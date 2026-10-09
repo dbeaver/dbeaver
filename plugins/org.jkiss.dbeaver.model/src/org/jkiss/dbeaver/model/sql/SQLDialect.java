@@ -207,6 +207,22 @@ public interface SQLDialect {
     @NotNull
     String[] getScriptDelimiters();
 
+    /**
+     * Script delimiters that separate batches rather than individual statements.
+     */
+    @NotNull
+    default String[] getBatchDelimiters() {
+        return new String[0];
+    }
+
+    /**
+     * Returns the lifetime of variables introduced by standalone SQL statements, or {@code null} when unsupported.
+     */
+    @Nullable
+    default SQLScriptVariableScope getScriptVariableScope() {
+        return null;
+    }
+
     @Nullable
     String getScriptDelimiterRedefiner();
 

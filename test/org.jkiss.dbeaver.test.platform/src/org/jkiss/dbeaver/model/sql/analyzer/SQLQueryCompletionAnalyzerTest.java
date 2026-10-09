@@ -94,6 +94,35 @@ public class SQLQueryCompletionAnalyzerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void testDeclaredVariableCompletion() throws DBException {
+        Set<String> proposals = RequestBuilder.empty().prepare().requestNewStrings(
+            "DECLARE @value INT\nSELECT @va|"
+        );
+
+        Assertions.assertTrue(proposals.contains("@value"));
+    }
+
+    @Test
+    public void testColumnCompletionAfterConsecutiveDeclarations() throws DBException {
+        RequestResult request = RequestBuilder.tables(tables -> tables.table("employee_table", table -> {
+            table.attribute("first_name");
+            table.attribute("last_name");
+            table.attribute("hire_date");
+        })).prepare();
+
+        Set<String> proposals = request.requestNewStrings("""
+            DECLARE @start_date DATE = DATEADD(MONTH, -1, CURRENT_TIMESTAMP)
+            DECLARE @end_date DATE = CURRENT_TIMESTAMP
+            SELECT e.| FROM employee_table e
+            WHERE e.hire_date BETWEEN @start_date AND @end_date
+            """);
+
+        Assertions.assertTrue(proposals.contains("first_name"));
+        Assertions.assertTrue(proposals.contains("last_name"));
+        Assertions.assertTrue(proposals.contains("hire_date"));
+    }
+
+    @Test
     public void testColumnNamesCompletion() throws DBException {
         final RequestResult request = RequestBuilder
             .tables(s -> {

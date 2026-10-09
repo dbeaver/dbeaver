@@ -41,11 +41,13 @@ import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
+import org.jkiss.dbeaver.model.sql.semantics.tracking.SQLScriptVariablesTracker;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLReconcilingStrategy;
 import org.jkiss.dbeaver.utils.ListNode;
 
 import java.util.List;
@@ -57,12 +59,216 @@ public class SQLBackgroundParsingJob {
     private static final boolean DEBUG = false;
 
     private static final long schedulingTimeoutMilliseconds = 250;
-    
+
     private static class QueuedRegionInfo {
         public int length;
-        
+
         public QueuedRegionInfo(int length) {
             this.length = length;
+        }
+    }
+
+    private final class ScriptVariablesTrackingContext {
+        @NotNull
+        private final Object lock = new Object();
+        @Nullable
+        private SQLReconcilingStrategy.ScriptElementsListener scriptElementsListener;
+        @Nullable
+        private SQLScriptVariablesTracker tracker;
+        @Nullable
+        private SQLScriptVariableScope variableScope;
+        @Nullable
+        private SQLReconcilingStrategy subscribedReconcilingStrategy;
+        private volatile long documentGeneration;
+        private long trackerGeneration;
+        private long invalidatedDocumentStamp = Long.MIN_VALUE;
+
+        private void setup(@NotNull SQLDialect dialect) {
+            synchronized (this.lock) {
+                this.unsubscribe();
+                this.documentGeneration++;
+                this.trackerGeneration++;
+                this.invalidatedDocumentStamp = Long.MIN_VALUE;
+                this.variableScope = editor.getActivePreferenceStore()
+                    .getBoolean(SQLModelPreferences.TRACK_SCRIPT_VARIABLES)
+                    ? dialect.getScriptVariableScope()
+                    : null;
+                this.tracker = SQLScriptVariablesTracker.create(this.variableScope);
+                this.subscribe();
+            }
+        }
+
+        private void dispose() {
+            synchronized (this.lock) {
+                this.documentGeneration++;
+                this.trackerGeneration++;
+                this.unsubscribe();
+                this.tracker = null;
+                this.variableScope = null;
+                this.invalidatedDocumentStamp = Long.MIN_VALUE;
+            }
+        }
+
+        private void applyDelta(int offset, int oldLength, int newLength) {
+            synchronized (this.lock) {
+                this.documentGeneration++;
+                long documentStamp = getDocumentModificationStamp(document);
+                this.invalidatedDocumentStamp = documentStamp == IDocumentExtension4.UNKNOWN_MODIFICATION_STAMP
+                    ? Long.MIN_VALUE
+                    : documentStamp;
+                if (this.tracker != null) {
+                    this.tracker.applyDelta(offset, oldLength, newLength);
+                }
+            }
+        }
+
+        private void clear() {
+            synchronized (this.lock) {
+                this.documentGeneration++;
+                this.trackerGeneration++;
+                this.unsubscribe();
+                this.invalidatedDocumentStamp = Long.MIN_VALUE;
+                if (this.tracker != null) {
+                    this.tracker = SQLScriptVariablesTracker.create(this.variableScope);
+                    this.subscribe();
+                }
+            }
+        }
+
+        private long getDocumentGeneration() {
+            return this.documentGeneration;
+        }
+
+        @Nullable
+        private SQLScriptVariablesTracker prepareForAnalysis(
+            @NotNull SQLParserContext parserContext,
+            @NotNull List<SQLScriptElement> elements,
+            long expectedDocumentGeneration
+        ) {
+            SQLScriptVariablesTracker currentTracker;
+            int gapStart;
+            synchronized (this.lock) {
+                if (expectedDocumentGeneration != this.documentGeneration || this.tracker == null) {
+                    return null;
+                }
+                currentTracker = this.tracker;
+                int lastCoveredPosition = currentTracker.getLastCoveredPosition();
+                gapStart = lastCoveredPosition == Integer.MAX_VALUE ? Integer.MAX_VALUE : lastCoveredPosition + 1;
+            }
+
+            List<SQLScriptElement> gapElements = List.of();
+            int analysisStart = elements.getFirst().getOffset();
+            if (gapStart < analysisStart) {
+                SQLScriptElement containingElement = SQLScriptParser.extractQueryAtPos(parserContext, gapStart, false);
+                if (containingElement != null) {
+                    gapStart = Math.min(gapStart, containingElement.getOffset());
+                }
+                gapElements = SQLScriptParser.extractScriptQueries(
+                    parserContext,
+                    gapStart,
+                    analysisStart - gapStart,
+                    false,
+                    false,
+                    false,
+                    true
+                );
+            }
+
+            List<SQLScriptElement> relevantGapElements = filterForRelevantElements(gapElements);
+            List<SQLScriptElement> relevantElements = filterForRelevantElements(elements);
+            synchronized (this.lock) {
+                if (expectedDocumentGeneration == this.documentGeneration && currentTracker == this.tracker) {
+                    this.trackElements(relevantGapElements);
+                    this.trackElements(relevantElements);
+                    return currentTracker;
+                }
+                return null;
+            }
+        }
+
+        private void acceptAnalysisResult(
+            @NotNull SQLScriptElement element,
+            @NotNull SQLQueryModel model,
+            long expectedDocumentGeneration
+        ) {
+            synchronized (this.lock) {
+                if (expectedDocumentGeneration == this.documentGeneration && this.tracker != null) {
+                    this.tracker.acceptAnalysisResult(element, model);
+                }
+            }
+        }
+
+        private void trackReconciledElements(
+            int offset,
+            int length,
+            @NotNull List<SQLScriptElement> elements,
+            long documentModificationStamp,
+            long expectedTrackerGeneration
+        ) {
+            synchronized (this.lock) {
+                if (expectedTrackerGeneration != this.trackerGeneration ||
+                    documentModificationStamp == this.invalidatedDocumentStamp ||
+                    documentModificationStamp != getDocumentModificationStamp(document)
+                ) {
+                    return;
+                }
+            }
+            List<SQLScriptElement> relevantElements = filterForRelevantElements(elements);
+            synchronized (this.lock) {
+                if (expectedTrackerGeneration == this.trackerGeneration &&
+                    documentModificationStamp != this.invalidatedDocumentStamp &&
+                    documentModificationStamp == getDocumentModificationStamp(document)
+                ) {
+                    if (this.tracker != null) {
+                        this.tracker.reconcileElements(offset, length, relevantElements);
+                    }
+                }
+            }
+        }
+
+        private void trackElements(@NotNull List<SQLScriptElement> elements) {
+            if (this.tracker != null) {
+                this.tracker.trackElements(elements);
+            }
+        }
+
+        @NotNull
+        private static List<SQLScriptElement> filterForRelevantElements(@NotNull List<SQLScriptElement> elements) {
+            return elements.stream().filter(SQLScriptVariablesTracker::isRelevant).toList();
+        }
+
+        private void unsubscribe() {
+            if (this.subscribedReconcilingStrategy != null && this.scriptElementsListener != null) {
+                this.subscribedReconcilingStrategy.removeScriptElementsListener(this.scriptElementsListener);
+            }
+            this.subscribedReconcilingStrategy = null;
+            this.scriptElementsListener = null;
+        }
+
+        private void subscribe() {
+            if (this.tracker == null || !this.tracker.usesReconciledElements()) {
+                return;
+            }
+            SQLReconcilingStrategy reconcilingStrategy = editor.getViewerConfiguration().getReconcilingStrategy();
+            if (reconcilingStrategy != null) {
+                long expectedTrackerGeneration = this.trackerGeneration;
+                this.scriptElementsListener = (offset, length, elements, documentModificationStamp) ->
+                    this.trackReconciledElements(
+                        offset,
+                        length,
+                        elements,
+                        documentModificationStamp,
+                        expectedTrackerGeneration
+                    );
+                reconcilingStrategy.addScriptElementsListener(this.scriptElementsListener);
+                this.subscribedReconcilingStrategy = reconcilingStrategy;
+            }
+        }
+
+        private static long getDocumentModificationStamp(@Nullable IDocument document) {
+            return document instanceof IDocumentExtension4 documentExtension
+                ? documentExtension.getModificationStamp()
+                : IDocumentExtension4.UNKNOWN_MODIFICATION_STAMP;
         }
     }
 
@@ -75,8 +281,11 @@ public class SQLBackgroundParsingJob {
     private final SQLEditorBase editor;
     @NotNull
     private final SQLDocumentSyntaxContext context = new SQLDocumentSyntaxContext();
+    @NotNull
+    private final ScriptVariablesTrackingContext variablesTrackingContext = new ScriptVariablesTrackingContext();
     @Nullable
     private IDocument document = null;
+    private boolean isSetup;
     @NotNull
     private final AbstractJob job = new AbstractJob("Background parsing job") {
         @NotNull
@@ -92,7 +301,11 @@ public class SQLBackgroundParsingJob {
             }
         }
     };
-    private volatile CompletableFuture<Long> lastParsingFinishStamp = new CompletableFuture<>() { { this.complete(0L); } };
+    private volatile CompletableFuture<Long> lastParsingFinishStamp = new CompletableFuture<>() {
+        {
+            this.complete(0L);
+        }
+    };
 
     private volatile boolean isRunning = false;
     private volatile int knownRegionStart = 0;
@@ -115,9 +328,14 @@ public class SQLBackgroundParsingJob {
      */
     public void setup() {
         synchronized (this.syncRoot) {
+            SQLDialect dialect = this.obtainCurrentSqlDialect(this.editor.getExecutionContext());
+            this.variablesTrackingContext.setup(dialect);
             if (this.editor.getTextViewer() != null) {
-                this.editor.getTextViewer().addTextInputListener(this.documentListener);
-                this.editor.getTextViewer().addViewportListener(this.documentListener);
+                if (!this.isSetup) {
+                    this.editor.getTextViewer().addTextInputListener(this.documentListener);
+                    this.editor.getTextViewer().addViewportListener(this.documentListener);
+                    this.isSetup = true;
+                }
                 if (this.document == null) {
                     IDocument document = this.editor.getTextViewer().getDocument();
                     if (document != null) {
@@ -144,6 +362,8 @@ public class SQLBackgroundParsingJob {
                     this.document.removeDocumentListener(this.documentListener);
                 }
             }
+            this.variablesTrackingContext.dispose();
+            this.isSetup = false;
         }
     }
 
@@ -174,7 +394,8 @@ public class SQLBackgroundParsingJob {
                     // the offset may be covered by adjacent scriptItem but still queued due to actual scriptItem being temporarily dropped
                     NodesIterator<QueuedRegionInfo> qit = this.queuedForReparse.nodesIteratorAt(requestOffset);
                     QueuedRegionInfo region = qit.getCurrValue() != null ? qit.getCurrValue() : (qit.prev() ? qit.getCurrValue() : null);
-                    boolean positionIsQueued = region != null && (qit.getCurrOffset() + region.length >= requestOffset || region.length == Integer.MAX_VALUE);
+                    boolean positionIsQueued = region != null && (qit.getCurrOffset() + region.length >= requestOffset
+                        || region.length == Integer.MAX_VALUE);
                     if (!positionIsQueued) {
                         scriptItem = this.context.findScriptItem(requestOffset - 1);
                         if (scriptItem != null) { // TODO consider statements separation which is ignored for now
@@ -227,11 +448,10 @@ public class SQLBackgroundParsingJob {
         return this.context;
     }
 
-    private void beforeDocumentModification(DocumentEvent event) {
+    private void beforeDocumentModification(@NotNull DocumentEvent event) {
         this.cancel();
-        
         int insertedLength = event.getText() == null ? 0 : event.getText().length();
-        
+        this.variablesTrackingContext.applyDelta(event.getOffset(), event.getLength(), insertedLength);
         IRegion regionToReparse = this.context.applyDelta(event.getOffset(), event.getLength(), insertedLength);
         int reparseStart = regionToReparse.getOffset();
         int reparseLength = 0;
@@ -259,7 +479,7 @@ public class SQLBackgroundParsingJob {
                 this.enqueueToReparse(reparseStart, reparseLength);
             } else {
                 // TODO remove just the affected fragment and enqueue regionToReparse
-                
+
                 // for now removing the whole tail as its offsets are being invalidated
                 ListNode<Integer> keyOffsetsToRemove = null;
                 NodesIterator<QueuedRegionInfo> it = this.queuedForReparse.nodesIteratorAt(reparseStart);
@@ -269,7 +489,7 @@ public class SQLBackgroundParsingJob {
                     if (firstAffectedReparseOffset < reparseStart &&
                         firstAffectedReparseOffset + it.getCurrValue().length > reparseStart + insertedLength
                     ) {
-                        return; // modified region is a subrange of already queued for reparse 
+                        return; // modified region is a subrange of already queued for reparse
                     }
                     keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, firstAffectedReparseOffset);
                 }
@@ -320,7 +540,7 @@ public class SQLBackgroundParsingJob {
             }
         }
     }
-    
+
     private void ensureVisibleRangeIsParsed() {
         TextViewer viewer = this.editor.getTextViewer();
         if (viewer == null || viewer.getDocument() == null) {
@@ -346,7 +566,7 @@ public class SQLBackgroundParsingJob {
             this.schedule(null);
         }
     }
-    
+
     private void schedule(@Nullable DocumentEvent event) {
         synchronized (this.syncRoot) {
             if (this.editor.getRuleManager() == null || !this.editor.isAdvancedHighlightingEnabled() ||
@@ -379,20 +599,21 @@ public class SQLBackgroundParsingJob {
             if (this.document != null) {
                 this.cancel();
             }
-            
+
             if (newDocument != null && SQLEditorUtils.isSQLSyntaxParserApplied(editor.getEditorInput())) {
                 this.document = newDocument;
                 this.reset();
             }
         }
     }
-    
+
     private void reset() {
         synchronized (this.syncRoot) {
             if (DEBUG) {
                 log.debug("reset background parsing job");
             }
             this.context.clear();
+            this.variablesTrackingContext.clear();
             this.queuedForReparse.clear();
             this.knownRegionEnd = 0;
             this.knownRegionStart = 0;
@@ -421,7 +642,10 @@ public class SQLBackgroundParsingJob {
                     firstVisibleLine = doc.getLineOfOffset(startOffset);
                     int visibleLinesCount = viewer.getTextWidget().getSize().y / viewer.getTextWidget().getLineHeight();
                     int rangeStart = doc.getLineOffset(Math.max(0, firstVisibleLine - visibleLinesCount * stepsToKeep));
-                    int rangeEnd = doc.getLineOffset(Math.min(doc.getNumberOfLines(), firstVisibleLine + visibleLinesCount * (stepsToKeep + 1)));
+                    int rangeEnd = doc.getLineOffset(Math.min(
+                        doc.getNumberOfLines(),
+                        firstVisibleLine + visibleLinesCount * (stepsToKeep + 1)
+                    ));
                     return new Interval(rangeStart, rangeEnd);
                 } catch (BadLocationException e) {
                     int endOffset = viewer.getBottomIndexEndOffset();
@@ -439,19 +663,19 @@ public class SQLBackgroundParsingJob {
         try {
             synchronized (this.syncRoot) {
                 this.isRunning = true;
-                
+
                 // drop unnecessary items
                 if (DEBUG) {
                     log.debug("actual region is " + actualFragment.a + "-" + actualFragment.b);
                 }
                 Interval preservedRegion = this.context.dropInvisibleScriptItems(actualFragment);
                 this.knownRegionStart = preservedRegion.a;
-                this.knownRegionEnd = preservedRegion.b; 
+                this.knownRegionEnd = preservedRegion.b;
                 if (DEBUG) {
                     log.debug("preserved is " + knownRegionStart + "-" + knownRegionEnd);
                     log.debug("queued ranges total: " + this.queuedForReparse.size());
                 }
-                
+
                 // TODO reparse only changed elements
                 // for now just cover the region of interest
                 {
@@ -463,7 +687,7 @@ public class SQLBackgroundParsingJob {
                     workLength = (it.getCurrValue() != null || it.prev())
                         ? (it.getCurrOffset() + it.getCurrValue().length - workOffset) : 0;
                 }
-                
+
                 // truncate work region to fit within actualFragment,
                 // as we've dropped what is outside already, so not point to parse outside of it
                 Interval workInterval = new Interval(workOffset, saturatedSum(workOffset, workLength));
@@ -490,7 +714,7 @@ public class SQLBackgroundParsingJob {
                         }
                     }
                 }
-                
+
                 this.queuedForReparse.clear();
                 if (DEBUG) {
                     log.debug("doWork: queuedForReparse count is " + queuedForReparse.size());
@@ -508,6 +732,7 @@ public class SQLBackgroundParsingJob {
                 return;
             }
 
+            final long variablesDocumentGeneration = this.variablesTrackingContext.getDocumentGeneration();
             SQLParserContext parserContext = new SQLParserContext(
                 editor.getDataSource(), editor.getSyntaxManager(), editor.getRuleManager(), document
             );
@@ -523,7 +748,7 @@ public class SQLBackgroundParsingJob {
                 }
             }
             List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(
-                parserContext, workOffset, workLength, false, false, false
+                parserContext, workOffset, workLength, false, false, false, true
             );
             if (elements.isEmpty()) {
                 if (DEBUG) {
@@ -533,12 +758,14 @@ public class SQLBackgroundParsingJob {
                 return;
             } else {
                 SQLScriptElement element = SQLScriptParser.extractQueryAtPos(parserContext, elements.get(0).getOffset(), false);
-                if (element != null && element.getOffset() < elements.get(0).getOffset()) {
+                if (elements.get(0) instanceof SQLQuery &&
+                    element != null && element.getOffset() < elements.get(0).getOffset()
+                ) {
                     elements.set(0, element);
                 }
                 int lastElementIndex = elements.size() - 1;
                 SQLScriptElement lastElement = elements.get(lastElementIndex);
-                if (elements.size() > 1) {
+                if (elements.size() > 1 && lastElement instanceof SQLQuery) {
                     element = SQLScriptParser.extractQueryAtPos(parserContext, lastElement.getOffset(), false);
                     if (element != null) {
                         elements.set(lastElementIndex, element);
@@ -554,7 +781,7 @@ public class SQLBackgroundParsingJob {
                     }
                 }
             }
-            
+
             {
                 SQLScriptElement lastElement = elements.get(elements.size() - 1);
                 if (lastElement == null) {
@@ -565,7 +792,8 @@ public class SQLBackgroundParsingJob {
                 workLength = lastElement.getOffset() + lastElement.getLength() - workOffset;
                 if (DEBUG) {
                     log.debug("firstElement@" + elements.get(0).getOffset() + ":" + elements.get(0).getText());
-                    log.debug("lastElement@" + elements.get(elements.size() - 1).getOffset() + ":" + elements.get(elements.size() - 1).getText());
+                    log.debug(
+                        "lastElement@" + elements.get(elements.size() - 1).getOffset() + ":" + elements.get(elements.size() - 1).getText());
                     log.debug("parsing " + workOffset + "+" + workLength);
                 }
             }
@@ -590,22 +818,40 @@ public class SQLBackgroundParsingJob {
             SQLQueryRecognitionContext recognitionContext = new SQLQueryRecognitionContext(
                 monitor, executionContext, useRealMetadata, validateFunctions, syntaxManager, dialect
             );
+            SQLScriptVariablesTracker variablesTracker = monitor.isCanceled()
+                ? null
+                : this.variablesTrackingContext.prepareForAnalysis(parserContext, elements, variablesDocumentGeneration);
 
             int i = 1;
             for (SQLScriptElement element : elements) {
                 if (monitor.isCanceled()) {
                     break;
                 }
+                if (element instanceof SQLBatchDelimiterElement) {
+                    continue;
+                }
                 try {
                     recognitionContext.reset();
-                    SQLQueryModel queryModel = element instanceof SQLControlCommand
-                        ? SQLCommandModelRecognizer.recognizeCommand(
+                    SQLQueryModel queryModel;
+                    if (element instanceof SQLControlCommand) {
+                        queryModel = SQLCommandModelRecognizer.recognizeCommand(
                             recognitionContext,
                             element.getText(),
                             this.editor instanceof SQLEditor e ? e.getGlobalScriptContext() : null
-                        )
-                        : SQLQueryModelRecognizer.recognizeQuery(recognitionContext, element.getOriginalText());
-
+                        );
+                    } else {
+                        SQLQueryVariablesSubset varsSubset = variablesTracker == null
+                            ? SQLQueryVariablesSubset.EMPTY
+                            : variablesTracker.getVisibleVariablesAt(recognitionContext, element.getOffset());
+                        recognitionContext.reset();
+                        queryModel = SQLQueryModelRecognizer.recognizeQuery(recognitionContext, element.getOriginalText(), varsSubset);
+                        if (queryModel != null) {
+                            this.variablesTrackingContext.acceptAnalysisResult(element, queryModel, variablesDocumentGeneration);
+                        }
+                    }
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
                     if (queryModel != null) {
                         if (DEBUG) {
                             log.debug("registering script item @" + element.getOffset() + "+" + element.getLength());
@@ -674,6 +920,7 @@ public class SQLBackgroundParsingJob {
 
     private void signalAccomplished() {
         synchronized (this.syncRoot) {
+            this.isRunning = false;
             this.lastParsingFinishStamp.complete(System.currentTimeMillis());
         }
     }
@@ -685,11 +932,10 @@ public class SQLBackgroundParsingJob {
             if (DEBUG) {
                 log.debug("known is " + knownRegionStart + "-" + knownRegionEnd);
             }
-            this.isRunning = false;
             this.signalAccomplished();
         }
     }
-    
+
     private static int saturatedSum(int a, int b) {
         int r = a + b;
         if (r < a || r < b) {

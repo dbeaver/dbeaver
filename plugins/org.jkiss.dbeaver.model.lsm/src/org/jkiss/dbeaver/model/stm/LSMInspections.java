@@ -38,8 +38,8 @@ import java.util.stream.StreamSupport;
 
 public class LSMInspections {
 
-    private static final Pattern anyWordPattern = Pattern.compile("^\\w+$");
-    private static final Pattern anyWordHeadPattern = Pattern.compile("^\\w+");
+    private static final Pattern anyWordPattern = Pattern.compile("^[@\\w]+$");
+    private static final Pattern anyWordHeadPattern = Pattern.compile("^[@\\w]+");
 
     public static boolean matchesAnyWord(String str) {
         return anyWordPattern.matcher(str).matches();

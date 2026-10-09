@@ -40,7 +40,7 @@ public class SQLEditorMessages extends NLS {
 
     public static String editor_query_log_viewer_draw_text_type_qury_part;
     public static String editor_query_log_viewer_reexecute_query_button_text;
-    
+
     public static String editor_sql_preference;
     public static String editors_sql_data_grid;
     public static String editors_sql_description;
@@ -70,7 +70,7 @@ public class SQLEditorMessages extends NLS {
     public static String editors_sql_staus_connected_to;
     public static String editors_sql_actions_copy_as_source_code;
     public static String editors_sql_actions_copy_as_source_code_tip;
-    
+
     public static String editors_sql_actions_search_selected_text_online;
     public static String editors_sql_actions_search_selected_text_online_tip;
 
@@ -248,6 +248,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_label_mark_occurrences_for_selections_tip;
     public static String pref_page_code_editor_label_advanced_highlighting_enabled;
     public static String pref_page_code_editor_label_advanced_highlighting_enabled_tip;
+    public static String pref_page_code_editor_label_track_script_variables_enabled;
+    public static String pref_page_code_editor_label_track_script_variables_enabled_tip;
     public static String pref_page_code_editor_label_validate_functions_enabled;
     public static String pref_page_code_editor_label_validate_functions_enabled_tip;
     public static String pref_page_code_editor_label_read_metadata_enabled;
@@ -378,7 +380,7 @@ public class SQLEditorMessages extends NLS {
     public static String source_viewer_show_partitions_ddl_tip;
 
     public static String sql_editor_action_clear;
-    
+
     public static String sql_editor_title_tooltip_path;
     public static String sql_editor_data_receiver_result_name_tooltip_connection;
     public static String sql_editor_data_receiver_result_name_tooltip_time;
@@ -428,7 +430,7 @@ public class SQLEditorMessages extends NLS {
 
     public static String sql_editor_status_bar_rollback_label;
     public static String sql_editor_status_bar_disconnect_label;
-    
+
     public static String sql_editor_outline_no_elements_label;
     public static String sql_editor_outline_query_analysis_disabled_label;
     public static String update_conflict_message;

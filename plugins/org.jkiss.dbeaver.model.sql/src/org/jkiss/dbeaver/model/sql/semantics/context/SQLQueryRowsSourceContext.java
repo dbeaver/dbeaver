@@ -63,6 +63,9 @@ public class SQLQueryRowsSourceContext {
     @Nullable
     private Supplier<SQLQueryRowsDataContext> relatedContextProvider = null;
 
+    @NotNull
+    private final SQLQueryVariablesSubset variablesSubset;
+
     public SQLQueryRowsSourceContext(@NotNull SQLQueryConnectionContext connectionInfo) {
         this(connectionInfo, false, UnmodifiableMap.emptyMap(), null);
     }
@@ -73,12 +76,23 @@ public class SQLQueryRowsSourceContext {
         @NotNull UnmodifiableMap<String, SourceResolutionResult> dynamicTableSources,
         @Nullable Supplier<SQLQueryRowsDataContext> relatedContextProvider
     ) {
+        this(connectionInfo, hasUnresolvedSource, dynamicTableSources, relatedContextProvider, connectionInfo.getVariablesSubset());
+    }
+
+    private SQLQueryRowsSourceContext(
+        @NotNull SQLQueryConnectionContext connectionInfo,
+        boolean hasUnresolvedSource,
+        @NotNull UnmodifiableMap<String, SourceResolutionResult> dynamicTableSources,
+        @Nullable Supplier<SQLQueryRowsDataContext> relatedContextProvider,
+        @NotNull SQLQueryVariablesSubset variablesSubset
+    ) {
         this.connectionInfo = connectionInfo;
         this.hasUnresolvedSource = hasUnresolvedSource;
         this.rowsSources = UnmodifiableMap.emptyMap();
         this.dynamicTableSources = dynamicTableSources;
         this.sourcesByLoweredAlias = UnmodifiableMap.emptyMap();
         this.relatedContextProvider = relatedContextProvider;
+        this.variablesSubset = variablesSubset;
     }
 
     private SQLQueryRowsSourceContext(
@@ -87,7 +101,8 @@ public class SQLQueryRowsSourceContext {
         @NotNull UnmodifiableMap<SQLQueryComplexName, SourceResolutionResult> rowsSources,
         @NotNull UnmodifiableMap<String, SourceResolutionResult> dynamicTableSources,
         @NotNull UnmodifiableMap<String, SourceResolutionResult> sourcesByLoweredAlias,
-        @Nullable Supplier<SQLQueryRowsDataContext> relatedContextProvider
+        @Nullable Supplier<SQLQueryRowsDataContext> relatedContextProvider,
+        @NotNull SQLQueryVariablesSubset variablesSubset
     ) {
         parent.registerConsumingContext(this);
         this.connectionInfo = parent.connectionInfo;
@@ -96,6 +111,7 @@ public class SQLQueryRowsSourceContext {
         this.dynamicTableSources = dynamicTableSources;
         this.sourcesByLoweredAlias = sourcesByLoweredAlias;
         this.relatedContextProvider = relatedContextProvider;
+        this.variablesSubset = variablesSubset;
     }
 
     private void registerConsumingContext(@NotNull SQLQueryRowsSourceContext context) {
@@ -121,7 +137,9 @@ public class SQLQueryRowsSourceContext {
      */
     @NotNull
     public final SQLQueryRowsSourceContext reset() {
-        return new SQLQueryRowsSourceContext(this.connectionInfo, false, this.dynamicTableSources, this.relatedContextProvider);
+        return new SQLQueryRowsSourceContext(
+            this.connectionInfo, false, this.dynamicTableSources, this.relatedContextProvider, this.variablesSubset
+        );
     }
 
     /**
@@ -129,7 +147,9 @@ public class SQLQueryRowsSourceContext {
      */
     @NotNull
     public final SQLQueryRowsSourceContext resetAsUnresolved() {
-        return new SQLQueryRowsSourceContext(this.connectionInfo, true, this.dynamicTableSources, this.relatedContextProvider);
+        return new SQLQueryRowsSourceContext(
+            this.connectionInfo, true, this.dynamicTableSources, this.relatedContextProvider, this.variablesSubset
+        );
     }
 
     @NotNull
@@ -140,7 +160,8 @@ public class SQLQueryRowsSourceContext {
             this.rowsSources,
             this.dynamicTableSources,
             this.sourcesByLoweredAlias,
-            relatedContextProvider
+            relatedContextProvider,
+            this.variablesSubset
         );
     }
 
@@ -331,6 +352,43 @@ public class SQLQueryRowsSourceContext {
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
     /**
+     * Return a collection of variables available
+     */
+    @NotNull
+    public SQLQueryVariablesSubset getVariablesSubset() {
+        return this.variablesSubset;
+    }
+
+    /**
+     * Return information about the script variabpseudo column used in the query by the specified name
+     */
+    @Nullable
+    public SQLQueryVariableInfo resolveScriptVariable(@NotNull SQLQuerySymbolEntry name) {
+        return this.variablesSubset.resolve(name);
+    }
+
+    /**
+     * Register new variable into the context for it to be resolvable in the subsequent contexts
+     */
+    @NotNull
+    public SQLQueryRowsSourceContext registerScriptVariable(
+        @NotNull SQLQuerySymbolEntry name,
+        @NotNull SQLQueryExprType type,
+        @NotNull SQLQueryVariableInfo.OperationKind operationKind,
+        int relativeOffset
+    ) {
+        return new SQLQueryRowsSourceContext(
+            this,
+            this.hasUnresolvedSource,
+            this.rowsSources,
+            this.dynamicTableSources,
+            this.sourcesByLoweredAlias,
+            this.relatedContextProvider,
+            this.variablesSubset.appendVariable(name, type, operationKind, relativeOffset)
+        );
+    }
+
+    /**
      * Create empty data context
      */
     @NotNull
@@ -472,7 +530,8 @@ public class SQLQueryRowsSourceContext {
             rowsSources,
             dynamicTableSources,
             sourcesByLoweredAlias,
-            relatedContextProvider
+            relatedContextProvider,
+            this.variablesSubset
         );
     }
 
@@ -484,7 +543,8 @@ public class SQLQueryRowsSourceContext {
             this.rowsSources,
             dynamicTableSources,
             this.sourcesByLoweredAlias,
-            this.relatedContextProvider
+            this.relatedContextProvider,
+            this.variablesSubset
         );
     }
 

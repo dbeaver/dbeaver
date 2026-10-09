@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLBatchDelimiterToken;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLControlToken;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.SQLTokenEntry;
@@ -77,6 +78,7 @@ public class SQLScriptParser {
      * @param keepDelimiters the keep delimiters option
      * @return the sql script element
      */
+    @Nullable
     public static SQLScriptElement parseQuery(
         @NotNull final SQLParserContext context,
         final int startPos,
@@ -85,21 +87,26 @@ public class SQLScriptParser {
         final boolean scriptMode,
         final boolean keepDelimiters
     ) {
-        return tryExpandElement(parseQueryImpl(context, startPos, endPos, currentPos, scriptMode, keepDelimiters, false), context);
+        return tryExpandElement(
+            parseQueryImpl(
+                context, startPos, endPos, currentPos, scriptMode, keepDelimiters, false, false
+            ), context
+        );
     }
 
+    @Nullable
     public static SQLScriptElement parseQuery(
-        DBPDataSource dataSource,
-        SQLDialect dialect,
-        DBPPreferenceStore preferenceStore,
-        String sqlScriptContent,
+        @Nullable DBPDataSource dataSource,
+        @NotNull SQLDialect dialect,
+        @NotNull DBPPreferenceStore preferenceStore,
+        @NotNull String sqlScriptContent,
         int cursorPosition
     ) {
         SQLParserContext parserContext = prepareSqlParserContext(dataSource, dialect, preferenceStore, sqlScriptContent);
         return SQLScriptParser.extractQueryAtPos(parserContext, cursorPosition, true);
     }
 
-
+    @Nullable
     private static SQLScriptElement parseQueryImpl(
         @NotNull final SQLParserContext context,
         final int startPos,
@@ -107,7 +114,8 @@ public class SQLScriptParser {
         final int currentPos,
         final boolean scriptMode,
         final boolean keepDelimiters,
-        boolean forceExtractComments
+        boolean forceExtractComments,
+        boolean includeBatchDelimiterElements
     ) {
         int length = endPos - startPos;
         IDocument document = context.getDocument();
@@ -117,6 +125,8 @@ public class SQLScriptParser {
         SQLDialect dialect = context.getDialect();
         SQLTokenPredicateEvaluator predicateEvaluator = new SQLTokenPredicateEvaluator(dialect.getSkipTokenPredicates());
         boolean isPredicateEvaluationEnabled = isPredicateEvaluationEnabled();
+        boolean isVariablesTrackingEnabled = dialect.getScriptVariableScope() != null &&
+            context.getPreferenceStore().getBoolean(SQLModelPreferences.TRACK_SCRIPT_VARIABLES);
         boolean newTokenCaptured = false;
 
         // Parse range
@@ -131,6 +141,7 @@ public class SQLScriptParser {
         ScriptBlockInfo curBlock = null;
         boolean hasBlocks = false;
         int lastTokenLineFeeds = 0;
+        boolean hasVariableKeyword = false;
         SQLTokenType prevNotEmptyTokenType = SQLTokenType.T_UNKNOWN;
         String firstKeyword = null, lastKeyword = null;
         boolean endClosedCaseBlock = false;
@@ -138,14 +149,17 @@ public class SQLScriptParser {
             TPToken token = ruleScanner.nextToken();
             int tokenOffset = ruleScanner.getTokenOffset();
             int tokenLength = ruleScanner.getTokenLength();
+            int tokenEnd = tokenOffset + tokenLength;
 
-            if (tokenOffset + tokenLength > document.getLength()) {
+            if (tokenEnd > document.getLength()) {
                 log.debug("Token location is outside of the document boundaries during query parsing");
                 token = TPTokenAbstract.EOF;
                 tokenOffset = document.getLength();
                 tokenLength = 0;
+                tokenEnd = tokenOffset;
             }
 
+            boolean isBatchSeparator = token instanceof SQLBatchDelimiterToken;
             SQLTokenType tokenType = token instanceof TPTokenDefault tpTokenDefault
                 ? (SQLTokenType) tpTokenDefault.getData()
                 : SQLTokenType.T_OTHER;
@@ -195,9 +209,12 @@ public class SQLScriptParser {
                 }
                 if (tokenType == SQLTokenType.T_DELIMITER && prevNotEmptyTokenType == SQLTokenType.T_BLOCK_BEGIN) {
                     // Another trick. If BEGIN follows with delimiter then it is not a block (#7821)
-                    if (curBlock != null) curBlock = curBlock.parent;
+                    if (curBlock != null) {
+                        curBlock = curBlock.parent;
+                    }
                 }
-                if (dialect.isStripCommentsBeforeBlocks() && tokenType == SQLTokenType.T_BLOCK_HEADER && prevNotEmptyTokenType == SQLTokenType.T_COMMENT) {
+                if (dialect.isStripCommentsBeforeBlocks() && tokenType == SQLTokenType.T_BLOCK_HEADER
+                    && prevNotEmptyTokenType == SQLTokenType.T_COMMENT) {
                     statementStart = tokenOffset;
                 }
                 if (tokenType == SQLTokenType.T_BLOCK_HEADER) {
@@ -224,7 +241,10 @@ public class SQLScriptParser {
                     // there's no direct header block terminators
                     // like 'BEGIN ... END' but 'DECLARE ... BEGIN ... END'
                     if (curBlock != null && curBlock.isHeader) {
-                        if (curBlock.isPredicateHeaderBlock || !ArrayUtils.containsIgnoreCase(dialect.getInnerBlockPrefixes(), lastKeyword)) {
+                        if (curBlock.isPredicateHeaderBlock || !ArrayUtils.containsIgnoreCase(
+                            dialect.getInnerBlockPrefixes(),
+                            lastKeyword
+                        )) {
                             curBlock = curBlock.parent;
                         }
                     }
@@ -234,7 +254,8 @@ public class SQLScriptParser {
                 } else if (tokenType == SQLTokenType.T_BLOCK_END) {
                     if (curBlock != null) {
                         if (curBlock.togglePattern != null) {
-                            log.trace("SQLScriptParser: blocks structure recognition inconsistency - trying to leave toggled block on non-togging token");
+                            log.trace(
+                                "SQLScriptParser: blocks structure recognition inconsistency - trying to leave toggled block on non-togging token");
                         } else {
                             // CASE...END is an expression, not a control block. Don't let
                             // its END be treated as a statement-block terminator that
@@ -253,15 +274,23 @@ public class SQLScriptParser {
                     // see https://github.com/dbeaver/pro/issues/3935
                     // If there is a statement preceding a command (e.g., @ai, @echo)
                     // and it does not contain any delimiters, then that statement should be extracted.
-                    boolean cursorInsideToken = currentPos >= tokenOffset && currentPos <= tokenOffset + tokenLength;
+                    boolean cursorInsideToken = currentPos >= tokenOffset && currentPos <= tokenEnd;
                     if (!hasValuableTokens || cursorInsideToken) {
                         isControl = true;
                     }
                 } else if (tokenType == SQLTokenType.T_COMMENT) {
-                    lastTokenLineFeeds = tokenLength < 2 ? 0 : countLineFeeds(document, tokenOffset + tokenLength - 2, 2);
+                    lastTokenLineFeeds = tokenLength < 2 ? 0 : countLineFeeds(document, tokenEnd - 2, 2);
                 }
 
                 if (tokenLength > 0 && !token.isWhitespace()) {
+                    String tokenText = null;
+                    if (isVariablesTrackingEnabled) {
+                        tokenText = document.get(tokenOffset, tokenLength);
+                        if (SQLConstants.KEYWORD_DECLARE.equalsIgnoreCase(tokenText) ||
+                            SQLConstants.KEYWORD_SET.equalsIgnoreCase(tokenText)) {
+                            hasVariableKeyword = true;
+                        }
+                    }
                     switch (tokenType) {
                         case T_BLOCK_END:
                             if (endClosedCaseBlock) {
@@ -276,7 +305,9 @@ public class SQLScriptParser {
                         case T_BLOCK_HEADER:
                         case T_KEYWORD:
                         case T_UNKNOWN:
-                            lastKeyword = document.get(tokenOffset, tokenLength);
+                            lastKeyword = tokenText == null
+                                ? document.get(tokenOffset, tokenLength)
+                                : tokenText;
                             if (firstKeyword == null) {
                                 firstKeyword = lastKeyword;
                             }
@@ -317,10 +348,18 @@ public class SQLScriptParser {
                     }
                 }
 
-                boolean cursorInsideToken = currentPos >= tokenOffset && currentPos < tokenOffset + tokenLength;
+                boolean cursorInsideToken = currentPos >= tokenOffset && currentPos < tokenEnd;
+                if (includeBatchDelimiterElements && isBatchSeparator && !hasValuableTokens) {
+                    return new SQLBatchDelimiterElement(
+                        context.getDataSource(),
+                        document.get(tokenOffset, tokenLength),
+                        tokenOffset,
+                        tokenLength
+                    );
+                }
                 if (isControl && (
-                        ((scriptMode || cursorInsideToken) && !hasValuableTokens)
-                        || (token.isEOF() || (isDelimiter && tokenOffset + tokenLength >= currentPos))
+                    ((scriptMode || cursorInsideToken) && !hasValuableTokens)
+                        || (token.isEOF() || (isDelimiter && tokenEnd >= currentPos))
                 )) {
                     // Control query
                     String controlText = document.get(tokenOffset, tokenLength);
@@ -335,16 +374,20 @@ public class SQLScriptParser {
                         commandId,
                         tokenOffset,
                         tokenLength,
-                        tokenType == SQLTokenType.T_SET_DELIMITER);
-                    if (command.isEmptyCommand() ||
-                        (command.getCommandId() != null &&
-                            SQLCommandsRegistry.getInstance().getCommandHandler(command.getCommandId()) != null)) {
+                        tokenType == SQLTokenType.T_SET_DELIMITER
+                    );
+                    if (command.isEmptyCommand() || (
+                        command.getCommandId() != null &&
+                            SQLCommandsRegistry.getInstance().getCommandHandler(command.getCommandId()) != null
+                    )) {
                         return command;
                     }
                     // This is not a valid command
                     isControl = false;
                 }
-                if (hasValuableTokens && (token.isEOF() || (isDelimiter && tokenOffset + tokenLength >= currentPos) || tokenOffset > endPos)) {
+                if (hasValuableTokens && (
+                    token.isEOF() || (isDelimiter && tokenEnd >= currentPos) || tokenOffset > endPos
+                )) {
                     if (tokenOffset > endPos) {
                         tokenOffset = endPos;
                     }
@@ -371,18 +414,18 @@ public class SQLScriptParser {
                         if (token.isEOF()) {
                             return null;
                         }
-                        statementStart = tokenOffset + tokenLength;
+                        statementStart = tokenEnd;
                         continue;
                     }
                     String queryText = document.get(statementStart, tokenOffset - statementStart);
                     queryText = SQLUtils.fixLineFeeds(queryText);
 
                     int queryEndPos = tokenOffset;
-                    if (isDelimiter &&
-                        (keepDelimiters ||
-                        (hasBlocks && dialect.isDelimiterAfterQuery()) ||
-                        (needsDelimiterAfterBlock(firstKeyword, lastKeyword, dialect))))
-                    {
+                    if (isDelimiter && (
+                        keepDelimiters ||
+                            (hasBlocks && dialect.isDelimiterAfterQuery()) ||
+                            (needsDelimiterAfterBlock(firstKeyword, lastKeyword, dialect))
+                    )) {
                         if (delimiterText != null && delimiterText.equals(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
                             // Add delimiter in the end of query. Do this only for semicolon delimiters.
                             // For SQL server add it in the end of query. For Oracle only after END clause
@@ -391,8 +434,8 @@ public class SQLScriptParser {
                             queryText += delimiterText;
                         }
                     }
-                    if (tokenType == SQLTokenType.T_DELIMITER) {
-                        queryEndPos += tokenLength;
+                    if (tokenType == SQLTokenType.T_DELIMITER && !(includeBatchDelimiterElements && isBatchSeparator)) {
+                        queryEndPos = tokenEnd;
                     }
                     if (curBlock != null) {
                         log.trace("Found leftover blocks in script after parsing");
@@ -417,11 +460,13 @@ public class SQLScriptParser {
                             queryEndPos - statementStart
                         );
                         query.setEndsWithDelimiter(tokenType == SQLTokenType.T_DELIMITER);
+                        query.setHasVariableKeyword(hasVariableKeyword);
                         return query;
                     }
                 }
                 if (isDelimiter) {
-                    statementStart = tokenOffset + tokenLength;
+                    statementStart = tokenEnd;
+                    hasVariableKeyword = false;
                     if (isPredicateEvaluationEnabled) {
                         firstKeyword = null;
                         predicateEvaluator.reset();
@@ -433,7 +478,7 @@ public class SQLScriptParser {
                 if (token.isEOF()) {
                     return null;
                 }
-                if (!hasValuableTokens && !token.isWhitespace() && !isControl) {
+                if (!hasValuableTokens && !token.isWhitespace() && !isControl && !isDelimiter) {
                     if (tokenType == SQLTokenType.T_COMMENT) {
                         hasValuableTokens = dialect.supportsCommentQuery() || forceExtractComments;
                     } else {
@@ -462,11 +507,12 @@ public class SQLScriptParser {
      * @param cursorPosition   the cursor position
      * @return the sql script element
      */
+    @Nullable
     public static SQLScriptElement parseQuery(
-        DBPDataSource dataSource,
-        SQLDialect dialect,
-        DBPPreferenceStore preferenceStore,
-        String sqlScriptContent,
+        @Nullable DBPDataSource dataSource,
+        @NotNull SQLDialect dialect,
+        @NotNull DBPPreferenceStore preferenceStore,
+        @NotNull String sqlScriptContent,
         int cursorPosition,
         boolean forceExtractComments
     ) {
@@ -474,7 +520,11 @@ public class SQLScriptParser {
         return SQLScriptParser.extractQueryAtPos(parserContext, cursorPosition, forceExtractComments);
     }
 
-    private static boolean needsDelimiterAfterBlock(String firstKeyword, String lastKeyword, SQLDialect dialect) {
+    private static boolean needsDelimiterAfterBlock(
+        @Nullable String firstKeyword,
+        @Nullable String lastKeyword,
+        @NotNull SQLDialect dialect
+    ) {
         if (dialect.needsDelimiterFor(firstKeyword, lastKeyword)) {
             // SQL Server needs delimiters after MERGE
             return true;
@@ -503,7 +553,7 @@ public class SQLScriptParser {
             ArrayUtils.contains(dialect.getDDLKeywords(), firstKeyword);
     }
 
-    private static int countLineFeeds(final IDocument document, final int offset, final int length) {
+    private static int countLineFeeds(@NotNull final IDocument document, final int offset, final int length) {
         int lfCount = 0;
         try {
             for (int i = offset; i < offset + length; i++) {
@@ -517,18 +567,22 @@ public class SQLScriptParser {
         return lfCount;
     }
 
-    public static SQLScriptElement extractQueryAtPos(SQLParserContext context, int currentPos, boolean forceExtractComments) {
+    @Nullable
+    public static SQLScriptElement extractQueryAtPos(@NotNull SQLParserContext context, int currentPos, boolean forceExtractComments) {
         return tryExpandElement(extractQueryAtPosImpl(context, currentPos, forceExtractComments), context);
     }
-    
-    private static SQLScriptElement extractQueryAtPosImpl(SQLParserContext context, int currentPos, boolean forceExtractComments) {
+
+    @Nullable
+    private static SQLScriptElement extractQueryAtPosImpl(@NotNull SQLParserContext context, int currentPos, boolean forceExtractComments) {
         IDocument document = context.getDocument();
         if (document.getLength() == 0) {
             return null;
         }
         SQLSyntaxManager syntaxManager = context.getSyntaxManager();
         final int docLength = document.getLength();
-        IDocumentPartitioner partitioner = document instanceof IDocumentExtension3 ? ((IDocumentExtension3)document).getDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING) : null;
+        IDocumentPartitioner partitioner = document instanceof IDocumentExtension3
+            ? ((IDocumentExtension3) document).getDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING)
+            : null;
         if (partitioner != null) {
             try {
                 int currLineIndex = document.getLineOfOffset(currentPos);
@@ -662,22 +716,26 @@ public class SQLScriptParser {
         } catch (BadLocationException e) {
             log.warn(e);
         }
-        return parseQueryImpl(context, startPos, document.getLength(), currentPos, false, false, forceExtractComments);
+        return parseQueryImpl(
+            context, startPos, document.getLength(), currentPos, false, false, forceExtractComments, false
+        );
     }
 
-    private static boolean isDefaultPartition(IDocumentPartitioner partitioner, int currentPos) {
+    private static boolean isDefaultPartition(@Nullable IDocumentPartitioner partitioner, int currentPos) {
         return partitioner == null || IDocument.DEFAULT_CONTENT_TYPE.equals(partitioner.getContentType(currentPos));
     }
 
-    private static boolean isMultiCommentPartition(IDocumentPartitioner partitioner, int currentPos) {
+    private static boolean isMultiCommentPartition(@Nullable IDocumentPartitioner partitioner, int currentPos) {
         return partitioner != null && SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(partitioner.getContentType(currentPos));
     }
 
+    @Nullable
     public static SQLScriptElement extractNextQuery(@NotNull SQLParserContext context, int offset, boolean next) {
         SQLScriptElement curElement = extractQueryAtPos(context, offset, false);
         return tryExpandElement(extractNextQueryImpl(context, curElement, next), context);
     }
 
+    @Nullable
     public static SQLScriptElement extractNextQuery(
         @NotNull SQLParserContext context,
         @Nullable SQLScriptElement curElement,
@@ -686,6 +744,7 @@ public class SQLScriptParser {
         return tryExpandElement(extractNextQueryImpl(context, curElement, next), context);
     }
 
+    @Nullable
     private static SQLScriptElement extractNextQueryImpl(
         @NotNull SQLParserContext context,
         @Nullable SQLScriptElement curElement,
@@ -772,8 +831,8 @@ public class SQLScriptParser {
     }
 
     @Nullable
-    public static SQLScriptElement extractActiveQuery(SQLParserContext context, int selOffset, int selLength) {
-        return extractActiveQuery(context, new IRegion[]{new Region(selOffset, selLength)});
+    public static SQLScriptElement extractActiveQuery(@NotNull SQLParserContext context, int selOffset, int selLength) {
+        return extractActiveQuery(context, new IRegion[] {new Region(selOffset, selLength)});
     }
 
     @Nullable
@@ -804,7 +863,8 @@ public class SQLScriptParser {
         if (!CommonUtils.isEmpty(selText)) {
             SQLScriptElement parsedElement = SQLScriptParser.parseQuery(
                 context,
-                region.getOffset(), region.getOffset() + region.getLength(), region.getOffset(), false, false);
+                region.getOffset(), region.getOffset() + region.getLength(), region.getOffset(), false, false
+            );
             if (parsedElement instanceof SQLControlCommand) {
                 // This is a command
                 element = parsedElement;
@@ -831,17 +891,22 @@ public class SQLScriptParser {
         return element;
     }
 
-    public static List<SQLQueryParameter> parseParametersAndVariables(SQLParserContext context, String selectedQueryText) {
+    @Nullable
+    public static List<SQLQueryParameter> parseParametersAndVariables(
+        @NotNull SQLParserContext context,
+        @NotNull String selectedQueryText
+    ) {
         SQLParserContext ctx = new SQLParserContext(
-                context.getDataSource(),
-                context.getSyntaxManager(),
-                context.getRuleManager(),
-                new Document(selectedQueryText)
+            context.getDataSource(),
+            context.getSyntaxManager(),
+            context.getRuleManager(),
+            new Document(selectedQueryText)
         );
-        return  parseParametersAndVariables(ctx, 0, selectedQueryText.length());
+        return parseParametersAndVariables(ctx, 0, selectedQueryText.length());
     }
 
-    public static List<SQLQueryParameter> parseParametersAndVariables(SQLParserContext context, int queryOffset, int queryLength) {
+    @Nullable
+    public static List<SQLQueryParameter> parseParametersAndVariables(@NotNull SQLParserContext context, int queryOffset, int queryLength) {
         final SQLDialect sqlDialect = context.getDialect();
         IDocument document = context.getDocument();
         if (queryOffset + queryLength > document.getLength()) {
@@ -869,8 +934,8 @@ public class SQLScriptParser {
                 }
                 // Handle only parameters which are not in SQL blocks
                 SQLTokenType tokenType = token instanceof TPTokenDefault
-                                         ? (SQLTokenType) ((TPTokenDefault) token).getData()
-                                         : null;
+                    ? (SQLTokenType) ((TPTokenDefault) token).getData()
+                    : null;
                 if (token.isWhitespace() || tokenType == SQLTokenType.T_COMMENT) {
                     continue;
                 }
@@ -918,7 +983,7 @@ public class SQLScriptParser {
                                 preparedParamName = paramName;
                             }
                         }
-                        
+
                         SQLQueryParameter parameter = new SQLQueryParameter(
                             syntaxManager,
                             parameters.size(),
@@ -988,7 +1053,11 @@ public class SQLScriptParser {
         return parameters;
     }
 
-    private static SQLQueryParameter getPreviousParameter(List<SQLQueryParameter> parameters, SQLQueryParameter parameter) {
+    @Nullable
+    private static SQLQueryParameter getPreviousParameter(
+        @NotNull List<SQLQueryParameter> parameters,
+        @NotNull SQLQueryParameter parameter
+    ) {
         String varName = parameter.getVarName();
         if (parameter.isNamed()) {
             for (int i = parameters.size(); i > 0; i--) {
@@ -1000,6 +1069,7 @@ public class SQLScriptParser {
         return null;
     }
 
+    @NotNull
     public static List<SQLScriptElement> extractScriptQueries(
         @NotNull SQLParserContext parserContext,
         int startOffset,
@@ -1007,6 +1077,27 @@ public class SQLScriptParser {
         boolean scriptMode,
         boolean keepDelimiters,
         boolean parseParameters
+    ) {
+        return extractScriptQueries(
+            parserContext,
+            startOffset,
+            length,
+            scriptMode,
+            keepDelimiters,
+            parseParameters,
+            false
+        );
+    }
+
+    @NotNull
+    public static List<SQLScriptElement> extractScriptQueries(
+        @NotNull SQLParserContext parserContext,
+        int startOffset,
+        int length,
+        boolean scriptMode,
+        boolean keepDelimiters,
+        boolean parseParameters,
+        boolean includeBatchDelimiterElements
     ) {
         // LinkedList is crucial to prevent copy on expand and for many-to-one replacements efficiency
         List<SQLScriptElement> queryList = new LinkedList<>();
@@ -1019,7 +1110,16 @@ public class SQLScriptParser {
         parserContext.startScriptEvaluation();
         try {
             for (int queryOffset = startOffset; ; ) {
-                SQLScriptElement query = parseQueryImpl(parserContext, queryOffset, startOffset + length, queryOffset, scriptMode, keepDelimiters, false);
+                SQLScriptElement query = parseQueryImpl(
+                    parserContext,
+                    queryOffset,
+                    startOffset + length,
+                    queryOffset,
+                    scriptMode,
+                    keepDelimiters,
+                    false,
+                    includeBatchDelimiterElements
+                );
                 if (query == null) {
                     break;
                 }
@@ -1050,14 +1150,14 @@ public class SQLScriptParser {
         var it = queryList.listIterator();
         while (it.hasNext()) {
             SQLScriptElement firstElement = it.next();
-            if (firstElement instanceof SQLQuery queryStart && !queryStart.isEndsWithDelimiter() && it.hasNext()) {
+            if (firstElement instanceof SQLQuery queryStart && !Boolean.TRUE.equals(queryStart.isEndsWithDelimiter()) && it.hasNext()) {
                 SQLQuery prevElement = queryStart;
                 SQLScriptElement currElement = it.next();
                 boolean captureCurrElement;
                 while ((captureCurrElement = (
-                        currElement instanceof SQLQuery queryElement && !continuationDetector.elementStartsProperly(queryElement) &&
-                        !prevElement.isEndsWithDelimiter()
-                    )) && it.hasNext()) {
+                    currElement instanceof SQLQuery queryElement && !continuationDetector.elementStartsProperly(queryElement) &&
+                        !Boolean.TRUE.equals(prevElement.isEndsWithDelimiter())
+                )) && it.hasNext()) {
                     it.remove(); // remove currElement while it is a continuation of the query started at the firstElement
                     prevElement = (SQLQuery) currElement;
                     currElement = it.next();
@@ -1086,7 +1186,8 @@ public class SQLScriptParser {
         }
     }
 
-    public static List<SQLScriptElement> parseScript(DBPDataSource dataSource, String sqlScriptContent) {
+    @NotNull
+    public static List<SQLScriptElement> parseScript(@NotNull DBPDataSource dataSource, @NotNull String sqlScriptContent) {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
@@ -1098,22 +1199,42 @@ public class SQLScriptParser {
         return SQLScriptParser.extractScriptQueries(parserContext, 0, sqlScriptContent.length(), true, false, true);
     }
 
+    @NotNull
     public static List<SQLScriptElement> parseScript(
-        DBPDataSource dataSource,
-        SQLDialect dialect,
-        DBPPreferenceStore preferenceStore,
-        String sqlScriptContent
+        @Nullable DBPDataSource dataSource,
+        @NotNull SQLDialect dialect,
+        @NotNull DBPPreferenceStore preferenceStore,
+        @NotNull String sqlScriptContent
+    ) {
+        return parseScript(dataSource, dialect, preferenceStore, sqlScriptContent, false);
+    }
+
+    @NotNull
+    public static List<SQLScriptElement> parseScript(
+        @Nullable DBPDataSource dataSource,
+        @NotNull SQLDialect dialect,
+        @NotNull DBPPreferenceStore preferenceStore,
+        @NotNull String sqlScriptContent,
+        boolean includeBatchDelimiterElements
     ) {
         SQLParserContext parserContext = prepareSqlParserContext(dataSource, dialect, preferenceStore, sqlScriptContent);
-        return SQLScriptParser.extractScriptQueries(parserContext, 0, sqlScriptContent.length(), true, false, true);
+        return SQLScriptParser.extractScriptQueries(
+            parserContext,
+            0,
+            sqlScriptContent.length(),
+            true,
+            false,
+            true,
+            includeBatchDelimiterElements
+        );
     }
 
     @NotNull
     public static SQLParserContext prepareSqlParserContext(
-        DBPDataSource dataSource,
-        SQLDialect dialect,
-        DBPPreferenceStore preferenceStore,
-        String sqlScriptContent
+        @Nullable DBPDataSource dataSource,
+        @NotNull SQLDialect dialect,
+        @NotNull DBPPreferenceStore preferenceStore,
+        @NotNull String sqlScriptContent
     ) {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dialect, preferenceStore);
@@ -1124,7 +1245,8 @@ public class SQLScriptParser {
 
         FastPartitioner partitioner = new FastPartitioner(
             new SQLPartitionScanner(dataSource, dialect, ruleManager),
-            SQLParserPartitions.SQL_CONTENT_TYPES);
+            SQLParserPartitions.SQL_CONTENT_TYPES
+        );
         partitioner.connect(sqlDocument);
 
         sqlDocument.setDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING, partitioner);
@@ -1135,30 +1257,34 @@ public class SQLScriptParser {
     }
 
     private static class ScriptBlockInfo {
+        @Nullable
         final ScriptBlockInfo parent;
+        @Nullable
         final String togglePattern;
         boolean isHeader; // block started by DECLARE, FUNCTION, etc
         boolean isPredicateHeaderBlock;
+        @Nullable
         String beginToken;
 
-        ScriptBlockInfo(ScriptBlockInfo parent, boolean isHeader) {
+        ScriptBlockInfo(@Nullable ScriptBlockInfo parent, boolean isHeader) {
             this.parent = parent;
             this.togglePattern = null;
             this.isHeader = isHeader;
         }
 
-        ScriptBlockInfo(ScriptBlockInfo parent, boolean isHeader, boolean isPredicateHeaderBlock) {
+        ScriptBlockInfo(@Nullable ScriptBlockInfo parent, boolean isHeader, boolean isPredicateHeaderBlock) {
             this(parent, isHeader);
             this.isPredicateHeaderBlock = isPredicateHeaderBlock;
         }
 
-        ScriptBlockInfo(ScriptBlockInfo parent, String togglePattern) {
+        ScriptBlockInfo(@Nullable ScriptBlockInfo parent, @NotNull String togglePattern) {
             this.parent = parent;
             this.togglePattern = togglePattern;
         }
     }
 
-    private static SQLScriptElement tryExpandElement(SQLScriptElement element, SQLParserContext context) {
+    @Nullable
+    private static SQLScriptElement tryExpandElement(@Nullable SQLScriptElement element, @NotNull SQLParserContext context) {
         if (element instanceof SQLQuery queryElement && context.getSyntaxManager().getStatementDelimiterMode().useSmart) {
             var continuationDetector = new ScriptElementContinuationDetector(context);
             SQLScriptElement extendedElement = continuationDetector.tryPrepareExtendedElement(queryElement);
@@ -1168,28 +1294,31 @@ public class SQLScriptParser {
         }
         return element;
     }
-    
+
     private static class ScriptElementContinuationDetector {
         private static final Set<Integer> statementStartTokenIds = LSMInspections.prepareOffquerySyntaxInspection().predictedTokenIds();
 
-        private static final Map<SQLDialect, Set<String>> statementStartKeywordsByDialect = Collections.synchronizedMap(new WeakHashMap<>());
-        
+        private static final Map<SQLDialect, Set<String>> statementStartKeywordsByDialect
+            = Collections.synchronizedMap(new WeakHashMap<>());
+
         private final Set<String> statementStartKeywords;
 
         private final SQLParserContext context;
         private final LSMAnalyzerParameters analyzerParameters;
-        
+
         public ScriptElementContinuationDetector(@NotNull SQLParserContext context) {
             this.context = context;
             this.statementStartKeywords = getStatementStartKeywords(this.context);
             this.analyzerParameters = LSMAnalyzerParameters.forDialect(this.context.getDialect(), this.context.getSyntaxManager());
         }
 
-        private static Set<String> getStatementStartKeywords(SQLParserContext context) {
+        @NotNull
+        private static Set<String> getStatementStartKeywords(@NotNull SQLParserContext context) {
             return statementStartKeywordsByDialect.computeIfAbsent(context.getDialect(), d -> prepareStatementStartKeywordsSet(context));
         }
 
-        private static Set<String> prepareStatementStartKeywordsSet(SQLParserContext context) {
+        @NotNull
+        private static Set<String> prepareStatementStartKeywordsSet(@NotNull SQLParserContext context) {
             SQLDialect dialect = context.getDialect();
             Set<String> statementStartKeywords = new HashSet<>();
 
@@ -1239,6 +1368,7 @@ public class SQLScriptParser {
             );
         }
 
+        @NotNull
         private SQLQuery findSmartStatementBegginning(@NotNull SQLQuery element) {
             SQLQuery lastElement = element;
             SQLScriptElement prevElement = extractNextQueryImpl(this.context, element, false);
@@ -1247,7 +1377,7 @@ public class SQLScriptParser {
                 prevElement instanceof SQLQuery prevQueryFragment &&
                     (takePrev = (
                         !Boolean.TRUE.equals(prevQueryFragment.isEndsWithDelimiter()) ||
-                        prevElement.getOffset() + prevElement.getLength() >= lastElement.getOffset() + lastElement.getLength()
+                            prevElement.getOffset() + prevElement.getLength() >= lastElement.getOffset() + lastElement.getLength()
                     )) && !elementStartsProperly(prevElement) && prevElement.getOffset() < lastElement.getOffset()
             ) {
                 lastElement = prevQueryFragment;
@@ -1257,6 +1387,7 @@ public class SQLScriptParser {
             return boundaryElement;
         }
 
+        @NotNull
         private SQLQuery findSmartStatementEnding(@NotNull SQLQuery element) {
             SQLQuery lastElement = element;
             SQLScriptElement nextElement = extractNextQueryImpl(this.context, element, true);
@@ -1279,6 +1410,7 @@ public class SQLScriptParser {
             return prepareExtendedSQLScriptElement(extendedHead, tailElement);
         }
 
+        @NotNull
         public SQLQuery prepareExtendedSQLScriptElement(
             @NotNull SQLQuery headElement,
             @NotNull SQLQuery tailElement
@@ -1299,6 +1431,7 @@ public class SQLScriptParser {
                 String text = this.context.getDocument().get(start, extractionEnd - start);
                 SQLQuery query = new SQLQuery(this.context.getDataSource(), text, start, realEnd - start);
                 query.setEndsWithDelimiter(tailElement.isEndsWithDelimiter());
+                query.setHasVariableKeyword(headElement.hasVariableKeyword() || tailElement.hasVariableKeyword());
                 return query;
             } catch (BadLocationException ex) {
                 return headElement;

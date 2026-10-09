@@ -40,10 +40,7 @@ import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLCommandModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.*;
@@ -833,7 +830,8 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
                 case CLIENT_PARAMETER -> UIIcon.SQL_PARAMETER;
                 case CLIENT_VARIABLE -> UIIcon.SQL_PARAMETER;
             };
-            this.makeNode(node, varExpr, prepareQueryPreview(varExpr.getRawName()), icon);
+            String extraText = this.obtainExprTypeNameString(varExpr.getValueType());
+            this.makeNode(node, varExpr, prepareQueryPreview(varExpr.getRawName()), extraText, icon);
             return null;
         }
         
@@ -1205,6 +1203,26 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         @Override
         public Object visitCommandVariable(@NotNull SQLCommandModel.VariableNode variable, OutlineQueryNode arg) {
             this.makeNode(arg, variable, variable.name.getName() + " = " + variable.value, UIIcon.SQL_PARAMETER);
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitVariableStatement(@NotNull SQLQueryVariableStatementModel variableStatement, @NotNull OutlineQueryNode node) {
+            for (SQLQueryVariableClause clause : variableStatement.getVariableClauses()) {
+                clause.apply(this, node);
+            }
+            if (variableStatement.getBody() != null) {
+                variableStatement.getBody().apply(this, node);
+            }
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object visitVariableClause(@NotNull SQLQueryVariableClause variableClause, @NotNull OutlineQueryNode node) {
+            String nodeText = prepareQueryPreview(variableClause.getSyntaxNode().getTextContent());
+            this.makeNode(node, variableClause, nodeText, UIIcon.SQL_VARIABLE2, variableClause.getValueExpression());
             return null;
         }
 

@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionHelper;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.sql.semantics.*;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultPseudoColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDataModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
@@ -205,6 +206,13 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
                     }
                     case SQLQuerySymbolEntry defSymbolEntry -> {
                         dbObject = null;
+                    }
+                    case SQLQueryVariableInfo variable -> {
+                        dbObject = null;
+                        message = "Script variable " + variable.rawName();
+                        if (variable.type() != SQLQueryExprType.UNKNOWN) {
+                            message += " of type " +  variable.type().getDisplayName();
+                        }
                     }
                     case null -> {
                         dbObject = null;

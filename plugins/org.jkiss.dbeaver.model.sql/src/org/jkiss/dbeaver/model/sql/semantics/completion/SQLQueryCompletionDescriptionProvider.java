@@ -135,4 +135,9 @@ public class SQLQueryCompletionDescriptionProvider implements SQLQueryCompletion
     public String  visitSpecialText(@NotNull SQLSpecialTextCompletionItem specialText) {
         return specialText.description;
     }
+
+    @Nullable
+    public String visitScriptVariable(@NotNull SQLScriptVariableCompletionItem scriptVariable) {
+        return "SQL script variable belonging to the " + scriptVariable.variableDefinition.scope() + " scope";
+    }
 }

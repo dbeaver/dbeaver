@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ lexer grammar SQLStandardLexer;
 @header {
     /*
      * DBeaver - Universal Database Manager
-     * Copyright (C) 2010-2024 DBeaver Corp and others
+     * Copyright (C) 2010-2026 DBeaver Corp and others
      *
      * Licensed under the Apache License, Version 2.0 (the "License");
      * you may not use this file except in compliance with the License.
@@ -280,6 +280,7 @@ CURRENT_USER: C U R R E N T '_' U S E R ;
 DATE: D A T E ;
 DAY: D A Y ;
 DEFAULT: D E F A U L T ;
+DECLARE: D E C L A R E ;
 DEFERRABLE: D E F E R R A B L E ;
 DEFERRED: D E F E R R E D ;
 DELETE: D E L E T E ;
@@ -395,6 +396,8 @@ USER: U S E R ;
 USING: U S I N G ;
 VALUE: V A L U E ;
 VALUES: V A L U E S ;
+VAR: V A R ;
+VARIABLE: V A R I A B L E ;
 VIEW: V I E W ;
 WHEN: W H E N ;
 WHERE: W H E R E ;

@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.sql.completion.SQLCompletionProposalBase;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.model.sql.semantics.SQLDocumentScriptItemSyntaxContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLDocumentSyntaxContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLScriptItemAtOffset;
@@ -43,6 +45,7 @@ import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionAnalyz
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionProposal;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
+import org.jkiss.dbeaver.model.sql.semantics.tracking.SQLScriptVariablesTracker;
 import org.jkiss.utils.Pair;
 import org.junit.jupiter.api.Assertions;
 
@@ -126,10 +129,16 @@ public class RequestResult {
             request.getContext().getDataSource().getSQLDialect()
         );
         recognitionContext.reset();
-        SQLQueryModel queryModel = SQLQueryModelRecognizer.recognizeQuery(recognitionContext, queryText);
+        SQLDialect dialect = request.getContext().getDataSource().getSQLDialect();
+        SQLScriptVariablesTracker variablesTracker = SQLScriptVariablesTracker.create(dialect.getScriptVariableScope());
+        SQLQuery query = new SQLQuery(null, queryText);
+        variablesTracker.trackElements(List.of(query));
+        var visibleVariables = variablesTracker.getVisibleVariablesAt(recognitionContext, 0);
+        recognitionContext.reset();
+        SQLQueryModel queryModel = SQLQueryModelRecognizer.recognizeQuery(recognitionContext, queryText, visibleVariables);
         Assertions.assertNotNull(queryModel);
 
-        final SQLQueryCompletionAnalyzer analyzer = getSqlQueryCompletionAnalyzer(queryText, queryModel, request);
+        final SQLQueryCompletionAnalyzer analyzer = getSqlQueryCompletionAnalyzer(queryText, queryModel, request, dialect);
         try {
             analyzer.run(monitor);
         } catch (InvocationTargetException | InterruptedException e) {
@@ -142,22 +151,23 @@ public class RequestResult {
     private static SQLQueryCompletionAnalyzer getSqlQueryCompletionAnalyzer(
         String queryText,
         SQLQueryModel queryModel,
-        SQLCompletionRequest request
+        SQLCompletionRequest request,
+        SQLDialect dialect
     ) {
-        SQLDocumentScriptItemSyntaxContext scriptItemContext = new SQLDocumentScriptItemSyntaxContext(
-            0,
+        SQLDocumentSyntaxContext documentContext = new SQLDocumentSyntaxContext();
+        SQLDocumentScriptItemSyntaxContext scriptItemContext = documentContext.registerScriptItemContext(
             queryText,
             queryModel,
-            queryText.length()
+            0,
+            queryText.length(),
+            false
         );
-        scriptItemContext.setHasContextBoundaryAtLength(false);
-
         final SQLQueryCompletionAnalyzer analyzer = new SQLQueryCompletionAnalyzer(
             m -> SQLQueryCompletionContext.prepareCompletionContext(
                 new SQLScriptItemAtOffset(0, scriptItemContext),
                 request.getDocumentOffset(),
                 request.getContext().getExecutionContext(),
-                request.getContext().getDataSource().getSQLDialect()
+                dialect
             ),
             request,
             request::getDocumentOffset
@@ -213,7 +223,12 @@ public class RequestResult {
         private final SQLRuleManager ruleManager;
         private final DBCExecutionContext executionContext;
 
-        private CompletionContext(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, SQLRuleManager ruleManager, DBCExecutionContext executionContext) {
+        private CompletionContext(
+            DBPDataSource dataSource,
+            SQLSyntaxManager syntaxManager,
+            SQLRuleManager ruleManager,
+            DBCExecutionContext executionContext
+        ) {
             this.dataSource = dataSource;
             this.syntaxManager = syntaxManager;
             this.ruleManager = ruleManager;
@@ -296,11 +311,33 @@ public class RequestResult {
         }
 
         @Override
-        public boolean isForceQualifiedColumnNames() { return false; }
+        public boolean isForceQualifiedColumnNames() {
+            return false;
+        }
 
         @Override
-        public SQLCompletionProposalBase createProposal(@NotNull SQLCompletionRequest request, @NotNull String displayString, @NotNull String replacementString, int cursorPosition, @Nullable DBPImage image, @NotNull DBPKeywordType proposalType, @Nullable String description, @Nullable DBPNamedObject object, @NotNull Map<String, Object> params) {
-            return new SQLCompletionProposalBase(request, displayString, replacementString, cursorPosition, image, proposalType, description, object, params);
+        public SQLCompletionProposalBase createProposal(
+            @NotNull SQLCompletionRequest request,
+            @NotNull String displayString,
+            @NotNull String replacementString,
+            int cursorPosition,
+            @Nullable DBPImage image,
+            @NotNull DBPKeywordType proposalType,
+            @Nullable String description,
+            @Nullable DBPNamedObject object,
+            @NotNull Map<String, Object> params
+        ) {
+            return new SQLCompletionProposalBase(
+                request,
+                displayString,
+                replacementString,
+                cursorPosition,
+                image,
+                proposalType,
+                description,
+                object,
+                params
+            );
         }
     }
 }

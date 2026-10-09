@@ -77,6 +77,7 @@ public class SQLQuery implements SQLScriptElement {
     private String text;
     private int offset;
     private int length;
+    private boolean hasVariableKeyword;
     private Object data;
     private int resultsOffset = -1;
     private int resultsMaxRows = -1;
@@ -113,6 +114,8 @@ public class SQLQuery implements SQLScriptElement {
         }
         this.parameters = sourceQuery.parameters;
         this.data = sourceQuery.data;
+        this.isEndsWithDelimiter = sourceQuery.isEndsWithDelimiter;
+        this.hasVariableKeyword = sourceQuery.hasVariableKeyword;
     }
 
     public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String text, int offset, int length) {
@@ -411,6 +414,14 @@ public class SQLQuery implements SQLScriptElement {
 
     public void setLength(int length) {
         this.length = length;
+    }
+
+    public boolean hasVariableKeyword() {
+        return this.hasVariableKeyword;
+    }
+
+    public void setHasVariableKeyword(boolean hasVariableKeyword) {
+        this.hasVariableKeyword = hasVariableKeyword;
     }
 
     /**

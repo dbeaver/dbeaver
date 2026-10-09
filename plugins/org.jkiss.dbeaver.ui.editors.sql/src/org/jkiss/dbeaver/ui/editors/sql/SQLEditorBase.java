@@ -251,7 +251,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         }
         return false;
     }
-    
+
     static long getBigScriptFileLengthBoundary() {
         return DBWorkbench.getPlatform().getPreferenceStore().getLong(SQLPreferenceConstants.SCRIPT_BIG_FILE_LENGTH_BOUNDARY);
     }
@@ -283,10 +283,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     protected String[] getKeyBindingContexts() {
-        return new String[]{
+        return new String[] {
             TEXT_EDITOR_CONTEXT,
             SQLEditorContributions.SQL_EDITOR_CONTEXT,
-            SQLEditorContributions.SQL_EDITOR_SCRIPT_CONTEXT};
+            SQLEditorContributions.SQL_EDITOR_SCRIPT_CONTEXT
+        };
     }
 
     @Override
@@ -380,7 +381,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         projectionSupport = new ProjectionSupport(
             projectionViewer,
             getAnnotationAccess(),
-            getSharedColors());
+            getSharedColors()
+        );
         projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.error"); //$NON-NLS-1$
         projectionSupport.addSummarizableAnnotationType("org.eclipse.ui.workbench.texteditor.warning"); //$NON-NLS-1$
         projectionSupport.install();
@@ -416,7 +418,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
                     final ITextSelection selection = (ITextSelection) selectionProvider.getSelection();
 
                     int widgetOffset = widget.getOffsetAtPoint(new Point(e.x, e.y));
-                    
+
                     if (widgetOffset < 0) {
                         int lineIndex = widget.getLineIndex(e.y);
                         if (lineIndex + 1 >= widget.getLineCount()) {
@@ -425,12 +427,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
                             widgetOffset = widget.getOffsetAtLine(lineIndex + 1) - widget.getLineDelimiter().length();
                         }
                     }
-                    
+
                     if (widgetOffset < 0) {
                         return;
                     }
-                    
-                    int modelOffset = sourceViewer instanceof ITextViewerExtension5 vext ? vext.widgetOffset2ModelOffset(widgetOffset) : widgetOffset;
+
+                    int modelOffset = sourceViewer instanceof ITextViewerExtension5 vext ? vext.widgetOffset2ModelOffset(widgetOffset)
+                        : widgetOffset;
 
                     boolean withinExistingSelection = false;
 
@@ -623,7 +626,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
     protected SourceViewerDecorationSupport getSourceViewerDecorationSupport(ISourceViewer viewer) {
         if (fSourceViewerDecorationSupport == null) {
-            fSourceViewerDecorationSupport = new SQLSourceViewerDecorationSupport(viewer, getOverviewRuler(), getAnnotationAccess(), getSharedColors());
+            fSourceViewerDecorationSupport = new SQLSourceViewerDecorationSupport(
+                viewer,
+                getOverviewRuler(),
+                getAnnotationAccess(),
+                getSharedColors()
+            );
             configureSourceViewerDecorationSupport(fSourceViewerDecorationSupport);
         }
         return fSourceViewerDecorationSupport;
@@ -632,9 +640,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
         char[] matchChars = SQLConstants.BRACKETS; //which brackets to match
         try {
-            characterPairMatcher = new SQLCharacterPairMatcher(this, matchChars,
+            characterPairMatcher = new SQLCharacterPairMatcher(
+                this, matchChars,
                 SQLParserPartitions.SQL_PARTITIONING,
-                true);
+                true
+            );
         } catch (Throwable e) {
             // If we below Eclipse 4.2.1
             characterPairMatcher = new SQLCharacterPairMatcher(this, matchChars, SQLParserPartitions.SQL_PARTITIONING);
@@ -652,7 +662,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         super.configureSourceViewerDecorationSupport(support);
 
         if (UIStyles.isDarkHighContrastTheme()) {
-            support.setCursorLinePainterPreferenceKeys(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_CURRENT_LINE, ThemeConstants.COLOR_SQL_RESULT_LINES_SELECTED);
+            support.setCursorLinePainterPreferenceKeys(
+                AbstractDecoratedTextEditorPreferenceConstants.EDITOR_CURRENT_LINE,
+                ThemeConstants.COLOR_SQL_RESULT_LINES_SELECTED
+            );
         }
     }
 
@@ -702,7 +715,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         } else if (IContentOutlinePage.class.equals(required)) {
             return (T) getOverviewOutlinePage();
         }
-    
+
         return super.getAdapter(required);
     }
 
@@ -718,8 +731,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     public SQLTemplatesPage getTemplatesPage() {
-        if (templatesPage == null)
+        if (templatesPage == null) {
             templatesPage = new SQLTemplatesPage(this);
+        }
         return templatesPage;
     }
 
@@ -768,7 +782,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             bundle,
             SQLEditorContributor.getActionResourcePrefix(SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL),
             this,
-            ISourceViewer.CONTENTASSIST_PROPOSALS);
+            ISourceViewer.CONTENTASSIST_PROPOSALS
+        );
         action.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS);
         setAction(SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL, action);
 
@@ -776,7 +791,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             bundle,
             SQLEditorContributor.getActionResourcePrefix(SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP),
             this,
-            ISourceViewer.CONTENTASSIST_CONTEXT_INFORMATION);
+            ISourceViewer.CONTENTASSIST_CONTEXT_INFORMATION
+        );
         action.setActionDefinitionId(ITextEditorActionDefinitionIds.CONTENT_ASSIST_CONTEXT_INFORMATION);
         setAction(SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP, action);
 
@@ -784,7 +800,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             bundle,
             SQLEditorContributor.getActionResourcePrefix(SQLEditorContributor.ACTION_CONTENT_ASSIST_INFORMATION),
             this,
-            ISourceViewer.INFORMATION);
+            ISourceViewer.INFORMATION
+        );
         action.setActionDefinitionId(ITextEditorActionDefinitionIds.SHOW_INFORMATION);
         setAction(SQLEditorContributor.ACTION_CONTENT_ASSIST_INFORMATION, action);
 
@@ -792,7 +809,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             bundle,
             SQLEditorContributor.getActionResourcePrefix(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL),
             this,
-            ISourceViewer.FORMAT);
+            ISourceViewer.FORMAT
+        );
         action.setActionDefinitionId(BaseTextEditorCommands.CMD_CONTENT_FORMAT);
         setAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL, action);
 
@@ -816,7 +834,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL);
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP);
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_INFORMATION);
-        menu.insertBefore(ITextEditorActionConstants.GROUP_COPY, ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_NAVIGATE_OBJECT));
+        menu.insertBefore(
+            ITextEditorActionConstants.GROUP_COPY,
+            ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_NAVIGATE_OBJECT)
+        );
 
         TextViewer textViewer = getTextViewer();
         if (!isReadOnly() && textViewer != null && textViewer.isEditable()) {
@@ -846,7 +867,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             if (this.backgroundParsingJob == null) {
                 this.backgroundParsingJob = new SQLBackgroundParsingJob(this);
             }
-            if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED) && this.semanticMarkersManager == null) {
+            if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED)
+                && this.semanticMarkersManager == null) {
                 this.semanticMarkersManager = new SQLEditorSemanticMarkersManager(this);
             }
         } else {
@@ -857,7 +879,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         }
         if (this.semanticMarkersManager != null && (
             this.backgroundParsingJob == null ||
-            !this.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED)
+                !this.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROBLEM_MARKERS_ENABLED)
         )) {
             this.semanticMarkersManager.dispose();
             this.semanticMarkersManager = null;
@@ -873,13 +895,19 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         if (getDataSource() != null) {
             parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, document != null ? document : new Document());
         } else {
-            parserContext = new SQLParserContext(getDataSourceContainerForSyntaxRuleReloading(), syntaxManager, ruleManager, document != null ? document : new Document());
+            parserContext = new SQLParserContext(
+                getDataSourceContainerForSyntaxRuleReloading(),
+                syntaxManager,
+                ruleManager,
+                document != null ? document : new Document()
+            );
         }
 
         if (document instanceof IDocumentExtension3) {
             IDocumentPartitioner partitioner = new FastPartitioner(
                 new SQLPartitionScanner(getDataSource(), dialect, ruleManager),
-                SQLParserPartitions.SQL_CONTENT_TYPES);
+                SQLParserPartitions.SQL_CONTENT_TYPES
+            );
             partitioner.connect(document);
             try {
                 ((IDocumentExtension3) document).setDocumentPartitioner(SQLParserPartitions.SQL_PARTITIONING, partitioner);
@@ -915,6 +943,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             }
         }*/
 
+        // Subscribe semantic consumers before reconciliation publishes the refreshed script elements.
+        if (this.backgroundParsingJob != null) {
+            this.backgroundParsingJob.setup();
+        }
         // Update configuration
         if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
             ((SQLEditorSourceViewerConfiguration) getSourceViewerConfiguration()).onDataSourceChange();
@@ -923,9 +955,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             verticalRuler.update();
         }
 
-        if (this.backgroundParsingJob != null) {
-            this.backgroundParsingJob.setup();
-        }
         if (this.semanticMarkersManager != null) {
             this.semanticMarkersManager.refresh();
         }
@@ -981,12 +1010,39 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         return SQLScriptParser.extractNextQuery(parserContext, offset, next);
     }
 
-    public List<SQLScriptElement> extractScriptQueries(int startOffset, int length, boolean scriptMode, boolean keepDelimiters, boolean parseParameters) {
+    @Nullable
+    public List<SQLScriptElement> extractScriptQueries(
+        int startOffset,
+        int length,
+        boolean scriptMode,
+        boolean keepDelimiters,
+        boolean parseParameters
+    ) {
+        return this.extractScriptQueries(startOffset, length, scriptMode, keepDelimiters, parseParameters, false);
+    }
+
+    @Nullable
+    public List<SQLScriptElement> extractScriptQueries(
+        int startOffset,
+        int length,
+        boolean scriptMode,
+        boolean keepDelimiters,
+        boolean parseParameters,
+        boolean includeBatchDelimiterElements
+    ) {
         if (parserContext == null) {
             return null;
         }
 
-        return SQLScriptParser.extractScriptQueries(parserContext, startOffset, length, scriptMode, keepDelimiters, parseParameters);
+        return SQLScriptParser.extractScriptQueries(
+            parserContext,
+            startOffset,
+            length,
+            scriptMode,
+            keepDelimiters,
+            parseParameters,
+            includeBatchDelimiterElements
+        );
     }
 
     public SQLCompletionContext getCompletionContext() {
@@ -1003,9 +1059,19 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         }
         SQLParserContext context;
         if (getDataSource() != null) {
-            context = new SQLParserContext(getDataSource(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
+            context = new SQLParserContext(
+                getDataSource(),
+                parserContext.getSyntaxManager(),
+                parserContext.getRuleManager(),
+                new Document(query.getText())
+            );
         } else {
-            context = new SQLParserContext(getDataSourceContainerForSyntaxRuleReloading(), parserContext.getSyntaxManager(), parserContext.getRuleManager(), new Document(query.getText()));
+            context = new SQLParserContext(
+                getDataSourceContainerForSyntaxRuleReloading(),
+                parserContext.getSyntaxManager(),
+                parserContext.getRuleManager(),
+                new Document(query.getText())
+            );
         }
         return SQLScriptParser.parseParametersAndVariables(context, 0, query.getLength());
     }
@@ -1037,15 +1103,17 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
     protected String[] collectContextMenuPreferencePages() {
         String[] ids = super.collectContextMenuPreferencePages();
-        return ArrayUtils.concatArrays(ids, new String[] {
-            PrefPageSQLEditor.PAGE_ID,
-            PrefPageSQLExecute.PAGE_ID,
-            PrefPageSQLCodeEditing.PAGE_ID,
-            PrefPageSQLCompletion.PAGE_ID,
-            PrefPageSQLFormat.PAGE_ID,
-            PrefPageSQLResources.PAGE_ID,
-            PrefPageSQLTemplates.PAGE_ID
-        });
+        return ArrayUtils.concatArrays(
+            ids, new String[] {
+                PrefPageSQLEditor.PAGE_ID,
+                PrefPageSQLExecute.PAGE_ID,
+                PrefPageSQLCodeEditing.PAGE_ID,
+                PrefPageSQLCompletion.PAGE_ID,
+                PrefPageSQLFormat.PAGE_ID,
+                PrefPageSQLResources.PAGE_ID,
+                PrefPageSQLTemplates.PAGE_ID
+            }
+        );
     }
 
     @Override
@@ -1059,7 +1127,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     /**
      * Error handling
      */
-    boolean visualizeQueryErrors(@NotNull DBRProgressMonitor monitor, @NotNull SQLQuery query, @NotNull Throwable error, @Nullable SQLQuery originalQuery) {
+    boolean visualizeQueryErrors(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLQuery query,
+        @NotNull Throwable error,
+        @Nullable SQLQuery originalQuery
+    ) {
         try {
             DBCExecutionContext context = getExecutionContext();
             if (context == null) {
@@ -1081,7 +1154,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
                             if (pos.position >= 0) {
                                 // Only position
                                 errorOffset = queryStartOffset + pos.position;
-                                final SQLWordPartDetector detector = new SQLWordPartDetector(getDocument(), getSyntaxManager(), errorOffset);
+                                final SQLWordPartDetector detector = new SQLWordPartDetector(
+                                    getDocument(),
+                                    getSyntaxManager(),
+                                    errorOffset
+                                );
                                 final int length = detector.getLength() > 0
                                     ? detector.getLength()
                                     : queryLength - pos.position;
@@ -1115,8 +1192,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
                                 } else {
                                     errorLength = document.getLineLength(startLine + pos.line);
                                 }
-                                if (errorOffset < queryStartOffset) errorOffset = queryStartOffset;
-                                if (errorLength > queryLength) errorLength = queryLength;
+                                if (errorOffset < queryStartOffset) {
+                                    errorOffset = queryStartOffset;
+                                }
+                                if (errorLength > queryLength) {
+                                    errorLength = queryLength;
+                                }
                                 if (errorOffset >= queryStartOffset + queryLength) {
                                     // This may happen if error position was incorrectly detected.
                                     // E.g. in SQL Server when actual error happened in some stored procedure.
@@ -1132,8 +1213,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
                             }
                         }
                         if (originalQuery != null) {
-                            originalQuery.addExtraErrorMessage("\n" + SQLEditorMessages.sql_editor_error_position + ":" + (pos.line > 0 ? " line: " + pos.line : "") +
-                                (pos.position > 0 ? " pos: " + pos.position : ""));
+                            originalQuery.addExtraErrorMessage(
+                                "\n" + SQLEditorMessages.sql_editor_error_position + ":" + (pos.line > 0 ? " line: " + pos.line : "") +
+                                    (pos.position > 0 ? " pos: " + pos.position : ""));
                             if (index == 0) {
                                 lastQueryErrorPosition = errorOffset;
                             }
@@ -1142,10 +1224,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
                 }
             }
             return scrolled;
-//            if (!scrolled) {
-//                // Can't position on error - let's just select entire problem query
-//                showStatementInEditor(result.getStatement(), true);
-//            }
+            //            if (!scrolled) {
+            //                // Can't position on error - let's just select entire problem query
+            //                showStatementInEditor(result.getStatement(), true);
+            //            }
         } catch (Exception e) {
             log.warn("Error positioning on query error", e);
             return false;
@@ -1293,6 +1375,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             case SQLPreferenceConstants.SQL_FORMAT_ACTIVE_QUERY:
             case SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE:
             case ModelPreferences.META_DISABLE_EXTRA_READ:
+            case SQLPreferenceConstants.TRACK_SCRIPT_VARIABLES:
             case SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS:
             case ModelPreferences.SQL_FORMAT_KEYWORD_CASE:
             case ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA:
@@ -1320,14 +1403,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             this.semanticMarkersManager.refresh();
         }
     }
-    
+
     private void reloadSourceViewerConfiguration() {
         SourceViewerConfiguration configuration = this.getSourceViewerConfiguration();
         SQLEditorSourceViewer sourceViewer = (SQLEditorSourceViewer) this.getSourceViewer();
         sourceViewer.unconfigure();
         sourceViewer.configure(configuration);
     }
-    
+
     void setLastQueryErrorPosition(int lastQueryErrorPosition) {
         this.lastQueryErrorPosition = lastQueryErrorPosition;
     }
@@ -1356,7 +1439,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         return dataSource == null ? null : dataSource.getContainer();
     }
 
-    ////////////////////////////////////////////////////////
+    /// /////////////////////////////////////////////////////
     // Brackets
 
     protected class ShowPreferencesAction extends Action {

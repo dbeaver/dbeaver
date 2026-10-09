@@ -292,4 +292,9 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     public String visitSpecialText(@NotNull SQLSpecialTextCompletionItem specialText) {
         return specialText.text;
     }
+
+    @Nullable
+    public String visitScriptVariable(@NotNull SQLScriptVariableCompletionItem scriptVariable) {
+        return scriptVariable.variableDefinition.rawName();
+    }
 }

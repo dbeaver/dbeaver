@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialectMetadataRegistry;
+import org.jkiss.dbeaver.model.sql.SQLScriptVariableScope;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -53,6 +54,12 @@ public class RequestBuilder {
             @Override
             public boolean supportsAliasInSelect() {
                 return true;
+            }
+
+            @NotNull
+            @Override
+            public SQLScriptVariableScope getScriptVariableScope() {
+                return SQLScriptVariableScope.BATCH;
             }
         };
         when(dataSource.getSQLDialect()).thenReturn(dialect);

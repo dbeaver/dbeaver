@@ -52,7 +52,10 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     @NotNull
     private final Supplier<Integer> currentCompletionOffsetSupplier;
     @NotNull
-    private final AtomicReference<Pair<Integer, List<SQLQueryCompletionProposal>>> result = new AtomicReference<>(Pair.of(null, Collections.emptyList()));
+    private final AtomicReference<Pair<Integer, List<SQLQueryCompletionProposal>>> result = new AtomicReference<>(Pair.of(
+        null,
+        Collections.emptyList()
+    ));
     private SQLQueryCompletionProposalContext proposalContext;
 
     public SQLQueryCompletionAnalyzer(
@@ -66,14 +69,14 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     }
 
     @Override
-    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+    public void run(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
         SQLQueryCompletionContext completionContext = this.completionContextSupplier.apply(monitor);
-//        while (completionContext.getRequestOffset() != this.completionRequestPostion.getOffset()) {
-//            // Context preparation was initiated after the parsing when the user stopped typing,
-//            // but then he started typing again, before the context preparation was finished.
-//            // No need to proceed with actual proposals preparation, we can just repeat the completion context preparation.
-//            completionContext = this.editor.obtainCompletionContext(this.completionRequestPostion);
-//        }
+        //        while (completionContext.getRequestOffset() != this.completionRequestPostion.getOffset()) {
+        //            // Context preparation was initiated after the parsing when the user stopped typing,
+        //            // but then he started typing again, before the context preparation was finished.
+        //            // No need to proceed with actual proposals preparation, we can just repeat the completion context preparation.
+        //            completionContext = this.editor.obtainCompletionContext(this.completionRequestPostion);
+        //        }
 
         Pair<Integer, List<SQLQueryCompletionProposal>> result;
         SQLCompletionContext requestContext = this.request.getContext();
@@ -97,6 +100,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         return new SQLQueryCompletionProposalContext(this.request, completionContext.getRequestOffset());
     }
 
+    @Nullable
     private String getTextFragmentAt(int offset, int length) {
         if (offset >= 0 && offset + length <= this.request.getDocument().getLength()) {
             try {
@@ -109,7 +113,11 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         }
     }
 
-    private List<SQLQueryCompletionProposal> prepareContextfulCompletion(DBRProgressMonitor monitor, SQLQueryCompletionContext completionContext) {
+    @NotNull
+    private List<SQLQueryCompletionProposal> prepareContextfulCompletion(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull SQLQueryCompletionContext completionContext
+    ) {
         Collection<SQLQueryCompletionSet> completionSets = completionContext.prepareProposal(monitor, this.request);
         SQLQueryCompletionTextProvider textProvider = new SQLQueryCompletionTextProvider(this.request, completionContext, monitor);
 
@@ -146,6 +154,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         return proposals;
     }
 
+    @NotNull
     protected SQLQueryCompletionProposal createProposal(
         @NotNull SQLQueryCompletionItemKind itemKind,
         @Nullable DBSObject object,
@@ -176,13 +185,18 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     }
 
     @NotNull
-    private String prepareReplacementString(@NotNull SQLQueryCompletionItem item, @NotNull String text, @NotNull SQLQueryCompletionContext completionContext) {
+    private String prepareReplacementString(
+        @NotNull SQLQueryCompletionItem item,
+        @NotNull String text,
+        @NotNull SQLQueryCompletionContext completionContext
+    ) {
         LSMInspections.SyntaxInspectionResult inspectionResult = completionContext.getInspectionResult();
-        boolean whitespaceNeeded = item.getKind() == SQLQueryCompletionItemKind.RESERVED ||
-            (!text.endsWith(" ") && this.proposalContext.isInsertSpaceAfterProposal() && (
+        boolean whitespaceNeeded = item.getKind() == SQLQueryCompletionItemKind.RESERVED || (
+            !text.endsWith(" ") && this.proposalContext.isInsertSpaceAfterProposal() && (
                 (inspectionResult.expectingTableReference() && item.getKind().isTableName) ||
-                ((inspectionResult.expectingColumnReference() || inspectionResult.expectingColumnName()) && item.getKind().isColumnName)
-            ));
+                    ((inspectionResult.expectingColumnReference() || inspectionResult.expectingColumnName()) && item.getKind().isColumnName)
+            )
+        );
         return whitespaceNeeded ? text + " " : text;
     }
 
@@ -198,7 +212,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     @NotNull
     protected DBPImage prepareProposalImage(@NotNull SQLQueryCompletionItem item) {
         return switch (item.getKind()) {
-            case SCHEMA, CATALOG, UNKNOWN ->  DBValueFormatting.getObjectImage(item.getObject());
+            case SCHEMA, CATALOG, UNKNOWN -> DBValueFormatting.getObjectImage(item.getObject());
             case RESERVED -> DBIcon.SQL_TEXT;
             case SUBQUERY_ALIAS, RELATED_SUBQUERY_ALIAS -> DBIcon.TREE_TABLE_ALIAS;
             case DERIVED_COLUMN_NAME -> DBIcon.TREE_DERIVED_COLUMN;
@@ -207,7 +221,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
                 yield object == null ? DBIcon.TREE_TABLE : DBValueFormatting.getObjectImage(object);
             }
             case TABLE_COLUMN_NAME -> DBIcon.TREE_COLUMN;
-            case GLOBAL_PSEUDO_COLUMN -> DBIcon.TREE_ATTRIBUTE;
+            case GLOBAL_PSEUDO_COLUMN, SCRIPT_VARIABLE -> DBIcon.TREE_ATTRIBUTE;
             case COMPOSITE_FIELD_NAME -> DBIcon.TREE_DATA_TYPE;
             case JOIN_CONDITION -> DBIcon.TREE_CONSTRAINT;
             case PROCEDURE -> item.getObject() == null ? DBIcon.TREE_FUNCTION : DBValueFormatting.getObjectImage(item.getObject());

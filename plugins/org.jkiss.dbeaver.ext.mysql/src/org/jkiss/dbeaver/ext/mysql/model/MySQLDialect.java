@@ -44,6 +44,12 @@ import java.util.regex.Pattern;
  */
 public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaController, SQLDialectDDLExtension {
 
+    @NotNull
+    @Override
+    public SQLScriptVariableScope getScriptVariableScope() {
+        return SQLScriptVariableScope.SESSION;
+    }
+
     public static final String[] MYSQL_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
         new String[]{

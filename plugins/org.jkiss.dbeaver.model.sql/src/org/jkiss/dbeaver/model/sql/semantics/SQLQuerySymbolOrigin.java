@@ -54,6 +54,8 @@ public abstract class SQLQuerySymbolOrigin {
         void visitColumnNameFromRowsData(ColumnNameFromRowsData origin);
 
         void visitSyntaxBasedFromRowsData(SyntaxBasedFromRowsData origin);
+
+        void visitScriptVariableRef(ScriptVariableRef origin);
     }
 
     public abstract boolean isChained();
@@ -373,6 +375,34 @@ public abstract class SQLQuerySymbolOrigin {
         @Override
         public void apply(Visitor visitor) {
             visitor.visitSyntaxBasedFromRowsData(this);
+        }
+    }
+
+    /**
+     * Context is a scope for strictly variable name
+     */
+    public static class ScriptVariableRef extends SQLQuerySymbolOrigin {
+
+        @NotNull
+        private final SQLQueryRowsSourceContext rowsSourceContext;
+
+        public ScriptVariableRef(@NotNull SQLQueryRowsSourceContext rowsSourceContext) {
+            this.rowsSourceContext = rowsSourceContext;
+        }
+
+        @NotNull
+        public SQLQueryRowsSourceContext getRowsSourceContext() {
+            return this.rowsSourceContext;
+        }
+
+        @Override
+        public boolean isChained() {
+            return false;
+        }
+
+        @Override
+        public void apply(Visitor visitor) {
+            visitor.visitScriptVariableRef(this);
         }
     }
 }

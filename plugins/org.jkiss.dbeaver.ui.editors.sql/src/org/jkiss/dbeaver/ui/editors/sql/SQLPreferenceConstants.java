@@ -57,23 +57,23 @@ public class SQLPreferenceConstants {
         }
 
     }
-    
+
     public enum SQLAutocompletionMode {
         DEFAULT(true, false, SQLEditorMessages.pref_page_sql_completion_label_completion_mode_default),
         NEW(false, true, SQLEditorMessages.pref_page_sql_completion_label_completion_mode_new_engine),
         COMBINED(true, true, SQLEditorMessages.pref_page_sql_completion_label_completion_mode_combined);
-    
+
         public final boolean useOldAnalyzer;
         public final boolean useNewAnalyzer;
 
         public final String title;
-    
+
         SQLAutocompletionMode(boolean useOldAnalyzer, boolean useNewAnalyzer, String title) {
             this.useOldAnalyzer = useOldAnalyzer;
             this.useNewAnalyzer = useNewAnalyzer;
             this.title = title;
         }
-        
+
         public String getName() {
             return this.toString();
         }
@@ -149,6 +149,7 @@ public class SQLPreferenceConstants {
     public static final String ENABLE_AUTO_ACTIVATION                  = "SQLEditor.ContentAssistant.auto.activation.enable";
     public static final String AUTOCOMPLETION_MODE                     = SQLModelPreferences.AUTOCOMPLETION_MODE;
     public static final String ADVANCED_HIGHLIGHTING_ENABLE            = SQLModelPreferences.ADVANCED_HIGHLIGHTING_ENABLE;
+    public static final String TRACK_SCRIPT_VARIABLES                  = SQLModelPreferences.TRACK_SCRIPT_VARIABLES;
     public static final String READ_METADATA_FOR_SEMANTIC_ANALYSIS     = SQLModelPreferences.READ_METADATA_FOR_SEMANTIC_ANALYSIS;
     public static final String VALIDATE_FUNCTIONS                      = SQLModelPreferences.VALIDATE_FUNCTIONS;
     public static final String ENABLE_KEYSTROKE_ACTIVATION             = "SQLEditor.ContentAssistant.auto.keystrokes.activation";

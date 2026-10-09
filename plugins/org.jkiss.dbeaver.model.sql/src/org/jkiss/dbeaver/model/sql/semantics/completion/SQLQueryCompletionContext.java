@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -373,7 +373,8 @@ public abstract class SQLQueryCompletionContext {
                 }
             }
 
-            private void prepareInspectedIdentifierCompletions(@NotNull DBRProgressMonitor monitor,
+            private void prepareInspectedIdentifierCompletions(
+                @NotNull DBRProgressMonitor monitor,
                 @NotNull SQLCompletionRequest request,
                 @NotNull List<SQLQueryWordEntry> parts,
                 @NotNull List<SQLQueryCompletionSet> results
@@ -386,7 +387,8 @@ public abstract class SQLQueryCompletionContext {
                         // The "word" being accomplished may be a quoted or a beginning of the quoted identifier,
                         // so we should remove potential quotes.
                         // TODO Consider identifiers containing escape-sequences
-                        String qp = Stream.of(quoteStrs).flatMap(ss -> Stream.of(ss)).map(Pattern::quote).distinct().collect(Collectors.joining("|"));
+                        String qp = Stream.of(quoteStrs).flatMap(ss -> Stream.of(ss)).map(Pattern::quote).distinct()
+                            .collect(Collectors.joining("|"));
                         tail = new SQLQueryWordEntry(tail.offset, tail.string.replaceAll(qp, ""));
 
                         // TODO Consider force identifier quotation (see testQuotedNamesCompletion)
@@ -981,6 +983,12 @@ public abstract class SQLQueryCompletionContext {
                         prepareInspectedFreeCompletions(monitor, request, results);
                     }
 
+                    @Override
+                    public void visitScriptVariableRef(SQLQuerySymbolOrigin.ScriptVariableRef origin) {
+                        SQLQueryDataContextInfo contextInfo = SQLQueryDataContextInfo.makeFor(origin.getRowsSourceContext());
+                        setContextInfo(contextInfo);
+                        makeFilteredCompletionSet(filterOrNull, prepareVariableCompletions(contextInfo, filterOrNull), results);
+                    }
                 });
             }
 
@@ -1147,13 +1155,18 @@ public abstract class SQLQueryCompletionContext {
                         context,
                         filterOrNull
                     );
+                    LinkedList<SQLQueryCompletionItem> variableItems = this.prepareVariableCompletions(
+                        context,
+                        filterOrNull
+                    );
                     resultItems = Stream.of(
                         joinConditions,
                         subsetColumns,
                         tableRefs,
                         procedureItems,
                         sequenceItems,
-                        globalPseudoColumnItems
+                        globalPseudoColumnItems,
+                        variableItems
                     ).flatMap(Collection::stream).toList();
                 } else {
                     resultItems = subsetColumns;
@@ -1180,6 +1193,22 @@ public abstract class SQLQueryCompletionContext {
                     }
                 }
                 return globalPseudoColumnItems;
+            }
+
+            @NotNull
+            private LinkedList<SQLQueryCompletionItem> prepareVariableCompletions(
+                @NotNull SQLQueryDataContextInfo context,
+                @Nullable SQLQueryWordEntry filterOrNull
+            ) {
+                LinkedList<SQLQueryCompletionItem> variableItems = new LinkedList<>();
+                for (SQLQueryVariableInfo variable : context.getVariablesList()) {
+                    SQLQueryWordEntry filterWord = makeFilterInfo(filterOrNull, variable.rawName());
+                    int score = filterWord.matches(filterOrNull, this.searchInsideWords);
+                    if (score > 0) {
+                        variableItems.add(SQLQueryCompletionItem.forScriptVariable(score, filterWord, variable));
+                    }
+                }
+                return variableItems;
             }
 
             @NotNull
@@ -1482,7 +1511,12 @@ public abstract class SQLQueryCompletionContext {
                 );
             }
 
-            private SQLQueryCompletionItem.ContextObjectInfo prepareContextInfo(@NotNull SQLCompletionRequest request, @NotNull List<SQLQueryWordEntry> prefix, @Nullable SQLQueryWordEntry tail, @NotNull DBSObject contextObject) {
+            private SQLQueryCompletionItem.ContextObjectInfo prepareContextInfo(
+                @NotNull SQLCompletionRequest request,
+                @NotNull List<SQLQueryWordEntry> prefix,
+                @Nullable SQLQueryWordEntry tail,
+                @NotNull DBSObject contextObject
+            ) {
                 if (contextObject != null) {
                     int prefixStart = prefix.get(0).offset;
                     int requestPosition = tail != null ? tail.offset : (requestOffset - scriptItem.offset);
@@ -1635,6 +1669,9 @@ public abstract class SQLQueryCompletionContext {
         @NotNull
         Collection<SQLQueryResultPseudoColumn> getGlobalPseudoColumnsList();
 
+        @NotNull
+        Collection<SQLQueryVariableInfo> getVariablesList();
+
         @Nullable
         SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> s);
 
@@ -1691,6 +1728,12 @@ public abstract class SQLQueryCompletionContext {
         @Override
         public Collection<SQLQueryResultPseudoColumn> getGlobalPseudoColumnsList() {
             return this.rowsSourceContext.getConnectionInfo().getGlobalPseudoColumns();
+        }
+
+        @NotNull
+        @Override
+        public Collection<SQLQueryVariableInfo> getVariablesList() {
+            return this.rowsSourceContext.getVariablesSubset().getVariables();
         }
 
         @Nullable
@@ -1811,6 +1854,12 @@ public abstract class SQLQueryCompletionContext {
         @NotNull
         @Override
         public Collection<SQLQueryResultPseudoColumn> getGlobalPseudoColumnsList() {
+            return Collections.emptyList();
+        }
+
+        @NotNull
+        @Override
+        public Collection<SQLQueryVariableInfo> getVariablesList() {
             return Collections.emptyList();
         }
 

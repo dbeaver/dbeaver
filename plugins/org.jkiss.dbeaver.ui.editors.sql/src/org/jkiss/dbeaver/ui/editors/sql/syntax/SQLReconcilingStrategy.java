@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.sql.SQLBatchDelimiterElement;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -56,6 +57,23 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
     private final NavigableSet<SQLScriptElementImpl> cache = new TreeSet<>();
 
+    /**
+     * Receives script elements produced by a reconciliation pass.
+     * The supplied elements are owned by the strategy and must not be modified or retained.
+     */
+    @FunctionalInterface
+    public interface ScriptElementsListener {
+        void onScriptElements(
+            int offset,
+            int length,
+            @NotNull List<SQLScriptElement> elements,
+            long documentModificationStamp
+        );
+    }
+
+    private final Set<ScriptElementsListener> scriptElementsListeners =
+        Collections.synchronizedSet(new HashSet<>());
+
     private final SQLEditorBase editor;
 
     private IDocument document;
@@ -68,6 +86,26 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
     public SQLReconcilingStrategy(SQLEditorBase editor) {
         this.editor = editor;
+    }
+
+    public void addScriptElementsListener(@NotNull ScriptElementsListener listener) {
+        this.scriptElementsListeners.add(listener);
+    }
+
+    public void removeScriptElementsListener(@NotNull ScriptElementsListener listener) {
+        this.scriptElementsListeners.remove(listener);
+    }
+
+    private void notifyScriptElementsListeners(
+        int offset,
+        int length,
+        @NotNull List<SQLScriptElement> elements,
+        long documentModificationStamp
+    ) {
+        ScriptElementsListener[] listeners = this.scriptElementsListeners.toArray(ScriptElementsListener[]::new);
+        for (ScriptElementsListener listener : listeners) {
+            listener.onScriptElements(offset, length, elements, documentModificationStamp);
+        }
     }
 
     protected IAnnotationModel getAnnotationModel() {
@@ -191,15 +229,24 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     }
 
     private void reconcile(int damagedRegionOffset, int damagedRegionLength, boolean restoreCollapsedAnnotations) {
+        ProjectionAnnotationModel model;
         if (!editor.isFoldingEnabled()) {
             cache.clear(); // underlying annotation model being cleared, so reset the cache too
-            return;
+            model = null;
+            if (this.scriptElementsListeners.isEmpty()) {
+                return;
+            }
+        } else {
+            model = editor.getProjectionAnnotationModel();
+            if (model == null) {
+                return;
+            }
         }
-        ProjectionAnnotationModel model = editor.getProjectionAnnotationModel();
-        if (model == null) {
-            return;
-        }
+        long documentModificationStamp = this.document instanceof IDocumentExtension4 documentExtension
+            ? documentExtension.getModificationStamp()
+            : IDocumentExtension4.UNKNOWN_MODIFICATION_STAMP;
 
+        int damagedRegionOpeningOffset = damagedRegionOffset;
         SQLScriptElementImpl leftBound = cache.lower(new SQLScriptElementImpl(damagedRegionOffset, damagedRegionLength));
         if (leftBound != null) {
             leftBound = cache.lower(leftBound);
@@ -230,6 +277,15 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 }
                 rightBound = null;
             }
+        }
+        this.notifyScriptElementsListeners(
+            damagedRegionOpeningOffset,
+            damagedRegionLength,
+            parsedQueries,
+            documentModificationStamp
+        );
+        if (model == null) {
+            return;
         }
 
         Collection<SQLScriptElementImpl> cachedQueries;
@@ -270,7 +326,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         cache.addAll(additions.values());
 
         if (isSpellingEnabled() && spellingContext != null) {
-            IRegion[] regions = new IRegion[]{
+            IRegion[] regions = new IRegion[] {
                 new Region(damagedRegionOffset, damagedRegionLength)
             };
             ISpellingProblemCollector spellingProblemCollector = new SpellingProblemCollector(
@@ -282,10 +338,20 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
     @Nullable
     private List<SQLScriptElement> extractQueries(int offset, int length) {
-        return editor.extractScriptQueries(offset, length, false, true, false);
+        return editor.extractScriptQueries(
+            offset,
+            length,
+            false,
+            true,
+            false,
+            true
+        );
     }
 
     private boolean deservesFolding(SQLScriptElement element) {
+        if (element instanceof SQLBatchDelimiterElement) {
+            return false;
+        }
         int numberOfLines = getNumberOfLines(element);
         if (numberOfLines == 1) {
             return false;
@@ -455,7 +521,8 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         public void accept(SpellingProblem problem) {
             addedAnnotations.put(
                 new SpellingAnnotation(problem),
-                new Position(problem.getOffset(), problem.getLength()));
+                new Position(problem.getOffset(), problem.getLength())
+            );
         }
 
         @Override
