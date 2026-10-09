@@ -111,6 +111,9 @@ class DDDesktopSsoLoginTest {
             Assertions.assertEquals(400, get(callback + query + "&state=other"));
             Assertions.assertEquals(400, get(callback + "/other" + query));
             Assertions.assertEquals(400, get(callback + "?code=" + "B".repeat(43) + "&state=wrong"));
+            Assertions.assertEquals(400, get(callback + "?code=short&state=" + params.get("state")));
+            Assertions.assertEquals(400, get(callback + query + "&error=access_denied"));
+            Assertions.assertEquals(400, get(callback + query + "&unexpected=value"));
             Assertions.assertEquals(200, get(callback + query));
         });
         Assertions.assertEquals("access-value", result.accessToken());
@@ -122,6 +125,7 @@ class DDDesktopSsoLoginTest {
             .encodeToString(MessageDigest.getInstance("SHA-256").digest(exchange.get("code_verifier").getBytes(StandardCharsets.US_ASCII))));
         Assertions.assertFalse(exchange.containsKey("client_secret"));
         Assertions.assertFalse(exchange.containsKey("refresh_token"));
+        Assertions.assertThrows(DBException.class, () -> get(authorization.get().get("redirect_uri")));
     }
 
     @Test
@@ -166,10 +170,28 @@ class DDDesktopSsoLoginTest {
     }
 
     @Test
+    void cancellationAfterCallbackDoesNotExchangeCode() {
+        Assertions.assertThrows(InterruptedException.class, () -> new DDDesktopSsoLogin().login(issuer, monitor, url -> {
+            complete(url);
+            Mockito.when(monitor.isCanceled()).thenReturn(true);
+        }));
+        Assertions.assertNull(form.get());
+    }
+
+    @Test
+    void alreadyCanceledLoginDoesNotOpenBrowser() {
+        Mockito.when(monitor.isCanceled()).thenReturn(true);
+        Assertions.assertThrows(InterruptedException.class, () -> new DDDesktopSsoLogin().login(issuer, monitor, url -> {
+            throw new AssertionError("Canceled login must not open the browser");
+        }));
+        Assertions.assertNull(form.get());
+    }
+
+    @Test
     void authorizationErrorCompletesLoginInsteadOfWaitingForTimeout() {
         Assertions.assertThrows(DBException.class, () -> new DDDesktopSsoLogin().login(issuer, monitor, url -> {
             Map<String, String> params = parameters(URI.create(url).getRawQuery());
-            Assertions.assertEquals(400, get(params.get("redirect_uri") + "?error=access_denied&state=" + params.get("state")));
+            Assertions.assertEquals(200, get(params.get("redirect_uri") + "?error=access_denied&state=" + params.get("state")));
         }));
         Assertions.assertNull(form.get());
     }
