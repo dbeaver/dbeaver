@@ -145,7 +145,43 @@ public class AISettings implements DBPAdaptable {
     }
 
     @NotNull
-    public AIConfigurationProfile copyConfiguration(
+    public String generateProfileId(@NotNull AIEngineDescriptor engine) {
+        String baseId = engine.getId();
+        String id = baseId;
+        for (int i = 1; getConfigurationOrNull(id) != null; i++) {
+            id = baseId + "_" + i;
+        }
+        return id;
+    }
+
+    @NotNull
+    public String generateProfileName(@NotNull String baseName) {
+        String name = baseName;
+        for (int i = 1; getConfigurationByNameOrNull(name) != null; i++) {
+            name = baseName + " (" + i + ")";
+        }
+        return name;
+    }
+
+    @NotNull
+    public synchronized AIConfigurationProfile copyConfiguration(@NotNull AIConfigurationProfile source) throws DBException {
+        return copyConfiguration(
+            source,
+            generateProfileId(source.getEngineDescriptor()),
+            generateProfileName(source.getProfileName())
+        );
+    }
+
+    @NotNull
+    public synchronized AIConfigurationProfile copyConfiguration(
+        @NotNull AIConfigurationProfile source,
+        @NotNull String id
+    ) throws DBException {
+        return copyConfiguration(source, id, generateProfileName(source.getProfileName()));
+    }
+
+    @NotNull
+    public synchronized AIConfigurationProfile copyConfiguration(
         @NotNull AIConfigurationProfile source,
         @NotNull String id,
         @NotNull String name

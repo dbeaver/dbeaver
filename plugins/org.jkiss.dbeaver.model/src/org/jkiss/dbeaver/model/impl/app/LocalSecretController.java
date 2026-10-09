@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.regex.Pattern;
 
 /**
  * Default local secret controller.
@@ -37,6 +38,7 @@ import java.util.List;
  */
 public class LocalSecretController implements DBSSecretController {
     public static final LocalSecretController INSTANCE = new LocalSecretController();
+    private static final String SECRET_PREFERENCE_PREFIX = "secrets/";
 
     private final DBPPreferenceStore preferences = ModelPreferences.getPreferences();
 
@@ -76,7 +78,14 @@ public class LocalSecretController implements DBSSecretController {
     }
 
     @NotNull
+    public static Pattern getDiagnosticSecretPreferencePattern() {
+        // Eclipse exports keys containing a slash after a double slash following the bundle node.
+        String prefix = "/instance/" + ModelPreferences.getMainBundle().getSymbolicName() + "//" + SECRET_PREFERENCE_PREFIX;
+        return Pattern.compile("(?m)^" + Pattern.quote(prefix) + "[^\r\n]*(?:\r?\n|$)");
+    }
+
+    @NotNull
     private static String makeKey(@NotNull String secretId) {
-        return "secrets/" + secretId;
+        return SECRET_PREFERENCE_PREFIX + secretId;
     }
 }

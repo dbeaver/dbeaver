@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,21 +16,38 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
+import com.google.gson.annotations.SerializedName;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.AIImageAttachment;
+
 public class OAIMessageContent {
 
     public static final String TYPE_INPUT_TEXT = "input_text";
     public static final String TYPE_OUTPUT_TEXT = "output_text";
 
 
+    public static final String TYPE_INPUT_IMAGE = "input_image";
+
+    @SerializedName("image_url")
+    public String imageUrl;
     public String type;
     public String text;
     public Object annotations;
     public Object logprobs;
 
+    @NotNull
+    public static OAIMessageContent image(@NotNull AIImageAttachment image) {
+        OAIMessageContent content = new OAIMessageContent();
+        content.type = TYPE_INPUT_IMAGE;
+        content.imageUrl = image.toDataUrl();
+        return content;
+    }
+
     public OAIMessageContent() {
     }
 
-    public OAIMessageContent(boolean isInput, String text) {
+    public OAIMessageContent(boolean isInput, @Nullable String text) {
         this.type = isInput ? TYPE_INPUT_TEXT : TYPE_OUTPUT_TEXT;
         this.text = text;
     }

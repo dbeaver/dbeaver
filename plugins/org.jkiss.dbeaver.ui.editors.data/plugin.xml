@@ -1368,6 +1368,13 @@
                 title="%confirm.close_resultset_edit.title"
                 message="%confirm.close_resultset_edit.message"
                 group="%confirm.resultSet.group.name"/>
+        <confirmation
+                id="save_zero_rows"
+                title="%confirm.save_zero_rows.title"
+                description="%confirm.save_zero_rows.tip"
+                message="%confirm.save_zero_rows.message"
+                toggleMessage="%confirm.resultSet.toggleMessage"
+                group="%confirm.resultSet.group.name"/>
     </extension>
     
     <extension point="org.jkiss.dbeaver.toolBarConfiguration">
