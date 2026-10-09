@@ -236,3 +236,54 @@
 .message table:not(.code-table) td {
     color: var(--text-color);
 }
+
+
+.message-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 6px;
+}
+
+.message-image {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 64px;
+    width: 64px;
+    height: 64px;
+    padding: 4px;
+    box-sizing: border-box;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+}
+
+.message-image:hover {
+    border-color: var(--hyperlink-color);
+}
+
+.message-image:focus {
+    outline: 2px solid var(--hyperlink-color);
+    outline-offset: 2px;
+}
+
+.message-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.message-image-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}

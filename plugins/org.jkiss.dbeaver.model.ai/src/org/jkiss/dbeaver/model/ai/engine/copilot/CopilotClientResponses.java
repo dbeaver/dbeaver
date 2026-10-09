@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotSessionToken;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiAPIStreamConsumer;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiUtils;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessageContent;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModel;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModelList;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
@@ -90,14 +91,20 @@ public class CopilotClientResponses extends CopilotClientBase<Pair<OAIResponsesR
         if (completionRequest.model != null && MODELS_WITHOUT_TEMPERATURE.contains(completionRequest.model)) {
             completionRequest.temperature = null;
         }
-        return HttpRequest.newBuilder()
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve(session.apiBaseUrl() + RESPONSES_PATH))
             .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + session.token())
             .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .header("Editor-Version", CHAT_EDITOR_VERSION)
             .POST(HttpRequest.BodyPublishers.ofString(serializeValue(completionRequest)))
-            .timeout(timeout)
-            .build();
+            .timeout(timeout);
+        if (completionRequest.input != null && completionRequest.input.stream()
+            .filter(message -> message.content != null)
+            .flatMap(message -> message.content.stream())
+            .anyMatch(content -> OAIMessageContent.TYPE_INPUT_IMAGE.equals(content.type))) {
+            builder.header("Copilot-Vision-Request", "true");
+        }
+        return builder.build();
     }
 
     @NotNull

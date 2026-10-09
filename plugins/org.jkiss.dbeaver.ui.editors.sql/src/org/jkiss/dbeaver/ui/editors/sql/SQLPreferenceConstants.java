@@ -207,6 +207,7 @@ public class SQLPreferenceConstants {
 
     public final static String BEEP_ON_QUERY_END                        = "SQLEditor.beepOnQueryEnd";
     public final static String REFRESH_DEFAULTS_AFTER_EXECUTE           = "SQLEditor.refreshDefaultsAfterExecute";
+    public final static String SHOW_METADATA_REFRESH_NOTIFICATION       = "SQLEditor.showMetadataRefreshNotification";
     public final static String CLEAR_OUTPUT_BEFORE_EXECUTE              = "SQLEditor.clearOutputBeforeExecute";
 
     public static final String RESULT_SET_MAX_TABS_PER_QUERY            = "SQLEditor.resultSet.queryTabLimit";

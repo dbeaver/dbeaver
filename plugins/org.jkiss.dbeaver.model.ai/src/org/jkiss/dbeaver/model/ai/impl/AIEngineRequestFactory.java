@@ -69,6 +69,9 @@ public class AIEngineRequestFactory {
         @NotNull AIFunctionContext functionContext,
         @NotNull List<AIMessage> messages
     ) throws DBException {
+        if (messages.stream().anyMatch(message -> !message.getImages().isEmpty()) && !engine.supportsImageInput(monitor)) {
+            throw new DBException("The selected AI model does not support images. Select a model with image input support.");
+        }
         AIPromptGenerator promptGenerator = functionContext.getPrompt();
         AIDatabaseContext databaseContext = functionContext.getContext();
         String systemPrompt = promptGenerator.build(assistant, databaseContext);
@@ -130,12 +133,14 @@ public class AIEngineRequestFactory {
 
         // Truncate chat to fit the window
 
+        Map<AIImageAttachment, Integer> imageTokenCounts = new IdentityHashMap<>();
         ChatTruncator chatTruncator = ChatTruncator.builder()
             .maxTokens(maxContextWindowSize)
             .reserveForSystem(systemPromptTokenBudget)
             .reserveForReply(REPLY_TOKEN_RESERVE)
             .reserveForOverhead(OVERHEAD_TOKEN_RESERVE)
             .tokenCounter(tokenCounter)
+            .imageTokenCounter(image -> imageTokenCounts.computeIfAbsent(image, engine::estimateImageTokens))
             .build();
 
         List<AIMessage> allMessages = new ArrayList<>(1 + messages.size());
