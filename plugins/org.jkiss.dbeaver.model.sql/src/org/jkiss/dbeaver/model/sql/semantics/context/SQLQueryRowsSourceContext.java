@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -360,7 +360,7 @@ public class SQLQueryRowsSourceContext {
     }
 
     /**
-     * Return information about the script variabpseudo column used in the query by the specified name
+     * Return information about the script variable used in the query by the specified name
      */
     @Nullable
     public SQLQueryVariableInfo resolveScriptVariable(@NotNull SQLQuerySymbolEntry name) {
