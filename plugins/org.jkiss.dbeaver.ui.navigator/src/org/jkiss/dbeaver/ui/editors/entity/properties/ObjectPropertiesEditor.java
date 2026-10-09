@@ -577,11 +577,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             return;
         }
         final DBSObject object = node.getObject();
+        List<EntityEditorDescriptor> editors = EntityEditorsRegistry.getInstance().getEntityEditors(object, this, null);
 
         if (!node.getMeta().isStandaloneNode()) {
             // Collect tabs from navigator tree model
             DBRRunnableWithProgress tabsCollector = monitor ->
-                collectNavigatorTabs(monitor, part, node, tabList);
+                collectNavigatorTabs(monitor, part, node, tabList, editors);
             try {
                 if (node.needsInitialization()) {
                     UIUtils.runInProgressService(tabsCollector);
@@ -611,10 +612,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
 
         // Query for entity editors
-        List<EntityEditorDescriptor> editors = EntityEditorsRegistry.getInstance().getEntityEditors(object, this, null);
         if (!CommonUtils.isEmpty(editors)) {
             for (EntityEditorDescriptor descriptor : editors) {
-                if (descriptor.getType() == EntityEditorDescriptor.Type.folder) {
+                if (descriptor.getType() == EntityEditorDescriptor.Type.folder && descriptor.getFolderType() == null) {
                     tabList.add(new TabbedFolderInfo(
                         descriptor.getId(),
                         descriptor.getName(),
@@ -627,8 +627,29 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
     }
 
-    private static void collectNavigatorTabs(DBRProgressMonitor monitor, IDatabaseEditor part, DBNNode node, List<TabbedFolderInfo> tabList)
-    {
+    @NotNull
+    private static ITabbedFolder createNavigatorFolderPage(
+        @NotNull IDatabaseEditor part,
+        @NotNull DBNNode node,
+        @NotNull DBXTreeFolder folder,
+        @NotNull List<EntityEditorDescriptor> editors
+    ) {
+        for (EntityEditorDescriptor descriptor : editors) {
+            if (descriptor.getType() == EntityEditorDescriptor.Type.folder
+                && descriptor.getFolderType() != null && descriptor.getFolderType().equals(folder.getType())) {
+                return new TabbedFolderPageEditor(part, descriptor);
+            }
+        }
+        return new TabbedFolderPageNode(part, node, node instanceof DBNDatabaseFolder ? null : folder);
+    }
+
+    private static void collectNavigatorTabs(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull IDatabaseEditor part,
+        @NotNull DBNNode node,
+        @NotNull List<TabbedFolderInfo> tabList,
+        @NotNull List<EntityEditorDescriptor> editors
+    ) {
         monitor.beginTask("Collect tabs", 1);
         // Add all nested folders as tabs
         if (node instanceof DBNDataSource ds && !ds.getDataSourceContainer().isConnected()) {
@@ -659,7 +680,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                                     folder.getDefaultIcon(),
                                     folder.getDescription(),
                                     false,
-                                    new TabbedFolderPageNode(part, node, folder)));
+                                    createNavigatorFolderPage(part, node, folder, editors)));
                         }
                     }
                 }
@@ -675,7 +696,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                                     folder.getNodeIconDefault(),
                                     child.getNodeDescription(),
                                     false,//folder.getMeta().isInline(),
-                                    new TabbedFolderPageNode(part, folder, null)
+                                    createNavigatorFolderPage(part, folder, folder.getMeta(), editors)
                                 ));
                         }
                     }
