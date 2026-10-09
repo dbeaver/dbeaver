@@ -113,10 +113,19 @@ public class AIChatSession {
             log.warn("Error creating database context for conversation save", e);
         }
 
-        storage.saveConversation(
-            sessionIdProvider.getSessionId(monitor),
-            QMAIChatHistoryMapper.toQMAIChatHistory(conversation, contextSettings, databaseContext)
-        );
+        saveConversation(sessionIdProvider.getSessionId(monitor), conversation, contextSettings, databaseContext);
+    }
+
+    private void saveConversation(
+        @NotNull String sessionId,
+        @NotNull AIChatConversation conversation,
+        @Nullable AIContextSettings settings,
+        @Nullable AIDatabaseContext context
+    ) throws DBException {
+        // serialize the history snapshot and storage write with other saves of this conversation
+        synchronized (conversation.getPersistenceLock()) {
+            storage.saveConversation(sessionId, QMAIChatHistoryMapper.toQMAIChatHistory(conversation, settings, context));
+        }
     }
 
     @NotNull
@@ -192,7 +201,8 @@ public class AIChatSession {
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIChatConversation conversation
     ) throws DBException {
-        synchronized (conversation) {
+        // prompt submission can hold the conversation monitor while waiting for a save job
+        synchronized (conversation.getPersistenceLock()) {
             if (conversation.areImagesLoaded()) {
                 return;
             }
@@ -451,14 +461,7 @@ public class AIChatSession {
             return finishConversationWithError(conversation, chatListener, e);
         }
         if (isContextChanged(conversation.getId(), context) && !conversation.isTemporary()) {
-            storage.saveConversation(
-                sessionId,
-                QMAIChatHistoryMapper.toQMAIChatHistory(
-                    conversation,
-                    settings,
-                    context
-                )
-            );
+            saveConversation(sessionId, conversation, settings, context);
         }
 
         List<AIMessage> messages = new ArrayList<>(conversation.getMessages().stream()
