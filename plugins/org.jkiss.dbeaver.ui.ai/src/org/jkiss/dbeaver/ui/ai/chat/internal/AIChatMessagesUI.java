@@ -42,6 +42,7 @@ public class AIChatMessagesUI extends NLS {
     public static String ai_chat_clear_history_partial_confirm_message;
     public static String ai_chat_empty_hint;
     public static String ai_chat_drag_n_drop_message;
+    public static String ai_chat_drag_n_drop_objects_message;
     public static String ai_chat_default_conversation_name;
     public static String ai_chat_attach_button_tip;
     public static String ai_chat_confirm_title;
@@ -95,6 +96,15 @@ public class AIChatMessagesUI extends NLS {
     public static String ai_chat_context_menu_all_objects;
     public static String ai_chat_context_menu_empty;
 
+
+    public static String ai_chat_image_open;
+    public static String ai_chat_image_remove;
+    public static String ai_chat_image_error;
+    public static String ai_chat_image_load_error;
+    public static String ai_chat_image_view_error;
+    public static String ai_chat_image_limit;
+    public static String ai_chat_image_loading;
+    public static String ai_chat_image_clipboard_name;
 
     static {
         NLS.initializeMessages(AIChatMessagesUI.class.getName(), AIChatMessagesUI.class);

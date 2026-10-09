@@ -18,11 +18,8 @@ package org.jkiss.dbeaver.model.datadam;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClientResponses;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
-import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class DDAIEngineProperties extends OpenAIProperties {
@@ -61,19 +58,13 @@ public class DDAIEngineProperties extends OpenAIProperties {
     }
 
     @Override
-    public void resolveSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
-        if (getToken() == null) {
-            setToken(AIUtils.getSecretValueOrDefault(profile, DATADAM_API_TOKEN, getToken()));
-        }
+    public boolean isTokenRequired() {
+        return true;
     }
 
+    @NotNull
     @Override
-    public void saveSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
-        AIUtils.setSecretValue(profile, DATADAM_API_TOKEN, getToken());
-    }
-
-    @Override
-    public void deleteSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
-        AIUtils.deleteSecretValue(profile, DATADAM_API_TOKEN);
+    protected String getApiTokenSecretId() {
+        return DATADAM_API_TOKEN;
     }
 }

@@ -55,14 +55,7 @@ public class CopilotClientChat extends CopilotClientBase<CopilotChatRequest, Cop
         @NotNull CopilotSessionToken session,
         @NotNull CopilotChatRequest chatRequest
     ) throws DBException {
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(session.apiBaseUrl() + CHAT_COMPLETIONS_PATH))
-            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
-            .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + session.token())
-            .header("Editor-Version", CHAT_EDITOR_VERSION)
-            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(chatRequest)))
-            .timeout(timeout)
-            .build();
+        HttpRequest request = createCompletionRequest(chatRequest, session);
 
         String responseJson = client.send(monitor, request);
         return CopilotUtils.GSON.fromJson(responseJson, CopilotChatResponseLegacy.class);
@@ -75,14 +68,7 @@ public class CopilotClientChat extends CopilotClientBase<CopilotChatRequest, Cop
         @NotNull CopilotChatRequest chatRequest,
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(AIHttpUtils.resolve(session.apiBaseUrl() + CHAT_COMPLETIONS_PATH))
-            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
-            .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + session.token())
-            .header("Editor-Version", CHAT_EDITOR_VERSION)
-            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(chatRequest)))
-            .timeout(timeout)
-            .build();
+        HttpRequest request = createCompletionRequest(chatRequest, session);
 
         client.sendAsync(
             request,
@@ -91,6 +77,24 @@ public class CopilotClientChat extends CopilotClientBase<CopilotChatRequest, Cop
             listener::completeBlock
         );
 
+    }
+
+    @NotNull
+    private HttpRequest createCompletionRequest(
+        @NotNull CopilotChatRequest chatRequest,
+        @NotNull CopilotSessionToken session
+    ) throws DBException {
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
+            .uri(AIHttpUtils.resolve(session.apiBaseUrl() + CHAT_COMPLETIONS_PATH))
+            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
+            .header(HttpConstants.HEADER_AUTHORIZATION, "Bearer " + session.token())
+            .header("Editor-Version", CHAT_EDITOR_VERSION)
+            .POST(HttpRequest.BodyPublishers.ofString(CopilotUtils.GSON.toJson(chatRequest)))
+            .timeout(timeout);
+        if (chatRequest.messages().stream().anyMatch(CopilotMessage::hasImages)) {
+            builder.header("Copilot-Vision-Request", "true");
+        }
+        return builder.build();
     }
 
     private static class StreamConsumer implements Consumer<String> {
