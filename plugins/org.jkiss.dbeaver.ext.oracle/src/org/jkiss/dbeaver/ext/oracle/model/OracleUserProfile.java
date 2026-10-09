@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,28 +17,43 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * OracleUserProfile
  */
-public class OracleUserProfile extends OracleGlobalObject
-{
+public class OracleUserProfile extends OracleGlobalObject {
     private static final Log log = Log.getLog(OracleUserProfile.class);
+
+    public static final String DEFAULT_PROFILE_NAME = "DEFAULT";
 
     private String name;
 
-    public OracleUserProfile(OracleDataSource dataSource, ResultSet resultSet) {
+    public OracleUserProfile(@NotNull OracleDataSource dataSource, @Nullable ResultSet resultSet) {
         super(dataSource, resultSet != null);
         this.name = JDBCUtils.safeGetString(resultSet, "PROFILE");
+    }
+
+    public OracleUserProfile(@NotNull OracleDataSource dataSource, @NotNull String name) {
+        super(dataSource, false);
+        this.name = name;
     }
 
     @NotNull
@@ -48,23 +63,50 @@ public class OracleUserProfile extends OracleGlobalObject
         return name;
     }
 
+    public void setName(@NotNull String name) {
+        this.name = name;
+    }
+
+    @NotNull
     @Association
-    public Collection<ProfileResource> getResources(DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<ProfileResource> getResources(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (!isPersisted()) {
+            return Collections.emptyList();
+        }
         return getDataSource().profileCache.getChildren(monitor, getDataSource(), this);
+    }
+
+    @NotNull
+    @Association
+    public Collection<OracleUser> getUsers(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (!isPersisted()) {
+            return Collections.emptyList();
+        }
+        List<OracleUser> users = new ArrayList<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load profile users");
+             JDBCPreparedStatement statement = session.prepareStatement("SELECT * FROM DBA_USERS WHERE PROFILE=? ORDER BY USERNAME")) {
+            statement.setString(1, getName());
+            try (JDBCResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    users.add(new OracleUser(getDataSource(), resultSet));
+                }
+            }
+        } catch (SQLException exception) {
+            throw new DBException("Error reading profile users", exception);
+        }
+        return users;
     }
 
     /**
      * ProfileResource
      */
-    public static class ProfileResource extends OracleObject<OracleUserProfile>
-    {
+    public static class ProfileResource extends OracleObject<OracleUserProfile> {
         private static final Log log = Log.getLog(ProfileResource.class);
 
         private String type;
         private String limit;
 
-        public ProfileResource(OracleUserProfile profile, ResultSet resultSet) {
+        public ProfileResource(@NotNull OracleUserProfile profile, @NotNull ResultSet resultSet) {
             super(profile, JDBCUtils.safeGetString(resultSet, "RESOURCE_NAME"), true);
             this.type = JDBCUtils.safeGetString(resultSet, "RESOURCE_TYPE");
             this.limit = JDBCUtils.safeGetString(resultSet, "LIMIT");
@@ -77,15 +119,15 @@ public class OracleUserProfile extends OracleGlobalObject
             return super.getName();
         }
 
+        @Nullable
         @Property(viewable = true, order = 2)
-        public String getType()
-        {
+        public String getType() {
             return type;
         }
 
+        @Nullable
         @Property(viewable = true, order = 3)
-        public String getLimit()
-        {
+        public String getLimit() {
             return limit;
         }
     }
