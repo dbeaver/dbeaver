@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -700,7 +700,8 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
     public String getFullyQualifiedName(@NotNull DBPEvaluationContext context) {
         final PostgreSchema owner = getParentObject();
         if (owner == null || owner.getName().equals(PostgreConstants.CATALOG_SCHEMA_NAME)) {
-            return getName();
+            // System types are stored with internal names (e.g. float8), display their SQL names instead
+            return PostgreConstants.DATA_TYPE_CANONICAL_NAMES.getOrDefault(getName(), getName());
         } else {
             return DBUtils.getQuotedIdentifier(owner) + "." + DBUtils.getQuotedIdentifier(this);
         }

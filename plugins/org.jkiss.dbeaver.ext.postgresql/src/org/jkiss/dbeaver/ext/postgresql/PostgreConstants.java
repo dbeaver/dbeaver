@@ -222,7 +222,9 @@ public class PostgreConstants {
         DATA_TYPE_CANONICAL_NAMES.put(TYPE_INT8, "bigint");
         DATA_TYPE_CANONICAL_NAMES.put(TYPE_INT2, "smallint");
         DATA_TYPE_CANONICAL_NAMES.put(TYPE_FLOAT4, "real");
-        DATA_TYPE_CANONICAL_NAMES.put("character varying", "varchar");
+        DATA_TYPE_CANONICAL_NAMES.put(TYPE_FLOAT8, "double precision");
+        DATA_TYPE_CANONICAL_NAMES.put(TYPE_BOOL, "boolean");
+        DATA_TYPE_CANONICAL_NAMES.put(TYPE_BPCHAR, "character");
     }
 
     public static final String[] POSTGIS_FUNCTIONS = {
