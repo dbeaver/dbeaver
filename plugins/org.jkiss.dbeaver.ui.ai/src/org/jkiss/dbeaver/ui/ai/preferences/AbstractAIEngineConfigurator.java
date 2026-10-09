@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.ai.preferences;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -47,8 +48,32 @@ public abstract class AbstractAIEngineConfigurator<ENGINE extends AIEngineDescri
     @Nullable
     private Button logQueryCheck;
 
+    @Nullable
+    protected Button useEnvVariablesCheck;
+    protected volatile boolean useEnvVariables;
+
+    private Composite advancedSettingsClient;
+
     private int timeout = AIEngineProperties.DEFAULT_TIMEOUT;
     private boolean logQuery;
+
+    protected void createEnvironmentSettings(@NotNull Runnable propertyChangeListener) {
+        useEnvVariablesCheck = UIUtils.createCheckbox(
+            advancedSettingsClient,
+            AIUIMessages.ai_engine_configurator_use_env,
+            AIUIMessages.ai_engine_configurator_use_env_tip,
+            false,
+            2
+        );
+        useEnvVariablesCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
+            useEnvVariables = useEnvVariablesCheck.getSelection();
+            environmentSettingsChanged();
+            propertyChangeListener.run();
+        }));
+    }
+
+    protected void environmentSettingsChanged() {
+    }
 
     @NotNull
     protected Composite createAdvancedSettings(@NotNull Composite parent) {
@@ -63,6 +88,7 @@ public abstract class AbstractAIEngineConfigurator<ENGINE extends AIEngineDescri
         advancedSettings.setLayoutData(gd);
 
         Composite client = UIUtils.createComposite(advancedSettings, 2);
+        advancedSettingsClient = client;
 
         timeoutText = UIUtils.createLabelText(
             client,
@@ -98,6 +124,14 @@ public abstract class AbstractAIEngineConfigurator<ENGINE extends AIEngineDescri
     }
 
     protected void loadAdvancedSettings(@NotNull AIEngineProperties configuration) {
+        useEnvVariables = configuration.isUseEnvVariables();
+        if (useEnvVariablesCheck != null) {
+            useEnvVariablesCheck.setSelection(useEnvVariables);
+            useEnvVariablesCheck.setToolTipText(NLS.bind(
+                AIUIMessages.ai_engine_configurator_use_env_variables_tip,
+                String.join(", ", configuration.getEnvironmentVariables())
+            ));
+        }
         timeout = configuration.getTimeout();
         logQuery = CommonUtils.toBoolean(configuration.isLoggingEnabled());
         applyAdvancedSettings();
@@ -113,6 +147,7 @@ public abstract class AbstractAIEngineConfigurator<ENGINE extends AIEngineDescri
     }
 
     protected void saveAdvancedSettings(@NotNull AIEngineProperties configuration) {
+        configuration.setUseEnvVariables(useEnvVariables);
         configuration.setTimeout(timeout);
         configuration.setLoggingEnabled(logQuery);
     }

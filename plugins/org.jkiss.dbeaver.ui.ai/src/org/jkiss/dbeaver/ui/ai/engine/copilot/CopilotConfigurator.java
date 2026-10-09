@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
@@ -51,7 +52,6 @@ import java.util.concurrent.CompletableFuture;
 
 public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends CopilotProperties>
     extends AbstractAIEngineConfigurator<ENGINE, PROPERTIES> {
-
     private static final Log log = Log.getLog(CopilotConfigurator.class);
 
     private Text temperatureText;
@@ -67,7 +67,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
 
     @NotNull
     private List<AIModel> fetchCopilotModels(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (CommonUtils.isEmpty(accessToken)) {
+        if (CommonUtils.isEmpty(createConnectionProperties().getEffectiveToken())) {
             throw new DBException(CopilotMessages.copilot_access_token_required);
         }
 
@@ -87,6 +87,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         createConnectionParameters(composite);
         createModelParameters(composite);
         createAdditionalSettings(composite);
+        createEnvironmentSettings(propertyChangeListener);
         UIUtils.syncExec(this::applySettings);
     }
 
@@ -132,7 +133,6 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         modelSelectorField = ModelSelectorField.builder()
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
-            .withRequiredSetting(accessTokenText, CopilotMessages.copilot_access_token_required)
             .withModifyListener(() -> {
                 CopilotModels.getModelByName(modelSelectorField.getSelectedModelName())
                     .ifPresentOrElse(
@@ -241,7 +241,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
 
     @NotNull
     protected String getCurrentAuthURL() {
-        return CopilotConstants.BASE_AUTH_URL;
+        return createConnectionProperties().getEffectiveBaseAuthUrl();
     }
 
     @NotNull
@@ -255,8 +255,22 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
     @NotNull
     protected CopilotCompletionEngine createEngine() {
         CopilotProperties properties = new CopilotProperties();
+        saveAdvancedSettings(properties);
         properties.setToken(accessToken);
 
         return new CopilotCompletionEngine(properties);
+    }
+
+    @NotNull
+    private CopilotProperties createConnectionProperties() {
+        CopilotProperties currentProperties = new CopilotProperties();
+        currentProperties.setUseEnvVariables(useEnvVariables);
+        currentProperties.setToken(accessToken);
+        return currentProperties;
+    }
+
+    @Override
+    protected void environmentSettingsChanged() {
+        modelSelectorField.refreshModelListSilently(true);
     }
 }

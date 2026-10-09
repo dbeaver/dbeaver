@@ -22,7 +22,12 @@ import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClientResponses;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
 public class DDAIEngineProperties extends OpenAIProperties {
+    public static final String ENV_API_KEY = "DBEAVER_AI_DATADAM_API_KEY";
+    public static final String ENV_BASE_URL = "DBEAVER_AI_DATADAM_BASE_URL";
+    public static final String ENV_MODEL = "DBEAVER_AI_DATADAM_MODEL";
 
     public static final String DEFAULT_ENDPOINT = "https://ai.datadam.cloud/v1/";
     public static final String DEFAULT_MODEL = "datadam-fast";
@@ -66,5 +71,29 @@ public class DDAIEngineProperties extends OpenAIProperties {
     @Override
     protected String getApiTokenSecretId() {
         return DATADAM_API_TOKEN;
+    }
+
+    @NotNull
+    @Override
+    public List<String> getEnvironmentVariables() {
+        return List.of(ENV_API_KEY, ENV_BASE_URL, ENV_MODEL);
+    }
+
+    @Nullable
+    @Override
+    protected String getEnvironmentModel() {
+        return getEnvironmentValue(ENV_MODEL);
+    }
+
+    @Nullable
+    @Override
+    public String getEffectiveToken() {
+        return resolveEnvironmentValue(getToken(), ENV_API_KEY);
+    }
+
+    @NotNull
+    @Override
+    public String getEffectiveBaseUrl() {
+        return resolveEnvironmentValue(getBaseUrl(), ENV_BASE_URL);
     }
 }

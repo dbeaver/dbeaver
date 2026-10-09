@@ -118,7 +118,7 @@ public class AIAssistantImpl implements AIAssistant {
                 AIMessageMeta requestMeta = new AIMessageMeta(
                     AIMetaTypes.PROMPT,
                     engineDescriptor.getId(),
-                    engine.getProperties().getModel(),
+                    engine.getProperties().getModelDisplayName(),
                     usage,
                     Duration.between(now, Instant.now()),
                     systemPromptLength
@@ -530,7 +530,7 @@ public class AIAssistantImpl implements AIAssistant {
     protected static String getEngineInfo(@NotNull AIConfigurationProfile profile, @NotNull AIEngine<?> engine) {
         return "profile: " + profile.getProfileName()
             + ", engine: " + profile.getEngineId()
-            + ", model: " + engine.getProperties().getModel();
+            + ", model: " + engine.getProperties().getModelDisplayName();
     }
 
     protected boolean isLoggingEnabled() {
