@@ -16,10 +16,17 @@
  */
 package org.jkiss.dbeaver.ext.cdata.registry;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonParser;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 import java.sql.SQLException;
+import java.time.DateTimeException;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -43,6 +50,54 @@ final class CDataLicenseParser {
     private static final Pattern EXPIRED_CODE = Pattern.compile("\\[code:\\s*j(?:\\s|\\])");
 
     private CDataLicenseParser() {
+    }
+
+    @NotNull
+    static CDataDriverLicense parseLicenseCheck(@NotNull String output, @NotNull LocalDate today) {
+        CDataLicenseStatus fallback = CDataLicenseStatus.VALIDATION_UNAVAILABLE;
+        try {
+            JsonElement response = JsonParser.parseString(output);
+            if (!response.isJsonObject()) {
+                return new CDataDriverLicense(fallback, "", null);
+            }
+            JsonObject information = response.getAsJsonObject();
+            JsonElement active = information.get("active");
+            if (active == null || !active.isJsonPrimitive() || !active.getAsJsonPrimitive().isBoolean()) {
+                return new CDataDriverLicense(fallback, "", null);
+            }
+            boolean isActive = active.getAsBoolean();
+            if (!isActive) {
+                fallback = CDataLicenseStatus.INVALID_KEY;
+            }
+            JsonElement type = information.get("license_type");
+            if (type == null || !type.isJsonPrimitive() || !type.getAsJsonPrimitive().isString() || type.getAsString().isBlank()) {
+                return new CDataDriverLicense(fallback, "", null);
+            }
+            boolean trial = type.getAsString().toLowerCase(Locale.ENGLISH).contains("trial");
+            Integer remainingDays = null;
+            JsonElement expiration = information.get("expiration_date");
+            if (expiration != null && !expiration.isJsonNull()) {
+                if (!expiration.isJsonPrimitive() || !expiration.getAsJsonPrimitive().isString()) {
+                    return new CDataDriverLicense(fallback, "", null);
+                }
+                if (!expiration.getAsString().isBlank()) {
+                    remainingDays = Math.toIntExact(ChronoUnit.DAYS.between(today, LocalDate.parse(expiration.getAsString())));
+                }
+            }
+            CDataLicenseStatus status;
+            if (remainingDays != null && (remainingDays < 0 || !isActive && remainingDays == 0)) {
+                status = trial ? CDataLicenseStatus.TRIAL_EXPIRED : CDataLicenseStatus.EXPIRED;
+            } else if (!isActive) {
+                status = CDataLicenseStatus.INVALID_KEY;
+            } else if (remainingDays != null && remainingDays <= 3) {
+                status = trial ? CDataLicenseStatus.TRIAL_EXPIRING : CDataLicenseStatus.PURCHASED_EXPIRING;
+            } else {
+                status = trial ? CDataLicenseStatus.TRIAL_ACTIVE : CDataLicenseStatus.PURCHASED_ACTIVE;
+            }
+            return new CDataDriverLicense(status, "", null, status.isExpired() ? null : remainingDays);
+        } catch (JsonParseException | DateTimeException | ArithmeticException e) {
+            return new CDataDriverLicense(fallback, "", null);
+        }
     }
 
     @NotNull

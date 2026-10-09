@@ -10,7 +10,7 @@
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator
             class="org.jkiss.dbeaver.ext.cdata.CDataAuthModel"
-            uiClass="org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator"/>
+            uiClass="org.jkiss.dbeaver.ext.cdata.ui.CDataAuthModelConfigurator"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceConfigurator">
@@ -32,5 +32,13 @@
     </extension>
     <extension point="org.eclipse.ui.keywords">
         <keyword id="org.jkiss.dbeaver.ext.cdata.ui.keyword.pref.licenses" label="%keyword.org.jkiss.dbeaver.ext.cdata.ui.keyword.pref.licenses.label"/>
+    </extension>
+    <extension point="org.eclipse.ui.activities">
+        <activity id="dbeaver.activity.cdata" name="%cdata.activity.name">
+            <enabledWhen>
+                <test property="org.jkiss.dbeaver.app.config.isFeatureEnabled" value="cdata"/>
+            </enabledWhen>
+        </activity>
+        <activityPatternBinding activityId="dbeaver.activity.cdata" pattern="org\.jkiss\.dbeaver\.ext\.cdata.*"/>
     </extension>
 </plugin>

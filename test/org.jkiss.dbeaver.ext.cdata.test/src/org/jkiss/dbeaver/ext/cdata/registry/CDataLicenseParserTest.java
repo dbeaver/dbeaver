@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.junit.DBeaverUnitTest;
@@ -47,6 +48,14 @@ import java.util.jar.Manifest;
 public class CDataLicenseParserTest extends DBeaverUnitTest {
     @TempDir
     Path tempDirectory;
+
+    @NotNull
+    private static CDataDriverDescriptor mockDriver() {
+        return Mockito.mock(CDataDriverDescriptor.class, Mockito.withSettings().useConstructor(
+            DataSourceProviderRegistry.getInstance().getDataSourceProvider("generic"), "test-cdata-license",
+            new CDataDriverInfo("postgresql", "postgresql", "Test driver", 2026,
+                CDataDriverTier.PROFESSIONAL, "https://example.org", "postgresql", null)));
+    }
 
     @Test
     public void parseDriverInformation() {
@@ -165,7 +174,7 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
 
     @Test
     public void requirePurchasedKeyAfterAnyLicenseExpires() throws DBException {
-        CDataDriverDescriptor driver = Mockito.mock(CDataDriverDescriptor.class);
+        CDataDriverDescriptor driver = mockDriver();
         Mockito.when(driver.supportsTrialLicense()).thenCallRealMethod();
         Mockito.when(driver.requestTrialLicense(Mockito.any())).thenCallRealMethod();
         CDataLicenseActivationRequest request = new CDataLicenseActivationRequest(
@@ -183,7 +192,7 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
 
     @Test
     public void reportRuntimeExpirationOnlyOnce() {
-        CDataDriverDescriptor driver = Mockito.mock(CDataDriverDescriptor.class);
+        CDataDriverDescriptor driver = mockDriver();
         CDataDriverLoaderDescriptor loader = new CDataDriverLoaderDescriptor("default", driver);
         Mockito.when(driver.getDefaultDriverLoader()).thenReturn(loader);
         Mockito.when(driver.reportLicenseError(Mockito.any())).thenCallRealMethod();
@@ -197,7 +206,7 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
 
     @Test
     public void keepReportedExpirationUntilLicenseFileChanges() throws Exception {
-        CDataDriverDescriptor driver = Mockito.mock(CDataDriverDescriptor.class);
+        CDataDriverDescriptor driver = mockDriver();
         CDataDriverLoaderDescriptor loader = new CDataDriverLoaderDescriptor("default", driver);
         Path licensePath = tempDirectory.resolve("cdata.jdbc.postgresql.lic");
         Files.writeString(licensePath, "expired-license");
@@ -436,29 +445,6 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void licenseProbeReportsFailureCause() throws Exception {
-        Path modelBundle = Path.of(CDataLicenseProbe.class.getProtectionDomain()
-            .getCodeSource()
-            .getLocation()
-            .toURI());
-        CDataProcessExecutor.ProcessResult result = CDataProcessExecutor.execute(
-            new VoidProgressMonitor(),
-            List.of(
-                GeneralUtils.findJavaExecutable(),
-                "-cp",
-                modelBundle.toString(),
-                CDataLicenseProbe.class.getName(),
-                "missing.Driver"
-            ),
-            modelBundle.toFile().isDirectory() ? modelBundle : modelBundle.getParent(),
-            "CData probe diagnostic test",
-            List.of()
-        );
-        Assertions.assertEquals(2, result.exitCode());
-        Assertions.assertTrue(result.output().contains(CDataLicenseProbe.ERROR_PREFIX));
-    }
-
-    @Test
     public void releaseActivationFileLockBeforeEnteringLoader() throws Exception {
         Path packageFolder = Files.createDirectories(
             CDataDriverLoaderDescriptor.getStoragePath().resolve("drivers/cdata.jdbc.postgresql"));
@@ -482,9 +468,9 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
                 output.closeEntry();
             }
             Files.writeString(resolved.licensePath(), "previous-license");
-            CDataDriverDescriptor driver = Mockito.mock(CDataDriverDescriptor.class);
+            CDataDriverDescriptor driver = mockDriver();
             Mockito.when(driver.getDriverInfo()).thenReturn(new CDataDriverInfo(
-                "postgresql", "postgresql-jdbc", "Test driver", 2026, CDataDriverTier.PROFESSIONAL, "https://example.org"));
+                "postgresql", "postgresql", "Test driver", 2026, CDataDriverTier.PROFESSIONAL, "https://example.org", "postgresql", null));
             Mockito.when(driver.beginLicenseActivationProcess()).thenReturn(true);
             Mockito.when(driver.getCurrentLicense()).thenCallRealMethod();
             DBPDriverLibrary library = Mockito.mock(DBPDriverLibrary.class);
@@ -630,45 +616,6 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
                 }
             }
         }
-    }
-
-    @Test
-    public void doNotDiscardALicenseCDataRefusesToRecognize() throws Exception {
-        // A purchased license is bound to a registered calling class, so the external probe reports
-        // it as "No License". Discarding it on that basis burns a paid activation.
-        Path folder = Files.createDirectories(tempDirectory.resolve("cdata.jdbc.gmail/26"));
-        CDataResolvedDriver resolved = resolvedAt(folder);
-
-        Assertions.assertEquals(
-            CDataLicenseStatus.NOT_INSTALLED,
-            keep(CDataLicenseStatus.NOT_INSTALLED, resolved),
-            "no license file - nothing is installed"
-        );
-
-        Files.writeString(resolved.licensePath(), "purchased-license");
-        Assertions.assertEquals(
-            CDataLicenseStatus.VALIDATION_UNAVAILABLE,
-            keep(CDataLicenseStatus.NOT_INSTALLED, resolved),
-            "the file is there - the state is unknown, not absent"
-        );
-        Assertions.assertTrue(keep(CDataLicenseStatus.NOT_INSTALLED, resolved).allowsDriverUsage());
-
-        // a license CData does recognize as bad still blocks
-        for (CDataLicenseStatus bad : new CDataLicenseStatus[]{
-            CDataLicenseStatus.EXPIRED, CDataLicenseStatus.TRIAL_EXPIRED, CDataLicenseStatus.MACHINE_MISMATCH}) {
-            Assertions.assertEquals(bad, keep(bad, resolved));
-            Assertions.assertFalse(bad.allowsDriverUsage());
-        }
-        Assertions.assertEquals(CDataLicenseStatus.TRIAL_ACTIVE, keep(CDataLicenseStatus.TRIAL_ACTIVE, resolved));
-    }
-
-    @NotNull
-    private static CDataLicenseStatus keep(
-        @NotNull CDataLicenseStatus status,
-        @NotNull CDataResolvedDriver resolved
-    ) {
-        return CDataLicenseValidator.keepInstalledLicense(
-            new CDataDriverLicense(status, "", null), resolved).getStatus();
     }
 
     @NotNull

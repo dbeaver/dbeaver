@@ -19,13 +19,14 @@ package org.jkiss.dbeaver.model.net.ssh;
 import com.jcraft.jsch.Identity;
 import net.schmizz.sshj.SSHClient;
 import net.schmizz.sshj.common.LoggerFactory;
+import net.schmizz.sshj.transport.verification.OpenSSHKnownHosts;
 import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
 import net.schmizz.sshj.userauth.method.AuthMethod;
 import net.schmizz.sshj.userauth.password.PasswordFinder;
 import net.schmizz.sshj.userauth.password.PasswordUtils;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHAuthConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.config.SSHHostConfiguration;
@@ -35,13 +36,14 @@ import org.jkiss.utils.CommonUtils;
 import org.slf4j.Logger;
 import org.slf4j.helpers.NOPLogger;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public class SSHJSessionController extends AbstractSessionController<SSHJSession> {
-    private static final Log log = Log.getLog(SSHJSessionController.class);
+    private static final List<String> DEFAULT_KNOWN_HOSTS_FILE_NAMES = List.of("known_hosts", "known_hosts2");
 
     @NotNull
     @Override
@@ -67,11 +69,7 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
         client.getConnection().getKeepAlive().setKeepAliveInterval(keepAliveInterval);
         client.getTransport().getConfig().setLoggerFactory(new FilterLoggerFactory());
 
-        try {
-            setupHostKeyVerification(client, configuration, host);
-        } catch (IOException e) {
-            log.debug("Error loading known hosts: " + e.getMessage());
-        }
+        setupHostKeyVerification(client, configuration, host, DBWorkbench.getPlatform().getApplication().isHeadlessMode());
 
         monitor.subTask(String.format("Instantiate tunnel to %s:%d", host.hostname(), host.port()));
 
@@ -125,21 +123,48 @@ public class SSHJSessionController extends AbstractSessionController<SSHJSession
         return client;
     }
 
-    private static void setupHostKeyVerification(
+    static void setupHostKeyVerification(
         @NotNull SSHClient client,
         @NotNull DBWHandlerConfiguration configuration,
-        @NotNull SSHHostConfiguration actualHostConfiguration
-    ) throws IOException {
-        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode() ||
-            configuration.getBooleanProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION)
-        ) {
+        @NotNull SSHHostConfiguration actualHostConfiguration,
+        boolean headless
+    ) throws DBException {
+        if (headless || configuration.getBooleanProperty(SSHConstants.PROP_BYPASS_HOST_VERIFICATION)) {
             client.addHostKeyVerifier(new PromiscuousVerifier());
             client.getTransport().getConfig().setVerifyHostKeyCertificates(false);
         } else {
-            client.addHostKeyVerifier(new KnownHostsVerifier(SSHUtils.getKnownSshHostsFileOrDefault(), actualHostConfiguration));
+            loadKnownHosts(client, SSHUtils.getKnownSshHostsFileOrDefault(), actualHostConfiguration);
+            loadDefaultKnownHosts(client, OpenSSHKnownHosts.detectSSHDir());
         }
+    }
 
-        client.loadKnownHosts();
+    static void loadDefaultKnownHosts(@NotNull SSHClient client, @Nullable File sshDirectory) throws DBException {
+        if (sshDirectory != null) {
+            // Load separately to report the failing path instead of SSHJ's generic "Could not load known_hosts" error.
+            for (String fileName : DEFAULT_KNOWN_HOSTS_FILE_NAMES) {
+                loadKnownHosts(client, new File(sshDirectory, fileName), null);
+            }
+        }
+    }
+
+    static void loadKnownHosts(
+        @NotNull SSHClient client,
+        @NotNull File knownHostsFile,
+        @Nullable SSHHostConfiguration actualHostConfiguration
+    ) throws DBException {
+        try {
+            if (actualHostConfiguration != null) {
+                client.addHostKeyVerifier(new KnownHostsVerifier(knownHostsFile, actualHostConfiguration));
+            } else {
+                client.loadKnownHosts(knownHostsFile);
+            }
+        } catch (IOException | RuntimeException e) {
+            throw new DBException(
+                "Could not load SSH known hosts file '" + knownHostsFile.getAbsolutePath() +
+                    "'. Check that the file is readable and contains valid OpenSSH host keys.",
+                e
+            );
+        }
     }
 
     private static class FilterLoggerFactory implements LoggerFactory {

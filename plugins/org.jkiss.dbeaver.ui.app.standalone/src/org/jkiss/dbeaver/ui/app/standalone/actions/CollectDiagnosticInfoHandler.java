@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.impl.app.LocalSecretController;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -116,7 +117,8 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
                 try {
                     out.putNextEntry(new ZipEntry("configuration.txt"));
                     try {
-                        String configuration = ConfigurationInfo.getSystemSummary();
+                        String configuration = LocalSecretController.getDiagnosticSecretPreferencePattern()
+                            .matcher(ConfigurationInfo.getSystemSummary()).replaceAll("");
                         out.write((sanitizer == null ? configuration : sanitizer.sanitize(configuration)).getBytes(StandardCharsets.UTF_8));
                     } catch (IOException e) {
                         log.warn("Cannot write configuration info into archive '%s': caught exception".formatted(archive), e);

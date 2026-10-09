@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ConnectionFeatures;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.driver.DataSourceTypeViewer;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
 import java.util.*;
@@ -115,7 +116,7 @@ public class NewConnectionWizard extends ConnectionWizard
         }
         DBPDataSourceType type = getPageDataSource().getSelectedDataSourceType();
         DBPDriver selectedDriver = pageConnector.getDataSourceType() == type ? pageConnector.getSelectedDriver() : null;
-        if (selectedDriver != null) {
+        if (selectedDriver != null && DataSourceTypeViewer.isDriverVisible(selectedDriver)) {
             return selectedDriver;
         }
         List<? extends DBPDriver> drivers = getAvailableDrivers(type);
@@ -279,7 +280,7 @@ public class NewConnectionWizard extends ConnectionWizard
             return List.of();
         }
         return type.getEnabledDrivers().stream()
-            .filter(driver -> !DBWorkbench.isDistributed() || driver.getDefaultDriverLoader().isDriverInstalled())
+            .filter(DataSourceTypeViewer::isDriverVisible)
             .toList();
     }
 
