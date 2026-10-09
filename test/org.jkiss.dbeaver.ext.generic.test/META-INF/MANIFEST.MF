@@ -13,5 +13,6 @@ Require-Bundle: org.jkiss.dbeaver.headless,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.ext.generic,
+ org.jkiss.dbeaver.ext.vertica,
  org.jkiss.dbeaver.test.platform,
  org.objenesis
