@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import javax.crypto.SecretKey;
 
 /**
- * Credentials used to sign requests and to encrypt data.
+ * Encryption credentials. Legacy signature methods remain for bundle compatibility, not Storage authentication.
  */
 public interface DDSyncCredentials {
 
