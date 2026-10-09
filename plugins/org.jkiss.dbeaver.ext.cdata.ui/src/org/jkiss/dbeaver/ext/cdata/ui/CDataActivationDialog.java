@@ -260,7 +260,7 @@ final class CDataActivationDialog extends TitleAreaDialog {
             (selectedType == CDataLicenseType.PURCHASED && productKeyText.getText().isBlank())) {
             return CDataUIMessages.activation_required_fields;
         }
-        if (!emailText.getText().contains("@")) {
+        if (!CDataLicenseActivationRequest.isValidEmail(emailText.getText().strip())) {
             return CDataUIMessages.activation_invalid_email;
         }
         return null;
