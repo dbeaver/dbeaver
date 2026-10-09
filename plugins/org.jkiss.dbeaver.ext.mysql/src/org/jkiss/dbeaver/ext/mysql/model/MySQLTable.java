@@ -293,8 +293,7 @@ public class MySQLTable extends MySQLTableBase
     public Collection<MySQLTableIndex> getIndexes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        // Read indexes using cache
-        return this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
+        return getContainer().getIndexes(monitor, this);
     }
 
     @NotNull
