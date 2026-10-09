@@ -31,12 +31,12 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyIcon;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.ui.dialogs.driver.DataSourceTypeViewer;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StringUtils;
@@ -50,6 +50,7 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
     private DBPDataSourceType dataSourceType;
     private DBPDriver selectedDriver;
     private ConnectorViewer viewer;
+    private boolean showCData;
 
     ConnectionPageConnector(@NotNull NewConnectionWizard wizard) {
         super("newConnectionDriverChoice");
@@ -77,10 +78,14 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
     }
 
     void setDataSourceType(@NotNull DBPDataSourceType dataSourceType) {
-        if (this.dataSourceType != dataSourceType) {
+        boolean typeChanged = this.dataSourceType != dataSourceType;
+        if (typeChanged) {
             this.dataSourceType = dataSourceType;
             this.selectedDriver = null;
             setDescription(NLS.bind(UIConnectionMessages.dialog_new_connection_wizard_driver_description, dataSourceType.getName()));
+        }
+        if (typeChanged || showCData != DataSourceTypeViewer.isShowCData()) {
+            showCData = DataSourceTypeViewer.isShowCData();
             refreshDrivers();
         }
     }
@@ -100,19 +105,16 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
             return;
         }
         List<DBPDriver> drivers = new ArrayList<>(dataSourceType.getEnabledDrivers());
-        if (DBWorkbench.isDistributed()) {
-            drivers.removeIf(driver -> !driver.getDefaultDriverLoader().isDriverInstalled());
-        }
+        drivers.removeIf(driver -> !DataSourceTypeViewer.isDriverVisible(driver));
         drivers.sort(new DriverUtils.DriverScoreComparator(DataSourceRegistry.getAllDataSources()));
+        DBPDriver driverToSelect = drivers.contains(selectedDriver) ? selectedDriver : drivers.isEmpty() ? null : drivers.getFirst();
         if (viewer == null) {
-            selectedDriver = drivers.isEmpty() ? null : drivers.getFirst();
+            selectedDriver = driverToSelect;
             return;
         }
         viewer.setDrivers(drivers);
-        if (!drivers.isEmpty()) {
-            viewer.setSelection(new StructuredSelection(drivers.getFirst()), true);
-        }
-        selectedDriver = drivers.isEmpty() ? null : drivers.getFirst();
+        viewer.setSelection(driverToSelect == null ? StructuredSelection.EMPTY : new StructuredSelection(driverToSelect), true);
+        selectedDriver = driverToSelect;
     }
 
     @Override

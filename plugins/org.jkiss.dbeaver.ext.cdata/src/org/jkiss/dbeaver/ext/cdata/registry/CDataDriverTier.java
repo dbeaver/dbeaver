@@ -16,7 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.cdata.registry;
 
+import com.google.gson.annotations.SerializedName;
+
 public enum CDataDriverTier {
+    @SerializedName("Professional")
     PROFESSIONAL,
+    @SerializedName("Premium")
     PREMIUM
 }
