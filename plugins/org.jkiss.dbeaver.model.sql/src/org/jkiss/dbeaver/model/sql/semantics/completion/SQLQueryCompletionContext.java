@@ -431,7 +431,7 @@ public abstract class SQLQueryCompletionContext {
                     );
 
                     if (prefixObject != null) {
-                        SQLQueryCompletionItem.ContextObjectInfo prefixInfo = this.prepareContextInfo(request, prefix, tail, prefixObject);
+                        SQLQueryCompletionItem.ContextObjectInfo prefixInfo = this.prepareContextInfo(prefix, tail, prefixObject);
                         List<SQLQueryCompletionItem> items = this.accomplishTableReferences(
                             monitor,
                             request,
@@ -1512,7 +1512,6 @@ public abstract class SQLQueryCompletionContext {
             }
 
             private SQLQueryCompletionItem.ContextObjectInfo prepareContextInfo(
-                @NotNull SQLCompletionRequest request,
                 @NotNull List<SQLQueryWordEntry> prefix,
                 @Nullable SQLQueryWordEntry tail,
                 @NotNull DBSObject contextObject

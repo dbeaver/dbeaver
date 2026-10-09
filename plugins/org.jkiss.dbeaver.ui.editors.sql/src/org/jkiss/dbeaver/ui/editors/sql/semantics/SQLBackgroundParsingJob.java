@@ -72,7 +72,7 @@ public class SQLBackgroundParsingJob {
         @NotNull
         private final Object lock = new Object();
         @Nullable
-        private SQLReconcilingStrategy.ScriptElementsListener scriptElementsListener;
+        private SQLReconcilingStrategy.ReconciliationListener reconciliationListener;
         @Nullable
         private SQLScriptVariablesTracker tracker;
         @Nullable
@@ -83,7 +83,7 @@ public class SQLBackgroundParsingJob {
         private long trackerGeneration;
         private long invalidatedDocumentStamp = Long.MIN_VALUE;
 
-        private void setup(@NotNull SQLDialect dialect) {
+        public void setup(@NotNull SQLDialect dialect) {
             synchronized (this.lock) {
                 this.unsubscribe();
                 this.documentGeneration++;
@@ -98,7 +98,7 @@ public class SQLBackgroundParsingJob {
             }
         }
 
-        private void dispose() {
+        public void dispose() {
             synchronized (this.lock) {
                 this.documentGeneration++;
                 this.trackerGeneration++;
@@ -109,7 +109,7 @@ public class SQLBackgroundParsingJob {
             }
         }
 
-        private void applyDelta(int offset, int oldLength, int newLength) {
+        public void applyDelta(int offset, int oldLength, int newLength) {
             synchronized (this.lock) {
                 this.documentGeneration++;
                 long documentStamp = getDocumentModificationStamp(document);
@@ -122,7 +122,7 @@ public class SQLBackgroundParsingJob {
             }
         }
 
-        private void clear() {
+        public void clear() {
             synchronized (this.lock) {
                 this.documentGeneration++;
                 this.trackerGeneration++;
@@ -135,12 +135,12 @@ public class SQLBackgroundParsingJob {
             }
         }
 
-        private long getDocumentGeneration() {
+        public long getDocumentGeneration() {
             return this.documentGeneration;
         }
 
         @Nullable
-        private SQLScriptVariablesTracker prepareForAnalysis(
+        public SQLScriptVariablesTracker prepareForAnalysis(
             @NotNull SQLParserContext parserContext,
             @NotNull List<SQLScriptElement> elements,
             long expectedDocumentGeneration
@@ -186,7 +186,7 @@ public class SQLBackgroundParsingJob {
             }
         }
 
-        private void acceptAnalysisResult(
+        public void acceptAnalysisResult(
             @NotNull SQLScriptElement element,
             @NotNull SQLQueryModel model,
             long expectedDocumentGeneration
@@ -238,11 +238,11 @@ public class SQLBackgroundParsingJob {
         }
 
         private void unsubscribe() {
-            if (this.subscribedReconcilingStrategy != null && this.scriptElementsListener != null) {
-                this.subscribedReconcilingStrategy.removeScriptElementsListener(this.scriptElementsListener);
+            if (this.subscribedReconcilingStrategy != null && this.reconciliationListener != null) {
+                this.subscribedReconcilingStrategy.removeReconciliationListener(this.reconciliationListener);
             }
             this.subscribedReconcilingStrategy = null;
-            this.scriptElementsListener = null;
+            this.reconciliationListener = null;
         }
 
         private void subscribe() {
@@ -252,7 +252,7 @@ public class SQLBackgroundParsingJob {
             SQLReconcilingStrategy reconcilingStrategy = editor.getViewerConfiguration().getReconcilingStrategy();
             if (reconcilingStrategy != null) {
                 long expectedTrackerGeneration = this.trackerGeneration;
-                this.scriptElementsListener = (offset, length, elements, documentModificationStamp) ->
+                this.reconciliationListener = (offset, length, elements, documentModificationStamp) ->
                     this.trackReconciledElements(
                         offset,
                         length,
@@ -260,7 +260,7 @@ public class SQLBackgroundParsingJob {
                         documentModificationStamp,
                         expectedTrackerGeneration
                     );
-                reconcilingStrategy.addScriptElementsListener(this.scriptElementsListener);
+                reconcilingStrategy.addReconciliationListener(this.reconciliationListener);
                 this.subscribedReconcilingStrategy = reconcilingStrategy;
             }
         }

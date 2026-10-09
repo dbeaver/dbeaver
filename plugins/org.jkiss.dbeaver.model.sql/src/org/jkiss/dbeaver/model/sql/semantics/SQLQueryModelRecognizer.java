@@ -937,11 +937,12 @@ public class SQLQueryModelRecognizer {
                 expr = switch (step.getNodeKindId()) {
                     case SQLStandardParser.RULE_valueRefIndexingStep -> {
                         int s = i;
-                        for (;
-                            i < subnodes.size() && (step = subnodes.get(i)).getNodeKindId() == SQLStandardParser.RULE_valueRefIndexingStep;
-                            i++
+                        while (
+                            i < subnodes.size() &&
+                            (step = subnodes.get(i)).getNodeKindId() == SQLStandardParser.RULE_valueRefIndexingStep
                         ) {
                             slicingFlags[i] = step.findFirstChildOfName(STMKnownRuleNames.valueRefIndexingStepSlice) != null;
+                            i++;
                         }
                         boolean[] slicingSpec = Arrays.copyOfRange(slicingFlags, s, i);
                         yield LazyExpr.of(new SQLQueryValueIndexingExpression(range, node, expr.getExpression(false), slicingSpec));
