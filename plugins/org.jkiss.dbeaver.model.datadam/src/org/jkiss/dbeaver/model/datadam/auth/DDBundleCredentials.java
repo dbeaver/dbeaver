@@ -20,78 +20,18 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDSyncCredentials;
 
-import java.nio.charset.StandardCharsets;
-import java.security.GeneralSecurityException;
-import java.security.KeyFactory;
-import java.security.MessageDigest;
-import java.security.PrivateKey;
-import java.security.Signature;
-import java.security.spec.MGF1ParameterSpec;
-import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.PSSParameterSpec;
 import java.util.Base64;
-import java.util.HexFormat;
-import java.util.Locale;
-import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 public class DDBundleCredentials implements DDSyncCredentials {
 
-    private static final String KEY_ALGORITHM = "RSA";
     private static final String DATA_KEY_ALGORITHM = "AES";
-    private static final String SIGNATURE_ALGORITHM = "RSASSA-PSS";
-    private static final String SIGNATURE_FORMAT = "DD-SIG-v1";
-    private static final PSSParameterSpec SIGNATURE_PARAMETER_SPEC = new PSSParameterSpec(
-        "SHA-256",
-        "MGF1",
-        MGF1ParameterSpec.SHA256,
-        32,
-        PSSParameterSpec.TRAILER_FIELD_BC
-    );
 
     private final DDKeyBundle bundle;
-    private final AtomicLong serverTimeOffset = new AtomicLong();
 
     public DDBundleCredentials(@NotNull DDKeyBundle bundle) {
         this.bundle = bundle;
-    }
-
-    @NotNull
-    @Override
-    public String buildToken(
-        @NotNull String method,
-        @NotNull String pathAndQuery,
-        @NotNull byte[] body
-    ) throws DBException {
-        long timestamp = System.currentTimeMillis() + serverTimeOffset.get();
-        try {
-            String accountId = UUID.fromString(bundle.accountId()).toString();
-            String canonicalRequest = String.join(
-                "\n",
-                SIGNATURE_FORMAT,
-                accountId,
-                method.toUpperCase(Locale.ROOT),
-                pathAndQuery,
-                HexFormat.of().formatHex(MessageDigest.getInstance("SHA-256").digest(body)),
-                Long.toString(timestamp),
-                Long.toString(bundle.generation())
-            );
-            Signature signature = Signature.getInstance(SIGNATURE_ALGORITHM);
-            signature.setParameter(SIGNATURE_PARAMETER_SPEC);
-            signature.initSign(signingKey());
-            signature.update(canonicalRequest.getBytes(StandardCharsets.UTF_8));
-            return accountId + "." + timestamp + "." + bundle.generation() + "." +
-                Base64.getUrlEncoder().withoutPadding().encodeToString(signature.sign());
-        } catch (GeneralSecurityException | IllegalArgumentException e) {
-            throw new DBException("Error signing request", e);
-        }
-    }
-
-    @Override
-    public void updateServerTime(long serverTimeMillis) {
-        serverTimeOffset.set(serverTimeMillis - System.currentTimeMillis());
     }
 
     @NotNull
@@ -101,16 +41,6 @@ public class DDBundleCredentials implements DDSyncCredentials {
             return new SecretKeySpec(Base64.getDecoder().decode(bundle.dataKey()), DATA_KEY_ALGORITHM);
         } catch (IllegalArgumentException e) {
             throw new DBException("Invalid data key in the bundle", e);
-        }
-    }
-
-    @NotNull
-    private PrivateKey signingKey() throws DBException {
-        try {
-            return KeyFactory.getInstance(KEY_ALGORITHM)
-                .generatePrivate(new PKCS8EncodedKeySpec(Base64.getDecoder().decode(bundle.signingKey())));
-        } catch (IllegalArgumentException | GeneralSecurityException e) {
-            throw new DBException("Invalid signing key in the bundle", e);
         }
     }
 }
