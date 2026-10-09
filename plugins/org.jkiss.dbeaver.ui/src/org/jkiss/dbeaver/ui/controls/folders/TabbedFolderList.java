@@ -524,6 +524,20 @@ public class TabbedFolderList extends ConComposite {
         UIUtils.installAndUpdateMainFont(this);
     }
 
+    @Override
+    public void setBackground(Color color) {
+        super.setBackground(color);
+        if (topNavigationElement != null) {
+            refreshColours();
+        }
+    }
+
+    private void refreshColours() {
+        initColours();
+        Rectangle clientArea = getClientArea();
+        redraw(clientArea.x, clientArea.y, clientArea.width, clientArea.height, true);
+    }
+
     /**
      * Calculate the number of tabs that will fit in the tab list composite.
      */
