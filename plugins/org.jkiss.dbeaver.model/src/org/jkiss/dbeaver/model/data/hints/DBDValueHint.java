@@ -42,6 +42,7 @@ public interface DBDValueHint {
     }
 
     int OPTION_READ_ONLY = 1;
+    int OPTION_HIDE_WITH_FULL_ARRAY_PREVIEW = 1 << 1;
 
     @NotNull
     HintType getHintType();

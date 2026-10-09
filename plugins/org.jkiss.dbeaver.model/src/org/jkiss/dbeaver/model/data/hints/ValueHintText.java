@@ -28,11 +28,17 @@ public class ValueHintText implements DBDValueHint {
     private final String text;
     private final String description;
     private final DBPImage icon;
+    private final int options;
 
     public ValueHintText(@NotNull String text, @Nullable String description, @Nullable DBPImage icon) {
+        this(text, description, icon, 0);
+    }
+
+    public ValueHintText(@NotNull String text, @Nullable String description, @Nullable DBPImage icon, int options) {
         this.text = text;
         this.description = description;
         this.icon = icon;
+        this.options = options;
     }
 
     @NotNull
@@ -57,5 +63,10 @@ public class ValueHintText implements DBDValueHint {
     @Override
     public DBPImage getHintIcon() {
         return icon;
+    }
+
+    @Override
+    public int getHintOptions() {
+        return options;
     }
 }

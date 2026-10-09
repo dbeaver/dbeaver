@@ -28,6 +28,18 @@ import java.util.List;
 
 public interface IGridContentProvider extends IContentProvider {
 
+    /** Computes optional complete text for a cell when requested by the renderer. */
+    @FunctionalInterface
+    interface FullTextProvider {
+        /**
+         * Computes complete cell text synchronously during painting. Implementations must be bounded and perform no I/O.
+         *
+         * @return complete text, or {@code null} when it cannot be produced within the provider's limits
+         */
+        @Nullable
+        String get();
+    }
+
     enum ElementState {
         NONE,
         EXPANDED,
@@ -57,6 +69,9 @@ public interface IGridContentProvider extends IContentProvider {
         public Color background;
         public Object value;
         public Object text;
+        /** Lazily provides a complete alternative to {@link #text}; the renderer uses it only when it fits. */
+        @Nullable
+        public FullTextProvider fullTextProvider;
     }
 
     @NotNull
