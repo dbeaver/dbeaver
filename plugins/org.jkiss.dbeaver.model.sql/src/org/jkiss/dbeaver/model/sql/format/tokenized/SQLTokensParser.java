@@ -178,11 +178,13 @@ class SQLTokensParser {
                 return new FormatterToken(TokenType.SYMBOL, String.valueOf(fChar), start_pos);
             }
             fPos += commentString.length() - 1;
+            // The comment ends before the first LF or CRLF, whatever line separator the platform uses
             while (fPos < fBefore.length()) {
-                fPos++;
-                if (fBefore.substring(fPos).startsWith(System.lineSeparator())) {
+                char ch = fBefore.charAt(fPos);
+                if (ch == '\n' || (ch == '\r' && fPos + 1 < fBefore.length() && fBefore.charAt(fPos + 1) == '\n')) {
                     break;
                 }
+                fPos++;
             }
             commentString = fBefore.substring(start_pos, fPos);
             return new FormatterToken(TokenType.COMMENT, commentString, start_pos);
