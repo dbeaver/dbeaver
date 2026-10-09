@@ -578,11 +578,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
         final DBSObject object = node.getObject();
         List<EntityEditorDescriptor> editors = EntityEditorsRegistry.getInstance().getEntityEditors(object, this, null);
+        Set<String> mappedEditors = new HashSet<>();
 
         if (!node.getMeta().isStandaloneNode()) {
             // Collect tabs from navigator tree model
             DBRRunnableWithProgress tabsCollector = monitor ->
-                collectNavigatorTabs(monitor, part, node, tabList, editors);
+                collectNavigatorTabs(monitor, part, node, tabList, editors, mappedEditors);
             try {
                 if (node.needsInitialization()) {
                     UIUtils.runInProgressService(tabsCollector);
@@ -612,16 +613,25 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
 
         // Query for entity editors
+        addEditorFolderTabs(part, tabList, editors, mappedEditors);
+    }
+
+    private static void addEditorFolderTabs(
+        @NotNull IDatabaseEditor part,
+        @NotNull List<TabbedFolderInfo> tabList,
+        @NotNull List<EntityEditorDescriptor> editors,
+        @NotNull Set<String> mappedEditors
+    ) {
         if (!CommonUtils.isEmpty(editors)) {
             for (EntityEditorDescriptor descriptor : editors) {
-                if (descriptor.getType() == EntityEditorDescriptor.Type.folder && descriptor.getFolderType() == null) {
+                if (descriptor.getType() == EntityEditorDescriptor.Type.folder && !mappedEditors.contains(descriptor.getId())) {
                     tabList.add(new TabbedFolderInfo(
                         descriptor.getId(),
                         descriptor.getName(),
                         descriptor.getIcon(),
                         descriptor.getDescription(),
                         descriptor.isEmbeddable(),
-                        new TabbedFolderPageEditor(this, descriptor)));
+                        new TabbedFolderPageEditor(part, descriptor)));
                 }
             }
         }
@@ -632,11 +642,13 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         @NotNull IDatabaseEditor part,
         @NotNull DBNNode node,
         @NotNull DBXTreeFolder folder,
-        @NotNull List<EntityEditorDescriptor> editors
+        @NotNull List<EntityEditorDescriptor> editors,
+        @NotNull Set<String> mappedEditors
     ) {
         for (EntityEditorDescriptor descriptor : editors) {
             if (descriptor.getType() == EntityEditorDescriptor.Type.folder
                 && descriptor.getFolderType() != null && descriptor.getFolderType().equals(folder.getType())) {
+                mappedEditors.add(descriptor.getId());
                 return new TabbedFolderPageEditor(part, descriptor);
             }
         }
@@ -648,7 +660,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         @NotNull IDatabaseEditor part,
         @NotNull DBNNode node,
         @NotNull List<TabbedFolderInfo> tabList,
-        @NotNull List<EntityEditorDescriptor> editors
+        @NotNull List<EntityEditorDescriptor> editors,
+        @NotNull Set<String> mappedEditors
     ) {
         monitor.beginTask("Collect tabs", 1);
         // Add all nested folders as tabs
@@ -680,7 +693,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                                     folder.getDefaultIcon(),
                                     folder.getDescription(),
                                     false,
-                                    createNavigatorFolderPage(part, node, folder, editors)));
+                                    createNavigatorFolderPage(part, node, folder, editors, mappedEditors)));
                         }
                     }
                 }
@@ -696,7 +709,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                                     folder.getNodeIconDefault(),
                                     child.getNodeDescription(),
                                     false,//folder.getMeta().isInline(),
-                                    createNavigatorFolderPage(part, folder, folder.getMeta(), editors)
+                                    createNavigatorFolderPage(part, folder, folder.getMeta(), editors, mappedEditors)
                                 ));
                         }
                     }
