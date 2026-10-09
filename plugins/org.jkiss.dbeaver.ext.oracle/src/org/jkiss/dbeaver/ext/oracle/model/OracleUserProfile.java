@@ -20,14 +20,21 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * OracleUserProfile
@@ -75,9 +82,19 @@ public class OracleUserProfile extends OracleGlobalObject {
         if (!isPersisted()) {
             return Collections.emptyList();
         }
-        return getDataSource().getUsers(monitor).stream()
-            .filter(user -> getName().equals(user.getLazyReference("profile")))
-            .toList();
+        List<OracleUser> users = new ArrayList<>();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load profile users");
+             JDBCPreparedStatement statement = session.prepareStatement("SELECT * FROM DBA_USERS WHERE PROFILE=? ORDER BY USERNAME")) {
+            statement.setString(1, getName());
+            try (JDBCResultSet resultSet = statement.executeQuery()) {
+                while (resultSet.next()) {
+                    users.add(new OracleUser(getDataSource(), resultSet));
+                }
+            }
+        } catch (SQLException exception) {
+            throw new DBException("Error reading profile users", exception);
+        }
+        return users;
     }
 
     /**

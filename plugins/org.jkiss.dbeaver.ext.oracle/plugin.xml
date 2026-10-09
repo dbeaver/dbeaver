@@ -335,7 +335,7 @@
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUserProfile" label="%tree.profiles.node.name" icon="#folder_profile" description="User profiles">
                         <items label="%tree.profile.node.name" path="profiles" property="profiles" icon="#profile">
                             <items label="%tree.resource.node.name" path="resource" property="resources" icon="#resource"/>
-                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUser" label="%tree.users.node.name" icon="#folder_user" description="Profile users">
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUser" label="%tree.users.node.name" icon="#folder_user" description="%tree.profile.users.node.description">
                                 <items label="%tree.user.node.name" path="users" property="users" icon="#user"/>
                             </folder>
                         </items>
