@@ -51,6 +51,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
     private Spinner executeTimeoutText;
     private Button soundOnQueryEnd;
     private Button updateDefaultAfterExecute;
+    private Button showMetadataRefreshNotification;
     private Button clearOutputBeforeExecute;
 
     private Combo commitTypeCombo;
@@ -111,6 +112,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                 store.contains(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB) ||
                 store.contains(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION) ||
                 store.contains(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE) ||
+                store.contains(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION) ||
                 store.contains(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
             ;
     }
@@ -156,6 +158,13 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                     commonGroup,
                     SQLEditorMessages.pref_page_sql_editor_label_refresh_defaults_after_execute,
                     SQLEditorMessages.pref_page_sql_editor_label_refresh_defaults_after_execute_tip,
+                    false,
+                    2
+                );
+                showMetadataRefreshNotification = UIUtils.createCheckbox(
+                    commonGroup,
+                    SQLEditorMessages.pref_page_sql_editor_label_show_metadata_refresh_notification,
+                    SQLEditorMessages.pref_page_sql_editor_label_show_metadata_refresh_notification_tip,
                     false,
                     2
                 );
@@ -427,6 +436,10 @@ public class PrefPageSQLExecute extends TargetPrefPage {
             store.setValue(SQLPreferenceConstants.STATEMENT_TIMEOUT, executeTimeoutText.getSelection());
             store.setValue(SQLPreferenceConstants.BEEP_ON_QUERY_END, soundOnQueryEnd.getSelection());
             store.setValue(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE, updateDefaultAfterExecute.getSelection());
+            store.setValue(
+                SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION,
+                showMetadataRefreshNotification.getSelection()
+            );
             store.setValue(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE, clearOutputBeforeExecute.getSelection());
 
             store.setValue(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE, getSelectedScriptCommitType().name());
@@ -507,6 +520,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
         store.setToDefault(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);
         store.setToDefault(SQLPreferenceConstants.BEEP_ON_QUERY_END);
         store.setToDefault(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE);
+        store.setToDefault(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION);
         store.setToDefault(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE);
     }
 
@@ -541,6 +555,11 @@ public class PrefPageSQLExecute extends TargetPrefPage {
             useDefaults
                 ? store.getDefaultBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
                 : store.getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
+        );
+        showMetadataRefreshNotification.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION)
+                : store.getBoolean(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION)
         );
         clearOutputBeforeExecute.setSelection(
             useDefaults

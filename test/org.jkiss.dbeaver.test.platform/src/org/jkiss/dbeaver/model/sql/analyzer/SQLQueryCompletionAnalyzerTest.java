@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.sql.analyzer;
 
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestResult;
@@ -543,5 +544,379 @@ public class SQLQueryCompletionAnalyzerTest extends DBeaverUnitTest {
         Set<String> proposals = modelDataRequest
             .requestNewStrings("SELECT * FROM table1 a, table2 b WHERE c.|");
         Assertions.assertTrue(proposals.isEmpty());
+    }
+
+    @Test
+    public void testPro3816ColumnsBetweenCommasHaveNoGeneratedAliases() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> {
+            s.table("J1_TBL", t -> {
+                t.attribute("i");
+                t.attribute("j");
+            });
+            s.table("J2_TBL", t -> {
+                t.attribute("i");
+                t.attribute("k");
+            });
+        }).prepare();
+
+        Set<String> proposals = request.requestNewStrings(
+            "SELECT '' AS \"xxx\", | FROM J1_TBL t1 CROSS JOIN J2_TBL t2"
+        );
+        assertContains(proposals, "t1.i", "t1.j", "t2.i", "t2.k");
+        Assertions.assertTrue(proposals.stream().noneMatch(p -> p.contains(" AS ") || p.contains("t1.t1.") ||
+            p.contains("t2.t2.")), proposals::toString);
+    }
+
+    @Test
+    public void testPro3829ParenthesizedJoinScopes() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> {
+            s.table("x", t -> {
+                t.attribute("x1");
+                t.attribute("x2");
+            });
+            s.table("y", t -> {
+                t.attribute("y1");
+                t.attribute("y2");
+            });
+        }).prepare();
+
+        Set<String> innerJoin = request.requestNewStrings(
+            "select * from (x left join y on (|x1 = y1)) left join x xx(xx1, xx2) " +
+                "on (x1 = xx1 and y2 is not null)"
+        );
+        assertContains(innerJoin, "x1", "x2", "y1", "y2");
+        assertNotContains(innerJoin, "xx.xx1", "xx.xx2");
+
+        Set<String> outerJoin = request.requestNewStrings(
+            "select * from (x left join y on (x1 = y1)) left join x xx(xx1, xx2) " +
+                "on (|x1 = xx1 and xx2 is not null)"
+        );
+        assertContains(outerJoin, "x1", "x2", "y1", "y2", "xx.xx1", "xx.xx2");
+
+        // following scenarios cover presently not-properly-supported forms of value-expressions their support requires
+        // TODO not just slight grammar adjustments, but certain grammar refactoring and semantic resolution improvement
+        //      (valueExpression vs rowValueConstructor ambiguity)
+
+//        Set<String> simpleCorrelatedColumns = request.requestNewStrings(
+//            "select * from x left join x xx(xx1, xx2) on (x1 = xx1 and xx.|)"
+//        );
+//        assertContains(simpleCorrelatedColumns, "xx1", "xx2");
+
+//        Set<String> correlatedColumns = request.requestNewStrings(
+//            "select * from (x left join y on (x1 = y1)) left join x xx(xx1, xx2) " +
+//                "on (x1 = xx1 and xx.|)"
+//        );
+//        assertContains(correlatedColumns, "xx1", "xx2");
+//        assertNotContains(correlatedColumns, "x1", "x2");
+    }
+
+    @Test
+    public void testPro3830PartialTableName() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> {
+            s.table("y", empty());
+            s.table("yy", empty());
+            s.table("xx", empty());
+        }).prepare();
+
+        Set<String> proposals = request.requestNewStrings("select * from y|");
+        assertContains(proposals, "y y2", "yy y2");
+        assertNotContains(proposals, "xx x");
+    }
+
+    @Test
+    public void testPro3831UsingColumns() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> {
+            s.table("J1_TBL", t -> {
+                t.attribute("i");
+                t.attribute("j");
+            });
+            s.table("J2_TBL", t -> {
+                t.attribute("i");
+                t.attribute("k");
+            });
+        }).prepare();
+
+        Set<String> proposals = request.requestNewStrings(
+            "SELECT * FROM J1_TBL JOIN J2_TBL USING (|i)"
+        );
+        assertContains(proposals, "i", "j", "k");
+        Assertions.assertTrue(proposals.stream().noneMatch(p -> p.contains(".")), proposals::toString);
+    }
+
+    @Test
+    public void testPro3832NestedQueryColumns() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> {
+            s.table("t1", t -> {
+                t.attribute("a");
+                t.attribute("b");
+                t.attribute("c");
+            });
+            s.table("t2", t -> {
+                t.attribute("a");
+                t.attribute("b");
+                t.attribute("c");
+            });
+        }).prepare();
+
+        Set<String> proposals = request.requestNewStrings("""
+            SELECT | FROM
+                (SELECT * FROM t1 WHERE a < 450) a1
+                FULL JOIN
+                (SELECT * FROM t2 WHERE b > 250) a2
+                    ON a1.a = a2.b
+            WHERE a1.b = 0 OR a2.a = 0
+            ORDER BY a1.a, a2.b
+            """);
+        assertContains(proposals, "a1.a", "a1.b", "a1.c", "a2.a", "a2.b", "a2.c");
+        Assertions.assertTrue(proposals.stream().noneMatch(p -> p.contains("a1.a1.") || p.contains("a2.a2.")),
+            proposals::toString);
+    }
+
+    @Test
+    public void testPro3839InsertColumns() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> s.table("inserttest", t -> {
+            t.attribute("col1");
+            t.attribute("col2");
+            t.attribute("col3");
+        })).prepare();
+
+        Set<String> proposals = request.requestNewStrings(
+            "insert into inserttest (|col1, col2, col3) values (1, DEFAULT, DEFAULT)"
+        );
+        assertContains(proposals, "col1", "col2", "col3");
+        assertNotContains(proposals, "inserttest.col1", "inserttest.col2", "inserttest.col3");
+    }
+
+    @Test
+    public void testPro3923CompletionInDerivedTableJoin() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> {
+            s.table("yy", t -> {
+                t.attribute("pkyy");
+                t.attribute("pkxx");
+            });
+            s.table("xx", t -> t.attribute("pkxx"));
+        }).prepare();
+
+        Set<String> proposals = request.requestNewStrings("""
+            select yy.pkyy as yy_pkyy, yy.pkxx as yy_pkxx, yya.pkyy as yya_pkyy,
+                   xxa.pkxx as xxa_pkxx, xxb.pkxx as xxb_pkxx
+            from yy
+                 left join (SELECT * FROM yy where pkyy = 101) as yya ON yy.pkyy = yya.|
+                 left join xx xxa on yya.pkxx = xxa.pkxx
+                 left join xx xxb on coalesce (xxa.pkxx, 1) = xxb.pkxx
+            """);
+        assertContains(proposals, "pkyy", "pkxx");
+        assertNotContains(proposals, "yya.pkyy", "yya.pkxx", "yy.pkyy", "yy.pkxx");
+    }
+
+    @Test
+    public void testPro4029TableCompletionImmediatelyAfterFrom() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> {
+            s.table("Artist", t -> {
+                t.attribute("ArtistId");
+                t.attribute("Name");
+            });
+            s.table("Album", t -> {
+                t.attribute("AlbumId");
+                t.attribute("Title");
+            });
+        }).prepare();
+
+        Set<String> proposals = request.requestNewStrings("SELECT * FROM |");
+        assertContains(proposals, "Artist a", "Album a");
+        assertNotContains(proposals, "ArtistId", "AlbumId", "Name", "Title");
+    }
+
+    @Test
+    public void testPro4058ColumnsAtJoinConditionTail() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> {
+            s.table("Artist", t -> {
+                t.attribute("ArtistId");
+                t.attribute("Name");
+            });
+            s.table("Album", t -> {
+                t.attribute("AlbumId");
+                t.attribute("Title");
+                t.attribute("ArtistId");
+            });
+        }).prepare();
+
+        Set<String> proposals = request.requestNewStrings("select * FROM Artist art join Album al ON |");
+        assertContains(proposals, "art.ArtistId", "art.Name", "al.AlbumId", "al.Title", "al.ArtistId");
+        assertNotContains(proposals, "Artist a", "Album a");
+    }
+
+    @Test
+    public void testDbeaver36708And36887PreserveAliasCase() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> {
+            s.table("ACCESS$", t -> {
+                t.attribute("D_OBJ#");
+                t.attribute("ORDER#");
+            });
+            s.table("ROLE_TAB_PRIVS", t -> t.attribute("ROLE"));
+        }).prepare();
+
+        Set<String> proposals = request.requestNewStrings(
+            "SELECT * FROM \"ACCESS$\" AS aCc JOIN ROLE_TAB_PRIVS rt ON true WHERE |"
+        );
+        assertContains(proposals, "aCc.\"D_OBJ#\"", "aCc.\"ORDER#\"", "rt.ROLE");
+        Assertions.assertTrue(proposals.stream().noneMatch(p -> p.startsWith("ACC.") || p.startsWith("ACc.")),
+            proposals::toString);
+    }
+
+    @Test
+    public void testDbeaver36693CompletionAfterTableHint() throws DBException {
+        RequestResult request = RequestBuilder.schemas(d -> d.schema("dbo", s -> s.table("Customers", t -> {
+            t.attribute("id");
+            t.attribute("Customer");
+        }))).prepare();
+
+        Set<String> proposals = request.requestNewStrings(
+            "select c.id, c.Customer from dbo.Customers c with(nolock) where c.|"
+        );
+        assertContains(proposals, "id", "Customer");
+    }
+
+    @Test
+    public void testDbeaver36582CompletionAfterSelectInto() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> s.table("film_actor", t -> {
+            t.attribute("actor_id");
+            t.attribute("film_id");
+        })).prepare();
+
+        Set<String> proposals = request.requestNewStrings(
+            "select * into film_actor_copy from film_actor as fa where fa.|"
+        );
+        assertContains(proposals, "actor_id", "film_id");
+    }
+
+    @Test
+    public void testDbeaver36573GroupByColumnsHaveNoAliases() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> s.table("tab1", t -> {
+            t.attribute("id");
+            t.attribute("statdate");
+            t.attribute("enddate");
+        })).prepare();
+
+        Set<String> proposals = request.requestNewStrings("select * from tab1 as t group by |");
+        assertContains(proposals, "id", "statdate", "enddate");
+        Assertions.assertTrue(proposals.stream().noneMatch(p -> p.contains(" AS ")), proposals::toString);
+    }
+
+    @Test
+    public void testDbeaver37074CorrelatedSubqueryScopes() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> {
+            s.table("test_tab_1", t -> {
+                t.attribute("id");
+                t.attribute("code");
+                t.attribute("name");
+                t.attribute("ext_id");
+            });
+            s.table("test_tab_2", t -> {
+                t.attribute("id");
+                t.attribute("code");
+            });
+        }).prepare();
+
+        Set<String> inner = request.requestNewStrings("""
+            select * from test_tab_1 t1
+            where exists (select 1 from test_tab_2 t2 where t2.|)
+            """);
+        assertContains(inner, "id", "code");
+        assertNotContains(inner, "name", "ext_id");
+
+        Set<String> outer = request.requestNewStrings("""
+            select * from test_tab_1 t1
+            where exists (select 1 from test_tab_2 t2 where t2.id = t1.|)
+            """);
+        assertContains(outer, "id", "code", "name", "ext_id");
+    }
+
+    @Test
+    public void testDbeaver34251SelfJoinAliases() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> s.table("test", t -> {
+            t.attribute("id");
+            t.attribute("value");
+        })).prepare();
+
+        assertContains(request.requestNewStrings("select t1.| from test t1 join test t2 on true"), "id", "value");
+        assertContains(request.requestNewStrings("select t2.| from test t1 join test t2 on true"), "id", "value");
+    }
+
+    @Test
+    public void testDbeaver37431CompletionAfterStraightJoin() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> {
+            s.table("sMarketplace_supply", t -> {
+                t.attribute("id");
+                t.attribute("mpWarehouseID");
+                t.attribute("mpSupplyDateFact");
+            });
+            s.table("sPlace", t -> t.attribute("mpSupplyID"));
+            s.table("sSerial", t -> t.attribute("placeID"));
+        }).prepare();
+
+        Set<String> proposals = request.requestNewStrings("""
+            SELECT * FROM sMarketplace_supply AS mps
+            STRAIGHT_JOIN sPlace AS pl ON pl.mpSupplyID = mps.id
+            STRAIGHT_JOIN sSerial AS s ON s.placeID = pl.placeID
+            WHERE mps.|
+            """);
+        assertContains(proposals, "id", "mpWarehouseID", "mpSupplyDateFact");
+    }
+
+    @Test
+    public void testDbeaver36357LateralJoinScopes() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> {
+            s.table("pg_class", t -> {
+                t.attribute("oid");
+                t.attribute("relname");
+            });
+            s.table("pg_attribute", t -> {
+                t.attribute("attrelid");
+                t.attribute("attname");
+            });
+        }).prepare();
+
+        Set<String> correlated = request.requestNewStrings("""
+            select * from pg_class
+            inner join lateral (
+                select * from pg_attribute where attrelid = pg_class.|
+            ) t on true
+            """);
+        assertContains(correlated, "oid", "relname");
+
+        Set<String> projected = request.requestNewStrings("""
+            select t.| from pg_class
+            inner join lateral (
+                select * from pg_attribute where attrelid = pg_class.oid
+            ) t on true
+            """);
+        assertContains(projected, "attrelid", "attname");
+    }
+
+    @Test
+    public void testDbeaver37476CompletionAtStatementTail() throws DBException {
+        RequestResult request = RequestBuilder.schemas(d -> d.schema("clients", s -> s.table("tabl_clients", t -> {
+            t.attribute("client_id");
+            t.attribute("client_name");
+            t.attribute("status");
+        }))).prepare();
+
+        Set<String> proposals = request.requestNewStrings(
+            "SELECT * FROM clients.tabl_clients WHERE client_|"
+        );
+        assertContains(proposals, "client_id", "client_name");
+    }
+
+    private static void assertContains(@NotNull Set<String> actual, @NotNull String... expected) {
+        for (String value : expected) {
+            Assertions.assertTrue(actual.contains(value), () -> "Expected '" + value + "' in " + actual);
+        }
+    }
+
+    private static void assertNotContains(@NotNull Set<String> actual, @NotNull String... unexpected) {
+        for (String value : unexpected) {
+            Assertions.assertFalse(actual.contains(value), () -> "Did not expect '" + value + "' in " + actual);
+        }
     }
 }

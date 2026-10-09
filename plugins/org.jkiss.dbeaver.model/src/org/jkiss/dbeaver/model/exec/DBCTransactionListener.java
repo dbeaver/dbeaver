@@ -14,17 +14,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.lsm;
+package org.jkiss.dbeaver.model.exec;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.stm.STMErrorListener;
-import org.jkiss.dbeaver.model.stm.STMSource;
-import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
 
-public interface LSMAnalyzer {
+/**
+ * Receives successful transaction state changes from a transaction manager.
+ */
+public interface DBCTransactionListener {
+    default void transactionCommitted() {
+    }
 
-    @Nullable
-    STMTreeRuleNode parseSqlQueryTree(@NotNull STMSource source, @Nullable STMErrorListener errorListener);
+    default void transactionRolledBack(@Nullable DBCSavepoint savepoint) {
+    }
 
+    default void autoCommitChanged(boolean autoCommit) {
+    }
+
+    /**
+     * Invoked before the transaction context is closed. The listener is automatically removed afterwards.
+     */
+    default void transactionContextClosed() {
+    }
 }
