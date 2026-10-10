@@ -4800,11 +4800,11 @@ public abstract class LightGrid extends Canvas {
                         if (columns.isEmpty()) {
                             columns = LightGrid.this.columns;
                         }
-                        Set<Integer> rows = selectedRows.keySet();
+                        Set<Integer> rows = new TreeSet<>(selectedRows.keySet());
                         if (rows.isEmpty()) {
-                            rows = Collections.singleton(draggingRow);
+                            rows.add(draggingRow);
                         }
-
+                       
                         StringBuilder text = new StringBuilder();
                         for (Integer row : rows) {
                             if (!text.isEmpty()) text.append("\n");
@@ -4821,6 +4821,7 @@ public abstract class LightGrid extends Canvas {
                     }
                 }
             }
+            
             @Override
             public void dragFinished(DragSourceEvent event) {
                 draggingColumn = null;
