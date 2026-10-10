@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,14 @@
 package org.jkiss.dbeaver.model.sql.completion;
 
 import org.eclipse.jface.text.IDocument;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
+
+import java.util.function.Supplier;
 
 public class SQLCompletionRequest {
 
@@ -83,6 +89,12 @@ public class SQLCompletionRequest {
         return wordDetector;
     }
 
+    /** Recreate the word detector in this request's context when the user continues typing. */
+    @NotNull
+    public SQLWordPartDetector createWordDetector(@NotNull IDocument currentDocument, int currentOffset) {
+        return new SQLWordPartDetector(currentDocument, context.getSyntaxManager(), currentOffset);
+    }
+
     public String getWordPart() {
         return wordPart;
     }
@@ -97,6 +109,25 @@ public class SQLCompletionRequest {
 
     public void setQueryType(QueryType queryType) {
         this.queryType = queryType;
+    }
+
+    /** Whether this request contains SQL suitable for semantic completion. */
+    public boolean supportsSemanticCompletion() {
+        return true;
+    }
+
+    /** Whether lexical proposals are required even when semantic completion is enabled. */
+    public boolean requiresLegacyCompletion() {
+        return false;
+    }
+
+    /** Obtain semantic context, allowing embedded SQL to use its own model instead of the editor's model. */
+    @Nullable
+    public SQLQueryCompletionContext obtainCompletionContext(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Supplier<SQLQueryCompletionContext> editorContext
+    ) {
+        return editorContext.get();
     }
 
     public void setContentType(String contentType) {

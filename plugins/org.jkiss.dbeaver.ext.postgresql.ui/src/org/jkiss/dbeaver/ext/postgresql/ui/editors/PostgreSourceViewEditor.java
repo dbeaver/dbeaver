@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,12 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.ui.editors.sql.handlers.SQLEditorHandlerCheckProcedureConsole;
@@ -30,6 +34,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -48,6 +53,36 @@ import java.util.Map;
  * PostgreSourceViewEditor
  */
 public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject> {
+
+    private static final Log log = Log.getLog(PostgreSourceViewEditor.class);
+    private PostgreRoutineCompletion routineCompletion;
+
+    @NotNull
+    @Override
+    public SQLCompletionRequest createCompletionRequest(@NotNull IDocument document, int offset, boolean simpleMode) {
+        if (getSourceObject() instanceof PostgreProcedure) {
+            if (routineCompletion == null) {
+                routineCompletion = new PostgreRoutineCompletion();
+            }
+            try {
+                SQLCompletionRequest request = routineCompletion.createRequest(
+                    getCompletionContext(), document, offset, simpleMode, isInDebugMode()
+                );
+                if (request != null) {
+                    return request;
+                }
+            } catch (BadLocationException e) {
+                log.debug(e);
+            }
+        }
+        return super.createCompletionRequest(document, offset, simpleMode);
+    }
+
+    @Override
+    public void reloadSyntaxRules() {
+        routineCompletion = null;
+        super.reloadSyntaxRules();
+    }
 
     public PostgreSourceViewEditor() {
 
