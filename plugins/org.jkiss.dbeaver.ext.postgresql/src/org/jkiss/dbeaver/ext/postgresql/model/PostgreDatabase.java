@@ -94,6 +94,8 @@ public class PostgreDatabase extends JDBCRemoteInstance
     final LanguageCache languageCache = new LanguageCache();
     private final EncodingCache encodingCache = new EncodingCache();
     private final EventTriggersCache eventTriggersCache = new EventTriggersCache();
+    private final PublicationCache publicationCache = new PublicationCache();
+    private final SubscriptionCache subscriptionCache = new SubscriptionCache();
     public final ExtensionCache extensionCache = new ExtensionCache();
     private final AvailableExtensionCache availableExtensionCache = new AvailableExtensionCache();
     private final CollationCache collationCache = new CollationCache();
@@ -508,6 +510,36 @@ public class PostgreDatabase extends JDBCRemoteInstance
         return eventTriggersCache;
     }
 
+    @NotNull
+    @Association
+    public Collection<PostgrePublication> getPublications(@NotNull DBRProgressMonitor monitor) throws DBException {
+        checkInstanceConnection(monitor);
+        if (!getDataSource().getServerType().supportsLogicalReplication()) {
+            return Collections.emptyList();
+        }
+        return publicationCache.getAllObjects(monitor, this);
+    }
+
+    @NotNull
+    public JDBCObjectLookupCache<PostgreDatabase, PostgrePublication> getPublicationCache() {
+        return publicationCache;
+    }
+
+    @NotNull
+    @Association
+    public Collection<PostgreSubscription> getSubscriptions(@NotNull DBRProgressMonitor monitor) throws DBException {
+        checkInstanceConnection(monitor);
+        if (!getDataSource().getServerType().supportsLogicalReplication()) {
+            return Collections.emptyList();
+        }
+        return subscriptionCache.getAllObjects(monitor, this);
+    }
+
+    @NotNull
+    public JDBCObjectLookupCache<PostgreDatabase, PostgreSubscription> getSubscriptionCache() {
+        return subscriptionCache;
+    }
+
     @Association
     public Collection<PostgreExtension> getExtensions(DBRProgressMonitor monitor)
         throws DBException {
@@ -894,6 +926,8 @@ public class PostgreDatabase extends JDBCRemoteInstance
         languageCache.clearCache();
         encodingCache.clearCache();
         eventTriggersCache.clearCache();
+        publicationCache.clearCache();
+        subscriptionCache.clearCache();
         extensionCache.clearCache();
         availableExtensionCache.clearCache();
         collationCache.clearCache();
@@ -1307,6 +1341,67 @@ public class PostgreDatabase extends JDBCRemoteInstance
                 return true;
             }
             return false;
+        }
+    }
+
+    static class PublicationCache extends JDBCObjectLookupCache<PostgreDatabase, PostgrePublication> {
+        @NotNull
+        @Override
+        public JDBCStatement prepareLookupStatement(
+            @NotNull JDBCSession session, @NotNull PostgreDatabase database,
+            @Nullable PostgrePublication object, @Nullable String objectName
+        ) throws SQLException {
+            String name = object == null ? objectName : object.getName();
+            JDBCPreparedStatement statement = session.prepareStatement(
+                "SELECT p.*, pg_catalog.obj_description(p.oid, 'pg_publication') AS description " +
+                "FROM pg_catalog.pg_publication p" + (name == null ? "" : " WHERE p.pubname=?") + " ORDER BY p.pubname"
+            );
+            if (name != null) {
+                statement.setString(1, name);
+            }
+            return statement;
+        }
+
+        @NotNull
+        @Override
+        protected PostgrePublication fetchObject(
+            @NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull JDBCResultSet result
+        ) {
+            return new PostgrePublication(database, result);
+        }
+    }
+
+    static class SubscriptionCache extends JDBCObjectLookupCache<PostgreDatabase, PostgreSubscription> {
+        @NotNull
+        @Override
+        public JDBCStatement prepareLookupStatement(
+            @NotNull JDBCSession session, @NotNull PostgreDatabase database,
+            @Nullable PostgreSubscription object, @Nullable String objectName
+        ) throws SQLException {
+            String name = object == null ? objectName : object.getName();
+            // subconninfo is deliberately excluded: it can contain passwords and is not readable by ordinary users.
+            // pg_subscription is shared across databases, so always filter by the database OID.
+            JDBCPreparedStatement statement = session.prepareStatement(
+                "SELECT s.oid, s.subname, s.subowner, s.subenabled, s.subbinary, s.substream, " +
+                "s.subslotname, s.subsynccommit, s.subpublications, " +
+                (database.getDataSource().isServerVersionAtLeast(15, 0) ? "s.subtwophasestate" : "NULL::text AS subtwophasestate") +
+                ", pg_catalog.shobj_description(s.oid, 'pg_subscription') AS description " +
+                "FROM pg_catalog.pg_subscription s WHERE s.subdbid=?" +
+                (name == null ? "" : " AND s.subname=?") + " ORDER BY s.subname"
+            );
+            statement.setLong(1, database.getObjectId());
+            if (name != null) {
+                statement.setString(2, name);
+            }
+            return statement;
+        }
+
+        @NotNull
+        @Override
+        protected PostgreSubscription fetchObject(
+            @NotNull JDBCSession session, @NotNull PostgreDatabase database, @NotNull JDBCResultSet result
+        ) {
+            return new PostgreSubscription(database, result);
         }
     }
     

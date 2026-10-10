@@ -90,20 +90,32 @@ public abstract class AbstractCommandContext implements DBECommandContext {
             }
         }
 
-        // Execute commands in transaction
-        DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
-        boolean useAutoCommit;
-
         // Validate commands
-        {
-            Map<String, Object> validateOptions = new HashMap<>();
-            for (CommandQueue queue : getCommandQueues()) {
-                for (CommandInfo cmd : queue.commands) {
-                    cmd.command.validateCommand(monitor, validateOptions);
-                }
+        Map<String, Object> validateOptions = new HashMap<>();
+        for (CommandQueue queue : getCommandQueues()) {
+            for (CommandInfo cmd : queue.commands) {
+                cmd.command.validateCommand(monitor, validateOptions);
             }
-            useAutoCommit = CommonUtils.getOption(validateOptions, OPTION_AVOID_TRANSACTIONS);
         }
+
+        if (CommonUtils.getOption(validateOptions, OPTION_ISOLATED_EXECUTION)) {
+            // Isolate the entire save lifecycle, including transaction switching, commit, rollback, and cleanup.
+            try (DBCExecutionContext isolated = executionContext.getOwnerInstance().openIsolatedContext(
+                monitor, ModelMessages.model_edit_execute_, executionContext)) {
+                saveChanges(monitor, options, isolated, CommonUtils.getOption(validateOptions, OPTION_AVOID_TRANSACTIONS));
+            }
+        } else {
+            saveChanges(monitor, options, executionContext, CommonUtils.getOption(validateOptions, OPTION_AVOID_TRANSACTIONS));
+        }
+    }
+
+    private void saveChanges(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Map<String, Object> options,
+        @NotNull DBCExecutionContext executionContext,
+        boolean useAutoCommit
+    ) throws DBException {
+        DBCTransactionManager txnManager = DBUtils.getTransactionManager(executionContext);
 
         if (!executionContext.getDataSource().getInfo().supportsTransactionsForDDL()) {
             // Use transaction mode of the session instead
@@ -123,7 +135,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
 
         try {
-            executeCommands(monitor, options, useAutoCommit ? null : txnManager);
+            executeCommands(monitor, options, useAutoCommit ? null : txnManager, executionContext);
 
             // Clear commands. We can't undo after save
             clearCommandQueues();
@@ -147,7 +159,10 @@ public abstract class AbstractCommandContext implements DBECommandContext {
         }
     }
 
-    private void executeCommands(DBRProgressMonitor monitor, Map<String, Object> options, DBCTransactionManager txnManager) throws DBException {
+    private void executeCommands(
+        @NotNull DBRProgressMonitor monitor, @NotNull Map<String, Object> options, @Nullable DBCTransactionManager txnManager,
+        @NotNull DBCExecutionContext executionContext
+    ) throws DBException {
         List<CommandQueue> commandQueues = getCommandQueues();
 
         // Execute commands
@@ -176,7 +191,10 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                             }
                         //}
                         if (!CommonUtils.isEmpty(cmd.persistActions)) {
-                            try (DBCSession session = openCommandPersistContext(monitor, cmd.command)) {
+                            try (DBCSession session = executionContext == this.executionContext
+                                ? openCommandPersistContext(monitor, cmd.command)
+                                : executionContext.openSession(monitor, DBCExecutionPurpose.META_DDL,
+                                    ModelMessages.model_edit_execute_ + cmd.command.getTitle())) {
                                 DBException error = null;
                                 for (PersistInfo persistInfo : cmd.persistActions) {
                                     DBEPersistAction.ActionType actionType = persistInfo.action.getType();
