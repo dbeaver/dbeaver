@@ -11,6 +11,7 @@ Export-Package: org.jkiss.junit
 Require-Bundle: junit-jupiter-api,
  org.jkiss.dbeaver.headless,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.jdbc,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.data.transfer,
  org.jkiss.dbeaver.registry,
