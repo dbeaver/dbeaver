@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryType;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
@@ -65,7 +66,12 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
     @Override
     public String transformQueryString(SQLQuery query) throws DBCException {
         String newQuery;
-        String testQuery = query.getText().toUpperCase().trim();
+        // Use an explicit locale so the ASCII keyword list in NON_LIMIT_QUERY_PATTERN
+        // matches regardless of the JVM default locale. In Turkish/Azeri locales plain
+        // toUpperCase() folds a lowercase "limit" to "LİMİT" (with a combining dot above),
+        // which does not match the ASCII pattern literal "LIMIT" - Auto-Limit then
+        // appends a second LIMIT clause and the driver rejects the rewritten query.
+        String testQuery = query.getText().toUpperCase(Locale.ENGLISH).trim();
         SQLDialect dialect = SQLUtils.getDialectFromDataSource(query.getDataSource());
         boolean plainSelect = query.isPlainSelect();
         if (!plainSelect && query.getType() == SQLQueryType.UNKNOWN) {
