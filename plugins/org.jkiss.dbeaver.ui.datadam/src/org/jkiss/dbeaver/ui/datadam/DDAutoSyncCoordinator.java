@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.DDBundleCredentials;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
@@ -37,7 +38,6 @@ import org.jkiss.dbeaver.model.datadam.sync.core.DDTransportException;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -206,10 +206,7 @@ public class DDAutoSyncCoordinator {
         if (bundle == null) {
             return null;
         }
-        String url = DDSyncPreferencePage.getGatewayUrl();
-        if (CommonUtils.isEmpty(url)) {
-            return null;
-        }
+        String url = DDEndpoints.getStorageBaseUrl();
         return new DDSyncService(
             url,
             new DDBundleCredentials(bundle),
