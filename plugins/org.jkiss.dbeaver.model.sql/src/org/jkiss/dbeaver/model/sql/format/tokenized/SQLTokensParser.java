@@ -306,6 +306,11 @@ class SQLTokensParser {
             || (firstChar == '*' && position > 0 && fBefore.charAt(position - 1) == structSeparator)
             || structSeparator == firstChar || catalogSeparator.indexOf(firstChar) != -1
         ) {
+            if (firstChar == '@'
+                && position + 1 < fBefore.length()
+                && fBefore.charAt(position + 1) == '?') {
+                break;
+            }
             s.append(firstChar);
             position++;
             if (position >= fBefore.length()) {

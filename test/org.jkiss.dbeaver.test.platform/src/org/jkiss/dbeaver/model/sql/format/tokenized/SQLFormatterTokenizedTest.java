@@ -608,4 +608,19 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         Assertions.assertFalse(formattedString.contains("@ myvar"), //$NON-NLS-1$
             "SQLFormatterTokenized must not split @var into @ myvar, got: " + formattedString);
     }
+
+    @Test
+    public void shouldPreserveAtQuestionOperatorTouchingLeftOperand() {
+        //given
+        String inputString = "SELECT * FROM t WHERE c@?'$.x'"; //$NON-NLS-1$
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains("c @?"), //$NON-NLS-1$
+            "SQLFormatterTokenized must keep @? intact without left whitespace, got: " + formattedString);
+        Assertions.assertFalse(formattedString.contains("@ ?"), //$NON-NLS-1$
+            "SQLFormatterTokenized must not split @? into @ ?, got: " + formattedString);
+    }
 }
