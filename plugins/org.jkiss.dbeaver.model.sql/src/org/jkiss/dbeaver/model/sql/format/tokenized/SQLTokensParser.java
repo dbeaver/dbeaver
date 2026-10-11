@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -186,6 +186,10 @@ class SQLTokensParser {
             }
             commentString = fBefore.substring(start_pos, fPos);
             return new FormatterToken(TokenType.COMMENT, commentString, start_pos);
+        }
+        else if (fChar == '@' && fPos + 1 < fBefore.length() && fBefore.charAt(fPos + 1) == '?') {
+            fPos += 2;
+            return new FormatterToken(TokenType.SYMBOL, "@?", start_pos); //$NON-NLS-1$
         }
         else if (isLetter(fChar)) {
             StringBuilder s = new StringBuilder();
