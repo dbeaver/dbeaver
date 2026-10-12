@@ -29,6 +29,21 @@ public class FireBirdUIMessages extends NLS {
     public static String page_embedded_dialog_title;
     public static String page_embedded_dialog_message;
 
+    public static String dialog_events_title;
+    public static String dialog_events_group_config;
+    public static String dialog_events_label_events;
+    public static String dialog_events_label_events_tip;
+    public static String dialog_events_button_start;
+    public static String dialog_events_button_stop;
+    public static String dialog_events_group_log;
+    public static String dialog_events_button_clear;
+    public static String dialog_events_log_started;
+    public static String dialog_events_log_stopped;
+    public static String dialog_events_log_event_received;
+    public static String dialog_events_error_no_events;
+    public static String dialog_events_error_connect;
+    public static String dialog_events_error_driver;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, FireBirdUIMessages.class);
