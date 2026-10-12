@@ -479,7 +479,7 @@ public class LSMInspections {
                     if (item.kind == TermNodeKind.IDENTIFIER || item.term().getTextContent().startsWith(VARIABLE_NAME_PREFIX)) {
                         nameNodes.addFirst(item.term);
                         i--;
-                        if (i < 0 || allTerms.get(i).kind == TermNodeKind.PERIOD) {
+                        if (i < 0 || allTerms.get(i).kind != TermNodeKind.PERIOD) {
                             break; // not followed by an identifier separator part
                         }
                     } else {

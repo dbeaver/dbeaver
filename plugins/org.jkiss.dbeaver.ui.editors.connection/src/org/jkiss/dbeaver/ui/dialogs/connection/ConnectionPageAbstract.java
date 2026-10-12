@@ -283,7 +283,10 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             site.getDriver().getFullName() + " ",
             () -> {
                 String databaseDocumentationSuffixURL = site.getDriver().getDatabaseDocumentationSuffixURL();
-                ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(databaseDocumentationSuffixURL));
+                ShellUtils.launchProgram(databaseDocumentationSuffixURL.startsWith("https://")
+                    || databaseDocumentationSuffixURL.startsWith("http://")
+                    ? databaseDocumentationSuffixURL
+                    : HelpUtils.getHelpExternalReference(databaseDocumentationSuffixURL));
             });
         databaseDocumentationInfoLabel.setToolTipText(
             UIConnectionMessages.dialog_connection_database_documentation);

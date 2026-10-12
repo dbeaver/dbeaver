@@ -100,7 +100,7 @@ final class AIChatViewHandler {
             return;
         }
         IEditorPart activeEditor = window.getActivePage().getActiveEditor();
-        DBPDataSourceContainer container = null;
+        DBPDataSourceContainer container = activeEditor == null ? chat.getDataSourceContainer() : null;
         if (activeEditor instanceof DBPDataSourceContainerProvider dscp) {
             container = dscp.getDataSourceContainer();
             if (container != null && container == chat.getDataSourceContainer()) {

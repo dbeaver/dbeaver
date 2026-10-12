@@ -25,24 +25,29 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Listener;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIFeatures;
-import org.jkiss.dbeaver.utils.MimeTypes;
-import org.jkiss.utils.ArrayUtils;
+import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.utils.IOUtils;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.function.Supplier;
@@ -50,6 +55,7 @@ import java.util.function.Supplier;
 final class WebViewDndController {
 
     private static final Log log = Log.getLog(WebViewDndController.class);
+    private static final String BROWSER_FILE_TRANSFER_TYPE = "Files";
 
     private final Composite owner;
     private final Browser browser;
@@ -81,10 +87,10 @@ final class WebViewDndController {
 
     private void setupDragAndDrop() {
         stackLayout.topControl = browser;
-        dndOverlay.addPaintListener(WebViewDndController::drawDNDWindow);
+        dndOverlay.addPaintListener(this::drawDNDWindow);
 
         DropTarget dropTarget = new DropTarget(dndOverlay, DND.DROP_COPY | DND.DROP_DEFAULT);
-        dropTarget.setTransfer(FileTransfer.getInstance());
+        dropTarget.setTransfer(TreeNodeTransfer.getInstance(), FileTransfer.getInstance(), ImageTransfer.getInstance());
 
         dropTarget.addDropListener(new DropTargetAdapter() {
             @Override
@@ -108,10 +114,9 @@ final class WebViewDndController {
             }
 
             private void handleDragEvent(@NotNull DropTargetEvent event) {
-                if (FileTransfer.getInstance().isSupportedType(event.currentDataType)) {
-                    event.detail = DND.DROP_COPY;
-                } else {
-                    event.detail = DND.DROP_NONE;
+                chat.updateDropEvent(event);
+                if (event.detail == DND.DROP_NONE) {
+                    hideDndOverlay();
                 }
             }
 
@@ -120,7 +125,11 @@ final class WebViewDndController {
                 log.debug("DND: drop on overlay");
                 hideDndOverlay();
 
-                if (event.data instanceof String[] files) {
+                if (event.data instanceof Collection<?> nodes) {
+                    chat.describeDroppedObjects(nodes);
+                } else if (event.data instanceof ImageData image) {
+                    chat.attachImage(image);
+                } else if (event.data instanceof String[] files) {
                     List<Path> paths = new ArrayList<>();
                     for (String file : files) {
                         Path filepath = Path.of(file);
@@ -150,13 +159,10 @@ final class WebViewDndController {
             @Override
             public Object function(@NotNull Object[] arguments1) {
                 super.function(arguments1);
-                if (arguments1.length > 0 &&
-                    arguments1[0] instanceof Object[] mtList &&
-                    ArrayUtils.contains(mtList, MimeTypes.TEXT_PLAIN)) {
-                    return null;
+                if (isDropSupported(arguments1)) {
+                    log.debug("DND: onDragEnter from JS");
+                    showDndOverlay();
                 }
-                log.debug("DND: onDragEnter from JS");
-                showDndOverlay();
                 return null;
             }
         };
@@ -166,9 +172,24 @@ final class WebViewDndController {
                 hideDndOverlay();
             }
         });
+
+        Display display = owner.getDisplay();
+        Listener dragEndListener = event -> hideDndOverlay();
+        display.addFilter(DND.DragEnd, dragEndListener);
+        owner.addDisposeListener(event -> display.removeFilter(DND.DragEnd, dragEndListener));
     }
 
-    private static void drawDNDWindow(@NotNull PaintEvent e) {
+    private boolean isDropSupported(@NotNull Object[] arguments) {
+        Collection<DBNNode> draggedNodes = TreeNodeTransfer.getInstance().getDraggedNodes();
+        if (draggedNodes != null) {
+            return chat.canDescribeDroppedObjects(draggedNodes) || chat.canAttachDroppedFiles(draggedNodes);
+        }
+        return arguments.length > 0 && arguments[0] instanceof Object[] types
+            && (Arrays.asList(types).contains(BROWSER_FILE_TRANSFER_TYPE)
+                || Arrays.stream(types).anyMatch(type -> type instanceof String mimeType && mimeType.startsWith("image/")));
+    }
+
+    private void drawDNDWindow(@NotNull PaintEvent e) {
         GC gc = e.gc;
         gc.setForeground(BaseThemeSettings.instance.colorAccent);
         gc.setLineStyle(SWT.LINE_DASH);
@@ -177,7 +198,7 @@ final class WebViewDndController {
         Font font = UIUtils.scaleFontSize(gc.getFont(), 2);
         gc.setFont(font);
 
-        var text = AIChatMessagesUI.ai_chat_drag_n_drop_message;
+        var text = getDropMessage();
         var extent = gc.textExtent(text);
 
         Image icon = DBeaverIcons.getImage(UIIcon.IMPORT);
@@ -199,22 +220,26 @@ final class WebViewDndController {
         font.dispose();
     }
 
+    @NotNull
+    private String getDropMessage() {
+        return chat.canDescribeDroppedObjects(TreeNodeTransfer.getInstance().getDraggedNodes())
+            ? AIChatMessagesUI.ai_chat_drag_n_drop_objects_message
+            : AIChatMessagesUI.ai_chat_drag_n_drop_message;
+    }
+
     private void showDndOverlay() {
-        UIUtils.asyncExec(() -> {
-            if (!owner.isDisposed()) {
-                stackLayout.topControl = dndOverlay;
-                owner.layout();
-                dndOverlay.forceFocus();
-            }
-        });
+        if (!owner.isDisposed() && stackLayout.topControl != dndOverlay) {
+            stackLayout.topControl = dndOverlay;
+            owner.layout();
+            dndOverlay.update();
+            dndOverlay.forceFocus();
+        }
     }
 
     private void hideDndOverlay() {
-        UIUtils.asyncExec(() -> {
-            if (!owner.isDisposed()) {
-                stackLayout.topControl = browser;
-                owner.layout();
-            }
-        });
+        if (!owner.isDisposed() && stackLayout.topControl != browser) {
+            stackLayout.topControl = browser;
+            owner.layout();
+        }
     }
 }

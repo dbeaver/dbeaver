@@ -136,7 +136,7 @@ public class ResultSetPropertyTester extends PropertyTester
                     return rsv.isInsertable();
                 } else if ("copy".equals(expectedValue) || "delete".equals(expectedValue)) {
                     ResultSetRow currentRow = rsv.getCurrentRow();
-                    return currentRow != null && rsv.isInsertable();
+                    return currentRow != null && ("copy".equals(expectedValue) ? rsv.isInsertable() : rsv.isDeletable());
                 } else {
                     return false;
                 }

@@ -19,9 +19,17 @@ package org.eclipse.swt.widgets;
 import com.sun.jna.Function;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.win32.Kernel32;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
+import org.eclipse.swt.internal.DPIUtil;
 import org.eclipse.swt.internal.win32.MENUITEMINFO;
 import org.eclipse.swt.internal.win32.OS;
+import org.eclipse.swt.internal.win32.RECT;
+import org.jkiss.code.NotNull;
+
+import java.util.function.BooleanSupplier;
 
 /**
  * SWT theme switch helpers
@@ -31,8 +39,10 @@ public final class SWTThemeUtils {
     public static final char[] WINDOW_THEME_COMBO = "CFD\0".toCharArray();
     public static final char[] WINDOW_THEME_DEFAULT = Display.EXPLORER;
     private static final int FLUSH_MENU_THEMES_ORDINAL = 136;
+    // Windows TREEITEMSTATES.HOTSELECTED is not exposed by SWT's OS constants.
+    private static final int TREIS_HOTSELECTED = 6;
 
-    public static void updateShellsAndMenus(Display display, boolean dark) {
+    public static void updateShellsAndMenus(@NotNull Display display, boolean dark) {
         // SetPreferredAppMode updates SWT's defaults, but Windows keeps the old menu theme cached.
         if (OS.IsDarkModeAvailable()) {
             try {
@@ -53,7 +63,7 @@ public final class SWTThemeUtils {
         }
     }
 
-    private static void updateMenuBarTheme(Menu menuBar) {
+    private static void updateMenuBarTheme(@NotNull Menu menuBar) {
         Display display = menuBar.getDisplay();
         if (menuBar.foreground != display.menuBarForegroundPixel || menuBar.background != display.menuBarBackgroundPixel) {
             menuBar.initThemeColors();
@@ -84,7 +94,7 @@ public final class SWTThemeUtils {
         menuBar.update();
     }
 
-    private static void updateMenusTheme(Menu [] menus) {
+    private static void updateMenusTheme(@NotNull Menu [] menus) {
         for (Menu menu : menus) {
             if (menu == null || menu.isDisposed()) {
                 continue;
@@ -117,7 +127,7 @@ public final class SWTThemeUtils {
     /**
      * Uses Windows-specific calls and constants to update native widgets look-and-feel
      */
-    public static void updateWidgetTheme(Control control, boolean dark) {
+    public static void updateWidgetTheme(@NotNull Control control, boolean dark) {
         // TODO: do not style custom wigets and empty composites
         OS.AllowDarkModeForWindow(control.handle, dark);
         // For Tree and Table we shouldn't set any theme but EXPLORER.
@@ -133,7 +143,91 @@ public final class SWTThemeUtils {
         }
     }
 
-    private static char[] getDarkThemeIdByWidgetType(Control control) {
+    public static void installTreeSelectionFix(@NotNull Tree tree, @NotNull BooleanSupplier isDarkTheme) {
+        tree.addListener(SWT.EraseItem, new TreeSelectionFix(tree, isDarkTheme)::eraseItem);
+    }
+
+    /**
+     * Workaround for SWT's Windows Tree painting: Windows draws the first column, while SWT draws
+     * the remaining columns, producing different hover and selection backgrounds in dark theme.
+     * TODO: Fix SWT Tree to use the same native TreeView state across all columns and preserve
+     * the hovered state when drawing subsequent columns, then remove this workaround.
+     */
+    private static final class TreeSelectionFix {
+        private final Tree tree;
+        private final BooleanSupplier isDarkTheme;
+        private TreeItem hotItem;
+
+        private TreeSelectionFix(@NotNull Tree tree, @NotNull BooleanSupplier isDarkTheme) {
+            this.tree = tree;
+            this.isDarkTheme = isDarkTheme;
+        }
+
+        private void eraseItem(@NotNull Event event) {
+            if (!isDarkTheme.getAsBoolean() || tree.getColumnCount() < 2) {
+                return;
+            }
+            boolean selected = (event.detail & SWT.SELECTED) != 0;
+            if (event.index == tree.getFirstColumnIndex()) {
+                Point cursor = tree.toControl(tree.getDisplay().getCursorLocation());
+                hotItem = (event.detail & SWT.HOT) != 0 || tree.getItem(cursor) == event.item
+                    ? (TreeItem) event.item : null;
+            }
+            // Suppressing the native first-cell HOT state also clears CDIS_HOT before SWT paints
+            // subsequent columns. Remember it from the first cell to paint the entire hovered row.
+            boolean hot = event.item == hotItem;
+            if (!selected && !hot) {
+                return;
+            }
+
+            int zoom = tree.getAutoscalingZoom();
+            long theme = OS.OpenThemeData(tree.handle, Display.TREEVIEW, zoom);
+            if (theme == 0) {
+                return;
+            }
+            try {
+                RECT row = new RECT();
+                Rectangle bounds = tree.getClientArea();
+                row.left = DPIUtil.pointToPixel(bounds.x, zoom);
+                row.right = DPIUtil.pointToPixel(bounds.x + bounds.width, zoom);
+                int totalWidth = 0;
+                for (TreeColumn column : tree.getColumns()) {
+                    totalWidth += column.getWidth();
+                }
+                if (totalWidth > bounds.width) {
+                    row.left = 0;
+                    row.right = DPIUtil.pointToPixel(totalWidth, zoom);
+                }
+                row.top = DPIUtil.pointToPixel(event.y, zoom);
+                row.bottom = DPIUtil.pointToPixel(event.y + event.height, zoom);
+
+                RECT cell = new RECT();
+                cell.left = DPIUtil.pointToPixel(event.x, zoom);
+                cell.right = DPIUtil.pointToPixel(event.x + event.width, zoom);
+                cell.top = row.top;
+                cell.bottom = row.bottom;
+                if (totalWidth < bounds.width && event.index == tree.getColumnOrder()[tree.getColumnCount() - 1]) {
+                    // SWT normally extends the last selected cell to the right edge of the tree.
+                    cell.right = row.right;
+                    event.gc.setClipping((Rectangle) null);
+                }
+                // Use Windows' combined state on hover, but retain the native inactive selection state.
+                int state = selected ? (hot ? TREIS_HOTSELECTED : OS.TREIS_SELECTED) : OS.TREIS_HOT;
+                if (selected && !hot && !tree.isFocusControl()) {
+                    state = OS.TREIS_SELECTEDNOTFOCUS;
+                }
+                OS.DrawThemeBackground(theme, event.gc.handle, OS.TVP_TREEITEM, state, row, cell);
+                if (selected) {
+                    event.gc.setForeground(tree.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
+                }
+                event.detail &= ~(SWT.SELECTED | SWT.HOT | SWT.BACKGROUND);
+            } finally {
+                OS.CloseThemeData(theme);
+            }
+        }
+    }
+
+    private static @NotNull char[] getDarkThemeIdByWidgetType(@NotNull Control control) {
         // Combo is an exception?
         return control instanceof Combo ? WINDOW_THEME_COMBO : WINDOW_THEME_DEFAULT;
     }
