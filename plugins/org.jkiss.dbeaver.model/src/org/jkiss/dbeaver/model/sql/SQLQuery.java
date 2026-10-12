@@ -806,7 +806,11 @@ public class SQLQuery implements SQLScriptElement {
         parseQuery();
         if (statement instanceof Select) {
             SelectMutationVisitor visitor = new SelectMutationVisitor();
-            visitor.getTables(statement);
+            try {
+                visitor.getTables(statement);
+            } catch (Throwable e) {
+                return false;
+            }
             return visitor.isMutating();
         }
         return objectOperation != null || statement != null &&
