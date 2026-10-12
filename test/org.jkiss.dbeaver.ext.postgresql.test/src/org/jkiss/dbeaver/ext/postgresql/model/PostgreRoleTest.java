@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
@@ -65,6 +66,7 @@ public class PostgreRoleTest extends DBeaverUnitTest {
         Assertions.assertTrue(ddl.contains("CONNECTION LIMIT -1"), ddl);
     }
 
+    @NotNull
     private String generateRoleDDL(int connectionLimit) throws Exception {
         PostgreRole role = new PostgreRole(testDatabase, "test_role", null, true);
         role.setConnLimit(connectionLimit);
