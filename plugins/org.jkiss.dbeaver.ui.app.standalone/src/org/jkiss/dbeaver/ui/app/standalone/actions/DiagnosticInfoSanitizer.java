@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.app.standalone.actions;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.impl.app.LocalSecretController;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -53,7 +54,8 @@ final class DiagnosticInfoSanitizer {
 
     // Complete connection strings and IPv4-mapped IPv6 addresses take precedence over their embedded addresses.
     private final Pattern sensitiveValuesPattern = Pattern.compile(
-        "(?<JDBC>(?<=\")jdbc:[^\\r\\n\"]+|(?<=')jdbc:[^\\r\\n']+"
+        "(?<SECRET>(?-i:" + LocalSecretController.getDiagnosticSecretPreferencePattern().pattern() + "))"
+            + "|(?<JDBC>(?<=\")jdbc:[^\\r\\n\"]+|(?<=')jdbc:[^\\r\\n']+"
             + "|\\bjdbc:[a-z0-9_.-]+:(?:\\([^\\r\\n]*\\)|\\{[^\\r\\n}]*\\}|\\[[^\\r\\n\\]]*\\]|[^\\s\"'<>()\\[\\]{}])++)"
             + "|(?<SSH>(?<![\\w.@])(?:ssh://"
             + "(?:\\([^\\r\\n]*\\)|\\{[^\\r\\n}]*\\}|\\[[^\\r\\n\\]]*\\]|[^\\s\"'<>()\\[\\]{}])++"

@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.impl.app.LocalSecretController;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -66,6 +65,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -91,7 +91,10 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
             return null;
         }
         File archive = new File(dialog.getOutputFolder(), "dbeaver-diagnostic-info-%d.zip".formatted(System.currentTimeMillis()));
-        boolean sanitizeLogs = dialog.isSanitizeLogs();
+        DiagnosticInfoSanitizer sanitizer = null;
+        if (dialog.isSanitizeLogs()) {
+            sanitizer = new DiagnosticInfoSanitizer();
+        }
         AbstractJob job = new AbstractJob(CoreApplicationMessages.collect_diagnostic_info_pick_path_title) {
             @NotNull
             @Override
@@ -105,81 +108,44 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
     }
 
     @NotNull
-    private static IStatus collectDiagnosticInfo(@NotNull DBRProgressMonitor monitor, @NotNull File archive, boolean sanitizeLogs) {
+    private static IStatus collectDiagnosticInfo(@NotNull DBRProgressMonitor monitor, @NotNull File archive, @Nullable DiagnosticInfoSanitizer sanitizer) {
         log.trace("Writing diagnostic info archive");
-        DiagnosticInfoSanitizer sanitizer = sanitizeLogs ? new DiagnosticInfoSanitizer() : null;
         boolean archiveCreated = false;
         boolean complete = false;
-        monitor.beginTask(CoreApplicationMessages.collect_diagnostic_info_pick_path_title, IProgressMonitor.UNKNOWN);
-        try {
-            try (var out = new ZipOutputStream(Files.newOutputStream(archive.toPath(), StandardOpenOption.CREATE_NEW))) {
-                archiveCreated = true;
-                try {
-                    out.putNextEntry(new ZipEntry("configuration.txt"));
-                    try {
-                        String configuration = LocalSecretController.getDiagnosticSecretPreferencePattern()
-                            .matcher(ConfigurationInfo.getSystemSummary()).replaceAll("");
-                        out.write((sanitizer == null ? configuration : sanitizer.sanitize(configuration)).getBytes(StandardCharsets.UTF_8));
-                    } catch (IOException e) {
-                        log.warn("Cannot write configuration info into archive '%s': caught exception".formatted(archive), e);
-                    } finally {
-                        out.closeEntry();
-                    }
-                } catch (IOException e) {
-                    log.warn("issues with configuration.txt entry in archive '%s': caught exception".formatted(archive), e);
+        Collection<DiagnosticsEntry> entries = getDiagnosticEntries();
+        monitor.beginTask(CoreApplicationMessages.collect_diagnostic_info_pick_path_title, entries.size());
+        try (var out = new ZipOutputStream(Files.newOutputStream(archive.toPath(), StandardOpenOption.CREATE_NEW))) {
+            archiveCreated = true;
+            for (var entry : entries) {
+                if (monitor.isCanceled()) {
+                    return Status.CANCEL_STATUS;
                 }
-                for (var file : getDiagnosticEntries()) {
+                monitor.subTask("collecting " + entry.zipEntryName());
+                try {
+                    out.putNextEntry(new ZipEntry(entry.zipEntryName()));
                     if (monitor.isCanceled()) {
                         return Status.CANCEL_STATUS;
                     }
-                    monitor.subTask(file.zipEntryName);
-                    try {
-                        out.putNextEntry(new ZipEntry(file.zipEntryName));
-                        try (var in = Files.newInputStream(file.path, StandardOpenOption.READ)) {
-                            if (sanitizer == null) {
-                                byte[] buffer = new byte[8192];
-                                int count;
-                                while ((count = in.read(buffer)) != -1) {
-                                    if (monitor.isCanceled()) {
-                                        return Status.CANCEL_STATUS;
-                                    }
-                                    out.write(buffer, 0, count);
-                                }
-                            } else {
-                                // Process logs line by line so large archives do not have to fit in memory.
-                                BufferedReader reader = new BufferedReader(new InputStreamReader(in, StandardCharsets.UTF_8));
-                                String line;
-                                while ((line = reader.readLine()) != null) {
-                                    if (monitor.isCanceled()) {
-                                        return Status.CANCEL_STATUS;
-                                    }
-                                    out.write(sanitizer.sanitize(line).getBytes(StandardCharsets.UTF_8));
-                                    out.write('\n');
-                                }
-                            }
-                        } catch (IOException e) {
-                            log.warn(
-                                "error transferring log entry '%s' into archive '%s': caught exception".formatted(
-                                    file.zipEntryName, archive),
-                                e
-                            );
-                        } finally {
-                            out.closeEntry();
-                        }
-                    } catch (IOException e) {
-                        log.warn("error with log entry '%s' in archive '%s': caught exception".formatted(file.zipEntryName, archive), e);
+                    String content = entry.stringContent();
+                    if (sanitizer != null) {
+                        content = sanitizer.sanitize(content);
                     }
+                    if (monitor.isCanceled()) {
+                        return Status.CANCEL_STATUS;
+                    }
+                    out.write(content.getBytes(StandardCharsets.UTF_8));
+                    out.flush();
+                    if (monitor.isCanceled()) {
+                        return Status.CANCEL_STATUS;
+                    }
+                } catch (IOException e) {
+                    log.warn("error with log entry '%s' in archive '%s': caught exception".formatted(entry.zipEntryName(), archive), e);
+                } finally {
+                    out.closeEntry();
                     monitor.worked(1);
                 }
             }
-            if (monitor.isCanceled()) {
-                return Status.CANCEL_STATUS;
-            }
             complete = true;
-        } catch (IOException e) {
-            log.warn("Cannot collect diagnostic data into archive '%s': caught exception".formatted(archive), e);
-            showError();
-            return GeneralUtils.makeErrorStatus(CoreApplicationMessages.collect_diagnostic_info_error_message_text, e);
         } finally {
             monitor.done();
             if (archiveCreated && !complete) {
@@ -216,8 +182,9 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
     }
 
     @NotNull
-    private static Iterable<DiagnosticsEntry> getDiagnosticEntries() {
+    private static Collection<DiagnosticsEntry> getDiagnosticEntries() {
         Collection<DiagnosticsEntry> diagnosticsEntries = new ArrayList<>();
+        diagnosticsEntries.add(new StringDiagnosticsEntry(ConfigurationInfo.getSystemSummary(), "configuration.txt"));
         addEclipseLog(diagnosticsEntries);
         addTaskLogs(diagnosticsEntries);
         // Ensure the current debug log comes last as to capture any errors during packaging the info archive
@@ -227,7 +194,7 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
 
     private static void addEclipseLog(@NotNull Collection<DiagnosticsEntry> diagnosticsEntries) {
         Path path = Platform.getLogFileLocation().toPath();
-        diagnosticsEntries.add(new DiagnosticsEntry(path, path.getFileName().toString()));
+        diagnosticsEntries.add(new FileDiagnosticsEntry(path, path.getFileName().toString()));
     }
 
     private static void addDBeaverDebugLogs(@NotNull Collection<DiagnosticsEntry> diagnosticsEntries) {
@@ -244,7 +211,7 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
             try (var stream = Files.list(logFileLocation)) {
                 Collection<DiagnosticsEntry> tmp = stream
                     .filter(path -> logFileNamePredicate.test(path.getFileName().toString()))
-                    .map(path -> new DiagnosticsEntry(path, path.getFileName().toString()))
+                    .map(path -> new FileDiagnosticsEntry(path, path.getFileName().toString()))
                     .toList();
                 diagnosticsEntries.addAll(tmp);
             } catch (IOException e) {
@@ -253,7 +220,7 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         }
         // Ensure the current debug log comes last as to capture any errors during packaging the info archive
         if (Files.isRegularFile(debugLog)) {
-            diagnosticsEntries.add(new DiagnosticsEntry(debugLog, debugLog.getFileName().toString()));
+            diagnosticsEntries.add(new FileDiagnosticsEntry(debugLog, debugLog.getFileName().toString()));
         }
     }
 
@@ -265,7 +232,7 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
                 for (DBTTaskRun taskRun: task.getAllRuns()) {
                     Path runLog = task.getRunLog(taskRun);
                     if (runLog != null) {
-                        diagnosticsEntries.add(new DiagnosticsEntry(runLog, zipEntryNamePrefix + runLog.getFileName().toString()));
+                        diagnosticsEntries.add(new FileDiagnosticsEntry(runLog, zipEntryNamePrefix + runLog.getFileName().toString()));
                     }
                 }
             }
@@ -280,7 +247,47 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         UIUtils.createInfoLink(parent, href, () -> ShellUtils.launchProgram(linkToDocs));
     }
 
-    private record DiagnosticsEntry(@NotNull Path path, @NotNull String zipEntryName) {}
+    private static abstract class DiagnosticsEntry {
+        private final String zipEntryName;
+
+        DiagnosticsEntry(String zipEntryName) {
+            this.zipEntryName = zipEntryName;
+        }        
+
+        String zipEntryName() {
+            return zipEntryName;
+        }
+
+        abstract String stringContent();
+    }
+
+    private static final class StringDiagnosticsEntry extends DiagnosticsEntry {
+        private String str;
+
+        StringDiagnosticsEntry(String zipEntryName, String str) {
+            super(zipEntryName);
+            this.str = str;
+        } 
+
+        @Override
+        String stringContent() {
+            return str;
+        }
+    }
+
+    private static final class FileDiagnosticsEntry extends DiagnosticsEntry {
+        private final Path path;
+
+        FileDiagnosticsEntry(String zipEntryName, Path path) {
+            super(zipEntryName);
+            this.path = path;
+        }
+
+        @Override
+        String stringContent() {
+            return Files.readString(path, StandardCharsets.UTF_8);
+        }
+    }
 
     private static final class CollectDiagnosticInfoDialog extends BaseDialog {
         @Nullable
