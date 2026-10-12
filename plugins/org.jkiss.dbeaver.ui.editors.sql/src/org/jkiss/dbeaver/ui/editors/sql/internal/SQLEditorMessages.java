@@ -65,6 +65,12 @@ public class SQLEditorMessages extends NLS {
     public static String editors_sql_statistics;
     public static String editors_sql_job_execute_query;
     public static String editors_sql_job_execute_script;
+    public static String execute_script_file_error_title;
+    public static String execute_script_file_project_not_found;
+    public static String execute_script_file_task_type_not_available;
+    public static String execute_script_file_no_configuration_ui;
+    public static String execute_script_file_task_name;
+    public static String execute_script_file_open_error;
     public static String editors_sql_status_cant_obtain_document;
     public static String editors_sql_status_empty_query_string;
     public static String editors_sql_staus_connected_to;
@@ -213,8 +219,11 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_label_activate_on_typing_tip;
     public static String pref_page_sql_completion_label_auto_insert_proposal;
     public static String pref_page_sql_completion_label_auto_insert_proposal_tip;
-    public static String pref_page_sql_completion_label_autocomplete_by_tab;
-    public static String pref_page_sql_completion_label_autocomplete_by_tab_tip;
+    public static String pref_page_sql_completion_label_activation_key;
+    public static String pref_page_sql_completion_label_activation_key_enter;
+    public static String pref_page_sql_completion_label_activation_key_tab;
+    public static String pref_page_sql_completion_label_activation_key_both;
+    public static String pref_page_sql_completion_label_activation_key_none;
     public static String pref_page_sql_completion_label_insert_case;
     public static String pref_page_sql_completion_label_replace_word_after;
     public static String pref_page_sql_completion_label_replace_word_after_tip;
@@ -252,6 +261,8 @@ public class SQLEditorMessages extends NLS {
 
     public static String pref_page_sql_editor_checkbox_fetch_resultsets;
     public static String pref_page_sql_editor_checkbox_fetch_resultsets_tip;
+    public static String pref_page_sql_editor_checkbox_confirm_large_script_fetch;
+    public static String pref_page_sql_editor_checkbox_confirm_large_script_fetch_tip;
     public static String pref_page_sql_editor_text_statement_delimiter;
     public static String pref_page_sql_editor_checkbox_ignore_native_delimiter;
     public static String pref_page_sql_editor_checkbox_ignore_native_delimiter_tip;
@@ -295,6 +306,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_checkbox_bind_connection_hint;
     public static String pref_page_sql_editor_checkbox_bind_embedded_read;
     public static String pref_page_sql_editor_checkbox_bind_embedded_read_tip;
+    public static String pref_page_sql_editor_checkbox_bind_embedded_read_confirm;
+    public static String pref_page_sql_editor_checkbox_bind_embedded_read_confirm_tip;
     public static String pref_page_sql_editor_checkbox_bind_embedded_write;
     public static String pref_page_sql_editor_checkbox_bind_embedded_write_tip;
     public static String pref_page_sql_editor_group_scripts;
@@ -308,6 +321,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_label_sound_on_query_end;
     public static String pref_page_sql_editor_label_refresh_defaults_after_execute;
     public static String pref_page_sql_editor_label_refresh_defaults_after_execute_tip;
+    public static String pref_page_sql_editor_label_show_metadata_refresh_notification;
+    public static String pref_page_sql_editor_label_show_metadata_refresh_notification_tip;
     public static String pref_page_sql_editor_label_clear_output_before_execute;
     public static String pref_page_sql_editor_label_clear_output_before_execute_tip;
 
@@ -381,6 +396,15 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_title_tooltip_url;
     public static String sql_editor_title_tooltip_database;
     public static String sql_editor_title_tooltip_schema;
+    public static String sql_editor_metadata_refresh_notification_title;
+    public static String sql_editor_metadata_refresh_information_title;
+    public static String sql_editor_metadata_refresh_notification;
+    public static String sql_editor_metadata_refresh_pending_notification;
+    public static String sql_editor_metadata_refresh_committed_notification;
+    public static String sql_editor_metadata_refresh_rolled_back_notification;
+    public static String sql_editor_metadata_refresh_ignored_notification;
+    public static String sql_editor_metadata_refresh_error_title;
+    public static String sql_editor_metadata_refresh_error_message;
 
     public static String sql_generator_title_text;
     public static String sql_generator_no_obj_container_text;
@@ -399,6 +423,18 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_confirm_no_fetch_result_for_big_script_yes;
     public static String sql_editor_confirm_no_fetch_result_for_big_script_no;
     public static String sql_editor_confirm_no_fetch_result_for_big_script_remember;
+
+    public static String sql_editor_confirm_binding_read_confirmation_title;
+    public static String sql_editor_confirm_binding_read_confirmation_question;
+    public static String sql_editor_confirm_binding_read_confirmation_yes;
+    public static String sql_editor_confirm_binding_read_confirmation_no;
+    public static String sql_editor_confirm_binding_read_confirmation_remember;
+
+    public static String sql_editor_confirm_binding_read_ensure_title;
+    public static String sql_editor_confirm_binding_read_ensure_question;
+    public static String sql_editor_confirm_binding_read_ensure_yes;
+    public static String sql_editor_confirm_binding_read_ensure_just_now;
+    public static String sql_editor_confirm_binding_read_ensure_cancel;
 
     public static String dialog_save_script_title;
     public static String dialog_save_script_message;

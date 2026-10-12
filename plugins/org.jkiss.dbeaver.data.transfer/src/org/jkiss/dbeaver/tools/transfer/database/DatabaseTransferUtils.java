@@ -121,10 +121,7 @@ public class DatabaseTransferUtils {
                 } else if (!(newTarget instanceof DBSDataManipulator)) {
                     throw new DBCException("New table " + DBUtils.getObjectFullName(newTarget, DBPEvaluationContext.UI) + " doesn't support data manipulation");
                 }
-                containerMapping.setTarget((DBSDataManipulator) newTarget);
-                if (containerMapping.getMappingType() == DatabaseMappingType.create) {
-                    containerMapping.setMappingType(DatabaseMappingType.existing);
-                }
+                setMappingTarget(containerMapping, (DBSDataManipulator) newTarget);
             }
 
             if (updateMappingAttributes || force) {
@@ -137,6 +134,16 @@ public class DatabaseTransferUtils {
                     }
                 }
             }
+        }
+    }
+
+    static void setMappingTarget(
+        @NotNull DatabaseMappingContainer containerMapping,
+        @NotNull DBSDataManipulator target
+    ) {
+        containerMapping.setTarget(target);
+        if (containerMapping.getMappingType() == DatabaseMappingType.create) {
+            containerMapping.setMappingType(DatabaseMappingType.existing);
         }
     }
 
@@ -660,7 +667,8 @@ public class DatabaseTransferUtils {
         }
     }
 
-    static void createTargetDynamicTable(
+    @Nullable
+    static DBSDataManipulator createTargetDynamicTable(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
         @NotNull DBSObjectContainer schema,
@@ -689,6 +697,13 @@ public class DatabaseTransferUtils {
             throw new DBException("Can not set name for target entity '" + targetEntity.getClass().getName() + "'");
         }
         commandContext.saveChanges(monitor, options);
+        if (targetEntity instanceof DBSDataManipulator dataManipulator) {
+            if (targetEntity instanceof DBSDocumentContainer && tableManager.getObjectsCache(targetEntity) == null) {
+                return dataManipulator;
+            }
+            return null;
+        }
+        throw new DBException("Target entity doesn't support data manipulation: '" + targetEntity.getClass().getName() + "'");
     }
 
     @NotNull
@@ -744,7 +759,7 @@ public class DatabaseTransferUtils {
         }
     }
 
-    public static class TargetCommandContext extends AbstractCommandContext {
+    public static class TargetCommandContext extends AbstractCommandContext implements DBETransientObjectContext {
         public TargetCommandContext(DBCExecutionContext executionContext) {
             super(executionContext, true);
         }

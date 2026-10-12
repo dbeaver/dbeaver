@@ -24,6 +24,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.clickhouse.model.auth.ClickhouseAuthModelCloudSSO;
 import org.jkiss.dbeaver.ext.clickhouse.model.auth.ClickhouseAuthModelJWTBase;
 import org.jkiss.dbeaver.ext.clickhouse.model.auth.ClickhouseJWTProviderRegistry;
 import org.jkiss.dbeaver.ext.clickhouse.ui.internal.ClickhouseMessages;
@@ -36,11 +38,11 @@ import org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurat
  * Configuration of the ClickHouse Cloud SSO auth model.
  * <p>
  * There is nothing to configure: the endpoints are derived from the host name and the tokens are
- * obtained interactively. The panel only explains what will happen and allows to drop cached tokens.
+ * obtained interactively. The panel shows the current sign-in state and manages the cached tokens.
  */
 public class ClickhouseCloudSSOAuthConfigurator extends DatabaseNativeAuthModelConfigurator {
 
-    private DBPDataSourceContainer dataSource;
+    private ClickhouseAuthModelCloudSSO authModel;
     private Button signOutButton;
 
     @Override
@@ -51,6 +53,9 @@ public class ClickhouseCloudSSOAuthConfigurator extends DatabaseNativeAuthModelC
     ) {
         // Neither user name nor password are applicable, so the base class renders nothing
         super.createControl(authPanel, object, propertyChangeListener);
+        if (object instanceof ClickhouseAuthModelCloudSSO cloudSSOAuthModel) {
+            authModel = cloudSSOAuthModel;
+        }
 
         UIUtils.createInfoLabel(authPanel, ClickhouseMessages.dialog_connection_auth_cloud_sso_info,
             GridData.FILL_HORIZONTAL, 2);
@@ -64,6 +69,7 @@ public class ClickhouseCloudSSOAuthConfigurator extends DatabaseNativeAuthModelC
                         // Both halves are needed: the cached provider and the tokens in the secure storage
                         ClickhouseJWTProviderRegistry.reset(dataSource.getId());
                         ClickhouseAuthModelJWTBase.clearStoredTokens(dataSource);
+                        updateSignOutButton();
                     }
                 }
             });
@@ -74,10 +80,7 @@ public class ClickhouseCloudSSOAuthConfigurator extends DatabaseNativeAuthModelC
     @Override
     public void loadSettings(@NotNull DBPDataSourceContainer dataSource) {
         super.loadSettings(dataSource);
-        this.dataSource = dataSource;
-        if (signOutButton != null && !signOutButton.isDisposed()) {
-            signOutButton.setEnabled(!dataSource.isTemporary());
-        }
+        updateSignOutButton();
     }
 
     @Override
@@ -90,5 +93,16 @@ public class ClickhouseCloudSSOAuthConfigurator extends DatabaseNativeAuthModelC
     @Override
     public boolean isComplete() {
         return true;
+    }
+
+    private void updateSignOutButton() {
+        if (signOutButton == null || signOutButton.isDisposed()) {
+            return;
+        }
+        try {
+            signOutButton.setEnabled(dataSource != null && authModel != null && authModel.isSignedIn(dataSource));
+        } catch (DBException e) {
+            signOutButton.setEnabled(false);
+        }
     }
 }

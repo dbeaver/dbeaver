@@ -32,6 +32,8 @@ public class RegistryMessages extends NLS {
     public static String dialog_data_source_synchronization_fail_local_message;
     public static String dialog_data_source_synchronization_fail_remote_message;
 
+    public static String data_source_sync_unit_name;
+
     public static String navigator_settings_preset_simple_view_name;
     public static String navigator_settings_preset_simple_view_description;
     public static String navigator_settings_preset_advanced_view_name;

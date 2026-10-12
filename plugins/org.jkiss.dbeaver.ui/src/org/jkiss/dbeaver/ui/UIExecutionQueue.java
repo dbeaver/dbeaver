@@ -49,21 +49,28 @@ public class UIExecutionQueue {
     }
 
     public static void unblockQueue() {
+        boolean scheduleExecution;
         synchronized (execQueue) {
             if (runCount <= 0) {
                 throw new IllegalStateException("Queue is unblocked");
             }
             runCount--;
+            scheduleExecution = runCount == 0 && !execQueue.isEmpty();
+        }
+        if (scheduleExecution) {
+            UIUtils.asyncExec(UIExecutionQueue::executeInUI);
         }
     }
 
     private static void executeInUI() {
         synchronized (execQueue) {
             boolean workbenchStarted = DBWorkbench.getPlatform() instanceof DBPPlatformDesktop pd && pd.isWorkbenchStarted();
-            if (runCount > 0 || !workbenchStarted) {
-                // If workbench wasn't fully started or
-                // job is running or
-                // some Eclipse job is active in UI thread then retry later
+            if (runCount > 0) {
+                // The active job schedules the next one after it leaves any nested event loop and finishes.
+                return;
+            }
+            if (!workbenchStarted) {
+                // If workbench wasn't fully started then retry later
                 if (!DBWorkbench.getPlatform().isShuttingDown()) {
                     UIUtils.asyncExec(UIExecutionQueue::executeInUI);
                 }

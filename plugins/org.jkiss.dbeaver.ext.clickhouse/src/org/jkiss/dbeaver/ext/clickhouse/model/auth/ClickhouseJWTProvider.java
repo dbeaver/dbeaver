@@ -24,10 +24,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.HttpConstants;
+import org.jkiss.utils.oauth.OAuthConstants;
+import org.jkiss.utils.oauth.code.OAuthRequestURLBuilder;
 
 import java.io.IOException;
 import java.net.URI;
-import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -61,7 +63,7 @@ public class ClickhouseJWTProvider {
 
     private static final String DEVICE_CODE_PATH = "/oauth/device/code";
     private static final String TOKEN_PATH = "/oauth/token";
-    protected static final String DEVICE_CODE_GRANT = "urn:ietf:params:oauth:grant-type:device_code";
+    protected static final String DEVICE_CODE_GRANT = OAuthConstants.GRANT_TYPE_DEVICE_CODE;
     /** Seconds added to the polling interval when the provider asks us to slow down */
     static final int SLOW_DOWN_INCREMENT_SECONDS = 5;
 
@@ -120,6 +122,13 @@ public class ClickhouseJWTProvider {
      */
     protected void interactiveLogin(@NotNull DBRProgressMonitor monitor) throws DBException {
         deviceCodeLogin(monitor);
+    }
+
+    /**
+     * Returns whether this provider can authenticate without another interactive sign in.
+     */
+    public synchronized boolean isSignedIn() {
+        return isIdPAccessTokenValid() || hasRefreshToken();
     }
 
     /**
@@ -225,8 +234,8 @@ public class ClickhouseJWTProvider {
     protected void deviceCodeLogin(@NotNull DBRProgressMonitor monitor) throws DBException {
         monitor.subTask("Requesting device code");
         Map<String, String> deviceCodeParams = new LinkedHashMap<>();
-        deviceCodeParams.put("client_id", clientId);
-        deviceCodeParams.put("scope", getScopes());
+        deviceCodeParams.put(OAuthConstants.AUTH_PROP_CLIENT_ID, clientId);
+        deviceCodeParams.put(OAuthConstants.PARAM_SCOPE, getScopes());
         String audience = getAudience();
         if (!CommonUtils.isEmpty(audience)) {
             deviceCodeParams.put("audience", audience);
@@ -260,9 +269,9 @@ public class ClickhouseJWTProvider {
         @NotNull CompletableFuture<Void> cancellation
     ) throws DBException {
         Map<String, String> params = new LinkedHashMap<>();
-        params.put("grant_type", DEVICE_CODE_GRANT);
-        params.put("device_code", deviceCode);
-        params.put("client_id", clientId);
+        params.put(OAuthConstants.PARAM_GRANT_TYPE, DEVICE_CODE_GRANT);
+        params.put(OAuthConstants.PARAM_DEVICE_CODE, deviceCode);
+        params.put(OAuthConstants.AUTH_PROP_CLIENT_ID, clientId);
         addClientAuthentication(params);
 
         int pollInterval = interval;
@@ -334,9 +343,9 @@ public class ClickhouseJWTProvider {
 
     protected void refreshIdPAccessToken() throws DBException {
         Map<String, String> params = new LinkedHashMap<>();
-        params.put("grant_type", "refresh_token");
-        params.put("client_id", clientId);
-        params.put("refresh_token", idpRefreshToken);
+        params.put(OAuthConstants.PARAM_GRANT_TYPE, OAuthConstants.GRANT_TYPE_REFRESH_TOKEN);
+        params.put(OAuthConstants.AUTH_PROP_CLIENT_ID, clientId);
+        params.put(OAuthConstants.RESPONSE_PARAM_REFRESH_TOKEN, idpRefreshToken);
         addClientAuthentication(params);
         try {
             acceptTokenResponse(sendForm(getTokenEndpoint(), params, null));
@@ -407,11 +416,11 @@ public class ClickhouseJWTProvider {
     protected JsonObject getJson(@NotNull String url) throws DBException {
         HttpRequest request = HttpRequest.newBuilder(URI.create(url))
             .timeout(REQUEST_TIMEOUT)
-            .header("Accept", "application/json")
+            .header(HttpConstants.HEADER_ACCEPT, HttpConstants.CONTENT_TYPE_JSON)
             .GET()
             .build();
         HttpResponse<String> response = sendRequest(request);
-        if (response.statusCode() != 200) {
+        if (response.statusCode() != HttpConstants.CODE_OK) {
             throw new DBException("Request to " + url + " failed: HTTP " + response.statusCode());
         }
         return parseJson(response.body());
@@ -424,7 +433,7 @@ public class ClickhouseJWTProvider {
         @Nullable String bearerToken
     ) throws DBException {
         HttpResponse<String> response = send(url, parameters, bearerToken);
-        if (response.statusCode() != 200) {
+        if (response.statusCode() != HttpConstants.CODE_OK) {
             throw new DBException("Request to " + url + " failed: HTTP " + response.statusCode() + "\n" + response.body());
         }
         return parseJson(response.body());
@@ -447,10 +456,10 @@ public class ClickhouseJWTProvider {
     ) throws DBException {
         HttpRequest.Builder request = HttpRequest.newBuilder(URI.create(url))
             .timeout(REQUEST_TIMEOUT)
-            .header("Content-Type", "application/x-www-form-urlencoded")
+            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_APP_FORM)
             .POST(HttpRequest.BodyPublishers.ofString(toForm(parameters)));
         if (bearerToken != null) {
-            request.header("Authorization", "Bearer " + bearerToken);
+            request.header(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + bearerToken);
         }
         return sendRequest(request.build());
     }
@@ -486,15 +495,6 @@ public class ClickhouseJWTProvider {
 
     @NotNull
     protected static String toForm(@NotNull Map<String, String> parameters) {
-        StringBuilder form = new StringBuilder();
-        for (Map.Entry<String, String> parameter : parameters.entrySet()) {
-            if (!form.isEmpty()) {
-                form.append('&');
-            }
-            form.append(URLEncoder.encode(parameter.getKey(), StandardCharsets.UTF_8))
-                .append('=')
-                .append(URLEncoder.encode(parameter.getValue(), StandardCharsets.UTF_8));
-        }
-        return form.toString();
+        return OAuthRequestURLBuilder.buildURLParameters(parameters);
     }
 }

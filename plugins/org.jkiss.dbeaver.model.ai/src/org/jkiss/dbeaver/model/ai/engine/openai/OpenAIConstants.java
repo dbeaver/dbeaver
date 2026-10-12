@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 public class OpenAIConstants {
 
     public static final String OPENAI_ENGINE = "openai";
+    public static final String LEGACY_DEFAULT_MODEL = "gpt-4o";
     public static final String GPT_API_TOKEN = "gpt.token";
     public static final String GPT_MODEL = "gpt.model";
     public static final String AI_TEMPERATURE = "gpt.model.temperature";

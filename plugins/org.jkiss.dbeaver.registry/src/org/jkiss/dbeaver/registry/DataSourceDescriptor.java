@@ -1204,6 +1204,12 @@ public class DataSourceDescriptor
 
                 openDataSource(monitor, initialize);
 
+                if (monitor.isCanceled()) {
+                    // A driver may return successfully after ignoring interruption during initialization.
+                    // Throw so the connection failure path releases the partially initialized data source.
+                    throw new DBException("Connection has been canceled");
+                }
+
                 if (dataSource != null) {
                     DBPDataSourceInfo info = dataSource.getInfo();
                     log.debug(
@@ -1955,7 +1961,8 @@ public class DataSourceDescriptor
         if (!(obj instanceof DataSourceDescriptor source)) {
             return false;
         }
-        return isLooselyEqualTo(source) && equalConfiguration(source) && equalInternalConfiguration(source);
+        return isLooselyEqualTo(source) && equalConfiguration(source) && equalNavigation(source) &&
+            equalInternalConfiguration(source);
     }
 
     public boolean isLooselyEqualTo(DataSourceDescriptor source) {
@@ -1982,9 +1989,12 @@ public class DataSourceDescriptor
                 CommonUtils.equalObjects(this.formatterProfile, source.formatterProfile) &&
                 CommonUtils.equalObjects(this.clientHome, source.clientHome) &&
                 CommonUtils.equalObjects(this.lockPasswordHash, source.lockPasswordHash) &&
-                CommonUtils.equalObjects(this.folder, source.folder) &&
                 CommonUtils.equalObjects(this.preferenceStore, source.preferenceStore) &&
                 CommonUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
+    }
+
+    public boolean equalNavigation(DataSourceDescriptor source) {
+        return CommonUtils.equalObjects(this.folder, source.folder);
     }
 
     @NotNull
@@ -2087,6 +2097,9 @@ public class DataSourceDescriptor
 
         if (networkHandler == null) {
             DBAAuthModel<?> authModel = actualConfig.getAuthModel();
+            if (!authModel.isCredentialsPromptRequired()) {
+                return true;
+            }
             if (authModel.getClass() != AuthModelDatabaseNative.class) {
                 boolean savedPasswordState = dataSourceContainer.isSavePassword();
                 DBPConnectionConfiguration savedConnectionInfo = new DBPConnectionConfiguration(connConfig);

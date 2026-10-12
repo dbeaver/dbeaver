@@ -87,3 +87,6 @@ function initChat(args) {
     settingsChanged();
     updateAiNoticeVisibility();
 }
+function setThemeStylesheet({href}) {
+    document.getElementById('theme-stylesheet').href = href;
+}

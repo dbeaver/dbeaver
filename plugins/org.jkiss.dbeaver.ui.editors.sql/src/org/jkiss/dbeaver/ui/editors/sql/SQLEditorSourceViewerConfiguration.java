@@ -157,7 +157,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         } else if (SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT.equals(contentType) || SQLParserPartitions.CONTENT_TYPE_SQL_MULTILINE_COMMENT.equals(contentType)) {
             return new IAutoEditStrategy[]{new SQLCommentAutoIndentStrategy(SQLParserPartitions.SQL_PARTITIONING)};
         } else if (SQLParserPartitions.CONTENT_TYPE_SQL_STRING.equals(contentType)) {
-            return new IAutoEditStrategy[]{new SQLStringAutoIndentStrategy(SQLParserPartitions.CONTENT_TYPE_SQL_STRING)};
+            return new IAutoEditStrategy[]{new SQLStringAutoIndentStrategy(SQLParserPartitions.SQL_PARTITIONING)};
         }
         return new IAutoEditStrategy[0];
     }

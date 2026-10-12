@@ -82,6 +82,12 @@ public class AIUIMessages extends NLS {
     public static String openai_configurator_log_query_tip;
     public static String openai_configurator_temperature_tip;
     public static String openai_configurator_token_placeholder;
+    public static String openai_configurator_custom_headers;
+    public static String openai_configurator_header_name;
+    public static String openai_configurator_header_value;
+    public static String openai_configurator_header_add;
+    public static String openai_configurator_header_remove;
+    public static String openai_configurator_header_invalid;
     public static String openai_configurator_login_method_label;
     public static String openai_configurator_authentication_api_token;
     public static String openai_configurator_authentication_chatgpt_account;
@@ -99,9 +105,6 @@ public class AIUIMessages extends NLS {
     public static String openai_configurator_sign_in_device_code;
     public static String openai_configurator_sign_in_device_code_description;
     public static String openai_configurator_sign_in_continue;
-    public static String openai_configurator_browser_dialog_message;
-    public static String openai_configurator_authorization_link;
-    public static String openai_configurator_copy_link;
     public static String openai_configurator_credentials_save_error_title;
     public static String openai_configurator_credentials_save_error_message;
     public static String openai_configurator_sign_out_save_error_title;

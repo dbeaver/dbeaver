@@ -153,7 +153,8 @@ public class TextRenderingUtils {
         int line = widget.getLineAtOffset(offset);
         int start = widget.getOffsetAtLine(line);
         String contents = widget.getLine(line);
-        return contents.substring(offset - start);
+        int lineOffset = Math.max(0, Math.min(offset - start, contents.length()));
+        return contents.substring(lineOffset);
     }
 
 

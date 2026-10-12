@@ -17,10 +17,13 @@
 package org.jkiss.dbeaver.ui.workbench;
 
 import org.eclipse.jface.preference.IPreferenceNode;
+import org.eclipse.jface.preference.IPreferencePage;
 import org.eclipse.jface.preference.PreferenceManager;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.dialogs.PropertyPageContributorManager;
 import org.eclipse.ui.internal.dialogs.RegistryPageContributor;
+import org.eclipse.ui.internal.dialogs.WorkbenchPreferenceNode;
 import org.jkiss.code.NotNull;
 
 import java.util.*;
@@ -65,4 +68,82 @@ public class WorkbenchUtils {
         }
     }
 
+    public static void movePreferencePage(
+        @NotNull String pageId,
+        @NotNull String toPage,
+        @NotNull String label
+    ) {
+        PreferenceManager preferenceManager = PlatformUI.getWorkbench().getPreferenceManager();
+        IPreferenceNode node = preferenceManager.remove(pageId);
+        if (node instanceof WorkbenchPreferenceNode workbenchNode) {
+            RenamedPreferenceNode renamedNode = new RenamedPreferenceNode(workbenchNode, label);
+            preferenceManager.addTo(toPage, renamedNode);
+            for (IPreferenceNode child : workbenchNode.getSubNodes()) {
+                workbenchNode.remove(child);
+                preferenceManager.addTo(toPage, child);
+            }
+        } else if (node != null) {
+            preferenceManager.addTo(toPage, node);
+        }
+    }
+
+    private static class RenamedPreferenceNode extends WorkbenchPreferenceNode {
+        private final WorkbenchPreferenceNode originalNode;
+        private final String label;
+
+        private RenamedPreferenceNode(@NotNull WorkbenchPreferenceNode originalNode, @NotNull String label) {
+            super(originalNode.getId(), originalNode.getConfigurationElement());
+            this.originalNode = originalNode;
+            this.label = label;
+        }
+
+        @Override
+        public String getLabelText() {
+            return label;
+        }
+
+        @Override
+        public Image getLabelImage() {
+            return originalNode.getLabelImage();
+        }
+
+        @Override
+        public void createPage() {
+            originalNode.createPage();
+            setPage(originalNode.getPage());
+            if (getPage() != null) {
+                getPage().setTitle(label);
+            }
+        }
+
+        @Override
+        public IPreferencePage getPage() {
+            return originalNode.getPage();
+        }
+
+        @Override
+        public void setPage(IPreferencePage page) {
+            originalNode.setPage(page);
+        }
+
+        @Override
+        public void disposeResources() {
+            originalNode.disposeResources();
+        }
+
+        @Override
+        public int getPriority() {
+            return originalNode.getPriority();
+        }
+
+        @Override
+        public void setPriority(int priority) {
+            originalNode.setPriority(priority);
+        }
+
+        @Override
+        public <T> T getAdapter(Class<T> adapter) {
+            return originalNode.getAdapter(adapter);
+        }
+    }
 }

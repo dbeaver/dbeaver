@@ -17,17 +17,22 @@
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import com.google.gson.annotations.SerializedName;
+import com.google.gson.reflect.TypeToken;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
+import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.BaseAIEngineProperties;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Map;
 
 public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBaseProperties {
     protected static final String GPT_BASE_URL = "gpt.base_url";
@@ -39,6 +44,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     public static final int DEFAULT_ACCOUNT_CONTEXT_WINDOW_SIZE = 272_000;
     private static final String ACCESS_TOKEN = "openai.account.accessToken";
     private static final String REFRESH_TOKEN = "openai.account.refreshToken";
+    private static final String CUSTOM_HEADERS = "openai.headers";
 
 
     @Nullable
@@ -49,6 +55,11 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     @SecureProperty
     @SerializedName(GPT_TOKEN)
     private String token;
+
+    @Nullable
+    @SecureProperty
+    @SerializedName(CUSTOM_HEADERS)
+    private Map<String, String> customHeaders;
 
     @Nullable
     @SerializedName(GPT_MODEL)
@@ -94,13 +105,23 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
 
     @Nullable
     @Override
-    @Property(order = 1, password = true, required = true)
+    @Property(order = 1, password = true, hideExpr = AIConstants.AI_NON_GLOBAL_CREDENTIALS_HIDE_EXPRESSION)
     public String getToken() {
         return token;
     }
 
     public void setToken(@Nullable String token) {
         this.token = token;
+    }
+
+    @NotNull
+    @Override
+    public Map<String, String> getCustomHeaders() {
+        return customHeaders == null ? Map.of() : Map.copyOf(customHeaders);
+    }
+
+    public void setCustomHeaders(@NotNull Map<String, String> customHeaders) {
+        this.customHeaders = Map.copyOf(customHeaders);
     }
 
     @Nullable
@@ -119,6 +140,13 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
 
     public void setModel(@Nullable String model) {
         this.model = model;
+    }
+
+    @Override
+    public void selectModel(@NotNull AIModel model) {
+        setModel(model.name());
+        setContextWindowSize(model.contextWindowSize() != null ? model.contextWindowSize() :
+            OpenAIModels.getModelByName(model.name()).map(AIModel::contextWindowSize).orElse(AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE));
     }
 
     @Override
@@ -198,7 +226,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     public boolean isValidConfiguration() {
         return isChatGptAccountAuthentication()
             ? OpenAIAccountAuthenticator.isSupported() && isChatGptAccountConnected()
-            : !CommonUtils.isEmpty(token);
+            : OpenAIBaseProperties.super.isValidConfiguration();
     }
 
     @Nullable
@@ -284,7 +312,13 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     @Override
     public void resolveSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
         if (token == null) {
-            token = AIUtils.getSecretValueOrDefault(profile, OpenAIConstants.GPT_API_TOKEN, token);
+            token = AIUtils.getSecretValueOrDefault(profile, getApiTokenSecretId(), token);
+        }
+        if (customHeaders == null) {
+            String headers = AIUtils.getSecretValueOrDefault(profile, CUSTOM_HEADERS, null);
+            if (headers != null) {
+                customHeaders = JSONUtils.GSON.fromJson(headers, new TypeToken<Map<String, String>>() { }.getType());
+            }
         }
         this.profile = profile;
         if (accessToken == null) {
@@ -309,7 +343,8 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
 
     @Override
     public void saveSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
-        AIUtils.setSecretValue(profile, OpenAIConstants.GPT_API_TOKEN, token);
+        AIUtils.setSecretValue(profile, getApiTokenSecretId(), token);
+        saveCustomHeaderSecrets(profile);
         this.profile = profile;
         AIUtils.setSecretValue(profile, getRefreshTokenSecretId(), refreshToken);
         AIUtils.setSecretValue(profile, getAccessTokenSecretId(), accessToken);
@@ -317,9 +352,21 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
 
     @Override
     public void deleteSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
-        AIUtils.deleteSecretValue(profile, OpenAIConstants.GPT_API_TOKEN);
+        AIUtils.deleteSecretValue(profile, getApiTokenSecretId());
+        AIUtils.deleteSecretValue(profile, CUSTOM_HEADERS);
         AIUtils.deleteSecretValue(profile, getAccessTokenSecretId());
         AIUtils.deleteSecretValue(profile, getRefreshTokenSecretId());
+    }
+
+    public void saveCustomHeaderSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
+        if (customHeaders != null) {
+            AIUtils.setSecretValue(profile, CUSTOM_HEADERS, JSONUtils.GSON.toJson(customHeaders));
+        }
+    }
+
+    @NotNull
+    protected String getApiTokenSecretId() {
+        return OpenAIConstants.GPT_API_TOKEN;
     }
 
     @NotNull

@@ -231,8 +231,6 @@ public class ScopeSelectorControl extends Composite {
     }
 
     public void changeScope(@NotNull AIDatabaseScope scope) {
-        checkedObjectIds.clear();
-
         if (scope == AIDatabaseScope.CUSTOM) {
             List<String> ids = chooseCustomEntities(
                 getShell(),
@@ -242,10 +240,14 @@ public class ScopeSelectorControl extends Composite {
             );
 
             if (ids == null) {
+                scopeCombo.select(currentScope.ordinal());
                 return;
             }
 
+            checkedObjectIds.clear();
             checkedObjectIds.addAll(ids);
+        } else {
+            checkedObjectIds.clear();
         }
 
         currentScope = scope;

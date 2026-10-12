@@ -48,7 +48,6 @@ import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -147,10 +146,13 @@ public class SQLServerDataSource
     @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
-        int errorCode = SQLState.getCodeFromException(error);
-        if (errorCode == SQLServerConstants.EC_SQL_SERVER_LOGON_FAILED
-            || errorCode == SQLServerConstants.EC_PASSWORD_EXPIRED
-            || errorCode == SQLServerConstants.EC_PASSWORD_MUST_CHANGE) {
+        if (isPasswordExpired(error)) {
+            return ErrorType.PASSWORD_EXPIRED;
+        }
+        if (JDBCUtils.matchesSQLException(
+            error,
+            exception -> exception.getErrorCode() == SQLServerConstants.EC_SQL_SERVER_LOGON_FAILED
+        )) {
             return ErrorType.AUTHENTICATION_FAILED;
         }
         return super.discoverErrorType(error);
@@ -309,8 +311,8 @@ public class SQLServerDataSource
         }
     }
 
-    private boolean isPasswordExpired(@NotNull DBCException e) {
-        for (Throwable cause = e; cause != null; cause = cause.getCause()) {
+    private boolean isPasswordExpired(@NotNull Throwable error) {
+        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
             if (cause instanceof SQLException sqle) {
                 // Check chained SQL exceptions for specific password expiry error codes
                 for (SQLException se = sqle; se != null; se = se.getNextException()) {

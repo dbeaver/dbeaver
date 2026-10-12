@@ -22,6 +22,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.data.gis.handlers.WKGUtils;
 import org.jkiss.dbeaver.model.data.DBDValue;
+import org.jkiss.dbeaver.model.data.DBDValueCloneable;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.CoordinateFilter;
 import org.locationtech.jts.geom.Geometry;
@@ -34,7 +37,7 @@ import java.util.Map;
 /**
  * Geometry value (LOB).
  */
-public class DBGeometry implements DBDValue {
+public class DBGeometry implements DBDValue, DBDValueCloneable {
 
     private final Object rawValue;
     private int srid;
@@ -199,6 +202,12 @@ public class DBGeometry implements DBDValue {
             }
         }
         return true;
+    }
+
+    @NotNull
+    @Override
+    public DBDValueCloneable cloneValue(@NotNull DBRProgressMonitor monitor) throws DBCException {
+        return copy();
     }
 
     private static class InvertCoordinateFilter implements CoordinateFilter {

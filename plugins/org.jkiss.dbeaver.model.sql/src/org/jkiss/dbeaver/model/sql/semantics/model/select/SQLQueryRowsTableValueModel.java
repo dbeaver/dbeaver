@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,7 +73,9 @@ public class SQLQueryRowsTableValueModel extends SQLQueryRowsSourceModel {
         for (List<SQLQueryValueExpression> row : this.rows) {
             for (SQLQueryValueExpression value : row) {
                 value.resolveRowSources(this.getRowsSources(), statistics);
-                value.resolveValueRelations(emptyTuple, statistics);
+                if (!value.tryResolveValueRelations(emptyTuple, statistics)) {
+                    return this.getRowsSources().makeEmptyTuple();
+                }
                 if (rowIndex == 0) {
                     resultColumns.addLast(
                         new SQLQueryResultColumn(

@@ -29,18 +29,10 @@ import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMUtils;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.GlobalEventManagerImpl;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
-import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.StandardConstants;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Locale;
 
 /**
@@ -49,15 +41,12 @@ import java.util.Locale;
 public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatformDesktop {
 
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.headless"; //$NON-NLS-1$
-    private static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
-
     private static final Log log = Log.getLog(DBeaverTestPlatform.class);
 
     static DBeaverTestPlatform instance;
 
     private static volatile boolean isClosing = false;
 
-    private Path tempFolder;
     private DBeaverTestWorkspace workspace;
 
     private static boolean disposed = false;
@@ -114,15 +103,6 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
         QMUtils.disposePlatform();
         DataSourceProviderRegistry.dispose();
 
-        // Remove temp folder
-        if (tempFolder != null) {
-
-            if (!ContentUtils.deleteFileRecursive(tempFolder)) {
-                log.warn("Can't delete temp folder '" + tempFolder.toAbsolutePath() + "'");
-            }
-            tempFolder = null;
-        }
-
         DBeaverTestPlatform.instance = null;
         DBeaverTestPlatform.disposed = true;
         System.gc();
@@ -174,43 +154,6 @@ public class DBeaverTestPlatform extends BasePlatformImpl implements DBPPlatform
     @Override
     public boolean isWorkbenchStarted() {
         return true;
-    }
-
-    @NotNull
-    public Path getTempFolder(@NotNull DBRProgressMonitor monitor, @NotNull String name) {
-        if (tempFolder == null) {
-            // Make temp folder
-            monitor.subTask("Create temp folder");
-            try {
-                tempFolder = Files.createTempDirectory(TEMP_PROJECT_NAME);
-            } catch (IOException e) {
-                String sysTempFolder = System.getProperty(StandardConstants.ENV_TMP_DIR);
-                if (!CommonUtils.isEmpty(sysTempFolder)) {
-                    tempFolder = Path.of(sysTempFolder, TEMP_PROJECT_NAME);
-                    try {
-                        Files.createDirectories(tempFolder);
-                    } catch (IOException ex) {
-                        String sysUserFolder = System.getProperty(StandardConstants.ENV_USER_HOME);
-                        if (!CommonUtils.isEmpty(sysUserFolder)) {
-                            tempFolder = Path.of(sysUserFolder, TEMP_PROJECT_NAME);
-                            try {
-                                Files.createDirectories(tempFolder);
-                            } catch (IOException exc) {
-                                tempFolder = Path.of(TEMP_PROJECT_NAME);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        if (!Files.exists(tempFolder)) {
-            try {
-                Files.createDirectories(tempFolder);
-            } catch (IOException e) {
-                log.error("Can't create temp directory " + tempFolder.toAbsolutePath());
-            }
-        }
-        return tempFolder;
     }
 
     @Override

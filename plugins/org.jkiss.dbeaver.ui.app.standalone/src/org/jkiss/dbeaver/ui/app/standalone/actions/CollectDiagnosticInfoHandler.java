@@ -31,9 +31,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.LogOutputStream;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.impl.app.LocalSecretController;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskRun;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -60,8 +62,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -93,7 +93,9 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
             try {
                 out.putNextEntry(new ZipEntry("configuration.txt"));
                 try {
-                    out.write(ConfigurationInfo.getSystemSummary().getBytes(StandardCharsets.UTF_8));
+                    String summary = LocalSecretController.getDiagnosticSecretPreferencePattern()
+                        .matcher(ConfigurationInfo.getSystemSummary()).replaceAll("");
+                    out.write(summary.getBytes(StandardCharsets.UTF_8));
                 } catch (IOException e) {
                     log.warn("Cannot write configuration info into archive '%s': caught exception".formatted(archive), e);
                 } finally {
@@ -165,21 +167,10 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         Path logFileLocation = debugLog.getParent();
         if (logFileLocation != null && Files.isDirectory(logFileLocation)) {
             String fileName = debugLog.getFileName().toString();
-            String logFileName;
-            String logFileNameExtension;
-            int fnameExtStart = fileName.lastIndexOf('.');
-            if (fnameExtStart >= 0) {
-                logFileName = fileName.substring(0, fnameExtStart);
-                logFileNameExtension = fileName.substring(fnameExtStart);
-            } else {
-                logFileName = fileName;
-                logFileNameExtension = "";
-            }
-            String logFileNameRegexStr = "^" + Pattern.quote(logFileName) + "\\-[0-9]+" + Pattern.quote(logFileNameExtension) + "$";
-            Predicate<String> logFileNamePattern = Pattern.compile(logFileNameRegexStr).asMatchPredicate();
+            var logFileNamePredicate = LogOutputStream.getArchivedLogFileNamePredicate(fileName);
             try (var stream = Files.list(logFileLocation)) {
                 Collection<DiagnosticsEntry> tmp = stream
-                    .filter(path -> logFileNamePattern.test(path.getFileName().toString()))
+                    .filter(path -> logFileNamePredicate.test(path.getFileName().toString()))
                     .map(path -> new DiagnosticsEntry(path, path.getFileName().toString()))
                     .toList();
                 diagnosticsEntries.addAll(tmp);

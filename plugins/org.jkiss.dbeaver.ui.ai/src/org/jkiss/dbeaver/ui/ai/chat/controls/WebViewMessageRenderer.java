@@ -16,8 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.ai.chat.controls;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.Document;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.SWTException;
 import org.eclipse.swt.browser.Browser;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -28,16 +31,18 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.impl.MessageChunk;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.editors.sql.convert.impl.HTMLSQLConverter;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleScanner;
 import org.jkiss.dbeaver.utils.DurationFormat;
 import org.jkiss.dbeaver.utils.DurationFormatter;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -53,15 +58,20 @@ final class WebViewMessageRenderer {
 
     private final Browser browser;
     private final Supplier<DBPDataSource> dataSourceSupplier;
+    private final WebCSSInitializer cssInitializer;
+    private final Map<Integer, AbstractJob> thumbnailJobs = new HashMap<>();
     private SQLSyntaxManager syntaxManager;
     private SQLRuleScanner ruleScanner;
 
     WebViewMessageRenderer(
         @NotNull Browser browser,
-        @NotNull Supplier<DBPDataSource> dataSourceSupplier
+        @NotNull Supplier<DBPDataSource> dataSourceSupplier,
+        @NotNull WebCSSInitializer cssInitializer
     ) {
         this.browser = browser;
         this.dataSourceSupplier = dataSourceSupplier;
+        this.cssInitializer = cssInitializer;
+        browser.addDisposeListener(event -> cancelImageJobs());
     }
 
     @Nullable
@@ -117,7 +127,7 @@ final class WebViewMessageRenderer {
         DBPImage icon = AIChatUtils.getRoleIcon(message.message());
         String iconPath = "";
         try {
-            iconPath = RuntimeUtils.getPlatformFile(icon.getLocation()).toAbsolutePath().toString();
+            iconPath = cssInitializer.getResourceUrl(icon);
         } catch (IOException e) {
             log.error("Error getting icon path for " + icon, e);
         }
@@ -140,13 +150,63 @@ final class WebViewMessageRenderer {
             default -> addUsualMessage(args, message);
         }
 
+        args.put("images", message.message().getImages().stream()
+            .map(image -> Map.of("name", image.name())).toList());
         args.put("id", message.id());
         args.put("role", message.message().getRole().name().toLowerCase(Locale.ROOT));
         args.put("icon", iconPath);
         args.put("meta", buildMessageMeta(message));
         execute("addMessage", args);
+        loadMessageImages(message);
 
         return true;
+    }
+
+    private void loadMessageImages(@NotNull AIChatMessage message) {
+        List<AIImageAttachment> images = message.message().getImages();
+        if (images.isEmpty() || browser.isDisposed()) {
+            return;
+        }
+        AbstractJob previous = thumbnailJobs.remove(message.id());
+        if (previous != null) {
+            previous.cancel();
+        }
+        AbstractJob job = new AbstractJob(AIChatMessagesUI.ai_chat_image_loading) {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                for (int index = 0; index < images.size(); index++) {
+                    if (monitor.isCanceled()) {
+                        return Status.CANCEL_STATUS;
+                    }
+                    int imageIndex = index;
+                    try {
+                        String source = AIImageThumbnail.toDataUrl(images.get(index).getBytes(), AIImageAttachmentTile.PREVIEW_SIZE * 2);
+                        if (monitor.isCanceled()) {
+                            return Status.CANCEL_STATUS;
+                        }
+                        UIUtils.asyncExec(() -> {
+                            if (!browser.isDisposed() && thumbnailJobs.get(message.id()) == this) {
+                                execute("setMessageImage", Map.of("id", message.id(), "index", imageIndex, "src", source));
+                            }
+                        });
+                    } catch (IOException | SWTException | IllegalArgumentException exception) {
+                        log.debug("Cannot create message image thumbnail", exception);
+                    }
+                }
+                UIUtils.asyncExec(() -> thumbnailJobs.remove(message.id(), this));
+                return Status.OK_STATUS;
+            }
+        };
+        thumbnailJobs.put(message.id(), job);
+        job.setRule(AIImageThumbnail.DECODING_RULE);
+        job.setSystem(true);
+        job.schedule();
+    }
+
+    private void cancelImageJobs() {
+        thumbnailJobs.values().forEach(AbstractJob::cancel);
+        thumbnailJobs.clear();
     }
 
     @Nullable
@@ -283,7 +343,7 @@ final class WebViewMessageRenderer {
                 attachmentData.put("name", file.getFileName().toString());
                 String fileIconPath = null;
                 try {
-                    fileIconPath = RuntimeUtils.getPlatformFile(attachment.getIcon(file).getLocation()).toAbsolutePath().toString();
+                    fileIconPath = cssInitializer.getResourceUrl(attachment.getIcon(file));
                 } catch (IOException e) {
                     log.error("Error getting icon path for " + file.getFileName(), e);
                 }
@@ -357,7 +417,7 @@ final class WebViewMessageRenderer {
     private Map<String, String> getActionData(@NotNull DBIcon icon, @NotNull String tooltipMessage) {
         Map<String, String> iconData;
         try {
-            iconData = Map.of("icon", RuntimeUtils.getPlatformFile(icon.getLocation()).toString(), "tooltip", tooltipMessage);
+            iconData = Map.of("icon", cssInitializer.getResourceUrl(icon), "tooltip", tooltipMessage);
         } catch (IOException e) {
             log.error("Error getting icon path for " + icon, e);
             iconData = Map.of("icon", "", "tooltip", tooltipMessage);
@@ -366,10 +426,15 @@ final class WebViewMessageRenderer {
     }
 
     void removeMessage(@NotNull AIChatMessage message) {
+        AbstractJob job = thumbnailJobs.remove(message.id());
+        if (job != null) {
+            job.cancel();
+        }
         execute("removeMessage", Map.of("id", message.id()));
     }
 
     void clearChat() {
+        cancelImageJobs();
         execute("clearChat", Map.of());
     }
 

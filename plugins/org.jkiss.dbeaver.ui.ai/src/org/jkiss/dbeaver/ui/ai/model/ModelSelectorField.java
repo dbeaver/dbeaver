@@ -65,6 +65,7 @@ public class ModelSelectorField {
     private volatile AIModel selectedModel;
     private boolean disableModifyListener = false;
     private List<AIModel> loadedModels;
+    private boolean fieldEnabled = true;
     private boolean refreshEnabled = true;
     @Nullable
     private String refreshDisabledMessage;
@@ -136,7 +137,7 @@ public class ModelSelectorField {
     }
 
     public void refreshModelListSilently(boolean refresh) {
-        if (!refreshEnabled || findMissingSetting() != null) {
+        if (!fieldEnabled || !refreshEnabled || findMissingSetting() != null) {
             return;
         }
         new AbstractJob("Refreshing model list silently") {
@@ -157,6 +158,12 @@ public class ModelSelectorField {
     public void setRefreshEnabled(boolean enabled, @Nullable String disabledMessage) {
         refreshEnabled = enabled;
         refreshDisabledMessage = disabledMessage;
+        updateRefreshButtonState();
+    }
+
+    public void setEnabled(boolean enabled) {
+        fieldEnabled = enabled;
+        combo.setEnabled(enabled);
         updateRefreshButtonState();
     }
 
@@ -261,7 +268,7 @@ public class ModelSelectorField {
         if (refreshButton.isDisposed()) {
             return;
         }
-        if (!refreshEnabled) {
+        if (!fieldEnabled || !refreshEnabled) {
             refreshButton.setEnabled(false);
             refreshButton.setToolTipText(refreshDisabledMessage);
             return;

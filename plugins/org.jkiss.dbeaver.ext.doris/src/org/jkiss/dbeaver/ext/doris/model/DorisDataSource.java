@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.ext.doris.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -44,6 +46,8 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class DorisDataSource extends GenericDataSource {
 
+    private static final Log log = Log.getLog(DorisDataSource.class);
+
     public static final String DEFAULT_CATALOG_NAME = "internal"; //$NON-NLS-1$
     private static final String COL_CATALOG_NAME = "CatalogName"; //$NON-NLS-1$
     private static final String COL_TYPE = "Type"; //$NON-NLS-1$
@@ -53,6 +57,7 @@ public class DorisDataSource extends GenericDataSource {
      * catalog name -> [type, comment]
      */
     private final Map<String, CatalogMetadata> catalogMetadataCache = new ConcurrentHashMap<>();
+    private volatile int availableBackendCount;
 
     public record CatalogMetadata(@Nullable String type, @Nullable String comment) {
     }
@@ -60,15 +65,9 @@ public class DorisDataSource extends GenericDataSource {
     public DorisDataSource(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer container,
-        @NotNull DorisMetaModel metaModel
+        @NotNull GenericMetaModel metaModel
     ) throws DBException {
         super(monitor, container, metaModel, new DorisDialect());
-    }
-
-    @NotNull
-    @Override
-    public DorisMetaModel getMetaModel() {
-        return (DorisMetaModel) super.getMetaModel();
     }
 
     @Override
@@ -88,6 +87,12 @@ public class DorisDataSource extends GenericDataSource {
         } else {
             dorisContext.refreshDefaults(monitor, true);
         }
+    }
+
+    @Override
+    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
+        super.initialize(monitor);
+        availableBackendCount = readAvailableBackendCount(monitor);
     }
 
     @Override
@@ -129,6 +134,30 @@ public class DorisDataSource extends GenericDataSource {
     @Nullable
     public CatalogMetadata getCatalogMetadata(@NotNull String catalogName) {
         return catalogMetadataCache.get(catalogName);
+    }
+
+    public int getAvailableBackendCount() {
+        return availableBackendCount;
+    }
+
+    private int readAvailableBackendCount(@NotNull DBRProgressMonitor monitor) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read Doris backends");
+             JDBCPreparedStatement statement = session.prepareStatement("SHOW BACKENDS"); //$NON-NLS-1$
+             JDBCResultSet resultSet = statement.executeQuery()
+        ) {
+            int backendCount = 0;
+            while (resultSet.next()) {
+                if (JDBCUtils.safeGetBoolean(resultSet, "Alive") && //$NON-NLS-1$
+                    !JDBCUtils.safeGetBoolean(resultSet, "SystemDecommissioned") //$NON-NLS-1$
+                ) {
+                    backendCount++;
+                }
+            }
+            return backendCount;
+        } catch (DBException | SQLException e) {
+            log.debug("Unable to determine Doris backend count", e); //$NON-NLS-1$
+            return 0;
+        }
     }
 
     @Nullable

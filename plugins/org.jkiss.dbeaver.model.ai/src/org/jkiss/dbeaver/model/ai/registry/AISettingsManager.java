@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.engine.AICredentialsProvider;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.rm.RMConstants;
@@ -57,6 +58,7 @@ public class AISettingsManager {
             AI_CONFIGURATION_FILE_NAME, o -> {
                 // reset current context for settings to be lazily reloaded when needed
                 this.getSettingsHolder().reset();
+                this.notifyProfilesChanged();
                 this.raiseChangedEvent(this); // consider detailed event info
             });
     }
@@ -84,6 +86,12 @@ public class AISettingsManager {
     private void raiseChangedEvent(AISettingsManager registry) {
         for (AISettingsEventListener listener : this.settingsChangedListeners.toArray(AISettingsEventListener[]::new)) {
             listener.onSettingsUpdate(registry);
+        }
+    }
+
+    public void notifyProfilesChanged() {
+        for (AISettingsEventListener listener : this.settingsChangedListeners.toArray(AISettingsEventListener[]::new)) {
+            listener.onProfilesUpdate(this);
         }
     }
 
@@ -141,16 +149,20 @@ public class AISettingsManager {
                 return;
             }
 
+            if (!saveSecretsAsPlainText()) {
+                AIConfigurationProfile defaultProfile = settings.getDefaultConfigurationOrNull();
+                for (AIConfigurationProfile profile : settings.getConfigurations()) {
+                    if (profile == defaultProfile) {
+                        profile.saveSecrets();
+                    } else if (profile.getConfiguration() instanceof OpenAIProperties properties) {
+                        properties.saveCustomHeaderSecrets(profile);
+                    }
+                }
+            }
+
             String content = SAVE_PROPS_GSON.toJson(settings);
 
             DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
-
-            if (!saveSecretsAsPlainText()) {
-                AIConfigurationProfile profile = settings.getDefaultConfigurationOrNull();
-                if (profile != null) {
-                    profile.saveSecrets();
-                }
-            }
 
             this.getSettingsHolder().setSettings(settings);
         } catch (Exception e) {
