@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -83,6 +84,15 @@ public class SQLServerDateTimeOffsetHandler extends JDBCDateTimeValueHandler {
             }
         }
         return super.getValueFromObject(session, type, object, copy, validateValue);
+    }
+
+    @NotNull
+    @Override
+    public String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
+        if (format == DBDDisplayFormat.NATIVE && value instanceof OffsetDateTime offsetDateTime) {
+            return "'" + DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(offsetDateTime) + "'";
+        }
+        return super.getValueDisplayString(column, value, format);
     }
 
     @NotNull
