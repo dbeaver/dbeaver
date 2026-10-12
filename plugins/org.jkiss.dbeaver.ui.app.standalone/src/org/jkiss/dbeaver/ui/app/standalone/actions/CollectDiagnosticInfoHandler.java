@@ -210,7 +210,7 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
             String fileName = debugLog.getFileName().toString();
             var logFileNamePredicate = LogOutputStream.getArchivedLogFileNamePredicate(fileName);
             try (var stream = Files.list(logFileLocation)) {
-                Collection<DiagnosticsEntry> tmp = stream
+                Collection<FileDiagnosticsEntry> tmp = stream
                     .filter(path -> logFileNamePredicate.test(path.getFileName().toString()))
                     .map(path -> new FileDiagnosticsEntry(path.getFileName().toString(), path))
                     .toList();
