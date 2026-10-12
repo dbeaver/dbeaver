@@ -132,6 +132,52 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void shouldNotInsertDelimiterAfterCommentFollowedByEmptyLine() {
+        //given
+        String expectedString = "-- test" + lineBreak + lineBreak + "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tmytable;";
+        String inputString = "-- test" + lineBreak + lineBreak + "SELECT * FROM mytable;";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertEquals(expectedString, formattedString);
+    }
+
+    @Test
+    public void shouldNotInsertDelimiterAfterBlockCommentFollowedByEmptyLine() {
+        //given
+        String expectedString = "/* test */" + lineBreak + lineBreak + "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tmytable;";
+        String inputString = "/* test */" + lineBreak + lineBreak + "SELECT * FROM mytable;";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertEquals(expectedString, formattedString);
+    }
+
+    @Test
+    public void shouldInsertDelimiterInEmptyLineBetweenQueries() {
+        //given
+        String expectedString = "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tt1;" + lineBreak + lineBreak +
+            "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tt2";
+        String inputString = "SELECT * FROM t1" + lineBreak + lineBreak + "SELECT * FROM t2";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertEquals(expectedString, formattedString);
+    }
+
+    @Test
     public void shouldAddLineBreakBeforeBraceBySpecialSetting() {
         //given
         String expectedString = getExpectedStringWithLineBreakBeforeBraces();
