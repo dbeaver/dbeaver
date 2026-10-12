@@ -75,7 +75,7 @@ public class OracleQueue extends OracleSchemaObject {
     @NotNull
     @Property(viewable = true, order = 2)
     public OracleTableBase getQueueTable(DBRProgressMonitor monitor) throws DBException {
-        return this.parent.tableCache.getObject(monitor, parent, queueTable);
+        return this.parent.getTableCache().getObject(monitor, parent, queueTable);
     }
 
     @NotNull

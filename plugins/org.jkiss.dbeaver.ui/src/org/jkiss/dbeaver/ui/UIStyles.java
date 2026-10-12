@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.e4.ui.css.swt.internal.theme.Theme;
+import org.eclipse.e4.ui.css.swt.internal.theme.ThemeEngine;
 import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.e4.ui.css.swt.theme.IThemeManager;
 import org.eclipse.e4.ui.internal.workbench.swt.E4Application;
@@ -55,6 +56,7 @@ public class UIStyles {
     public static final Color COLOR_WHITE_DARK = new Color(null, 192, 192, 192);
 
     private static final String THEME_HIGH_CONTRAST_ID = E4Application.HIGH_CONTRAST_THEME_ID;
+    private static final String THEME_DARK_ID = ThemeEngine.E4_DARK_THEME_ID;
 
     private static IPreferenceStore EDITORS_PREFERENCE_STORE;
     private static IThemeEngine themeEngine = null;
@@ -64,10 +66,6 @@ public class UIStyles {
             EDITORS_PREFERENCE_STORE = new ScopedPreferenceStore(InstanceScope.INSTANCE, EditorsUI.PLUGIN_ID);
         }
         return EDITORS_PREFERENCE_STORE;
-    }
-
-    public static boolean isDarkTheme() {
-        return UIUtils.isDark(getDefaultTextBackground().getRGB()) || isDarkHighContrastTheme();
     }
 
     private static @Nullable IThemeEngine getThemeEngine() {
@@ -89,23 +87,34 @@ public class UIStyles {
         return themeEngine;
     }
 
+    public static boolean isDarkTheme() {
+        var theme = getCurrentTheme();
+        if (theme == null) {
+            return false;
+        }
+        String curThemeId = theme.getId();
+        return THEME_DARK_ID.equals(curThemeId) ||
+            (THEME_HIGH_CONTRAST_ID.equals(curThemeId) && UIUtils.isDark(getDefaultTextBackground().getRGB()));
+    }
+
     public static boolean isHighContrastTheme() {
+        var theme = getCurrentTheme();
+        return theme != null && theme.getId().equals(THEME_HIGH_CONTRAST_ID);
+    }
+
+    private static @Nullable org.eclipse.e4.ui.css.swt.theme.ITheme getCurrentTheme() {
         IThemeEngine themeEngine = getThemeEngine();
-        org.eclipse.e4.ui.css.swt.theme.ITheme theme = null;
         if (themeEngine != null) {
-            theme = themeEngine.getActiveTheme(); 
+            return themeEngine.getActiveTheme();
         } else {
             themeEngine = PlatformUI.getWorkbench().getService(IThemeEngine.class);
             if (themeEngine != null) {
-                theme = themeEngine.getActiveTheme();
+                return themeEngine.getActiveTheme();
             }
         }
-        if (theme != null) {
-            return theme.getId().equals(THEME_HIGH_CONTRAST_ID);
-        }
-        return false;
+        return null;
     }
-    
+
     public static boolean isDarkHighContrastTheme() {
         return isHighContrastTheme() && UIUtils.isDark(getDefaultWidgetBackground().getRGB());
     }
