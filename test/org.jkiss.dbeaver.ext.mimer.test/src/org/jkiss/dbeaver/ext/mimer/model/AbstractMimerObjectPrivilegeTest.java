@@ -21,8 +21,8 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
-import static org.mockito.Mockito.when;
 
 /**
  * {@link AbstractMimerObjectPrivilege#buildGrantDDL()}/{@link
@@ -47,9 +47,9 @@ public class AbstractMimerObjectPrivilegeTest extends DBeaverUnitTest {
 
     @Test
     public void schemaQualifiedOwnerGrantAndRevokeDDL() {
-        when(sequence.getName()).thenReturn("my_seq");
-        when(sequence.getParentObject()).thenReturn(sequenceSchema);
-        when(sequenceSchema.getName()).thenReturn("my_schema");
+        Mockito.when(sequence.getName()).thenReturn("my_seq");
+        Mockito.when(sequence.getParentObject()).thenReturn(sequenceSchema);
+        Mockito.when(sequenceSchema.getName()).thenReturn("my_schema");
 
         MimerSequencePrivilege privilege = new MimerSequencePrivilege(sequence, "my_ident");
 
@@ -63,9 +63,9 @@ public class AbstractMimerObjectPrivilegeTest extends DBeaverUnitTest {
 
     @Test
     public void withGrantOptionAppendsClauseOnlyToGrant() {
-        when(sequence.getName()).thenReturn("my_seq");
-        when(sequence.getParentObject()).thenReturn(sequenceSchema);
-        when(sequenceSchema.getName()).thenReturn("my_schema");
+        Mockito.when(sequence.getName()).thenReturn("my_seq");
+        Mockito.when(sequence.getParentObject()).thenReturn(sequenceSchema);
+        Mockito.when(sequenceSchema.getName()).thenReturn("my_schema");
 
         MimerSequencePrivilege privilege = new MimerSequencePrivilege(sequence, "my_ident");
         privilege.setGrantable(true);
@@ -76,7 +76,7 @@ public class AbstractMimerObjectPrivilegeTest extends DBeaverUnitTest {
 
     @Test
     public void bareOwnerNameGrantAndRevokeDDL() {
-        when(program.getName()).thenReturn("my_prog");
+        Mockito.when(program.getName()).thenReturn("my_prog");
 
         MimerProgramPrivilege privilege = new MimerProgramPrivilege(program, "my_ident");
 

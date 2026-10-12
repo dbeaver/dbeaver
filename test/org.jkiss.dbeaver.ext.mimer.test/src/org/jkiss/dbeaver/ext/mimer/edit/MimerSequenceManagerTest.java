@@ -28,13 +28,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerSequenceManager}'s create-action wiring - delegates straight to {@link
@@ -64,17 +63,17 @@ public class MimerSequenceManagerTest extends DBeaverUnitTest {
 
     @BeforeEach
     public void setUp() {
-        when(container.getDataSource()).thenReturn(dataSource);
-        when(dataSource.getSQLDialect()).thenReturn(new MimerSQLDialect());
+        Mockito.when(container.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(new MimerSQLDialect());
     }
 
     @Test
     public void createActionDelegatesToTheSequenceSOwnBuildCreateDDL() throws Exception {
-        when(dataSource.supportsModernSequenceSyntax()).thenReturn(true);
+        Mockito.when(dataSource.supportsModernSequenceSyntax()).thenReturn(true);
         MimerSequence sequence = new MimerSequence(container, "my_seq");
 
-        var command = mock(SQLObjectEditor.ObjectCreateCommand.class);
-        when(command.getObject()).thenReturn(sequence);
+        var command = Mockito.mock(SQLObjectEditor.ObjectCreateCommand.class);
+        Mockito.when(command.getObject()).thenReturn(sequence);
 
         List<DBEPersistAction> actions = new ArrayList<>();
         manager.addObjectCreateActions(monitor, executionContext, actions, command, Map.of());

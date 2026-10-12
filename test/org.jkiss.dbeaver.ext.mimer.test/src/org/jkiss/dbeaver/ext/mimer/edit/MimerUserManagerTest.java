@@ -25,13 +25,12 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerUserManager}'s create-action wiring - "Create New User" emits {@code CREATE IDENT}
@@ -57,8 +56,8 @@ public class MimerUserManagerTest extends DBeaverUnitTest {
     @Test
     public void createActionsEmitOnlyCreateIdentWithNoGroupsPicked() throws Exception {
         MimerUser user = new MimerUser(dataSource, "fredrik");
-        var command = mock(SQLObjectEditor.ObjectCreateCommand.class);
-        when(command.getObject()).thenReturn(user);
+        var command = Mockito.mock(SQLObjectEditor.ObjectCreateCommand.class);
+        Mockito.when(command.getObject()).thenReturn(user);
 
         List<DBEPersistAction> actions = new ArrayList<>();
         manager.addObjectCreateActions(monitor, executionContext, actions, command, Map.of());
@@ -71,8 +70,8 @@ public class MimerUserManagerTest extends DBeaverUnitTest {
     public void createActionsAppendOneGrantMemberPerPickedGroup() throws Exception {
         MimerUser user = new MimerUser(dataSource, "fredrik");
         user.setInitialGroups(List.of("developers", "admins"));
-        var command = mock(SQLObjectEditor.ObjectCreateCommand.class);
-        when(command.getObject()).thenReturn(user);
+        var command = Mockito.mock(SQLObjectEditor.ObjectCreateCommand.class);
+        Mockito.when(command.getObject()).thenReturn(user);
 
         List<DBEPersistAction> actions = new ArrayList<>();
         manager.addObjectCreateActions(monitor, executionContext, actions, command, Map.of());

@@ -22,10 +22,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.sql.SQLException;
 
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerGroupMember}'s {@code GRANT}/{@code REVOKE MEMBER ON GROUP} DDL - the {@code GROUP}
@@ -45,7 +45,7 @@ public class MimerGroupMemberTest extends DBeaverUnitTest {
 
     @BeforeEach
     public void setUp() {
-        when(group.getName()).thenReturn("developers");
+        Mockito.when(group.getName()).thenReturn("developers");
     }
 
     @Test
@@ -58,9 +58,9 @@ public class MimerGroupMemberTest extends DBeaverUnitTest {
 
     @Test
     public void grantDDLIncludesWithGrantOptionWhenTheLoadedRowIsGrantable() throws SQLException {
-        when(resultSet.getString("GRANTEE")).thenReturn("fredrik");
-        when(resultSet.getString("GRANTOR")).thenReturn("SYSADM");
-        when(resultSet.getString("IS_GRANTABLE")).thenReturn("YES");
+        Mockito.when(resultSet.getString("GRANTEE")).thenReturn("fredrik");
+        Mockito.when(resultSet.getString("GRANTOR")).thenReturn("SYSADM");
+        Mockito.when(resultSet.getString("IS_GRANTABLE")).thenReturn("YES");
         MimerGroupMember member = new MimerGroupMember(group, resultSet);
 
         Assertions.assertEquals(

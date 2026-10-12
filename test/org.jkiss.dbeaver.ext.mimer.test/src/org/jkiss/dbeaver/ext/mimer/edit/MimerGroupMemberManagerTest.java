@@ -21,8 +21,8 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerGroupMemberManager#canCreateObject} - refuses "Create New Member" under the
@@ -44,19 +44,19 @@ public class MimerGroupMemberManagerTest extends DBeaverUnitTest {
 
     @Test
     public void refusesCreateUnderThePublicGroup() {
-        when(publicGroup.getName()).thenReturn("PUBLIC");
+        Mockito.when(publicGroup.getName()).thenReturn("PUBLIC");
         Assertions.assertFalse(manager.canCreateObject(publicGroup));
     }
 
     @Test
     public void refusesCreateUnderThePublicGroupRegardlessOfCase() {
-        when(publicGroup.getName()).thenReturn("public");
+        Mockito.when(publicGroup.getName()).thenReturn("public");
         Assertions.assertFalse(manager.canCreateObject(publicGroup));
     }
 
     @Test
     public void doesNotRefuseBasedOnNameAloneForAnyOtherGroup() {
-        when(otherGroup.getName()).thenReturn("developers");
+        Mockito.when(otherGroup.getName()).thenReturn("developers");
         // Only asserting the PUBLIC-specific short-circuit is NOT what refuses this one - the
         // real return value beyond that depends on the live platform permission check, which
         // this unit test doesn't control and shouldn't assert either way.

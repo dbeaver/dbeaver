@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mimer.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,7 @@ public class MimerDatabankShadowTest extends DBeaverUnitTest {
     @Mock
     private MimerDataSource dataSource;
 
+    @NotNull
     private MimerDatabankShadow newShadow() {
         return new MimerDatabankShadow(new MimerDatabank(dataSource, "abc"), "abc_shadow");
     }

@@ -80,7 +80,7 @@ public class MimerTableColumnTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void aRealTypedInPrecisionIsLeftUntouched() {
+    public void realTypedInPrecisionIsLeftUntouched() {
         Assertions.assertEquals("INTERVAL DAY(5)", MimerTableColumn.stripUnfilledIntervalPlaceholders("INTERVAL DAY(5)"));
         Assertions.assertEquals(
             "INTERVAL DAY(7) TO SECOND(9)", MimerTableColumn.stripUnfilledIntervalPlaceholders("INTERVAL DAY(7) TO SECOND(9)"));

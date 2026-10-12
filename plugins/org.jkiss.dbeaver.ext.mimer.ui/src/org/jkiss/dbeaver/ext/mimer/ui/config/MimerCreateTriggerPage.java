@@ -137,19 +137,19 @@ public class MimerCreateTriggerPage extends BaseObjectEditPage implements MimerC
         String triggerName = name.trim();
         trigger.setName(triggerName);
 
-        boolean forEachRow = granularity.equals(GRANULARITIES[1]);
-        boolean needsOld = !event.equals(EVENTS[0]); // not INSERT
-        boolean needsNew = !event.equals(EVENTS[2]); // not DELETE
-
         String schemaName = trigger.getTable().getSchema().getName().replace("\"", "\"\"");
         String tableName = trigger.getTable().getName().replace("\"", "\"\"");
-        String kind = forEachRow ? "ROW" : "TABLE";
 
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE TRIGGER \"").append(schemaName).append("\".\"")
             .append(triggerName.replace("\"", "\"\"")).append("\"\n");
         sb.append(timing).append(' ').append(event).append('\n');
         sb.append("ON \"").append(schemaName).append("\".\"").append(tableName).append("\"\n");
+
+        boolean forEachRow = granularity.equals(GRANULARITIES[1]);
+        boolean needsOld = !event.equals(EVENTS[0]); // not INSERT
+        boolean needsNew = !event.equals(EVENTS[2]); // not DELETE
+        String kind = forEachRow ? "ROW" : "TABLE";
         if (needsNew || needsOld) {
             sb.append("REFERENCING");
             if (needsNew) {

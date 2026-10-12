@@ -168,9 +168,18 @@ public class MimerCreateStructuredTypePage extends BaseObjectEditPage implements
                     item.setText(1, row.dataType);
                 } else if (control instanceof Text text) {
                     switch (index) {
-                        case 0 -> { row.name = text.getText(); item.setText(0, row.name); }
-                        case 2 -> { row.size = text.getText(); item.setText(2, row.size); }
-                        default -> { row.defaultValue = text.getText(); item.setText(3, row.defaultValue); }
+                        case 0 -> {
+                            row.name = text.getText();
+                            item.setText(0, row.name);
+                        }
+                        case 2 -> {
+                            row.size = text.getText();
+                            item.setText(2, row.size);
+                        }
+                        default -> {
+                            row.defaultValue = text.getText();
+                            item.setText(3, row.defaultValue);
+                        }
                     }
                 }
                 // isPageComplete() depends on the grid contents (at least one fully-filled-in

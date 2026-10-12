@@ -33,7 +33,7 @@ public interface MimerCreatePage {
      * Opens the create dialog and lets the user fill it in or cancel.
      *
      * @return {@code true} if the user confirmed the dialog, {@code false} if they canceled -
-     * same contract as {@link BaseObjectEditPage#edit()}.
+     *     same contract as {@link BaseObjectEditPage#edit()}.
      */
     boolean edit();
 

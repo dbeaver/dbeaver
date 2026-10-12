@@ -21,8 +21,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerDatabankPrivilege}'s {@code GRANT}/{@code REVOKE TABLE|SEQUENCE ON DATABANK} DDL -
@@ -37,7 +37,7 @@ public class MimerDatabankPrivilegeTest extends DBeaverUnitTest {
 
     @BeforeEach
     public void setUp() {
-        when(databank.getName()).thenReturn("SALESDB");
+        Mockito.when(databank.getName()).thenReturn("SALESDB");
     }
 
     @Test

@@ -24,10 +24,10 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.List;
 
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerDatabankFileManager#canCreateObject}/{@code canDeleteObject} - multi-file databanks
@@ -56,16 +56,16 @@ public class MimerDatabankFileManagerTest extends DBeaverUnitTest {
 
     @Test
     public void refusesCreateOnAServerWithoutMultiFileDatabankSupport() {
-        when(databank.getDataSource()).thenReturn(dataSource);
-        when(dataSource.supportsMultiFileDatabanks()).thenReturn(false);
+        Mockito.when(databank.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSource.supportsMultiFileDatabanks()).thenReturn(false);
 
         Assertions.assertFalse(manager.canCreateObject(databank));
     }
 
     @Test
     public void doesNotRefuseCreateBasedOnVersionAloneOnA110Server() {
-        when(databank.getDataSource()).thenReturn(dataSource);
-        when(dataSource.supportsMultiFileDatabanks()).thenReturn(true);
+        Mockito.when(databank.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSource.supportsMultiFileDatabanks()).thenReturn(true);
         // As above (MimerGroupMemberManagerTest) - only the version short-circuit is ours to
         // assert; the real permission check beyond that isn't controlled by this unit test.
         Assertions.assertDoesNotThrow(() -> manager.canCreateObject(databank));
@@ -73,20 +73,20 @@ public class MimerDatabankFileManagerTest extends DBeaverUnitTest {
 
     @Test
     public void refusesDeleteOnAServerWithoutMultiFileDatabankSupport() {
-        when(file.getDatabank()).thenReturn(databank);
-        when(databank.getDataSource()).thenReturn(dataSource);
-        when(dataSource.supportsMultiFileDatabanks()).thenReturn(false);
+        Mockito.when(file.getDatabank()).thenReturn(databank);
+        Mockito.when(databank.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSource.supportsMultiFileDatabanks()).thenReturn(false);
 
         Assertions.assertFalse(manager.canDeleteObject(file));
     }
 
     @Test
     public void refusesDeleteOfTheLastRemainingFile() {
-        when(file.getDatabank()).thenReturn(databank);
-        when(databank.getDataSource()).thenReturn(dataSource);
-        when(dataSource.supportsMultiFileDatabanks()).thenReturn(true);
-        when(databank.getFileCache()).thenReturn(fileCache);
-        when(fileCache.getCachedObjects()).thenReturn(List.of(file));
+        Mockito.when(file.getDatabank()).thenReturn(databank);
+        Mockito.when(databank.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSource.supportsMultiFileDatabanks()).thenReturn(true);
+        Mockito.when(databank.getFileCache()).thenReturn(fileCache);
+        Mockito.when(fileCache.getCachedObjects()).thenReturn(List.of(file));
 
         Assertions.assertFalse(manager.canDeleteObject(file));
     }
@@ -94,11 +94,11 @@ public class MimerDatabankFileManagerTest extends DBeaverUnitTest {
     @Test
     public void allowsDeleteWhenMoreThanOneFileExists() {
         MimerDatabankFile otherFile = org.mockito.Mockito.mock(MimerDatabankFile.class);
-        when(file.getDatabank()).thenReturn(databank);
-        when(databank.getDataSource()).thenReturn(dataSource);
-        when(dataSource.supportsMultiFileDatabanks()).thenReturn(true);
-        when(databank.getFileCache()).thenReturn(fileCache);
-        when(fileCache.getCachedObjects()).thenReturn(List.of(file, otherFile));
+        Mockito.when(file.getDatabank()).thenReturn(databank);
+        Mockito.when(databank.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSource.supportsMultiFileDatabanks()).thenReturn(true);
+        Mockito.when(databank.getFileCache()).thenReturn(fileCache);
+        Mockito.when(fileCache.getCachedObjects()).thenReturn(List.of(file, otherFile));
 
         // Past the file-count/version gates, canDeleteObject() falls through to the same live
         // permission check as canCreateObject() - not asserted here for the same reason.

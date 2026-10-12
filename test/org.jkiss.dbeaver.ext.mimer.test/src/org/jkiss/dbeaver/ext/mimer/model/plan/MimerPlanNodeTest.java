@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mimer.model.plan;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeKind;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.xml.XMLUtils;
@@ -92,7 +93,8 @@ public class MimerPlanNodeTest extends DBeaverUnitTest {
         Assertions.assertEquals("0", tempTable.getTempWrites());
     }
 
-    private static MimerPlanNode parse(String xml) throws Exception {
+    @NotNull
+    private static MimerPlanNode parse(@NotNull String xml) throws Exception {
         Document document = XMLUtils.parseDocument(new StringReader(xml));
         return new MimerPlanNode(document.getDocumentElement(), null);
     }

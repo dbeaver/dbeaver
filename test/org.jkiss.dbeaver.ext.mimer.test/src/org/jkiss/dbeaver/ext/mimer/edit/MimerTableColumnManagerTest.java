@@ -29,13 +29,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.List;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerTableColumnManager#prepareAutoIncrementColumn} - the shared "Auto Generated"
@@ -62,37 +59,37 @@ public class MimerTableColumnManagerTest extends DBeaverUnitTest {
 
     @BeforeEach
     public void setUp() {
-        when(column.getParentObject()).thenReturn(table);
-        when(column.getName()).thenReturn("id");
-        when(column.getDataSource()).thenReturn(dataSource);
-        when(table.getSchema()).thenReturn(schema);
-        when(table.getName()).thenReturn("customers");
-        when(schema.getName()).thenReturn("mimer_store");
-        when(schema.getDataSource()).thenReturn(dataSource);
-        when(dataSource.getSQLDialect()).thenReturn(new MimerSQLDialect());
-        when(dataSource.supportsNextValueForSyntax()).thenReturn(true);
-        when(dataSource.supportsModernSequenceSyntax()).thenReturn(true);
+        Mockito.when(column.getParentObject()).thenReturn(table);
+        Mockito.when(column.getName()).thenReturn("id");
+        Mockito.when(column.getDataSource()).thenReturn(dataSource);
+        Mockito.when(table.getSchema()).thenReturn(schema);
+        Mockito.when(table.getName()).thenReturn("customers");
+        Mockito.when(schema.getName()).thenReturn("mimer_store");
+        Mockito.when(schema.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(new MimerSQLDialect());
+        Mockito.when(dataSource.supportsNextValueForSyntax()).thenReturn(true);
+        Mockito.when(dataSource.supportsModernSequenceSyntax()).thenReturn(true);
     }
 
     @Test
     public void nonAutoIncrementColumnIsANoOp() throws Exception {
-        when(column.isAutoIncrement()).thenReturn(false);
+        Mockito.when(column.isAutoIncrement()).thenReturn(false);
 
         List<DBEPersistAction> actions = MimerTableColumnManager.prepareAutoIncrementColumn(monitor, column);
 
         Assertions.assertTrue(actions.isEmpty());
-        verify(column, never()).setDefaultValue(org.mockito.ArgumentMatchers.anyString());
+        Mockito.verify(column, Mockito.never()).setDefaultValue(org.mockito.ArgumentMatchers.anyString());
     }
 
     @Test
     public void blankSequenceNameDefaultsToTableUnderscoreColumnUnderscoreSeq() throws Exception {
-        when(column.isAutoIncrement()).thenReturn(true);
-        when(column.getSequenceName()).thenReturn("");
+        Mockito.when(column.isAutoIncrement()).thenReturn(true);
+        Mockito.when(column.getSequenceName()).thenReturn("");
         org.mockito.Mockito.doReturn(List.of()).when(schema).getSequences(monitor);
 
         List<DBEPersistAction> actions = MimerTableColumnManager.prepareAutoIncrementColumn(monitor, column);
 
-        verify(column).setDefaultValue("NEXT VALUE FOR \"mimer_store\".\"customers_id_seq\"");
+        Mockito.verify(column).setDefaultValue("NEXT VALUE FOR \"mimer_store\".\"customers_id_seq\"");
         Assertions.assertEquals(1, actions.size());
         Assertions.assertEquals(
             new MimerSequence(schema, "customers_id_seq").buildCreateDDL(),
@@ -101,13 +98,13 @@ public class MimerTableColumnManagerTest extends DBeaverUnitTest {
 
     @Test
     public void anExplicitSequenceNameIsUsedVerbatim() throws Exception {
-        when(column.isAutoIncrement()).thenReturn(true);
-        when(column.getSequenceName()).thenReturn("  my_custom_seq  "); // must be trimmed
+        Mockito.when(column.isAutoIncrement()).thenReturn(true);
+        Mockito.when(column.getSequenceName()).thenReturn("  my_custom_seq  "); // must be trimmed
         org.mockito.Mockito.doReturn(List.of()).when(schema).getSequences(monitor);
 
         List<DBEPersistAction> actions = MimerTableColumnManager.prepareAutoIncrementColumn(monitor, column);
 
-        verify(column).setDefaultValue("NEXT VALUE FOR \"mimer_store\".\"my_custom_seq\"");
+        Mockito.verify(column).setDefaultValue("NEXT VALUE FOR \"mimer_store\".\"my_custom_seq\"");
         Assertions.assertEquals(1, actions.size());
         Assertions.assertEquals(
             new MimerSequence(schema, "my_custom_seq").buildCreateDDL(),
@@ -116,29 +113,29 @@ public class MimerTableColumnManagerTest extends DBeaverUnitTest {
 
     @Test
     public void reusesAnAlreadyExistingSequenceInsteadOfCreatingANewOne() throws Exception {
-        when(column.isAutoIncrement()).thenReturn(true);
-        when(column.getSequenceName()).thenReturn("customers_id_seq");
-        GenericSequence existing = mock(GenericSequence.class);
-        when(existing.getName()).thenReturn("CUSTOMERS_ID_SEQ"); // case-insensitive match
+        Mockito.when(column.isAutoIncrement()).thenReturn(true);
+        Mockito.when(column.getSequenceName()).thenReturn("customers_id_seq");
+        GenericSequence existing = Mockito.mock(GenericSequence.class);
+        Mockito.when(existing.getName()).thenReturn("CUSTOMERS_ID_SEQ"); // case-insensitive match
         org.mockito.Mockito.doReturn(List.of(existing)).when(schema).getSequences(monitor);
 
         List<DBEPersistAction> actions = MimerTableColumnManager.prepareAutoIncrementColumn(monitor, column);
 
         // The default value is still pointed at the sequence even when reused - only the
         // CREATE SEQUENCE action itself is skipped.
-        verify(column).setDefaultValue("NEXT VALUE FOR \"mimer_store\".\"customers_id_seq\"");
+        Mockito.verify(column).setDefaultValue("NEXT VALUE FOR \"mimer_store\".\"customers_id_seq\"");
         Assertions.assertTrue(actions.isEmpty());
     }
 
     @Test
     public void usesTheLegacyNextValueOfSyntaxOnAnOlderServer() throws Exception {
-        when(dataSource.supportsNextValueForSyntax()).thenReturn(false);
-        when(column.isAutoIncrement()).thenReturn(true);
-        when(column.getSequenceName()).thenReturn("");
+        Mockito.when(dataSource.supportsNextValueForSyntax()).thenReturn(false);
+        Mockito.when(column.isAutoIncrement()).thenReturn(true);
+        Mockito.when(column.getSequenceName()).thenReturn("");
         org.mockito.Mockito.doReturn(List.of()).when(schema).getSequences(monitor);
 
         MimerTableColumnManager.prepareAutoIncrementColumn(monitor, column);
 
-        verify(column).setDefaultValue("NEXT_VALUE OF \"mimer_store\".\"customers_id_seq\"");
+        Mockito.verify(column).setDefaultValue("NEXT_VALUE OF \"mimer_store\".\"customers_id_seq\"");
     }
 }

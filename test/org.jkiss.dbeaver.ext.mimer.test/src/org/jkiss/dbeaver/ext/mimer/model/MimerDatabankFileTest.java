@@ -16,17 +16,17 @@
  */
 package org.jkiss.dbeaver.ext.mimer.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.List;
 import java.util.Set;
 
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerDatabankFile}'s DDL builders - {@code ALTER DATABANK ... ADD FILE} / {@code DROP FILE},
@@ -44,10 +44,11 @@ public class MimerDatabankFileTest extends DBeaverUnitTest {
 
     @BeforeEach
     public void setUp() {
-        when(databank.getName()).thenReturn("abc");
-        lenient().when(databank.isSingleFile()).thenReturn(false); // multi-file unless a test overrides
+        Mockito.when(databank.getName()).thenReturn("abc");
+        Mockito.lenient().when(databank.isSingleFile()).thenReturn(false); // multi-file unless a test overrides
     }
 
+    @NotNull
     private MimerDatabankFile newFile() {
         return new MimerDatabankFile(databank, "a2.dbf");
     }
@@ -119,7 +120,7 @@ public class MimerDatabankFileTest extends DBeaverUnitTest {
 
     @Test
     public void renameFileDDLUsesTheFileLessFormOnASingleFileDatabank() {
-        when(databank.isSingleFile()).thenReturn(true);
+        Mockito.when(databank.isSingleFile()).thenReturn(true);
         MimerDatabankFile file = newFile();
         file.setName("aa2.dbf");
         Assertions.assertEquals(
@@ -129,7 +130,7 @@ public class MimerDatabankFileTest extends DBeaverUnitTest {
 
     @Test
     public void alterFileDDLUsesTheFileLessFormOnASingleFileDatabank() {
-        when(databank.isSingleFile()).thenReturn(true);
+        Mockito.when(databank.isSingleFile()).thenReturn(true);
         MimerDatabankFile file = newFile();
         file.setFileSize("200M");
 

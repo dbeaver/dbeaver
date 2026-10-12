@@ -21,8 +21,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerDomain#buildCreateDDL()} - {@code CREATE DOMAIN ... AS <type> [COLLATE ...]
@@ -38,7 +38,7 @@ public class MimerDomainTest extends DBeaverUnitTest {
 
     @BeforeEach
     public void setUp() {
-        when(schema.getName()).thenReturn("mimer_store");
+        Mockito.when(schema.getName()).thenReturn("mimer_store");
     }
 
     @Test

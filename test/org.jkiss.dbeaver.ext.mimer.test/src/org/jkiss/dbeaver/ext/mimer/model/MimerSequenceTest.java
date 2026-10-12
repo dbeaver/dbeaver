@@ -22,8 +22,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerSequence#buildCreateDDL()} - branches between the modern (11.0+) {@code CREATE
@@ -44,13 +44,13 @@ public class MimerSequenceTest extends DBeaverUnitTest {
 
     @BeforeEach
     public void setUp() {
-        when(container.getDataSource()).thenReturn(dataSource);
-        when(dataSource.getSQLDialect()).thenReturn(new MimerSQLDialect());
+        Mockito.when(container.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(new MimerSQLDialect());
     }
 
     @Test
     public void modernCreateDDLHasNoMinMaxCycleWhenUnsetMeansNoMinMaxCycle() {
-        when(dataSource.supportsModernSequenceSyntax()).thenReturn(true);
+        Mockito.when(dataSource.supportsModernSequenceSyntax()).thenReturn(true);
         MimerSequence seq = new MimerSequence(container, "my_seq");
 
         String ddl = seq.buildCreateDDL();
@@ -67,7 +67,7 @@ public class MimerSequenceTest extends DBeaverUnitTest {
 
     @Test
     public void modernCreateDDLIncludesEveryOptionalClauseWhenSet() {
-        when(dataSource.supportsModernSequenceSyntax()).thenReturn(true);
+        Mockito.when(dataSource.supportsModernSequenceSyntax()).thenReturn(true);
         MimerSequence seq = new MimerSequence(container, "my_seq");
         seq.setDataType("BIGINT");
         seq.setLastValue(100L);
@@ -96,7 +96,7 @@ public class MimerSequenceTest extends DBeaverUnitTest {
      */
     @Test
     public void legacyCreateDDLHasNoIncrementCycleOrDatabankClause() {
-        when(dataSource.supportsModernSequenceSyntax()).thenReturn(false);
+        Mockito.when(dataSource.supportsModernSequenceSyntax()).thenReturn(false);
         MimerSequence seq = new MimerSequence(container, "my_seq");
         seq.setDataType("INTEGER");
         seq.setLastValue(10L);
@@ -119,7 +119,7 @@ public class MimerSequenceTest extends DBeaverUnitTest {
 
     @Test
     public void restartDDLUsesTheGivenValueOverTheCurrentLastValue() {
-        when(dataSource.supportsModernSequenceSyntax()).thenReturn(true);
+        Mockito.when(dataSource.supportsModernSequenceSyntax()).thenReturn(true);
         MimerSequence seq = new MimerSequence(container, "my_seq");
         seq.setLastValue(1L);
 
@@ -131,7 +131,7 @@ public class MimerSequenceTest extends DBeaverUnitTest {
 
     @Test
     public void restartDDLFallsBackToTheCurrentLastValueWhenNoneGiven() {
-        when(dataSource.supportsModernSequenceSyntax()).thenReturn(true);
+        Mockito.when(dataSource.supportsModernSequenceSyntax()).thenReturn(true);
         MimerSequence seq = new MimerSequence(container, "my_seq");
         seq.setLastValue(7L);
 
@@ -146,11 +146,11 @@ public class MimerSequenceTest extends DBeaverUnitTest {
     @Test
     public void persistedSequenceNeverPopulatesLastValueFromStartValue() throws Exception {
         var dbResult = org.mockito.Mockito.mock(org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet.class);
-        when(dbResult.getString("SEQUENCE_NAME")).thenReturn("my_seq");
-        when(dbResult.getLong("START_VALUE")).thenReturn(1L);
-        when(dbResult.getLong("MINIMUM_VALUE")).thenReturn(1L);
-        when(dbResult.getLong("MAXIMUM_VALUE")).thenReturn(2147483647L);
-        when(dbResult.getLong("INCREMENT")).thenReturn(1L);
+        Mockito.when(dbResult.getString("SEQUENCE_NAME")).thenReturn("my_seq");
+        Mockito.when(dbResult.getLong("START_VALUE")).thenReturn(1L);
+        Mockito.when(dbResult.getLong("MINIMUM_VALUE")).thenReturn(1L);
+        Mockito.when(dbResult.getLong("MAXIMUM_VALUE")).thenReturn(2147483647L);
+        Mockito.when(dbResult.getLong("INCREMENT")).thenReturn(1L);
 
         MimerSequence seq = new MimerSequence(container, dbResult);
 

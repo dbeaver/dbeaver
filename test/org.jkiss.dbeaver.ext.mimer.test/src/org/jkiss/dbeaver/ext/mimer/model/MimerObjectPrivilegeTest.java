@@ -23,11 +23,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.Arrays;
 
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerObjectPrivilege}'s {@code GRANT}/{@code REVOKE ON TABLE} DDL - including the
@@ -44,9 +43,9 @@ public class MimerObjectPrivilegeTest extends DBeaverUnitTest {
 
     @BeforeEach
     public void setUp() {
-        lenient().when(table.getSchema()).thenReturn(schema);
-        lenient().when(schema.getName()).thenReturn("mimer_store");
-        lenient().when(table.getName()).thenReturn("orders");
+        Mockito.lenient().when(table.getSchema()).thenReturn(schema);
+        Mockito.lenient().when(schema.getName()).thenReturn("mimer_store");
+        Mockito.lenient().when(table.getName()).thenReturn("orders");
     }
 
     @Test

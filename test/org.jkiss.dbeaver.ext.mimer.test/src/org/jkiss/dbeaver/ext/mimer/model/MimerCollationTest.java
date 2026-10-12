@@ -21,8 +21,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerCollation#buildCreateDDL()} - {@code CREATE COLLATION ... FROM ... [USING '...']}.
@@ -38,7 +38,7 @@ public class MimerCollationTest extends DBeaverUnitTest {
 
     @BeforeEach
     public void setUp() {
-        when(schema.getName()).thenReturn("mimer_store");
+        Mockito.when(schema.getName()).thenReturn("mimer_store");
     }
 
     @Test
@@ -79,7 +79,7 @@ public class MimerCollationTest extends DBeaverUnitTest {
      */
     @Test
     public void referenceIsBareForAnInformationSchemaCollation() {
-        when(schema.getName()).thenReturn("INFORMATION_SCHEMA");
+        Mockito.when(schema.getName()).thenReturn("INFORMATION_SCHEMA");
         MimerCollation collation = new MimerCollation(schema, "ISO8BIT");
 
         Assertions.assertEquals("ISO8BIT", collation.getReference());
@@ -87,7 +87,7 @@ public class MimerCollationTest extends DBeaverUnitTest {
 
     @Test
     public void referenceIsCaseInsensitiveForInformationSchema() {
-        when(schema.getName()).thenReturn("information_schema");
+        Mockito.when(schema.getName()).thenReturn("information_schema");
         MimerCollation collation = new MimerCollation(schema, "UCS_BASIC");
 
         Assertions.assertEquals("UCS_BASIC", collation.getReference());

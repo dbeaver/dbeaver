@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.mimer.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedureParameter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -30,18 +32,12 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerUtils#readExternalRoutineInfo}/{@link MimerUtils#buildExternalRoutineSource} - the
@@ -84,7 +80,7 @@ public class MimerUtilsExternalRoutineTest extends DBeaverUnitTest {
 
     @BeforeEach
     public void setUp() {
-        when(procedure.getDataSource()).thenReturn(dataSource);
+        Mockito.when(procedure.getDataSource()).thenReturn(dataSource);
     }
 
     /**
@@ -94,19 +90,19 @@ public class MimerUtilsExternalRoutineTest extends DBeaverUnitTest {
      */
     @Test
     public void notExternalWhenServerDoesNotSupportExternalLibraries() throws Exception {
-        when(dataSource.supportsExternalLibraries()).thenReturn(false);
+        Mockito.when(dataSource.supportsExternalLibraries()).thenReturn(false);
 
         MimerExternalRoutineInfo info = MimerUtils.readExternalRoutineInfo(monitor, procedure, SCHEMA, SPECIFIC_NAME);
 
         Assertions.assertSame(MimerExternalRoutineInfo.NOT_EXTERNAL, info);
         Assertions.assertNull(MimerUtils.buildExternalRoutineSource(monitor, procedure, SCHEMA, "ISJSON", SPECIFIC_NAME));
-        verify(dataSource, never()).getDefaultInstance();
+        Mockito.verify(dataSource, Mockito.never()).getDefaultInstance();
     }
 
     @Test
     public void notExternalWhenNoMatchingRoutineRow() throws Exception {
         mockDatabaseChain();
-        when(resultSet.next()).thenReturn(false);
+        Mockito.when(resultSet.next()).thenReturn(false);
 
         MimerExternalRoutineInfo info = MimerUtils.readExternalRoutineInfo(monitor, procedure, SCHEMA, SPECIFIC_NAME);
 
@@ -116,8 +112,8 @@ public class MimerUtilsExternalRoutineTest extends DBeaverUnitTest {
     @Test
     public void notExternalForAPlainSqlBodiedRoutine() throws Exception {
         mockDatabaseChain();
-        when(resultSet.next()).thenReturn(true);
-        when(resultSet.getString("ROUTINE_BODY")).thenReturn("SQL");
+        Mockito.when(resultSet.next()).thenReturn(true);
+        Mockito.when(resultSet.getString("ROUTINE_BODY")).thenReturn("SQL");
 
         MimerExternalRoutineInfo info = MimerUtils.readExternalRoutineInfo(monitor, procedure, SCHEMA, SPECIFIC_NAME);
 
@@ -134,15 +130,15 @@ public class MimerUtilsExternalRoutineTest extends DBeaverUnitTest {
     public void buildsCreateProcedureForAnExternalClrRoutine() throws Exception {
         mockDatabaseChain();
         mockExternalRoutineRow("CLR", "UserLib.UserClass1.AddOne", "NETLIB");
-        when(procedure.getProcedureType()).thenReturn(DBSProcedureType.PROCEDURE);
+        Mockito.when(procedure.getProcedureType()).thenReturn(DBSProcedureType.PROCEDURE);
         // Built as a separate statement, not inline inside thenReturn(...) - mockParameter's own
-        // when(...).thenReturn(...) calls must fully complete before this method's own
-        // when(procedure.getParameters(monitor)) stub is closed off; Mockito's stubbing state
+        // Mockito.when(...).thenReturn(...) calls must fully complete before this method's own
+        // Mockito.when(procedure.getParameters(monitor)) stub is closed off; Mockito's stubbing state
         // isn't reentrant, so nesting them inside one expression throws UnfinishedStubbingException.
         List<GenericProcedureParameter> params = List.of(
             mockParameter(DBSProcedureParameterKind.IN, "parameter1", "INTEGER"),
             mockParameter(DBSProcedureParameterKind.OUT, "parameter2", "INTEGER"));
-        when(procedure.getParameters(monitor)).thenReturn(params);
+        Mockito.when(procedure.getParameters(monitor)).thenReturn(params);
 
         String ddl = MimerUtils.buildExternalRoutineSource(monitor, procedure, SCHEMA, "AddOne", SPECIFIC_NAME);
 
@@ -163,13 +159,13 @@ public class MimerUtilsExternalRoutineTest extends DBeaverUnitTest {
     public void buildsCreateFunctionWithReturnTypeForAnExternalClrRoutine() throws Exception {
         mockDatabaseChain();
         mockExternalRoutineRow("CLR", "Mimer.Extensions.JSONLib.ISJSON", "MIMER_DOTNET_EXTENSIONS");
-        when(procedure.getProcedureType()).thenReturn(DBSProcedureType.FUNCTION);
+        Mockito.when(procedure.getProcedureType()).thenReturn(DBSProcedureType.FUNCTION);
         // See the comment in buildsCreateProcedureForAnExternalClrRoutine - built as a separate
         // statement so mockParameter's own stubbing isn't nested inside this method's thenReturn(...).
         List<GenericProcedureParameter> params = List.of(
             mockParameter(DBSProcedureParameterKind.IN, "EXPRESSION", "NVARCHAR(5000)"),
             mockParameter(DBSProcedureParameterKind.RETURN, "RETURN", "BOOLEAN"));
-        when(procedure.getParameters(monitor)).thenReturn(params);
+        Mockito.when(procedure.getParameters(monitor)).thenReturn(params);
 
         String ddl = MimerUtils.buildExternalRoutineSource(monitor, procedure, SCHEMA, "ISJSON", SPECIFIC_NAME);
 
@@ -185,8 +181,8 @@ public class MimerUtilsExternalRoutineTest extends DBeaverUnitTest {
     public void omitsTheInClauseWhenNoLibraryIsReported() throws Exception {
         mockDatabaseChain();
         mockExternalRoutineRow("CLR", "UserLib.UserClass1.AddOne", null);
-        when(procedure.getProcedureType()).thenReturn(DBSProcedureType.PROCEDURE);
-        when(procedure.getParameters(monitor)).thenReturn(List.of());
+        Mockito.when(procedure.getProcedureType()).thenReturn(DBSProcedureType.PROCEDURE);
+        Mockito.when(procedure.getParameters(monitor)).thenReturn(List.of());
 
         String ddl = MimerUtils.buildExternalRoutineSource(monitor, procedure, SCHEMA, "AddOne", SPECIFIC_NAME);
 
@@ -201,8 +197,8 @@ public class MimerUtilsExternalRoutineTest extends DBeaverUnitTest {
     public void escapesASingleQuoteInTheExternalName() throws Exception {
         mockDatabaseChain();
         mockExternalRoutineRow("CLR", "UserLib.O'Brien.Method", "NETLIB");
-        when(procedure.getProcedureType()).thenReturn(DBSProcedureType.PROCEDURE);
-        when(procedure.getParameters(monitor)).thenReturn(List.of());
+        Mockito.when(procedure.getProcedureType()).thenReturn(DBSProcedureType.PROCEDURE);
+        Mockito.when(procedure.getParameters(monitor)).thenReturn(List.of());
 
         String ddl = MimerUtils.buildExternalRoutineSource(monitor, procedure, SCHEMA, "Weird", SPECIFIC_NAME);
 
@@ -217,27 +213,34 @@ public class MimerUtilsExternalRoutineTest extends DBeaverUnitTest {
      * see the class Javadoc.
      */
     private void mockDatabaseChain() throws Exception {
-        when(dataSource.supportsExternalLibraries()).thenReturn(true);
-        when(dataSource.getDefaultInstance()).thenReturn(instance);
-        when(instance.getDefaultContext(any(), anyBoolean())).thenReturn(executionContext);
-        when(executionContext.openSession(eq(monitor), eq(DBCExecutionPurpose.META), anyString())).thenReturn(session);
-        when(session.prepareStatement(anyString())).thenReturn(statement);
-        when(statement.executeQuery()).thenReturn(resultSet);
+        Mockito.when(dataSource.supportsExternalLibraries()).thenReturn(true);
+        Mockito.when(dataSource.getDefaultInstance()).thenReturn(instance);
+        Mockito.when(instance.getDefaultContext(ArgumentMatchers.any(), ArgumentMatchers.anyBoolean())).thenReturn(executionContext);
+        Mockito.when(executionContext.openSession(
+            ArgumentMatchers.eq(monitor), ArgumentMatchers.eq(DBCExecutionPurpose.META), ArgumentMatchers.anyString()
+        )).thenReturn(session);
+        Mockito.when(session.prepareStatement(ArgumentMatchers.anyString())).thenReturn(statement);
+        Mockito.when(statement.executeQuery()).thenReturn(resultSet);
     }
 
-    private void mockExternalRoutineRow(String language, String externalName, String library) throws Exception {
-        when(resultSet.next()).thenReturn(true);
-        when(resultSet.getString("ROUTINE_BODY")).thenReturn("EXTERNAL");
-        when(resultSet.getString("EXTERNAL_LANGUAGE")).thenReturn(language);
-        when(resultSet.getString("EXTERNAL_NAME")).thenReturn(externalName);
-        when(resultSet.getString("EXTERNAL_LIBRARY")).thenReturn(library);
+    private void mockExternalRoutineRow(
+        @NotNull String language, @NotNull String externalName, @Nullable String library
+    ) throws Exception {
+        Mockito.when(resultSet.next()).thenReturn(true);
+        Mockito.when(resultSet.getString("ROUTINE_BODY")).thenReturn("EXTERNAL");
+        Mockito.when(resultSet.getString("EXTERNAL_LANGUAGE")).thenReturn(language);
+        Mockito.when(resultSet.getString("EXTERNAL_NAME")).thenReturn(externalName);
+        Mockito.when(resultSet.getString("EXTERNAL_LIBRARY")).thenReturn(library);
     }
 
-    private static GenericProcedureParameter mockParameter(DBSProcedureParameterKind kind, String name, String fullTypeName) {
-        GenericProcedureParameter param = mock(GenericProcedureParameter.class);
-        when(param.getParameterKind()).thenReturn(kind);
-        when(param.getName()).thenReturn(name);
-        when(param.getFullTypeName()).thenReturn(fullTypeName);
+    @NotNull
+    private static GenericProcedureParameter mockParameter(
+        @NotNull DBSProcedureParameterKind kind, @NotNull String name, @NotNull String fullTypeName
+    ) {
+        GenericProcedureParameter param = Mockito.mock(GenericProcedureParameter.class);
+        Mockito.when(param.getParameterKind()).thenReturn(kind);
+        Mockito.when(param.getName()).thenReturn(name);
+        Mockito.when(param.getFullTypeName()).thenReturn(fullTypeName);
         return param;
     }
 }

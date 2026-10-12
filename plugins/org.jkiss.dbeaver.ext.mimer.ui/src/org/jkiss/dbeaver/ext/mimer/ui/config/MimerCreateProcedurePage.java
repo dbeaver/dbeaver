@@ -431,13 +431,13 @@ public class MimerCreateProcedurePage extends CreateProcedurePage implements Mim
         if (type == DBSProcedureType.FUNCTION) {
             sb.append("RETURNS ").append(returnType.trim()).append('\n');
         }
-        boolean external = "CLR".equals(language);
         sb.append("LANGUAGE ").append(language).append('\n');
         if (specific != null) {
             sb.append("SPECIFIC \"").append(specific.replace("\"", "\"\"")).append("\"\n");
         }
         sb.append(deterministic).append('\n');
         sb.append(accessOption).append('\n');
+        boolean external = "CLR".equals(language);
         if (external) {
             sb.append("EXTERNAL NAME '").append(externalName.trim().replace("'", "''")).append('\'')
                 .append(" IN \"").append(externalLibrary.trim().replace("\"", "\"\"")).append('"');

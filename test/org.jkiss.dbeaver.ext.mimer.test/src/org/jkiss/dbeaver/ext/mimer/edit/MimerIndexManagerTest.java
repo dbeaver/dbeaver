@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.mimer.edit;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableIndexColumn;
@@ -34,16 +36,14 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerIndexManager#addObjectCreateActions} - Mimer SQL's {@code CREATE [UNIQUE]
@@ -73,23 +73,23 @@ public class MimerIndexManagerTest extends DBeaverUnitTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        when(dataSource.getSQLDialect()).thenReturn(dialect);
-        when(index.getDataSource()).thenReturn(dataSource);
-        when(index.getTable()).thenReturn(table);
-        when(index.getName()).thenReturn("cst_email_idx");
-        when(table.getFullyQualifiedName(DBPEvaluationContext.DDL)).thenReturn("\"mimer_store\".\"customers\"");
-        when(index.isIgnoreNulls(monitor)).thenReturn(false);
-        // doReturn(...), not when(...).thenReturn(...): getAttributeReferences returns a
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
+        Mockito.when(index.getDataSource()).thenReturn(dataSource);
+        Mockito.when(index.getTable()).thenReturn(table);
+        Mockito.when(index.getName()).thenReturn("cst_email_idx");
+        Mockito.when(table.getFullyQualifiedName(DBPEvaluationContext.DDL)).thenReturn("\"mimer_store\".\"customers\"");
+        Mockito.when(index.isIgnoreNulls(monitor)).thenReturn(false);
+        // Mockito.doReturn(...), not Mockito.when(...).thenReturn(...): getAttributeReferences returns a
         // List<? extends DBSTableIndexColumn> (wildcard), and the column(...) helper does its
-        // own nested when()-stubbing - both of which trip up the when().thenReturn() form.
-        doReturn(List.of(indexColumn("email", true))).when(index).getAttributeReferences(any());
-        doReturn(List.of()).when(index).getIncludedColumns();
+        // own nested Mockito.when()-stubbing - both of which trip up the Mockito.when().thenReturn() form.
+        Mockito.doReturn(List.of(indexColumn("email", true))).when(index).getAttributeReferences(ArgumentMatchers.any());
+        Mockito.doReturn(List.of()).when(index).getIncludedColumns();
     }
 
     @Test
     public void plainIndexHasNoUniqueClusteredIgnoreNullsOrInclude() throws Exception {
-        when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
-        when(index.isUnique()).thenReturn(false);
+        Mockito.when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
+        Mockito.when(index.isUnique()).thenReturn(false);
 
         String ddl = createDDL();
 
@@ -103,8 +103,8 @@ public class MimerIndexManagerTest extends DBeaverUnitTest {
 
     @Test
     public void uniqueClusteredIndexIncludesBothModifiersInOrder() throws Exception {
-        when(index.getIndexType()).thenReturn(DBSIndexType.CLUSTERED);
-        when(index.isUnique()).thenReturn(true);
+        Mockito.when(index.getIndexType()).thenReturn(DBSIndexType.CLUSTERED);
+        Mockito.when(index.isUnique()).thenReturn(true);
 
         String ddl = createDDL();
 
@@ -113,9 +113,9 @@ public class MimerIndexManagerTest extends DBeaverUnitTest {
 
     @Test
     public void ignoreNullsAppearsAfterTheColumnList() throws Exception {
-        when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
-        when(index.isUnique()).thenReturn(false);
-        when(index.isIgnoreNulls(monitor)).thenReturn(true);
+        Mockito.when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
+        Mockito.when(index.isUnique()).thenReturn(false);
+        Mockito.when(index.isIgnoreNulls(monitor)).thenReturn(true);
 
         String ddl = createDDL();
 
@@ -128,10 +128,10 @@ public class MimerIndexManagerTest extends DBeaverUnitTest {
      */
     @Test
     public void ignoreNullsComesBeforeInclude() throws Exception {
-        when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
-        when(index.isUnique()).thenReturn(false);
-        when(index.isIgnoreNulls(monitor)).thenReturn(true);
-        doReturn(List.of(tableColumn("balance"))).when(index).getIncludedColumns();
+        Mockito.when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
+        Mockito.when(index.isUnique()).thenReturn(false);
+        Mockito.when(index.isIgnoreNulls(monitor)).thenReturn(true);
+        Mockito.doReturn(List.of(tableColumn("balance"))).when(index).getIncludedColumns();
 
         String ddl = createDDL();
 
@@ -143,9 +143,9 @@ public class MimerIndexManagerTest extends DBeaverUnitTest {
 
     @Test
     public void includeListsEveryColumnCommaSeparated() throws Exception {
-        when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
-        when(index.isUnique()).thenReturn(false);
-        doReturn(List.of(tableColumn("balance"), tableColumn("currency"))).when(index).getIncludedColumns();
+        Mockito.when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
+        Mockito.when(index.isUnique()).thenReturn(false);
+        Mockito.doReturn(List.of(tableColumn("balance"), tableColumn("currency"))).when(index).getIncludedColumns();
 
         String ddl = createDDL();
 
@@ -156,10 +156,10 @@ public class MimerIndexManagerTest extends DBeaverUnitTest {
 
     @Test
     public void multipleIndexColumnsAreCommaSeparatedAndQuoted() throws Exception {
-        when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
-        when(index.isUnique()).thenReturn(false);
-        doReturn(List.of(indexColumn("last_name", true), indexColumn("first_name", true)))
-            .when(index).getAttributeReferences(any());
+        Mockito.when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
+        Mockito.when(index.isUnique()).thenReturn(false);
+        Mockito.doReturn(List.of(indexColumn("last_name", true), indexColumn("first_name", true)))
+            .when(index).getAttributeReferences(ArgumentMatchers.any());
 
         String ddl = createDDL();
 
@@ -169,10 +169,10 @@ public class MimerIndexManagerTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void aDescendingColumnGetsTheDescModifier() throws Exception {
-        when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
-        when(index.isUnique()).thenReturn(false);
-        doReturn(List.of(indexColumn("created_at", false))).when(index).getAttributeReferences(any());
+    public void descendingColumnGetsTheDescModifier() throws Exception {
+        Mockito.when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
+        Mockito.when(index.isUnique()).thenReturn(false);
+        Mockito.doReturn(List.of(indexColumn("created_at", false))).when(index).getAttributeReferences(ArgumentMatchers.any());
 
         String ddl = createDDL();
 
@@ -185,10 +185,10 @@ public class MimerIndexManagerTest extends DBeaverUnitTest {
      */
     @Test
     public void columnAlgorithmAddsAForClauseBeforeTheDescModifier() throws Exception {
-        when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
-        when(index.isUnique()).thenReturn(false);
-        doReturn(List.of(mimerIndexColumn("notes", false, MimerConstants.INDEX_ALGORITHM_WORD_SEARCH)))
-            .when(index).getAttributeReferences(any());
+        Mockito.when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
+        Mockito.when(index.isUnique()).thenReturn(false);
+        Mockito.doReturn(List.of(mimerIndexColumn("notes", false, MimerConstants.INDEX_ALGORITHM_WORD_SEARCH)))
+            .when(index).getAttributeReferences(ArgumentMatchers.any());
 
         String ddl = createDDL();
 
@@ -202,11 +202,11 @@ public class MimerIndexManagerTest extends DBeaverUnitTest {
      */
     @Test
     public void columnCollationAppearsBeforeAlgorithmAndDescModifier() throws Exception {
-        when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
-        when(index.isUnique()).thenReturn(false);
-        doReturn(List.of(mimerIndexColumn(
+        Mockito.when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
+        Mockito.when(index.isUnique()).thenReturn(false);
+        Mockito.doReturn(List.of(mimerIndexColumn(
             "notes", false, MimerConstants.INDEX_ALGORITHM_WORD_SEARCH, "\"INFORMATION_SCHEMA\".\"ENGLISH_1\"")))
-            .when(index).getAttributeReferences(any());
+            .when(index).getAttributeReferences(ArgumentMatchers.any());
 
         String ddl = createDDL();
 
@@ -219,9 +219,9 @@ public class MimerIndexManagerTest extends DBeaverUnitTest {
 
     @Test
     public void noCollationAddsNoCollateClause() throws Exception {
-        when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
-        when(index.isUnique()).thenReturn(false);
-        doReturn(List.of(mimerIndexColumn("c1", true, null, null))).when(index).getAttributeReferences(any());
+        Mockito.when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
+        Mockito.when(index.isUnique()).thenReturn(false);
+        Mockito.doReturn(List.of(mimerIndexColumn("c1", true, null, null))).when(index).getAttributeReferences(ArgumentMatchers.any());
 
         String ddl = createDDL();
 
@@ -230,12 +230,12 @@ public class MimerIndexManagerTest extends DBeaverUnitTest {
 
     @Test
     public void simpleOrMissingAlgorithmAddsNoForClause() throws Exception {
-        when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
-        when(index.isUnique()).thenReturn(false);
-        doReturn(List.of(
+        Mockito.when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
+        Mockito.when(index.isUnique()).thenReturn(false);
+        Mockito.doReturn(List.of(
             mimerIndexColumn("c1", true, MimerConstants.INDEX_ALGORITHM_SIMPLE),
             mimerIndexColumn("c2", true, null)
-        )).when(index).getAttributeReferences(any());
+        )).when(index).getAttributeReferences(ArgumentMatchers.any());
 
         String ddl = createDDL();
 
@@ -249,12 +249,12 @@ public class MimerIndexManagerTest extends DBeaverUnitTest {
      */
     @Test
     public void clusteredIndexNeverEmitsIgnoreNullsIncludeOrAlgorithm() throws Exception {
-        when(index.getIndexType()).thenReturn(DBSIndexType.CLUSTERED);
-        when(index.isUnique()).thenReturn(false);
-        when(index.isIgnoreNulls(monitor)).thenReturn(true);
-        doReturn(List.of(tableColumn("balance"))).when(index).getIncludedColumns();
-        doReturn(List.of(mimerIndexColumn("notes", true, MimerConstants.INDEX_ALGORITHM_WORD_SEARCH)))
-            .when(index).getAttributeReferences(any());
+        Mockito.when(index.getIndexType()).thenReturn(DBSIndexType.CLUSTERED);
+        Mockito.when(index.isUnique()).thenReturn(false);
+        Mockito.when(index.isIgnoreNulls(monitor)).thenReturn(true);
+        Mockito.doReturn(List.of(tableColumn("balance"))).when(index).getIncludedColumns();
+        Mockito.doReturn(List.of(mimerIndexColumn("notes", true, MimerConstants.INDEX_ALGORITHM_WORD_SEARCH)))
+            .when(index).getAttributeReferences(ArgumentMatchers.any());
 
         String ddl = createDDL();
 
@@ -271,19 +271,20 @@ public class MimerIndexManagerTest extends DBeaverUnitTest {
      */
     @Test
     public void clusteredIndexStillEmitsCollation() throws Exception {
-        when(index.getIndexType()).thenReturn(DBSIndexType.CLUSTERED);
-        when(index.isUnique()).thenReturn(false);
-        doReturn(List.of(mimerIndexColumn("notes", true, null, "\"INFORMATION_SCHEMA\".\"ENGLISH_1\"")))
-            .when(index).getAttributeReferences(any());
+        Mockito.when(index.getIndexType()).thenReturn(DBSIndexType.CLUSTERED);
+        Mockito.when(index.isUnique()).thenReturn(false);
+        Mockito.doReturn(List.of(mimerIndexColumn("notes", true, null, "\"INFORMATION_SCHEMA\".\"ENGLISH_1\"")))
+            .when(index).getAttributeReferences(ArgumentMatchers.any());
 
         String ddl = createDDL();
 
         Assertions.assertTrue(ddl.contains(" COLLATE \"INFORMATION_SCHEMA\".\"ENGLISH_1\""), ddl);
     }
 
+    @NotNull
     private String createDDL() throws Exception {
-        var command = mock(SQLObjectEditor.ObjectCreateCommand.class);
-        when(command.getObject()).thenReturn(index);
+        var command = Mockito.mock(SQLObjectEditor.ObjectCreateCommand.class);
+        Mockito.when(command.getObject()).thenReturn(index);
 
         List<DBEPersistAction> actions = new ArrayList<>();
         manager.addObjectCreateActions(monitor, executionContext, actions, command, Map.of());
@@ -292,11 +293,12 @@ public class MimerIndexManagerTest extends DBeaverUnitTest {
         return actions.get(0).getScript();
     }
 
-    private DBSTableIndexColumn indexColumn(String name, boolean ascending) {
-        GenericTableIndexColumn col = mock(GenericTableIndexColumn.class);
-        when(col.getName()).thenReturn(name);
-        when(col.getDataSource()).thenReturn(dataSource);
-        when(col.isAscending()).thenReturn(ascending);
+    @NotNull
+    private DBSTableIndexColumn indexColumn(@NotNull String name, boolean ascending) {
+        GenericTableIndexColumn col = Mockito.mock(GenericTableIndexColumn.class);
+        Mockito.when(col.getName()).thenReturn(name);
+        Mockito.when(col.getDataSource()).thenReturn(dataSource);
+        Mockito.when(col.isAscending()).thenReturn(ascending);
         return col;
     }
 
@@ -307,25 +309,30 @@ public class MimerIndexManagerTest extends DBeaverUnitTest {
      * {@code indexColumn.getIndex().getIndexType()} independently of the owning {@link #index}
      * field.
      */
-    private DBSTableIndexColumn mimerIndexColumn(String name, boolean ascending, String algorithm) {
+    @NotNull
+    private DBSTableIndexColumn mimerIndexColumn(@NotNull String name, boolean ascending, @Nullable String algorithm) {
         return mimerIndexColumn(name, ascending, algorithm, null);
     }
 
-    private DBSTableIndexColumn mimerIndexColumn(String name, boolean ascending, String algorithm, String collation) {
-        MimerTableIndexColumn col = mock(MimerTableIndexColumn.class);
-        when(col.getName()).thenReturn(name);
-        when(col.getDataSource()).thenReturn(dataSource);
-        when(col.isAscending()).thenReturn(ascending);
-        when(col.getAlgorithm()).thenReturn(algorithm);
-        when(col.getCollation()).thenReturn(collation);
-        doReturn(index).when(col).getIndex();
+    @NotNull
+    private DBSTableIndexColumn mimerIndexColumn(
+        @NotNull String name, boolean ascending, @Nullable String algorithm, @Nullable String collation
+    ) {
+        MimerTableIndexColumn col = Mockito.mock(MimerTableIndexColumn.class);
+        Mockito.when(col.getName()).thenReturn(name);
+        Mockito.when(col.getDataSource()).thenReturn(dataSource);
+        Mockito.when(col.isAscending()).thenReturn(ascending);
+        Mockito.when(col.getAlgorithm()).thenReturn(algorithm);
+        Mockito.when(col.getCollation()).thenReturn(collation);
+        Mockito.doReturn(index).when(col).getIndex();
         return col;
     }
 
-    private GenericTableColumn tableColumn(String name) {
-        GenericTableColumn col = mock(GenericTableColumn.class);
-        when(col.getName()).thenReturn(name);
-        when(col.getDataSource()).thenReturn(dataSource);
+    @NotNull
+    private GenericTableColumn tableColumn(@NotNull String name) {
+        GenericTableColumn col = Mockito.mock(GenericTableColumn.class);
+        Mockito.when(col.getName()).thenReturn(name);
+        Mockito.when(col.getDataSource()).thenReturn(dataSource);
         return col;
     }
 }

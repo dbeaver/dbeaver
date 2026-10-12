@@ -313,8 +313,7 @@ public class MimerProgram implements DBSObject, DBPNamedObject2, DBPSaveableObje
 
     /**
      * {@code EXECUTE} grants on this program - see {@link MimerProgramPrivilege}.
-     */
-    /**
+     * <p>
      * {@code GRANTOR = '_SYSTEM'} rows (Mimer SQL's synthetic "the creator implicitly holds
      * EXECUTE WITH GRANT OPTION" grant - per the docs, a program's creator is automatically
      * granted this at creation time) are excluded - {@code EXT_OBJECT_PRIVILEGES} carries the

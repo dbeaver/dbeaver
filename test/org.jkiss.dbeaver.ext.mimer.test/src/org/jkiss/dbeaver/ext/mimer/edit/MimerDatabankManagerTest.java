@@ -25,13 +25,12 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerDatabankManager}'s create-action wiring - delegates straight to {@link
@@ -59,8 +58,8 @@ public class MimerDatabankManagerTest extends DBeaverUnitTest {
     @Test
     public void createActionDelegatesToTheDatabankSOwnBuildCreateDDL() throws Exception {
         MimerDatabank databank = new MimerDatabank(dataSource, "MYDB");
-        var command = mock(SQLObjectEditor.ObjectCreateCommand.class);
-        when(command.getObject()).thenReturn(databank);
+        var command = Mockito.mock(SQLObjectEditor.ObjectCreateCommand.class);
+        Mockito.when(command.getObject()).thenReturn(databank);
 
         List<DBEPersistAction> actions = new ArrayList<>();
         manager.addObjectCreateActions(monitor, executionContext, actions, command, Map.of());

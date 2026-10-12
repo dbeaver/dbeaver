@@ -111,6 +111,25 @@ public class MimerTableIndexColumn extends GenericTableIndexColumn {
     }
 
     /**
+     * The real, per-column algorithm for an already-persisted index's column - {@code "SIMPLE"}
+     * for an ordinary one (matching how {@link MimerAccessPathColumn#getAlgorithm()} itself
+     * reports it), resolved from the owning table's already-loaded {@link MimerAccessPath}s (see
+     * {@link MimerTable#getAccessPaths}) rather than a fresh query. For a not-yet-persisted
+     * column (still in the create dialog) this just reflects {@link #getAlgorithm()} instead -
+     * nothing to look up yet.
+     */
+    @Nullable
+    @Property(viewable = true, order = 4)
+    public String getAlgorithm(@NotNull DBRProgressMonitor monitor) {
+        if (!getIndex().isPersisted()) {
+            return CommonUtils.isEmpty(createTimeAlgorithm) ? MimerConstants.INDEX_ALGORITHM_SIMPLE : createTimeAlgorithm;
+        }
+        MimerAccessPathColumn accessPathColumn = resolveAccessPathColumn(monitor);
+        String algorithm = accessPathColumn == null ? null : accessPathColumn.getAlgorithm();
+        return CommonUtils.isEmpty(algorithm) ? MimerConstants.INDEX_ALGORITHM_SIMPLE : algorithm;
+    }
+
+    /**
      * The {@code COLLATE <collation>} clause to emit for this column, or {@code null} for none -
      * create-time only, same shape as {@link #getAlgorithm()} (see {@link
      * org.jkiss.dbeaver.ext.mimer.edit.MimerIndexManager#appendIndexColumnModifiers} for the
@@ -120,6 +139,29 @@ public class MimerTableIndexColumn extends GenericTableIndexColumn {
     @Nullable
     public String getCollation() {
         return createTimeCollation;
+    }
+
+    /**
+     * The real collation for an already-persisted index column, resolved the same way as {@link
+     * #getAlgorithm(DBRProgressMonitor)} - from the owning table's already-loaded {@link
+     * MimerAccessPath}s, via {@link MimerAccessPathColumn#getCollation()}. For a not-yet-
+     * persisted column this just reflects {@link #getCollation()} instead. {@code null} for a
+     * non-character column (see {@link MimerConstants#isCharacterType}) - deliberately not
+     * hidden via {@code visibleIf} for that case: this is a grid-rendered property (the index's
+     * Columns folder shows one row per column), and {@code visibleIf} doesn't reliably
+     * re-evaluate per row there when the answer varies row to row - see {@link
+     * MimerTableColumn#getCollation(DBRProgressMonitor)}'s own Javadoc for the full story. Same
+     * "always show the column, let a non-eligible row's value communicate it instead" choice
+     * {@link #getAlgorithm(DBRProgressMonitor)} already makes.
+     */
+    @Nullable
+    @Property(viewable = true, order = 5)
+    public String getCollation(@NotNull DBRProgressMonitor monitor) {
+        if (!getIndex().isPersisted()) {
+            return createTimeCollation;
+        }
+        MimerAccessPathColumn accessPathColumn = resolveAccessPathColumn(monitor);
+        return accessPathColumn == null ? null : accessPathColumn.getCollation();
     }
 
     /**
@@ -147,48 +189,6 @@ public class MimerTableIndexColumn extends GenericTableIndexColumn {
     @Property(viewable = true, order = 3)
     public String getSortOrder() {
         return isAscending() ? "Ascending" : "Descending";
-    }
-
-    /**
-     * The real, per-column algorithm for an already-persisted index's column - {@code "SIMPLE"}
-     * for an ordinary one (matching how {@link MimerAccessPathColumn#getAlgorithm()} itself
-     * reports it), resolved from the owning table's already-loaded {@link MimerAccessPath}s (see
-     * {@link MimerTable#getAccessPaths}) rather than a fresh query. For a not-yet-persisted
-     * column (still in the create dialog) this just reflects {@link #getAlgorithm()} instead -
-     * nothing to look up yet.
-     */
-    @Nullable
-    @Property(viewable = true, order = 4)
-    public String getAlgorithm(@NotNull DBRProgressMonitor monitor) {
-        if (!getIndex().isPersisted()) {
-            return CommonUtils.isEmpty(createTimeAlgorithm) ? MimerConstants.INDEX_ALGORITHM_SIMPLE : createTimeAlgorithm;
-        }
-        MimerAccessPathColumn accessPathColumn = resolveAccessPathColumn(monitor);
-        String algorithm = accessPathColumn == null ? null : accessPathColumn.getAlgorithm();
-        return CommonUtils.isEmpty(algorithm) ? MimerConstants.INDEX_ALGORITHM_SIMPLE : algorithm;
-    }
-
-    /**
-     * The real collation for an already-persisted index column, resolved the same way as {@link
-     * #getAlgorithm(DBRProgressMonitor)} - from the owning table's already-loaded {@link
-     * MimerAccessPath}s, via {@link MimerAccessPathColumn#getCollation()}. For a not-yet-
-     * persisted column this just reflects {@link #getCollation()} instead. {@code null} for a
-     * non-character column (see {@link MimerConstants#isCharacterType}) - deliberately not
-     * hidden via {@code visibleIf} for that case: this is a grid-rendered property (the index's
-     * Columns folder shows one row per column), and {@code visibleIf} doesn't reliably
-     * re-evaluate per row there when the answer varies row to row - see {@link
-     * MimerTableColumn#getCollation(DBRProgressMonitor)}'s own Javadoc for the full story. Same
-     * "always show the column, let a non-eligible row's value communicate it instead" choice
-     * {@link #getAlgorithm(DBRProgressMonitor)} already makes.
-     */
-    @Nullable
-    @Property(viewable = true, order = 5)
-    public String getCollation(@NotNull DBRProgressMonitor monitor) {
-        if (!getIndex().isPersisted()) {
-            return createTimeCollation;
-        }
-        MimerAccessPathColumn accessPathColumn = resolveAccessPathColumn(monitor);
-        return accessPathColumn == null ? null : accessPathColumn.getCollation();
     }
 
     @Nullable

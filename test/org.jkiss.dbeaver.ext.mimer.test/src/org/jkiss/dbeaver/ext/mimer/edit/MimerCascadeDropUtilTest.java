@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mimer.edit;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.mimer.MimerConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -32,12 +33,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.mockito.Mockito.lenient;
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerCascadeDropUtil} - the {@code CASCADE}-append text assembly, the per-object-type
@@ -61,6 +61,7 @@ public class MimerCascadeDropUtilTest extends DBeaverUnitTest {
 
     private DBPPreferenceStore prefStore;
 
+    @NotNull
     private static Map<String, Object> cascadeOption(boolean cascade) {
         Map<String, Object> options = new HashMap<>();
         options.put(DBEObjectManager.OPTION_DELETE_CASCADE, cascade);
@@ -69,10 +70,10 @@ public class MimerCascadeDropUtilTest extends DBeaverUnitTest {
 
     @BeforeEach
     public void wireConnection() {
-        lenient().when(executionContext.getDataSource()).thenReturn(dataSource);
-        lenient().when(dataSource.getContainer()).thenReturn(container);
-        lenient().when(container.getConnectionConfiguration()).thenReturn(connectionConfiguration);
-        lenient().when(connectionConfiguration.getConnectionType()).thenReturn(DBPConnectionType.DEV);
+        Mockito.lenient().when(executionContext.getDataSource()).thenReturn(dataSource);
+        Mockito.lenient().when(dataSource.getContainer()).thenReturn(container);
+        Mockito.lenient().when(container.getConnectionConfiguration()).thenReturn(connectionConfiguration);
+        Mockito.lenient().when(connectionConfiguration.getConnectionType()).thenReturn(DBPConnectionType.DEV);
         prefStore = DBWorkbench.getPlatform().getPreferenceStore();
     }
 
@@ -83,7 +84,7 @@ public class MimerCascadeDropUtilTest extends DBeaverUnitTest {
         }
     }
 
-    private static boolean isConfirmationArmed(SQLDatabasePersistAction action) {
+    private static boolean isConfirmationArmed(@NotNull SQLDatabasePersistAction action) {
         // confirmedDrop() returns a plain SQLDatabasePersistAction when no prompt is needed and an
         // anonymous subclass (with a beforeExecute override) when it is.
         return action.getClass() != SQLDatabasePersistAction.class;
@@ -146,7 +147,7 @@ public class MimerCascadeDropUtilTest extends DBeaverUnitTest {
 
     @Test
     public void productionConnectionAlwaysConfirmsEvenWithThePreferenceSet() {
-        when(connectionConfiguration.getConnectionType()).thenReturn(DBPConnectionType.PROD);
+        Mockito.when(connectionConfiguration.getConnectionType()).thenReturn(DBPConnectionType.PROD);
         prefStore.setValue(MimerConstants.PREF_DROP_CASCADE_CONFIRM_PREFIX + "table", true);
 
         SQLDatabasePersistAction action = MimerCascadeDropUtil.dropAction(

@@ -26,14 +26,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerLibraryManager#addObjectCreateActions} - the {@code CREATE LIBRARY} action wiring.
@@ -73,8 +72,8 @@ public class MimerLibraryManagerTest extends DBeaverUnitTest {
         library.setFileName("C:\\dev\\MyLib.dll");
         library.setLanguage("CLR");
 
-        var command = mock(SQLObjectEditor.ObjectCreateCommand.class);
-        when(command.getObject()).thenReturn(library);
+        var command = Mockito.mock(SQLObjectEditor.ObjectCreateCommand.class);
+        Mockito.when(command.getObject()).thenReturn(library);
 
         manager.addObjectCreateActions(monitor, executionContext, actions, command, options);
 

@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.mimer.edit;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
@@ -31,14 +33,13 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
+import org.mockito.Mockito;
 
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerTableManager#getChildTypes()} - declares the real Mimer SQL subclasses
@@ -87,19 +88,21 @@ public class MimerTableManagerTest extends DBeaverUnitTest {
 
     /** Exposes the protected {@code appendTableModifiers} for direct testing. */
     private static final class TestableManager extends MimerTableManager {
-        String modifiersFor(MimerTable table, boolean alter) throws DBException {
+        @NotNull
+        String modifiersFor(@NotNull MimerTable table, boolean alter) throws DBException {
             StringBuilder ddl = new StringBuilder("CREATE TABLE \"s\".\"t\" (\n\tid INTEGER\n)");
             appendTableModifiers(new VoidProgressMonitor(), table, null, ddl, alter, new HashMap<>());
             return ddl.toString();
         }
     }
 
-    private MimerTable tableWithDatabank(String databank) throws DBException {
-        GenericDataSource ds = mock(GenericDataSource.class);
-        when(ds.getSQLDialect()).thenReturn(new MimerSQLDialect());
-        MimerTable table = mock(MimerTable.class);
-        when(table.getDataSource()).thenReturn(ds);
-        when(table.getDatabank(any())).thenReturn(databank);
+    @NotNull
+    private MimerTable tableWithDatabank(@Nullable String databank) throws DBException {
+        GenericDataSource ds = Mockito.mock(GenericDataSource.class);
+        Mockito.when(ds.getSQLDialect()).thenReturn(new MimerSQLDialect());
+        MimerTable table = Mockito.mock(MimerTable.class);
+        Mockito.when(table.getDataSource()).thenReturn(ds);
+        Mockito.when(table.getDatabank(ArgumentMatchers.any())).thenReturn(databank);
         return table;
     }
 

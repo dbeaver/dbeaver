@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mimer.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -26,15 +27,12 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.when;
 
 /**
  * {@link MimerStatement}'s {@code CREATE [SCROLL|NO SCROLL] STATEMENT} header - translated
@@ -73,15 +71,17 @@ public class MimerStatementTest extends DBeaverUnitTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        when(schema.getName()).thenReturn("mimer_store");
-        when(schema.getDataSource()).thenReturn(dataSource);
-        when(dataSource.getDefaultInstance()).thenReturn(instance);
-        when(instance.getDefaultContext(any(), anyBoolean())).thenReturn(executionContext);
-        when(executionContext.openSession(eq(monitor), eq(DBCExecutionPurpose.META), anyString())).thenReturn(session);
-        when(session.prepareStatement(anyString())).thenReturn(statement);
-        when(statement.executeQuery()).thenReturn(resultSet);
-        when(resultSet.next()).thenReturn(true, false);
-        when(resultSet.getString(1)).thenReturn("SELECT * FROM customers");
+        Mockito.when(schema.getName()).thenReturn("mimer_store");
+        Mockito.when(schema.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSource.getDefaultInstance()).thenReturn(instance);
+        Mockito.when(instance.getDefaultContext(ArgumentMatchers.any(), ArgumentMatchers.anyBoolean())).thenReturn(executionContext);
+        Mockito.when(executionContext.openSession(
+            ArgumentMatchers.eq(monitor), ArgumentMatchers.eq(DBCExecutionPurpose.META), ArgumentMatchers.anyString()
+        )).thenReturn(session);
+        Mockito.when(session.prepareStatement(ArgumentMatchers.anyString())).thenReturn(statement);
+        Mockito.when(statement.executeQuery()).thenReturn(resultSet);
+        Mockito.when(resultSet.next()).thenReturn(true, false);
+        Mockito.when(resultSet.getString(1)).thenReturn("SELECT * FROM customers");
     }
 
     @Test
@@ -113,11 +113,12 @@ public class MimerStatementTest extends DBeaverUnitTest {
             stmt.getObjectDefinitionText(monitor, Map.of()));
     }
 
+    @NotNull
     private MimerStatement statement(boolean scrollable, boolean forwardOnly) throws Exception {
         JDBCResultSet loadRow = org.mockito.Mockito.mock(JDBCResultSet.class);
-        when(loadRow.getString("STATEMENT_NAME")).thenReturn("zzz");
-        when(loadRow.getString("IS_SCROLLABLE")).thenReturn(scrollable ? "YES" : "NO");
-        when(loadRow.getString("IS_FORWARD_ONLY")).thenReturn(forwardOnly ? "YES" : "NO");
+        Mockito.when(loadRow.getString("STATEMENT_NAME")).thenReturn("zzz");
+        Mockito.when(loadRow.getString("IS_SCROLLABLE")).thenReturn(scrollable ? "YES" : "NO");
+        Mockito.when(loadRow.getString("IS_FORWARD_ONLY")).thenReturn(forwardOnly ? "YES" : "NO");
         return new MimerStatement(schema, loadRow);
     }
 }

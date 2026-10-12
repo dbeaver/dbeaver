@@ -22,10 +22,10 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.util.Arrays;
 
-import static org.mockito.Mockito.when;
 
 /**
  * Tests for {@link MimerSQLDialect}.
@@ -73,8 +73,8 @@ public class MimerSQLDialectTest extends DBeaverUnitTest {
      * COLLATE UCS_BASIC(10)"} target DDL during a cross-database table export.
      */
     @Test
-    public void aTypeNameAlreadyCarryingCollateGetsNoFurtherModifiers() {
-        when(column.getMaxLength()).thenReturn(10L);
+    public void typeNameAlreadyCarryingCollateGetsNoFurtherModifiers() {
+        Mockito.when(column.getMaxLength()).thenReturn(10L);
 
         String modifiers = new MimerSQLDialect().getColumnTypeModifiers(
             dataSource, column, "NATIONAL CHARACTER COLLATE UCS_BASIC", DBPDataKind.STRING);
@@ -90,8 +90,8 @@ public class MimerSQLDialectTest extends DBeaverUnitTest {
      */
     @Test
     public void pendingColumnKeepsAnExplicitLengthOnAPlainCharacterType() {
-        when(column.isPersisted()).thenReturn(false);
-        when(column.getMaxLength()).thenReturn(20L);
+        Mockito.when(column.isPersisted()).thenReturn(false);
+        Mockito.when(column.getMaxLength()).thenReturn(20L);
 
         String modifiers = new MimerSQLDialect().getColumnTypeModifiers(
             dataSource, column, "NATIONAL CHARACTER", DBPDataKind.STRING);
@@ -107,8 +107,8 @@ public class MimerSQLDialectTest extends DBeaverUnitTest {
      */
     @Test
     public void pendingColumnKeepsLengthEvenWhenDataKindIsNotResolvedToString() {
-        when(column.isPersisted()).thenReturn(false);
-        when(column.getMaxLength()).thenReturn(20L);
+        Mockito.when(column.isPersisted()).thenReturn(false);
+        Mockito.when(column.getMaxLength()).thenReturn(20L);
 
         String modifiers = new MimerSQLDialect().getColumnTypeModifiers(
             dataSource, column, "NATIONAL CHARACTER", DBPDataKind.UNKNOWN);
@@ -118,8 +118,8 @@ public class MimerSQLDialectTest extends DBeaverUnitTest {
 
     @Test
     public void pendingColumnWithNoExplicitLengthGetsNoModifier() {
-        when(column.isPersisted()).thenReturn(false);
-        when(column.getMaxLength()).thenReturn(0L);
+        Mockito.when(column.isPersisted()).thenReturn(false);
+        Mockito.when(column.getMaxLength()).thenReturn(0L);
 
         String modifiers = new MimerSQLDialect().getColumnTypeModifiers(
             dataSource, column, "CHARACTER", DBPDataKind.STRING);
@@ -134,7 +134,7 @@ public class MimerSQLDialectTest extends DBeaverUnitTest {
      */
     @Test
     public void tinyintNeverGetsALengthRegardlessOfDataKind() {
-        when(column.getMaxLength()).thenReturn(3L);
+        Mockito.when(column.getMaxLength()).thenReturn(3L);
 
         Assertions.assertNull(new MimerSQLDialect().getColumnTypeModifiers(
             dataSource, column, "ODBC.TINYINT", DBPDataKind.STRING));
@@ -146,9 +146,9 @@ public class MimerSQLDialectTest extends DBeaverUnitTest {
 
     @Test
     public void collationIsAppendedAfterTheLength() {
-        when(column.isPersisted()).thenReturn(false);
-        when(column.getCollation()).thenReturn("ISO8BIT");
-        when(column.getMaxLength()).thenReturn(50L);
+        Mockito.when(column.isPersisted()).thenReturn(false);
+        Mockito.when(column.getCollation()).thenReturn("ISO8BIT");
+        Mockito.when(column.getMaxLength()).thenReturn(50L);
 
         String modifiers = new MimerSQLDialect().getColumnTypeModifiers(
             dataSource, column, "CHARACTER", DBPDataKind.STRING);

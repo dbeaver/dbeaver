@@ -241,8 +241,7 @@ public class MimerStatement implements DBSObject, DBPSaveableObject, DBPRefresha
 
     /**
      * {@code EXECUTE} grants on this statement - see {@link MimerStatementPrivilege}.
-     */
-    /**
+     * <p>
      * {@code GRANTOR = '_SYSTEM'} rows (Mimer SQL's synthetic "the owner implicitly holds
      * EXECUTE" grant) are excluded - {@code EXT_OBJECT_PRIVILEGES} carries these for a
      * databank's owner too (see {@code MimerDatabankPrivilege.PrivilegeCache}); same
