@@ -21,6 +21,8 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collections;
+
 public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
 
     @Test
@@ -48,6 +50,32 @@ public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void trailingCommentAfterDelimiterWorksForTextExplain() {
+        //given
+        String selection = "SELECT 1; -- trailing comment"; //$NON-NLS-1$
+        PostgreExecutionPlan plan = new PostgreExecutionPlan(
+            true, false, selection, new DBCQueryPlannerConfiguration());
+
+        //when
+        String planSql = plan.getPlanQueryString();
+
+        //then
+        Assertions.assertEquals("EXPLAIN SELECT 1 -- trailing comment", planSql); //$NON-NLS-1$
+    }
+
+    @Test
+    public void terminalDelimiterWithoutCommentPreserved() {
+        //given
+        String selection = "SELECT 1;"; //$NON-NLS-1$
+
+        //when
+        String planSql = explainXml(selection);
+
+        //then
+        Assertions.assertEquals("EXPLAIN (FORMAT XML) SELECT 1;", planSql); //$NON-NLS-1$
+    }
+
+    @Test
     public void plainQueryUnchanged() {
         //given
         String selection = "SELECT 1"; //$NON-NLS-1$
@@ -60,55 +88,41 @@ public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void leadingCommentPreservedAsSingleStatement() {
-        //given
-        String selection = "-- context\nSELECT 1"; //$NON-NLS-1$
-
-        //when
-        String planSql = explainXml(selection);
-
-        //then
-        Assertions.assertFalse(planSql.contains(";"), //$NON-NLS-1$
-            "Explain input must be a single statement, got: " + planSql);
-    }
-
-    @Test
-    public void blockCommentPreservedAsSingleStatement() {
-        //given
-        String selection = "/* context */ SELECT 1"; //$NON-NLS-1$
-
-        //when
-        String planSql = explainXml(selection);
-
-        //then
-        Assertions.assertFalse(planSql.contains(";"), //$NON-NLS-1$
-            "Explain input must be a single statement, got: " + planSql);
-    }
-
-    @Test
     public void commentLikeTextInStringLiteralUntouched() {
         //given
-        String selection = "SELECT '-- not a comment' AS value"; //$NON-NLS-1$
+        String selection = "SELECT '-- ; --'; -- trailing comment"; //$NON-NLS-1$
 
         //when
         String planSql = explainXml(selection);
 
         //then
-        Assertions.assertTrue(planSql.contains("'-- not a comment'"), //$NON-NLS-1$
-            "String literal must stay intact, got: " + planSql);
+        Assertions.assertEquals("EXPLAIN (FORMAT XML) SELECT '-- ; --' -- trailing comment", planSql); //$NON-NLS-1$
     }
 
     @Test
-    public void twoRealStatementsNotSilentlyMerged() {
+    public void twoRealStatementsWithTrailingCommentKeepInternalDelimiter() {
         //given
-        String selection = "SELECT 1; SELECT 2;"; //$NON-NLS-1$
+        String selection = "SELECT 1; SELECT 2; -- trailing comment"; //$NON-NLS-1$
 
         //when
         String planSql = explainXml(selection);
 
         //then
-        Assertions.assertTrue(planSql.contains("SELECT 1") && planSql.contains("SELECT 2"), //$NON-NLS-1$ //$NON-NLS-2$
-            "Two statements must never be treated as one, got: " + planSql);
+        Assertions.assertEquals("EXPLAIN (FORMAT XML) SELECT 1; SELECT 2 -- trailing comment", planSql); //$NON-NLS-1$
+    }
+
+    @Test
+    public void semicolonInQuotedIdentifierUntouched() {
+        //given
+        String selection = "SELECT \"a;b\"; -- trailing comment"; //$NON-NLS-1$
+
+        //when
+        String planSql = explainXml(selection);
+
+        //then
+        Assertions.assertEquals(
+            "EXPLAIN (FORMAT XML) SELECT \"a;b\" -- trailing comment", //$NON-NLS-1$
+            planSql);
     }
 
     @Test
@@ -124,18 +138,58 @@ public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void escapedQuoteInEscapeStringUntouched() {
+    public void dollarQuoteLikeSuffixInIdentifierDoesNotStartDollarQuote() {
         //given
-        String selection = "SELECT E'a\\'; -- c'"; //$NON-NLS-1$
+        String selection = "SELECT foo$tag$; -- trailing comment"; //$NON-NLS-1$
 
         //when
         String planSql = explainXml(selection);
 
         //then
-        Assertions.assertEquals("EXPLAIN (FORMAT XML) SELECT E'a\\'; -- c'", planSql); //$NON-NLS-1$
+        Assertions.assertEquals("EXPLAIN (FORMAT XML) SELECT foo$tag$ -- trailing comment", planSql); //$NON-NLS-1$
+    }
+
+    @Test
+    public void escapedQuoteInEscapeStringUntouched() {
+        //given
+        String selection = "SELECT E'a\\'b'; -- trailing comment"; //$NON-NLS-1$
+
+        //when
+        String planSql = explainXml(selection);
+
+        //then
+        Assertions.assertEquals("EXPLAIN (FORMAT XML) SELECT E'a\\'b' -- trailing comment", planSql); //$NON-NLS-1$
+    }
+
+    @Test
+    public void originalQueryPreserved() {
+        //given
+        String selection = "SELECT 1; -- trailing comment"; //$NON-NLS-1$
+
+        //when
+        PostgreExecutionPlan plan = explainPlan(selection);
+
+        //then
+        Assertions.assertEquals(selection, plan.getQueryString());
+    }
+
+    @Test
+    public void originalQueryPreservedForExternalPlanConstructor() {
+        //given
+        String selection = "SELECT 1; -- trailing comment"; //$NON-NLS-1$
+
+        //when
+        PostgreExecutionPlan plan = new PostgreExecutionPlan(selection, Collections.emptyList());
+
+        //then
+        Assertions.assertEquals(selection, plan.getQueryString());
+    }
+
+    private static PostgreExecutionPlan explainPlan(String query) {
+        return new PostgreExecutionPlan(false, false, query, new DBCQueryPlannerConfiguration());
     }
 
     private static String explainXml(String query) {
-        return new PostgreExecutionPlan(false, false, query, new DBCQueryPlannerConfiguration()).getPlanQueryString();
+        return explainPlan(query).getPlanQueryString();
     }
 }

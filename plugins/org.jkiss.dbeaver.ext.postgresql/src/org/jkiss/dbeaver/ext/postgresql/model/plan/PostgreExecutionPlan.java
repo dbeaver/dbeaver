@@ -63,12 +63,12 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
     {
         this.oldQuery = oldQuery;
         this.verbose = verbose;
-        this.query = trimTerminalDelimiter(query);
+        this.query = query;
         this.configuration = configuration;
     }
 
     public PostgreExecutionPlan(String query, List<PostgrePlanNodeExternal> nodes) {
-        this.query = trimTerminalDelimiter(query);
+        this.query = query;
         this.rootNodes = new ArrayList<>();
         this.rootNodes.addAll(nodes);
         this.configuration = new DBCQueryPlannerConfiguration();
@@ -96,8 +96,9 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
     @NotNull
     @Override
     public String getPlanQueryString() {
+        String executableQuery = trimTerminalDelimiter(query);
         if (oldQuery) {
-            return "EXPLAIN " + (verbose ? "VERBOSE " : "") + query;
+            return "EXPLAIN " + (verbose ? "VERBOSE " : "") + executableQuery;
         } else {
             Map<String, Object> parameters = this.configuration.getParameters();
             StringBuilder explainStat = new StringBuilder(64);
@@ -123,7 +124,7 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
                     explainStat.append(",").append(key);
                 }
             }
-            explainStat.append(") ").append(query);
+            explainStat.append(") ").append(executableQuery);
             return explainStat.toString();
         }
     }
@@ -141,7 +142,7 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
         }
     }
 
-    // Drop a terminal delimiter hidden behind a trailing comment so the driver sees a single statement
+    // Drop a terminal delimiter only when a trailing comment hides it
     private static int findTerminalDelimiter(@NotNull String query)
     {
         final int code = 0;
@@ -156,6 +157,7 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
         String dollarTag = null;
         int lastDelim = -1;
         boolean codeAfterDelim = false;
+        boolean commentAfterDelim = false;
         int i = 0;
         while (i < query.length()) {
             char c = query.charAt(i);
@@ -209,6 +211,7 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
             } else if (c == ';') {
                 lastDelim = i;
                 codeAfterDelim = false;
+                commentAfterDelim = false;
                 i++;
             } else if (c == '\'') {
                 escapeAware = i > 0 && (query.charAt(i - 1) == 'E' || query.charAt(i - 1) == 'e')
@@ -219,14 +222,20 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
                 state = doubleQuote;
                 i++;
             } else if (c == '-' && n == '-') {
+                if (lastDelim >= 0) {
+                    commentAfterDelim = true;
+                }
                 state = lineComment;
                 i += 2;
             } else if (c == '/' && n == '*') {
+                if (lastDelim >= 0) {
+                    commentAfterDelim = true;
+                }
                 state = blockComment;
                 blockDepth = 1;
                 i += 2;
             } else if (c == '$') {
-                String tag = matchDollarTag(query, i);
+                String tag = i > 0 && isIdentifierPart(query.charAt(i - 1)) ? null : matchDollarTag(query, i);
                 if (tag == null) {
                     codeAfterDelim = true;
                     i++;
@@ -242,7 +251,10 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
                 i++;
             }
         }
-        return codeAfterDelim ? -1 : lastDelim;
+        if (codeAfterDelim || !commentAfterDelim) {
+            return -1;
+        }
+        return lastDelim;
     }
 
     @Nullable
