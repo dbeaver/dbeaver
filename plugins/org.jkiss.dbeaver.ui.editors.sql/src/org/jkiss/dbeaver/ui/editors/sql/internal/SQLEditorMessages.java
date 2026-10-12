@@ -65,6 +65,12 @@ public class SQLEditorMessages extends NLS {
     public static String editors_sql_statistics;
     public static String editors_sql_job_execute_query;
     public static String editors_sql_job_execute_script;
+    public static String execute_script_file_error_title;
+    public static String execute_script_file_project_not_found;
+    public static String execute_script_file_task_type_not_available;
+    public static String execute_script_file_no_configuration_ui;
+    public static String execute_script_file_task_name;
+    public static String execute_script_file_open_error;
     public static String editors_sql_status_cant_obtain_document;
     public static String editors_sql_status_empty_query_string;
     public static String editors_sql_staus_connected_to;
