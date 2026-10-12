@@ -45,7 +45,7 @@ abstract class PrefPageManagedNetworkProfiles extends PrefPageNetworkProfiles {
     protected abstract DBWNetworkProfileManager getProfilesManager();
 
     @NotNull
-    protected abstract DBWNetworkProfile createProfile(@NotNull String profileName);
+    protected abstract DBWNetworkProfile createNewProfile(@NotNull String profileName);
 
     protected abstract boolean isNameValid(@NotNull String profileName) throws DBException;
 
@@ -121,13 +121,6 @@ abstract class PrefPageManagedNetworkProfiles extends PrefPageNetworkProfiles {
             }
         }
 
-        DBWNetworkProfile newProfile = createProfile(profileName);
-        DBWNetworkProfileManager profilesRegistry = getProfilesManager();
-        profilesRegistry.addOrUpdateProfile(newProfile);
-        if (!DBWorkbench.isDistributed()) {
-            profilesRegistry.saveSettings();
-        }
-
-        return newProfile;
+        return createNewProfile(profileName);
     }
 }

@@ -134,7 +134,7 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
             return false;
         }
         if (networkProfilesPage != null) {
-            networkProfilesPage.performOk();
+            return networkProfilesPage.performOk();
         }
         return true;
     }
@@ -198,9 +198,22 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
 
         @NotNull
         @Override
-        protected DBWNetworkProfile createProfile(@NotNull String profileName) {
+        protected DBWNetworkProfile createNewProfile(@NotNull String profileName) {
             DBWNetworkProfile profile = new DBWNetworkProfile();
             profile.setProfileName(profileName);
+            return profile;
+        }
+
+        @Nullable
+        @Override
+        protected DBWNetworkProfile createNewProfile(@Nullable DBWNetworkProfile sourceProfile) {
+            DBWNetworkProfile profile = super.createNewProfile(sourceProfile);
+            if (profile != null) {
+                getProfilesManager().addOrUpdateProfile(profile);
+                if (!DBWorkbench.isDistributed()) {
+                    getProfilesManager().saveSettings();
+                }
+            }
             return profile;
         }
 
