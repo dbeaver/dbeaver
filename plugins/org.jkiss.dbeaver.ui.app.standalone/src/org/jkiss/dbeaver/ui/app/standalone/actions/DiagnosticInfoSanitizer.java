@@ -30,6 +30,8 @@ import java.util.regex.Pattern;
 final class DiagnosticInfoSanitizer {
     private static final String IPV4_OCTET = "(?:25[0-5]|2[0-4]\\d|1\\d{2}|0?\\d{1,2})";
     private static final String IPV4_ADDRESS = "(?:" + IPV4_OCTET + "\\.){3}" + IPV4_OCTET;
+    private static final boolean IS_IPV4_SANITIZATION_ON = false; // Currently off as it cannot distinguish between an IP addr and a 4-part version like 25.0.4.1
+
     private static final String IPV6_GROUP = "[0-9a-f]{1,4}";
     private static final String IPV6_ADDRESS = "(?:"
         + "(?:" + IPV6_GROUP + ":){6}" + IPV4_ADDRESS
@@ -61,7 +63,7 @@ final class DiagnosticInfoSanitizer {
             + "(?:\\([^\\r\\n]*\\)|\\{[^\\r\\n}]*\\}|\\[[^\\r\\n\\]]*\\]|[^\\s\"'<>()\\[\\]{}])++"
             + "|[\\w.*-]+@" + SSH_HOST + ")(?![\\w@]))"
             + "|(?<IPV6>(?<![\\w:.%])" + IPV6_ADDRESS + "(?![\\w:%]|\\.\\d))"
-            + "|(?<IPV4>(?<![\\w.])" + IPV4_ADDRESS + "(?![\\w]|\\.\\d))",
+            + IS_IPV4_SANITIZATION_ON ? "|(?<IPV4>(?<![\\w.])" + IPV4_ADDRESS + "(?![\\w]|\\.\\d))" : "",
         Pattern.CASE_INSENSITIVE
     );
 
