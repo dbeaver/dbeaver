@@ -63,7 +63,7 @@ final class DiagnosticInfoSanitizer {
             + "(?:\\([^\\r\\n]*\\)|\\{[^\\r\\n}]*\\}|\\[[^\\r\\n\\]]*\\]|[^\\s\"'<>()\\[\\]{}])++"
             + "|[\\w.*-]+@" + SSH_HOST + ")(?![\\w@]))"
             + "|(?<IPV6>(?<![\\w:.%])" + IPV6_ADDRESS + "(?![\\w:%]|\\.\\d))"
-            + IS_IPV4_SANITIZATION_ON ? "|(?<IPV4>(?<![\\w.])" + IPV4_ADDRESS + "(?![\\w]|\\.\\d))" : "",
+            + (IS_IPV4_SANITIZATION_ON ? "|(?<IPV4>(?<![\\w.])" + IPV4_ADDRESS + "(?![\\w]|\\.\\d))" : ""),
         Pattern.CASE_INSENSITIVE
     );
 
