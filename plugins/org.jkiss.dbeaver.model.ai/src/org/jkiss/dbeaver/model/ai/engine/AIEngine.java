@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
@@ -27,6 +29,8 @@ import java.util.List;
  * Completion engine
  */
 public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseable {
+
+    Log log = Log.getLog(AIEngine.class);
 
     @NotNull
     List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException;
@@ -65,6 +69,24 @@ public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseabl
     PROPS getProperties();
 
     int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException;
+
+    default int estimateImageTokens(@NotNull AIImageAttachment image) {
+        // conservative reserve for engines without a model-specific image tokenizer
+        return AIImageAttachment.DEFAULT_TOKEN_ESTIMATE;
+    }
+
+    default boolean supportsImageInput(@NotNull DBRProgressMonitor monitor) throws DBException {
+        try {
+            return getModels(monitor).stream()
+                .filter(model -> model.name().equals(getProperties().getModel()))
+                .findFirst()
+                .map(AIModel::imageInputSupported)
+                .orElse(true);
+        } catch (DBException exception) {
+            log.debug("Cannot determine image input capability", exception);
+            return true;
+        }
+    }
 
     @Override
     void close() throws DBException;
