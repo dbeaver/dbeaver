@@ -93,6 +93,12 @@ public final class AIHttpUtils {
                         return messageElement.getAsString();
                     }
                 }
+                if (errorResponse.getAsJsonObject().has("detail")) {
+                    JsonElement detailElement = errorResponse.getAsJsonObject().get("detail");
+                    if (detailElement.isJsonPrimitive() && detailElement.getAsJsonPrimitive().isString()) {
+                        return detailElement.getAsString();
+                    }
+                }
             }
         } catch (JsonSyntaxException e) {
             log.debug("Failed to parse error response: " + e.getMessage());
