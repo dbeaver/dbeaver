@@ -24,7 +24,7 @@ import org.junit.jupiter.api.Test;
 public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
 
     @Test
-    public void trailingCommentAfterDelimiter_yieldsSingleStatement() {
+    public void trailingCommentAfterDelimiterYieldsSingleStatement() {
         //given
         String selection = "SELECT 1; -- trailing comment"; //$NON-NLS-1$
 
@@ -36,7 +36,7 @@ public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void trailingBlockCommentAfterDelimiter_yieldsSingleStatement() {
+    public void trailingBlockCommentAfterDelimiterYieldsSingleStatement() {
         //given
         String selection = "SELECT 1; /* context */"; //$NON-NLS-1$
 
@@ -48,7 +48,7 @@ public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void plainQuery_unchanged() {
+    public void plainQueryUnchanged() {
         //given
         String selection = "SELECT 1"; //$NON-NLS-1$
 
@@ -60,7 +60,7 @@ public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void leadingComment_preservedAsSingleStatement() {
+    public void leadingCommentPreservedAsSingleStatement() {
         //given
         String selection = "-- context\nSELECT 1"; //$NON-NLS-1$
 
@@ -73,7 +73,7 @@ public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void blockComment_preservedAsSingleStatement() {
+    public void blockCommentPreservedAsSingleStatement() {
         //given
         String selection = "/* context */ SELECT 1"; //$NON-NLS-1$
 
@@ -86,7 +86,7 @@ public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void commentLikeTextInStringLiteral_untouched() {
+    public void commentLikeTextInStringLiteralUntouched() {
         //given
         String selection = "SELECT '-- not a comment' AS value"; //$NON-NLS-1$
 
@@ -99,7 +99,7 @@ public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void twoRealStatements_notSilentlyMerged() {
+    public void twoRealStatementsNotSilentlyMerged() {
         //given
         String selection = "SELECT 1; SELECT 2;"; //$NON-NLS-1$
 
@@ -112,7 +112,7 @@ public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void semicolonInDollarQuote_untouched() {
+    public void semicolonInDollarQuoteUntouched() {
         //given
         String selection = "SELECT $tag$a;b$tag$; -- comment"; //$NON-NLS-1$
 
@@ -124,7 +124,7 @@ public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void escapedQuoteInEscapeString_untouched() {
+    public void escapedQuoteInEscapeStringUntouched() {
         //given
         String selection = "SELECT E'a\\'; -- c'"; //$NON-NLS-1$
 
