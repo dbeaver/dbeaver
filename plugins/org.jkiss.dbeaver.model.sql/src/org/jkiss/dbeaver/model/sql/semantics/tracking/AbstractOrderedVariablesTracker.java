@@ -39,14 +39,25 @@ import java.util.*;
  * relevant elements and define where a new variable scope begins.
  */
 abstract class AbstractOrderedVariablesTracker extends AbstractSQLScriptVariablesTracker {
+    /**
+     * One positional variable lifetime. Snapshots are stored relative to the scope start and capture each effective
+     * variable operation encountered while rebuilding document order.
+     */
     protected static class ScopeState {
+        /**
+         * Variable snapshots keyed by offsets relative to this scope.
+         */
         @NotNull
         private final OffsetKeyedTreeMap<SQLQueryVariablesSubset> snapshots = new OffsetKeyedTreeMap<>();
 
+        /**
+         * Creates a scope whose initial snapshot is visible at relative offset zero.
+         */
         protected ScopeState(@NotNull SQLQueryVariablesSubset initialVariables) {
             this.snapshots.put(0, initialVariables);
         }
 
+        /** Resolves the latest snapshot at or before a position relative to this scope. */
         @NotNull
         private SQLQueryVariablesSubset getVisibleVariablesAt(int offset) {
             OffsetKeyedTreeMap.ValueAndOffset<SQLQueryVariablesSubset> snapshot = findFloor(this.snapshots, offset);
@@ -57,13 +68,28 @@ abstract class AbstractOrderedVariablesTracker extends AbstractSQLScriptVariable
         }
     }
 
+    /**
+     * Empty immutable snapshot carrying the concrete script or batch scope kind.
+     */
     @NotNull
     private final SQLQueryVariablesSubset emptyVariables;
+    /**
+     * Scope starts and their lazily built variable snapshots, keyed by absolute document offset.
+     */
     @NotNull
     private final OffsetKeyedTreeMap<ScopeState> scopes = new OffsetKeyedTreeMap<>();
+    /**
+     * Whether scope rebuilding must restart from the beginning of the document.
+     */
     private boolean scopesDirty = true;
+    /**
+     * Inclusive semantic frontier through which {@link #scopes} and its snapshots are valid.
+     */
     private int scopesValidThrough = -1;
 
+    /**
+     * Creates an ordered tracker with empty snapshots of the requested positional lifetime.
+     */
     protected AbstractOrderedVariablesTracker(@NotNull SQLScriptVariableScope variableScope) {
         this.emptyVariables = SQLQueryVariablesSubset.makeSnapshot(variableScope, Collections.emptyMap());
     }
@@ -71,14 +97,6 @@ abstract class AbstractOrderedVariablesTracker extends AbstractSQLScriptVariable
     @Override
     public final boolean usesReconciledElements() {
         return true;
-    }
-
-    @Override
-    public final int getLastCoveredPosition() {
-        synchronized (this.getStateLock()) {
-            this.consumeQueuedElements();
-            return this.scopesDirty ? -1 : this.scopesValidThrough;
-        }
     }
 
     @NotNull
@@ -151,6 +169,7 @@ abstract class AbstractOrderedVariablesTracker extends AbstractSQLScriptVariable
         }
     }
 
+    /** Invalidates outputs after a newly promoted analyzed statement while preserving its input snapshot. */
     private void invalidateDerivedStateAfter(int offset) {
         // Preserve the statement input at this offset so the accepted model can be applied without reanalysis.
         OffsetKeyedTreeMap.ValueAndOffset<ScopeState> currentScope = findFloor(this.scopes, offset);
@@ -179,6 +198,7 @@ abstract class AbstractOrderedVariablesTracker extends AbstractSQLScriptVariable
         this.scopesValidThrough = offset - 1;
     }
 
+    /** Marks all positional scopes for lazy reconstruction from committed structural elements. */
     private void resetDerivedState() {
         this.scopes.clear();
         this.scopesDirty = true;
@@ -190,6 +210,10 @@ abstract class AbstractOrderedVariablesTracker extends AbstractSQLScriptVariable
         this.resetDerivedState();
     }
 
+    /**
+     * Registers scope boundaries contributed by an element while rebuilding the requested range. Script scope uses the
+     * default no-op implementation; batch scope starts an empty scope at each batch delimiter.
+     */
     protected void registerScopeBoundaries(
         @NotNull OffsetKeyedTreeMap<ScopeState> scopes,
         int elementOffset,
@@ -199,11 +223,15 @@ abstract class AbstractOrderedVariablesTracker extends AbstractSQLScriptVariable
     ) {
     }
 
+    /**
+     * Returns the empty snapshot used to initialize newly created scopes.
+     */
     @NotNull
     protected final SQLQueryVariablesSubset getEmptyVariables() {
         return this.emptyVariables;
     }
 
+    /** Lazily extends semantic scope snapshots through the requested document position. */
     private boolean ensureScopesThrough(@NotNull SQLQueryRecognitionContext context, int position) {
         if (!this.scopesDirty && position <= this.scopesValidThrough) {
             return true;
@@ -226,6 +254,12 @@ abstract class AbstractOrderedVariablesTracker extends AbstractSQLScriptVariable
         return registeredThrough >= position && !context.getMonitor().isCanceled();
     }
 
+    /**
+     * Applies tracked boundaries and variable statements after the previous semantic frontier through the requested
+     * position, stopping at the first canceled recognition.
+     *
+     * @return inclusive position through which semantic state was built
+     */
     private int registerElementsInRange(
         @NotNull SQLQueryRecognitionContext context,
         @NotNull OffsetKeyedTreeMap<ScopeState> scopes,
@@ -280,6 +314,7 @@ abstract class AbstractOrderedVariablesTracker extends AbstractSQLScriptVariable
         return position;
     }
 
+    /** Applies variable operations in source order and stores a snapshot after each operation. */
     @NotNull
     private static SQLQueryVariablesSubset registerVariableOperations(
         @NotNull OffsetKeyedTreeMap.ValueAndOffset<ScopeState> scope,
@@ -297,6 +332,7 @@ abstract class AbstractOrderedVariablesTracker extends AbstractSQLScriptVariable
         return variables;
     }
 
+    /** Rebuilds the mutable working map from an immutable or live input snapshot. */
     private static void resetEffectiveVariables(
         @NotNull Map<String, SQLQueryVariableInfo> effectiveVariables,
         @NotNull SQLQueryVariablesSubset variables
@@ -307,6 +343,7 @@ abstract class AbstractOrderedVariablesTracker extends AbstractSQLScriptVariable
         }
     }
 
+    /** Removes every keyed value at or after the specified offset. */
     private static <T> void removeAtOrAfter(@NotNull OffsetKeyedTreeMap<T> map, int offset) {
         ListNode<Integer> offsetsToRemove = null;
         NodesIterator<T> iterator = map.nodesIteratorAt(offset);
@@ -322,6 +359,9 @@ abstract class AbstractOrderedVariablesTracker extends AbstractSQLScriptVariable
     }
 
     @Nullable
+    /**
+     * Finds the value at or immediately before an absolute or relative offset.
+     */
     protected static <T> OffsetKeyedTreeMap.ValueAndOffset<T> findFloor(
         @NotNull OffsetKeyedTreeMap<T> map,
         int offset

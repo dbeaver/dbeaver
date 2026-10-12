@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.utils.ListNode;
 
 import java.util.List;
 import java.util.concurrent.*;
+import java.util.stream.Stream;
 
 public class SQLBackgroundParsingJob {
 
@@ -146,27 +147,36 @@ public class SQLBackgroundParsingJob {
             long expectedDocumentGeneration
         ) {
             SQLScriptVariablesTracker currentTracker;
-            int gapStart;
+            int firstUnobservedPosition;
             synchronized (this.lock) {
                 if (expectedDocumentGeneration != this.documentGeneration || this.tracker == null) {
                     return null;
                 }
                 currentTracker = this.tracker;
                 int lastCoveredPosition = currentTracker.getLastCoveredPosition();
-                gapStart = lastCoveredPosition == Integer.MAX_VALUE ? Integer.MAX_VALUE : lastCoveredPosition + 1;
+                firstUnobservedPosition = lastCoveredPosition == Integer.MAX_VALUE
+                    ? Integer.MAX_VALUE
+                    : lastCoveredPosition + 1;
             }
 
             List<SQLScriptElement> gapElements = List.of();
             int analysisStart = elements.getFirst().getOffset();
-            if (gapStart < analysisStart) {
-                SQLScriptElement containingElement = SQLScriptParser.extractQueryAtPos(parserContext, gapStart, false);
+            int analysisEnd = elements.getLast().getOffset() + elements.getLast().getLength();
+            int observedRangeStart = analysisStart;
+            if (firstUnobservedPosition < analysisStart) {
+                observedRangeStart = firstUnobservedPosition;
+                SQLScriptElement containingElement = SQLScriptParser.extractQueryAtPos(
+                    parserContext,
+                    firstUnobservedPosition,
+                    false
+                );
                 if (containingElement != null) {
-                    gapStart = Math.min(gapStart, containingElement.getOffset());
+                    observedRangeStart = Math.min(observedRangeStart, containingElement.getOffset());
                 }
                 gapElements = SQLScriptParser.extractScriptQueries(
                     parserContext,
-                    gapStart,
-                    analysisStart - gapStart,
+                    observedRangeStart,
+                    analysisStart - observedRangeStart,
                     false,
                     false,
                     false,
@@ -174,12 +184,20 @@ public class SQLBackgroundParsingJob {
                 );
             }
 
-            List<SQLScriptElement> relevantGapElements = filterForRelevantElements(gapElements);
-            List<SQLScriptElement> relevantElements = filterForRelevantElements(elements);
+            List<SQLScriptElement> relevantElements = Stream.concat(gapElements.stream(), elements.stream())
+                .filter(SQLScriptVariablesTracker::isRelevant)
+                .toList();
             synchronized (this.lock) {
                 if (expectedDocumentGeneration == this.documentGeneration && currentTracker == this.tracker) {
-                    this.trackElements(relevantGapElements);
-                    this.trackElements(relevantElements);
+                    if (firstUnobservedPosition < analysisEnd) {
+                        currentTracker.reconcileElements(
+                            observedRangeStart,
+                            analysisEnd - observedRangeStart,
+                            relevantElements
+                        );
+                    } else {
+                        currentTracker.trackElements(relevantElements);
+                    }
                     return currentTracker;
                 }
                 return null;
@@ -213,7 +231,9 @@ public class SQLBackgroundParsingJob {
                     return;
                 }
             }
-            List<SQLScriptElement> relevantElements = filterForRelevantElements(elements);
+            List<SQLScriptElement> relevantElements = elements.stream()
+                .filter(SQLScriptVariablesTracker::isRelevant)
+                .toList();
             synchronized (this.lock) {
                 if (expectedTrackerGeneration == this.trackerGeneration &&
                     documentModificationStamp != this.invalidatedDocumentStamp &&
@@ -224,17 +244,6 @@ public class SQLBackgroundParsingJob {
                     }
                 }
             }
-        }
-
-        private void trackElements(@NotNull List<SQLScriptElement> elements) {
-            if (this.tracker != null) {
-                this.tracker.trackElements(elements);
-            }
-        }
-
-        @NotNull
-        private static List<SQLScriptElement> filterForRelevantElements(@NotNull List<SQLScriptElement> elements) {
-            return elements.stream().filter(SQLScriptVariablesTracker::isRelevant).toList();
         }
 
         private void unsubscribe() {

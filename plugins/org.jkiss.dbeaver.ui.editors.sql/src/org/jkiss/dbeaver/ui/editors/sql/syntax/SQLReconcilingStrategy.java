@@ -69,9 +69,9 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
          * <p>
          * The supplied elements are owned by the strategy and must not be modified or retained.
          *
-         * @param invalidatedOffset start of the range where previously tracked elements must be invalidated
-         * @param invalidatedLength length of the invalidated range
-         * @param observedElements elements observed by the reconciliation pass
+         * @param invalidatedOffset         start of the range where previously tracked elements must be invalidated
+         * @param invalidatedLength         length of the invalidated range
+         * @param observedElements          elements observed by the reconciliation pass
          * @param documentModificationStamp document modification stamp associated with the result
          */
         void onReconciliation(
@@ -240,18 +240,13 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     }
 
     private void reconcile(int damagedRegionOffset, int damagedRegionLength, boolean restoreCollapsedAnnotations) {
-        ProjectionAnnotationModel model;
         if (!editor.isFoldingEnabled()) {
             cache.clear(); // underlying annotation model being cleared, so reset the cache too
-            model = null;
-            if (this.reconciliationListeners.isEmpty()) {
-                return;
-            }
-        } else {
-            model = editor.getProjectionAnnotationModel();
-            if (model == null) {
-                return;
-            }
+            return;
+        }
+        ProjectionAnnotationModel model = editor.getProjectionAnnotationModel();
+        if (model == null) {
+            return;
         }
         long documentModificationStamp = this.document instanceof IDocumentExtension4 documentExtension
             ? documentExtension.getModificationStamp()
@@ -297,10 +292,6 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             parsedQueries,
             documentModificationStamp
         );
-        if (model == null) {
-            return;
-        }
-
         Collection<SQLScriptElementImpl> cachedQueries;
         if (leftBound == null && rightBound == null) {
             cachedQueries = Collections.unmodifiableNavigableSet(cache);

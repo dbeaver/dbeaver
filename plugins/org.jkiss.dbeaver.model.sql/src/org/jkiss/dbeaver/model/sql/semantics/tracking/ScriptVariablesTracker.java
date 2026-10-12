@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.sql.SQLScriptVariableScope;
  * positions because the entire script forms one scope.
  */
 final class ScriptVariablesTracker extends AbstractOrderedVariablesTracker {
+    /** Creates one document-wide ordered variable scope. */
     ScriptVariablesTracker() {
         super(SQLScriptVariableScope.SCRIPT);
     }

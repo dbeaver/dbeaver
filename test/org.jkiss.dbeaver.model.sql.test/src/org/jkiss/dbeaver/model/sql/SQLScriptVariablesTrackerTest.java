@@ -35,16 +35,64 @@ import java.util.List;
 
 public class SQLScriptVariablesTrackerTest extends DBeaverUnitTest {
     @Test
-    public void orderedTrackerReportsInclusiveCoveredPosition() {
+    public void orderedTrackerReportsInclusiveObservedPosition() {
         TrackerFixture fixture = createTracker(SQLScriptVariableScope.SCRIPT);
-        fixture.tracker.trackElements(List.of(variableQuery("DECLARE @value INT", 10, 18)));
+        SQLQuery declaration = variableQuery("DECLARE @value INT", 10, 18);
+        fixture.tracker.trackElements(List.of(declaration));
 
         Assertions.assertEquals(-1, fixture.tracker.getLastCoveredPosition());
         fixture.visibleAt(40);
+        Assertions.assertEquals(-1, fixture.tracker.getLastCoveredPosition());
+
+        fixture.tracker.reconcileElements(0, 41, List.of(declaration));
         Assertions.assertEquals(40, fixture.tracker.getLastCoveredPosition());
 
         fixture.tracker.applyDelta(30, 1, 0);
         Assertions.assertEquals(29, fixture.tracker.getLastCoveredPosition());
+    }
+
+    @Test
+    public void disjointObservedRangeDoesNotAdvanceCoverage() {
+        TrackerFixture fixture = createTracker(SQLScriptVariableScope.SCRIPT);
+
+        fixture.tracker.reconcileElements(30, 10, List.of());
+        Assertions.assertEquals(-1, fixture.tracker.getLastCoveredPosition());
+
+        fixture.tracker.reconcileElements(0, 10, List.of());
+        Assertions.assertEquals(9, fixture.tracker.getLastCoveredPosition());
+
+        fixture.tracker.reconcileElements(10, 20, List.of());
+        Assertions.assertEquals(29, fixture.tracker.getLastCoveredPosition());
+    }
+
+    @Test
+    public void documentDeltaRetainsPendingObservationPrefix() {
+        TrackerFixture fixture = createTracker(SQLScriptVariableScope.SCRIPT);
+
+        fixture.tracker.reconcileElements(0, 100, List.of());
+        fixture.tracker.applyDelta(20, 0, 1);
+
+        Assertions.assertEquals(19, fixture.tracker.getLastCoveredPosition());
+    }
+
+    @Test
+    public void documentDeltaAfterPendingObservationRetainsItsCoverage() {
+        TrackerFixture fixture = createTracker(SQLScriptVariableScope.SCRIPT);
+
+        fixture.tracker.reconcileElements(0, 20, List.of());
+        fixture.tracker.applyDelta(30, 0, 1);
+
+        Assertions.assertEquals(19, fixture.tracker.getLastCoveredPosition());
+    }
+
+    @Test
+    public void documentDeltaAtPendingObservationStartDiscardsItsCoverage() {
+        TrackerFixture fixture = createTracker(SQLScriptVariableScope.SCRIPT);
+
+        fixture.tracker.reconcileElements(10, 20, List.of());
+        fixture.tracker.applyDelta(10, 0, 1);
+
+        Assertions.assertEquals(-1, fixture.tracker.getLastCoveredPosition());
     }
 
     @Test

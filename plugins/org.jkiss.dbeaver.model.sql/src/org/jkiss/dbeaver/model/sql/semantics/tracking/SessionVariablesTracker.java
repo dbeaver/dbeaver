@@ -35,10 +35,19 @@ import java.util.concurrent.ConcurrentMap;
  * observes the same live variable set.
  */
 final class SessionVariablesTracker implements SQLScriptVariablesTracker {
+    /**
+     * Serializes clear and accepted-model updates while the live view remains concurrently readable.
+     */
     @NotNull
     private final Object stateLock = new Object();
+    /**
+     * Latest accepted operation for each canonical variable name.
+     */
     @NotNull
     private final ConcurrentMap<String, SQLQueryVariableInfo> variables = new ConcurrentHashMap<>();
+    /**
+     * Stable live view shared by all document positions for the lifetime of this tracker.
+     */
     @NotNull
     private final SQLQueryVariablesSubset visibleVariables = SQLQueryVariablesSubset.makeLiveView(this.variables);
 

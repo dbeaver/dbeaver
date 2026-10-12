@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.sql.semantics.OffsetKeyedTreeMap;
  * starting a new empty variable scope at each delimiter.
  */
 final class BatchVariablesTracker extends AbstractOrderedVariablesTracker {
+    /** Creates ordered variable scopes separated by batch delimiters. */
     BatchVariablesTracker() {
         super(SQLScriptVariableScope.BATCH);
     }

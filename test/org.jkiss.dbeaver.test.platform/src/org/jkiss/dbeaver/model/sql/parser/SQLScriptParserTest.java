@@ -1116,11 +1116,20 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
             """;
 
         Assertions.assertEquals(
-            List.of(true, true, false, true, false),
+            List.of(true, true, false, false, false),
             extractWithBatchSeparators(script).stream()
                 .map(SQLQuery::hasVariableKeyword)
                 .toList()
         );
+    }
+
+    @Test
+    public void captureSetVariableKeywordAfterLeadingComment() throws DBException {
+        String script = "-- initialize variable\nSET @value = 1;";
+
+        SQLQuery query = extractWithBatchSeparators(script).getFirst();
+
+        Assertions.assertTrue(query.hasVariableKeyword());
     }
 
     @Test

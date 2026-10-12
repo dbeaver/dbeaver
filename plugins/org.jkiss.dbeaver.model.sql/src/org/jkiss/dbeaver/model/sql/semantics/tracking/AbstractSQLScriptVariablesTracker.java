@@ -41,6 +41,33 @@ import java.util.function.Function;
  * the resulting elements into visible variable state and invalidate that derived state as needed.
  */
 abstract class AbstractSQLScriptVariablesTracker implements SQLScriptVariablesTracker {
+    /**
+     * Parser coverage awaiting commitment to the contiguous observation frontier.
+     */
+    private record ObservedRange(int start, int end) {
+        @NotNull
+        private ObservedRange merge(int start, int end) {
+            if (end <= start) {
+                return this;
+            }
+            if (start <= this.end && end >= this.start) {
+                return new ObservedRange(Math.min(start, this.start), Math.max(end, this.end));
+            }
+            return start < this.start ? new ObservedRange(start, end) : this;
+        }
+
+        @Nullable
+        private ObservedRange truncateAt(int offset) {
+            if (offset >= this.end) {
+                return this;
+            }
+            return offset <= this.start ? null : new ObservedRange(this.start, offset);
+        }
+    }
+
+    /**
+     * Structural removal queued by reconciliation. The clear-all variant represents the empty-document reset signal.
+     */
     private record InvalidationRange(int start, int end, boolean clearAll) {
         @NotNull
         private static InvalidationRange forClearAll() {
@@ -75,11 +102,16 @@ abstract class AbstractSQLScriptVariablesTracker implements SQLScriptVariablesTr
         }
     }
 
+    /**
+     * Minimal immutable representation retained from parser output. Variable text supports lazy recognition, while
+     * batch delimiters define scope boundaries without requiring a semantic model.
+     */
     protected record TrackedElement(
         int length,
         @Nullable String variableStatementText,
         boolean batchDelimiter
     ) {
+        /** Creates parser-derived structural knowledge, retaining text only for parser-identified variable statements. */
         @NotNull
         protected static TrackedElement variableStatement(@NotNull SQLScriptElement element) {
             return new TrackedElement(
@@ -89,35 +121,75 @@ abstract class AbstractSQLScriptVariablesTracker implements SQLScriptVariablesTr
             );
         }
 
+        /** Creates structural knowledge backed by a successfully accepted variable-statement model. */
         @NotNull
         protected static TrackedElement analyzedVariableStatement(@NotNull SQLScriptElement element) {
             return new TrackedElement(element.getLength(), element.getOriginalText(), false);
         }
 
+        /** Creates a structural batch boundary that carries no variable-statement text. */
         @NotNull
         protected static TrackedElement batchDelimiter(@NotNull SQLBatchDelimiterElement element) {
             return new TrackedElement(element.getLength(), null, true);
         }
 
+        /** Returns the first document position affected by this element. */
         int coverageStart(int elementOffset) {
             return elementOffset;
         }
 
+        /** Returns the exclusive end of document coverage affected by this element. */
         private int coverageEnd(int elementOffset) {
             return elementOffset + this.length;
         }
     }
 
+    /**
+     * Protects cheap producer-side updates submitted by reconciliation and background parsing.
+     */
     @NotNull
     private final Object queueLock = new Object();
+    /**
+     * Protects committed elements and all derived semantic state maintained by subclasses.
+     */
     @NotNull
     private final Object stateLock = new Object();
+    /**
+     * Presence updates waiting to be applied to {@link #trackedElements}.
+     */
     @NotNull
     private final OffsetKeyedTreeMap<TrackedElement> queuedElements = new OffsetKeyedTreeMap<>();
+    /**
+     * Parser-observed range waiting to advance {@link #lastObservedPosition}. It represents evidence about the current
+     * document, so an edit truncates it at the edit offset rather than translating it to new document coordinates.
+     */
+    @Nullable
+    private ObservedRange queuedObservedRange;
+    /**
+     * Pending removal range applied to {@link #trackedElements} before queued replacements are inserted. Unlike
+     * {@link #queuedObservedRange}, it follows document deltas so that the previously queued removal still reaches
+     * stale elements after their offsets change.
+     */
     @Nullable
     private InvalidationRange queuedInvalidationRange;
+    /**
+     * Committed relevant elements indexed by their current document offsets.
+     */
     @NotNull
     private final OffsetKeyedTreeMap<TrackedElement> trackedElements = new OffsetKeyedTreeMap<>();
+    /**
+     * Inclusive end of the contiguous document prefix whose relevant elements and absences have been observed.
+     * Pending observation advances this frontier only after its elements and invalidation are consumed.
+     */
+    private int lastObservedPosition = -1;
+
+    @Override
+    public final int getLastCoveredPosition() {
+        synchronized (this.stateLock) {
+            this.consumeQueuedElements();
+            return this.lastObservedPosition;
+        }
+    }
 
     @Override
     public final void trackElements(@NotNull Collection<? extends SQLScriptElement> elements) {
@@ -141,12 +213,16 @@ abstract class AbstractSQLScriptVariablesTracker implements SQLScriptVariablesTr
         synchronized (this.queueLock) {
             if (offset == 0 && length == 0) {
                 this.queuedElements.clear();
+                this.queuedObservedRange = null;
                 this.queuedInvalidationRange = InvalidationRange.forClearAll();
             } else {
                 removeElementsInRange(this.queuedElements, offset, end);
                 this.queuedInvalidationRange = this.queuedInvalidationRange == null
                     ? new InvalidationRange(offset, end, false)
                     : this.queuedInvalidationRange.expand(offset, end);
+                this.queuedObservedRange = this.queuedObservedRange == null
+                    ? new ObservedRange(offset, end)
+                    : this.queuedObservedRange.merge(offset, end);
             }
             for (SQLScriptElement element : elements) {
                 TrackedElement trackedElement = this.createTrackedElement(element);
@@ -165,6 +241,9 @@ abstract class AbstractSQLScriptVariablesTracker implements SQLScriptVariablesTr
         synchronized (this.stateLock) {
             synchronized (this.queueLock) {
                 applyDeltaToElements(this.queuedElements, offset, oldLength, newLength, Function.identity());
+                if (this.queuedObservedRange != null) {
+                    this.queuedObservedRange = this.queuedObservedRange.truncateAt(offset);
+                }
                 if (this.queuedInvalidationRange != null) {
                     this.queuedInvalidationRange = this.queuedInvalidationRange.applyDelta(offset, oldLength, newLength);
                 }
@@ -176,6 +255,9 @@ abstract class AbstractSQLScriptVariablesTracker implements SQLScriptVariablesTr
                 newLength,
                 Function.identity()
             );
+            if (offset <= this.lastObservedPosition) {
+                this.lastObservedPosition = offset - 1;
+            }
             this.applyDeltaToDerivedState(offset, oldLength, newLength);
             this.invalidateDerivedStateFrom(Math.min(offset, affectedElementStart));
         }
@@ -186,43 +268,76 @@ abstract class AbstractSQLScriptVariablesTracker implements SQLScriptVariablesTr
         synchronized (this.stateLock) {
             synchronized (this.queueLock) {
                 this.queuedElements.clear();
+                this.queuedObservedRange = null;
                 this.queuedInvalidationRange = null;
             }
             this.trackedElements.clear();
+            this.lastObservedPosition = -1;
             this.clearDerivedState();
         }
     }
 
+    /**
+     * Converts parser output into the minimal element representation required by the concrete scope strategy.
+     *
+     * @param element parser-produced script element
+     * @return retained representation, or {@code null} when the element is irrelevant
+     */
     @Nullable
     protected abstract TrackedElement createTrackedElement(@NotNull SQLScriptElement element);
 
+    /**
+     * Lets subclasses transform derived positional caches after a document replacement.
+     */
     protected void applyDeltaToDerivedState(int offset, int oldLength, int newLength) {
     }
 
+    /**
+     * Invalidates derived semantic state beginning at the earliest changed structural position.
+     */
     protected abstract void invalidateDerivedStateFrom(int offset);
 
+    /**
+     * Clears all subclass-owned semantic state.
+     */
     protected abstract void clearDerivedState();
 
+    /**
+     * Notifies subclasses that the retained representation at an offset changed.
+     */
     protected void trackedElementChanged(int offset) {
     }
 
+    /**
+     * Returns the lock guarding committed and derived tracker state.
+     */
     @NotNull
     protected final Object getStateLock() {
         return this.stateLock;
     }
 
+    /**
+     * Returns committed structural elements. Callers must hold {@link #getStateLock()}.
+     */
     @NotNull
     protected final OffsetKeyedTreeMap<TrackedElement> getTrackedElements() {
         return this.trackedElements;
     }
 
+    /**
+     * Atomically drains producer-side updates, applies invalidation before replacement elements, advances observation
+     * coverage, and invalidates subclass-derived state. Callers must hold {@link #getStateLock()}.
+     */
     protected final void consumeQueuedElements() {
         List<OffsetKeyedTreeMap.ValueAndOffset<TrackedElement>> pending = new ArrayList<>();
+        ObservedRange observedRange;
         InvalidationRange invalidationRange;
         synchronized (this.queueLock) {
             this.queuedElements.forEach((offset, element) ->
                 pending.add(new OffsetKeyedTreeMap.ValueAndOffset<>(element, offset)));
             this.queuedElements.clear();
+            observedRange = this.queuedObservedRange;
+            this.queuedObservedRange = null;
             invalidationRange = this.queuedInvalidationRange;
             this.queuedInvalidationRange = null;
         }
@@ -232,6 +347,7 @@ abstract class AbstractSQLScriptVariablesTracker implements SQLScriptVariablesTr
             invalidatedFrom = Integer.MAX_VALUE;
         } else if (invalidationRange.clearAll) {
             this.trackedElements.clear();
+            this.lastObservedPosition = -1;
             invalidatedFrom = 0;
             changed = true;
         } else {
@@ -247,15 +363,24 @@ abstract class AbstractSQLScriptVariablesTracker implements SQLScriptVariablesTr
                 changed = true;
             }
         }
+        if (observedRange != null && observedRange.start <= this.lastObservedPosition + 1) {
+            this.lastObservedPosition = Math.max(this.lastObservedPosition, observedRange.end - 1);
+        }
         if (changed) {
             this.invalidateDerivedStateFrom(invalidatedFrom);
         }
     }
 
+    /**
+     * Returns whether an element is a parser-identified variable statement.
+     */
     protected static boolean isVariableStatement(@NotNull SQLScriptElement element) {
         return element instanceof SQLQuery query && query.hasVariableKeyword();
     }
 
+    /**
+     * Extracts variable operations from an accepted variable-statement model in source order.
+     */
     @NotNull
     protected static List<SQLQueryVariableInfo> getIntroducedVariables(@Nullable SQLQueryModel model) {
         if (model == null || !(model.getQueryModel() instanceof SQLQueryVariableStatementModel statement)) {
@@ -273,6 +398,12 @@ abstract class AbstractSQLScriptVariablesTracker implements SQLScriptVariablesTr
         return result;
     }
 
+    /**
+     * Applies a document replacement to an offset-indexed element map and removes representations intersecting the
+     * changed text. Deletions conservatively discard the tail because its offsets and parser interpretation may change.
+     *
+     * @return earliest removed element coverage, or {@link Integer#MAX_VALUE} when no element was removed
+     */
     protected static <T> int applyDeltaToElements(
         @NotNull OffsetKeyedTreeMap<T> elements,
         int offset,
@@ -331,6 +462,7 @@ abstract class AbstractSQLScriptVariablesTracker implements SQLScriptVariablesTr
         return affectedElementStart;
     }
 
+    /** Removes retained elements whose coverage overlaps the half-open range. */
     private static void removeElementsInRange(
         @NotNull OffsetKeyedTreeMap<TrackedElement> elements,
         int start,

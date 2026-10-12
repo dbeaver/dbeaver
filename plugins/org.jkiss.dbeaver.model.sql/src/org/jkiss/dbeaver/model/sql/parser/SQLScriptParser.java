@@ -142,6 +142,7 @@ public class SQLScriptParser {
         boolean hasBlocks = false;
         int lastTokenLineFeeds = 0;
         boolean hasVariableKeyword = false;
+        boolean hasNonCommentToken = false;
         SQLTokenType prevNotEmptyTokenType = SQLTokenType.T_UNKNOWN;
         String firstKeyword = null, lastKeyword = null;
         boolean endClosedCaseBlock = false;
@@ -287,9 +288,12 @@ public class SQLScriptParser {
                     if (isVariablesTrackingEnabled) {
                         tokenText = document.get(tokenOffset, tokenLength);
                         if (SQLConstants.KEYWORD_DECLARE.equalsIgnoreCase(tokenText) ||
-                            SQLConstants.KEYWORD_SET.equalsIgnoreCase(tokenText)) {
+                            (!hasNonCommentToken && SQLConstants.KEYWORD_SET.equalsIgnoreCase(tokenText))) {
                             hasVariableKeyword = true;
                         }
+                    }
+                    if (tokenType != SQLTokenType.T_COMMENT) {
+                        hasNonCommentToken = true;
                     }
                     switch (tokenType) {
                         case T_BLOCK_END:
@@ -467,6 +471,7 @@ public class SQLScriptParser {
                 if (isDelimiter) {
                     statementStart = tokenEnd;
                     hasVariableKeyword = false;
+                    hasNonCommentToken = false;
                     if (isPredicateEvaluationEnabled) {
                         firstKeyword = null;
                         predicateEvaluator.reset();
