@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor {
     private final String position;
     private final DBPImage icon;
     private final Type type;
+    private final String folderType;
     private boolean embeddable;
 
     EntityEditorDescriptor() {
@@ -80,6 +81,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor {
         this.position = null;
         this.icon = DBIcon.TREE_DATABASE;
         this.type = Type.editor;
+        this.folderType = null;
     }
 
     public EntityEditorDescriptor(@NotNull IConfigurationElement config) {
@@ -101,6 +103,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor {
             this.type = Type.editor;
         }
         this.embeddable = CommonUtils.toBoolean(config.getAttribute("embeddable"));
+        this.folderType = config.getAttribute("folderType");
     }
 
     @NotNull
@@ -136,6 +139,11 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor {
     public Type getType()
     {
         return type;
+    }
+
+    @Nullable
+    public String getFolderType() {
+        return folderType;
     }
 
     public boolean isEmbeddable() {
