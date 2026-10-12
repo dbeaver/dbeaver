@@ -311,6 +311,18 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             return null;
         });
 
+        createFunction("openImage", arguments -> {
+            if (arguments.length == 2 && arguments[1] instanceof Number number) {
+                AIChatMessage message = getMessageById(arguments[0]);
+                int index = number.intValue();
+                List<AIImageAttachment> images = message.message().getImages();
+                if (index >= 0 && index < images.size()) {
+                    UIUtils.asyncExec(() -> AIImageAttachmentViewer.open(getShell(), images.get(index)));
+                }
+            }
+            return null;
+        });
+
         createFunction("openInEditor", arguments -> {
             if (arguments.length < 2) {
                 throw new IllegalArgumentException("openInEditor requires at least one argument");

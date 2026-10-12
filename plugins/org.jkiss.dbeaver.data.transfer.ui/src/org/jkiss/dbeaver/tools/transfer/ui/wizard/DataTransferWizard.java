@@ -568,10 +568,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             }
             Map<String, Object> nodeSection = new LinkedHashMap<>();
 
-            IDataTransferSettings settings = this.settings.getNodeSettings(nodePageSettings.sourceNode);
-            if (settings != null) {
-                settings.saveSettings(nodeSection);
-            }
+            settings.saveNodeSettings(nodePageSettings.sourceNode, nodeSection);
             // Note: do it in the end because of limitation of IDialogSettings wrapper
             config.put(entry.getKey().getSimpleName(), nodeSection);
         }

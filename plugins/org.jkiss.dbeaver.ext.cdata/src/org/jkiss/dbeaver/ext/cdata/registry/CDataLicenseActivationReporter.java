@@ -42,7 +42,8 @@ import java.util.jar.JarFile;
 
 final class CDataLicenseActivationReporter extends AbstractJob {
     private static final Log log = Log.getLog(CDataLicenseActivationReporter.class);
-    private static final String ACTIVATION_URL = "https://dbeaver.com/lmp/externalLicenseActivation";
+    private static final String ACTIVATION_HOST = /*<LM-PROD-URL*/"dbeaver.com"/*/>*/;
+    private static final String ACTIVATION_URL = "https://" + ACTIVATION_HOST + "/lmp/externalLicenseActivation";
     private static final int REQUEST_TIMEOUT = 10_000;
     private static final int MAX_ATTEMPTS = 3;
     private static final long RETRY_DELAY = 5_000;

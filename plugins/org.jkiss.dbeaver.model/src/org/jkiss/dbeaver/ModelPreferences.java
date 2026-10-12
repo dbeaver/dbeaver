@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.data.order.OrderingPolicy;
 import org.jkiss.dbeaver.model.data.order.OrderingStrategy;
+import org.jkiss.dbeaver.model.exec.DBCDDLTransactionBehavior;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -281,6 +282,7 @@ public final class ModelPreferences
     public static final String TRANSACTIONS_SHOW_NOTIFICATIONS = "transaction.show.notifications"; //$NON-NLS-1$
     public static final String TRANSACTIONS_AUTO_CLOSE_ENABLED = "transaction.auto.close.enabled"; //$NON-NLS-1$
     public static final String TRANSACTIONS_AUTO_CLOSE_TTL = "transaction.auto.close.ttl"; //$NON-NLS-1$
+    public static final String TRANSACTIONS_DDL_BEHAVIOR = "transaction.ddl.behavior"; //$NON-NLS-1$
 
     public static final String DICTIONARY_COLUMN_DIVIDER = "resultset.dictionary.columnDivider"; //$NON-NLS-1$
     public static final String RESULT_SET_USE_DATETIME_EDITOR = "resultset.datetime.editor";
@@ -418,6 +420,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED, true);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL, 30 * 60);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS, true);
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_DDL_BEHAVIOR, DBCDDLTransactionBehavior.AUTO.name());
 
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.DICTIONARY_COLUMN_DIVIDER, " ");
         // Data formats
