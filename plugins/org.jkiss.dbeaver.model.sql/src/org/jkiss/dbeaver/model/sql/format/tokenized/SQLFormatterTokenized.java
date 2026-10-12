@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -255,6 +255,8 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 if (lfCount > 1) {
                     if (i > 0 && statementDelimiters.contains(argList.get(i - 1).getString())) {
                         // Do nothing - there is a delimiter already
+                    } else if (i > 0 && argList.get(i - 1).getType() == TokenType.COMMENT) {
+                        // Do nothing - a comment is not a query and the delimiter would end up inside of it
                     } else {
                         argList.add(i, new FormatterToken(TokenType.SYMBOL, statementDelimiters.get(0)));
                         i++;
