@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
 public interface MimerCreatePage {
 
     /**
+     * Opens the create dialog and lets the user fill it in or cancel.
+     *
      * @return {@code true} if the user confirmed the dialog, {@code false} if they canceled -
      * same contract as {@link BaseObjectEditPage#edit()}.
      */

@@ -28,6 +28,8 @@ import java.util.Arrays;
 import static org.mockito.Mockito.when;
 
 /**
+ * Tests for {@link MimerSQLDialect}.
+ *
  * @author Mimer Information Technology
  */
 public class MimerSQLDialectTest extends DBeaverUnitTest {

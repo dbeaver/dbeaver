@@ -53,6 +53,10 @@ import java.util.Locale;
 import java.util.Properties;
 
 /**
+ * The Mimer SQL data source - adds datasource-global caches (users, groups, programs, databanks,
+ * shadows, libraries, collations) and version-gated feature predicates on top of the generic
+ * model.
+ *
  * @author Mimer Information Technology
  */
 public class MimerDataSource extends GenericDataSource {

@@ -54,6 +54,7 @@ import java.util.Collection;
  * custom query directly against {@code ROUTINES.EXTERNAL_LIBRARY}, not the generic {@code
  * EXT_OBJECT_OBJECT_USED} mechanism {@link MimerObjectUsedBy} otherwise reads from (see the
  * "Used By"/"Uses" feature elsewhere in this plugin). External libraries are an 11.1+ feature.
+ *
  * @author Mimer Information Technology
  */
 public class MimerLibrary implements DBSObject, DBPSaveableObject {

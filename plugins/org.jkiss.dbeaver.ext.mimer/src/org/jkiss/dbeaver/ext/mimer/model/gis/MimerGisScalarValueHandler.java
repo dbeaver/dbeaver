@@ -55,6 +55,8 @@ class MimerGisScalarValueHandler extends ProxyValueHandler {
     private final boolean asDecimal;
 
     /**
+     * Wraps {@code target} to convert its raw fetched bytes into a plain {@code Double}.
+     *
      * @param precomputed     the current page's already-converted values, keyed by {@link
      *                        MimerGisUtils#toKey(byte[])} - may be empty (e.g. the batch itself
      *                        failed), in which case every value falls back to its own query

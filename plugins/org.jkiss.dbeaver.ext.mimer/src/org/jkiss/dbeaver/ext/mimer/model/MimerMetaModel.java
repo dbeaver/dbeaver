@@ -313,7 +313,6 @@ public class MimerMetaModel extends GenericMetaModel {
         return new MimerTableIndex(table, nonUnique, qualifier, cardinality, indexName, indexType, persisted);
     }
 
-    @NotNull
     ///////////////////////////////////////////////
     // Tables / views
 
@@ -324,6 +323,7 @@ public class MimerMetaModel extends GenericMetaModel {
      * schemas' {@code TABLES} catalog view directly instead; every other schema stays on
      * the normal JDBC metadata path.
      */
+    @NotNull
     @Override
     public JDBCStatement prepareTableLoadStatement(
         @NotNull JDBCSession session,
@@ -552,7 +552,6 @@ public class MimerMetaModel extends GenericMetaModel {
         return new GenericContainerTrigger(container, name, null);
     }
 
-    @NotNull
     ///////////////////////////////////////////////
     // Native DDL
 
@@ -568,6 +567,7 @@ public class MimerMetaModel extends GenericMetaModel {
      * Save would re-execute the bare {@code SELECT} as a query instead of DDL, so edits would
      * never actually persist back to the view.
      */
+    @NotNull
     @Override
     public String getViewDDL(
         @NotNull DBRProgressMonitor monitor,

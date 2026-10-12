@@ -72,12 +72,14 @@ class MimerGisPointValueHandler extends ProxyValueHandler {
 
     private final Map<String, double[]> precomputed;
     private final String seedConstructor;
-    private final String xAccessor;
-    private final String yAccessor;
+    private final String accessorX;
+    private final String accessorY;
     private final int srid;
     private final boolean asGeometry;
 
     /**
+     * Wraps {@code target} to convert its raw fetched bytes into a {@link DBGeometry} point.
+     *
      * @param precomputed     the current page's already-converted values, keyed by {@link
      *                        MimerGisUtils#toKey(byte[])} - may be empty (e.g. the batch itself
      *                        failed), in which case every value falls back to its own query
@@ -93,16 +95,16 @@ class MimerGisPointValueHandler extends ProxyValueHandler {
         @NotNull DBDValueHandler target,
         @NotNull Map<String, double[]> precomputed,
         @NotNull String seedConstructor,
-        @NotNull String xAccessor,
-        @NotNull String yAccessor,
+        @NotNull String accessorX,
+        @NotNull String accessorY,
         int srid,
         boolean asGeometry
     ) {
         super(target);
         this.precomputed = precomputed;
         this.seedConstructor = seedConstructor;
-        this.xAccessor = xAccessor;
-        this.yAccessor = yAccessor;
+        this.accessorX = accessorX;
+        this.accessorY = accessorY;
         this.srid = srid;
         this.asGeometry = asGeometry;
     }
@@ -151,7 +153,7 @@ class MimerGisPointValueHandler extends ProxyValueHandler {
         if (xy == null) {
             // Not covered by the page this handler was built for (e.g. scrolled in afterward) -
             // same one-value round trip as before batching existed.
-            xy = MimerGisUtils.fetchComponents(session, bytes, seedConstructor, xAccessor, yAccessor);
+            xy = MimerGisUtils.fetchComponents(session, bytes, seedConstructor, accessorX, accessorY);
         }
         Point point = GEOMETRY_FACTORY.createPoint(new Coordinate(xy[0], xy[1]));
         DBGeometry geometry = new DBGeometry(point);

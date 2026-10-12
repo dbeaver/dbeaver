@@ -27,6 +27,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
+ * Mimer SQL's {@link GenericDataSourceProvider} override - rewrites the generated connection URL
+ * for the "local" (shared-memory) protocol.
+ *
  * @author Mimer Information Technology
  */
 public class MimerDataSourceProvider extends GenericDataSourceProvider<MimerDataSource> {
