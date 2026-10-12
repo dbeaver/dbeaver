@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStringValueHandler;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.BeanUtils;
 
@@ -90,7 +91,7 @@ public class SQLServerDateTimeOffsetHandler extends JDBCDateTimeValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
         if (format == DBDDisplayFormat.NATIVE && value instanceof OffsetDateTime offsetDateTime) {
-            return "'" + DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(offsetDateTime) + "'";
+            return SQLUtils.quoteString(column, DateTimeFormatter.ISO_OFFSET_DATE_TIME.format(offsetDateTime));
         }
         return super.getValueDisplayString(column, value, format);
     }

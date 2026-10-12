@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.data.DateTimeCustomValueHandler;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.sql.SQLState;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
@@ -205,8 +206,8 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
         String strValue = super.getValueDisplayString(column, value, format);
         // Native formatters return SQL expressions; fallback formatters return display text.
         if (format == DBDDisplayFormat.NATIVE && !DBUtils.isNullValue(value)
-            && !strValue.startsWith("'") && !strValue.endsWith("'")) {
-            strValue = "'" + strValue + "'";
+            && (strValue.length() < 2 || !strValue.startsWith("'") || !strValue.endsWith("'"))) {
+            strValue = SQLUtils.quoteString(column, strValue);
         }
         return strValue;
     }

@@ -18,15 +18,22 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -35,8 +42,8 @@ import java.text.Format;
 import java.text.SimpleDateFormat;
 import java.time.OffsetDateTime;
 import java.util.Date;
+import java.util.stream.Stream;
 
-import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 
 public class JDBCDateTimeValueHandlerTest extends DBeaverUnitTest {
@@ -101,6 +108,42 @@ public class JDBCDateTimeValueHandlerTest extends DBeaverUnitTest {
     public void preservesAlreadyQuotedFallback() {
         when(formatter.formatValue(OFFSET_VALUE)).thenReturn("'" + DISPLAY_VALUE + "'");
         Assertions.assertEquals("'" + DISPLAY_VALUE + "'", handler.getValueDisplayString(column, OFFSET_VALUE, DBDDisplayFormat.NATIVE));
+    }
+
+    @ParameterizedTest
+    @MethodSource("fallbackQuotingCases")
+    public void escapesNativeFallbackText(@NotNull String text, @NotNull String expected) {
+        when(formatter.formatValue(OFFSET_VALUE)).thenReturn(text);
+
+        Assertions.assertEquals(expected, handler.getValueDisplayString(column, OFFSET_VALUE, DBDDisplayFormat.NATIVE));
+        Assertions.assertEquals(expected, handler.getValueDisplayString(column, text, DBDDisplayFormat.NATIVE));
+        Assertions.assertEquals(text, handler.getValueDisplayString(column, OFFSET_VALUE, DBDDisplayFormat.UI));
+        Assertions.assertEquals(text, handler.getValueDisplayString(column, OFFSET_VALUE, DBDDisplayFormat.EDIT));
+    }
+
+    @NotNull
+    private static Stream<Arguments> fallbackQuotingCases() {
+        return Stream.of(
+            Arguments.of("2007-05-08 o'clock", "'2007-05-08 o''clock'"),
+            Arguments.of("'2007-05-08", "'''2007-05-08'"),
+            Arguments.of("2007-05-08'", "'2007-05-08'''"),
+            Arguments.of("'", "''''"),
+            Arguments.of("", "''"),
+            Arguments.of("'2007-05-08 o''clock'", "'2007-05-08 o''clock'")
+        );
+    }
+
+    @Test
+    public void usesColumnDialectForFallbackQuoting() {
+        DBSEntityAttribute attribute = mock(DBSEntityAttribute.class);
+        DBPDataSource dataSource = mock(DBPDataSource.class);
+        SQLDialect dialect = spy(BasicSQLDialect.INSTANCE);
+        when(attribute.getDataSource()).thenReturn(dataSource);
+        when(dataSource.getSQLDialect()).thenReturn(dialect);
+        String value = "2007-05-08 o'clock";
+
+        Assertions.assertEquals("'2007-05-08 o''clock'", handler.getValueDisplayString(attribute, value, DBDDisplayFormat.NATIVE));
+        verify(dialect).getQuotedString(value);
     }
 
     @Test
