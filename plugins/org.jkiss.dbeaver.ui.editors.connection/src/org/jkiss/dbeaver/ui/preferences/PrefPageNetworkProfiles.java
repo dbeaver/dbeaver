@@ -385,7 +385,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
         for (HandlerBlock handlerBlock : configurations.values()) {
             DBWHandlerConfiguration configuration = handlerBlock.loadedConfigs.get(profile);
             if (configuration != null) {
-                profile.updateConfiguration(configuration);
+                profile.updateConfiguration(new DBWHandlerConfiguration(configuration));
             }
         }
     }
