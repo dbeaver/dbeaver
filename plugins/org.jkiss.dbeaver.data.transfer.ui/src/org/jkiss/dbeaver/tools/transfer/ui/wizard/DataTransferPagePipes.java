@@ -66,6 +66,7 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -527,6 +528,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             DTUIMessages.data_transfer_wizard_configure_columns,
             DBIcon.TREE_COLUMNS,
             SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                getWizard().loadNodeSettings();
                 final List<StreamMappingContainer> mappings = new ArrayList<>();
 
                 StreamConsumerSettings streamConsumerSettings = getStreamConsumerSettings();
@@ -819,7 +821,13 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
 
     @Override
     public void activatePage() {
-        getWizard().loadNodeSettings();
+        DataTransferWizard wizard = getWizard();
+        DataTransferNodeDescriptor consumer = wizard.getSettings().getConsumer();
+        // resolve the last export database on the mapping page, which handles auto reconnect
+        if (wizard.isTaskEditor() || isDataImport() || consumer == null ||
+            !DatabaseTransferConsumer.class.isAssignableFrom(consumer.getNodeClass())) {
+            wizard.loadNodeSettings();
+        }
 
         inputsTable.setInput(getWizard().getSettings().getSourceObjects());
         updateSourceButtons();

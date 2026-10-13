@@ -497,6 +497,11 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return userCache.getObject(monitor, this, name);
     }
 
+    @NotNull
+    public JDBCStructCache<OracleDataSource, OracleUserProfile, OracleUserProfile.ProfileResource> getProfileCache() {
+        return profileCache;
+    }
+
     @Association
     public Collection<OracleUserProfile> getProfiles(DBRProgressMonitor monitor) throws DBException {
         return profileCache.getAllObjects(monitor, this);

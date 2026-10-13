@@ -24,14 +24,12 @@ import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationResult;
 import com.dbeaver.datadam.share.api.service.DDSharedProjectService;
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
-import com.dbeaver.rest.client.interceptor.HttpRequestWrapper;
-import com.dbeaver.rest.client.interceptor.HttpResponseWrapper;
-import com.dbeaver.rest.client.interceptor.InterceptorChain;
 import com.google.gson.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
+import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoSession;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.GsonUtils;
 import org.jkiss.utils.HttpConstants;
@@ -40,6 +38,7 @@ import org.jkiss.utils.Pair;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -51,7 +50,6 @@ import javax.crypto.SecretKey;
 public class DDShareClient extends AbstractRestClient implements DDSyncTransport, DDSharedProjectService {
 
     private static final int TIMEOUT_MS = 30000;
-    private static final String SERVER_TIME_HEADER = "X-DD-Server-Time";
     private static final String FIELD_NAME = "name";
     private static final String FIELD_DESCRIPTION = "description";
 
@@ -64,11 +62,10 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         updateTime""";
 
     private final DDSyncCredentials credentials;
-    private final ThreadLocal<byte[]> requestBody = new ThreadLocal<>();
     private SecretKey dataKey;
 
     public DDShareClient(@NotNull String url, @NotNull DDSyncCredentials credentials) {
-        super(url, DEFAULT_CONNECT_TIMEOUT, TIMEOUT_MS, List.of());
+        super(url, DEFAULT_CONNECT_TIMEOUT, TIMEOUT_MS, List.of(), HttpClient.Redirect.NEVER);
         this.credentials = credentials;
         this.gson = GsonUtils.gsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeIsoAdapter())
@@ -446,47 +443,12 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
     @NotNull
     private HttpRequest.Builder request(@NotNull byte[] body) throws DBException {
         URI uri = buildUri(CommonUtils.removeLeadingSlash(DDSyncApi.GRAPHQL_ENDPOINT), Map.of());
+        String authorization = DDDesktopSsoSession.accessFor(uri);
         HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
             .header(HttpConstants.HEADER_CONTENT_TYPE, MediaType.JSON.toString())
-            .header(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + buildToken("POST", uri, body))
+            .header(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + authorization)
             .POST(HttpRequest.BodyPublishers.ofByteArray(body));
-        requestBody.set(body);
         return builder;
-    }
-
-    @NotNull
-    @Override
-    protected <T> T execute(@NotNull HttpRequest.Builder builder, @NotNull Type type) throws DBException {
-        try {
-            return super.execute(builder, type);
-        } finally {
-            requestBody.remove();
-        }
-    }
-
-    @NotNull
-    @Override
-    protected HttpResponseWrapper executeChain(
-        @NotNull InterceptorChain chain,
-        @NotNull HttpRequestWrapper request,
-        @NotNull URI uri
-    ) throws Exception {
-        HttpResponseWrapper response = chain.proceed(request);
-        String serverTime = header(response, SERVER_TIME_HEADER);
-        if (serverTime == null) {
-            return response;
-        }
-        credentials.updateServerTime(Long.parseLong(serverTime));
-        request.withHeader(
-            HttpConstants.HEADER_AUTHORIZATION,
-            HttpConstants.BEARER_PREFIX + buildToken("POST", uri, requestBody.get()));
-        return chain.proceed(request);
-    }
-
-    @NotNull
-    private String buildToken(@NotNull String method, @NotNull URI uri, @NotNull byte[] body) throws DBException {
-        String pathAndQuery = uri.getRawQuery() == null ? uri.getRawPath() : uri.getRawPath() + "?" + uri.getRawQuery();
-        return credentials.buildToken(method, pathAndQuery, body);
     }
 
     @NotNull
@@ -509,12 +471,4 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         super.handleRequestException(message, e);
     }
 
-    @Nullable
-    private static String header(@NotNull HttpResponseWrapper response, @NotNull String name) {
-        return response.headers().entrySet().stream()
-            .filter(entry -> entry.getKey().equalsIgnoreCase(name))
-            .flatMap(entry -> entry.getValue().stream())
-            .findFirst()
-            .orElse(null);
-    }
 }

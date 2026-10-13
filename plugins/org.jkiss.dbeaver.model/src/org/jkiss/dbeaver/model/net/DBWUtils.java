@@ -203,9 +203,10 @@ public class DBWUtils {
                         }
                     }
                     if (urlConfiguration == null) {
-                        urlConfiguration = DatabaseURL.extractConfigurationFromUrl(DatabaseURL.Generic.TEMPLATE, activeUrl);
+                        DatabaseURL.Pattern genericPattern = DatabaseURL.Generic.getUrlPattern();
+                        urlConfiguration = DatabaseURL.extractConfigurationFromUrl(genericPattern, activeUrl);
                         if (urlConfiguration != null) {
-                            urlPattern = DatabaseURL.getUrlPattern(DatabaseURL.Generic.TEMPLATE);
+                            urlPattern = genericPattern;
                         }
                     }
                     if (urlConfiguration != null) {
@@ -253,4 +254,3 @@ public class DBWUtils {
         };
     }
 }
-

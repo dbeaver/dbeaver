@@ -1562,13 +1562,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             }
         }
 
-        if (firstInit) {
-            firstInit = false;
-            UIUtils.asyncExec(() -> {
-                updateTreeColumnWidths();
-                this.autoAssignMappings();
-            });
-        }
+        UIUtils.asyncExec(this::updateTreeColumnWidths);
     }
 
     private void updateTreeColumnWidths() {
@@ -1643,6 +1637,16 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         }
 
         loadAndUpdateColumnsModel();
+        // loading may be deferred until the user explicitly connects to the target database
+        if (firstInit && getDatabaseConsumerSettings().getContainer() != null && !model.isEmpty()) {
+            firstInit = false;
+            UIUtils.asyncExec(() -> {
+                if (!mappingViewer.getTree().isDisposed()) {
+                    updateTreeColumnWidths();
+                    autoAssignMappings();
+                }
+            });
+        }
         updatePageCompletion();
     }
 
