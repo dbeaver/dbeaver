@@ -148,6 +148,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             TreeViewer treeViewer = new TreeViewer(this, viewerStyle);
             final Tree tree = treeViewer.getTree();
             tree.setHeaderVisible(true);
+            NativeThemeUtils.installTreeSelectionFix(tree);
             if (showTableGrid) {
                 tree.setLinesVisible(true);
             }
@@ -208,7 +209,6 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 UIUtils.asyncExec(() -> {
                     themeRefreshPending = false;
                     if (!isDisposed()) {
-                        NativeThemeUtils.updateNativeTheme(itemsViewer.getControl());
                         itemsViewer.refresh();
                     }
                 });

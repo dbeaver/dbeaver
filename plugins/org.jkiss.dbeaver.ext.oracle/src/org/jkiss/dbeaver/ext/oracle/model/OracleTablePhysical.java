@@ -151,13 +151,13 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         throws DBException
     {
         // Read indexes using cache
-        return this.getContainer().indexCache.getObjects(monitor, getContainer(), this);
+        return this.getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
     }
 
     public OracleTableIndex getIndex(DBRProgressMonitor monitor, String name)
         throws DBException
     {
-        return this.getContainer().indexCache.getObject(monitor, getContainer(), this, name);
+        return this.getContainer().getIndexCache().getObject(monitor, getContainer(), this, name);
     }
 
     public PartitionCache getPartitionCache() {
@@ -321,7 +321,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
-        this.getContainer().indexCache.clearObjectCache(this);
+        this.getContainer().getIndexCache().clearObjectCache(this);
         if (partitionCache != null) {
             partitionCache.clearCache();
         }

@@ -43,7 +43,7 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
     @Override
     public DBSObjectCache<? extends DBSObject, OracleProcedureStandalone> getObjectsCache(OracleProcedureStandalone object)
     {
-        return object.getSchema().proceduresCache;
+        return object.getSchema().getProceduresCache();
     }
 
     @Override
@@ -54,8 +54,13 @@ public class OracleProcedureManager extends SQLObjectEditor<OracleProcedureStand
         @Nullable Object copyFrom,
         @NotNull Map<String, Object> options
     ) {
+        return createProcedure((OracleSchema) container);
+    }
+
+    @NotNull
+    protected OracleProcedureStandalone createProcedure(@NotNull OracleSchema schema) {
         return new OracleProcedureStandalone(
-            (OracleSchema) container,
+            schema,
             "NEW_PROCEDURE",
             DBSProcedureType.PROCEDURE);
     }
