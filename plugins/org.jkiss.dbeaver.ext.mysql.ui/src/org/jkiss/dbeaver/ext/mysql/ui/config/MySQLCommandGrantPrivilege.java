@@ -69,7 +69,7 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         this.withGrantOption = withGrantOption;
         this.schema = schema;
         this.table = table;
-        this.privileges.add(privilege);
+        addPrivilege(privilege);
     }
 
     /**
@@ -100,7 +100,7 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         this.withGrantOption = withGrantOption;
         this.schema = schema;
         this.procedure = procedure;
-        this.privileges.add(privilege);
+        addPrivilege(privilege);
     }
 
     public MySQLCommandGrantPrivilege(
@@ -120,7 +120,7 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         this.schema = schema;
         this.table = table;
         this.columns = columns;
-        this.privileges.add(privilege);
+        addPrivilege(privilege);
     }
 
     @Override
@@ -192,10 +192,6 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         return withGrantOption;
     }
 
-    public void setWithGrantOption(boolean withGrantOption) {
-        this.withGrantOption = withGrantOption;
-    }
-
     public boolean hasSameTarget(
         @Nullable MySQLCatalog schema,
         @Nullable MySQLTableBase table,
@@ -206,14 +202,55 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
             && CommonUtils.equalObjects(this.columns, columns);
     }
 
+    /**
+     * Adds a privilege to this statement. For a GRANT the grant-option pseudo-privilege also turns
+     * on the {@code WITH GRANT OPTION} suffix, so both always change together.
+     */
     public void addPrivilege(@NotNull MySQLPrivilege privilege) {
         if (!privileges.contains(privilege)) {
             privileges.add(privilege);
         }
+        if (grant && privilege.isGrantOption()) {
+            withGrantOption = true;
+        }
     }
 
+    /**
+     * Removes a privilege from this statement. For a GRANT removing the grant-option
+     * pseudo-privilege also drops the {@code WITH GRANT OPTION} suffix.
+     */
     public boolean removePrivilege(@NotNull MySQLPrivilege privilege) {
-        return privileges.remove(privilege);
+        boolean removed = privileges.remove(privilege);
+        if (grant && privilege.isGrantOption() && withGrantOption) {
+            withGrantOption = false;
+            removed = true;
+        }
+        return removed;
+    }
+
+    @NotNull
+    public List<MySQLPrivilege> getPrivileges() {
+        return List.copyOf(privileges);
+    }
+
+    @Nullable
+    public MySQLCatalog getSchema() {
+        return schema;
+    }
+
+    @Nullable
+    public MySQLTableBase getTable() {
+        return table;
+    }
+
+    @Nullable
+    public MySQLProcedure getProcedure() {
+        return procedure;
+    }
+
+    @Nullable
+    public List<MySQLTableColumn> getColumns() {
+        return columns;
     }
 
     public boolean isEmptyCommand() {

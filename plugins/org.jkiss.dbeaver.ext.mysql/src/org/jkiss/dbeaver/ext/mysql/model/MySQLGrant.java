@@ -411,15 +411,26 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
     /**
      * Splits a privilege list on top-level commas, keeping column lists such as
      * {@code SELECT (col1, col2)} intact (commas inside parentheses are not separators).
+     * Parentheses and commas inside back-tick quoted column names are part of the name;
+     * a doubled back-tick ({@code ``}) inside quotes is an escaped back-tick.
      */
     @NotNull
     static List<String> splitPrivileges(@NotNull String privString) {
         List<String> tokens = new ArrayList<>();
         int depth = 0;
         int start = 0;
+        boolean quoted = false;
         for (int i = 0; i < privString.length(); i++) {
             char c = privString.charAt(i);
-            if (c == '(') {
+            if (c == '`') {
+                if (quoted && i + 1 < privString.length() && privString.charAt(i + 1) == '`') {
+                    i++;
+                } else {
+                    quoted = !quoted;
+                }
+            } else if (quoted) {
+                continue;
+            } else if (c == '(') {
                 depth++;
             } else if (c == ')') {
                 depth--;

@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
@@ -53,6 +54,7 @@ import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -777,14 +779,8 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         DBECommandContext ctx = getEditorInput().getCommandContext();
         MySQLCommandGrantPrivilege opposite = findPendingUserCommand(user, !isGrant, table, procedure, columns);
         if (opposite != null) {
-            boolean cancelled;
-            if (privilege.isGrantOption() && !isGrant && opposite.isWithGrantOption()) {
-                opposite.setWithGrantOption(false);
-                cancelled = true;
-            } else {
-                cancelled = opposite.removePrivilege(privilege);
-            }
-            if (cancelled) {
+            // For a pending GRANT this also drops WITH GRANT OPTION together with its pseudo-privilege
+            if (opposite.removePrivilege(privilege)) {
                 if (opposite.isEmptyCommand()) {
                     ctx.removeCommand(opposite);
                 } else {
@@ -795,14 +791,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         }
         MySQLCommandGrantPrivilege pending = findPendingUserCommand(user, isGrant, table, procedure, columns);
         if (pending != null) {
-            if (privilege.isGrantOption() && isGrant) {
-                pending.setWithGrantOption(true);
-            } else {
-                pending.addPrivilege(privilege);
-                if (withGrantOption) {
-                    pending.setWithGrantOption(true);
-                }
-            }
+            pending.addPrivilege(privilege);
             ctx.updateCommand(pending, null);
             return;
         }
@@ -834,7 +823,75 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     // the command context handles them by their own object manager, so a raw cast is safe here.
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void addUserCommand(@NotNull MySQLCommandGrantPrivilege command) {
-        addChangeCommand((DBECommand) command, null);
+        addChangeCommand((DBECommand) command, (DBECommandReflector) privilegeChangeReflector);
+    }
+
+    /**
+     * Keeps the local grant state in sync with Undo/Redo of a privilege command. The command may
+     * hold several folded toggles, so its current content is re-applied (redo) or reverted (undo).
+     */
+    private final DBECommandReflector<MySQLUser, MySQLCommandGrantPrivilege> privilegeChangeReflector =
+        new DBECommandReflector<>() {
+            @Override
+            public void redoCommand(@NotNull MySQLCommandGrantPrivilege command) {
+                reflectPrivilegeCommand(command, true);
+            }
+
+            @Override
+            public void undoCommand(@NotNull MySQLCommandGrantPrivilege command) {
+                reflectPrivilegeCommand(command, false);
+            }
+        };
+
+    private void reflectPrivilegeCommand(@NotNull MySQLCommandGrantPrivilege command, boolean apply) {
+        // Undo of a GRANT means the privileges are not granted, undo of a REVOKE - that they are
+        final boolean granted = command.isGrant() == apply;
+        final MySQLUser user = command.getObject();
+        final List<MySQLTableColumn> columns = command.getColumns();
+        for (MySQLPrivilege privilege : command.getPrivileges()) {
+            if (CommonUtils.isEmpty(columns)) {
+                updateLocalGrant(user, privilege, granted, granted, command.getTable(), command.getProcedure(), null);
+            } else {
+                for (MySQLTableColumn column : columns) {
+                    updateLocalGrant(user, privilege, granted, granted, command.getTable(), null, column);
+                }
+            }
+        }
+        refreshAfterUndoRedo();
+    }
+
+    /**
+     * Rebuilds the lists and panels after Undo/Redo changed the local grants, keeping the current
+     * user/object selection when it is still shown.
+     */
+    private void refreshAfterUndoRedo() {
+        if (usersTable == null || usersTable.isDisposed()) {
+            return;
+        }
+        if (selectedUser != null && !users.contains(selectedUser)) {
+            selectedUser = null;
+        }
+        final MySQLTableBase table = selectedTable;
+        final MySQLProcedure procedure = selectedProcedure;
+        rebuildUsersTable();
+        selectUserItem(selectedUser);
+        fillObjectLists();
+        if (tablesTable != null) {
+            if (table != null && shownData(tablesTable).contains(table)) {
+                selectTableByData(tablesTable, table);
+            } else {
+                selectedTable = null;
+            }
+            if (procedure != null && shownData(proceduresTable).contains(procedure)) {
+                tablesTable.deselectAll();
+                selectTableByData(proceduresTable, procedure);
+            } else {
+                selectedProcedure = null;
+            }
+            fillColumnsList();
+        }
+        updatePanels();
+        updateButtons();
     }
 
     private @NotNull MySQLCommandGrantPrivilege createCommand(
@@ -1017,6 +1074,11 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         adjustListHeight(usersTable);
         selectUserItem(chosen.get(0));
         selectedUser = chosen.get(0);
+        // selectUserItem() doesn't fire the users-table listener, so drop the previous user's
+        // object selection here - otherwise the next toggle would target that stale object
+        selectedTable = null;
+        selectedColumn = null;
+        selectedProcedure = null;
         fillObjectLists();
         updatePanels();
         updateButtons();
@@ -1214,7 +1276,27 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                     grant.removeColumnPrivilege(priv, column.getName());
                 }
                 user.clearGrantsCache();
-                addUserRevokeCommand(new MySQLCommandRevokeObjectGrants(user, tableSpec(table), privNames, false));
+                final MySQLGrant curGrant = grant;
+                final String columnName = column.getName();
+                addUserRevokeCommand(
+                    new MySQLCommandRevokeObjectGrants(user, tableSpec(table), privNames, false),
+                    new DBECommandReflector<>() {
+                        @Override
+                        public void redoCommand(@NotNull MySQLCommandRevokeObjectGrants command) {
+                            for (MySQLPrivilege priv : affected) {
+                                curGrant.removeColumnPrivilege(priv, columnName);
+                            }
+                            refreshAfterUndoRedo();
+                        }
+
+                        @Override
+                        public void undoCommand(@NotNull MySQLCommandRevokeObjectGrants command) {
+                            for (MySQLPrivilege priv : affected) {
+                                curGrant.addColumnPrivilege(priv, columnName);
+                            }
+                            refreshAfterUndoRedo();
+                        }
+                    });
             }
             Set<MySQLTableColumn> extra = extraColumns.get(user);
             if (extra != null) {
@@ -1273,20 +1355,22 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         String objectSpec = grantObjectSpec(grant);
         userGrants.getOrDefault(user, new ArrayList<>()).remove(grant);
         user.clearGrantsCache();
+        DBECommandReflector<MySQLUser, MySQLCommandRevokeObjectGrants> reflector = createRemovalReflector(user, grant);
         // Grant option is folded into the table-level statement when there is one, otherwise into
         // the column-level statement, so it is never revoked on its own (which would error).
         boolean grantOptionEmitted = false;
         if (!tablePrivNames.isEmpty()) {
-            addUserRevokeCommand(new MySQLCommandRevokeObjectGrants(user, objectSpec, tablePrivNames, grant.isGrantOption()));
+            addUserRevokeCommand(
+                new MySQLCommandRevokeObjectGrants(user, objectSpec, tablePrivNames, grant.isGrantOption()), reflector);
             grantOptionEmitted = grant.isGrantOption();
         }
         if (!columnPrivNames.isEmpty()) {
             addUserRevokeCommand(new MySQLCommandRevokeObjectGrants(
-                user, objectSpec, columnPrivNames, !grantOptionEmitted && grant.isGrantOption()));
+                user, objectSpec, columnPrivNames, !grantOptionEmitted && grant.isGrantOption()), reflector);
             grantOptionEmitted |= grant.isGrantOption();
         }
         if (!grantOptionEmitted && grant.isGrantOption()) {
-            addUserRevokeCommand(new MySQLCommandRevokeObjectGrants(user, objectSpec, List.of(), true));
+            addUserRevokeCommand(new MySQLCommandRevokeObjectGrants(user, objectSpec, List.of(), true), reflector);
         }
     }
 
@@ -1308,8 +1392,42 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private void addUserRevokeCommand(@NotNull MySQLCommandRevokeObjectGrants command) {
-        addChangeCommand((DBECommand) command, null);
+    private void addUserRevokeCommand(
+        @NotNull MySQLCommandRevokeObjectGrants command,
+        @NotNull DBECommandReflector<MySQLUser, MySQLCommandRevokeObjectGrants> reflector
+    ) {
+        addChangeCommand((DBECommand) command, (DBECommandReflector) reflector);
+    }
+
+    /**
+     * Undo/Redo of a removal: undo puts the removed grant (and its user, if it was removed from
+     * the list too) back into the local state, redo drops it again.
+     */
+    private @NotNull DBECommandReflector<MySQLUser, MySQLCommandRevokeObjectGrants> createRemovalReflector(
+        @NotNull MySQLUser user,
+        @NotNull MySQLGrant grant
+    ) {
+        return new DBECommandReflector<>() {
+            @Override
+            public void redoCommand(@NotNull MySQLCommandRevokeObjectGrants command) {
+                userGrants.getOrDefault(user, new ArrayList<>()).remove(grant);
+                user.clearGrantsCache();
+                refreshAfterUndoRedo();
+            }
+
+            @Override
+            public void undoCommand(@NotNull MySQLCommandRevokeObjectGrants command) {
+                List<MySQLGrant> grants = userGrants.computeIfAbsent(user, u -> new ArrayList<>());
+                if (!grants.contains(grant)) {
+                    grants.add(grant);
+                }
+                if (!users.contains(user)) {
+                    users.add(user);
+                }
+                user.clearGrantsCache();
+                refreshAfterUndoRedo();
+            }
+        };
     }
 
     // ==== object loading for "+" dialogs (lazy) ====

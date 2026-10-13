@@ -173,7 +173,7 @@ public class PrivilegeTableControl extends Composite {
                     if (!userPrivilege.enabled || userPrivilege.partial) {
                         userPrivilege.enabled = true;
                         userPrivilege.partial = false;
-                        notifyPrivilegeCheck(userPrivilege.privilege, true, false);
+                        notifyPrivilegeCheck(userPrivilege.privilege, true, userPrivilege.privilege.isGrantOption());
                     }
                 }
                 drawColumns(currentPrivileges);

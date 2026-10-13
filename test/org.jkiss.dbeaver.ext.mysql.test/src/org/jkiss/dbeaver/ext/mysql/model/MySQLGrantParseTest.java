@@ -144,6 +144,14 @@ public class MySQLGrantParseTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void parenthesesInsideBackticksDoNotSplitPrivileges() throws DBException {
+        MySQLGrant grant = parse("GRANT SELECT (`a),b`, `c(`), INSERT ON `mydb`.`t` TO 'u'@'%'");
+        Assertions.assertNotNull(grant);
+        Assertions.assertEquals(Set.of("a),b", "c("), grant.getColumnPrivileges().get(privilege("SELECT")));
+        Assertions.assertTrue(Arrays.asList(grant.getPrivileges()).contains(privilege("INSERT")));
+    }
+
+    @Test
     public void escapedBacktickInColumnNameIsPreserved() throws DBException {
         MySQLGrant grant = parse("GRANT SELECT (`a``b`) ON `mydb`.`t` TO 'u'@'%'");
         Assertions.assertNotNull(grant);
@@ -172,6 +180,14 @@ public class MySQLGrantParseTest extends DBeaverUnitTest {
     public void splitPrivilegesKeepsColumnListsIntact() {
         List<String> tokens = MySQLGrant.splitPrivileges("SELECT (col1, col2), INSERT, UPDATE (col3)");
         Assertions.assertEquals(List.of("SELECT (col1, col2)", " INSERT", " UPDATE (col3)"), tokens);
+    }
+
+    @Test
+    public void splitPrivilegesIgnoresSeparatorsInsideBackticks() {
+        Assertions.assertEquals(
+            List.of("SELECT (`a),b`)", " INSERT"), MySQLGrant.splitPrivileges("SELECT (`a),b`), INSERT"));
+        Assertions.assertEquals(
+            List.of("SELECT (`x``)`, `y`)", " UPDATE"), MySQLGrant.splitPrivileges("SELECT (`x``)`, `y`), UPDATE"));
     }
 
     @Test

@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -401,14 +402,8 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         // A pending command of the opposite direction cancels this change out
         MySQLCommandGrantPrivilege opposite = findPendingCommand(!isGrant, schema, table, procedure, columns);
         if (opposite != null) {
-            boolean cancelled;
-            if (privilege.isGrantOption() && !isGrant && opposite.isWithGrantOption()) {
-                opposite.setWithGrantOption(false);
-                cancelled = true;
-            } else {
-                cancelled = opposite.removePrivilege(privilege);
-            }
-            if (cancelled) {
+            // For a pending GRANT this also drops WITH GRANT OPTION together with its pseudo-privilege
+            if (opposite.removePrivilege(privilege)) {
                 if (opposite.isEmptyCommand()) {
                     commandContext.removeCommand(opposite);
                 } else {
@@ -420,14 +415,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         // Fold into a pending command of the same direction
         MySQLCommandGrantPrivilege pending = findPendingCommand(isGrant, schema, table, procedure, columns);
         if (pending != null) {
-            if (privilege.isGrantOption() && isGrant) {
-                pending.setWithGrantOption(true);
-            } else {
-                pending.addPrivilege(privilege);
-                if (withGrantOption) {
-                    pending.setWithGrantOption(true);
-                }
-            }
+            pending.addPrivilege(privilege);
             commandContext.updateCommand(pending, null);
             return;
         }
@@ -439,7 +427,48 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         } else {
             command = new MySQLCommandGrantPrivilege(getDatabaseObject(), isGrant, withGrantOption, schema, table, privilege);
         }
-        addChangeCommand(command, null);
+        addChangeCommand(command, privilegeChangeReflector);
+    }
+
+    /**
+     * Keeps the local grant state in sync with Undo/Redo of a privilege command. The command may
+     * hold several folded toggles, so its current content is re-applied (redo) or reverted (undo).
+     */
+    private final DBECommandReflector<MySQLUser, MySQLCommandGrantPrivilege> privilegeChangeReflector =
+        new DBECommandReflector<>() {
+            @Override
+            public void redoCommand(@NotNull MySQLCommandGrantPrivilege command) {
+                reflectPrivilegeCommand(command, true);
+            }
+
+            @Override
+            public void undoCommand(@NotNull MySQLCommandGrantPrivilege command) {
+                reflectPrivilegeCommand(command, false);
+            }
+        };
+
+    private void reflectPrivilegeCommand(@NotNull MySQLCommandGrantPrivilege command, boolean apply) {
+        if (grants == null) {
+            return;
+        }
+        // Undo of a GRANT means the privileges are not granted, undo of a REVOKE - that they are
+        final boolean granted = command.isGrant() == apply;
+        final MySQLCatalog schema = command.getSchema();
+        final MySQLTableBase table = command.getTable();
+        final MySQLProcedure procedure = command.getProcedure();
+        final List<MySQLTableColumn> columns = command.getColumns();
+        for (MySQLPrivilege privilege : command.getPrivileges()) {
+            if (procedure != null && schema != null) {
+                updateLocalProcedureData(privilege, granted, granted, schema, procedure);
+            } else if (!CommonUtils.isEmpty(columns) && schema != null && table != null) {
+                for (MySQLTableColumn column : columns) {
+                    updateLocalColumnData(privilege, granted, granted, schema, table, column);
+                }
+            } else {
+                updateLocalData(privilege, granted, granted, schema, table);
+            }
+        }
+        refreshObjectLists();
     }
 
     @Nullable
