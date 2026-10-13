@@ -25,7 +25,7 @@ import org.mockito.Mockito;
 
 import java.util.Map;
 
-class DDAIEnvironmentTest {
+class DDAiEnvironmentTest {
     @Test
     void dataDamKeepsItsOwnEnvironmentAndDefaultEndpoint() {
         DDAIEngineProperties properties = withEnvironment(new DDAIEngineProperties(), Map.of(
