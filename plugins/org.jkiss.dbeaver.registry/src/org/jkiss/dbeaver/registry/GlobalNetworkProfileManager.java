@@ -89,7 +89,7 @@ public final class GlobalNetworkProfileManager extends DBWNetworkProfileManager 
                 return DataSourceParser.parseProfiles(
                     new DataSourceParser.ContextParameters(
                         null,
-                        DBWorkbench.isMultiuserOrDistributed() ? new DataSourceConfigurationManagerBuffer() : null,
+                        usesGlobalSecretController() ? null : new DataSourceConfigurationManagerBuffer(),
                         Map.of()
                     ),
                     json
@@ -107,7 +107,7 @@ public final class GlobalNetworkProfileManager extends DBWNetworkProfileManager 
             List<DBWNetworkProfile> profiles = getProfiles();
             DataSourceParser.ContextParameters contextParameters = new DataSourceParser.ContextParameters(
                 null,
-                DBWorkbench.isMultiuserOrDistributed() ? new DataSourceConfigurationManagerBuffer() : null,
+                usesGlobalSecretController() ? null : new DataSourceConfigurationManagerBuffer(),
                 new LinkedHashMap<>()
             );
             StringWriter strWriter = new StringWriter();
@@ -122,14 +122,34 @@ public final class GlobalNetworkProfileManager extends DBWNetworkProfileManager 
                 CONFIG_FILE_NAME,
                 strWriter.toString()
             );
-            if (!DBWorkbench.isMultiuserOrDistributed()) {
+            if (usesGlobalSecretController()) {
+                DBSSecretController secretController = getSecretController();
                 for (DBWNetworkProfile profile : profiles) {
-                    profile.persistSecrets(DBSSecretController.getGlobalSecretController());
+                    profile.persistSecrets(secretController);
                 }
+                secretController.flushChanges();
             }
         } catch (IOException | DBException e) {
             log.error("Error saving global network profiles", e);
         }
+    }
+
+    @Override
+    public void removeProfile(@NotNull DBWNetworkProfile profile) {
+        super.removeProfile(profile);
+        if (usesGlobalSecretController()) {
+            try {
+                DBSSecretController secretController = getSecretController();
+                secretController.setPrivateSecretValue(profile.getSecretKeyId(), null);
+                secretController.flushChanges();
+            } catch (DBException e) {
+                log.error("Error removing global network profile secrets", e);
+            }
+        }
+    }
+
+    private boolean usesGlobalSecretController() {
+        return !DBWorkbench.isMultiuserOrDistributed();
     }
 
     public void detachProfile(
