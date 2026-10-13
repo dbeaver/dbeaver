@@ -52,6 +52,12 @@ public @interface Property
     String name() default DEFAULT_LOCAL_STRING;
 
     /**
+     * Optional owner of shared property translations. Class-specific translations take precedence;
+     * missing names, descriptions and hints are looked up under the same property name in this owner's bundle.
+     */
+    Class<?> localizationOwner() default void.class;
+
+    /**
      * Property name which used on serialization
      *
      * @return name
