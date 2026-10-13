@@ -15,6 +15,7 @@ Export-Package: org.jkiss.dbeaver.ext.mssql,
  org.jkiss.dbeaver.ext.mssql.auth,
  org.jkiss.dbeaver.ext.mssql.edit.generic,
  org.jkiss.dbeaver.ext.mssql.model,
+ org.jkiss.dbeaver.ext.mssql.model.data,
  org.jkiss.dbeaver.ext.mssql.model.generic,
  org.jkiss.dbeaver.ext.mssql.model.session
 Bundle-ActivationPolicy: lazy
