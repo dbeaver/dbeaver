@@ -88,10 +88,18 @@ public class CopilotProperties extends BaseAIEngineProperties {
     @Override
     @Property(order = 3)
     public double getTemperature() {
+        return resolveTemperature(getModel());
+    }
+
+    public double getEffectiveTemperature() {
+        return resolveTemperature(getEffectiveModel());
+    }
+
+    private double resolveTemperature(@Nullable String modelName) {
         if (Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
             return temperature;
         }
-        return CopilotModels.getModelByName(getEffectiveModel())
+        return CopilotModels.getModelByName(modelName)
             .map(AIModel::defaultTemperature)
             .orElse(AIUtils.DEFAULT_TEMPERATURE);
     }

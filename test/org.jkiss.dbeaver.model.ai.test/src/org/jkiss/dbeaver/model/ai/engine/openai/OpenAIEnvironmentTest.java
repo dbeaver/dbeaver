@@ -184,6 +184,32 @@ class OpenAIEnvironmentTest {
     }
 
     @Test
+    void copilotTemperatureSurvivesSettingsSaveAndEnvironmentOptOut() {
+        CopilotProperties properties = withEnvironment(new CopilotProperties(), Map.of(CopilotProperties.ENV_MODEL, "gpt-5"));
+        properties.setModel("gpt-4o");
+        properties.setTemperature(0.0);
+        properties.setUseEnvVariables(true);
+        Assertions.assertEquals(0.0, properties.getTemperature());
+        Assertions.assertEquals(1.0, properties.getEffectiveTemperature());
+        properties.setTemperature(properties.getTemperature());
+        CopilotProperties saved = new Gson().fromJson(new Gson().toJson(properties, CopilotProperties.class), CopilotProperties.class);
+        saved.setUseEnvVariables(false);
+        Assertions.assertEquals(0.0, saved.getTemperature());
+        Assertions.assertEquals(0.0, saved.getEffectiveTemperature());
+        Assertions.assertEquals("gpt-4o", saved.getModel());
+    }
+
+    @Test
+    void copilotExplicitTemperatureIsPreservedWithAnEnvironmentModel() {
+        CopilotProperties properties = withEnvironment(new CopilotProperties(), Map.of(CopilotProperties.ENV_MODEL, "gpt-5"));
+        properties.setModel("gpt-4o");
+        properties.setTemperature(0.5);
+        properties.setUseEnvVariables(true);
+        Assertions.assertEquals(0.5, properties.getTemperature());
+        Assertions.assertEquals(0.5, properties.getEffectiveTemperature());
+    }
+
+    @Test
     void unknownEnvironmentModelsRetainTheConfiguredContextLimit() {
         OpenAIProperties openAiProperties = withEnvironment(new OpenAIProperties(), Map.of(OpenAIProperties.ENV_MODEL, "custom-model"));
         openAiProperties.setUseEnvVariables(true);

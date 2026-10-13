@@ -102,7 +102,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         @NotNull AIEngineRequest request
     ) throws DBException {
         Pair<OAIResponsesRequest, CopilotChatRequest> copilotChatRequestOAIResponsesRequestPair = new Pair<>(
-            OpenAiUtils.createOpenAiRequest(request, getModelName(), getProperties().getTemperature()),
+            OpenAiUtils.createOpenAiRequest(request, getModelName(), getProperties().getEffectiveTemperature()),
             createLegacyChatRequest(request, false)
         );
         Object chatResponse = client.getInstance().chat(
@@ -158,7 +158,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
         Pair<OAIResponsesRequest, CopilotChatRequest> copilotChatRequestOAIResponsesRequestPair = new Pair<>(
-            OpenAiUtils.createOpenAiRequest(request, getModelName(), getProperties().getTemperature()),
+            OpenAiUtils.createOpenAiRequest(request, getModelName(), getProperties().getEffectiveTemperature()),
             createLegacyChatRequest(request, true)
         );
         client.getInstance().createChatCompletionStream(
@@ -216,7 +216,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
                 .map(OAITool::fromDescriptor)
                 .map(CopilotFunction::new)
                 .toList())
-            .withTemperature(properties.getTemperature())
+            .withTemperature(properties.getEffectiveTemperature())
             .withStream(stream)
             .withIntent(false)
             .withTopP(1)
