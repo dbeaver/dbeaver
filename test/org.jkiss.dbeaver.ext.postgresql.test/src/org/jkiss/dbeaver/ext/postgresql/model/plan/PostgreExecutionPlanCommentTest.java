@@ -162,6 +162,18 @@ public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void ambiguousBackslashQuoteFailsClosed() {
+        //given
+        String selection = "SELECT 'a\\'; -- c'; -- trailing comment"; //$NON-NLS-1$
+
+        //when
+        String planSql = explainXml(selection);
+
+        //then
+        Assertions.assertEquals("EXPLAIN (FORMAT XML) SELECT 'a\\'; -- c'; -- trailing comment", planSql); //$NON-NLS-1$
+    }
+
+    @Test
     public void originalQueryPreserved() {
         //given
         String selection = "SELECT 1; -- trailing comment"; //$NON-NLS-1$

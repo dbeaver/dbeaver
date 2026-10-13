@@ -183,6 +183,15 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
             } else if (state == singleQuote) {
                 if (escapeAware && c == '\\' && n != 0) {
                     i += 2;
+                } else if (!escapeAware && c == '\\' && n == '\'') {
+                    int backslashes = 0;
+                    for (int j = i; j >= 0 && query.charAt(j) == '\\'; j--) {
+                        backslashes++;
+                    }
+                    if (backslashes % 2 == 1) {
+                        return -1;
+                    }
+                    i++;
                 } else if (c == '\'') {
                     if (n == '\'') {
                         i += 2;
