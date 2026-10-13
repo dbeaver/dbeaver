@@ -47,6 +47,7 @@ import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
@@ -66,6 +67,8 @@ import java.util.stream.Collectors;
  * SQLQuery
  */
 public class SQLQuery implements SQLScriptElement {
+
+    private static final Log log = Log.getLog(SQLQuery.class);
 
     private static final Pattern QUERY_TITLE_PATTERN = Pattern.compile("^\\s*(?:--|//|/\\*)\\s*(?:name|title)\\s*:\\s*(.+)$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
@@ -809,7 +812,7 @@ public class SQLQuery implements SQLScriptElement {
             try {
                 visitor.getTables(statement);
             } catch (Throwable e) {
-                return false;
+                log.trace("Error while evaluating whether given query is mutating.", e);
             }
             return visitor.isMutating();
         }
@@ -835,7 +838,7 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     private static class SelectMutationVisitor extends TablesNamesFinder<Void> {
-        private boolean mutating;
+        private boolean mutating = false;
 
         @Override
         @Nullable
