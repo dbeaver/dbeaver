@@ -192,18 +192,20 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
 
     @Test
     public void recognizeRepeatedRuntimeExpirationAndNotifyOnlyOnce() {
-        CDataDriverDescriptor driver = mockDriver();
+        var driver = Mockito.spy(new CDataDriverDescriptor(
+            DataSourceProviderRegistry.getInstance().getDataSourceProvider("generic"), "test-cdata-license",
+            new CDataDriverInfo("postgresql", "postgresql", "Test driver", 2026,
+                CDataDriverTier.PROFESSIONAL, "https://example.org", "postgresql", null)));
         CDataDriverLoaderDescriptor loader = new CDataDriverLoaderDescriptor("default", driver);
-        Mockito.when(driver.getDefaultDriverLoader()).thenReturn(loader);
-        Mockito.when(driver.reportLicenseError(Mockito.any())).thenCallRealMethod();
-        Mockito.doCallRealMethod().when(driver).setCurrentLicense(Mockito.any());
+        Mockito.doReturn(loader).when(driver).getDefaultDriverLoader();
+        var listener = Mockito.mock(Runnable.class);
+        driver.addLicenseChangeListener(listener);
         SQLException error = new SQLException("The trial license has expired [code: J nodeid: TEST].");
 
         Assertions.assertTrue(driver.reportLicenseError(error));
         Assertions.assertTrue(driver.reportLicenseError(error));
-        Mockito.verify(driver, Mockito.times(1)).setCurrentLicense(Mockito.any());
+        Mockito.verify(listener, Mockito.times(1)).run();
         Assertions.assertFalse(driver.reportLicenseError(new SQLException("Connection refused")));
-        Mockito.when(driver.getLicenseStatus()).thenCallRealMethod();
         Assertions.assertEquals(CDataLicenseStatus.TRIAL_EXPIRED, driver.getLicenseStatus());
     }
 

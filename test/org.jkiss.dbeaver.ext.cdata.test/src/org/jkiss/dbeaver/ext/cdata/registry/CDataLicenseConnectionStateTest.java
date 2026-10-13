@@ -51,7 +51,8 @@ public class CDataLicenseConnectionStateTest extends DBeaverUnitTest {
         Mockito.when(oldLicense.isLicenseInvalid()).thenReturn(true);
         Mockito.when(newLicense.isLicenseInvalid()).thenReturn(false);
         var parent = Mockito.mock(DBNNode.class);
-        var model = Mockito.mock(DBNModel.class);
+        var model = Mockito.spy(new DBNModel(DBWorkbench.getPlatform(), null));
+        Mockito.doNothing().when(model).fireNodeUpdate(Mockito.any(), Mockito.any(), Mockito.any());
         Mockito.when(parent.getModel()).thenReturn(model);
         var container = Mockito.mock(DBPDataSourceContainer.class,
             Mockito.withSettings().extraInterfaces(DBPImageProvider.class, DBPStatefulObject.class));

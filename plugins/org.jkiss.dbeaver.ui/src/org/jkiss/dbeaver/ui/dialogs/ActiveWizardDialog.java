@@ -24,13 +24,16 @@ import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.HashSet;
@@ -91,6 +94,16 @@ public class ActiveWizardDialog extends WizardDialog {
 
     protected boolean isModalWizard() {
         return true;
+    }
+
+    @Override
+    public void setTitleImage(@Nullable Image image) {
+        super.setTitleImage(image);
+        Label label = getTitleImageLabel();
+        if (label != null && !label.isDisposed()) {
+            label.requestLayout();
+            label.getParent().layout(true, true);
+        }
     }
 
     @Override

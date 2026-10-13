@@ -141,12 +141,12 @@ final class CDataActivationDialog extends BaseDialog {
         GridData formData = new GridData(GridData.FILL_HORIZONTAL);
         formData.widthHint = 520;
         form.setLayoutData(formData);
-        nameText = createField(form, CDataUIMessages.activation_name, endUserName);
+        nameText = createField(form, CDataUIMessages.activation_name, endUserName, SWT.NONE);
         nameError = createErrorLabel(nameText.getParent());
-        emailText = createField(form, CDataUIMessages.activation_email, endUserEmail);
+        emailText = createField(form, CDataUIMessages.activation_email, endUserEmail, SWT.NONE);
         emailError = createErrorLabel(emailText.getParent());
         if (!isTrial()) {
-            productKeyText = createField(form, CDataUIMessages.activation_product_key, "");
+            productKeyText = createField(form, CDataUIMessages.activation_product_key, "", SWT.PASSWORD);
             productKeyError = createErrorLabel(productKeyText.getParent());
         }
 
@@ -382,7 +382,7 @@ final class CDataActivationDialog extends BaseDialog {
     }
 
     @NotNull
-    private static Text createField(@NotNull Composite parent, @NotNull String label, @NotNull String value) {
+    private static Text createField(@NotNull Composite parent, @NotNull String label, @NotNull String value, int style) {
         Label fieldLabel = UIUtils.createLabel(parent, label);
         GridData labelData = new GridData(SWT.LEFT, SWT.TOP, false, false);
         labelData.verticalIndent = 3;
@@ -390,7 +390,7 @@ final class CDataActivationDialog extends BaseDialog {
         fieldLabel.setLayoutData(labelData);
         Composite field = UIUtils.createPlaceholder(parent, 1, 0);
         field.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        Text text = new Text(field, SWT.BORDER);
+        Text text = new Text(field, SWT.BORDER | style);
         text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         text.setText(value);
         return text;
