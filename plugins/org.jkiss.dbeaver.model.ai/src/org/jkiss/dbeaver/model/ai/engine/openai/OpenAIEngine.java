@@ -58,7 +58,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     @Override
     public int estimateImageTokens(@NotNull AIImageAttachment image) {
-        return OpenAiUtils.estimateImageTokens(properties.getModel(), image);
+        return OpenAiUtils.estimateImageTokens(properties.getEffectiveModel(), image);
     }
 
     @NotNull
@@ -72,7 +72,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
                 ))
                 .toList();
         }
-        String baseUrl = properties.getBaseUrl();
+        String baseUrl = properties.getEffectiveBaseUrl();
         boolean defaultEndpoint = OpenAIBaseProperties.isDefaultBaseUrl(baseUrl);
         return openAiService.getInstance().getModels(monitor)
             .stream()
@@ -128,7 +128,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     @Override
     public int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        Integer contextWindowSize = properties.getContextWindowSize();
+        Integer contextWindowSize = properties.getEffectiveContextWindowSize();
         if (contextWindowSize != null) {
             return contextWindowSize;
         }
@@ -170,11 +170,11 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
             }
             return new OpenAIAccountClient(openAIProperties);
         }
-        String token = properties.getToken();
+        String token = properties.getEffectiveToken();
         if (properties.isTokenRequired() && CommonUtils.isEmptyTrimmed(token)) {
             throw new DBException("OpenAI API token is not set");
         }
-        String baseUrl = properties.getBaseUrl();
+        String baseUrl = properties.getEffectiveBaseUrl();
         if (baseUrl == null || baseUrl.isEmpty()) {
             baseUrl = OpenAIClientResponses.OPENAI_ENDPOINT;
         }
@@ -183,7 +183,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     @Nullable
     protected String model() throws DBException {
-        return properties.getModel();
+        return properties.getEffectiveModel();
     }
 
     protected double temperature() throws DBException {

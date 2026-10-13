@@ -34,9 +34,14 @@ import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
 import java.util.Map;
 
 public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBaseProperties, AIAccountProperties {
+    public static final String ENV_API_KEY = "OPENAI_API_KEY";
+    public static final String ENV_BASE_URL = "OPENAI_BASE_URL";
+    public static final String ENV_MODEL = "DBEAVER_AI_OPENAI_MODEL";
+
     protected static final String GPT_BASE_URL = "gpt.base_url";
     protected static final String GPT_TOKEN = "gpt.token";
     protected static final String GPT_MODEL = "gpt.model";
@@ -194,6 +199,15 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         return OpenAIModels.getModelByName(getModel())
             .map(AIModel::contextWindowSize)
             .orElse(null);
+    }
+
+    @Nullable
+    @Override
+    public Integer getEffectiveContextWindowSize() {
+        String environmentModel = getEnvironmentModel();
+        return environmentModel == null ? getContextWindowSize() : OpenAIModels.getModelByName(environmentModel)
+            .map(AIModel::contextWindowSize)
+            .orElseGet(this::getContextWindowSize);
     }
 
     public void setContextWindowSize(@Nullable Integer contextWindowSize) {
@@ -560,6 +574,30 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     private OpenAIProperties getAccountCredentialsOwner() {
         OpenAIProperties source = accountCredentialsSource;
         return source == null ? this : source.getAccountCredentialsOwner();
+    }
+
+    @NotNull
+    @Override
+    public List<String> getEnvironmentVariables() {
+        return List.of(ENV_API_KEY, ENV_BASE_URL, ENV_MODEL);
+    }
+
+    @Nullable
+    @Override
+    protected String getEnvironmentModel() {
+        return getEnvironmentValue(ENV_MODEL);
+    }
+
+    @Nullable
+    @Override
+    public String getEffectiveToken() {
+        return isAccountAuthentication() ? getToken() : resolveEnvironmentValue(getToken(), ENV_API_KEY);
+    }
+
+    @NotNull
+    @Override
+    public String getEffectiveBaseUrl() {
+        return isAccountAuthentication() ? getBaseUrl() : resolveEnvironmentValue(getBaseUrl(), ENV_BASE_URL);
     }
 
     private void saveAccountTokensInternal(

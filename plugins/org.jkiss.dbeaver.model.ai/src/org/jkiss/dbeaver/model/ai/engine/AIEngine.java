@@ -78,7 +78,7 @@ public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseabl
     default boolean supportsImageInput(@NotNull DBRProgressMonitor monitor) throws DBException {
         try {
             return getModels(monitor).stream()
-                .filter(model -> model.name().equals(getProperties().getModel()))
+                .filter(model -> model.name().equals(getProperties().getEffectiveModel()))
                 .findFirst()
                 .map(AIModel::imageInputSupported)
                 .orElse(true);
