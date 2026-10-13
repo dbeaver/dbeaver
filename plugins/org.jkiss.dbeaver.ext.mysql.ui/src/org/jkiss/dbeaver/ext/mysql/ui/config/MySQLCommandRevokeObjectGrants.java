@@ -38,6 +38,8 @@ public class MySQLCommandRevokeObjectGrants extends DBECommandAbstract<MySQLUser
 
     private final String objectSpec;
     private final List<String> privilegeNames;
+    // Column-level privileges of the same grant: a separate statement, mixing levels is rejected by the server
+    private final List<String> columnPrivilegeNames;
     private final boolean grantOption;
 
     /**
@@ -53,9 +55,27 @@ public class MySQLCommandRevokeObjectGrants extends DBECommandAbstract<MySQLUser
         @NotNull String objectSpec,
         @NotNull List<String> privilegeNames,
         boolean grantOption) {
+        this(user, objectSpec, privilegeNames, List.of(), grantOption);
+    }
+
+    /**
+     * Creates a command that removes a whole grant row in one undoable step: table-level and
+     * column-level privileges are revoked by two statements of this single command.
+     *
+     * @param privilegeNames       rendered table/routine-level privileges, e.g. {@code SELECT}, {@code ALL PRIVILEGES}
+     * @param columnPrivilegeNames rendered column-level privileges, e.g. {@code UPDATE (`col1`, `col2`)}
+     */
+    public MySQLCommandRevokeObjectGrants(
+        @NotNull MySQLUser user,
+        @NotNull String objectSpec,
+        @NotNull List<String> privilegeNames,
+        @NotNull List<String> columnPrivilegeNames,
+        boolean grantOption
+    ) {
         super(user, MySQLUIMessages.edit_command_grant_privilege_name_revoke_privilege);
         this.objectSpec = objectSpec;
         this.privilegeNames = new ArrayList<>(privilegeNames);
+        this.columnPrivilegeNames = new ArrayList<>(columnPrivilegeNames);
         this.grantOption = grantOption;
     }
 
@@ -72,11 +92,22 @@ public class MySQLCommandRevokeObjectGrants extends DBECommandAbstract<MySQLUser
         @NotNull Map<String, Object> options) {
         List<DBEPersistAction> actions = new ArrayList<>();
         List<String> revoked = new ArrayList<>(privilegeNames);
-        // Fold grant option into the same REVOKE statement when there are other privileges;
-        // a standalone "REVOKE GRANT OPTION" errors if the option isn't actually held.
+        List<String> columnRevoked = new ArrayList<>(columnPrivilegeNames);
+        // Fold grant option into one REVOKE statement with other privileges (the table-level one
+        // when there is one); it is revoked on its own only when the grant holds nothing else.
         if (grantOption) {
-            revoked.add("GRANT OPTION"); //$NON-NLS-1$
+            if (revoked.isEmpty() && !columnRevoked.isEmpty()) {
+                columnRevoked.add("GRANT OPTION"); //$NON-NLS-1$
+            } else {
+                revoked.add("GRANT OPTION"); //$NON-NLS-1$
+            }
         }
+        addRevokeAction(actions, revoked);
+        addRevokeAction(actions, columnRevoked);
+        return actions.toArray(new DBEPersistAction[0]);
+    }
+
+    private void addRevokeAction(@NotNull List<DBEPersistAction> actions, @NotNull List<String> revoked) {
         if (!revoked.isEmpty()) {
             actions.add(new SQLDatabasePersistAction(
                 MySQLUIMessages.edit_command_grant_privilege_name_revoke_privilege,
@@ -84,6 +115,5 @@ public class MySQLCommandRevokeObjectGrants extends DBECommandAbstract<MySQLUser
                     " ON " + objectSpec + //$NON-NLS-1$
                     " FROM " + getObject().getFullName())); //$NON-NLS-1$
         }
-        return actions.toArray(new DBEPersistAction[0]);
     }
 }

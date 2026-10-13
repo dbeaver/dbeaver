@@ -1210,7 +1210,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
                 if (!grant.matches(catalog)) {
                     continue;
                 }
-                revokeWholeGrant(grant, grantObjectSpec(grant, catalog));
+                revokeWholeGrant(grant);
             }
             extraCatalogs.remove(catalog);
             extraTables.remove(catalog);
@@ -1239,7 +1239,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         for (MySQLTableBase table : new ArrayList<>(selectedTables)) {
             for (MySQLGrant grant : new ArrayList<>(grants)) {
                 if (grant.matches(catalog) && grant.matches(table)) {
-                    revokeWholeGrant(grant, tableSpec(catalog, table.getName()));
+                    revokeWholeGrant(grant);
                 }
             }
             Set<MySQLTableBase> extra = extraTables.get(catalog);
@@ -1328,7 +1328,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         for (MySQLProcedure procedure : new ArrayList<>(selectedProcedures)) {
             for (MySQLGrant grant : new ArrayList<>(grants)) {
                 if (grant.matches(catalog) && grant.matchesProcedure(procedure)) {
-                    revokeWholeGrant(grant, procedureSpec(catalog, grant.getObjectType(), procedure.getName()));
+                    revokeWholeGrant(grant);
                 }
             }
             Set<MySQLProcedure> extra = extraProcedures.get(catalog);
@@ -1347,7 +1347,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
      * Creates a REVOKE command covering everything the given grant holds and drops the grant
      * from the local model.
      */
-    private void revokeWholeGrant(@NotNull MySQLGrant grant, @NotNull String objectSpec) {
+    private void revokeWholeGrant(@NotNull MySQLGrant grant) {
         // Revoke exactly the privileges the grant holds, each at its own level. Table-level and
         // column-level privileges go in separate statements: mixing them (or listing a privilege
         // that isn't actually held) makes the server reject the whole statement.
@@ -1386,45 +1386,18 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
                     refreshObjectLists();
                 }
             };
-        boolean grantOptionEmitted = false;
-        if (!tablePrivNames.isEmpty()) {
-            addChangeCommand(
-                new MySQLCommandRevokeObjectGrants(
-                    getDatabaseObject(), objectSpec, tablePrivNames, grant.isGrantOption()),
-                reflector);
-            grantOptionEmitted = grant.isGrantOption();
-        }
-        if (!columnPrivNames.isEmpty()) {
-            addChangeCommand(
-                new MySQLCommandRevokeObjectGrants(
-                    getDatabaseObject(), objectSpec, columnPrivNames, !grantOptionEmitted && grant.isGrantOption()),
-                reflector);
-            grantOptionEmitted |= grant.isGrantOption();
-        }
-        if (!grantOptionEmitted && grant.isGrantOption()) {
-            addChangeCommand(new MySQLCommandRevokeObjectGrants(getDatabaseObject(), objectSpec, List.of(), true), reflector);
-        }
-    }
-
-    private @NotNull String grantObjectSpec(@NotNull MySQLGrant grant, @NotNull MySQLCatalog catalog) {
-        if (grant.getObjectType() != MySQLGrant.ObjectType.TABLE) {
-            return procedureSpec(catalog, grant.getObjectType(), grant.getTable());
-        }
-        return grant.isAllTables()
-            ? DBUtils.getQuotedIdentifier(catalog) + ".*" //$NON-NLS-1$
-            : tableSpec(catalog, grant.getTable());
+        // One command for the whole row (table- and column-level statements together), so a single
+        // Undo restores exactly what this removal revoked. The target comes from the grant itself:
+        // a wildcard schema grant (`tenant\_%`.*) must be revoked by its stored pattern.
+        addChangeCommand(
+            new MySQLCommandRevokeObjectGrants(
+                getDatabaseObject(), grant.getObjectSpec(), tablePrivNames, columnPrivNames, grant.isGrantOption()),
+            reflector);
     }
 
     private @NotNull String tableSpec(@NotNull MySQLCatalog catalog, @NotNull String tableName) {
         return DBUtils.getQuotedIdentifier(catalog) + "." //$NON-NLS-1$
             + DBUtils.getQuotedIdentifier(catalog.getDataSource(), tableName);
-    }
-
-    private @NotNull String procedureSpec(
-        @NotNull MySQLCatalog catalog, @NotNull MySQLGrant.ObjectType objectType, @NotNull String procedureName) {
-        return (objectType == MySQLGrant.ObjectType.FUNCTION ? "FUNCTION " : "PROCEDURE ") //$NON-NLS-1$ //$NON-NLS-2$
-            + DBUtils.getQuotedIdentifier(catalog) + "." //$NON-NLS-1$
-            + DBUtils.getQuotedIdentifier(catalog.getDataSource(), procedureName);
     }
 
     private void refreshObjectLists() {

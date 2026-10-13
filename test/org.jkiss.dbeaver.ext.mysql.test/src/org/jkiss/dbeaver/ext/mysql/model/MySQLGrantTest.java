@@ -233,4 +233,26 @@ public class MySQLGrantTest extends DBeaverUnitTest {
         Assertions.assertFalse(grant.getColumnPrivileges().containsKey(select));
         Assertions.assertFalse(grant.hasColumnPrivilege(select, "col"));
     }
+
+    @Test
+    public void objectSpecUsesStoredWildcardSchema() {
+        // A `tenant\_%`.* grant shows up under tenant_1, but must be revoked by its stored pattern
+        MySQLGrant grant = tableGrant("tenant\\_%", "*", List.of(object("SELECT")), false);
+        Assertions.assertTrue(grant.matches(catalog("tenant_1")));
+        Assertions.assertEquals("`tenant\\_%`.*", grant.getObjectSpec());
+    }
+
+    @Test
+    public void objectSpecForTableAndRoutineGrants() {
+        Assertions.assertEquals("`mydb`.`t`", tableGrant("mydb", "t", List.of(), false).getObjectSpec());
+        Assertions.assertEquals(
+            "PROCEDURE `mydb`.`p`", procedureGrant("mydb", "p", MySQLGrant.ObjectType.PROCEDURE).getObjectSpec());
+        Assertions.assertEquals(
+            "FUNCTION `mydb`.`f`", procedureGrant("mydb", "f", MySQLGrant.ObjectType.FUNCTION).getObjectSpec());
+    }
+
+    @Test
+    public void objectSpecEscapesBackticks() {
+        Assertions.assertEquals("`my``db`.`t``1`", tableGrant("my`db", "t`1", List.of(), false).getObjectSpec());
+    }
 }

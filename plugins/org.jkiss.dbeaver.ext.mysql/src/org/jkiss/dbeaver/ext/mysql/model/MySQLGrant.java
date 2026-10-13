@@ -56,10 +56,14 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
         MySQLPrivilege resolve(@NotNull String privilegeName) throws DBException;
     }
 
+    // A grant target part: a back-tick quoted identifier (a doubled back-tick inside is an escaped one) or a bare name/*
+    private static final String IDENTIFIER_PATTERN = "(`(?:[^`]|``)+`|[^`\\s.]+)";
     public static final Pattern TABLE_GRANT_PATTERN = Pattern.compile(
-        "GRANT\\s+(.+)\\s+ON\\s+`?([^`]+)`?\\.`?([^`]+)`?\\s+TO\\s+", Pattern.CASE_INSENSITIVE);
+        "GRANT\\s+(.+)\\s+ON\\s+" + IDENTIFIER_PATTERN + "\\." + IDENTIFIER_PATTERN + "\\s+TO\\s+",
+        Pattern.CASE_INSENSITIVE);
     public static final Pattern PROCEDURE_GRANT_PATTERN = Pattern.compile(
-        "GRANT\\s+(.+)\\s+ON\\s+(PROCEDURE|FUNCTION)\\s+`?([^`]+)`?\\.`?([^`]+)`?\\s+TO\\s+", Pattern.CASE_INSENSITIVE);
+        "GRANT\\s+(.+)\\s+ON\\s+(PROCEDURE|FUNCTION)\\s+" + IDENTIFIER_PATTERN + "\\." + IDENTIFIER_PATTERN + "\\s+TO\\s+",
+        Pattern.CASE_INSENSITIVE);
     public static final Pattern GLOBAL_GRANT_PATTERN = Pattern.compile("GRANT\\s+(.+)\\s+ON\\s+(.+)\\s+TO\\s+", Pattern.CASE_INSENSITIVE);
 
     public enum ObjectType {
@@ -358,12 +362,12 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
         if (matcher.find()) {
             privString = matcher.group(1);
             objectType = "FUNCTION".equalsIgnoreCase(matcher.group(2)) ? ObjectType.FUNCTION : ObjectType.PROCEDURE;
-            catalog = matcher.group(3);
-            table = matcher.group(4);
+            catalog = unquoteIdentifier(matcher.group(3));
+            table = unquoteIdentifier(matcher.group(4));
         } else if ((matcher = TABLE_GRANT_PATTERN.matcher(grantString)).find()) {
             privString = matcher.group(1);
-            catalog = matcher.group(2);
-            table = matcher.group(3);
+            catalog = unquoteIdentifier(matcher.group(2));
+            table = unquoteIdentifier(matcher.group(3));
         } else if ((matcher = GLOBAL_GRANT_PATTERN.matcher(grantString)).find()) {
             privString = matcher.group(1);
         } else {
@@ -444,6 +448,18 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
     }
 
     /**
+     * Strips back-tick quotes from a grant target part and unescapes doubled back-ticks;
+     * a bare name (or {@code *}) is returned as is.
+     */
+    @NotNull
+    static String unquoteIdentifier(@NotNull String identifier) {
+        if (identifier.length() >= 2 && identifier.startsWith("`") && identifier.endsWith("`")) {
+            return identifier.substring(1, identifier.length() - 1).replace("``", "`");
+        }
+        return identifier;
+    }
+
+    /**
      * Parses a column list such as {@code `col1`, `col2`} from a column-level grant. Handles
      * back-tick quoting: commas inside quotes are not separators, and a doubled back-tick inside a
      * quoted identifier ({@code ``}) is an escaped back-tick.
@@ -478,6 +494,28 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
         if (!column.isEmpty()) {
             columns.add(column);
         }
+    }
+
+    /**
+     * The grant target as written after {@code ON} in GRANT/REVOKE: {@code `db`.*}, {@code `db`.`tbl`}
+     * or {@code PROCEDURE `db`.`proc`}. The schema is taken from the grant itself, so a wildcard schema
+     * pattern (e.g. {@code `tenant\_%`}) is kept as is and the statement addresses the stored grant row.
+     */
+    @NotNull
+    public String getObjectSpec() {
+        String schema = CommonUtils.isEmpty(catalogName) || isAllCatalogs() ? "*" : quoteIdentifier(catalogName);
+        String object = CommonUtils.isEmpty(tableName) || isAllTables() ? "*" : quoteIdentifier(tableName);
+        String prefix = switch (objectType) {
+            case PROCEDURE -> "PROCEDURE ";
+            case FUNCTION -> "FUNCTION ";
+            default -> "";
+        };
+        return prefix + schema + "." + object;
+    }
+
+    @NotNull
+    private static String quoteIdentifier(@NotNull String name) {
+        return "`" + name.replace("`", "``") + "`";
     }
 
     public boolean isStatic() {

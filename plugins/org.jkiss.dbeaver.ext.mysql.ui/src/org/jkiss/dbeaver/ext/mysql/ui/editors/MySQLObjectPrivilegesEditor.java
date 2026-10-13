@@ -372,6 +372,9 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             if (!candidateKeys.contains(userKey(user.getUserName(), user.getHost()))) {
                 continue;
             }
+            // Always re-read SHOW GRANTS: the per-user cache isn't cleared by refreshing the edited
+            // object, so changes made via SQL or another connection would otherwise stay invisible
+            user.clearGrantsCache();
             List<MySQLGrant> catalogGrants = new ArrayList<>();
             boolean relevant = false;
             for (MySQLGrant grant : user.getGrants(monitor)) {
@@ -754,7 +757,18 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 if (table == null || selectedColumns.isEmpty()) {
                     return;
                 }
-                columns = new ArrayList<>(selectedColumns);
+                columns = new ArrayList<>();
+                // With several columns in a mixed (tri-state) state only the columns actually changing
+                // are targeted: REVOKE of a column privilege that isn't held fails the whole statement
+                boolean multi = selectedColumns.size() > 1;
+                for (MySQLTableColumn column : selectedColumns) {
+                    if (!multi || hasColumnPrivilege(user, table, column, privilege) != isGrant) {
+                        columns.add(column);
+                    }
+                }
+                if (columns.isEmpty()) {
+                    return;
+                }
             }
             if (columns != null) {
                 for (MySQLTableColumn c : columns) {
@@ -765,6 +779,19 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             }
             applyUserPrivilegeChange(user, privilege, isGrant, withGrantOption, table, procedure, columns);
         });
+    }
+
+    private boolean hasColumnPrivilege(
+        @NotNull MySQLUser user, @NotNull MySQLTableBase table, @NotNull MySQLTableColumn column, @NotNull MySQLPrivilege privilege
+    ) {
+        for (MySQLGrant grant : userGrants.getOrDefault(user, Collections.emptyList())) {
+            if (grant.matches(catalog) && grant.matches(table)
+                && (privilege.isGrantOption() ? grant.isGrantOption() : grant.hasColumnPrivilege(privilege, column.getName()))
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -1352,39 +1379,14 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             cols.append(")"); //$NON-NLS-1$
             columnPrivNames.add(entry.getKey().getFixedPrivilegeName().toUpperCase(Locale.ROOT) + cols);
         }
-        String objectSpec = grantObjectSpec(grant);
         userGrants.getOrDefault(user, new ArrayList<>()).remove(grant);
         user.clearGrantsCache();
-        DBECommandReflector<MySQLUser, MySQLCommandRevokeObjectGrants> reflector = createRemovalReflector(user, grant);
-        // Grant option is folded into the table-level statement when there is one, otherwise into
-        // the column-level statement, so it is never revoked on its own (which would error).
-        boolean grantOptionEmitted = false;
-        if (!tablePrivNames.isEmpty()) {
-            addUserRevokeCommand(
-                new MySQLCommandRevokeObjectGrants(user, objectSpec, tablePrivNames, grant.isGrantOption()), reflector);
-            grantOptionEmitted = grant.isGrantOption();
-        }
-        if (!columnPrivNames.isEmpty()) {
-            addUserRevokeCommand(new MySQLCommandRevokeObjectGrants(
-                user, objectSpec, columnPrivNames, !grantOptionEmitted && grant.isGrantOption()), reflector);
-            grantOptionEmitted |= grant.isGrantOption();
-        }
-        if (!grantOptionEmitted && grant.isGrantOption()) {
-            addUserRevokeCommand(new MySQLCommandRevokeObjectGrants(user, objectSpec, List.of(), true), reflector);
-        }
-    }
-
-    private @NotNull String grantObjectSpec(@NotNull MySQLGrant grant) {
-        if (grant.getObjectType() != MySQLGrant.ObjectType.TABLE) {
-            return (grant.getObjectType() == MySQLGrant.ObjectType.FUNCTION ? "FUNCTION " : "PROCEDURE ") //$NON-NLS-1$ //$NON-NLS-2$
-                + DBUtils.getQuotedIdentifier(catalog) + "." //$NON-NLS-1$
-                + DBUtils.getQuotedIdentifier(catalog.getDataSource(), grant.getTable());
-        }
-        if (grant.isAllTables()) {
-            return DBUtils.getQuotedIdentifier(catalog) + ".*"; //$NON-NLS-1$
-        }
-        return DBUtils.getQuotedIdentifier(catalog) + "." //$NON-NLS-1$
-            + DBUtils.getQuotedIdentifier(catalog.getDataSource(), grant.getTable());
+        // One command for the whole row (table- and column-level statements together), so a single
+        // Undo restores exactly what this removal revoked. The target comes from the grant itself:
+        // a wildcard schema grant (`tenant\_%`.*) must be revoked by its stored pattern.
+        addUserRevokeCommand(
+            new MySQLCommandRevokeObjectGrants(user, grant.getObjectSpec(), tablePrivNames, columnPrivNames, grant.isGrantOption()),
+            createRemovalReflector(user, grant));
     }
 
     private @NotNull String tableSpec(@NotNull MySQLTableBase table) {

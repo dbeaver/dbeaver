@@ -645,8 +645,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         String catalogName = catalog.getName();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Find users with grants on object")) {
             if (supportsInformationSchema()) {
-                collectGrantees(session, keys,
-                    "SELECT DISTINCT GRANTEE FROM information_schema.SCHEMA_PRIVILEGES WHERE TABLE_SCHEMA = ?", catalogName);
+                collectSchemaGrantees(session, keys, catalogName);
                 collectGrantees(session, keys,
                     "SELECT DISTINCT GRANTEE FROM information_schema.TABLE_PRIVILEGES WHERE TABLE_SCHEMA = ?", catalogName);
                 collectGrantees(session, keys,
@@ -668,6 +667,31 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             }
         }
         return keys;
+    }
+
+    /**
+     * Schema-level grants may target a LIKE pattern (e.g. {@code `tenant\_%`.*}), so the stored
+     * schema is matched with the same LIKE semantics as {@link MySQLGrant#matches(MySQLCatalog)}.
+     */
+    private static void collectSchemaGrantees(
+        @NotNull JDBCSession session, @NotNull Set<String> keys, @NotNull String catalogName) {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT DISTINCT GRANTEE, TABLE_SCHEMA FROM information_schema.SCHEMA_PRIVILEGES")) {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                while (dbResult.next()) {
+                    String schema = JDBCUtils.safeGetString(dbResult, "TABLE_SCHEMA");
+                    if (schema == null || !SQLUtils.matchesLike(catalogName, schema)) {
+                        continue;
+                    }
+                    String key = granteeToKey(JDBCUtils.safeGetString(dbResult, "GRANTEE"));
+                    if (key != null) {
+                        keys.add(key);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            log.debug("Can't query schema privileges: " + e.getMessage());
+        }
     }
 
     private static void collectGrantees(

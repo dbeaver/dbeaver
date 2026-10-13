@@ -122,6 +122,31 @@ public class MySQLGrantParseTest extends DBeaverUnitTest {
         Assertions.assertEquals(MySQLGrant.ObjectType.FUNCTION, grant.getObjectType());
     }
 
+    @Test
+    public void escapedBacktickInRoutineNameIsPreserved() throws DBException {
+        MySQLGrant grant = parse("GRANT EXECUTE ON PROCEDURE `mydb`.`p``x` TO 'u'@'%'");
+        Assertions.assertNotNull(grant);
+        Assertions.assertEquals(MySQLGrant.ObjectType.PROCEDURE, grant.getObjectType());
+        Assertions.assertEquals("mydb", grant.getCatalog());
+        Assertions.assertEquals("p`x", grant.getTable());
+    }
+
+    @Test
+    public void escapedBacktickInTableAndSchemaNameIsPreserved() throws DBException {
+        MySQLGrant grant = parse("GRANT SELECT ON `my``db`.`t``1` TO 'u'@'%'");
+        Assertions.assertNotNull(grant);
+        Assertions.assertEquals("my`db", grant.getCatalog());
+        Assertions.assertEquals("t`1", grant.getTable());
+    }
+
+    @Test
+    public void dotInsideQuotedSchemaNameIsNotASeparator() throws DBException {
+        MySQLGrant grant = parse("GRANT SELECT ON `my.db`.`t` TO 'u'@'%'");
+        Assertions.assertNotNull(grant);
+        Assertions.assertEquals("my.db", grant.getCatalog());
+        Assertions.assertEquals("t", grant.getTable());
+    }
+
     // ---- column grants ----
 
     @Test
@@ -188,6 +213,13 @@ public class MySQLGrantParseTest extends DBeaverUnitTest {
             List.of("SELECT (`a),b`)", " INSERT"), MySQLGrant.splitPrivileges("SELECT (`a),b`), INSERT"));
         Assertions.assertEquals(
             List.of("SELECT (`x``)`, `y`)", " UPDATE"), MySQLGrant.splitPrivileges("SELECT (`x``)`, `y`), UPDATE"));
+    }
+
+    @Test
+    public void unquoteIdentifierHandlesQuotesAndEscapes() {
+        Assertions.assertEquals("p`x", MySQLGrant.unquoteIdentifier("`p``x`"));
+        Assertions.assertEquals("db", MySQLGrant.unquoteIdentifier("`db`"));
+        Assertions.assertEquals("*", MySQLGrant.unquoteIdentifier("*"));
     }
 
     @Test
