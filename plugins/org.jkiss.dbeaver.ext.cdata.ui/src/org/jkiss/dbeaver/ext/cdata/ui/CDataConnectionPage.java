@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.ext.cdata.model.CDataConnectionHierarchyReader;
 import org.jkiss.dbeaver.ext.cdata.model.CDataConnectionUrl;
 import org.jkiss.dbeaver.ext.cdata.registry.CDataDriverDescriptor;
 import org.jkiss.dbeaver.ext.cdata.registry.CDataDriverLicense;
+import org.jkiss.dbeaver.ext.cdata.registry.CDataLicenseStatus;
 import org.jkiss.dbeaver.ext.cdata.registry.CDataLicenseType;
 import org.jkiss.dbeaver.ext.cdata.ui.internal.CDataUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -279,7 +280,17 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
     }
 
     private void propertiesChanged(@Nullable Property property) {
-        if (hierarchy == null || loadingSettings || updatingUrl) {
+        if (loadingSettings || updatingUrl) {
+            site.updateButtons();
+            return;
+        }
+        if (hierarchy == null) {
+            try {
+                CDataConnectionUrl.parse(urlText.getText(), getDriver().getDriverInfo().jdbcName());
+                setErrorMessage(null);
+            } catch (DBException e) {
+                setErrorMessage(CDataUIMessages.connection_editor_invalid_url);
+            }
             site.updateButtons();
             return;
         }
@@ -391,6 +402,7 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
         hierarchy = loaded;
         editor.setHierarchy(null);
         loadSettings();
+        checkLicense();
     }
 
     @NotNull
@@ -428,7 +440,13 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
             SelectionListener.widgetSelectedAdapter(event -> activateLicense(CDataLicenseType.PURCHASED)));
         activateButton.setToolTipText(CDataUIMessages.license_activation_hint);
         retryLicenseButton = UIUtils.createDialogButton(actions, CDataUIMessages.license_retry,
-            SelectionListener.widgetSelectedAdapter(event -> checkLicense()));
+            SelectionListener.widgetSelectedAdapter(event -> {
+                if (getDriver().getDefaultDriverLoader().isDriverInstalled()) {
+                    checkLicense();
+                } else {
+                    reloadConnectionHierarchy();
+                }
+            }));
         Button manage = UIUtils.createDialogButton(licenseGroup, CDataUIMessages.license_manage,
             SelectionListener.widgetSelectedAdapter(event -> manageLicenses()));
         manage.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
@@ -437,7 +455,7 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
 
     private void checkLicense() {
         CDataDriverDescriptor driver = getDriver();
-        if (!checkingDrivers.add(driver)) {
+        if (!driver.getDefaultDriverLoader().isDriverInstalled() || !checkingDrivers.add(driver)) {
             return;
         }
         retryLicenseButton.setEnabled(false);
@@ -446,7 +464,7 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
-                    driver.validateCurrentLicense(monitor);
+                    driver.validateInstalledLicense(monitor);
                 } catch (DBException e) {
                     log.debug("Unable to verify CData driver license", e);
                 } finally {
@@ -556,17 +574,22 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
             return;
         }
         CDataDriverLicense license = driver.getCurrentLicense();
+        boolean driverMissing = !driver.getDefaultDriverLoader().isDriverInstalled();
         var price = driver.getDriverInfo().annualPriceUsd();
         buyButton.setText(price == null ? CDataUIMessages.activation_buy_button
             : NLS.bind(CDataUIMessages.activation_buy_button_with_price, NumberFormat.getCurrencyInstance(Locale.US).format(price)));
         ((GridData) buyButton.getLayoutData()).widthHint = UIUtils.getDialogButtonWidth(buyButton);
-        statusLabel.setText(CDataLicenseUIUtils.getLicenseTitle(license));
-        var icon = CDataLicenseUIUtils.getStatusIcon(license.getStatus());
+        statusLabel.setText(driverMissing ? CDataUIMessages.license_driver_missing : CDataLicenseUIUtils.getLicenseTitle(license));
+        var icon = CDataLicenseUIUtils.getStatusIcon(driverMissing ? CDataLicenseStatus.VALIDATION_UNAVAILABLE : license.getStatus());
         statusIcon.setImage(icon == null ? null : DBeaverIcons.getImage(icon));
         UIUtils.setControlVisible(statusIcon, icon != null);
-        licenseDetails.setText(CDataLicenseUIUtils.getLicenseDetails(license));
+        licenseDetails.setText(driverMissing ? CDataUIMessages.license_driver_missing_description
+            : CDataLicenseUIUtils.getLicenseDetails(license));
         UIUtils.setControlVisible(licenseDetails, !licenseDetails.getText().isBlank());
-        boolean unverified = license.getStatus().isUnknown();
+        boolean unverified = driverMissing || license.getStatus().isUnknown();
+        retryLicenseButton.setText(driverMissing
+            ? UIConnectionMessages.dialog_driver_download_auto_page_download_driver_files : CDataUIMessages.license_retry);
+        ((GridData) retryLicenseButton.getLayoutData()).widthHint = UIUtils.getDialogButtonWidth(retryLicenseButton);
         UIUtils.setControlVisible(retryLicenseButton, unverified);
         retryLicenseButton.setEnabled(!checkingDrivers.contains(driver));
         UIUtils.setControlVisible(trialButton, !unverified && driver.supportsTrialLicense());

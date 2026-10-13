@@ -168,6 +168,14 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
         return getCDataDriverLoader().validateLicense(monitor, true);
     }
 
+    @Nullable
+    public CDataDriverLicense validateInstalledLicense(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (monitor.isCanceled() || !getDefaultDriverLoader().isDriverInstalled()) {
+            return null;
+        }
+        return validateCurrentLicense(monitor);
+    }
+
     @NotNull
     public List<CDataPersistedLicense> inspectPersistedLicenses(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getCDataDriverLoader().inspectPersistedLicenses(monitor);

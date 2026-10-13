@@ -116,6 +116,8 @@ public final class CDataUIMessages extends NLS {
     public static String license_trial_expired_description;
     public static String license_expired_description;
     public static String license_unverified_description;
+    public static String license_driver_missing;
+    public static String license_driver_missing_description;
     public static String license_invalid_description;
     public static String license_retry;
     public static String license_check_job;
