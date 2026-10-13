@@ -17,9 +17,9 @@
 
 package org.jkiss.dbeaver.tools.transfer.stream;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDBinaryFormatter;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
@@ -82,7 +82,7 @@ public class StreamTransferUtils {
                     break;
                 case NATIVE:
                     if (dataSource != null) {
-                        ByteArrayOutputStream bufferStream = new ByteArrayOutputStream((int) contentStorage.getContentLength());
+                        ByteArrayOutputStream bufferStream = new ByteArrayOutputStream();
                         IOUtils.copyStream(stream, bufferStream);
 
                         byte[] bytes = bufferStream.toByteArray();
