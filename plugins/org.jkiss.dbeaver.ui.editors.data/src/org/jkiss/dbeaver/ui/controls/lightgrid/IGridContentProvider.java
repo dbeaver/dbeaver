@@ -69,7 +69,7 @@ public interface IGridContentProvider extends IContentProvider {
         public Color background;
         public Object value;
         public Object text;
-        /** Lazily provides a complete alternative to {@link #text}; the renderer uses it only when it fits. */
+        /** Computes complete alternative text during painting; the renderer displays it only when it fits. */
         @Nullable
         public FullTextProvider fullTextProvider;
     }

@@ -180,14 +180,15 @@ public class GridCellRenderer extends AbstractRenderer {
         List<IGridHint> cellHints = null;
         if (cellInfo.fullTextProvider != null) {
             cellHints = grid.getContentProvider().getCellHints(col, row, cellInfo.value, 0);
-            List<IGridHint> fullTextHints = withoutOmissionHints(cellHints);
-            int fullTextWidth = width - getCellHintsWidth(gc, fullTextHints, selected, focus || hover);
             String fullText = cellInfo.fullTextProvider.get();
             if (fullText != null) {
                 boolean decorated = CommonUtils.isBitSet(state, IGridContentProvider.STATE_DECORATED);
                 int measuredWidth = decorated
                     ? getDecoratedTextWidth(gc, fullText)
                     : gc.textExtent(CommonUtils.getSingleLineString(fullText)).x;
+                List<IGridHint> fullTextHints = withoutHideableHints(cellHints);
+                int fullTextWidth = width - getCellHintsWidth(gc, fullTextHints, selected, focus || hover);
+
                 // Avoid presenting LightGrid's safety truncation as a complete value.
                 if (grid.getCellText(fullText).equals(fullText) && measuredWidth <= fullTextWidth) {
                     text = fullText;
@@ -479,14 +480,14 @@ public class GridCellRenderer extends AbstractRenderer {
     }
 
     @Nullable
-    private static List<IGridHint> withoutOmissionHints(@Nullable List<IGridHint> cellHints) {
+    private static List<IGridHint> withoutHideableHints(@Nullable List<IGridHint> cellHints) {
         if (cellHints == null) {
             return null;
         }
         List<IGridHint> filteredHints = null;
         for (int i = 0; i < cellHints.size(); i++) {
             IGridHint hint = cellHints.get(i);
-            if (hint.isOmission()) {
+            if (hint.isHideableWithFullPreview()) {
                 if (filteredHints == null) {
                     filteredHints = new ArrayList<>(cellHints.size() - 1);
                     filteredHints.addAll(cellHints.subList(0, i));

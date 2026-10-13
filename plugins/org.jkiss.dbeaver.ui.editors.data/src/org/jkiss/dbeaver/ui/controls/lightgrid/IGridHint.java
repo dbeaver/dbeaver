@@ -58,7 +58,7 @@ public interface IGridHint {
     /**
      * @return true if the hint describes content omitted from the cell text
      */
-    default boolean isOmission() {
+    default boolean isHideableWithFullPreview() {
         return false;
     }
 

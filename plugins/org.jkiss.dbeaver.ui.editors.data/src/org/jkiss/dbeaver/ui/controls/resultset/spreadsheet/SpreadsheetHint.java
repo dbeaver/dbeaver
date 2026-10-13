@@ -72,7 +72,7 @@ public class SpreadsheetHint implements IGridHint {
     }
 
     @Override
-    public boolean isOmission() {
+    public boolean isHideableWithFullPreview() {
         return CommonUtils.isBitSet(valueHint.getHintOptions(), DBDValueHint.OPTION_HIDE_WITH_FULL_ARRAY_PREVIEW);
     }
 
