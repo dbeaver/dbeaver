@@ -296,7 +296,7 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
             new CDataLicenseActivationRequest("ABC", "test@example.org", CDataLicenseType.PURCHASED, "ABC-SECRET"),
             new CDataLicenseActivationRequest("user", "user@example.org", CDataLicenseType.PURCHASED, "user@example.org-SECRET"),
             new CDataLicenseActivationRequest("ABC-SECRET", "test@example.org", CDataLicenseType.PURCHASED, "ABC"),
-            new CDataLicenseActivationRequest("name[1]", "name[1]@example.org", CDataLicenseType.PURCHASED, "name[1]@example.org-SECRET$")
+            new CDataLicenseActivationRequest("name[1]", "name+tag@example.org", CDataLicenseType.PURCHASED, "name+tag@example.org-SECRET$")
         )) {
             String output = "Name: " + request.name() + " Email: " + request.email() + " Key: " + request.productKey();
             Assertions.assertEquals("Name: <redacted> Email: <redacted> Key: <redacted>",
