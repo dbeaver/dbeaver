@@ -187,8 +187,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     @Override
-    protected Control createDialogArea(Composite parent) {
-        Composite mainComposite = new Composite(parent, SWT.NONE);
+    @NotNull
+    protected Control createDialogArea(@NotNull Composite parent) {
+        final Composite mainComposite = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
         layout.marginHeight = 0;
         layout.marginWidth = 0;

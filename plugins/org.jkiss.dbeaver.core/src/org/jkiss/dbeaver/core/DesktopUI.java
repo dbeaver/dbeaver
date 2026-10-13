@@ -359,8 +359,8 @@ public class DesktopUI extends ConsoleUserInterface {
         return ExecutionQueueErrorJob.showError(task, error, queue);
     }
 
-    private static UserResponse showDatabaseError(String message, DBException error)
-    {
+    @Nullable
+    private static UserResponse showDatabaseError(@Nullable String message, @NotNull DBException error) {
         Set<Throwable> visited = Collections.newSetFromMap(new IdentityHashMap<>());
         for (Throwable cause = error; cause != null && visited.add(cause); cause = cause.getCause()) {
             if (cause instanceof DBCDriverLicenseException licenseError) {
@@ -369,7 +369,8 @@ public class DesktopUI extends ConsoleUserInterface {
             }
         }
         DBPDataSource dataSource = error instanceof DBDatabaseException dbe ? dbe.getDataSource() : null;
-        DBPErrorAssistant.ErrorType errorType = dataSource == null ? DBPErrorAssistant.ErrorType.NORMAL : DBExecUtils.discoverErrorType(dataSource, error);
+        DBPErrorAssistant.ErrorType errorType = dataSource == null
+            ? DBPErrorAssistant.ErrorType.NORMAL : DBExecUtils.discoverErrorType(dataSource, error);
         switch (errorType) {
             case CONNECTION_LOST:
                 if (dataSource.getContainer().getDataSource() == null) {
@@ -381,9 +382,9 @@ public class DesktopUI extends ConsoleUserInterface {
             case DRIVER_CLASS_MISSING:
                 DriverEditHelpers.showBadConfigDialog(null, message, error);
                 return UserResponse.OK;
+            default:
+                return null;
         }
-
-        return null;
     }
 
     private static void showDriverLicenseError(@NotNull DBCDriverLicenseException error) {

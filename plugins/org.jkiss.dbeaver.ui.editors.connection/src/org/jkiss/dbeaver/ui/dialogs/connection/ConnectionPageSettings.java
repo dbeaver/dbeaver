@@ -262,7 +262,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         }
     }
 
-    void saveSettings(DataSourceDescriptor dataSource) {
+    void saveSettings(@NotNull DataSourceDescriptor dataSource) {
         dataSource.getConnectionConfiguration().setConfigProfile(getActiveProfile());
         if (subPages != null) {
             for (IDialogPage page : subPages) {

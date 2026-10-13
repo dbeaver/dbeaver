@@ -75,8 +75,7 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     }
 
     @Override
-    protected void dispose(boolean reflect)
-    {
+    protected void dispose(boolean reflect) {
         synchronized (this) {
             licenseListenerDisposed = true;
             if (licensedDriver != null) {

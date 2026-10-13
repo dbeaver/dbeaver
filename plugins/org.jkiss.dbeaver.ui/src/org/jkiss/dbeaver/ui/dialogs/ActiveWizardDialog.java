@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -107,8 +108,8 @@ public class ActiveWizardDialog extends WizardDialog {
     }
 
     @Override
-    protected IDialogSettings getDialogBoundsSettings()
-    {
+    @NotNull
+    protected IDialogSettings getDialogBoundsSettings() {
         return UIUtils.getDialogSettings("DBeaver.ActiveWizardDialog." + getWizard().getClass().getSimpleName());
     }
 
