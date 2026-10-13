@@ -29,12 +29,16 @@ import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Common editing flow for project and global network profiles.
  */
 abstract class PrefPageManagedNetworkProfiles extends PrefPageNetworkProfiles {
+
+    protected final Set<String> deletedProfileNames = new HashSet<>();
 
     @Override
     protected boolean hasAccessToPage() {
@@ -49,13 +53,44 @@ abstract class PrefPageManagedNetworkProfiles extends PrefPageNetworkProfiles {
 
     protected abstract boolean isNameValid(@NotNull String profileName) throws DBException;
 
-    @Override
-    protected abstract boolean deleteProfile(@NotNull DBWNetworkProfile profile);
-
     @NotNull
     @Override
     protected List<DBWNetworkProfile> getDefaultNetworkProfiles() {
         return getProfilesManager().getProfiles();
+    }
+
+    @Override
+    protected void performDefaults() {
+        super.performDefaults();
+        deletedProfileNames.clear();
+    }
+
+    @Override
+    protected boolean deleteProfile(@NotNull DBWNetworkProfile profile) {
+        if (!confirmProfileDeletion(profile)) {
+            return false;
+        }
+        if (getProfilesManager().getProfiles().contains(profile)) {
+            deletedProfileNames.add(profile.getProfileName());
+        }
+        return true;
+    }
+
+    @Override
+    public boolean performOk() {
+        List<DBWNetworkProfile> profilesToRemove = getProfilesManager().getProfiles().stream()
+            .filter(profile -> deletedProfileNames.contains(profile.getProfileName()))
+            .toList();
+        for (DBWNetworkProfile profile : profilesToRemove) {
+            if (!removeProfile(profile)) {
+                return false;
+            }
+        }
+        if (!super.performOk()) {
+            return false;
+        }
+        deletedProfileNames.clear();
+        return true;
     }
 
     @Override
@@ -83,12 +118,9 @@ abstract class PrefPageManagedNetworkProfiles extends PrefPageNetworkProfiles {
         );
     }
 
-    protected void removeProfile(@NotNull DBWNetworkProfile profile) {
-        DBWNetworkProfileManager profilesRegistry = getProfilesManager();
-        profilesRegistry.removeProfile(profile);
-        if (!DBWorkbench.isDistributed()) {
-            profilesRegistry.saveSettings();
-        }
+    protected boolean removeProfile(@NotNull DBWNetworkProfile profile) {
+        getProfilesManager().removeProfile(profile);
+        return true;
     }
 
     @Nullable

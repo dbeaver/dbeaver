@@ -51,7 +51,9 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.util.*;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
@@ -65,7 +67,6 @@ public class PrefPageProjectNetworkProfiles extends PrefPageManagedNetworkProfil
 
     @Nullable
     private DBPProject projectMeta;
-    private final Set<String> deletedProfileNames = new LinkedHashSet<>();
 
     public PrefPageProjectNetworkProfiles() {
     }
@@ -114,33 +115,16 @@ public class PrefPageProjectNetworkProfiles extends PrefPageManagedNetworkProfil
     }
 
     @Override
-    protected boolean deleteProfile(@NotNull DBWNetworkProfile profile) {
-        if (!canDeleteProfile(profile) || !super.confirmProfileDeletion(profile)) {
-            return false;
-        }
-        if (getProfilesManager().getProfiles().contains(profile)) {
-            deletedProfileNames.add(profile.getProfileName());
-        }
-        return true;
-    }
-
-    @Override
-    protected void performDefaults() {
-        super.performDefaults();
-        deletedProfileNames.clear();
+    protected boolean confirmProfileDeletion(@NotNull DBWNetworkProfile profile) {
+        return canDeleteProfile(profile) && super.confirmProfileDeletion(profile);
     }
 
     @Override
     protected void updateNetworkProfiles(@NotNull List<DBWNetworkProfile> allProfiles) {
-        List<DBWNetworkProfile> profilesToRemove = getProfilesManager().getProfiles().stream()
-            .filter(profile -> deletedProfileNames.contains(profile.getProfileName()))
-            .toList();
-        for (DBWNetworkProfile profile : profilesToRemove) {
-            getProfilesManager().removeProfile(profile);
+        for (DBWNetworkProfile profile : allProfiles) {
+            persistProfileSecrets(profile);
         }
-        
         super.updateNetworkProfiles(allProfiles);
-        deletedProfileNames.clear();
     }
 
     private boolean canDeleteProfile(@NotNull DBWNetworkProfile profile) {

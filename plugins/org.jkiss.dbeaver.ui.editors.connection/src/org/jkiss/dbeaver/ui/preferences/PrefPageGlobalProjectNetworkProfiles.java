@@ -204,22 +204,9 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
             return profile;
         }
 
-        @Nullable
-        @Override
-        protected DBWNetworkProfile createNewProfile(@Nullable DBWNetworkProfile sourceProfile) {
-            DBWNetworkProfile profile = super.createNewProfile(sourceProfile);
-            if (profile != null) {
-                getProfilesManager().addOrUpdateProfile(profile);
-                if (!DBWorkbench.isDistributed()) {
-                    getProfilesManager().saveSettings();
-                }
-            }
-            return profile;
-        }
-
         @Override
         protected boolean isNameValid(@NotNull String profileName) throws DBException {
-            if (getProfilesManager().getProfile(null, profileName) != null) {
+            if (getCurrentProfiles().stream().anyMatch(profile -> profile.getProfileName().equals(profileName))) {
                 UIUtils.showMessageBox(
                     getShell(),
                     UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_title,
@@ -258,31 +245,41 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
         }
 
         @Override
-        protected boolean deleteProfile(@NotNull DBWNetworkProfile profile) {
+        protected boolean confirmProfileDeletion(@NotNull DBWNetworkProfile profile) {
             try {
                 List<ProjectConnections> usedBy = getProfilesManager().findGlobalProfileConnections(profile.getProfileName());
-                boolean confirmed = usedBy.isEmpty() ? super.confirmProfileDeletion(profile) : confirmUsedProfileDeletion(profile, usedBy);
-                if (!confirmed) {
-                    return false;
-                }
-                List<DBPDataSourceContainer> connections = resolveConnections(usedBy);
-                getProfilesManager().detachProfile(profile, connections);
-                super.removeProfile(profile);
-                return true;
+                return usedBy.isEmpty() ? super.confirmProfileDeletion(profile) : confirmUsedProfileDeletion(profile, usedBy);
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError(
-                    UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
-                    NLS.bind(
-                        UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_message,
-                        profile.getProfileName()
-                    ), e
-                );
+                showDeleteError(profile, e);
                 return false;
             }
         }
 
+        @Override
+        protected boolean removeProfile(@NotNull DBWNetworkProfile profile) {
+            try {
+                List<ProjectConnections> usedBy = getProfilesManager().findGlobalProfileConnections(profile.getProfileName());
+                List<DBPDataSourceContainer> connections = resolveConnections(usedBy);
+                getProfilesManager().detachProfile(profile, connections);
+                return super.removeProfile(profile);
+            } catch (DBException e) {
+                showDeleteError(profile, e);
+                return false;
+            }
+        }
+
+        private void showDeleteError(@NotNull DBWNetworkProfile profile, @NotNull DBException error) {
+            DBWorkbench.getPlatformUI().showError(
+                UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
+                NLS.bind(
+                    UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_message,
+                    profile.getProfileName()
+                ), error
+            );
+        }
+
         @NotNull
-        private static List<DBPDataSourceContainer> resolveConnections(@NotNull List<ProjectConnections> usedBy) throws DBException {
+        private List<DBPDataSourceContainer> resolveConnections(@NotNull List<ProjectConnections> usedBy) throws DBException {
             List<DBPDataSourceContainer> connections = new ArrayList<>();
             for (ProjectConnections projectUsage : usedBy) {
                 DBPProject project = DBWorkbench.getPlatform().getWorkspace().getProjectById(projectUsage.projectId());
