@@ -14,6 +14,15 @@
         <image commandId="org.jkiss.dbeaver.core.import.data" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/table_import.svg"/>
     </extension>
 
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+                class="org.jkiss.dbeaver.tools.transfer.ui.handlers.DataImportPropertyTester"
+                id="org.jkiss.dbeaver.tools.transfer.ui.handlers.DataImportPropertyTester"
+                namespace="org.jkiss.dbeaver.dataTransfer"
+                properties="supportsImport"
+                type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+    </extension>
+
     <extension point="org.eclipse.ui.menus">
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=export_import">
@@ -47,12 +56,17 @@
                 <with variable="selection">
                     <count value="+"/>
                     <iterate operator="and">
-                        <or>
-                            <adapt type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+                        <and>
+                            <or>
+                                <adapt type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+                                <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                                    <test property="org.jkiss.dbeaver.model.isTableContainer"/>
+                                </adapt>
+                            </or>
                             <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
-                                <test property="org.jkiss.dbeaver.model.isTableContainer"/>
+                                <test property="org.jkiss.dbeaver.dataTransfer.supportsImport" forcePluginActivation="true"/>
                             </adapt>
-                        </or>
+                        </and>
                     </iterate>
                 </with>
             </enabledWhen>

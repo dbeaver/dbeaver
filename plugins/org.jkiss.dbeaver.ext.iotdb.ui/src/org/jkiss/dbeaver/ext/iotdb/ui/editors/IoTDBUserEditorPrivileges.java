@@ -260,7 +260,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
                 if (grants != null) {
                     for (IoTDBGrant grant : grants) {
                         if (grant.canHighlightDatabase(db)) {
-                            item.setFont(BaseThemeSettings.instance.treeAndTableFont);
+                            item.setFont(BaseThemeSettings.instance.treeAndTableFontBold);
                             break;
                         }
                     }
@@ -283,7 +283,7 @@ public class IoTDBUserEditorPrivileges extends IoTDBUserEditorAbstract {
                 if (grants != null) {
                     for (IoTDBGrant grant : grants) {
                         if (grant.canHighlightTable(selectedDatabase.name, tb)) {
-                            item.setFont(BaseThemeSettings.instance.treeAndTableFont);
+                            item.setFont(BaseThemeSettings.instance.treeAndTableFontBold);
                             break;
                         }
                     }
