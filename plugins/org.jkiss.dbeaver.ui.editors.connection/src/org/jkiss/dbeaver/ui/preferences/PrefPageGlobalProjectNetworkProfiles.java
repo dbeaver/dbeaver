@@ -20,9 +20,9 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
@@ -44,8 +44,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -59,6 +58,9 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
     private Composite networkProfilesPageHolder;
     private int lastProjectIndex = -1;
     private Link projectInfoLink;
+    private PrefPageGlobalNetworkProfiles globalPage;
+    private final Map<String, PrefPageProjectNetworkProfiles> projectPages = new HashMap<>();
+    private final StackLayout pagesLayout = new StackLayout();
 
     @Override
     public void init(@NotNull IWorkbench workbench) {
@@ -92,7 +94,7 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
             DBPProject project = projects.get(selectionIndex - 1);
             if (!refreshActiveProject(project)) {
                 // Failed to load another project, let's fall back to the old one...
-                projectCombo.select(lastProjectIndex);
+                projectCombo.select(lastProjectIndex + 1);
                 return;
             }
             lastProjectIndex = selectionIndex - 1;
@@ -107,15 +109,16 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
                 if (selectionIndex < 1) {
                     refreshActiveProject(null);
                 } else if (projects.get(selectionIndex - 1) instanceof RCPProject project) {
-                    PrefPageProjectNetworkProfiles.open(getShell(), project, null);
-                    refreshActiveProject(project);
+                    if (PrefPageProjectNetworkProfiles.open(getShell(), project, null)) {
+                        reloadProjectPage(project);
+                    }
                 }
             }
         );
 
         networkProfilesPageHolder = new Composite(composite, SWT.NONE);
         networkProfilesPageHolder.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).span(3, 1).create());
-        networkProfilesPageHolder.setLayout(new FillLayout());
+        networkProfilesPageHolder.setLayout(pagesLayout);
 
         // Populate and select active project
         projectCombo.add("<Global>");
@@ -133,20 +136,47 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
         if (!super.performOk()) {
             return false;
         }
-        if (networkProfilesPage != null) {
-            return networkProfilesPage.performOk();
+        for (PrefPageProjectNetworkProfiles page : projectPages.values()) {
+            if (!page.performOk()) {
+                return false;
+            }
         }
-        return true;
+        return globalPage == null || globalPage.performOk();
     }
 
     @Override
     public void dispose() {
-        if (networkProfilesPage != null) {
-            networkProfilesPage.dispose();
+        for (PrefPageProjectNetworkProfiles page : projectPages.values()) {
+            page.dispose();
         }
+        projectPages.clear();
+        if (globalPage != null) {
+            globalPage.dispose();
+        }
+        super.dispose();
     }
 
     private boolean refreshActiveProject(@Nullable DBPProject project) {
+        if (!canShowProject(project)) {
+            return false;
+        }
+        showProjectPage(project);
+        return true;
+    }
+
+    private void reloadProjectPage(@NotNull DBPProject project) {
+        if (!canShowProject(project)) {
+            return;
+        }
+        PrefPageProjectNetworkProfiles page = projectPages.remove(project.getId());
+        if (page != null) {
+            page.getControl().dispose();
+            page.dispose();
+        }
+        showProjectPage(project);
+    }
+
+    private boolean canShowProject(@Nullable DBPProject project) {
         if (project != null && project.getDataSourceRegistry().hasError()) {
             DBWorkbench.getPlatformUI().showError(
                 "Error opening project",
@@ -157,30 +187,28 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
             );
             return false;
         }
-
-        // It's easier to recreate the whole page... not ideal
-        if (networkProfilesPage != null) {
-            networkProfilesPage.getControl().dispose();
-            networkProfilesPage.dispose();
-            networkProfilesPage = null;
-        }
-
-        networkProfilesPage = createPrefPageNetworkProfiles(project);
-        networkProfilesPage.createControl(networkProfilesPageHolder);
-        networkProfilesPage.loadSettings();
-        networkProfilesPageHolder.layout(true, true);
-
         return true;
     }
 
-    @NotNull
-    private PrefPageManagedNetworkProfiles createPrefPageNetworkProfiles(@Nullable DBPProject project) {
+    private void showProjectPage(@Nullable DBPProject project) {
         if (project == null) {
-            return new PrefPageGlobalNetworkProfiles();
+            if (globalPage == null) {
+                globalPage = new PrefPageGlobalNetworkProfiles();
+                globalPage.createControl(networkProfilesPageHolder);
+            }
+            networkProfilesPage = globalPage;
+        } else {
+            PrefPageProjectNetworkProfiles page = projectPages.get(project.getId());
+            if (page == null) {
+                page = new PrefPageProjectNetworkProfiles();
+                page.setProjectMeta(project);
+                page.createControl(networkProfilesPageHolder);
+                projectPages.put(project.getId(), page);
+            }
+            networkProfilesPage = page;
         }
-        PrefPageProjectNetworkProfiles projectPage = new PrefPageProjectNetworkProfiles();
-        projectPage.setProjectMeta(project);
-        return projectPage;
+        pagesLayout.topControl = networkProfilesPage.getControl();
+        networkProfilesPageHolder.layout(true, true);
     }
 
     @NotNull
