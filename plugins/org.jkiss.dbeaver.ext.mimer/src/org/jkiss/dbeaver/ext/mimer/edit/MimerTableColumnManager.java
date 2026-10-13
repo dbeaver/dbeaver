@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
+import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.ext.mimer.model.MimerSequence;
 import org.jkiss.dbeaver.ext.mimer.model.MimerTableColumn;
@@ -36,6 +38,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
@@ -62,6 +66,91 @@ import java.util.Map;
  * @author Mimer Information Technology
  */
 public class MimerTableColumnManager extends GenericTableColumnManager {
+
+    /**
+     * Same as the inherited {@link #NotNullModifier}, except it never emits the {@code NOT NULL}
+     * keyword for an already-persisted column, and omits it for a still-pending one only when
+     * the column is part of the table's own {@code PRIMARY KEY}.
+     * <p>
+     * Mimer SQL always backs an explicit column-level {@code NOT NULL} with its own synthetic
+     * {@code SQL_TABLE_CHECK_...} constraint. Once a column is persisted, that constraint (or
+     * the primary key constraint itself, for a key column) already conveys its non-nullability,
+     * so showing the keyword too is redundant. A still-pending primary key column needs the same
+     * suppression for a related reason: DBeaver's generic column editor marks it {@code
+     * isRequired()} even when "Not Null" was never ticked, and emitting the keyword there would
+     * only create a synthetic {@code CHECK} that outlives the key if it's later dropped.
+     */
+    private final ColumnModifier<GenericTableColumn> mimerNotNullModifier = (monitor, column, sql, command) -> {
+        boolean redundant;
+        try {
+            redundant = isRedundantNotNull(monitor, column);
+        } catch (DBException e) {
+            log.error("Can't check for a redundant NOT NULL", e);
+            redundant = false;
+        }
+        if (column.isRequired() && !redundant) {
+            sql.append(" NOT NULL");
+        }
+    };
+
+    /**
+     * Package-visible, not {@code private}, so the full decision (including the
+     * not-yet-persisted gating on {@link #isPrimaryKeyColumn}) is directly unit-testable - same
+     * reasoning as {@link #prepareAutoIncrementColumn}.
+     */
+    static boolean isRedundantNotNull(
+        @NotNull DBRProgressMonitor monitor, @NotNull GenericTableColumn column
+    ) throws DBException {
+        return column.isRequired() && (column.isPersisted() || isPrimaryKeyColumn(monitor, column));
+    }
+
+    /**
+     * Column membership is checked via {@link GenericUniqueKey#getAttributeReferences}
+     * ({@code KEY_COLUMN_USAGE}-backed) - the standard way any {@code PRIMARY KEY}/{@code UNIQUE}
+     * constraint's own columns are already resolved elsewhere in this codebase. Package-visible,
+     * not {@code private}, so it's directly unit-testable - same reasoning as {@link
+     * #prepareAutoIncrementColumn}.
+     */
+    static boolean isPrimaryKeyColumn(
+        @NotNull DBRProgressMonitor monitor, @NotNull GenericTableColumn column
+    ) throws DBException {
+        GenericTableBase table = column.getTable();
+        if (table == null) {
+            return false;
+        }
+        List<GenericUniqueKey> constraints = table.getConstraints(monitor);
+        if (constraints == null) {
+            return false;
+        }
+        for (GenericUniqueKey constraint : constraints) {
+            if (constraint.getConstraintType() != DBSEntityConstraintType.PRIMARY_KEY) {
+                continue;
+            }
+            List<? extends DBSEntityAttributeRef> attrs = constraint.getAttributeReferences(monitor);
+            if (attrs == null) {
+                continue;
+            }
+            for (DBSEntityAttributeRef ref : attrs) {
+                if (column.equals(ref.getAttribute())) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    @NotNull
+    @Override
+    protected ColumnModifier[] getSupportedModifiers(GenericTableColumn column, Map<String, Object> options) {
+        GenericMetaModel metaModel = column.getDataSource().getMetaModel();
+        if (!metaModel.supportsNotNullColumnModifiers(column)) {
+            return new ColumnModifier[]{DataTypeModifier, DefaultModifier};
+        }
+        return new ColumnModifier[]{
+            DataTypeModifier, DefaultModifier,
+            metaModel.isColumnNotNullByDefault() ? NullNotNullModifier : mimerNotNullModifier
+        };
+    }
 
     /**
      * A new column's default data type - {@link GenericTableColumnManager#createDatabaseObject}

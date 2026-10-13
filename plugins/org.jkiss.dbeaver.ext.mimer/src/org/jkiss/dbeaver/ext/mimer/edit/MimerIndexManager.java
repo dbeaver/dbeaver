@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -153,6 +154,25 @@ public class MimerIndexManager extends GenericIndexManager {
 
         final String tableName = DBUtils.getEntityScriptName(table, options);
 
+        // Defensive re-check, independent of whatever the create dialog did or didn't catch - see
+        // the class javadoc: a CLUSTERED index can never carry IGNORE NULLS or INCLUDE.
+        boolean clustered = index.getIndexType() == DBSIndexType.CLUSTERED;
+
+        // A reloaded index's getAttributeReferences() mixes real key columns with INCLUDE-only
+        // ones. MimerTableIndex#getIncludedColumns() can't tell them apart here - it only tracks
+        // the create dialog's own pending choices and is always empty after a reload - so each
+        // column's real status is re-resolved via MimerTableIndexColumn#isIncluded instead (a
+        // no-op for a still-pending column, which was never in this list to begin with).
+        List<DBSTableIndexColumn> keyColumns = new ArrayList<>();
+        List<DBSTableIndexColumn> persistedIncludedColumns = new ArrayList<>();
+        for (DBSTableIndexColumn indexColumn : CommonUtils.safeCollection(index.getAttributeReferences(new VoidProgressMonitor()))) {
+            if (!clustered && indexColumn instanceof MimerTableIndexColumn mimerColumn && mimerColumn.isIncluded(monitor)) {
+                persistedIncludedColumns.add(indexColumn);
+            } else {
+                keyColumns.add(indexColumn);
+            }
+        }
+
         StringBuilder decl = new StringBuilder(40);
         decl.append("CREATE");
         appendIndexModifiers(index, decl);
@@ -162,7 +182,7 @@ public class MimerIndexManager extends GenericIndexManager {
         appendIndexTypeAfterOn(index, decl);
         decl.append(" (");
         boolean firstColumn = true;
-        for (DBSTableIndexColumn indexColumn : CommonUtils.safeCollection(index.getAttributeReferences(new VoidProgressMonitor()))) {
+        for (DBSTableIndexColumn indexColumn : keyColumns) {
             if (!firstColumn) {
                 decl.append(",");
             }
@@ -172,9 +192,6 @@ public class MimerIndexManager extends GenericIndexManager {
         }
         decl.append(")");
         if (index instanceof MimerTableIndex mimerIndex) {
-            // Defensive re-check, independent of whatever the create dialog did or didn't catch -
-            // see the class javadoc: a CLUSTERED index can never carry IGNORE NULLS or INCLUDE.
-            boolean clustered = index.getIndexType() == DBSIndexType.CLUSTERED;
             try {
                 if (!clustered && mimerIndex.isIgnoreNulls(monitor)) {
                     decl.append(" IGNORE NULLS");
@@ -182,12 +199,25 @@ public class MimerIndexManager extends GenericIndexManager {
             } catch (DBException e) {
                 log.error(e);
             }
-            // IGNORE NULLS comes before INCLUDE, not the other way around.
-            List<GenericTableColumn> includedColumns = clustered ? List.of() : mimerIndex.getIncludedColumns();
-            if (!includedColumns.isEmpty()) {
+            // IGNORE NULLS comes before INCLUDE, not the other way around. Combines the
+            // create-time-only pending list (MimerIndexConfigurator's own choices, for a
+            // not-yet-persisted index) with whatever was just re-detected above (for an
+            // already-persisted one) - the two sources never overlap in practice, since a
+            // pending index's columns are never wrapped as MimerTableIndexColumn-included in
+            // the first place.
+            List<DBSTableIndexColumn> includedColumns = clustered ? List.of() : persistedIncludedColumns;
+            List<GenericTableColumn> pendingIncludedColumns = clustered ? List.of() : mimerIndex.getIncludedColumns();
+            if (!includedColumns.isEmpty() || !pendingIncludedColumns.isEmpty()) {
                 decl.append(" INCLUDE (");
                 boolean firstIncluded = true;
-                for (GenericTableColumn includedColumn : includedColumns) {
+                for (GenericTableColumn includedColumn : pendingIncludedColumns) {
+                    if (!firstIncluded) {
+                        decl.append(",");
+                    }
+                    firstIncluded = false;
+                    decl.append(DBUtils.getQuotedIdentifier(includedColumn));
+                }
+                for (DBSTableIndexColumn includedColumn : includedColumns) {
                     if (!firstIncluded) {
                         decl.append(",");
                     }

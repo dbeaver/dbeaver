@@ -191,6 +191,26 @@ public class MimerTableIndexColumn extends GenericTableIndexColumn {
         return isAscending() ? "Ascending" : "Descending";
     }
 
+    /**
+     * Whether this is an {@code INCLUDE}-only column of an already-persisted index, as opposed
+     * to a real key column - needed because {@link MimerTableIndex#getIncludedColumns()} is
+     * create-time-only and never re-hydrated on reload (see that field's own Javadoc), so
+     * anything that reconstructs an *existing* index's full DDL (the owning table's own DDL
+     * tab, or edit-via-drop-recreate) can't rely on it and must resolve this itself instead -
+     * the same way {@link #getAlgorithm(DBRProgressMonitor)}/{@link
+     * #getCollation(DBRProgressMonitor)} already do, from the owning table's {@link
+     * MimerAccessPath}. Always {@code false} for a not-yet-persisted column: the create dialog
+     * never wraps an INCLUDE-only column into a {@code MimerTableIndexColumn} in the first
+     * place (see {@code MimerIndexConfigurator}), so this is never even asked about one.
+     */
+    public boolean isIncluded(@NotNull DBRProgressMonitor monitor) {
+        if (!getIndex().isPersisted()) {
+            return false;
+        }
+        MimerAccessPathColumn accessPathColumn = resolveAccessPathColumn(monitor);
+        return accessPathColumn != null && !accessPathColumn.isKey();
+    }
+
     @Nullable
     private MimerAccessPathColumn resolveAccessPathColumn(@NotNull DBRProgressMonitor monitor) {
         if (accessPathColumnResolved) {

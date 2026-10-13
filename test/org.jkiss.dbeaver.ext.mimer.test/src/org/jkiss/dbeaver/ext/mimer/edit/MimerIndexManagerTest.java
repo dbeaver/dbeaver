@@ -243,6 +243,33 @@ public class MimerIndexManagerTest extends DBeaverUnitTest {
     }
 
     /**
+     * The real bug this guards against: {@link MimerTableIndex#getIncludedColumns()} is
+     * create-time-only and always empty for an already-persisted, reloaded index (e.g. after
+     * reconnecting), so the owning table's DDL tab used to dump every column - key and
+     * INCLUDE-only alike - into the main column list, with no {@code INCLUDE} clause at all.
+     * {@link MimerTableIndexColumn#isIncluded} is how a persisted column's real status gets
+     * re-checked instead.
+     */
+    @Test
+    public void persistedIndexSeparatesKeyAndIncludeColumnsEvenWithAnEmptyPendingList() throws Exception {
+        Mockito.when(index.getIndexType()).thenReturn(DBSIndexType.OTHER);
+        Mockito.when(index.isUnique()).thenReturn(false);
+        DBSTableIndexColumn keyColumn = mimerIndexColumn("i1", true, null);
+        DBSTableIndexColumn includedColumn = mimerIndexColumn("i2", true, null);
+        Mockito.when(((MimerTableIndexColumn) includedColumn).isIncluded(monitor)).thenReturn(true);
+        Mockito.doReturn(List.of(keyColumn, includedColumn)).when(index).getAttributeReferences(ArgumentMatchers.any());
+        Mockito.doReturn(List.of()).when(index).getIncludedColumns();
+
+        String ddl = createDDL();
+
+        String expectedI1 = dialect.getQuotedIdentifier("i1", true, false);
+        String expectedI2 = dialect.getQuotedIdentifier("i2", true, false);
+        Assertions.assertTrue(ddl.contains("(" + expectedI1 + ")"), ddl);
+        Assertions.assertFalse(ddl.contains("(" + expectedI1 + "," + expectedI2 + ")"), ddl);
+        Assertions.assertTrue(ddl.endsWith("INCLUDE (" + expectedI2 + ")"), ddl);
+    }
+
+    /**
      * Belt-and-suspenders re-check at the DDL-building layer (see the manager's class javadoc) -
      * a CLUSTERED index never emits IGNORE NULLS, INCLUDE, or a column FOR clause, regardless of
      * what the model object's own flags say.

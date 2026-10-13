@@ -19,15 +19,19 @@ package org.jkiss.dbeaver.ext.mimer.edit;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericSequence;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.ext.mimer.model.MimerSQLDialect;
 import org.jkiss.dbeaver.ext.mimer.model.MimerSequence;
 import org.jkiss.dbeaver.ext.mimer.model.MimerTableColumn;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
@@ -60,6 +64,7 @@ public class MimerTableColumnManagerTest extends DBeaverUnitTest {
     @BeforeEach
     public void setUp() {
         Mockito.when(column.getParentObject()).thenReturn(table);
+        Mockito.when(column.getTable()).thenReturn(table);
         Mockito.when(column.getName()).thenReturn("id");
         Mockito.when(column.getDataSource()).thenReturn(dataSource);
         Mockito.when(table.getSchema()).thenReturn(schema);
@@ -137,5 +142,97 @@ public class MimerTableColumnManagerTest extends DBeaverUnitTest {
         MimerTableColumnManager.prepareAutoIncrementColumn(monitor, column);
 
         Mockito.verify(column).setDefaultValue("NEXT_VALUE OF \"mimer_store\".\"customers_id_seq\"");
+    }
+
+    /**
+     * {@link MimerTableColumnManager#isPrimaryKeyColumn} - reported live: ticking only "Primary
+     * Key" (not "Not Null") for a new column still produced an explicit {@code NOT NULL} in the
+     * generated DDL, even though a plain hand-written {@code "col TYPE PRIMARY KEY"} never
+     * needs one.
+     */
+    @Test
+    public void columnReferencedByThePrimaryKeyIsRecognised() throws Exception {
+        GenericUniqueKey primaryKey = Mockito.mock(GenericUniqueKey.class);
+        Mockito.when(primaryKey.getConstraintType()).thenReturn(DBSEntityConstraintType.PRIMARY_KEY);
+        DBSEntityAttributeRef ref = Mockito.mock(DBSEntityAttributeRef.class);
+        Mockito.doReturn(column).when(ref).getAttribute();
+        Mockito.doReturn(List.of(ref)).when(primaryKey).getAttributeReferences(monitor);
+        Mockito.doReturn(List.of(primaryKey)).when(table).getConstraints(monitor);
+
+        Assertions.assertTrue(MimerTableColumnManager.isPrimaryKeyColumn(monitor, column));
+    }
+
+    @Test
+    public void columnNotReferencedByAnyPrimaryKeyIsNotRecognised() throws Exception {
+        GenericUniqueKey primaryKey = Mockito.mock(GenericUniqueKey.class);
+        Mockito.when(primaryKey.getConstraintType()).thenReturn(DBSEntityConstraintType.PRIMARY_KEY);
+        MimerTableColumn otherColumn = Mockito.mock(MimerTableColumn.class);
+        DBSEntityAttributeRef ref = Mockito.mock(DBSEntityAttributeRef.class);
+        Mockito.doReturn(otherColumn).when(ref).getAttribute();
+        Mockito.doReturn(List.of(ref)).when(primaryKey).getAttributeReferences(monitor);
+        Mockito.doReturn(List.of(primaryKey)).when(table).getConstraints(monitor);
+
+        Assertions.assertFalse(MimerTableColumnManager.isPrimaryKeyColumn(monitor, column));
+    }
+
+    @Test
+    public void noConstraintsAtAllMeansNotAPrimaryKeyColumn() throws Exception {
+        Mockito.doReturn(List.of()).when(table).getConstraints(monitor);
+
+        Assertions.assertFalse(MimerTableColumnManager.isPrimaryKeyColumn(monitor, column));
+    }
+
+    /**
+     * {@link MimerTableColumnManager#isRedundantNotNull} - the full decision. A persisted
+     * column is always redundant regardless of primary-key membership, since Mimer SQL already
+     * backs an explicit {@code NOT NULL} with its own synthetic {@code CHECK} constraint that
+     * the table's own DDL reconstruction lists separately - this is the regression test for the
+     * compounding-constraint bug found live: a reconstructed DDL that still showed the inline
+     * keyword, once copied back in as a literal {@code CREATE TABLE}, made Mimer SQL
+     * auto-generate yet another synthetic {@code CHECK} on top of the one being copied.
+     */
+    @Test
+    public void persistedRequiredColumnIsRedundantEvenWithNoPrimaryKeyAtAll() throws Exception {
+        Mockito.when(column.isRequired()).thenReturn(true);
+        Mockito.when(column.isPersisted()).thenReturn(true);
+
+        Assertions.assertTrue(MimerTableColumnManager.isRedundantNotNull(monitor, column));
+        Mockito.verify(table, Mockito.never()).getConstraints(ArgumentMatchers.any());
+    }
+
+    @Test
+    public void notYetPersistedPrimaryKeyColumnIsRedundant() throws Exception {
+        Mockito.when(column.isRequired()).thenReturn(true);
+        Mockito.when(column.isPersisted()).thenReturn(false);
+        GenericUniqueKey primaryKey = Mockito.mock(GenericUniqueKey.class);
+        Mockito.when(primaryKey.getConstraintType()).thenReturn(DBSEntityConstraintType.PRIMARY_KEY);
+        DBSEntityAttributeRef ref = Mockito.mock(DBSEntityAttributeRef.class);
+        Mockito.doReturn(column).when(ref).getAttribute();
+        Mockito.doReturn(List.of(ref)).when(primaryKey).getAttributeReferences(monitor);
+        Mockito.doReturn(List.of(primaryKey)).when(table).getConstraints(monitor);
+
+        Assertions.assertTrue(MimerTableColumnManager.isRedundantNotNull(monitor, column));
+    }
+
+    /**
+     * The ordinary "add a new, non-key column and tick Not Null" case must keep working - the
+     * keyword is still the real mechanism for creating that behavior on a not-yet-persisted
+     * column.
+     */
+    @Test
+    public void notYetPersistedNonPrimaryKeyColumnIsNotRedundant() throws Exception {
+        Mockito.when(column.isRequired()).thenReturn(true);
+        Mockito.when(column.isPersisted()).thenReturn(false);
+        Mockito.doReturn(List.of()).when(table).getConstraints(monitor);
+
+        Assertions.assertFalse(MimerTableColumnManager.isRedundantNotNull(monitor, column));
+    }
+
+    @Test
+    public void notRequiredColumnIsNeverRedundantRegardlessOfConstraints() throws Exception {
+        Mockito.when(column.isRequired()).thenReturn(false);
+
+        Assertions.assertFalse(MimerTableColumnManager.isRedundantNotNull(monitor, column));
+        Mockito.verify(table, Mockito.never()).getConstraints(ArgumentMatchers.any());
     }
 }
