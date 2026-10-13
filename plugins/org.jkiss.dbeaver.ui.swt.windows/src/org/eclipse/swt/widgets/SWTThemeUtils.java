@@ -144,27 +144,26 @@ public final class SWTThemeUtils {
     }
 
     public static void installTreeSelectionFix(@NotNull Tree tree, @NotNull BooleanSupplier isDarkTheme) {
-        tree.addListener(SWT.EraseItem, new TreeSelectionFix(tree, isDarkTheme)::eraseItem);
+        // Keep the existing entry point for callers; row states need the same fix in both themes.
+        tree.addListener(SWT.EraseItem, new TreeSelectionFix(tree)::eraseItem);
     }
 
     /**
      * Workaround for SWT's Windows Tree painting: Windows draws the first column, while SWT draws
-     * the remaining columns, producing different hover and selection backgrounds in dark theme.
+     * the remaining columns, producing different hover and selection backgrounds.
      * TODO: Fix SWT Tree to use the same native TreeView state across all columns and preserve
      * the hovered state when drawing subsequent columns, then remove this workaround.
      */
     private static final class TreeSelectionFix {
         private final Tree tree;
-        private final BooleanSupplier isDarkTheme;
         private TreeItem hotItem;
 
-        private TreeSelectionFix(@NotNull Tree tree, @NotNull BooleanSupplier isDarkTheme) {
+        private TreeSelectionFix(@NotNull Tree tree) {
             this.tree = tree;
-            this.isDarkTheme = isDarkTheme;
         }
 
         private void eraseItem(@NotNull Event event) {
-            if (!isDarkTheme.getAsBoolean() || tree.getColumnCount() < 2) {
+            if (tree.getColumnCount() < 2) {
                 return;
             }
             boolean selected = (event.detail & SWT.SELECTED) != 0;
