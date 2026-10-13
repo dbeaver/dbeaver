@@ -111,35 +111,37 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         boolean complete = false;
         Collection<DiagnosticsEntry> entries = getDiagnosticEntries();
         monitor.beginTask(CoreApplicationMessages.collect_diagnostic_info_pick_path_title, entries.size());
-        try (var out = new ZipOutputStream(Files.newOutputStream(archive.toPath(), StandardOpenOption.CREATE_NEW))) {
-            archiveCreated = true;
-            for (var entry : entries) {
-                if (monitor.isCanceled()) {
-                    return Status.CANCEL_STATUS;
-                }
-                monitor.subTask("collecting " + entry.zipEntryName());
-                try {
-                    out.putNextEntry(new ZipEntry(entry.zipEntryName()));
+        try {
+            try (var out = new ZipOutputStream(Files.newOutputStream(archive.toPath(), StandardOpenOption.CREATE_NEW))) {
+                archiveCreated = true;
+                for (var entry : entries) {
                     if (monitor.isCanceled()) {
                         return Status.CANCEL_STATUS;
                     }
-                    String content = entry.stringContent();
-                    if (sanitizer != null) {
-                        content = sanitizer.sanitize(content);
+                    monitor.subTask("collecting " + entry.zipEntryName());
+                    try {
+                        out.putNextEntry(new ZipEntry(entry.zipEntryName()));
+                        if (monitor.isCanceled()) {
+                            return Status.CANCEL_STATUS;
+                        }
+                        String content = entry.stringContent();
+                        if (sanitizer != null) {
+                            content = sanitizer.sanitize(content);
+                        }
+                        if (monitor.isCanceled()) {
+                            return Status.CANCEL_STATUS;
+                        }
+                        out.write(content.getBytes(StandardCharsets.UTF_8));
+                        out.flush();
+                        if (monitor.isCanceled()) {
+                            return Status.CANCEL_STATUS;
+                        }
+                    } catch (IOException e) {
+                        log.warn("error with log entry '%s' in archive '%s': caught exception".formatted(entry.zipEntryName(), archive), e);
+                    } finally {
+                        out.closeEntry();
+                        monitor.worked(1);
                     }
-                    if (monitor.isCanceled()) {
-                        return Status.CANCEL_STATUS;
-                    }
-                    out.write(content.getBytes(StandardCharsets.UTF_8));
-                    out.flush();
-                    if (monitor.isCanceled()) {
-                        return Status.CANCEL_STATUS;
-                    }
-                } catch (IOException e) {
-                    log.warn("error with log entry '%s' in archive '%s': caught exception".formatted(entry.zipEntryName(), archive), e);
-                } finally {
-                    out.closeEntry();
-                    monitor.worked(1);
                 }
             }
             complete = true;

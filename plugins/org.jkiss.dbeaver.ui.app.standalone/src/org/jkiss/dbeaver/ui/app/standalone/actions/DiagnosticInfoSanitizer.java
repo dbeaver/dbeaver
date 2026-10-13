@@ -61,7 +61,8 @@ final class DiagnosticInfoSanitizer {
             + "|\\bjdbc:[a-z0-9_.-]+:(?:\\([^\\r\\n]*\\)|\\{[^\\r\\n}]*\\}|\\[[^\\r\\n\\]]*\\]|[^\\s\"'<>()\\[\\]{}])++)"
             + "|(?<SSH>(?<![\\w.@])(?:ssh://"
             + "(?:\\([^\\r\\n]*\\)|\\{[^\\r\\n}]*\\}|\\[[^\\r\\n\\]]*\\]|[^\\s\"'<>()\\[\\]{}])++"
-            + "|[\\w.*-]+@" + SSH_HOST + ")(?![\\w@]))"
+            + "|[\\w.*-]+@" + SSH_HOST
+            + "|(?<=\\bInstantiate tunnel to )" + SSH_HOST + ")(?![\\w@]))"
             + "|(?<IPV6>(?<![\\w:.%])" + IPV6_ADDRESS + "(?![\\w:%]|\\.\\d))"
             + (IS_IPV4_SANITIZATION_ON ? "|(?<IPV4>(?<![\\w.])" + IPV4_ADDRESS + "(?![\\w]|\\.\\d))" : ""),
         Pattern.CASE_INSENSITIVE
@@ -82,6 +83,12 @@ final class DiagnosticInfoSanitizer {
                     continue;
                 }
                 int valueEnd = matcher.end();
+                if (groupName.equals("SECRET")) {
+                    // The preference filter also matches its line separator; keep it outside the placeholder.
+                    while (valueEnd > matcher.start() && (text.charAt(valueEnd - 1) == '\r' || text.charAt(valueEnd - 1) == '\n')) {
+                        valueEnd--;
+                    }
+                }
                 boolean quoted = matcher.start() > 0
                     && (text.charAt(matcher.start() - 1) == '"' || text.charAt(matcher.start() - 1) == '\'');
                 if (groupName.equals("SSH") || groupName.equals("JDBC") && !quoted) {
