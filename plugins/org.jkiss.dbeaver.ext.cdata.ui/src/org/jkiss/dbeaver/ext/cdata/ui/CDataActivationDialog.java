@@ -60,6 +60,7 @@ final class CDataActivationDialog extends BaseDialog {
     private Label errorDetails;
     private boolean submitted;
     private boolean activating;
+    private AbstractJob activationJob;
     private CDataDriverLicense activatedLicense;
 
     CDataActivationDialog(
@@ -233,32 +234,39 @@ final class CDataActivationDialog extends BaseDialog {
         CDataLicenseActivationRequest request = new CDataLicenseActivationRequest(
             endUserName, endUserEmail, selectedType, isTrial() ? null : productKeyText.getText().strip());
         setActivating(true);
-        new AbstractJob(isTrial() ? CDataUIMessages.activation_trial_progress : CDataUIMessages.activation_purchased_progress) {
+        activationJob = new AbstractJob(
+            isTrial() ? CDataUIMessages.activation_trial_progress : CDataUIMessages.activation_purchased_progress
+        ) {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     CDataDriverLicense license = CDataLicenseActivator.activate(monitor, driver, activationTarget, request);
-                    UIUtils.asyncExec(() -> finishActivation(license, null));
-                    return Status.OK_STATUS;
+                    boolean canceled = monitor.isCanceled();
+                    UIUtils.asyncExec(() -> finishActivation(canceled ? null : license, null));
+                    return canceled ? Status.CANCEL_STATUS : Status.OK_STATUS;
                 } catch (Exception e) {
-                    UIUtils.asyncExec(() -> finishActivation(null, e));
-                    return Status.OK_STATUS;
+                    boolean canceled = monitor.isCanceled();
+                    UIUtils.asyncExec(() -> finishActivation(null, canceled ? null : e));
+                    return canceled ? Status.CANCEL_STATUS : Status.OK_STATUS;
                 }
             }
-        }.schedule();
+        };
+        activationJob.schedule();
     }
 
     @Override
     public boolean close() {
-        return !activating && super.close();
+        if (activating && activationJob != null) {
+            activationJob.cancel();
+        }
+        return super.close();
     }
 
     private void setActivating(boolean running) {
         activating = running;
         form.setEnabled(!running);
         getButton(IDialogConstants.OK_ID).setEnabled(!running);
-        getButton(IDialogConstants.CANCEL_ID).setEnabled(!running);
         UIUtils.setControlVisible(progressArea, running);
         UIUtils.setControlVisible(errorArea, false);
         UIUtils.setControlVisible(progressArea.getParent(), running);
@@ -269,6 +277,7 @@ final class CDataActivationDialog extends BaseDialog {
         if (getShell() == null || getShell().isDisposed()) {
             return;
         }
+        activationJob = null;
         setActivating(false);
         if (license != null) {
             activatedLicense = license;

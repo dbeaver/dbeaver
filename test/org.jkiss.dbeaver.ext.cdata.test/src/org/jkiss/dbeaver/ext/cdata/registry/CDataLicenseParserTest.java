@@ -15,10 +15,14 @@
  */
 package org.jkiss.dbeaver.ext.cdata.registry;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -38,6 +42,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.sql.SQLException;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
@@ -388,6 +393,52 @@ public class CDataLicenseParserTest extends DBeaverUnitTest {
         Assertions.assertEquals("CData cancellation test was canceled", error.getMessage());
         long pid = Long.parseLong(Files.readString(pidFile));
         Assertions.assertFalse(ProcessHandle.of(pid).map(ProcessHandle::isAlive).orElse(false));
+    }
+
+    @Test
+    public void cancelingActivationJobTerminatesItsProcess() throws Exception {
+        Path testBundle = Path.of(CDataPromptProcess.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+        Path pidFile = tempDirectory.resolve("activation-job.pid");
+        var job = new AbstractJob("CData activation cancellation test") {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                try {
+                    CDataProcessExecutor.execute(
+                        monitor,
+                        List.of(
+                            GeneralUtils.findJavaExecutable(), "-cp", testBundle.toString(),
+                            CDataPromptProcess.class.getName(), pidFile.toString()
+                        ),
+                        tempDirectory,
+                        "CData activation cancellation test",
+                        List.of(new CDataProcessExecutor.PromptResponse("unmatched prompt", ""))
+                    );
+                    return Status.OK_STATUS;
+                } catch (Exception e) {
+                    return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.error("CData test process failed", e);
+                }
+            }
+        };
+        job.schedule();
+        try {
+            Assertions.assertTimeoutPreemptively(Duration.ofSeconds(10), () -> {
+                while (!Files.isRegularFile(pidFile)) {
+                    Thread.sleep(10);
+                }
+            });
+
+            job.cancel();
+
+            Assertions.assertTimeoutPreemptively(Duration.ofSeconds(10), () -> {
+                job.join();
+            });
+            Assertions.assertSame(Status.CANCEL_STATUS, job.getResult());
+            long pid = Long.parseLong(Files.readString(pidFile));
+            Assertions.assertFalse(ProcessHandle.of(pid).map(ProcessHandle::isAlive).orElse(false));
+        } finally {
+            job.cancel();
+        }
     }
 
     @Test
