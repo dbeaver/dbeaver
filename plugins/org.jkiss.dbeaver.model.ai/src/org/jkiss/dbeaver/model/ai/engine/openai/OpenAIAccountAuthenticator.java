@@ -149,28 +149,41 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
         @NotNull CompletableFuture<Void> cancellation
     ) throws DBException {
         long deadline = System.nanoTime() + AUTHORIZATION_TIMEOUT.toNanos();
+        int intervalSeconds = authorization.intervalSeconds();
         while (System.nanoTime() < deadline) {
             if (cancellation.isCancelled()) {
                 throw new DBException("OpenAI device authorization was cancelled");
             }
-            JsonObject response = pollDeviceAuthorization(authorization);
-            if (response != null) {
+            DeviceAuthorizationPollResult result = pollDeviceAuthorization(authorization, cancellation);
+            if (result.status() == DeviceAuthorizationPollStatus.COMPLETE) {
                 if (cancellation.isCancelled()) {
                     throw new DBException("OpenAI device authorization was cancelled");
                 }
-                Tokens tokens = exchangeCode(
-                    getRequiredString(response, "authorization_code"),
-                    getRequiredString(response, "code_verifier"),
-                    ISSUER + "/deviceauth/callback"
-                );
-                if (cancellation.isCancelled()) {
-                    throw new DBException("OpenAI device authorization was cancelled");
-                }
-                return tokens;
+                return Objects.requireNonNull(result.tokens());
             }
-            sleep(authorization.intervalSeconds() + POLLING_SAFETY_MARGIN_SECONDS);
+            if (result.status() == DeviceAuthorizationPollStatus.SLOW_DOWN) {
+                intervalSeconds += 5;
+            }
+            sleep(intervalSeconds + POLLING_SAFETY_MARGIN_SECONDS);
         }
         throw new DBException("OpenAI device authorization timed out");
+    }
+
+    @NotNull
+    @Override
+    public DeviceAuthorizationPollResult pollDeviceAuthorization(
+        @NotNull AIAccountAuthenticator.DeviceAuthorization authorization,
+        @NotNull CompletableFuture<Void> cancellation
+    ) throws DBException {
+        JsonObject response = requestDeviceAuthorizationStatus(authorization);
+        if (response == null) {
+            return DeviceAuthorizationPollResult.pending();
+        }
+        return DeviceAuthorizationPollResult.complete(exchangeCode(
+            getRequiredString(response, "authorization_code"),
+            getRequiredString(response, "code_verifier"),
+            ISSUER + "/deviceauth/callback"
+        ));
     }
 
     @NotNull
@@ -318,7 +331,9 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
     }
 
     @Nullable
-    private JsonObject pollDeviceAuthorization(@NotNull AIAccountAuthenticator.DeviceAuthorization authorization) throws DBException {
+    private JsonObject requestDeviceAuthorizationStatus(
+        @NotNull AIAccountAuthenticator.DeviceAuthorization authorization
+    ) throws DBException {
         JsonObject body = new JsonObject();
         body.addProperty("device_auth_id", authorization.deviceCode());
         body.addProperty("user_code", authorization.userCode());
@@ -330,8 +345,7 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
             .build();
         try {
             HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-            if (response.statusCode() == HttpConstants.CODE_FORBIDDEN
-                || response.statusCode() == HttpConstants.CODE_NOT_FOUND) {
+            if (isDeviceAuthorizationPendingStatus(response.statusCode())) {
                 return null;
             }
             return parseResponse(response);
@@ -341,6 +355,10 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
         } catch (IOException e) {
             throw new DBException("OpenAI device authorization request failed", e);
         }
+    }
+
+    static boolean isDeviceAuthorizationPendingStatus(int statusCode) {
+        return statusCode == HttpConstants.CODE_FORBIDDEN || statusCode == HttpConstants.CODE_NOT_FOUND;
     }
 
     @NotNull
