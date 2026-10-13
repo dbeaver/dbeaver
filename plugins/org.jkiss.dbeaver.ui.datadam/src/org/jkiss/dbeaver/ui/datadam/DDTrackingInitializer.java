@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.datadam.DDClientInfo;
 import org.jkiss.dbeaver.model.datadam.DDTracking;
 import org.jkiss.dbeaver.model.datadam.DDTrackingClient;
 import org.jkiss.dbeaver.model.datadam.auth.DDBundleCredentials;
+import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoSession;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDSyncCredentials;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
+import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -51,6 +53,7 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
     private static final Log log = Log.getLog(DDTrackingInitializer.class);
 
     private static final AtomicBoolean LISTENER_REGISTERED = new AtomicBoolean(false);
+    private static final AtomicBoolean DESKTOP_LOGIN_STARTED = new AtomicBoolean(false);
     private static final AtomicReference<Session> ACTIVE_SESSION = new AtomicReference<>();
 
     @Override
@@ -60,6 +63,7 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
                 @Override
                 public boolean preShutdown(@NotNull IWorkbench workbench, boolean forced) {
                     stop();
+                    DDDesktopSsoSession.logout();
                     return true;
                 }
 
@@ -69,7 +73,37 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
                 }
             });
         }
+        startDesktopLogin();
         start();
+    }
+
+    private static void startDesktopLogin() {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(DDSyncPreferencePage.PREF_DESKTOP_SSO_ENABLED)
+            || !DESKTOP_LOGIN_STARTED.compareAndSet(false, true)) {
+            return;
+        }
+        String accountUrl = DDSyncPreferencePage.getAccountUrl();
+        String storageUrl = DDSyncPreferencePage.getGatewayUrl();
+        if (CommonUtils.isEmpty(accountUrl) || CommonUtils.isEmpty(storageUrl)) {
+            return;
+        }
+        AbstractJob loginJob = new AbstractJob(DDTrackingUIMessages.sync_preference_page_desktop_sign_in) {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                try {
+                    DDDesktopSsoSession.login(java.net.URI.create(accountUrl), java.net.URI.create(storageUrl), monitor);
+                    start();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                } catch (org.jkiss.dbeaver.DBException | IllegalArgumentException e) {
+                    log.error("DataDam desktop sign-in failed", e);
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        loginJob.setUser(true);
+        loginJob.schedule();
     }
 
     /**
@@ -77,9 +111,13 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
      * Safe to call again after a login, it is a no-op while a session is already active.
      */
     public static void start() {
+        if (DDDesktopSsoSession.needsLogin()) {
+            log.debug("DataDam tracking disabled (not signed in to SSO)");
+            return;
+        }
         DDKeyBundle bundle = DDKeyStore.load();
         if (bundle == null) {
-            log.debug("DataDam tracking disabled (not logged in)");
+            log.debug("DataDam tracking disabled (encryption keys are not imported)");
             return;
         }
         String url = DDSyncPreferencePage.getGatewayUrl();
