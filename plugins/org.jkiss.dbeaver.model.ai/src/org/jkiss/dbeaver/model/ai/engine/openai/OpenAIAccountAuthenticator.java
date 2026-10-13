@@ -151,14 +151,10 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
         long deadline = System.nanoTime() + AUTHORIZATION_TIMEOUT.toNanos();
         int intervalSeconds = authorization.intervalSeconds();
         while (System.nanoTime() < deadline) {
-            if (cancellation.isCancelled()) {
-                throw new DBException("OpenAI device authorization was cancelled");
-            }
+            checkDeviceAuthorizationCancellation(cancellation);
             DeviceAuthorizationPollResult result = pollDeviceAuthorization(authorization, cancellation);
             if (result.status() == DeviceAuthorizationPollStatus.COMPLETE) {
-                if (cancellation.isCancelled()) {
-                    throw new DBException("OpenAI device authorization was cancelled");
-                }
+                checkDeviceAuthorizationCancellation(cancellation);
                 return Objects.requireNonNull(result.tokens());
             }
             if (result.status() == DeviceAuthorizationPollStatus.SLOW_DOWN) {
@@ -179,11 +175,20 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
         if (response == null) {
             return DeviceAuthorizationPollResult.pending();
         }
+        checkDeviceAuthorizationCancellation(cancellation);
         return DeviceAuthorizationPollResult.complete(exchangeCode(
             getRequiredString(response, "authorization_code"),
             getRequiredString(response, "code_verifier"),
             ISSUER + "/deviceauth/callback"
         ));
+    }
+
+    private static void checkDeviceAuthorizationCancellation(
+        @NotNull CompletableFuture<Void> cancellation
+    ) throws DBException {
+        if (cancellation.isCancelled()) {
+            throw new DBException("OpenAI device authorization was cancelled");
+        }
     }
 
     @NotNull
