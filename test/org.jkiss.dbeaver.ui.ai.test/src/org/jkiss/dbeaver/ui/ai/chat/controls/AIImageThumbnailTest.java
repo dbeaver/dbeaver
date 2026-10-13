@@ -45,9 +45,13 @@ class AIImageThumbnailTest {
         for (String source : new String[]{LOSSY, LOSSLESS, TRANSPARENT, ANIMATED}) {
             byte[] bytes = decode(source);
             Assertions.assertTrue(AIImageThumbnail.isWebp(bytes));
-            Assertions.assertEquals("data:image/webp;base64," + source, AIImageThumbnail.toDataUrl(bytes, 128));
-            Assertions.assertEquals("data:image/webp;base64," + source, AIImageThumbnail.toDataUrl(bytes, 2048));
+            Assertions.assertEquals("data:image/webp;base64," + source, AIImageThumbnail.toWebpSource(bytes));
         }
+    }
+
+    @Test
+    void doesNotReturnUnscaledWebpAsThumbnail() {
+        Assertions.assertThrows(IOException.class, () -> AIImageThumbnail.toDataUrl(decode(LOSSLESS), 8));
     }
 
     @Test
@@ -75,7 +79,7 @@ class AIImageThumbnailTest {
         byte[] bytes = decode(LOSSLESS);
         // lossless WebP stores width and height minus one in two 14-bit fields
         ByteBuffer.wrap(bytes, 21, 4).order(ByteOrder.LITTLE_ENDIAN).putInt(16383 | (16383 << 14));
-        IOException exception = Assertions.assertThrows(IOException.class, () -> AIImageThumbnail.toDataUrl(bytes, 128));
+        IOException exception = Assertions.assertThrows(IOException.class, () -> AIImageThumbnail.toWebpSource(bytes));
         Assertions.assertTrue(exception.getMessage().contains("16 million pixels"));
     }
 
@@ -92,14 +96,14 @@ class AIImageThumbnailTest {
         }
         byte[] bytes = output.toByteArray();
         ByteBuffer.wrap(bytes, 4, 4).order(ByteOrder.LITTLE_ENDIAN).putInt(bytes.length - 8);
-        IOException exception = Assertions.assertThrows(IOException.class, () -> AIImageThumbnail.toDataUrl(bytes, 128));
+        IOException exception = Assertions.assertThrows(IOException.class, () -> AIImageThumbnail.toWebpSource(bytes));
         Assertions.assertTrue(exception.getMessage().contains("Too many WebP frames"));
     }
 
     @Test
     void rejectsIncompleteWebp() {
         byte[] bytes = Arrays.copyOf(decode(LOSSLESS), 26);
-        Assertions.assertThrows(IOException.class, () -> AIImageThumbnail.toDataUrl(bytes, 128));
+        Assertions.assertThrows(IOException.class, () -> AIImageThumbnail.toWebpSource(bytes));
     }
 
     @Test
@@ -107,7 +111,7 @@ class AIImageThumbnailTest {
         byte[] bytes = new byte[32];
         Assertions.assertFalse(AIImageThumbnail.isWebp(bytes));
         Assertions.assertFalse(AIImageThumbnail.isWebp(new byte[4]));
-        Assertions.assertThrows(IOException.class, () -> AIImageThumbnail.toDataUrl(bytes, 128));
+        Assertions.assertThrows(IOException.class, () -> AIImageThumbnail.toWebpSource(bytes));
     }
 
     @NotNull

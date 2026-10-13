@@ -54,16 +54,21 @@ final class AIImageThumbnail {
 
     @NotNull
     static String toDataUrl(@NotNull byte[] bytes, int size) throws IOException {
-        if (isWebp(bytes)) {
-            AIImageDimensions dimensions = AIImageDimensions.read(bytes);
-            checkWebpPixels(bytes, (long) dimensions.width() * dimensions.height());
-            return "data:image/webp;base64," + Base64.getEncoder().encodeToString(bytes);
-        }
         ImageLoader loader = new ImageLoader();
         loader.data = new ImageData[]{read(bytes, size)};
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         loader.save(output, SWT.IMAGE_PNG);
         return "data:image/png;base64," + Base64.getEncoder().encodeToString(output.toByteArray());
+    }
+
+    @NotNull
+    static String toWebpSource(@NotNull byte[] bytes) throws IOException {
+        if (!isWebp(bytes)) {
+            throw new IOException("Unsupported image format.");
+        }
+        AIImageDimensions dimensions = AIImageDimensions.read(bytes);
+        checkWebpPixels(bytes, (long) dimensions.width() * dimensions.height());
+        return "data:image/webp;base64," + Base64.getEncoder().encodeToString(bytes);
     }
 
     @NotNull

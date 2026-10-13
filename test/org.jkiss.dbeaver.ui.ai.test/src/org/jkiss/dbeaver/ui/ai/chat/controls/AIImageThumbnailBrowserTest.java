@@ -52,6 +52,16 @@ class AIImageThumbnailBrowserTest {
     private static final String LOSSLESS = "UklGRhwAAABXRUJQVlA4TA8AAAAvH8ADAAcQ/Y/+ByKi/wEA";
     private static final String TRANSPARENT = "UklGRhwAAABXRUJQVlA4TA8AAAAvH8ADEAcQ/Y8CBSKi/wEA";
 
+    private static final String WIDE =
+        "UklGRooCAABXRUJQVlA4WAoAAAAgAAAA/wsADwAASUNDUMgBAAAAAAHIAAAAAAQwAABtbnRyUkdCIFhZWiAH4AABAAEAAAAAAABhY3NwAAAAAAAA"
+            + "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAQAA9tYAAQAAAADTLQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            + "AAlkZXNjAAAA8AAAACRyWFlaAAABFAAAABRnWFlaAAABKAAAABRiWFlaAAABPAAAABR3dHB0AAABUAAAABRyVFJDAAABZAAAAChnVFJDAAABZAAA"
+            + "AChiVFJDAAABZAAAAChjcHJ0AAABjAAAADxtbHVjAAAAAAAAAAEAAAAMZW5VUwAAAAgAAAAcAHMAUgBHAEJYWVogAAAAAAAAb6IAADj1AAADkFhZ"
+            + "WiAAAAAAAABimQAAt4UAABjaWFlaIAAAAAAAACSgAAAPhAAAts9YWVogAAAAAAAA9tYAAQAAAADTLXBhcmEAAAAAAAQAAAACZmYAAPKnAAANWQAA"
+            + "E9AAAApbAAAAAAAAAABtbHVjAAAAAAAAAAEAAAAMZW5VUwAAACAAAAAcAEcAbwBvAGcAbABlACAASQBuAGMALgAgADIAMAAxADZWUDggnAAAAPAN"
+            + "AJ0BKgAMEAA+bTaZSaQjIqEgKACADYlpbuF2sR7cB+AAABPYB77ZOQ99snIe+2TkPfbJyHvtk5D32ych77ZOQ99snIe+2TkPfbJyHvtk5D32ych7"
+            + "7ZOQ99snIe+2TkPfbJyHvtk5D32ych77ZOQ99snIe+2TEAD+/3A9///5BcsLrka///kB/yA/5Af/x8U02nAgAAAAAAAAAA==";
+
     private Display display;
     private Shell shell;
     private Browser browser;
@@ -116,13 +126,7 @@ class AIImageThumbnailBrowserTest {
         CompletableFuture<AIImageThumbnailBrowser.Thumbnail> canceled = decoder.load(image(LOSSLESS), 8, cancel::get);
         CompletableFuture<AIImageThumbnailBrowser.Thumbnail> loaded = decoder.load(image(TRANSPARENT), 8, () -> false);
         cancel.set(true);
-        try (InputStream input = getClass().getResourceAsStream("/web/scripts/messages.js")) {
-            Assertions.assertNotNull(input);
-            String script = new String(input.readAllBytes(), StandardCharsets.UTF_8);
-            browser.setText("<html><head><meta http-equiv='Content-Security-Policy' content=\"default-src 'none'; "
-                + "connect-src swt:; img-src data:; script-src 'unsafe-inline'\"></head><body><script>"
-                + script + "</script></body></html>");
-        }
+        loadThumbnailScript();
         waitFor(loaded);
         Assertions.assertThrows(CompletionException.class, failed::join);
         Assertions.assertTrue(canceled.isCancelled());
@@ -135,7 +139,7 @@ class AIImageThumbnailBrowserTest {
     void fullPreviewReportsBrowserDecodeFailure() throws Exception {
         CompletableFuture<Void> failed = new CompletableFuture<>();
         registerPreviewError(failed);
-        browser.setText(AIImageAttachmentViewer.createImageHtml(AIImageThumbnail.toDataUrl(corruptImage().getBytes(), 2048)));
+        browser.setText(AIImageAttachmentViewer.createImageHtml(AIImageThumbnail.toWebpSource(corruptImage().getBytes())));
         waitFor(failed);
     }
 
@@ -151,6 +155,39 @@ class AIImageThumbnailBrowserTest {
         Assertions.assertEquals(32, ((Number) browser.evaluate("return document.images[0].naturalWidth;")).intValue());
     }
 
+    @Test
+    void limitsWideWebpThumbnailDimensions() throws Exception {
+        AIImageThumbnailBrowser decoder = new AIImageThumbnailBrowser(browser);
+        CompletableFuture<AIImageThumbnailBrowser.Thumbnail> loaded = decoder.load(image(WIDE), 128, () -> false);
+        loadThumbnailScript();
+        waitFor(loaded);
+        Assertions.assertEquals(128, loaded.join().imageData().width);
+        Assertions.assertEquals(1, loaded.join().imageData().height);
+        Assertions.assertTrue(loaded.join().dataUrl().startsWith("data:image/png;base64,"));
+    }
+
+    @Test
+    void limitsFullWebpPreviewRasterDimensions() throws Exception {
+        CompletableFuture<Void> failed = new CompletableFuture<>();
+        CompletableFuture<int[]> loaded = new CompletableFuture<>();
+        registerPreviewError(failed);
+        new BrowserFunction(browser, "imagePreviewLoaded") {
+            @Nullable
+            @Override
+            public Object function(@NotNull Object[] arguments) {
+                loaded.complete(new int[]{((Number) arguments[0]).intValue(), ((Number) arguments[1]).intValue()});
+                return null;
+            }
+        };
+        String html = AIImageAttachmentViewer.createImageHtml(AIImageThumbnail.toWebpSource(image(WIDE).getBytes()));
+        browser.setText(html.replace("onload='resizeImage(this)'", "onload='resizeImage(this); "
+            + "if (this.complete && this.naturalWidth > 0 && this.src.startsWith(\"data:image/png;\")) "
+            + "imagePreviewLoaded(this.naturalWidth, this.naturalHeight)'"));
+        waitFor(loaded);
+        Assertions.assertFalse(failed.isDone());
+        Assertions.assertArrayEquals(new int[]{AIImageAttachmentViewer.MAX_DISPLAY_SIZE, 11}, loaded.join());
+    }
+
     private void registerPreviewError(@NotNull CompletableFuture<Void> failed) {
         new BrowserFunction(browser, AIImageAttachmentViewer.ERROR_FUNCTION) {
             @Nullable
@@ -160,6 +197,16 @@ class AIImageThumbnailBrowserTest {
                 return null;
             }
         };
+    }
+
+    private void loadThumbnailScript() throws Exception {
+        try (InputStream input = getClass().getResourceAsStream("/web/scripts/messages.js")) {
+            Assertions.assertNotNull(input);
+            String script = new String(input.readAllBytes(), StandardCharsets.UTF_8);
+            browser.setText("<html><head><meta http-equiv='Content-Security-Policy' content=\"default-src 'none'; "
+                + "connect-src swt:; img-src data:; script-src 'unsafe-inline'\"></head><body><script>"
+                + script + "</script></body></html>");
+        }
     }
 
     private void waitFor(@NotNull CompletableFuture<?> future) {

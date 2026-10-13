@@ -43,7 +43,7 @@ import java.io.IOException;
 
 final class AIImageAttachmentViewer {
     static final String ERROR_FUNCTION = "imagePreviewError";
-    private static final int MAX_DISPLAY_SIZE = 2048;
+    static final int MAX_DISPLAY_SIZE = 2048;
 
     private AIImageAttachmentViewer() {
     }
@@ -88,7 +88,9 @@ final class AIImageAttachmentViewer {
                             return Status.CANCEL_STATUS;
                         }
                         try {
-                            String source = AIImageThumbnail.toDataUrl(image.getBytes(), MAX_DISPLAY_SIZE);
+                            byte[] bytes = image.getBytes();
+                            String source = AIImageThumbnail.isWebp(bytes)
+                                ? AIImageThumbnail.toWebpSource(bytes) : AIImageThumbnail.toDataUrl(bytes, MAX_DISPLAY_SIZE);
                             UIUtils.asyncExec(() -> {
                                 if (!browser.isDisposed() && !monitor.isCanceled()) {
                                     browser.setText(createImageHtml(source));
@@ -141,8 +143,27 @@ final class AIImageAttachmentViewer {
 
     @NotNull
     static String createImageHtml(@NotNull String source) {
-        return "<html><body style='margin:0;background:#222;display:flex;align-items:center;"
-            + "justify-content:center;height:100vh'><img style='max-width:100%;max-height:100%' onerror='"
-            + ERROR_FUNCTION + "()' src='" + source + "'></body></html>";
+        return """
+            <html><head><script>
+            function resizeImage(image) {
+                const size = %d;
+                const scale = Math.min(1, size / Math.max(image.naturalWidth, image.naturalHeight));
+                if (scale === 1) {
+                    return;
+                }
+                try {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+                    canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+                    canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+                    image.src = canvas.toDataURL('image/png');
+                } catch (error) {
+                    %s();
+                }
+            }
+            </script></head><body style='margin:0;background:#222;display:flex;align-items:center;justify-content:center;height:100vh'>
+            <img style='max-width:100%%;max-height:100%%' onload='resizeImage(this)' onerror='%s()' src='%s'>
+            </body></html>
+            """.formatted(MAX_DISPLAY_SIZE, ERROR_FUNCTION, ERROR_FUNCTION, source);
     }
 }

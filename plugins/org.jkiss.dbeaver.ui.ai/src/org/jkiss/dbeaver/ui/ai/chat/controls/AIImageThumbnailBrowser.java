@@ -132,7 +132,7 @@ final class AIImageThumbnailBrowser {
                     return Status.CANCEL_STATUS;
                 }
                 try {
-                    String source = AIImageThumbnail.toDataUrl(request.image().getBytes(), request.size());
+                    String source = AIImageThumbnail.toWebpSource(request.image().getBytes());
                     String arguments = JSONUtils.GSON.toJson(Map.of(
                         "id", request.id(), "src", source, "size", request.size(), "timeout", LOAD_TIMEOUT_MS));
                     if (monitor.isCanceled()) {
