@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIFunctionCall;
+import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
@@ -53,6 +54,11 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     public OpenAIEngine(@NotNull PROPS properties) {
         super(properties);
+    }
+
+    @Override
+    public int estimateImageTokens(@NotNull AIImageAttachment image) {
+        return OpenAiUtils.estimateImageTokens(properties.getModel(), image);
     }
 
     @NotNull

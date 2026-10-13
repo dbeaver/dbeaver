@@ -22,14 +22,23 @@ public class DDTrackingUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages"; //$NON-NLS-1$
 
     public static String sync_preference_page_title;
-    public static String sync_preference_page_access_key_group;
+    public static String sync_preference_page_account_group;
+    public static String sync_preference_page_encryption_keys_group;
+    public static String sync_preference_page_status_label;
+    public static String sync_preference_page_signed_in;
+    public static String sync_preference_page_signed_out;
+    public static String sync_preference_page_session_expired;
     public static String sync_preference_page_server_url_label;
     public static String sync_preference_page_default_button;
     public static String sync_preference_page_account_label;
-    public static String sync_preference_page_log_in_button;
-    public static String sync_preference_page_log_out_button;
-    public static String sync_preference_page_log_out_confirm_title;
-    public static String sync_preference_page_log_out_confirm_message;
+    public static String sync_preference_page_desktop_sign_in;
+    public static String sync_preference_page_desktop_sign_out;
+    public static String sync_preference_page_import_keys_button;
+    public static String sync_preference_page_forget_keys_button;
+    public static String sync_preference_page_forget_keys_confirm_title;
+    public static String sync_preference_page_forget_keys_confirm_message;
+    public static String sync_preference_page_import_keys_first;
+    public static String sync_preference_page_import_keys_failed;
     public static String sync_preference_page_configuration_group;
     public static String sync_preference_page_bound_to_label;
     public static String sync_preference_page_upload_button;

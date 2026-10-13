@@ -52,7 +52,6 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
     private final CDataDriverInfo driverInfo;
     private DBPDataSourceType dataSourceType;
     private final Set<Runnable> licenseChangeListeners = new CopyOnWriteArraySet<>();
-    private final Object licenseActivationLock = new Object();
     private final AtomicBoolean activationDialogInProgress = new AtomicBoolean();
     private final AtomicBoolean activationProcessInProgress = new AtomicBoolean();
     private final AtomicBoolean iconLoadStarted = new AtomicBoolean();
@@ -197,11 +196,6 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
         activationProcessInProgress.set(false);
     }
 
-    @NotNull
-    Object getLicenseActivationLock() {
-        return licenseActivationLock;
-    }
-
     public void invalidateLicenseCaches() {
         for (var loader : getAllDriverLoaders()) {
             ((CDataDriverLoaderDescriptor) loader).invalidateLicenseCache();
@@ -240,7 +234,7 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
 
     @NotNull
     @Override
-    public DBPDriverLicense getCurrentLicense() throws DBException {
+    public CDataDriverLicense getCurrentLicense() {
         return currentLicense;
     }
 
@@ -249,10 +243,12 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
         return currentLicense.getStatus();
     }
 
+    @Override
     public void addLicenseChangeListener(@NotNull Runnable listener) {
         licenseChangeListeners.add(listener);
     }
 
+    @Override
     public void removeLicenseChangeListener(@NotNull Runnable listener) {
         licenseChangeListeners.remove(listener);
     }
@@ -269,13 +265,22 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
     }
 
     @Override
+    public boolean isLicenseInvalid() {
+        return !getLicenseStatus().allowsDriverUsage();
+    }
+
+    @Override
     public boolean supportsTrialLicense() {
         return getLicenseStatus().allowsTrialActivation();
     }
 
     public boolean reportLicenseError(@NotNull Throwable error) {
         CDataLicenseStatus status = CDataLicenseParser.parseExpiredLicenseError(error);
-        return status != null && getCDataDriverLoader().reportExpiredLicense(status);
+        if (status == null) {
+            return false;
+        }
+        getCDataDriverLoader().reportExpiredLicense(status);
+        return true;
     }
 
     @NotNull

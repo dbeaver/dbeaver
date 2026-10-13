@@ -118,7 +118,7 @@ public class QMAIChatHistoryMapper {
             profile = null;
         }
 
-        return new AIChatConversation(
+        AIChatConversation conversation = new AIChatConversation(
             UUID.fromString(history.getId()),
             history.getCaption(),
             generator,
@@ -127,6 +127,8 @@ public class QMAIChatHistoryMapper {
             history.getNextMessageId(),
             profile
         );
+        conversation.setImagesLoaded(history.areImagesLoaded());
+        return conversation;
     }
 
     @NotNull
@@ -142,7 +144,8 @@ public class QMAIChatHistoryMapper {
                 toFunctionResultJson(it.message().getFunctionResult()),
                 it.message().getTime().toInstant(ZoneOffset.UTC),
                 false,
-                toQMAIMessageMeta(it.message().getMeta())
+                toQMAIMessageMeta(it.message().getMeta()),
+                it.message().getImages().isEmpty() ? null : it.message().getImages()
             );
         }).toList();
     }
@@ -244,7 +247,7 @@ public class QMAIChatHistoryMapper {
                     it.displayMessage(),
                     messageTime,
                     messageMetas
-                );
+                ).withImages(it.images() == null ? List.of() : it.images());
             }
 
             return new AIChatMessage(it.id(), aiMessage);

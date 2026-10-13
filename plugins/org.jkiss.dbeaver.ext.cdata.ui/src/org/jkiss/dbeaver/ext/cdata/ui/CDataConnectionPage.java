@@ -19,8 +19,10 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -43,6 +45,7 @@ import org.jkiss.dbeaver.ext.cdata.model.CDataConnectionHierarchy.Property;
 import org.jkiss.dbeaver.ext.cdata.model.CDataConnectionHierarchyReader;
 import org.jkiss.dbeaver.ext.cdata.model.CDataConnectionUrl;
 import org.jkiss.dbeaver.ext.cdata.registry.CDataDriverDescriptor;
+import org.jkiss.dbeaver.ext.cdata.registry.CDataDriverLicense;
 import org.jkiss.dbeaver.ext.cdata.registry.CDataLicenseType;
 import org.jkiss.dbeaver.ext.cdata.ui.internal.CDataUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -52,6 +55,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
@@ -61,6 +65,9 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
+import java.text.NumberFormat;
+import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -69,9 +76,15 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class CDataConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
     private static final Log log = Log.getLog(CDataConnectionPage.class);
-    private static final String SUPPORT_URL = "https://portal.cdata.com/?a=support";
     private static final String PREFERENCE_PAGE_ID = "org.jkiss.dbeaver.ext.cdata.preferences";
     private Label statusLabel;
+    private Label statusIcon;
+    private Label licenseDetails;
+    private Button buyButton;
+    private Button trialButton;
+    private Button retryLicenseButton;
+    private final Set<CDataDriverDescriptor> checkingDrivers = new HashSet<>();
+    private CDataDriverDescriptor licensedDriver;
     private Button activateButton;
     private Button runButton;
     private boolean builderRunning;
@@ -95,7 +108,9 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
     @Override
     public void createControl(@NotNull Composite parent) {
         hierarchy = readConnectionHierarchy();
-        Composite page = new Composite(parent, SWT.NONE);
+        ScrolledComposite scroll = UIUtils.createScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
+        scroll.setShowFocusedControl(true);
+        Composite page = new Composite(scroll, SWT.NONE);
         page.setLayout(new GridLayout(1, false));
         page.setLayoutData(new GridData(GridData.FILL_BOTH));
         Composite general = UIUtils.createTitledComposite(
@@ -147,17 +162,32 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
         editor.setPasswordOptionsControl(savePasswordCheck);
         createLicenseGroup(page);
         createDriverPanel(page);
-        setControl(page);
-        CDataDriverDescriptor driver = getDriver();
-        driver.addLicenseChangeListener(licenseChangeListener);
-        page.addDisposeListener(event -> driver.removeLicenseChangeListener(licenseChangeListener));
+        setControl(scroll);
+        UIUtils.configureScrolledComposite(scroll, page);
+        page.addDisposeListener(event -> {
+            if (licensedDriver != null) {
+                licensedDriver.removeLicenseChangeListener(licenseChangeListener);
+                licensedDriver = null;
+            }
+        });
         loadSettings();
     }
 
     @Override
     public void loadSettings() {
         loadingSettings = true;
+        CDataDriverDescriptor driver = getDriver();
+        boolean driverChanged = licensedDriver != driver;
         try {
+            if (driverChanged) {
+                if (licensedDriver != null) {
+                    licensedDriver.removeLicenseChangeListener(licenseChangeListener);
+                    hierarchy = readConnectionHierarchy();
+                    editor.setHierarchy(null);
+                }
+                licensedDriver = driver;
+                driver.addLicenseChangeListener(licenseChangeListener);
+            }
             final DBPDataSourceContainer loadedDataSource = site.getActiveDataSource();
             editedUrlProperties.clear();
             pendingUrlProperties.clear();
@@ -186,6 +216,10 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
             loadingSettings = false;
         }
         propertiesChanged(null);
+        UIUtils.updateDialogSize(statusLabel);
+        if (driverChanged) {
+            checkLicense();
+        }
     }
 
     @Override
@@ -367,31 +401,66 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
 
     private void createLicenseGroup(@NotNull Composite composite) {
         Composite licenseGroup = UIUtils.createTitledComposite(
-            composite,
-            CDataUIMessages.license_group_title,
-            5,
-            GridData.FILL_HORIZONTAL
-        );
-        statusLabel = new Label(licenseGroup, SWT.NONE);
+            composite, CDataUIMessages.license_group_title, 2, GridData.FILL_HORIZONTAL);
+        Composite status = UIUtils.createPlaceholder(licenseGroup, 2, 4);
+        status.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        statusIcon = new Label(status, SWT.NONE);
+        statusIcon.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        statusLabel = new Label(status, SWT.WRAP);
+        statusLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
         statusLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        Button manageButton = new Button(licenseGroup, SWT.PUSH);
-        manageButton.setText(CDataUIMessages.license_manage);
-        manageButton.addListener(SWT.Selection, event -> manageLicenses());
-
-        activateButton = new Button(licenseGroup, SWT.PUSH);
-        activateButton.setLayoutData(new GridData());
-        activateButton.setText(CDataUIMessages.license_activate);
-        activateButton.addListener(SWT.Selection, event -> activatePurchasedLicense());
-
-        Button buyButton = new Button(licenseGroup, SWT.PUSH);
-        buyButton.setText(CDataUIMessages.activation_buy_button);
-        buyButton.addListener(SWT.Selection, event -> UIUtils.openWebBrowser(getDriver().getDriverPurchaseURL()));
-
-        Link supportLink = new Link(licenseGroup, SWT.NONE);
-        supportLink.setText(CDataUIMessages.activation_support_link);
-        supportLink.addListener(SWT.Selection, event -> UIUtils.openWebBrowser(SUPPORT_URL));
+        Link support = new Link(licenseGroup, SWT.NONE);
+        support.setText(CDataUIMessages.activation_support_link);
+        support.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+        support.addListener(SWT.Selection, event -> UIUtils.openWebBrowser(CDataLicenseUIUtils.SUPPORT_URL));
+        licenseDetails = new Label(licenseGroup, SWT.WRAP);
+        GridData detailsData = new GridData(SWT.FILL, SWT.TOP, true, false, 2, 1);
+        detailsData.widthHint = 355;
+        licenseDetails.setLayoutData(detailsData);
+        Composite actions = UIUtils.createPlaceholder(licenseGroup, 4, 0);
+        actions.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        buyButton = UIUtils.createDialogButton(actions, CDataUIMessages.activation_buy_button,
+            SelectionListener.widgetSelectedAdapter(event -> UIUtils.openWebBrowser(getDriver().getDriverPurchaseURL())));
+        buyButton.setToolTipText(CDataUIMessages.license_purchase_hint);
+        trialButton = UIUtils.createDialogButton(actions, CDataUIMessages.license_start_trial,
+            SelectionListener.widgetSelectedAdapter(event -> activateLicense(CDataLicenseType.TRIAL)));
+        activateButton = UIUtils.createDialogButton(actions, CDataUIMessages.license_activate,
+            SelectionListener.widgetSelectedAdapter(event -> activateLicense(CDataLicenseType.PURCHASED)));
+        activateButton.setToolTipText(CDataUIMessages.license_activation_hint);
+        retryLicenseButton = UIUtils.createDialogButton(actions, CDataUIMessages.license_retry,
+            SelectionListener.widgetSelectedAdapter(event -> checkLicense()));
+        Button manage = UIUtils.createDialogButton(licenseGroup, CDataUIMessages.license_manage,
+            SelectionListener.widgetSelectedAdapter(event -> manageLicenses()));
+        manage.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
         refreshStatus();
+    }
+
+    private void checkLicense() {
+        CDataDriverDescriptor driver = getDriver();
+        if (!checkingDrivers.add(driver)) {
+            return;
+        }
+        retryLicenseButton.setEnabled(false);
+        new AbstractJob(CDataUIMessages.license_check_job) {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                try {
+                    driver.validateCurrentLicense(monitor);
+                } catch (DBException e) {
+                    log.debug("Unable to verify CData driver license", e);
+                } finally {
+                    UIUtils.asyncExec(() -> {
+                        checkingDrivers.remove(driver);
+                        if (!retryLicenseButton.isDisposed() && getDriver() == driver) {
+                            retryLicenseButton.setEnabled(true);
+                            refreshStatus();
+                        }
+                    });
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
     }
 
     private void manageLicenses() {
@@ -475,9 +544,9 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
         }
     }
 
-    private void activatePurchasedLicense() {
+    private void activateLicense(@NotNull CDataLicenseType type) {
         CDataLicenseUIService uiService = DBWorkbench.getService(CDataLicenseUIService.class);
-        if (uiService != null && uiService.activateLicense(getDriver(), CDataLicenseType.PURCHASED) != null) {
+        if (uiService != null && uiService.activateLicense(getDriver(), type) != null) {
             refreshStatus();
         }
     }
@@ -486,12 +555,27 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
         if (!(site.getDriver() instanceof CDataDriverDescriptor driver)) {
             return;
         }
-        statusLabel.setText(NLS.bind(
-            CDataUIMessages.license_status,
-            CDataLicenseUIUtils.getStatusText(driver.getLicenseStatus())
-        ));
-        UIUtils.setControlVisible(activateButton, driver.getLicenseStatus().isTrial());
-        statusLabel.getParent().layout(true, true);
+        CDataDriverLicense license = driver.getCurrentLicense();
+        var price = driver.getDriverInfo().annualPriceUsd();
+        buyButton.setText(price == null ? CDataUIMessages.activation_buy_button
+            : NLS.bind(CDataUIMessages.activation_buy_button_with_price, NumberFormat.getCurrencyInstance(Locale.US).format(price)));
+        ((GridData) buyButton.getLayoutData()).widthHint = UIUtils.getDialogButtonWidth(buyButton);
+        statusLabel.setText(CDataLicenseUIUtils.getLicenseTitle(license));
+        var icon = CDataLicenseUIUtils.getStatusIcon(license.getStatus());
+        statusIcon.setImage(icon == null ? null : DBeaverIcons.getImage(icon));
+        UIUtils.setControlVisible(statusIcon, icon != null);
+        licenseDetails.setText(CDataLicenseUIUtils.getLicenseDetails(license));
+        UIUtils.setControlVisible(licenseDetails, !licenseDetails.getText().isBlank());
+        boolean unverified = license.getStatus().isUnknown();
+        UIUtils.setControlVisible(retryLicenseButton, unverified);
+        retryLicenseButton.setEnabled(!checkingDrivers.contains(driver));
+        UIUtils.setControlVisible(trialButton, !unverified && driver.supportsTrialLicense());
+        UIUtils.setControlVisible(buyButton, !unverified && (!license.getStatus().isValid() || license.isTrialLicense()));
+        UIUtils.setControlVisible(activateButton, !unverified && (!license.getStatus().isValid() || license.isTrialLicense()));
+        licenseDetails.getParent().layout(true, true);
+        if (getControl() != null) {
+            UIUtils.updateDialogSize(statusLabel);
+        }
     }
 
     @NotNull
