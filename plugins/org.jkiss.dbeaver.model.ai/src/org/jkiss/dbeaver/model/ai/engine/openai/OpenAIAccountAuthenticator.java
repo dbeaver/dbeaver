@@ -131,9 +131,6 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
 
     @NotNull
     public AIAccountAuthenticator.DeviceAuthorization startDeviceAuthorization() throws DBException {
-        if (!isSupported()) {
-            throw new DBException("ChatGPT account authentication is available only in standalone desktop applications");
-        }
         JsonObject request = new JsonObject();
         request.addProperty("client_id", CLIENT_ID);
         JsonObject response = sendJson(ISSUER + "/api/accounts/deviceauth/usercode", request);
