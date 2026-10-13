@@ -54,6 +54,11 @@ final class AIImageThumbnail {
 
     @NotNull
     static String toDataUrl(@NotNull byte[] bytes, int size) throws IOException {
+        if (isWebp(bytes)) {
+            AIImageDimensions dimensions = AIImageDimensions.read(bytes);
+            checkWebpPixels(bytes, (long) dimensions.width() * dimensions.height());
+            return "data:image/webp;base64," + Base64.getEncoder().encodeToString(bytes);
+        }
         ImageLoader loader = new ImageLoader();
         loader.data = new ImageData[]{read(bytes, size)};
         ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -82,10 +87,12 @@ final class AIImageThumbnail {
                 }
             }
         }
-        // native SWT decoders support WebP on platforms without an ImageIO reader
-        AIImageDimensions dimensions = AIImageDimensions.read(bytes);
-        checkWebpPixels(bytes, (long) dimensions.width() * dimensions.height());
-        return scale(new ImageData(new ByteArrayInputStream(bytes)), size);
+        throw new IOException("Unsupported image format.");
+    }
+
+    static boolean isWebp(@NotNull byte[] bytes) {
+        return bytes.length >= 12 && bytes[0] == 'R' && bytes[1] == 'I' && bytes[2] == 'F' && bytes[3] == 'F'
+            && bytes[8] == 'W' && bytes[9] == 'E' && bytes[10] == 'B' && bytes[11] == 'P';
     }
 
     private static void checkWebpPixels(@NotNull byte[] bytes, long canvasPixels) throws IOException {

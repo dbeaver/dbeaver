@@ -24,6 +24,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.browser.Browser;
+import org.eclipse.swt.browser.BrowserFunction;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -41,6 +42,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 
 final class AIImageAttachmentViewer {
+    static final String ERROR_FUNCTION = "imagePreviewError";
     private static final int MAX_DISPLAY_SIZE = 2048;
 
     private AIImageAttachmentViewer() {
@@ -50,6 +52,7 @@ final class AIImageAttachmentViewer {
         new Dialog(shell) {
             @Nullable
             private AbstractJob imageJob;
+            private boolean imageErrorShown;
 
             {
                 setShellStyle(getShellStyle() | SWT.RESIZE | SWT.MAX);
@@ -67,6 +70,14 @@ final class AIImageAttachmentViewer {
                 Composite area = (Composite) super.createDialogArea(parent);
                 Browser browser = new Browser(area, SWT.NONE);
                 browser.setLayoutData(new org.eclipse.swt.layout.GridData(SWT.FILL, SWT.FILL, true, true));
+                new BrowserFunction(browser, ERROR_FUNCTION) {
+                    @Nullable
+                    @Override
+                    public Object function(@NotNull Object[] arguments) {
+                        UIUtils.asyncExec(() -> showImageError(browser, new IOException("Cannot decode image.")));
+                        return null;
+                    }
+                };
                 browser.setText("<html><body style='background:#222;color:#ddd'>"
                     + CommonUtils.escapeHtml(AIChatMessagesUI.ai_chat_image_loading) + "</body></html>");
                 imageJob = new AbstractJob(AIChatMessagesUI.ai_chat_image_loading) {
@@ -80,18 +91,13 @@ final class AIImageAttachmentViewer {
                             String source = AIImageThumbnail.toDataUrl(image.getBytes(), MAX_DISPLAY_SIZE);
                             UIUtils.asyncExec(() -> {
                                 if (!browser.isDisposed() && !monitor.isCanceled()) {
-                                    browser.setText("<html><body style='margin:0;background:#222;display:flex;align-items:center;"
-                                        + "justify-content:center;height:100vh'><img style='max-width:100%;max-height:100%' src='"
-                                        + source + "'></body></html>");
+                                    browser.setText(createImageHtml(source));
                                 }
                             });
                         } catch (IOException | SWTException | IllegalArgumentException exception) {
                             UIUtils.asyncExec(() -> {
-                                if (!browser.isDisposed() && !monitor.isCanceled()) {
-                                    browser.setText("<html><body style='background:#222;color:#ddd'>"
-                                        + CommonUtils.escapeHtml(CommonUtils.notEmpty(exception.getMessage())) + "</body></html>");
-                                    DBWorkbench.getPlatformUI().showError(AIChatMessagesUI.ai_chat_image_error,
-                                        NLS.bind(AIChatMessagesUI.ai_chat_image_view_error, image.name()), exception);
+                                if (!monitor.isCanceled()) {
+                                    showImageError(browser, exception);
                                 }
                             });
                         }
@@ -109,6 +115,17 @@ final class AIImageAttachmentViewer {
                 return area;
             }
 
+            private void showImageError(@NotNull Browser browser, @NotNull Exception exception) {
+                if (browser.isDisposed() || imageErrorShown) {
+                    return;
+                }
+                imageErrorShown = true;
+                browser.setText("<html><body style='background:#222;color:#ddd'>"
+                    + CommonUtils.escapeHtml(CommonUtils.notEmpty(exception.getMessage())) + "</body></html>");
+                DBWorkbench.getPlatformUI().showError(AIChatMessagesUI.ai_chat_image_error,
+                    NLS.bind(AIChatMessagesUI.ai_chat_image_view_error, image.name()), exception);
+            }
+
             @Override
             protected void createButtonsForButtonBar(@NotNull Composite parent) {
                 createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
@@ -120,5 +137,12 @@ final class AIImageAttachmentViewer {
                 return new Point(900, 650);
             }
         }.open();
+    }
+
+    @NotNull
+    static String createImageHtml(@NotNull String source) {
+        return "<html><body style='margin:0;background:#222;display:flex;align-items:center;"
+            + "justify-content:center;height:100vh'><img style='max-width:100%;max-height:100%' onerror='"
+            + ERROR_FUNCTION + "()' src='" + source + "'></body></html>";
     }
 }
