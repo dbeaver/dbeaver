@@ -62,7 +62,6 @@ abstract class PrefPageManagedNetworkProfiles extends PrefPageNetworkProfiles {
     protected void updateNetworkProfiles(@NotNull List<DBWNetworkProfile> allProfiles) {
         DBWNetworkProfileManager profilesRegistry = getProfilesManager();
         for (DBWNetworkProfile profile : allProfiles) {
-            saveSettings(profile);
             profilesRegistry.addOrUpdateProfile(profile);
         }
         profilesRegistry.saveSettings();
