@@ -24,8 +24,8 @@ import org.junit.jupiter.api.Test;
  * {@link MimerTableColumn#buildIntervalTypeName} - rebuilding a fully-precisioned {@code
  * INTERVAL} type declaration from {@code INFORMATION_SCHEMA.COLUMNS}'s {@code INTERVAL_TYPE}/
  * {@code INTERVAL_PRECISION}/{@code DATETIME_PRECISION}, since the driver's own {@code TYPE_NAME}
- * never carries the real precision. Expected values confirmed against a real DbVisualizer DDL
- * export for a table covering all 13 qualifier shapes.
+ * never carries the real precision. Expected values confirmed against a real DDL export for a
+ * table covering all 13 qualifier shapes.
  *
  * @author Mimer Information Technology
  */

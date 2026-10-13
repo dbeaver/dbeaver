@@ -27,8 +27,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * "Switch Shadow To Master", which swaps the master's and shadow's files). Synthesised from the
  * owning shadow's already-loaded {@code EXT_SHADOWS.FILE_NAME}/{@code IS_ONLINE} - no extra query.
  * <p>
- * DbVisualizer's Mimer profile models a shadow as single-file, and so does this: a shadow of a
- * multi-file databank would only surface its first file here.
+ * This models a shadow as single-file: a shadow of a multi-file databank would only surface its
+ * first file here.
  *
  * @author Mimer Information Technology
  */

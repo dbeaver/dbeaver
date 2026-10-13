@@ -74,9 +74,8 @@ import java.util.Set;
  * BLOB}/{@code CLOB}/{@code NCLOB}/{@code CHAR LARGE OBJECT}/{@code NCHAR LARGE OBJECT}) are
  * deliberately not added as their own picker entries. Every one of them is echoed back as its
  * spelled-out form once the column is saved and the tree refreshes, so listing both forms would
- * just be six near-duplicate entries collapsing down to the same three real types - and
- * DbVisualizer's own picker, the reference for this plugin, only ever lists the three
- * spelled-out names. Typing an abbreviation directly still works correctly - {@link
+ * just be six near-duplicate entries collapsing down to the same three real types. Typing an
+ * abbreviation directly still works correctly - {@link
  * MimerDataSource#resolveDataKind} and {@code MimerSQLDialect#getColumnTypeModifiers} both still
  * recognize the abbreviations by name, this only trims what the dropdown lists, not what's
  * accepted.
@@ -162,8 +161,7 @@ public class MimerDataTypeCache extends GenericDataTypeCache {
             objectList.add(new GenericDataType(owner, largeObjectTypeCode(typeName), typeName, null, false, true, 0, 0, 0));
         }
         // Deliberately not also adding MimerConstants.TYPE_NAMES_LARGE_OBJECT_ABBREVIATED here -
-        // see the class javadoc for why (redundant with the three above once persisted, and not
-        // what DbVisualizer's own picker offers either).
+        // see the class javadoc for why (redundant with the three above once persisted).
         objectList.sort(Comparator.comparing(GenericDataType::getName, String.CASE_INSENSITIVE_ORDER));
     }
 

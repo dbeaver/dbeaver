@@ -174,8 +174,8 @@ public class MimerDatabankShadow implements DBSObject, DBPSaveableObject {
 
     /**
      * The file(s) backing this shadow - lets the shadow node be expanded in the navigator to see
-     * which physical file it uses. Synthesised from the loaded {@link #getFileName() file name}
-     * (single-file, matching DbVisualizer's model) - see {@link MimerShadowFile}.
+     * which physical file it uses. Synthesised from the loaded {@link #getFileName() file name} -
+     * a shadow is modeled as single-file here - see {@link MimerShadowFile}.
      */
     @NotNull
     @Association

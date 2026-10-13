@@ -68,7 +68,7 @@ public class MimerDatabankPrivilege extends AbstractMimerMultiTypePrivilege<Mime
      * holds TABLE/SEQUENCE" rows, same as the table-privilege {@code _SYSTEM} filter) and, when
      * the creator is known, {@code GRANTEE = <creator>} (any further grant to the owner is
      * redundant - the owner already has it). {@code OBJECT_SCHEMA} is scoped to the creator,
-     * matching DbVisualizer's own {@code mimer.getObjectPrivileges}.
+     * since a databank has no schema of its own.
      */
     public static class PrivilegeCache extends JDBCObjectCache<MimerDatabank, MimerDatabankPrivilege> {
         @NotNull
