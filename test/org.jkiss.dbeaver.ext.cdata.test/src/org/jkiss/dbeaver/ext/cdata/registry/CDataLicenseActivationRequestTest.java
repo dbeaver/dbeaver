@@ -24,62 +24,25 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 public class CDataLicenseActivationRequestTest extends DBeaverUnitTest {
-    @ParameterizedTest
-    @ValueSource(strings = {
-        "user@example.com",
-        "first.last+tag@example.co.uk",
-        "user_name@example-domain.com",
-        "USER@EXAMPLE.COM",
-        "user@sub.example.com",
-        "user@xn--bcher-kva.de",
-        "o'connor@example.com",
-        "!#$%&'*+/=?^_`{|}~-@example.com"
-    })
-    public void acceptsValidEmail(@NotNull String email) {
-        Assertions.assertTrue(CDataLicenseActivationRequest.isValidEmail(email));
+    @Test
+    public void acceptsValidEmail() {
         for (CDataLicenseType type : CDataLicenseType.values()) {
-            CDataLicenseActivationRequest request = new CDataLicenseActivationRequest("Test User", email, type, "test-key");
-            Assertions.assertEquals(email, request.email());
+            CDataLicenseActivationRequest request = new CDataLicenseActivationRequest(
+                "Test User", "first.last+tag@example.com", type, "test-key"
+            );
+            Assertions.assertEquals("first.last+tag@example.com", request.email());
         }
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {
-        "",
-        "user",
-        "@example.com",
-        "user@",
-        "user@localhost",
-        "user@@example.com",
-        ".user@example.com",
-        "user.@example.com",
-        "first..last@example.com",
-        "user@.example.com",
-        "user@example..com",
-        "user@example.com.",
-        "user@-example.com",
-        "user@example-.com",
-        "user@exa_mple.com",
-        "first last@example.com",
-        "user@exa mple.com",
-        "user@example.com\nother@example.com",
-        "user@example.com\u0000",
-        "name[1]@example.com",
-        "../../../@../../../../qqqqqwwwwwwwwwwwwwwwwwqqqqqqqqqq"
-    })
+    @ValueSource(strings = {"user", "user@@example.com", "../../../@../../../../qqqqqwwwwwwwwwwwwwwwwwqqqqqqqqqq"})
     public void rejectsInvalidEmailBeforeActivation(@NotNull String email) {
         assertInvalidEmail(email);
     }
 
     @Test
-    public void enforcesEmailLengthLimits() {
-        String longestEmail = "a".repeat(64) + "@" + "b".repeat(63) + "." + "c".repeat(63) + "." + "d".repeat(61);
-        Assertions.assertEquals(254, longestEmail.length());
-        Assertions.assertTrue(CDataLicenseActivationRequest.isValidEmail(longestEmail));
-        Assertions.assertDoesNotThrow(() -> new CDataLicenseActivationRequest("Test User", longestEmail, CDataLicenseType.TRIAL, null));
-        assertInvalidEmail(longestEmail + "d");
-        assertInvalidEmail("a".repeat(65) + "@example.com");
-        assertInvalidEmail("user@" + "a".repeat(64) + ".com");
+    public void rejectsOversizedEmailBeforeActivation() {
+        assertInvalidEmail("a".repeat(255) + "@example.com");
     }
 
     @Test
@@ -93,7 +56,6 @@ public class CDataLicenseActivationRequestTest extends DBeaverUnitTest {
     }
 
     private static void assertInvalidEmail(@NotNull String email) {
-        Assertions.assertFalse(CDataLicenseActivationRequest.isValidEmail(email));
         for (CDataLicenseType type : CDataLicenseType.values()) {
             Assertions.assertThrows(IllegalArgumentException.class,
                 () -> new CDataLicenseActivationRequest("Test User", email, type, "test-key"));

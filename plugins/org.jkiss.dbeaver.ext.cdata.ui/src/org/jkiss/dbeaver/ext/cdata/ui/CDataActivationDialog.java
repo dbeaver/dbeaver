@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cdata.registry.*;
 import org.jkiss.dbeaver.ext.cdata.ui.internal.CDataUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 final class CDataActivationDialog extends TitleAreaDialog {
@@ -260,7 +261,7 @@ final class CDataActivationDialog extends TitleAreaDialog {
             (selectedType == CDataLicenseType.PURCHASED && productKeyText.getText().isBlank())) {
             return CDataUIMessages.activation_required_fields;
         }
-        if (!CDataLicenseActivationRequest.isValidEmail(emailText.getText().strip())) {
+        if (!GeneralUtils.isValidEmail(emailText.getText().strip())) {
             return CDataUIMessages.activation_invalid_email;
         }
         return null;
