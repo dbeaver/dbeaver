@@ -50,13 +50,20 @@ final class AIImageAttachmentsComposite extends ScrolledComposite {
 
     private final Composite attachments;
     private final IntConsumer removeImage;
+    @Nullable
+    private final AIImageThumbnailBrowser thumbnailBrowser;
     private final Map<AIImageAttachment, ImageData> thumbnails = new HashMap<>();
     @Nullable
     private AbstractJob thumbnailJob;
 
-    AIImageAttachmentsComposite(@NotNull Composite parent, @NotNull IntConsumer removeImage) {
+    AIImageAttachmentsComposite(
+        @NotNull Composite parent,
+        @Nullable AIImageThumbnailBrowser thumbnailBrowser,
+        @NotNull IntConsumer removeImage
+    ) {
         super(parent, SWT.V_SCROLL);
         this.removeImage = removeImage;
+        this.thumbnailBrowser = thumbnailBrowser;
         setBackgroundMode(SWT.INHERIT_DEFAULT);
         setExpandHorizontal(true);
         setExpandVertical(true);
@@ -117,14 +124,25 @@ final class AIImageAttachmentsComposite extends ScrolledComposite {
                         return Status.CANCEL_STATUS;
                     }
                     try {
-                        ImageData thumbnail = AIImageThumbnail.read(request.image().getBytes(), AIImageAttachmentTile.PREVIEW_SIZE * 2);
+                        int size = AIImageAttachmentTile.PREVIEW_SIZE * 2;
+                        if ("image/webp".equals(request.image().mediaType())) {
+                            UIUtils.asyncExec(() -> {
+                                if (thumbnailBrowser != null && !isDisposed() && !request.tile().isDisposed()
+                                    && !monitor.isCanceled()) {
+                                    thumbnailBrowser.load(request.image(), size,
+                                        () -> monitor.isCanceled() || isDisposed() || request.tile().isDisposed())
+                                        .thenAccept(thumbnail -> setThumbnail(request, thumbnail.imageData()));
+                                }
+                            });
+                            continue;
+                        }
+                        ImageData thumbnail = AIImageThumbnail.read(request.image().getBytes(), size);
                         if (monitor.isCanceled()) {
                             return Status.CANCEL_STATUS;
                         }
                         UIUtils.asyncExec(() -> {
-                            if (!isDisposed() && !request.tile().isDisposed()) {
-                                thumbnails.put(request.image(), thumbnail);
-                                request.tile().setThumbnail(thumbnail);
+                            if (!monitor.isCanceled()) {
+                                setThumbnail(request, thumbnail);
                             }
                         });
                     } catch (IOException | SWTException | IllegalArgumentException exception) {
@@ -137,6 +155,13 @@ final class AIImageAttachmentsComposite extends ScrolledComposite {
         thumbnailJob.setRule(AIImageThumbnail.DECODING_RULE);
         thumbnailJob.setSystem(true);
         thumbnailJob.schedule();
+    }
+
+    private void setThumbnail(@NotNull ThumbnailRequest request, @NotNull ImageData thumbnail) {
+        if (!isDisposed() && !request.tile().isDisposed()) {
+            thumbnails.put(request.image(), thumbnail);
+            request.tile().setThumbnail(thumbnail);
+        }
     }
 
     private void updateContentSize() {
