@@ -51,9 +51,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -67,6 +65,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageManagedNetworkProfil
 
     @Nullable
     private DBPProject projectMeta;
+    private final Set<String> deletedProfileNames = new LinkedHashSet<>();
 
     public PrefPageProjectNetworkProfiles() {
     }
@@ -90,10 +89,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageManagedNetworkProfil
         return composite;
     }
 
-    @Override
-    public void saveSettings(@NotNull DBWNetworkProfile profile) {
-        super.saveSettings(profile);
-
+    private void persistProfileSecrets(@NotNull DBWNetworkProfile profile) {
         try {
             if (!DBWorkbench.isDistributed() && getProjectMeta().isUseSecretStorage()) {
                 DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProjectMeta());
@@ -119,24 +115,32 @@ public class PrefPageProjectNetworkProfiles extends PrefPageManagedNetworkProfil
 
     @Override
     protected boolean deleteProfile(@NotNull DBWNetworkProfile profile) {
-        return canDeleteProfile(profile) && super.confirmProfileDeletion(profile);
+        if (!canDeleteProfile(profile) || !super.confirmProfileDeletion(profile)) {
+            return false;
+        }
+        if (getProfilesManager().getProfiles().contains(profile)) {
+            deletedProfileNames.add(profile.getProfileName());
+        }
+        return true;
     }
 
-    @NotNull
-    private List<DBWNetworkProfile> getDeletedProfiles() {
-        List<DBWNetworkProfile> visibleProfiles = getCurrentProfiles();
-        return getProfilesManager().getProfiles().stream()
-            .filter(saved -> visibleProfiles.stream()
-                .noneMatch(visible -> visible.getProfileName().equals(saved.getProfileName())))
-            .toList();
+    @Override
+    protected void performDefaults() {
+        super.performDefaults();
+        deletedProfileNames.clear();
     }
 
     @Override
     protected void updateNetworkProfiles(@NotNull List<DBWNetworkProfile> allProfiles) {
-        for (DBWNetworkProfile profile : getDeletedProfiles()) {
+        List<DBWNetworkProfile> profilesToRemove = getProfilesManager().getProfiles().stream()
+            .filter(profile -> deletedProfileNames.contains(profile.getProfileName()))
+            .toList();
+        for (DBWNetworkProfile profile : profilesToRemove) {
             getProfilesManager().removeProfile(profile);
         }
+        
         super.updateNetworkProfiles(allProfiles);
+        deletedProfileNames.clear();
     }
 
     private boolean canDeleteProfile(@NotNull DBWNetworkProfile profile) {
