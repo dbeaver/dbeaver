@@ -45,10 +45,13 @@ import org.jkiss.dbeaver.tools.transfer.stream.exporter.StreamExporterAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.awt.*;
 import java.awt.Color;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
 import java.nio.file.Files;
@@ -533,7 +536,15 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         @NotNull DBPDataSource dataSource
     ) throws IOException {
         CellValueWriter writer = new CellValueWriter();
-        StreamTransferUtils.writeBinaryData(contentStorage, lobEncoding, dataSource, writer);
+        if (lobEncoding == LobEncoding.BINARY) {
+            // XLSX cells need decoded text without the JSON escaping used by stream exporters.
+            try (InputStream stream = contentStorage.getContentStream();
+                 Reader reader = new InputStreamReader(stream, contentStorage.getCharset())) {
+                IOUtils.copyText(reader, writer);
+            }
+        } else {
+            StreamTransferUtils.writeBinaryData(contentStorage, lobEncoding, dataSource, writer);
+        }
         if (writer.isTruncated()) {
             log.warn("The string value of the row " + (rowCount + 1) + " was more maximum length, so it was cropped.");
         }
