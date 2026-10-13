@@ -161,7 +161,10 @@ public final class GlobalNetworkProfileManager extends DBWNetworkProfileManager 
         }
         for (DBPDataSourceContainer dataSource : dataSources) {
             var configuration = dataSource.getConnectionConfiguration();
-            if (profile.getProfileName().equals(configuration.getConfigProfileName())) {
+            // Local profiles can share the global name and have the same empty source.
+            if (profile.getProfileName().equals(configuration.getConfigProfileName()) &&
+                CommonUtils.isEmpty(configuration.getConfigProfileSource()) &&
+                dataSource.getRegistry().getNetworkProfiles().getProfile(null, profile.getProfileName()) == profile) {
                 configuration.setConfigProfile(null);
                 configuration.setHandlers(List.of());
                 dataSource.getRegistry().updateDataSource(dataSource, false);
