@@ -37,19 +37,10 @@ import org.jkiss.dbeaver.ui.BaseEditorColors;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.regex.Pattern;
-
 final class CDataActivationDialog extends BaseDialog {
-    private static final int MAX_EMAIL_LENGTH = 254;
-    private static final int MAX_EMAIL_LOCAL_PART_LENGTH = 64;
-    private static final String EMAIL_LOCAL_PART = "[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+";
-    private static final String EMAIL_DOMAIN_LABEL = "[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?";
-    private static final Pattern EMAIL_PATTERN = Pattern.compile(
-        EMAIL_LOCAL_PART + "(?:\\." + EMAIL_LOCAL_PART + ")*@" + EMAIL_DOMAIN_LABEL + "(?:\\." + EMAIL_DOMAIN_LABEL + ")+"
-    );
-
     private final CDataDriverDescriptor driver;
     private final CDataLicenseType selectedType;
     private final CDataResolvedDriver activationTarget;
@@ -302,7 +293,7 @@ final class CDataActivationDialog extends BaseDialog {
     private Control validateInput() {
         boolean missingName = nameText.getText().isBlank();
         boolean missingEmail = emailText.getText().isBlank();
-        boolean invalidEmail = !missingEmail && !isValidEmail(emailText.getText().strip());
+        boolean invalidEmail = !missingEmail && !GeneralUtils.isValidEmail(emailText.getText().strip());
         boolean missingKey = !isTrial() && productKeyText.getText().isBlank();
         showFieldError(nameError, missingName ? CDataUIMessages.activation_name_required : null);
         showFieldError(emailError, missingEmail ? CDataUIMessages.activation_email_required
@@ -336,12 +327,6 @@ final class CDataActivationDialog extends BaseDialog {
 
     private boolean isTrial() {
         return selectedType == CDataLicenseType.TRIAL;
-    }
-
-    private static boolean isValidEmail(@NotNull String email) {
-        return email.length() <= MAX_EMAIL_LENGTH
-            && email.indexOf('@') <= MAX_EMAIL_LOCAL_PART_LENGTH
-            && EMAIL_PATTERN.matcher(email).matches();
     }
 
     @NotNull
