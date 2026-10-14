@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.datadam;
 import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpServer;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoSession;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopTokenManager;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,7 +48,8 @@ class DDAccountClientTest {
     private final AtomicInteger requests = new AtomicInteger();
     private HttpServer server;
     private URI account;
-    private MockedStatic<DDDesktopSsoSession> session;
+    private MockedStatic<DDDesktopTokenManager> session;
+    private DDDesktopTokenManager manager;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -68,8 +69,10 @@ class DDAccountClientTest {
             }
         });
         server.start();
-        session = Mockito.mockStatic(DDDesktopSsoSession.class);
-        session.when(() -> DDDesktopSsoSession.accessFor(account.resolve("/graphql"))).thenReturn("test-access-token");
+        manager = Mockito.mock(DDDesktopTokenManager.class);
+        session = Mockito.mockStatic(DDDesktopTokenManager.class);
+        session.when(DDDesktopTokenManager::getInstance).thenReturn(manager);
+        Mockito.when(manager.accessFor(account.resolve("/graphql"))).thenReturn("test-access-token");
     }
 
     @AfterEach
@@ -96,9 +99,8 @@ class DDAccountClientTest {
     }
 
     @Test
-    void requiresSsoBeforeSendingAnyRequest() {
-        session.when(() -> DDDesktopSsoSession.accessFor(account.resolve("/graphql")))
-            .thenThrow(new DBException("Sign in to DataDam first"));
+    void requiresSsoBeforeSendingAnyRequest() throws Exception {
+        Mockito.when(manager.accessFor(account.resolve("/graphql"))).thenThrow(new DBException("Sign in to DataDam first"));
         Assertions.assertThrows(DBException.class, () -> new DDAccountClient(account).getCryptoState());
         Assertions.assertEquals(0, requests.get());
     }

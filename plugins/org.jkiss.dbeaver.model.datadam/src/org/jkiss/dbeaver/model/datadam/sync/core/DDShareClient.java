@@ -28,8 +28,9 @@ import com.google.gson.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
-import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoSession;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopTokenManager;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.GsonUtils;
 import org.jkiss.utils.HttpConstants;
@@ -443,12 +444,12 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
     @NotNull
     private HttpRequest.Builder request(@NotNull byte[] body) throws DBException {
         URI uri = buildUri(CommonUtils.removeLeadingSlash(DDSyncApi.GRAPHQL_ENDPOINT), Map.of());
-        String authorization = DDDesktopSsoSession.accessFor(uri);
-        HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
+        DDEndpoints.requireSecureTransport(uri);
+        String authorization = DDDesktopTokenManager.getInstance().accessFor(uri);
+        return HttpRequest.newBuilder(uri)
             .header(HttpConstants.HEADER_CONTENT_TYPE, MediaType.JSON.toString())
             .header(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + authorization)
             .POST(HttpRequest.BodyPublishers.ofByteArray(body));
-        return builder;
     }
 
     @NotNull

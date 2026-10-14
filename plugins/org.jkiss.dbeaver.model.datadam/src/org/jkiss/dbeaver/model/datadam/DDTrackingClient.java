@@ -22,7 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoSession;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopTokenManager;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDSyncCredentials;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.HttpConstants;
@@ -89,6 +89,7 @@ public class DDTrackingClient implements DDTrackingService {
         DDTracking post(@NotNull String path, @Nullable String authorization, @NotNull Object body) {
             try {
                 URI uri = buildUri(CommonUtils.removeLeadingSlash(rootPath + path), Map.of());
+                DDEndpoints.requireSecureTransport(uri);
                 HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
                     .header(HttpConstants.HEADER_CONTENT_TYPE, MediaType.JSON.toString())
                     .POST(createBodyPublisher(body, MediaType.JSON));
@@ -104,6 +105,7 @@ public class DDTrackingClient implements DDTrackingService {
         DDTracking post(@NotNull String path, @Nullable String authorization) {
             try {
                 URI uri = buildUri(CommonUtils.removeLeadingSlash(rootPath + path), Map.of());
+                DDEndpoints.requireSecureTransport(uri);
                 HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
                     .POST(HttpRequest.BodyPublishers.noBody());
                 applyAuth(builder, authorization);
@@ -133,13 +135,14 @@ public class DDTrackingClient implements DDTrackingService {
         ) {
             try {
                 URI uri = buildUri(CommonUtils.removeLeadingSlash(rootPath + path), Map.of());
+                DDEndpoints.requireSecureTransport(uri);
                 HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
                     .POST(HttpRequest.BodyPublishers.ofByteArray(body));
                 if (json) {
                     builder.header(HttpConstants.HEADER_CONTENT_TYPE, MediaType.JSON.toString());
                 }
                 builder.header(HttpConstants.HEADER_AUTHORIZATION,
-                    HttpConstants.BEARER_PREFIX + DDDesktopSsoSession.accessFor(uri));
+                    HttpConstants.BEARER_PREFIX + DDDesktopTokenManager.getInstance().accessFor(uri));
                 return execute(builder, DDTracking.class);
             } catch (DBException e) {
                 log.debug("DataDam tracking request failed", e);

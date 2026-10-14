@@ -22,7 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.DDCryptoState;
-import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoSession;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopTokenManager;
 import org.jkiss.utils.HttpConstants;
 
 import java.lang.reflect.Type;
@@ -63,8 +63,10 @@ public class DDAccountClient extends AbstractRestClient {
     @NotNull
     @Override
     protected <T> T execute(@NotNull HttpRequest.Builder builder, @NotNull Type type) throws DBException {
+        URI uri = builder.build().uri();
+        DDEndpoints.requireSecureTransport(uri);
         builder.setHeader(HttpConstants.HEADER_AUTHORIZATION,
-            HttpConstants.BEARER_PREFIX + DDDesktopSsoSession.accessFor(builder.build().uri()));
+            HttpConstants.BEARER_PREFIX + DDDesktopTokenManager.getInstance().accessFor(uri));
         return super.execute(builder, type);
     }
 

@@ -108,7 +108,7 @@ public class DDDesktopSsoLogin {
         }
     }
 
-    static void openBrowser(@NotNull String url) throws DBException {
+    public static void openBrowser(@NotNull String url) throws DBException {
         try {
             OAuthUtils.openBrowser(url);
         } catch (IOException e) {

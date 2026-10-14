@@ -23,7 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.DDTrackingClient;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
-import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoSession;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopTokenManager;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -62,8 +62,10 @@ class DDShareClientTest {
             }
         });
         server.start();
-        try (var session = Mockito.mockStatic(DDDesktopSsoSession.class)) {
-            session.when(() -> DDDesktopSsoSession.accessFor(Mockito.any())).thenReturn("test-token");
+        try (var session = Mockito.mockStatic(DDDesktopTokenManager.class)) {
+            var manager = Mockito.mock(DDDesktopTokenManager.class);
+            session.when(DDDesktopTokenManager::getInstance).thenReturn(manager);
+            Mockito.when(manager.accessFor(Mockito.any())).thenReturn("test-token");
             DDShareClient client = new DDShareClient("http://127.0.0.1:" + server.getAddress().getPort(), credentials);
 
             response.set("{\"data\":{\"createProject\":" + project + "}}");
@@ -106,8 +108,10 @@ class DDShareClientTest {
             exchange.close();
         });
         server.start();
-        try (var session = Mockito.mockStatic(DDDesktopSsoSession.class)) {
-            session.when(() -> DDDesktopSsoSession.accessFor(Mockito.any())).thenReturn("test-token");
+        try (var session = Mockito.mockStatic(DDDesktopTokenManager.class)) {
+            var manager = Mockito.mock(DDDesktopTokenManager.class);
+            session.when(DDDesktopTokenManager::getInstance).thenReturn(manager);
+            Mockito.when(manager.accessFor(Mockito.any())).thenReturn("test-token");
             DDSyncCredentials credentials = Mockito.mock(DDSyncCredentials.class);
             Assertions.assertThrows(DBException.class, () -> new DDShareClient(base, credentials).listConfigurations());
             Assertions.assertNull(new DDTrackingClient(base).stop(credentials, "tracking-id"));
@@ -119,7 +123,6 @@ class DDShareClientTest {
 
     @Test
     void storageCallsRequireSsoInsteadOfFallingBackToBundleSignatures() throws Exception {
-        DDDesktopSsoSession.logout();
         DDSyncCredentials credentials = Mockito.mock(DDSyncCredentials.class);
         DDShareClient client = new DDShareClient("http://127.0.0.1:1", credentials);
 

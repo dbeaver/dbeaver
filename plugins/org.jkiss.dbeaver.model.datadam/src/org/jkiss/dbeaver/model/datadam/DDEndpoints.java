@@ -18,7 +18,10 @@ package org.jkiss.dbeaver.model.datadam;
 
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.utils.ArrayUtils;
+
+import java.net.URI;
 
 /**
  * Remote DataDam endpoints used for login, project synchronization and tracking.
@@ -45,5 +48,13 @@ public final class DDEndpoints {
     @NotNull
     public static String getStorageBaseUrl() {
         return STAGE ? STAGE_STORAGE_URL : PROD_STORAGE_URL;
+    }
+
+    public static void requireSecureTransport(@NotNull URI url) throws DBException {
+        if (url.getHost() == null || url.getUserInfo() != null
+            || !("https".equals(url.getScheme()) || "http".equals(url.getScheme())
+                && ("localhost".equals(url.getHost()) || "127.0.0.1".equals(url.getHost())))) {
+            throw new DBException("Expected an HTTPS DataDam URL (HTTP is allowed on loopback only)");
+        }
     }
 }
