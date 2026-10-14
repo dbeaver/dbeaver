@@ -98,9 +98,18 @@ public final class OpenAIModels {
 
     @NotNull
     public static AIModel fromApiModel(@NotNull OAIModel model, @Nullable AIModelCatalogEntry catalogEntry) {
+        return fromApiModel(model, catalogEntry, detectModelFeatures(model.id()));
+    }
+
+    @NotNull
+    public static AIModel fromApiModel(
+        @NotNull OAIModel model,
+        @Nullable AIModelCatalogEntry catalogEntry,
+        @NotNull Set<AIModelFeature> features
+    ) {
         Integer contextSize = model.contextLength();
         AIModel result = new AIModel(
-            model.id(), contextSize != null && contextSize > 0 ? contextSize : null, detectModelFeatures(model.id())
+            model.id(), contextSize != null && contextSize > 0 ? contextSize : null, features
         );
         return catalogEntry == null ? result : catalogEntry.enrich(result);
     }

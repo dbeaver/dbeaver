@@ -21,7 +21,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public abstract class BaseCompletionEngine<PROPS extends AIEngineProperties> implements AIEngine<PROPS> {
 
@@ -56,8 +59,31 @@ public abstract class BaseCompletionEngine<PROPS extends AIEngineProperties> imp
 
     @Nullable
     protected AIModelCatalogEntry getCachedCatalogEntry() throws DBException {
-        String model = properties.getModel();
-        return model == null ? null : getCachedModelCatalog().get(model);
+        return findCatalogEntry(getCachedModelCatalog(), model());
+    }
+
+    @Nullable
+    protected AIModelCatalogEntry findCatalogEntry(
+        @NotNull Map<String, AIModelCatalogEntry> catalog,
+        @Nullable String modelName
+    ) {
+        return modelName == null ? null : catalog.get(modelName);
+    }
+
+    @NotNull
+    protected <MODEL> List<AIModel> mapModels(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull List<MODEL> models,
+        @NotNull Function<MODEL, String> modelName,
+        @NotNull BiFunction<MODEL, AIModelCatalogEntry, AIModel> mapper
+    ) {
+        Map<String, AIModelCatalogEntry> catalog = getModelCatalog(monitor);
+        return models.stream().map(model -> mapper.apply(model, findCatalogEntry(catalog, modelName.apply(model)))).toList();
+    }
+
+    @Nullable
+    protected String model() throws DBException {
+        return properties.getModel();
     }
 
     @Override

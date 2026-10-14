@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.ai.engine;
 
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -27,14 +26,15 @@ import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.HttpConstants;
 import org.jkiss.utils.function.ThrowableFunction;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -45,16 +45,17 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.zip.GZIPInputStream;
 
 public final class AIModelCatalog {
     private static final Log log = Log.getLog(AIModelCatalog.class);
-    private static final URI CATALOG_URI = URI.create("https://models.dev/api.json");
+    private static final String CATALOG_HOST = /*<LM-PROD-URL*/"dbeaver.com"/*/>*/;
+    private static final URI CATALOG_URI = URI.create("https://" + CATALOG_HOST + "/product/ai_models_api.json.gz");
     private static final Duration REFRESH_INTERVAL = Duration.ofDays(7);
     private static final Duration RETRY_INTERVAL = Duration.ofDays(1);
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(10);
     private static final Duration POLL_INTERVAL = Duration.ofMillis(100);
     private static final Gson GSON = new Gson();
-    private static final TypeToken<Map<String, Provider>> PROVIDERS_TYPE = new TypeToken<>() {};
     private static final ThreadLocal<AIModelCatalog> testInstance = new ThreadLocal<>();
 
     @Nullable
@@ -188,7 +189,7 @@ public final class AIModelCatalog {
         try {
             Path directory = cacheFile.toAbsolutePath().getParent();
             Files.createDirectories(directory);
-            Path temporaryFile = Files.createTempFile(directory, "models-dev-", ".tmp");
+            Path temporaryFile = Files.createTempFile(directory, "ai-model-catalog-", ".tmp");
             try {
                 Files.writeString(temporaryFile, GSON.toJson(new CacheSnapshot(nextRefreshAt, providers)));
                 try {
@@ -206,8 +207,8 @@ public final class AIModelCatalog {
 
     @NotNull
     private static Map<String, Provider> readProviders(@NotNull String json) throws IOException {
-        Map<String, Provider> parsed = GSON.fromJson(json, PROVIDERS_TYPE);
-        Map<String, Provider> result = immutableProviders(parsed);
+        CatalogSnapshot snapshot = GSON.fromJson(json, CatalogSnapshot.class);
+        Map<String, Provider> result = immutableProviders(snapshot == null ? null : snapshot.api());
         if (result.values().stream().allMatch(provider -> provider.models().isEmpty())) {
             throw new IOException("AI model catalog contains no models");
         }
@@ -245,22 +246,23 @@ public final class AIModelCatalog {
     static String download(@NotNull DBRProgressMonitor monitor, @NotNull HttpClient client) throws IOException, InterruptedException {
         checkCanceled(monitor);
         HttpRequest request = HttpRequest.newBuilder(CATALOG_URI)
-            .header(HttpConstants.HEADER_ACCEPT, HttpConstants.CONTENT_TYPE_JSON)
             .timeout(REQUEST_TIMEOUT)
             .GET()
             .build();
-        CompletableFuture<HttpResponse<String>> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofString());
+        CompletableFuture<HttpResponse<byte[]>> future = client.sendAsync(request, HttpResponse.BodyHandlers.ofByteArray());
         try {
             while (!future.isDone()) {
                 checkCanceled(monitor);
                 Thread.sleep(POLL_INTERVAL);
             }
             checkCanceled(monitor);
-            HttpResponse<String> response = future.get();
+            HttpResponse<byte[]> response = future.get();
             if (response.statusCode() != 200) {
                 throw new IOException("AI model catalog returned HTTP " + response.statusCode());
             }
-            return response.body();
+            try (GZIPInputStream input = new GZIPInputStream(new ByteArrayInputStream(response.body()))) {
+                return new String(input.readAllBytes(), StandardCharsets.UTF_8);
+            }
         } catch (ExecutionException e) {
             throw new IOException("Unable to download AI model catalog", e.getCause());
         } finally {
@@ -282,7 +284,7 @@ public final class AIModelCatalog {
         try {
             AIActivator activator = AIActivator.getInstance();
             if (activator != null) {
-                cacheFile = RuntimeUtils.getPluginStateLocation(activator).resolve("models-dev.json");
+                cacheFile = RuntimeUtils.getPluginStateLocation(activator).resolve("ai-model-catalog-" + CATALOG_HOST + ".json");
             }
         } catch (Exception e) {
             log.debug("Unable to locate AI model catalog cache directory", e);
@@ -291,6 +293,9 @@ public final class AIModelCatalog {
     }
 
     private record Provider(@NotNull Map<String, AIModelCatalogEntry> models) {
+    }
+
+    private record CatalogSnapshot(@Nullable Map<String, Provider> api) {
     }
 
     private record CacheSnapshot(long nextRefreshAt, @NotNull Map<String, Provider> providers) {

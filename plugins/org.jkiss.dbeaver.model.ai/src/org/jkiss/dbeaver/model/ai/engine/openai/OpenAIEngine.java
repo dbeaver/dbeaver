@@ -65,15 +65,14 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
             }
             return new OpenAIAccountAuthenticator(openAIProperties.getTimeout()).listModelDetails(monitor, openAIProperties);
         }
-        List<OAIModel> models = openAiService.getInstance().getModels(monitor);
-        Map<String, AIModelCatalogEntry> catalog = getModelCatalog(monitor);
-        boolean defaultEndpoint = OpenAIModels.isOpenAIEndpoint(properties.getBaseUrl());
-        return models.stream()
-            .map(model -> defaultEndpoint
-                ? OpenAIModels.fromApiModel(model, OpenAIModels.findCatalogEntry(catalog, model.id()))
-                : new AIModel(model.id(), model.contextLength() != null && model.contextLength() > 0 ? model.contextLength() : null,
-                    Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)))
-            .toList();
+        return mapModels(monitor, openAiService.getInstance().getModels(monitor), OAIModel::id,
+            (model, entry) -> OpenAIModels.fromApiModel(model, entry, getModelFeatures(model.id())));
+    }
+
+    @NotNull
+    protected Set<AIModelFeature> getModelFeatures(@NotNull String modelName) {
+        return OpenAIModels.isOpenAIEndpoint(properties.getBaseUrl()) ? OpenAIModels.detectModelFeatures(modelName)
+            : Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING);
     }
 
     @NotNull
@@ -155,8 +154,12 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     @Nullable
     @Override
-    protected AIModelCatalogEntry getCachedCatalogEntry() throws DBException {
-        return OpenAIModels.findCatalogEntry(getCachedModelCatalog(), model());
+    protected AIModelCatalogEntry findCatalogEntry(
+        @NotNull Map<String, AIModelCatalogEntry> catalog,
+        @Nullable String modelName
+    ) {
+        return OpenAIModels.CATALOG_PROVIDER_ID.equals(getCatalogProviderId())
+            ? OpenAIModels.findCatalogEntry(catalog, modelName) : super.findCatalogEntry(catalog, modelName);
     }
 
     @NotNull
@@ -179,11 +182,6 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
             baseUrl = OpenAIClientResponses.OPENAI_ENDPOINT;
         }
         return OpenAIClientResponses.createClient(baseUrl, token);
-    }
-
-    @Nullable
-    protected String model() throws DBException {
-        return properties.getModel();
     }
 
 }

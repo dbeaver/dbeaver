@@ -180,7 +180,7 @@ class OpenAIModelCatalogTest extends DBeaverUnitTest {
         AIModelCatalog catalog = new AIModelCatalog(null, Clock.systemUTC(), progress -> {
             Assertions.assertSame(monitor, progress);
             downloads.incrementAndGet();
-            return "{\"openai\":{\"models\":{\"gpt-test\":{\"limit\":{\"context\":128000}}}}}";
+            return "{\"api\":{\"openai\":{\"models\":{\"gpt-test\":{\"limit\":{\"context\":128000}}}}}}";
         });
         OpenAIProperties properties = new OpenAIProperties();
         properties.setModel("gpt-test");
@@ -224,7 +224,7 @@ class OpenAIModelCatalogTest extends DBeaverUnitTest {
         AtomicInteger downloads = new AtomicInteger();
         AIModelCatalog catalog = new AIModelCatalog(null, clock, progress -> {
             int context = downloads.incrementAndGet() == 1 ? 128_000 : 64_000;
-            return "{\"openai\":{\"models\":{\"gpt-test\":{\"limit\":{\"context\":" + context + "},\"temperature\":false}}}}";
+            return "{\"api\":{\"openai\":{\"models\":{\"gpt-test\":{\"limit\":{\"context\":" + context + "},\"temperature\":false}}}}}";
         });
         OpenAIProperties properties = new OpenAIProperties();
         properties.setModel("gpt-test");

@@ -134,16 +134,14 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
             .withRequiredSetting(accessTokenText, CopilotMessages.copilot_access_token_required)
-            .withModifyListener(() -> {
+            .withModelChangeListener(modelChanged -> {
                 AIModel selectedModel = modelSelectorField.getSelectedModel();
                 if (selectedModel == null) {
                     selectedModel = CopilotModels.getModelByName(modelSelectorField.getSelectedModelName()).orElse(null);
                 }
-                updateModelParameters(selectedModel, temperatureText, contextWindowSizeField, true);
+                updateModelParameters(selectedModel, temperatureText, contextWindowSizeField, modelChanged);
             })
             .withModelListSupplier(modelListProvider)
-            .withModelsRefreshListener(() -> updateModelParameters(
-                modelSelectorField.getSelectedModel(), temperatureText, contextWindowSizeField, false))
             .build();
 
         contextWindowSizeField = ContextWindowSizeField.builder()

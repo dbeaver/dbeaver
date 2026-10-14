@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai.engine;
 
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.function.ThrowableFunction;
@@ -24,29 +25,37 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.zip.GZIPOutputStream;
 
 class AIModelCatalogTest extends DBeaverUnitTest {
     private static final String CATALOG = """
         {
-          "openai":{"models":{"gpt-test":{"limit":{"context":400000,"input":272000,"output":128000},
-            "temperature":false,"tool_call":true,"reasoning":true}}},
-          "anthropic":{"models":{"claude-test":{"limit":{"context":200000}}}}
+          "update_time":"2026-10-13T12:49:59Z",
+          "api":{
+            "openai":{"models":{"gpt-test":{"limit":{"context":400000,"input":272000,"output":128000},
+              "temperature":false,"tool_call":true,"reasoning":true}}},
+            "anthropic":{"models":{"claude-test":{"limit":{"context":200000}}}}
+          }
         }
         """;
 
@@ -64,7 +73,7 @@ class AIModelCatalogTest extends DBeaverUnitTest {
         Mockito.when(clock.millis()).thenAnswer(invocation -> time.get());
         loader = Mockito.mock(ThrowableFunction.class);
         Mockito.when(loader.apply(Mockito.any())).thenReturn(CATALOG);
-        cacheFile = directory.resolve("models-dev.json");
+        cacheFile = directory.resolve("ai-model-catalog-dbeaver.com.json");
     }
 
     @Test
@@ -132,14 +141,16 @@ class AIModelCatalogTest extends DBeaverUnitTest {
         AIModelCatalog catalog = new AIModelCatalog(cacheFile, clock, loader);
         catalog.getModels("openai");
         time.addAndGet(Duration.ofDays(7).toMillis());
-        for (String response : new String[]{"<html>unavailable</html>", "{}", "null", "{\"openai\":{}}"}) {
+        for (String response : new String[]{
+            "<html>unavailable</html>", "{}", "null", "{\"api\":null}", "{\"api\":{}}", "{\"api\":{\"openai\":{}}}"
+        }) {
             Mockito.when(loader.apply(Mockito.any())).thenReturn(response);
             Assertions.assertEquals(400_000, catalog.getModels("openai").get("gpt-test").limit().context());
             Assertions.assertEquals(400_000,
                 new AIModelCatalog(cacheFile, clock, loader).getCachedModels("openai").get("gpt-test").limit().context());
             time.addAndGet(Duration.ofDays(1).toMillis());
         }
-        Mockito.verify(loader, Mockito.times(5)).apply(Mockito.any());
+        Mockito.verify(loader, Mockito.times(7)).apply(Mockito.any());
     }
 
     @Test
@@ -213,13 +224,62 @@ class AIModelCatalogTest extends DBeaverUnitTest {
     }
 
     @Test
+    void downloadsGzipCatalogFromDBeaverWebsite() throws Exception {
+        HttpClient client = Mockito.mock(HttpClient.class);
+        HttpResponse<byte[]> response = Mockito.mock(HttpResponse.class);
+        Mockito.when(response.statusCode()).thenReturn(200);
+        Mockito.when(response.body()).thenReturn(compress(CATALOG));
+        Mockito.when(client.sendAsync(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<byte[]>>any()))
+            .thenReturn(CompletableFuture.completedFuture(response));
+        AIModelCatalog catalog = new AIModelCatalog(cacheFile, clock, progress -> AIModelCatalog.download(progress, client));
+
+        Assertions.assertEquals(400_000, catalog.getModels(monitor, "openai").get("gpt-test").limit().context());
+        ArgumentCaptor<HttpRequest> request = ArgumentCaptor.forClass(HttpRequest.class);
+        Mockito.verify(client).sendAsync(request.capture(), Mockito.<HttpResponse.BodyHandler<byte[]>>any());
+        Assertions.assertTrue(List.of(
+            "https://dbeaver.com/product/ai_models_api.json.gz",
+            "https://stage-website-com.beavers.team/product/ai_models_api.json.gz"
+        ).contains(request.getValue().uri().toString()));
+    }
+
+    @Test
+    void corruptGzipKeepsCachedSnapshot() throws Exception {
+        HttpClient client = Mockito.mock(HttpClient.class);
+        HttpResponse<byte[]> response = Mockito.mock(HttpResponse.class);
+        Mockito.when(response.statusCode()).thenReturn(200);
+        Mockito.when(response.body()).thenReturn(compress(CATALOG), new byte[]{0x1f, (byte) 0x8b, 0x00});
+        Mockito.when(client.sendAsync(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<byte[]>>any()))
+            .thenAnswer(invocation -> CompletableFuture.completedFuture(response));
+        AIModelCatalog catalog = new AIModelCatalog(cacheFile, clock, progress -> AIModelCatalog.download(progress, client));
+        catalog.getModels(monitor, "openai");
+        time.addAndGet(Duration.ofDays(7).toMillis());
+
+        Assertions.assertEquals(400_000, catalog.getModels(monitor, "openai").get("gpt-test").limit().context());
+        Assertions.assertEquals(400_000,
+            new AIModelCatalog(cacheFile, clock, loader).getCachedModels("openai").get("gpt-test").limit().context());
+    }
+
+    @Test
+    void httpFailureDoesNotDecodeResponseBody() throws Exception {
+        HttpClient client = Mockito.mock(HttpClient.class);
+        HttpResponse<byte[]> response = Mockito.mock(HttpResponse.class);
+        Mockito.when(response.statusCode()).thenReturn(503);
+        Mockito.when(client.sendAsync(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<byte[]>>any()))
+            .thenReturn(CompletableFuture.completedFuture(response));
+
+        IOException exception = Assertions.assertThrows(IOException.class, () -> AIModelCatalog.download(monitor, client));
+        Assertions.assertEquals("AI model catalog returned HTTP 503", exception.getMessage());
+        Mockito.verify(response, Mockito.never()).body();
+    }
+
+    @Test
     void cancellationDuringDownloadCancelsHttpFutureAndAllowsImmediateRetry() throws Exception {
         HttpClient client = Mockito.mock(HttpClient.class);
-        CompletableFuture<HttpResponse<String>> pending = new CompletableFuture<>();
-        HttpResponse<String> response = Mockito.mock(HttpResponse.class);
+        CompletableFuture<HttpResponse<byte[]>> pending = new CompletableFuture<>();
+        HttpResponse<byte[]> response = Mockito.mock(HttpResponse.class);
         Mockito.when(response.statusCode()).thenReturn(200);
-        Mockito.when(response.body()).thenReturn(CATALOG);
-        Mockito.when(client.sendAsync(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any()))
+        Mockito.when(response.body()).thenReturn(compress(CATALOG));
+        Mockito.when(client.sendAsync(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<byte[]>>any()))
             .thenReturn(pending, CompletableFuture.completedFuture(response));
         Mockito.when(monitor.isCanceled()).thenReturn(false, false, false, true);
         AIModelCatalog catalog = new AIModelCatalog(cacheFile, clock, progress -> AIModelCatalog.download(progress, client));
@@ -230,7 +290,7 @@ class AIModelCatalogTest extends DBeaverUnitTest {
         Mockito.when(monitor.isCanceled()).thenReturn(false);
         Assertions.assertEquals(400_000, catalog.getModels(monitor, "openai").get("gpt-test").limit().context());
         Mockito.verify(client, Mockito.times(2)).sendAsync(
-            Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any());
+            Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<byte[]>>any());
     }
 
     @Test
@@ -250,5 +310,14 @@ class AIModelCatalogTest extends DBeaverUnitTest {
         Mockito.when(monitor.isCanceled()).thenReturn(false);
         Mockito.doReturn(CATALOG.replace("400000", "500000")).when(loader).apply(monitor);
         Assertions.assertEquals(500_000, catalog.getModels(monitor, "openai").get("gpt-test").limit().context());
+    }
+
+    @NotNull
+    private static byte[] compress(@NotNull String json) throws IOException {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        try (GZIPOutputStream gzip = new GZIPOutputStream(output)) {
+            gzip.write(json.getBytes(StandardCharsets.UTF_8));
+        }
+        return output.toByteArray();
     }
 }

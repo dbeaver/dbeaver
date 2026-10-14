@@ -180,17 +180,15 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                     .filter(it -> it.features().contains(AIModelFeature.CHAT))
                     .toList()
             )
-            .withModifyListener(() -> {
+            .withModelChangeListener(modelChanged -> {
                 AIModel selectedModel = modelSelectorField.getSelectedModel();
                 if (selectedModel == null && (OpenAIModels.isOpenAIEndpoint(baseUrl)
                     || isAccountAuthentication() && accountAuthenticator instanceof OpenAIAccountAuthenticator)
                 ) {
                     selectedModel = OpenAIModels.getModelByName(modelSelectorField.getSelectedModelName()).orElse(null);
                 }
-                updateModelParameters(selectedModel, temperatureText, contextWindowSizeField, true);
+                updateModelParameters(selectedModel, temperatureText, contextWindowSizeField, modelChanged);
             })
-            .withModelsRefreshListener(() -> updateModelParameters(
-                modelSelectorField.getSelectedModel(), temperatureText, contextWindowSizeField, false))
             .build();
 
         contextWindowSizeField = ContextWindowSizeField.builder()
@@ -224,14 +222,6 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             }
         }
         return Collections.emptyList();
-    }
-
-    @NotNull
-    protected List<String> fetchAccountModels(
-        @NotNull PROPERTIES properties,
-        @NotNull AIAccountAuthenticator authenticator
-    ) throws DBException {
-        return ((OpenAIAccountAuthenticator) authenticator).listModels(properties);
     }
 
     @NotNull
