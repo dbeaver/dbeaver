@@ -68,6 +68,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     public static final String ATTACHMENT_OPEN_FILE_IN_EXPLORER = "openFileInExplorer";
 
     protected final Browser browser;
+    private final AIImageThumbnailBrowser thumbnailBrowser;
     private final WebCSSInitializer cssInitializer;
     private final IPropertyChangeListener themeChangeListener;
     private final AISettingsManager settingsManager;
@@ -81,6 +82,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     public WebViewMessageList(@NotNull AIChatControl chat, @NotNull Composite parent) throws IOException {
         super(parent, SWT.NONE);
         browser = new Browser(this, SWT.NONE);
+        thumbnailBrowser = new AIImageThumbnailBrowser(browser);
         cssInitializer = createCssInitializer();
         var refreshTheme = RuntimeUtils.debounce(
             () -> UIUtils.asyncExec(this::refreshTheme),
@@ -92,7 +94,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
             cssInitializer.close();
         });
-        renderer = new WebViewMessageRenderer(browser, this::getDataSource, cssInitializer);
+        renderer = new WebViewMessageRenderer(browser, thumbnailBrowser, this::getDataSource, cssInitializer);
 
         messageChunkBuffer = new AIMessageChunkBuffer(getDisplay(), renderer::addMessageChunk, this::isDisposed);
         chat.getChatSession().addListener(new AIChatListener() {
@@ -292,6 +294,11 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
         if (!isInitWaiting) {
             renderer.execute("focusChat");
         }
+    }
+
+    @NotNull
+    AIImageThumbnailBrowser getThumbnailBrowser() {
+        return thumbnailBrowser;
     }
 
     private void createFunctions(@NotNull AIChatControl chat) {
