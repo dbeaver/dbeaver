@@ -8,6 +8,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-Release-Date: 20260720
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.ui.navigator,
  org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.ui.ai,
  org.jkiss.dbeaver.model.datadam,

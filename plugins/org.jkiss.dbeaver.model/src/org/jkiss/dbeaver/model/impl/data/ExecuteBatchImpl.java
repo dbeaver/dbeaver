@@ -177,7 +177,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                             statistics.addExecuteTime(System.currentTimeMillis() - startTime);
 
                             long rowCount = statement.getUpdateRowCount();
-                            if (rowCount > 0) {
+                            if (rowCount >= 0) {
                                 statistics.addRowsUpdated(rowCount);
                             }
 

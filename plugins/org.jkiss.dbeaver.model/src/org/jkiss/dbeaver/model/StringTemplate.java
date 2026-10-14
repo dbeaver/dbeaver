@@ -457,6 +457,8 @@ public class StringTemplate {
     private final boolean isNotPlain;
     @NotNull
     private final Pattern pattern;
+    @NotNull
+    private final Map<String, Pattern> parameterPatterns;
 
     private StringTemplate(
         @NotNull String templateString,
@@ -471,6 +473,9 @@ public class StringTemplate {
         this.groupsInfo = templateInfo.getSecond().toGroupInfo("");
         this.isNotPlain = templateInfo.getFirst().hasNamedGroups || this.paramInfoByName.values().stream().anyMatch(p -> !p.isSingleton);
         this.pattern = prepareRegexPattern(root, this.paramInfoByName, parameterPatternSupplier);
+        this.parameterPatterns = parameterPatternSupplier == null
+            ? Collections.emptyMap() : this.paramInfoByName.values().stream()
+            .collect(Collectors.toMap(ParameterInfo::name, param -> Pattern.compile(parameterPatternSupplier.getParamRegex(param))));
     }
 
     /**
@@ -875,7 +880,12 @@ public class StringTemplate {
      */
     @Nullable
     public ParamEntries extractAllParametersTree(@NotNull String string) {
-        CapturesEnumerator it = this.extractAllParametersImpl(string);
+        return extractAllParametersTree(string, false);
+    }
+
+    @Nullable
+    public ParamEntries extractAllParametersTree(@NotNull String string, boolean matchEntireString) {
+        CapturesEnumerator it = this.extractAllParametersImpl(string, matchEntireString);
         if (it != null) {
             ListNode<ParamEntries> stack = ListNode.of(new ParamEntries());
             while (it.nextCapture()) {
@@ -954,9 +964,14 @@ public class StringTemplate {
 
     @Nullable
     private CapturesEnumerator extractAllParametersImpl(@NotNull String text) {
+        return extractAllParametersImpl(text, false);
+    }
+
+    @Nullable
+    private CapturesEnumerator extractAllParametersImpl(@NotNull String text, boolean matchEntireString) {
         if (this.isNotPlain) {
             TreeMatchStep path = this.applyTreeMatch(text);
-            if (path != null) {
+            if (path != null && (!matchEntireString || path.position() == text.length())) {
                 return new CapturesEnumerator() {
                     private TreeMatchStep step = path;
 
@@ -997,7 +1012,7 @@ public class StringTemplate {
         } else {
             Matcher m = this.pattern.matcher(text);
 
-            if (m.find()) {
+            if (matchEntireString ? m.matches() : m.find()) {
                 return new CapturesEnumerator() {
                     private final Iterator<ParameterInfo> parameters = paramInfoByName.values().iterator();
 
@@ -1129,7 +1144,7 @@ public class StringTemplate {
             @Nullable
             @Override
             public TreeMatchStep visitParameter(@NotNull TemplateNode.Parameter parameter, @NotNull TreeMatchStep step) {
-                Matcher m = DEFAULT_PARAM_VALUE_PATTERN.matcher(string);
+                Matcher m = parameterPatterns.getOrDefault(parameter.name, DEFAULT_PARAM_VALUE_PATTERN).matcher(string);
                 if (m.find(step.position()) && m.start() == step.position()) {
                     return new TreeMatchStep.Parameter(step, m.end(), parameter.name);
                 } else {
@@ -1156,7 +1171,8 @@ public class StringTemplate {
                 TreeMatchStep current = repeat.child.visit(this, step);
                 while (current != null) {
                     prev = current;
-                    current = repeat.child.visit(this, current);
+                    TreeMatchStep next = repeat.child.visit(this, current);
+                    current = next != null && next.position() > current.position() ? next : null;
                 }
                 return prev;
             }

@@ -21,19 +21,8 @@ import org.jkiss.dbeaver.DBException;
 
 import javax.crypto.SecretKey;
 
-/**
- * Credentials used to sign requests and to encrypt data.
- */
+/** Encryption credentials; API requests use the desktop SSO session. */
 public interface DDSyncCredentials {
-
-    @NotNull
-    String buildToken(
-        @NotNull String method,
-        @NotNull String pathAndQuery,
-        @NotNull byte[] body
-    ) throws DBException;
-
-    void updateServerTime(long serverTimeMillis);
 
     @NotNull
     SecretKey getDataKey() throws DBException;

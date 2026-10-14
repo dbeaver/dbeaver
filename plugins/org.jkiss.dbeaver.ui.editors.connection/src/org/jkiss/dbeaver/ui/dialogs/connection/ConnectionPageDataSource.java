@@ -104,12 +104,19 @@ class ConnectionPageDataSource extends ActiveWizardPage<NewConnectionWizard> imp
 
         {
             Composite bottomPanel = new Composite(placeholder, SWT.NONE);
-            bottomPanel.setLayout(new GridLayout(1, false));
+            bottomPanel.setLayout(new GridLayout(2, false));
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             bottomPanel.setLayoutData(gd);
             projectSelector = new ProjectSelectorPanel(bottomPanel, NavigatorUtils.getSelectedProject(), SWT.NONE, true);
             if (projectSelector.getSelectedProject() == null) {
                 setErrorMessage("You need to create a project first");
+            }
+            if (DataSourceTypeViewer.isCDataEnabled()) {
+                Button showCData = UIUtils.createCheckbox(bottomPanel,
+                    UIConnectionMessages.dialog_connection_show_cdata, DataSourceTypeViewer.isShowCData());
+                showCData.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
+                showCData.addSelectionListener(SelectionListener.widgetSelectedAdapter(
+                    event -> dataSourceTypeViewer.setShowCData(showCData.getSelection())));
             }
         }
 

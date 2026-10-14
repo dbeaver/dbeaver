@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ext.db2.model.security.DB2Grantee;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2GranteeCache;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Role;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -284,6 +285,15 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         return props;
     }
 
+    @NotNull
+    @Override
+    public ErrorType discoverErrorType(@NotNull Throwable error) {
+        if (isPasswordExpired(error)) {
+            return ErrorType.PASSWORD_EXPIRED;
+        }
+        return super.discoverErrorType(error);
+    }
+
     @Override
     protected Connection openConnection(
         @NotNull DBRProgressMonitor monitor,
@@ -294,9 +304,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         try {
             db2Connection = super.openConnection(monitor, context, purpose);
         } catch (DBCException e) {
-            if ((!isBigSQL() && !isWarehouse()) && isPasswordExpired(e)
-                && DBAuthUtils.promptAndChangePasswordForCurrentUser(
-                monitor, container, this::changeUserPassword)) {
+            if ((!isBigSQL() && !isWarehouse()) && isPasswordExpired(e) && changeExpiredPassword(monitor)) {
                 return openConnection(monitor, context, purpose);
             }
             throw e;
@@ -317,13 +325,11 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         return db2Connection;
     }
 
-    private boolean isPasswordExpired(@NotNull DBCException e) {
-        Throwable cause = e.getCause();
+    private boolean isPasswordExpired(@NotNull Throwable error) {
+        return JDBCUtils.matchesSQLException(error, this::isPasswordExpired);
+    }
 
-        if (!(cause instanceof SQLException sqlEx)) {
-            return false;
-        }
-
+    private boolean isPasswordExpired(@NotNull SQLException sqlEx) {
         if (sqlEx.getErrorCode() != DB2Constants.ER_MUST_CHANGE_PASSWORD_LOGIN ||
             !DB2Constants.ER_STATE_MUST_CHANGE_PASSWORD_LOGIN.equals(sqlEx.getSQLState())) {
             return false;
@@ -331,7 +337,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
 
         try {
             Object errorSrc = BeanUtils.invokeObjectDeclaredMethod(
-                cause,
+                sqlEx,
                 "getErrorSrc",
                 new Class<?>[0],
                 new Object[0]
@@ -340,6 +346,25 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         } catch (Throwable ex) {
             log.error("Failed to retrieve DB2 error source from SQLException", ex);
             return false;
+        }
+    }
+
+    private boolean changeExpiredPassword(@NotNull DBRProgressMonitor monitor) throws DBCException {
+        DBAPasswordChangeInfo passwordChangeInfo = DBAuthUtils.getPendingPasswordChange(
+            container.getActualConnectionConfiguration());
+        if (passwordChangeInfo == null) {
+            return DBAuthUtils.promptAndChangePasswordForCurrentUser(monitor, container, this::changeUserPassword);
+        }
+        try {
+            DBAuthUtils.changePasswordForCurrentUser(
+                monitor,
+                container,
+                this::changeUserPassword,
+                passwordChangeInfo
+            );
+            return true;
+        } catch (DBException e) {
+            throw new DBCException("Error changing expired password", e);
         }
     }
 
