@@ -144,8 +144,7 @@ public final class SWTThemeUtils {
     }
 
     public static void installTreeSelectionFix(@NotNull Tree tree, @NotNull BooleanSupplier isDarkTheme) {
-        // Keep the existing entry point for callers; row states need the same fix in both themes.
-        tree.addListener(SWT.EraseItem, new TreeSelectionFix(tree)::eraseItem);
+        tree.addListener(SWT.EraseItem, new TreeSelectionFix(tree, isDarkTheme)::eraseItem);
     }
 
     /**
@@ -156,10 +155,12 @@ public final class SWTThemeUtils {
      */
     private static final class TreeSelectionFix {
         private final Tree tree;
+        private final BooleanSupplier isDarkTheme;
         private TreeItem hotItem;
 
-        private TreeSelectionFix(@NotNull Tree tree) {
+        private TreeSelectionFix(@NotNull Tree tree, @NotNull BooleanSupplier isDarkTheme) {
             this.tree = tree;
+            this.isDarkTheme = isDarkTheme;
         }
 
         private void eraseItem(@NotNull Event event) {
@@ -214,10 +215,12 @@ public final class SWTThemeUtils {
                 int state = selected ? (hot ? TREIS_HOTSELECTED : OS.TREIS_SELECTED) : OS.TREIS_HOT;
                 if (selected && !hot && !tree.isFocusControl()) {
                     state = OS.TREIS_SELECTEDNOTFOCUS;
-                }
+                }F
                 OS.DrawThemeBackground(theme, event.gc.handle, OS.TVP_TREEITEM, state, row, cell);
                 if (selected) {
-                    event.gc.setForeground(tree.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT));
+                    event.gc.setForeground(isDarkTheme.getAsBoolean()
+                        ? tree.getDisplay().getSystemColor(SWT.COLOR_LIST_SELECTION_TEXT)
+                        : tree.getForeground());
                 }
                 event.detail &= ~(SWT.SELECTED | SWT.HOT | SWT.BACKGROUND);
             } finally {
