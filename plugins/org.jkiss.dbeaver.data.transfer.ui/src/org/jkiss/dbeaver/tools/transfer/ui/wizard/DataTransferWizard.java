@@ -380,10 +380,9 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                     throw new DBException("Data transfer error", executor.getError());
                 }
             }
+        } catch (DBInterruptedException e) {
+            return true;
         } catch (DBException e) {
-            if (e instanceof DBInterruptedException) {
-                return true;
-            }
             DBWorkbench.getPlatformUI().showError(e.getMessage(), null, e);
             return false;
         }
