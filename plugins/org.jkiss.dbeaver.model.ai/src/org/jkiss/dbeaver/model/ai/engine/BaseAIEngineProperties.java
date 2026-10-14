@@ -81,7 +81,6 @@ public abstract class BaseAIEngineProperties implements AIEngineProperties {
     }
 
     @Override
-    @Property(order = 1002)
     public boolean isUseEnvVariables() {
         return useEnvVariables;
     }
