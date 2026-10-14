@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -86,6 +86,7 @@ public class DatabaseTasksTree {
             new NamedObjectPatternFilter(), TaskUIViewMessages.db_tasks_tree_text_tasks_type);
         Tree taskTree = taskViewer.getTree();
         taskTree.setHeaderVisible(true);
+        NativeThemeUtils.installTreeSelectionFix(taskTree);
         taskTree.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         taskColumnController = new ViewerColumnController<>(TaskUIViewMessages.db_tasks_tree_column_controller_tasks, taskViewer);
