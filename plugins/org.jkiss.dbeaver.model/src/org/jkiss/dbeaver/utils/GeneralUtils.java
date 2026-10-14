@@ -102,6 +102,14 @@ public class GeneralUtils {
     private static final Pattern VAR_PATTERN = Pattern.compile(
         "(\\$\\{([\\w\\.\\-]+)(\\:[^\\$\\{\\}]+)?\\})", Pattern.CASE_INSENSITIVE);
 
+    private static final int MAX_EMAIL_LENGTH = 254;
+    private static final int MAX_EMAIL_LOCAL_PART_LENGTH = 64;
+    private static final String EMAIL_LOCAL_PART = "[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+";
+    private static final String EMAIL_DOMAIN_LABEL = "[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?";
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+        EMAIL_LOCAL_PART + "(?:\\." + EMAIL_LOCAL_PART + ")*@" + EMAIL_DOMAIN_LABEL + "(?:\\." + EMAIL_DOMAIN_LABEL + ")+"
+    );
+
     /**
      * Default encoding (UTF-8)
      */
@@ -448,6 +456,12 @@ public class GeneralUtils {
 
     public static boolean isWhitespaceExt(char c) {
         return c <= ' ' || c == 0x160;
+    }
+
+    public static boolean isValidEmail(@NotNull String email) {
+        return email.length() <= MAX_EMAIL_LENGTH
+            && email.indexOf('@') <= MAX_EMAIL_LOCAL_PART_LENGTH
+            && EMAIL_PATTERN.matcher(email).matches();
     }
 
     @NotNull

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -145,8 +146,8 @@ public class PrefPageTransactions extends TargetPrefPage {
                 PrefPageConnectionTypes.PAGE_ID,
                 wpc,
                 null
-            );
-            }
+            ).setLayoutData(GridDataFactory.swtDefaults().span(2, 1).create());
+        }
 
         {
             Composite notifyNameGroup = UIUtils.createTitledComposite(
