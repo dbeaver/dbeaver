@@ -243,7 +243,7 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
                 );
                 return false;
             }
-            List<String> projectsWithSameProfileName = getProfilesManager().findLocalProfileConflicts(profileName).values().stream()
+            List<String> projectsWithSameProfileName = findLocalProfileConflicts(profileName).values().stream()
                 .map(name -> " - " + name)
                 .toList();
             return projectsWithSameProfileName.isEmpty() || UIUtils.confirmAction(
@@ -255,6 +255,20 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
                     String.join("\n", projectsWithSameProfileName)
                 )
             );
+        }
+
+        @NotNull
+        private Map<String, String> findLocalProfileConflicts(@NotNull String profileName) throws DBException {
+            Map<String, String> conflicts = new LinkedHashMap<>(getProfilesManager().findLocalProfileConflicts(profileName));
+            for (Map.Entry<String, PrefPageProjectNetworkProfiles> entry : projectPages.entrySet()) {
+                PrefPageProjectNetworkProfiles page = entry.getValue();
+                if (page.getCurrentProfiles().stream().anyMatch(profile -> profile.getProfileName().equals(profileName))) {
+                    conflicts.put(entry.getKey(), page.getProjectMeta().getName());
+                } else {
+                    conflicts.remove(entry.getKey());
+                }
+            }
+            return conflicts;
         }
 
         @NotNull
