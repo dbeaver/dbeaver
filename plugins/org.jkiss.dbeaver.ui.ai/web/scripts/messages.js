@@ -69,6 +69,37 @@ function setMessageImage(args) {
     }
 }
 
+function loadImageThumbnail(args) {
+    const image = new Image();
+    let completed = false;
+    const complete = source => {
+        if (completed) {
+            return;
+        }
+        completed = true;
+        clearTimeout(timeout);
+        image.onload = null;
+        image.onerror = null;
+        image.src = '';
+        imageThumbnailLoaded(args.id, source);
+    };
+    const timeout = setTimeout(() => complete(''), args.timeout);
+    image.onerror = () => complete('');
+    image.onload = () => {
+        try {
+            const scale = Math.min(1, args.size / Math.max(image.naturalWidth, image.naturalHeight));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+            canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+            canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+            complete(canvas.toDataURL('image/png'));
+        } catch (error) {
+            complete('');
+        }
+    };
+    image.src = args.src;
+}
+
 function addMessage(args) {
     hideCenterText();
 
