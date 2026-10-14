@@ -34,6 +34,8 @@ import java.util.UUID;
 public final class DDProjectSyncUIManager {
     private static final DDProjectSyncUIManager INSTANCE = new DDProjectSyncUIManager();
 
+    // Property testers run during shell activation, including when secure storage opens its password dialog.
+    private volatile ServiceContext currentContext;
     private DDProjectSyncService service;
 
     private DDProjectSyncUIManager() {
@@ -45,22 +47,22 @@ public final class DDProjectSyncUIManager {
     }
 
     public boolean isDDEnabled() {
-        return getCurrentContext() != null;
+        return currentContext != null;
     }
 
     @NotNull
     public DDProjectSyncService getService() {
         synchronized (this) {
             if (service == null) {
-                ServiceContext currentContext = getCurrentContext();
-                if (currentContext == null) {
+                ServiceContext context = currentContext;
+                if (context == null) {
                     throw new IllegalStateException("DataDam is not enabled");
                 }
                 service = new DDProjectSyncService(
-                    currentContext.url(),
-                    new DDBundleCredentials(currentContext.keyBundle()),
-                    currentContext.workspace(),
-                    currentContext.accountId()
+                    context.url(),
+                    new DDBundleCredentials(context.keyBundle()),
+                    context.workspace(),
+                    context.accountId()
                 );
             }
         }
@@ -68,19 +70,23 @@ public final class DDProjectSyncUIManager {
     }
 
     public void refresh() {
+        refresh(DDKeyStore.load());
+    }
+
+    public void refresh(@Nullable DDKeyBundle bundle) {
+        ServiceContext context = getCurrentContext(bundle);
         synchronized (this) {
+            currentContext = context;
             service = null;
         }
         DDProjectSyncPropertyTester.firePropertyChange();
     }
 
     @Nullable
-    private static ServiceContext getCurrentContext() {
-        String url = DDEndpoints.getStorageBaseUrl();
-        DDKeyBundle bundle = DDKeyStore.load();
+    private static ServiceContext getCurrentContext(@Nullable DDKeyBundle bundle) {
         UUID accountId = getAccountId(bundle);
         return accountId == null ? null : new ServiceContext(
-            url, bundle, DBWorkbench.getPlatform().getWorkspace(), accountId);
+            DDEndpoints.getStorageBaseUrl(), bundle, DBWorkbench.getPlatform().getWorkspace(), accountId);
     }
 
     @Nullable

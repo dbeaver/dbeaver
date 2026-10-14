@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncUIManager;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.StandardConstants;
@@ -113,6 +114,7 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
             return;
         }
         DDKeyBundle bundle = DDKeyStore.load();
+        DDProjectSyncUIManager.getInstance().refresh(bundle);
         if (bundle == null) {
             log.debug("DataDam tracking disabled (encryption keys are not imported)");
             return;
