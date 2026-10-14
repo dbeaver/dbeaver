@@ -16,21 +16,38 @@
  */
 package org.jkiss.dbeaver.ext.cdata.registry;
 
+import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 public record CDataDriverInfo(
-    @NotNull String dataSource,
-    @NotNull String artifactId,
-    @NotNull String driverName,
-    int versionYear,
+    @SerializedName("datasource") @NotNull String dataSource,
+    @SerializedName("objname") @NotNull String objectName,
+    @SerializedName("driver_name") @NotNull String driverName,
+    @SerializedName("version_year") int versionYear,
     @NotNull CDataDriverTier tier,
-    @NotNull String purchaseUrl
+    @SerializedName("purchase_url") @NotNull String purchaseUrl,
+    @SerializedName("datatype_id") @NotNull String dataTypeId,
+    @SerializedName("order_sku") @Nullable String orderSku
 ) {
-    static final String ARTIFACT_SUFFIX = "-jdbc";
+    private static final String DOCUMENTATION_URL_PREFIX = "https://cdn.cdata.com/help/";
+
+    @Nullable
+    public String documentationUrl() {
+        if (orderSku == null || orderSku.length() < 4) {
+            return null;
+        }
+        return DOCUMENTATION_URL_PREFIX + orderSku.substring(0, 2) + orderSku.charAt(3) + "/jdbc/";
+    }
+
+    @NotNull
+    public String artifactId() {
+        return objectName + "-jdbc";
+    }
 
     @NotNull
     public String jdbcName() {
-        return artifactId.substring(0, artifactId.length() - ARTIFACT_SUFFIX.length());
+        return objectName;
     }
 
     @NotNull

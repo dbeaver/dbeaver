@@ -172,8 +172,16 @@ public class DTUIMessages extends NLS {
     public static String data_transfer_task_configurator_confirm_action_question;
 
     public static String sql_script_task_configuration_wizard_default_window_title;
+    public static String sql_script_task_configuration_wizard_configuration_error_title;
+    public static String sql_script_task_configuration_wizard_configuration_error_message;
+    public static String sql_script_task_configuration_wizard_executing;
+    public static String sql_script_task_configuration_wizard_done;
+    public static String sql_script_task_configuration_wizard_failed;
+    public static String sql_script_task_configuration_wizard_task_run_error_title;
     public static String sql_script_task_data_source_selection_dialog_column_description_script;
     public static String sql_script_task_data_source_selection_dialog_column_description_script_data_source;
+    public static String sql_script_task_page_log_title;
+    public static String sql_script_task_page_log_description;
     public static String sql_script_task_page_settings_tool_item_text_add_script;
     public static String sql_script_task_page_settings_tool_item_text_remove_script;
     public static String sql_script_task_page_settings_tool_item_text_move_script_up;
@@ -213,6 +221,7 @@ public class DTUIMessages extends NLS {
     public static String data_transfer_error_target_not_specified;
     public static String data_transfer_error_no_objects_selected;
     public static String database_consumer_page_mapping_error_message_set_target_container;
+    public static String database_consumer_page_mapping_error_message_import_not_supported;
     public static String database_consumer_page_mapping_error_message_set_all_tables_mappings;
     public static String database_consumer_page_mapping_error_no_schema_changes_info;
     public static String database_consumer_page_mapping_error_schema_save_title;

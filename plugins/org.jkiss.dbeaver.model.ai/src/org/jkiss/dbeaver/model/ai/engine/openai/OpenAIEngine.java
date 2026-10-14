@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIFunctionCall;
+import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
@@ -55,13 +56,15 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         super(properties);
     }
 
+    @Override
+    public int estimateImageTokens(@NotNull AIImageAttachment image) {
+        return OpenAiUtils.estimateImageTokens(properties.getEffectiveModel(), image);
+    }
+
     @NotNull
     @Override
     public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (properties instanceof OpenAIProperties openAIProperties && openAIProperties.isChatGptAccountAuthentication()) {
-            if (!OpenAIAccountAuthenticator.isSupported()) {
-                throw new DBException("ChatGPT account authentication is available only in standalone desktop applications");
-            }
             return new OpenAIAccountAuthenticator(openAIProperties.getTimeout()).listModels(openAIProperties).stream()
                 .map(model -> OpenAIModels.KNOWN_MODELS.getOrDefault(
                     model,
@@ -69,9 +72,8 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
                 ))
                 .toList();
         }
-        String baseUrl = properties.getBaseUrl();
-        boolean defaultEndpoint = CommonUtils.isEmpty(baseUrl)
-            || OpenAIClientResponses.OPENAI_ENDPOINT.equals(baseUrl.endsWith("/") ? baseUrl : baseUrl + "/");
+        String baseUrl = properties.getEffectiveBaseUrl();
+        boolean defaultEndpoint = OpenAIBaseProperties.isDefaultBaseUrl(baseUrl);
         return openAiService.getInstance().getModels(monitor)
             .stream()
             .map(model -> defaultEndpoint ? OpenAIModels.KNOWN_MODELS.getOrDefault(
@@ -126,7 +128,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     @Override
     public int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        Integer contextWindowSize = properties.getContextWindowSize();
+        Integer contextWindowSize = properties.getEffectiveContextWindowSize();
         if (contextWindowSize != null) {
             return contextWindowSize;
         }
@@ -163,28 +165,25 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     @NotNull
     protected OpenAIClientResponses createClient() throws DBException {
         if (properties instanceof OpenAIProperties openAIProperties && openAIProperties.isChatGptAccountAuthentication()) {
-            if (!OpenAIAccountAuthenticator.isSupported()) {
-                throw new DBException("ChatGPT account authentication is available only in standalone desktop applications");
-            }
             if (!openAIProperties.isChatGptAccountConnected()) {
                 throw new DBException("OpenAI ChatGPT account is not connected");
             }
             return new OpenAIAccountClient(openAIProperties);
         }
-        String token = properties.getToken();
-        if (token == null || token.isEmpty()) {
+        String token = properties.getEffectiveToken();
+        if (properties.isTokenRequired() && CommonUtils.isEmptyTrimmed(token)) {
             throw new DBException("OpenAI API token is not set");
         }
-        String baseUrl = properties.getBaseUrl();
+        String baseUrl = properties.getEffectiveBaseUrl();
         if (baseUrl == null || baseUrl.isEmpty()) {
             baseUrl = OpenAIClientResponses.OPENAI_ENDPOINT;
         }
-        return OpenAIClientResponses.createClient(baseUrl, token);
+        return OpenAIClientResponses.createClient(baseUrl, token, properties.getCustomHeaders());
     }
 
     @Nullable
     protected String model() throws DBException {
-        return properties.getModel();
+        return properties.getEffectiveModel();
     }
 
     protected double temperature() throws DBException {

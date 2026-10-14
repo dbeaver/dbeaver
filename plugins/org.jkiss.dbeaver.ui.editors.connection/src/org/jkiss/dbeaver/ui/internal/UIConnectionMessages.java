@@ -283,6 +283,7 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_drivers_group_location;
 
     public static String dialog_connection_driver_project;
+    public static String dialog_connection_show_cdata;
 
     public static String dialog_edit_driver_edit_maven_raw;
     public static String dialog_edit_driver_edit_maven_settings;
@@ -548,6 +549,8 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_transactions_notifications_show_check_description;
     public static String pref_page_transactions_notifications_show_check_label;
     public static String pref_page_transactions_notify_name_group_label;
+    public static String pref_page_transactions_ddl_behavior_label;
+    public static String pref_page_transactions_ddl_behavior_tip;
     public static String pref_page_ui_general_group_general;
 
     static {

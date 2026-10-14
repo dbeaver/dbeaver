@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,9 +18,11 @@ package org.jkiss.dbeaver.ui.dnd;
 
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Used to move DBNNode around in a database navigator.
@@ -31,6 +33,8 @@ public final class TreeNodeTransfer extends LocalObjectTransfer<Collection<DBNNo
 	private static final String TYPE_NAME = "DBNNode Transfer"//$NON-NLS-1$
 			+ System.currentTimeMillis() + ":" + INSTANCE.hashCode();//$NON-NLS-1$
 	private static final int TYPEID = registerType(TYPE_NAME);
+
+    private Collection<DBNNode> draggedNodes;
 
 	/**
 	 * Returns the singleton instance.
@@ -59,6 +63,15 @@ public final class TreeNodeTransfer extends LocalObjectTransfer<Collection<DBNNo
     protected String[] getTypeNames() {
 		return new String[] { TYPE_NAME };
 	}
+
+    @Nullable
+    public Collection<DBNNode> getDraggedNodes() {
+        return draggedNodes;
+    }
+
+    public void setDraggedNodes(@Nullable Collection<DBNNode> nodes) {
+        draggedNodes = nodes == null ? null : List.copyOf(nodes);
+    }
 
     public static Collection<DBNNode> getFromClipboard()
     {
