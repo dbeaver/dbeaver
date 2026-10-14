@@ -94,6 +94,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     private List<MySQLPrivilege> tablePrivTypes = new ArrayList<>();
     private List<MySQLPrivilege> procedurePrivTypes = new ArrayList<>();
     private List<MySQLPrivilege> columnPrivTypes = new ArrayList<>();
+    private List<MySQLPrivilege> otherPrivTypes = new ArrayList<>();
     private final Map<MySQLTableBase, List<MySQLTableColumn>> tableColumnsCache = new HashMap<>();
 
     private MySQLUser selectedUser;
@@ -368,7 +369,14 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             }
         }
         Set<String> candidateKeys = dataSource.getObjectGrantees(monitor, catalog);
-        for (MySQLUser user : dataSource.getUsers(monitor)) {
+        List<MySQLUser> allUsers = dataSource.getUsers(monitor);
+        if (!containsAllAccounts(allUsers, candidateKeys)) {
+            // A grantee missing from the cached account list was created via SQL or another connection
+            // after the list was loaded: reload it, otherwise the account can't be shown or added
+            dataSource.resetUsers();
+            allUsers = dataSource.getUsers(monitor);
+        }
+        for (MySQLUser user : allUsers) {
             if (!candidateKeys.contains(userKey(user.getUserName(), user.getHost()))) {
                 continue;
             }
@@ -443,6 +451,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         tablePrivTypes = data.tablePrivs;
         procedurePrivTypes = data.procedurePrivs;
         columnPrivTypes = data.columnPrivs;
+        otherPrivTypes = data.otherPrivs;
         if (rootTable != null) {
             tableColumnsCache.put(rootTable, data.rootTableColumns);
         }
@@ -473,6 +482,14 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     }
 
     // ==== user/grant helpers ====
+
+    private static boolean containsAllAccounts(@NotNull List<MySQLUser> users, @NotNull Set<String> accountKeys) {
+        Set<String> known = new HashSet<>();
+        for (MySQLUser user : users) {
+            known.add(userKey(user.getUserName(), user.getHost()));
+        }
+        return known.containsAll(accountKeys);
+    }
 
     private static @NotNull String userKey(@NotNull String user, @NotNull String host) {
         return user + "@" + host; //$NON-NLS-1$
@@ -960,7 +977,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 ? grant.isGrantOption()
                 : (column != null
                     ? grant.hasColumnPrivilege(privilege, column.getName())
-                    : ArrayUtils.contains(grant.getPrivileges(), privilege));
+                    : grant.isAllPrivileges() || ArrayUtils.contains(grant.getPrivileges(), privilege));
             if (holdsPrivilege) {
                 target = grant;
                 break;
@@ -993,6 +1010,12 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         } else if (isGrant) {
             target.addPrivilege(privilege);
         } else {
+            // ALL PRIVILEGES must become an explicit list first, or the flag keeps reporting the privilege
+            List<MySQLPrivilege> levelPrivileges = new ArrayList<>(procedure != null ? procedurePrivTypes : tablePrivTypes);
+            if (procedure == null && table == null) {
+                levelPrivileges.addAll(otherPrivTypes);
+            }
+            target.expandAllPrivileges(levelPrivileges);
             target.removePrivilege(privilege);
         }
         user.clearGrantsCache();

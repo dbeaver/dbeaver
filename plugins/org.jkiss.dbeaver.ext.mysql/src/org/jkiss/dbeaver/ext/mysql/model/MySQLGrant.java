@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -78,7 +79,7 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
     private final String catalogName;
     @Nullable
     private final String tableName;
-    private final boolean allPrivileges;
+    private boolean allPrivileges;
     private boolean grantOption;
     @NotNull
     private final ObjectType objectType;
@@ -304,12 +305,30 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
     public boolean matches(@Nullable MySQLCatalog catalog) {
         return (catalog == null && isAllCatalogs())
             || (catalog != null && CommonUtils.isNotEmpty(catalogName) && !isAllCatalogs()
-            && SQLUtils.matchesLike(catalog.getName(), catalogName));
+            && (isCaseSensitiveNames()
+                ? Pattern.compile(SQLUtils.makeLikePattern(catalogName)).matcher(catalog.getName()).matches()
+                : SQLUtils.matchesLike(catalog.getName(), catalogName)));
     }
 
     public boolean matches(@Nullable MySQLTableBase table) {
-        return objectType == ObjectType.TABLE
-            && ((table == null && isAllTables()) || (table != null && table.getName().equalsIgnoreCase(tableName)));
+        if (objectType != ObjectType.TABLE) {
+            return false;
+        }
+        if (table == null) {
+            return isAllTables();
+        }
+        return isCaseSensitiveNames() ? table.getName().equals(tableName) : table.getName().equalsIgnoreCase(tableName);
+    }
+
+    /**
+     * With {@code lower_case_table_names=0} schema and table names are case-sensitive, so e.g. grants
+     * on {@code Foo} and {@code foo} are distinct. Routine names are always case-insensitive in MySQL.
+     */
+    private boolean isCaseSensitiveNames() {
+        MySQLDataSource dataSource = user.getDataSource();
+        // The MySQL dialect derives this from lower_case_table_names (same check as the catalog cache)
+        return dataSource != null && dataSource.getSQLDialect() != null
+            && !dataSource.getSQLDialect().useCaseInsensitiveNameLookup();
     }
 
     /**
@@ -493,6 +512,25 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
         String column = value.toString().trim();
         if (!column.isEmpty()) {
             columns.add(column);
+        }
+    }
+
+    /**
+     * Replaces the {@code ALL PRIVILEGES} flag by the explicit privileges it stands for on this grant's
+     * level, so that a single privilege can then be revoked from the local model (otherwise the flag
+     * would keep reporting it as granted). The grant option is a separate flag and is not added.
+     *
+     * @param levelPrivileges all privileges applicable on this grant's level
+     */
+    public void expandAllPrivileges(@NotNull Collection<MySQLPrivilege> levelPrivileges) {
+        if (!allPrivileges) {
+            return;
+        }
+        allPrivileges = false;
+        for (MySQLPrivilege privilege : levelPrivileges) {
+            if (!privilege.isGrantOption() && !privileges.contains(privilege)) {
+                privileges.add(privilege);
+            }
         }
     }
 

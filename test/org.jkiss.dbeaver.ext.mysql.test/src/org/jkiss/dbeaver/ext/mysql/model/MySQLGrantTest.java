@@ -255,4 +255,61 @@ public class MySQLGrantTest extends DBeaverUnitTest {
     public void objectSpecEscapesBackticks() {
         Assertions.assertEquals("`my``db`.`t``1`", tableGrant("my`db", "t`1", List.of(), false).getObjectSpec());
     }
+
+    @NotNull
+    private static MySQLUser userWithLowerCaseTableNames(int lowerCaseTableNames) {
+        MySQLDialect dialect = Mockito.mock(MySQLDialect.class);
+        Mockito.when(dialect.useCaseInsensitiveNameLookup()).thenReturn(lowerCaseTableNames != 0);
+        MySQLDataSource dataSource = Mockito.mock(MySQLDataSource.class);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
+        return new MySQLUser(dataSource, null);
+    }
+
+    @Test
+    public void tableAndSchemaMatchingIsCaseSensitiveWhenServerIs() {
+        // lower_case_table_names=0: Foo and foo are different tables (and schemas) with distinct grants
+        MySQLUser user = userWithLowerCaseTableNames(0);
+        MySQLGrant grant = new MySQLGrant(user, new ArrayList<>(), "MyDb", "Foo", false, false, MySQLGrant.ObjectType.TABLE);
+        Assertions.assertTrue(grant.matches(table("Foo")));
+        Assertions.assertFalse(grant.matches(table("foo")));
+        Assertions.assertTrue(grant.matches(catalog("MyDb")));
+        Assertions.assertFalse(grant.matches(catalog("mydb")));
+    }
+
+    @Test
+    public void tableAndSchemaMatchingIgnoresCaseWhenServerDoes() {
+        MySQLUser user = userWithLowerCaseTableNames(1);
+        MySQLGrant grant = new MySQLGrant(user, new ArrayList<>(), "MyDb", "Foo", false, false, MySQLGrant.ObjectType.TABLE);
+        Assertions.assertTrue(grant.matches(table("foo")));
+        Assertions.assertTrue(grant.matches(catalog("mydb")));
+    }
+
+    @Test
+    public void caseSensitiveSchemaMatchingKeepsWildcards() {
+        MySQLGrant grant = new MySQLGrant(
+            userWithLowerCaseTableNames(0), new ArrayList<>(), "Tenant\\_%", "*", false, false, MySQLGrant.ObjectType.TABLE);
+        Assertions.assertTrue(grant.matches(catalog("Tenant_1")));
+        Assertions.assertFalse(grant.matches(catalog("tenant_1")));
+        Assertions.assertFalse(grant.matches(catalog("TenantX1")));
+    }
+
+    @Test
+    public void expandAllPrivilegesAllowsRevokingOnePrivilege() {
+        MySQLPrivilege select = object("SELECT");
+        MySQLPrivilege insert = object("INSERT");
+        MySQLPrivilege grantOption = new MySQLPrivilege(null, MySQLPrivilege.GRANT_PRIVILEGE, "Tables", "", MySQLPrivilege.Kind.OBJECTS);
+        MySQLGrant grant = new MySQLGrant(USER, new ArrayList<>(), "mydb", "*", true, false, MySQLGrant.ObjectType.TABLE);
+        grant.expandAllPrivileges(List.of(select, insert, grantOption));
+        grant.removePrivilege(select);
+        Assertions.assertFalse(grant.isAllPrivileges());
+        Assertions.assertEquals(List.of(insert), List.of(grant.getPrivileges()));
+    }
+
+    @Test
+    public void expandAllPrivilegesKeepsExplicitGrantUntouched() {
+        MySQLPrivilege select = object("SELECT");
+        MySQLGrant grant = tableGrant("mydb", "t", List.of(select), false);
+        grant.expandAllPrivileges(List.of(select, object("INSERT")));
+        Assertions.assertEquals(List.of(select), List.of(grant.getPrivileges()));
+    }
 }

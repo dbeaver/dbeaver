@@ -114,6 +114,8 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     private List<MySQLPrivilege> tablePrivilegeTypes;
     private List<MySQLPrivilege> otherPrivilegeTypes;
     private List<MySQLPrivilege> procedurePrivilegeTypes;
+    // All privilege types incl. administrative ones - what ALL PRIVILEGES on *.* stands for
+    private List<MySQLPrivilege> allPrivilegeTypes;
 
     @Override
     public void createPartControl(@NotNull Composite parent) {
@@ -698,7 +700,9 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         getDatabaseObject().clearGrantsCache();
         MySQLGrant target = selectGrantToUpdate(
             grant -> grant.matches(curCatalog) && grant.matchesProcedure(curProcedure),
-            grant -> privilege.isGrantOption() ? grant.isGrantOption() : ArrayUtils.contains(grant.getPrivileges(), privilege));
+            grant -> privilege.isGrantOption()
+                ? grant.isGrantOption()
+                : grant.isAllPrivileges() || ArrayUtils.contains(grant.getPrivileges(), privilege));
         if (target != null) {
             if (privilege.isGrantOption()) {
                 target.setGrantOption(withGrantOption);
@@ -707,6 +711,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
                     target.addPrivilege(privilege);
                 }
             } else {
+                target.expandAllPrivileges(CommonUtils.safeCollection(procedurePrivilegeTypes));
                 target.removePrivilege(privilege);
             }
         } else {
@@ -740,7 +745,9 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         getDatabaseObject().clearGrantsCache();
         MySQLGrant target = selectGrantToUpdate(
             grant -> grant.matches(curCatalog) && grant.matches(curTable),
-            grant -> privilege.isGrantOption() ? grant.isGrantOption() : ArrayUtils.contains(grant.getPrivileges(), privilege));
+            grant -> privilege.isGrantOption()
+                ? grant.isGrantOption()
+                : grant.isAllPrivileges() || ArrayUtils.contains(grant.getPrivileges(), privilege));
         if (target != null) {
             if (privilege.isGrantOption()) {
                 target.setGrantOption(withGrantOption);
@@ -749,6 +756,8 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
                     target.addPrivilege(privilege);
                 }
             } else {
+                // ALL PRIVILEGES must become an explicit list first, or the flag keeps reporting the privilege
+                target.expandAllPrivileges(getLevelPrivileges(curCatalog, curTable));
                 target.removePrivilege(privilege);
             }
         } else {
@@ -767,6 +776,25 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         }
         highlightCatalogs();
         highlightTables();
+    }
+
+    /**
+     * Privileges an {@code ALL PRIVILEGES} grant stands for on the given level, matching what the
+     * privilege panels show for it: everything on {@code *.*}, table + other privileges on a schema,
+     * table privileges on a table.
+     */
+    @NotNull
+    private List<MySQLPrivilege> getLevelPrivileges(@Nullable MySQLCatalog catalog, @Nullable MySQLTableBase table) {
+        List<MySQLPrivilege> result = new ArrayList<>();
+        if (catalog == null && table == null) {
+            result.addAll(CommonUtils.safeCollection(allPrivilegeTypes));
+            return result;
+        }
+        result.addAll(CommonUtils.safeCollection(tablePrivilegeTypes));
+        if (table == null) {
+            result.addAll(CommonUtils.safeCollection(otherPrivilegeTypes));
+        }
+        return result;
     }
 
     private void fillCatalogs() {
@@ -1991,6 +2019,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
                     tablePrivilegeTypes = tablePrivs;
                     otherPrivilegeTypes = otherPrivs;
                     procedurePrivilegeTypes = procedurePrivs;
+                    allPrivilegeTypes = privs == null ? new ArrayList<>() : new ArrayList<>(privs);
                     tablePrivilegesTable.fillPrivileges(tablePrivs);
                     columnPrivilegesTable.fillPrivileges(columnPrivs);
                     procedurePrivilegesTable.fillPrivileges(procedurePrivs);
