@@ -16,11 +16,63 @@
  */
 package org.jkiss.dbeaver.ext.cdata.ui;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.cdata.registry.CDataDriverLicense;
 import org.jkiss.dbeaver.ext.cdata.registry.CDataLicenseStatus;
 import org.jkiss.dbeaver.ext.cdata.ui.internal.CDataUIMessages;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.ui.UIIcon;
+
+import java.time.format.DateTimeFormatter;
+import java.time.format.FormatStyle;
+import java.util.Locale;
 
 final class CDataLicenseUIUtils {
+    static final String SUPPORT_URL = "https://portal.cdata.com/?a=support";
+
+    @NotNull
+    static String getLicenseTitle(@NotNull CDataDriverLicense license) {
+        Integer days = license.getRemainingDays();
+        return switch (license.getStatus()) {
+            case TRIAL_ACTIVE -> days == null
+                ? getStatusText(license.getStatus()) : NLS.bind(CDataUIMessages.license_trial_remaining, days);
+            case TRIAL_EXPIRING -> days == null
+                ? getStatusText(license.getStatus()) : NLS.bind(CDataUIMessages.license_trial_expiring, days);
+            case PURCHASED_EXPIRING -> days == null
+                ? getStatusText(license.getStatus()) : NLS.bind(CDataUIMessages.license_purchased_expiring, days);
+            default -> getStatusText(license.getStatus());
+        };
+    }
+
+    @NotNull
+    static String getLicenseDetails(@NotNull CDataDriverLicense license) {
+        if (license.getStatus().isValid()) {
+            var expiration = license.getExpirationDate();
+            return expiration == null ? "" : NLS.bind(CDataUIMessages.license_valid_until,
+                expiration.format(DateTimeFormatter.ofLocalizedDate(FormatStyle.LONG).withLocale(Locale.US)));
+        }
+        return switch (license.getStatus()) {
+            case NOT_INSTALLED -> CDataUIMessages.license_required_description;
+            case TRIAL_EXPIRED -> CDataUIMessages.license_trial_expired_description;
+            case EXPIRED -> CDataUIMessages.license_expired_description;
+            case VALIDATION_UNAVAILABLE -> CDataUIMessages.license_unverified_description;
+            default -> CDataUIMessages.license_invalid_description;
+        };
+    }
+
+    @Nullable
+    static DBPImage getStatusIcon(@NotNull CDataLicenseStatus status) {
+        return switch (status) {
+            case PURCHASED_ACTIVE, TRIAL_ACTIVE -> UIIcon.ACCEPT;
+            case PURCHASED_EXPIRING, TRIAL_EXPIRING, VALIDATION_UNAVAILABLE -> DBIcon.SMALL_WARNING;
+            case NOT_INSTALLED -> null;
+            default -> DBIcon.SMALL_ERROR;
+        };
+    }
+
     private CDataLicenseUIUtils() {
     }
 
