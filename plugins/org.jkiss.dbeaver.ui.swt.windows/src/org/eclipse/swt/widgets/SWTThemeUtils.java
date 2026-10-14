@@ -215,7 +215,7 @@ public final class SWTThemeUtils {
                 int state = selected ? (hot ? TREIS_HOTSELECTED : OS.TREIS_SELECTED) : OS.TREIS_HOT;
                 if (selected && !hot && !tree.isFocusControl()) {
                     state = OS.TREIS_SELECTEDNOTFOCUS;
-                }F
+                }
                 OS.DrawThemeBackground(theme, event.gc.handle, OS.TVP_TREEITEM, state, row, cell);
                 if (selected) {
                     event.gc.setForeground(isDarkTheme.getAsBoolean()
