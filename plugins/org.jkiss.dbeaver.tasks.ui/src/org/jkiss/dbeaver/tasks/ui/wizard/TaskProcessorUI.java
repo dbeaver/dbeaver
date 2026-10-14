@@ -123,7 +123,7 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
             UIServiceSystemAgent serviceSystemAgent = DBWorkbench.getService(UIServiceSystemAgent.class);
             if (serviceSystemAgent != null && elapsedTime > serviceSystemAgent.getLongOperationTimeout() * 1000) {
                 serviceSystemAgent.notifyAgent(
-                    completeMessage.toString(), !hasErrors ? IStatus.INFO : IStatus.ERROR);
+                    hasErrors ? error.getMessage() : completeMessage.toString(), hasErrors ? IStatus.ERROR : IStatus.INFO);
             }
 
             if (isShowFinalMessage() && !hasErrors) {

@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
@@ -380,6 +381,9 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                 }
             }
         } catch (DBException e) {
+            if (e instanceof DBInterruptedException) {
+                return true;
+            }
             DBWorkbench.getPlatformUI().showError(e.getMessage(), null, e);
             return false;
         }
