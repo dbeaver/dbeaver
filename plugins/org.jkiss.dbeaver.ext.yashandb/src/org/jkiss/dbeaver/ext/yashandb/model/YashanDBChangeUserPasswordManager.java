@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.yashandb.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -45,6 +46,9 @@ public class YashanDBChangeUserPasswordManager implements DBAUserPasswordManager
     ) throws DBException {
         if (newPassword.indexOf('"') >= 0) {
             throw new DBCException("YashanDB passwords cannot contain double quotes");
+        }
+        if (OracleConstants.SCHEMA_SYS.equals(DBUtils.getUnQuotedNormalizedIdentifier(dataSource.getSQLDialect(), userName))) {
+            throw new DBCException("The YashanDB SYS password must be changed with the yaspwd tool on the database server");
         }
         dataSource.validateUserPassword(monitor, userName, oldPassword);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Change user password")) {

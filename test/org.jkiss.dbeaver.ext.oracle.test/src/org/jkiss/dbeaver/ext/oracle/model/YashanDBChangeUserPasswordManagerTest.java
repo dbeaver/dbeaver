@@ -123,6 +123,29 @@ public class YashanDBChangeUserPasswordManagerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void rejectsSysBeforeOpeningConnections() throws Exception {
+        for (String userName : new String[] {"SYS", "sys", "SyS", "\"SYS\""}) {
+            configuration.setUserName(userName);
+            DBCException error = Assertions.assertThrows(DBCException.class,
+                () -> passwordManager.changeUserPassword(monitor, userName, "New%Password1", "Old%Password1"));
+
+            Assertions.assertTrue(error.getMessage().contains("yaspwd"));
+            Assertions.assertEquals("Old%Password1", configuration.getUserPassword());
+        }
+
+        Assertions.assertNull(dataSource.validationConfiguration);
+        Mockito.verify(dataSource, Mockito.never()).validateUserPassword(Mockito.any(), Mockito.anyString(), Mockito.anyString());
+        Mockito.verifyNoInteractions(validationConnection, session, statement);
+    }
+
+    @Test
+    public void allowsUserNamesStartingWithSys() throws Exception {
+        passwordManager.changeUserPassword(monitor, "sys_admin", "New%Password1", "Old%Password1");
+
+        Mockito.verify(session).prepareStatement("ALTER USER SYS_ADMIN IDENTIFIED BY \"New%Password1\"");
+    }
+
+    @Test
     public void rejectsInvalidCurrentPasswordBeforeChangingPassword() throws Exception {
         DBCException failure = new DBCException("Invalid current password");
         dataSource.validationFailure = failure;
