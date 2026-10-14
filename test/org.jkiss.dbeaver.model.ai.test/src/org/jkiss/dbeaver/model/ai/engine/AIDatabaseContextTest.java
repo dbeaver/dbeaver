@@ -19,17 +19,20 @@ package org.jkiss.dbeaver.model.ai.engine;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.List;
+import java.util.Map;
 
 public class AIDatabaseContextTest extends DBeaverUnitTest {
     private static final String EMPTY_SCOPE_MESSAGE =
@@ -66,6 +69,35 @@ public class AIDatabaseContextTest extends DBeaverUnitTest {
         AIDatabaseContext context = createBuilder(AIDatabaseScope.CURRENT_DATASOURCE).build();
 
         Assertions.assertEquals(AIDatabaseScope.CURRENT_DATASOURCE, context.getScope());
+    }
+
+    @Test
+    public void excludesConfiguredObjectAndItsDescendants() throws DBException {
+        DBPDataSourceContainer dataSource = Mockito.mock(DBPDataSourceContainer.class);
+        Mockito.when(dataSource.getId()).thenReturn("data-source");
+        Mockito.when(dataSource.getExtension(AIContextSettingsDataSource.AI_DS_EXTENSION))
+            .thenReturn(Map.of("excludedObjects", List.of("data-source/restricted")));
+
+        DBSObjectContainer restrictedSchema = Mockito.mock(DBSObjectContainer.class);
+        Mockito.when(restrictedSchema.getName()).thenReturn("restricted");
+        Mockito.when(restrictedSchema.getParentObject()).thenReturn(dataSource);
+
+        DBSEntity restrictedTable = Mockito.mock(DBSEntity.class);
+        Mockito.when(restrictedTable.getName()).thenReturn("documents");
+        Mockito.when(restrictedTable.getParentObject()).thenReturn(restrictedSchema);
+
+        DBSObjectContainer publicSchema = Mockito.mock(DBSObjectContainer.class);
+        Mockito.when(publicSchema.getName()).thenReturn("public");
+        Mockito.when(publicSchema.getParentObject()).thenReturn(dataSource);
+
+        AIDatabaseContext context = new AIDatabaseContext.Builder(new DBSLogicalDataSource(dataSource))
+            .setScope(AIDatabaseScope.CURRENT_DATASOURCE)
+            .setExecutionContext(Mockito.mock(DBCExecutionContext.class))
+            .build();
+
+        Assertions.assertTrue(context.isObjectExcluded(restrictedSchema));
+        Assertions.assertTrue(context.isObjectExcluded(restrictedTable));
+        Assertions.assertFalse(context.isObjectExcluded(publicSchema));
     }
 
     @NotNull

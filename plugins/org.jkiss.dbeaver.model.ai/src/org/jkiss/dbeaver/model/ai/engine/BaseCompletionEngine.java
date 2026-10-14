@@ -83,13 +83,13 @@ public abstract class BaseCompletionEngine<PROPS extends AIEngineProperties> imp
 
     @Nullable
     protected String model() throws DBException {
-        return properties.getModel();
+        return properties.getEffectiveModel();
     }
 
     @Override
     public int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException {
         getModelCatalog(monitor);
-        Integer contextSize = properties.getContextWindowSize();
+        Integer contextSize = properties.getEffectiveContextWindowSize();
         if (contextSize != null && contextSize > 0) {
             return contextSize;
         }

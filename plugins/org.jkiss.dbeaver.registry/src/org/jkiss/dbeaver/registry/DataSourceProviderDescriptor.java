@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
@@ -70,6 +71,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private ObjectType implType;
     private final String name;
     private final String description;
+    private final String dataSourceTypeId;
     private final boolean temporary;
     private DBPImage icon;
     private DBPDataSourceProvider<?> instance;
@@ -100,6 +102,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.dataSourceTypeId = config.getAttribute(RegistryConstants.ATTR_DATA_SOURCE_TYPE);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.icon == null) {
             this.icon = DBIcon.DATABASE_DEFAULT;
@@ -247,6 +250,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         this.id = id;
         this.name = id;
         this.description = "Missing datasource provider " + id;
+        this.dataSourceTypeId = null;
         this.implType = new ObjectType(MissingDataSourceProvider.class.getName());
         this.temporary = true;
         this.treeDescriptor = new DBXTreeDescriptor(this, null, null, id, id, false, true, false, false, true, null, null);
@@ -310,6 +314,16 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     @Override
     public DBPImage getIcon() {
         return icon;
+    }
+
+    @Override
+    public @Nullable DBPDataSourceType getDataSourceType() {
+        return CommonUtils.isEmpty(dataSourceTypeId) ? null : registry.getDataSourceType(dataSourceTypeId);
+    }
+
+    @Nullable
+    public String getDataSourceTypeId() {
+        return dataSourceTypeId;
     }
 
     @NotNull
@@ -396,7 +410,13 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     }
 
     public synchronized void removeCustomAndDisabledDrivers() {
-        drivers.removeIf(driver -> driver.isCustom() || driver.isDisabled());
+        drivers.removeIf(driver -> {
+            if (driver.isCustom() || driver.isDisabled()) {
+                registry.removeDriver(driver);
+                return true;
+            }
+            return false;
+        });
     }
 
     @NotNull

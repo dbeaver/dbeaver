@@ -22,14 +22,23 @@ public class DDTrackingUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages"; //$NON-NLS-1$
 
     public static String sync_preference_page_title;
-    public static String sync_preference_page_access_key_group;
+    public static String sync_preference_page_account_group;
+    public static String sync_preference_page_encryption_keys_group;
+    public static String sync_preference_page_status_label;
+    public static String sync_preference_page_signed_in;
+    public static String sync_preference_page_signed_out;
+    public static String sync_preference_page_session_expired;
     public static String sync_preference_page_server_url_label;
     public static String sync_preference_page_default_button;
     public static String sync_preference_page_account_label;
-    public static String sync_preference_page_log_in_button;
-    public static String sync_preference_page_log_out_button;
-    public static String sync_preference_page_log_out_confirm_title;
-    public static String sync_preference_page_log_out_confirm_message;
+    public static String sync_preference_page_desktop_sign_in;
+    public static String sync_preference_page_desktop_sign_out;
+    public static String sync_preference_page_import_keys_button;
+    public static String sync_preference_page_forget_keys_button;
+    public static String sync_preference_page_forget_keys_confirm_title;
+    public static String sync_preference_page_forget_keys_confirm_message;
+    public static String sync_preference_page_import_keys_first;
+    public static String sync_preference_page_import_keys_failed;
     public static String sync_preference_page_configuration_group;
     public static String sync_preference_page_bound_to_label;
     public static String sync_preference_page_upload_button;
@@ -58,6 +67,33 @@ public class DDTrackingUIMessages extends NLS {
     public static String sync_preference_page_keep_local_button;
     public static String sync_preference_page_conflict_resolved_label;
     public static String sync_preference_page_conflict_resolve_failed;
+
+    public static String project_sync_title;
+    public static String project_sync_share_job;
+    public static String project_sync_share_success;
+    public static String project_sync_share_failed;
+    public static String project_sync_update_job;
+    public static String project_sync_update_unchanged;
+    public static String project_sync_update_conflict;
+    public static String project_sync_update_failed;
+    public static String project_sync_push_success;
+    public static String project_sync_push_failed;
+    public static String project_sync_pull_success;
+    public static String project_sync_pull_failed;
+    public static String project_sync_unbind_confirm_title;
+    public static String project_sync_unbind_confirm_message;
+    public static String project_sync_unbind_job;
+    public static String project_sync_unbind_success;
+    public static String project_sync_unbind_failed;
+    public static String project_sync_import_list_job;
+    public static String project_sync_import_dialog_title;
+    public static String project_sync_import_dialog_message;
+    public static String project_sync_import_button;
+    public static String project_sync_import_no_projects;
+    public static String project_sync_import_list_failed;
+    public static String project_sync_import_job;
+    public static String project_sync_import_success;
+    public static String project_sync_import_failed;
 
     public static String create_configuration_dialog_title;
     public static String create_configuration_dialog_name_label;

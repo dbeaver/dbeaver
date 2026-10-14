@@ -31,16 +31,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.datadam.auth.DDBrowserLogin;
-import org.jkiss.dbeaver.model.datadam.auth.DDBundleCredentials;
-import org.jkiss.dbeaver.model.datadam.auth.DDCryptoState;
-import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
-import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
-import org.jkiss.dbeaver.model.datadam.sync.DDLocalSyncConflictException;
-import org.jkiss.dbeaver.model.datadam.sync.DDSyncBinding;
-import org.jkiss.dbeaver.model.datadam.sync.DDSyncConflict;
-import org.jkiss.dbeaver.model.datadam.sync.DDSyncResult;
-import org.jkiss.dbeaver.model.datadam.sync.DDSyncService;
+import org.jkiss.dbeaver.model.datadam.DDAccountClient;
+import org.jkiss.dbeaver.model.datadam.auth.*;
+import org.jkiss.dbeaver.model.datadam.sync.*;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDConfigurationNotFoundException;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDConfigurationSummary;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -48,10 +41,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncUIManager;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
@@ -66,14 +61,18 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private static final String SYNC_TITLE = DDTrackingUIMessages.sync_preference_page_title;
     private static final String ENV_URL = "DATADAM_URL";
     private static final String PREF_SERVER_URL = "datadam.server-url";
+    static final String PREF_DESKTOP_SSO_ENABLED = "datadam.desktop.sso.auto-login";
     private static final int GATEWAY_PORT = 9000;
     private static final int ACCOUNT_PORT = 9001;
 
     private Text accountText;
+    private Text statusText;
     private Text urlText;
     private Text configurationText;
     private Button loginButton;
-    private Button deleteButton;
+    private Button logoutButton;
+    private Button importKeysButton;
+    private Button forgetKeysButton;
     private Button uploadButton;
     private Button downloadButton;
     private Button downloadOptionsButton;
@@ -105,7 +104,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         Composite composite = UIUtils.createPlaceholder(parent, 1);
         Composite group = UIUtils.createTitledComposite(
             composite,
-            DDTrackingUIMessages.sync_preference_page_access_key_group,
+            DDTrackingUIMessages.sync_preference_page_account_group,
             2,
             GridData.FILL_HORIZONTAL,
             SWT.DEFAULT);
@@ -124,25 +123,41 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                 updateApplyState();
             }));
 
-        accountText = UIUtils.createLabelText(
-            group, DDTrackingUIMessages.sync_preference_page_account_label, "", SWT.READ_ONLY, idFieldLayout());
+        statusText = UIUtils.createLabelText(
+            group, DDTrackingUIMessages.sync_preference_page_status_label, "", SWT.READ_ONLY, idFieldLayout());
 
         Composite buttons = UIUtils.createComposite(group, 2);
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.horizontalSpan = 2;
         buttons.setLayoutData(gd);
         loginButton = UIUtils.createPushButton(
-            buttons, DDTrackingUIMessages.sync_preference_page_log_in_button, null,
+            buttons, DDTrackingUIMessages.sync_preference_page_desktop_sign_in, null,
             SelectionListener.widgetSelectedAdapter(e -> logIn()));
-        deleteButton = UIUtils.createPushButton(
-            buttons, DDTrackingUIMessages.sync_preference_page_log_out_button, null,
+        logoutButton = UIUtils.createPushButton(
+            buttons, DDTrackingUIMessages.sync_preference_page_desktop_sign_out, null,
+            SelectionListener.widgetSelectedAdapter(e -> logOut()));
+
+        Composite keysGroup = UIUtils.createTitledComposite(
+            composite, DDTrackingUIMessages.sync_preference_page_encryption_keys_group,
+            2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        accountText = UIUtils.createLabelText(
+            keysGroup, DDTrackingUIMessages.sync_preference_page_account_label, "", SWT.READ_ONLY, idFieldLayout());
+        Composite keyButtons = UIUtils.createComposite(keysGroup, 2);
+        GridData keyButtonsGd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        keyButtonsGd.horizontalSpan = 2;
+        keyButtons.setLayoutData(keyButtonsGd);
+        importKeysButton = UIUtils.createPushButton(
+            keyButtons, DDTrackingUIMessages.sync_preference_page_import_keys_button, null,
+            SelectionListener.widgetSelectedAdapter(e -> importKeys()));
+        forgetKeysButton = UIUtils.createPushButton(
+            keyButtons, DDTrackingUIMessages.sync_preference_page_forget_keys_button, null,
             SelectionListener.widgetSelectedAdapter(e -> {
                 if (UIUtils.confirmAction(
                     getShell(),
-                    DDTrackingUIMessages.sync_preference_page_log_out_confirm_title,
-                    DDTrackingUIMessages.sync_preference_page_log_out_confirm_message)
+                    DDTrackingUIMessages.sync_preference_page_forget_keys_confirm_title,
+                    DDTrackingUIMessages.sync_preference_page_forget_keys_confirm_message)
                 ) {
-                    logOut();
+                    forgetKeys();
                 }
             }));
 
@@ -303,8 +318,11 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         }
         List<String> resolved = new ArrayList<>();
         try {
-            runInProgress(() -> {
+            runInProgressAction(monitor -> {
                 for (DDSyncConflict conflict : conflicts) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
                     if (takeRemote) {
                         service.forceDownload(conflict.key());
                     } else {
@@ -343,11 +361,11 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         return holder.get();
     }
 
-    private void runInProgress(@NotNull DBRunnable runnable) throws DBException {
+    private void runInProgressAction(@NotNull DBRunnable runnable) throws DBException {
         try {
             UIUtils.runInProgressDialog(monitor -> {
                 try {
-                    runnable.run();
+                    runnable.run(monitor);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
@@ -372,7 +390,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     @FunctionalInterface
     private interface DBRunnable {
-        void run() throws DBException;
+        void run(@NotNull DBRProgressMonitor monitor) throws DBException;
     }
 
     private void showChanged(@NotNull String emptyMessage, @NotNull String label, @NotNull DDSyncResult result) {
@@ -407,9 +425,13 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     @Nullable
     private DDSyncService createSyncService() {
+        if (DDDesktopSsoSession.needsLogin()) {
+            DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_log_in_first, true);
+            return null;
+        }
         DDKeyBundle bundle = DDKeyStore.load();
         if (bundle == null) {
-            DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_log_in_first, true);
+            DBWorkbench.getPlatformUI().showMessageBox(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_import_keys_first, true);
             return null;
         }
         String url = getGatewayUrl();
@@ -486,8 +508,12 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     @Override
     protected void performApply() {
         String url = urlText.getText().trim();
+        boolean changed = !savedUrl.equals(url);
         DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_SERVER_URL, url);
         savedUrl = url;
+        if (changed) {
+            DDProjectSyncUIManager.getInstance().refresh();
+        }
         updateApplyState();
     }
 
@@ -497,29 +523,24 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         return super.performOk();
     }
 
-    private void logIn() {
+    private void importKeys() {
         String siteUrl = getAccountUrl();
         if (CommonUtils.isEmpty(siteUrl)) {
             DBWorkbench.getPlatformUI().showMessageBox(
                 SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_url_not_configured, true);
             return;
         }
-        DDCryptoState[] result = new DDCryptoState[1];
+        DDCryptoState state;
         try {
-            UIUtils.runInProgressDialog(monitor -> {
-                try {
-                    result[0] = new DDBrowserLogin(siteUrl).login();
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            });
-        } catch (InvocationTargetException e) {
+            state = runInProgress(monitor -> new DDAccountClient(URI.create(siteUrl)).getCryptoState());
+        } catch (DBException | IllegalArgumentException e) {
             DBWorkbench.getPlatformUI().showError(
-                SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_login_failed, e.getTargetException());
+                SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_import_keys_failed, e);
             return;
         }
-
-        DDCryptoState state = result[0];
+        if (state == null) {
+            return;
+        }
         if (!state.cryptoConfigured()) {
             DBWorkbench.getPlatformUI().showMessageBox(
                 SYNC_TITLE,
@@ -541,32 +562,78 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                 }
             });
             DDKeyStore.save(keyBundle[0]);
+            DDProjectSyncUIManager.getInstance().refresh();
             DDTrackingInitializer.start();
             refresh();
         } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_login_failed, e);
+            DBWorkbench.getPlatformUI().showError(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_import_keys_failed, e);
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(
-                SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_login_failed, e.getTargetException());
+                SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_import_keys_failed, e.getTargetException());
         }
     }
 
-    private void logOut() {
+    private void forgetKeys() {
         try {
             DDTrackingInitializer.stop();
             DDKeyStore.clear();
+            DDProjectSyncUIManager.getInstance().refresh();
             refresh();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_cannot_forget_keys, e);
         }
     }
 
+    private void logIn() {
+        String account = getAccountUrl();
+        String storage = getGatewayUrl();
+        if (CommonUtils.isEmpty(account) || CommonUtils.isEmpty(storage)) {
+            DBWorkbench.getPlatformUI().showMessageBox(
+                SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_url_not_configured, true);
+            return;
+        }
+        try {
+            Boolean signedIn = runInProgress(monitor -> {
+                try {
+                    DDDesktopSsoSession.login(URI.create(account), URI.create(storage), monitor);
+                    return true;
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    throw new DBException("DataDam sign-in was interrupted", e);
+                } catch (IllegalArgumentException e) {
+                    throw new DBException("Invalid DataDam server URL", e);
+                }
+            });
+            if (!Boolean.TRUE.equals(signedIn)) {
+                return;
+            }
+            DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_DESKTOP_SSO_ENABLED, true);
+            DDTrackingInitializer.start();
+            refresh();
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_login_failed, e);
+        }
+    }
+
+    private void logOut() {
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_DESKTOP_SSO_ENABLED, false);
+        DDTrackingInitializer.stop();
+        DDDesktopSsoSession.logout();
+        refresh();
+    }
+
     private void refresh() {
         DDKeyBundle bundle = DDKeyStore.load();
         boolean present = bundle != null;
+        boolean signedIn = !DDDesktopSsoSession.needsLogin();
+        statusText.setText(signedIn ? DDTrackingUIMessages.sync_preference_page_signed_in
+            : DDDesktopSsoSession.hasLogin() ? DDTrackingUIMessages.sync_preference_page_session_expired
+                : DDTrackingUIMessages.sync_preference_page_signed_out);
         accountText.setText(present ? bundle.accountId() : "");
-        loginButton.setEnabled(!present);
-        deleteButton.setEnabled(present);
+        loginButton.setEnabled(!signedIn);
+        logoutButton.setEnabled(DDDesktopSsoSession.hasLogin());
+        importKeysButton.setEnabled(signedIn);
+        forgetKeysButton.setEnabled(present);
 
         DDSyncBinding binding = DDSyncService.readBinding(
             DBWorkbench.getPlatform().getWorkspace().getAbsolutePath());
@@ -574,9 +641,10 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         configurationText.setText(!boundToCurrentAccount
             ? ""
             : CommonUtils.isEmpty(binding.name()) ? binding.configurationId() : binding.name());
-        uploadButton.setEnabled(present);
-        downloadButton.setEnabled(present && boundToCurrentAccount);
-        downloadOptionsButton.setEnabled(present);
+        uploadButton.setEnabled(signedIn && present);
+        downloadButton.setEnabled(signedIn && present && boundToCurrentAccount);
+        downloadOptionsButton.setEnabled(signedIn && present);
+        autoSyncButton.setEnabled(signedIn && present);
         autoSyncButton.setSelection(DDAutoSyncCoordinator.isEnabled());
 
         savedUrl = DBWorkbench.getPlatform().getPreferenceStore().getString(PREF_SERVER_URL);
@@ -587,7 +655,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             ? CommonUtils.notEmpty(System.getenv(ENV_URL))
             : savedUrl);
 
-        refreshConflicts(present && boundToCurrentAccount);
+        refreshConflicts(signedIn && present && boundToCurrentAccount);
     }
 
     private void refreshConflicts(boolean boundToCurrentAccount) {
@@ -631,6 +699,9 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     @Nullable
     private static DDSyncService createSyncServiceSilently() {
+        if (DDDesktopSsoSession.needsLogin()) {
+            return null;
+        }
         DDKeyBundle bundle = DDKeyStore.load();
         if (bundle == null) {
             return null;

@@ -16,12 +16,13 @@
  */
 package org.jkiss.dbeaver.model.datadam.sync.core;
 
+import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
 import org.jkiss.code.NotNull;
 
 import java.util.Map;
 
 public record DDSharedProjectPullResult(
-    @NotNull String configurationFingerprint,
-    @NotNull Map<String, byte[]> files
+    @NotNull Map<String, byte[]> files,
+    @NotNull DDSharedProjectRevision currentRevision
 ) {
 }

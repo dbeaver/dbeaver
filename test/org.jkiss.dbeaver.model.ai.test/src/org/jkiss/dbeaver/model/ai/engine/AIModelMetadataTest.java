@@ -30,6 +30,19 @@ class AIModelMetadataTest extends DBeaverUnitTest {
     private static final Gson GSON = new Gson();
 
     @Test
+    void catalogEnrichmentPreservesNativeImageInputRestriction() {
+        AIModel model = new AIModel("text-only", 64000, Set.of(AIModelFeature.CHAT), 0.7, false);
+        AIModelCatalogEntry entry = GSON.fromJson("{\"tool_call\":true,\"temperature\":false}", AIModelCatalogEntry.class);
+
+        AIModel result = entry.enrich(model);
+
+        Assertions.assertFalse(result.imageInputSupported());
+        Assertions.assertTrue(result.features().contains(AIModelFeature.TOOL_CALL));
+        Assertions.assertEquals(64000, result.contextWindowSize());
+        Assertions.assertFalse(result.withFeature(AIModelFeature.REASONING, true).imageInputSupported());
+    }
+
+    @Test
     void featureOverridesPreserveMetadataAndDoNotMutateOriginal() {
         AIModel nativeModel = new AIModel("test-model", 64000, Set.of(AIModelFeature.CHAT, AIModelFeature.VISION),
             0.7, 48000, 16000, 2.0);

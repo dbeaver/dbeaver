@@ -359,6 +359,7 @@
                     <count value="+"/>
                     <iterate operator="and">
                         <or>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.fs.DBNPathBase"/>
                             <adapt type="org.jkiss.dbeaver.model.navigator.DBNNode">
                                 <test property="org.jkiss.dbeaver.core.object.projectResourceViewable"/>
                             </adapt>

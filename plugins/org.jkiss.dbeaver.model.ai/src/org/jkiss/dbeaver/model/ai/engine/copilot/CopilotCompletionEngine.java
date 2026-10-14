@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIFunctionCall;
+import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIUsage;
@@ -45,7 +46,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         @NotNull
         @Override
         protected CopilotClientResponses initialize() throws DBException {
-            CopilotClientResponses newClient = createClient(getProperties().getBaseAuthUrl());
+            CopilotClientResponses newClient = createClient(getProperties().getEffectiveBaseAuthUrl());
             newClient.setTimeout(getProperties().getTimeout());
             return newClient;
         }
@@ -61,10 +62,20 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         super(properties);
     }
 
+    @Override
+    public int estimateImageTokens(@NotNull AIImageAttachment image) {
+        return OpenAiUtils.estimateImageTokens(properties.getEffectiveModel(), image);
+    }
+
     @NotNull
     @Override
     protected String getCatalogProviderId() {
         return CopilotModels.CATALOG_PROVIDER_ID;
+    }
+
+    @Override
+    protected double temperature() {
+        return properties.getEffectiveTemperature();
     }
 
     @NotNull
@@ -175,7 +186,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
 
         synchronized (this) {
             if (sessionToken == null) {
-                sessionToken = client.getInstance().requestSessionToken(monitor, properties.getToken());
+                sessionToken = client.getInstance().requestSessionToken(monitor, properties.getEffectiveToken());
             }
         }
         return sessionToken;
@@ -183,7 +194,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
 
     @Nullable
     public String getModelName() {
-        return properties.getModel();
+        return properties.getEffectiveModel();
     }
 
     @NotNull
@@ -243,7 +254,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
 
     @NotNull
     protected CopilotClientResponses createClient(@NotNull String baseAuthUrl) throws DBException {
-        String token = properties.getToken();
+        String token = properties.getEffectiveToken();
         if (token == null || token.isEmpty()) {
             throw new DBException("Copilot API token is not set");
         }

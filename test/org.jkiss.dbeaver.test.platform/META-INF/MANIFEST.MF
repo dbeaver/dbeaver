@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Test Suite
 Bundle-SymbolicName: org.jkiss.dbeaver.test.platform
-Bundle-Version: 1.0.145.qualifier
-Bundle-Release-Date: 20261005
+Bundle-Version: 1.0.147.qualifier
+Bundle-Release-Date: 20261102
 Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
@@ -11,6 +11,7 @@ Export-Package: org.jkiss.junit
 Require-Bundle: junit-jupiter-api,
  org.jkiss.dbeaver.headless,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.jdbc,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.data.transfer,
  org.jkiss.dbeaver.registry,

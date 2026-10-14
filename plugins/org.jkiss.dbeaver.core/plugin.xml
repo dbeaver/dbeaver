@@ -634,6 +634,9 @@
             <command commandId="org.jkiss.dbeaver.core.sql.script.run.scriptNative">
                 <visibleWhen checkEnabled="true"/>
             </command>
+            <command commandId="org.jkiss.dbeaver.core.sql.script.execute">
+                <visibleWhen checkEnabled="true"/>
+            </command>
             <command commandId="org.jkiss.dbeaver.core.show.in.explorer">
                 <visibleWhen checkEnabled="true"/>
             </command>
@@ -1039,6 +1042,7 @@
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.toolbar" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.toolbar.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.accessibility" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.accessibility.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.general" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.general.label"/>
+        <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.user.interface" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.user.interface.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.dataformat" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.dataformat.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.db.qm" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.db.qm.label"/>
         <keyword id="org.jkiss.dbeaver.core.keyword.pref.main.meta" label="%keyword.org.jkiss.dbeaver.core.keyword.pref.main.meta.label"/>
@@ -1138,13 +1142,6 @@
                 title="%confirm.driver_download.title"
                 description="%confirm.driver_download.tip"
                 message="%confirm.driver_download.message"
-                toggleMessage="default"
-                group="%confirmation.group.general.actions"/>
-        <confirmation
-                id="disable_network_handler"
-                title="%confirm.disable_network_handler.title"
-                description="%confirm.disable_network_handler.tip"
-                message="%confirm.disable_network_handler.message"
                 toggleMessage="default"
                 group="%confirmation.group.general.actions"/>
         <confirmation

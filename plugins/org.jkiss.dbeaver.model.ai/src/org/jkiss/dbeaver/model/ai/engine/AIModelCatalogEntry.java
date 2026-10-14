@@ -40,7 +40,8 @@ public record AIModelCatalogEntry(
             model.defaultTemperature(),
             preferLimit(model.inputTokenLimit(), limit == null ? null : limit.input()),
             preferLimit(model.outputTokenLimit(), limit == null ? null : limit.output()),
-            model.maxTemperature()
+            model.maxTemperature(),
+            model.imageInputSupported()
         ).withFeature(AIModelFeature.TOOL_CALL, toolCall)
             .withFeature(AIModelFeature.REASONING, reasoning)
             .withFeature(AIModelFeature.STRUCTURED_OUTPUT, structuredOutput);

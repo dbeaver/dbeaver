@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.TreeViewerColumn;
 import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.ControlListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -78,20 +79,31 @@ class ConfigureColumnsDialog extends BaseDialog {
         viewer = new CheckboxTreeViewer(composite, SWT.MULTI | SWT.BORDER | SWT.FULL_SELECTION);
         viewer.getTree().setLayoutData(new GridData(GridData.FILL_BOTH));
         viewer.getTree().setLinesVisible(false);
-        viewer.getTree().setLayoutData(gd);
-
+        viewer.getTree().setHeaderVisible(true);
 
         viewer.setContentProvider(new TreeContentProvider() {
             @Override
             public Object[] getChildren(Object element) {
                 // We have preloaded the attributes before, so it is 'safe' to use void monitor here
-                return ((StreamMappingContainer) element).getAttributes(new VoidProgressMonitor()).toArray();
+                return element instanceof StreamMappingContainer container
+                    ? container.getAttributes(new VoidProgressMonitor()).toArray()
+                    : new Object[0];
             }
 
             @Override
             public boolean hasChildren(Object element) {
                 return element instanceof StreamMappingContainer;
             }
+        });
+        viewer.addCheckStateListener(event -> {
+            if (event.getElement() instanceof StreamMappingContainer container) {
+                viewer.setSubtreeChecked(container, event.getChecked());
+            } else if (event.getElement() instanceof StreamMappingAttribute attribute) {
+                StreamMappingContainer container = attribute.getContainer();
+                boolean hasCheckedColumns = container.getAttributes(new VoidProgressMonitor()).stream().anyMatch(viewer::getChecked);
+                viewer.setChecked(container, hasCheckedColumns);
+            }
+            updateCompletion();
         });
 
         {
@@ -107,6 +119,18 @@ class ConfigureColumnsDialog extends BaseDialog {
             });
             column.getColumn().setText(DTUIMessages.stream_consumer_page_mapping_name_column_name);
         }
+        {
+            TreeViewerColumn column = new TreeViewerColumn(viewer, SWT.LEFT);
+            column.setLabelProvider(new CellLabelProvider() {
+                @Override
+                public void update(ViewerCell cell) {
+                    cell.setText(cell.getElement() instanceof StreamMappingAttribute attribute
+                        ? attribute.getAttribute().getFullTypeName() : "");
+                }
+            });
+            column.getColumn().setText(DTUIMessages.stream_consumer_page_mapping_type_column_name);
+        }
+        viewer.getTree().addControlListener(ControlListener.controlResizedAdapter(e -> packColumns()));
 
         errorLabel = new CLabel(group, SWT.NONE);
         errorLabel.setText(DTUIMessages.stream_consumer_page_mapping_label_error_no_columns_selected_text);
@@ -119,29 +143,34 @@ class ConfigureColumnsDialog extends BaseDialog {
 
             List<Object> checked = new ArrayList<>();
             for (StreamMappingContainer element : mappings) {
-                final StreamMappingType type = element.getMappingType();
-                if (type == StreamMappingType.export) {
-                    checked.add(element);
-                }
+                boolean hasCheckedColumns = false;
                 for (StreamMappingAttribute attr : element.getAttributes(new VoidProgressMonitor())) {
                     if (attr.getMappingType() == StreamMappingType.export) {
                         checked.add(attr);
+                        hasCheckedColumns = true;
                     }
+                }
+                if (hasCheckedColumns) {
+                    checked.add(element);
                 }
             }
             viewer.setCheckedElements(checked.toArray());
 
-            UIUtils.packColumns(viewer.getTree(), true, new float[] {0.75f, 0.25f});
+            packColumns();
             updateCompletion();
         });
 
         return group;
     }
 
+    private void packColumns() {
+        if (!viewer.getTree().isDisposed()) {
+            UIUtils.packColumns(viewer.getTree(), true, new float[] {0.65f, 0.25f});
+        }
+    }
+
     @Override
     protected void okPressed() {
-        settings.getDataMappings().clear();
-
         Set<Object> checkedElements = Set.of(viewer.getCheckedElements());
         for (StreamMappingContainer container : mappings) {
             container.setMappingType(checkedElements.contains(container) ? StreamMappingType.export : StreamMappingType.skip);
@@ -158,7 +187,8 @@ class ConfigureColumnsDialog extends BaseDialog {
     }
 
     private void updateCompletion() {
-        final boolean isComplete = mappings.stream().allMatch(StreamMappingContainer::isComplete);
+        final boolean isComplete = mappings.stream().allMatch(container ->
+            container.getAttributes(new VoidProgressMonitor()).stream().anyMatch(viewer::getChecked));
         errorLabel.setVisible(!isComplete);
         enableButton(IDialogConstants.OK_ID, isComplete);
     }

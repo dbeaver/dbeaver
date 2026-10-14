@@ -195,10 +195,6 @@ public class DorisMetaModel extends GenericMetaModel {
         @NotNull GenericStructContainer owner,
         @Nullable GenericTableBase forTable
     ) throws SQLException {
-        if (forTable == null) {
-            throw new SQLException("Cannot load columns without specifying a table"); //$NON-NLS-1$
-        }
-
         // Switch to the catalog context
         GenericCatalog catalog = owner.getCatalog();
         if (catalog != null) {
@@ -210,6 +206,7 @@ public class DorisMetaModel extends GenericMetaModel {
 
         // Use information_schema.columns to get ORDINAL_POSITION
         String sql = "SELECT " + //$NON-NLS-1$
+            "TABLE_NAME, " + //$NON-NLS-1$
             "COLUMN_NAME, " + //$NON-NLS-1$
             "DATA_TYPE, " + //$NON-NLS-1$
             "COLUMN_TYPE, " + //$NON-NLS-1$
@@ -219,12 +216,15 @@ public class DorisMetaModel extends GenericMetaModel {
             "COLUMN_COMMENT, " + //$NON-NLS-1$
             "ORDINAL_POSITION " + //$NON-NLS-1$
             "FROM information_schema.columns " + //$NON-NLS-1$
-            "WHERE table_schema = ? AND table_name = ? " + //$NON-NLS-1$
-            "ORDER BY ORDINAL_POSITION"; //$NON-NLS-1$
+            "WHERE table_schema = ?" + //$NON-NLS-1$
+            (forTable == null ? " " : " AND table_name = ? ") + //$NON-NLS-1$ //$NON-NLS-2$
+            "ORDER BY TABLE_NAME, ORDINAL_POSITION"; //$NON-NLS-1$
 
         JDBCPreparedStatement stmt = session.prepareStatement(sql);
         stmt.setString(1, schemaName);
-        stmt.setString(2, forTable.getName());
+        if (forTable != null) {
+            stmt.setString(2, forTable.getName());
+        }
         return stmt;
     }
 

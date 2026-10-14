@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIFunctionCall;
+import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -56,6 +58,11 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         super(properties);
     }
 
+    @Override
+    public int estimateImageTokens(@NotNull AIImageAttachment image) {
+        return OpenAiUtils.estimateImageTokens(properties.getEffectiveModel(), image);
+    }
+
     @NotNull
     @Override
     public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
@@ -71,7 +78,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     @NotNull
     protected Set<AIModelFeature> getModelFeatures(@NotNull String modelName) {
-        return OpenAIModels.isOpenAIEndpoint(properties.getBaseUrl()) ? OpenAIModels.detectModelFeatures(modelName)
+        return OpenAIModels.isOpenAIEndpoint(properties.getEffectiveBaseUrl()) ? OpenAIModels.detectModelFeatures(modelName)
             : Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING);
     }
 
@@ -149,7 +156,8 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     protected String getCatalogProviderId() {
         boolean accountAuthentication = properties instanceof OpenAIProperties openAIProperties
             && openAIProperties.isChatGptAccountAuthentication();
-        return accountAuthentication || OpenAIModels.isOpenAIEndpoint(properties.getBaseUrl()) ? OpenAIModels.CATALOG_PROVIDER_ID : null;
+        return accountAuthentication || OpenAIModels.isOpenAIEndpoint(properties.getEffectiveBaseUrl())
+            ? OpenAIModels.CATALOG_PROVIDER_ID : null;
     }
 
     @Nullable
@@ -165,23 +173,20 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     @NotNull
     protected OpenAIClientResponses createClient() throws DBException {
         if (properties instanceof OpenAIProperties openAIProperties && openAIProperties.isChatGptAccountAuthentication()) {
-            if (!OpenAIAccountAuthenticator.isSupported()) {
-                throw new DBException("ChatGPT account authentication is available only in standalone desktop applications");
-            }
             if (!openAIProperties.isChatGptAccountConnected()) {
                 throw new DBException("OpenAI ChatGPT account is not connected");
             }
             return new OpenAIAccountClient(openAIProperties);
         }
-        String token = properties.getToken();
-        if (token == null || token.isEmpty()) {
+        String token = properties.getEffectiveToken();
+        if (properties.isTokenRequired() && CommonUtils.isEmptyTrimmed(token)) {
             throw new DBException("OpenAI API token is not set");
         }
-        String baseUrl = properties.getBaseUrl();
+        String baseUrl = properties.getEffectiveBaseUrl();
         if (baseUrl == null || baseUrl.isEmpty()) {
             baseUrl = OpenAIClientResponses.OPENAI_ENDPOINT;
         }
-        return OpenAIClientResponses.createClient(baseUrl, token);
+        return OpenAIClientResponses.createClient(baseUrl, token, properties.getCustomHeaders());
     }
 
 }

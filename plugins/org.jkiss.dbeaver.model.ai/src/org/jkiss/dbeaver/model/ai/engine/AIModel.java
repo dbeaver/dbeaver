@@ -29,7 +29,8 @@ public record AIModel(
     double defaultTemperature,
     @Nullable Integer inputTokenLimit,
     @Nullable Integer outputTokenLimit,
-    @Nullable Double maxTemperature
+    @Nullable Double maxTemperature,
+    boolean imageInputSupported
 ) {
 
     public AIModel(
@@ -38,7 +39,29 @@ public record AIModel(
         @NotNull Set<AIModelFeature> features,
         double defaultTemperature
     ) {
-        this(name, contextWindowSize, features, defaultTemperature, null, null, null);
+        this(name, contextWindowSize, features, defaultTemperature, null, null, null, true);
+    }
+
+    public AIModel(
+        @NotNull String name,
+        @Nullable Integer contextWindowSize,
+        @NotNull Set<AIModelFeature> features,
+        double defaultTemperature,
+        boolean imageInputSupported
+    ) {
+        this(name, contextWindowSize, features, defaultTemperature, null, null, null, imageInputSupported);
+    }
+
+    public AIModel(
+        @NotNull String name,
+        @Nullable Integer contextWindowSize,
+        @NotNull Set<AIModelFeature> features,
+        double defaultTemperature,
+        @Nullable Integer inputTokenLimit,
+        @Nullable Integer outputTokenLimit,
+        @Nullable Double maxTemperature
+    ) {
+        this(name, contextWindowSize, features, defaultTemperature, inputTokenLimit, outputTokenLimit, maxTemperature, true);
     }
 
     public AIModel(@NotNull String name, @Nullable Integer contextWindowSize, @NotNull Set<AIModelFeature> features) {
@@ -57,7 +80,7 @@ public record AIModel(
             updated.remove(feature);
         }
         return new AIModel(name, contextWindowSize, Set.copyOf(updated), defaultTemperature,
-            inputTokenLimit, outputTokenLimit, maxTemperature);
+            inputTokenLimit, outputTokenLimit, maxTemperature, imageInputSupported);
     }
 
     public boolean isTemperatureEditable() {
