@@ -285,6 +285,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     static final class TextBuilderImpl<T> extends UIControlBuilderImpl<TextBuilder<T>, Text> implements TextBuilder<T> {
         private final int style;
         private final UIObservable<T> text;
+        private UIObservable<String> message;
         private Function<? super String, IStatus> toModelValidator;
         private Function<? super String, ? extends T> toModelConverter;
         private Function<? super T, String> fromModelConverter;
@@ -292,6 +293,13 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         TextBuilderImpl(int style, @NotNull UIObservable<T> text) {
             this.style = style;
             this.text = text;
+        }
+
+        @NotNull
+        @Override
+        public TextBuilder<T> message(@NotNull UIObservable<String> value) {
+            message = value;
+            return this;
         }
 
         @NotNull
@@ -328,6 +336,9 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         @SuppressWarnings("unchecked")
         protected void bind(@NotNull DataBindingContext context, @NotNull Text control, @Nullable UIRowBuilderImpl row) {
             super.bind(context, control, row);
+            if (message != null) {
+                context.bindValue(WidgetProperties.message().observe(control), delegate(message));
+            }
 
             UpdateValueStrategy<String, ? extends T> toModelStrategy = null;
             UpdateValueStrategy<? super T, String> fromModelStrategy = null;
