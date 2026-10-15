@@ -42,7 +42,7 @@ class DDDesktopTokenManager {
     private final DDDesktopTokenValidator validator;
     private final DDDesktopSsoLogin login;
     @Nullable
-    private DDDesktopUserToken token;
+    private volatile DDDesktopUserToken token;
 
     DDDesktopTokenManager(
         @NotNull DDDesktopTokenStore store, @NotNull DDDesktopTokenValidator validator,
@@ -63,10 +63,11 @@ class DDDesktopTokenManager {
         if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_LOGGED_IN)) {
             return Status.SIGNED_OUT;
         }
-        if (token == null) {
+        DDDesktopUserToken current = token;
+        if (current == null) {
             return Status.UNLOADED;
         }
-        return validator.isExpired(token) ? Status.EXPIRED : Status.SIGNED_IN;
+        return validator.isExpired(current) ? Status.EXPIRED : Status.SIGNED_IN;
     }
 
     public void load(@NotNull URI resource) throws DBException {
@@ -93,7 +94,8 @@ class DDDesktopTokenManager {
     @NotNull
     public String getAccessTokenForResource(@NotNull URI resource) throws DBException {
         DDDesktopUserToken current = token;
-        if (getStatus() != Status.SIGNED_IN || current == null) {
+        if (current == null || validator.isExpired(current)
+            || !DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_LOGGED_IN)) {
             throw new DBException("Sign in to DataDam first");
         }
         if (!validator.matchesResource(current, resource)) {

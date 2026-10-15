@@ -30,6 +30,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.locks.ReentrantLock;
 
 /** Coordinates the desktop login and the locally imported project keys. */
 public class DDDesktopAccessService {
@@ -39,6 +40,7 @@ public class DDDesktopAccessService {
     private static final DDDesktopAccessService INSTANCE = new DDDesktopAccessService(DDDesktopTokenManager.getInstance());
 
     private final DDDesktopTokenManager tokenManager;
+    private final ReentrantLock operationLock = new ReentrantLock();
     private final List<Runnable> keyBundleListeners = new CopyOnWriteArrayList<>();
     private final URI accountUrl = URI.create(DDEndpoints.getAccountBaseUrl());
     private final URI storageUrl = URI.create(DDEndpoints.getStorageBaseUrl());
@@ -67,48 +69,91 @@ public class DDDesktopAccessService {
 
     @Nullable
     public DDKeyBundle getKeyBundle() {
-        return getStatus() != Status.SIGNED_OUT ? keyBundle : null;
+        if (!operationLock.tryLock()) {
+            return null;
+        }
+        try {
+            return getStatus() != Status.SIGNED_OUT ? keyBundle : null;
+        } finally {
+            operationLock.unlock();
+        }
     }
 
     @NotNull
     public String getAccessTokenForResource(@NotNull URI resource) throws DBException {
-        return tokenManager.getAccessTokenForResource(resource);
+        if (!operationLock.tryLock()) {
+            throw new DBException("DataDam access operation is in progress");
+        }
+        try {
+            return tokenManager.getAccessTokenForResource(resource);
+        } finally {
+            operationLock.unlock();
+        }
     }
 
     public void load() throws DBException {
-        log.debug("Loading DataDam desktop access");
-        tokenManager.load(storageUrl);
-        updateKeyBundle(tokenManager.getStatus() == DDDesktopTokenManager.Status.SIGNED_IN ? DDKeyStore.load() : null);
+        operationLock.lock();
+        try {
+            if (tokenManager.getStatus() != DDDesktopTokenManager.Status.UNLOADED) {
+                return;
+            }
+            log.debug("Loading DataDam desktop access");
+            tokenManager.load(storageUrl);
+            updateKeyBundle(tokenManager.getStatus() == DDDesktopTokenManager.Status.SIGNED_IN ? DDKeyStore.load() : null);
+        } finally {
+            operationLock.unlock();
+        }
     }
 
     public void signIn(@NotNull DBRProgressMonitor monitor) throws DBException, InterruptedException {
-        tokenManager.signIn(accountUrl, storageUrl, monitor);
-        updateKeyBundle(DDKeyStore.load());
-        log.debug("Signed in to DataDam desktop access");
+        operationLock.lock();
+        try {
+            tokenManager.signIn(accountUrl, storageUrl, monitor);
+            setKeyBundle(null);
+            updateKeyBundle(DDKeyStore.load());
+            log.debug("Signed in to DataDam desktop access");
+        } finally {
+            operationLock.unlock();
+        }
     }
 
     public void importKeys(@NotNull String recoveryPhrase) throws DBException {
-        if (tokenManager.getStatus() != DDDesktopTokenManager.Status.SIGNED_IN) {
-            throw new DBException("Sign in to DataDam before importing keys");
+        operationLock.lock();
+        try {
+            if (tokenManager.getStatus() != DDDesktopTokenManager.Status.SIGNED_IN) {
+                throw new DBException("Sign in to DataDam before importing keys");
+            }
+            var state = accountClient.getCryptoState();
+            DDKeyBundle bundle = DDKeyStore.unpack(state, recoveryPhrase);
+            DDKeyStore.save(bundle);
+            setKeyBundle(bundle);
+            log.debug("Imported DataDam encryption keys");
+        } finally {
+            operationLock.unlock();
         }
-        var state = accountClient.getCryptoState();
-        DDKeyBundle bundle = DDKeyStore.unpack(state, recoveryPhrase);
-        DDKeyStore.save(bundle);
-        setKeyBundle(bundle);
-        log.debug("Imported DataDam encryption keys");
     }
 
     public void forgetKeys() throws DBException {
-        DDKeyStore.clear();
-        setKeyBundle(null);
-        log.debug("Forgot DataDam encryption keys");
+        operationLock.lock();
+        try {
+            DDKeyStore.clear();
+            setKeyBundle(null);
+            log.debug("Forgot DataDam encryption keys");
+        } finally {
+            operationLock.unlock();
+        }
     }
 
     public void signOut() throws DBException {
-        DDKeyStore.clear();
-        setKeyBundle(null);
-        tokenManager.signOut();
-        log.debug("Signed out of DataDam desktop access");
+        operationLock.lock();
+        try {
+            DDKeyStore.clear();
+            setKeyBundle(null);
+            tokenManager.signOut();
+            log.debug("Signed out of DataDam desktop access");
+        } finally {
+            operationLock.unlock();
+        }
     }
 
     public void addKeyBundleListener(@NotNull Runnable listener) {
