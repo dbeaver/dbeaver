@@ -44,7 +44,12 @@ public class DDDesktopTokenUIManager {
         if (monitor.isCanceled()) {
             return false;
         }
-        if (accessService.getStatus() == DDDesktopAccessService.Status.EXPIRED) {
+        DDDesktopAccessService.Status status = accessService.getStatus();
+        if (status == DDDesktopAccessService.Status.UNLOADED) {
+            accessService.load();
+            status = accessService.getStatus();
+        }
+        if (status == DDDesktopAccessService.Status.EXPIRED) {
             Boolean accepted = UIUtils.syncExec(new RunnableWithResult<>() {
                 @Override
                 public Boolean runWithResult() {
@@ -70,6 +75,6 @@ public class DDDesktopTokenUIManager {
                 return false;
             }
         }
-        return !monitor.isCanceled() && accessService.getStatus() != DDDesktopAccessService.Status.SIGNED_OUT;
+        return !monitor.isCanceled() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN;
     }
 }

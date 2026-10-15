@@ -22,7 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.DDCryptoState;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopTokenManager;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.utils.HttpConstants;
 
 import java.lang.reflect.Type;
@@ -34,6 +34,7 @@ import java.util.Map;
 
 /** Account requests authenticated by the current desktop SSO session. */
 public class DDAccountClient extends AbstractRestClient {
+    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
     private static final String GRAPHQL_PATH = "graphql";
     private static final String CRYPTO_STATE_QUERY = """
         query GatewayCryptoState {
@@ -66,7 +67,7 @@ public class DDAccountClient extends AbstractRestClient {
         URI uri = builder.build().uri();
         DDEndpoints.requireSecureTransport(uri);
         builder.setHeader(HttpConstants.HEADER_AUTHORIZATION,
-            HttpConstants.BEARER_PREFIX + DDDesktopTokenManager.getInstance().accessFor(uri));
+            HttpConstants.BEARER_PREFIX + accessService.getAccessTokenForResource(uri));
         return super.execute(builder, type);
     }
 

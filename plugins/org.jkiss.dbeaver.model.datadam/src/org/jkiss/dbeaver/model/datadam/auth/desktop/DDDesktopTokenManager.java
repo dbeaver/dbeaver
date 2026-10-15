@@ -30,7 +30,7 @@ import java.net.URI;
 /**
  * Owns the desktop access token. Reading status or attaching a token never starts a browser flow.
  */
-public class DDDesktopTokenManager {
+class DDDesktopTokenManager {
     public enum Status { SIGNED_OUT, UNLOADED, SIGNED_IN, EXPIRED }
 
     private static final Log log = Log.getLog(DDDesktopTokenManager.class);
@@ -89,7 +89,7 @@ public class DDDesktopTokenManager {
     }
 
     @NotNull
-    public String accessFor(@NotNull URI resource) throws DBException {
+    public String getAccessTokenForResource(@NotNull URI resource) throws DBException {
         DDDesktopUserToken current = token;
         if (getStatus() != Status.SIGNED_IN || current == null) {
             throw new DBException("Sign in to DataDam first");

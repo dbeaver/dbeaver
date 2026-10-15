@@ -27,7 +27,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopTokenManager;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.GsonUtils;
 import org.jkiss.utils.HttpConstants;
@@ -61,6 +61,7 @@ public class DDShareClient extends AbstractRestClient implements DDSharedProject
         updateTime""";
 
     private final DDSyncCredentials credentials;
+    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
     private SecretKey dataKey;
 
     public DDShareClient(@NotNull String url, @NotNull DDSyncCredentials credentials) {
@@ -402,7 +403,7 @@ public class DDShareClient extends AbstractRestClient implements DDSharedProject
     private HttpRequest.Builder request(@NotNull byte[] body) throws DBException {
         URI uri = buildUri(CommonUtils.removeLeadingSlash(GRAPHQL_ENDPOINT), Map.of());
         DDEndpoints.requireSecureTransport(uri);
-        String authorization = DDDesktopTokenManager.getInstance().accessFor(uri);
+        String authorization = accessService.getAccessTokenForResource(uri);
         return HttpRequest.newBuilder(uri)
             .header(HttpConstants.HEADER_CONTENT_TYPE, MediaType.JSON.toString())
             .header(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + authorization)

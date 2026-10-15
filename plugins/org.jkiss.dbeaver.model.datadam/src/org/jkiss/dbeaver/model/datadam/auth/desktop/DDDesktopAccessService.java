@@ -32,7 +32,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /** Coordinates the desktop login and the locally imported project keys. */
 public class DDDesktopAccessService {
-    public enum Status { SIGNED_OUT, EXPIRED, TOKEN_ONLY, PROJECT_SYNC }
+    public enum Status { SIGNED_IN, SIGNED_OUT, EXPIRED, UNLOADED }
 
     private static final DDDesktopAccessService INSTANCE = new DDDesktopAccessService(DDDesktopTokenManager.getInstance());
 
@@ -54,19 +54,22 @@ public class DDDesktopAccessService {
 
     @NotNull
     public Status getStatus() {
-        DDDesktopTokenManager.Status tokenStatus = tokenManager.getStatus();
-        if (tokenStatus == DDDesktopTokenManager.Status.SIGNED_OUT) {
-            return Status.SIGNED_OUT;
-        }
-        if (tokenStatus == DDDesktopTokenManager.Status.EXPIRED) {
-            return Status.EXPIRED;
-        }
-        return keyBundle == null ? Status.TOKEN_ONLY : Status.PROJECT_SYNC;
+        return switch (tokenManager.getStatus()) {
+            case SIGNED_IN -> Status.SIGNED_IN;
+            case SIGNED_OUT -> Status.SIGNED_OUT;
+            case EXPIRED -> Status.EXPIRED;
+            case UNLOADED -> Status.UNLOADED;
+        };
     }
 
     @Nullable
     public DDKeyBundle getKeyBundle() {
         return getStatus() != Status.SIGNED_OUT ? keyBundle : null;
+    }
+
+    @NotNull
+    public String getAccessTokenForResource(@NotNull URI resource) throws DBException {
+        return tokenManager.getAccessTokenForResource(resource);
     }
 
     public void load() throws DBException {

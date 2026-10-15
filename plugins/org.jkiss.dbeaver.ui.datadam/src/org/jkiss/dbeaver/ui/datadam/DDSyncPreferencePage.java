@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.DDCryptoState;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopTokenManager;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -44,6 +44,7 @@ import java.util.concurrent.atomic.AtomicReference;
 public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
 
     private static final String SYNC_TITLE = DDTrackingUIMessages.sync_preference_page_title;
+    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
 
     private Text accountText;
     private Text statusText;
@@ -201,12 +202,10 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     private void logIn() {
-        String account = DDEndpoints.getAccountBaseUrl();
-        String storage = DDEndpoints.getStorageBaseUrl();
         try {
             Boolean signedIn = runInProgress(monitor -> {
                 try {
-                    DDDesktopTokenManager.getInstance().signIn(URI.create(account), URI.create(storage), monitor);
+                    accessService.signIn(monitor);
                     return true;
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
@@ -228,7 +227,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private void logOut() {
         DDTrackingInitializer.stop();
         try {
-            DDDesktopTokenManager.getInstance().signOut();
+            accessService.signOut();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_logout_failed, e);
         }
@@ -238,14 +237,14 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private void refresh() {
         DDKeyBundle bundle = DDKeyStore.load();
         boolean present = bundle != null;
-        DDDesktopTokenManager.Status status = DDDesktopTokenManager.getInstance().getStatus();
-        boolean signedIn = status == DDDesktopTokenManager.Status.SIGNED_IN;
+        DDDesktopAccessService.Status status = accessService.getStatus();
+        boolean signedIn = status == DDDesktopAccessService.Status.SIGNED_IN;
         statusText.setText(signedIn ? DDTrackingUIMessages.sync_preference_page_signed_in
-            : status == DDDesktopTokenManager.Status.EXPIRED ? DDTrackingUIMessages.sync_preference_page_session_expired
+            : status == DDDesktopAccessService.Status.EXPIRED ? DDTrackingUIMessages.sync_preference_page_session_expired
                 : DDTrackingUIMessages.sync_preference_page_signed_out);
         accountText.setText(present ? bundle.accountId().toString() : "");
         loginButton.setEnabled(!signedIn);
-        logoutButton.setEnabled(status != DDDesktopTokenManager.Status.SIGNED_OUT);
+        logoutButton.setEnabled(status != DDDesktopAccessService.Status.SIGNED_OUT);
         importKeysButton.setEnabled(signedIn);
         forgetKeysButton.setEnabled(present);
     }

@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.datadam;
 import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpServer;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopTokenManager;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -48,8 +48,8 @@ class DDAccountClientTest {
     private final AtomicInteger requests = new AtomicInteger();
     private HttpServer server;
     private URI account;
-    private MockedStatic<DDDesktopTokenManager> session;
-    private DDDesktopTokenManager manager;
+    private MockedStatic<DDDesktopAccessService> session;
+    private DDDesktopAccessService manager;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -69,10 +69,10 @@ class DDAccountClientTest {
             }
         });
         server.start();
-        manager = Mockito.mock(DDDesktopTokenManager.class);
-        session = Mockito.mockStatic(DDDesktopTokenManager.class);
-        session.when(DDDesktopTokenManager::getInstance).thenReturn(manager);
-        Mockito.when(manager.accessFor(account.resolve("/graphql"))).thenReturn("test-access-token");
+        manager = Mockito.mock(DDDesktopAccessService.class);
+        session = Mockito.mockStatic(DDDesktopAccessService.class);
+        session.when(DDDesktopAccessService::getInstance).thenReturn(manager);
+        Mockito.when(manager.getAccessTokenForResource(account.resolve("/graphql"))).thenReturn("test-access-token");
     }
 
     @AfterEach
@@ -100,7 +100,7 @@ class DDAccountClientTest {
 
     @Test
     void requiresSsoBeforeSendingAnyRequest() throws Exception {
-        Mockito.when(manager.accessFor(account.resolve("/graphql"))).thenThrow(new DBException("Sign in to DataDam first"));
+        Mockito.when(manager.getAccessTokenForResource(account.resolve("/graphql"))).thenThrow(new DBException("Sign in to DataDam first"));
         Assertions.assertThrows(DBException.class, () -> new DDAccountClient(account).getCryptoState());
         Assertions.assertEquals(0, requests.get());
     }

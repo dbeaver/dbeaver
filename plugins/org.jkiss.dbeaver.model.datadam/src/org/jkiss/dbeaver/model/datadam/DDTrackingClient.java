@@ -22,7 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopTokenManager;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.HttpConstants;
 
@@ -78,7 +78,7 @@ public class DDTrackingClient implements DDTrackingService {
     private static final class Transport extends AbstractRestClient {
 
         private final String rootPath;
-        private final DDDesktopTokenManager tokenManager = DDDesktopTokenManager.getInstance();
+        private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
 
         Transport(@NotNull String url, @NotNull String rootPath, int readTimeoutMs) {
             super(url, DEFAULT_CONNECT_TIMEOUT, readTimeoutMs, List.of(), HttpClient.Redirect.NEVER);
@@ -137,7 +137,7 @@ public class DDTrackingClient implements DDTrackingService {
                     builder.header(HttpConstants.HEADER_CONTENT_TYPE, MediaType.JSON.toString());
                 }
                 builder.header(HttpConstants.HEADER_AUTHORIZATION,
-                    HttpConstants.BEARER_PREFIX + tokenManager.accessFor(uri));
+                    HttpConstants.BEARER_PREFIX + accessService.getAccessTokenForResource(uri));
                 return execute(builder, DDTracking.class);
             } catch (DBException e) {
                 log.debug("DataDam tracking request failed", e);
