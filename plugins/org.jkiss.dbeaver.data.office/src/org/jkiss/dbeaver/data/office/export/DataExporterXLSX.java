@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.storage.BytesContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -45,7 +46,6 @@ import org.jkiss.dbeaver.tools.transfer.stream.exporter.StreamExporterAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
 import java.awt.*;
 import java.awt.Color;
@@ -53,7 +53,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.io.Writer;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
@@ -493,7 +493,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
                     } else if (ContentUtils.isTextContent(content)) {
                         writeCellValue(cell, cs.getContentReader());
                     } else {
-                        writeBinaryCellValue(cell, cs, session.getDataSource());
+                        writeBinaryCellValue(session.getProgressMonitor(), cell, cs, session.getDataSource());
                     }
                 } finally {
                     content.release();
@@ -531,57 +531,58 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     }
 
     private void writeBinaryCellValue(
+        @NotNull DBRProgressMonitor monitor,
         @NotNull Cell cell,
         @NotNull DBDContentStorage contentStorage,
         @NotNull DBPDataSource dataSource
     ) throws IOException {
-        CellValueWriter writer = new CellValueWriter();
+        if (monitor.isCanceled()) {
+            return;
+        }
+        String value;
+        // Read one extra character to distinguish a full cell from a truncated value.
+        int limit = EXCEL_MAX_CELL_CHARACTERS + 1;
         if (lobEncoding == LobEncoding.BINARY) {
             // XLSX cells need decoded text without the JSON escaping used by stream exporters.
             try (InputStream stream = contentStorage.getContentStream();
                  Reader reader = new InputStreamReader(stream, contentStorage.getCharset())) {
-                IOUtils.copyText(reader, writer);
+                char[] buffer = new char[limit];
+                int length = 0;
+                while (length < buffer.length && !monitor.isCanceled()) {
+                    int count = reader.read(buffer, length, buffer.length - length);
+                    if (count < 0) {
+                        break;
+                    }
+                    length += count;
+                }
+                value = new String(buffer, 0, length);
             }
         } else {
-            StreamTransferUtils.writeBinaryData(contentStorage, lobEncoding, dataSource, writer);
-        }
-        if (writer.isTruncated()) {
-            log.warn("The string value of the row " + (rowCount + 1) + " was more maximum length, so it was cropped.");
-        }
-        cell.setCellValue(getPreparedString(writer.toString()));
-    }
-
-    private static class CellValueWriter extends Writer {
-        private final StringBuilder buffer = new StringBuilder();
-        private boolean truncated;
-
-        @Override
-        public void write(@NotNull char[] chars, int offset, int length) {
-            int available = EXCEL_MAX_CELL_CHARACTERS - buffer.length();
-            if (available <= 0) {
-                truncated = truncated || length > 0;
+            // This prefix is sufficient for hex, Base64 and native hex literals, including their prefixes/suffixes.
+            // Bound the input before encoding: NATIVE buffers and formats all supplied bytes.
+            byte[] buffer = new byte[limit];
+            int length = 0;
+            try (InputStream stream = contentStorage.getContentStream()) {
+                while (length < buffer.length && !monitor.isCanceled()) {
+                    int count = stream.read(buffer, length, buffer.length - length);
+                    if (count < 0) {
+                        break;
+                    }
+                    length += count;
+                }
+            }
+            if (monitor.isCanceled()) {
                 return;
             }
-            int count = Math.min(available, length);
-            buffer.append(chars, offset, count);
-            truncated = truncated || count < length;
+            StringWriter writer = new StringWriter();
+            StreamTransferUtils.writeBinaryData(
+                new BytesContentStorage(Arrays.copyOf(buffer, length), contentStorage.getCharset()),
+                lobEncoding, dataSource, writer
+            );
+            value = writer.toString();
         }
-
-        @Override
-        public void flush() {
-        }
-
-        @Override
-        public void close() {
-        }
-
-        public boolean isTruncated() {
-            return truncated;
-        }
-
-        @Override
-        public String toString() {
-            return buffer.toString();
+        if (!monitor.isCanceled()) {
+            cell.setCellValue(getPreparedString(value));
         }
     }
 
