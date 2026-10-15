@@ -26,6 +26,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.UUID;
 import javax.crypto.SecretKey;
 
 public class DDKeyStore {
@@ -49,7 +50,11 @@ public class DDKeyStore {
             if (CommonUtils.isEmpty(value)) {
                 return null;
             }
-            return JSONUtils.GSON.fromJson(value, DDKeyBundle.class);
+            DDKeyBundle bundle = JSONUtils.GSON.fromJson(value, DDKeyBundle.class);
+            if (bundle == null || bundle.accountId() == null) {
+                throw new IllegalArgumentException("Key bundle has no account ID");
+            }
+            return bundle;
         } catch (DBException | RuntimeException e) {
             log.error("Error reading key bundle", e);
             return null;
@@ -66,6 +71,12 @@ public class DDKeyStore {
         }
         if (CommonUtils.isEmpty(state.salt()) || state.iterations() == null) {
             throw new DBException("Key derivation settings are not configured for this account");
+        }
+        UUID accountId;
+        try {
+            accountId = UUID.fromString(state.accountId());
+        } catch (IllegalArgumentException | NullPointerException e) {
+            throw new DBException("Invalid DataDam account ID", e);
         }
         byte[] salt;
         byte[] encryptedBundle;
@@ -88,7 +99,7 @@ public class DDKeyStore {
             throw new DBException("Key bundle is incomplete");
         }
         return new DDKeyBundle(
-            state.accountId(),
+            accountId,
             parts[0],
             parts[1],
             state.generation() == null ? 0 : state.generation());

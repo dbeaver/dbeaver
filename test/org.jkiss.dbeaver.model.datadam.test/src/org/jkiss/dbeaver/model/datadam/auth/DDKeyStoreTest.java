@@ -32,11 +32,13 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.UUID;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
 class DDKeyStoreTest {
     private static final String ACCOUNT_ID = "8decb064-2709-4914-b6b6-68eaef98cac3";
+    private static final UUID ACCOUNT_UUID = UUID.fromString(ACCOUNT_ID);
     // canonical BIP-39 test vector (all-zero entropy) - valid checksum, used across the test suite
     private static final String RECOVERY_PHRASE =
         "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
@@ -66,7 +68,7 @@ class DDKeyStoreTest {
 
         DDKeyBundle bundle = DDKeyStore.unpack(fixture.state(), RECOVERY_PHRASE);
 
-        Assertions.assertEquals(ACCOUNT_ID, bundle.accountId());
+        Assertions.assertEquals(ACCOUNT_UUID, bundle.accountId());
         Assertions.assertEquals(fixture.signingKey(), bundle.signingKey());
         Assertions.assertEquals(fixture.dataKey(), bundle.dataKey());
         Assertions.assertEquals(7, bundle.generation());
@@ -113,8 +115,9 @@ class DDKeyStoreTest {
 
     @Test
     void saveRejectsBundleFromDifferentAccount() throws Exception {
-        DDKeyBundle stored = new DDKeyBundle(ACCOUNT_ID, "signing-key", "data-key", 2);
-        DDKeyBundle replacement = new DDKeyBundle("another-account", "new-signing-key", "new-data-key", 3);
+        DDKeyBundle stored = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 2);
+        DDKeyBundle replacement = new DDKeyBundle(
+            UUID.fromString("8decb064-2709-4914-b6b6-68eaef98cac4"), "new-signing-key", "new-data-key", 3);
 
         DBException exception = assertRejectedSave(stored, replacement);
 
@@ -123,8 +126,8 @@ class DDKeyStoreTest {
 
     @Test
     void saveRejectsGenerationRollback() throws Exception {
-        DDKeyBundle stored = new DDKeyBundle(ACCOUNT_ID, "signing-key", "data-key", 3);
-        DDKeyBundle replacement = new DDKeyBundle(ACCOUNT_ID, "old-signing-key", "old-data-key", 2);
+        DDKeyBundle stored = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 3);
+        DDKeyBundle replacement = new DDKeyBundle(ACCOUNT_UUID, "old-signing-key", "old-data-key", 2);
 
         DBException exception = assertRejectedSave(stored, replacement);
 

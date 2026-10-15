@@ -29,7 +29,7 @@ import java.net.URI;
 
 /** Coordinates the desktop login and the locally imported project keys. */
 public class DDDesktopAccessService {
-    public enum Status { SIGNED_OUT, TOKEN_ONLY, PROJECT_READY }
+    public enum Status { SIGNED_OUT, TOKEN_ONLY, PROJECT_SYNC }
 
     private static final DDDesktopAccessService INSTANCE = new DDDesktopAccessService(DDDesktopTokenManager.getInstance());
 
@@ -50,15 +50,16 @@ public class DDDesktopAccessService {
 
     @NotNull
     public Status getStatus() {
-        if (tokenManager.getStatus() != DDDesktopTokenManager.Status.SIGNED_IN) {
+        DDDesktopTokenManager.Status tokenStatus = tokenManager.getStatus();
+        if (tokenStatus == DDDesktopTokenManager.Status.SIGNED_OUT) {
             return Status.SIGNED_OUT;
         }
-        return keyBundle == null ? Status.TOKEN_ONLY : Status.PROJECT_READY;
+        return keyBundle == null ? Status.TOKEN_ONLY : Status.PROJECT_SYNC;
     }
 
     @Nullable
     public DDKeyBundle getKeyBundle() {
-        return getStatus() == Status.PROJECT_READY ? keyBundle : null;
+        return getStatus() == Status.PROJECT_SYNC ? keyBundle : null;
     }
 
     public void load() throws DBException {
