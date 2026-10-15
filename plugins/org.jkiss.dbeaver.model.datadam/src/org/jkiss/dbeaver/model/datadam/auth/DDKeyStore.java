@@ -42,7 +42,7 @@ public class DDKeyStore {
     }
 
     @Nullable
-    public static DDKeyBundle load() {
+    public static DDKeyBundle load() throws DBException {
         try {
             String value = DBSSecretController.getGlobalSecretController()
                 .getPrivateSecretValue(SECRET_KEY_BUNDLE);
@@ -54,9 +54,8 @@ public class DDKeyStore {
                 throw new IllegalArgumentException("Key bundle has no account ID");
             }
             return bundle;
-        } catch (DBException | RuntimeException e) {
-            log.error("Error reading key bundle", e);
-            return null;
+        } catch (Exception e) {
+            throw new DBException("Error reading key bundle", e);
         }
     }
 
@@ -99,7 +98,12 @@ public class DDKeyStore {
     }
 
     public static void save(@NotNull DDKeyBundle bundle) throws DBException {
-        DDKeyBundle current = load();
+        DDKeyBundle current = null;
+        try {
+            current = load();
+        } catch (DBException e) {
+            log.debug("Could not read stored keys before replacement", e);
+        }
         if (current != null
             && current.accountId().equals(bundle.accountId())
             && bundle.generation() < current.generation()) {

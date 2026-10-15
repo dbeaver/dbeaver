@@ -86,10 +86,13 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     ACCESS_SERVICE.load();
-                    start();
-                } catch (org.jkiss.dbeaver.DBException | IllegalArgumentException e) {
+                } catch (DBException e) {
                     log.debug("DataDam desktop token could not be restored", e);
+                    if (ACCESS_SERVICE.getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
+                        return Status.OK_STATUS;
+                    }
                 }
+                start();
                 return Status.OK_STATUS;
             }
         };

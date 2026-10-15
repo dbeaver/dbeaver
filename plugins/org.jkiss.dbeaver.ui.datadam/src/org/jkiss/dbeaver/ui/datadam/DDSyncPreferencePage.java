@@ -167,8 +167,13 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private void logIn() {
         runOperation(DDTrackingUIMessages.sync_preference_page_login_failed, monitor -> {
             DDTrackingInitializer.stop();
-            accessService.signIn(monitor);
-            DDTrackingInitializer.start();
+            try {
+                accessService.signIn(monitor);
+            } finally {
+                if (accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                    DDTrackingInitializer.start();
+                }
+            }
         });
     }
 

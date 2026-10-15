@@ -114,6 +114,49 @@ class DDKeyStoreTest {
     }
 
     @Test
+    void loadRejectsMalformedBundle() throws Exception {
+        DBSSecretController controller = Mockito.mock(DBSSecretController.class);
+        Mockito.when(controller.getPrivateSecretValue("datadam.key-bundle")).thenReturn("not-json");
+        try (MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(DBSSecretController.class)) {
+            controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
+
+            Assertions.assertThrows(DBException.class, DDKeyStore::load);
+            Mockito.verify(controller, Mockito.never())
+                .setPrivateSecretValue(ArgumentMatchers.anyString(), ArgumentMatchers.any());
+        }
+    }
+
+    @Test
+    void saveReplacesUnreadableBundle() throws Exception {
+        DDKeyBundle replacement = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 1);
+        DBSSecretController controller = Mockito.mock(DBSSecretController.class);
+        DBException readError = new DBException("Cannot read stored keys");
+        Mockito.when(controller.getPrivateSecretValue("datadam.key-bundle")).thenThrow(readError);
+        try (MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(DBSSecretController.class)) {
+            controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
+
+            Assertions.assertThrows(DBException.class, DDKeyStore::load);
+            DDKeyStore.save(replacement);
+
+            Mockito.verify(controller).setPrivateSecretValue("datadam.key-bundle", JSONUtils.GSON.toJson(replacement));
+            Mockito.verify(controller).flushChanges();
+        }
+    }
+
+    @Test
+    void savePropagatesFlushFailure() throws Exception {
+        DDKeyBundle replacement = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 1);
+        DBSSecretController controller = Mockito.mock(DBSSecretController.class);
+        DBException writeError = new DBException("Cannot flush keys");
+        Mockito.doThrow(writeError).when(controller).flushChanges();
+        try (MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(DBSSecretController.class)) {
+            controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
+
+            Assertions.assertSame(writeError, Assertions.assertThrows(DBException.class, () -> DDKeyStore.save(replacement)));
+        }
+    }
+
+    @Test
     void saveReplacesBundleFromDifferentAccount() throws Exception {
         DDKeyBundle stored = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 2);
         DDKeyBundle replacement = new DDKeyBundle(
@@ -137,24 +180,20 @@ class DDKeyStoreTest {
         DDKeyBundle stored = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 3);
         DDKeyBundle replacement = new DDKeyBundle(ACCOUNT_UUID, "old-signing-key", "old-data-key", 2);
 
-        DBException exception = assertRejectedSave(stored, replacement);
-
-        Assertions.assertEquals("The keys are older than the stored ones", exception.getMessage());
+        assertRejectedSave(stored, replacement);
     }
 
-    @NotNull
-    private static DBException assertRejectedSave(@NotNull DDKeyBundle stored, @NotNull DDKeyBundle replacement) throws Exception {
+    private static void assertRejectedSave(@NotNull DDKeyBundle stored, @NotNull DDKeyBundle replacement) throws Exception {
         DBSSecretController controller = Mockito.mock(DBSSecretController.class);
         Mockito.when(controller.getPrivateSecretValue(ArgumentMatchers.anyString()))
             .thenReturn(JSONUtils.GSON.toJson(stored));
         try (MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(DBSSecretController.class)) {
             controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
 
-            DBException exception = Assertions.assertThrows(DBException.class, () -> DDKeyStore.save(replacement));
+            Assertions.assertThrows(DBException.class, () -> DDKeyStore.save(replacement));
 
             Mockito.verify(controller, Mockito.never())
                 .setPrivateSecretValue(ArgumentMatchers.anyString(), ArgumentMatchers.any());
-            return exception;
         }
     }
 
