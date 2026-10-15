@@ -85,6 +85,8 @@ class DDDesktopTokenManager {
         }
         if (getStatus() == Status.UNLOADED) {
             signOut();
+        } else {
+            log.debug("Loaded DataDam desktop token");
         }
     }
 
@@ -121,6 +123,7 @@ class DDDesktopTokenManager {
             token = saved;
             DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, true);
         }
+        log.debug("Stored DataDam desktop token");
     }
 
     public void signOut() throws DBException {
@@ -129,6 +132,7 @@ class DDDesktopTokenManager {
             DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, false);
             store.clear();
         }
+        log.debug("Cleared DataDam desktop token");
     }
 
     @NotNull

@@ -181,6 +181,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                 }
             });
             DDKeyStore.save(keyBundle[0]);
+            accessService.load();
             DDTrackingInitializer.start();
             refresh();
         } catch (DBException e) {
@@ -194,7 +195,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private void forgetKeys() {
         try {
             DDTrackingInitializer.stop();
-            DDKeyStore.clear();
+            accessService.forgetKeys();
             refresh();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_cannot_forget_keys, e);

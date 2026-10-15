@@ -91,7 +91,7 @@ class DDKeyStoreTest {
         byte[] encrypted = Base64.getDecoder().decode(fixture.state().encryptedBundle());
         String truncated = Base64.getEncoder().encodeToString(Arrays.copyOf(encrypted, 12));
         DDCryptoState state = new DDCryptoState(
-            ACCOUNT_ID, true, truncated, 1L, fixture.state().salt(), KDF_ITERATIONS);
+            ACCOUNT_UUID, true, truncated, 1L, fixture.state().salt(), KDF_ITERATIONS);
 
         Assertions.assertThrows(DBException.class, () -> DDKeyStore.unpack(state, RECOVERY_PHRASE));
     }
@@ -102,7 +102,7 @@ class DDKeyStoreTest {
         SecretKey kek = DDCrypto.deriveKek(RECOVERY_PHRASE, salt, KDF_ITERATIONS);
         byte[] encrypted = DDCrypto.encrypt(kek, "incomplete".getBytes(StandardCharsets.UTF_8));
         DDCryptoState state = new DDCryptoState(
-            ACCOUNT_ID,
+            ACCOUNT_UUID,
             true,
             Base64.getEncoder().encodeToString(encrypted),
             1L,
@@ -164,7 +164,7 @@ class DDKeyStoreTest {
         );
         return new BundleFixture(
             new DDCryptoState(
-                ACCOUNT_ID,
+                ACCOUNT_UUID,
                 true,
                 Base64.getEncoder().encodeToString(encrypted),
                 generation,

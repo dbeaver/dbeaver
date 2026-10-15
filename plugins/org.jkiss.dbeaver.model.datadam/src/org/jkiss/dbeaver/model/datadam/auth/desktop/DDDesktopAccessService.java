@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.datadam.auth.desktop;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
@@ -34,12 +35,14 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class DDDesktopAccessService {
     public enum Status { SIGNED_IN, SIGNED_OUT, EXPIRED, UNLOADED }
 
+    private static final Log log = Log.getLog(DDDesktopAccessService.class);
     private static final DDDesktopAccessService INSTANCE = new DDDesktopAccessService(DDDesktopTokenManager.getInstance());
 
     private final DDDesktopTokenManager tokenManager;
     private final List<Runnable> keyBundleListeners = new CopyOnWriteArrayList<>();
     private final URI accountUrl = URI.create(DDEndpoints.getAccountBaseUrl());
     private final URI storageUrl = URI.create(DDEndpoints.getStorageBaseUrl());
+    private final DDAccountClient accountClient = new DDAccountClient(accountUrl);
     @Nullable
     private volatile DDKeyBundle keyBundle;
 
@@ -73,34 +76,39 @@ public class DDDesktopAccessService {
     }
 
     public void load() throws DBException {
+        log.debug("Loading DataDam desktop access");
         tokenManager.load(storageUrl);
-        setKeyBundle(tokenManager.getStatus() == DDDesktopTokenManager.Status.SIGNED_IN ? DDKeyStore.load() : null);
+        updateKeyBundle(tokenManager.getStatus() == DDDesktopTokenManager.Status.SIGNED_IN ? DDKeyStore.load() : null);
     }
 
     public void signIn(@NotNull DBRProgressMonitor monitor) throws DBException, InterruptedException {
         tokenManager.signIn(accountUrl, storageUrl, monitor);
-        setKeyBundle(DDKeyStore.load());
+        updateKeyBundle(DDKeyStore.load());
+        log.debug("Signed in to DataDam desktop access");
     }
 
     public void importKeys(@NotNull String recoveryPhrase) throws DBException {
         if (tokenManager.getStatus() != DDDesktopTokenManager.Status.SIGNED_IN) {
             throw new DBException("Sign in to DataDam before importing keys");
         }
-        var state = new DDAccountClient(accountUrl).getCryptoState();
+        var state = accountClient.getCryptoState();
         DDKeyBundle bundle = DDKeyStore.unpack(state, recoveryPhrase);
         DDKeyStore.save(bundle);
         setKeyBundle(bundle);
+        log.debug("Imported DataDam encryption keys");
     }
 
     public void forgetKeys() throws DBException {
         DDKeyStore.clear();
         setKeyBundle(null);
+        log.debug("Forgot DataDam encryption keys");
     }
 
     public void signOut() throws DBException {
         DDKeyStore.clear();
         setKeyBundle(null);
         tokenManager.signOut();
+        log.debug("Signed out of DataDam desktop access");
     }
 
     public void addKeyBundleListener(@NotNull Runnable listener) {
@@ -109,6 +117,15 @@ public class DDDesktopAccessService {
 
     public void removeKeyBundleListener(@NotNull Runnable listener) {
         keyBundleListeners.remove(listener);
+    }
+
+    private void updateKeyBundle(@Nullable DDKeyBundle bundle) throws DBException {
+        if (bundle != null && !bundle.accountId().equals(accountClient.getCryptoState().accountId())) {
+            log.debug("Stored DataDam encryption keys belong to another account");
+            setKeyBundle(null);
+        } else {
+            setKeyBundle(bundle);
+        }
     }
 
     private void setKeyBundle(@Nullable DDKeyBundle bundle) {

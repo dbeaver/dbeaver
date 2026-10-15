@@ -55,7 +55,7 @@ public class DDAccountClient extends AbstractRestClient {
             throw new DBException("Could not read encryption keys from DataDam Account");
         }
         DDCryptoState state = response.data().gatewayCryptoState();
-        if (state.accountId() == null || state.accountId().isBlank()) {
+        if (state.accountId() == null) {
             throw new DBException("DataDam Account response has no account ID");
         }
         return state;
