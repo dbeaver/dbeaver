@@ -1525,6 +1525,27 @@ public class OracleSchema extends OracleGlobalObject implements
             return dbStat;
         }
 
+        /**
+         * Always reload a single package row and copy into the existing instance.
+         * {@link JDBCObjectLookupCache#refreshObject} falls back to {@code loadObjects()} when the
+         * cache is not fully loaded; that merge keeps the old instance and drops freshly fetched
+         * DDL timestamps (common for packages obtained via findObject/getChild).
+         */
+        @Override
+        public OraclePackage refreshObject(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull OracleSchema owner,
+            @NotNull OraclePackage oldObject
+        ) throws DBException {
+            OraclePackage reloaded = reloadObject(monitor, owner, oldObject, null);
+            if (reloaded != null) {
+                deepCopyCachedObject(reloaded, oldObject);
+            } else {
+                removeObject(oldObject, false);
+            }
+            return oldObject;
+        }
+
         @Override
         protected OraclePackage fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
