@@ -162,6 +162,63 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void shouldInsertDelimiterAfterBlockCommentEndingQueryFollowedByEmptyLine() {
+        //given
+        String inputString = "SELECT 1 /* note */" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains("/* note */;"), formattedString);
+    }
+
+    @Test
+    public void shouldNotInsertDelimiterAfterCommentFollowingDelimiter() {
+        //given
+        String expectedString = "SELECT" + lineBreak + "\t1;" + lineBreak + "-- test" + lineBreak + lineBreak + "SELECT" + lineBreak + "\t2";
+        String inputString = "SELECT 1;" + lineBreak + "-- test" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertEquals(expectedString, formattedString);
+    }
+
+    @Test
+    public void shouldNotInsertDelimiterInsideSingleLineCommentEndingQuery() {
+        //given
+        String inputString = "SELECT 1 -- note" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains("-- note;"), formattedString);
+    }
+
+    @Test
+    public void shouldNotInsertDelimiterAfterStandaloneBlockComment() {
+        //given
+        String inputString = "SELECT 1;" + lineBreak + "/* test */" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains("*/;"), formattedString);
+    }
+
+    @Test
     public void shouldInsertDelimiterInEmptyLineBetweenQueries() {
         //given
         String expectedString = "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tt1;" + lineBreak + lineBreak +
