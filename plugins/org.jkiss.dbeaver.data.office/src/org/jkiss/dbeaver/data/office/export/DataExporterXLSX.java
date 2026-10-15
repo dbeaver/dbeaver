@@ -574,16 +574,51 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
             if (monitor.isCanceled()) {
                 return;
             }
-            StringWriter writer = new StringWriter();
-            StreamTransferUtils.writeBinaryData(
-                new BytesContentStorage(Arrays.copyOf(buffer, length), contentStorage.getCharset()),
-                lobEncoding, dataSource, writer
-            );
-            value = writer.toString();
+            value = encodeBinaryData(buffer, length, contentStorage.getCharset(), dataSource);
+            if (value.length() > EXCEL_MAX_CELL_CHARACTERS) {
+                if (monitor.isCanceled()) {
+                    return;
+                }
+                // Search whole-byte prefixes rather than cutting encoding groups or native formatter wrappers.
+                int low = 0;
+                int high = length - 1;
+                value = encodeBinaryData(buffer, 0, contentStorage.getCharset(), dataSource);
+                if (value.length() > EXCEL_MAX_CELL_CHARACTERS) {
+                    throw new IOException("Binary format exceeds the maximum XLSX cell length");
+                }
+                while (low < high) {
+                    if (monitor.isCanceled()) {
+                        return;
+                    }
+                    int count = low + (high - low + 1) / 2;
+                    String candidate = encodeBinaryData(buffer, count, contentStorage.getCharset(), dataSource);
+                    if (candidate.length() <= EXCEL_MAX_CELL_CHARACTERS) {
+                        low = count;
+                        value = candidate;
+                    } else {
+                        high = count - 1;
+                    }
+                }
+                log.warn("The binary value of the row " + (rowCount + 1) + " exceeded the maximum cell length, so it was cropped.");
+            }
         }
         if (!monitor.isCanceled()) {
             cell.setCellValue(getPreparedString(value));
         }
+    }
+
+    @NotNull
+    private String encodeBinaryData(
+        @NotNull byte[] buffer,
+        int length,
+        @NotNull String charset,
+        @NotNull DBPDataSource dataSource
+    ) throws IOException {
+        StringWriter writer = new StringWriter();
+        StreamTransferUtils.writeBinaryData(
+            new BytesContentStorage(Arrays.copyOf(buffer, length), charset), lobEncoding, dataSource, writer
+        );
+        return writer.toString();
     }
 
     private CellType getCellType(DBDAttributeBinding column) {
