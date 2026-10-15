@@ -40,6 +40,9 @@ public class SQLFormatterTokenized implements SQLFormatter {
 
     private static final String[] DML_KEYWORD = { "SELECT", "UPDATE", "INSERT", "DELETE" };
 
+    // MySQL and MariaDB comments which are executed as SQL, so they are a part of a query
+    private static final String[] EXECUTABLE_COMMENT_PREFIXES = { "/*!", "/*M!" };
+
 
     private SQLFormatterConfiguration formatterCfg;
 
@@ -256,30 +259,60 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 if (lfCount > 1) {
                     if (i > 0 && statementDelimiters.contains(argList.get(i - 1).getString())) {
                         // Do nothing - there is a delimiter already
-                    } else if (isDelimiterBlockedByComment(argList, i - 1)) {
-                        // Do nothing - a comment is not a query and the delimiter would end up inside of it
                     } else {
-                        argList.add(i, new FormatterToken(TokenType.SYMBOL, statementDelimiters.get(0)));
-                        i++;
+                        int delimiterIndex = findDelimiterIndex(argList, i);
+                        if (delimiterIndex >= 0) {
+                            argList.add(delimiterIndex, new FormatterToken(TokenType.SYMBOL, statementDelimiters.get(0)));
+                            i++;
+                        }
                     }
                 }
             }
         }
     }
 
-    private boolean isDelimiterBlockedByComment(List<FormatterToken> argList, int index) {
-        if (index < 0 || argList.get(index).getType() != TokenType.COMMENT) {
+    /**
+     * Finds the position for the delimiter which replaces an empty line at the specified index.
+     *
+     * @return index in the list to insert the delimiter at or -1 if the delimiter is not needed
+     */
+    private int findDelimiterIndex(@NotNull List<FormatterToken> argList, int emptyLineIndex) {
+        int commentIndex = emptyLineIndex - 1;
+        if (commentIndex < 0 || !isPlainComment(argList.get(commentIndex))) {
+            return emptyLineIndex;
+        }
+        // The query is followed by a comment. Look for the end of the query content before the comment(s)
+        int contentIndex = commentIndex - 1;
+        while (contentIndex >= 0
+            && (argList.get(contentIndex).getType() == TokenType.SPACE || isPlainComment(argList.get(contentIndex)))
+        ) {
+            contentIndex--;
+        }
+        if (contentIndex < 0 || statementDelimiters.contains(argList.get(contentIndex).getString())) {
+            // A comment is not a query, there is nothing to terminate
+            return -1;
+        }
+        if (argList.get(commentIndex).getString().startsWith(SQLConstants.ML_COMMENT_START)) {
+            // The delimiter is valid right after a multi-line comment
+            return emptyLineIndex;
+        }
+        // A delimiter after a single-line comment would end up inside of it, so it goes before the comment
+        int delimiterIndex = commentIndex;
+        while (delimiterIndex > 0 && argList.get(delimiterIndex - 1).getType() == TokenType.SPACE) {
+            delimiterIndex--;
+        }
+        return delimiterIndex;
+    }
+
+    /**
+     * Checks whether the token is a comment which is not a part of a query (executable comments are).
+     */
+    private static boolean isPlainComment(@NotNull FormatterToken token) {
+        if (token.getType() != TokenType.COMMENT) {
             return false;
         }
-        if (!argList.get(index).getString().startsWith(SQLConstants.ML_COMMENT_START)) {
-            return true;
-        }
-        for (int i = index - 1; i >= 0; i--) {
-            FormatterToken token = argList.get(i);
-            if (statementDelimiters.contains(token.getString())) {
-                return true;
-            }
-            if (token.getType() != TokenType.SPACE && token.getType() != TokenType.COMMENT) {
+        for (String prefix : EXECUTABLE_COMMENT_PREFIXES) {
+            if (token.getString().startsWith(prefix)) {
                 return false;
             }
         }

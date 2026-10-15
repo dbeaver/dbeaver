@@ -191,7 +191,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void shouldNotInsertDelimiterInsideSingleLineCommentEndingQuery() {
+    public void shouldInsertDelimiterBeforeSingleLineCommentEndingQuery() {
         //given
         String inputString = "SELECT 1 -- note" + lineBreak + lineBreak + "SELECT 2";
 
@@ -202,6 +202,36 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
 
         //then
         Assertions.assertFalse(formattedString.contains("-- note;"), formattedString);
+        int delimiterIndex = formattedString.indexOf(';');
+        Assertions.assertTrue(delimiterIndex >= 0 && delimiterIndex < formattedString.indexOf("-- note"), formattedString);
+    }
+
+    @Test
+    public void shouldInsertDelimiterAfterExecutableComment() {
+        //given
+        String inputString = "/*!40101 SET @x=1 */" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains("*/;"), formattedString);
+    }
+
+    @Test
+    public void shouldInsertDelimiterAfterMariaDbExecutableComment() {
+        //given
+        String inputString = "/*M!100100 SET @x=1 */" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains("*/;"), formattedString);
     }
 
     @Test
