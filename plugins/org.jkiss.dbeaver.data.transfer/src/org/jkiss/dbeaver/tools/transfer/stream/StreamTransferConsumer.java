@@ -606,6 +606,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         this.settings = settings;
         this.processorProperties = processorProperties;
         this.project = project;
+        this.initialized = false;
+        this.firstRow = true;
+        this.multiFileNumber = 0;
+        this.bytesWritten = 0;
+        this.statStream = null;
+        this.outputFiles.clear();
         
         if (runtimeParameters == null) {
             runtimeParameters = settings.prepareRuntimeParameters();
@@ -636,6 +642,15 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         boolean last
     ) throws DBException {
         List<Exception> errors = new ArrayList<>(0);
+
+        if (error != null) {
+            try {
+                closeExporter();
+            } catch (IOException e) {
+                log.warn("Error closing data exporter after failed transfer", e);
+                error.addSuppressed(e);
+            }
+        }
 
         if (!last && error == null) {
             exportFooterInFile(monitor);
