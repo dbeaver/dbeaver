@@ -52,7 +52,7 @@ public final class DDProjectSyncUIManager {
             if (service == null) {
                 DDKeyBundle bundle = accessService.getKeyBundle();
                 if (bundle == null) {
-                    throw new IllegalStateException("DataDam is not enabled");
+                    throw new IllegalStateException("DataDam project synchronization is not enabled");
                 }
                 service = new DDProjectSyncService(
                     DDEndpoints.getStorageBaseUrl(),
