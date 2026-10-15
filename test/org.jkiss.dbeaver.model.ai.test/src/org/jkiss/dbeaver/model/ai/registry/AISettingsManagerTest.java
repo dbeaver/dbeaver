@@ -25,13 +25,75 @@ import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentMatchers;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 
 import java.io.StringReader;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AISettingsManagerTest extends DBeaverUnitTest {
+
+    @Test
+    public void headerSecretsShouldBeSavedForAllProfiles() throws Exception {
+        AISettingsManager manager = AISettingsManager.getInstance();
+        AISettings previousSettings = manager.getSettings();
+        AISettings settings = new AISettings();
+        AIEngineDescriptor engine = AIEngineRegistry.getInstance().getEngineDescriptor(OpenAIConstants.OPENAI_ENGINE);
+        Assertions.assertNotNull(engine);
+        AIConfigurationProfile work = settings.createConfiguration("test-work", engine);
+        ((OpenAIProperties) work.getConfiguration()).setCustomHeaders(Map.of("X-Api-Key", "work-secret"));
+        AIConfigurationProfile personal = settings.createConfiguration("test-personal", engine);
+        ((OpenAIProperties) personal.getConfiguration()).setCustomHeaders(Map.of("Authorization", "personal-secret"));
+        settings.setDefaultConfiguration(work);
+
+        Map<String, String> secrets = new HashMap<>();
+        secrets.put("gpt.token_test-personal", "existing-personal-token");
+        DBSSecretController controller = Mockito.mock(DBSSecretController.class);
+        Mockito.when(controller.getPrivateSecretValue(ArgumentMatchers.anyString()))
+            .thenAnswer(invocation -> secrets.get(invocation.getArgument(0)));
+        Mockito.doAnswer(invocation -> {
+            secrets.put(invocation.getArgument(0), invocation.getArgument(1));
+            return null;
+        }).when(controller).setPrivateSecretValue(ArgumentMatchers.anyString(), ArgumentMatchers.nullable(String.class));
+        DBPPlatform platform = Mockito.mock(DBPPlatform.class, Mockito.RETURNS_DEEP_STUBS);
+        Mockito.when(platform.getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)).thenReturn(true);
+
+        try (MockedStatic<DBWorkbench> workbench = Mockito.mockStatic(
+            DBWorkbench.class, Mockito.withSettings().mockMaker("mock-maker-inline"));
+            MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(
+                DBSSecretController.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
+            workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+            controllers.when(DBSSecretController::getGlobalSecretControllerOrNull).thenReturn(controller);
+            try {
+                manager.saveSettings(settings);
+                Assertions.assertEquals("existing-personal-token", secrets.get("gpt.token_test-personal"));
+                ArgumentCaptor<String> savedJson = ArgumentCaptor.forClass(String.class);
+                Mockito.verify(platform.getConfigurationController()).saveConfigurationFile(
+                    ArgumentMatchers.eq(AISettingsManager.AI_CONFIGURATION_FILE_NAME), savedJson.capture());
+                Assertions.assertFalse(savedJson.getValue().contains("secret"));
+                Assertions.assertFalse(savedJson.getValue().contains("openai.headers"));
+                AISettings restored = AISettingsManager.READ_PROPS_GSON.fromJson(savedJson.getValue(), AISettings.class);
+                restored.finishSettingsLoading();
+                restored.resolveSecrets();
+                Assertions.assertEquals(Map.of("X-Api-Key", "work-secret"),
+                    ((OpenAIProperties) restored.getConfiguration("test-work").getConfiguration()).getCustomHeaders());
+                Assertions.assertEquals(Map.of("Authorization", "personal-secret"),
+                    ((OpenAIProperties) restored.getConfiguration("test-personal").getConfiguration()).getCustomHeaders());
+            } finally {
+                manager.saveSettings(previousSettings);
+            }
+        }
+    }
 
     @Test
     public void modelSelectionIsSavedPerProfile() throws Exception {
@@ -165,5 +227,26 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
 
         profile.setGlobal(false);
         Assertions.assertFalse(properties.isGlobal());
+    }
+
+    @Test
+    public void generatesUniqueIdentityForProfileCopy() throws Exception {
+        AISettings settings = new AISettings();
+        AIEngineDescriptor engine = AIEngineRegistry.getInstance().getEngineDescriptor(OpenAIConstants.OPENAI_ENGINE);
+        Assertions.assertNotNull(engine);
+
+        AIConfigurationProfile source = settings.createConfiguration("source", engine);
+        source.setProfileName("Profile");
+        AIConfigurationProfile existing = settings.createConfiguration(OpenAIConstants.OPENAI_ENGINE, engine);
+        existing.setProfileName("Profile (1)");
+
+        AIConfigurationProfile copy = settings.copyConfiguration(source);
+
+        Assertions.assertEquals(OpenAIConstants.OPENAI_ENGINE + "_1", copy.getProfileId());
+        Assertions.assertEquals("Profile (2)", copy.getProfileName());
+
+        AIConfigurationProfile copyWithProvidedId = settings.copyConfiguration(source, "provided-copy-id");
+        Assertions.assertEquals("provided-copy-id", copyWithProvidedId.getProfileId());
+        Assertions.assertEquals("Profile (3)", copyWithProvidedId.getProfileName());
     }
 }

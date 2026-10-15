@@ -21,6 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 
+import java.util.List;
+
 public interface AIEngineProperties {
 
     int DEFAULT_TIMEOUT = 30;
@@ -33,8 +35,25 @@ public interface AIEngineProperties {
     String getModel();
 
     @Nullable
-    default String getModelDisplayName() {
+    default String getEffectiveModel() {
         return getModel();
+    }
+
+    default boolean isUseEnvVariables() {
+        return false;
+    }
+
+    default void setUseEnvVariables(boolean useEnvVariables) {
+    }
+
+    @NotNull
+    default List<String> getEnvironmentVariables() {
+        return List.of();
+    }
+
+    @Nullable
+    default String getModelDisplayName() {
+        return getEffectiveModel();
     }
 
     default boolean isModelSelectionSupported() {
@@ -51,6 +70,11 @@ public interface AIEngineProperties {
 
     @Nullable
     Integer getContextWindowSize();
+
+    @Nullable
+    default Integer getEffectiveContextWindowSize() {
+        return getContextWindowSize();
+    }
 
     double getTemperature();
 

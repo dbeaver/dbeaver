@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSystemAgent;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
 import org.jkiss.dbeaver.tasks.ui.internal.TaskUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -143,10 +144,11 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
                 }
                 completeMessage.append("\nObject(s) processed: ").append(String.join(",", objects));
             }
+            String notificationMessage = error == null ? completeMessage.toString() : GeneralUtils.getExceptionMessage(error);
             UIServiceSystemAgent serviceSystemAgent = DBWorkbench.getService(UIServiceSystemAgent.class);
             if (serviceSystemAgent != null && elapsedTime > serviceSystemAgent.getLongOperationTimeout() * 1000) {
                 serviceSystemAgent.notifyAgent(
-                    completeMessage.toString(), !hasErrors ? IStatus.INFO : IStatus.ERROR);
+                    notificationMessage, hasErrors ? IStatus.ERROR : IStatus.INFO);
             }
 
             if (isShowFinalMessage() && !hasErrors) {
@@ -161,7 +163,7 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
                 DBeaverNotifications.showNotification(
                     "task.execute.failure",
                     theTask == null ? this.task.getName() : theTask.getName(),
-                    error.getMessage(),
+                    notificationMessage,
                     DBPMessageType.ERROR,
                     () -> DBWorkbench.getPlatformUI().showError("Task error", "Task execution failed", error)
                 );

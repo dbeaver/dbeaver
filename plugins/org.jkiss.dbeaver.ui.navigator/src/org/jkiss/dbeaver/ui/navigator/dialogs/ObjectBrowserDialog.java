@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,7 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
     private final Class<?>[] allowedTypes;
     private final Class<?>[] resultTypes;
     private final Class<?>[] leafTypes;
+    private Predicate<DBNNode> nodeFilter;
     private Predicate<String> nameFilter;
 
     private ObjectBrowserDialog(
@@ -69,6 +70,11 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
 
     public void setNameFilter(Predicate<String> nameFilter) {
         this.nameFilter = nameFilter;
+    }
+
+    @Override
+    protected boolean matchesResultNode(@NotNull DBNNode node) {
+        return (nodeFilter == null || nodeFilter.test(node)) && super.matchesResultNode(node);
     }
 
     @Override
@@ -103,6 +109,9 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
         return new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
+                if (nodeFilter != null && element instanceof DBNNode node && !nodeFilter.test(node)) {
+                    return false;
+                }
                 if (isShowConnected()) {
                     if (element instanceof DBNDataSource) {
                         return ((DBNDataSource) element).getDataSource() != null;
@@ -186,6 +195,21 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
         @Nullable Class<?>[] leafTypes,
         @Nullable Predicate<String> nameFilter
     ) {
+        return selectObject(parentShell, title, rootNode, selectedNode, allowedTypes, resultTypes, leafTypes, nameFilter, null);
+    }
+
+    @Nullable
+    public static DBNNode selectObject(
+        @NotNull Shell parentShell,
+        @NotNull String title,
+        @NotNull DBNNode rootNode,
+        @Nullable DBNNode selectedNode,
+        @NotNull Class<?>[] allowedTypes,
+        @Nullable Class<?>[] resultTypes,
+        @Nullable Class<?>[] leafTypes,
+        @Nullable Predicate<String> nameFilter,
+        @Nullable Predicate<DBNNode> nodeFilter
+    ) {
         ObjectBrowserDialog scDialog = new ObjectBrowserDialog(
             parentShell,
             title,
@@ -199,6 +223,7 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
         if (nameFilter != null) {
             scDialog.setNameFilter(nameFilter);
         }
+        scDialog.nodeFilter = nodeFilter;
         if (scDialog.open() == IDialogConstants.OK_ID) {
             List<DBNNode> result = scDialog.getSelectedObjects();
             return result.isEmpty() ? null : result.get(0);
@@ -216,8 +241,21 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
         @NotNull Class<?>[] allowedTypes,
         @Nullable Class<?>[] resultTypes,
         @Nullable Class<?>[] leafTypes
-    )
-    {
+    ) {
+        return selectObjects(parentShell, title, rootNode, selectedNodes, allowedTypes, resultTypes, leafTypes, null);
+    }
+
+    @Nullable
+    public static List<DBNNode> selectObjects(
+        @NotNull Shell parentShell,
+        @NotNull String title,
+        @NotNull DBNNode rootNode,
+        @NotNull List<? extends DBNNode> selectedNodes,
+        @NotNull Class<?>[] allowedTypes,
+        @Nullable Class<?>[] resultTypes,
+        @Nullable Class<?>[] leafTypes,
+        @Nullable Predicate<DBNNode> nodeFilter
+    ) {
         ObjectBrowserDialog scDialog = new ObjectBrowserDialog(
             parentShell,
             title,
@@ -228,6 +266,7 @@ public class ObjectBrowserDialog extends ObjectBrowserDialogBase {
             resultTypes,
             leafTypes
         );
+        scDialog.nodeFilter = nodeFilter;
         if (scDialog.open() == IDialogConstants.OK_ID) {
             return scDialog.getSelectedObjects();
         } else {
