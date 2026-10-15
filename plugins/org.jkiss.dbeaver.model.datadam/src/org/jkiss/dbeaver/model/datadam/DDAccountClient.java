@@ -35,7 +35,6 @@ import java.util.UUID;
 
 /** Account requests authenticated by the current desktop SSO session. */
 public class DDAccountClient extends AbstractRestClient {
-    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
     private static final String GRAPHQL_PATH = "graphql";
     private static final String ACCOUNT_ID_QUERY = """
         query GatewayAccountId {
@@ -87,7 +86,7 @@ public class DDAccountClient extends AbstractRestClient {
         URI uri = builder.build().uri();
         DDEndpoints.requireSecureTransport(uri);
         builder.setHeader(HttpConstants.HEADER_AUTHORIZATION,
-            HttpConstants.BEARER_PREFIX + accessService.getAccessTokenForResource(uri));
+            HttpConstants.BEARER_PREFIX + DDDesktopAccessService.getInstance().getAccessTokenForResource(uri));
         return super.execute(builder, type);
     }
 
