@@ -83,7 +83,7 @@ public record CopilotModel(
             limits == null ? null : limits.maxPromptTokens(),
             limits == null ? null : limits.maxOutputTokens(),
             null
-        );
+        ).withFeature(AIModelFeature.VISION, supports == null ? null : supports.vision());
     }
 
     @NotNull
@@ -116,7 +116,7 @@ public record CopilotModel(
         @SerializedName("max_prompt_tokens")
         Integer maxPromptTokens
     ) {
-    };
+    }
 
     public record CopilotModelCapabilities(
         @Nullable

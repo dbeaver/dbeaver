@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModel;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.Set;
 
@@ -32,11 +34,14 @@ class AIModelMetadataTest extends DBeaverUnitTest {
     @Test
     void catalogEnrichmentPreservesNativeImageInputRestriction() {
         AIModel model = new AIModel("text-only", 64000, Set.of(AIModelFeature.CHAT), 0.7, false);
-        AIModelCatalogEntry entry = GSON.fromJson("{\"tool_call\":true,\"temperature\":false}", AIModelCatalogEntry.class);
+        AIModelCatalogEntry entry = GSON.fromJson("""
+            {"tool_call":true,"temperature":false,"modalities":{"input":["text","image"]}}
+            """, AIModelCatalogEntry.class);
 
         AIModel result = entry.enrich(model);
 
         Assertions.assertFalse(result.imageInputSupported());
+        Assertions.assertFalse(result.features().contains(AIModelFeature.VISION));
         Assertions.assertTrue(result.features().contains(AIModelFeature.TOOL_CALL));
         Assertions.assertEquals(64000, result.contextWindowSize());
         Assertions.assertFalse(result.withFeature(AIModelFeature.REASONING, true).imageInputSupported());
@@ -56,6 +61,8 @@ class AIModelMetadataTest extends DBeaverUnitTest {
         Assertions.assertEquals(16000, updated.outputTokenLimit());
         Assertions.assertEquals(0.7, updated.defaultTemperature());
         Assertions.assertEquals(2.0, updated.maxTemperature());
+        Assertions.assertFalse(updated.imageInputSupported());
+        Assertions.assertTrue(updated.withFeature(AIModelFeature.VISION, true).imageInputSupported());
         Assertions.assertSame(updated, updated.withFeature(AIModelFeature.TOOL_CALL, null));
         Assertions.assertThrows(UnsupportedOperationException.class, () -> updated.features().add(AIModelFeature.VISION));
     }
@@ -71,6 +78,18 @@ class AIModelMetadataTest extends DBeaverUnitTest {
         Assertions.assertEquals(128_000, model.contextWindowSize());
         Assertions.assertEquals(0.0, model.defaultTemperature());
         Assertions.assertFalse(model.features().contains(AIModelFeature.ALWAYS_DEFAULT_TEMPERATURE));
+    }
+
+    @Test
+    void catalogImageModalitiesControlImageInputWhileMissingMetadataKeepsTheFallback() {
+        AIModel model = new AIModel("gpt-test", 64000, Set.of(AIModelFeature.CHAT));
+        AIModelCatalogEntry textOnly = GSON.fromJson("{\"modalities\":{\"input\":[\"text\"]}}", AIModelCatalogEntry.class);
+        AIModelCatalogEntry vision = GSON.fromJson("{\"modalities\":{\"input\":[\"text\",\"image\"]}}", AIModelCatalogEntry.class);
+
+        Assertions.assertFalse(textOnly.enrich(model).imageInputSupported());
+        Assertions.assertTrue(vision.enrich(model).imageInputSupported());
+        Assertions.assertTrue(GSON.fromJson("{}", AIModelCatalogEntry.class).enrich(model).imageInputSupported());
+        Assertions.assertTrue(model.imageInputSupported());
     }
 
     @Test
@@ -108,9 +127,25 @@ class AIModelMetadataTest extends DBeaverUnitTest {
         Assertions.assertEquals(128_000, model.contextWindowSize());
         Assertions.assertEquals(96_000, model.inputTokenLimit());
         Assertions.assertEquals(32_000, model.outputTokenLimit());
+        Assertions.assertFalse(model.imageInputSupported());
         Assertions.assertEquals(Set.of(
             AIModelFeature.CHAT, AIModelFeature.STREAMING, AIModelFeature.TOOL_CALL, AIModelFeature.REASONING
         ), model.features());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void copilotNativeVisionSupportOverridesCatalog(boolean imageInputSupported) {
+        CopilotModel response = GSON.fromJson(
+            "{\"id\":\"custom-chat\",\"capabilities\":{\"supports\":{\"vision\":" + imageInputSupported + "}}}", CopilotModel.class);
+        AIModelCatalogEntry entry = GSON.fromJson(
+            imageInputSupported ? "{\"modalities\":{\"input\":[\"text\"]}}" : "{\"modalities\":{\"input\":[\"text\",\"image\"]}}",
+            AIModelCatalogEntry.class);
+
+        AIModel model = response.toAIModel(entry);
+
+        Assertions.assertEquals(imageInputSupported, model.imageInputSupported());
+        Assertions.assertEquals(imageInputSupported, model.features().contains(AIModelFeature.VISION));
     }
 
     @Test
@@ -189,6 +224,7 @@ class AIModelMetadataTest extends DBeaverUnitTest {
         Assertions.assertFalse(model.features().contains(AIModelFeature.TOOL_CALL));
         Assertions.assertFalse(model.features().contains(AIModelFeature.VISION));
         Assertions.assertFalse(model.features().contains(AIModelFeature.REASONING));
+        Assertions.assertFalse(model.imageInputSupported());
         Assertions.assertTrue(model.features().contains(AIModelFeature.TEMPERATURE_UNSUPPORTED));
     }
 }

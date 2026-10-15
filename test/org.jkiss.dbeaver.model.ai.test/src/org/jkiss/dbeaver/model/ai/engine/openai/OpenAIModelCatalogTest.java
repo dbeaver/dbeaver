@@ -19,7 +19,11 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 import com.google.gson.Gson;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIAssistant;
+import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.ai.AIFunctionContext;
+import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
@@ -29,6 +33,8 @@ import org.jkiss.dbeaver.model.ai.engine.AIModelCatalogEntry;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModel;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
+import org.jkiss.dbeaver.model.ai.impl.AIEngineRequestFactory;
+import org.jkiss.dbeaver.model.ai.impl.DummyTokenCounter;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
@@ -47,6 +53,65 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 class OpenAIModelCatalogTest extends DBeaverUnitTest {
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void catalogModalitiesControlImageInput(boolean imageInputSupported) throws Exception {
+        OpenAIProperties properties = new OpenAIProperties();
+        properties.setModel("gpt-test");
+        DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
+        OpenAIClientResponses client = Mockito.mock(OpenAIClientResponses.class);
+        Mockito.when(client.getModels(monitor)).thenReturn(List.of(new OAIModel("gpt-test", "model", 0, "openai", null)));
+        AIModelCatalogEntry entry = new Gson().fromJson(
+            imageInputSupported ? "{\"modalities\":{\"input\":[\"text\",\"image\"]}}" : "{\"modalities\":{\"input\":[\"text\"]}}",
+            AIModelCatalogEntry.class);
+        try (AutoCloseable ignored = AIModelCatalog.useForTests(Map.of("openai", Map.of("gpt-test", entry)));
+            OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties) {
+                @NotNull
+                @Override
+                protected OpenAIClientResponses createClient() {
+                    return client;
+                }
+            }) {
+            Assertions.assertEquals(imageInputSupported, engine.getModels(monitor).getFirst().imageInputSupported());
+            Assertions.assertEquals(imageInputSupported, engine.supportsImageInput(monitor));
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void textOnlyModelRejectsImagesInCurrentPromptOrHistoryBeforePreparingRequest(boolean imageInHistory) throws Exception {
+        OpenAIProperties properties = new OpenAIProperties();
+        properties.setModel("gpt-3.5-turbo");
+        DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
+        OpenAIClientResponses client = Mockito.mock(OpenAIClientResponses.class);
+        Mockito.when(client.getModels(monitor)).thenReturn(List.of(new OAIModel("gpt-3.5-turbo", "model", 0, "openai", null)));
+        AIModelCatalogEntry entry = new Gson().fromJson("{\"modalities\":{\"input\":[\"text\"]}}", AIModelCatalogEntry.class);
+        AIImageAttachment image = new AIImageAttachment("test.png", "image/png",
+            "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aN1cAAAAASUVORK5CYII=");
+        AIMessage prompt = AIMessage.userMessage("Describe this picture").withImages(List.of(image));
+        List<AIMessage> messages = imageInHistory ? List.of(prompt, AIMessage.userMessage("Continue")) : List.of(prompt);
+        AIAssistant assistant = Mockito.mock(AIAssistant.class);
+        AIFunctionContext context = Mockito.mock(AIFunctionContext.class);
+
+        try (AutoCloseable ignored = AIModelCatalog.useForTests(Map.of("openai", Map.of("gpt-3.5-turbo", entry)));
+            OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties) {
+                @NotNull
+                @Override
+                protected OpenAIClientResponses createClient() {
+                    return client;
+                }
+            }) {
+            DBException error = Assertions.assertThrows(DBException.class,
+                () -> new AIEngineRequestFactory(new DummyTokenCounter()).build(
+                    monitor, assistant, new AIConfigurationProfile(), engine, context, messages));
+
+            Assertions.assertEquals(
+                "The selected AI model does not support images. Select a model with image input support.", error.getMessage());
+            Mockito.verifyNoInteractions(assistant, context);
+            Mockito.verify(client).getModels(monitor);
+        }
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {"gpt-test", "gpt-test-2025-04-14"})
     void enrichesOnlyAvailableModelsAndUsesOnlyCacheForCompletions(@NotNull String modelId) throws Exception {

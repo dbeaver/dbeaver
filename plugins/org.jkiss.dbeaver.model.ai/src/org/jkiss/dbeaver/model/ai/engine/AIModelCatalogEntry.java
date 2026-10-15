@@ -52,7 +52,7 @@ public record AIModelCatalogEntry(
             }
         }
         if (modalities != null && modalities.input() != null) {
-            result = result.withFeature(AIModelFeature.VISION, modalities.input().contains("image"))
+            result = result.withFeature(AIModelFeature.VISION, model.imageInputSupported() && modalities.input().contains("image"))
                 .withFeature(AIModelFeature.PDF_INPUT, modalities.input().contains("pdf"));
         }
         return result;

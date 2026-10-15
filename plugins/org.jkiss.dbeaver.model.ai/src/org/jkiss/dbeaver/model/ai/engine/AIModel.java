@@ -70,7 +70,11 @@ public record AIModel(
 
     @NotNull
     public AIModel withFeature(@NotNull AIModelFeature feature, @Nullable Boolean supported) {
-        if (supported == null || features.contains(feature) == supported) {
+        if (supported == null) {
+            return this;
+        }
+        boolean updatedImageInputSupport = feature == AIModelFeature.VISION ? supported : imageInputSupported;
+        if (features.contains(feature) == supported && updatedImageInputSupport == imageInputSupported) {
             return this;
         }
         Set<AIModelFeature> updated = new HashSet<>(features);
@@ -80,7 +84,7 @@ public record AIModel(
             updated.remove(feature);
         }
         return new AIModel(name, contextWindowSize, Set.copyOf(updated), defaultTemperature,
-            inputTokenLimit, outputTokenLimit, maxTemperature, imageInputSupported);
+            inputTokenLimit, outputTokenLimit, maxTemperature, updatedImageInputSupport);
     }
 
     public boolean isTemperatureEditable() {
