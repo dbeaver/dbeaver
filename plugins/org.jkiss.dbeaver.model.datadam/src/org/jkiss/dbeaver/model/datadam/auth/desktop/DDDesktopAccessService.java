@@ -120,7 +120,7 @@ public class DDDesktopAccessService {
     }
 
     private void updateKeyBundle(@Nullable DDKeyBundle bundle) throws DBException {
-        if (bundle != null && !bundle.accountId().equals(accountClient.getCryptoState().accountId())) {
+        if (bundle != null && !bundle.accountId().equals(accountClient.getAccountId())) {
             log.debug("Stored DataDam encryption keys belong to another account");
             setKeyBundle(null);
         } else {

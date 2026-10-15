@@ -31,11 +31,19 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /** Account requests authenticated by the current desktop SSO session. */
 public class DDAccountClient extends AbstractRestClient {
     private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
     private static final String GRAPHQL_PATH = "graphql";
+    private static final String ACCOUNT_ID_QUERY = """
+        query GatewayAccountId {
+            gatewayCryptoState {
+                accountId
+            }
+        }
+        """;
     private static final String CRYPTO_STATE_QUERY = """
         query GatewayCryptoState {
             gatewayCryptoState {
@@ -59,6 +67,18 @@ public class DDAccountClient extends AbstractRestClient {
             throw new DBException("DataDam Account response has no account ID");
         }
         return state;
+    }
+
+    @NotNull
+    public UUID getAccountId() throws DBException {
+        AccountResponse response = executePostRequest(
+            GRAPHQL_PATH, Map.of(), Map.of("query", ACCOUNT_ID_QUERY), AccountResponse.class);
+        if (response == null || response.errors() != null && !response.errors().isEmpty()
+            || response.data() == null || response.data().gatewayCryptoState() == null
+            || response.data().gatewayCryptoState().accountId() == null) {
+            throw new DBException("Could not read account ID from DataDam Account");
+        }
+        return response.data().gatewayCryptoState().accountId();
     }
 
     @NotNull
@@ -89,5 +109,14 @@ public class DDAccountClient extends AbstractRestClient {
     }
 
     private record CryptoData(@Nullable DDCryptoState gatewayCryptoState) {
+    }
+
+    private record AccountResponse(@Nullable AccountData data, @Nullable List<Object> errors) {
+    }
+
+    private record AccountData(@Nullable AccountState gatewayCryptoState) {
+    }
+
+    private record AccountState(@Nullable UUID accountId) {
     }
 }
