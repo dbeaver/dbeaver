@@ -19,34 +19,26 @@ package org.jkiss.dbeaver.model.ai.engine.copilot;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
+import org.jkiss.dbeaver.model.ai.engine.AIModelCatalog;
+import org.jkiss.dbeaver.model.ai.engine.AIModelCatalogEntry;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
-import org.jkiss.dbeaver.model.ai.utils.AIUtils;
+import org.jkiss.utils.CommonUtils;
 
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 public final class CopilotModels {
+    public static final String CATALOG_PROVIDER_ID = "github-copilot";
+
     private CopilotModels() {
     }
 
-    public static final Map<String, AIModel> KNOWN_MODELS = AIUtils.modelMap(
-        new AIModel("claude-3.5-sonnet", 200_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("claude-3.7-sonnet", 200_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("claude-3.7-sonnet-thought", 200_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("claude-sonnet-4", 200_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("gemini-2.5", 1_000_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("gemini-2.5-pro", 1_000_000, Set.of(AIModelFeature.CHAT)),
-        new AIModel("gemini-2.0-flash-001", 1_000_000, Set.of(AIModelFeature.CHAT))
-    );
-
     @NotNull
     public static Optional<AIModel> getModelByName(@Nullable String modelName) {
-        Optional<AIModel> model = AIUtils.getModelByName(KNOWN_MODELS, modelName);
-        if (model.isPresent()) {
+        if (CommonUtils.isEmpty(modelName)) {
             return Optional.empty();
         }
-        return OpenAIModels.getModelByName(modelName);
+        AIModelCatalogEntry entry = AIModelCatalog.getInstance().getCachedModels(CATALOG_PROVIDER_ID).get(modelName);
+        return Optional.ofNullable(entry).map(metadata -> metadata.enrich(new AIModel(modelName, null, Set.of(AIModelFeature.CHAT))));
     }
 }

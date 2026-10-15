@@ -95,7 +95,8 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
     public void loadSettings(@NotNull PROPERTIES configuration) {
         token = CommonUtils.toString(configuration.getToken());
         modelSelectorField.setSelectedModel(configuration.getModel());
-        contextWindowSizeField.setValue(configuration.getContextWindowSize());
+        contextWindowSizeField.setValue(configuration.getConfiguredContextWindowSize());
+        contextWindowSizeField.setDefaultValue(configuration.getContextWindowSize());
         temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
         accessToken = token;
         accessTokenText.setText(accessToken);
@@ -133,21 +134,12 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         modelSelectorField = ModelSelectorField.builder()
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
-            .withModifyListener(() -> {
-                CopilotModels.getModelByName(modelSelectorField.getSelectedModelName())
-                    .ifPresentOrElse(
-                        model -> {
-                            contextWindowSizeField.setValue(model.contextWindowSize());
-                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
-                        }, () -> {
-                            contextWindowSizeField.setValue(null);
-                            temperatureText.setText("0.0");
-                        }
-                    );
+            .withModelChangeListener(modelChanged -> {
                 AIModel selectedModel = modelSelectorField.getSelectedModel();
-                if (selectedModel != null) {
-                    contextWindowSizeField.setValue(selectedModel.contextWindowSize());
+                if (selectedModel == null) {
+                    selectedModel = CopilotModels.getModelByName(modelSelectorField.getSelectedModelName()).orElse(null);
                 }
+                updateModelParameters(selectedModel, temperatureText, contextWindowSizeField, modelChanged);
             })
             .withModelListSupplier(modelListProvider)
             .build();

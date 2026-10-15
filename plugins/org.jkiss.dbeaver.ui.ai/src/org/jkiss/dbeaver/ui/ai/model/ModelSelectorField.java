@@ -48,6 +48,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class ModelSelectorField {
     private static final Log log = Log.getLog(ModelSelectorField.class);
@@ -60,6 +61,8 @@ public class ModelSelectorField {
     private final ModelListProvider modelListProvider;
     @NotNull
     private final List<RequiredSetting> requiredSettings;
+    @Nullable
+    private final Consumer<Boolean> modelChangeListener;
 
     private volatile String selectedModelName;
     private volatile AIModel selectedModel;
@@ -73,6 +76,7 @@ public class ModelSelectorField {
     private ModelSelectorField(@NotNull Builder builder) {
         this.modelListProvider = builder.modelListSupplier;
         this.requiredSettings = List.copyOf(builder.requiredSettings);
+        this.modelChangeListener = builder.modelChangeListener;
 
         this.combo = UIUtils.createLabelCombo(builder.parent, builder.modelLabel, SWT.DROP_DOWN);
         this.combo.setLayoutData(builder.gridData);
@@ -85,6 +89,9 @@ public class ModelSelectorField {
             selectedModel = getModel(newText);
             if (builder.onModify != null) {
                 builder.onModify.run();
+            }
+            if (modelChangeListener != null) {
+                modelChangeListener.accept(true);
             }
         });
 
@@ -168,33 +175,39 @@ public class ModelSelectorField {
     }
 
     public int refreshModelList(@NotNull DBRProgressMonitor monitor, boolean refresh) throws DBException {
-        loadedModels = modelListProvider.getModels(monitor, refresh);
-
-        if (loadedModels.isEmpty()) {
-            return 0;
-        }
+        List<AIModel> models = modelListProvider.getModels(monitor, refresh);
 
         UIUtils.syncExec(() -> {
             if (combo.isDisposed()) {
                 return;
             }
+            loadedModels = models;
             String selectedItem = combo.getText();
-            Set<String> models = new LinkedHashSet<>(loadedModels.stream().map(AIModel::name).toList());
+            Set<String> modelNames = new LinkedHashSet<>(models.stream().map(AIModel::name).toList());
             if (!selectedItem.isEmpty()) {
-                models.add(selectedItem);
+                modelNames.add(selectedItem);
             }
 
-            List<String> sortedModels = models.stream()
+            List<String> sortedModels = modelNames.stream()
                 .sorted(String::compareToIgnoreCase)
                 .toList();
 
             disableModifyListener = true;
-            combo.setItems(sortedModels.toArray(new String[0]));
-            disableModifyListener = false;
-            combo.select(sortedModels.indexOf(selectedItem));
+            try {
+                combo.setItems(sortedModels.toArray(new String[0]));
+                // select() can leave an editable combo empty after replacing its items on macOS
+                combo.setText(selectedItem);
+                selectedModelName = combo.getText();
+                selectedModel = getModel(selectedModelName);
+            } finally {
+                disableModifyListener = false;
+            }
+            if (modelChangeListener != null) {
+                modelChangeListener.accept(false);
+            }
         });
 
-        return loadedModels.size();
+        return models.size();
     }
 
     private void refreshModelListWithProgress() {
@@ -301,6 +314,8 @@ public class ModelSelectorField {
 
         @Nullable
         private Runnable onModify;
+        @Nullable
+        private Consumer<Boolean> modelChangeListener;
 
         @NotNull
         private ModelListProvider modelListSupplier;
@@ -320,6 +335,12 @@ public class ModelSelectorField {
 
         public Builder withModifyListener(@NotNull Runnable onModify) {
             this.onModify = onModify;
+            return this;
+        }
+
+        @NotNull
+        public Builder withModelChangeListener(@NotNull Consumer<Boolean> listener) {
+            this.modelChangeListener = listener;
             return this;
         }
 
