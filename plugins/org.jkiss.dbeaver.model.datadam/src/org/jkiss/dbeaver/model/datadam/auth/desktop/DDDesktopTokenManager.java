@@ -16,10 +16,12 @@
  */
 package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
+import com.google.gson.JsonObject;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoClient;
 import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoLogin;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -68,6 +70,13 @@ class DDDesktopTokenManager {
             return Status.UNLOADED;
         }
         return validator.isExpired(current) ? Status.EXPIRED : Status.SIGNED_IN;
+    }
+
+    /** Returns readable claims even for an expired token; these are not verified credentials. */
+    @Nullable
+    JsonObject getUnverifiedTokenClaims() {
+        DDDesktopUserToken current = token;
+        return current == null ? null : JSONUtils.parseJwtClaims(current.accessToken());
     }
 
     public void load(@NotNull URI resource) throws DBException {

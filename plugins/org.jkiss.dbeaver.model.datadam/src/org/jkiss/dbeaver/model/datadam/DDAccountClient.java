@@ -36,6 +36,13 @@ import java.util.UUID;
 /** Account requests authenticated by the current desktop SSO session. */
 public class DDAccountClient extends AbstractRestClient {
     private static final String GRAPHQL_PATH = "graphql";
+    private static final String ACCOUNT_INFO_QUERY = """
+        query AccountInfo {
+            accountInfo {
+                accountId accountName
+            }
+        }
+        """;
     private static final String ACCOUNT_ID_QUERY = """
         query GatewayAccountId {
             gatewayCryptoState {
@@ -81,6 +88,18 @@ public class DDAccountClient extends AbstractRestClient {
     }
 
     @NotNull
+    public String getAccountName() throws DBException {
+        AccountResponse response = executePostRequest(
+            GRAPHQL_PATH, Map.of(), Map.of("query", ACCOUNT_INFO_QUERY), AccountResponse.class);
+        if (response == null || response.errors() != null && !response.errors().isEmpty()
+            || response.data() == null || response.data().accountInfo() == null
+            || response.data().accountInfo().accountName() == null) {
+            throw new DBException("Could not read account name from DataDam Account");
+        }
+        return response.data().accountInfo().accountName();
+    }
+
+    @NotNull
     @Override
     protected <T> T execute(@NotNull HttpRequest.Builder builder, @NotNull Type type) throws DBException {
         URI uri = builder.build().uri();
@@ -113,9 +132,9 @@ public class DDAccountClient extends AbstractRestClient {
     private record AccountResponse(@Nullable AccountData data, @Nullable List<Object> errors) {
     }
 
-    private record AccountData(@Nullable AccountState gatewayCryptoState) {
+    private record AccountData(@Nullable AccountState gatewayCryptoState, @Nullable AccountState accountInfo) {
     }
 
-    private record AccountState(@Nullable UUID accountId) {
+    private record AccountState(@Nullable UUID accountId, @Nullable String accountName) {
     }
 }

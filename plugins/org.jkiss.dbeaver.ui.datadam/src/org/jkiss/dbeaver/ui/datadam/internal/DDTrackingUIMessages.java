@@ -24,12 +24,11 @@ public class DDTrackingUIMessages extends NLS {
     public static String sync_preference_page_title;
     public static String sync_preference_page_account_group;
     public static String sync_preference_page_encryption_keys_group;
-    public static String sync_preference_page_status_label;
-    public static String sync_preference_page_signed_in;
-    public static String sync_preference_page_signed_out;
-    public static String sync_preference_page_session_expired;
+    public static String sync_preference_page_user_label;
+    public static String sync_preference_page_unknown;
     public static String sync_preference_page_account_label;
     public static String sync_preference_page_desktop_sign_in;
+    public static String sync_preference_page_desktop_sign_in_again;
     public static String sync_preference_page_desktop_sign_out;
     public static String sync_preference_page_import_keys_button;
     public static String sync_preference_page_forget_keys_button;
@@ -40,6 +39,9 @@ public class DDTrackingUIMessages extends NLS {
     public static String sync_preference_page_login_failed;
     public static String sync_preference_page_logout_failed;
     public static String sync_preference_page_cannot_forget_keys;
+
+    public static String desktop_relogin_title;
+    public static String desktop_relogin_message;
 
     public static String project_sync_title;
     public static String project_sync_share_job;

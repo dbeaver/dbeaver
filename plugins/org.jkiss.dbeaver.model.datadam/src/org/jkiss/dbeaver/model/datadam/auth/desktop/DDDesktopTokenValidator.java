@@ -16,31 +16,22 @@
  */
 package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
-import com.google.gson.JsonParser;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.util.Base64;
 
 /** Checks when a token expires and whether a request targets one of its stored origins. */
 class DDDesktopTokenValidator {
-    private static final int MAX_TOKEN_LENGTH = 16_384;
-
     boolean isExpired(@NotNull DDDesktopUserToken token) {
         try {
-            String value = token.accessToken();
-            if (value.length() > MAX_TOKEN_LENGTH) {
+            var claims = JSONUtils.parseJwtClaims(token.accessToken());
+            if (claims == null) {
                 return true;
             }
-            String[] parts = value.split("\\.", -1);
-            if (parts.length != 3) {
-                return true;
-            }
-            long seconds = JsonParser.parseString(new String(Base64.getUrlDecoder().decode(parts[1]), StandardCharsets.UTF_8))
-                .getAsJsonObject().get("exp").getAsLong();
+            long seconds = claims.get("exp").getAsLong();
             return !Instant.ofEpochSecond(seconds).isAfter(Instant.now().plusSeconds(30));
         } catch (RuntimeException e) {
             return true;

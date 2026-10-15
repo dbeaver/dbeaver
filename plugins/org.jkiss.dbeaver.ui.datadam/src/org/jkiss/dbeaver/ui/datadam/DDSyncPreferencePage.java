@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.datadam;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
@@ -25,12 +27,9 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.datadam.DDAccountClient;
-import org.jkiss.dbeaver.model.datadam.DDEndpoints;
-import org.jkiss.dbeaver.model.datadam.auth.DDCryptoState;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
-import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -38,20 +37,21 @@ import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 import java.lang.reflect.InvocationTargetException;
-import java.net.URI;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
 
     private static final String SYNC_TITLE = DDTrackingUIMessages.sync_preference_page_title;
     private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
+    private AbstractJob userViewJob;
 
     private Text accountText;
-    private Text statusText;
+    private Text userText;
     private Button loginButton;
+    private Button reloginButton;
     private Button logoutButton;
     private Button importKeysButton;
     private Button forgetKeysButton;
+    private Composite keysGroup;
 
     @Override
     public void init(@NotNull IWorkbench workbench) {
@@ -68,21 +68,24 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             2,
             GridData.FILL_HORIZONTAL,
             SWT.DEFAULT);
-        statusText = UIUtils.createLabelText(
-            group, DDTrackingUIMessages.sync_preference_page_status_label, "", SWT.READ_ONLY, idFieldLayout());
+        userText = UIUtils.createLabelText(
+            group, DDTrackingUIMessages.sync_preference_page_user_label, "", SWT.READ_ONLY, idFieldLayout());
 
-        Composite buttons = UIUtils.createComposite(group, 2);
+        Composite buttons = UIUtils.createComposite(group, 3);
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.horizontalSpan = 2;
         buttons.setLayoutData(gd);
         loginButton = UIUtils.createPushButton(
             buttons, DDTrackingUIMessages.sync_preference_page_desktop_sign_in, null,
             SelectionListener.widgetSelectedAdapter(e -> logIn()));
+        reloginButton = UIUtils.createPushButton(
+            buttons, DDTrackingUIMessages.sync_preference_page_desktop_sign_in_again, null,
+            SelectionListener.widgetSelectedAdapter(e -> logIn()));
         logoutButton = UIUtils.createPushButton(
             buttons, DDTrackingUIMessages.sync_preference_page_desktop_sign_out, null,
             SelectionListener.widgetSelectedAdapter(e -> logOut()));
 
-        Composite keysGroup = UIUtils.createTitledComposite(
+        keysGroup = UIUtils.createTitledComposite(
             composite, DDTrackingUIMessages.sync_preference_page_encryption_keys_group,
             2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
         accountText = UIUtils.createLabelText(
@@ -110,34 +113,33 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         return composite;
     }
 
-    @NotNull
-    private <T> T runInProgress(@NotNull DBSupplier<T> supplier) throws DBException {
-        AtomicReference<T> holder = new AtomicReference<>();
+    @Override
+    public void dispose() {
+        if (userViewJob != null) {
+            userViewJob.cancel();
+        }
+        super.dispose();
+    }
+
+    private void runOperation(@NotNull String errorMessage, @NotNull AccessOperation operation) {
         try {
             UIUtils.runInProgressDialog(monitor -> {
                 try {
-                    holder.set(supplier.get(monitor));
+                    operation.run(monitor);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
             });
         } catch (InvocationTargetException e) {
-            throw unwrap(e);
+            DBWorkbench.getPlatformUI().showError(SYNC_TITLE, errorMessage, e.getTargetException());
+        } finally {
+            refresh();
         }
-        return holder.get();
-    }
-
-    @NotNull
-    private static DBException unwrap(@NotNull InvocationTargetException e) {
-        Throwable target = e.getTargetException();
-        return target instanceof DBException dbException
-            ? dbException
-            : new DBException(String.valueOf(target.getMessage()), target);
     }
 
     @FunctionalInterface
-    private interface DBSupplier<T> {
-        T get(@NotNull DBRProgressMonitor monitor) throws DBException;
+    private interface AccessOperation {
+        void run(@NotNull DBRProgressMonitor monitor) throws DBException, InterruptedException;
     }
 
     @NotNull
@@ -148,105 +150,79 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     private void importKeys() {
-        String siteUrl = DDEndpoints.getAccountBaseUrl();
-        DDCryptoState state;
-        try {
-            state = runInProgress(monitor -> new DDAccountClient(URI.create(siteUrl)).getCryptoState());
-        } catch (DBException | IllegalArgumentException e) {
-            DBWorkbench.getPlatformUI().showError(
-                SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_import_keys_failed, e);
-            return;
-        }
-        if (state == null) {
-            return;
-        }
-        if (!state.cryptoConfigured()) {
-            DBWorkbench.getPlatformUI().showMessageBox(
-                SYNC_TITLE,
-                DDTrackingUIMessages.sync_preference_page_encryption_not_configured,
-                true);
-            return;
-        }
         DDImportKeyDialog dialog = new DDImportKeyDialog(getShell());
         if (dialog.open() != Window.OK) {
             return;
         }
-        DDKeyBundle[] keyBundle = new DDKeyBundle[1];
-        try {
-            UIUtils.runInProgressDialog(monitor -> {
-                try {
-                    keyBundle[0] = DDKeyStore.unpack(state, dialog.getPhrase());
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            });
-            DDKeyStore.save(keyBundle[0]);
-            accessService.load();
-            DDTrackingInitializer.start();
-            refresh();
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_import_keys_failed, e);
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError(
-                SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_import_keys_failed, e.getTargetException());
-        }
+        String phrase = dialog.getPhrase();
+        runOperation(DDTrackingUIMessages.sync_preference_page_import_keys_failed,
+            monitor -> accessService.importKeys(phrase));
     }
 
     private void forgetKeys() {
-        try {
-            DDTrackingInitializer.stop();
-            accessService.forgetKeys();
-            refresh();
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_cannot_forget_keys, e);
-        }
+        runOperation(DDTrackingUIMessages.sync_preference_page_cannot_forget_keys,
+            monitor -> accessService.forgetKeys());
     }
 
     private void logIn() {
-        try {
-            Boolean signedIn = runInProgress(monitor -> {
-                try {
-                    accessService.signIn(monitor);
-                    return true;
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    throw new DBException("DataDam sign-in was interrupted", e);
-                } catch (IllegalArgumentException e) {
-                    throw new DBException("Invalid DataDam server URL", e);
-                }
-            });
-            if (!Boolean.TRUE.equals(signedIn)) {
-                return;
-            }
+        runOperation(DDTrackingUIMessages.sync_preference_page_login_failed, monitor -> {
+            DDTrackingInitializer.stop();
+            accessService.signIn(monitor);
             DDTrackingInitializer.start();
-            refresh();
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_login_failed, e);
-        }
+        });
     }
 
     private void logOut() {
-        DDTrackingInitializer.stop();
-        try {
+        runOperation(DDTrackingUIMessages.sync_preference_page_logout_failed, monitor -> {
+            DDTrackingInitializer.stop();
             accessService.signOut();
-        } catch (DBException e) {
-            DBWorkbench.getPlatformUI().showError(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_logout_failed, e);
-        }
-        refresh();
+        });
     }
 
     private void refresh() {
-        DDKeyBundle bundle = DDKeyStore.load();
+        DDKeyBundle bundle = accessService.getKeyBundle();
         boolean present = bundle != null;
         DDDesktopAccessService.Status status = accessService.getStatus();
         boolean signedIn = status == DDDesktopAccessService.Status.SIGNED_IN;
-        statusText.setText(signedIn ? DDTrackingUIMessages.sync_preference_page_signed_in
-            : status == DDDesktopAccessService.Status.EXPIRED ? DDTrackingUIMessages.sync_preference_page_session_expired
-                : DDTrackingUIMessages.sync_preference_page_signed_out);
-        accountText.setText(present ? bundle.accountId().toString() : "");
+        accountText.setText(present ? bundle.accountId().toString() : DDTrackingUIMessages.sync_preference_page_unknown);
+        userText.setText(DDTrackingUIMessages.sync_preference_page_unknown);
         loginButton.setEnabled(!signedIn);
+        reloginButton.setEnabled(signedIn || status == DDDesktopAccessService.Status.EXPIRED);
         logoutButton.setEnabled(status != DDDesktopAccessService.Status.SIGNED_OUT);
         importKeysButton.setEnabled(signedIn);
         forgetKeysButton.setEnabled(present);
+        Composite keysSection = keysGroup.getParent();
+        keysSection.setVisible(signedIn);
+        ((GridData) keysSection.getLayoutData()).exclude = !signedIn;
+        keysSection.getParent().layout(true, true);
+        loadLoggedUserView();
+    }
+
+    private void loadLoggedUserView() {
+        if (userViewJob != null) {
+            userViewJob.cancel();
+        }
+        userViewJob = new AbstractJob("Read DataDam user information") {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                if (monitor.isCanceled()) {
+                    return Status.CANCEL_STATUS;
+                }
+                var user = accessService.getLoggedUserView();
+                UIUtils.asyncExec(() -> {
+                    if (!accountText.isDisposed() && userViewJob == this && !monitor.isCanceled()) {
+                        userText.setText(user.userName() == null
+                            ? DDTrackingUIMessages.sync_preference_page_unknown : user.userName());
+                        accountText.setText(user.accountName() != null ? user.accountName()
+                            : user.accountId() == null ? DDTrackingUIMessages.sync_preference_page_unknown
+                                : user.accountId().toString());
+                    }
+                });
+                return Status.OK_STATUS;
+            }
+        };
+        userViewJob.setSystem(true);
+        userViewJob.schedule();
     }
 }

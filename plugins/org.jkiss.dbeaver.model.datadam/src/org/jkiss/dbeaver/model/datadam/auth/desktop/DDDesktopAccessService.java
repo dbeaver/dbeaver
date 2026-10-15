@@ -45,11 +45,13 @@ public class DDDesktopAccessService {
     private final URI accountUrl = URI.create(DDEndpoints.getAccountBaseUrl());
     private final URI storageUrl = URI.create(DDEndpoints.getStorageBaseUrl());
     private final DDAccountClient accountClient = new DDAccountClient(accountUrl);
+    private final DDDesktopUserService userService;
     @Nullable
     private volatile DDKeyBundle keyBundle;
 
     DDDesktopAccessService(@NotNull DDDesktopTokenManager tokenManager) {
         this.tokenManager = tokenManager;
+        this.userService = new DDDesktopUserService(tokenManager, accountClient);
     }
 
     @NotNull
@@ -89,6 +91,13 @@ public class DDDesktopAccessService {
         } finally {
             operationLock.unlock();
         }
+    }
+
+    /** Reads display information, including an Account request when keys and a valid token are available. */
+    @NotNull
+    public DDLoggedUserView getLoggedUserView() {
+        DDKeyBundle bundle = getKeyBundle();
+        return userService.getLoggedUserView(bundle == null ? null : bundle.accountId());
     }
 
     public void load() throws DBException {
