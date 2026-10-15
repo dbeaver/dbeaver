@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 import org.jkiss.utils.CommonUtils;
@@ -165,7 +164,7 @@ public class MimerIndexManager extends GenericIndexManager {
         // no-op for a still-pending column, which was never in this list to begin with).
         List<DBSTableIndexColumn> keyColumns = new ArrayList<>();
         List<DBSTableIndexColumn> persistedIncludedColumns = new ArrayList<>();
-        for (DBSTableIndexColumn indexColumn : CommonUtils.safeCollection(index.getAttributeReferences(new VoidProgressMonitor()))) {
+        for (DBSTableIndexColumn indexColumn : CommonUtils.safeCollection(index.getAttributeReferences(monitor))) {
             if (!clustered && indexColumn instanceof MimerTableIndexColumn mimerColumn && mimerColumn.isIncluded(monitor)) {
                 persistedIncludedColumns.add(indexColumn);
             } else {

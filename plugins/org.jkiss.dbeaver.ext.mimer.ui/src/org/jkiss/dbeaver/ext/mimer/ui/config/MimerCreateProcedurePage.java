@@ -31,6 +31,7 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedureParameter;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
@@ -38,7 +39,6 @@ import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.ext.mimer.model.MimerLibrary;
 import org.jkiss.dbeaver.ext.mimer.model.MimerProcedure;
 import org.jkiss.dbeaver.ext.mimer.ui.internal.MimerUIMessages;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
@@ -214,17 +214,21 @@ public class MimerCreateProcedurePage extends CreateProcedurePage implements Mim
     @NotNull
     private String[] loadLibraryNames() {
         try {
-            if (procedure.getDataSource() instanceof MimerDataSource ds) {
-                List<String> names = new ArrayList<>();
-                for (MimerLibrary library : ds.getLibraries(new VoidProgressMonitor())) {
-                    names.add(library.getName());
+            String[] result = UIUtils.runWithDialog(monitor -> {
+                if (procedure.getDataSource() instanceof MimerDataSource ds) {
+                    List<String> names = new ArrayList<>();
+                    for (MimerLibrary library : ds.getLibraries(monitor)) {
+                        names.add(library.getName());
+                    }
+                    return names.toArray(new String[0]);
                 }
-                return names.toArray(new String[0]);
-            }
-        } catch (Exception e) {
+                return new String[0];
+            });
+            return result != null ? result : new String[0];
+        } catch (DBException e) {
             log.debug("Can't load library list for the create-procedure dialog", e);
+            return new String[0];
         }
-        return new String[0];
     }
 
     /**
@@ -366,15 +370,18 @@ public class MimerCreateProcedurePage extends CreateProcedurePage implements Mim
     @NotNull
     private String[] loadDataTypeNames() {
         try {
-            Set<String> names = new LinkedHashSet<>();
-            for (DBSObject type : procedure.getDataSource().getDataTypes(new VoidProgressMonitor())) {
-                names.add(type.getName().replaceAll("\\(.*\\)", "").trim());
-            }
-            return names.toArray(new String[0]);
-        } catch (Exception e) {
+            String[] result = UIUtils.runWithDialog(monitor -> {
+                Set<String> names = new LinkedHashSet<>();
+                for (DBSObject type : procedure.getDataSource().getDataTypes(monitor)) {
+                    names.add(type.getName().replaceAll("\\(.*\\)", "").trim());
+                }
+                return names.toArray(new String[0]);
+            });
+            return result != null ? result : new String[0];
+        } catch (DBException e) {
             log.debug("Can't load data type list for the create-procedure dialog", e);
+            return new String[0];
         }
-        return new String[0];
     }
 
     /**

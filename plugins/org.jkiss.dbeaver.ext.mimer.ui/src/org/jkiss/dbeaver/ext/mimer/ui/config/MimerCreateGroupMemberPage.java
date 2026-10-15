@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.ext.mimer.model.MimerGroup;
@@ -30,7 +31,6 @@ import org.jkiss.dbeaver.ext.mimer.model.MimerGroupMember;
 import org.jkiss.dbeaver.ext.mimer.model.MimerProgram;
 import org.jkiss.dbeaver.ext.mimer.model.MimerUser;
 import org.jkiss.dbeaver.ext.mimer.ui.internal.MimerUIMessages;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
@@ -99,21 +99,25 @@ public class MimerCreateGroupMemberPage extends BaseObjectEditPage implements Mi
     @NotNull
     private String[] loadIdentNames() {
         try {
-            if (member.getDataSource() instanceof MimerDataSource ds) {
-                String ownGroup = member.getGroup().getName();
-                return Stream.concat(
-                        Stream.concat(
-                            ds.getUsers(new VoidProgressMonitor()).stream().map(MimerUser::getName),
-                            ds.getPrograms(new VoidProgressMonitor()).stream().map(MimerProgram::getName)),
-                        ds.getGroups(new VoidProgressMonitor()).stream().map(MimerGroup::getName)
-                            .filter(name -> !name.equals(ownGroup))) // a group can't be its own member
-                    .sorted()
-                    .toArray(String[]::new);
-            }
-        } catch (Exception e) {
+            String[] result = UIUtils.runWithDialog(monitor -> {
+                if (member.getDataSource() instanceof MimerDataSource ds) {
+                    String ownGroup = member.getGroup().getName();
+                    return Stream.concat(
+                            Stream.concat(
+                                ds.getUsers(monitor).stream().map(MimerUser::getName),
+                                ds.getPrograms(monitor).stream().map(MimerProgram::getName)),
+                            ds.getGroups(monitor).stream().map(MimerGroup::getName)
+                                .filter(name -> !name.equals(ownGroup))) // a group can't be its own member
+                        .sorted()
+                        .toArray(String[]::new);
+                }
+                return new String[0];
+            });
+            return result != null ? result : new String[0];
+        } catch (DBException e) {
             log.debug("Can't load ident list for the grant-membership dialog", e);
+            return new String[0];
         }
-        return new String[0];
     }
 
     @Override

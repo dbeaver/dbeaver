@@ -28,12 +28,12 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mimer.model.MimerUserDefinedType;
 import org.jkiss.dbeaver.ext.mimer.ui.internal.MimerUIMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
@@ -230,15 +230,18 @@ public class MimerCreateStructuredTypePage extends BaseObjectEditPage implements
     @NotNull
     private String[] loadDataTypeNames() {
         try {
-            Set<String> names = new LinkedHashSet<>();
-            for (DBSObject t : type.getDataSource().getDataTypes(new VoidProgressMonitor())) {
-                names.add(t.getName().replaceAll("\\(.*\\)", "").trim());
-            }
-            return names.toArray(new String[0]);
-        } catch (Exception e) {
+            String[] result = UIUtils.runWithDialog(monitor -> {
+                Set<String> names = new LinkedHashSet<>();
+                for (DBSObject t : type.getDataSource().getDataTypes(monitor)) {
+                    names.add(t.getName().replaceAll("\\(.*\\)", "").trim());
+                }
+                return names.toArray(new String[0]);
+            });
+            return result != null ? result : new String[0];
+        } catch (DBException e) {
             log.debug("Can't load data type list for the create-structured-type dialog", e);
+            return new String[0];
         }
-        return new String[0];
     }
 
     @Override

@@ -24,13 +24,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.ext.mimer.model.MimerUserDefinedType;
 import org.jkiss.dbeaver.ext.mimer.ui.internal.MimerUIMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
@@ -114,30 +114,37 @@ public class MimerCreateDistinctTypePage extends BaseObjectEditPage implements M
     @NotNull
     private String[] loadDataTypeNames() {
         try {
-            Set<String> names = new LinkedHashSet<>();
-            for (DBSObject t : type.getDataSource().getDataTypes(new VoidProgressMonitor())) {
-                names.add(t.getName().replaceAll("\\(.*\\)", "").trim());
-            }
-            return names.toArray(new String[0]);
-        } catch (Exception e) {
+            String[] result = UIUtils.runWithDialog(monitor -> {
+                Set<String> names = new LinkedHashSet<>();
+                for (DBSObject t : type.getDataSource().getDataTypes(monitor)) {
+                    names.add(t.getName().replaceAll("\\(.*\\)", "").trim());
+                }
+                return names.toArray(new String[0]);
+            });
+            return result != null ? result : new String[0];
+        } catch (DBException e) {
             log.debug("Can't load data type list for the create-distinct-type dialog", e);
+            return new String[0];
         }
-        return new String[0];
     }
 
     @NotNull
     private String[] loadCollationNames() {
         try {
-            if (type.getDataSource() instanceof MimerDataSource ds) {
-                return ds.getCollations(new VoidProgressMonitor()).stream()
-                    .map(c -> "\"" + c.getSchemaName().replace("\"", "\"\"")
-                        + "\".\"" + c.getName().replace("\"", "\"\"") + "\"")
-                    .toArray(String[]::new);
-            }
-        } catch (Exception e) {
+            String[] result = UIUtils.runWithDialog(monitor -> {
+                if (type.getDataSource() instanceof MimerDataSource ds) {
+                    return ds.getCollations(monitor).stream()
+                        .map(c -> "\"" + c.getSchemaName().replace("\"", "\"\"")
+                            + "\".\"" + c.getName().replace("\"", "\"\"") + "\"")
+                        .toArray(String[]::new);
+                }
+                return new String[0];
+            });
+            return result != null ? result : new String[0];
+        } catch (DBException e) {
             log.debug("Can't load collation list for the create-distinct-type dialog", e);
+            return new String[0];
         }
-        return new String[0];
     }
 
     @Override

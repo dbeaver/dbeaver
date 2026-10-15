@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
@@ -233,6 +232,13 @@ public class MimerTable extends GenericTable {
      * User databanks for the "Databank" property's dropdown - system databanks
      * ({@link MimerConstants#SYSTEM_DATABANKS}) aren't valid table storage. Stays typeable
      * ({@link #allowCustomValue()}) for a name the picker can't see yet.
+     * <p>
+     * {@link IPropertyValueListProvider#getPossibleValues} takes no monitor, and this is a model
+     * class with no UI-layer progress-dialog mechanism available to it - so this deliberately
+     * reads whatever {@link MimerDataSource#getDatabankCache()} already has cached (populated the
+     * first time the DBA Views > Databanks folder was expanded) instead of forcing a fresh,
+     * uncancelable load. Returns an empty list, not an error, if the cache hasn't been warmed yet
+     * - the field stays typeable either way.
      */
     public static class DatabankListProvider implements IPropertyValueListProvider<MimerTable> {
         @Override
@@ -246,15 +252,10 @@ public class MimerTable extends GenericTable {
             if (!(object.getDataSource() instanceof MimerDataSource ds)) {
                 return new Object[0];
             }
-            try {
-                return ds.getDatabanks(new VoidProgressMonitor()).stream()
-                    .map(MimerDatabank::getName)
-                    .filter(name -> !MimerConstants.SYSTEM_DATABANKS.contains(name))
-                    .toArray();
-            } catch (DBException e) {
-                log.debug("Can't load databank list for the table Databank property", e);
-                return new Object[0];
-            }
+            return ds.getDatabankCache().getCachedObjects().stream()
+                .map(MimerDatabank::getName)
+                .filter(name -> !MimerConstants.SYSTEM_DATABANKS.contains(name))
+                .toArray();
         }
     }
 

@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
@@ -31,11 +32,12 @@ import org.jkiss.dbeaver.ext.mimer.model.MimerSynonym;
 import org.jkiss.dbeaver.ext.mimer.ui.internal.MimerUIMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
 import org.jkiss.utils.CommonUtils;
+
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * "Create Synonym" dialog: Name, Target Schema (combo of the datasource's schemas), Target
@@ -116,10 +118,16 @@ public class MimerCreateSynonymPage extends BaseObjectEditPage implements MimerC
             return;
         }
         try {
-            for (GenericTableBase table : schema.getTables(new VoidProgressMonitor())) {
-                targetNameCombo.add(table.getName());
-            }
-        } catch (Exception e) {
+            UIUtils.runInProgressService(monitor -> {
+                try {
+                    for (GenericTableBase table : schema.getTables(monitor)) {
+                        targetNameCombo.add(table.getName());
+                    }
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException | InterruptedException e) {
             log.debug("Can't load table list for the create-synonym dialog", e);
         }
     }

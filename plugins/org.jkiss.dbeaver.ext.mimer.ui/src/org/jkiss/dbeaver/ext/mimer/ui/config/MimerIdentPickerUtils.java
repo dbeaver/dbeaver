@@ -17,12 +17,13 @@
 package org.jkiss.dbeaver.ext.mimer.ui.config;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.ext.mimer.model.MimerGroup;
 import org.jkiss.dbeaver.ext.mimer.model.MimerProgram;
 import org.jkiss.dbeaver.ext.mimer.model.MimerUser;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.stream.Stream;
 
@@ -49,15 +50,15 @@ public final class MimerIdentPickerUtils {
     @NotNull
     public static String[] loadIdentNames(@NotNull MimerDataSource dataSource) {
         try {
-            VoidProgressMonitor monitor = new VoidProgressMonitor();
-            return Stream.of(
+            String[] result = UIUtils.runWithDialog(monitor -> Stream.of(
                     dataSource.getUsers(monitor).stream().map(MimerUser::getName),
                     dataSource.getGroups(monitor).stream().map(MimerGroup::getName),
                     dataSource.getPrograms(monitor).stream().map(MimerProgram::getName))
                 .flatMap(s -> s)
                 .sorted()
-                .toArray(String[]::new);
-        } catch (Exception e) {
+                .toArray(String[]::new));
+            return result != null ? result : new String[0];
+        } catch (DBException e) {
             log.debug("Can't load ident list for a grantee picker", e);
             return new String[0];
         }

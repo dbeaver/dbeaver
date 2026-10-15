@@ -24,13 +24,13 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.List;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mimer.MimerConstants;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.ext.mimer.model.MimerGroup;
 import org.jkiss.dbeaver.ext.mimer.model.MimerUser;
 import org.jkiss.dbeaver.ext.mimer.ui.internal.MimerUIMessages;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
@@ -115,19 +115,23 @@ public class MimerCreateUserPage extends BaseObjectEditPage implements MimerCrea
     @NotNull
     private String[] loadGroupNames() {
         try {
-            if (user.getDataSource() instanceof MimerDataSource ds) {
-                return ds.getGroups(new VoidProgressMonitor()).stream()
-                    .map(MimerGroup::getName)
-                    // Every ident is already implicitly a member of PUBLIC - Mimer SQL rejects
-                    // an explicit GRANT MEMBER ON GROUP PUBLIC, so don't offer it here.
-                    .filter(name -> !MimerConstants.GROUP_PUBLIC.equalsIgnoreCase(name))
-                    .sorted()
-                    .toArray(String[]::new);
-            }
-        } catch (Exception e) {
+            String[] result = UIUtils.runWithDialog(monitor -> {
+                if (user.getDataSource() instanceof MimerDataSource ds) {
+                    return ds.getGroups(monitor).stream()
+                        .map(MimerGroup::getName)
+                        // Every ident is already implicitly a member of PUBLIC - Mimer SQL
+                        // rejects an explicit GRANT MEMBER ON GROUP PUBLIC, so don't offer it here.
+                        .filter(name -> !MimerConstants.GROUP_PUBLIC.equalsIgnoreCase(name))
+                        .sorted()
+                        .toArray(String[]::new);
+                }
+                return new String[0];
+            });
+            return result != null ? result : new String[0];
+        } catch (DBException e) {
             log.debug("Can't load group list for the create-user dialog", e);
+            return new String[0];
         }
-        return new String[0];
     }
 
     @Override

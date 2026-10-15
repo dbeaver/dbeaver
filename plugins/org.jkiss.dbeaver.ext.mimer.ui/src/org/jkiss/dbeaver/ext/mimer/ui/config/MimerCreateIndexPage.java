@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.ext.mimer.model.MimerCollation;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.ext.mimer.ui.internal.MimerUIMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
@@ -45,6 +44,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditIndexPage;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -468,12 +468,18 @@ public class MimerCreateIndexPage extends EditIndexPage {
         if (collationNames == null) {
             collationNames = new ArrayList<>(MimerConstants.CURRENT_COLLATION_NAMES);
             try {
-                if (getObject() instanceof DBSTableIndex tableIndex && tableIndex.getDataSource() instanceof MimerDataSource ds) {
-                    for (MimerCollation collation : ds.getCollations(new VoidProgressMonitor())) {
-                        collationNames.add(collation.getReference());
+                UIUtils.runInProgressService(monitor -> {
+                    try {
+                        if (getObject() instanceof DBSTableIndex tableIndex && tableIndex.getDataSource() instanceof MimerDataSource ds) {
+                            for (MimerCollation collation : ds.getCollations(monitor)) {
+                                collationNames.add(collation.getReference());
+                            }
+                        }
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
                     }
-                }
-            } catch (DBException e) {
+                });
+            } catch (InvocationTargetException | InterruptedException e) {
                 log.debug("Can't load collation list for the create-index dialog", e);
             }
         }

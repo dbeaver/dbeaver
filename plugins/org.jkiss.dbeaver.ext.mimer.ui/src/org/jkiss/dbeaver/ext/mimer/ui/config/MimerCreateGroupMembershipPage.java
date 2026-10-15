@@ -25,13 +25,13 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mimer.MimerConstants;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.ext.mimer.model.MimerGroup;
 import org.jkiss.dbeaver.ext.mimer.model.MimerIdentGroupMembership;
 import org.jkiss.dbeaver.ext.mimer.ui.internal.MimerUIMessages;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
@@ -100,19 +100,23 @@ public class MimerCreateGroupMembershipPage extends BaseObjectEditPage implement
     @NotNull
     private String[] loadGroupNames() {
         try {
-            if (membership.getDataSource() instanceof MimerDataSource ds) {
-                String ownName = membership.getIdent() instanceof MimerGroup ownGroup ? ownGroup.getName() : null;
-                return ds.getGroups(new VoidProgressMonitor()).stream()
-                    .map(MimerGroup::getName)
-                    .filter(name -> !MimerConstants.GROUP_PUBLIC.equalsIgnoreCase(name))
-                    .filter(name -> ownName == null || !name.equalsIgnoreCase(ownName))
-                    .sorted()
-                    .toArray(String[]::new);
-            }
-        } catch (Exception e) {
+            String[] result = UIUtils.runWithDialog(monitor -> {
+                if (membership.getDataSource() instanceof MimerDataSource ds) {
+                    String ownName = membership.getIdent() instanceof MimerGroup ownGroup ? ownGroup.getName() : null;
+                    return ds.getGroups(monitor).stream()
+                        .map(MimerGroup::getName)
+                        .filter(name -> !MimerConstants.GROUP_PUBLIC.equalsIgnoreCase(name))
+                        .filter(name -> ownName == null || !name.equalsIgnoreCase(ownName))
+                        .sorted()
+                        .toArray(String[]::new);
+                }
+                return new String[0];
+            });
+            return result != null ? result : new String[0];
+        } catch (DBException e) {
             log.debug("Can't load group list for the grant-membership dialog", e);
+            return new String[0];
         }
-        return new String[0];
     }
 
     @Override

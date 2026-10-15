@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
@@ -212,6 +213,13 @@ public class MimerTableColumn extends GenericTableColumn {
      * Every collation in the datasource (not just this table's own schema - matches how the
      * Domain/Collation create dialogs' own Collation pickers work). Stays typeable ({@link
      * #allowCustomValue()}), same reasoning as {@link MimerTable.DatabankListProvider}.
+     * <p>
+     * {@link IPropertyValueListProvider#getPossibleValues} takes no monitor, and this is a model
+     * class with no UI-layer progress-dialog mechanism available to it - so this deliberately
+     * reads whatever each schema's own {@link MimerSchema#getCollationCache()} already has
+     * cached (populated the first time that schema's Collations folder was expanded) instead of
+     * forcing a fresh, uncancelable load. A schema whose cache hasn't been warmed yet simply
+     * contributes nothing - the field stays typeable either way.
      */
     public static class CollationListProvider implements IPropertyValueListProvider<MimerTableColumn> {
         @Override
@@ -226,12 +234,12 @@ public class MimerTableColumn extends GenericTableColumn {
                 return new Object[0];
             }
             List<Object> values = new ArrayList<>(MimerConstants.CURRENT_COLLATION_NAMES);
-            try {
-                for (MimerCollation c : ds.getCollations(new VoidProgressMonitor())) {
-                    values.add(c.getReference());
+            for (GenericSchema schema : CommonUtils.safeCollection(ds.getSchemas())) {
+                if (schema instanceof MimerSchema mimerSchema) {
+                    for (MimerCollation c : mimerSchema.getCollationCache().getCachedObjects()) {
+                        values.add(c.getReference());
+                    }
                 }
-            } catch (DBException e) {
-                log.debug("Can't load collation list for the column Collation property", e);
             }
             return values.toArray();
         }
