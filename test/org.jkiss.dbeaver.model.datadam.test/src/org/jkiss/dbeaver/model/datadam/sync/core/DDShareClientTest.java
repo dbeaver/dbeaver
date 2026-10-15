@@ -113,8 +113,8 @@ class DDShareClientTest {
             session.when(DDDesktopTokenManager::getInstance).thenReturn(manager);
             Mockito.when(manager.accessFor(Mockito.any())).thenReturn("test-token");
             DDSyncCredentials credentials = Mockito.mock(DDSyncCredentials.class);
-            Assertions.assertThrows(DBException.class, () -> new DDShareClient(base, credentials).listConfigurations());
-            Assertions.assertNull(new DDTrackingClient(base).stop(credentials, "tracking-id"));
+            Assertions.assertThrows(DBException.class, () -> new DDShareClient(base, credentials).listProjects());
+            Assertions.assertNull(new DDTrackingClient(base).stop("tracking-id"));
             Assertions.assertEquals(0, redirected.get());
         } finally {
             server.stop(0);
@@ -126,8 +126,8 @@ class DDShareClientTest {
         DDSyncCredentials credentials = Mockito.mock(DDSyncCredentials.class);
         DDShareClient client = new DDShareClient("http://127.0.0.1:1", credentials);
 
-        DBException error = Assertions.assertThrows(DBException.class, client::listConfigurations);
-        Assertions.assertTrue(error.getMessage().contains("Sign in to DataDam"));
+        DBException error = Assertions.assertThrows(DBException.class, client::listProjects);
+        Assertions.assertTrue(error.getCause().getMessage().contains("Sign in to DataDam"));
         Mockito.verifyNoInteractions(credentials);
     }
 

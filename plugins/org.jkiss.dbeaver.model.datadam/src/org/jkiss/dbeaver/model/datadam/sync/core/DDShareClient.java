@@ -18,9 +18,6 @@ package org.jkiss.dbeaver.model.datadam.sync.core;
 
 import com.dbeaver.datadam.share.api.exception.DDShareException;
 import com.dbeaver.datadam.share.api.model.*;
-import com.dbeaver.datadam.share.api.model.DDConfiguration;
-import com.dbeaver.datadam.share.api.model.DDConfigurationSummary;
-import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationResult;
 import com.dbeaver.datadam.share.api.service.DDSharedProjectService;
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
@@ -48,9 +45,10 @@ import java.time.ZoneOffset;
 import java.util.*;
 import javax.crypto.SecretKey;
 
-public class DDShareClient extends AbstractRestClient implements DDSyncTransport, DDSharedProjectService {
+public class DDShareClient extends AbstractRestClient implements DDSharedProjectService {
 
     private static final int TIMEOUT_MS = 30000;
+    private static final String GRAPHQL_ENDPOINT = "/graphql";
     private static final String FIELD_NAME = "name";
     private static final String FIELD_DESCRIPTION = "description";
 
@@ -95,47 +93,6 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         ) {
             return new JsonPrimitive(src.atOffset(ZoneOffset.UTC).toString());
         }
-    }
-
-    @NotNull
-    @Override
-    public List<DDConfigurationSummary> listConfigurations() throws DBException {
-        JsonObject data = call(DDSyncApi.QUERY_LIST_CONFIGURATIONS, Map.of());
-        return List.of(gson.fromJson(data.get("configurations"), DDConfigurationSummary[].class));
-    }
-
-    @NotNull
-    @Override
-    public DDConfiguration getConfiguration(@NotNull String configurationId) throws DBException {
-        JsonObject data = call(DDSyncApi.QUERY_GET_CONFIGURATION, Map.of("configurationId", configurationId));
-        JsonElement configuration = data.get("configuration");
-        if (configuration == null || configuration.isJsonNull()) {
-            throw new DDConfigurationNotFoundException("Configuration '" + configurationId + "' not found");
-        }
-        return gson.fromJson(configuration, DDConfiguration.class);
-    }
-
-    @NotNull
-    @Override
-    public DDConfiguration createConfiguration(@NotNull DDCreateConfigurationRequest request) throws DBException {
-        JsonObject data = call(DDSyncApi.MUTATION_CREATE_CONFIGURATION, Map.of("input", request));
-        return gson.fromJson(data.get("createConfiguration"), DDConfiguration.class);
-    }
-
-    @NotNull
-    @Override
-    public DDUpdateConfigurationResult updateConfiguration(
-        @NotNull String configurationId,
-        @NotNull DDUpdateConfigurationRequest request
-    ) throws DBException {
-        JsonObject data = call(
-            DDSyncApi.MUTATION_UPDATE_CONFIGURATION,
-            Map.of("configurationId", configurationId, "input", request));
-        JsonElement result = data.get("updateConfiguration");
-        if (result == null || result.isJsonNull()) {
-            throw new DDConfigurationNotFoundException("Configuration '" + configurationId + "' not found");
-        }
-        return gson.fromJson(result, DDUpdateConfigurationResult.class);
     }
 
     @NotNull
@@ -443,7 +400,7 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
 
     @NotNull
     private HttpRequest.Builder request(@NotNull byte[] body) throws DBException {
-        URI uri = buildUri(CommonUtils.removeLeadingSlash(DDSyncApi.GRAPHQL_ENDPOINT), Map.of());
+        URI uri = buildUri(CommonUtils.removeLeadingSlash(GRAPHQL_ENDPOINT), Map.of());
         DDEndpoints.requireSecureTransport(uri);
         String authorization = DDDesktopTokenManager.getInstance().accessFor(uri);
         return HttpRequest.newBuilder(uri)
