@@ -60,18 +60,14 @@ public class DDDesktopTokenUIManager {
                     );
                 }
             });
-            if (accepted == null) {
+            if (!Boolean.TRUE.equals(accepted)) {
                 return false;
             }
-            if (accepted) {
-                try {
-                    accessService.signIn(monitor);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    return false;
-                }
-            } else {
-                accessService.signOut();
+
+            try {
+                accessService.signIn(monitor);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 return false;
             }
         }

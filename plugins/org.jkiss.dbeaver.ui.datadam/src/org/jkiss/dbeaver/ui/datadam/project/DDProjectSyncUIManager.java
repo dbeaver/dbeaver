@@ -47,12 +47,12 @@ public final class DDProjectSyncUIManager {
     }
 
     @NotNull
-    public DDProjectSyncService getService() {
+    public DDProjectSyncService getService() throws DBException {
         synchronized (this) {
             if (service == null) {
                 DDKeyBundle bundle = accessService.getKeyBundle();
                 if (bundle == null) {
-                    throw new IllegalStateException("DataDam project synchronization is not enabled");
+                    throw new DBException("Import encryption keys for the current DataDam account in Preferences > DataDam");
                 }
                 service = new DDProjectSyncService(
                     DDEndpoints.getStorageBaseUrl(),
