@@ -45,9 +45,6 @@ import java.util.Map;
  */
 public class HiveMetaModel extends GenericMetaModel
 {
-    private static final String DRIVER_ID_HIVE_LEGACY = "apache_hive2";
-    private static final String DRIVER_ID_HIVE_4 = "apache_hive4";
-
     public HiveMetaModel() {
         super();
     }
@@ -58,14 +55,10 @@ public class HiveMetaModel extends GenericMetaModel
         return new HiveDataSource(monitor, container, this);
     }
 
-    @Nullable
+    @NotNull
     @Override
     public DBCQueryPlanner getQueryPlanner(@NotNull GenericDataSource dataSource) {
-        String driverId = dataSource.getContainer().getDriver().getId();
-        return switch (driverId) {
-            case DRIVER_ID_HIVE_LEGACY, DRIVER_ID_HIVE_4 -> new HiveQueryPlanner((HiveDataSource) dataSource);
-            default -> null;
-        };
+        return new HiveQueryPlanner((HiveDataSource) dataSource);
     }
 
     @NotNull
