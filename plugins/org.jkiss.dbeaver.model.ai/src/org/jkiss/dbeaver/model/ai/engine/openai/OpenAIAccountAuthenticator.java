@@ -24,6 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.access.DBAuthUtils;
+import org.jkiss.dbeaver.model.ai.engine.OAuthDeviceCodeFlow;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.HttpConstants;
 import org.jkiss.utils.oauth.OAuthConstants;
@@ -51,8 +52,8 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
     private static final String CODEX_MODELS_ENDPOINT = "https://chatgpt.com/backend-api/codex/models";
     private static final String CALLBACK_PATH = "/auth/callback";
     private static final int CALLBACK_PORT = 1455;
-    private static final int POLLING_SAFETY_MARGIN_SECONDS = 3;
     private static final Duration AUTHORIZATION_TIMEOUT = Duration.ofMinutes(15);
+    private static final OAuthDeviceCodeFlow DEVICE_CODE_FLOW = new OAuthDeviceCodeFlow();
 
     private final Duration requestTimeout;
     private final HttpClient httpClient;
@@ -148,21 +149,7 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
         @NotNull AIAccountAuthenticator.DeviceAuthorization authorization,
         @NotNull CompletableFuture<Void> cancellation
     ) throws DBException {
-        long deadline = System.nanoTime() + AUTHORIZATION_TIMEOUT.toNanos();
-        int intervalSeconds = authorization.intervalSeconds();
-        while (System.nanoTime() < deadline) {
-            checkDeviceAuthorizationCancellation(cancellation);
-            DeviceAuthorizationPollResult result = pollDeviceAuthorization(authorization, cancellation);
-            if (result.status() == DeviceAuthorizationPollStatus.COMPLETE) {
-                checkDeviceAuthorizationCancellation(cancellation);
-                return Objects.requireNonNull(result.tokens());
-            }
-            if (result.status() == DeviceAuthorizationPollStatus.SLOW_DOWN) {
-                intervalSeconds += 5;
-            }
-            sleep(intervalSeconds + POLLING_SAFETY_MARGIN_SECONDS);
-        }
-        throw new DBException("OpenAI device authorization timed out");
+        return DEVICE_CODE_FLOW.complete(this, authorization, cancellation, "OpenAI");
     }
 
     @NotNull
@@ -392,15 +379,6 @@ public class OpenAIAccountAuthenticator implements AIAccountAuthenticator {
             throw new DBException("OpenAI request failed: " + response.statusCode() + ": " + responseBody);
         }
         return JsonParser.parseString(response.body()).getAsJsonObject();
-    }
-
-    private static void sleep(int seconds) throws DBException {
-        try {
-            Thread.sleep(Duration.ofSeconds(seconds));
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new DBException("OpenAI device authorization was interrupted", e);
-        }
     }
 
     private static void stopAuthorization(@NotNull PendingAuthorization authorization) {
