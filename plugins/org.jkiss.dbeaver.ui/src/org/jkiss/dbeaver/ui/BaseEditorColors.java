@@ -25,6 +25,8 @@ public interface BaseEditorColors {
     String COLOR_WARNING = "org.jkiss.dbeaver.txn.color.transaction.background";  // = new RGB(0xFF, 0xE4, 0xB5); //$NON-NLS-1$
     String COLOR_READ_ONLY = "org.jkiss.dbeaver.color.readOnly.foreground";
     String COLOR_ACCENT = "org.jkiss.dbeaver.ui.general.accent";
+    String COLOR_WARNING_FOREGROUND = "org.jkiss.dbeaver.ui.general.color.warning.foreground";
+    String COLOR_ERROR_FOREGROUND = "org.jkiss.dbeaver.ui.general.color.error.foreground";
 
     String COLOR_UNCOMMITTED = COLOR_SUCCESS;
     String COLOR_REVERTED = COLOR_ERROR;

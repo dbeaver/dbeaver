@@ -33,7 +33,9 @@ import java.util.Map;
 import java.util.Objects;
 
 /**
- * AI context settings
+ * AI context settings.
+ * Subset of AI configuration specific for a datasource or conversation.
+ * Keep information about database scope and AI/MCP enablement flags.
  */
 public abstract class AIContextSettings {
 
@@ -51,6 +53,7 @@ public abstract class AIContextSettings {
         public boolean mcpEnabled;
         public AIDatabaseScope scope;
         public String[] objects;
+        public String[] excludedObjects;
     }
 
     @Nullable
@@ -92,10 +95,23 @@ public abstract class AIContextSettings {
         this.settings.objects = customObjectIds;
     }
 
+    @Nullable
+    public String[] getExcludedObjectIds() {
+        return settings.excludedObjects;
+    }
+
+    public void setExcludedObjectIds(String[] excludedObjectIds) {
+        this.settings.excludedObjects = excludedObjectIds;
+    }
+
     public void loadSettingsFromMap(@NotNull Map<String, Object> dsConfig) {
         settings = JSONUtils.convertMapToObject(dsConfig, PersistentSettings.class);
         if (settings.objects != null) {
             settings.objects = Arrays.stream(settings.objects)
+                .filter(o -> !CommonUtils.isEmpty(o)).toArray(String[]::new);
+        }
+        if (settings.excludedObjects != null) {
+            settings.excludedObjects = Arrays.stream(settings.excludedObjects)
                 .filter(o -> !CommonUtils.isEmpty(o)).toArray(String[]::new);
         }
     }

@@ -16,23 +16,32 @@
  */
 package org.jkiss.dbeaver.model.impl.config;
 
+import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 public final class ProductConfigUtils {
-    /**
-     * Force Product Config to show at every launch
-     */
-    private static final String PROP_SHOW_ON_STARTUP = "dbeaver.show.easy.config.on.startup";
-
+    public static final String PRODUCT_CONFIG_DISABLE = "product.config.disable";
     private ProductConfigUtils() {
     }
 
     /**
-     * Returns whether Product Config should be shown at startup.
+     * Returns whether Product Config feature is available.
      * <p>
      * This is determined by the system property {@code dbeaver.show.easy.config.on.startup}.
      */
-    public static boolean isShowOnStartup() {
-        return CommonUtils.getBoolean(System.getProperty(PROP_SHOW_ON_STARTUP));
+    public static boolean isAvailable() {
+        return isProductApplicable();
+    }
+
+    /**
+     * Returns whether Product Config is applicable to the current environment.
+     */
+    private static boolean isProductApplicable() {
+        return BaseApplicationImpl.getInstance().isStandalone() && !DBWorkbench.isDistributed();
+    }
+
+    public static boolean isProductConfigSuppressed() {
+        return CommonUtils.toBoolean(System.getProperty(PRODUCT_CONFIG_DISABLE));
     }
 }

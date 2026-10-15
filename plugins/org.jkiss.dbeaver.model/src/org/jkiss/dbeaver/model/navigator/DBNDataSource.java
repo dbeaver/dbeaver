@@ -21,12 +21,16 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyIcon;
+import org.jkiss.dbeaver.model.connection.DBPDriverWithLicense;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -40,12 +44,21 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
 
     private final DBPDataSourceContainer dataSource;
     private final DBXTreeNode treeRoot;
+    private DBPDriverWithLicense licensedDriver;
+    private boolean licenseListenerDisposed;
+    private final Runnable driverIconUpdateCallback = () -> {
+        DBNModel model = getModel();
+        if (model != null) {
+            model.fireNodeUpdate(this, this, DBNEvent.NodeChange.STRUCT_REFRESH);
+        }
+    };
 
     public DBNDataSource(@NotNull DBNNode parentNode, @NotNull DBPDataSourceContainer dataSource) {
         super(parentNode);
         this.dataSource = dataSource;
         this.treeRoot = dataSource.getDriver().getNavigatorRoot();
         registerNode();
+        getLicensedDriver();
     }
 
     @Nullable
@@ -62,8 +75,14 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     }
 
     @Override
-    protected void dispose(boolean reflect)
-    {
+    protected void dispose(boolean reflect) {
+        synchronized (this) {
+            licenseListenerDisposed = true;
+            if (licensedDriver != null) {
+                licensedDriver.removeLicenseChangeListener(driverIconUpdateCallback);
+                licensedDriver = null;
+            }
+        }
         unregisterNode(reflect);
 
         super.dispose(reflect);
@@ -160,7 +179,14 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
     @Nullable
     @Override
     public DBPImage getNodeIcon() {
+        DBPDriverWithLicense currentLicensedDriver = getLicensedDriver();
+        if (dataSource.getDriver() instanceof DBPDriverWithLazyIcon lazyIcon) {
+            lazyIcon.loadIcon(driverIconUpdateCallback);
+        }
         DBPImage image = super.getNodeIcon();
+        if (image != null && currentLicensedDriver != null && currentLicensedDriver.isLicenseInvalid()) {
+            image = DBNModel.getStateOverlayImage(image, DBSObjectState.INVALID);
+        }
         if (USE_ICON_DECORATIONS) {
             boolean hasNetworkHandlers = hasNetworkHandlers();
             if (dataSource.isConnectionReadOnly() || hasNetworkHandlers) {
@@ -179,6 +205,24 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
             }
         }
         return image;
+    }
+
+    @Nullable
+    private synchronized DBPDriverWithLicense getLicensedDriver() {
+        if (licenseListenerDisposed) {
+            return null;
+        }
+        DBPDriverWithLicense currentDriver = dataSource.getDriver() instanceof DBPDriverWithLicense driver ? driver : null;
+        if (licensedDriver != currentDriver) {
+            if (licensedDriver != null) {
+                licensedDriver.removeLicenseChangeListener(driverIconUpdateCallback);
+            }
+            licensedDriver = currentDriver;
+            if (licensedDriver != null) {
+                licensedDriver.addLicenseChangeListener(driverIconUpdateCallback);
+            }
+        }
+        return licensedDriver;
     }
 
     public boolean hasNetworkHandlers() {
@@ -259,6 +303,9 @@ public class DBNDataSource extends DBNDatabaseNode implements DBNContainer, DBPA
             return false;
         }
         dataSource.setFolder(folder);
+        if (DBWorkbench.isDistributed()) {
+            return dataSource.persistConfiguration(false);
+        }
         return true;
     }
 

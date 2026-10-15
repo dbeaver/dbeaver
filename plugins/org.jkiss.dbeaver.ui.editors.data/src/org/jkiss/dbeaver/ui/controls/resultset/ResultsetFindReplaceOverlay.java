@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.controls.findandreplace.AccessibleToolItemBuilder;
 import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.findandreplace.SearchQuickFilterInfo;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class ResultsetFindReplaceOverlay extends FindReplaceOverlay {
@@ -54,34 +55,6 @@ public class ResultsetFindReplaceOverlay extends FindReplaceOverlay {
     @NotNull
     private final AbstractPresentation resultsetPresentation;
 
-    private boolean findAllActionApplied = false;
-    private boolean isInteractiveFilterEnabled = true;
-
-    private IAction enableInteractiveFilterAction;
-    private IAction disableInteractiveFilterAction;
-
-    private Composite extraContentContainer;
-
-    private Composite placeholder;
-    private GridData placeholderLayoutData;
-    private GridData extraContentLayoutData;
-
-    @NotNull
-    private final AbstractUIJob interactiveFilterJob = new AbstractUIJob("Resultset filter job") {
-
-        @NotNull
-        @Override
-        protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
-            try {
-                ResultsetFindReplaceOverlay.this.applyInteractiveFilterJob();
-                return Status.OK_STATUS;
-            } catch (Throwable e) {
-                log.debug(e);
-                return Status.CANCEL_STATUS;
-            }
-        }
-    };
-
     public ResultsetFindReplaceOverlay(
         @NotNull IWorkbenchPart part,
         @NotNull Composite targetControl,
@@ -92,178 +65,239 @@ public class ResultsetFindReplaceOverlay extends FindReplaceOverlay {
         this.resultsetPresentation = resultsetPresentation;
     }
 
+    @NotNull
     @Override
-    protected void configureSelectAllButton(@NotNull AccessibleToolItemBuilder buttonBuilder) {
-        buttonBuilder.withStyleBits(SWT.CHECK)
-                     .withImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE_FIND_ALL_FILTER))
-                     .withToolTipText(ResultSetMessages.find_and_replace_find_all_tooltip)
-                     .withOperation(this::performSelectAll).withShortcuts(KeyboardShortcuts.SEARCH_ALL);
+    protected ResultsetFindReplaceUIControl createControl() {
+        return new ResultsetFindReplaceUIControl();
+    }
 
-        MenuManager contextMenuManager = new MenuManager();
-        this.enableInteractiveFilterAction = new Action("Check 'Show matching' on to filter while typing") {
+    protected class ResultsetFindReplaceUIControl extends FindReplaceUIControl {
+        private boolean findAllActionApplied = false;
+        private boolean isInteractiveFilterEnabled = true;
+
+        private IAction enableInteractiveFilterAction;
+        private IAction disableInteractiveFilterAction;
+
+        private Composite extraContentContainer;
+
+        private Composite placeholder;
+        private GridData placeholderLayoutData;
+        private GridData extraContentLayoutData;
+
+        @NotNull
+        private final AbstractUIJob interactiveFilterJob = new AbstractUIJob("Resultset filter job") {
+
+            @NotNull
             @Override
-            public void run() {
-                if (!isInteractiveFilterEnabled) {
-                    setEnableInteractiveFilter(true);
+            protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
+                try {
+                    ResultsetFindReplaceUIControl.this.applyInteractiveFilterJob();
+                    return Status.OK_STATUS;
+                } catch (Throwable e) {
+                    log.debug(e);
+                    return Status.CANCEL_STATUS;
                 }
             }
         };
-        this.disableInteractiveFilterAction =  new Action("Use 'Show matching' explicitly to apply filter") {
-            @Override
-            public void run() {
-                if (isInteractiveFilterEnabled) {
-                    setEnableInteractiveFilter(false);
-                }
-            }
-        };
 
-        contextMenuManager.add(enableInteractiveFilterAction);
-        contextMenuManager.add(disableInteractiveFilterAction);
-        buttonBuilder.withContextMenu(contextMenuManager);
-    }
-
-    @Override
-    protected void restoreOverlaySettings() {
-        super.restoreOverlaySettings();
-
-        IDialogSettings dialogSettings = this.getDialogSettings(ResultsetFindReplaceOverlay.class);
-
-        boolean shouldEnableInteractiveFilter = !dialogSettings.getBoolean(INTERACTIVE_FILTER_DISABLED_DIALOG_SETTING);
-        this.setEnableInteractiveFilter(shouldEnableInteractiveFilter);
-    }
-
-    private void setEnableInteractiveFilter(boolean enabled) {
-        if (!enabled) {
-            this.selectAllButton.setSelection(false);
+        public ResultsetFindReplaceUIControl() {
+            super();
         }
-        this.isInteractiveFilterEnabled = enabled;
-        this.enableInteractiveFilterAction.setChecked(enabled);
-        this.disableInteractiveFilterAction.setChecked(!enabled);
 
-        IDialogSettings dialogSettings = this.getDialogSettings(ResultsetFindReplaceOverlay.class);
-        dialogSettings.put(INTERACTIVE_FILTER_DISABLED_DIALOG_SETTING, !enabled);
-    }
+        @Override
+        protected void configureSelectAllButton(@NotNull AccessibleToolItemBuilder buttonBuilder) {
+            buttonBuilder.withStyleBits(SWT.CHECK)
+                .withImage(DBeaverIcons.getImage(UIIcon.FIND_REPLACE_FIND_ALL_FILTER))
+                .withToolTipText(ResultSetMessages.find_and_replace_find_all_tooltip)
+                .withOperation(this::performSelectAll).withShortcuts(KeyboardShortcuts.SEARCH_ALL);
 
-    @Override
-    protected void onSearchFieldModified(@NotNull ModifyEvent event) {
-        if (this.isInteractiveFilterEnabled) {
-            this.wholeWordSearchButton.setEnabled(this.findReplaceLogic.isAvailable(SearchOptions.WHOLE_WORD));
-            if (this.selectAllButton.getSelection()) {
-                this.scheduleFilter();
+            MenuManager contextMenuManager = new MenuManager();
+            this.enableInteractiveFilterAction = new Action("Check 'Show matching' on to filter while typing") {
+                @Override
+                public void run() {
+                    if (!isInteractiveFilterEnabled) {
+                        setEnableInteractiveFilter(true);
+                    }
+                }
+            };
+            this.disableInteractiveFilterAction = new Action("Use 'Show matching' explicitly to apply filter") {
+                @Override
+                public void run() {
+                    if (isInteractiveFilterEnabled) {
+                        setEnableInteractiveFilter(false);
+                    }
+                }
+            };
+
+            contextMenuManager.add(enableInteractiveFilterAction);
+            contextMenuManager.add(disableInteractiveFilterAction);
+            buttonBuilder.withContextMenu(contextMenuManager);
+        }
+
+        @Override
+        protected void createSearchBar() {
+            super.createSearchBar();
+            TextEditorUtils.enableHostEditorKeyBindingsSupport(targetPart.getSite(), this.searchBar);
+        }
+
+        @Override
+        protected void createReplaceBar() {
+            super.createReplaceBar();
+            TextEditorUtils.enableHostEditorKeyBindingsSupport(targetPart.getSite(), this.replaceBar);
+        }
+
+        @Override
+        protected void restoreOverlaySettings() {
+            super.restoreOverlaySettings();
+
+            IDialogSettings dialogSettings = getDialogSettings(ResultsetFindReplaceOverlay.class);
+
+            boolean shouldEnableInteractiveFilter = !dialogSettings.getBoolean(INTERACTIVE_FILTER_DISABLED_DIALOG_SETTING);
+            this.setEnableInteractiveFilter(shouldEnableInteractiveFilter);
+        }
+
+        private void setEnableInteractiveFilter(boolean enabled) {
+            if (!enabled) {
+                this.selectAllButton.setSelection(false);
+            }
+            this.isInteractiveFilterEnabled = enabled;
+            this.enableInteractiveFilterAction.setChecked(enabled);
+            this.disableInteractiveFilterAction.setChecked(!enabled);
+
+            IDialogSettings dialogSettings = getDialogSettings(ResultsetFindReplaceOverlay.class);
+            dialogSettings.put(INTERACTIVE_FILTER_DISABLED_DIALOG_SETTING, !enabled);
+        }
+
+        @Override
+        protected void onSearchFieldModified(@NotNull ModifyEvent event) {
+            if (this.isInteractiveFilterEnabled) {
+                this.wholeWordSearchButton.setEnabled(findReplaceLogic.isAvailable(SearchOptions.WHOLE_WORD));
+                if (this.selectAllButton.getSelection()) {
+                    this.scheduleFilter();
+                } else {
+                    super.onSearchFieldModified(event);
+                }
             } else {
                 super.onSearchFieldModified(event);
             }
-        } else {
-            super.onSearchFieldModified(event);
         }
-    }
 
-    @Override
-    public void setFilterState(@Nullable SearchQuickFilterInfo quickFilter) {
-        if (quickFilter != null) {
-            this.findAllActionApplied = true;
-            this.open();
-            super.setFilterState(quickFilter);
-        }
-        this.setExtrasVisibility(quickFilter != null);
-    }
-
-    private void applyFilterAction(@Nullable SearchQuickFilterInfo quickFilter) {
-        this.resultsetPresentation.getController().getModel().setQuickFilter(quickFilter);
-        this.resultsetPresentation.refreshData(false, false, false);
-        this.setExtrasVisibility(quickFilter != null);
-    }
-
-    private void applyInteractiveFilterJob() {
-        this.applyQuickFilter();
-        this.updateIncrementalSearch();
-        this.decorate();
-    }
-
-    @Override
-    protected void performSelectAll() {
-        if (this.isInteractiveFilterEnabled) {
-            if (this.selectAllButton.getSelection()) {
-                this.scheduleFilter();
-            } else {
-                this.applyFilterAction(null);
-            }
-        } else {
-            this.selectAllButton.setSelection(false);
-            this.applyQuickFilter();
-            this.searchBar.storeHistory();
-        }
-    }
-
-    private void applyQuickFilter() {
-        BusyIndicator.showWhile(
-            this.containerControl.getShell() != null ? this.containerControl.getShell().getDisplay() : Display.getCurrent(),
-            () -> {
+        @Override
+        public void setFilterState(@Nullable SearchQuickFilterInfo quickFilter) {
+            if (quickFilter != null) {
                 this.findAllActionApplied = true;
-                if (CommonUtils.isEmpty(this.searchBar.getText())) {
-                    this.applyFilterAction(null);
-                } else {
-                    this.applyFilterAction(new SearchQuickFilterInfo(
-                        this.searchBar.getText(),
-                        this.caseSensitiveSearchButton.getSelection(),
-                        this.regexSearchButton.getSelection(),
-                        this.wholeWordSearchButton.getSelection()
-                    ));
+                this.open();
+                if (this.isInteractiveFilterEnabled) {
+                    this.selectAllButton.setSelection(true);
                 }
+                super.setFilterState(quickFilter);
             }
-        );
-    }
-
-    @Override
-    protected void onClose() {
-        if (this.isInteractiveFilterEnabled) {
-            this.interactiveFilterJob.cancel();
-            this.selectAllButton.setSelection(false);
+            this.setExtrasVisibility(quickFilter != null);
         }
 
-        if (this.findAllActionApplied) {
-            this.findAllActionApplied = false;
+        private void applyFilterAction(@Nullable SearchQuickFilterInfo quickFilter) {
+            resultsetPresentation.getController().getModel().setQuickFilter(quickFilter);
+            resultsetPresentation.refreshData(false, false, false);
+            this.setExtrasVisibility(quickFilter != null);
+        }
+
+        private void applyInteractiveFilterJob() {
+            this.applyQuickFilter();
+            this.updateIncrementalSearch();
+            this.decorate();
+        }
+
+        @Override
+        protected void performSelectAll() {
+            if (this.isInteractiveFilterEnabled) {
+                if (this.selectAllButton.getSelection()) {
+                    this.scheduleFilter();
+                } else {
+                    this.applyFilterAction(null);
+                }
+            } else {
+                this.selectAllButton.setSelection(false);
+                this.applyQuickFilter();
+                this.searchBar.storeHistory();
+            }
+        }
+
+        private void applyQuickFilter() {
             BusyIndicator.showWhile(
                 this.containerControl.getShell() != null ? this.containerControl.getShell().getDisplay() : Display.getCurrent(),
-                () -> this.applyFilterAction(null)
+                () -> {
+                    this.findAllActionApplied = true;
+                    if (CommonUtils.isEmpty(this.searchBar.getText())) {
+                        this.applyFilterAction(null);
+                    } else {
+                        this.applyFilterAction(new SearchQuickFilterInfo(
+                            this.searchBar.getText(),
+                            this.caseSensitiveSearchButton.getSelection(),
+                            this.regexSearchButton.getSelection(),
+                            this.wholeWordSearchButton.getSelection()
+                        ));
+                    }
+                }
             );
         }
-    }
 
-    @Override
-    protected void createExtraContent(@NotNull Composite realContainerControl) {
-        this.placeholder = new FixedColorComposite(realContainerControl, SWT.NONE, this.overlayBackgroundColor);
-        this.placeholderLayoutData = GridDataFactory.fillDefaults().hint(0, 0).create();
-        this.placeholder.setLayoutData(this.placeholderLayoutData);
-
-        this.extraContentContainer = new FixedColorComposite(realContainerControl, SWT.NONE, this.overlayBackgroundColor);
-        GridLayoutFactory.fillDefaults().numColumns(1).equalWidth(false).spacing(0, 2).applyTo(this.extraContentContainer);
-        this.extraContentLayoutData = GridDataFactory.fillDefaults().grab(true, true).align(GridData.FILL, GridData.FILL).create();
-        this.extraContentContainer.setLayoutData(this.extraContentLayoutData);
-
-        UIUtils.createInfoLabel(this.extraContentContainer, ResultSetMessages.find_and_replace_overlay_label)
-            .setToolTipText(ResultSetMessages.find_and_replace_overlay_tooltip);
-    }
-
-    private void setExtrasVisibility(boolean visible) {
-        this.placeholderLayoutData.exclude = !visible;
-        this.extraContentLayoutData.exclude = !visible;
-        this.placeholder.setVisible(visible);
-        this.extraContentContainer.setVisible(visible);
-        for (Control c = extraContentContainer; c != null && c != this.targetControl; c = c.getParent()) {
-            this.containerControl.layout(true);
+        @Override
+        public void open() {
+            super.open();
+            this.setExtrasVisibility(false);
         }
-        this.updatePlacementAndVisibility(true);
-    }
 
-    private void scheduleFilter() {
-        long delay;
-        if (this.interactiveFilterJob.getState() == Job.RUNNING) {
-            delay = filterSchedulingTimeoutMilliseconds * 2;
-        } else {
-            delay = filterSchedulingTimeoutMilliseconds;
-            this.interactiveFilterJob.cancel();
+        @Override
+        protected void onClose() {
+            if (this.isInteractiveFilterEnabled) {
+                this.interactiveFilterJob.cancel();
+                this.selectAllButton.setSelection(false);
+            }
+
+            if (this.findAllActionApplied) {
+                this.findAllActionApplied = false;
+                BusyIndicator.showWhile(
+                    this.containerControl.getShell() != null ? this.containerControl.getShell().getDisplay() : Display.getCurrent(),
+                    () -> this.applyFilterAction(null)
+                );
+            }
         }
-        this.interactiveFilterJob.schedule(delay);
+
+        @Override
+        protected void createExtraContent(@NotNull Composite realContainerControl) {
+            this.placeholder = new FixedColorComposite(realContainerControl, SWT.NONE, this.overlayBackgroundColor);
+            this.placeholderLayoutData = GridDataFactory.fillDefaults().hint(0, 0).create();
+            this.placeholder.setLayoutData(this.placeholderLayoutData);
+
+            this.extraContentContainer = new FixedColorComposite(realContainerControl, SWT.NONE, this.overlayBackgroundColor);
+            GridLayoutFactory.fillDefaults().numColumns(1).equalWidth(false).spacing(0, 2).applyTo(this.extraContentContainer);
+            this.extraContentLayoutData = GridDataFactory.fillDefaults().grab(true, true).align(GridData.FILL, GridData.FILL).create();
+            this.extraContentContainer.setLayoutData(this.extraContentLayoutData);
+
+            UIUtils.createInfoLabel(this.extraContentContainer, ResultSetMessages.find_and_replace_overlay_label)
+                .setToolTipText(ResultSetMessages.find_and_replace_overlay_tooltip);
+        }
+
+        private void setExtrasVisibility(boolean visible) {
+            this.placeholderLayoutData.exclude = !visible;
+            this.extraContentLayoutData.exclude = !visible;
+            this.placeholder.setVisible(visible);
+            this.extraContentContainer.setVisible(visible);
+            for (Control c = extraContentContainer; c != null && c != targetControl; c = c.getParent()) {
+                this.containerControl.layout(true);
+            }
+            this.updatePlacementAndVisibility(true);
+        }
+
+        private void scheduleFilter() {
+            long delay;
+            if (this.interactiveFilterJob.getState() == Job.RUNNING) {
+                delay = filterSchedulingTimeoutMilliseconds * 2;
+            } else {
+                delay = filterSchedulingTimeoutMilliseconds;
+                this.interactiveFilterJob.cancel();
+            }
+            this.interactiveFilterJob.schedule(delay);
+        }
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,8 +30,12 @@ public class WMISession extends AbstractSession {
 
     private final WMIDataSource dataSource;
 
-    public WMISession(DBRProgressMonitor monitor, DBCExecutionPurpose purpose, String taskTitle, WMIDataSource dataSource)
-    {
+    public WMISession(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionPurpose purpose,
+        @NotNull String taskTitle,
+        @NotNull WMIDataSource dataSource
+    ) {
         super(monitor, purpose, taskTitle);
         this.dataSource = dataSource;
     }
@@ -44,21 +48,24 @@ public class WMISession extends AbstractSession {
 
     @NotNull
     @Override
-    public WMIDataSource getDataSource()
-    {
+    public WMIDataSource getDataSource() {
         return dataSource;
     }
 
     @NotNull
     @Override
-    public DBCStatement prepareStatement(@NotNull DBCStatementType type, @NotNull String query, boolean scrollable, boolean updatable, boolean returnGeneratedKeys) throws DBCException
-    {
+    public DBCStatement prepareStatement(
+        @NotNull DBCStatementType type,
+        @NotNull String query,
+        boolean scrollable,
+        boolean updatable,
+        boolean returnGeneratedKeys
+    ) throws DBCException {
         return new WMIStatement(this, type, query);
     }
 
     @Override
-    public void cancelBlock(@NotNull DBRProgressMonitor monitor, @Nullable Thread blockThread) throws DBException
-    {
+    public void cancelBlock(@NotNull DBRProgressMonitor monitor, @Nullable Thread blockThread) throws DBException {
         // Cancel WMI async call
     }
 

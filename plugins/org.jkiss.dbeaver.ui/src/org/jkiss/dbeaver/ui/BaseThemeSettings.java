@@ -52,6 +52,11 @@ public class BaseThemeSettings extends ThemeListener {
     public volatile Color colorError;
     @ThemeColor(BaseEditorColors.COLOR_WARNING)
     public volatile Color colorWarning;
+    @ThemeColor(BaseEditorColors.COLOR_WARNING_FOREGROUND)
+    public volatile Color colorWarningForeground;
+    @ThemeColor(BaseEditorColors.COLOR_ERROR_FOREGROUND)
+    public volatile Color colorErrorForeground;
+
     @ThemeColor(BaseEditorColors.COLOR_ACCENT)
     public volatile Color colorAccent;
 

@@ -30,7 +30,7 @@ import java.util.Map;
  */
 public interface DBEObjectConfigurator<OBJECT_TYPE extends DBPObject> {
 
-    @NotNull
+    @Nullable
     OBJECT_TYPE configureObject(
         @NotNull DBRProgressMonitor monitor,
         @Nullable DBECommandContext commandContext,

@@ -105,4 +105,5 @@ public class WSObjectSettingsEvent extends WSAbstractEvent {
     public Set<String> getSettingIds() {
         return settingIds;
     }
+
 }

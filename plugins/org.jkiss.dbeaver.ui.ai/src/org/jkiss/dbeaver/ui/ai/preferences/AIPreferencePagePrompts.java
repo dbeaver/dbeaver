@@ -116,7 +116,7 @@ public final class AIPreferencePagePrompts extends AbstractPrefPage implements I
         }
 
         settings.setCustomInstructions(instructions);
-        settingsManager.saveSettings(settings);
+        settingsManager.saveSettings(this.settings);
 
         return super.performOk();
     }

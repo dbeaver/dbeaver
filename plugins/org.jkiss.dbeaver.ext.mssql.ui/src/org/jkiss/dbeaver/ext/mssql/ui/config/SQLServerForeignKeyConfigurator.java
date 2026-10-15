@@ -35,7 +35,7 @@ import java.util.Map;
  */
 public class SQLServerForeignKeyConfigurator implements DBEObjectConfigurator<SQLServerTableForeignKey> {
 
-    @NotNull
+    @Nullable
     @Override
     public SQLServerTableForeignKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull SQLServerTableForeignKey foreignKey, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {

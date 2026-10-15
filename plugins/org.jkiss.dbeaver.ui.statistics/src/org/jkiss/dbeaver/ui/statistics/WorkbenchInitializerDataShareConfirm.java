@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,12 +18,17 @@ package org.jkiss.dbeaver.ui.statistics;
 
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.impl.config.ProductConfigUtils;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 
 public class WorkbenchInitializerDataShareConfirm implements IWorkbenchWindowInitializer {
 
     @Override
     public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
+        if (ProductConfigUtils.isAvailable()) {
+            // Data sharing confirmation is handled by Product Config if it's available
+            return;
+        }
         if (UIStatisticsActivator.isSkipDataShareConfirmation() || UIStatisticsActivator.isTrackingEnabled()) {
             return;
         }

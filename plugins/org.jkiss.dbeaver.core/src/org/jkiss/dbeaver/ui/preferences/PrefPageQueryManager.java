@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -130,14 +129,10 @@ public class PrefPageQueryManager extends AbstractPrefPage implements IWorkbench
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
             checkStoreLog.setLayoutData(gd);
-            checkStoreLog.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+            checkStoreLog.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     UIUtils.enableWithChildren(textOutputFolder.getParent(), checkStoreLog.getSelection());
                     UIUtils.enableWithChildren(textHistoryDays, checkStoreLog.getSelection());
-                }
-            });
+                }));
             textOutputFolder = DialogUtils.createOutputFolderChooser(storageSettings, CoreMessages.pref_page_query_manager_logs_folder, null, false, null);
 
             textOutputFolder.setText(getQMLogStorePath(store));

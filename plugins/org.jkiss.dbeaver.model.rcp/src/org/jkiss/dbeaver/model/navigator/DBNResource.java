@@ -27,6 +27,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.*;
+import org.jkiss.dbeaver.model.fs.efs.NIOEFSFileSystemProvider;
+import org.jkiss.dbeaver.model.fs.efs.NIOEFSPath;
 import org.jkiss.dbeaver.model.fs.nio.EFSNIOResource;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.rm.RMConstants;
@@ -58,6 +60,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
     private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
 
     private static final NumberFormat numberFormat = new DecimalFormat();
+    public static final NIOEFSFileSystemProvider NIOEFS_FILE_SYSTEM_PROVIDER = new NIOEFSFileSystemProvider();
 
     private IResource resource;
     private DBPResourceHandler handler;
@@ -333,7 +336,7 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
                                 monitor.getNestedMonitor());
                         }
                         NavigatorResources.refreshFileStore(monitor, resource);
-                        resource.refreshLocal(IResource.DEPTH_ONE, monitor.getNestedMonitor());
+                        resource.refreshLocal(IResource.DEPTH_INFINITE, monitor.getNestedMonitor());
                     } catch (CoreException e) {
                         throw new DBException("Can't copy " + otherResource.getName() + " to " + resource.getName(), e);
                     }
@@ -468,7 +471,11 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
             }
             if (adapter == Path.class) {
                 IPath location = resource.getLocation();
-                return location == null ? null : adapter.cast(location.toPath());
+                return location != null
+                    ? adapter.cast(location.toPath())
+                    : resource.getLocationURI() != null
+                        ? adapter.cast(createPath(resource.getLocationURI()))
+                        : null;
             } else if (adapter == InputStream.class && resource instanceof IFile file) {
                 try {
                     return adapter.cast(file.getContents());
@@ -478,6 +485,11 @@ public class DBNResource extends DBNNode implements DBNStreamData, DBNNodeWithCa
             }
         }
         return super.getAdapter(adapter);
+    }
+
+    @NotNull
+    private NIOEFSPath createPath(@NotNull URI locationUri) {
+        return NIOEFS_FILE_SYSTEM_PROVIDER.getPath(locationUri);
     }
 
     @NotNull

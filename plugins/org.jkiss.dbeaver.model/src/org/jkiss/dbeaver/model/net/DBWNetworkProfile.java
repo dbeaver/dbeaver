@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.secret.DBSSecretBrowser;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.secret.DBSSecretSubject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.utils.AlphanumericComparator;
 
 import java.io.StringReader;
 import java.util.*;
@@ -40,6 +41,11 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
 
     // Secret key prefix
     public static final String PROFILE_KEY_PREFIX = "/network-profile/";
+
+    public static final Comparator<DBWNetworkProfile> PROFILE_NAME_COMPARATOR = Comparator.comparing(
+        DBWNetworkProfile::getProfileName,
+        AlphanumericComparator.getInstance()
+    );
 
     private transient DBSSecretSubject secretSubject;
 
@@ -196,6 +202,24 @@ public class DBWNetworkProfile extends DBPConfigurationProfile {
                 cfg.setSecureProperties(secureProps);
             }
         }
+    }
+
+    public boolean equalConfigurations(@Nullable DBWNetworkProfile other) {
+        if (other == null ||
+            !Objects.equals(getProfileName(), other.getProfileName()) ||
+            !Objects.equals(getProfileDescription(), other.getProfileDescription()) ||
+            !Objects.equals(getProperties(), other.getProperties()) ||
+            this.configurations.size() != other.configurations.size()
+        ) {
+            return false;
+        }
+        for (DBWHandlerConfiguration cfg : configurations) {
+            DBWHandlerConfiguration otherCfg = other.getConfiguration(cfg.getId());
+            if (!Objects.equals(cfg, otherCfg)) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }

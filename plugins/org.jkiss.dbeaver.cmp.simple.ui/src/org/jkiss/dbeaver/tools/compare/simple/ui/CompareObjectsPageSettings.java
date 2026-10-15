@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.tools.compare.simple.ui;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -85,37 +84,17 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
             compareSettings.setLayout(new GridLayout(1, false));
 
             skipSystemObjects = UIUtils.createCheckbox(compareSettings, CompareUIMessages.compare_objects_page_settings_checkbox_skip_objects, settings.isSkipSystemObjects());
-            skipSystemObjects.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    settings.setSkipSystemObjects(skipSystemObjects.getSelection());
-                }
-            });
+            skipSystemObjects.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                settings.setSkipSystemObjects(skipSystemObjects.getSelection())));
             compareLazyProperties = UIUtils.createCheckbox(compareSettings, CompareUIMessages.compare_objects_page_settings_checkbox_compare_properties, settings.isCompareLazyProperties());
-            compareLazyProperties.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    settings.setCompareLazyProperties(compareLazyProperties.getSelection());
-                }
-            });
+            compareLazyProperties.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                settings.setCompareLazyProperties(compareLazyProperties.getSelection())));
             compareOnlyStructure = UIUtils.createCheckbox(compareSettings, CompareUIMessages.compare_objects_page_settings_checkbox_compare_structure, settings.isCompareOnlyStructure());
-            compareOnlyStructure.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    settings.setCompareOnlyStructure(compareOnlyStructure.getSelection());
-                }
-            });
+            compareOnlyStructure.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                settings.setCompareOnlyStructure(compareOnlyStructure.getSelection())));
             compareScriptProperties = UIUtils.createCheckbox(compareSettings, CompareUIMessages.compare_objects_page_settings_checkbox_scripts, settings.isCompareScripts());
-            compareScriptProperties.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
-                    settings.setCompareScripts(compareScriptProperties.getSelection());
-                }
-            });
+            compareScriptProperties.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                settings.setCompareScripts(compareScriptProperties.getSelection())));
         }
         
         setControl(composite);

@@ -28,6 +28,8 @@ public class SMUser extends SMSubject {
     private String[] userTeams;
     private boolean enabled;
     private String authRole;
+    @NotNull
+    private String[] linkedAuthProviders = new String[0];
     @Nullable
     private Instant disableDate;
     @Nullable
@@ -97,6 +99,15 @@ public class SMUser extends SMSubject {
 
     public void setUserTeams(@NotNull String[] userTeams) {
         this.userTeams = userTeams;
+    }
+
+    @NotNull
+    public String[] getLinkedAuthProviders() {
+        return linkedAuthProviders;
+    }
+
+    public void setLinkedAuthProviders(@NotNull String[] linkedAuthProviders) {
+        this.linkedAuthProviders = linkedAuthProviders;
     }
 
     @Property(viewable = true, order = 3)

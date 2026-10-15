@@ -200,6 +200,24 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void shouldKeepTableConstraintColumnsOnTheSameLine() {
+        String inputString = "CREATE TABLE Persons (PersonID int, LastName varchar(255), " +
+            "CONSTRAINT PersonPK PRIMARY KEY (PersonID, LastName), UNIQUE (PersonID, LastName), " +
+            "FOREIGN KEY (PersonID, LastName) REFERENCES Parent (PersonID, LastName));";
+        String expectedString = "CREATE TABLE Persons (" + lineBreak +
+            "\tPersonID int," + lineBreak +
+            "\tLastName varchar(255)," + lineBreak +
+            "\tCONSTRAINT PersonPK PRIMARY KEY (PersonID, LastName)," + lineBreak +
+            "\tUNIQUE (PersonID, LastName)," + lineBreak +
+            "\tFOREIGN KEY (PersonID, LastName) REFERENCES Parent (PersonID, LastName)" + lineBreak +
+            ");";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_BREAK_BEFORE_CLOSE_BRACKET))).thenReturn(true);
+
+        Assertions.assertEquals(expectedString, format(inputString));
+    }
+
+    @Test
     public void shouldDoDefaultFormatForAlterStatementWhenIndentSubstatementsInParenthesesOn() {
         //given
         String inputString = "ALTER TABLE `users` ADD COLUMN (count_copy smallint(6) NOT NULL, status int(10) unsigned NOT NULL) AFTER `lastname`;";
@@ -559,5 +577,50 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
 
         //then
         Assertions.assertEquals(inputString, formattedString);
+    }
+
+    @Test
+    public void shouldPreservePostgresAtQuestionOperator() {
+        //given
+        String inputString = "SELECT * FROM t WHERE c @? CAST('$.x' AS JSONPATH)"; //$NON-NLS-1$
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains("c @? CAST"), //$NON-NLS-1$
+            "SQLFormatterTokenized must keep PostgreSQL @? operator intact, got: " + formattedString);
+        Assertions.assertFalse(formattedString.contains("@ ?"), //$NON-NLS-1$
+            "SQLFormatterTokenized must not split @? into @ ?, got: " + formattedString);
+    }
+
+    @Test
+    public void shouldKeepAtVariablesIntact() {
+        //given
+        String inputString = "SELECT @myvar FROM mytable"; //$NON-NLS-1$
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains("@myvar"), //$NON-NLS-1$
+            "SQLFormatterTokenized must keep @var variables intact, got: " + formattedString);
+        Assertions.assertFalse(formattedString.contains("@ myvar"), //$NON-NLS-1$
+            "SQLFormatterTokenized must not split @var into @ myvar, got: " + formattedString);
+    }
+
+    @Test
+    public void shouldPreserveAtQuestionOperatorTouchingLeftOperand() {
+        //given
+        String inputString = "SELECT * FROM t WHERE c@?'$.x'"; //$NON-NLS-1$
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains("c @?"), //$NON-NLS-1$
+            "SQLFormatterTokenized must keep @? intact without left whitespace, got: " + formattedString);
+        Assertions.assertFalse(formattedString.contains("@ ?"), //$NON-NLS-1$
+            "SQLFormatterTokenized must not split @? into @ ?, got: " + formattedString);
     }
 }

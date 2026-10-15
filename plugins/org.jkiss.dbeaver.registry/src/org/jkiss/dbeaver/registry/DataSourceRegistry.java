@@ -222,7 +222,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     public T findDataSourceByName(String name) {
         synchronized (dataSources) {
             for (T dsd : dataSources.values()) {
-                if (!dsd.isHidden() && dsd.getName().equals(name)) {
+                if (!dsd.isHidden() && Objects.equals(dsd.getName(), name)) {
                     return dsd;
                 }
             }
@@ -342,17 +342,21 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     public void removeFolder(@NotNull DBPDataSourceFolder folder, boolean dropContents) {
         final DataSourceFolder folderImpl = (DataSourceFolder) folder;
         final String folderPath = folder.getFolderPath();
+        removeFolderContents(folderImpl, dropContents);
+        persistDataFolderDelete(folderPath, dropContents);
+    }
 
-        for (DataSourceFolder child : folderImpl.getChildren()) {
-            removeFolder(child, dropContents);
+    private void removeFolderContents(@NotNull DataSourceFolder folder, boolean dropContents) {
+        for (DataSourceFolder child : folder.getChildren()) {
+            removeFolderContents(child, dropContents);
         }
-        dataSourceFolders.remove(folderImpl);
+        dataSourceFolders.remove(folder);
 
         final DBPDataSourceFolder parent = folder.getParent();
         if (parent != null) {
-            folderImpl.setParent(null);
+            folder.setParent(null);
         }
-        for (DataSourceDescriptor ds : dataSources.values()) {
+        for (DataSourceDescriptor ds : new ArrayList<>(dataSources.values())) {
             if (ds.getFolder() == folder) {
                 if (dropContents) {
                     removeDataSource(ds);
@@ -361,7 +365,6 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
                 }
             }
         }
-        persistDataFolderDelete(folderPath, dropContents);
     }
 
     @Override
@@ -625,6 +628,10 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
     }
 
     protected void persistDataSourceUpdate(@NotNull DBPDataSourceContainer container) {
+        persistDataSourceUpdates(List.of(container));
+    }
+
+    protected void persistDataSourceUpdates(@NotNull List<? extends DBPDataSourceContainer> containers) {
         saveDataSources();
     }
 
@@ -832,6 +839,18 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
             }
             for (DBPDataSourceFolder folder : parseResults.addedFolders) {
                 addDataSourceFolder((DataSourceFolder) folder);
+            }
+
+            // Remove untouched profiles
+            // purgeUntouched removes only data sources and folders
+            // Profiles are always removed if they are not in the config
+            for (DBWNetworkProfile profile : networkProfileManager.getProfiles()) {
+                if (!parseResults.updatedProfiles.contains(profile)) {
+                    parseResults.removedProfiles.add(profile);
+                }
+            }
+            for (DBWNetworkProfile profile : parseResults.removedProfiles) {
+                networkProfileManager.removeProfile(profile);
             }
 
             if (purgeUntouched) {
@@ -1132,6 +1151,11 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         }
 
         @Override
+        public void reloadProfiles() {
+            project.getDataSourceRegistry().refreshConfig();
+        }
+
+        @Override
         public void saveSettings() {
             project.getDataSourceRegistry().flushConfig();
         }
@@ -1151,7 +1175,7 @@ public class DataSourceRegistry<T extends DataSourceDescriptor> implements DBPDa
         @Override
         public void removeProfile(@NotNull DBWNetworkProfile profile) {
             super.removeProfile(profile);
-            if (project.isUseSecretStorage()) {
+            if (!DBWorkbench.isDistributed() && project.isUseSecretStorage()) {
                 try {
                     DBSSecretController secretController = getSecretController();
                     secretController.setPrivateSecretValue(

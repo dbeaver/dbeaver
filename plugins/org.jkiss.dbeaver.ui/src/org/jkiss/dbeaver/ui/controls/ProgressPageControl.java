@@ -28,8 +28,7 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -346,9 +345,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
         final ToolItem stopButton = new ToolItem(progressTools, SWT.PUSH);
         stopButton.setImage(UIUtils.getShardImage(ISharedImages.IMG_ELCL_STOP));
         stopButton.setToolTipText(UIMessages.controls_progress_page_progress_bar_cancel_tooltip);
-        stopButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        stopButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 // Cancel current job
                 if (cancelProgress()) {
                     if (!stopButton.isDisposed()) {
@@ -356,8 +353,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
                         stopButton.setImage(UIUtils.getShardImage(ISharedImages.IMG_ELCL_STOP_DISABLED));
                     }
                 }
-            }
-        });
+            }));
         searchControlsComposite.getParent().layout();
     }
 

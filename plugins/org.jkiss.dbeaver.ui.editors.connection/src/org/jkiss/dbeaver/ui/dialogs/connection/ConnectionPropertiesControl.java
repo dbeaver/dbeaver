@@ -21,8 +21,7 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.ToolBar;
@@ -43,6 +42,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
@@ -226,27 +226,30 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
         ToolItem addItem = new ToolItem(toolBar, SWT.NONE);
         addItem.setImage(DBeaverIcons.getImage(UIIcon.ROW_ADD));
         addItem.setToolTipText("Add user property");
-        addItem.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                createNewProperty(getCategoryNode(USER_PROPERTIES_CATEGORY), USER_PROPERTIES_CATEGORY);
-            }
-        });
+        addItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            createNewProperty(getCategoryNode(USER_PROPERTIES_CATEGORY), USER_PROPERTIES_CATEGORY)));
 
         ToolItem removeItem = new ToolItem(toolBar, SWT.NONE);
         removeItem.setImage(DBeaverIcons.getImage(UIIcon.ROW_DELETE));
         removeItem.setToolTipText("Remove user property");
-        removeItem.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        removeItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 ISelection selection = getSelection();
                 if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
                     removeProperty(((IStructuredSelection) selection).getFirstElement());
                 }
-            }
-        });
+            }));
         removeItem.setEnabled(false);
 
+        ToolItem resetItem = new ToolItem(toolBar, SWT.NONE);
+        resetItem.setImage(DBeaverIcons.getImage(UIIcon.ERASE));
+        resetItem.setToolTipText(
+            UIMessages.ui_properties_tree_viewer_action_reset_value + UIMessages.ui_properties_tree_viewer__to_default);
+        resetItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> resetSelectedPropertyToDefault()));
+        resetItem.setEnabled(false);
+
+
+        Runnable updateResetItem = () -> resetItem.setEnabled(
+            !USER_PROPERTIES_CATEGORY.equals(getSelectedCategory()) && canResetSelectedProperty());
         addSelectionChangedListener(event -> {
             addItem.setEnabled(getCategoryNode(USER_PROPERTIES_CATEGORY) != null);
             boolean hasDelete = false;
@@ -254,7 +257,10 @@ public class ConnectionPropertiesControl extends PropertyTreeViewer {
                 hasDelete = true;
             }
             removeItem.setEnabled(hasDelete);
+            updateResetItem.run();
         });
+        addPropertyChangeListener(event -> updateResetItem.run());
+        addEditorValueChangeListener(updateResetItem);
     }
 
 }

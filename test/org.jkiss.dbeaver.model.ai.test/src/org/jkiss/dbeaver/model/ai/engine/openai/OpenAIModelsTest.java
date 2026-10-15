@@ -21,16 +21,17 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 
-import static org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels.*;
+import static org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels.KNOWN_MODELS;
+import static org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels.getEffectiveModelName;
 
 public class OpenAIModelsTest extends DBeaverUnitTest {
 
     @Test
-    public void effectiveModelNameNullShouldReturnDefaultModelName() {
+    public void effectiveModelNameNullShouldReturnNull() {
         //when
         var result = getEffectiveModelName(null);
         //then
-        Assertions.assertEquals(DEFAULT_MODEL, result);
+        Assertions.assertNull(result);
     }
 
     @Test

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Widget;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -44,6 +45,7 @@ public class BreadcrumbViewer extends StructuredViewer {
 
     private ILabelProvider toolTipLabelProvider;
     private ITreeContentProvider dropDownContentProvider;
+    private Menu contextMenu;
     private BreadcrumbItem selectedItem;
 
     /**
@@ -149,7 +151,7 @@ public class BreadcrumbViewer extends StructuredViewer {
 
     @Override
     protected List<?> getSelectionFromWidget() {
-        if (selectedItem == null || selectedItem.getData() == null) {
+        if (selectedItem == null || selectedItem.isDisposed() || selectedItem.getData() == null) {
             return List.of();
         }
         return List.of(selectedItem.getData());
@@ -220,8 +222,19 @@ public class BreadcrumbViewer extends StructuredViewer {
         fireOpen(new OpenEvent(this, new StructuredSelection(element)));
     }
 
-    void fireDoubleClick() {
-        fireDoubleClick(new DoubleClickEvent(this, getSelection()));
+    boolean showContextMenu(@NotNull BreadcrumbItem item, int x, int y) {
+        if (contextMenu == null || contextMenu.isDisposed()) {
+            return false;
+        }
+        container.forceFocus();
+        setSelection(new StructuredSelection(item.getData()));
+        contextMenuAboutToShow();
+        contextMenu.setLocation(x, y);
+        contextMenu.setVisible(true);
+        return true;
+    }
+
+    protected void contextMenuAboutToShow() {
     }
 
     @Nullable
@@ -240,6 +253,10 @@ public class BreadcrumbViewer extends StructuredViewer {
 
     public void setDropDownContentProvider(@NotNull ITreeContentProvider dropDownContentProvider) {
         this.dropDownContentProvider = dropDownContentProvider;
+    }
+
+    public void setContextMenu(@Nullable Menu contextMenu) {
+        this.contextMenu = contextMenu;
     }
 
     public int getStyle() {

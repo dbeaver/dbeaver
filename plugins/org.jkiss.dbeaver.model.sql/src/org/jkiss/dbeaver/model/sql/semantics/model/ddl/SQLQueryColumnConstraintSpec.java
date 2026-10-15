@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -81,7 +81,7 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
     /**
      * Propagate semantics context and establish relations through the query model
      */
-    public void resolveRelations(
+    public boolean tryResolveRelations(
         @NotNull SQLQueryRowsSourceContext rowsContext,
         @Nullable SQLQueryRowsDataContext tableDataContext,
         @NotNull SQLQueryRecognitionContext statistics
@@ -98,8 +98,9 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
 
         if (this.checkExpression != null && tableDataContext != null) {
             this.checkExpression.resolveRowSources(tableDataContext.getRowsSources(), statistics);
-            this.checkExpression.resolveValueRelations(tableDataContext, statistics);
+            return this.checkExpression.tryResolveValueRelations(tableDataContext, statistics);
         }
+        return true;
     }
 
     /**
@@ -114,7 +115,10 @@ public class SQLQueryColumnConstraintSpec extends SQLQueryNodeModel {
     ) {
         statistics.setTreatErrorAsWarnings(true);
         referencedTable.resolveObjectAndRowsReferences(rowsContext, statistics);
-        referencedTable.resolveValueRelations(rowsContext.makeEmptyTuple(), statistics);
+        if (!referencedTable.tryResolveValueRelations(rowsContext.makeEmptyTuple(), statistics)) {
+            statistics.setTreatErrorAsWarnings(false);
+            return null;
+        }
         SQLQueryRowsDataContext referencedContext = referencedTable.getRowsDataContext();
         statistics.setTreatErrorAsWarnings(false);
         DBSEntity realTable = referencedTable.getTable();

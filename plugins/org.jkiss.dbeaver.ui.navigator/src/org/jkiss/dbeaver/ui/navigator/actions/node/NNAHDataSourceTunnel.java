@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.navigator.actions.node;
 
-import org.eclipse.swt.widgets.Event;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -31,7 +30,6 @@ import org.jkiss.dbeaver.model.net.DBWUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.actions.NavigatorNodeActionHandlerAbstract;
 import org.jkiss.utils.CommonUtils;
 
@@ -41,7 +39,7 @@ import org.jkiss.utils.CommonUtils;
 public class NNAHDataSourceTunnel extends NavigatorNodeActionHandlerAbstract {
 
     @Override
-    public boolean isEnabledFor(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
+    public boolean isEnabledFor(@NotNull DBNNode node) {
         if (node instanceof DBNDataSource dbnDataSource) {
             return dbnDataSource.hasNetworkHandlers();
         }
@@ -50,13 +48,13 @@ public class NNAHDataSourceTunnel extends NavigatorNodeActionHandlerAbstract {
 
     @Override
     @Nullable
-    public DBPImage getNodeActionIcon(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
+    public DBPImage getNodeActionIcon(@NotNull DBNNode node) {
         return UIIcon.BUTTON_TUNNEL;
     }
 
     @Override
     @Nullable
-    public String getNodeActionToolTip(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
+    public String getNodeActionToolTip(@NotNull DBNNode node) {
         StringBuilder tip = new StringBuilder("Network handlers enabled:");
         for (DBWHandlerConfiguration handler : DBWUtils.getActualNetworkHandlers(((DBNDataSource) node).getDataSourceContainer())) {
             if (handler.isEnabled()) {
@@ -71,9 +69,9 @@ public class NNAHDataSourceTunnel extends NavigatorNodeActionHandlerAbstract {
     }
 
     @Override
-    public void handleNodeAction(@NotNull INavigatorModelView view, @NotNull DBNNode node, @NotNull Event event, boolean defaultAction) {
-        if (node instanceof DBNDatabaseNode) {
-            DBPDataSourceContainer dataSourceContainer = ((DBNDatabaseNode) node).getDataSourceContainer();
+    public void handleNodeAction(@NotNull DBNNode node, boolean defaultAction) {
+        if (node instanceof DBNDatabaseNode dbNode) {
+            DBPDataSourceContainer dataSourceContainer = dbNode.getDataSourceContainer();
 
             String nhId = null;
             for (DBWHandlerConfiguration nhc : DBWUtils.getActualNetworkHandlers(dataSourceContainer)) {

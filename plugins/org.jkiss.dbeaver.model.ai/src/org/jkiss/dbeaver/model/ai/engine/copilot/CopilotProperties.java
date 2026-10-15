@@ -20,20 +20,26 @@ import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
+import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
+import org.jkiss.dbeaver.model.ai.engine.BaseAIEngineProperties;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
-import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.utils.CommonUtils;
 
-public class CopilotProperties implements AIEngineProperties {
+import java.util.List;
+
+public class CopilotProperties extends BaseAIEngineProperties {
+    public static final String ENV_TOKEN = "COPILOT_GITHUB_TOKEN";
+    public static final String ENV_GH_TOKEN = "GH_TOKEN";
+    public static final String ENV_GITHUB_TOKEN = "GITHUB_TOKEN";
+    public static final String ENV_MODEL = "COPILOT_MODEL";
+    public static final String ENV_AUTH_URL = "DBEAVER_AI_COPILOT_AUTH_URL";
+
     private static final String COPILOT_ACCESS_TOKEN = "copilot.access.token";
     private static final String GPT_MODEL = "gpt.model";
     private static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
-    private static final String GPT_MODEL_TEMPERATURE = "gpt.model.temperature";
-    private static final String GPT_LOG_QUERY = "gpt.log.query";
 
     @Nullable
     @SecureProperty
@@ -47,12 +53,6 @@ public class CopilotProperties implements AIEngineProperties {
     @Nullable
     @SerializedName(GPT_CONTEXT_WINDOW_SIZE)
     private Integer contextWindowSize;
-
-    @SerializedName(GPT_MODEL_TEMPERATURE)
-    private double temperature;
-
-    @SerializedName(GPT_LOG_QUERY)
-    private boolean loggingEnabled;
 
     @Nullable
     @Property(order = 1, password = true, required = true)
@@ -80,66 +80,101 @@ public class CopilotProperties implements AIEngineProperties {
     }
 
     @Override
+    public void selectModel(@NotNull AIModel model) {
+        setModel(model.name());
+        setContextWindowSize(model.contextWindowSize());
+    }
+
+    @Override
     @Property(order = 3)
     public double getTemperature() {
+        return resolveTemperature(getModel());
+    }
+
+    public double getEffectiveTemperature() {
+        return resolveTemperature(getEffectiveModel());
+    }
+
+    private double resolveTemperature(@Nullable String modelName) {
         if (Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
             return temperature;
         }
-        return CopilotModels.getModelByName(model)
+        return CopilotModels.getModelByName(modelName)
             .map(AIModel::defaultTemperature)
             .orElse(AIUtils.DEFAULT_TEMPERATURE);
     }
 
-    public void setTemperature(double temperature) {
-        this.temperature = AIUtils.normalizeTemperature(temperature);
-    }
-
     @Override
     @Nullable
-    @Property(order = 4)
+    @Property(order = 4, min = 1)
     public Integer getContextWindowSize() {
         if (contextWindowSize != null) {
             return contextWindowSize;
         }
 
-        return CopilotModels.getModelByName(model)
+        return CopilotModels.getModelByName(getModel())
             .map(AIModel::contextWindowSize)
             .orElse(null);
+    }
+
+    @Nullable
+    @Override
+    public Integer getEffectiveContextWindowSize() {
+        String environmentModel = getEnvironmentModel();
+        return environmentModel == null ? getContextWindowSize() : CopilotModels.getModelByName(environmentModel)
+            .map(AIModel::contextWindowSize)
+            .orElseGet(this::getContextWindowSize);
     }
 
     public void setContextWindowSize(@Nullable Integer contextWindowSize) {
         this.contextWindowSize = contextWindowSize;
     }
 
-    @Property(order = 5)
-    public boolean isLoggingEnabled() {
-        return loggingEnabled;
-    }
-
-    public void setLoggingEnabled(boolean loggingEnabled) {
-        this.loggingEnabled = loggingEnabled;
-    }
-
     /**
      * Resolve secrets from the secret controller.
      */
-    public void resolveSecrets() throws DBException {
-        token = AIUtils.getSecretValueOrDefault(CopilotConstants.COPILOT_ACCESS_TOKEN, token);
+    public void resolveSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
+        if (token == null) {
+            token = AIUtils.getSecretValueOrDefault(profile, CopilotConstants.COPILOT_ACCESS_TOKEN, token);
+        }
     }
 
     /**
      * Save secrets to the secret controller.
      */
-    public void saveSecrets() throws DBException {
-        if (token != null) {
-            DBSSecretController.getGlobalSecretController().setPrivateSecretValue(
-                CopilotConstants.COPILOT_ACCESS_TOKEN, token
-            );
-        }
+    public void saveSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
+        AIUtils.setSecretValue(profile, CopilotConstants.COPILOT_ACCESS_TOKEN, token);
+    }
+
+    @Override
+    public void deleteSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
+        AIUtils.deleteSecretValue(profile, CopilotConstants.COPILOT_ACCESS_TOKEN);
     }
 
     @Override
     public boolean isValidConfiguration() {
-        return !CommonUtils.isEmpty(getToken());
+        return !CommonUtils.isEmpty(getEffectiveToken());
+    }
+
+    @NotNull
+    @Override
+    public List<String> getEnvironmentVariables() {
+        return List.of(ENV_TOKEN, ENV_GH_TOKEN, ENV_GITHUB_TOKEN, ENV_MODEL, ENV_AUTH_URL);
+    }
+
+    @Nullable
+    @Override
+    protected String getEnvironmentModel() {
+        return getEnvironmentValue(ENV_MODEL);
+    }
+
+    @Nullable
+    public String getEffectiveToken() {
+        return resolveEnvironmentValue(getToken(), ENV_TOKEN, ENV_GH_TOKEN, ENV_GITHUB_TOKEN);
+    }
+
+    @NotNull
+    public String getEffectiveBaseAuthUrl() {
+        return resolveEnvironmentValue(getBaseAuthUrl(), ENV_AUTH_URL);
     }
 }

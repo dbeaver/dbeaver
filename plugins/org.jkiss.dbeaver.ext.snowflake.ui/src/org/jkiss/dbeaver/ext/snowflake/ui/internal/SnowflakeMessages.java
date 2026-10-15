@@ -25,12 +25,10 @@ public class SnowflakeMessages extends NLS {
 	public static String label_connection;
 	public static String label_database;
 	public static String label_host;
-	public static String label_password;
 	public static String label_port;
 	public static String label_role;
 	public static String label_schema;
 	public static String label_security;
-	public static String label_user;
 	public static String label_warehouse;
 
 	public static String dialog_setting_sql;

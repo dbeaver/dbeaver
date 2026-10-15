@@ -88,6 +88,15 @@ public final class DBeaverEditorPartUtils {
         if (part.getTransientData().containsKey(PART_SKIP_KEY)) {
             return null;
         }
+        // For live editors, always query directly since the container may change at runtime
+        if (part.getObject() instanceof CompatibilityEditor editor) {
+            IEditorPart editorPart = editor.getEditor();
+            DBPDataSourceContainer container = editorPart instanceof DBPDataSourceContainerProvider provider
+                ? provider.getDataSourceContainer()
+                : getDataSourceContainer(editorPart);
+            cache.put(part, container);
+            return container;
+        }
         if (cache.containsKey(part)) {
             return cache.get(part);
         }

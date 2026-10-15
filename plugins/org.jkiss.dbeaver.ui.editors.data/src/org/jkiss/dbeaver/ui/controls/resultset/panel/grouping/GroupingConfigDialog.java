@@ -21,8 +21,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -191,12 +190,7 @@ public class GroupingConfigDialog extends BaseDialog {
             addButton.setText(UIMessages.button_add);
             addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             Menu items = createAddMenu(addButton);
-            addButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    items.setVisible(true);
-                }
-            });
+            addButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> items.setVisible(true)));
             return addButton;
         }
 
@@ -209,9 +203,10 @@ public class GroupingConfigDialog extends BaseDialog {
                 rootManager.add(new Action(columnName) {
                                     @Override
                                     public void run() {
-                                        TableItem newItem = new TableItem(valueTable, SWT.LEFT);
-                                        newItem.setText(columnName);
-                                        addTableItem(newItem);
+                                        addTableItem(SQLGroupingAttribute.makeCustom(
+                                            resultsContainer.getDataContainer().getDataSource(),
+                                            columnName
+                                        ));
                                     }
                                 }
                 );
@@ -262,12 +257,7 @@ public class GroupingConfigDialog extends BaseDialog {
             addButton.setText(UIMessages.button_add);
             addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             Menu items = createAddMenu(addButton);
-            addButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    items.setVisible(true);
-                }
-            });
+            addButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> items.setVisible(true)));
             return addButton;
         }
 
@@ -302,9 +292,7 @@ public class GroupingConfigDialog extends BaseDialog {
                 @Override
                 public void run() {
                     String functionCall = functionName + "(" + columnName + ")";
-                    TableItem newItem = new TableItem(valueTable, SWT.LEFT);
-                    newItem.setText(functionCall);
-                    addTableItem(newItem);
+                    addTableItem(functionCall);
                 }
             };
         }

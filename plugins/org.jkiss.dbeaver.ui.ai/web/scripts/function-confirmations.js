@@ -109,7 +109,9 @@ function addFunctionConfirmation(args) {
     card.appendChild(actions);
 
     div.appendChild(card);
+    makeItemFocusable(div, 'assistant');
     appendChatNode(div);
+    announce(args.title);
 }
 
 function approveFunctionConfirmation(messageId, functionIndex) {
@@ -233,7 +235,9 @@ function addAutoConfirmedStatus(args) {
     const collapsible = createCollapsibleStatus(args.text, statusClass, args);
     div.appendChild(collapsible);
 
+    makeItemFocusable(div, 'assistant');
     appendChatNode(div);
+    announce(args.text);
 }
 
 function replaceCardWithCollapsibleStatus(container, text, statusClass, data) {
@@ -371,7 +375,9 @@ function updateFunctionResult(args) {
         awaitResult: false
     });
     container.appendChild(collapsible);
+    makeItemFocusable(container, 'assistant');
     appendChatNode(container);
+    announce(args.text || args.functionName);
     updateFunctionResult({
         ...args,
         hasException: true

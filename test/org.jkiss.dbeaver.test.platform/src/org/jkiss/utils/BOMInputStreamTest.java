@@ -44,6 +44,13 @@ public class BOMInputStreamTest extends DBeaverUnitTest {
         Assertions.assertEquals("\uD83D\uDD25", rd.readLine());
     }
 
+    @Test
+    public void testReadString() throws IOException {
+        final BOMInputStream is = input(ByteOrderMark.UTF_8, 0xEF, 0xBB, 0xBF, 0xF0, 0x9F, 0x94, 0xA5);
+        final String s = is.readString();
+        Assertions.assertEquals("\uD83D\uDD25", s);
+    }
+
     @NotNull
     private static BOMInputStream input(@NotNull ByteOrderMark bom, int... bytes) {
         final byte[] b = new byte[bytes.length];
@@ -57,7 +64,7 @@ public class BOMInputStreamTest extends DBeaverUnitTest {
     }
 
     @NotNull
-    private static BufferedReader reader(@NotNull ByteOrderMark bom, @NotNull InputStream is) throws IOException {
-        return new BufferedReader(new InputStreamReader(is, bom.getCharsetName()));
+    private static BufferedReader reader(@NotNull ByteOrderMark bom, @NotNull InputStream is) {
+        return new BufferedReader(new InputStreamReader(is, bom.getCharset()));
     }
 }

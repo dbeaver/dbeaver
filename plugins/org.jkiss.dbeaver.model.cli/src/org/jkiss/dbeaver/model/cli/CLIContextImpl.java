@@ -37,6 +37,8 @@ public class CLIContextImpl implements AutoCloseable, CLIContext {
 
     @Nullable
     private CLIProcessResult.PostAction postAction = null;
+    @NotNull
+    private CLILogFormat logFormat = CLILogFormat.TEXT;
 
     public CLIContextImpl(@Nullable ApplicationInstanceController instanceController) {
         this.instanceController = instanceController;
@@ -84,6 +86,17 @@ public class CLIContextImpl implements AutoCloseable, CLIContext {
     @Override
     public void setPostAction(@Nullable CLIProcessResult.PostAction postAction) {
         this.postAction = postAction;
+    }
+
+    @Override
+    @NotNull
+    public CLILogFormat getLogFormat() {
+        return logFormat;
+    }
+
+    @Override
+    public void setLogFormat(@NotNull CLILogFormat logFormat) {
+        this.logFormat = logFormat;
     }
 
     @Nullable

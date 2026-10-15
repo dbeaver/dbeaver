@@ -148,7 +148,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         // Compute width required to draw all actions
         int width = (actions.size() - 1) * ELEMENT_MARGIN;
         for (INavigatorNodeActionHandler action : actions) {
-            Image image = DBeaverIcons.getImage(action.getNodeActionIcon(getView(), node));
+            Image image = DBeaverIcons.getImage(action.getNodeActionIcon(node));
             Rectangle size = image.getBounds();
             width += size.width;
         }
@@ -163,7 +163,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
         // Draw actions
         for (int i = actions.size() - 1; i >= 0; i--) {
             INavigatorNodeActionHandler action = actions.get(i);
-            Image image = DBeaverIcons.getImage(action.getNodeActionIcon(getView(), node));
+            Image image = DBeaverIcons.getImage(action.getNodeActionIcon(node));
             Rectangle size = image.getBounds();
 
             if (bounds.width < size.width) {
@@ -362,7 +362,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             if (node instanceof DBNDataSource) {
                 INavigatorNodeActionHandler overActionButton = getActionButton(node, tree, event);
                 if (overActionButton != null) {
-                    return overActionButton.getNodeActionToolTip(view, node);
+                    return overActionButton.getNodeActionToolTip(node);
                 }
             }
         }
@@ -376,7 +376,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
             // Detect active action
             INavigatorNodeActionHandler overActionButton = getActionButton(node, tree, event);
             if (overActionButton != null) {
-                overActionButton.handleNodeAction(view, node, event, defaultAction);
+                overActionButton.handleNodeAction(node, defaultAction);
             }
         }
     }
@@ -420,7 +420,7 @@ public class StatisticsNavigatorNodeRenderer extends DefaultNavigatorNodeRendere
 
         for (int i = actions.size() - 1; i >= 0; i--) {
             INavigatorNodeActionHandler action = actions.get(i);
-            Image image = DBeaverIcons.getImage(action.getNodeActionIcon(getView(), node));
+            Image image = DBeaverIcons.getImage(action.getNodeActionIcon(node));
             Rectangle size = image.getBounds();
 
             if (client.width < size.width || event.y < client.y || event.y >= client.y + client.height) {

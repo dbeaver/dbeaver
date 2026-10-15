@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.nio.file.Path;
+
 /**
  * Desktop eclipse based workspace
  */
@@ -32,14 +34,22 @@ public interface DBPWorkspaceDesktop extends DBPWorkspaceEclipse, DBPExternalFil
 
     @NotNull
     DBPResourceHandler getDefaultResourceHandler();
+
     @NotNull
     DBPResourceHandlerDescriptor[] getAllResourceHandlers();
+
     @Nullable
     DBPResourceHandler getResourceHandler(IResource resource);
+
     @Nullable
     IFolder getResourceDefaultRoot(@NotNull DBPProject project, @NotNull DBPResourceHandlerDescriptor handler, boolean forceCreate);
+
     @Nullable
-    IFolder getResourceDefaultRoot(@NotNull DBPProject project, @NotNull Class<? extends DBPResourceHandler> handlerType, boolean forceCreate);
+    IFolder getResourceDefaultRoot(
+        @NotNull DBPProject project,
+        @NotNull Class<? extends DBPResourceHandler> handlerType,
+        boolean forceCreate
+    );
 
     /**
      * Reloads workspace contents. Creates missing projects, removes unexistent projects
@@ -50,5 +60,12 @@ public interface DBPWorkspaceDesktop extends DBPWorkspaceEclipse, DBPExternalFil
     DBPProject createProject(@NotNull String name, @Nullable String description) throws DBException;
 
     void deleteProject(@NotNull DBPProject project, boolean deleteContents) throws DBException;
+
+    /**
+     * Links an existing external folder into the workspace as a project without copying its contents.
+     * The project content stays at {@code projectPath}; only a workspace reference is created.
+     */
+    @NotNull
+    DBPProject linkProject(@NotNull Path projectPath, @Nullable String name, @NotNull DBRProgressMonitor monitor) throws DBException;
 
 }

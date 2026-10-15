@@ -35,7 +35,7 @@ public class SampleDatabaseHandler extends AbstractHandler {
         }
         DBPDataSourceRegistry registry = activeProject.getDataSourceRegistry();
         Shell shell = UIUtils.getActiveWorkbenchShell();
-        if (SampleDatabaseUtil.isSampleDatabaseExists(registry)) {
+        if (SampleDatabaseUtil.isSampleDatabaseExists(activeProject)) {
             UIUtils.showMessageBox(shell, SampleDatabaseMessages.dialog_already_created_title, SampleDatabaseMessages.dialog_already_created_description, SWT.ICON_WARNING);
             return null;
         }

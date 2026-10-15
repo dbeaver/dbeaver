@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,10 +16,21 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
+import org.eclipse.jface.dialogs.IDialogPage;
+import org.jkiss.code.NotNull;
+
 /**
  * Active wizard page
  */
-public interface IWizardPageActive {
+public interface IWizardPageActive extends IDialogPage {
+
+    /**
+     * Sub-title is used in page navigator (e.g. tree in multi-page dialog)
+     */
+    @NotNull
+    default String getPageSubTitle() {
+        return this.getTitle();
+    }
 
     void activatePage();
 

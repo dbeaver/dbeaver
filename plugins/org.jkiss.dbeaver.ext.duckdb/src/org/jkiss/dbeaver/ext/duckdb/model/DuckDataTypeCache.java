@@ -55,55 +55,41 @@ public class DuckDataTypeCache extends JDBCBasicDataTypeCache<GenericStructConta
         @NotNull JDBCResultSet dbResult
     ) {
         final String name = JDBCUtils.safeGetString(dbResult, "type_name");
-        final int kind = getTypeKind(JDBCUtils.safeGetString(dbResult, "type_category"));
+        final int kind = getTypeKind(name, JDBCUtils.safeGetString(dbResult, "type_category"));
         return new GenericDataType(container, kind, name, null, false, false, -1, -1, -1);
     }
 
-    private static int getTypeKind(@Nullable String category) {
+    private static int getTypeKind(@Nullable String typeName, @Nullable String category) {
+        if (typeName != null) {
+            int type = switch (typeName.toLowerCase(Locale.ROOT)) {
+                case "date" -> Types.DATE;
+                case "time" -> Types.TIME;
+                case "timetz", "time with time zone" -> Types.TIME_WITH_TIMEZONE;
+                case "timestamp", "timestamp_s", "timestamp_ms", "timestamp_ns", "timestamp_us" -> Types.TIMESTAMP;
+                case "timestamptz", "timestamp with time zone" -> Types.TIMESTAMP_WITH_TIMEZONE;
+                default -> Types.OTHER;
+            };
+            if (type != Types.OTHER) {
+                return type;
+            }
+        }
         if (category == null) {
             return Types.OTHER;
         }
 
-        switch (category.toLowerCase(Locale.ROOT)) {
-            case "boolean":
-            case "bool":
-            case "logical":
-                return Types.BOOLEAN;
-            case "composite":
-            case "point_2d":
-            case "point_3d":
-            case "point_4d":
-            case "linestring_2d":
-            case "polygon_2d":
-            case "box_2d":
-                return Types.STRUCT;
-            case "wkb_blob":
-            case "blob":
-            case "bytea":
-            case "varbinary":
-            case "binary":
-                return Types.BINARY;
-            case "date":
-                return Types.DATE;
-            case "datetime":
-            case "timestamp_us":
-                return Types.TIMESTAMP;
-            case "timestamptz":
-                return Types.TIMESTAMP_WITH_TIMEZONE;
-            case "time":
-                return Types.TIME;
-            case "timetz":
-                return Types.TIME_WITH_TIMEZONE;
-            case "numeric":
-                return Types.NUMERIC;
-            case "string":
-            case "varchar":
-            case "bpchar":
-            case "nvarchar":
-            case "text":
-                return Types.VARCHAR;
-            default:
-                return Types.OTHER;
-        }
+        return switch (category.toLowerCase(Locale.ROOT)) {
+            case "boolean", "bool", "logical" -> Types.BOOLEAN;
+            case "composite", "point_2d", "point_3d", "point_4d", "linestring_2d", "polygon_2d", "box_2d" ->
+                Types.STRUCT;
+            case "wkb_blob", "blob", "bytea", "varbinary", "binary" -> Types.BINARY;
+            case "date" -> Types.DATE;
+            case "datetime", "timestamp_us" -> Types.TIMESTAMP;
+            case "timestamptz" -> Types.TIMESTAMP_WITH_TIMEZONE;
+            case "time" -> Types.TIME;
+            case "timetz" -> Types.TIME_WITH_TIMEZONE;
+            case "numeric" -> Types.NUMERIC;
+            case "string", "varchar", "bpchar", "nvarchar", "text" -> Types.VARCHAR;
+            default -> Types.OTHER;
+        };
     }
 }

@@ -74,7 +74,9 @@ public class SQLSemanticProcessor {
 
     @NotNull
     private static CCJSqlParser buildParser(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
-        final String sqlWithoutComments = dialect == null ? sql : SQLUtils.stripComments(dialect, sql);
+        final String sqlWithoutComments = dialect == null
+            ? sql
+            : SQLUtils.stripComments(dialect, SQLUtils.maskDialectLineComments(dialect, sql));
         try {
             CCJSqlParser parser = new CCJSqlParser(sqlWithoutComments)
                 .withAllowComplexParsing(ALLOW_COMPLEX_PARSING);
@@ -85,6 +87,11 @@ public class SQLSemanticProcessor {
                         parser.withSquareBracketQuotation(true);
                         break;
                     }
+                }
+                // Match MySQL-style backslash escaping so the parser agrees with SQLUtils.maskDialectLineComments
+                // on where string literals end (e.g. 'O\'Brien'); otherwise the parser sees a stray closing quote.
+                if (dialect.getStringEscapeCharacter() == '\\') {
+                    parser.withBackslashEscapeCharacter(true);
                 }
             }
             return parser;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,9 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.preference.PreferenceConverter;
@@ -41,8 +44,10 @@ import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.PlatformUI;
@@ -146,6 +151,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     private boolean hasVerticalRuler = true;
     private SQLTemplatesPage templatesPage;
     private IPropertyChangeListener themeListener;
+    private final AbstractUIJob themeUpdateJob;
     private SQLEditorControl editorControl;
 
     private ICharacterPairMatcher characterPairMatcher;
@@ -159,26 +165,27 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         super();
         syntaxManager = new SQLSyntaxManager();
         ruleScanner = new SQLRuleScanner();
-        themeListener = new IPropertyChangeListener() {
-            long lastUpdateTime = 0;
+        themeUpdateJob = new AbstractUIJob("SQL editor theme update") {
+            {
+                setSystem(true);
+            }
 
+            @NotNull
+            @Override
+            protected IStatus runInUIThread(@NotNull DBRProgressMonitor monitor) {
+                refreshSyntaxColors();
+                return Status.OK_STATUS;
+            }
+        };
+        themeListener = new IPropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent event) {
                 if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
                     event.getProperty().startsWith("org.jkiss.dbeaver.sql.editor")) {
-                    if (lastUpdateTime > 0 && System.currentTimeMillis() - lastUpdateTime < 500) {
-                        // Do not update too often (theme change may trigger this hundreds of times)
-                        return;
+                    switch (themeUpdateJob.getState()) {
+                        case Job.WAITING, Job.SLEEPING -> themeUpdateJob.cancel();
                     }
-                    lastUpdateTime = System.currentTimeMillis();
-                    UIUtils.asyncExec(() -> {
-                        ISourceViewer sourceViewer = getSourceViewer();
-                        if (sourceViewer != null) {
-                            reloadSyntaxRules();
-                            // Reconfigure to let comments/strings colors to take effect
-                            sourceViewer.configure(getSourceViewerConfiguration());
-                        }
-                    });
+                    themeUpdateJob.schedule(1000);
                 }
             }
         };
@@ -191,6 +198,15 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         completionContext = new SQLEditorCompletionContext(this);
 
         DBWorkbench.getPlatform().getPreferenceStore().addPropertyChangeListener(this);
+    }
+
+    private void refreshSyntaxColors() {
+        ISourceViewer sourceViewer = getSourceViewer();
+        if (sourceViewer != null && !sourceViewer.getTextWidget().isDisposed()) {
+            reloadSyntaxRules();
+            // Reconfigure to let comments/strings colors to take effect
+            sourceViewer.configure(getSourceViewerConfiguration());
+        }
     }
 
     @Override
@@ -253,9 +269,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     static long getBigScriptFileLengthBoundary() {
         return DBWorkbench.getPlatform().getPreferenceStore().getLong(SQLPreferenceConstants.SCRIPT_BIG_FILE_LENGTH_BOUNDARY);
     }
-    
+
     static boolean isReadEmbeddedBinding() {
         return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ);
+    }
+
+    static boolean isConfirmReadEmbeddedBinding() {
+        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_BIND_EMBEDDED_READ_CONFIRM);
     }
 
     static boolean isWriteEmbeddedBinding() {
@@ -360,7 +380,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(@NotNull Composite parent) {
         setRangeIndicator(new DefaultRangeIndicator());
 
         editorControl = new SQLEditorControl(parent, this);
@@ -543,6 +563,28 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         return UIUtils.getSharedTextColors();
     }
 
+    protected void updateVerticalRulerColors() {
+        if (!UIStyles.isDarkTheme()) {
+            return;
+        }
+        IVerticalRuler verticalRuler = getVerticalRuler();
+        if (verticalRuler == null) {
+            return;
+        }
+        Control rulerControl = verticalRuler.getControl();
+        if (rulerControl == null || rulerControl.isDisposed()) {
+            return;
+        }
+        Color background = UIStyles.getDefaultTextBackground();
+        rulerControl.setBackground(background);
+        if (rulerControl instanceof Composite composite) {
+            // Each ruler column owns a canvas that does not inherit the background on its own
+            for (Control column : composite.getChildren()) {
+                column.setBackground(background);
+            }
+        }
+    }
+
     @Override
     protected void doSetInput(IEditorInput input) throws CoreException {
         if (getDocumentProvider() instanceof NonFileDocumentProvider) {
@@ -698,6 +740,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     @Override
     public void dispose() {
         DBWorkbench.getPlatform().getPreferenceStore().removePropertyChangeListener(this);
+        themeUpdateJob.cancel();
         if (this.semanticMarkersManager != null) {
             this.semanticMarkersManager.dispose();
         }
@@ -780,7 +823,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     @Override
-    public void editorContextMenuAboutToShow(IMenuManager menu) {
+    public void editorContextMenuAboutToShow(@NotNull IMenuManager menu) {
         menu.add(new GroupMarker(GROUP_SQL_ADDITIONS));
 
         super.editorContextMenuAboutToShow(menu);

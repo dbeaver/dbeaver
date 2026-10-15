@@ -20,8 +20,7 @@ package org.jkiss.dbeaver.registry.settings;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.impl.app.BaseApplicationImpl;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -35,9 +34,7 @@ import java.util.Properties;
  */
 public class GlobalSettings {
 
-    private static final String DBEAVER_CONFIG_FOLDER = "settings";
     private static final String DBEAVER_CONFIG_FILE = "global-settings.ini";
-    private static final String DBEAVER_PROP_LANGUAGE = "nl";
 
     private static final Log log = Log.getLog(GlobalSettings.class);
 
@@ -90,8 +87,7 @@ public class GlobalSettings {
 
     @NotNull
     private static Path getPropertiesFile() {
-        final Path root = Path.of(RuntimeUtils.getWorkingDirectory(BaseApplicationImpl.DBEAVER_DATA_DIR));
-        return root.resolve(DBEAVER_CONFIG_FOLDER).resolve(DBEAVER_CONFIG_FILE);
+        return DBWorkbench.getPlatform().getGlobalConfigurationFile(DBEAVER_CONFIG_FILE);
     }
 
     private void saveProperties() {

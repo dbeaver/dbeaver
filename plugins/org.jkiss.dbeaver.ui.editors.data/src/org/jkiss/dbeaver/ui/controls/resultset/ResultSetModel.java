@@ -231,6 +231,7 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     @Nullable
+    @Override
     public DBDAttributeBinding getDocumentAttribute() {
         return documentAttribute;
     }
@@ -375,7 +376,7 @@ public class ResultSetModel implements DBDResultSetModel {
         return getVirtualEntity(entity, create);
     }
 
-    @NotNullWhen("create")
+    @Nullable
     public DBVEntity getVirtualEntity(DBSEntity entity, boolean create) {
         if (entity != null) {
             return DBVUtils.getVirtualEntity(entity, true);
@@ -410,6 +411,11 @@ public class ResultSetModel implements DBDResultSetModel {
     @NotNull
     public List<ResultSetRow> getAllRows() {
         return this.filteredRows != null ? this.filteredRows : this.curRows;
+    }
+
+    boolean containsRow(@NotNull ResultSetRow row) {
+        // ResultSetRow.equals compares row numbers, which can be reused after a reload.
+        return curRows.stream().anyMatch(current -> current == row);
     }
 
     @NotNull
@@ -502,7 +508,7 @@ public class ResultSetModel implements DBDResultSetModel {
             updateChanges = false;
         }
 
-        boolean isOldHistoricValueAbsent = !row.isChanged(attr);
+        boolean isOldHistoricValueAbsent = !row.isChanged(topAttribute);
         Object currentValue = row.values[rootIndex];
         Object valueToEdit = currentValue;
 
@@ -877,6 +883,44 @@ public class ResultSetModel implements DBDResultSetModel {
         return newRow;
     }
 
+    @NotNull
+    List<ResultSetRow> preserveNewRows(int rowNum, @NotNull List<Object[]> data) {
+        if (this.filteredRows != null) {
+            int firstRowNumber = this.curRows.size();
+            int firstVisualNumber = this.filteredRows.size() + 1;
+            List<ResultSetRow> newRows = new ArrayList<>(data.size());
+            for (int i = 0; i < data.size(); i++) {
+                ResultSetRow newRow = new ResultSetRow(firstRowNumber + i, data.get(i));
+                newRow.setVisualNumber(firstVisualNumber + i);
+                newRow.setState(ResultSetRow.STATE_ADDED);
+                newRows.add(newRow);
+            }
+            this.filteredRows.addAll(newRows);
+            this.curRows.addAll(rowNum, newRows);
+            this.changesCount += newRows.size();
+            return newRows;
+        }
+
+        int rowCount = data.size();
+        for (ResultSetRow row : this.curRows) {
+            if (row.getVisualNumber() >= rowNum) {
+                row.setVisualNumber(row.getVisualNumber() + rowCount);
+            }
+        }
+
+        int firstRowNumber = this.curRows.size();
+        List<ResultSetRow> newRows = new ArrayList<>(rowCount);
+        for (int i = 0; i < rowCount; i++) {
+            ResultSetRow newRow = new ResultSetRow(firstRowNumber + i, data.get(i));
+            newRow.setVisualNumber(rowNum + i);
+            newRow.setState(ResultSetRow.STATE_ADDED);
+            newRows.add(newRow);
+        }
+        this.curRows.addAll(rowNum, newRows);
+        this.changesCount += rowCount;
+        return newRows;
+    }
+
     /**
      * Removes row with specified index from data
      *
@@ -1039,12 +1083,11 @@ public class ResultSetModel implements DBDResultSetModel {
             }
             filterConstraint.setOptions(constraint.getOptions());
             DBSAttributeBase cAttr = filterConstraint.getAttribute();
-            if (cAttr instanceof DBDAttributeBinding) {
+            if (cAttr instanceof DBDAttributeBinding attribute) {
                 if (!constraint.isVisible()) {
                     visibleAttributes.remove(cAttr);
                 } else {
                     if (!visibleAttributes.contains(cAttr)) {
-                        DBDAttributeBinding attribute = (DBDAttributeBinding) cAttr;
                         if (attribute.getParentObject() == null || attribute.getParentObject() == documentAttribute) {
                             // Add only root attributes
                             visibleAttributes.add(attribute);

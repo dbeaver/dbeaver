@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,11 +27,13 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
+import org.jkiss.dbeaver.model.struct.DBSDescriptionEditable;
 
 /**
  * VerticaProjectionColumn
  */
 public class VerticaProjectionColumn extends JDBCTableColumn<VerticaProjection>
+    implements DBSDescriptionEditable
 {
     private static final Log log = Log.getLog(VerticaProjectionColumn.class);
     private String description;
@@ -116,7 +118,8 @@ public class VerticaProjectionColumn extends JDBCTableColumn<VerticaProjection>
         return description;
     }
 
-    public void setDescription(String description) {
+    @Override
+    public void setDescription(@Nullable String description) {
         this.description = description;
     }
 }

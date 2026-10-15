@@ -22,9 +22,11 @@ import org.jkiss.dbeaver.ext.bigquery.model.BQDataSource;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class BQDataSourceProvider extends GenericDataSourceProvider<BQDataSource> {
+    private static final String DRIVER_PARAM_PARTNER_ATTRIBUTION = "supports-partner-attribution";
 
     @DynamicCall
     public BQDataSourceProvider() {
@@ -43,6 +45,17 @@ public class BQDataSourceProvider extends GenericDataSourceProvider<BQDataSource
         url.append("jdbc:bigquery://").append(connectionInfo.getHostName());
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
             url.append(":").append(connectionInfo.getHostPort());
+        }
+        if (CommonUtils.toBoolean(driver.getDriverParameter(DRIVER_PARAM_PARTNER_ATTRIBUTION), false)) {
+            String product = GeneralUtils.getProductName()
+                .trim()
+                .replace(" ", "+")
+                .replace("/", "-");
+            url.append(";PartnerToken=\"")
+                .append(product)
+                .append("/v")
+                .append(GeneralUtils.getProductVersion())
+                .append("(GPN:DBeaver;Environment)\"");
         }
         return url.toString();
     }

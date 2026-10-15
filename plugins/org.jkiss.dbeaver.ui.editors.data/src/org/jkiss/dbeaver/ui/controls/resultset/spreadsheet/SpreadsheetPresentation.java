@@ -30,11 +30,17 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.themes.ITheme;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
@@ -63,10 +69,10 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanMode;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleSet;
+import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController.RowPlacement;
-import org.jkiss.dbeaver.ui.controls.findandreplace.FindReplaceOverlay;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetPropertyTester;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel;
@@ -91,7 +97,6 @@ import org.jkiss.utils.xml.XMLUtils;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.*;
-import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -196,15 +201,12 @@ public class SpreadsheetPresentation extends AbstractPresentation
             this);
         this.spreadsheet.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        this.spreadsheet.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        this.spreadsheet.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (e.detail != SWT.DRAG && e.detail != SWT.DROP_DOWN && e.data != null) {
                     updateGridCursor((GridCell) e.data);
                 }
                 fireSelectionChanged(new SpreadsheetSelectionImpl());
-            }
-        });
+            }));
         this.spreadsheet.addMouseWheelListener(e -> {
 
         });
@@ -711,11 +713,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     String[][] newLines = parseGridLines(strValue, settings.isInsertMultipleRows(), settings.isIgnoreQuotes());
 
                     if (insertNewRows) {
-                        for (int i = 0; i < newLines.length; i++) {
-                            controller.addNewRow(RowPlacement.BEFORE_SELECTION, false, false);
-                        }
+                        ResultSetRow currentRow = controller.getCurrentRow();
+                        int insertionIndex = controller.isRecordMode() && currentRow != null ?
+                            currentRow.getVisualNumber() : rowNum;
+                        controller.preserveNewRows(insertionIndex, newLines.length);
                         spreadsheet.refreshRowsData();
-                        //rowNum++;
                     } else {
                         while (rangeEnd == null && rowNum + newLines.length > spreadsheet.getItemCount()) {
                             controller.addNewRow(RowPlacement.AT_END, false, false);
@@ -1521,6 +1523,9 @@ public class SpreadsheetPresentation extends AbstractPresentation
         this.spreadsheet.setFont(ResultSetThemeSettings.instance.resultSetFont);
 
         {
+            this.backgroundDefault = null;
+            this.foregroundDefault = null;
+
             if (this.cellHeaderSelectionBackground != null) {
                 UIUtils.dispose(this.cellHeaderSelectionBackground);
                 this.cellHeaderSelectionBackground = null;
@@ -1893,7 +1898,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
             for (DBDAttributeBinding cur = binding; cur != null; cur = cur.getParentObject()) {
                 final DBPDataKind kind = cur.getDataKind();
                 if (kind == DBPDataKind.ARRAY) {
-                    return true;
+                    return this.isComplexValuesExpansionEnabled();
                 }
             }
         }
@@ -3038,6 +3043,48 @@ public class SpreadsheetPresentation extends AbstractPresentation
         return currentAttribute == null || currentRow == null ? null : makeResultSetCellLocation(currentAttribute, currentRow, focusRow);
     }
 
+    @Override
+    public void setCurrentCellLocation(@NotNull ResultSetCellLocation cellLocation) {
+        boolean recordMode = getController().isRecordMode();
+        IGridColumn column = spreadsheet.getColumnByElement(recordMode ? cellLocation.getRow() : cellLocation.getAttribute());
+        if (column == null) {
+            super.setCurrentCellLocation(cellLocation);
+            return;
+        }
+
+        // Fast-path: locate the row directly by element (common case: no nested row/value path)
+        int fromIndex = recordMode ? 0 : cellLocation.getRow().getVisualNumber();
+        Object rowElement = recordMode ? cellLocation.getAttribute() : cellLocation.getRow();
+        IGridRow row = spreadsheet.getRowByElement(fromIndex, rowElement);
+        if (row != null && trySetCursor(cellLocation, column, row)) {
+            return;
+        }
+
+        // Locate the row by iterating through all rows (needed for nested rows/value paths)
+        for (int rowIndex = 0; rowIndex < spreadsheet.getItemCount(); rowIndex++) {
+            IGridRow row1 = spreadsheet.getRow(rowIndex);
+            if (row1 != null && trySetCursor(cellLocation, column, row1)) {
+                return;
+            }
+        }
+
+        super.setCurrentCellLocation(cellLocation);
+    }
+
+    private boolean trySetCursor(@NotNull ResultSetCellLocation location, @NotNull IGridColumn column, @NotNull IGridRow row) {
+        var cell = new GridCell(column, row);
+        var candidate = getCellLocation(cell);
+        if (candidate.getRow() == location.getRow()
+            && candidate.getAttribute() == location.getAttribute()
+            && Arrays.equals(candidate.getRowIndexes(), location.getRowIndexes())
+            && Objects.equals(candidate.getValuePath(), location.getValuePath())
+        ) {
+            spreadsheet.setCursor(cell, false, true, true);
+            return true;
+        }
+        return false;
+    }
+
     @NotNull
     public ResultSetCellLocation getCellLocation(@NotNull GridCell cell) {
         final boolean recordMode = getController().isRecordMode();
@@ -3185,11 +3232,10 @@ public class SpreadsheetPresentation extends AbstractPresentation
             }
 
             if (item.getElement() instanceof DBDAttributeBinding attr) {
-                DBPImage image = DBValueFormatting.getObjectImage(attr.getAttribute());
-                return DBeaverIcons.getImage(image);
+                boolean includeModifiers = controller.isRecordMode();
+                return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(attr.getAttribute(), true, includeModifiers));
             } else if (item.getElement() instanceof DBSAttributeBase attrBase) {
-                return DBeaverIcons.getImage(
-                    DBValueFormatting.getObjectImage(attrBase));
+                return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(attrBase));
             }
 
             return null;

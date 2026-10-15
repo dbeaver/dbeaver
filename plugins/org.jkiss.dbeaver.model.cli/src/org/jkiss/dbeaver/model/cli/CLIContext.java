@@ -42,4 +42,9 @@ public interface CLIContext {
     CLIProcessResult.PostAction getPostAction();
 
     void setPostAction(@Nullable CLIProcessResult.PostAction postAction);
+
+    @NotNull
+    CLILogFormat getLogFormat();
+
+    void setLogFormat(@NotNull CLILogFormat logFormat);
 }

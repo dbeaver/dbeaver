@@ -28,6 +28,8 @@ public class HANAMessages extends NLS {
     public static String dialog_user_expired_password_error_message;
     public static String dialog_invalid_license_input_title;
     public static String dialog_invalid_license_input_label;
+    public static String dialog_invalid_license_input_label_systemdb;
+    public static String dialog_invalid_license_input_label_tenantdb;
     public static String dialog_invalid_license_empty_input;
     public static String dialog_invalid_license_error_title;
     public static String dialog_invalid_license_error_message;

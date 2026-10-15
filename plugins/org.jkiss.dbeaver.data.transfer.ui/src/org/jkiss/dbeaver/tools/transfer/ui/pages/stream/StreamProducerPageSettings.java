@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -59,12 +59,11 @@ import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.*;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
@@ -547,18 +546,14 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
                     initializer = monitor -> updateSingleConsumer(monitor, pipe, selected.getPath());
                 }
             } else if (pipe.getConsumer() != null && pipe.getConsumer().getTargetObjectContainer() != null) {
-                File[] files = DialogUtils.openFileList(getShell(), DTUIMessages.stream_producer_select_input_file, extensions);
+                Path[] files = DialogUtils.openFileList(getShell(), DTUIMessages.stream_producer_select_input_file, extensions);
                 if (files != null && files.length > 0) {
-                    initializer = monitor -> updateMultiConsumers(
-                        monitor,
-                        pipe,
-                        Arrays.stream(files).map(File::toPath).toArray(Path[]::new)
-                    );
+                    initializer = monitor -> updateMultiConsumers(monitor, pipe, files);
                 }
             } else {
-                File file = DialogUtils.openFile(getShell(), extensions);
+                Path file = DialogUtils.openFile(getShell(), extensions);
                 if (file != null) {
-                    initializer = monitor -> updateSingleConsumer(monitor, pipe, file.toPath());
+                    initializer = monitor -> updateSingleConsumer(monitor, pipe, file);
                 }
             }
             if (initializer != null) {

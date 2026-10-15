@@ -226,7 +226,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
                     try (Reader reader = openStreamReader(inputStream, properties, true)) {
                         try (CSVReader csvReader = openCSVReader(reader, properties)) {
 
-                            int maxRows = site.getSettings().getMaxRows();
+                            long maxRows = site.getSettings().getMaxRows();
                             int targetAttrSize = entityMapping.getStreamColumns().size();
                             boolean headerRead = false;
                             for (long lineNum = 0; ; ) {
@@ -263,7 +263,9 @@ public class DataImporterCSV extends StreamImporterAbstract {
                                 }
                                 if (trimWhitespaces) {
                                     for (int i = 0; i < line.length; i++) {
-                                        line[i] = line[i].trim();
+                                        if (line[i] != null) {
+                                            line[i] = line[i].trim();
+                                        }
                                     }
                                 }
                                 if (emptyStringNull) {

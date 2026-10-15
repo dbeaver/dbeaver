@@ -20,15 +20,19 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StringUtils;
+import org.jkiss.utils.UUIDv7;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * AI chat conversation.
@@ -55,28 +59,24 @@ public class AIChatConversation {
     private final AIPromptGenerator promptGenerator;
     @NotNull
     private final List<AIChatMessage> messages;
+    @NotNull
+    private final Object persistenceLock = new Object();
     @Nullable
     private final DBPDataSourceContainer container;
     @NotNull
     private final LocalDateTime time;
     @Nullable
-    private AIChatConversationSettings customSettings;
+    private AIContextSettingsChatConversation customSettings;
+    @Nullable
+    private AIConfigurationProfile profile;
 
     /**
      * Sequence number of the next message.
      */
     private int nextMessageId;
     private State state = State.NONE;
+    private volatile boolean imagesLoaded = true;
     private CompletableFuture<AIChatConversation> finishFuture;
-
-    public AIChatConversation(
-        @NotNull String caption,
-        @NotNull AIPromptGenerator promptGenerator,
-        @NotNull List<AIChatMessage> messages,
-        @Nullable DBPDataSourceContainer container
-    ) {
-        this(UUID.randomUUID(), caption, promptGenerator, messages, container, 0);
-    }
 
     public AIChatConversation(
         @NotNull String caption,
@@ -87,20 +87,39 @@ public class AIChatConversation {
     }
 
     public AIChatConversation(
+        @NotNull String caption,
+        @NotNull AIPromptGenerator promptGenerator,
+        @NotNull List<AIChatMessage> messages,
+        @Nullable DBPDataSourceContainer container
+    ) {
+        this(
+            UUIDv7.randomUUID(),
+            caption,
+            promptGenerator,
+            messages,
+            container,
+            0,
+            AISettingsManager.getInstance().getSettings().getDefaultConfigurationOrNull()
+        );
+    }
+
+    public AIChatConversation(
         @NotNull UUID uuid,
         @NotNull String caption,
         @NotNull AIPromptGenerator promptGenerator,
         @NotNull List<AIChatMessage> messages,
         @Nullable DBPDataSourceContainer container,
-        int nextMessageId
+        int nextMessageId,
+        @Nullable AIConfigurationProfile profile
     ) {
         this.uuid = uuid;
         this.caption = StringUtils.truncateToSpace(caption, MAX_CAPTION_LENGTH);
         this.promptGenerator = promptGenerator;
         this.container = container;
-        this.messages = new ArrayList<>(messages);
+        this.messages = new CopyOnWriteArrayList<>(messages);
         this.time = messages.isEmpty() ? LocalDateTime.now() : messages.getLast().message().getTime();
         this.nextMessageId = nextMessageId;
+        this.profile = profile;
     }
 
     @NotNull
@@ -127,6 +146,29 @@ public class AIChatConversation {
         return messages.stream().filter(message -> !message.pending()).toList();
     }
 
+    @NotNull
+    Object getPersistenceLock() {
+        return persistenceLock;
+    }
+
+    public boolean areImagesLoaded() {
+        return imagesLoaded;
+    }
+
+    public void setImagesLoaded(boolean imagesLoaded) {
+        this.imagesLoaded = imagesLoaded;
+    }
+
+    public void restoreImages(@NotNull Map<Integer, List<AIImageAttachment>> images) {
+        // replaceAll publishes one snapshot and leaves history intact if validation fails
+        messages.replaceAll(message -> {
+            List<AIImageAttachment> attachments = images.get(message.id());
+            return attachments == null ? message
+                : new AIChatMessage(message.id(), message.message().withImages(attachments), message.pending());
+        });
+        imagesLoaded = true;
+    }
+
     @Nullable
     public AIChatMessage getMessage(@NotNull String messageId) {
         int intId = CommonUtils.toInt(messageId);
@@ -150,6 +192,9 @@ public class AIChatConversation {
             } else {
                 newCaption = message.getContent();
             }
+            if (newCaption.isBlank() && !message.getImages().isEmpty()) {
+                newCaption = message.getImages().getFirst().name();
+            }
             this.caption = StringUtils.truncateToSpace(newCaption, MAX_CAPTION_LENGTH);
         }
         AIChatMessage chatMessage = new AIChatMessage(nextMessageId, message);
@@ -161,7 +206,7 @@ public class AIChatConversation {
     }
 
     public boolean removeMessage(@NotNull AIChatMessage message) {
-        return this.messages.remove(message);
+        return messages.removeIf(current -> sameMessage(current, message));
     }
 
     public void clearMessages() {
@@ -169,10 +214,17 @@ public class AIChatConversation {
     }
 
     public void clearMessagesAfter(@NotNull AIChatMessage message) {
-        int index = messages.indexOf(message);
-        while (messages.size() > index) {
-            messages.removeLast();
-        }
+        AtomicBoolean removing = new AtomicBoolean();
+        messages.removeIf(current -> {
+            if (sameMessage(current, message)) {
+                removing.set(true);
+            }
+            return removing.get();
+        });
+    }
+
+    private static boolean sameMessage(@NotNull AIChatMessage current, @NotNull AIChatMessage target) {
+        return current == target || !current.pending() && !target.pending() && current.id() == target.id();
     }
 
     public void addPendingDeclinedFunctionCallMessages(@NotNull List<AIMessage> messages) {
@@ -220,12 +272,21 @@ public class AIChatConversation {
     }
 
     @Nullable
-    public AIChatConversationSettings getCustomSettings() {
+    public AIContextSettingsChatConversation getCustomSettings() {
         return customSettings;
     }
 
-    public void setCustomSettings(@Nullable AIChatConversationSettings customSettings) {
+    public void setCustomSettings(@Nullable AIContextSettingsChatConversation customSettings) {
         this.customSettings = customSettings;
+    }
+
+    @Nullable
+    public AIConfigurationProfile getProfile() {
+        return profile;
+    }
+
+    public void setProfile(@Nullable AIConfigurationProfile profile) {
+        this.profile = profile;
     }
 
     @NotNull

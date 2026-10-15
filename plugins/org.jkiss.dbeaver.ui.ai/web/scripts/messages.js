@@ -5,11 +5,36 @@ function createContent(args) {
     if (args.role === 'attachment') {
         body.innerHTML = createAttachmentCard(args);
     } else {
-        const markdown = marked.parse(args.content);
+        const markdown = sanitizeHtml(marked.parse(args.content));
         body.innerHTML = parseSqlBlocks(markdown, args.id);
     }
 
     holder.appendChild(body);
+    if (Array.isArray(args.images) && args.images.length > 0) {
+        const images = document.createElement('div');
+        images.className = 'message-images';
+        args.images.forEach((image, index) => {
+            const link = document.createElement('a');
+            link.className = 'message-image';
+            link.href = '#';
+            link.title = image.name;
+            link.setAttribute('role', 'button');
+            link.tabIndex = -1;
+            if (image.src) {
+                link.appendChild(createImagePreview(image.src));
+            }
+            const name = document.createElement('span');
+            name.className = 'message-image-name';
+            name.textContent = image.name;
+            link.appendChild(name);
+            link.addEventListener('click', event => {
+                event.preventDefault();
+                openImage(args.id, index);
+            });
+            images.appendChild(link);
+        });
+        holder.appendChild(images);
+    }
 
     if (args.role == 'assistant' && typeof args.meta === 'object') {
         const meta = document.createElement('p');
@@ -25,6 +50,56 @@ function createContent(args) {
     return holder;
 }
 
+function createImagePreview(source) {
+    const preview = document.createElement('img');
+    preview.src = source;
+    preview.alt = '';
+    preview.loading = 'lazy';
+    preview.decoding = 'async';
+    preview.draggable = false;
+    return preview;
+}
+
+function setMessageImage(args) {
+    const message = document.getElementById(args.id);
+    const link = message?.querySelectorAll('.message-image')[args.index];
+    if (link) {
+        link.querySelector('img')?.remove();
+        link.prepend(createImagePreview(args.src));
+    }
+}
+
+function loadImageThumbnail(args) {
+    const image = new Image();
+    let completed = false;
+    const complete = source => {
+        if (completed) {
+            return;
+        }
+        completed = true;
+        clearTimeout(timeout);
+        image.onload = null;
+        image.onerror = null;
+        image.src = '';
+        imageThumbnailLoaded(args.id, source);
+    };
+    const timeout = setTimeout(() => complete(''), args.timeout);
+    image.onerror = () => complete('');
+    image.onload = () => {
+        try {
+            const scale = Math.min(1, args.size / Math.max(image.naturalWidth, image.naturalHeight));
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.max(1, Math.round(image.naturalWidth * scale));
+            canvas.height = Math.max(1, Math.round(image.naturalHeight * scale));
+            canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height);
+            complete(canvas.toDataURL('image/png'));
+        } catch (error) {
+            complete('');
+        }
+    };
+    image.src = args.src;
+}
+
 function addMessage(args) {
     hideCenterText();
 
@@ -33,6 +108,8 @@ function addMessage(args) {
         if (existingMessage.classList.contains('streaming')) {
             if (typeof args.content === 'string') {
                 streamingMessages.set(args.id, args.content);
+            } else {
+                streamingMessages.set(args.id, escapeStreamedMarkdown(streamingMessages.get(args.id) || ''));
             }
             finalizeStreamingMessage(args.id, args.meta);
             return;
@@ -45,7 +122,7 @@ function addMessage(args) {
         if (streamingMessage && streamingMessage.classList.contains('streaming')) {
             const finalContent = typeof args.content === 'string'
                 ? args.content
-                : (streamingMessages.get(currentStreamingMessageId) || '');
+                : escapeStreamedMarkdown(streamingMessages.get(currentStreamingMessageId) || '');
 
             streamingMessage.id = args.id;
             streamingMessages.set(args.id, finalContent);
@@ -100,7 +177,9 @@ function addMessage(args) {
         }, 0);
     }
 
+    makeItemFocusable(div, args.role);
     appendChatNode(div);
+    announceMessage(args.role, div);
 }
 
 function calculateIconsContainerOffset(messageDiv, iconsContainer) {
@@ -142,6 +221,7 @@ function removeMessage(args) {
         currentStreamingMessageId = null;
     }
     ensureBusyIndicator();
+    updateAiNoticeVisibility();
 }
 
 function removeFunctionArtifacts(messageId) {

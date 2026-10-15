@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.wmi.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPImageProvider;
@@ -33,68 +34,87 @@ import java.util.*;
 /**
  * WMI result set
  */
-public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEntityMetaData
-{
-    private DBCSession session;
-    private WMIClass classObject;
-    private Collection<WMIObject> rows;
+public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEntityMetaData {
+    private static final Log log = Log.getLog(WMIResultSet.class);
+
+    private final DBCSession session;
+    private final WMIClass classObject;
+    private final Collection<WMIObject> rows;
+    private final List<DBCAttributeMetaData> properties;
+    private final DBCStatement statement;
     private Iterator<WMIObject> iterator;
     private WMIObject row;
-    private List<DBCAttributeMetaData> properties;
 
-    private final DBCStatement statement;
 
-    public WMIResultSet(@NotNull DBCSession session, WMIClass classObject, Collection<WMIObject> rows) throws WMIException
-    {
+    public WMIResultSet(
+        @NotNull DBCSession session,
+        @Nullable WMIClass classObject,
+        @NotNull Collection<WMIObject> rows
+    ) throws WMIException {
         this.session = session;
         this.classObject = classObject;
         this.rows = rows;
         this.iterator = rows.iterator();
         this.row = null;
         this.statement = new LocalStatement(session, "");
-        {
-            // Init meta properties
-            WMIObject metaObject;
-            if (classObject != null) {
-                metaObject = classObject.getClassObject();
-            } else if (!rows.isEmpty()) {
-                metaObject = rows.iterator().next();
-            } else {
-                metaObject = null;
-            }
-            if (metaObject == null) {
-                properties = Collections.emptyList();
-            } else {
-                Collection<WMIObjectAttribute> props = metaObject.getAttributes(WMIConstants.WBEM_FLAG_ALWAYS);
-                properties = new ArrayList<>(props.size());
-                int index = 0;
-                for (WMIObjectAttribute prop : props) {
-                    if (!prop.isSystem()) {
-                        properties.add(new MetaProperty(prop, index++));
-                    }
+        this.properties = readMeta(rows);
+    }
+
+    public WMIResultSet(
+        @NotNull DBCSession session,
+        @NotNull WMIStatement statement,
+        @NotNull Collection<WMIObject> rows
+    ) throws WMIException {
+        this.session = session;
+        this.classObject = null;
+        this.rows = rows;
+        this.iterator = rows.iterator();
+        this.row = null;
+        this.statement = statement;
+        this.properties = readMeta(rows);
+    }
+
+    @NotNull
+    private List<DBCAttributeMetaData> readMeta(@NotNull Collection<WMIObject> rows) throws WMIException {
+        final List<DBCAttributeMetaData> properties;
+        // Init meta properties
+        WMIObject metaObject;
+        if (classObject != null) {
+            metaObject = classObject.getClassObject();
+        } else if (!rows.isEmpty()) {
+            metaObject = rows.iterator().next();
+        } else {
+            metaObject = null;
+        }
+        if (metaObject == null) {
+            properties = Collections.emptyList();
+        } else {
+            Collection<WMIObjectAttribute> props = metaObject.getAttributes(WMIConstants.WBEM_FLAG_ALWAYS);
+            properties = new ArrayList<>(props.size());
+            int index = 0;
+            for (WMIObjectAttribute prop : props) {
+                if (!prop.isSystem()) {
+                    properties.add(new MetaProperty(prop, index++));
                 }
             }
         }
-
+        return properties;
     }
 
     @NotNull
     @Override
-    public DBCSession getSession()
-    {
+    public DBCSession getSession() {
         return session;
     }
 
     @NotNull
     @Override
-    public DBCStatement getSourceStatement()
-    {
+    public DBCStatement getSourceStatement() {
         return statement;
     }
 
     @Override
-    public Object getAttributeValue(int index) throws DBCException
-    {
+    public Object getAttributeValue(int index) throws DBCException {
         try {
             if (index >= properties.size()) {
                 throw new DBCException("Column index " + index + " out of bounds (" + properties.size() + ")");
@@ -116,14 +136,12 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     }
 
     @Override
-    public DBDValueMeta getAttributeValueMeta(int index) throws DBCException
-    {
+    public DBDValueMeta getAttributeValueMeta(int index) throws DBCException {
         return null;
     }
 
     @Override
-    public DBDValueMeta getRowMeta() throws DBCException
-    {
+    public DBDValueMeta getRowMeta() throws DBCException {
         try {
             Collection<WMIQualifier> qualifiers = row.getQualifiers();
             if (CommonUtils.isEmpty(qualifiers)) {
@@ -136,8 +154,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     }
 
     @Override
-    public boolean nextRow() throws DBCException
-    {
+    public boolean nextRow() throws DBCException {
         if (!this.iterator.hasNext()) {
             return false;
         }
@@ -146,17 +163,17 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     }
 
     @Override
-    public boolean moveTo(int position) throws DBCException
-    {
+    public boolean moveTo(int position) throws DBCException {
         this.iterator = rows.iterator();
-        while (position-- > 0) nextRow();
+        while (position-- > 0) {
+            nextRow();
+        }
         return true;
     }
 
     @NotNull
     @Override
-    public DBCResultSetMetaData getMeta() throws DBCException
-    {
+    public DBCResultSetMetaData getMeta() throws DBCException {
         return this;
     }
 
@@ -171,28 +188,31 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         for (WMIObject row : rows) {
             row.release();
         }
         rows.clear();
         row = null;
+        if (this.statement != null && !(statement instanceof WMIStatement)) {
+            try {
+                this.statement.close();
+            } catch (DBException e) {
+                log.debug(e);
+            }
+        }
     }
 
-    /////////////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////////
     // DBCResultSetMetaData
-
     @NotNull
     @Override
-    public List<? extends DBCAttributeMetaData> getAttributes()
-    {
+    public List<? extends DBCAttributeMetaData> getAttributes() {
         return properties;
     }
 
-    /////////////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////////
     // DBCTableMetaData
-
     @Nullable
     @Override
     public String getCatalogName() {
@@ -207,35 +227,30 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
 
     @NotNull
     @Override
-    public String getEntityName()
-    {
+    public String getEntityName() {
         return classObject == null ? null : classObject.getName();
     }
 
-    /////////////////////////////////////////////////////////////
+    /// //////////////////////////////////////////////////////////
     // Meta property
 
-    private class MetaProperty implements DBCAttributeMetaData,DBPImageProvider
-    {
+    private class MetaProperty implements DBCAttributeMetaData, DBPImageProvider {
         private final WMIObjectAttribute attribute;
         private final int index;
 
-        private MetaProperty(WMIObjectAttribute attribute, int index)
-        {
+        private MetaProperty(WMIObjectAttribute attribute, int index) {
             this.attribute = attribute;
             this.index = index;
         }
 
         @NotNull
         @Override
-        public String getName()
-        {
+        public String getName() {
             return attribute.getName();
         }
 
         @Override
-        public long getMaxLength()
-        {
+        public long getMaxLength() {
             return 0;
         }
 
@@ -246,8 +261,7 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
 
         @NotNull
         @Override
-        public String getTypeName()
-        {
+        public String getTypeName() {
             return attribute.getTypeName();
         }
 
@@ -258,33 +272,28 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
         }
 
         @Override
-        public int getTypeID()
-        {
+        public int getTypeID() {
             return attribute.getType();
         }
 
         @NotNull
         @Override
-        public DBPDataKind getDataKind()
-        {
+        public DBPDataKind getDataKind() {
             return WMIClassAttribute.getDataKindById(attribute.getType());
         }
 
         @Override
-        public Integer getScale()
-        {
+        public Integer getScale() {
             return 0;
         }
 
         @Override
-        public Integer getPrecision()
-        {
+        public Integer getPrecision() {
             return 0;
         }
 
         @Override
-        public int getOrdinalPosition()
-        {
+        public int getOrdinalPosition() {
             return index;
         }
 
@@ -296,41 +305,35 @@ public class WMIResultSet implements DBCResultSet, DBCResultSetMetaData, DBCEnti
 
         @NotNull
         @Override
-        public String getLabel()
-        {
+        public String getLabel() {
             return attribute.getName();
         }
 
         @Nullable
         @Override
-        public String getEntityName()
-        {
+        public String getEntityName() {
             return classObject == null ? null : classObject.getName();
         }
 
         @Override
-        public boolean isReadOnly()
-        {
+        public boolean isReadOnly() {
             return false;
         }
 
         @Nullable
         @Override
-        public DBCEntityMetaData getEntityMetaData()
-        {
+        public DBCEntityMetaData getEntityMetaData() {
             return WMIResultSet.this;
         }
 
         @Nullable
         @Override
-        public DBPImage getObjectImage()
-        {
+        public DBPImage getObjectImage() {
             return WMIClassAttribute.getPropertyImage(attribute.getType());
         }
 
         @Override
-        public boolean isRequired()
-        {
+        public boolean isRequired() {
             return false;
         }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,12 +17,14 @@
 package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchSite;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceContainerProvider;
@@ -68,6 +70,7 @@ public class DatabaseEditorUtils {
         }
 
         if (dsContainer == null) {
+            rootComposite.setData(CSSUtils.DATABASE_EDITOR_COMPOSITE_DATASOURCE, null);
             rootComposite.setBackground(null);
         } else {
             Color bgColor = UIUtils.getConnectionColor(dsContainer.getConnectionConfiguration());
@@ -86,11 +89,13 @@ public class DatabaseEditorUtils {
             EditorsMessages.database_editor_command_refresh_tip,
             true
         ));
-        contributionManager.add(new ToolbarSeparatorContribution(true));
+        if (contributionManager instanceof ToolBarManager) {
+            contributionManager.add(new ToolbarSeparatorContribution(true));
+        }
         contributionManager.add(ActionUtils.makeCommandContribution(
             workbenchSite,
             IWorkbenchCommandConstants.FILE_SAVE,
-            EditorsMessages.database_editor_command_save_name,
+            WorkbenchMessages.Save,
             UIIcon.SAVE,
             EditorsMessages.database_editor_command_save_tip,
             true
@@ -98,12 +103,14 @@ public class DatabaseEditorUtils {
         contributionManager.add(ActionUtils.makeCommandContribution(
             workbenchSite,
             IWorkbenchCommandConstants.FILE_REVERT,
-            EditorsMessages.database_editor_command_revert_name,
+            WorkbenchMessages.Workbench_revert,
             UIIcon.RESET,
             EditorsMessages.database_editor_command_revert_tip,
             true
         ));
-        contributionManager.add(new ToolbarSeparatorContribution(true));
+        if (contributionManager instanceof ToolBarManager) {
+            contributionManager.add(new ToolbarSeparatorContribution(true));
+        }
     }
 
 }

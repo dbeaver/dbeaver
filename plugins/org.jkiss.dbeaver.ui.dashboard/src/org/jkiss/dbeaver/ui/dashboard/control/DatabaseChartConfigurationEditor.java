@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ui.dashboard.control;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -82,17 +81,14 @@ public class DatabaseChartConfigurationEditor implements IObjectPropertyConfigur
                 if (targetDatabase != null) {
                     dbSelectorText.setText(targetDatabase.getName());
                 }
-                UIUtils.createPushButton(dbSelectorPanel, UIDashboardMessages.dialog_edit_dashboard_maininfo_buttons_select, null, new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                UIUtils.createPushButton(dbSelectorPanel, UIDashboardMessages.dialog_edit_dashboard_maininfo_buttons_select, null, SelectionListener.widgetSelectedAdapter(e -> {
                         DashboardDatabaseSelectDialog selectDialog = new DashboardDatabaseSelectDialog(composite.getShell());
                         if (selectDialog.open() == IDialogConstants.OK_ID) {
                             targetDatabase = selectDialog.getTarget();
                             dbSelectorText.setText(targetDatabase.getName());
                         }
                         propertyChangeListener.run();
-                    }
-                });
+                    }));
 
                 dataTypeCombo = UIUtils.createLabelCombo(mainGroup, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_datatype, UIDashboardMessages.dialog_edit_dashboard_maininfo_combos_datatype_tooltip, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
                 for (DBDashboardDataType ddt : DBDashboardDataType.values()) {

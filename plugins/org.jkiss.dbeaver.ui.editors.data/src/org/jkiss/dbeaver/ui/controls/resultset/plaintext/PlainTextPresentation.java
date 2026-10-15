@@ -26,8 +26,7 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.StyledTextPrintOptions;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -55,11 +54,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.editors.TextEditorUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Empty presentation.
@@ -101,19 +96,14 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
         text.setFont(UIUtils.getMonospaceFont());
         text.setLayoutData(new GridData(GridData.FILL_BOTH));
         text.addCaretListener(event -> onCursorChange(event.caretOffset));
-        text.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        text.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 curSelection = text.getSelectionText();
                 fireSelectionChanged(new PlainTextSelectionImpl());
-            }
-        });
+            }));
         CSSUtils.setExcludeFromStyling(text);
 
         final ScrollBar verticalBar = text.getVerticalBar();
-        verticalBar.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        verticalBar.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (verticalBar.getSelection() + verticalBar.getPageIncrement() >= verticalBar.getMaximum()) {
                     if (controller.getPreferenceStore().getBoolean(ResultSetPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT) &&
                         !controller.isRecordMode() &&
@@ -121,8 +111,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IResu
                         controller.readNextSegment();
                     }
                 }
-            }
-        });
+            }));
         findReplaceTarget = new StyledTextFindReplaceTarget(text);
         TextEditorUtils.enableHostEditorKeyBindingsSupport(controller.getSite(), text);
 

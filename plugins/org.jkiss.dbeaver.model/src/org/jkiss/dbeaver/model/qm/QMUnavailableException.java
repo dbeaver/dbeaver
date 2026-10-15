@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.DBException;
  */
 public class QMUnavailableException extends DBException {
 
-    public static final String DEFAULT_MESSAGE = "QMDB managed server recovery is disabled for this session";
+    public static final String DEFAULT_MESSAGE = "Query Manager is not available for this session";
 
     public QMUnavailableException() {
         super(DEFAULT_MESSAGE);

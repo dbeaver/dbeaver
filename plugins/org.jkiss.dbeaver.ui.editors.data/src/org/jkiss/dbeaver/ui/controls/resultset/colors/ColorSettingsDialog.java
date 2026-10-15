@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,7 @@ import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
@@ -32,6 +31,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -216,12 +216,7 @@ public class ColorSettingsDialog extends BaseDialog {
                 }
             }
         });
-        attributeTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                updateAttributeSelection();
-            }
-        });
+        attributeTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateAttributeSelection()));
     }
 
     private void updateAttributeSelection() {
@@ -301,22 +296,17 @@ public class ColorSettingsDialog extends BaseDialog {
             UIUtils.createTableColumn(colorsTable, SWT.RIGHT, "Value(s)");
             UIUtils.executeOnResize(colorsTable, () -> UIUtils.packColumns(colorsTable, true));
 
-            colorsTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            colorsTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     int selectionIndex = colorsTable.getSelectionIndex();
                     curOverride = selectionIndex < 0 ? null : (DBVColorOverride) colorsTable.getItem(selectionIndex).getData();
                     btnDelete.setEnabled(selectionIndex >= 0);
                     updateControlsState();
-                }
-            });
+                }));
 
             {
                 ToolBar buttonsPanel = new ToolBar(colorsGroup, SWT.FLAT | SWT.VERTICAL);
                 buttonsPanel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-                UIUtils.createToolItem(buttonsPanel, "Add", UIIcon.ROW_ADD, new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                UIUtils.createToolItem(buttonsPanel, "Add", UIIcon.ROW_ADD, SelectionListener.widgetSelectedAdapter(e -> {
                         curOverride = new DBVColorOverride(attribute.getName(), DBCLogicalOperator.EQUALS, null, null, null);
                         vEntity.addColorOverride(curOverride);
                         TableItem tableItem = new TableItem(colorsTable, SWT.NONE);
@@ -324,19 +314,15 @@ public class ColorSettingsDialog extends BaseDialog {
                         colorsTable.setSelection(tableItem);
                         updateColorItem(tableItem);
                         updateControlsState();
-                    }
-                });
-                btnDelete = UIUtils.createToolItem(buttonsPanel, "Delete", UIIcon.ROW_DELETE, new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                    }));
+                btnDelete = UIUtils.createToolItem(buttonsPanel, WorkbenchMessages.Workbench_delete, UIIcon.ROW_DELETE, SelectionListener.widgetSelectedAdapter(e -> {
                         if (curOverride != null) {
                             colorsTable.getItem(colorsTable.getSelectionIndex()).dispose();
                             vEntity.removeColorOverride(curOverride);
                             curOverride = null;
                             updateControlsState();
                         }
-                    }
-                });
+                    }));
                 btnDelete.setEnabled(false);
             }
 
@@ -357,15 +343,12 @@ public class ColorSettingsDialog extends BaseDialog {
                 false,
                 3
             );
-            rangeCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            rangeCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     if (curOverride != null) {
                         curOverride.setRange(rangeCheck.getSelection());
                     }
                     updateControlsState();
-                }
-            });
+                }));
             singleColumnCheck = UIUtils.createCheckbox(
                 settingsGroup,
                 ResultSetMessages.dialog_row_colors_group_settings_single_column_label,
@@ -373,14 +356,11 @@ public class ColorSettingsDialog extends BaseDialog {
                 false,
                 3
             );
-            singleColumnCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            singleColumnCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     if (curOverride != null) {
                         curOverride.setSingleColumn(singleColumnCheck.getSelection());
                     }
-                }
-            });
+                }));
 
             operatorCombo = UIUtils.createLabelCombo(
                 settingsGroup,
@@ -388,15 +368,12 @@ public class ColorSettingsDialog extends BaseDialog {
                 ResultSetMessages.dialog_row_colors_group_settings_operator_tip,
                 SWT.DROP_DOWN | SWT.READ_ONLY
             );
-            operatorCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            operatorCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     if (curOverride != null) {
                         curOverride.setOperator(SUPPORTED_OPERATORS[operatorCombo.getSelectionIndex()]);
                     }
                     updateControlsState();
-                }
-            });
+                }));
             UIUtils.createPlaceholder(settingsGroup, 1);
 
             for (DBCLogicalOperator operator : SUPPORTED_OPERATORS) {

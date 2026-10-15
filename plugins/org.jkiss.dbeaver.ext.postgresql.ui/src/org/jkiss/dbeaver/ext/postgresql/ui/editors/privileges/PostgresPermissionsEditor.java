@@ -25,8 +25,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -400,9 +399,7 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
         UIUtils.createTableColumn(table, SWT.LEFT, PostgreMessages.dialog_create_table_column_name_permission);
         UIUtils.createTableColumn(table, SWT.CENTER, PostgreMessages.dialog_create_table_column_name_with_garant);
         UIUtils.createTableColumn(table, SWT.CENTER, PostgreMessages.dialog_create_table_column_name_with_hierarchy);
-        table.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        table.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (e.item instanceof TableItem tableItem && e.detail == SWT.CHECK) {
                     PostgrePrivilegeType[] privilegeTypes = {(PostgrePrivilegeType) tableItem.getData()};
                     if (tableItem.getChecked()) {
@@ -411,8 +408,7 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
                         revokeFromSelectedObjects(privilegeTypes);
                     }
                 }
-            }
-        });
+            }));
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDown(MouseEvent e) {
@@ -499,24 +495,14 @@ abstract class PostgresPermissionsEditor<T extends DBSObject>
             buttonPanel,
             PostgreMessages.dialog_create_push_button_grant_all,
             null,
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    grantAllCurrentPrivileges();
-                }
-            }
+            SelectionListener.widgetSelectedAdapter(e -> grantAllCurrentPrivileges())
         );
 
         UIUtils.createPushButton(
             buttonPanel,
             PostgreMessages.dialog_create_push_button_revoke_all,
             null,
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    revokeAllCurrentPrivileges();
-                }
-            }
+            SelectionListener.widgetSelectedAdapter(e -> revokeAllCurrentPrivileges())
         );
     }
 

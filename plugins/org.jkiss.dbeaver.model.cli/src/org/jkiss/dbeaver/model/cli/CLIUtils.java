@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.cli.model.option.DataSourceOptions;
 import org.jkiss.dbeaver.model.cli.model.option.InputFileOption;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -49,10 +50,7 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class CLIUtils {
     private static final Log log = Log.getLog(CLIUtils.class);
@@ -66,6 +64,26 @@ public class CLIUtils {
             return name.substring(1);
         }
         return name;
+    }
+
+    @NotNull
+    public static String formatErrorStatusJson(short exitCode, @NotNull Throwable error) {
+        List<String> messages = collectErrorMessages(error);
+        String message = messages.isEmpty() ? error.getClass().getSimpleName() : messages.getFirst();
+        CLIErrorStatus status = new CLIErrorStatus(exitCode, message, messages.size() > 1 ? messages : null);
+        return JSONUtils.GSON.toJson(status);
+    }
+
+    @NotNull
+    private static List<String> collectErrorMessages(@NotNull Throwable error) {
+        List<String> messages = new ArrayList<>();
+        for (Throwable e = error; e != null; e = e.getCause()) {
+            String message = e.getMessage();
+            if (CommonUtils.isNotEmpty(message) && !messages.contains(message)) {
+                messages.add(message);
+            }
+        }
+        return messages;
     }
 
     @Nullable

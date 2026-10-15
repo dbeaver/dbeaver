@@ -46,7 +46,7 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
     @Override
     public DBSObjectCache<? extends DBSObject, OracleTableConstraint> getObjectsCache(OracleTableConstraint object)
     {
-        return object.getParentObject().getSchema().constraintCache;
+        return object.getParentObject().getSchema().getConstraintCache();
     }
 
     @Override
@@ -96,7 +96,7 @@ public class OracleConstraintManager extends SQLConstraintManager<OracleTableCon
     }
 
     @Override
-    protected void appendConstraintDefinition(StringBuilder decl, DBECommandAbstract<OracleTableConstraint> command) {
+    protected void appendConstraintDefinition(@NotNull StringBuilder decl, @NotNull DBECommandAbstract<OracleTableConstraint> command) {
         if (command.getObject().getConstraintType() == DBSEntityConstraintType.CHECK) {
             decl.append(" (").append((command.getObject()).getSearchCondition()).append(")");
         } else {

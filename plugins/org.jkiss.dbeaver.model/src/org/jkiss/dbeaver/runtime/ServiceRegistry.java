@@ -74,6 +74,9 @@ public class ServiceRegistry {
             List<ServiceDescriptor> descriptors = services.computeIfAbsent(service.type.getImplName(), s -> new ArrayList<>());
             descriptors.add(service);
         }
+        for (List<ServiceDescriptor> descriptors : services.values()) {
+            descriptors.sort(Comparator.comparingInt(ServiceDescriptor::getPriority).reversed());
+        }
     }
 
     @Nullable
@@ -81,7 +84,6 @@ public class ServiceRegistry {
         List<ServiceDescriptor> descriptors = services.get(serviceType.getName());
         if (!CommonUtils.isEmpty(descriptors)) {
             boolean headlessMode = DBWorkbench.getPlatform().getApplication().isHeadlessMode();
-            descriptors.sort(Comparator.comparingInt(ServiceDescriptor::getPriority).reversed());
             for (ServiceDescriptor descriptor : descriptors) {
                 if (descriptors.size() > 1 && headlessMode != descriptor.headless) {
                     continue;

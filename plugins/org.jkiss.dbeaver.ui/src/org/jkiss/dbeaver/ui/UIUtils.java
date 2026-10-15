@@ -345,6 +345,12 @@ public class UIUtils {
             if (clientArea.isEmpty()) {
                 return;
             }
+            if (RuntimeUtils.isMacOS()) {
+                ScrollBar verticalBar = tree.getVerticalBar();
+                if (verticalBar != null) {
+                    clientArea.width -= verticalBar.getSize().x;
+                }
+            }
             int totalWidth = 0;
             for (TreeColumn column : columns) {
                 int colWidth = column.getWidth();
@@ -715,8 +721,7 @@ public class UIUtils {
         host.setLayoutData(gd);
 
         var client = new Composite(host, SWT.NONE);
-        GridLayoutFactory.fillDefaults()
-            .margins(0, 5)
+        GridLayoutFactory.swtDefaults()
             .numColumns(columns)
             .applyTo(client);
 
@@ -926,15 +931,12 @@ public class UIUtils {
         //editButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         //editButton.setText("...");
         editButton.setImage(DBeaverIcons.getImage(UIIcon.EDIT)); //$NON-NLS-1$
-        editButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        editButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 String newText = EditTextDialog.editText(parent.getShell(), label, text.getText());
                 if (newText != null) {
                     text.setText(newText);
                 }
-            }
-        });
+            }));
         editTB.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         return text;
@@ -1230,19 +1232,56 @@ public class UIUtils {
         scrolledComposite.setContent(content);
         scrolledComposite.setExpandHorizontal(true);
         scrolledComposite.setExpandVertical(true);
-        scrolledComposite.addControlListener(new ControlAdapter() {
-            @Override
-            public void controlResized(ControlEvent e) {
-                Rectangle area = scrolledComposite.getClientArea();
-                Point size = content.computeSize(
-                    (scrolledComposite.getStyle() & SWT.H_SCROLL) != 0 ? SWT.DEFAULT : area.width,
-                    (scrolledComposite.getStyle() & SWT.V_SCROLL) != 0 ? SWT.DEFAULT : area.height
-                );
+        scrolledComposite.addControlListener(ControlListener.controlResizedAdapter(e -> refreshScrolledComposite(scrolledComposite)));
+        refreshScrolledComposite(scrolledComposite);
+    }
 
-                content.setSize(size);
-                scrolledComposite.setMinSize(size);
+    /**
+     * Updates the scroll range after the content's preferred size changes, even if the viewport has not resized.
+     */
+    public static void refreshScrolledComposite(@NotNull ScrolledComposite scrolledComposite) {
+        Control content = scrolledComposite.getContent();
+        if (content == null || content.isDisposed()) {
+            return;
+        }
+        boolean horizontalScroll = (scrolledComposite.getStyle() & SWT.H_SCROLL) != 0;
+        boolean verticalScroll = (scrolledComposite.getStyle() & SWT.V_SCROLL) != 0;
+        Point availableSize = scrolledComposite.getSize();
+        int border = scrolledComposite.getBorderWidth() * 2;
+        availableSize.x -= border;
+        availableSize.y -= border;
+        // Start without scrollbar trim so an existing scrollbar cannot keep wrapping content unnecessarily tall.
+        // Then account for any scrollbar needed by the new content. Before initial layout, use its natural size.
+        for (int pass = 0; pass < 2; pass++) {
+            scrolledComposite.setMinSize(content.computeSize(
+                horizontalScroll || availableSize.x <= 0 ? SWT.DEFAULT : availableSize.x,
+                verticalScroll || availableSize.y <= 0 ? SWT.DEFAULT : availableSize.y,
+                true
+            ));
+            Rectangle area = scrolledComposite.getClientArea();
+            if ((horizontalScroll || availableSize.x == area.width) && (verticalScroll || availableSize.y == area.height)) {
+                break;
             }
-        });
+            availableSize = new Point(area.width, area.height);
+        }
+        scrolledComposite.layout(true, true);
+    }
+
+    /**
+     * Relayouts a changed dialog form. Scrollable forms keep their window size; other forms may grow their shell.
+     */
+    public static void updateDialogSize(@NotNull Control control) {
+        if (control.isDisposed()) {
+            return;
+        }
+        ScrolledComposite scrolledComposite = getParentOfType(control, ScrolledComposite.class);
+        if (scrolledComposite != null) {
+            refreshScrolledComposite(scrolledComposite);
+        } else {
+            Shell shell = control.getShell();
+            shell.layout(true, true);
+            resizeShell(shell);
+        }
     }
 
     @NotNull
@@ -2162,6 +2201,14 @@ public class UIUtils {
         }
     }
 
+    public static void runInUIThread(@NotNull Runnable runnable) {
+        if (isUIThread()) {
+            runnable.run();
+        } else {
+            asyncExec(runnable);
+        }
+    }
+
     public static void syncExec(@NotNull Runnable runnable) {
         try {
             Display display = getDisplay();
@@ -2203,41 +2250,45 @@ public class UIUtils {
     public static Color getConnectionColor(@NotNull DBPConnectionConfiguration connectionInfo) {
         String rgbString = connectionInfo.getConnectionColor();
         if (CommonUtils.isEmpty(rgbString)) {
-            rgbString = connectionInfo.getConnectionType().getColor();
-        }
-        if (CommonUtils.isEmpty(rgbString)) {
-            return null;
+            rgbString = UIStyles.isDarkTheme() ?
+                connectionInfo.getConnectionType().getColorDark() :
+                connectionInfo.getConnectionType().getColorLight();
         }
         return getConnectionColorByRGB(rgbString);
     }
 
     @Nullable
     public static Color getConnectionTypeColor(@NotNull DBPConnectionType connectionType) {
-        String rgbString = connectionType.getColor();
-        if (CommonUtils.isEmpty(rgbString)) {
-            return null;
-        }
+        // If it is dark theme then alternative color would be default one
+        String rgbString = UIStyles.isDarkTheme() ?
+            connectionType.getColorDark() :
+            connectionType.getColorLight();
         return getConnectionColorByRGB(rgbString);
     }
 
     @Nullable
-    public static Color getConnectionColorByRGB(@NotNull String rgbStringOrId) {
-        if (rgbStringOrId.isEmpty()) {
+    public static Color getConnectionColorByRGB(@Nullable String rgbStringOrId) {
+        if (CommonUtils.isEmpty(rgbStringOrId)) {
             return null;
         }
+        Color connectionColor;
         if (Character.isAlphabetic(rgbStringOrId.charAt(0))) {
             // Some color constant
             RGB rgb = getCurrentTheme().getColorRegistry().getRGB(rgbStringOrId);
-            return SHARED_TEXT_COLORS.getColor(rgb);
+            connectionColor = getSharedColor(rgb);
         } else {
-            Color connectionColor = SHARED_TEXT_COLORS.getColor(rgbStringOrId);
-            if (connectionColor.getBlue() == 255 && connectionColor.getRed() == 255 && connectionColor.getGreen() == 255) {
-                // For white color return just null to avoid explicit color set.
-                // It is important for dark themes
-                return null;
-            }
-            return connectionColor;
+            connectionColor = SHARED_TEXT_COLORS.getColor(rgbStringOrId);
         }
+        if (connectionColor != null &&
+            connectionColor.getRed() == 255 &&
+            connectionColor.getGreen() == 255 &&
+            connectionColor.getBlue() == 255
+        ) {
+            // For white color return just null to avoid explicit color set.
+            // It is important for dark themes
+            connectionColor = null;
+        }
+        return connectionColor;
     }
 
     /**
@@ -2291,9 +2342,12 @@ public class UIUtils {
     }
 
     @NotNull
-    public static String getSupportedVariablesTip(@NotNull String toolTip, String... variables) {
+    public static String getSupportedVariablesTip(@Nullable String toolTip, @NotNull String... variables) {
         StringBuilder varsTip = new StringBuilder();
-        varsTip.append(toolTip).append(". ").append(UIMessages.pref_page_connections_tool_tip_text_allowed_variables).append(":\n");
+        if (CommonUtils.isNotEmpty(toolTip)) {
+            varsTip.append(toolTip).append(". ");
+        }
+        varsTip.append(UIMessages.pref_page_connections_tool_tip_text_allowed_variables).append(":\n");
         for (int i = 0; i < variables.length; i++) {
             String var = variables[i];
             if (i > 0) {
@@ -2303,6 +2357,11 @@ public class UIUtils {
         }
         varsTip.append("."); //$NON-NLS-1$
         return varsTip.toString();
+    }
+
+    @NotNull
+    public static String getSupportedVariablesTip(@NotNull String... variables) {
+        return getSupportedVariablesTip(null, variables);
     }
 
     public static void resizeShell(@NotNull Shell shell) {
@@ -2524,6 +2583,58 @@ public class UIUtils {
         gc.fillRectangle(centerX - 2, centerY - 2, size.x + 4, size.y + 4);
         gc.drawText(text, centerX, centerY, true);
         gc.drawRoundRectangle(centerX - 3, centerY - 3, size.x + 5, size.y + 5, 5, 5);
+    }
+
+    /**
+     * Word-wraps {@code text} so that no line exceeds {@code maxWidth} pixels when measured with
+     * {@code gc}. Existing newlines are preserved; words longer than the line are left intact.
+     * Returns the text unchanged when {@code maxWidth} is not positive.
+     */
+    @NotNull
+    public static String wrapText(@NotNull GC gc, @NotNull String text, int maxWidth) {
+        if (maxWidth <= 0) {
+            return text;
+        }
+        StringBuilder result = new StringBuilder();
+        for (String line : text.split("\n", -1)) {
+            if (result.length() > 0) {
+                result.append('\n');
+            }
+            StringBuilder current = new StringBuilder();
+            for (String word : line.split(" ")) {
+                if (current.length() == 0) {
+                    current.append(word);
+                } else if (gc.textExtent(current + " " + word).x <= maxWidth) {
+                    current.append(' ').append(word);
+                } else {
+                    result.append(current).append('\n');
+                    current.setLength(0);
+                    current.append(word);
+                }
+            }
+            result.append(current);
+        }
+        return result.toString();
+    }
+
+    /**
+     * Installs a placeholder hint on a multi-line {@link Text} control. Unlike {@link Text#setMessage},
+     * which is not rendered for {@link SWT#MULTI} fields on any platform, this paints the hint manually
+     * while the control is empty and word-wraps it to the control's current width.
+     */
+    public static void installMultiLineTextHint(@NotNull Text text, @NotNull String hintText) {
+        final int hintMargin = 3;
+        // Repaint so stale hint pixels are cleared once text is entered (and re-painted when emptied).
+        text.addModifyListener(e -> text.redraw());
+        text.addPaintListener(e -> {
+            if (text.getCharCount() > 0) {
+                return;
+            }
+            e.gc.setForeground(text.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DISABLED_FOREGROUND));
+            int wrapWidth = text.getClientArea().width - hintMargin * 2;
+            String wrapped = wrapText(e.gc, hintText, wrapWidth);
+            e.gc.drawText(wrapped, hintMargin, 0, SWT.DRAW_TRANSPARENT | SWT.DRAW_DELIMITER);
+        });
     }
 
     public static void installMacOSFocusLostSubstitution(@NotNull Widget widget, @NotNull Runnable onFocusLost) {

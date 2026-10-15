@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,12 +30,12 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.actions.ConnectionCommands;
+import org.jkiss.dbeaver.ui.actions.CoreCommandConstants;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.utils.CommonUtils;
 
@@ -89,7 +89,7 @@ public class ToolsContextMenuHandler extends AbstractDataSourceHandler
 */
         }
         if (part instanceof IEditorPart) {
-            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_LINK_EDITOR, CoreMessages.action_menu_tools_find_in_navigator, null));
+            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommandConstants.CMD_LINK_EDITOR, CoreMessages.action_menu_tools_find_in_navigator, null));
         }
 
         final Menu contextMenu = menuManager.createContextMenu(focusControl);

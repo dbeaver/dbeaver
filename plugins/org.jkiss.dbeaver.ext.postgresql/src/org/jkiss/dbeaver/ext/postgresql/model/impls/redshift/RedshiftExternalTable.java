@@ -88,6 +88,7 @@ public class RedshiftExternalTable extends PostgreTable implements DBPRefreshabl
         this.parameters = source.parameters;
     }
 
+    @NotNull
     @Override
     public RedshiftExternalSchema getContainer() {
         return (RedshiftExternalSchema)super.getContainer();

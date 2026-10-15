@@ -22,23 +22,19 @@ import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlanNode;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * DB2 Plan Node
- * 
+ *
  * @author Denis Forveille
  */
 public abstract class DB2PlanNode extends AbstractExecutionPlanNode {
 
     private DB2PlanNode parent;
-    private Collection<DB2PlanNode> listNestedNodes = new ArrayList<>(64);
+    private final List<DB2PlanNode> listNestedNodes = new ArrayList<>();
 
     protected DB2PlanNode() {
-    }
-
-    protected DB2PlanNode(DB2PlanNode node) {
-        this.parent = node.parent;
-        this.listNestedNodes.addAll(node.listNestedNodes);
     }
 
     // --------------------
@@ -50,18 +46,15 @@ public abstract class DB2PlanNode extends AbstractExecutionPlanNode {
 
     public abstract Double getEstimatedCardinality();
 
-    public void setEstimatedCardinality(Double estimatedCardinality)
-    {
+    public void setEstimatedCardinality(Double estimatedCardinality) {
         // Not supported by every kind of DB2PlanNode
     }
 
-    public String getDetails()
-    {
+    public String getDetails() {
         return "";
     }
 
-    public void setParent(DB2PlanNode parent)
-    {
+    public void setParent(DB2PlanNode parent) {
         this.parent = parent;
     }
 
@@ -70,15 +63,13 @@ public abstract class DB2PlanNode extends AbstractExecutionPlanNode {
     // ---------------------
     @Nullable
     @Override
-    public DB2PlanNode getParent()
-    {
+    public DB2PlanNode getParent() {
         return parent;
     }
 
     @NotNull
     @Override
-    public Collection<DB2PlanNode> getNested()
-    {
+    public Collection<DB2PlanNode> getNested() {
         return listNestedNodes;
     }
 

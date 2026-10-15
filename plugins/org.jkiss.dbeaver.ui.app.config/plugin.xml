@@ -11,8 +11,28 @@
        <page id="finalSteps" order="5000" class="org.jkiss.dbeaver.ui.app.config.pages.ProductConfigFinalStepsPage"/>
    </extension>
 
-   <extension point="org.jkiss.dbeaver.workbenchHandler">
-      <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.app.config.handler.ProductConfigWorkbenchInitializer" order="0"/>
+   <extension point="org.eclipse.ui.commands">
+      <command
+          id="org.jkiss.dbeaver.ui.app.config.showWizard"
+          categoryId="org.jkiss.dbeaver.core.util"
+          name="Show Product Configuration..."
+          description="Show product configuration wizard"/>
+   </extension>
+
+   <extension point="org.eclipse.ui.handlers">
+      <handler commandId="org.jkiss.dbeaver.ui.app.config.showWizard" class="org.jkiss.dbeaver.ui.app.config.ProductConfigWizardHandler">
+         <enabledWhen>
+            <test property="org.jkiss.dbeaver.app.config.isAvailable"/>
+         </enabledWhen>
+      </handler>
+   </extension>
+
+   <extension point="org.eclipse.ui.menus">
+      <menuContribution allPopups="false" locationURI="menu:help?after=additions">
+         <command commandId="org.jkiss.dbeaver.ui.app.config.showWizard">
+            <visibleWhen checkEnabled="true"/>
+         </command>
+      </menuContribution>
    </extension>
 
 </plugin>

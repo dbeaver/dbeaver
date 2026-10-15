@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.impl.config.ProductConfigUtils;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
@@ -37,6 +38,10 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
 
     @Override
     public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
+        if (ProductConfigUtils.isAvailable()) {
+            // Sample database creation is handled by Product Config if it's available
+            return;
+        }
         if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PROP_SAMPLE_DB_CANCELED)) {
             // Create was canceled
             return;
@@ -51,7 +56,7 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
             return;
         }
         DBPDataSourceRegistry registry = activeProject.getDataSourceRegistry();
-        if (SampleDatabaseUtil.isSampleDatabaseExists(registry)) {
+        if (SampleDatabaseUtil.isSampleDatabaseExists(activeProject)) {
             // Already exist
             return;
         }
@@ -71,4 +76,3 @@ public class WorkbenchInitializerCreateSampleDatabase implements IWorkbenchWindo
     }
 
 }
-

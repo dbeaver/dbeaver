@@ -22,6 +22,10 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -31,30 +35,32 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfile;
 import org.jkiss.dbeaver.model.net.DBWNetworkProfileManager;
 import org.jkiss.dbeaver.model.rcp.RCPProject;
+import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 /**
  * PrefPageProjectResourceSettings
  */
-public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
+public class PrefPageProjectNetworkProfiles extends PrefPageManagedNetworkProfiles
+    implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.project.settings.networkProfiles"; //$NON-NLS-1$
 
     private static final Log log = Log.getLog(PrefPageProjectNetworkProfiles.class);
@@ -65,13 +71,35 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
     public PrefPageProjectNetworkProfiles() {
     }
 
+    @NotNull
+    @Override
+    protected Control createPreferenceContent(@NotNull Composite parent) {
+        // Embedded editors in global preferences have no preference container.
+        if (getContainer() == null || projectMeta == null) {
+            return super.createPreferenceContent(parent);
+        }
+
+        Composite composite = UIUtils.createComposite(parent, 1);
+        Control content = super.createPreferenceContent(composite);
+        content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        UIUtils.createInfoLink(
+            composite,
+            UIConnectionMessages.pref_page_network_profiles_project_global_hint,
+            () -> {
+                UIUtils.showPreferencesFor(getShell(), null, PrefPageGlobalProjectNetworkProfiles.PAGE_ID);
+                loadSettings();
+            }
+        );
+        return composite;
+    }
+
     @Override
     public void saveSettings(@NotNull DBWNetworkProfile profile) {
         super.saveSettings(profile);
 
         try {
-            if (projectMeta != null && projectMeta.isUseSecretStorage()) {
-                DBSSecretController secretController = DBSSecretController.getProjectSecretController(projectMeta);
+            if (!DBWorkbench.isDistributed() && getProjectMeta().isUseSecretStorage()) {
+                DBSSecretController secretController = DBSSecretController.getProjectSecretController(getProjectMeta());
                 profile.persistSecrets(secretController);
             }
         } catch (DBException e) {
@@ -82,122 +110,81 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
     @Nullable
     @Override
     protected DBSSecretController getSecretController() throws DBException {
-        DBSSecretController secretController = null;
-        if (projectMeta == null) {
-            return DBSSecretController.getGlobalSecretController();
-        } else if (projectMeta.isUseSecretStorage()) {
-            secretController = DBSSecretController.getProjectSecretController(projectMeta);
-        }
-        return secretController;
-    }
-
-    @NotNull
-    private DBWNetworkProfileManager getProfilesRegistry() {
-        if (projectMeta == null) {
-            return DBWorkbench.getPlatform().getNetworkProfiles();
-        } else {
-            return projectMeta.getDataSourceRegistry().getNetworkProfiles();
-        }
+        return !DBWorkbench.isDistributed() && getProjectMeta().isUseSecretStorage()
+            ? DBSSecretController.getProjectSecretController(getProjectMeta()) : null;
     }
 
     @NotNull
     @Override
-    protected List<DBWNetworkProfile> getDefaultNetworkProfiles() {
-        return getProfilesRegistry().getProfiles();
+    protected DBWNetworkProfileManager getProfilesManager() {
+        return getProjectMeta().getDataSourceRegistry().getNetworkProfiles();
     }
 
     @Override
-    protected void updateNetworkProfiles(@NotNull List<DBWNetworkProfile> allProfiles) {
-        DBWNetworkProfileManager profilesRegistry = getProfilesRegistry();
-        for (DBWNetworkProfile profile : allProfiles) {
-            saveSettings(profile);
-            profilesRegistry.addOrUpdateProfile(profile);
+    protected boolean deleteProfile(@NotNull DBWNetworkProfile profile) {
+        List<? extends DBPDataSourceContainer> usedBy = getProjectMeta().getDataSourceRegistry().getDataSourcesByProfile(profile);
+        if (!usedBy.isEmpty()) {
+            UIUtils.showMessageBox(
+                getShell(),
+                UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
+                NLS.bind(
+                    UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_info,
+                    profile.getProfileName(), usedBy.size(), usedBy.stream()
+                        .sorted(Comparator.comparing(DBPDataSourceContainer::getName))
+                        .map(connection -> " - " + connection.getName())
+                        .collect(Collectors.joining("\n"))
+                ),
+                SWT.ICON_ERROR
+            );
+            return false;
         }
-        profilesRegistry.saveSettings();
+        if (!super.confirmProfileDeletion(profile)) {
+            return false;
+        }
+        super.removeProfile(profile);
+        return true;
+    }
+
+    @NotNull
+    @Override
+    protected DBWNetworkProfile createProfile(@NotNull String profileName) {
+        DBWNetworkProfile profile = new DBWNetworkProfile(getProjectMeta());
+        profile.setProfileName(profileName);
+        return profile;
     }
 
     @Override
-    protected boolean deleteProfile(@NotNull DBWNetworkProfile selectedProfile) {
-        if (projectMeta != null) {
-            List<? extends DBPDataSourceContainer> usedBy = projectMeta
-                .getDataSourceRegistry().getDataSourcesByProfile(selectedProfile);
-            if (!usedBy.isEmpty()) {
-                UIUtils.showMessageBox(
-                    getShell(),
-                    UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_title,
-                    NLS.bind(
-                        UIConnectionMessages.pref_page_network_profiles_tool_delete_dialog_error_info, new Object[] {
-                            selectedProfile.getProfileName(),
-                            usedBy.size(),
-                            usedBy.stream()
-                                .sorted(Comparator.comparing(DBPNamedObject::getName))
-                                .map(x -> " - " + x.getName())
-                                .collect(Collectors.joining("\n"))
-                        }
-                    ),
-                    SWT.ICON_ERROR
-                );
-                return false;
-            }
-        }
-        if (UIUtils.confirmAction(
-            getShell(),
-            UIConnectionMessages.pref_page_network_profiles_tool_delete_confirmation_title,
-            NLS.bind(
-                UIConnectionMessages.pref_page_network_profiles_tool_delete_confirmation_question,
-                selectedProfile.getProfileName()
-            )
-        )) {
-            DBWNetworkProfileManager profilesRegistry = getProfilesRegistry();
-            profilesRegistry.removeProfile(selectedProfile);
-            profilesRegistry.saveSettings();
+    protected boolean isNameValid(@NotNull String profileName) {
+        DBWNetworkProfile foundProfile = getProfilesManager().getProfile(null, profileName);
+        if (foundProfile == null) {
             return true;
         }
+        if (foundProfile.isGlobal()) {
+            return confirmLocalCreation(profileName);
+        }
+        UIUtils.showMessageBox(
+            getShell(),
+            UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_title,
+            NLS.bind(
+                UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_info,
+                profileName,
+                getProjectMeta().getName()
+            ),
+            SWT.ICON_ERROR
+        );
         return false;
     }
 
-    @Nullable
-    @Override
-    protected DBWNetworkProfile createNewProfile(@Nullable DBWNetworkProfile sourceProfile) {
-        String profileName = sourceProfile == null ? "" : sourceProfile.getProfileName();
-
-        DBWNetworkProfileManager profilesRegistry = getProfilesRegistry();
-        while (true) {
-            profileName = EnterNameDialog.chooseName(
-                getShell(),
-                UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_profile_name,
-                profileName
-            );
-
-            if (CommonUtils.isEmptyTrimmed(profileName)) {
-                return null;
-            }
-
-            profileName = profileName.trim();
-
-            if (profilesRegistry.getProfile(null, profileName) != null) {
-                UIUtils.showMessageBox(
-                    getShell(),
-                    UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_title,
-                    projectMeta == null ?
-                        NLS.bind(UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_global_info, profileName) :
-                        NLS.bind(UIConnectionMessages.pref_page_network_profiles_tool_create_dialog_error_info, profileName, projectMeta.getName()),
-                    SWT.ICON_ERROR
-                );
-
-                continue;
-            }
-
-            break;
-        }
-
-        DBWNetworkProfile newProfile = projectMeta == null ? new DBWNetworkProfile() : new DBWNetworkProfile(projectMeta);
-        newProfile.setProfileName(profileName);
-
-        profilesRegistry.addOrUpdateProfile(newProfile);
-        profilesRegistry.saveSettings();
-
-        return newProfile;
+    private boolean confirmLocalCreation(@NotNull String profileName) {
+        return UIUtils.confirmAction(
+            getShell(),
+            UIConnectionMessages.pref_page_network_profiles_local_name_used_in_global_label,
+            NLS.bind(
+                UIConnectionMessages.pref_page_network_profiles_local_name_used_in_global_question,
+                profileName,
+                getProjectMeta().getName()
+            )
+        );
     }
 
     @Override
@@ -222,13 +209,13 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         }
     }
 
-    void setProjectMeta(@Nullable DBPProject projectMeta) {
+    void setProjectMeta(@NotNull DBPProject projectMeta) {
         this.projectMeta = projectMeta;
     }
 
-    @Nullable
+    @NotNull
     DBPProject getProjectMeta() {
-        return projectMeta;
+        return Objects.requireNonNull(projectMeta, "Project must be set before editing network profiles");
     }
 
     /**
@@ -237,13 +224,7 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
      * @return {@code true} if the dialog was closed with OK, {@code false} otherwise or if an error occurred.
      */
     public static boolean open(@NotNull Shell shell, @NotNull RCPProject project, @Nullable DBWNetworkProfile profile) {
-        PreferenceDialog dialog = PreferencesUtil.createPropertyDialogOn(
-            shell,
-            project.getEclipseProject(),
-            PAGE_ID,
-            null,
-            profile != null ? profile.getProfileName() : null
-        );
+        PreferenceDialog dialog = getPropertyDialogOn(shell, project, profile);
         if (dialog == null) {
             log.error("Can't open network profiles preferences");
             return false;
@@ -251,5 +232,37 @@ public class PrefPageProjectNetworkProfiles extends PrefPageNetworkProfiles impl
         return dialog.open() == IDialogConstants.OK_ID;
     }
 
+    @Nullable
+    private static PreferenceDialog getPropertyDialogOn(
+        @NotNull Shell shell,
+        @NotNull RCPProject project,
+        @Nullable DBWNetworkProfile profile
+    ) {
+        return profile != null && profile.isGlobal()
+            ? PreferencesUtil.createPreferenceDialogOn(
+            shell,
+            PrefPageGlobalProjectNetworkProfiles.PAGE_ID,
+            null,
+            profile.getProfileName()
+        )
+            : PreferencesUtil.createPropertyDialogOn(
+                shell,
+                project.getEclipseProject(),
+                PAGE_ID,
+                null,
+                profile != null ? profile.getProfileName() : null
+            );
+    }
 
+    @NotNull
+    @Override
+    protected Image getProfileImage(@NotNull DBWNetworkProfile profile) {
+        return DBeaverIcons.getImage(DBIcon.CONNECTION_PROFILE);
+    }
+    @Override
+    protected boolean hasAccessToPage() {
+        return super.hasAccessToPage() ||
+            (projectMeta != null && projectMeta.isPrivateProject() && DBWorkbench.getPlatform().getWorkspace()
+                .hasRealmPermission(RMConstants.PERMISSION_DATABASE_DEVELOPER));
+    }
 }

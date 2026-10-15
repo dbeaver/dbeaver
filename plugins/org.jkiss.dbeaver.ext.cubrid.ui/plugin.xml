@@ -23,29 +23,19 @@
         </configurator>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-            id="org.jkiss.dbeaver.ext.cubrid.dataSourceWizardView"
-            class="org.jkiss.dbeaver.ext.cubrid.ui.views.CubridConnectionPage"
-            icon="platform:/plugin/org.jkiss.dbeaver.ext.cubrid/icons/cubrid_icon.png"
-            dataSource="cubrid"
-            label="%dialog.connection.header"
-            targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard">
-        </view>
-        <view
-            id="org.jkiss.dbeaver.ext.cubrid.dataSourceEditorView"
-            class="org.jkiss.dbeaver.ext.cubrid.ui.views.CubridConnectionPage"
-            icon="platform:/plugin/org.jkiss.dbeaver.ext.cubrid/icons/cubrid_icon.png"
-            dataSource="cubrid"
-            label="%dialog.connection.header"
-            targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
-        </view>
+    <extension point="org.jkiss.dbeaver.dataSourceConfigurator">
+        <configurator dataSource="cubrid" class="org.jkiss.dbeaver.ext.cubrid.ui.views.CubridConnectionPage"/>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
         <page category="org.jkiss.dbeaver.preferences.drivers" id="org.jkiss.dbeaver.preferences.cubrid.general" class="org.jkiss.dbeaver.ext.cubrid.ui.views.PrefPageCubrid" name="%views.PrefPageCubrid.name">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.ext.cubrid.ui.keyword.pref.general"/>
         </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.ext.cubrid.ui.keyword.pref.general" label="%keyword.org.jkiss.dbeaver.ext.cubrid.ui.keyword.pref.general.label"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.resultset.panel">

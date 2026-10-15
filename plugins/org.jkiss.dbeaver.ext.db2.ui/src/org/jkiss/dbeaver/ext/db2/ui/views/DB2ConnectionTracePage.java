@@ -18,14 +18,15 @@ package org.jkiss.dbeaver.ext.db2.ui.views;
 
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.db2.DB2Constants;
 import org.jkiss.dbeaver.ext.db2.ui.internal.DB2Messages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -40,8 +41,8 @@ import java.util.Map;
 /**
  * OracleConnectionPage
  */
-public class DB2ConnectionTracePage extends ConnectionPageAbstract
-{
+public class DB2ConnectionTracePage extends ConnectionPageAbstract {
+    private static final Log log = Log.getLog(DB2ConnectionTracePage.class);
 
     private Button enableTraceCheck;
     private Text fileNameText;
@@ -133,18 +134,14 @@ public class DB2ConnectionTracePage extends ConnectionPageAbstract
             level.checkbox = UIUtils.createCheckbox(levelsGroup, level.label, false);
         }
 
-        enableTraceCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        enableTraceCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (traceEnableState == null) {
                     traceEnableState = ControlEnableState.disable(traceGroup);
                 } else {
                     traceEnableState.restore();
                     traceEnableState = null;
                 }
-            }
-        });
+            }));
 
         setControl(cfgGroup);
 

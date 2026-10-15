@@ -227,53 +227,44 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     }
 
     @Override
-    public void dispose() {
-        try {
-            if (exportSql && wb != null) {
-                try {
+    public void dispose() throws IOException {
+        if (exportSql && wb != null) {
+            try {
 
-                    Sheet sh = wb.createSheet();
-                    if (splitSqlText) {
-                        String[] sqlText = getSite().getSource().getName().split("\n",
-                                wb.getSpreadsheetVersion().getMaxRows());
+                Sheet sh = wb.createSheet();
+                if (splitSqlText) {
+                    String[] sqlText = getSite().getSource().getName().split("\n",
+                            wb.getSpreadsheetVersion().getMaxRows());
 
-                        int sqlRownum = 0;
+                    int sqlRownum = 0;
 
-                        for (String s : sqlText) {
-                            Row row = sh.createRow(sqlRownum);
-                            Cell newcell = row.createCell(0);
-                            newcell.setCellValue(s);
-                            sqlRownum++;
-                        }
-
-                    } else {
-                        Row row = sh.createRow(0);
+                    for (String s : sqlText) {
+                        Row row = sh.createRow(sqlRownum);
                         Cell newcell = row.createCell(0);
-                        newcell.setCellValue(getSite().getSource().getName());
+                        newcell.setCellValue(s);
+                        sqlRownum++;
                     }
-                    sh = null;
-                } catch (Exception e) {
-                    log.error("Dispose error", e);
-                }
-            }
-            if (wb != null) {
-                wb.write(getSite().getOutputStream());
-                wb.close();
-                wb.dispose();
-            }
 
-        } catch (IOException e) {
-            log.error("Dispose error", e);
+                } else {
+                    Row row = sh.createRow(0);
+                    Cell newcell = row.createCell(0);
+                    newcell.setCellValue(getSite().getSource().getName());
+                }
+            } catch (Exception e) {
+                log.error("Dispose error", e);
+            }
         }
-        wb = null;
+        if (wb != null) {
+            wb.write(getSite().getOutputStream());
+            wb.close();
+            wb = null;
+        }
         if (!CommonUtils.isEmpty(worksheets)) {
             for (Worksheet w : worksheets.values()) {
                 w.dispose();
             }
             worksheets.clear();
         }
-
-        super.dispose();
     }
 
     @Override

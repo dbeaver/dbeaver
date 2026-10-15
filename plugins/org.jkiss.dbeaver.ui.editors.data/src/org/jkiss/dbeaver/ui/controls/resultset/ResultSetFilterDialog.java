@@ -88,7 +88,6 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
             public boolean select(@NotNull Viewer viewer, @NotNull Object parentElement, @NotNull Object element) {
                 var filter = (QMQueryFilter) element;
                 var criteria = searchText.getText().trim();
-                persistFilter(filter);
                 return criteria.isEmpty()
                     || StringUtils.containsIgnoreCase(filter.text(), criteria)
                     || (filter.title() != null && StringUtils.containsIgnoreCase(filter.title(), criteria));
@@ -178,9 +177,9 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
         titleColumn.setEditingSupport(new TextGetSetEditingSupport<QMQueryFilter>(viewer,
             f -> CommonUtils.notEmpty(f.title()),
             (f, s) -> {
-                if (f != null && !CommonUtils.isEmpty(s)) {
+                if (f != null) {
                     f.setTitle(s);
-                    persistFilter(f);
+                    UIUtils.asyncExec(() -> persistFilter(f));
                 }
         }));
 

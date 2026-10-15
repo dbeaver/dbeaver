@@ -344,7 +344,7 @@ public class StreamDataSourceContainer implements DBPDataSourceContainer {
     }
 
     @Override
-    public boolean persistConfiguration() {
+    public boolean persistConfiguration(boolean forcePersistSecrets) {
         return true;
     }
 

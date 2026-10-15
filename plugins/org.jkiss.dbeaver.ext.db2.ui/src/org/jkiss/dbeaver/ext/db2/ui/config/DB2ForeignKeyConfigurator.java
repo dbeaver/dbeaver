@@ -49,7 +49,7 @@ public class DB2ForeignKeyConfigurator implements DBEObjectConfigurator<DB2Table
         FK_RULES = rules.toArray(new DBSForeignKeyModifyRule[]{});
     }
 
-    @NotNull
+    @Nullable
     @Override
     public DB2TableForeignKey configureObject(
         @NotNull DBRProgressMonitor monitor,

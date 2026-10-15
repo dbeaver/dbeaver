@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,11 @@
 
 package org.jkiss.dbeaver.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.meta.IPropertyValueValidator;
+import org.jkiss.dbeaver.model.meta.Property;
+
 /**
  * Abstract persisted object
  */
@@ -28,5 +33,17 @@ public interface DBPPersistedObject extends DBPObject {
      * @return true if object is persisted in external data source
      */
     boolean isPersisted();
+
+    /**
+     * A validator that checks if the object is persisted.
+     *
+     * @see Property#visibleIf()
+     */
+    final class IsPersistedValidator implements IPropertyValueValidator<DBPPersistedObject, Object> {
+        @Override
+        public boolean isValidValue(@NotNull DBPPersistedObject object, @Nullable Object value) throws IllegalArgumentException {
+            return object.isPersisted();
+        }
+    }
 
 }

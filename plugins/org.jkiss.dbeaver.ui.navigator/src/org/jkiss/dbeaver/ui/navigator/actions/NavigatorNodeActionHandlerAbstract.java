@@ -22,7 +22,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.INavigatorNodeActionHandler;
 
 /**
@@ -31,24 +30,24 @@ import org.jkiss.dbeaver.ui.navigator.INavigatorNodeActionHandler;
 public abstract class NavigatorNodeActionHandlerAbstract implements INavigatorNodeActionHandler {
 
     @Override
-    public boolean isEnabledFor(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
+    public boolean isEnabledFor(@NotNull DBNNode node) {
         return true;
     }
 
     @Override
-    public boolean isSticky(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
+    public boolean isSticky(@NotNull DBNNode node) {
         return true;
     }
 
     @Override
     @Nullable
-    public DBPImage getNodeActionIcon(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
+    public DBPImage getNodeActionIcon(@NotNull DBNNode node) {
         return DBIcon.TYPE_UNKNOWN;
     }
 
     @Override
     @Nullable
-    public String getNodeActionToolTip(@NotNull INavigatorModelView view, @NotNull DBNNode node) {
+    public String getNodeActionToolTip(@NotNull DBNNode node) {
         return null;
     }
 

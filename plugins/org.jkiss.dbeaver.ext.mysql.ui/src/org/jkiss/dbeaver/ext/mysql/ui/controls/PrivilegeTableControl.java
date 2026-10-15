@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ext.mysql.ui.controls;
 
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -145,10 +144,7 @@ public class PrivilegeTableControl extends Composite {
         Composite buttonsPanel = UIUtils.createComposite(privsGroup, 3);
         buttonsPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        UIUtils.createPushButton(buttonsPanel, MySQLUIMessages.controls_privilege_table_push_button_check_all, null, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        UIUtils.createPushButton(buttonsPanel, MySQLUIMessages.controls_privilege_table_push_button_check_all, null, SelectionListener.widgetSelectedAdapter(e -> {
                 for (MySQLObjectPrivilege userPrivilege : CommonUtils.safeCollection(currentPrivileges)) {
                     if (!userPrivilege.enabled) {
                         userPrivilege.enabled = true;
@@ -156,12 +152,8 @@ public class PrivilegeTableControl extends Composite {
                     }
                 }
                 drawColumns(currentPrivileges);
-            }
-        });
-        UIUtils.createPushButton(buttonsPanel, MySQLUIMessages.controls_privilege_table_push_button_clear_all, null, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            }));
+        UIUtils.createPushButton(buttonsPanel, MySQLUIMessages.controls_privilege_table_push_button_clear_all, null, SelectionListener.widgetSelectedAdapter(e -> {
                 for (MySQLObjectPrivilege userPrivilege : CommonUtils.safeCollection(currentPrivileges)) {
                     if (userPrivilege.enabled) {
                         userPrivilege.enabled = false;
@@ -169,8 +161,7 @@ public class PrivilegeTableControl extends Composite {
                     }
                 }
                 drawColumns(currentPrivileges);
-            }
-        });
+            }));
     }
 
     private void notifyPrivilegeCheck(MySQLPrivilege privilege, boolean checked, boolean withGrantOption) {

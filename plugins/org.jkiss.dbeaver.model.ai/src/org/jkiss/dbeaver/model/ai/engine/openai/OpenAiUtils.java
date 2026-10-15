@@ -20,9 +20,12 @@ import com.google.gson.JsonSyntaxException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.AIFunctionParameter;
+import org.jkiss.dbeaver.model.ai.AIImageAttachment;
+import org.jkiss.dbeaver.model.ai.AIImageDimensions;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
@@ -30,6 +33,7 @@ import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +44,36 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class OpenAiUtils {
+    private static final Log log = Log.getLog(OpenAiUtils.class);
+    private static final int MINI_IMAGE_BASE_TOKENS = 2833;
+    private static final int MINI_IMAGE_TILE_TOKENS = 5667;
+    private static final int MAX_IMAGE_TILES = 8;
+    private static final int IMAGE_TILE_SIZE = 512;
+    private static final int IMAGE_MAX_SIDE = 2048;
+    private static final int IMAGE_SHORT_SIDE = 768;
+
     private OpenAiUtils() {
+    }
+
+    public static int estimateImageTokens(@Nullable String model, @NotNull AIImageAttachment image) {
+        if (model == null || !model.contains("gpt-4o-mini")) {
+            return AIImageAttachment.DEFAULT_TOKEN_ESTIMATE;
+        }
+        int tiles = MAX_IMAGE_TILES;
+        try {
+            AIImageDimensions dimensions = AIImageDimensions.read(image.getBytes());
+            double width = dimensions.width();
+            double height = dimensions.height();
+            double scale = Math.min(1, IMAGE_MAX_SIDE / Math.max(width, height));
+            width *= scale;
+            height *= scale;
+            scale = Math.min(1, IMAGE_SHORT_SIDE / Math.min(width, height));
+            tiles = (int) (Math.ceil(width * scale / IMAGE_TILE_SIZE) * Math.ceil(height * scale / IMAGE_TILE_SIZE));
+        } catch (IOException | IllegalArgumentException exception) {
+            log.debug("Cannot estimate image tokens from dimensions", exception);
+        }
+        // auto detail can use the high-detail tile budget
+        return MINI_IMAGE_BASE_TOKENS + Math.min(MAX_IMAGE_TILES, tiles) * MINI_IMAGE_TILE_TOKENS;
     }
 
     @NotNull
@@ -80,23 +113,45 @@ public class OpenAiUtils {
                 tool.type = OAITool.TYPE_FUNCTION;
                 tool.name = fd.getFullId();
                 tool.description = fd.getAiDescription();
+                tool.parameters = new OAIToolParameters();
                 tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
-                List<String> requiredFields = new ArrayList<>();
-                for (AIFunctionParameter param : fd.getParameters()) {
-                    OAIToolParameter tp = new OAIToolParameter();
-                    tp.type = param.getType();
-                    tp.description = param.getDescription();
-                    tp.enumItems = param.getValidValues();
-                    requiredFields.add(param.getName());
-                    tool.parameters.properties.put(param.getName(), tp);
+                if (fd.getParameters().length > 0) {
+                    List<String> requiredFields = new ArrayList<>();
+                    for (AIFunctionParameter param : fd.getParameters()) {
+                        OAIToolParameter tp = new OAIToolParameter();
+                        tp.type = param.getType();
+                        tp.description = param.getDescription();
+                        tp.enumItems = param.getValidValues();
+                        if (param.isRequired()) {
+                            requiredFields.add(param.getName());
+                        }
+                        tool.parameters.properties.put(param.getName(), tp);
+                    }
+                    if (!requiredFields.isEmpty()) {
+                        tool.parameters.required = requiredFields.toArray(new String[0]);
+                    }
                 }
-                tool.parameters.required = requiredFields.toArray(new String[0]);
                 tools.add(tool);
             }
             oaiRequest.tools = tools;
         }
 
         return oaiRequest;
+    }
+
+    static void prepareChatGptAccountRequest(@NotNull OAIResponsesRequest request) {
+        if (request.input == null) {
+            return;
+        }
+        String instructions = request.input.stream()
+            .filter(message -> "system".equals(message.role))
+            .map(OAIMessage::getFullText)
+            .filter(CommonUtils::isNotEmpty)
+            .collect(Collectors.joining("\n"));
+        request.instructions = CommonUtils.isEmpty(instructions) ? null : instructions;
+        request.input = request.input.stream()
+            .filter(message -> !"system".equals(message.role))
+            .toList();
     }
 
     @NotNull
@@ -118,6 +173,22 @@ public class OpenAiUtils {
         return result;
     }
 
+    public static boolean shouldFallbackToLegacyChat(@Nullable String message) {
+        if (message == null) {
+            return false;
+        }
+        return message.contains("is not supported via Responses API")
+            || message.contains("does not support Responses API")
+            || message.contains("model_not_supported")
+            || message.contains("The requested model is not supported");
+    }
+
+    public static boolean isTemperatureNotSupported(@Nullable String message) {
+        return message != null
+            && ((message.contains("Unsupported parameter") && message.contains("temperature"))
+                || message.contains("`temperature` is deprecated"));
+    }
+
     public static boolean processErrors(
         @NotNull MonitoredHttpClient.ErrorMapper mapper,
         @NotNull Consumer<Throwable> errorHandler,
@@ -130,9 +201,9 @@ public class OpenAiUtils {
             String responseBody = response.body().collect(Collectors.joining());
             if (backupOption != null && statusCode == 400) {
                 String reason;
-                if (responseBody.contains("is not supported via Responses API")) {
+                if (shouldFallbackToLegacyChat(responseBody)) {
                     reason = OpenAIConstants.LEGACY_FALLBACK;
-                } else if (responseBody.contains("Unsupported parameter: 'temperature'")) {
+                } else if (isTemperatureNotSupported(responseBody)) {
                     reason = OpenAIConstants.TEMPERATURE_NOT_SUPPORTED;
                 } else {
                     errorHandler.accept(mapper.map(statusCode, responseBody));

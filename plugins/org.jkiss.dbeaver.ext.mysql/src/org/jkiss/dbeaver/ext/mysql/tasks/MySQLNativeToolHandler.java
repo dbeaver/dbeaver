@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
@@ -31,6 +33,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.Writer;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -97,18 +100,22 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         }
 
         NativeToolUtils.addHostAndPortParamsToCmd(settings.getDataSourceContainer(), cmd);
+        cmd.removeIf(CommonUtils::isEmpty);
         return cmd;
     }
 
-    private static Path createCredentialsFile(String username, String password) throws IOException {
+    @NotNull
+    static Path createCredentialsFile(@Nullable String username, @Nullable String password) throws IOException {
         Path dir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "mysql-native-handler"); //$NON-NLS-1$
         Path cnf = dir.resolve(".my.cnf"); //$NON-NLS-1$
         cnf.toFile().deleteOnExit();
 
-        try (Writer writer = Files.newBufferedWriter(cnf)) {
+        try (Writer writer = Files.newBufferedWriter(cnf, StandardCharsets.UTF_8)) {
             writer.write("[client]"); //$NON-NLS-1$
             writer.write("\nuser=" + CommonUtils.notEmpty(username)); //$NON-NLS-1$
-            writer.write("\npassword=" + CommonUtils.notEmpty(password)); //$NON-NLS-1$
+            writer.write("\npassword=\"" + CommonUtils.notEmpty(password)
+                .replace("\\", "\\\\")
+                .replace("\"", "\\\"") + "\""); //$NON-NLS-1$
         }
 
         return cnf;

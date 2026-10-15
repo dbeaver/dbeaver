@@ -22,6 +22,8 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -39,6 +41,7 @@ import java.util.TimeZone;
  * MySQLPageAdvanced
  */
 public class MySQLConnectionPageAdvanced extends ConnectionPageAbstract {
+    private static final Log log = Log.getLog(MySQLConnectionPageAdvanced.class);
 
     // disable Server time zone manage - it confuses users and makes very little sense
     // as now we use server timestamp format by default

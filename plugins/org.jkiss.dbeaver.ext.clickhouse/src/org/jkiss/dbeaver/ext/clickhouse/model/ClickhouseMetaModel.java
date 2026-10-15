@@ -179,11 +179,12 @@ public class ClickhouseMetaModel extends GenericMetaModel implements DBCQueryTra
         return false;
     }
 
-    private String normalizeDDL(String ddl) {
+    static String normalizeDDL(String ddl) {
         int declStart = ddl.indexOf("(");
         int declEnd = ddl.indexOf(") ENGINE");
-        if (declEnd == -1) {
-            declEnd = ddl.length() - 1;
+        if (declStart == -1 || declEnd == -1 || declStart > declEnd) {
+            // Not a column declaration block (e.g. plain view definition) - leave it as is
+            return ddl;
         }
         return
             ddl.substring(0, declStart) + "(\n" +

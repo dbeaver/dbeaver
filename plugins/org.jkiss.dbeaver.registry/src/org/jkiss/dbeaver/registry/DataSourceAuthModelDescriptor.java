@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.registry;
 
+import org.eclipse.core.expressions.Expression;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -58,6 +59,7 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
     private final Map<String, String[]> replaces = new HashMap<>();
     private final List<DBPDriverLibrary> libraries;
     private boolean hasCondReplaces = false;
+    private final Expression enabledWhen;
 
     private DBAAuthModel<?> instance;
 
@@ -93,6 +95,8 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
                 libraries.add(lib);
             }
         }
+
+        this.enabledWhen = getEnablementExpression(config);
     }
 
     @NotNull
@@ -197,11 +201,12 @@ public class DataSourceAuthModelDescriptor extends DataSourceBindingDescriptor i
         return requiredAuthProvider;
     }
 
-    boolean appliesTo(DBPDriver driver) {
-        return isDriverApplicable(driver);
+    boolean appliesTo(@NotNull DBPDriver driver) {
+        return isExpressionTrue(enabledWhen, driver) && isDriverApplicable(driver);
     }
 
-    public Collection<String> getReplaces(DBPDriver driver) {
+    @NotNull
+    public Collection<String> getReplaces(@NotNull DBPDriver driver) {
         if (hasCondReplaces) {
             List<String> replList = new ArrayList<>();
             for (Map.Entry<String, String[]> re : replaces.entrySet()) {

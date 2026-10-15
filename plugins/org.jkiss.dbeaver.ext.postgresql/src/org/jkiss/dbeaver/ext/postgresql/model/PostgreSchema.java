@@ -998,6 +998,9 @@ public class PostgreSchema implements
                 case "f":
                     constraintType = DBSEntityConstraintType.FOREIGN_KEY;
                     break;
+                case "n":
+                    constraintType = DBSEntityConstraintType.NOT_NULL;
+                    break;
                 case "p":
                     constraintType = DBSEntityConstraintType.PRIMARY_KEY;
                     break;

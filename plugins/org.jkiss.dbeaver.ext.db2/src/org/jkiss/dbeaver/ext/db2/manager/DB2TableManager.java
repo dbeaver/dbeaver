@@ -157,6 +157,11 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
         if (commentAction != null) {
             actions.add(commentAction);
         }
+        for (DB2TableColumn column : CommonUtils.safeCollection(command.getObject().getAttributes(monitor))) {
+            if (CommonUtils.isNotEmpty(column.getDescription())) {
+                actions.add(DB2TableColumnManager.buildCommentAction(column));
+            }
+        }
     }
 
     // ------

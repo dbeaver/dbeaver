@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBRuntimeException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
@@ -33,6 +34,7 @@ import java.util.List;
 public class AIFunctionInternalDescriptor extends AbstractDescriptor implements AIFunctionDescriptor {
 
     public static final String EXTENSION_ID = "com.dbeaver.ai.function";
+    private static final Log log = Log.getLog(AIFunctionInternalDescriptor.class);
 
     private static final AIFunction VOID_STUB = (context, parameters) -> {
         throw new DBCFeatureNotSupportedException("Internal error. This function mustn't be called");
@@ -41,11 +43,13 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     private final AIToolboxInternalDescriptor toolbox;
     private final ObjectType objectType;
     private final String id;
+    private final String legacyId;
     private final String name;
     private final DBPImage icon;
     private final boolean system;
     private final boolean ui;
     private final boolean enabledByDefault;
+    private final boolean omitConfirmation;
     private final AIFunctionAllowMode defaultAllowMode;
     private final AIFunctionPurpose purpose;
     private final AIFunctionType type;
@@ -54,17 +58,27 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     private final String userDescription;
     private final String categoryId;
     private final AIFunctionInternalParameter[] parameters;
+    private final AIFunctionImplementationDescriptor implementation;
     private transient AIFunction instance;
 
     public AIFunctionInternalDescriptor(
         @NotNull AIToolboxInternalDescriptor toolbox,
         @NotNull IConfigurationElement config
     ) {
+        this(toolbox, config, null);
+    }
+
+    AIFunctionInternalDescriptor(
+        @NotNull AIToolboxInternalDescriptor toolbox,
+        @NotNull IConfigurationElement config,
+        @Nullable AIFunctionImplementationDescriptor implementation
+    ) {
         super(config);
         this.toolbox = toolbox;
         this.objectType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
+        this.legacyId = config.getAttribute("legacyId");
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
         this.ui = CommonUtils.toBoolean(config.getAttribute("ui"));
         this.system = CommonUtils.toBoolean(config.getAttribute("system"));
@@ -74,6 +88,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
             config.getAttribute("defaultAllowMode"),
             AIFunctionAllowMode.ALWAYS_ALLOW
         );
+        this.omitConfirmation = CommonUtils.toBoolean(config.getAttribute("omitConfirmation"), false);
         this.purpose = CommonUtils.valueOf(AIFunctionPurpose.class, config.getAttribute("purpose"), AIFunctionPurpose.TOOL);
         this.categoryId = config.getAttribute("categoryId");
         this.aiDescription = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
@@ -87,9 +102,18 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
 
         List<AIFunctionInternalParameter> params = new ArrayList<>();
         for (IConfigurationElement pe : config.getChildren("parameter")) {
-            params.add(new AIFunctionInternalParameter(pe));
+            params.add(new AIFunctionInternalParameter(pe, implementation));
         }
         this.parameters = params.toArray(new AIFunctionInternalParameter[0]);
+        this.implementation = implementation;
+        if (implementation != null) {
+            for (String parameterName : implementation.getTransformedParameters()) {
+                if (getParameter(parameterName) == null) {
+                    log.error("AI function implementation references an unknown parameter '" + parameterName +
+                        "' in function '" + id + "'");
+                }
+            }
+        }
     }
 
     @NotNull
@@ -101,6 +125,12 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     @NotNull
     public String getId() {
         return id;
+    }
+
+    @Nullable
+    @Override
+    public String getLegacyId() {
+        return legacyId;
     }
 
     @NotNull
@@ -153,6 +183,11 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
         return enabledByDefault;
     }
 
+    @Override
+    public boolean isOmitConfirmation() {
+        return omitConfirmation;
+    }
+
     @NotNull
     @Override
     public AIFunctionAllowMode getDefaultAllowMode() {
@@ -184,7 +219,13 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
     @NotNull
     public AIFunction getInstance() {
         if (instance == null) {
-            if (CommonUtils.isEmpty(objectType.getImplName())) {
+            if (implementation != null && implementation.hasClass()) {
+                try {
+                    instance = implementation.createInstance();
+                } catch (Exception e) {
+                    throw new DBRuntimeException("Error creating AI function " + getId(), e);
+                }
+            } else if (CommonUtils.isEmpty(objectType.getImplName())) {
                 instance = VOID_STUB;
             } else {
                 try {
@@ -195,6 +236,12 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
             }
         }
         return instance;
+    }
+
+    boolean hasImplementation() {
+        return (implementation != null && (implementation.hasClass() ||
+            implementation.isHeadless() && type == AIFunctionType.ACTION)) ||
+            CommonUtils.isNotEmpty(objectType.getImplName());
     }
 
     public boolean isApplicable(@NotNull AIEngineDescriptor engine, @NotNull AIPromptGenerator prompt) {

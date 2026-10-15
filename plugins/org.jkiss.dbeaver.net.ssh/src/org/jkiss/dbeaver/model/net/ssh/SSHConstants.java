@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ public class SSHConstants {
     public static final String PROP_REMOTE_PORT = "remotePort";
     public static final String PROP_BYPASS_HOST_VERIFICATION = "bypassHostVerification";
     public static final String PROP_SHARE_TUNNELS = "shareTunnels";
+    public static final String PROP_AGENT_SOCK_PATH = "agentAuthSockPath";
     //private static final int CONNECT_TIMEOUT = 10000;
 
     public enum AuthType {

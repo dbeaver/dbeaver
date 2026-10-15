@@ -226,7 +226,11 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.app.config">
-        <feature id="dashboards" label="Database dashboards" enabledByDefault="true"/>
+        <feature
+            id="dashboards"
+            label="Database dashboards"
+            description="Allows to quickly identify performance, disk space issues, the number of connections, and other important KPIs associated with a single database connections."
+            enabledByDefault="true"/>
     </extension>
 
     <extension point="org.eclipse.ui.activities">
@@ -236,8 +240,8 @@
             </enabledWhen>
         </activity>
 
-        <activityPatternBinding activityId="dbeaver.activity.dashboards" pattern="org.jkiss.dbeaver.ui.dashboard.*"/>
-        <activityPatternBinding activityId="dbeaver.activity.dashboards" pattern="org.jkiss.dbeaver.dashboard.ui.*"/>
+        <activityPatternBinding activityId="dbeaver.activity.dashboards" pattern="org\.jkiss\.dbeaver\.ui\.dashboard.*"/>
+        <activityPatternBinding activityId="dbeaver.activity.dashboards" pattern="org\.jkiss\.dbeaver\.dashboard\.ui.*"/>
     </extension>
 
 </plugin>

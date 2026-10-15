@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.registry;
 
 import org.eclipse.core.commands.Command;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.ui.IPluginContribution;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -40,7 +41,7 @@ import java.util.stream.Stream;
 /**
  * ToolDescriptor
  */
-public class ToolDescriptor extends AbstractDescriptor {
+public class ToolDescriptor extends AbstractDescriptor implements IPluginContribution {
     private final String id;
     private final String label;
     private final String description;
@@ -64,6 +65,12 @@ public class ToolDescriptor extends AbstractDescriptor {
             .map(e -> e.getAttribute(RegistryConstants.ATTR_ID)).collect(Collectors.toSet());
         this.toolCommandRefs = Stream.of(config.getChildren("command"))
             .map(ToolCommandRef::new).collect(Collectors.toSet());
+    }
+
+    @NotNull
+    @Override
+    public String getLocalId() {
+        return id;
     }
 
     @NotNull

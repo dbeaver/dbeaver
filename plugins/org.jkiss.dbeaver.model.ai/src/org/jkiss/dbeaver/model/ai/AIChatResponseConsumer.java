@@ -38,6 +38,7 @@ public interface AIChatResponseConsumer {
 
     void complete(
         @NotNull List<AIMessageMeta> meta,
-        boolean finishConversation
+        boolean finishConversation,
+        boolean isCanceled
     );
 }

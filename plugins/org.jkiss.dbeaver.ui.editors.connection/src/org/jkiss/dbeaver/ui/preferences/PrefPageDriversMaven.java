@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -85,10 +84,7 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
 
             Composite buttonsPH = UIUtils.createComposite(mavenGroup, 1);
             buttonsPH.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-            UIUtils.createDialogButton(buttonsPH, UIConnectionMessages.pref_page_drivers_maven_button_add, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+            UIUtils.createDialogButton(buttonsPH, UIConnectionMessages.pref_page_drivers_maven_button_add, SelectionListener.widgetSelectedAdapter(e -> {
                     String urlString = EnterNameDialog.chooseName(getShell(), UIConnectionMessages.pref_page_drivers_maven_label_enter_maven_repository_url, "http://");
                     if (urlString != null) {
                         try {
@@ -101,20 +97,14 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
                             DBWorkbench.getPlatformUI().showError(UIConnectionMessages.pref_page_drivers_maven_label_bad_url, UIConnectionMessages.pref_page_drivers_maven_label_bad_url_tip, e1);
                         }
                     }
-                }
-            });
-            removeButton = UIUtils.createDialogButton(buttonsPH, UIConnectionMessages.pref_page_drivers_maven_button_remove, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+                }));
+            removeButton = UIUtils.createDialogButton(buttonsPH, UIConnectionMessages.pref_page_drivers_maven_button_remove, SelectionListener.widgetSelectedAdapter(e -> {
                     mavenRepoTable.remove(mavenRepoTable.getSelectionIndices());
                     mavenRepoTable.notifyListeners(SWT.Selection, new Event());
-                }
-            });
+                }));
             removeButton.setEnabled(false);
 
-            disableButton = UIUtils.createDialogButton(buttonsPH, UIConnectionMessages.pref_page_drivers_maven_label_disable, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            disableButton = UIUtils.createDialogButton(buttonsPH, UIConnectionMessages.pref_page_drivers_maven_label_disable, SelectionListener.widgetSelectedAdapter(e -> {
                     for (TableItem item : mavenRepoTable.getSelection()) {
                         MavenRepository repo = (MavenRepository) item.getData();
                         if (!disabledRepositories.remove(repo)) {
@@ -125,12 +115,9 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
                         }
                     }
                     mavenRepoTable.notifyListeners(SWT.Selection, new Event());
-                }
-            });
+                }));
             removeButton.setEnabled(false);
-            moveUpButton = UIUtils.createDialogButton(buttonsPH, UIConnectionMessages.pref_page_drivers_maven_button_up, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            moveUpButton = UIUtils.createDialogButton(buttonsPH, UIConnectionMessages.pref_page_drivers_maven_button_up, SelectionListener.widgetSelectedAdapter(e -> {
                     final TableItem item = mavenRepoTable.getSelection()[0];
                     final int index = mavenRepoTable.indexOf(item);
                     if (index > 0) {
@@ -139,11 +126,8 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
                         mavenRepoTable.setSelection(index - 1);
                         updateSelection();
                     }
-                }
-            });
-            moveDownButton = UIUtils.createDialogButton(buttonsPH, UIConnectionMessages.pref_page_drivers_maven_button_down, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+                }));
+            moveDownButton = UIUtils.createDialogButton(buttonsPH, UIConnectionMessages.pref_page_drivers_maven_button_down, SelectionListener.widgetSelectedAdapter(e -> {
                     final TableItem item = mavenRepoTable.getSelection()[0];
                     final int index = mavenRepoTable.indexOf(item);
                     if (index < mavenRepoTable.getItemCount() - 1) {
@@ -152,15 +136,9 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
                         mavenRepoTable.setSelection(index + 1);
                         updateSelection();
                     }
-                }
-            });
+                }));
 
-            mavenRepoTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    updateSelection();
-                }
-            });
+            mavenRepoTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateSelection()));
         }
 
         {
@@ -196,14 +174,11 @@ public class PrefPageDriversMaven extends AbstractPrefPage implements IWorkbench
             });
             isSnapshotRepository = UIUtils.createCheckbox(propsGroup,
                 UIConnectionMessages.pref_page_drivers_maven_checkbox_snapshot, false);
-            isSnapshotRepository.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            isSnapshotRepository.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     if (getSelectedRepository() != null) {
                         getSelectedRepository().setIsSnapshot(isSnapshotRepository.getSelection());
                     }
-                }
-            });
+                }));
         }
 
         {

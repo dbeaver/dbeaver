@@ -26,13 +26,13 @@ import org.eclipse.core.expressions.EvaluationContext;
 import org.eclipse.core.expressions.IEvaluationContext;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.bindings.Binding;
-import org.eclipse.jface.bindings.Scheme;
 import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.commands.ToggleState;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Point;
@@ -42,6 +42,7 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandImageService;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
+import org.eclipse.ui.internal.keys.BindingService;
 import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
@@ -64,6 +65,9 @@ import java.util.function.Consumer;
  * Action utils
  */
 public class ActionUtils {
+
+    private static final String HOSTING_OBJECT_PROP_NAME = "org.jkiss.dbeaver.ui.hostingObject";
+
     private static final Log log = Log.getLog(ActionUtils.class);
 
     private static final Set<IPropertyChangeListener> propertyEvaluationRequestListeners = Collections.synchronizedSet(new HashSet<>());
@@ -302,25 +306,28 @@ public class ActionUtils {
         IBindingService bindingService = serviceLocator.getService(IBindingService.class);
         if (bindingService != null) {
             TriggerSequence sequence = null;
-            Binding[] bindings = bindingService.getBindings();
-            Scheme activeScheme = bindingService.getActiveScheme();
-            String activeSchemeId = activeScheme == null ? null : activeScheme.getId();
+            Iterable<Binding> bindings;
+            if (bindingService instanceof BindingService s) {
+                bindings = s.getBindingManager().getActiveBindingsDisregardingContextFlat();
+            } else if (bindingService.getBindings() instanceof Binding[] bb) {
+                bindings = Arrays.asList(bb);
+            } else {
+                bindings = null;
+            }
             if (bindings != null) {
                 for (Binding b : bindings) {
-                    if (activeSchemeId == null || activeSchemeId.equals(b.getSchemeId())) {
-                        ParameterizedCommand parameterizedCommand = b.getParameterizedCommand();
-                        if (parameterizedCommand != null && commandId.equals(parameterizedCommand.getId())) {
-                            if (paramName != null) {
-                                Object cmdParamValue = parameterizedCommand.getParameterMap().get(paramName);
-                                if (!CommonUtils.equalObjects(cmdParamValue, paramValue)) {
-                                    continue;
-                                }
+                    ParameterizedCommand parameterizedCommand = b.getParameterizedCommand();
+                    if (parameterizedCommand != null && commandId.equals(parameterizedCommand.getId())) {
+                        if (paramName != null) {
+                            Object cmdParamValue = parameterizedCommand.getParameterMap().get(paramName);
+                            if (!CommonUtils.equalObjects(cmdParamValue, paramValue)) {
+                                continue;
                             }
-                            sequence = b.getTriggerSequence();
-                            if (b.getType() == Binding.USER) {
-                                // Prefer user-defined binding over default (system)
-                                break;
-                            }
+                        }
+                        sequence = b.getTriggerSequence();
+                        if (b.getType() == Binding.USER) {
+                            // Prefer user-defined binding over default (system)
+                            break;
                         }
                     }
                 }
@@ -365,22 +372,33 @@ public class ActionUtils {
     }
 
     public static void runCommand(String commandId, ISelection selection, Map<String, Object> parameters, IServiceLocator serviceLocator) {
+        runCommand(commandId, selection, parameters, null, serviceLocator);
+    }
+
+    public static void runCommand(
+        @Nullable String commandId,
+        @Nullable ISelection selection,
+        @Nullable Map<String, Object> parameters,
+        @Nullable Map<String, Object> contextVariables,
+        @NotNull IServiceLocator serviceLocator
+    ) {
         if (commandId != null) {
             try {
                 ICommandService commandService = serviceLocator.getService(ICommandService.class);
                 IHandlerService handlerService = serviceLocator.getService(IHandlerService.class);
                 if (commandService != null) {
                     Command command = commandService.getCommand(commandId);
-                    boolean needContextPatch = false;
+                    boolean needContextPatch = !CommonUtils.isEmpty(contextVariables);
                     if (selection != null) {
                         needContextPatch = true;
                         if (serviceLocator instanceof IWorkbenchPartSite) {
-                            final ISelection curSelection = ((IWorkbenchSite) serviceLocator).getSelectionProvider().getSelection();
+                            final ISelectionProvider selectionProvider = ((IWorkbenchSite) serviceLocator).getSelectionProvider();
+                            final ISelection curSelection = selectionProvider == null ? null : selectionProvider.getSelection();
                             if (curSelection instanceof IStructuredSelection && selection instanceof IStructuredSelection) {
                                 if (((IStructuredSelection) curSelection).size() == ((IStructuredSelection) selection).size() &&
                                     ((IStructuredSelection) curSelection).getFirstElement() == ((IStructuredSelection) selection).getFirstElement()) {
                                     // The same selection
-                                    needContextPatch = false;
+                                    needContextPatch = !CommonUtils.isEmpty(contextVariables);
                                 }
                             }
                         }
@@ -403,14 +421,20 @@ public class ActionUtils {
                         }
                     }
 
-                    if (selection != null && needContextPatch) {
+                    if (needContextPatch) {
                         // Create new eval context
+                        IEvaluationContext parentContext = handlerService.createContextSnapshot(false);
                         IEvaluationContext context = new EvaluationContext(
-                            handlerService.createContextSnapshot(false), selection);
+                            parentContext, selection == null ? parentContext.getDefaultVariable() : selection);
                         if (serviceLocator instanceof IWorkbenchPartSite) {
                             context.addVariable(ISources.ACTIVE_PART_NAME, ((IWorkbenchPartSite) serviceLocator).getPart());
                         }
-                        context.addVariable(ISources.ACTIVE_CURRENT_SELECTION_NAME, selection);
+                        if (selection != null) {
+                            context.addVariable(ISources.ACTIVE_CURRENT_SELECTION_NAME, selection);
+                        }
+                        if (contextVariables != null) {
+                            contextVariables.forEach(context::addVariable);
+                        }
 
                         ParameterizedCommand pc = new ParameterizedCommand(command, parametrization);
                         handlerService.executeCommandInContext(pc, null, context);
@@ -500,6 +524,9 @@ public class ActionUtils {
     }
 
     public static void evaluatePropertyState(String propertyName) {
+        if (!PlatformUI.isWorkbenchRunning()) {
+            return;
+        }
         IEvaluationService service = PlatformUI.getWorkbench().getService(IEvaluationService.class);
         if (service != null) {
             try {
@@ -573,5 +600,14 @@ public class ActionUtils {
         } else {
             return label;
         }
+    }
+
+    public static void setHostingObject(@NotNull Menu menu, @NotNull Object obj) {
+        menu.setData(HOSTING_OBJECT_PROP_NAME, obj);
+    }
+
+    @Nullable
+    public static Object getHostingObject(@NotNull Menu menu) {
+        return menu.getData(HOSTING_OBJECT_PROP_NAME);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,58 +83,50 @@ public class ExecuteBatchWithMultipleInsert extends ExecuteInsertBatchImpl {
     @NotNull
     @Override
     public DBCStatistics processBatch(@NotNull DBCSession session, @Nullable List<DBEPersistAction> actions, Map<String, Object> options) throws
-        DBException {
+            DBException {
         int attributesLength = attributes.length;
         DBDValueHandler[] handlers = new DBDValueHandler[attributesLength];
         for (int i = 0; i < attributesLength; i++) {
             if (attributes[i] instanceof DBDAttributeBinding) {
-                handlers[i] = ((DBDAttributeBinding)attributes[i]).getValueHandler();
+                handlers[i] = ((DBDAttributeBinding) attributes[i]).getValueHandler();
             } else {
                 handlers[i] = DBUtils.findValueHandler(session, attributes[i]);
             }
         }
 
         DBCStatistics statistics = new DBCStatistics();
-        DBCStatement batchStatement = null;
 
-        try {
-            int multiRowInsertBatchSize = CommonUtils.toInt(options.get(DBSDataManipulator.OPTION_MULTI_INSERT_BATCH_SIZE), 100);
-            boolean skipBindValues = CommonUtils.toBoolean(options.get(DBSDataManipulator.OPTION_SKIP_BIND_VALUES));
+        int multiRowInsertBatchSize = CommonUtils.toInt(options.get(DBSDataManipulator.OPTION_MULTI_INSERT_BATCH_SIZE), 100);
+        boolean skipBindValues = CommonUtils.toBoolean(options.get(DBSDataManipulator.OPTION_SKIP_BIND_VALUES));
 
-
-            int rowsCount = values.size();
-            List<Object> multiRowInsertBatchValuesList = new ArrayList<>();
-            for (int i = 0; i < rowsCount; i++) {
-                if (session.getProgressMonitor().isCanceled()) {
-                    break;
-                }
-                Object[] objects = values.get(i);
-                // Execute batch if it has a suitable size, or this are the last values
-                if (i == rowsCount - 1 || (i != 0 && i % multiRowInsertBatchSize == 0)) {
-                    // We can reuse statement, but not for the last values (their amount can be different from previous batches)
-                    if (i == rowsCount - 1) {
-                        Collections.addAll(multiRowInsertBatchValuesList, objects);
-                        Object[] allMultiInsertValues = multiRowInsertBatchValuesList.toArray(new Object[0]);
-                        try (DBCStatement statement = prepareStatement(session, handlers, allMultiInsertValues, options)) {
-                            bindAndFlushStatement(handlers, statistics, statement, allMultiInsertValues, skipBindValues);
-                            multiRowInsertBatchValuesList.clear();
-                            break;
-                        }
+        int rowsCount = values.size();
+        List<Object> multiRowInsertBatchValuesList = new ArrayList<>();
+        for (int i = 0; i < rowsCount; i++) {
+            if (session.getProgressMonitor().isCanceled()) {
+                break;
+            }
+            Object[] objects = values.get(i);
+            // Execute batch if it has a suitable size, or this are the last values
+            if (i == rowsCount - 1 || (i != 0 && i % multiRowInsertBatchSize == 0)) {
+                // We can reuse statement, but not for the last values (their amount can be different from previous batches)
+                if (i == rowsCount - 1) {
+                    Collections.addAll(multiRowInsertBatchValuesList, objects);
+                    Object[] allMultiInsertValues = multiRowInsertBatchValuesList.toArray(new Object[0]);
+                    try (DBCStatement statement = prepareStatement(session, handlers, allMultiInsertValues, options)) {
+                        bindAndFlushStatement(handlers, statistics, statement, allMultiInsertValues, skipBindValues);
+                        multiRowInsertBatchValuesList.clear();
+                        break;
                     }
-                    Object[] allMultiInsertValuesBatch = multiRowInsertBatchValuesList.toArray(new Object[0]);
-                    batchStatement = prepareStatement(session, handlers, allMultiInsertValuesBatch, options);
+                }
+                Object[] allMultiInsertValuesBatch = multiRowInsertBatchValuesList.toArray(new Object[0]);
+                try (DBCStatement batchStatement = prepareStatement(session, handlers, allMultiInsertValuesBatch, options)) {
                     bindAndFlushStatement(handlers, statistics, batchStatement, allMultiInsertValuesBatch, skipBindValues);
                     multiRowInsertBatchValuesList.clear();
                 }
-                Collections.addAll(multiRowInsertBatchValuesList, objects);
             }
-            values.clear();
-        } finally {
-            if (batchStatement != null) {
-                 batchStatement.close();
-            }
+            Collections.addAll(multiRowInsertBatchValuesList, objects);
         }
-
+        values.clear();
         return statistics;
     }
 

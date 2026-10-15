@@ -2,10 +2,18 @@
 <?eclipse version="3.2"?>
 <plugin>
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="starrocks"
+            label="StarRocks"
+            description="StarRocks database"
+            dataSourceInformation="Relational database management system"
+            icon="icons/starrocks_icon.svg"
+            iconBig="icons/starrocks_icon_big.svg"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.starrocks.StarRocksDataSourceProvider"
                 description="StarRocks Database"
                 id="starrocks"
+                dataSourceType="starrocks"
                 parent="generic"
                 dialect="starrocks"
                 label="StarRocks"
@@ -25,8 +33,6 @@
                 <driver
                         id="starrocks"
                         label="StarRocks"
-                        icon="icons/starrocks_icon.svg"
-                        iconBig="icons/starrocks_icon_big.svg"
                         class="com.starrocks.cj.jdbc.Driver"
                         sampleURL="jdbc:starrocks://{host}[:{port}]/[{database}]"
                         defaultPort="9030"
@@ -35,7 +41,7 @@
                         description="StarRocks JDBC driver"
                         categories="sql">
                     <replace provider="mysql" driver="starRocks"/>
-                    <file type="jar" path="maven:/com.starrocks:starrocks-connector-j:RELEASE[1.1.1]"/>
+                    <file type="jar" path="maven:/com.starrocks:starrocks-connector-j:RELEASE[1.1.2]"/>
                     <file type="license" path="https://www.gnu.org/licenses/old-licenses/gpl-2.0.txt"/>
                     <property name="connectTimeout" value="20000"/>
                     <parameter name="supports-partitions" value="false"/>

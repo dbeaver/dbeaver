@@ -18,10 +18,15 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.internal.AIMessages;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.SocketTimeoutException;
+import java.net.http.HttpTimeoutException;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Represents a single AI message
@@ -44,6 +49,7 @@ public class AIMessage {
     @Nullable
     private final List<AIMessageMeta> meta;
     private final Throwable error;
+    private List<AIImageAttachment> images = List.of();
 
     public AIMessage(
         @NotNull AIMessageType role,
@@ -135,11 +141,24 @@ public class AIMessage {
     public AIMessage(@NotNull Throwable error) {
         this(
             AIMessageType.ERROR,
-            CommonUtils.getAllExceptionMessages(error),
-            CommonUtils.getAllExceptionMessages(error),
+            getErrorMessage(error),
+            getErrorMessage(error),
             LocalDateTime.now(),
             null,
             error);
+    }
+
+    @NotNull
+    private static String getErrorMessage(@NotNull Throwable error) {
+        for (Throwable t = error; t != null; t = t.getCause()) {
+            if (t instanceof HttpTimeoutException || t instanceof SocketTimeoutException || t instanceof TimeoutException) {
+                return AIUtils.getSettingsAccessMessage(
+                    AIMessages.ai_error_request_timed_out,
+                    AIMessages.ai_error_request_timed_out_linked,
+                    AIMessages.ai_error_request_timed_out_admin);
+            }
+    }
+        return CommonUtils.getAllExceptionMessages(error);
     }
 
     public AIMessage(
@@ -205,8 +224,28 @@ public class AIMessage {
     }
 
     @NotNull
-    public AIMessage withContent(String newContent) {
-        return new AIMessage(role, newContent, displayMessage, time, meta);
+    public AIMessage withContent(@NotNull String newContent) {
+        return new AIMessage(role, newContent, displayMessage, time, meta, error).withImages(images);
+    }
+
+    @NotNull
+    public List<AIImageAttachment> getImages() {
+        return images;
+    }
+
+    @NotNull
+    public AIMessage withImages(@NotNull List<AIImageAttachment> images) {
+        if (images.isEmpty() && this.images.isEmpty()) {
+            return this;
+        }
+        if (!images.isEmpty() && role != AIMessageType.USER) {
+            throw new IllegalArgumentException("Only user messages can contain image attachments.");
+        }
+        AIMessage message = new AIMessage(role, content, displayMessage, time, meta, error);
+        List<AIImageAttachment> attachments = List.copyOf(images);
+        AIImageAttachment.validateImages(attachments);
+        message.images = attachments;
+        return message;
     }
 
     @Override

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,7 +49,7 @@ import java.util.*;
  * MySQLTable base
  */
 public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, SQLServerSchema>
-    implements SQLServerObject, SQLServerExtendedPropertyOwner, DBPNamedObject2, DBPRefreshableObject, DBSObjectWithScript, DBPScriptObjectExt2, DBPSystemObject, DBSDataManipulatorExt
+    implements SQLServerObject, SQLServerExtendedPropertyOwner, DBPNamedObject2, DBPRefreshableObject, DBSObjectWithScript, DBPScriptObjectExt2, DBPSystemObject, DBSDataManipulatorExt, DBSDescriptionEditable
 {
     private static final Log log = Log.getLog(SQLServerTableBase.class);
 
@@ -140,7 +140,8 @@ public abstract class SQLServerTableBase extends JDBCTable<SQLServerDataSource, 
         return description;
     }
 
-    public void setDescription(String description) {
+    @Override
+    public void setDescription(@Nullable String description) {
         this.description = description;
     }
 

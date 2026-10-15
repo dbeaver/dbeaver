@@ -108,7 +108,7 @@ public class VerticaTable extends GenericTable implements DBPObjectStatistics, D
     }
 
     @Override
-    public void setDescription(String description) {
+    public void setDescription(@Nullable String description) {
         this.description = description;
     }
 

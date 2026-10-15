@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.autorefresh;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -64,12 +63,8 @@ public class AutoRefreshConfigDialog extends BaseDialog {
             1,
             Integer.MAX_VALUE
         );
-        intervalSpinner.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                refreshSettings.setRefreshInterval(intervalSpinner.getSelection());
-            }
-        });
+        intervalSpinner.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            refreshSettings.setRefreshInterval(intervalSpinner.getSelection())));
         final Button stopOnErrorCheck = UIUtils.createCheckbox(
             settingsGroup,
             "Stop on error",
@@ -77,12 +72,8 @@ public class AutoRefreshConfigDialog extends BaseDialog {
             refreshSettings.isStopOnError(),
             2
         );
-        stopOnErrorCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                refreshSettings.setStopOnError(stopOnErrorCheck.getSelection());
-            }
-        });
+        stopOnErrorCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            refreshSettings.setStopOnError(stopOnErrorCheck.getSelection())));
 
         return composite;
     }

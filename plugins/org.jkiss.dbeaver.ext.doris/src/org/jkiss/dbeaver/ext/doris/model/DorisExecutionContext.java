@@ -83,6 +83,16 @@ public class DorisExecutionContext extends JDBCExecutionContext
         this.activeDatabaseName = activeDatabaseName;
     }
 
+    void initDefaultsFrom(@NotNull DBRProgressMonitor monitor, @NotNull DorisExecutionContext context) throws DBCException {
+        if (!CommonUtils.isEmpty(context.activeCatalogName)) {
+            setCurrentCatalog(monitor, context.activeCatalogName);
+            activeCatalogName = context.activeCatalogName;
+        }
+        if (!CommonUtils.isEmpty(context.activeDatabaseName)) {
+            setCurrentDatabase(monitor, context.activeDatabaseName);
+        }
+    }
+
     @Nullable
     @Override
     public DorisCatalog getDefaultCatalog() {

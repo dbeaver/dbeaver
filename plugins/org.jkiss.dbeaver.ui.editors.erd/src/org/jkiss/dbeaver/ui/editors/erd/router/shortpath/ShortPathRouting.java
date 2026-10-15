@@ -23,6 +23,7 @@ import org.eclipse.draw2d.geometry.PrecisionPoint;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw2d.graph.Path;
 import org.eclipse.draw2d.graph.ShortestPathRouter;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.editors.erd.figures.EntityFigure;
 import org.jkiss.dbeaver.ui.editors.erd.router.ERDConnectionRouter;
 
@@ -45,6 +46,7 @@ public class ShortPathRouting extends ERDConnectionRouter {
     private final Set<Connection> staleConnections = new HashSet<>();
     private final LayoutListener listener = new LayoutTracker();
     private boolean ignoreInvalidate;
+    private boolean bendpointFeedbackActive;
 
     private final FigureListener figureListener = source -> {
         Rectangle newBounds = source.getBounds().getCopy();
@@ -332,14 +334,15 @@ public class ShortPathRouting extends ERDConnectionRouter {
     }
 
     /**
-     * This method checks and remove bend point if it overlap entity
+     * This method checks and remove bend point if it overlaps with entity
      *
      * @param path - path
      */
-    private void removeOverlappingBendPoints(Path path) {
+    private void removeOverlappingBendPoints(@NotNull Path path) {
         PointList bendPoints = path.getBendPoints();
         if (bendPoints != null) {
             PointList actualBendPoints = new PointList(bendPoints.size());
+            boolean overlapFound = false;
             for (int index = 0; index < bendPoints.size(); index++) {
                 Point bp = bendPoints.getPoint(index);
                 boolean requireToSkipp = false;
@@ -351,15 +354,42 @@ public class ShortPathRouting extends ERDConnectionRouter {
                     }
                 }
                 if (requireToSkipp) {
+                    overlapFound = true;
                     continue;
                 }
                 actualBendPoints.addPoint(bp);
             }
             path.setBendPoints(actualBendPoints);
+
+            // It is only ok to mess with path data when it is not being operated by the GEF already, which is detected with feedback flag.
+            // On feedback being disabled and bendpoint-vs-entity overlap and existing bendpoint constraints for the current relation path,
+            // we need to remove unwanted points from constraint and leave only those we've kept in the path's bendpoints collection
+            // GEF owns the temporary constraint list while showing bendpoint drag feedback.
+            if (!bendpointFeedbackActive
+                && overlapFound && path.data instanceof Connection connection
+                && this.getConstraint(connection) instanceof List<?> bendpointsConstraint
+                && bendpointsConstraint.size() == bendPoints.size()
+                && !bendpointsConstraint.isEmpty() && bendpointsConstraint.getFirst() instanceof Bendpoint
+            ) {
+                for (int i = bendpointsConstraint.size() - 1; i >= 0; i--) {
+                    if (!pointListContainsPoint(actualBendPoints, bendPoints.getPoint(i))) {
+                        bendpointsConstraint.remove(i);
+                    }
+                }
+            }
         }
     }
 
-    protected int getDirection(Rectangle r, Point p) {
+    private static boolean pointListContainsPoint(@NotNull PointList pointList, @NotNull Point point) {
+        for (Point p : pointList) {
+            if (p.equals(point)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected int getDirection(@NotNull Rectangle r, @NotNull Point p) {
         int i = 0;
         int direction = LEFT;
         int distance = Math.abs(r.x - p.x);
@@ -423,6 +453,10 @@ public class ShortPathRouting extends ERDConnectionRouter {
      */
     public void setIgnoreInvalidate(boolean b) {
         ignoreInvalidate = b;
+    }
+
+    public void setBendpointFeedbackActive(boolean bendpointFeedbackActive) {
+        this.bendpointFeedbackActive = bendpointFeedbackActive;
     }
 
     /**

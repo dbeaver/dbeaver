@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.data.order.OrderingPolicy;
 import org.jkiss.dbeaver.model.data.order.OrderingStrategy;
+import org.jkiss.dbeaver.model.exec.DBCDDLTransactionBehavior;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -188,6 +189,7 @@ public final class ModelPreferences
     public static final String CONNECTION_VALIDATION_TIMEOUT = "connection.validation.timeout"; //$NON-NLS-1$
     public static final String CONNECTION_CLOSE_ON_SLEEP = "connection.closeOnSleep"; //$NON-NLS-1$
     public static final String CONNECTION_CLOSE_TIMEOUT = "connection.close.timeout"; //$NON-NLS-1$
+    public static final String CONNECTION_SHELL_AUTH_MODEL_ENABLED = "connection.shellAuthModelEnabled"; //$NON-NLS-1$
 
     public static final String SCRIPT_STATEMENT_DELIMITER = "script.sql.delimiter"; //$NON-NLS-1$
     public static final String SCRIPT_IGNORE_NATIVE_DELIMITER = "script.sql.ignoreNativeDelimiter"; //$NON-NLS-1$
@@ -280,6 +282,7 @@ public final class ModelPreferences
     public static final String TRANSACTIONS_SHOW_NOTIFICATIONS = "transaction.show.notifications"; //$NON-NLS-1$
     public static final String TRANSACTIONS_AUTO_CLOSE_ENABLED = "transaction.auto.close.enabled"; //$NON-NLS-1$
     public static final String TRANSACTIONS_AUTO_CLOSE_TTL = "transaction.auto.close.ttl"; //$NON-NLS-1$
+    public static final String TRANSACTIONS_DDL_BEHAVIOR = "transaction.ddl.behavior"; //$NON-NLS-1$
 
     public static final String DICTIONARY_COLUMN_DIVIDER = "resultset.dictionary.columnDivider"; //$NON-NLS-1$
     public static final String RESULT_SET_USE_DATETIME_EDITOR = "resultset.datetime.editor";
@@ -304,7 +307,7 @@ public final class ModelPreferences
     private static void initializeDefaultPreferences(DBPPreferenceStore store) {
         // Notifications
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NOTIFICATIONS_ENABLED, true);
-        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT, 3000L);
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT, 10000L);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NOTIFICATIONS_SOUND_ENABLED, true);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NOTIFICATIONS_SOUND_VOLUME, 100);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.DICTIONARY_MAX_ROWS, 200);
@@ -417,6 +420,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_AUTO_CLOSE_ENABLED, true);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_AUTO_CLOSE_TTL, 30 * 60);
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_SHOW_NOTIFICATIONS, true);
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.TRANSACTIONS_DDL_BEHAVIOR, DBCDDLTransactionBehavior.AUTO.name());
 
         PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.DICTIONARY_COLUMN_DIVIDER, " ");
         // Data formats

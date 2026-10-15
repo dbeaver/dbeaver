@@ -62,7 +62,7 @@ public class MySQLPlanNodePlain extends MySQLPlanNode {
     protected MySQLPlanNodePlain parent;
     protected List<MySQLPlanNodePlain> nested;
 
-    public MySQLPlanNodePlain(List<MySQLPlanNodePlain> nodes) {
+    public MySQLPlanNodePlain(@NotNull List<MySQLPlanNodePlain> nodes) {
         // Root node
         type = "<plan>";
         if (!nodes.isEmpty()) {
@@ -71,7 +71,7 @@ public class MySQLPlanNodePlain extends MySQLPlanNode {
         this.nested = nodes;
     }
 
-    public MySQLPlanNodePlain(MySQLPlanNodePlain parent, ResultSet dbResult) {
+    public MySQLPlanNodePlain(@Nullable MySQLPlanNodePlain parent, @NotNull ResultSet dbResult) {
         this.parent = parent;
         this.id = JDBCUtils.safeGetInteger(dbResult, "id");
         this.selectType = JDBCUtils.safeGetString(dbResult, "select_type");
@@ -101,12 +101,12 @@ public class MySQLPlanNodePlain extends MySQLPlanNode {
         this.extra = JSONUtils.getString(props, "extra");
     }
 
-    public MySQLPlanNodePlain(MySQLPlanNodePlain parent, String type) {
+    public MySQLPlanNodePlain(@Nullable MySQLPlanNodePlain parent, @NotNull String type) {
         this.parent = parent;
         this.selectType = type;
     }
 
-    protected MySQLPlanNodePlain(MySQLPlanNodePlain parent, MySQLPlanNodePlain source) {
+    protected MySQLPlanNodePlain(@Nullable MySQLPlanNodePlain parent, @NotNull MySQLPlanNodePlain source) {
         this.id = source.id;
         this.selectType = source.selectType;
         this.table = source.table;

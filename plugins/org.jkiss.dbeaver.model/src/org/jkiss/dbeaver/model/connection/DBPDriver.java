@@ -39,6 +39,11 @@ import java.util.Set;
  */
 public interface DBPDriver extends DBPNamedObject, DBPDriverLibraryProvider {
 
+    @Nullable
+    default DBPDataSourceType getDataSourceType() {
+        return getProviderDescriptor().getDataSourceType();
+    }
+
     /**
      * Driver contributor
      */
@@ -210,7 +215,7 @@ public interface DBPDriver extends DBPNamedObject, DBPDriverLibraryProvider {
     void resetDriverInstance();
 
     @Nullable
-    String getConnectionURL(DBPConnectionConfiguration configuration);
+    String getConnectionURL(DBPConnectionConfiguration configuration) throws DBException;
 
     /**
      * Create copy of

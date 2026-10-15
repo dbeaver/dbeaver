@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.ai.qm;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 
 import java.time.Instant;
@@ -105,6 +106,19 @@ public class QMAIChatStorageInMemory implements AIChatStorage {
         for (Map<String, QMAIConversationHistory> sessionConversations : conversations.values()) {
             if (sessionConversations.remove(conversationId) != null) {
                 return; // Conversation found and removed
+            }
+        }
+        throw new DBException("Conversation not found: " + conversationId);
+    }
+
+    @Override
+    public void changeConversationProfile(@NotNull String conversationId, @Nullable String profileID, String engineId) throws DBException {
+        for (Map<String, QMAIConversationHistory> sessionConversations : conversations.values()) {
+            QMAIConversationHistory chat = sessionConversations.get(conversationId);
+            if (chat != null) {
+                chat.setProfileId(profileID);
+                chat.setEngineId(profileID);
+                return;
             }
         }
         throw new DBException("Conversation not found: " + conversationId);

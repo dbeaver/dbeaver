@@ -28,23 +28,8 @@
         <manager class="org.jkiss.dbeaver.ext.iotdb.ui.config.IoTDBUserManager" objectType="org.jkiss.dbeaver.ext.iotdb.model.IoTDBRelationalUser"/>
     </extension>
 
-    <extension point="org.jkiss.dbeaver.dataSourceView">
-        <view
-                id="org.jkiss.dbeaver.ext.iotdb.dataSourceWizardView"
-                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                dataSource="iotdb"
-                label="IoTDB Connection Page"
-                class="org.jkiss.dbeaver.ext.iotdb.ui.views.IoTDBConnectionPage"
-                icon="platform:/plugin/org.jkiss.dbeaver.ext.iotdb/icons/iotdb_icon.png">
-        </view>
-        <view
-                id="org.jkiss.dbeaver.ext.iotdb.dataSourceEditorView"
-                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                dataSource="iotdb"
-                label="IoTDB Connection Page"
-                class="org.jkiss.dbeaver.ext.iotdb.ui.views.IoTDBConnectionPage"
-                icon="platform:/plugin/org.jkiss.dbeaver.ext.iotdb/icons/iotdb_icon.png">
-        </view>
+    <extension point="org.jkiss.dbeaver.dataSourceConfigurator">
+        <configurator dataSource="iotdb" class="org.jkiss.dbeaver.ext.iotdb.ui.views.IoTDBConnectionPage"/>
     </extension>
 
 </plugin>

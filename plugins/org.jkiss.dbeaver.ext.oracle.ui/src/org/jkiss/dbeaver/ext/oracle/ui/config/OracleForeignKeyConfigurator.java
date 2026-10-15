@@ -38,7 +38,7 @@ import java.util.Map;
  */
 public class OracleForeignKeyConfigurator implements DBEObjectConfigurator<OracleTableForeignKey> {
 
-    @NotNull
+    @Nullable
     @Override
     public OracleTableForeignKey configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object table, @NotNull OracleTableForeignKey foreignKey, @NotNull Map<String, Object> options) {
         return UITask.run(() -> {

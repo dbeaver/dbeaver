@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.gis;
 
+import org.eclipse.e4.ui.css.core.css2.CSS2ColorHelper;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Display;
@@ -38,6 +39,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.gis.internal.GISViewerActivator;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -123,16 +125,19 @@ public class GeometryDataUtils {
         properties.put("info", info);
         geometry.setProperties(properties);
 
-        final DBSEntityAttribute entityAttribute = geomAttrs.getGeomAttr().getEntityAttribute();
-        final DBVEntity entity = entityAttribute != null ? DBVUtils.getVirtualEntity(entityAttribute.getParentObject(), true) : null;
+        DBSEntityAttribute entityAttribute = geomAttrs.getGeomAttr().getEntityAttribute();
+        DBVEntity entity = entityAttribute != null ? DBVUtils.getVirtualEntity(entityAttribute.getParentObject(), true) : null;
 
         if (entity != null) {
-            final Collection<DBDAttributeBinding> attributes = entity.getDescriptionColumns(geomAttrs.descAttrs);
+            Collection<DBDAttributeBinding> attributes = entity.getDescriptionColumns(geomAttrs.descAttrs);
 
             if (!attributes.isEmpty()) {
-                final String divider = entity.getDataSource().getContainer()
+                String divider = entity.getDataSource().getContainer()
                     .getPreferenceStore().getString(ModelPreferences.DICTIONARY_COLUMN_DIVIDER);
-                final String name = attributes.stream()
+                if (CommonUtils.isEmpty(divider)) {
+                    divider = " ";
+                }
+                String name = attributes.stream()
                     .map(DBDAttributeBinding::getName)
                     .map(info::get)
                     .filter(Objects::nonNull)
@@ -151,11 +156,23 @@ public class GeometryDataUtils {
         if (value == null) {
             return null;
         }
-        RGB color = hexStringToRgb(value);
+        RGB color = colorNameToRgb(value);
+        if (color == null) {
+            color = hexStringToRgb(value);
+        }
         if (color == null) {
             color = stringToRandomRgb(value);
         }
         return color;
+    }
+
+    @Nullable
+    private static RGB colorNameToRgb(@NotNull String value) {
+        var hexColor = CSS2ColorHelper.getHexaColorFromColorName(value);
+        if (hexColor == null) {
+            return null;
+        }
+        return hexStringToRgb(hexColor);
     }
 
     @Nullable

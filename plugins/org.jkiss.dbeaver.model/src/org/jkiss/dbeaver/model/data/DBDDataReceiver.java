@@ -55,7 +55,7 @@ public interface DBDDataReceiver extends AutoCloseable {
      * Called after entire result set is fetched and closed.
      * This method is called even if fetchStart wasn't called in this data receiver (may occur if statement throws an error)
      */
-    void close();
+    void close() throws DBException;
 
     // FIXME: we should keep in variable or do not keep it at all (use separate interface)
     @NotNull

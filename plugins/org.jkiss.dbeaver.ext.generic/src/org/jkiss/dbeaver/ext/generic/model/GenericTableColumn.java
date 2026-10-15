@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
+import org.jkiss.dbeaver.model.struct.DBSDescriptionEditable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
 import org.jkiss.utils.CommonUtils;
 
@@ -34,7 +35,7 @@ import java.util.Collection;
 /**
  * Generic table column
  */
-public class GenericTableColumn extends JDBCTableColumn<GenericTableBase> implements DBSTableColumn, DBPNamedObject2, JDBCColumnKeyType, DBPOrderedObject {
+public class GenericTableColumn extends JDBCTableColumn<GenericTableBase> implements DBSTableColumn, DBPNamedObject2, JDBCColumnKeyType, DBPOrderedObject, DBSDescriptionEditable {
     private int radix;
     private String remarks;
     private int sourceType;
@@ -171,7 +172,8 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTableBase> implem
         return remarks;
     }
 
-    public void setDescription(String remarks) {
+    @Override
+    public void setDescription(@Nullable String remarks) {
         this.remarks = remarks;
     }
 

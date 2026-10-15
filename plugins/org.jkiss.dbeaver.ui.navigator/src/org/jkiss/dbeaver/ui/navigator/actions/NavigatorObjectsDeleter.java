@@ -275,13 +275,13 @@ public class NavigatorObjectsDeleter {
                 tasksToExecute.add(deleter);
             }
             if (commandTarget.getEditor() != null && selectedFromNavigator && !deleteWarningShowed) {
+                deleteWarningShowed = true;
                 UIUtils.getActiveWorkbenchWindow().getActivePage().activate(commandTarget.getEditor());
                 DBWorkbench.getPlatformUI().showMessageBox(
                     UINavigatorMessages.actions_navigator_persist_delete_in_the_editor_title,
                     NLS.bind(UINavigatorMessages.actions_navigator_persist_delete_in_the_editor_message, commandTarget.getEditor().getTitle()),
                     false
                 );
-                deleteWarningShowed = true;
             }
         } catch (Throwable e) {
             DBWorkbench.getPlatformUI().showError(

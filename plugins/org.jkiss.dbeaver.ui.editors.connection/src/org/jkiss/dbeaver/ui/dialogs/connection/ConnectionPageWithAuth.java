@@ -48,7 +48,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
         authModelSelector = new AuthModelSelector(parent, () -> {
             // Apply font on auth mode change
             Dialog.applyDialogFont(authModelSelector);
-        }, () -> getSite().updateButtons(), true, this.getIntention());
+        }, this::authModelPropertiesChanged, true, this.getIntention());
         authModelSelector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         UIUtils.setDefaultTextControlWidthHint(authModelSelector);
         ((GridData)authModelSelector.getLayoutData()).horizontalSpan = hSpan;
@@ -62,6 +62,10 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
                     () -> site.updateButtons());
             }
         }
+    }
+
+    protected void authModelPropertiesChanged() {
+        getSite().updateButtons();
     }
 
     protected Composite getAuthPanelComposite() {

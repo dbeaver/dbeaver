@@ -55,25 +55,31 @@ public class CertificateGenHelper {
             }
 
             public void checkClientTrusted(X509Certificate[] certs, String authType) {
+                // do nothing
             }
 
             public void checkServerTrusted(X509Certificate[] certs, String authType) {
+                // do nothing
             }
 
             @Override
             public void checkClientTrusted(X509Certificate[] chain, String authType, Socket socket) {
+                // do nothing
             }
 
             @Override
             public void checkServerTrusted(X509Certificate[] chain, String authType, Socket socket) {
+                // do nothing
             }
 
             @Override
             public void checkClientTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
+                // do nothing
             }
 
             @Override
             public void checkServerTrusted(X509Certificate[] chain, String authType, SSLEngine engine) {
+                // do nothing
             }
 
         }

@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ext.db2.ui.tools.maintenance;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
@@ -128,10 +127,7 @@ public class DB2ReorgTableDialog extends DB2BaseTableToolDialog {
 
         // INPLACE
         dlgInplace = UIUtils.createCheckbox(composite, DB2Messages.dialog_table_tools_reorg_inplace, false);
-        dlgInplace.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        dlgInplace.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (dlgInplace.getSelection()) {
                     dlgTruncate.setEnabled(true);
                     dlgTruncate.setSelection(true);
@@ -163,16 +159,12 @@ public class DB2ReorgTableDialog extends DB2BaseTableToolDialog {
                     dlgAccesNo.setSelection(true);
                 }
                 updateSQL();
-            }
-        });
+            }));
         UIUtils.createPlaceholder(composite, 1);
 
         // USE INDEX
         dlgUseIndex = UIUtils.createCheckbox(composite, DB2Messages.dialog_table_tools_reorg_useindex, false);
-        dlgUseIndex.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        dlgUseIndex.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (dlgUseIndex.getSelection()) {
                     indexesCombo.setEnabled(true);
                     dlgIndexScan.setEnabled(true);
@@ -181,8 +173,7 @@ public class DB2ReorgTableDialog extends DB2BaseTableToolDialog {
                     dlgIndexScan.setEnabled(false);
                 }
                 updateSQL();
-            }
-        });
+            }));
         indexesCombo = createIndexesCombo(composite);
 
         // INDEXSCAN
@@ -197,26 +188,19 @@ public class DB2ReorgTableDialog extends DB2BaseTableToolDialog {
 
         // USE TEMP TS
         dlgUseTempTS = UIUtils.createCheckbox(composite, DB2Messages.dialog_table_tools_reorg_usetempts, false);
-        dlgUseTempTS.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        dlgUseTempTS.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (dlgUseTempTS.getSelection()) {
                     tempTSCombo.setEnabled(true);
                 } else {
                     tempTSCombo.setEnabled(false);
                 }
                 updateSQL();
-            }
-        });
+            }));
         tempTSCombo = createTempTablespaceCombo(composite);
 
         // REORG LONG AND LOBS
         dlgReorgLobsTS = UIUtils.createCheckbox(composite, DB2Messages.dialog_table_tools_reorg_reorglobs, false);
-        dlgReorgLobsTS.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        dlgReorgLobsTS.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (dlgReorgLobsTS.getSelection()) {
                     dlgUseLobsTemp.setEnabled(true);
                     tempLobsTSCombo.setEnabled(false);
@@ -225,24 +209,19 @@ public class DB2ReorgTableDialog extends DB2BaseTableToolDialog {
                     tempLobsTSCombo.setEnabled(false);
                 }
                 updateSQL();
-            }
-        });
+            }));
         UIUtils.createPlaceholder(composite, 1);
 
         // REORG LONG AND LOBS TEMP TS
         dlgUseLobsTemp = UIUtils.createCheckbox(composite, DB2Messages.dialog_table_tools_reorg_reorglobsts, false);
-        dlgUseLobsTemp.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        dlgUseLobsTemp.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (dlgUseLobsTemp.getSelection()) {
                     tempLobsTSCombo.setEnabled(true);
                 } else {
                     tempLobsTSCombo.setEnabled(false);
                 }
                 updateSQL();
-            }
-        });
+            }));
         tempLobsTSCombo = createLobsTempTablespaceCombo(composite);
 
         // RESET DICTIONARY
@@ -289,14 +268,10 @@ public class DB2ReorgTableDialog extends DB2BaseTableToolDialog {
         }
         combo.select(0);
         combo.setEnabled(false);
-        combo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        combo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 indexName = listIndexNames.get(combo.getSelectionIndex());
                 updateSQL();
-            }
-        });
+            }));
         return combo;
     }
 
@@ -310,14 +285,10 @@ public class DB2ReorgTableDialog extends DB2BaseTableToolDialog {
         }
         combo.select(0);
         combo.setEnabled(false);
-        combo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        combo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 tempTablespace = listTempTsNames.get(combo.getSelectionIndex());
                 updateSQL();
-            }
-        });
+            }));
 
         return combo;
     }
@@ -333,14 +304,10 @@ public class DB2ReorgTableDialog extends DB2BaseTableToolDialog {
             combo.select(0);
         }
         combo.setEnabled(false);
-        combo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        combo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 lobsTablespace = listTempTsNames.get(combo.getSelectionIndex());
                 updateSQL();
-            }
-        });
+            }));
         return combo;
     }
 

@@ -110,7 +110,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     @Override
     public DBPImage getNodeIcon() {
         DBPImage image = DBIcon.PROJECT;
-        if (getProject().isPrivateProject()) {
+        if (DBWorkbench.isDistributed() && getProject().isPrivateProject()) {
             image = new DBIconComposite(image, false, null, null, null, DBIcon.OVER_LAMP);
         } else if (!getProject().hasRealmPermission(RMConstants.PERMISSION_PROJECT_DATASOURCES_EDIT)) {
             image = new DBIconComposite(image, false, null, null, null, DBIcon.OVER_LOCK);

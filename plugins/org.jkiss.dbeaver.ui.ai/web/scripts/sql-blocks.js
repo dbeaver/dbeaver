@@ -6,8 +6,7 @@ function parseSqlBlocks(htmlContent, messageId) {
     let i = 0
     return htmlContent.replace(sqlBlockRegex, (match, sqlCodeHtml) => {
         i++;
-        const sqlCode = decodeHtmlEntities(sqlCodeHtml.trim());
-        return createSqlForm(sqlCode, messageId + '.' + i, messageId, false);
+        return createSqlForm(sqlCodeHtml.trim(), messageId + '.' + i, messageId, false);
     });
 }
 
@@ -64,12 +63,6 @@ function getSqlCode(formId) {
     return '';
 }
 
-function decodeHtmlEntities(html) {
-    const txt = document.createElement("textarea");
-    txt.innerHTML = html;
-    return txt.value;
-}
-
 function parseSqlBlocksStreaming(htmlContent, messageId) {
     if (!htmlContent) return '';
 
@@ -78,7 +71,6 @@ function parseSqlBlocksStreaming(htmlContent, messageId) {
     let i = 0;
     return htmlContent.replace(sqlBlockRegex, (match, sqlCodeHtml) => {
         i++;
-        const sqlCode = decodeHtmlEntities(sqlCodeHtml.trim());
-        return createSqlForm(sqlCode, messageId + '.' + i, messageId, true);
+        return createSqlForm(sqlCodeHtml.trim(), messageId + '.' + i, messageId, true);
     });
 }

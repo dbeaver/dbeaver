@@ -20,5 +20,6 @@ public enum SQLParserActionKind {
     SKIP_SUFFIX_TERM,
     BEGIN_BLOCK,
     CAPTURE_COMMAND,
-    BLOCK_HEADER
+    BLOCK_HEADER,
+    END_BLOCK
 }

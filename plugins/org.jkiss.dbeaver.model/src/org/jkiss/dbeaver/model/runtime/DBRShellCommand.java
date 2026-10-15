@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,11 @@
 
 package org.jkiss.dbeaver.model.runtime;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * DBRShellCommand
@@ -37,6 +39,8 @@ public class DBRShellCommand {
     private int waitProcessTimeoutMs = WAIT_PROCESS_TIMEOUT_FOREVER;
     private boolean terminateAtDisconnect = true;
     private int pauseAfterExecute = 0;
+
+    @Nullable
     private String workingDirectory;
 
     public DBRShellCommand(String command) {
@@ -65,6 +69,10 @@ public class DBRShellCommand {
 
     public void setCommand(String command) {
         this.command = command;
+    }
+
+    public boolean isBlank() {
+        return CommonUtils.isEmpty(this.command);
     }
 
     public List<String> getCommandParams() {
@@ -123,11 +131,12 @@ public class DBRShellCommand {
         this.pauseAfterExecute = pauseAfterExecute;
     }
 
+    @Nullable
     public String getWorkingDirectory() {
         return workingDirectory;
     }
 
-    public void setWorkingDirectory(String workingDirectory) {
+    public void setWorkingDirectory(@Nullable String workingDirectory) {
         this.workingDirectory = workingDirectory;
     }
 
@@ -146,5 +155,19 @@ public class DBRShellCommand {
                 this.terminateAtDisconnect == source.terminateAtDisconnect &&
                 this.pauseAfterExecute == source.pauseAfterExecute &&
                 CommonUtils.equalObjects(this.workingDirectory, source.workingDirectory);
+    }
+
+    @Override
+    public int hashCode() {
+        int result = Objects.hashCode(command);
+        result = 31 * result + Objects.hashCode(commandParams);
+        result = 31 * result + Boolean.hashCode(enabled);
+        result = 31 * result + Boolean.hashCode(showProcessPanel);
+        result = 31 * result + Boolean.hashCode(waitProcessFinish);
+        result = 31 * result + waitProcessTimeoutMs;
+        result = 31 * result + Boolean.hashCode(terminateAtDisconnect);
+        result = 31 * result + pauseAfterExecute;
+        result = 31 * result + Objects.hashCode(workingDirectory);
+        return result;
     }
 }

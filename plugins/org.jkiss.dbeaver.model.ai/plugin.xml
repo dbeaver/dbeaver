@@ -6,20 +6,25 @@
     <extension-point id="com.dbeaver.ai.assistant" name="AI assistants" schema="schema/com.dbeaver.ai.assistant.exsd"/>
     <extension-point id="com.dbeaver.ai.prompt" name="AI prompt generators" schema="schema/com.dbeaver.ai.prompt.exsd"/>
     <extension-point id="com.dbeaver.ai.function" name="AI functions" schema="schema/com.dbeaver.ai.function.exsd"/>
+    <extension-point id="com.dbeaver.ai.functionImplementation" name="AI function implementations" schema="schema/com.dbeaver.ai.functionImplementation.exsd"/>
     <extension-point id="com.dbeaver.ai.credentialsProvider" name="AI Authorizations" schema="schema/com.dbeaver.ai.credentialsProvider.exsd"/>
 
     <extension point="com.dbeaver.ai.engine">
         <completionEngine id="openai"
             label="OpenAI"
+            icon="icons/engine_openai.svg"
             class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine"
             properties="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties"
+            promoted="true"
             default="true"
             supportsFunctions="true"
             fallbacks="openai-pro"/>
         <completionEngine id="copilot"
             label="Github Copilot"
+            icon="icons/engine_copilot.svg"
             class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine"
             properties="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties"
+            promoted="true"
             supportsFunctions="false"
             fallbacks="copilot-pro"/>
     </extension>
@@ -59,8 +64,18 @@
         </definition>
     </extension>
 
+    <extension point="org.eclipse.core.runtime.preferences">
+        <initializer class="org.jkiss.dbeaver.model.ai.internal.AIPreferenceInitializer"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.app.config">
-        <feature id="ai" label="AI integration" enabledByDefault="true"/>
+        <feature
+            id="ai"
+            label="AI integration"
+            description="Use AI to create and edit queries, answer questions, troubleshoot errors, or explore database objects."
+            enabledByDefault="true"
+            enablementTester="org.jkiss.dbeaver.model.ai.app.config.AIProductConfigFeatureTester"
+            availabilityTester="org.jkiss.dbeaver.model.ai.app.config.AIProductConfigFeatureTester"/>
     </extension>
 
     <extension point="com.dbeaver.ai.function">
@@ -93,7 +108,7 @@
             categoryId="schema.discovery"
             description="Returns a list of tables available in the current datasource. Call it also to verify whether a table exists.">
             <parameter name="catalogName" required="false" type="string" description="Catalog or database name. Leave empty if catalog is not known."/>
-            <parameter name="schemaName" required="false" type="string" description="Schema name. Short name without preceding catalog name. Leave empty if schema is not known."/>
+            <parameter name="schemaNames" required="false" type="string" description="Comma-separated schema names. Use short name without preceding catalog name. Required if the database supports schemas (take the default schema from the context if unknown). Leave empty only if the database has no schemas."/>
         </function>
 
         <function
@@ -112,7 +127,8 @@
             <parameter name="ddlComments" required="false" type="boolean" description="Adds table and column comments in the DDL. Default: false."/>
             <parameter name="ddlReferences" required="false" type="boolean" description="Adds foreign keys from other referencing tables in the DDL. Default: false."/>
         </function>
-
     </extension>
+
+    <!-- AISyncUnit sync is disabled for now, see pro#9577. Class kept, just not registered. -->
 
 </plugin>

@@ -31,6 +31,8 @@ import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.legacy.ChatCompletionRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.legacy.ChatCompletionResult;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.legacy.ChatMessage;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.legacy.ChatMessageContent;
+import org.jkiss.dbeaver.model.ai.utils.AIHttpRequestFilter;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -42,12 +44,11 @@ import java.util.Locale;
 import java.util.function.Consumer;
 
 public class OpenAIClientChat extends OpenAiClientBase {
-    private static final Duration TIMEOUT = Duration.ofSeconds(30);
     private static final Gson GSON = new GsonBuilder().create();
 
     public OpenAIClientChat(
         @NotNull String baseUrl,
-        @NotNull List<HttpRequestFilter> requestFilters
+        @NotNull List<AIHttpRequestFilter> requestFilters
     ) {
         super(baseUrl, requestFilters);
     }
@@ -70,7 +71,7 @@ public class OpenAIClientChat extends OpenAiClientBase {
         ChatCompletionRequest chatRequest = new ChatCompletionRequest();
         chatRequest.setMessages(completionRequest.input.stream().map(om -> new ChatMessage(
             om.role,
-            om.content.getFirst().text,
+            ChatMessageContent.from(om),
             om.name
         )).toList());
         chatRequest.setModel(completionRequest.model);
@@ -81,7 +82,7 @@ public class OpenAIClientChat extends OpenAiClientBase {
         HttpRequest request = HttpRequest.newBuilder()
             .uri(AIHttpUtils.resolve(baseUrl, "chat/completions"))
             .POST(HttpRequest.BodyPublishers.ofString(serializeValue(chatRequest)))
-            .timeout(TIMEOUT)
+            .timeout(timeout)
             .build();
 
         HttpRequest modifiedRequest = applyFilters(request);

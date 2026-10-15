@@ -21,6 +21,7 @@ import net.sf.jsqlparser.statement.select.Select;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -61,6 +62,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
     private final List<DatabaseMappingAttribute> attributeMappings = new ArrayList<>();
     private Map<DBPPropertyDescriptor, Object> changedPropertiesMap;
     private Map<String, Object> rawChangedPropertiesMap; // For tasks with empty container
+    private Object extraMappingState;
 
     public DatabaseMappingContainer(DatabaseConsumerSettings consumerSettings, DBSDataContainer source) {
         this.consumerSettings = consumerSettings;
@@ -90,6 +92,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         return consumerSettings;
     }
 
+    @Nullable
     @Override
     public DBSDataManipulator getTarget() {
         return target;
@@ -100,6 +103,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.targetName = null;
     }
 
+    @NotNull
     @Override
     public DatabaseMappingType getMappingType() {
         return mappingType;
@@ -148,11 +152,13 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         return true;
     }
 
+    @NotNull
     @Override
     public DBPImage getIcon() {
         return DBIcon.TREE_TABLE;
     }
 
+    @Nullable
     @Override
     public DBSDataContainer getSource() {
         return source;
@@ -170,6 +176,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         return rawChangedPropertiesMap;
     }
 
+    @NotNull
     @Override
     public String getTargetName() {
         String targetTableName = targetName;
@@ -219,16 +226,35 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         this.targetName = targetName;
     }
 
+    @Nullable
+    public Object getExtraMappingState() {
+        return extraMappingState;
+    }
+
+    public void setExtraMappingState(@Nullable Object extraMappingState) {
+        this.extraMappingState = extraMappingState;
+    }
+
+
+    @Nullable
     DatabaseMappingAttribute getAttributeMapping(@NotNull DBDAttributeBinding sourceAttr) {
+        return getAttributeMapping((DBSAttributeBase) sourceAttr);
+    }
+
+    @Nullable
+    public DatabaseMappingAttribute getAttributeMapping(@NotNull DBSAttributeBase sourceAttr) {
         return CommonUtils.findBestCaseAwareMatch(
             attributeMappings,
-            CommonUtils.notNull(sourceAttr.getLabel(), sourceAttr.getName()),
+            sourceAttr instanceof DBDAttributeBinding binding
+                ? CommonUtils.notNull(binding.getLabel(), binding.getName())
+                : sourceAttr.getName(),
             attr -> attr.getSourceLabelOrName(attr.getSource(), false, false));
     }
 
     /**
      * Returns attribute mappings collection without a monitor
      */
+    @NotNull
     public Collection<DatabaseMappingAttribute> getAttributeMappings() {
         if (attributeMappings.isEmpty()) {
             try {
@@ -242,7 +268,8 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         return attributeMappings;
     }
 
-    public Collection<DatabaseMappingAttribute> getAttributeMappings(DBRProgressMonitor monitor) {
+    @NotNull
+    public Collection<DatabaseMappingAttribute> getAttributeMappings(@NotNull DBRProgressMonitor monitor) {
         if (attributeMappings.isEmpty()) {
             try {
                 readAttributes(monitor);
@@ -258,7 +285,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         return attributeMappings;
     }
 
-    private void readAttributes(DBRProgressMonitor monitor) throws DBException {
+    private void readAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
         for (DBSAttributeBase attr : DTUtils.getAttributes(monitor, source, this)) {
             addAttributeMapping(monitor, attr);
         }
@@ -270,7 +297,8 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
         attributeMappings.add(mapping);
     }
 
-    public void saveSettings(Map<String, Object> settings) {
+
+    public void saveSettings(@NotNull Map<String, Object> settings) {
         if (!CommonUtils.isEmpty(targetName)) {
             settings.put("targetName", targetName);
         } else if (target != null) {
@@ -302,6 +330,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             // In case then we have only the raw map of changed container properties
             settings.put("changedProperties", rawChangedPropertiesMap);
         }
+        consumerSettings.saveContainerExtraSettings(this, settings);
     }
 
     public void loadSettings(DBRRunnableContext context, Map<String, Object> settings) {
@@ -348,6 +377,7 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
             }
         }
         rawChangedPropertiesMap = JSONUtils.getObject(settings, "changedProperties");
+        consumerSettings.loadContainerExtraSettings(this, settings);
     }
 
     public boolean isSameMapping(DatabaseMappingContainer mapping) {

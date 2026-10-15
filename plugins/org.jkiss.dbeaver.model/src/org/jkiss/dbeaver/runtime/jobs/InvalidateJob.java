@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,7 @@ import java.util.stream.Collectors;
  * Invalidate datasource job.
  * Invalidates all datasource contexts (not just the one passed in constructor).
  */
-public class InvalidateJob extends DataSourceJob
-{
+public class InvalidateJob extends DataSourceJob {
     private static final Log log = Log.getLog(InvalidateJob.class);
 
     private static final String TASK_INVALIDATE = "dsInvalidate";
@@ -50,28 +49,32 @@ public class InvalidateJob extends DataSourceJob
         private final DBPDataSource dataSource;
         private final Exception exception;
 
-        public ContextInvalidateResult(DBPDataSource dataSource) {
+        public ContextInvalidateResult(@NotNull DBPDataSource dataSource) {
             this.dataSource = dataSource;
             this.exception = null;
         }
 
-        public ContextInvalidateResult(DBPDataSource dataSource, Exception exception) {
+        public ContextInvalidateResult(@NotNull DBPDataSource dataSource, @NotNull Exception exception) {
             this.dataSource = dataSource;
             this.exception = exception;
         }
 
+        @NotNull
         public static ContextInvalidateResult newSuccess(@NotNull DBPDataSource dataSource) {
             return new ContextInvalidateResult(dataSource);
         }
 
+        @NotNull
         public static ContextInvalidateResult newError(@NotNull DBPDataSource dataSource, @NotNull Exception exception) {
             return new ContextInvalidateResult(dataSource, exception);
         }
 
+        @NotNull
         public DBPDataSource getDataSource() {
             return dataSource;
         }
 
+        @Nullable
         public Exception getException() {
             return exception;
         }
@@ -83,25 +86,38 @@ public class InvalidateJob extends DataSourceJob
         public boolean isError() {
             return exception != null;
         }
+
+        @Override
+        public String toString() {
+            return exception == null ? "Success" : exception.getMessage();
+        }
     }
 
     public interface InvalidationFeedbackHandler {
         boolean confirmInvalidate(@NotNull Set<DBPDataSourceContainer> containersToInvalidate);
 
-        void onInvalidateSuccess(@NotNull DBPDataSourceContainer container, @NotNull Collection<ContextInvalidateResult> results);
+        void onInvalidateSuccess(
+            @NotNull DBPDataSourceContainer container,
+            @NotNull Collection<ContextInvalidateResult> results
+        );
 
-        void onInvalidateFailure(@NotNull DBPDataSourceContainer container, @NotNull Collection<ContextInvalidateResult> results);
+        void onInvalidateFailure(
+            @NotNull DBPDataSourceContainer container,
+            @NotNull Collection<ContextInvalidateResult> results
+        );
     }
 
     private List<ContextInvalidateResult> invalidateResults = new ArrayList<>();
     private InvalidationFeedbackHandler feedbackHandler;
 
-    public InvalidateJob(
-        DBPDataSource dataSource)
-    {
-        super("Invalidate " + dataSource.getContainer().getName(), DBUtils.getDefaultContext(dataSource.getDefaultInstance(), false));
+    public InvalidateJob(@NotNull DBPDataSource dataSource) {
+        super(
+            "Invalidate " + dataSource.getContainer().getName(),
+            DBUtils.getDefaultContext(dataSource.getDefaultInstance(), false)
+        );
     }
 
+    @NotNull
     public List<ContextInvalidateResult> getInvalidateResults() {
         return invalidateResults;
     }
@@ -112,8 +128,7 @@ public class InvalidateJob extends DataSourceJob
 
     @NotNull
     @Override
-    protected IStatus run(@NotNull DBRProgressMonitor monitor)
-    {
+    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
         DBPDataSource dataSource = getExecutionContext().getDataSource();
 
         // Disable disconnect on failure. It is the worst case anyway.
@@ -136,7 +151,7 @@ public class InvalidateJob extends DataSourceJob
 
         final Map<DBPDataSourceContainer, Object> locks = new HashMap<>();
         for (var it = containers.iterator(); it.hasNext(); ) {
-            final DBPDataSourceContainer container = it.next();
+            DBPDataSourceContainer container = it.next();
             monitor.subTask("Obtain exclusive datasource lock for '" + container.getName() + "'");
 
             final Object lock = container.getExclusiveLock().acquireTaskLock(TASK_INVALIDATE, true);
@@ -234,13 +249,15 @@ public class InvalidateJob extends DataSourceJob
                     } catch (Exception e) {
                         log.error("Error closing inaccessible datasource", e);
                     }
-                    final String errors = results.stream()
+                    String errors = results.stream()
                         .filter(ContextInvalidateResult::isError)
-                        .map(result -> result.getException().getMessage())
+                        .map(result ->
+                            result.getException() == null ? "Unknow error" : result.getException().getMessage())
                         .collect(Collectors.joining("\n"));
                     DBWorkbench.getPlatformUI().showError(
                         "Forced disconnect",
-                        "Datasource '" + container.getName() + "' was disconnected: destination database unreachable.\n" + errors
+                        "Datasource '" + container.getName() +
+                            "' was disconnected: destination database unreachable.\n" + errors
                     );
                 }
 
@@ -317,7 +334,7 @@ public class InvalidateJob extends DataSourceJob
         @NotNull DBPDataSource dataSource,
         @NotNull DBCInvalidatePhase phase
     ) {
-        final List<ContextInvalidateResult> results = new ArrayList<>();
+        List<ContextInvalidateResult> results = new ArrayList<>();
 
         monitor.subTask("Invalidate connections of " + dataSource.getContainer().getName());
 
@@ -342,10 +359,15 @@ public class InvalidateJob extends DataSourceJob
         return results;
     }
 
-    public static void invalidateTransaction(DBRProgressMonitor monitor, DBPDataSource dataSource, DBCExecutionContext executionContext) {
+    public static void invalidateTransaction(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSource dataSource,
+        @Nullable DBCExecutionContext executionContext
+    ) {
         // Invalidate transactions
         if (executionContext != null) {
-            monitor.subTask("Invalidate context [" + executionContext.getDataSource().getContainer().getName() + "/" + executionContext.getContextName() + "] transactions");
+            monitor.subTask("Invalidate context [" + executionContext.getDataSource().getContainer().getName() +
+                "/" + executionContext.getContextName() + "] transactions");
             invalidateTransaction(monitor, executionContext);
         } else {
             monitor.subTask("Invalidate datasource [" + dataSource.getContainer().getName() + "] transactions");
@@ -357,7 +379,10 @@ public class InvalidateJob extends DataSourceJob
         }
     }
 
-    public static void invalidateTransaction(DBRProgressMonitor monitor, DBCExecutionContext context) {
+    public static void invalidateTransaction(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext context
+    ) {
         DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
         if (txnManager != null) {
             try {

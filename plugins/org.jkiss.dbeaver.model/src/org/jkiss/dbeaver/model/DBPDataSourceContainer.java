@@ -260,7 +260,11 @@ public interface DBPDataSourceContainer extends
     /**
      * @return false on any error. Actual error can be read in registry.
      */
-    boolean persistConfiguration();
+    default boolean persistConfiguration() {
+        return persistConfiguration(true);
+    }
+
+    boolean persistConfiguration(boolean forcePersistSecrets);
 
     @Nullable
     Date getConnectTime();

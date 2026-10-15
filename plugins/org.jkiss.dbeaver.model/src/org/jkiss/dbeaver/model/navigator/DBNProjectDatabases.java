@@ -435,6 +435,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
             }
             case OBJECT_UPDATE:
             case OBJECT_SELECT: {
+                if (event.getData() == DBPEvent.METADATA_REFRESH) {
+                    break;
+                }
                 DBNDatabaseNode dbmNode = model.getNodeByObject(event.getObject());
                 if (dbmNode != null) {
                     DBNEvent.NodeChange nodeChange;
@@ -471,8 +474,9 @@ public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEve
                                 dbmNode.clearNode(false);
                             }
                         } else {
-                            if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE) {
-                                // Force reorder.
+                            if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && children != null) {
+                                // Force reorder. Skip if already invalidated (e.g. by an earlier
+                                // event in the same batch) to avoid redundant full subtree refreshes.
                                 children = null;
                                 getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.UPDATE, this));
                             }

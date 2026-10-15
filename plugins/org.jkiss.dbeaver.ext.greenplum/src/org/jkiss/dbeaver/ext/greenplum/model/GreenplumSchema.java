@@ -114,7 +114,7 @@ public class GreenplumSchema extends PostgreSchema {
             boolean supportsRelStorageColumn = dataSource.isServerSupportsRelstorageColumn(session);
             before7version = !dataSource.isGreenplumVersionAtLeast(7, 0);
             String sqlQuery = "SELECT c.oid,c.*,d.description,\n" +
-                (before7version ? "p.partitiontablename,p.partitionboundary as partition_expr," :
+                (before7version ? "case when p.parchildrelid is not null then c.relname else null end as partitiontablename,pg_catalog.pg_get_partition_rule_def(p.oid, true) as partition_expr," :
                     "pg_catalog.pg_get_expr(c.relpartbound, c.oid) as partition_expr, pg_catalog.pg_get_partkeydef(c.oid) as partition_key,") +
                 (hasAccessToExttable ? "CASE WHEN x." + uriLocationColumn + " IS NOT NULL THEN array_to_string(x." + uriLocationColumn +
                     ", ',') ELSE '' END AS urilocation,\n" +
@@ -137,8 +137,7 @@ public class GreenplumSchema extends PostgreSchema {
                 "INNER JOIN pg_catalog.pg_namespace ns\n\ton ns.oid = c.relnamespace\n" +
                 "LEFT OUTER JOIN pg_catalog.pg_description d\n\tON d.objoid=c.oid AND d.objsubid=0\n" +
                 (hasAccessToExttable ? "LEFT OUTER JOIN pg_catalog.pg_exttable x\n\ton x.reloid = c.oid\n" : "") +
-                (before7version ? "LEFT OUTER JOIN pg_catalog.pg_partitions p\n\ton c.relname = p.partitiontablename " +
-                    "and ns.nspname = p.schemaname\n" : "") +
+                    (before7version ? "LEFT OUTER JOIN pg_catalog.pg_partition_rule p\n\ton p.parchildrelid = c.oid\n" : "") +
                 (before7version ? "" : "\nLEFT JOIN pg_catalog.pg_am pa ON pa.oid = c.relam") +
                 "\nWHERE c.relnamespace= ? AND c.relkind not in ('i','c') " +
                 (object == null && objectName == null ? "" : " AND relname=?");

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,11 +22,6 @@ public class SQLServerUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mssql.ui.SQLServerUIMessages"; //$NON-NLS-1$
 
     public static String dialog_setting_connection_settings;
-
-    public static String dialog_connection_windows_authentication_button;
-    public static String dialog_connection_authentication_combo;
-    public static String dialog_connection_authentication_combo_tip;
-    public static String dialog_connection_adp_authentication_button;
     public static String dialog_connection_database_schema_label;
     public static String dialog_connection_host_label;
     public static String dialog_connection_password_label;

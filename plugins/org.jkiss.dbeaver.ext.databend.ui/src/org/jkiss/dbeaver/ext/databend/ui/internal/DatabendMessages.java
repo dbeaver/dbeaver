@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,9 @@ public class DatabendMessages extends NLS {
 
     public static String dialog_connection_page_checkbox_use_ssl;
     public static String dialog_connection_page_checkbox_tip_use_ssl;
+    public static String dialog_connection_page_text_ssl_enabled;
     public static String dialog_connection_page_text_ssl_group;
+    public static String dialog_connection_page_text_ssl_no_additional_configuration;
 
     static {
         NLS.initializeMessages(BUNDLE_NAME, DatabendMessages.class);

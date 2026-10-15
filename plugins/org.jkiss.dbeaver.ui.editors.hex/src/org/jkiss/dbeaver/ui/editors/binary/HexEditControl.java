@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.custom.VerifyKeyListener;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -764,10 +765,7 @@ public class HexEditControl extends Composite {
         vertical.setSelection(0);
         vertical.setMinimum(0);
         vertical.setIncrement(1);
-        vertical.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        vertical.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 e.doit = false;
                 long previousStart = textAreasStart;
                 textAreasStart =
@@ -780,8 +778,7 @@ public class HexEditControl extends Composite {
                     runnableEnd();
                 };
                 runnableAdd(delayed);
-            }
-        });
+            }));
         updateScrollBar();
         addMouseListener(new org.eclipse.swt.events.MouseAdapter() {
             @Override

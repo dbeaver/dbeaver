@@ -17,7 +17,6 @@
 
 package org.jkiss.dbeaver.ui.navigator;
 
-import org.eclipse.swt.widgets.Event;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
@@ -28,16 +27,16 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
  */
 public interface INavigatorNodeActionHandler {
 
-    boolean isEnabledFor(@NotNull INavigatorModelView view, @NotNull DBNNode node);
+    boolean isEnabledFor(@NotNull DBNNode node);
 
-    boolean isSticky(@NotNull INavigatorModelView view, @NotNull DBNNode node);
-
-    @Nullable
-    DBPImage getNodeActionIcon(@NotNull INavigatorModelView view, @NotNull DBNNode node);
+    boolean isSticky(@NotNull DBNNode node);
 
     @Nullable
-    String getNodeActionToolTip(@NotNull INavigatorModelView view, @NotNull DBNNode node);
+    DBPImage getNodeActionIcon(@NotNull DBNNode node);
 
-    void handleNodeAction(@NotNull INavigatorModelView view, @NotNull DBNNode node, @NotNull Event event, boolean defaultAction);
+    @Nullable
+    String getNodeActionToolTip(@NotNull DBNNode node);
+
+    void handleNodeAction(@NotNull DBNNode node, boolean defaultAction);
 
 }
