@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,13 @@ public class PostgreSQLMessages extends NLS {
     public static String global_variable_system_user_description;
     public static String global_variable_user_description;
     public static String error_multi_database_mode_disabled_description;
+    public static String action_create_publication;
+    public static String action_drop_publication;
+    public static String action_create_subscription;
+    public static String action_alter_subscription;
+    public static String action_drop_subscription;
+    public static String action_test_subscription_connection;
+    public static String action_read_publication_names;
 
     static {
         // initialize resource bundle
