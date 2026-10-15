@@ -174,6 +174,10 @@ public class ObjectInformationView {
     }
 
     private void createTreeControl(@NotNull DBSTable input) {
+        DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode(input);
+        if (node == null) {
+            return;
+        }
         GridData gridData = new GridData(GridData.FILL_BOTH);
         gridData.horizontalSpan = 0;
         gridData.verticalSpan = 0;
@@ -181,7 +185,6 @@ public class ObjectInformationView {
             .getActivePage()
             .getActivePart()
             .getSite());
-        DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode(input);
         itemListControl = new ItemListControl(tableComposite, SWT.NONE, subSite, node, null) {
             @NotNull
             @Override

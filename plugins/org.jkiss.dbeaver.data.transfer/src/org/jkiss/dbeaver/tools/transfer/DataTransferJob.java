@@ -113,6 +113,9 @@ public class DataTransferJob extends AbstractJob {
             } catch (DBInterruptedException e) {
                 return Status.CANCEL_STATUS;
             } catch (Exception e) {
+                if (monitor.isCanceled()) {
+                    return Status.CANCEL_STATUS;
+                }
                 // Report as an OK status to avoid showing the error in the UI (it's handled by the caller)
                 return new Status(IStatus.OK, getClass(), "Data transfer failed", e);
             } finally {
@@ -120,13 +123,20 @@ public class DataTransferJob extends AbstractJob {
                 elapsedTime = System.currentTimeMillis() - startTime;
             }
         }
-        return Status.OK_STATUS;
+        return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
     }
 
     @Override
     protected void canceling() {
         transferCanceled = true;
         super.canceling();
+    }
+
+    @Nullable
+    @Override
+    protected DBRProgressMonitor getCancellationMonitor() {
+        // A single transfer uses the parent monitor for its JDBC sessions and active blocks.
+        return parentMonitor != null ? parentMonitor : super.getCancellationMonitor();
     }
 
     void transferData(

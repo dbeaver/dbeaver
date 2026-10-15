@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
@@ -43,6 +44,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
@@ -61,8 +63,20 @@ public class AIChatUtils {
         @NotNull AIChatContextProvider contextProvider,
         @Nullable AIChatConversation conversation
     ) {
+        chooseCustomScope(shell, settings, container, contextProvider, conversation, null);
+    }
+
+    public static void chooseCustomScope(
+        @NotNull Shell shell,
+        @NotNull AIContextSettings settings,
+        @NotNull DBPDataSourceContainer container,
+        @NotNull AIChatContextProvider contextProvider,
+        @Nullable AIChatConversation conversation,
+        @Nullable DBRRunnableContext runnableContext
+    ) {
+        DBRRunnableContext context = runnableContext != null ? runnableContext : UIUtils.getDefaultRunnableContext();
         if (container.isConnected() && container.getDataSource() != null) {
-            chooseContextCustomScope(shell, settings, container, contextProvider, conversation);
+            chooseContextCustomScope(shell, settings, container, contextProvider, conversation, context);
             return;
         }
         UIServiceConnections service = DBWorkbench.getService(UIServiceConnections.class);
@@ -71,40 +85,47 @@ public class AIChatUtils {
             return;
         }
         try {
-            UIUtils.runWithMonitor(monitor ->
-                DBUtils.initDataSource(monitor, container, e -> {
-                    if (!e.isOK()) {
-                        DBWorkbench.getPlatformUI().showError(
-                            ModelMessages.dialog_connection_wizard_start_dialog_error_message,
-                            null,
-                            e
-                        );
-                    } else {
-                        chooseContextCustomScope(shell, settings, container, contextProvider, conversation);
-                    }
+            context.run(true, true, monitor -> {
+                try {
+                    DBUtils.initDataSource(monitor, container, e -> {
+                        if (!e.isOK()) {
+                            DBWorkbench.getPlatformUI().showError(
+                                ModelMessages.dialog_connection_wizard_start_dialog_error_message,
+                                null,
+                                e
+                            );
+                        } else {
+                            chooseContextCustomScope(shell, settings, container, contextProvider, conversation, context);
+                        }
+                    });
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
                 }
-            ));
-        } catch (DBException e) {
-            log.error(e);
+            });
+        } catch (InvocationTargetException e) {
+            log.error(e.getTargetException());
+        } catch (InterruptedException ignored) {
         }
     }
 
-    public static void chooseContextCustomScope(
+    private static void chooseContextCustomScope(
         @NotNull Shell shell,
         @NotNull AIContextSettings settings,
         @NotNull DBPDataSourceContainer dataSourceContainer,
         @NotNull AIChatContextProvider contextProvider,
-        @Nullable AIChatConversation conversation
+        @Nullable AIChatConversation conversation,
+        @NotNull DBRRunnableContext runnableContext
     ) {
         DBCExecutionContext executionContext = contextProvider.getExecutionContext(dataSourceContainer);
         if (executionContext != null) {
             UIUtils.syncExec(() ->
                 AIChatUtils.chooseCustomDataSourceScope(
-                shell,
-                settings,
-                executionContext,
-                conversation
-            ));
+                    shell,
+                    settings,
+                    executionContext,
+                    conversation,
+                    runnableContext
+                ));
         } else {
             DBWorkbench.getPlatformUI().showError(
                 ModelMessages.dialog_connection_wizard_start_dialog_error_message,
@@ -113,17 +134,18 @@ public class AIChatUtils {
         }
     }
 
-    public static void chooseCustomDataSourceScope(
+    private static void chooseCustomDataSourceScope(
         @NotNull Shell shell,
         @NotNull AIContextSettings settings,
         @NotNull DBCExecutionContext executionContext,
-        @Nullable AIChatConversation conversation
+        @Nullable AIChatConversation conversation,
+        @NotNull DBRRunnableContext runnableContext
     ) {
         Set<String> passedObjects = ArrayUtils.isEmpty(settings.getCustomObjectIds()) ?
             Set.of() : Set.of(settings.getCustomObjectIds());
         List<String> ids = ScopeSelectorControl.chooseCustomEntities(
             shell,
-            UIUtils.getDefaultRunnableContext(),
+            runnableContext,
             executionContext,
             passedObjects
         );

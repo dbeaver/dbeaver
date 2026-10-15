@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.ext.athena.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -69,6 +71,11 @@ public class AthenaDataSource extends GenericDataSource {
         }
 
         if (!isLegacyDriver()) {
+            if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
+                props.put(
+                    AthenaConstants.DRIVER_PROP_APPLICATION_NAME,
+                    DBUtils.getClientApplicationName(getContainer(), context, purpose));
+            }
             // Hack to fix update from v2 -> v3 driver version https://github.com/dbeaver/dbeaver/issues/39947
             // https://docs.aws.amazon.com/athena/latest/ug/jdbc-v3-driver-aws-configuration-profile-credentials.html
             String credentialsProviderClass = connectionInfo.getProperties()

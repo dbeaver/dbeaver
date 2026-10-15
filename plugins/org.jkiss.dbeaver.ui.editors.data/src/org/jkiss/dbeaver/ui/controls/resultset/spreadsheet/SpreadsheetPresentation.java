@@ -1520,7 +1520,6 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     @Override
     protected void applyThemeSettings(@NotNull ITheme currentTheme) {
-        NativeThemeUtils.updateNativeTheme(this.spreadsheet);
         this.spreadsheet.setFont(ResultSetThemeSettings.instance.resultSetFont);
 
         {

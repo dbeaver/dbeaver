@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.rcp.feature"
         label="DBeaver RCP"
-        version="3.0.67.qualifier"
+        version="3.0.69.qualifier"
         provider-name="DBeaver Corp">
 
     <description>Universal Database Manager RCP</description>

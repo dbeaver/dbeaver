@@ -21,7 +21,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataImporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamEntityMapping;
@@ -36,6 +35,7 @@ import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -150,6 +150,35 @@ public class CSVImporterTest  extends DBeaverUnitTest {
         Assertions.assertEquals(1, rows.size());
         Assertions.assertEquals("14", rows.getFirst()[0]);
         Assertions.assertNull(rows.getFirst()[1]);
+    }
+
+    @Test
+    public void customEscapePreservesLiteralBackslashBeforeQuote() throws DBException, IOException {
+        String data = """
+            "id","text_value"
+            4,"value\\""test"
+            5,"one and two"
+            """;
+        properties.put("delimiter", ",");
+        properties.put("quoteChar", "\"");
+        properties.put("escapeChar", "~");
+        mapping.getStreamColumns().addAll(readColumnsInfo(data, true));
+
+        List<Object[]> rows = new ArrayList<>();
+        IDataTransferConsumer<?, ?> consumer = Mockito.mock(IDataTransferConsumer.class);
+        Mockito.doAnswer(invocation -> {
+            DBCResultSet resultSet = invocation.getArgument(1);
+            rows.add(new Object[] {resultSet.getAttributeValue(0), resultSet.getAttributeValue(1)});
+            return null;
+        }).when(consumer).fetchRow(Mockito.any(), Mockito.any());
+
+        try (ByteArrayInputStream input = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8))) {
+            importer.runImport(new VoidProgressMonitor(), mapping.getDataSource(), input, consumer);
+        }
+
+        Assertions.assertEquals(2, rows.size());
+        Assertions.assertArrayEquals(new Object[] {"4", "value\\\"test"}, rows.get(0));
+        Assertions.assertArrayEquals(new Object[] {"5", "one and two"}, rows.get(1));
     }
 
     @NotNull

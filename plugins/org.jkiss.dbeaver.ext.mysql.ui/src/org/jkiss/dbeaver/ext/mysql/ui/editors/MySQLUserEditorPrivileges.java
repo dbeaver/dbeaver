@@ -332,7 +332,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 if (grants != null) {
                     for (MySQLGrant grant : grants) {
                         if (grant.matches(catalog) && !grant.isEmpty()) {
-                            item.setFont(BaseThemeSettings.instance.treeAndTableFont);
+                            item.setFont(BaseThemeSettings.instance.treeAndTableFontBold);
                             break;
                         }
                     }
@@ -350,7 +350,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract
                 if (grants != null) {
                     for (MySQLGrant grant : grants) {
                         if (grant.matches(selectedCatalog) && grant.matches(table) && !grant.isEmpty()) {
-                            item.setFont(BaseThemeSettings.instance.treeAndTableFont);
+                            item.setFont(BaseThemeSettings.instance.treeAndTableFontBold);
                             break;
                         }
                     }
