@@ -249,6 +249,35 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void shouldNotInsertDelimitersBetweenCommentOnlyParagraphs() {
+        //given
+        String inputString = "-- first" + lineBreak + lineBreak + "/* second */" + lineBreak + lineBreak + "-- third";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains(";"), formattedString);
+    }
+
+    @Test
+    public void shouldInsertDelimiterOnlyAfterQueryFollowingCommentParagraphs() {
+        //given
+        String inputString = "-- header" + lineBreak + lineBreak + "SELECT 1" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertEquals(1, formattedString.chars().filter(c -> c == ';').count(), formattedString);
+        Assertions.assertTrue(formattedString.indexOf(';') > formattedString.indexOf("SELECT"), formattedString);
+    }
+
+    @Test
     public void shouldInsertDelimiterInEmptyLineBetweenQueries() {
         //given
         String expectedString = "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tt1;" + lineBreak + lineBreak +

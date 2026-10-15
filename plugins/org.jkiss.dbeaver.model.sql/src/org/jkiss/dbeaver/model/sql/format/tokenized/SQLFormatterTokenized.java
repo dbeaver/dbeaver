@@ -247,6 +247,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
     }
 
     private void convertEmptyLinesIntoDelimiters(List<FormatterToken> argList) {
+        boolean hasQueryContent = false;
         for (int i= 0; i < argList.size(); i++) {
             FormatterToken token = argList.get(i);
             if (token.getType() == TokenType.SPACE) {
@@ -260,35 +261,28 @@ public class SQLFormatterTokenized implements SQLFormatter {
                     if (i > 0 && statementDelimiters.contains(argList.get(i - 1).getString())) {
                         // Do nothing - there is a delimiter already
                     } else {
-                        int delimiterIndex = findDelimiterIndex(argList, i);
+                        int delimiterIndex = findDelimiterIndex(argList, i, hasQueryContent);
                         if (delimiterIndex >= 0) {
                             argList.add(delimiterIndex, new FormatterToken(TokenType.SYMBOL, statementDelimiters.get(0)));
+                            hasQueryContent = false;
                             i++;
                         }
                     }
                 }
+            } else if (statementDelimiters.contains(token.getString())) {
+                hasQueryContent = false;
+            } else if (!isPlainComment(token)) {
+                hasQueryContent = true;
             }
         }
     }
 
-    /**
-     * Finds the position for the delimiter which replaces an empty line at the specified index.
-     *
-     * @return index in the list to insert the delimiter at or -1 if the delimiter is not needed
-     */
-    private int findDelimiterIndex(@NotNull List<FormatterToken> argList, int emptyLineIndex) {
+    private int findDelimiterIndex(@NotNull List<FormatterToken> argList, int emptyLineIndex, boolean hasQueryContent) {
         int commentIndex = emptyLineIndex - 1;
         if (commentIndex < 0 || !isPlainComment(argList.get(commentIndex))) {
             return emptyLineIndex;
         }
-        // The query is followed by a comment. Look for the end of the query content before the comment(s)
-        int contentIndex = commentIndex - 1;
-        while (contentIndex >= 0
-            && (argList.get(contentIndex).getType() == TokenType.SPACE || isPlainComment(argList.get(contentIndex)))
-        ) {
-            contentIndex--;
-        }
-        if (contentIndex < 0 || statementDelimiters.contains(argList.get(contentIndex).getString())) {
+        if (!hasQueryContent) {
             // A comment is not a query, there is nothing to terminate
             return -1;
         }
@@ -304,9 +298,6 @@ public class SQLFormatterTokenized implements SQLFormatter {
         return delimiterIndex;
     }
 
-    /**
-     * Checks whether the token is a comment which is not a part of a query (executable comments are).
-     */
     private static boolean isPlainComment(@NotNull FormatterToken token) {
         if (token.getType() != TokenType.COMMENT) {
             return false;
