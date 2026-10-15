@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.sql.format.tokenized;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -255,7 +256,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 if (lfCount > 1) {
                     if (i > 0 && statementDelimiters.contains(argList.get(i - 1).getString())) {
                         // Do nothing - there is a delimiter already
-                    } else if (i > 0 && argList.get(i - 1).getType() == TokenType.COMMENT) {
+                    } else if (isDelimiterBlockedByComment(argList, i - 1)) {
                         // Do nothing - a comment is not a query and the delimiter would end up inside of it
                     } else {
                         argList.add(i, new FormatterToken(TokenType.SYMBOL, statementDelimiters.get(0)));
@@ -264,6 +265,25 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 }
             }
         }
+    }
+
+    private boolean isDelimiterBlockedByComment(List<FormatterToken> argList, int index) {
+        if (index < 0 || argList.get(index).getType() != TokenType.COMMENT) {
+            return false;
+        }
+        if (!argList.get(index).getString().startsWith(SQLConstants.ML_COMMENT_START)) {
+            return true;
+        }
+        for (int i = index - 1; i >= 0; i--) {
+            FormatterToken token = argList.get(i);
+            if (statementDelimiters.contains(token.getString())) {
+                return true;
+            }
+            if (token.getType() != TokenType.SPACE && token.getType() != TokenType.COMMENT) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void concatenateDoublewordedKeywords(List<FormatterToken> argList) {
