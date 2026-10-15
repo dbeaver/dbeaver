@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.datadam.auth.desktop;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoClient;
 import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoLogin;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -32,6 +33,7 @@ import java.net.URI;
 public class DDDesktopTokenManager {
     public enum Status { SIGNED_OUT, UNLOADED, SIGNED_IN, EXPIRED }
 
+    private static final Log log = Log.getLog(DDDesktopTokenManager.class);
     private static final String PREF_LOGGED_IN = "datadam.desktop.sso.logged-in";
     private static final DDDesktopTokenManager INSTANCE = new DDDesktopTokenManager(
         DDDesktopTokenStore.INSTANCE, new DDDesktopTokenValidator(), new DDDesktopSsoLogin());
@@ -67,6 +69,25 @@ public class DDDesktopTokenManager {
         return validator.isExpired(token) ? Status.EXPIRED : Status.SIGNED_IN;
     }
 
+    public void load(@NotNull URI resource) throws DBException {
+        if (getStatus() != Status.UNLOADED) {
+            return;
+        }
+        DDDesktopUserToken saved = store.load();
+        if (saved != null && !validator.matchesResource(saved, resource)) {
+            log.debug("Saved DataDam desktop token does not match the requested resource");
+            saved = null;
+        }
+        synchronized (this) {
+            if (getStatus() == Status.UNLOADED) {
+                token = saved;
+            }
+        }
+        if (getStatus() == Status.UNLOADED) {
+            signOut();
+        }
+    }
+
     @NotNull
     public String accessFor(@NotNull URI resource) throws DBException {
         DDDesktopUserToken current = token;
@@ -74,7 +95,7 @@ public class DDDesktopTokenManager {
             throw new DBException("Sign in to DataDam first");
         }
         if (!validator.matchesResource(current, resource)) {
-            throw new DBException("DataDam token is not valid for this endpoint");
+            throw new DBException("DataDam token is not valid for this endpoint. Relogin to DataDam");
         }
         return current.accessToken();
     }
