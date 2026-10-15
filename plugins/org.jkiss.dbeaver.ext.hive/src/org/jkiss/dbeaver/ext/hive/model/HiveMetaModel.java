@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.hive.model.plan.HiveQueryPlanner;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
@@ -43,6 +45,9 @@ import java.util.Map;
  */
 public class HiveMetaModel extends GenericMetaModel
 {
+    private static final String DRIVER_ID_HIVE_LEGACY = "apache_hive2";
+    private static final String DRIVER_ID_HIVE_4 = "apache_hive4";
+
     public HiveMetaModel() {
         super();
     }
@@ -51,6 +56,16 @@ public class HiveMetaModel extends GenericMetaModel
     @Override
     public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         return new HiveDataSource(monitor, container, this);
+    }
+
+    @Nullable
+    @Override
+    public DBCQueryPlanner getQueryPlanner(@NotNull GenericDataSource dataSource) {
+        String driverId = dataSource.getContainer().getDriver().getId();
+        return switch (driverId) {
+            case DRIVER_ID_HIVE_LEGACY, DRIVER_ID_HIVE_4 -> new HiveQueryPlanner((HiveDataSource) dataSource);
+            default -> null;
+        };
     }
 
     @NotNull
