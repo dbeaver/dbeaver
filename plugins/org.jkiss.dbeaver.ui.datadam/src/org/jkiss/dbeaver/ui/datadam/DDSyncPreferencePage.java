@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncUIManager;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 import java.lang.reflect.InvocationTargetException;
@@ -181,7 +180,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                 }
             });
             DDKeyStore.save(keyBundle[0]);
-            DDProjectSyncUIManager.getInstance().refresh();
             DDTrackingInitializer.start();
             refresh();
         } catch (DBException e) {
@@ -196,7 +194,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         try {
             DDTrackingInitializer.stop();
             DDKeyStore.clear();
-            DDProjectSyncUIManager.getInstance().refresh();
             refresh();
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_cannot_forget_keys, e);
@@ -235,7 +232,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_logout_failed, e);
         }
-        DDProjectSyncUIManager.getInstance().refresh();
         refresh();
     }
 

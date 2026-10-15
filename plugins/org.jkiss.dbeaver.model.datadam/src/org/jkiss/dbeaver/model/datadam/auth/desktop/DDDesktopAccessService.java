@@ -26,6 +26,9 @@ import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.net.URI;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /** Coordinates the desktop login and the locally imported project keys. */
 public class DDDesktopAccessService {
@@ -34,6 +37,7 @@ public class DDDesktopAccessService {
     private static final DDDesktopAccessService INSTANCE = new DDDesktopAccessService(DDDesktopTokenManager.getInstance());
 
     private final DDDesktopTokenManager tokenManager;
+    private final List<Runnable> keyBundleListeners = new CopyOnWriteArrayList<>();
     private final URI accountUrl = URI.create(DDEndpoints.getAccountBaseUrl());
     private final URI storageUrl = URI.create(DDEndpoints.getStorageBaseUrl());
     @Nullable
@@ -64,12 +68,12 @@ public class DDDesktopAccessService {
 
     public void load() throws DBException {
         tokenManager.load(storageUrl);
-        keyBundle = tokenManager.getStatus() == DDDesktopTokenManager.Status.SIGNED_IN ? DDKeyStore.load() : null;
+        setKeyBundle(tokenManager.getStatus() == DDDesktopTokenManager.Status.SIGNED_IN ? DDKeyStore.load() : null);
     }
 
     public void signIn(@NotNull DBRProgressMonitor monitor) throws DBException, InterruptedException {
         tokenManager.signIn(accountUrl, storageUrl, monitor);
-        keyBundle = DDKeyStore.load();
+        setKeyBundle(DDKeyStore.load());
     }
 
     public void importKeys(@NotNull String recoveryPhrase) throws DBException {
@@ -79,17 +83,34 @@ public class DDDesktopAccessService {
         var state = new DDAccountClient(accountUrl).getCryptoState();
         DDKeyBundle bundle = DDKeyStore.unpack(state, recoveryPhrase);
         DDKeyStore.save(bundle);
-        keyBundle = bundle;
+        setKeyBundle(bundle);
     }
 
     public void forgetKeys() throws DBException {
         DDKeyStore.clear();
-        keyBundle = null;
+        setKeyBundle(null);
     }
 
     public void signOut() throws DBException {
         DDKeyStore.clear();
-        keyBundle = null;
+        setKeyBundle(null);
         tokenManager.signOut();
+    }
+
+    public void addKeyBundleListener(@NotNull Runnable listener) {
+        keyBundleListeners.add(listener);
+    }
+
+    public void removeKeyBundleListener(@NotNull Runnable listener) {
+        keyBundleListeners.remove(listener);
+    }
+
+    private void setKeyBundle(@Nullable DDKeyBundle bundle) {
+        if (!Objects.equals(keyBundle, bundle)) {
+            keyBundle = bundle;
+            for (Runnable listener : keyBundleListeners) {
+                listener.run();
+            }
+        }
     }
 }
