@@ -71,7 +71,6 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
     private ResultSetValueController previewController;
     private IValueEditor valueEditor;
     private ReferenceValueEditor referenceValueEditor;
-    private boolean dictionaryView;
 
     private volatile boolean valueSaving;
     private IValueManager valueManager;
@@ -182,6 +181,7 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
         }
 
         boolean updateActions;
+        boolean allowEditorReuse = false;
         if (previewController == null) {
             previewController = new ResultSetValueController(
                 presentation.getController(),
@@ -203,29 +203,30 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
             updateActions = true;
             force = true;
         } else {
-            updateActions = force = (
-                force || previewController.getBinding() != cellLocation.getAttribute()
-                    || !CommonUtils.equalObjects(cellLocation.getRowIndexes(), previewController.getRowIndexes())
-                    || !CommonUtils.equalObjects(cellLocation.getValuePath(), previewController.getValuePath())
-            );
+            boolean cellChanged = previewController.getBinding() != cellLocation.getAttribute()
+                || !CommonUtils.equalObjects(cellLocation.getRowIndexes(), previewController.getRowIndexes())
+                || !CommonUtils.equalObjects(cellLocation.getValuePath(), previewController.getValuePath());
+            allowEditorReuse = !force && cellChanged;
+            updateActions = force = force || cellChanged;
             previewController.setCellLocation(cellLocation);
         }
         if (!force && (valueManager == null || valueEditor == null)) {
             force = true;
             updateActions = true;
         }
-        viewValue(force);
+        viewValue(force, allowEditorReuse);
         if (updateActions) {
             presentation.getController().updatePanelActions();
         }
     }
 
-    private void viewValue(boolean forceRefresh) {
+    private void viewValue(boolean forceRefresh, boolean allowEditorReuse) {
         if (valueSaving) {
             return;
         }
         if (forceRefresh) {
             IResultSetController controller = presentation.getController();
+            boolean panelEditor = previewController.getEditType() == IValueController.EditType.PANEL;
 
             ReferenceValueEditor newReferenceValueEditor = new ReferenceValueEditor(controller, previewController, valueEditor);
             final boolean showDictionaryView = controller.getPreferenceStore().getInt(ModelPreferences.DICTIONARY_MAX_ROWS) > 0
@@ -244,16 +245,15 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
                 cleanupPanel();
                 valueManager = newValueManager;
                 referenceValueEditor = newReferenceValueEditor;
-                dictionaryView = showDictionaryView;
                 DBWorkbench.getPlatformUI()
                     .showError(ResultSetMessages.value_viewer_preview_error_title, ResultSetMessages.value_viewer_preview_error_message, e);
                 return;
             }
-            boolean reuseValueEditor = valueEditor != null && valueEditor.getControl() != null
+            boolean reuseValueEditor = allowEditorReuse && valueEditor != null && valueEditor.getControl() != null
                 && !valueEditor.getControl().isDisposed() && newValueEditor != null
                 && valueEditor.getClass() == newValueEditor.getClass()
                 && valueEditor instanceof ContentPanelEditor contentPanelEditor
-                && !dictionaryView && !showDictionaryView
+                && panelEditor && !showDictionaryView
                 && contentPanelEditor.canReuseControl();
             if (reuseValueEditor) {
                 newValueEditor.dispose();
@@ -264,7 +264,6 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
                 valueManager = newValueManager;
                 valueEditor = newValueEditor;
                 referenceValueEditor = newReferenceValueEditor;
-                dictionaryView = showDictionaryView;
             }
             if (valueEditor != null && !reuseValueEditor) {
                 try {
@@ -389,7 +388,6 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
         cleanupPanel();
         valueManager = null;
         valueEditor = null;
-        dictionaryView = false;
 
         presentation.getController().updateEditControls();
         viewPlaceholder.layout();
