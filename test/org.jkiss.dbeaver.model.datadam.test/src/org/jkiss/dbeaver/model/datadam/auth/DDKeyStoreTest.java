@@ -114,14 +114,22 @@ class DDKeyStoreTest {
     }
 
     @Test
-    void saveRejectsBundleFromDifferentAccount() throws Exception {
+    void saveReplacesBundleFromDifferentAccount() throws Exception {
         DDKeyBundle stored = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 2);
         DDKeyBundle replacement = new DDKeyBundle(
-            UUID.fromString("8decb064-2709-4914-b6b6-68eaef98cac4"), "new-signing-key", "new-data-key", 3);
+            UUID.fromString("8decb064-2709-4914-b6b6-68eaef98cac4"), "new-signing-key", "new-data-key", 1);
 
-        DBException exception = assertRejectedSave(stored, replacement);
+        DBSSecretController controller = Mockito.mock(DBSSecretController.class);
+        Mockito.when(controller.getPrivateSecretValue(ArgumentMatchers.anyString()))
+            .thenReturn(JSONUtils.GSON.toJson(stored));
+        try (MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(DBSSecretController.class)) {
+            controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
 
-        Assertions.assertEquals("The keys belong to another account", exception.getMessage());
+            DDKeyStore.save(replacement);
+
+            Mockito.verify(controller).setPrivateSecretValue("datadam.key-bundle", JSONUtils.GSON.toJson(replacement));
+            Mockito.verify(controller).flushChanges();
+        }
     }
 
     @Test

@@ -100,13 +100,10 @@ public class DDKeyStore {
 
     public static void save(@NotNull DDKeyBundle bundle) throws DBException {
         DDKeyBundle current = load();
-        if (current != null) {
-            if (!current.accountId().equals(bundle.accountId())) {
-                throw new DBException("The keys belong to another account");
-            }
-            if (bundle.generation() < current.generation()) {
-                throw new DBException("The keys are older than the stored ones");
-            }
+        if (current != null
+            && current.accountId().equals(bundle.accountId())
+            && bundle.generation() < current.generation()) {
+            throw new DBException("The keys are older than the stored ones");
         }
         DBSSecretController controller = DBSSecretController.getGlobalSecretController();
         controller.setPrivateSecretValue(SECRET_KEY_BUNDLE, JSONUtils.GSON.toJson(bundle));
