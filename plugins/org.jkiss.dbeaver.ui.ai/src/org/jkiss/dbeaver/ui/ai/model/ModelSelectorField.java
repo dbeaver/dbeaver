@@ -195,7 +195,8 @@ public class ModelSelectorField {
             disableModifyListener = true;
             try {
                 combo.setItems(sortedModels.toArray(new String[0]));
-                combo.select(sortedModels.indexOf(selectedItem));
+                // select() can leave an editable combo empty after replacing its items on macOS
+                combo.setText(selectedItem);
                 selectedModelName = combo.getText();
                 selectedModel = getModel(selectedModelName);
             } finally {
