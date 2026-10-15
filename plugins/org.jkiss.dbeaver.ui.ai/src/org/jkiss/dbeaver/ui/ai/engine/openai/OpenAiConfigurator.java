@@ -64,7 +64,6 @@ import java.util.concurrent.CompletableFuture;
 
 public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends OpenAIProperties>
     extends AbstractAIEngineConfigurator<ENGINE, PROPERTIES> {
-
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
     protected String baseUrl;
     protected volatile String token = "";
@@ -113,6 +112,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         createBaseUrlParameter(composite);
 
         createAdditionalSettings(composite);
+        createEnvironmentSettings(propertyChangeListener);
     }
 
     @Override
@@ -259,13 +259,14 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                 .toList();
         }
         OpenAIProperties properties = new OpenAIProperties();
+        saveAdvancedSettings(properties);
         properties.setToken(currentToken);
         properties.setBaseUrl(currentBaseUrl);
         properties.setCustomHeaders(customHeaders);
         if (currentProperties != null) {
             properties.setTimeout(currentProperties.getTimeout());
         }
-        if (properties.isTokenRequired() && CommonUtils.isEmptyTrimmed(currentToken)) {
+        if (properties.isTokenRequired() && CommonUtils.isEmptyTrimmed(properties.getEffectiveToken())) {
             return Collections.emptyList();
         }
         try (OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)) {
@@ -476,8 +477,9 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     }
 
     protected boolean hasApiCredentials() {
-        return !CommonUtils.isEmptyTrimmed(token)
-            || baseUrlText != null && !OpenAIBaseProperties.isDefaultBaseUrl(baseUrl);
+        OpenAIProperties currentProperties = createConnectionProperties();
+        return !CommonUtils.isEmptyTrimmed(currentProperties.getEffectiveToken())
+            || baseUrlText != null && !currentProperties.isTokenRequired();
     }
 
     protected void updateModelRefreshState() {
@@ -686,4 +688,20 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         return authenticator.completeDeviceAuthorization(authorization, popupCompletion);
     }
 
+    @NotNull
+    protected OpenAIProperties createConnectionProperties() {
+        OpenAIProperties currentProperties = new OpenAIProperties();
+        currentProperties.setUseEnvVariables(useEnvVariables);
+        currentProperties.setToken(token);
+        currentProperties.setBaseUrl(baseUrl);
+        return currentProperties;
+    }
+
+    @Override
+    protected void environmentSettingsChanged() {
+        updateModelRefreshState();
+        if (modelSelectorField != null) {
+            modelSelectorField.refreshModelListSilently(true);
+        }
+    }
 }

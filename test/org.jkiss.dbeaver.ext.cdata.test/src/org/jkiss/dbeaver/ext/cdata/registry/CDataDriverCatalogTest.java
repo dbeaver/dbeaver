@@ -29,6 +29,7 @@ import org.mockito.Mockito;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -62,6 +63,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
               "objname": "googleads",
               "datatype_id": "google_ads",
               "driver_name": "Google AdWords JDBC Driver",
+              "annual_price_usd": "99",
               "version_year": "2026",
               "tier": "Professional",
               "purchase_url": "https://www.cdata.com/order/options.aspx?sku=DZRN-VSDBVR"
@@ -80,6 +82,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
               "objname": "jira",
               "datatype_id": "jira",
               "driver_name": "Jira JDBC Driver",
+              "annual_price_usd": "249",
               "version_year": "2025",
               "tier": "Premium",
               "purchase_url": "https://www.cdata.com/order/options.aspx?sku=BJRM-VSDBVR"
@@ -129,6 +132,9 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
         Assertions.assertEquals("aas", drivers.get(1).jdbcName());
         Assertions.assertEquals("{25\\..*}", drivers.get(2).mavenVersionPattern());
         Assertions.assertEquals(CDataDriverTier.PREMIUM, drivers.get(2).tier());
+        Assertions.assertEquals(new BigDecimal("99"), drivers.get(0).annualPriceUsd());
+        Assertions.assertNull(drivers.get(1).annualPriceUsd());
+        Assertions.assertEquals(new BigDecimal("249"), drivers.get(2).annualPriceUsd());
         Assertions.assertEquals("https://www.cdata.com/order/options.aspx?sku=BJRM-VSDBVR", drivers.get(2).purchaseUrl());
         Assertions.assertEquals(CATALOG, Files.readString(cacheFile));
         Assertions.assertEquals(LAST_MODIFIED, Files.getLastModifiedTime(cacheFile).toMillis());
@@ -153,7 +159,11 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
     public void doNotDownloadUnchangedCatalog() throws Exception {
         saveCachedCatalog(LAST_MODIFIED);
 
-        Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
+        var drivers = CDataDriverCatalog.load(monitor, cacheFile, connectionFactory);
+
+        Assertions.assertEquals(3, drivers.size());
+        Assertions.assertEquals(new BigDecimal("99"), drivers.get(0).annualPriceUsd());
+        Assertions.assertEquals(new BigDecimal("249"), drivers.get(2).annualPriceUsd());
 
         Mockito.verify(headConnection).disconnect();
         Mockito.verifyNoInteractions(downloadConnection);

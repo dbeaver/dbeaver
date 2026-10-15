@@ -1254,7 +1254,9 @@ public class DataSourceDescriptor
             }
             proxyHandler = null;
             // Failed
-            connectFailed = true;
+            if (!CommonUtils.hasCause(e, DBCDriverLicenseException.class)) {
+                connectFailed = true;
+            }
             if (e instanceof DBException) {
                 throw (DBException) e;
             } else {

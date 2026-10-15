@@ -211,6 +211,17 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void selectStatementShouldNotFailWhenMutationClassificationFails() {
+        var query = new SQLQuery(
+            null,
+            "SELECT string_agg(x::text, ',' ORDER BY x) FILTER (WHERE true) FROM (VALUES (1), (2)) t(x)"
+        );
+
+        Assertions.assertFalse(query.isMutatingStatement());
+        Assertions.assertFalse(query.isModifying());
+    }
+
+    @Test
     public void modifyingSelectStatementsShouldBeMutating() {
         for (String queryText : List.of(
             "SELECT * INTO copy FROM test",

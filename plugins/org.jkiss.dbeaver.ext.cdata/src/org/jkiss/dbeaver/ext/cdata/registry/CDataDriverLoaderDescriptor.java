@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.cdata.CDataLicenseUIService;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -74,28 +73,15 @@ final class CDataDriverLoaderDescriptor extends DriverLoaderDescriptor {
         loadDriver(monitor, forceReload, false);
     }
 
-    // activation re-enters the loader from a worker thread; holding its monitor across the dialog deadlocks
     private void loadDriver(
         @NotNull DBRProgressMonitor monitor,
         boolean forceReload,
         boolean forceValidation
     ) throws DBException {
-        // downloading may open a dialog, so it must happen before taking a lock
         getAllLibraryFiles(monitor);
-        if (tryLoadDriver(monitor, forceReload, forceValidation)) {
-            return;
-        }
-
-        CDataDriverDescriptor driver = (CDataDriverDescriptor) getDriver();
-        synchronized (driver.getLicenseActivationLock()) {
-            // another connection may have activated the license while we waited
-            if (tryLoadDriver(monitor, false, true)) {
-                return;
-            }
-            CDataLicenseUIService uiService = DBWorkbench.getService(CDataLicenseUIService.class);
-            if (uiService == null || uiService.activateLicense(driver) == null || !tryLoadDriver(monitor, false, true)) {
-                throw new CDataLicenseRequiredException(driver, driver.getLicenseStatus());
-            }
+        if (!tryLoadDriver(monitor, forceReload, forceValidation)) {
+            CDataDriverDescriptor driver = (CDataDriverDescriptor) getDriver();
+            throw new CDataLicenseRequiredException(driver, driver.getLicenseStatus());
         }
     }
 
