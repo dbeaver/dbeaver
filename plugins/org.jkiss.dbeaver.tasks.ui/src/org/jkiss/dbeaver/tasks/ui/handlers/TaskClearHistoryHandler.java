@@ -38,6 +38,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 
 public class TaskClearHistoryHandler implements DBRRunnableWithProgress {
     private static final Log log = Log.getLog(TaskClearHistoryHandler.class);
+    private static final int CANCEL_POLL_INTERVAL = 100;
 
     @Override
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
@@ -52,6 +53,17 @@ public class TaskClearHistoryHandler implements DBRRunnableWithProgress {
 
             monitor.subTask("Cancel running tasks");
             manager.cancelRunningTasks();
+            // Cancellation is asynchronous. Wait for final history writes, including directly executed tasks
+            // that cannot be joined through the Eclipse job manager, before deleting their records and logs.
+            while (manager.hasRunningTasks()) {
+                if (monitor.isCanceled()) {
+                    throw new InterruptedException();
+                }
+                Thread.sleep(CANCEL_POLL_INTERVAL);
+            }
+            if (monitor.isCanceled()) {
+                throw new InterruptedException();
+            }
             monitor.worked(1);
 
             monitor.subTask("Delete task run records");

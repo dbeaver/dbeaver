@@ -566,7 +566,18 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
         }
 
         @Override
+        public boolean isEnabled() {
+            DBTTaskRun run = getSelectedTaskRun();
+            return tasksTree.getSelectedTask() != null && run != null
+                && (!(run instanceof DBTTaskRunRecord record) || record.hasLog());
+        }
+
+        @Override
         public void run() {
+            // Double-click invokes the action directly, without checking its enabled state.
+            if (!isEnabled()) {
+                return;
+            }
             DBTTask task = tasksTree.getSelectedTask();
             DBTTaskRun taskRun = getSelectedTaskRun();
             if (task != null && taskRun != null) {

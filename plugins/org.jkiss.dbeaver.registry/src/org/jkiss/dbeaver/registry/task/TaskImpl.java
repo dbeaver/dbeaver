@@ -346,7 +346,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
             try {
                 var filter = new DBTTaskRunStorage.Filter(project.getId(), id, null, null, null, null, null,
                     DBTTaskRunStorage.Order.START_TIME, true);
-                result = new ArrayList<>(storage.findRuns(new VoidProgressMonitor(), filter, 0, MAX_RUNS_IN_STATS));
+                result = new ArrayList<>(storage.findRunWindow(new VoidProgressMonitor(), filter, MAX_RUNS_IN_STATS));
             } catch (DBException e) {
                 log.error("Error reading task run history", e);
                 return List.of();

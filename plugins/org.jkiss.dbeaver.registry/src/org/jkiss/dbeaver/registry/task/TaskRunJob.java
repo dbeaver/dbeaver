@@ -60,7 +60,8 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     private final Locale locale;
     private final DBTTaskExecutionListener executionListener;
     private Log taskLog = log;
-    private DBRProgressMonitor activeMonitor;
+    private volatile DBRProgressMonitor activeMonitor;
+    private volatile boolean cancellationRequested;
     private DBTTaskRunStatus taskRunStatus = new DBTTaskRunStatus();
 
     private Instant taskStartTime = Instant.now();
@@ -94,6 +95,12 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
     @NotNull
     @Override
     protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+        activeMonitor = new TaskLoggingProgressMonitor(monitor, task);
+        // A direct execution can be canceled after registration but before its monitor is available.
+        if (cancellationRequested) {
+            monitor.getNestedMonitor().setCanceled(true);
+            return Status.CANCEL_STATUS;
+        }
         Date startTime = new Date();
         taskStartTime = startTime.toInstant();
         runId = UUID.randomUUID().toString();
@@ -103,7 +110,6 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
             System.getProperty(StandardConstants.ENV_USER_NAME),
             GeneralUtils.getProductTitle(),
             null, null);
-        activeMonitor = new TaskLoggingProgressMonitor(monitor, task);
         executionHistory = new QMTaskExecution(task, taskRun);
         try {
             task.getTaskStatsFolder(true);
@@ -228,10 +234,19 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
             taskLog.info("Timeout cancellation requested for " + getExecutionDescription()
                 + " [elapsedMs=" + getElapsedTime().toMillis() + ", limitMs=" + task.getMaxExecutionTime().toMillis() + "]");
         }
+        cancelExecution();
+    }
+
+    /** Cancels both scheduled jobs and executions invoked outside the Eclipse job manager. */
+    public void cancelExecution() {
+        cancellationRequested = true;
         cancel();
-        activeMonitor.getNestedMonitor().setCanceled(true);
-        if (isRunDirectly()) {
-            canceling();
+        DBRProgressMonitor monitor = activeMonitor;
+        if (monitor != null) {
+            monitor.getNestedMonitor().setCanceled(true);
+            if (isRunDirectly()) {
+                canceling();
+            }
         }
     }
 
