@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoClient;
 import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoLogin;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.net.URI;
 
@@ -29,8 +30,9 @@ import java.net.URI;
  * Owns the desktop access token. Reading status or attaching a token never starts a browser flow.
  */
 public class DDDesktopTokenManager {
-    public enum Status { SIGNED_OUT, SIGNED_IN, EXPIRED }
+    public enum Status { SIGNED_OUT, UNLOADED, SIGNED_IN, EXPIRED }
 
+    private static final String PREF_LOGGED_IN = "datadam.desktop.sso.logged-in";
     private static final DDDesktopTokenManager INSTANCE = new DDDesktopTokenManager(
         DDDesktopTokenStore.INSTANCE, new DDDesktopTokenValidator(), new DDDesktopSsoLogin());
 
@@ -56,22 +58,19 @@ public class DDDesktopTokenManager {
 
     @NotNull
     public Status getStatus() {
-        if (token == null) {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_LOGGED_IN)) {
             return Status.SIGNED_OUT;
         }
+        if (token == null) {
+            return Status.UNLOADED;
+        }
         return validator.isExpired(token) ? Status.EXPIRED : Status.SIGNED_IN;
-    }
-
-    public void restore(@NotNull URI accountUrl, @NotNull URI storageUrl) throws DBException {
-        DDDesktopUserToken saved = store.load();
-        token = saved != null && accountUrl.toString().equals(saved.accountOrigin())
-            && storageUrl.toString().equals(saved.storageOrigin()) ? saved : null;
     }
 
     @NotNull
     public String accessFor(@NotNull URI resource) throws DBException {
         DDDesktopUserToken current = token;
-        if (current == null || validator.isExpired(current)) {
+        if (getStatus() != Status.SIGNED_IN || current == null) {
             throw new DBException("Sign in to DataDam first");
         }
         if (!validator.matchesResource(current, resource)) {
@@ -96,13 +95,19 @@ public class DDDesktopTokenManager {
         if (validator.isExpired(saved)) {
             throw new DBException("DataDam desktop token has expired");
         }
-        store.save(saved);
-        token = saved;
+        synchronized (this) {
+            store.save(saved);
+            token = saved;
+            DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, true);
+        }
     }
 
     public void signOut() throws DBException {
-        token = null;
-        store.clear();
+        synchronized (this) {
+            token = null;
+            DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, false);
+            store.clear();
+        }
     }
 
     @NotNull
