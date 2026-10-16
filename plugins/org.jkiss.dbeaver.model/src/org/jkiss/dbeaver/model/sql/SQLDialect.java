@@ -94,6 +94,13 @@ public interface SQLDialect {
     String[][] getIdentifierQuoteStrings();
 
     /**
+     * Returns whether a single quoted identifier represents a qualified object name.
+     */
+    default boolean treatsQuotedIdentifierAsQualifiedName(@NotNull String identifier) {
+        return false;
+    }
+
+    /**
      * Retrieves strings used to quote SQL strings.
      *
      * @return the array of string pairs

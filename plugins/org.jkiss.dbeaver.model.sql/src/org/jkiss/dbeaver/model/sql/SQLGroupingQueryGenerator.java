@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,7 +149,7 @@ public class SQLGroupingQueryGenerator {
                 }
                 for (int i = 0; i < groupFunctions.size(); i++) {
                     String func = groupFunctions.get(i);
-                    Expression expression = SQLSemanticProcessor.parseExpression(func);
+                    Expression expression = SQLSemanticProcessor.parseExpression(dialect, func);
                     SelectItem<?> sei = new SelectItem<>(expression);
                     if (useAliasForColumns) {
                         sei.setAlias(new Alias(funcAliases[i]));
@@ -235,7 +235,8 @@ public class SQLGroupingQueryGenerator {
         private final SQLDialect sqlDialect;
 
         public FormattedTable(Table table, SQLDialect sqlDialect) {
-            super(table.getDatabase(), table.getSchemaName(), table.getName());
+            getNameParts().addAll(table.getNameParts());
+            getNamePartDelimiters().addAll(table.getNamePartDelimiters());
             this.sqlDialect = sqlDialect;
         }
 

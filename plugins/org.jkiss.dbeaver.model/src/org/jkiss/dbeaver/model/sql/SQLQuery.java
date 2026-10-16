@@ -170,7 +170,10 @@ public class SQLQuery implements SQLScriptElement {
                 this.parseError = new DBException("Empty query");
                 return;
             }
-            statement = SQLSemanticProcessor.parseQuery(dataSource == null ? null : dataSource.getSQLDialect(), text);
+            statement = SQLSemanticProcessor.parseQuery(
+                dataSource == null ? BasicSQLDialect.INSTANCE : dataSource.getSQLDialect(),
+                text
+            );
             if (statement instanceof Select) {
                 type = SQLQueryType.SELECT;
                 if (statement instanceof PlainSelect plainSelect) {

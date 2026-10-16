@@ -62,6 +62,11 @@ public class BQSQLDialect extends GenericSQLDialect {
     }
 
     @Override
+    public boolean treatsQuotedIdentifierAsQualifiedName(@NotNull String identifier) {
+        return identifier.startsWith("`") && identifier.endsWith("`");
+    }
+
+    @Override
     public int getCatalogUsage() {
         return USAGE_ALL;
     }
