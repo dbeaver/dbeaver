@@ -133,6 +133,7 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
             return;
         }
 
+        GenericSchema oldSchema = getDefaultSchema();
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog")) {
             JDBCUtils.executeSQL(session, "USE " + DBUtils.getQuotedIdentifier(catalog));
             activeCatalogName = newCatalogName;
@@ -146,13 +147,16 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
 
         super.setDefaultCatalog(monitor, catalog, schema);
         cacheDefaultSchemas(monitor);
-        // Read the schema only now: the JDBC catalog switch above resets it to the catalog's default schema
+        // Set and read the schema only now: the JDBC catalog switch above resets it to the catalog's default schema
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, TASK_TITLE_SET_SCHEMA)) {
+            if (schema != null) {
+                session.setSchema(schema.getName());
+            }
             activeSchemaName = session.getSchema();
         } catch (SQLException e) {
             throw new DBCException(e, this);
         }
-        setActiveSchema(monitor, schema);
+        DBUtils.fireObjectSelectionChange(oldSchema, getDefaultSchema(), this);
     }
 
     @Override
