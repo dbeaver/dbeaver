@@ -75,6 +75,10 @@
                         type="java.lang.Object"/>
     </extension>
 
+    <extension point="org.eclipse.ui.startup">
+        <startup class="org.jkiss.dbeaver.ui.ai.internal.AIUIStartup"/>
+    </extension>
+
     <extension point="org.eclipse.ui.commands">
         <category id="com.dbeaver.ai" name="AI commands" description="AI commands"/>
         <command id="org.jkiss.dbeaver.ui.ai.showCompletion" name="%command.org.jkiss.dbeaver.ui.ai.showCompletion.name" description="%command.org.jkiss.dbeaver.ui.ai.showCompletion.description" categoryId="com.dbeaver.ai"/>
