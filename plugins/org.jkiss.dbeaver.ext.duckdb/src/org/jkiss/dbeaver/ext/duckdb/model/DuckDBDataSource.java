@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,5 +60,16 @@ public class DuckDBDataSource extends GenericDataSource {
     @Override
     protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
         return new DuckDBExecutionContext(instance, type);
+    }
+
+    @Override
+    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
+        super.initialize(monitor);
+        // Contexts read their defaults before catalogs are loaded, so cache the schemas of their catalogs now
+        for (JDBCExecutionContext context : getDefaultInstance().getAllContexts()) {
+            if (context instanceof DuckDBExecutionContext duckDBContext) {
+                duckDBContext.cacheDefaultCatalogSchemas(monitor);
+            }
+        }
     }
 }

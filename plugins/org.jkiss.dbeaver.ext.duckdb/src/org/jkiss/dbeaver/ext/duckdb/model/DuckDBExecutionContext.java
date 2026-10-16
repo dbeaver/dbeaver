@@ -180,6 +180,10 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
         DBUtils.fireObjectSelectionChange(oldSchema, schema, this);
     }
 
+    void cacheDefaultCatalogSchemas(@NotNull DBRProgressMonitor monitor) {
+        cacheSchemas(monitor, getDefaultCatalog());
+    }
+
     private void cacheSchemas(@NotNull DBRProgressMonitor monitor, @Nullable GenericCatalog catalog) {
         if (catalog == null) {
             return;
