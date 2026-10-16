@@ -29,6 +29,7 @@ public class DuckDBConstants {
     // Driver parameter, so drivers copied in Driver Manager keep passing the password as the token
     public static final String PARAM_MOTHERDUCK_TOKEN_AUTH = "motherduck-token-auth";
     public static final String PROP_MOTHERDUCK_TOKEN = "motherduck_token";
+    public static final String IN_MEMORY_URL = "jdbc:duckdb:";
 
     private DuckDBConstants() {
     }
