@@ -20,7 +20,7 @@
         <!-- Enabled by the user -->
         <definition id="org.jkiss.dbeaver.core.ai.completion.enabled.by.user">
             <not>
-                <test property="org.jkiss.dbeaver.ui.ai.isDisabled" forcePluginActivation="true" />
+                <test property="org.jkiss.dbeaver.ui.ai.isDisabled" forcePluginActivation="false" />
             </not>
         </definition>
     </extension>
