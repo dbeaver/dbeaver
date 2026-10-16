@@ -50,6 +50,18 @@ public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void nestedBlockCommentAfterDelimiterYieldsSingleStatement() {
+        //given
+        String selection = "SELECT 1; /* outer /* nested */ tail */"; //$NON-NLS-1$
+
+        //when
+        String planSql = explainXml(selection);
+
+        //then
+        Assertions.assertEquals("EXPLAIN (FORMAT XML) SELECT 1 /* outer /* nested */ tail */", planSql); //$NON-NLS-1$
+    }
+
+    @Test
     public void trailingCommentAfterDelimiterWorksForTextExplain() {
         //given
         String selection = "SELECT 1; -- trailing comment"; //$NON-NLS-1$
@@ -135,6 +147,18 @@ public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
 
         //then
         Assertions.assertEquals("EXPLAIN (FORMAT XML) SELECT $tag$a;b$tag$ -- comment", planSql); //$NON-NLS-1$
+    }
+
+    @Test
+    public void dollarQuoteLikeSuffixInIdentifierDoesNotStartDollarQuote() {
+        //given
+        String selection = "SELECT foo$tag$; -- trailing comment"; //$NON-NLS-1$
+
+        //when
+        String planSql = explainXml(selection);
+
+        //then
+        Assertions.assertEquals("EXPLAIN (FORMAT XML) SELECT foo$tag$ -- trailing comment", planSql); //$NON-NLS-1$
     }
 
     @Test

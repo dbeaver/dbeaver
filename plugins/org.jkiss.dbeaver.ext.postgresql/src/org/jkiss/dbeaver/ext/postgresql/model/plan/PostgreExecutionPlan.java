@@ -149,6 +149,7 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
         final int doubleQuote = 4;
         final int dollarQuote = 5;
         int state = code;
+        int blockDepth = 0;
         String dollarTag = null;
         int lastDelim = -1;
         boolean codeAfterDelim = false;
@@ -163,9 +164,15 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
                 }
                 i++;
             } else if (state == blockComment) {
-                if (c == '*' && n == '/') {
-                    state = code;
+                if (c == '/' && n == '*') {
+                    blockDepth++;
                     i += 2;
+                } else if (c == '*' && n == '/') {
+                    blockDepth--;
+                    i += 2;
+                    if (blockDepth <= 0) {
+                        state = code;
+                    }
                 } else {
                     i++;
                 }
@@ -226,9 +233,10 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
                     commentAfterDelim = true;
                 }
                 state = blockComment;
+                blockDepth = 1;
                 i += 2;
             } else if (c == '$') {
-                String tag = matchDollarTag(query, i);
+                String tag = i > 0 && isIdentifierPart(query.charAt(i - 1)) ? null : matchDollarTag(query, i);
                 if (tag == null) {
                     codeAfterDelim = true;
                     i++;
@@ -248,6 +256,11 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
             return -1;
         }
         return lastDelim;
+    }
+
+    private static boolean isIdentifierPart(char c)
+    {
+        return c == '_' || c == '$' || Character.isLetterOrDigit(c);
     }
 
     @Nullable
