@@ -18,20 +18,16 @@ package org.jkiss.dbeaver.model.datadam.sync.core;
 
 import com.dbeaver.datadam.share.api.exception.DDShareException;
 import com.dbeaver.datadam.share.api.model.*;
-import com.dbeaver.datadam.share.api.model.DDConfiguration;
-import com.dbeaver.datadam.share.api.model.DDConfigurationSummary;
-import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationResult;
 import com.dbeaver.datadam.share.api.service.DDSharedProjectService;
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
-import com.dbeaver.rest.client.interceptor.HttpRequestWrapper;
-import com.dbeaver.rest.client.interceptor.HttpResponseWrapper;
-import com.dbeaver.rest.client.interceptor.InterceptorChain;
 import com.google.gson.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.GsonUtils;
 import org.jkiss.utils.HttpConstants;
@@ -40,6 +36,7 @@ import org.jkiss.utils.Pair;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
@@ -48,10 +45,10 @@ import java.time.ZoneOffset;
 import java.util.*;
 import javax.crypto.SecretKey;
 
-public class DDShareClient extends AbstractRestClient implements DDSyncTransport, DDSharedProjectService {
+public class DDShareClient extends AbstractRestClient implements DDSharedProjectService {
 
     private static final int TIMEOUT_MS = 30000;
-    private static final String SERVER_TIME_HEADER = "X-DD-Server-Time";
+    private static final String GRAPHQL_ENDPOINT = "/graphql";
     private static final String FIELD_NAME = "name";
     private static final String FIELD_DESCRIPTION = "description";
 
@@ -64,11 +61,11 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         updateTime""";
 
     private final DDSyncCredentials credentials;
-    private final ThreadLocal<byte[]> requestBody = new ThreadLocal<>();
+    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
     private SecretKey dataKey;
 
     public DDShareClient(@NotNull String url, @NotNull DDSyncCredentials credentials) {
-        super(url, DEFAULT_CONNECT_TIMEOUT, TIMEOUT_MS, List.of());
+        super(url, DEFAULT_CONNECT_TIMEOUT, TIMEOUT_MS, List.of(), HttpClient.Redirect.NEVER);
         this.credentials = credentials;
         this.gson = GsonUtils.gsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeIsoAdapter())
@@ -97,47 +94,6 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         ) {
             return new JsonPrimitive(src.atOffset(ZoneOffset.UTC).toString());
         }
-    }
-
-    @NotNull
-    @Override
-    public List<DDConfigurationSummary> listConfigurations() throws DBException {
-        JsonObject data = call(DDSyncApi.QUERY_LIST_CONFIGURATIONS, Map.of());
-        return List.of(gson.fromJson(data.get("configurations"), DDConfigurationSummary[].class));
-    }
-
-    @NotNull
-    @Override
-    public DDConfiguration getConfiguration(@NotNull String configurationId) throws DBException {
-        JsonObject data = call(DDSyncApi.QUERY_GET_CONFIGURATION, Map.of("configurationId", configurationId));
-        JsonElement configuration = data.get("configuration");
-        if (configuration == null || configuration.isJsonNull()) {
-            throw new DDConfigurationNotFoundException("Configuration '" + configurationId + "' not found");
-        }
-        return gson.fromJson(configuration, DDConfiguration.class);
-    }
-
-    @NotNull
-    @Override
-    public DDConfiguration createConfiguration(@NotNull DDCreateConfigurationRequest request) throws DBException {
-        JsonObject data = call(DDSyncApi.MUTATION_CREATE_CONFIGURATION, Map.of("input", request));
-        return gson.fromJson(data.get("createConfiguration"), DDConfiguration.class);
-    }
-
-    @NotNull
-    @Override
-    public DDUpdateConfigurationResult updateConfiguration(
-        @NotNull String configurationId,
-        @NotNull DDUpdateConfigurationRequest request
-    ) throws DBException {
-        JsonObject data = call(
-            DDSyncApi.MUTATION_UPDATE_CONFIGURATION,
-            Map.of("configurationId", configurationId, "input", request));
-        JsonElement result = data.get("updateConfiguration");
-        if (result == null || result.isJsonNull()) {
-            throw new DDConfigurationNotFoundException("Configuration '" + configurationId + "' not found");
-        }
-        return gson.fromJson(result, DDUpdateConfigurationResult.class);
     }
 
     @NotNull
@@ -445,48 +401,13 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
 
     @NotNull
     private HttpRequest.Builder request(@NotNull byte[] body) throws DBException {
-        URI uri = buildUri(CommonUtils.removeLeadingSlash(DDSyncApi.GRAPHQL_ENDPOINT), Map.of());
-        HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
+        URI uri = buildUri(CommonUtils.removeLeadingSlash(GRAPHQL_ENDPOINT), Map.of());
+        DDEndpoints.requireSecureTransport(uri);
+        String authorization = accessService.getAccessTokenForResource(uri);
+        return HttpRequest.newBuilder(uri)
             .header(HttpConstants.HEADER_CONTENT_TYPE, MediaType.JSON.toString())
-            .header(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + buildToken("POST", uri, body))
+            .header(HttpConstants.HEADER_AUTHORIZATION, HttpConstants.BEARER_PREFIX + authorization)
             .POST(HttpRequest.BodyPublishers.ofByteArray(body));
-        requestBody.set(body);
-        return builder;
-    }
-
-    @NotNull
-    @Override
-    protected <T> T execute(@NotNull HttpRequest.Builder builder, @NotNull Type type) throws DBException {
-        try {
-            return super.execute(builder, type);
-        } finally {
-            requestBody.remove();
-        }
-    }
-
-    @NotNull
-    @Override
-    protected HttpResponseWrapper executeChain(
-        @NotNull InterceptorChain chain,
-        @NotNull HttpRequestWrapper request,
-        @NotNull URI uri
-    ) throws Exception {
-        HttpResponseWrapper response = chain.proceed(request);
-        String serverTime = header(response, SERVER_TIME_HEADER);
-        if (serverTime == null) {
-            return response;
-        }
-        credentials.updateServerTime(Long.parseLong(serverTime));
-        request.withHeader(
-            HttpConstants.HEADER_AUTHORIZATION,
-            HttpConstants.BEARER_PREFIX + buildToken("POST", uri, requestBody.get()));
-        return chain.proceed(request);
-    }
-
-    @NotNull
-    private String buildToken(@NotNull String method, @NotNull URI uri, @NotNull byte[] body) throws DBException {
-        String pathAndQuery = uri.getRawQuery() == null ? uri.getRawPath() : uri.getRawPath() + "?" + uri.getRawQuery();
-        return credentials.buildToken(method, pathAndQuery, body);
     }
 
     @NotNull
@@ -509,12 +430,4 @@ public class DDShareClient extends AbstractRestClient implements DDSyncTransport
         super.handleRequestException(message, e);
     }
 
-    @Nullable
-    private static String header(@NotNull HttpResponseWrapper response, @NotNull String name) {
-        return response.headers().entrySet().stream()
-            .filter(entry -> entry.getKey().equalsIgnoreCase(name))
-            .flatMap(entry -> entry.getValue().stream())
-            .findFirst()
-            .orElse(null);
-    }
 }

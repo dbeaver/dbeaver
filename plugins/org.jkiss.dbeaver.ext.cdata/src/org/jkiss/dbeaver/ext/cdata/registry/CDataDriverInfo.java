@@ -20,6 +20,8 @@ import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
+import java.math.BigDecimal;
+
 public record CDataDriverInfo(
     @SerializedName("datasource") @NotNull String dataSource,
     @SerializedName("objname") @NotNull String objectName,
@@ -28,9 +30,23 @@ public record CDataDriverInfo(
     @NotNull CDataDriverTier tier,
     @SerializedName("purchase_url") @NotNull String purchaseUrl,
     @SerializedName("datatype_id") @NotNull String dataTypeId,
-    @SerializedName("order_sku") @Nullable String orderSku
+    @SerializedName("order_sku") @Nullable String orderSku,
+    @SerializedName("annual_price_usd") @Nullable BigDecimal annualPriceUsd
 ) {
     private static final String DOCUMENTATION_URL_PREFIX = "https://cdn.cdata.com/help/";
+
+    public CDataDriverInfo(
+        @NotNull String dataSource,
+        @NotNull String objectName,
+        @NotNull String driverName,
+        int versionYear,
+        @NotNull CDataDriverTier tier,
+        @NotNull String purchaseUrl,
+        @NotNull String dataTypeId,
+        @Nullable String orderSku
+    ) {
+        this(dataSource, objectName, driverName, versionYear, tier, purchaseUrl, dataTypeId, orderSku, null);
+    }
 
     @Nullable
     public String documentationUrl() {

@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncUIManager;
@@ -43,6 +44,7 @@ import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncUIManager;
 import java.util.List;
 
 public class DDProjectImportHandler extends AbstractHandler {
+    private final DDDesktopTokenUIManager accessUIManager = DDDesktopTokenUIManager.getInstance();
     @Nullable
     @Override
     public Object execute(@NotNull ExecutionEvent event) {
@@ -50,12 +52,15 @@ public class DDProjectImportHandler extends AbstractHandler {
         if (!ddManager.isDDEnabled()) {
             return null;
         }
-        DDProjectSyncService service = ddManager.getService();
         new AbstractJob(DDTrackingUIMessages.project_sync_import_list_job) {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
+                    if (!accessUIManager.ensureTokenReady(monitor)) {
+                        return Status.CANCEL_STATUS;
+                    }
+                    DDProjectSyncService service = ddManager.getService();
                     List<DDSharedProject> projects = service.listNotAlreadyBindRemoteProjects();
                     UIUtils.asyncExec(() -> selectProject(ddManager, service, projects));
                 } catch (DBException e) {
