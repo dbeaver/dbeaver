@@ -20,11 +20,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.connection.DBPDriverLicense;
 
+import java.time.LocalDate;
+
 public final class CDataDriverLicense implements DBPDriverLicense {
     private final CDataLicenseStatus status;
     private final String licenseId;
     private final String message;
     private final Integer remainingDays;
+    private final LocalDate expirationDate;
 
     public CDataDriverLicense(
         @NotNull CDataLicenseStatus status,
@@ -40,10 +43,21 @@ public final class CDataDriverLicense implements DBPDriverLicense {
         @Nullable String message,
         @Nullable Integer remainingDays
     ) {
+        this(status, licenseId, message, remainingDays, LocalDate.now());
+    }
+
+    public CDataDriverLicense(
+        @NotNull CDataLicenseStatus status,
+        @Nullable String licenseId,
+        @Nullable String message,
+        @Nullable Integer remainingDays,
+        @NotNull LocalDate validationDate
+    ) {
         this.status = status;
         this.licenseId = licenseId == null ? "" : licenseId;
         this.message = message;
         this.remainingDays = remainingDays;
+        this.expirationDate = remainingDays == null ? null : validationDate.plusDays(remainingDays);
     }
 
     @NotNull
@@ -59,6 +73,11 @@ public final class CDataDriverLicense implements DBPDriverLicense {
     @Nullable
     public Integer getRemainingDays() {
         return remainingDays;
+    }
+
+    @Nullable
+    public LocalDate getExpirationDate() {
+        return expirationDate;
     }
 
     @NotNull
