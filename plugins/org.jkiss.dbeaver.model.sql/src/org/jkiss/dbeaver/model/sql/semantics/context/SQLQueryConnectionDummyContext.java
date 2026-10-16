@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryVariablesSubset;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
@@ -333,10 +334,11 @@ public class SQLQueryConnectionDummyContext extends SQLQueryConnectionContext {
 
     public SQLQueryConnectionDummyContext(
         @NotNull SQLDialect dialect,
+        @NotNull SQLQueryVariablesSubset variablesSubset,
         @NotNull Set<String> knownColumnNames,
         @NotNull Set<List<String>> knownTableNames
     ) {
-        super(dialect);
+        super(dialect, variablesSubset);
 
         this.knownColumnNames = knownColumnNames;
         this.knownTableNames = new HashSet<>();
