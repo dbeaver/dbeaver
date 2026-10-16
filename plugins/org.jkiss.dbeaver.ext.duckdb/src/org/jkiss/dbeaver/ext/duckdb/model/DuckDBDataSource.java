@@ -17,17 +17,22 @@
 package org.jkiss.dbeaver.ext.duckdb.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -60,5 +65,22 @@ public class DuckDBDataSource extends GenericDataSource {
     @Override
     protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
         return new DuckDBExecutionContext(instance, type);
+    }
+
+    @Nullable
+    @Override
+    protected Map<String, String> getInternalConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @NotNull JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) {
+        // MotherDuck reads the token from a connection property, so it can live in secure storage instead of the URL
+        String token = connectionInfo.getUserPassword();
+        if (DuckDBConstants.MOTHERDUCK_DRIVER_ID.equals(driver.getId()) && !CommonUtils.isEmpty(token)) {
+            return Map.of(DuckDBConstants.PROP_MOTHERDUCK_TOKEN, token);
+        }
+        return null;
     }
 }
