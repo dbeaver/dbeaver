@@ -277,9 +277,10 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
             store.setValue(ConfirmationConstants.CONFIRM_PREF_KEY_PREFIX + id, entry.getValue());
         }
         for (Map.Entry<ConfirmationDescriptor, Boolean> entry : changedDefaultConfirmations.entrySet()) {
+            // An unset boolean reads as false, so a boolean setValue(false) would not persist the override.
             store.setValue(
                 DEFAULT_CONFIRM_PREF_KEY_PREFIX + entry.getKey().getId(),
-                entry.getValue());
+                Boolean.toString(entry.getValue()));
         }
         PrefUtils.savePreferenceStore(store);
         return super.performOk();
