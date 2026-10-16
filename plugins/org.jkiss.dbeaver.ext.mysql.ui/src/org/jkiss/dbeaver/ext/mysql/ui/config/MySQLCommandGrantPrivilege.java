@@ -52,6 +52,10 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
     private MySQLTableBase table;
     private MySQLProcedure procedure;
     private List<MySQLTableColumn> columns;
+    // Stored schema LIKE pattern (e.g. tenant\_%) of a wildcard schema grant shown under a concrete schema:
+    // the statement must address that stored grant row, not the concrete schema
+    @Nullable
+    private String schemaPattern;
     // Commands on the same object merge into one GRANT/REVOKE statement with several privileges
     private final List<MySQLPrivilege> privileges = new ArrayList<>();
 
@@ -175,7 +179,7 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         // command on the same privileges cancels out - the General page relies on that, it adds
         // a command per click. The merge must stay free of side effects: the queue may be rebuilt many times.
         if (prevCommand instanceof MySQLCommandGrantPrivilege prevGrant
-            && prevGrant.hasSameTarget(schema, table, procedure, columns)
+            && prevGrant.hasSameTarget(schema, schemaPattern, table, procedure, columns)
             && new HashSet<>(prevGrant.privileges).equals(new HashSet<>(privileges))
         ) {
             if (prevGrant.grant != grant) {
@@ -198,12 +202,21 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
 
     public boolean hasSameTarget(
         @Nullable MySQLCatalog schema,
+        @Nullable String schemaPattern,
         @Nullable MySQLTableBase table,
         @Nullable MySQLProcedure procedure,
         @Nullable List<MySQLTableColumn> columns
     ) {
-        return this.schema == schema && this.table == table && this.procedure == procedure
+        return this.schema == schema && CommonUtils.equalObjects(this.schemaPattern, schemaPattern)
+            && this.table == table && this.procedure == procedure
             && CommonUtils.equalObjects(this.columns, columns);
+    }
+
+    /**
+     * Makes the statement address a wildcard schema grant by its stored pattern instead of the concrete schema.
+     */
+    public void setSchemaPattern(@Nullable String schemaPattern) {
+        this.schemaPattern = schemaPattern;
     }
 
     /**
@@ -266,6 +279,10 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
             return procedure.getProcedureType().name() + " " + //$NON-NLS-1$
                 (schema == null ? "*" : DBUtils.getQuotedIdentifier(schema)) + "." + //$NON-NLS-1$ //$NON-NLS-2$
                 DBUtils.getQuotedIdentifier(procedure);
+        }
+        if (schemaPattern != null) {
+            return "`" + schemaPattern.replace("`", "``") + "`." + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+                (table == null ? "*" : DBUtils.getQuotedIdentifier(table)); //$NON-NLS-1$
         }
         return
             (schema == null ? "*" : DBUtils.getQuotedIdentifier(schema)) + "." + //$NON-NLS-1$ //$NON-NLS-2$

@@ -83,6 +83,8 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     private PrivilegeTableControl inheritedPanel;
 
     private boolean isLoaded;
+    // Incremented on every load: a result of a superseded load (Refresh while loading) is dropped
+    private int loadGeneration;
     private MySQLCatalog catalog;
     private MySQLTableBase rootTable;
     private MySQLProcedure rootProcedure;
@@ -298,6 +300,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             return;
         }
         isLoaded = true;
+        final int generation = ++loadGeneration;
         LoadingJob.createService(
             new DatabaseLoadService<PrivData>(MySQLUIMessages.dialog_object_privileges_title, getExecutionContext()) {
                 @Override
@@ -309,7 +312,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                     }
                 }
             },
-            pageControl.createLoadVisualizer()
+            pageControl.createLoadVisualizer(generation)
         ).schedule();
     }
 
@@ -319,6 +322,11 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             || (source instanceof DBNEvent event && event.getSource() == DBNEvent.UPDATE_ON_SAVE)
             || !isLoaded
         ) {
+            if (force) {
+                // Explicit Refresh: re-read the account list too, so accounts created via SQL or another
+                // connection (even without any grant yet) show up in the list and in the "+" dialog
+                catalog.getDataSource().resetUsers();
+            }
             isLoaded = false;
             tableColumnsCache.clear();
             extraUsers.clear();
@@ -419,10 +427,13 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                     data.catalogTables.add(t);
                 }
             }
-            for (String name : procedureNames) {
-                MySQLProcedure p = catalog.getProceduresCache().getObject(monitor, catalog, name);
-                if (p != null) {
-                    data.catalogProcedures.add(p);
+            if (!procedureNames.isEmpty()) {
+                // A procedure and a function may share a name: match each routine by name AND type
+                // instead of a name-only cache lookup, which would return just one of them
+                for (MySQLProcedure p : catalog.getProceduresCache().getAllObjects(monitor, catalog)) {
+                    if (hasProcedureGrant(data.userGrants.values(), p)) {
+                        data.catalogProcedures.add(p);
+                    }
                 }
             }
         }
@@ -433,6 +444,17 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             }
         }
         return data;
+    }
+
+    private static boolean hasProcedureGrant(@NotNull Collection<List<MySQLGrant>> grantLists, @NotNull MySQLProcedure procedure) {
+        for (List<MySQLGrant> grants : grantLists) {
+            for (MySQLGrant grant : grants) {
+                if (grant.matchesProcedure(procedure)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private void applyData(@NotNull PrivData data) {
@@ -559,7 +581,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             tablesTable.removeAll();
             {
                 TableItem item = new TableItem(tablesTable, SWT.NONE);
-                item.setText("% (All)"); //$NON-NLS-1$
+                item.setText(MySQLUIMessages.editors_user_editor_privileges_all_objects);
                 item.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
             }
             Set<MySQLTableBase> shownTables = new LinkedHashSet<>(catalogTables);
@@ -795,14 +817,17 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                     return;
                 }
             }
+            String schemaPattern = null;
             if (columns != null) {
                 for (MySQLTableColumn c : columns) {
                     updateLocalGrant(user, privilege, isGrant, withGrantOption, table, procedure, c);
                 }
             } else {
-                updateLocalGrant(user, privilege, isGrant, withGrantOption, table, procedure, null);
+                MySQLGrant row = updateLocalGrant(user, privilege, isGrant, withGrantOption, table, procedure, null);
+                // Statements address the grant row the local model updated - a wildcard schema row by its pattern
+                schemaPattern = row.getWildcardSchemaPattern(catalog);
             }
-            applyUserPrivilegeChange(user, privilege, isGrant, withGrantOption, table, procedure, columns);
+            applyUserPrivilegeChange(user, privilege, isGrant, withGrantOption, table, procedure, columns, schemaPattern);
         });
     }
 
@@ -826,10 +851,11 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
      */
     private void applyUserPrivilegeChange(
         @NotNull MySQLUser user, @NotNull MySQLPrivilege privilege, boolean isGrant, boolean withGrantOption,
-        @Nullable MySQLTableBase table, @Nullable MySQLProcedure procedure, @Nullable List<MySQLTableColumn> columns
+        @Nullable MySQLTableBase table, @Nullable MySQLProcedure procedure, @Nullable List<MySQLTableColumn> columns,
+        @Nullable String schemaPattern
     ) {
         DBECommandContext ctx = getEditorInput().getCommandContext();
-        MySQLCommandGrantPrivilege opposite = findPendingUserCommand(user, !isGrant, table, procedure, columns);
+        MySQLCommandGrantPrivilege opposite = findPendingUserCommand(user, !isGrant, schemaPattern, table, procedure, columns);
         if (opposite != null) {
             // For a pending GRANT this also drops WITH GRANT OPTION together with its pseudo-privilege
             if (opposite.removePrivilege(privilege)) {
@@ -841,18 +867,20 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 return;
             }
         }
-        MySQLCommandGrantPrivilege pending = findPendingUserCommand(user, isGrant, table, procedure, columns);
+        MySQLCommandGrantPrivilege pending = findPendingUserCommand(user, isGrant, schemaPattern, table, procedure, columns);
         if (pending != null) {
             pending.addPrivilege(privilege);
             ctx.updateCommand(pending, null);
             return;
         }
-        addUserCommand(createCommand(user, isGrant, withGrantOption, table, procedure, columns, privilege));
+        MySQLCommandGrantPrivilege command = createCommand(user, isGrant, withGrantOption, table, procedure, columns, privilege);
+        command.setSchemaPattern(schemaPattern);
+        addUserCommand(command);
     }
 
     @Nullable
     private MySQLCommandGrantPrivilege findPendingUserCommand(
-        @NotNull MySQLUser user, boolean grantDirection,
+        @NotNull MySQLUser user, boolean grantDirection, @Nullable String schemaPattern,
         @Nullable MySQLTableBase table, @Nullable MySQLProcedure procedure, @Nullable List<MySQLTableColumn> columns
     ) {
         DBECommandContext ctx = getEditorInput().getCommandContext();
@@ -863,7 +891,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             if (command instanceof MySQLCommandGrantPrivilege g
                 && g.getObject() == user
                 && g.isGrant() == grantDirection
-                && g.hasSameTarget(catalog, table, procedure, columns)
+                && g.hasSameTarget(catalog, schemaPattern, table, procedure, columns)
             ) {
                 return g;
             }
@@ -963,8 +991,11 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     /**
      * Reflects a pending change in the in-memory grant list of the user so the UI stays consistent
      * before the change is saved.
+     *
+     * @return the grant row that was updated (or created)
      */
-    private void updateLocalGrant(
+    @NotNull
+    private MySQLGrant updateLocalGrant(
         @NotNull MySQLUser user, @NotNull MySQLPrivilege privilege, boolean isGrant, boolean withGrantOption,
         @Nullable MySQLTableBase table, @Nullable MySQLProcedure procedure, @Nullable MySQLTableColumn column
     ) {
@@ -1027,6 +1058,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             target.removePrivilege(privilege);
         }
         user.clearGrantsCache();
+        return target;
     }
 
     /**
@@ -1624,12 +1656,12 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             super(parent, SWT.NONE, MySQLObjectPrivilegesEditor.this);
         }
 
-        @NotNull ProgressVisualizer<PrivData> createLoadVisualizer() {
+        @NotNull ProgressVisualizer<PrivData> createLoadVisualizer(int generation) {
             return new ProgressVisualizer<>() {
                 @Override
                 public void completeLoading(@Nullable PrivData data) {
                     super.completeLoading(data);
-                    if (data != null && !pageControl.isDisposed()) {
+                    if (data != null && !pageControl.isDisposed() && generation == loadGeneration) {
                         applyData(data);
                     }
                 }

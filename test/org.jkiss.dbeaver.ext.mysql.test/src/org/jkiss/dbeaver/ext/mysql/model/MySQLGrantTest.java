@@ -312,4 +312,20 @@ public class MySQLGrantTest extends DBeaverUnitTest {
         grant.expandAllPrivileges(List.of(select, object("INSERT")));
         Assertions.assertEquals(List.of(select), List.of(grant.getPrivileges()));
     }
+
+    @Test
+    public void wildcardSchemaPatternForPatternGrantShownUnderConcreteSchema() {
+        MySQLGrant grant = tableGrant("tenant\\_%", "*", List.of(object("SELECT")), false);
+        Assertions.assertEquals("tenant\\_%", grant.getWildcardSchemaPattern(catalog("tenant_1")));
+    }
+
+    @Test
+    public void noWildcardSchemaPatternForOrdinaryGrants() {
+        Assertions.assertNull(tableGrant("mydb", "*", List.of(), false).getWildcardSchemaPattern(catalog("mydb")));
+        // Table-level and routine grants can't use schema wildcards
+        Assertions.assertNull(tableGrant("mydb", "t", List.of(), false).getWildcardSchemaPattern(catalog("mydb")));
+        Assertions.assertNull(
+            procedureGrant("mydb", "p", MySQLGrant.ObjectType.PROCEDURE).getWildcardSchemaPattern(catalog("mydb")));
+        Assertions.assertNull(tableGrant("*", "*", List.of(), false).getWildcardSchemaPattern(catalog("mydb")));
+    }
 }

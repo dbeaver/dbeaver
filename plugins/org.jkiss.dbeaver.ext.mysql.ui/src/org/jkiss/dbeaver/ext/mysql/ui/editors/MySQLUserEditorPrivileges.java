@@ -366,8 +366,9 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
                     if (!tablePrivilegeChangeNeeded(targetCatalog, null, privilege, isGrant)) {
                         continue;
                     }
-                    updateLocalData(privilege, isGrant, withGrantOption, targetCatalog, null);
-                    applyPrivilegeChange(privilege, isGrant, withGrantOption, targetCatalog, null, null, null);
+                    MySQLGrant row = updateLocalData(privilege, isGrant, withGrantOption, targetCatalog, null);
+                    applyPrivilegeChange(
+                        privilege, isGrant, withGrantOption, targetCatalog, null, null, null, row.getWildcardSchemaPattern(targetCatalog));
                 }
                 return;
             }
@@ -382,8 +383,10 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
                 if (multi && !tablePrivilegeChangeNeeded(curCatalog, curTable, privilege, isGrant)) {
                     continue;
                 }
-                updateLocalData(privilege, isGrant, withGrantOption, curCatalog, curTable);
-                applyPrivilegeChange(privilege, isGrant, withGrantOption, curCatalog, curTable, null, null);
+                MySQLGrant row = updateLocalData(privilege, isGrant, withGrantOption, curCatalog, curTable);
+                // Statements address the grant row the local model updated - a wildcard schema row by its pattern
+                String schemaPattern = curCatalog == null ? null : row.getWildcardSchemaPattern(curCatalog);
+                applyPrivilegeChange(privilege, isGrant, withGrantOption, curCatalog, curTable, null, null, schemaPattern);
             }
         }
         );
@@ -401,11 +404,12 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         @Nullable MySQLCatalog schema,
         @Nullable MySQLTableBase table,
         @Nullable MySQLProcedure procedure,
-        @Nullable List<MySQLTableColumn> columns
+        @Nullable List<MySQLTableColumn> columns,
+        @Nullable String schemaPattern
     ) {
         DBECommandContext commandContext = getEditorInput().getCommandContext();
         // A pending command of the opposite direction cancels this change out
-        MySQLCommandGrantPrivilege opposite = findPendingCommand(!isGrant, schema, table, procedure, columns);
+        MySQLCommandGrantPrivilege opposite = findPendingCommand(!isGrant, schema, schemaPattern, table, procedure, columns);
         if (opposite != null) {
             // For a pending GRANT this also drops WITH GRANT OPTION together with its pseudo-privilege
             if (opposite.removePrivilege(privilege)) {
@@ -418,7 +422,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             }
         }
         // Fold into a pending command of the same direction
-        MySQLCommandGrantPrivilege pending = findPendingCommand(isGrant, schema, table, procedure, columns);
+        MySQLCommandGrantPrivilege pending = findPendingCommand(isGrant, schema, schemaPattern, table, procedure, columns);
         if (pending != null) {
             pending.addPrivilege(privilege);
             commandContext.updateCommand(pending, null);
@@ -432,6 +436,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         } else {
             command = new MySQLCommandGrantPrivilege(getDatabaseObject(), isGrant, withGrantOption, schema, table, privilege);
         }
+        command.setSchemaPattern(schemaPattern);
         ownCommands.add(command);
         addChangeCommand(command, privilegeChangeReflector);
     }
@@ -481,6 +486,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     private MySQLCommandGrantPrivilege findPendingCommand(
         boolean grantDirection,
         @Nullable MySQLCatalog schema,
+        @Nullable String schemaPattern,
         @Nullable MySQLTableBase table,
         @Nullable MySQLProcedure procedure,
         @Nullable List<MySQLTableColumn> columns
@@ -493,7 +499,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             if (command instanceof MySQLCommandGrantPrivilege grantCommand
                 && ownCommands.contains(grantCommand)
                 && grantCommand.isGrant() == grantDirection
-                && grantCommand.hasSameTarget(schema, table, procedure, columns)
+                && grantCommand.hasSameTarget(schema, schemaPattern, table, procedure, columns)
             ) {
                 return grantCommand;
             }
@@ -555,7 +561,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
                 updateLocalColumnData(privilege, isGrant, withGrantOption, curCatalog, curTable, column);
             }
             // One statement per privilege toggle: GRANT priv (col1, col2, ...) ON catalog.table
-            applyPrivilegeChange(privilege, isGrant, withGrantOption, curCatalog, curTable, null, curColumns);
+            applyPrivilegeChange(privilege, isGrant, withGrantOption, curCatalog, curTable, null, curColumns, null);
         }
         );
     }
@@ -664,7 +670,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
                     continue;
                 }
                 updateLocalProcedureData(privilege, isGrant, withGrantOption, curCatalog, curProcedure);
-                applyPrivilegeChange(privilege, isGrant, withGrantOption, curCatalog, null, curProcedure, null);
+                applyPrivilegeChange(privilege, isGrant, withGrantOption, curCatalog, null, curProcedure, null, null);
             }
         }
         );
@@ -739,7 +745,13 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         highlightProcedures();
     }
 
-    private void updateLocalData(
+    /**
+     * Applies a table/schema/global privilege toggle to the local grants.
+     *
+     * @return the grant row that was updated (or created)
+     */
+    @NotNull
+    private MySQLGrant updateLocalData(
         @NotNull MySQLPrivilege privilege,
         boolean isGrant,
         boolean withGrantOption,
@@ -778,9 +790,11 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
                 false,
                 withGrantOption);
             grants.add(grant);
+            target = grant;
         }
         highlightCatalogs();
         highlightTables();
+        return target;
     }
 
     /**
@@ -814,7 +828,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             catalogsTable.removeAll();
             {
                 TableItem item = new TableItem(catalogsTable, SWT.NONE);
-                item.setText("% (All)"); //$NON-NLS-1$
+                item.setText(MySQLUIMessages.editors_user_editor_privileges_all_objects);
                 item.setImage(DBeaverIcons.getImage(DBIcon.TREE_DATABASE));
             }
             for (MySQLCatalog catalog : getDatabaseObject().getDataSource().getCatalogs()) {
@@ -857,7 +871,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             tablesTable.removeAll();
             {
                 TableItem item = new TableItem(tablesTable, SWT.NONE);
-                item.setText("% (All)"); //$NON-NLS-1$
+                item.setText(MySQLUIMessages.editors_user_editor_privileges_all_objects);
                 item.setImage(DBeaverIcons.getImage(DBIcon.TREE_TABLE));
             }
             if (catalogTables != null) {

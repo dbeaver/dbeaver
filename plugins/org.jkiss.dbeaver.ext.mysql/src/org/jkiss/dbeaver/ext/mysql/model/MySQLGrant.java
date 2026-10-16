@@ -535,6 +535,19 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
     }
 
     /**
+     * For a schema-level grant stored under a LIKE pattern (e.g. {@code tenant\_%}) and shown under a
+     * matching concrete schema, returns the stored pattern: GRANT/REVOKE statements must address that
+     * stored grant row, not the concrete schema. Returns {@code null} for an ordinary grant of the schema.
+     */
+    @Nullable
+    public String getWildcardSchemaPattern(@NotNull MySQLCatalog catalog) {
+        if (objectType != ObjectType.TABLE || !isAllTables() || CommonUtils.isEmpty(catalogName) || isAllCatalogs()) {
+            return null;
+        }
+        return catalogName.equals(catalog.getName()) ? null : catalogName;
+    }
+
+    /**
      * The grant target as written after {@code ON} in GRANT/REVOKE: {@code `db`.*}, {@code `db`.`tbl`}
      * or {@code PROCEDURE `db`.`proc`}. The schema is taken from the grant itself, so a wildcard schema
      * pattern (e.g. {@code `tenant\_%`}) is kept as is and the statement addresses the stored grant row.

@@ -80,6 +80,7 @@ public final class MySQLUIMessages extends NLS {
     public static String dialog_object_privileges_object_label;
     public static String dialog_object_privileges_group_users;
     public static String editors_object_privileges_control_schema_inherited;
+    public static String editors_user_editor_privileges_all_objects;
     public static String dialog_object_privileges_add_user;
     public static String editors_user_editor_abstract_action_grants_script;
     public static String editors_user_editor_abstract_dialog_grants_script_title;
