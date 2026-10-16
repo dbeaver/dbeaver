@@ -22,6 +22,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
@@ -58,6 +59,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
     private ContextWindowSizeField contextWindowSizeField;
     private ModelSelectorField modelSelectorField;
     protected Text accessTokenText;
+    private Button authorizeButton;
 
     protected volatile String accessToken;
     protected String token = "";
@@ -101,6 +103,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         accessTokenText.setText(accessToken);
         applySettings();
         loadAdvancedSettings(configuration);
+        updateEnvironmentControls();
 
         modelSelectorField.refreshModelListSilently(true);
     }
@@ -185,9 +188,14 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.widthHint = 150;
         accessTokenText.setLayoutData(gd);
-        accessTokenText.addModifyListener((e -> accessToken = accessTokenText.getText()));
+        accessTokenText.addModifyListener(e -> {
+            if (!isUpdatingEnvironmentControls()) {
+                accessToken = accessTokenText.getText();
+            }
+        });
         accessTokenText.setMessage(CopilotMessages.copilot_preference_page_token_info);
-        UIUtils.createDialogButton(parent, CopilotMessages.copilot_access_token_authorize, SelectionListener.widgetSelectedAdapter(e -> {
+        authorizeButton = UIUtils.createDialogButton(
+            parent, CopilotMessages.copilot_access_token_authorize, SelectionListener.widgetSelectedAdapter(e -> {
             try {
                 accessToken = UIUtils.runWithDialog(monitor -> {
                     var future = new CompletableFuture<Void>();
@@ -270,7 +278,19 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
     }
 
     @Override
+    protected void updateEnvironmentControls() {
+        String environmentToken = getEnvironmentValue(CopilotProperties.ENV_TOKEN, CopilotProperties.ENV_GH_TOKEN,
+            CopilotProperties.ENV_GITHUB_TOKEN);
+        updateEnvironmentText(accessTokenText, accessToken, environmentToken);
+        authorizeButton.setEnabled(environmentToken == null);
+        CopilotProperties currentProperties = createConnectionProperties();
+        modelSelectorField.setEnvironmentModel(
+            currentProperties.isModelSelectionSupported() ? null : currentProperties.getEffectiveModel());
+    }
+
+    @Override
     protected void environmentSettingsChanged() {
+        super.environmentSettingsChanged();
         modelSelectorField.refreshModelListSilently(true);
     }
 }
