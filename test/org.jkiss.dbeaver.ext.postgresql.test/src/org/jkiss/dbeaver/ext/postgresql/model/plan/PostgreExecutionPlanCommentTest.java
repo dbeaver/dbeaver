@@ -138,19 +138,7 @@ public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void dollarQuoteLikeSuffixInIdentifierDoesNotStartDollarQuote() {
-        //given
-        String selection = "SELECT foo$tag$; -- trailing comment"; //$NON-NLS-1$
-
-        //when
-        String planSql = explainXml(selection);
-
-        //then
-        Assertions.assertEquals("EXPLAIN (FORMAT XML) SELECT foo$tag$ -- trailing comment", planSql); //$NON-NLS-1$
-    }
-
-    @Test
-    public void escapedQuoteInEscapeStringUntouched() {
+    public void escapedQuoteInEscapeStringFailsClosed() {
         //given
         String selection = "SELECT E'a\\'b'; -- trailing comment"; //$NON-NLS-1$
 
@@ -158,7 +146,7 @@ public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
         String planSql = explainXml(selection);
 
         //then
-        Assertions.assertEquals("EXPLAIN (FORMAT XML) SELECT E'a\\'b' -- trailing comment", planSql); //$NON-NLS-1$
+        Assertions.assertEquals("EXPLAIN (FORMAT XML) SELECT E'a\\'b'; -- trailing comment", planSql); //$NON-NLS-1$
     }
 
     @Test

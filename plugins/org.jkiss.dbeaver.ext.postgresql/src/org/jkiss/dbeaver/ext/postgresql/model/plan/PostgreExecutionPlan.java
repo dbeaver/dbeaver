@@ -132,14 +132,11 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
     @NotNull
     private static String trimTerminalDelimiter(@NotNull String query)
     {
-        String result = query;
-        for (;;) {
-            int delimPos = findTerminalDelimiter(result);
-            if (delimPos < 0) {
-                return result;
-            }
-            result = result.substring(0, delimPos) + result.substring(delimPos + 1);
+        int delimPos = findTerminalDelimiter(query);
+        if (delimPos < 0) {
+            return query;
         }
+        return query.substring(0, delimPos) + query.substring(delimPos + 1);
     }
 
     // Drop a terminal delimiter only when a trailing comment hides it
@@ -152,8 +149,6 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
         final int doubleQuote = 4;
         final int dollarQuote = 5;
         int state = code;
-        int blockDepth = 0;
-        boolean escapeAware = false;
         String dollarTag = null;
         int lastDelim = -1;
         boolean codeAfterDelim = false;
@@ -168,22 +163,14 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
                 }
                 i++;
             } else if (state == blockComment) {
-                if (c == '/' && n == '*') {
-                    blockDepth++;
+                if (c == '*' && n == '/') {
+                    state = code;
                     i += 2;
-                } else if (c == '*' && n == '/') {
-                    blockDepth--;
-                    i += 2;
-                    if (blockDepth <= 0) {
-                        state = code;
-                    }
                 } else {
                     i++;
                 }
             } else if (state == singleQuote) {
-                if (escapeAware && c == '\\' && n != 0) {
-                    i += 2;
-                } else if (!escapeAware && c == '\\' && n == '\'') {
+                if (c == '\\' && n == '\'') {
                     int backslashes = 0;
                     for (int j = i; j >= 0 && query.charAt(j) == '\\'; j--) {
                         backslashes++;
@@ -223,8 +210,6 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
                 commentAfterDelim = false;
                 i++;
             } else if (c == '\'') {
-                escapeAware = i > 0 && (query.charAt(i - 1) == 'E' || query.charAt(i - 1) == 'e')
-                    && (i < 2 || !isIdentifierPart(query.charAt(i - 2)));
                 state = singleQuote;
                 i++;
             } else if (c == '"') {
@@ -241,10 +226,9 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
                     commentAfterDelim = true;
                 }
                 state = blockComment;
-                blockDepth = 1;
                 i += 2;
             } else if (c == '$') {
-                String tag = i > 0 && isIdentifierPart(query.charAt(i - 1)) ? null : matchDollarTag(query, i);
+                String tag = matchDollarTag(query, i);
                 if (tag == null) {
                     codeAfterDelim = true;
                     i++;
@@ -280,11 +264,6 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
             return query.substring(pos, i + 1);
         }
         return null;
-    }
-
-    private static boolean isIdentifierPart(char c)
-    {
-        return c == '_' || c == '$' || Character.isLetterOrDigit(c);
     }
 
     @NotNull
