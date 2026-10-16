@@ -18,10 +18,13 @@ package org.jkiss.dbeaver.model.ai.impl;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 
 import java.util.*;
+import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 
 public final class ChatTruncator {
@@ -33,6 +36,7 @@ public final class ChatTruncator {
     private final int reserveForReply;
     private final int reserveForOverhead;
     private final TokenCounter counter;
+    private final ToIntFunction<AIImageAttachment> imageTokenCounter;
 
     private ChatTruncator(@NotNull Builder b) {
         this.maxTokens = b.maxTokens;
@@ -40,6 +44,7 @@ public final class ChatTruncator {
         this.reserveForOverhead = b.reserveForOverhead;
         this.counter = Objects.requireNonNull(b.counter, "TokenCounter is required");
         this.reserveForSystem = b.reserveForSystem;
+        this.imageTokenCounter = b.imageTokenCounter;
         if (maxTokens <= reserveForReply + reserveForOverhead) {
             throw new IllegalArgumentException("This AI request does not fit into the selected context window");
         }
@@ -53,7 +58,7 @@ public final class ChatTruncator {
      *         or {@code null} if the entire input already fits within the budget unchanged
      */
     @Nullable
-    public List<AIMessage> tryTruncate(@NotNull List<AIMessage> input) {
+    public List<AIMessage> tryTruncate(@NotNull List<AIMessage> input) throws DBException {
         List<AIMessage> messages = filterNonEmpty(input);
         if (messages.isEmpty()) {
             return null;
@@ -90,10 +95,17 @@ public final class ChatTruncator {
                     continue;
                 }
                 AIMessage m = rest.get(idx);
+                int imageTokens = countImageTokens(m);
+                if (imageTokens > headroom - used) {
+                    throw new DBException("The images in the latest message exceed the selected context window. "
+                        + "Remove some images or increase the context window size.");
+                }
+                // preserve the latest images before reserving space for system text
+                budget = Math.max(budget, used + imageTokens);
                 AIMessage truncatedMessage = tryTruncateMessage(m, Math.max(0, budget - used));
                 AIMessage pickedMessage = truncatedMessage == null ? m : truncatedMessage;
                 pinned.put(idx, pickedMessage);
-                used += counter.count(pickedMessage.getContent());
+                used += countMessageTokens(pickedMessage);
                 truncated = truncated | truncatedMessage != null;
             }
 
@@ -103,13 +115,17 @@ public final class ChatTruncator {
                     continue;
                 }
                 AIMessage m = rest.get(i);
+                if (countImageTokens(m) > budget - used) {
+                    truncated = true;
+                    break;
+                }
                 AIMessage truncatedMessage = tryTruncateMessage(m, budget - used);
                 if (truncatedMessage == null) {
                     extra.put(i, m);
-                    used += counter.count(m.getContent());
+                    used += countMessageTokens(m);
                 } else {
                     truncated = true;
-                    int contentTokens = countTokensWithoutTruncatedSuffix(truncatedMessage);
+                    int contentTokens = countMessageTokens(truncatedMessage);
                     if (contentTokens <= 0) {
                         break;
                     }
@@ -177,7 +193,7 @@ public final class ChatTruncator {
         }
         ArrayList<AIMessage> out = new ArrayList<>(in.size());
         for (AIMessage m : in) {
-            if (m != null && !m.getContent().isBlank()) {
+            if (m != null && (!m.getContent().isBlank() || !m.getImages().isEmpty())) {
                 out.add(m);
             }
         }
@@ -219,19 +235,30 @@ public final class ChatTruncator {
 
     @Nullable
     private AIMessage tryTruncateMessage(@NotNull AIMessage message, int maxTokens) {
-        if (maxTokens >= counter.count(message.getContent())) {
+        int textBudget = Math.max(0, maxTokens - countImageTokens(message));
+        if (textBudget >= counter.count(message.getContent())) {
             return null;
         }
-        AIMessage truncatedMessage = truncateToTokens(message, maxTokens);
-        return truncatedMessage.withContent(truncatedMessage.getContent() + DEFAULT_TRUNCATED_SUFFIX);
+        int suffixTokens = counter.count(DEFAULT_TRUNCATED_SUFFIX);
+        if (textBudget < suffixTokens) {
+            return truncateToTokens(message, textBudget);
+        }
+        AIMessage truncatedMessage = truncateToTokens(message, textBudget - suffixTokens);
+        String content = truncatedMessage.getContent() + DEFAULT_TRUNCATED_SUFFIX;
+        // token boundaries can change when the suffix is appended
+        return truncateToTokens(truncatedMessage.withContent(content), textBudget);
     }
 
-    private int countTokensWithoutTruncatedSuffix(@NotNull AIMessage message) {
-        String content = message.getContent();
-        if (!content.endsWith(DEFAULT_TRUNCATED_SUFFIX)) {
-            return counter.count(content);
+    private int countMessageTokens(@NotNull AIMessage message) {
+        return counter.count(message.getContent()) + countImageTokens(message);
+    }
+
+    private int countImageTokens(@NotNull AIMessage message) {
+        long tokens = 0;
+        for (AIImageAttachment image : message.getImages()) {
+            tokens += Math.max(0, imageTokenCounter.applyAsInt(image));
         }
-        return counter.count(content.substring(0, content.length() - DEFAULT_TRUNCATED_SUFFIX.length()));
+        return (int) Math.min(tokens, Integer.MAX_VALUE);
     }
 
     @NotNull
@@ -258,6 +285,7 @@ public final class ChatTruncator {
         private int reserveForReply;
         private int reserveForOverhead;
         private TokenCounter counter;
+        private ToIntFunction<AIImageAttachment> imageTokenCounter = image -> AIImageAttachment.DEFAULT_TOKEN_ESTIMATE;
 
         @NotNull
         public Builder maxTokens(int v) {
@@ -286,6 +314,12 @@ public final class ChatTruncator {
         @NotNull
         public Builder tokenCounter(@NotNull TokenCounter c) {
             this.counter = c;
+            return this;
+        }
+
+        @NotNull
+        public Builder imageTokenCounter(@NotNull ToIntFunction<AIImageAttachment> counter) {
+            this.imageTokenCounter = Objects.requireNonNull(counter);
             return this;
         }
 

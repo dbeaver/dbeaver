@@ -66,6 +66,7 @@ import org.jkiss.dbeaver.runtime.ui.UIServiceSQL;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -357,6 +358,9 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
                 // no optional nodes
             }
         }
+        if (migrationTable != null) {
+            inputsTable.refresh();
+        }
         updatePageCompletion();
         getWizard().getContainer().updateNavigationTree();
         updateSourceButtons();
@@ -465,7 +469,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
                     StreamConsumerSettings streamSettings = getStreamConsumerSettings();
                     StreamMappingContainer mapping = streamSettings == null || !(element instanceof DBSDataContainer source)
                         ? null : streamSettings.getDataMapping(source);
-                    if (mapping != null && DBUtils.getAdapter(SQLQueryContainer.class, element) == null) {
+                    if (!isDatabaseMigrationSelected() && mapping != null && DBUtils.getAdapter(SQLQueryContainer.class, element) == null) {
                         List<StreamMappingAttribute> attributes = mapping.getAttributes(new org.jkiss.dbeaver.model.runtime.VoidProgressMonitor());
                         long selected = attributes.stream()
                             .filter(attribute -> attribute.getMappingType() == StreamMappingType.export).count();
@@ -527,6 +531,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             DTUIMessages.data_transfer_wizard_configure_columns,
             DBIcon.TREE_COLUMNS,
             SelectionListener.widgetSelectedAdapter(selectionEvent -> {
+                getWizard().loadNodeSettings();
                 final List<StreamMappingContainer> mappings = new ArrayList<>();
 
                 StreamConsumerSettings streamConsumerSettings = getStreamConsumerSettings();
@@ -578,7 +583,8 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         if (removeButton == null) {
             return;
         }
-        boolean editable = !getWizard().getSettings().isPipeChangeRestricted() && !getWizard().isTaskEditor();
+        boolean editable = !getWizard().getSettings().isPipeChangeRestricted() &&
+            (!getWizard().isTaskEditor() || getWizard().isNewTaskEditor());
         addButton.setEnabled(editable);
         addQueryButton.setEnabled(editable);
         DBSObject selectedSource = (DBSObject) ((IStructuredSelection) inputsTable.getSelection()).getFirstElement();
@@ -595,13 +601,17 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             inputsTable.getSelection().isEmpty() ? DTUIMessages.data_transfer_wizard_select_source :
                 DTUIMessages.data_transfer_task_configurator_dialog_button_label_remove);
         inputsTable.getTable().redraw();
-        setConfigureColumnsButtonVisible((getWizard().getSettings().getConsumer() == null ||
-            !DATABASE_CONSUMER_ID.equals(getWizard().getSettings().getConsumer().getId())) &&
+        setConfigureColumnsButtonVisible(!isDatabaseMigrationSelected() &&
             ((IStructuredSelection) inputsTable.getSelection()).toList().stream().noneMatch(source -> DBUtils.getAdapter(SQLQueryContainer.class, source) != null));
         columnsButton.setToolTipText(!columnsButton.isEnabled() ?
             getWizard().getSettings().isPipeChangeRestricted() ? DTUIMessages.data_transfer_wizard_sources_locked :
                 inputsTable.getSelection().isEmpty() ? DTUIMessages.data_transfer_wizard_select_source :
                     DTUIMessages.data_transfer_wizard_columns_unavailable : null);
+    }
+
+    private boolean isDatabaseMigrationSelected() {
+        DataTransferNodeDescriptor consumer = getWizard().getSettings().getConsumer();
+        return consumer != null && DATABASE_CONSUMER_ID.equals(consumer.getId());
     }
 
     private void addTables() {
@@ -765,7 +775,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         }
         settings.setDataPipes(pipes, true);
         getWizard().loadSettings();
-        inputsTable.setInput(settings.getSourceObjects());
+        refreshInputs();
         loadNodeSettings();
         getWizard().getContainer().updateNavigationTree();
         updateSourceButtons();
@@ -773,6 +783,20 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
 
     private boolean isDataImport() {
         return getWizard().getSettings().isProducerOptional();
+    }
+
+    private void refreshInputs() {
+        Object selected = ((IStructuredSelection) inputsTable.getSelection()).getFirstElement();
+        List<DBSObject> sources = getWizard().getSettings().getSourceObjects();
+        inputsTable.setInput(sources);
+        if (!isDataImport() && !sources.isEmpty()) {
+            if (!sources.contains(selected)) {
+                selected = sources.stream()
+                    .filter(source -> source instanceof DBSDataContainer && DBUtils.getAdapter(SQLQueryContainer.class, source) == null)
+                    .findFirst().orElse(sources.getFirst());
+            }
+            inputsTable.setSelection(new StructuredSelection(selected));
+        }
     }
 
     @Nullable
@@ -819,9 +843,15 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
 
     @Override
     public void activatePage() {
-        getWizard().loadNodeSettings();
+        DataTransferWizard wizard = getWizard();
+        DataTransferNodeDescriptor consumer = wizard.getSettings().getConsumer();
+        // resolve the last export database on the mapping page, which handles auto reconnect
+        if (wizard.isTaskEditor() || isDataImport() || consumer == null ||
+            !DatabaseTransferConsumer.class.isAssignableFrom(consumer.getNodeClass())) {
+            wizard.loadNodeSettings();
+        }
 
-        inputsTable.setInput(getWizard().getSettings().getSourceObjects());
+        refreshInputs();
         updateSourceButtons();
         if (!isDataImport()) {
             UIUtils.asyncExec(() -> {
@@ -874,7 +904,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             currentTarget = targets.getFirst();
         }
 
-        inputsTable.setInput(getWizard().getSettings().getSourceObjects());
+        refreshInputs();
 
         if (currentTarget != null) {
             StructuredSelection selection = new StructuredSelection(currentTarget);

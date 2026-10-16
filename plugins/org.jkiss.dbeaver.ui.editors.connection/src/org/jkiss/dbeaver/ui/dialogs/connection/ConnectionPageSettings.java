@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyLogo;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
@@ -58,6 +59,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
+import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -108,6 +110,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     private ToolItem handlerItem;
     private ToolItem profileItem;
     private ToolBar handlersToolbar;
+    private final Runnable logoUpdateCallback = () -> UIUtils.asyncExec(this::updateDriverLogo);
 
     /**
      * Constructor for ConnectionPageSettings
@@ -229,7 +232,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @Override
     @Nullable
     public Image getImage() {
-        DBPImage logoImage = getDriver().getLogoImage();
+        DBPDriver driver = getDriver();
+        if (driver instanceof DBPDriverWithLazyLogo lazyLogo) {
+            lazyLogo.loadLogo(logoUpdateCallback);
+        }
+        DBPImage logoImage = driver.getLogoImage();
         if (logoImage != null) {
             return DBeaverIcons.getImage(logoImage);
         }
@@ -242,7 +249,20 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         return super.getImage();
     }
 
-    void saveSettings(DataSourceDescriptor dataSource) {
+    private void updateDriverLogo() {
+        var container = getContainer();
+        if (container == null || container.getShell() == null || container.getShell().isDisposed()) {
+            return;
+        }
+        if (container instanceof MultiPageWizardDialog dialog) {
+            dialog.setTitleImage(getImage());
+            dialog.getShell().layout(true, true);
+        } else if (isCurrentPage()) {
+            container.updateTitleBar();
+        }
+    }
+
+    void saveSettings(@NotNull DataSourceDescriptor dataSource) {
         dataSource.getConnectionConfiguration().setConfigProfile(getActiveProfile());
         if (subPages != null) {
             for (IDialogPage page : subPages) {
@@ -549,7 +569,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     private boolean unselectProfile(@Nullable DBWHandlerDescriptor handlerToKeep) {
-        if (getActiveProfile() == null) {
+        DBWNetworkProfile activeProfile = getActiveProfile();
+        if (activeProfile == null) {
             return true;
         }
 
@@ -583,6 +604,13 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
         }
 
+        if (DBWorkbench.isDistributed()) {
+            for (DBWHandlerConfiguration configuration : activeProfile.getConfigurations()) {
+                if (configuration.isEnabled() && !handlersToRemove.contains(configuration.getHandlerDescriptor())) {
+                    getActiveDataSource().getConnectionConfiguration().updateHandler(new DBWHandlerConfiguration(configuration));
+                }
+            }
+        }
         selectProfile0(null);
 
         for (DBWHandlerDescriptor descriptor : handlersToRemove) {
