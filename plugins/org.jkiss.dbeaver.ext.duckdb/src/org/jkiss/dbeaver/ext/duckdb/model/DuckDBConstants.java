@@ -26,7 +26,8 @@ public class DuckDBConstants {
     public static final String PROP_DD_PLAIN_STRING = "duckdb.dd.plain.string";
     public static final String PROP_DD_TAG_STRING = "duckdb.dd.tag.string";
 
-    public static final String MOTHERDUCK_DRIVER_ID = "motherduck_jdbc";
+    // Driver parameter, so drivers copied in Driver Manager keep passing the password as the token
+    public static final String PARAM_MOTHERDUCK_TOKEN_AUTH = "motherduck-token-auth";
     public static final String PROP_MOTHERDUCK_TOKEN = "motherduck_token";
 
     private DuckDBConstants() {

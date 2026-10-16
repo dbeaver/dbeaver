@@ -78,7 +78,9 @@ public class DuckDBDataSource extends GenericDataSource {
     ) {
         // MotherDuck reads the token from a connection property, so it can live in secure storage instead of the URL
         String token = connectionInfo.getUserPassword();
-        if (DuckDBConstants.MOTHERDUCK_DRIVER_ID.equals(driver.getId()) && !CommonUtils.isEmpty(token)) {
+        if (CommonUtils.toBoolean(driver.getDriverParameter(DuckDBConstants.PARAM_MOTHERDUCK_TOKEN_AUTH))
+            && !CommonUtils.isEmpty(token)
+        ) {
             return Map.of(DuckDBConstants.PROP_MOTHERDUCK_TOKEN, token);
         }
         return null;
