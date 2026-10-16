@@ -362,6 +362,16 @@ public class FireBirdMetaModel extends GenericMetaModel
         return JDBCUtils.safeGetBytes(dbResult, "RDB$VIEW_BLR") == null ? 0 : 1;
     }
 
+    @Override
+    @NotNull
+    public JDBCStatement prepareTableColumnLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
+        if (forTable instanceof FireBirdTableBase table) {
+            // Read domains before opening the column result set so the column constructors don't open another metadata session.
+            table.setColumnDomainTypes(FireBirdUtils.readColumnDomainTypes(session, forTable));
+        }
+        return super.prepareTableColumnLoadStatement(session, owner, forTable);
+    }
+
 /*
     @Override
     public JDBCStatement prepareTableColumnLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
