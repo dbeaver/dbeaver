@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.model.datadam.auth;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
+import java.util.UUID;
+
 public record DDCryptoState(
-    @NotNull String accountId,
+    @NotNull UUID accountId,
     boolean cryptoConfigured,
     @Nullable String encryptedBundle,
     @Nullable Long generation,
