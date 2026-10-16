@@ -67,9 +67,13 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
     @Nullable
     @Override
     public GenericSchema getDefaultSchema() {
-        GenericCatalog catalog = getDefaultCatalog();
-        if (catalog == null || activeSchemaName == null) {
+        if (activeSchemaName == null) {
             return null;
+        }
+        GenericCatalog catalog = getDefaultCatalog();
+        if (catalog == null) {
+            // No catalogs, e.g. with the omit-catalog driver setting: schemas live at the data source root
+            return getDataSource().getSchema(activeSchemaName);
         }
         try {
             // Cache only: this getter is called from UI code, schemas are loaded when defaults change
@@ -132,7 +136,6 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog")) {
             JDBCUtils.executeSQL(session, "USE " + DBUtils.getQuotedIdentifier(catalog));
             activeCatalogName = newCatalogName;
-            activeSchemaName = session.getSchema();
         } catch (Exception e) {
             try {
                 throw new DBException("Failed to set active catalog to " + newCatalogName, e);
@@ -143,6 +146,12 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
 
         cacheSchemas(monitor, catalog);
         super.setDefaultCatalog(monitor, catalog, schema);
+        // Read the schema only now: the JDBC catalog switch above resets it to the catalog's default schema
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, TASK_TITLE_SET_SCHEMA)) {
+            activeSchemaName = session.getSchema();
+        } catch (SQLException e) {
+            throw new DBCException(e, this);
+        }
         setActiveSchema(monitor, schema);
     }
 
