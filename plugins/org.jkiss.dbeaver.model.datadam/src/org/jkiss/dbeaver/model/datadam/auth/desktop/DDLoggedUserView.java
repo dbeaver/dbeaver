@@ -14,24 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam.sync;
+package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
+import org.jkiss.code.Nullable;
 
-import java.util.List;
+import java.util.UUID;
 
-public class DDLocalSyncConflictException extends DBException {
-
-    private final List<String> conflictingParts;
-
-    public DDLocalSyncConflictException(@NotNull List<String> conflictingParts) {
-        super("Conflicting local changes: " + String.join(", ", conflictingParts));
-        this.conflictingParts = conflictingParts;
-    }
-
-    @NotNull
-    public List<String> conflictingParts() {
-        return conflictingParts;
-    }
+public record DDLoggedUserView(
+    @Nullable UUID userId,
+    @Nullable String userName,
+    @Nullable UUID accountId,
+    @Nullable String accountName
+) {
 }

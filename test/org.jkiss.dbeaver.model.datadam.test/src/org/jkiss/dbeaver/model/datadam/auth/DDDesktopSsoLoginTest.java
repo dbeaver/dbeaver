@@ -21,11 +21,7 @@ import com.sun.net.httpserver.HttpServer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -55,7 +51,6 @@ class DDDesktopSsoLoginTest {
 
     @BeforeEach
     void startSso() throws IOException {
-        DDDesktopSsoSession.logout();
         sso = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         issuer = URI.create("http://127.0.0.1:" + sso.getAddress().getPort());
         sso.createContext("/sso/desktop/config", exchange -> {
@@ -92,7 +87,6 @@ class DDDesktopSsoLoginTest {
     @AfterEach
     void stopSso() {
         sso.stop(0);
-        DDDesktopSsoSession.logout();
     }
 
     @Test
@@ -133,29 +127,6 @@ class DDDesktopSsoLoginTest {
         tokenRedirect.set(issuer + "/redirected-token");
         Assertions.assertThrows(DBException.class, () -> new DDDesktopSsoLogin().login(issuer, monitor, this::complete));
         Assertions.assertEquals(0, redirectedRequests.get());
-    }
-
-    @Test
-    void sessionAuthorizesAccountAndStorageOnlyUntilLogout() throws Exception {
-        Assertions.assertTrue(DDDesktopSsoSession.needsLogin());
-        DDDesktopSsoSession.login(issuer, URI.create("https://storage.example.test:443"), monitor, this::complete);
-        Assertions.assertFalse(DDDesktopSsoSession.needsLogin());
-        Assertions.assertEquals("access-value", DDDesktopSsoSession.accessFor(issuer.resolve("/graphql?query=account")));
-        Assertions.assertEquals("access-value", DDDesktopSsoSession.accessFor(URI.create("https://storage.example.test/graphql")));
-        Assertions.assertThrows(DBException.class, () -> DDDesktopSsoSession.accessFor(URI.create("https://other.example.test/graphql")));
-        DDDesktopSsoSession.logout();
-        Assertions.assertFalse(DDDesktopSsoSession.hasLogin());
-        Assertions.assertThrows(DBException.class, () -> DDDesktopSsoSession.accessFor(issuer));
-    }
-
-    @Test
-    void lateBrowserCallbackCannotRestoreSessionAfterLogout() {
-        Assertions.assertThrows(InterruptedException.class, () -> DDDesktopSsoSession.login(
-            issuer, URI.create("https://storage.example.test"), monitor, url -> {
-                DDDesktopSsoSession.logout();
-                complete(url);
-            }));
-        Assertions.assertFalse(DDDesktopSsoSession.hasLogin());
     }
 
     @Test

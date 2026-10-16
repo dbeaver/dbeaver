@@ -17,27 +17,24 @@
 package org.jkiss.dbeaver.ui.datadam.project;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.DDBundleCredentials;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
-import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncService;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.datadam.DDSyncPreferencePage;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.utils.CommonUtils;
-
-import java.util.UUID;
 
 public final class DDProjectSyncUIManager {
     private static final DDProjectSyncUIManager INSTANCE = new DDProjectSyncUIManager();
 
+    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
     private DDProjectSyncService service;
 
     private DDProjectSyncUIManager() {
+        accessService.addKeyBundleListener(this::refresh);
     }
 
     @NotNull
@@ -46,57 +43,33 @@ public final class DDProjectSyncUIManager {
     }
 
     public boolean isDDEnabled() {
-        return getCurrentContext() != null;
+        return accessService.getKeyBundle() != null;
     }
 
     @NotNull
-    public DDProjectSyncService getService() {
+    public DDProjectSyncService getService() throws DBException {
         synchronized (this) {
             if (service == null) {
-                ServiceContext currentContext = getCurrentContext();
-                if (currentContext == null) {
-                    throw new IllegalStateException("DataDam is not enabled");
+                DDKeyBundle bundle = accessService.getKeyBundle();
+                if (bundle == null) {
+                    throw new DBException("Import encryption keys for the current DataDam account in Preferences > DataDam");
                 }
                 service = new DDProjectSyncService(
-                    currentContext.url(),
-                    new DDBundleCredentials(currentContext.keyBundle()),
-                    currentContext.workspace(),
-                    currentContext.accountId()
+                    DDEndpoints.getStorageBaseUrl(),
+                    new DDBundleCredentials(bundle),
+                    DBWorkbench.getPlatform().getWorkspace(),
+                    bundle.accountId()
                 );
             }
+            return service;
         }
-        return service;
     }
 
-    public void refresh() {
+    private void refresh() {
         synchronized (this) {
             service = null;
         }
         DDProjectSyncPropertyTester.firePropertyChange();
-    }
-
-    @Nullable
-    private static ServiceContext getCurrentContext() {
-        String url = DDSyncPreferencePage.getGatewayUrl();
-        if (CommonUtils.isEmpty(url)) {
-            return null;
-        }
-        DDKeyBundle bundle = DDKeyStore.load();
-        UUID accountId = getAccountId(bundle);
-        return accountId == null ? null : new ServiceContext(
-            url, bundle, DBWorkbench.getPlatform().getWorkspace(), accountId);
-    }
-
-    @Nullable
-    private static UUID getAccountId(@Nullable DDKeyBundle bundle) {
-        if (bundle == null) {
-            return null;
-        }
-        try {
-            return UUID.fromString(bundle.accountId());
-        } catch (IllegalArgumentException e) {
-            return null;
-        }
     }
 
     public void showMessage(@NotNull String message, boolean warning) {
@@ -107,13 +80,5 @@ public final class DDProjectSyncUIManager {
     public void showError(@NotNull String message, @NotNull DBException exception) {
         UIUtils.asyncExec(() ->
             DBWorkbench.getPlatformUI().showError(DDTrackingUIMessages.project_sync_title, message, exception));
-    }
-
-    private record ServiceContext(
-        @NotNull String url,
-        @NotNull DDKeyBundle keyBundle,
-        @NotNull DBPWorkspace workspace,
-        @NotNull UUID accountId
-    ) {
     }
 }

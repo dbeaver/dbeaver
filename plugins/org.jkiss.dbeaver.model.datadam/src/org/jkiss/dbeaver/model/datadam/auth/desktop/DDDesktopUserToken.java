@@ -14,16 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam.sync.core;
+package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
 import org.jkiss.code.NotNull;
 
-import java.util.List;
-
-public record DDConfiguration(
-    @NotNull String configurationId,
-    @NotNull String name,
-    long version,
-    @NotNull List<DDConfigurationPart> parts
+/** Desktop bearer credential and the origins for which it was obtained. */
+public record DDDesktopUserToken(
+    @NotNull String accessToken,
+    @NotNull String issuer,
+    @NotNull String accountOrigin,
+    @NotNull String storageOrigin
 ) {
+    @Override
+    public String toString() {
+        return "DDDesktopUserToken[issuer=" + issuer + "]";
+    }
 }
