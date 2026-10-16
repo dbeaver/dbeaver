@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.sql.format.tokenized;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -38,6 +39,9 @@ public class SQLFormatterTokenized implements SQLFormatter {
     public static final String FORMATTER_ID = "DEFAULT";
 
     private static final String[] DML_KEYWORD = { "SELECT", "UPDATE", "INSERT", "DELETE" };
+
+    // MySQL and MariaDB comments which are executed as SQL, so they are a part of a query
+    private static final String[] EXECUTABLE_COMMENT_PREFIXES = { "/*!", "/*M!" };
 
 
     private SQLFormatterConfiguration formatterCfg;
@@ -243,6 +247,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
     }
 
     private void convertEmptyLinesIntoDelimiters(List<FormatterToken> argList) {
+        boolean hasQueryContent = false;
         for (int i= 0; i < argList.size(); i++) {
             FormatterToken token = argList.get(i);
             if (token.getType() == TokenType.SPACE) {
@@ -256,12 +261,53 @@ public class SQLFormatterTokenized implements SQLFormatter {
                     if (i > 0 && statementDelimiters.contains(argList.get(i - 1).getString())) {
                         // Do nothing - there is a delimiter already
                     } else {
-                        argList.add(i, new FormatterToken(TokenType.SYMBOL, statementDelimiters.get(0)));
-                        i++;
+                        int delimiterIndex = findDelimiterIndex(argList, i, hasQueryContent);
+                        if (delimiterIndex >= 0) {
+                            argList.add(delimiterIndex, new FormatterToken(TokenType.SYMBOL, statementDelimiters.get(0)));
+                            hasQueryContent = false;
+                            i++;
+                        }
                     }
                 }
+            } else if (statementDelimiters.contains(token.getString())) {
+                hasQueryContent = false;
+            } else if (!isPlainComment(token)) {
+                hasQueryContent = true;
             }
         }
+    }
+
+    private int findDelimiterIndex(@NotNull List<FormatterToken> argList, int emptyLineIndex, boolean hasQueryContent) {
+        int commentIndex = emptyLineIndex - 1;
+        if (commentIndex < 0 || !isPlainComment(argList.get(commentIndex))) {
+            return emptyLineIndex;
+        }
+        if (!hasQueryContent) {
+            // A comment is not a query, there is nothing to terminate
+            return -1;
+        }
+        if (argList.get(commentIndex).getString().startsWith(SQLConstants.ML_COMMENT_START)) {
+            // The delimiter is valid right after a multi-line comment
+            return emptyLineIndex;
+        }
+        // A delimiter after a single-line comment would end up inside of it, so it goes before the comment
+        int delimiterIndex = commentIndex;
+        while (delimiterIndex > 0 && argList.get(delimiterIndex - 1).getType() == TokenType.SPACE) {
+            delimiterIndex--;
+        }
+        return delimiterIndex;
+    }
+
+    private static boolean isPlainComment(@NotNull FormatterToken token) {
+        if (token.getType() != TokenType.COMMENT) {
+            return false;
+        }
+        for (String prefix : EXECUTABLE_COMMENT_PREFIXES) {
+            if (token.getString().startsWith(prefix)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private void concatenateDoublewordedKeywords(List<FormatterToken> argList) {
