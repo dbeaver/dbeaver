@@ -68,7 +68,7 @@ public class DuckDBDataSource extends GenericDataSource {
         // Contexts read their defaults before catalogs are loaded, so cache the schemas of their catalogs now
         for (JDBCExecutionContext context : getDefaultInstance().getAllContexts()) {
             if (context instanceof DuckDBExecutionContext duckDBContext) {
-                duckDBContext.cacheDefaultCatalogSchemas(monitor);
+                duckDBContext.cacheDefaultSchemas(monitor);
             }
         }
     }

@@ -116,7 +116,7 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
         } catch (SQLException e) {
             log.warn("Error reading active catalog and schema", e);
         }
-        cacheSchemas(monitor, getDefaultCatalog());
+        cacheDefaultSchemas(monitor);
 
         return changed;
     }
@@ -144,8 +144,8 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
             }
         }
 
-        cacheSchemas(monitor, catalog);
         super.setDefaultCatalog(monitor, catalog, schema);
+        cacheDefaultSchemas(monitor);
         // Read the schema only now: the JDBC catalog switch above resets it to the catalog's default schema
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, TASK_TITLE_SET_SCHEMA)) {
             activeSchemaName = session.getSchema();
@@ -180,11 +180,11 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
         DBUtils.fireObjectSelectionChange(oldSchema, schema, this);
     }
 
-    void cacheDefaultCatalogSchemas(@NotNull DBRProgressMonitor monitor) {
-        cacheSchemas(monitor, getDefaultCatalog());
-    }
-
-    private void cacheSchemas(@NotNull DBRProgressMonitor monitor, @Nullable GenericCatalog catalog) {
+    /**
+     * Loads the schemas of the active catalog, so that {@link #getDefaultSchema()} can resolve them from cache.
+     */
+    void cacheDefaultSchemas(@NotNull DBRProgressMonitor monitor) {
+        GenericCatalog catalog = getDefaultCatalog();
         if (catalog == null) {
             return;
         }
@@ -216,7 +216,7 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
             } catch (SQLException e) {
                 log.warn("Error restoring default schema", e);
             }
-            cacheSchemas(monitor, getDefaultCatalog());
+            cacheDefaultSchemas(monitor);
         }
     }
 
