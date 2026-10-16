@@ -203,6 +203,7 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
             } catch (SQLException e) {
                 log.warn("Error restoring default schema", e);
             }
+            cacheSchemas(monitor, getDefaultCatalog());
         }
     }
 
