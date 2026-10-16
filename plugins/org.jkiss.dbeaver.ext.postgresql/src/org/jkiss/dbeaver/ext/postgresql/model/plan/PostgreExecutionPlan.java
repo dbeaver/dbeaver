@@ -96,8 +96,9 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
     @NotNull
     @Override
     public String getPlanQueryString() {
+        String executableQuery = trimTerminalDelimiter(query);
         if (oldQuery) {
-            return "EXPLAIN " + (verbose ? "VERBOSE " : "") + query;
+            return "EXPLAIN " + (verbose ? "VERBOSE " : "") + executableQuery;
         } else {
             Map<String, Object> parameters = this.configuration.getParameters();
             StringBuilder explainStat = new StringBuilder(64);
@@ -123,9 +124,159 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
                     explainStat.append(",").append(key);
                 }
             }
-            explainStat.append(") ").append(query);
+            explainStat.append(") ").append(executableQuery);
             return explainStat.toString();
         }
+    }
+
+    @NotNull
+    private static String trimTerminalDelimiter(@NotNull String query)
+    {
+        int delimPos = findTerminalDelimiter(query);
+        if (delimPos < 0) {
+            return query;
+        }
+        return query.substring(0, delimPos) + query.substring(delimPos + 1);
+    }
+
+    // Drop a terminal delimiter only when a trailing comment hides it
+    private static int findTerminalDelimiter(@NotNull String query)
+    {
+        final int code = 0;
+        final int lineComment = 1;
+        final int blockComment = 2;
+        final int singleQuote = 3;
+        final int doubleQuote = 4;
+        final int dollarQuote = 5;
+        int state = code;
+        int blockDepth = 0;
+        String dollarTag = null;
+        int lastDelim = -1;
+        boolean codeAfterDelim = false;
+        boolean commentAfterDelim = false;
+        int i = 0;
+        while (i < query.length()) {
+            char c = query.charAt(i);
+            char n = i + 1 < query.length() ? query.charAt(i + 1) : '\0';
+            if (state == lineComment) {
+                if (c == '\n' || c == '\r') {
+                    state = code;
+                }
+                i++;
+            } else if (state == blockComment) {
+                if (c == '/' && n == '*') {
+                    blockDepth++;
+                    i += 2;
+                } else if (c == '*' && n == '/') {
+                    blockDepth--;
+                    i += 2;
+                    if (blockDepth <= 0) {
+                        state = code;
+                    }
+                } else {
+                    i++;
+                }
+            } else if (state == singleQuote) {
+                if (c == '\\' && n == '\'') {
+                    int backslashes = 0;
+                    for (int j = i; j >= 0 && query.charAt(j) == '\\'; j--) {
+                        backslashes++;
+                    }
+                    if (backslashes % 2 == 1) {
+                        return -1;
+                    }
+                    i++;
+                } else if (c == '\'') {
+                    if (n == '\'') {
+                        i += 2;
+                    } else {
+                        state = code;
+                        i++;
+                    }
+                } else {
+                    i++;
+                }
+            } else if (state == doubleQuote) {
+                if (c == '"') {
+                    if (n == '"') {
+                        i += 2;
+                    } else {
+                        state = code;
+                        i++;
+                    }
+                } else {
+                    i++;
+                }
+            } else if (state == dollarQuote) {
+                int end = query.indexOf(dollarTag, i);
+                i = end < 0 ? query.length() : end + dollarTag.length();
+                state = code;
+            } else if (c == ';') {
+                lastDelim = i;
+                codeAfterDelim = false;
+                commentAfterDelim = false;
+                i++;
+            } else if (c == '\'') {
+                state = singleQuote;
+                i++;
+            } else if (c == '"') {
+                state = doubleQuote;
+                i++;
+            } else if (c == '-' && n == '-') {
+                if (lastDelim >= 0) {
+                    commentAfterDelim = true;
+                }
+                state = lineComment;
+                i += 2;
+            } else if (c == '/' && n == '*') {
+                if (lastDelim >= 0) {
+                    commentAfterDelim = true;
+                }
+                state = blockComment;
+                blockDepth = 1;
+                i += 2;
+            } else if (c == '$') {
+                String tag = i > 0 && isIdentifierPart(query.charAt(i - 1)) ? null : matchDollarTag(query, i);
+                if (tag == null) {
+                    codeAfterDelim = true;
+                    i++;
+                } else {
+                    dollarTag = tag;
+                    state = dollarQuote;
+                    i += tag.length();
+                }
+            } else if (!Character.isWhitespace(c)) {
+                codeAfterDelim = true;
+                i++;
+            } else {
+                i++;
+            }
+        }
+        if (codeAfterDelim || !commentAfterDelim) {
+            return -1;
+        }
+        return lastDelim;
+    }
+
+    private static boolean isIdentifierPart(char c)
+    {
+        return c == '_' || c == '$' || Character.isLetterOrDigit(c);
+    }
+
+    @Nullable
+    private static String matchDollarTag(@NotNull String query, int pos)
+    {
+        int i = pos + 1;
+        if (i < query.length() && (query.charAt(i) == '_' || Character.isLetter(query.charAt(i)))) {
+            i++;
+            while (i < query.length() && (query.charAt(i) == '_' || Character.isLetterOrDigit(query.charAt(i)))) {
+                i++;
+            }
+        }
+        if (i < query.length() && query.charAt(i) == '$') {
+            return query.substring(pos, i + 1);
+        }
+        return null;
     }
 
     @NotNull
