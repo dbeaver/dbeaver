@@ -185,6 +185,11 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
         // hide standard Eclipse exit message if exit code is not OK (otherwise it may be confusing)
         System.setProperty(ECLIPSE_EXIT_DATA, "");
 
+        // Must run before any SWT Display / dialog is created (workspace lock UI, splash, etc.)
+        if (RuntimeUtils.isWindows()) {
+            setWindowsAppUserModelID();
+        }
+
         var args = preprocessCommandLine();
         Location instanceLoc = Platform.getInstanceLocation();
         Path defaultHomePath = getDefaultInstanceLocation();
@@ -508,6 +513,39 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
                 log.debug(e);
             }
         }
+    }
+
+    /**
+     * Sets an explicit AppUserModelID so Windows groups the app under one taskbar button.
+     * Must be called before the first SWT Display is created.
+     * <p>
+     * Delegates to the Windows SWT fragment via reflection so this class stays
+     * platform-agnostic at compile time. The fragment loads through SWT's classloader.
+     */
+    private void setWindowsAppUserModelID() {
+        try {
+            ClassLoader swtClassLoader = Display.class.getClassLoader();
+            Class<?> aumidClass = Class.forName(
+                "org.jkiss.dbeaver.ui.swt.windows.WindowsAppUserModelId",
+                true,
+                swtClassLoader
+            );
+            String appId = buildAppUserModelId();
+            aumidClass.getMethod("setCurrentProcessId", String.class).invoke(null, appId);
+        } catch (Exception e) {
+            log.debug("Failed to set Windows AppUserModelID", e);
+        }
+    }
+
+    /**
+     * Builds a Windows AppUserModelID from the current product identity.
+     * Edition is taken from {@link GeneralUtils#getProductName()}; version is omitted so
+     * pinned taskbar icons remain valid after upgrades (see Microsoft AppUserModelID rules).
+     */
+    @NotNull
+    private static String buildAppUserModelId() {
+        String productPart = GeneralUtils.getProductName().replaceAll("[^A-Za-z0-9]", "");
+        return "DBeaverCorp." + productPart;
     }
 
     private Display getDisplay() {
