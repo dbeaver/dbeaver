@@ -98,7 +98,7 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         } else if (RuntimeUtils.isWindows() && requiresUnicodeUsernameOptionFile(toolUserName)) {
             // On Windows, native MySQL clients may truncate non-ASCII -u arguments.
             // Preserve the usual password environment variable and option-file search order.
-            config = createCredentialsFile(toolUserName, null, false);
+            config = createUsernameOptionFile(toolUserName);
             cmd.add(1, "--defaults-extra-file=" + config.toAbsolutePath());
         } else {
             cmd.add("-u");
@@ -112,6 +112,11 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
 
     static boolean requiresUnicodeUsernameOptionFile(@Nullable String username) {
         return username != null && !StandardCharsets.US_ASCII.newEncoder().canEncode(username);
+    }
+
+    @NotNull
+    static Path createUsernameOptionFile(@NotNull String username) throws IOException {
+        return createCredentialsFile(username, null, false);
     }
 
     @NotNull
