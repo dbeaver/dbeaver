@@ -116,6 +116,9 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     private List<MySQLPrivilege> procedurePrivilegeTypes;
     // All privilege types incl. administrative ones - what ALL PRIVILEGES on *.* stands for
     private List<MySQLPrivilege> allPrivilegeTypes;
+    // Commands created by this page. Only these are folded into: the General page adds its own
+    // commands (with its own reflectors) to the same command context
+    private final Set<MySQLCommandGrantPrivilege> ownCommands = Collections.newSetFromMap(new WeakHashMap<>());
 
     @Override
     public void createPartControl(@NotNull Composite parent) {
@@ -429,6 +432,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         } else {
             command = new MySQLCommandGrantPrivilege(getDatabaseObject(), isGrant, withGrantOption, schema, table, privilege);
         }
+        ownCommands.add(command);
         addChangeCommand(command, privilegeChangeReflector);
     }
 
@@ -487,6 +491,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         }
         for (DBECommand<?> command : commandContext.getFinalCommands()) {
             if (command instanceof MySQLCommandGrantPrivilege grantCommand
+                && ownCommands.contains(grantCommand)
                 && grantCommand.isGrant() == grantDirection
                 && grantCommand.hasSameTarget(schema, table, procedure, columns)
             ) {

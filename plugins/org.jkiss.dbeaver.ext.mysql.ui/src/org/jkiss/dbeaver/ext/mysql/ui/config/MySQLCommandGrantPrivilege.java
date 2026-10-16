@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -169,17 +170,20 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
     @Nullable
     @Override
     public DBECommand<?> merge(@Nullable DBECommand<?> prevCommand, @NotNull Map<Object, Object> userParams) {
-        // Consolidation of pending commands happens in the editor at toggle time
-        // (see MySQLUserEditorPrivileges); here only exact duplicates are merged.
-        // The merge must stay free of side effects: the command queue may be rebuilt many times.
+        // Consolidation of pending commands happens in the Privileges page at toggle time
+        // (see MySQLUserEditorPrivileges); here only exact duplicates are merged, and an opposite
+        // command on the same privileges cancels out - the General page relies on that, it adds
+        // a command per click. The merge must stay free of side effects: the queue may be rebuilt many times.
         if (prevCommand instanceof MySQLCommandGrantPrivilege prevGrant
-            && prevGrant.schema == schema && prevGrant.table == table && prevGrant.procedure == procedure
-            && CommonUtils.equalObjects(prevGrant.columns, columns)
-            && prevGrant.grant == grant
-            && prevGrant.withGrantOption == withGrantOption
-            && prevGrant.privileges.equals(privileges)
+            && prevGrant.hasSameTarget(schema, table, procedure, columns)
+            && new HashSet<>(prevGrant.privileges).equals(new HashSet<>(privileges))
         ) {
-            return prevCommand;
+            if (prevGrant.grant != grant) {
+                return null;
+            }
+            if (prevGrant.withGrantOption == withGrantOption) {
+                return prevCommand;
+            }
         }
         return super.merge(prevCommand, userParams);
     }

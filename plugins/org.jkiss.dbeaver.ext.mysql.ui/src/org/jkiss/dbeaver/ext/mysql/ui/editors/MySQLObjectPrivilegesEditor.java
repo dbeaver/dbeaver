@@ -390,14 +390,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                     continue;
                 }
                 catalogGrants.add(grant);
-                if (rootTable != null) {
-                    relevant |= grant.matches(rootTable) || isSchemaLevelGrant(grant);
-                } else if (rootProcedure != null) {
-                    relevant |= grant.matchesProcedure(rootProcedure)
-                        || (isSchemaLevelGrant(grant) && hasAnyProcedurePrivilege(grant, data.procedurePrivs));
-                } else {
-                    relevant = true;
-                }
+                relevant |= isRelevantGrant(grant, data.procedurePrivs);
             }
             if (relevant) {
                 data.users.add(user);
@@ -493,6 +486,21 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
 
     private static @NotNull String userKey(@NotNull String user, @NotNull String host) {
         return user + "@" + host; //$NON-NLS-1$
+    }
+
+    /**
+     * Whether the grant makes its user show up in this editor: in a table/routine editor a direct
+     * grant on the object or an inherited schema-wide one, in a schema editor any grant of the schema.
+     */
+    private boolean isRelevantGrant(@NotNull MySQLGrant grant, @NotNull List<MySQLPrivilege> procedurePrivs) {
+        if (rootTable != null) {
+            return grant.matches(rootTable) || isSchemaLevelGrant(grant);
+        }
+        if (rootProcedure != null) {
+            return grant.matchesProcedure(rootProcedure)
+                || (isSchemaLevelGrant(grant) && hasAnyProcedurePrivilege(grant, procedurePrivs));
+        }
+        return true;
     }
 
     private static boolean isSchemaLevelGrant(@NotNull MySQLGrant grant) {
@@ -1243,6 +1251,18 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             revokeWholeGrant(user, grant);
         }
         extraUsers.remove(user);
+        // In a table/routine editor only the direct grants are revoked; an untouched inherited
+        // schema grant (db.*) still applies, so such a user stays listed with that grant
+        boolean stillRelevant = false;
+        for (MySQLGrant grant : userGrants.getOrDefault(user, Collections.emptyList())) {
+            stillRelevant |= isRelevantGrant(grant, procedurePrivTypes);
+        }
+        if (stillRelevant) {
+            fillObjectLists();
+            updatePanels();
+            updateButtons();
+            return;
+        }
         users.remove(user);
         userGrants.remove(user);
         selectUserItem(null);
