@@ -83,6 +83,8 @@ public class NavigatorObjectsDeleter {
     private final Set<Option> enabledOptions = new HashSet<>();
     private boolean deleteWarningShowed;
 
+    private final Map<DBECommandContext, Integer> batchStartCommandCounts = new IdentityHashMap<>();
+
     private NavigatorObjectsDeleter(IWorkbenchWindow window, List<?> selection, boolean selectedFromNavigator, boolean supportsShowViewScript,
                                     boolean supportsDeleteContents, Set<Option> supportedOptions) {
         this.window = window;
@@ -169,7 +171,7 @@ public class NavigatorObjectsDeleter {
             UIUtils.runInProgressService(dbrMonitor -> {
                 dbrMonitor.beginTask("Delete objects", selection.size());
                 try {
-                    for (Object obj: selection) {
+                    for (Object obj : selection) {
                         if (dbrMonitor.isCanceled()) {
                             break;
                         }
@@ -268,10 +270,19 @@ public class NavigatorObjectsDeleter {
                 // and execute command within it
             }
             Map<String, Object> deleteOptions = collectObjectMakerOptionsMap(object, objectMaker);
-            objectMaker.deleteObject(commandTarget.getContext(), node.getObject(), deleteOptions);
-            if (commandTarget.getEditor() == null && commandTarget.getContext() != null) {
+            DBECommandContext deleteContext = commandTarget.getContext();
+            Integer batchStart = (deleteContext == null) ? null
+                : batchStartCommandCounts.computeIfAbsent(deleteContext, DBECommandContext::getCommandCount);
+            objectMaker.deleteObject(deleteContext, node.getObject(), deleteOptions);
+            if (batchStart != null) {
+                int chainSize = deleteContext.getCommandCount() - batchStart;
+                if (chainSize > 1) {
+                    deleteContext.linkLastCommands(chainSize);
+                }
+            }
+            if (commandTarget.getEditor() == null && deleteContext != null) {
                 // Persist object deletion - only if there is no host editor and we have a command context
-                final NavigatorHandlerObjectBase.ObjectSaver deleter = new NavigatorHandlerObjectBase.ObjectSaver(commandTarget.getContext(), deleteOptions);
+                final NavigatorHandlerObjectBase.ObjectSaver deleter = new NavigatorHandlerObjectBase.ObjectSaver(deleteContext, deleteOptions);
                 tasksToExecute.add(deleter);
             }
             if (commandTarget.getEditor() != null && selectedFromNavigator && !deleteWarningShowed) {
