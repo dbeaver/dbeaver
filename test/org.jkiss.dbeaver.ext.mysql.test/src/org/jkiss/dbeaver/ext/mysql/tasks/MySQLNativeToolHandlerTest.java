@@ -27,6 +27,25 @@ import java.nio.file.Path;
 class MySQLNativeToolHandlerTest extends DBeaverUnitTest {
 
     @Test
+    void detectsNonAsciiUsernamesForWindowsNativeClients() {
+        Assertions.assertFalse(MySQLNativeToolHandler.requiresUnicodeUsernameOptionFile("admin"));
+        Assertions.assertTrue(MySQLNativeToolHandler.requiresUnicodeUsernameOptionFile("admin_björn"));
+        Assertions.assertTrue(MySQLNativeToolHandler.requiresUnicodeUsernameOptionFile("数据管理员"));
+        Assertions.assertFalse(MySQLNativeToolHandler.requiresUnicodeUsernameOptionFile(null));
+    }
+
+    @Test
+    void unicodeUsernameOptionFilePreservesUtf8WithoutOverridingPassword() throws IOException {
+        Path credentialsFile = MySQLNativeToolHandler.createUsernameOptionFile("admin_björn");
+        try {
+            Assertions.assertEquals("[client]\nuser=admin_björn", Files.readString(credentialsFile));
+            Assertions.assertFalse(Files.readString(credentialsFile).contains("password="));
+        } finally {
+            Files.deleteIfExists(credentialsFile);
+        }
+    }
+
+    @Test
     void createCredentialsFileEscapesPasswordForMySQLOptionFile() throws IOException {
         Path credentialsFile = MySQLNativeToolHandler.createCredentialsFile(
             "root",
