@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -71,7 +72,8 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
             return null;
         }
         try {
-            return catalog.getSchema(new VoidProgressMonitor(), activeSchemaName);
+            // Cache only: this getter is called from UI code, schemas are loaded when defaults change
+            return catalog.getSchema(new LocalCacheProgressMonitor(new VoidProgressMonitor()), activeSchemaName);
         } catch (DBException e) {
             log.debug("Error reading active schema", e);
             return null;
@@ -110,6 +112,7 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
         } catch (SQLException e) {
             log.warn("Error reading active catalog and schema", e);
         }
+        cacheSchemas(monitor, getDefaultCatalog());
 
         return changed;
     }
@@ -138,6 +141,7 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
             }
         }
 
+        cacheSchemas(monitor, catalog);
         super.setDefaultCatalog(monitor, catalog, schema);
         setActiveSchema(monitor, schema);
     }
@@ -167,6 +171,17 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
         DBUtils.fireObjectSelectionChange(oldSchema, schema, this);
     }
 
+    private void cacheSchemas(@NotNull DBRProgressMonitor monitor, @Nullable GenericCatalog catalog) {
+        if (catalog == null) {
+            return;
+        }
+        try {
+            catalog.getSchemas(monitor);
+        } catch (DBException e) {
+            log.debug("Error caching catalog schemas", e);
+        }
+    }
+
     @Override
     public void initDefaultsFrom(@NotNull DBRProgressMonitor monitor, @NotNull GenericExecutionContext context) {
         try {
@@ -176,11 +191,17 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
         }
 
         if (context instanceof DuckDBExecutionContext duckDBContext) {
+            String schemaName = duckDBContext.activeSchemaName;
             this.activeCatalogName = duckDBContext.activeCatalogName;
-            try {
-                setActiveSchema(monitor, duckDBContext.getDefaultSchema());
-            } catch (DBCException e) {
-                log.warn("Error initializing default schema from context", e);
+            // The new connection starts in the catalog's default schema, even on reconnect of this same context
+            this.activeSchemaName = null;
+            try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, TASK_TITLE_SET_SCHEMA)) {
+                if (schemaName != null) {
+                    session.setSchema(schemaName);
+                }
+                this.activeSchemaName = session.getSchema();
+            } catch (SQLException e) {
+                log.warn("Error restoring default schema", e);
             }
         }
     }
