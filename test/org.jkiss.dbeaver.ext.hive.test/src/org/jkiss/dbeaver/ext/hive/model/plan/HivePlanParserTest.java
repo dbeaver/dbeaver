@@ -17,19 +17,15 @@
 package org.jkiss.dbeaver.ext.hive.model.plan;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNodeKind;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.junit.DBeaverUnitTest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class HivePlanParserTest extends DBeaverUnitTest {
     private static final String LEGACY_PLAN = """
@@ -166,114 +162,114 @@ class HivePlanParserTest extends DBeaverUnitTest {
     void parsesLegacyStagesOperatorsAndMetrics() {
         List<HivePlanNode> roots = new HivePlanParser().parse(LEGACY_PLAN);
 
-        assertEquals(2, roots.size());
-        assertEquals("Stage-1", roots.get(0).getNodeName());
-        assertEquals("TRUE", roots.get(0).getNodeProperties().get("ROOT STAGE"));
-        assertEquals("Stage-1", roots.get(1).getNodeProperties().get("DEPENDENT STAGES"));
+        Assertions.assertEquals(2, roots.size());
+        Assertions.assertEquals("Stage-1", roots.get(0).getNodeName());
+        Assertions.assertEquals("TRUE", roots.get(0).getNodeProperties().get("ROOT STAGE"));
+        Assertions.assertEquals("Stage-1", roots.get(1).getNodeProperties().get("DEPENDENT STAGES"));
 
         HivePlanNode tableScan = findNode(roots, "TableScan");
-        assertNotNull(tableScan);
-        assertEquals("src", tableScan.getNodeName());
-        assertEquals("src", tableScan.getEntity());
-        assertEquals("TS_0", tableScan.getNodeProperties().get("OperatorId:"));
-        assertEquals("src", tableScan.getNodeProperties().get("alias:"));
-        assertEquals(DBCPlanNodeKind.TABLE_SCAN, tableScan.getNodeKind());
-        assertEquals(42.0, tableScan.getNodeRowCount().doubleValue());
-        assertEquals(1024L, tableScan.getEstimatedDataSize());
-        assertEquals("COMPLETE / COMPLETE", tableScan.getStatisticsStatus());
-        assertNull(tableScan.getNodeCost());
+        Assertions.assertNotNull(tableScan);
+        Assertions.assertEquals("src", tableScan.getNodeName());
+        Assertions.assertEquals("src", tableScan.getEntity());
+        Assertions.assertEquals("TS_0", tableScan.getNodeProperties().get("OperatorId:"));
+        Assertions.assertEquals("src", tableScan.getNodeProperties().get("alias:"));
+        Assertions.assertEquals(DBCPlanNodeKind.TABLE_SCAN, tableScan.getNodeKind());
+        Assertions.assertEquals(42.0, tableScan.getNodeRowCount().doubleValue());
+        Assertions.assertEquals(1024L, tableScan.getEstimatedDataSize());
+        Assertions.assertEquals("COMPLETE / COMPLETE", tableScan.getStatisticsStatus());
+        Assertions.assertNull(tableScan.getNodeCost());
 
         HivePlanNode filter = findNode(tableScan.getNested(), "Filter Operator");
-        assertNotNull(filter);
-        assertEquals("FIL_1", filter.getNodeName());
-        assertEquals("key > 10", filter.getNodeCondition());
-        assertEquals(DBCPlanNodeKind.FILTER, filter.getNodeKind());
+        Assertions.assertNotNull(filter);
+        Assertions.assertEquals("FIL_1", filter.getNodeName());
+        Assertions.assertEquals("key > 10", filter.getNodeCondition());
+        Assertions.assertEquals(DBCPlanNodeKind.FILTER, filter.getNodeKind());
 
-        assertEquals(DBCPlanNodeKind.DEFAULT, new HivePlanNode(null, "Processor Tree", null).getNodeKind());
-        assertEquals(DBCPlanNodeKind.DEFAULT, new HivePlanNode(null, "Reduce Output Operator", null).getNodeKind());
-        assertNull(findNode(roots, "Alias -> Map Operator Tree"));
-        assertNull(findNode(roots, "src"));
-        assertNull(findNode(roots, "Processor Tree"));
+        Assertions.assertEquals(DBCPlanNodeKind.DEFAULT, new HivePlanNode(null, "Processor Tree", null).getNodeKind());
+        Assertions.assertEquals(DBCPlanNodeKind.DEFAULT, new HivePlanNode(null, "Reduce Output Operator", null).getNodeKind());
+        Assertions.assertNull(findNode(roots, "Alias -> Map Operator Tree"));
+        Assertions.assertNull(findNode(roots, "src"));
+        Assertions.assertNull(findNode(roots, "Processor Tree"));
     }
 
     @Test
     void parsesHive4MetadataTezAndArrayChildren() {
         List<HivePlanNode> roots = new HivePlanParser().parse(HIVE_4_PLAN);
 
-        assertEquals(1, roots.size());
-        assertEquals("Plan optimized by CBO.", roots.getFirst().getNodeProperties().get("cboInfo"));
-        assertEquals("SELECT * FROM default.src", roots.getFirst().getNodeProperties().get("optimizedSQL"));
+        Assertions.assertEquals(1, roots.size());
+        Assertions.assertEquals("Plan optimized by CBO.", roots.getFirst().getNodeProperties().get("cboInfo"));
+        Assertions.assertEquals("SELECT * FROM default.src", roots.getFirst().getNodeProperties().get("optimizedSQL"));
 
         HivePlanNode tez = findNodeByName(roots, "Tez");
-        assertNotNull(tez);
-        assertEquals("Execution Engine", tez.getNodeType());
-        assertEquals("Tez", tez.getEntity());
-        assertNotNull(tez.getNodeProperties().get("Edges:"));
+        Assertions.assertNotNull(tez);
+        Assertions.assertEquals("Execution Engine", tez.getNodeType());
+        Assertions.assertEquals("Tez", tez.getEntity());
+        Assertions.assertNotNull(tez.getNodeProperties().get("Edges:"));
 
         HivePlanNode map = findNodeByName(roots, "Map 1");
-        assertNotNull(map);
-        assertEquals("Vertex", map.getNodeType());
-        assertEquals("Map 1", map.getEntity());
-        assertEquals("Map 4 (BROADCAST_EDGE)", map.getInputs());
-        assertNull(findNode(roots, "Vertices"));
-        assertNull(findNode(roots, "Map Operator Tree"));
+        Assertions.assertNotNull(map);
+        Assertions.assertEquals("Vertex", map.getNodeType());
+        Assertions.assertEquals("Map 1", map.getEntity());
+        Assertions.assertEquals("Map 4 (BROADCAST_EDGE)", map.getInputs());
+        Assertions.assertNull(findNode(roots, "Vertices"));
+        Assertions.assertNull(findNode(roots, "Map Operator Tree"));
 
         HivePlanNode tableScan = findNode(roots, "TableScan");
-        assertNotNull(tableScan);
-        assertEquals("orders", tableScan.getEntity());
-        assertEquals(500L, tableScan.getNodeRowCount());
-        assertEquals(500.0, tableScan.getNodeRowCount().doubleValue());
-        assertEquals(47000L, tableScan.getEstimatedDataSize());
-        assertEquals("COMPLETE / PARTIAL", tableScan.getStatisticsStatus());
+        Assertions.assertNotNull(tableScan);
+        Assertions.assertEquals("orders", tableScan.getEntity());
+        Assertions.assertEquals(500L, tableScan.getNodeRowCount());
+        Assertions.assertEquals(500.0, tableScan.getNodeRowCount().doubleValue());
+        Assertions.assertEquals(47000L, tableScan.getEstimatedDataSize());
+        Assertions.assertEquals("COMPLETE / PARTIAL", tableScan.getStatisticsStatus());
 
         HivePlanNode select = findNode(tableScan.getNested(), "Select Operator");
-        assertNotNull(select);
-        assertEquals(250.0, select.getNodeRowCount().doubleValue());
-        assertEquals(DBCPlanNodeKind.SELECT, select.getNodeKind());
+        Assertions.assertNotNull(select);
+        Assertions.assertEquals(250.0, select.getNodeRowCount().doubleValue());
+        Assertions.assertEquals(DBCPlanNodeKind.SELECT, select.getNodeKind());
 
         HivePlanNode mapJoin = findNode(roots, "Map Join Operator");
-        assertNotNull(mapJoin);
-        assertEquals("Inner Join 0 to 1", mapJoin.getNodeCondition());
-        assertEquals(
+        Assertions.assertNotNull(mapJoin);
+        Assertions.assertEquals("Inner Join 0 to 1", mapJoin.getNodeCondition());
+        Assertions.assertEquals(
             "keys: 0=customer_id (type: bigint); 1=id (type: bigint) | input vertices: 1=Map 4",
             mapJoin.getNodeDetails());
 
         HivePlanNode groupBy = findNode(roots, "Group By Operator");
-        assertNotNull(groupBy);
-        assertEquals(
+        Assertions.assertNotNull(groupBy);
+        Assertions.assertEquals(
             "keys: customer_id (type: bigint) | aggregations: sum(amount) | mode: hash",
             groupBy.getNodeDetails());
 
         HivePlanNode reduceOutput = findNode(roots, "Reduce Output Operator");
-        assertNotNull(reduceOutput);
-        assertEquals("Reducer 2", reduceOutput.getEntity());
-        assertEquals(
+        Assertions.assertNotNull(reduceOutput);
+        Assertions.assertEquals("Reducer 2", reduceOutput.getEntity());
+        Assertions.assertEquals(
             "key expressions: customer_id (type: bigint) | " +
                 "Map-reduce partition columns: customer_id (type: bigint) | sort order: + | null sort order: a",
             reduceOutput.getNodeDetails());
 
         HivePlanNode reducer = findNodeByTypeAndName(roots, "Vertex", "Reducer 2");
-        assertNotNull(reducer);
-        assertEquals("Map 1 (SIMPLE_EDGE); Map 4 (CUSTOM_SIMPLE_EDGE)", reducer.getInputs());
+        Assertions.assertNotNull(reducer);
+        Assertions.assertEquals("Map 1 (SIMPLE_EDGE); Map 4 (CUSTOM_SIMPLE_EDGE)", reducer.getInputs());
 
         HivePlanNode union = findNodeByTypeAndName(roots, "Vertex", "Union 3");
-        assertNotNull(union);
-        assertEquals("Reducer 2 (CONTAINS)", union.getInputs());
+        Assertions.assertNotNull(union);
+        Assertions.assertEquals("Reducer 2 (CONTAINS)", union.getInputs());
     }
 
     @Test
     void rejectsInvalidOrUnstructuredPlans() {
         HivePlanParser parser = new HivePlanParser();
 
-        assertThrows(RuntimeException.class, () -> parser.parse("not json"));
-        assertThrows(IllegalArgumentException.class, () -> parser.parse("{}"));
+        Assertions.assertThrows(RuntimeException.class, () -> parser.parse("not json"));
+        Assertions.assertThrows(IllegalArgumentException.class, () -> parser.parse("{}"));
     }
 
     @Test
     void createsExplainFormattedQuery() {
         HiveExecutionPlan plan = new HiveExecutionPlan("SELECT * FROM src", new HivePlanParser());
 
-        assertEquals("EXPLAIN FORMATTED SELECT * FROM src", plan.getPlanQueryString());
+        Assertions.assertEquals("EXPLAIN FORMATTED SELECT * FROM src", plan.getPlanQueryString());
     }
 
     @Test
@@ -284,48 +280,49 @@ class HivePlanParserTest extends DBeaverUnitTest {
             "(RUNTIME) Num rows: 500/513 Data size: 89000 Erasure files: 1 " +
                 "Basic stats: COMPLETE Column stats: PARTIAL");
 
-        assertEquals(500.0, tableScan.getNodeRowCount().doubleValue());
-        assertEquals(89000L, tableScan.getEstimatedDataSize());
-        assertEquals("COMPLETE / PARTIAL", tableScan.getStatisticsStatus());
+        Assertions.assertEquals(500.0, tableScan.getNodeRowCount().doubleValue());
+        Assertions.assertEquals(89000L, tableScan.getEstimatedDataSize());
+        Assertions.assertEquals("COMPLETE / PARTIAL", tableScan.getStatisticsStatus());
 
         HivePlanNode pruning = new HivePlanNode(null, "Dynamic Partitioning Event Operator", null);
         pruning.addProperty("Partition key expr:", "ds");
         pruning.addProperty("Target column:", "ds (string)");
         pruning.addProperty("Target Input:", "orders");
         pruning.addProperty("Target Vertex:", "Map 1");
-        assertEquals(
+        Assertions.assertEquals(
             "Partition key expr: ds | Target column: ds (string) | Target Input: orders | Target Vertex: Map 1",
             pruning.getNodeDetails());
 
         HivePlanNode partitionValues = new HivePlanNode(null, "partition values", null);
         partitionValues.addProperty("ds", "2026-01-01");
         partitionValues.addProperty("region", "EMEA");
-        assertEquals("ds=2026-01-01; region=EMEA", partitionValues.getNodeDetails());
+        Assertions.assertEquals("ds=2026-01-01; region=EMEA", partitionValues.getNodeDetails());
     }
 
     @Test
     void exposesViewablePropertiesThroughPropertyCollector() {
         HivePlanNode tableScan = findNode(new HivePlanParser().parse(LEGACY_PLAN), "TableScan");
-        assertNotNull(tableScan);
+        Assertions.assertNotNull(tableScan);
         PropertyCollector collector = new PropertyCollector(tableScan, false);
 
-        assertTrue(collector.collectProperties());
-        assertEquals("TableScan", collector.getPropertyValue(null, "nodeType"));
-        assertEquals("src", collector.getPropertyValue(null, "entity"));
-        assertEquals(42.0, ((Number) collector.getPropertyValue(null, "nodeRowCount")).doubleValue());
-        assertEquals("1K", collector.getPropertyValue(null, "estimatedDataSize"));
-        assertEquals("COMPLETE / COMPLETE", collector.getPropertyValue(null, "statisticsStatus"));
-        assertTrue(
+        Assertions.assertTrue(collector.collectProperties());
+        Assertions.assertEquals("TableScan", collector.getPropertyValue(null, "nodeType"));
+        Assertions.assertEquals("src", collector.getPropertyValue(null, "entity"));
+        Assertions.assertEquals(42.0, ((Number) collector.getPropertyValue(null, "nodeRowCount")).doubleValue());
+        Assertions.assertEquals("1K", collector.getPropertyValue(null, "estimatedDataSize"));
+        Assertions.assertEquals("COMPLETE / COMPLETE", collector.getPropertyValue(null, "statisticsStatus"));
+        Assertions.assertTrue(
             List.of(collector.getProperties()).stream()
                 .noneMatch(property -> "nodeCost".equals(property.getId())));
 
         HivePlanNode filter = findNode(tableScan.getNested(), "Filter Operator");
-        assertNotNull(filter);
+        Assertions.assertNotNull(filter);
         PropertyCollector filterCollector = new PropertyCollector(filter, false);
-        assertTrue(filterCollector.collectProperties());
-        assertEquals("key > 10", filterCollector.getPropertyValue(null, "nodeCondition"));
+        Assertions.assertTrue(filterCollector.collectProperties());
+        Assertions.assertEquals("key > 10", filterCollector.getPropertyValue(null, "nodeCondition"));
     }
 
+    @Nullable
     private static HivePlanNode findNode(
         @NotNull Collection<HivePlanNode> nodes,
         @NotNull String type
@@ -342,6 +339,7 @@ class HivePlanParserTest extends DBeaverUnitTest {
         return null;
     }
 
+    @Nullable
     private static HivePlanNode findNodeByName(
         @NotNull Collection<HivePlanNode> nodes,
         @NotNull String name
@@ -358,6 +356,7 @@ class HivePlanParserTest extends DBeaverUnitTest {
         return null;
     }
 
+    @Nullable
     private static HivePlanNode findNodeByTypeAndName(
         @NotNull Collection<HivePlanNode> nodes,
         @NotNull String type,

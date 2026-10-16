@@ -36,6 +36,7 @@ public class HiveQueryPlanner implements DBCQueryPlanner {
         this.dataSource = dataSource;
     }
 
+    @NotNull
     @Override
     public DBPDataSource getDataSource() {
         return dataSource;
