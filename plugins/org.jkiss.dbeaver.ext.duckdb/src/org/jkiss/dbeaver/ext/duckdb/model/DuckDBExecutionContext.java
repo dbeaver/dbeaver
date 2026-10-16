@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericExecutionContext;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.DBCCachedContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -30,14 +31,18 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.sql.SQLException;
 
 public class DuckDBExecutionContext extends GenericExecutionContext {
 
     private static final Logger log = LoggerFactory.getLogger(DuckDBExecutionContext.class);
     private String activeCatalogName;
+    private String activeSchemaName;
 
     public DuckDBExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
         super(instance, purpose);
@@ -48,10 +53,30 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
         return true;
     }
 
+    @Override
+    public boolean supportsSchemaChange() {
+        return true;
+    }
+
     @Nullable
     @Override
     public GenericCatalog getDefaultCatalog() {
         return activeCatalogName == null ? null : getDataSource().getCatalog(activeCatalogName);
+    }
+
+    @Nullable
+    @Override
+    public GenericSchema getDefaultSchema() {
+        GenericCatalog catalog = getDefaultCatalog();
+        if (catalog == null || activeSchemaName == null) {
+            return null;
+        }
+        try {
+            return catalog.getSchema(new VoidProgressMonitor(), activeSchemaName);
+        } catch (DBException e) {
+            log.debug("Error reading active schema", e);
+            return null;
+        }
     }
 
     @Override
@@ -80,6 +105,16 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
             }
         }
 
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.META, "Query active schema")) {
+            String currentSchema = JDBCUtils.queryString(session, "SELECT current_schema()");
+            if (!CommonUtils.isEmpty(currentSchema) && !currentSchema.equals(activeSchemaName)) {
+                activeSchemaName = currentSchema;
+                changed = true;
+            }
+        } catch (Exception e) {
+            log.warn("Error while reading active schema", e);
+        }
+
         return changed;
     }
 
@@ -91,12 +126,14 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
 
         String newCatalogName = catalog.getName();
         if (CommonUtils.equalObjects(activeCatalogName, newCatalogName)) {
+            setDefaultSchema(monitor, schema);
             return;
         }
 
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog")) {
             JDBCUtils.executeSQL(session, "USE " + newCatalogName);
             activeCatalogName = newCatalogName;
+            activeSchemaName = JDBCUtils.queryString(session, "SELECT current_schema()");
         } catch (Exception e) {
             try {
                 throw new DBException("Failed to set active catalog to " + newCatalogName, e);
@@ -106,6 +143,22 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
         }
 
         super.setDefaultCatalog(monitor, catalog, schema);
+        setDefaultSchema(monitor, schema);
+    }
+
+    @Override
+    public void setDefaultSchema(@NotNull DBRProgressMonitor monitor, @Nullable GenericSchema schema) throws DBCException {
+        if (schema == null || schema.getName().equals(activeSchemaName)) {
+            return;
+        }
+        GenericSchema oldSchema = getDefaultSchema();
+        try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, TASK_TITLE_SET_SCHEMA)) {
+            session.setSchema(schema.getName());
+        } catch (SQLException e) {
+            throw new DBCException(e, this);
+        }
+        activeSchemaName = schema.getName();
+        DBUtils.fireObjectSelectionChange(oldSchema, schema, this);
     }
 
     @Override
@@ -118,12 +171,17 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
 
         if (context instanceof DuckDBExecutionContext duckDBContext) {
             this.activeCatalogName = duckDBContext.activeCatalogName;
+            try {
+                setDefaultSchema(monitor, duckDBContext.getDefaultSchema());
+            } catch (DBCException e) {
+                log.warn("Error initializing default schema from context", e);
+            }
         }
     }
 
     @NotNull
     @Override
     public DBCCachedContextDefaults getCachedDefault() {
-        return new DBCCachedContextDefaults(activeCatalogName, getDefaultSchemaCached());
+        return new DBCCachedContextDefaults(activeCatalogName, activeSchemaName);
     }
 }
