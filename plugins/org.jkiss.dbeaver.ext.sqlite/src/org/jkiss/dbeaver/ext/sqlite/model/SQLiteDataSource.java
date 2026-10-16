@@ -33,13 +33,18 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSVisibilityScopeProvider;
 
 import java.sql.SQLException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-public class SQLiteDataSource extends GenericDataSource {
+public class SQLiteDataSource extends GenericDataSource implements DBSVisibilityScopeProvider {
+
+    private SQLiteSystemTablesContainer cachedSystemTablesContainer;
 
     public SQLiteDataSource(
         @NotNull DBRProgressMonitor monitor,
@@ -142,5 +147,14 @@ public class SQLiteDataSource extends GenericDataSource {
 
     public boolean supportsStrictTyping() {
         return isServerVersionAtLeast(3, 37);
+    }
+
+    @NotNull
+    @Override
+    public List<DBSObjectContainer> getPublicScopes(@NotNull DBRProgressMonitor monitor) {
+        if (cachedSystemTablesContainer == null) {
+            cachedSystemTablesContainer = new SQLiteSystemTablesContainer(this);
+        }
+        return List.of(cachedSystemTablesContainer);
     }
 }
