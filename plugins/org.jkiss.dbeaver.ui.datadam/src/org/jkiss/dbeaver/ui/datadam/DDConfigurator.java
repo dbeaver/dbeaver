@@ -44,6 +44,7 @@ import java.util.Optional;
 public class DDConfigurator extends AbstractAIEngineConfigurator<AIEngineDescriptor, DDAIEngineProperties> {
     @Override
     protected void environmentSettingsChanged() {
+        super.environmentSettingsChanged();
         modelSelectorField.refreshModelListSilently(true);
     }
 
@@ -70,11 +71,19 @@ public class DDConfigurator extends AbstractAIEngineConfigurator<AIEngineDescrip
 
         tokenText = UIUtils.createLabelText(composite, DDUIMessages.datadam_configurator_label_api_key, "", SWT.BORDER | SWT.PASSWORD);
         tokenText.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).span(2, 1).create());
-        tokenText.addModifyListener(e -> token = tokenText.getText());
+        tokenText.addModifyListener(e -> {
+            if (!isUpdatingEnvironmentControls()) {
+                token = tokenText.getText();
+            }
+        });
 
         baseUrlText = UIUtils.createLabelText(composite, DDUIMessages.datadam_configurator_label_endpoint, "");
         baseUrlText.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).span(2, 1).create());
-        baseUrlText.addModifyListener(e -> baseUrl = baseUrlText.getText());
+        baseUrlText.addModifyListener(e -> {
+            if (!isUpdatingEnvironmentControls()) {
+                baseUrl = baseUrlText.getText();
+            }
+        });
 
         modelSelectorField = ModelSelectorField.builder()
             .withParent(composite)
@@ -111,6 +120,7 @@ public class DDConfigurator extends AbstractAIEngineConfigurator<AIEngineDescrip
         modelSelectorField.setSelectedModel(CommonUtils.toString(configuration.getModel(), DDAIEngineProperties.DEFAULT_MODEL));
         contextWindowSizeField.setValue(configuration.getContextWindowSize());
 
+        updateEnvironmentControls();
         modelSelectorField.refreshModelListSilently(false);
     }
 
@@ -122,6 +132,15 @@ public class DDConfigurator extends AbstractAIEngineConfigurator<AIEngineDescrip
         configuration.setModel(modelSelectorField.getSelectedModelName());
         configuration.setContextWindowSize(contextWindowSizeField.getValue());
         configuration.setTemperature(CommonUtils.toDouble(temperature));
+    }
+
+    @Override
+    protected void updateEnvironmentControls() {
+        updateEnvironmentText(tokenText, token, getEnvironmentValue(DDAIEngineProperties.ENV_API_KEY));
+        updateEnvironmentText(baseUrlText, baseUrl, getEnvironmentValue(DDAIEngineProperties.ENV_BASE_URL));
+        AIEngineProperties currentProperties = getCurrentProperties().orElseThrow();
+        modelSelectorField.setEnvironmentModel(
+            currentProperties.isModelSelectionSupported() ? null : currentProperties.getEffectiveModel());
     }
 
     @Override
