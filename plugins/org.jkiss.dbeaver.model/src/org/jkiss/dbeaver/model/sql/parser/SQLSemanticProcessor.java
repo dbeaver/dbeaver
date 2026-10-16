@@ -122,7 +122,7 @@ public class SQLSemanticProcessor {
     public static List<Statement> parseQueries(@NotNull SQLDialect dialect, @NotNull String sql) throws DBCException {
         CCJSqlParser parser = buildParser(dialect, sql);
         List<Statement> statements = callWithTimeout(parser, parser::Statements);
-        statements.forEach(statement -> normalizeQuotedIdentifiers(dialect, ((ASTNodeAccess) statement).getASTNode()));
+        normalizeQuotedIdentifiers(dialect, parser.getASTRoot());
         return statements;
     }
 
@@ -130,7 +130,7 @@ public class SQLSemanticProcessor {
     public static Statement parseQuery(@NotNull SQLDialect dialect, @NotNull String sql) throws DBCException {
         CCJSqlParser parser = buildParser(dialect, sql);
         Statement statement = callWithTimeout(parser, parser::Statement);
-        normalizeQuotedIdentifiers(dialect, ((ASTNodeAccess) statement).getASTNode());
+        normalizeQuotedIdentifiers(dialect, parser.getASTRoot());
         return statement;
     }
 
@@ -180,7 +180,7 @@ public class SQLSemanticProcessor {
             return parsedExpression;
         });
         try {
-            normalizeQuotedIdentifiers(dialect, ((ASTNodeAccess) result).getASTNode());
+            normalizeQuotedIdentifiers(dialect, parser.getASTRoot());
             return result;
         } catch (RuntimeException e) {
             throw new DBCException(errorMessage, e);

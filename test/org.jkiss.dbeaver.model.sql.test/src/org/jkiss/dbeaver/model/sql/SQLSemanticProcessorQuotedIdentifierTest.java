@@ -21,7 +21,11 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.create.table.CreateTable;
+import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.update.Update;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
@@ -245,6 +249,30 @@ public class SQLSemanticProcessorQuotedIdentifierTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void nonSelectStatementsNormalizeQuotedDottedTableName() throws Exception {
+        CreateTable create = Assertions.assertInstanceOf(
+            CreateTable.class,
+            SQLSemanticProcessor.parseQuery(BasicSQLDialect.INSTANCE, "CREATE TABLE \"table.name\" (id INT)")
+        );
+        Update update = Assertions.assertInstanceOf(
+            Update.class,
+            SQLSemanticProcessor.parseQuery(BasicSQLDialect.INSTANCE, "UPDATE \"table.name\" SET id = 1")
+        );
+        Delete delete = Assertions.assertInstanceOf(
+            Delete.class,
+            SQLSemanticProcessor.parseQuery(BasicSQLDialect.INSTANCE, "DELETE FROM \"table.name\"")
+        );
+        Drop drop = Assertions.assertInstanceOf(
+            Drop.class,
+            SQLSemanticProcessor.parseQuery(BasicSQLDialect.INSTANCE, "DROP TABLE \"table.name\"")
+        );
+
+        for (Table table : List.of(create.getTable(), update.getTable(), delete.getTable(), drop.getName())) {
+            Assertions.assertEquals(List.of("\"table.name\""), table.getNameParts());
+        }
+    }
+
+    @Test
     public void quotedDottedColumnQualifierIsSingleName() throws Exception {
         PlainSelect select = (PlainSelect) SQLSemanticProcessor.parseQuery(
             BasicSQLDialect.INSTANCE,
@@ -289,10 +317,11 @@ public class SQLSemanticProcessorQuotedIdentifierTest extends DBeaverUnitTest {
     public void parseQueriesNormalizesEveryStatement() throws Exception {
         List<Statement> statements = SQLSemanticProcessor.parseQueries(
             BasicSQLDialect.INSTANCE,
-            "SELECT * FROM \"first.table\"; SELECT * FROM \"second.table\""
+            "SELECT * FROM \"first.table\"; CREATE TABLE \"second.table\" (id INT)"
         );
         Assertions.assertEquals(List.of("\"first.table\""), getTable(statements.get(0)).getNameParts());
-        Assertions.assertEquals(List.of("\"second.table\""), getTable(statements.get(1)).getNameParts());
+        CreateTable create = Assertions.assertInstanceOf(CreateTable.class, statements.get(1));
+        Assertions.assertEquals(List.of("\"second.table\""), create.getTable().getNameParts());
     }
 
     @Test
