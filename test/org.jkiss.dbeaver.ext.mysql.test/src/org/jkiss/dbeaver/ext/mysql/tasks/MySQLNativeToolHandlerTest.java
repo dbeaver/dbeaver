@@ -38,10 +38,44 @@ class MySQLNativeToolHandlerTest extends DBeaverUnitTest {
     void unicodeUsernameOptionFilePreservesUtf8WithoutOverridingPassword() throws IOException {
         Path credentialsFile = MySQLNativeToolHandler.createUsernameOptionFile("admin_björn");
         try {
-            Assertions.assertEquals("[client]\nuser=admin_björn", Files.readString(credentialsFile));
+            Assertions.assertEquals("[client]\nuser=\"admin_björn\"", Files.readString(credentialsFile));
             Assertions.assertFalse(Files.readString(credentialsFile).contains("password="));
         } finally {
             Files.deleteIfExists(credentialsFile);
+        }
+    }
+
+    @Test
+    void unicodeUsernameOptionFileEscapesSpecialCharacters() throws IOException {
+        String username = "用户\\path\"#\npassword=unexpected";
+        Path credentialsFile = MySQLNativeToolHandler.createUsernameOptionFile(username);
+        try {
+            String fileContents = Files.readString(credentialsFile);
+            Assertions.assertEquals(
+                "[client]\nuser=\"用户\\\\path\\\"#\\npassword=unexpected\"",
+                fileContents
+            );
+            // A newline in the username must not add a new MySQL option.
+            Assertions.assertFalse(fileContents.contains("\npassword="));
+        } finally {
+            Files.deleteIfExists(credentialsFile);
+        }
+    }
+
+    @Test
+    void differentExportsGetSeparateOptionFiles() throws IOException {
+        Path first = MySQLNativeToolHandler.createUsernameOptionFile("first_用户");
+        Path second = null;
+        try {
+            second = MySQLNativeToolHandler.createUsernameOptionFile("second_用户");
+            Assertions.assertNotEquals(first, second);
+            Assertions.assertEquals("[client]\nuser=\"first_用户\"", Files.readString(first));
+            Assertions.assertEquals("[client]\nuser=\"second_用户\"", Files.readString(second));
+        } finally {
+            Files.deleteIfExists(first);
+            if (second != null) {
+                Files.deleteIfExists(second);
+            }
         }
     }
 
@@ -54,7 +88,7 @@ class MySQLNativeToolHandlerTest extends DBeaverUnitTest {
 
         try {
             Assertions.assertEquals(
-                "[client]\nuser=root\npassword=\"Süper#Secret;\\\"quote'\\\\path\"",
+                "[client]\nuser=\"root\"\npassword=\"Süper#Secret;\\\"quote'\\\\path\"",
                 Files.readString(credentialsFile)
             );
         } finally {
