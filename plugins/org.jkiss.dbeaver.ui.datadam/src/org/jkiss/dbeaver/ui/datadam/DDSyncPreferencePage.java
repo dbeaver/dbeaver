@@ -45,13 +45,19 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private AbstractJob userViewJob;
 
     private Text accountText;
+    private Composite accountRow;
     private Text userText;
+    private Composite userRow;
     private Button loginButton;
     private Button reloginButton;
     private Button logoutButton;
     private Button importKeysButton;
     private Button forgetKeysButton;
     private Composite keysGroup;
+
+    public DDSyncPreferencePage() {
+        noDefaultAndApplyButton();
+    }
 
     @Override
     public void init(@NotNull IWorkbench workbench) {
@@ -68,8 +74,12 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             2,
             GridData.FILL_HORIZONTAL,
             SWT.DEFAULT);
+        userRow = UIUtils.createComposite(group, 2);
+        GridData userRowData = new GridData(GridData.FILL_HORIZONTAL);
+        userRowData.horizontalSpan = 2;
+        userRow.setLayoutData(userRowData);
         userText = UIUtils.createLabelText(
-            group, DDTrackingUIMessages.sync_preference_page_user_label, "", SWT.READ_ONLY, idFieldLayout());
+            userRow, DDTrackingUIMessages.sync_preference_page_user_label, "", SWT.READ_ONLY, idFieldLayout());
 
         Composite buttons = UIUtils.createComposite(group, 3);
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -88,8 +98,12 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         keysGroup = UIUtils.createTitledComposite(
             composite, DDTrackingUIMessages.sync_preference_page_encryption_keys_group,
             2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        accountRow = UIUtils.createComposite(keysGroup, 2);
+        GridData accountRowData = new GridData(GridData.FILL_HORIZONTAL);
+        accountRowData.horizontalSpan = 2;
+        accountRow.setLayoutData(accountRowData);
         accountText = UIUtils.createLabelText(
-            keysGroup, DDTrackingUIMessages.sync_preference_page_account_label, "", SWT.READ_ONLY, idFieldLayout());
+            accountRow, DDTrackingUIMessages.sync_preference_page_account_label, "", SWT.READ_ONLY, idFieldLayout());
         Composite keyButtons = UIUtils.createComposite(keysGroup, 2);
         GridData keyButtonsGd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         keyButtonsGd.horizontalSpan = 2;
@@ -187,8 +201,13 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private void refresh() {
         DDKeyBundle bundle = accessService.getKeyBundle();
         boolean present = bundle != null;
+        accountRow.setVisible(present);
+        ((GridData) accountRow.getLayoutData()).exclude = !present;
         DDDesktopAccessService.Status status = accessService.getStatus();
         boolean signedIn = status == DDDesktopAccessService.Status.SIGNED_IN;
+        boolean showUser = signedIn || status == DDDesktopAccessService.Status.EXPIRED;
+        userRow.setVisible(showUser);
+        ((GridData) userRow.getLayoutData()).exclude = !showUser;
         accountText.setText(present ? bundle.accountId().toString() : DDTrackingUIMessages.sync_preference_page_unknown);
         userText.setText(DDTrackingUIMessages.sync_preference_page_unknown);
         loginButton.setEnabled(!signedIn);
