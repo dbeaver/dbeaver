@@ -63,6 +63,25 @@ class MySQLNativeToolHandlerTest extends DBeaverUnitTest {
     }
 
     @Test
+    void passwordAndUsernameNewlinesCannotInjectAdditionalOptions() throws IOException {
+        Path credentialsFile = MySQLNativeToolHandler.createCredentialsFile(
+            "admin\nhost=unexpected",
+            "secret\nport=3307"
+        );
+        try {
+            String content = Files.readString(credentialsFile);
+            Assertions.assertEquals(
+                "[client]\nuser=\"admin\\nhost=unexpected\"\npassword=\"secret\\nport=3307\"",
+                content
+            );
+            Assertions.assertFalse(content.contains("\nhost="));
+            Assertions.assertFalse(content.contains("\nport="));
+        } finally {
+            Files.deleteIfExists(credentialsFile);
+        }
+    }
+
+    @Test
     void differentExportsGetSeparateOptionFiles() throws IOException {
         Path first = MySQLNativeToolHandler.createUsernameOptionFile("first_用户");
         Path second = null;
