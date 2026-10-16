@@ -85,10 +85,13 @@ public class AssociationCreateCommand extends Command {
     }
 
     protected boolean isAssociationExists() {
-        // Check for existence of relationship already
-        List<ERDAssociation> relationships = targetEntity.getReferences();
-        for (ERDAssociation currentRelationship : relationships) {
-            if (currentRelationship.getSourceEntity().equals(sourceEntity)) {
+        return isAssociationExists(sourceEntity, targetEntity);
+    }
+
+    private boolean isAssociationExists(ERDElement<?> source, ERDElement<?> target) {
+        // Check for an existing relationship in the final FK -> PK direction.
+        for (ERDAssociation currentRelationship : target.getReferences()) {
+            if (currentRelationship.getSourceEntity().equals(source)) {
                 return true;
             }
         }
@@ -179,6 +182,11 @@ public class AssociationCreateCommand extends Command {
                 }
             } catch (DBException e) {
                 log.error("Error reading constraints", e);
+            }
+
+            if (directionSwapped && isAssociationExists(associationSourceERDEntity, associationTargetERDEntity)) {
+                // canExecute() checked the unswapped endpoints. Avoid persisting a duplicate virtual FK.
+                return null;
             }
 
             DBVEntity vEntity = DBVUtils.getVirtualEntity(srcEntityObject, true);
