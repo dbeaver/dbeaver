@@ -20,7 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.databricks.model.types.*;
+import org.jkiss.dbeaver.ext.databricks.model.types.DatabricksDataTypeCache;
+import org.jkiss.dbeaver.ext.databricks.model.types.DatabricksMapDataType;
+import org.jkiss.dbeaver.ext.databricks.model.types.DatabricksMapValueHandler;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -40,7 +42,12 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Properties;
+import java.util.Set;
 
 public class DatabricksDataSource extends GenericDataSource implements DBDValueHandlerProvider {
 
@@ -71,6 +78,46 @@ public class DatabricksDataSource extends GenericDataSource implements DBDValueH
 
     public boolean isLegacyDriver() {
         return CommonUtils.equalObjects(DatabricksConstants.DRIVER_CLASS_LEGACY, getContainer().getDriver().getDriverClassName());
+    }
+
+    @Nullable
+    @Override
+    protected String prepareConnectionURL(@Nullable String url, @NotNull Properties connectionProperties) {
+        return isLegacyDriver() ? url : removeDuplicatedUrlParameters(url, connectionProperties);
+    }
+
+    @Nullable
+    static String removeDuplicatedUrlParameters(@Nullable String url, @NotNull Properties connectionProperties) {
+        if (url == null || connectionProperties.isEmpty()) {
+            return url;
+        }
+        int parametersStart = url.indexOf(';');
+        if (parametersStart < 0) {
+            return url;
+        }
+
+        Set<String> propertyNames = new HashSet<>();
+        for (Object key : connectionProperties.keySet()) {
+            propertyNames.add(key.toString().toLowerCase(Locale.ENGLISH));
+        }
+
+        StringBuilder result = new StringBuilder(url.length());
+        result.append(url, 0, parametersStart);
+        List<String> removed = new ArrayList<>();
+        for (String parameter : url.substring(parametersStart + 1).split(";", -1)) {
+            int separator = parameter.indexOf('=');
+            String name = separator < 0 ? parameter : parameter.substring(0, separator);
+            if (propertyNames.contains(name.toLowerCase(Locale.ENGLISH))) {
+                removed.add(name);
+            } else {
+                result.append(';').append(parameter);
+            }
+        }
+        if (removed.isEmpty()) {
+            return url;
+        }
+        log.debug("Skip JDBC URL parameters overridden by connection properties: " + removed);
+        return result.toString();
     }
 
     @NotNull
