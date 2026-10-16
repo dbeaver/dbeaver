@@ -16,13 +16,14 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.sql.SQLWarning;
 
-public class OraclePasswordWarningTest {
+public class OraclePasswordWarningTest extends DBeaverUnitTest {
 
     @ParameterizedTest
     @ValueSource(ints = {
