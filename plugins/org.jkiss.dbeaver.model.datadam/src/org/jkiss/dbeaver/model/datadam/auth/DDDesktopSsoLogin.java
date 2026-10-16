@@ -37,7 +37,7 @@ import java.util.Objects;
 
 /** DataDam adapter for the shared browser authorization flow and the desktop REST token client. */
 public class DDDesktopSsoLogin {
-    private static final Duration TIMEOUT = Duration.ofMinutes(15);
+    private static final Duration TIMEOUT = Duration.ofMinutes(3);
     private static final String CALLBACK_HOST = "127.0.0.1";
     private static final String CALLBACK_PATH = URI.create(DDSsoConstants.DESKTOP_CALLBACK_TEMPLATE).getPath();
     private static final String DONE_PAGE = """

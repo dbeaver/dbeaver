@@ -156,9 +156,9 @@ public class DDDesktopAccessService {
     public void signOut() throws DBException {
         operationLock.lock();
         try {
-            DDKeyStore.clear();
-            setKeyBundle(null);
             tokenManager.signOut();
+            setKeyBundle(null);
+            DDKeyStore.clear();
             log.debug("Signed out of DataDam desktop access");
         } finally {
             operationLock.unlock();

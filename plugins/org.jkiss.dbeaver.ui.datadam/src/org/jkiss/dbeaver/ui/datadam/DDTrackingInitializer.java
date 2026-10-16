@@ -131,9 +131,11 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
                         return Status.CANCEL_STATUS;
                     }
                 } catch (DBException e) {
-                    ACTIVE_SESSION.compareAndSet(session, null);
-                    log.debug("DataDam tracking sign-in failed", e);
-                    return Status.CANCEL_STATUS;
+                    log.debug("DataDam access initialization failed", e);
+                    if (ACCESS_SERVICE.getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
+                        ACTIVE_SESSION.compareAndSet(session, null);
+                        return Status.CANCEL_STATUS;
+                    }
                 }
                 if (ACTIVE_SESSION.get() != session) {
                     return Status.CANCEL_STATUS;

@@ -140,8 +140,8 @@ class DDDesktopTokenManager {
     public void signOut() throws DBException {
         synchronized (this) {
             token = null;
-            DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, false);
             store.clear();
+            DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, false);
         }
         log.debug("Cleared DataDam desktop token");
     }

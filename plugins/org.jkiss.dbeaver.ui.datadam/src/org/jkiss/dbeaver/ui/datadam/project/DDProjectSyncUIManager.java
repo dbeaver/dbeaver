@@ -61,8 +61,8 @@ public final class DDProjectSyncUIManager {
                     bundle.accountId()
                 );
             }
+            return service;
         }
-        return service;
     }
 
     private void refresh() {
