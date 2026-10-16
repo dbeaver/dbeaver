@@ -489,8 +489,10 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 (getDataSource().isServerVersionAtLeast(9, 4) ? "aggmtransfn, aggminvtransfn,\n" +
                 "aggfinalextra, aggmfinalextra, aggserialfn, aggdeserialfn, aggmfinalfn,\n" +
                 "format_type(aggmtranstype, NULL) as aggmtranstype\n" : "") +
+                (getDataSource().isServerVersionAtLeast(9, 6) ? ",aggcombinefn, pg_proc.proparallel\n" : "") +
                 (getDataSource().isServerVersionAtLeast(11, 0) ? ",aggfinalmodify, aggmfinalmodify " : "") +
                 "FROM pg_aggregate\n" +
+                "LEFT JOIN pg_proc ON pg_proc.oid = pg_aggregate.aggfnoid\n" +
                 "LEFT JOIN pg_operator ON pg_operator.oid = aggsortop\n" +
                 "WHERE aggfnoid = ?::regproc";
             try (JDBCPreparedStatement dbStat = session.prepareStatement(query)) {
@@ -518,6 +520,10 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                         String serialfn = JDBCUtils.safeGetString(dbResult, "aggserialfn");
                         String deserialfn = JDBCUtils.safeGetString(dbResult, "aggdeserialfn");
                         String mfinalfn = JDBCUtils.safeGetString(dbResult, "aggmfinalfn");
+                        String combinefn = getDataSource().isServerVersionAtLeast(9, 6)
+                            ? JDBCUtils.safeGetString(dbResult, "aggcombinefn") : null;
+                        String parallel = getDataSource().isServerVersionAtLeast(9, 6)
+                            ? JDBCUtils.safeGetString(dbResult, "proparallel") : null;
 
                         TransitionModifies finalmodify = null;
                         TransitionModifies mfinalmodify = null;
@@ -549,6 +555,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                                 aggregateBody.append(delim).append("FINALFUNC_MODIFY = ").append(finalmodify.keyword);
                             }
                         }
+                        appendAggregateExecutionOptions(aggregateBody, combinefn, parallel);
                         if (CommonUtils.isNotEmpty(serialfn) && !notResult.equals(serialfn)) {
                             aggregateBody.append(delim).append("SERIALFUNC = ").append(serialfn);
                         }
@@ -591,6 +598,18 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         } catch (SQLException e) {
             log.debug("Error reading aggregate function body", e);
             body = "-- Aggregate function " + getFullQualifiedSignature() + "\n-- " + e.getMessage();
+        }
+    }
+
+    static void appendAggregateExecutionOptions(StringBuilder ddl, @Nullable String combineFunction, @Nullable String parallel) {
+        if (CommonUtils.isNotEmpty(combineFunction) && !"-".equals(combineFunction)) {
+            ddl.append(",\n\tCOMBINEFUNC = ").append(combineFunction);
+        }
+        // UNSAFE is PostgreSQL's default; emit only the non-default parallel modes.
+        if ("s".equals(parallel)) {
+            ddl.append(",\n\tPARALLEL = SAFE");
+        } else if ("r".equals(parallel)) {
+            ddl.append(",\n\tPARALLEL = RESTRICTED");
         }
     }
 
