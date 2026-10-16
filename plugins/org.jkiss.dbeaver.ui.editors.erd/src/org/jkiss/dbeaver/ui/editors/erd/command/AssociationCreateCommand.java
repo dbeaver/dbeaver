@@ -85,10 +85,28 @@ public class AssociationCreateCommand extends Command {
     }
 
     protected boolean isAssociationExists() {
-        return isAssociationExists(sourceEntity, targetEntity);
+        ERDElement<?> associationSource = sourceEntity;
+        ERDElement<?> associationTarget = targetEntity;
+
+        if (sourceEntity instanceof ERDEntity && targetEntity instanceof ERDEntity &&
+            !CommonUtils.isEmpty(sourceAttributes) && !CommonUtils.isEmpty(targetAttributes)) {
+            try {
+                List<DBSEntityAttribute> srcAttrs = ERDUtils.getObjectsFromERD(sourceAttributes);
+                List<DBSEntityAttribute> refAttrs = ERDUtils.getObjectsFromERD(targetAttributes);
+                if (needToSwapForeignKeyDirection(new VoidProgressMonitor(), srcAttrs, refAttrs)) {
+                    // Normalize before checking: the opposite FK direction may be a legitimate new association.
+                    associationSource = targetEntity;
+                    associationTarget = sourceEntity;
+                }
+            } catch (DBException e) {
+                log.error("Error reading constraints", e);
+            }
+        }
+
+        return isAssociationExists(associationSource, associationTarget);
     }
 
-    private boolean isAssociationExists(ERDElement<?> source, ERDElement<?> target) {
+    private boolean isAssociationExists(@NotNull ERDElement<?> source, @NotNull ERDElement<?> target) {
         // Check for an existing relationship in the final FK -> PK direction.
         for (ERDAssociation currentRelationship : target.getReferences()) {
             if (currentRelationship.getSourceEntity().equals(source)) {
