@@ -89,6 +89,7 @@ public class PrefPageSQLTemplates extends TemplatePreferencePage implements IWor
             }
         }
         
+        updateButtons();
         return root;
     }
     
