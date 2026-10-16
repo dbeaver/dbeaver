@@ -83,5 +83,8 @@ public class ResultSetThemeSettings extends ThemeListener {
     @ThemeColor(ThemeConstants.COLOR_SQL_RESULT_STRING_FOREGROUND)
     public volatile Color dtStringColor;
 
+    @ThemeColor(ThemeConstants.COLOR_SQL_DATA_PANEL_FOREGROUND_COLOR)
+    public volatile Color dataPanelForegroundColor;
+
     public static final ResultSetThemeSettings instance = new ResultSetThemeSettings();
 }

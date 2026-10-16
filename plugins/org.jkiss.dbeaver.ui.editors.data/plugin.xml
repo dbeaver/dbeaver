@@ -1227,6 +1227,13 @@
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.lines.normal.description</description>
         </colorDefinition>
         <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.data.panel.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.data.panel.foreground"
+                value="0, 100, 0">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.data.panel.foreground.description</description>
+        </colorDefinition>
+        <colorDefinition
             label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.lines.selected.label"
             categoryId="org.jkiss.dbeaver.ui.presentation.results"
             id="org.jkiss.dbeaver.sql.resultset.color.lines.selected"
