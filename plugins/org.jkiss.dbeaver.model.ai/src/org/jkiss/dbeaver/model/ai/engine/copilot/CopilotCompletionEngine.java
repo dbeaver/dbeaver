@@ -47,7 +47,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         @NotNull
         @Override
         protected CopilotClientResponses initialize() throws DBException {
-            CopilotClientResponses newClient = createClient(getProperties().getBaseAuthUrl());
+            CopilotClientResponses newClient = createClient(getProperties().getEffectiveBaseAuthUrl());
             newClient.setTimeout(getProperties().getTimeout());
             return newClient;
         }
@@ -65,7 +65,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
 
     @Override
     public int estimateImageTokens(@NotNull AIImageAttachment image) {
-        return OpenAiUtils.estimateImageTokens(properties.getModel(), image);
+        return OpenAiUtils.estimateImageTokens(properties.getEffectiveModel(), image);
     }
 
     @NotNull
@@ -102,7 +102,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         @NotNull AIEngineRequest request
     ) throws DBException {
         Pair<OAIResponsesRequest, CopilotChatRequest> copilotChatRequestOAIResponsesRequestPair = new Pair<>(
-            OpenAiUtils.createOpenAiRequest(request, getModelName(), getProperties().getTemperature()),
+            OpenAiUtils.createOpenAiRequest(request, getModelName(), getProperties().getEffectiveTemperature()),
             createLegacyChatRequest(request, false)
         );
         Object chatResponse = client.getInstance().chat(
@@ -158,7 +158,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
         Pair<OAIResponsesRequest, CopilotChatRequest> copilotChatRequestOAIResponsesRequestPair = new Pair<>(
-            OpenAiUtils.createOpenAiRequest(request, getModelName(), getProperties().getTemperature()),
+            OpenAiUtils.createOpenAiRequest(request, getModelName(), getProperties().getEffectiveTemperature()),
             createLegacyChatRequest(request, true)
         );
         client.getInstance().createChatCompletionStream(
@@ -171,7 +171,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
 
     @Override
     public int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        Integer contextWindowSize = properties.getContextWindowSize();
+        Integer contextWindowSize = properties.getEffectiveContextWindowSize();
         if (contextWindowSize != null) {
             return contextWindowSize;
         }
@@ -193,7 +193,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
 
         synchronized (this) {
             if (sessionToken == null) {
-                sessionToken = client.getInstance().requestSessionToken(monitor, properties.getToken());
+                sessionToken = client.getInstance().requestSessionToken(monitor, properties.getEffectiveToken());
             }
         }
         return sessionToken;
@@ -201,7 +201,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
 
     @Nullable
     public String getModelName() {
-        return properties.getModel();
+        return properties.getEffectiveModel();
     }
 
     @NotNull
@@ -216,7 +216,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
                 .map(OAITool::fromDescriptor)
                 .map(CopilotFunction::new)
                 .toList())
-            .withTemperature(properties.getTemperature())
+            .withTemperature(properties.getEffectiveTemperature())
             .withStream(stream)
             .withIntent(false)
             .withTopP(1)
@@ -260,7 +260,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
 
     @NotNull
     protected CopilotClientResponses createClient(@NotNull String baseAuthUrl) throws DBException {
-        String token = properties.getToken();
+        String token = properties.getEffectiveToken();
         if (token == null || token.isEmpty()) {
             throw new DBException("Copilot API token is not set");
         }

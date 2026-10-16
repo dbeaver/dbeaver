@@ -31,13 +31,23 @@ public interface OpenAIBaseProperties extends AIEngineProperties {
     @Nullable
     String getToken();
 
+    @Nullable
+    default String getEffectiveToken() {
+        return getToken();
+    }
+
+    @Nullable
+    default String getEffectiveBaseUrl() {
+        return getBaseUrl();
+    }
+
     @NotNull
     default Map<String, String> getCustomHeaders() {
         return Map.of();
     }
 
     default boolean isTokenRequired() {
-        return isDefaultBaseUrl(getBaseUrl());
+        return isDefaultBaseUrl(getEffectiveBaseUrl());
     }
 
     static boolean isDefaultBaseUrl(@Nullable String baseUrl) {
@@ -56,7 +66,7 @@ public interface OpenAIBaseProperties extends AIEngineProperties {
 
     @Override
     default boolean isValidConfiguration() {
-        return (!isTokenRequired() || !CommonUtils.isEmptyTrimmed(getToken()))
+        return (!isTokenRequired() || !CommonUtils.isEmptyTrimmed(getEffectiveToken()))
             && OpenAIRequestFilter.findInvalidHeader(getCustomHeaders()) == null;
     }
 
