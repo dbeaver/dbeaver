@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -55,6 +55,8 @@ import java.util.stream.Collectors;
 public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema>
         implements PostgreObject, PostgreScriptObject, PostgrePrivilegeOwner, DBPUniqueObject, DBPOverloadedObject, DBPNamedObject2, DBPRefreshableObject, DBPScriptObjectExt2 {
     private static final Log log = Log.getLog(PostgreProcedure.class);
+    private static final String PARALLEL_SAFE_CODE = "s";
+    private static final String PARALLEL_RESTRICTED_CODE = "r";
 
     protected static final String CAT_FLAGS = "Flags";
     protected static final String CAT_PROPS = "Properties";
@@ -601,14 +603,14 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         }
     }
 
-    static void appendAggregateExecutionOptions(StringBuilder ddl, @Nullable String combineFunction, @Nullable String parallel) {
+    static void appendAggregateExecutionOptions(@NotNull StringBuilder ddl, @Nullable String combineFunction, @Nullable String parallel) {
         if (CommonUtils.isNotEmpty(combineFunction) && !"-".equals(combineFunction)) {
             ddl.append(",\n\tCOMBINEFUNC = ").append(combineFunction);
         }
         // UNSAFE is PostgreSQL's default; emit only the non-default parallel modes.
-        if ("s".equals(parallel)) {
+        if (PARALLEL_SAFE_CODE.equals(parallel)) {
             ddl.append(",\n\tPARALLEL = SAFE");
-        } else if ("r".equals(parallel)) {
+        } else if (PARALLEL_RESTRICTED_CODE.equals(parallel)) {
             ddl.append(",\n\tPARALLEL = RESTRICTED");
         }
     }
