@@ -128,20 +128,31 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
     private static Path createCredentialsFile(@Nullable String username, @Nullable String password,
             boolean includePassword) throws IOException {
         Path dir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "mysql-native-handler"); //$NON-NLS-1$
-        Path cnf = dir.resolve(".my.cnf"); //$NON-NLS-1$
+        // Separate files avoid clobbering the credentials of another running export.
+        Path cnf = Files.createTempFile(dir, "mysql-native-", ".cnf"); //$NON-NLS-1$
         cnf.toFile().deleteOnExit();
 
         try (Writer writer = Files.newBufferedWriter(cnf, StandardCharsets.UTF_8)) {
             writer.write("[client]"); //$NON-NLS-1$
-            writer.write("\nuser=" + CommonUtils.notEmpty(username)); //$NON-NLS-1$
+            writer.write("\nuser=\"" + escapeOptionFileValue(CommonUtils.notEmpty(username)) + "\""); //$NON-NLS-1$
             if (includePassword) {
-                writer.write("\npassword=\"" + CommonUtils.notEmpty(password)
-                    .replace("\\", "\\\\")
-                    .replace("\"", "\\\"") + "\""); //$NON-NLS-1$
+                writer.write("\npassword=\"" + escapeOptionFileValue(CommonUtils.notEmpty(password)) + "\""); //$NON-NLS-1$
             }
+        } catch (IOException e) {
+            Files.deleteIfExists(cnf);
+            throw e;
         }
 
         return cnf;
+    }
+
+    @NotNull
+    private static String escapeOptionFileValue(@NotNull String value) {
+        return value.replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t");
     }
 
     private boolean isOverrideCredentials(SETTINGS settings) {
