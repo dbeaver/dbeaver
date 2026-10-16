@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver;
 
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 
 import java.util.logging.Handler;
 import java.util.logging.Level;
@@ -35,16 +34,16 @@ public class JULHandler extends Handler {
 
     @Override
     public void publish(LogRecord record) {
+        String loggerName = record.getLoggerName();
+        String message = record.getMessage();
+        Throwable thrown = record.getThrown();
         int severity = getSeverity(record.getLevel());
-        if (severity == IStatus.ERROR || severity == IStatus.WARNING) {
-            log.log(new Status(
-                getSeverity(record.getLevel()),
-                record.getLoggerName(),
-                record.getMessage(),
-                record.getThrown()
-            ));
-        } else {
-            log.debug(record.getMessage(), record.getThrown());
+        Log logger = loggerName == null ? log : Log.getLog(loggerName);
+        switch (severity) {
+            case IStatus.ERROR -> logger.error(message, thrown);
+            case IStatus.WARNING -> logger.warn(message, thrown);
+            case IStatus.INFO -> logger.info(message, thrown);
+            default -> logger.debug(message, thrown);
         }
     }
 
@@ -58,11 +57,15 @@ public class JULHandler extends Handler {
         // No op
     }
 
+
+    // TRACE -> deb -> info -> err pochemy ne bilo inf0?
     private static int getSeverity(Level level) {
         if (level.intValue() >= Level.SEVERE.intValue()) {
             return IStatus.ERROR;
         } else if (level.intValue() >= Level.WARNING.intValue()) {
             return IStatus.WARNING;
+        } else if (level.intValue() >= Level.INFO.intValue()) {
+            return IStatus.INFO;
         } else {
             return IStatus.CANCEL;
         }
