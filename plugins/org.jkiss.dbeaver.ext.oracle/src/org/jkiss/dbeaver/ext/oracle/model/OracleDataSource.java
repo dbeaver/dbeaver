@@ -234,8 +234,14 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
     }
 
+    static boolean isPasswordWillExpireWarning(@NotNull SQLWarning warning) {
+        int errorCode = warning.getErrorCode();
+        return errorCode == OracleConstants.EC_PASSWORD_WILL_EXPIRE
+            || errorCode == OracleConstants.EC_PASSWORD_GRACE_PERIOD;
+    }
+
     private boolean checkForPasswordWillExpireWarning(@NotNull SQLWarning warning) {
-        if (warning != null && warning.getErrorCode() == OracleConstants.EC_PASSWORD_WILL_EXPIRE) {
+        if (isPasswordWillExpireWarning(warning)) {
             DBWorkbench.getPlatformUI().showWarningMessageBox(
                 OracleMessages.oracle_password_will_expire_warn_name,
                 NLS.bind(OracleMessages.oracle_password_will_expire_warn_description, warning.getMessage())
