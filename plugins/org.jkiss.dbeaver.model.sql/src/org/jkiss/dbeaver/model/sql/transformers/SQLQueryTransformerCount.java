@@ -122,12 +122,18 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
                 // An ORDER BY attached to the parenthesized query may refer to an
                 // output alias removed by COUNT injection. Clear it at each level.
                 parenthesedSelect.setOrderByElements(null);
-                // An outer OFFSET can discard the only COUNT(*) row.
-                parenthesedSelect.setLimit(null);
-                parenthesedSelect.setOffset(null);
+                // A row limit belongs to the original result set. Replacing the
+                // projection with COUNT(*) can discard the only aggregate row or
+                // over-count, so preserve the original query by wrapping instead.
+                if (parenthesedSelect.getLimit() != null || parenthesedSelect.getOffset() != null) {
+                    throw new DBException("Cannot inject COUNT into a parenthesized SELECT with LIMIT/OFFSET");
+                }
                 selectBody = parenthesedSelect.getSelect();
             }
             if (selectBody instanceof PlainSelect select) {
+                if (select.getLimit() != null || select.getOffset() != null) {
+                    throw new DBException("Cannot inject COUNT into SELECT with LIMIT/OFFSET");
+                }
                 if (select.getHaving() != null) {
                     throw new DBException("Can't inject COUNT into query with HAVING clause");
                 }
@@ -161,9 +167,6 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
                 selectItems.add(new SelectItem(countFunc));
                 select.setSelectItems(selectItems);
                 select.setOrderByElements(null);
-                // Row limits on the inner SELECT would also affect the aggregate row.
-                select.setLimit(null);
-                select.setOffset(null);
                 return new SQLQuery(dataSource, statement.toString(), query, false);
             } else {
                 throw new DBException("Query [" + query.getText() + "] can't be modified");
