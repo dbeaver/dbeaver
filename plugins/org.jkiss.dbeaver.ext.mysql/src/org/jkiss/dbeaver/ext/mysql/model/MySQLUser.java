@@ -104,19 +104,19 @@ public class MySQLUser implements DBAUser, DBARole, DBPRefreshableObject, DBPSav
     }
 
     /**
-     * The account as a quoted SQL identifier ({@code 'user'@'host'}) for use in GRANT/REVOKE and
-     * other statements. Backslashes and single quotes in the user or host are escaped so crafted
-     * names stay valid (same string-literal rules as {@link MySQLDialect#escapeString(String)}).
+     * The account as quoted identifiers ({@code `user`@`host`}) for use in GRANT/REVOKE, SHOW GRANTS
+     * and account statements - the form the server itself prints in SHOW GRANTS. Back-tick quoting has
+     * no backslash escapes, so it means the same with and without {@code NO_BACKSLASH_ESCAPES} in
+     * sql_mode (unlike a string literal); only a back-tick inside a name is doubled.
      */
     @NotNull
     public String getFullName() {
-        return "'" + escapeAccountPart(userName) + "'@'" + escapeAccountPart(host) + "'";
+        return quoteAccountPart(userName) + "@" + quoteAccountPart(host);
     }
 
     @NotNull
-    private static String escapeAccountPart(@NotNull String part) {
-        // Backslashes first, otherwise the backslash of an escaped quote would be doubled again
-        return part.replace("\\", "\\\\").replace("'", "''");
+    private static String quoteAccountPart(@NotNull String part) {
+        return "`" + part.replace("`", "``") + "`";
     }
 
     @Nullable

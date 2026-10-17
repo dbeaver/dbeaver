@@ -219,6 +219,11 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         this.schemaPattern = schemaPattern;
     }
 
+    @Nullable
+    public String getSchemaPattern() {
+        return schemaPattern;
+    }
+
     /**
      * Adds a privilege to this statement. For a GRANT the grant-option pseudo-privilege also turns
      * on the {@code WITH GRANT OPTION} suffix, so both always change together.

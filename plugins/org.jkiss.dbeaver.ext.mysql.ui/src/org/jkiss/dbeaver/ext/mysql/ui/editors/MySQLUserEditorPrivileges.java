@@ -119,6 +119,10 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     // Commands created by this page. Only these are folded into: the General page adds its own
     // commands (with its own reflectors) to the same command context
     private final Set<MySQLCommandGrantPrivilege> ownCommands = Collections.newSetFromMap(new WeakHashMap<>());
+    // Last command added by the current user action: one click (or "-") may create several commands,
+    // they are linked so a single Undo/Redo reverts/re-applies all of them
+    @Nullable
+    private DBECommand<?> undoBatchLast;
 
     @Override
     public void createPartControl(@NotNull Composite parent) {
@@ -356,6 +360,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
 
     private void addGrantListener(@NotNull final PrivilegeTableControl privTable) {
         privTable.addListener(SWT.Modify, event -> {
+            startUndoBatch();
             final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
             final boolean isGrant = event.detail >= 1;
             final boolean withGrantOption = event.detail == 2;
@@ -366,9 +371,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
                     if (!tablePrivilegeChangeNeeded(targetCatalog, null, privilege, isGrant)) {
                         continue;
                     }
-                    MySQLGrant row = updateLocalData(privilege, isGrant, withGrantOption, targetCatalog, null);
-                    applyPrivilegeChange(
-                        privilege, isGrant, withGrantOption, targetCatalog, null, null, null, row.getWildcardSchemaPattern(targetCatalog));
+                    applyTableToggle(privilege, isGrant, withGrantOption, targetCatalog, null);
                 }
                 return;
             }
@@ -383,13 +386,49 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
                 if (multi && !tablePrivilegeChangeNeeded(curCatalog, curTable, privilege, isGrant)) {
                     continue;
                 }
-                MySQLGrant row = updateLocalData(privilege, isGrant, withGrantOption, curCatalog, curTable);
-                // Statements address the grant row the local model updated - a wildcard schema row by its pattern
-                String schemaPattern = curCatalog == null ? null : row.getWildcardSchemaPattern(curCatalog);
-                applyPrivilegeChange(privilege, isGrant, withGrantOption, curCatalog, curTable, null, null, schemaPattern);
+                applyTableToggle(privilege, isGrant, withGrantOption, curCatalog, curTable);
             }
         }
         );
+    }
+
+    /**
+     * Applies a table/schema/global privilege toggle to the local grants and queues the statement.
+     * Statements address the grant row the local model updated - a wildcard schema row by its stored
+     * pattern. Unchecking on schema level revokes from every row holding the privilege: an exact
+     * schema grant and wildcard grants matching the schema are all shown as one checkbox.
+     */
+    private void applyTableToggle(
+        @NotNull MySQLPrivilege privilege,
+        boolean isGrant,
+        boolean withGrantOption,
+        @Nullable MySQLCatalog catalog,
+        @Nullable MySQLTableBase table
+    ) {
+        List<MySQLGrant> holders = new ArrayList<>();
+        if (!isGrant && catalog != null && table == null) {
+            for (MySQLGrant grant : grants) {
+                if (grant.matches(catalog) && grant.matches((MySQLTableBase) null) && holdsPrivilege(grant, privilege)) {
+                    holders.add(grant);
+                }
+            }
+        }
+        if (holders.size() <= 1) {
+            MySQLGrant row = updateLocalData(privilege, isGrant, withGrantOption, catalog, table, null);
+            String schemaPattern = catalog == null ? null : row.getWildcardSchemaPattern(catalog);
+            applyPrivilegeChange(privilege, isGrant, withGrantOption, catalog, table, null, null, schemaPattern);
+            return;
+        }
+        for (MySQLGrant holder : holders) {
+            updateLocalData(privilege, false, false, catalog, null, holder);
+            applyPrivilegeChange(privilege, false, false, catalog, null, null, null, holder.getWildcardSchemaPattern(catalog));
+        }
+    }
+
+    private static boolean holdsPrivilege(@NotNull MySQLGrant grant, @NotNull MySQLPrivilege privilege) {
+        return privilege.isGrantOption()
+            ? grant.isGrantOption()
+            : grant.isAllPrivileges() || ArrayUtils.contains(grant.getPrivileges(), privilege);
     }
 
     /**
@@ -438,7 +477,23 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         }
         command.setSchemaPattern(schemaPattern);
         ownCommands.add(command);
-        addChangeCommand(command, privilegeChangeReflector);
+        addBatchCommand(command, privilegeChangeReflector);
+    }
+
+    private void startUndoBatch() {
+        undoBatchLast = null;
+    }
+
+    /**
+     * Adds a command linked to the previous command of the current user action, so that the whole
+     * action is one Undo/Redo step (the command context undoes a linked chain together).
+     */
+    private void addBatchCommand(
+        @NotNull DBECommand<MySQLUser> command,
+        @NotNull DBECommandReflector<MySQLUser, ? extends DBECommand<MySQLUser>> reflector
+    ) {
+        getEditorInput().getCommandContext().addCommand(command, reflector, false, undoBatchLast);
+        undoBatchLast = command;
     }
 
     /**
@@ -476,10 +531,29 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
                     updateLocalColumnData(privilege, granted, granted, schema, table, column);
                 }
             } else {
-                updateLocalData(privilege, granted, granted, schema, table);
+                updateLocalData(privilege, granted, granted, schema, table, findSchemaRow(schema, table, command.getSchemaPattern()));
             }
         }
         refreshObjectLists();
+    }
+
+    /**
+     * The schema-level grant row a command addresses by its stored pattern ({@code null} pattern - the
+     * exact schema row), or {@code null} to let the local update pick/create the row.
+     */
+    @Nullable
+    private MySQLGrant findSchemaRow(@Nullable MySQLCatalog schema, @Nullable MySQLTableBase table, @Nullable String schemaPattern) {
+        if (schema == null || table != null) {
+            return null;
+        }
+        for (MySQLGrant grant : grants) {
+            if (grant.matches(schema) && grant.matches((MySQLTableBase) null)
+                && CommonUtils.equalObjects(grant.getWildcardSchemaPattern(schema), schemaPattern)
+            ) {
+                return grant;
+            }
+        }
+        return null;
     }
 
     @Nullable
@@ -537,6 +611,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
 
     private void addColumnGrantListener(@NotNull final PrivilegeTableControl privTable) {
         privTable.addListener(SWT.Modify, event -> {
+            startUndoBatch();
             final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
             final boolean isGrant = event.detail >= 1;
             final boolean withGrantOption = event.detail == 2;
@@ -656,6 +731,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
 
     private void addProcedureGrantListener(@NotNull final PrivilegeTableControl privTable) {
         privTable.addListener(SWT.Modify, event -> {
+            startUndoBatch();
             final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
             final boolean isGrant = event.detail >= 1;
             final boolean withGrantOption = event.detail == 2;
@@ -748,6 +824,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     /**
      * Applies a table/schema/global privilege toggle to the local grants.
      *
+     * @param row the grant row to update, or {@code null} to pick the matching row (or create one)
      * @return the grant row that was updated (or created)
      */
     @NotNull
@@ -756,15 +833,14 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         boolean isGrant,
         boolean withGrantOption,
         @Nullable MySQLCatalog curCatalog,
-        @Nullable MySQLTableBase curTable
+        @Nullable MySQLTableBase curTable,
+        @Nullable MySQLGrant row
     ) {
         // Modify local grants (and clear grants cache in user objects)
         getDatabaseObject().clearGrantsCache();
-        MySQLGrant target = selectGrantToUpdate(
+        MySQLGrant target = row != null ? row : selectGrantToUpdate(
             grant -> grant.matches(curCatalog) && grant.matches(curTable),
-            grant -> privilege.isGrantOption()
-                ? grant.isGrantOption()
-                : grant.isAllPrivileges() || ArrayUtils.contains(grant.getPrivileges(), privilege));
+            grant -> holdsPrivilege(grant, privilege));
         if (target != null) {
             if (privilege.isGrantOption()) {
                 target.setGrantOption(withGrantOption);
@@ -1249,6 +1325,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     }
 
     private void handleRemoveCatalog() {
+        startUndoBatch();
         if (grants == null || selectedCatalogs.isEmpty()) {
             return;
         }
@@ -1279,6 +1356,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     }
 
     private void handleRemoveTable() {
+        startUndoBatch();
         if (grants == null || selectedCatalog == null || selectedTables.isEmpty()) {
             return;
         }
@@ -1306,6 +1384,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     }
 
     private void handleRemoveColumn() {
+        startUndoBatch();
         if (grants == null || selectedCatalog == null || selectedTable == null || selectedColumns.isEmpty()) {
             return;
         }
@@ -1334,7 +1413,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
                 getDatabaseObject().clearGrantsCache();
                 final MySQLGrant curGrant = grant;
                 final MySQLTableColumn curColumn = column;
-                addChangeCommand(
+                addBatchCommand(
                     new MySQLCommandRevokeObjectGrants(getDatabaseObject(), tableSpec(catalog, table.getName()), privNames, false),
                     new DBECommandReflector<MySQLUser, MySQLCommandRevokeObjectGrants>() {
                         @Override
@@ -1368,6 +1447,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     }
 
     private void handleRemoveProcedure() {
+        startUndoBatch();
         if (grants == null || selectedCatalog == null || selectedProcedures.isEmpty()) {
             return;
         }
@@ -1436,7 +1516,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         // One command for the whole row (table- and column-level statements together), so a single
         // Undo restores exactly what this removal revoked. The target comes from the grant itself:
         // a wildcard schema grant (`tenant\_%`.*) must be revoked by its stored pattern.
-        addChangeCommand(
+        addBatchCommand(
             new MySQLCommandRevokeObjectGrants(
                 getDatabaseObject(), grant.getObjectSpec(), tablePrivNames, columnPrivNames, grant.isGrantOption()),
             reflector);

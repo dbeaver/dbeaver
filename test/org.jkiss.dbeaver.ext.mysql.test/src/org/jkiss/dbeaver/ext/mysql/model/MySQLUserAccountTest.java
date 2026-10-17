@@ -22,8 +22,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 /**
- * Unit tests for {@link MySQLUser#getFullName()}: the account is rendered as a quoted SQL
- * identifier with single quotes doubled so crafted user/host names stay valid in SQL.
+ * Unit tests for {@link MySQLUser#getFullName()}: the account is rendered as back-tick quoted
+ * identifiers, which mean the same regardless of NO_BACKSLASH_ESCAPES in sql_mode.
  */
 public class MySQLUserAccountTest extends DBeaverUnitTest {
 
@@ -37,36 +37,28 @@ public class MySQLUserAccountTest extends DBeaverUnitTest {
 
     @Test
     public void plainAccountIsQuoted() {
-        Assertions.assertEquals("'app'@'%'", user("app", "%").getFullName());
+        Assertions.assertEquals("`app`@`%`", user("app", "%").getFullName());
     }
 
     @Test
-    public void singleQuoteInUserNameIsDoubled() {
-        Assertions.assertEquals("'o''brien'@'localhost'", user("o'brien", "localhost").getFullName());
+    public void singleQuoteNeedsNoEscaping() {
+        Assertions.assertEquals("`o'brien`@`ho'st`", user("o'brien", "ho'st").getFullName());
     }
 
     @Test
-    public void singleQuoteInHostIsDoubled() {
-        Assertions.assertEquals("'app'@'ho''st'", user("app", "ho'st").getFullName());
+    public void backtickIsDoubledInBothParts() {
+        Assertions.assertEquals("`a``b`@`c``d`", user("a`b", "c`d").getFullName());
     }
 
     @Test
-    public void quotesInBothPartsAreDoubled() {
-        Assertions.assertEquals("'a''b'@'c''d'", user("a'b", "c'd").getFullName());
+    public void backslashIsKeptLiterally() {
+        // No backslash escaping inside back-ticks, so the result doesn't depend on NO_BACKSLASH_ESCAPES
+        Assertions.assertEquals("`a\\b`@`%`", user("a\\b", "%").getFullName());
+        Assertions.assertEquals("`x\\`@`%`", user("x\\", "%").getFullName());
     }
 
     @Test
-    public void backslashIsDoubled() {
-        Assertions.assertEquals("'a\\\\b'@'%'", user("a\\b", "%").getFullName());
-    }
-
-    @Test
-    public void trailingBackslashCannotEscapeClosingQuote() {
-        Assertions.assertEquals("'x\\\\'@'%'", user("x\\", "%").getFullName());
-    }
-
-    @Test
-    public void backslashAndQuoteAreBothEscaped() {
-        Assertions.assertEquals("'x\\\\'''@'%'", user("x\\'", "%").getFullName());
+    public void anonymousAccountIsQuoted() {
+        Assertions.assertEquals("``@`localhost`", user("", "localhost").getFullName());
     }
 }
