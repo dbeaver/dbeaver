@@ -13,6 +13,7 @@
     </url>
     <plugin id="org.jkiss.dbeaver.ext.snowflake.test" version = "0.0.0"/>
     <plugin id="org.jkiss.dbeaver.ext.cdata.test" version="0.0.0"/>
+    <plugin id="org.jkiss.dbeaver.ext.cubrid.test" version="0.0.0"/>
     <plugin id="org.jkiss.dbeaver.ext.oracle.test" version = "0.0.0"/>
     <plugin id="org.jkiss.dbeaver.model.lsm.test" version = "0.0.0"/>
     <plugin id="org.jkiss.dbeaver.ext.postgresql.test" version = "0.0.0"/>
