@@ -59,6 +59,8 @@ public class AttributeConnectionEditPolicy extends AttributeContainerEditPolicy 
         command.setSourceEntity(srcPart.getEntity());
         command.setTargetEntity(part.getEntity());
         command.setAttributes(srcPart.getAttribute(), part.getAttribute());
+        // Supply the diagram monitor for potentially long-running metadata reads.
+        command.setEditor(part.getEditor());
         return command;
     }
 
