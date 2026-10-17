@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.erd.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
@@ -165,6 +164,17 @@ public class AssociationCreateCommand extends Command {
     ) {
         ERDAssociation association = null;
         if (sourceEntity instanceof ERDEntity sourceERDEntity && targetEntity instanceof ERDEntity targetERDEntity) {
+            // Metadata lookups must use the diagram's monitor, which can be cancelled.
+            // Both the entity and attribute connection policies set the editor.
+            if (editor == null || editor.getDiagram() == null) {
+                log.error("Cannot create ERD association without an active diagram");
+                return null;
+            }
+            DBRProgressMonitor monitor = editor.getDiagram().getMonitor();
+            if (monitor.isCanceled()) {
+                return null;
+            }
+
             DBSEntity srcEntityObject = sourceERDEntity.getObject();
             DBSEntity targetEntityObject = targetERDEntity.getObject();
             ERDEntity associationSourceERDEntity = sourceERDEntity;
@@ -177,7 +187,7 @@ public class AssociationCreateCommand extends Command {
             try {
                 // Maybe we need to swap source and target
                 // Ref table must have a unique constraint with ref attributes
-                if (needToSwapForeignKeyDirection(new VoidProgressMonitor(), srcAttrs, refAttrs)) {
+                if (needToSwapForeignKeyDirection(monitor, srcAttrs, refAttrs)) {
                     directionSwapped = true;
                     ERDEntity tmpERDEntity = associationSourceERDEntity;
                     associationSourceERDEntity = associationTargetERDEntity;
@@ -193,6 +203,10 @@ public class AssociationCreateCommand extends Command {
                 }
             } catch (DBException e) {
                 log.error("Error reading constraints", e);
+                return null;
+            }
+            if (monitor.isCanceled()) {
+                return null;
             }
 
             if (isAssociationExists(associationSourceERDEntity, associationTargetERDEntity)) {
