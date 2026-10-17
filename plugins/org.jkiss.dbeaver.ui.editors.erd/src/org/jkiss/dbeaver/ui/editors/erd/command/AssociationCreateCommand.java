@@ -85,25 +85,18 @@ public class AssociationCreateCommand extends Command {
     }
 
     protected boolean isAssociationExists() {
-        ERDElement<?> associationSource = sourceEntity;
-        ERDElement<?> associationTarget = targetEntity;
-
         if (sourceEntity instanceof ERDEntity && targetEntity instanceof ERDEntity &&
             !CommonUtils.isEmpty(sourceAttributes) && !CommonUtils.isEmpty(targetAttributes)) {
-            try {
-                List<DBSEntityAttribute> srcAttrs = ERDUtils.getObjectsFromERD(sourceAttributes);
-                List<DBSEntityAttribute> refAttrs = ERDUtils.getObjectsFromERD(targetAttributes);
-                if (needToSwapForeignKeyDirection(new VoidProgressMonitor(), srcAttrs, refAttrs)) {
-                    // Normalize before checking: the opposite FK direction may be a legitimate new association.
-                    associationSource = targetEntity;
-                    associationTarget = sourceEntity;
-                }
-            } catch (DBException e) {
-                log.error("Error reading constraints", e);
-            }
+            // GEF calls canExecute() on the UI thread. Determining FK direction
+            // may load database metadata and must not happen here with a
+            // non-cancellable VoidProgressMonitor.
+            // If only one direction already exists, the other may still be
+            // valid. Check the final direction during execute() instead.
+            return isAssociationExists(sourceEntity, targetEntity) &&
+                isAssociationExists(targetEntity, sourceEntity);
         }
 
-        return isAssociationExists(associationSource, associationTarget);
+        return isAssociationExists(sourceEntity, targetEntity);
     }
 
     private boolean isAssociationExists(@NotNull ERDElement<?> source, @NotNull ERDElement<?> target) {
@@ -202,8 +195,9 @@ public class AssociationCreateCommand extends Command {
                 log.error("Error reading constraints", e);
             }
 
-            if (directionSwapped && isAssociationExists(associationSourceERDEntity, associationTargetERDEntity)) {
-                // canExecute() checked the unswapped endpoints. Avoid persisting a duplicate virtual FK.
+            if (isAssociationExists(associationSourceERDEntity, associationTargetERDEntity)) {
+                // The final direction is known only after reading the attributes.
+                // Reject duplicates even if canExecute() allowed the opposite drag.
                 return null;
             }
 
