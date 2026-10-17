@@ -90,7 +90,7 @@ public class SQLQueryTransformerCountTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void removesOuterLimitAndOffsetFromParenthesizedCount() throws Exception {
+    public void preservesOuterLimitAndOffsetWhenWrappingCount() throws Exception {
         DBPDataSource dataSource = Mockito.mock(DBPDataSource.class);
         SQLDialectRelational dialect = Mockito.mock(SQLDialectRelational.class);
         Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
@@ -103,13 +103,13 @@ public class SQLQueryTransformerCountTest extends DBeaverUnitTest {
 
         String countText = counted.getText().toLowerCase(Locale.ROOT);
         Assertions.assertTrue(countText.contains("count(*)"), countText);
-        Assertions.assertFalse(countText.contains("limit"), countText);
-        Assertions.assertFalse(countText.contains("offset"), countText);
-        Assertions.assertFalse(countText.contains("dbvrcnt"), countText);
+        Assertions.assertTrue(countText.contains("limit"), countText);
+        Assertions.assertTrue(countText.contains("offset"), countText);
+        Assertions.assertTrue(countText.contains("dbvrcnt"), countText);
     }
 
     @Test
-    public void removesInnerOffsetBeforeInjectingCount() throws Exception {
+    public void preservesInnerLimitAndOffsetWhenWrappingCount() throws Exception {
         DBPDataSource dataSource = Mockito.mock(DBPDataSource.class);
         SQLDialectRelational dialect = Mockito.mock(SQLDialectRelational.class);
         Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
@@ -122,9 +122,9 @@ public class SQLQueryTransformerCountTest extends DBeaverUnitTest {
 
         String countText = counted.getText().toLowerCase(Locale.ROOT);
         Assertions.assertTrue(countText.contains("count(*)"), countText);
-        Assertions.assertFalse(countText.contains("limit"), countText);
-        Assertions.assertFalse(countText.contains("offset"), countText);
-        Assertions.assertFalse(countText.contains("dbvrcnt"), countText);
+        Assertions.assertTrue(countText.contains("limit"), countText);
+        Assertions.assertTrue(countText.contains("offset"), countText);
+        Assertions.assertTrue(countText.contains("dbvrcnt"), countText);
     }
 
     @Test
