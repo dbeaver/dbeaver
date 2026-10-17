@@ -67,7 +67,8 @@ public class SQLServerGenericDataSource extends GenericDataSource {
     public SQLServerGenericDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, SQLServerMetaModel metaModel)
         throws DBException
     {
-        super(monitor, container, metaModel, metaModel.getServerType() == ServerType.SQL_SERVER ? new SQLServerDialectMssql() : new SQLServerDialectSybase());
+        super(monitor, container, metaModel,
+            metaModel.getServerType() == ServerType.SQL_SERVER ? new SQLServerDialectMssql() : new SQLServerDialectSybase());
     }
 
     @NotNull

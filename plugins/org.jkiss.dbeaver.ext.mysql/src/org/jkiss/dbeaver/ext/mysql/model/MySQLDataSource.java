@@ -269,10 +269,10 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         if (initFrom != null && !context.getDataSource().getContainer().isConnectionReadOnly()) {
             MySQLCatalog object = ((MySQLExecutionContext) initFrom).getDefaultCatalog();
             if (object != null) {
-                ((MySQLExecutionContext)context).setCurrentDatabase(monitor, object);
+                ((MySQLExecutionContext) context).setCurrentDatabase(monitor, object);
             }
         } else {
-            ((MySQLExecutionContext)context).refreshDefaults(monitor, true);
+            ((MySQLExecutionContext) context).refreshDefaults(monitor, true);
         }
     }
 

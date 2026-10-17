@@ -227,7 +227,8 @@ public class SQLServerDataSource
         Properties properties = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) { // App name
             properties.put(
-                SQLServerUtils.isDriverJtds(getContainer().getDriver()) ? SQLServerConstants.APPNAME_CLIENT_PROPERTY : SQLServerConstants.APPLICATION_NAME_CLIENT_PROPERTY,
+                SQLServerUtils.isDriverJtds(getContainer().getDriver())
+                    ? SQLServerConstants.APPNAME_CLIENT_PROPERTY : SQLServerConstants.APPLICATION_NAME_CLIENT_PROPERTY,
                 CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer(), context, purpose), 64));
         }
 

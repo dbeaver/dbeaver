@@ -417,27 +417,25 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
         }
     }
 
-	@Override
-	public <T> T getAdapter(@NotNull Class<T> adapter)
-	{
-		if (adapter == DBSStructureAssistant.class) {
-			return adapter.cast(new ExasolStructureAssistant(this));
-		} else if (adapter == DBAServerSessionManager.class) {
-			return adapter.cast(new ExasolServerSessionManager(this));
-		} else if (adapter == DBAUserPasswordManager.class) {
-			return adapter.cast(new ExasolChangeUserPasswordManager(this));
-		} else if (adapter == DBCQueryPlanner.class) {
-			return adapter.cast(new ExasolQueryPlanner(this));
-		}
-		return super.getAdapter(adapter);
-	}
+    @Nullable
+    @Override
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
+        if (adapter == DBSStructureAssistant.class) {
+            return adapter.cast(new ExasolStructureAssistant(this));
+        } else if (adapter == DBAServerSessionManager.class) {
+            return adapter.cast(new ExasolServerSessionManager(this));
+        } else if (adapter == DBAUserPasswordManager.class) {
+            return adapter.cast(new ExasolChangeUserPasswordManager(this));
+        } else if (adapter == DBCQueryPlanner.class) {
+            return adapter.cast(new ExasolQueryPlanner(this));
+        }
+        return super.getAdapter(adapter);
+    }
 
-	@Override
-	public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
-			throws DBException
-	{
-		// TODO DF: No idea what to do with this method, what it is used for...
-	}
+    @Override
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
+        // TODO DF: No idea what to do with this method, what it is used for...
+    }
 
     // -----------------------
     // Connection related Info
@@ -472,28 +470,29 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
         return props;
     }
 
-	@Override
-	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-		super.refreshObject(monitor);
-		
-		this.schemaCache.clearCache();
-		this.connectionCache.clearCache();
-		this.userCache.clearCache();
-		//caches for security
-		if (this.roleCache != null) {
-			this.roleCache.clearCache();
-		}
-		if (this.baseTableGrantCache != null) {
-			this.baseTableGrantCache.clearCache();
-		}
-		if (this.systemGrantCache != null) {
-			this.systemGrantCache.clearCache();
-		}
-		if (this.connectionGrantCache != null) {
-			this.connectionGrantCache.clearCache();
-		}
-		return this;
-	}
+    @NotNull
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        super.refreshObject(monitor);
+
+        this.schemaCache.clearCache();
+        this.connectionCache.clearCache();
+        this.userCache.clearCache();
+        // Caches for security
+        if (this.roleCache != null) {
+            this.roleCache.clearCache();
+        }
+        if (this.baseTableGrantCache != null) {
+            this.baseTableGrantCache.clearCache();
+        }
+        if (this.systemGrantCache != null) {
+            this.systemGrantCache.clearCache();
+        }
+        if (this.connectionGrantCache != null) {
+            this.connectionGrantCache.clearCache();
+        }
+        return this;
+    }
 	
 	// --------------------------
 	// Manage Children: ExasolSchema
