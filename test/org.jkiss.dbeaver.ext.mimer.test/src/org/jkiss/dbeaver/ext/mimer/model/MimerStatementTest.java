@@ -73,6 +73,7 @@ public class MimerStatementTest extends DBeaverUnitTest {
     public void setUp() throws Exception {
         Mockito.when(schema.getName()).thenReturn("mimer_store");
         Mockito.when(schema.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSource.hasDefaultInstance()).thenReturn(true);
         Mockito.when(dataSource.getDefaultInstance()).thenReturn(instance);
         Mockito.when(instance.getDefaultContext(ArgumentMatchers.any(), ArgumentMatchers.anyBoolean())).thenReturn(executionContext);
         Mockito.when(executionContext.openSession(
