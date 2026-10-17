@@ -142,7 +142,8 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         Path dir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "mysql-native-handler"); //$NON-NLS-1$
         // Separate files avoid clobbering the credentials of another running export.
         Path cnf = Files.createTempFile(dir, "mysql-native-", ".cnf"); //$NON-NLS-1$
-        cnf.toFile().deleteOnExit();
+        // doExecute() removes each option file in its finally block; registering every
+        // temporary path with deleteOnExit() would retain it for the JVM lifetime.
 
         try (Writer writer = Files.newBufferedWriter(cnf, StandardCharsets.UTF_8)) {
             writer.write("[client]"); //$NON-NLS-1$
