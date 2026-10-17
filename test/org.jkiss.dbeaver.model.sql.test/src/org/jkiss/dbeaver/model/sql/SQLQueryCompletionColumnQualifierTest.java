@@ -16,14 +16,14 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
-import java.util.List;
-
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionTextProvider;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SQLQueryCompletionColumnQualifierTest extends DBeaverUnitTest {
 
