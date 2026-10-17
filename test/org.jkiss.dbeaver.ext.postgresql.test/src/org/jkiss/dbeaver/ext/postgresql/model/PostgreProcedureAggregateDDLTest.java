@@ -16,10 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class PostgreProcedureAggregateDDLTest {
+public class PostgreProcedureAggregateDDLTest extends DBeaverUnitTest {
 
     @Test
     public void preservesCombineFunctionAndParallelSafe() {
