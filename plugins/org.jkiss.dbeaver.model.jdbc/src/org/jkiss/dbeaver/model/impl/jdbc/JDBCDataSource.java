@@ -538,19 +538,27 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return jdbcFactory;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public JDBCRemoteInstance getDefaultInstance() {
-        return defaultRemoteInstance;
+        JDBCRemoteInstance instance = defaultRemoteInstance;
+        if (instance == null) {
+            throw new IllegalStateException("Default JDBC instance is not initialized");
+        }
+        return instance;
+    }
+
+    @Override
+    public boolean hasDefaultInstance() {
+        return defaultRemoteInstance != null;
     }
 
     @NotNull
     @Override
     public List<? extends JDBCRemoteInstance> getAvailableInstances() {
-        JDBCRemoteInstance defaultInstance = getDefaultInstance();
-        return defaultInstance == null ?
+        return !hasDefaultInstance() ?
             Collections.emptyList() :
-            Collections.singletonList(defaultInstance);
+            Collections.singletonList(getDefaultInstance());
     }
 
     @Override
@@ -585,10 +593,10 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        JDBCRemoteInstance defaultInstance = getDefaultInstance();
-        if (defaultInstance == null) {
+        if (!hasDefaultInstance()) {
             throw new DBCException("Can't obtain default instance");
         }
+        JDBCRemoteInstance defaultInstance = getDefaultInstance();
         defaultInstance.initializeMetaContext(monitor);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, ModelMessages.model_jdbc_read_database_meta_data)) {
             JDBCDatabaseMetaData metaData = session.getMetaData();
@@ -879,6 +887,9 @@ public abstract class JDBCDataSource extends AbstractDataSource
     @Override
     public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBCTransactionManager.class) {
+            if (!hasDefaultInstance()) {
+                return null;
+            }
             return adapter.cast(DBUtils.getDefaultContext(getDefaultInstance(), false));
         } else if (adapter == DBCQueryTransformProvider.class) {
             return adapter.cast(this);

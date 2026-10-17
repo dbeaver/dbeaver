@@ -705,6 +705,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return getDefaultInstance().getDefaultDataTypeName(dataKind);
     }
 
+    @Override
+    public boolean hasDefaultInstance() {
+        return databaseCache != null && !databaseCache.getCachedObjects().isEmpty();
+    }
+
     @NotNull
     @Override
     public PostgreDatabase getDefaultInstance() {
