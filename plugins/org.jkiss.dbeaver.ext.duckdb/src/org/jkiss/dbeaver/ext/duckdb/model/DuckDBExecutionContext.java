@@ -32,8 +32,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.LocalCacheProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -75,13 +73,8 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
             // No catalogs, e.g. with the omit-catalog driver setting: schemas live at the data source root
             return getDataSource().getSchema(activeSchemaName);
         }
-        try {
-            // Cache only: this getter is called from UI code, schemas are loaded when defaults change
-            return catalog.getSchema(new LocalCacheProgressMonitor(new VoidProgressMonitor()), activeSchemaName);
-        } catch (DBException e) {
-            log.debug("Error reading active schema", e);
-            return null;
-        }
+        // Cache only: this getter is called from UI code, schemas are loaded when defaults change
+        return catalog.getCachedSchema(activeSchemaName);
     }
 
     @Override
