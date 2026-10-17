@@ -42,7 +42,7 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
     private String activeCatalogName;
     private String activeSchemaName;
 
-    public DuckDBExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose) {
+    public DuckDBExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String purpose) {
         super(instance, purpose);
     }
 
@@ -126,7 +126,7 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
             return;
         }
 
-        GenericSchema oldSchema = getDefaultSchema();
+        final GenericSchema oldSchema = getDefaultSchema();
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog")) {
             JDBCUtils.executeSQL(session, "USE " + DBUtils.getQuotedIdentifier(catalog));
             activeCatalogName = newCatalogName;

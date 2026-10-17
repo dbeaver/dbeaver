@@ -57,8 +57,9 @@ public class DuckDBDataSource extends GenericDataSource {
         return new DuckDBDataSourceInfo(getContainer().getDriver(), metaData);
     }
 
+    @NotNull
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new DuckDBExecutionContext(instance, type);
     }
 
