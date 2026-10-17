@@ -48,7 +48,7 @@
                         sampleURL="jdbc:duckdb:md:[{database}]"
                         defaultPort=""
                         webURL="https://motherduck.com/docs/integrations/sql-ides/dbeaver/"
-                        description="MotherDuck via the DuckDB JDBC driver. Put your access token in the Password field."
+                        description="%driver.motherduck.description"
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql,analytic">
                     <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:windows_arm64:RELEASE" os="win32" arch="aarch64" bundle="!drivers.duckdb"/>
