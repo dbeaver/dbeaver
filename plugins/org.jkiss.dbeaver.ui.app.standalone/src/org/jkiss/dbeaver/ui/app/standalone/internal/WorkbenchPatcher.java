@@ -356,12 +356,33 @@ public final class WorkbenchPatcher {
         return contributor.startsWith("org.jkiss.dbeaver") || contributor.startsWith("com.dbeaver");
     }
 
-    private record PartDescriptor(@NotNull IConfigurationElement element, @NotNull String id, @NotNull String icon) {
+    private static final class PartDescriptor {
+        private final IConfigurationElement element;
+        private final String id;
+        private String icon;
+
+        private PartDescriptor(@NotNull IConfigurationElement element) {
+            this.element = element;
+            this.id = element.getAttribute("id");
+        }
+
         @NotNull
         static PartDescriptor of(@NotNull IConfigurationElement element) {
-            String id = element.getAttribute("id");
-            String icon = MenuHelper.getIconURI(element, IWorkbenchRegistryConstants.ATT_ICON);
-            return new PartDescriptor(element, id, icon);
+            return new PartDescriptor(element);
+        }
+
+        @NotNull
+        String id() {
+            return id;
+        }
+
+        @NotNull
+        String icon() {
+            // Resolving an icon may search bundle resources; do it only for parts found in the workbench state.
+            if (icon == null) {
+                icon = MenuHelper.getIconURI(element, IWorkbenchRegistryConstants.ATT_ICON);
+            }
+            return icon;
         }
     }
 }
