@@ -604,22 +604,19 @@ public class SQLEditorUtils {
      */
     public static boolean isTemplateContextFitsEditorContext(@NotNull String templateContextTypeId, @NotNull SQLEditorBase editor) {
         boolean result = false;
-        if (editor instanceof SQLEditor) {
-            DBPDataSourceContainer dsContainer = ((SQLEditor) editor).getDataSourceContainer();
-            if (dsContainer != null) {
-                DBPDriver driver = dsContainer.getDriver();
-                String driverContextTypeId = SQLContextTypeDriver.getTypeId(driver);
-                String providerContextTypeId = SQLContextTypeProvider.getTypeId(driver.getProviderId());
-                result = isTemplateContextFitsEditorContext(templateContextTypeId, driverContextTypeId, providerContextTypeId);
-                if (!result) {
-                    for (Pair<String, String> replInfo : driver.getDriverReplacementsInfo()) {
-                        driverContextTypeId = SQLContextTypeDriver.getTypeId(replInfo.getFirst(), replInfo.getSecond());
-                        result = isTemplateContextFitsEditorContext(templateContextTypeId, driverContextTypeId, providerContextTypeId);
-                        if (result) {
-                            break;
-                        }
+        DBPDataSourceContainer dsContainer = editor.getDataSourceContainerForSyntaxRuleReloading();
+        if (dsContainer != null) {
+            DBPDriver driver = dsContainer.getDriver();
+            String driverContextTypeId = SQLContextTypeDriver.getTypeId(driver);
+            String providerContextTypeId = SQLContextTypeProvider.getTypeId(driver.getProviderId());
+            result = isTemplateContextFitsEditorContext(templateContextTypeId, driverContextTypeId, providerContextTypeId);
+            if (!result) {
+                for (Pair<String, String> replInfo : driver.getDriverReplacementsInfo()) {
+                    driverContextTypeId = SQLContextTypeDriver.getTypeId(replInfo.getFirst(), replInfo.getSecond());
+                    result = isTemplateContextFitsEditorContext(templateContextTypeId, driverContextTypeId, providerContextTypeId);
+                    if (result) {
+                        break;
                     }
-                    
                 }
             }
         }
