@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
+import org.jkiss.dbeaver.Log;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,8 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 class MySQLNativeToolHandlerTest extends DBeaverUnitTest {
 
@@ -95,6 +98,24 @@ class MySQLNativeToolHandlerTest extends DBeaverUnitTest {
             if (second != null) {
                 Files.deleteIfExists(second);
             }
+        }
+    }
+
+    @Test
+    void cleanupDeletesAllOptionFilesFromMultipleInvocations() throws IOException {
+        Path credentialsFile = MySQLNativeToolHandler.createCredentialsFile("root", "sensitive-password");
+        Path usernameFile = MySQLNativeToolHandler.createUsernameOptionFile("用户");
+        List<Path> configFiles = new ArrayList<>(List.of(credentialsFile, usernameFile));
+
+        try {
+            MySQLNativeToolHandler.deleteConfigurationFiles(configFiles, Log.getLog(getClass()));
+
+            Assertions.assertFalse(Files.exists(credentialsFile));
+            Assertions.assertFalse(Files.exists(usernameFile));
+            Assertions.assertTrue(configFiles.isEmpty());
+        } finally {
+            Files.deleteIfExists(credentialsFile);
+            Files.deleteIfExists(usernameFile);
         }
     }
 

@@ -43,20 +43,30 @@ import java.util.List;
 public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
     extends AbstractNativeToolHandler<SETTINGS, BASE_OBJECT, PROCESS_ARG> {
 
-    private Path config;
+    private final List<Path> configFiles = new ArrayList<>();
 
     @Override
     protected boolean doExecute(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log) throws DBException, InterruptedException {
         try {
             return super.doExecute(monitor, task, settings, log);
         } finally {
-            if (config != null) {
+            deleteConfigurationFiles(configFiles, log);
+        }
+    }
+
+    // A task can execute multiple native clients, each with its own option file.
+    // Always attempt to delete every file, even if one deletion fails.
+    static void deleteConfigurationFiles(@NotNull List<Path> configFiles, @NotNull Log log) {
+        try {
+            for (Path configFile : configFiles) {
                 try {
-                    Files.delete(config);
+                    Files.deleteIfExists(configFile);
                 } catch (IOException e) {
                     log.debug("Failed to delete configuration file", e);
                 }
             }
+        } finally {
+            configFiles.clear();
         }
     }
 
@@ -93,12 +103,14 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         }
 
         if (isOverrideCredentials(settings)) {
-            config = createCredentialsFile(toolUserName, toolUserPassword);
+            Path config = createCredentialsFile(toolUserName, toolUserPassword);
+            configFiles.add(config);
             cmd.add(1, "--defaults-file=" + config.toAbsolutePath());
         } else if (RuntimeUtils.isWindows() && requiresUnicodeUsernameOptionFile(toolUserName)) {
             // On Windows, native MySQL clients may truncate non-ASCII -u arguments.
             // Preserve the usual password environment variable and option-file search order.
-            config = createUsernameOptionFile(toolUserName);
+            Path config = createUsernameOptionFile(toolUserName);
+            configFiles.add(config);
             cmd.add(1, "--defaults-extra-file=" + config.toAbsolutePath());
         } else {
             cmd.add("-u");
