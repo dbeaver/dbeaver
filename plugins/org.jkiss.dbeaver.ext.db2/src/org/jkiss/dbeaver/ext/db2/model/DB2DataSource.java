@@ -192,12 +192,12 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
     }
 
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) throws DBCException {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) throws DBCException {
         return new DB2ExecutionContext(instance, type);
     }
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context,
-                                          JDBCExecutionContext initFrom) throws DBException
+                                          @Nullable JDBCExecutionContext initFrom) throws DBException
     {
         if (initFrom != null) {
             ((DB2ExecutionContext)context).setCurrentSchema(monitor, ((DB2ExecutionContext)initFrom).getDefaultSchema());
@@ -228,8 +228,9 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
     // Connection related Info
     // -----------------------
 
+    @NotNull
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
     {
         final DB2DataSourceInfo info = new DB2DataSourceInfo(metaData);
 
@@ -270,7 +271,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {

@@ -298,11 +298,12 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     }
 
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new OracleExecutionContext(instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, @Nullable
+    JDBCExecutionContext initFrom) throws DBException {
         if (outputReader == null) {
             outputReader = new OracleOutputReader();
         }
@@ -400,8 +401,9 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return (OracleSchema) DBUtils.getDefaultContext(this, true).getContextDefaults().getDefaultSchema();
     }
 
+    @NotNull
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
         return new OracleDataSourceInfo(metaData);
     }
 
@@ -428,7 +430,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
@@ -664,7 +666,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     }
 
     @Override
-    public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
+    public void cancelStatementExecute(@NotNull DBRProgressMonitor monitor, @NotNull JDBCStatement statement) throws DBException {
         if (driverSupportsQueryCancel()) {
             super.cancelStatementExecute(monitor, statement);
         } else {

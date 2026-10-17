@@ -149,7 +149,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
@@ -196,8 +196,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return props;
     }
 
+    @NotNull
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
         return new MySQLDataSourceInfo(metaData);
     }
 
@@ -254,11 +255,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new MySQLExecutionContext(instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, @Nullable
+    JDBCExecutionContext initFrom) throws DBException {
         if (initFrom != null && !context.getDataSource().getContainer().isConnectionReadOnly()) {
             MySQLCatalog object = ((MySQLExecutionContext)initFrom).getDefaultCatalog();
             if (object != null) {

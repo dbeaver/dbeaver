@@ -273,7 +273,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
@@ -381,7 +381,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     }
 
     @Override
-    protected PostgreExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected PostgreExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new PostgreExecutionContext((PostgreDatabase) instance, type);
     }
 
@@ -950,8 +950,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return super.discoverErrorType(error);
     }
 
+    @NotNull
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
     {
         return new PostgreDataSourceInfo(this, metaData);
     }

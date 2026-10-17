@@ -71,7 +71,7 @@ public class DorisDataSource extends GenericDataSource {
     }
 
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new DorisExecutionContext(instance, type);
     }
 

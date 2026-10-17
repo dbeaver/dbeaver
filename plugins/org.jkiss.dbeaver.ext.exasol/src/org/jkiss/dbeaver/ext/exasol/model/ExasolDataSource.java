@@ -356,9 +356,9 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
     
     @NotNull
     @Override
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, @NotNull
+    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull
 													String purpose,
-													@NotNull DBPConnectionConfiguration connectionInfo) throws DBCException {
+                                                    @NotNull DBPConnectionConfiguration connectionInfo) throws DBCException {
     	
     	Properties props =  super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
     	
@@ -399,12 +399,12 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
     }
 
 	@Override
-	protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+	protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
 		return new ExasolExecutionContext(instance, type);
 	}
 
 	protected void initializeContextState(@NotNull DBRProgressMonitor monitor,
-                                          @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom)
+                                          @NotNull JDBCExecutionContext context, @Nullable JDBCExecutionContext initFrom)
         throws DBException
 	{
 		if (initFrom != null) {
@@ -440,9 +440,10 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	// Connection related Info
 	// -----------------------
 
-	@Override
+	@NotNull
+    @Override
 	protected DBPDataSourceInfo createDataSourceInfo(
-        DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
+        @NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
 	{
 		final ExasolDataSourceInfo info = new ExasolDataSourceInfo(metaData);
 
@@ -453,11 +454,11 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 
 	@Override
 	protected Map<String, String> getInternalConnectionProperties(
-		@NotNull DBRProgressMonitor monitor,
-		@NotNull DBPDriver driver,
-		@NotNull JDBCExecutionContext context,
-		@NotNull String purpose,
-		@NotNull DBPConnectionConfiguration connectionInfo
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @Nullable JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
 	) throws DBCException {
 		Map<String, String> props = new HashMap<>(ExasolDataSourceProvider.getConnectionsProps());
 		if (CommonUtils.getBoolean(connectionInfo.getProviderProperty(ExasolConstants.DRV_USE_LEGACY_ENCRYPTION), false)) {

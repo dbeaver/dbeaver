@@ -94,15 +94,20 @@ public abstract class JDBCDataSource extends AbstractDataSource
     protected List<Path> tempFiles;
 
 
-    protected JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect)
-        throws DBException
-    {
+    protected JDBCDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container,
+        @NotNull SQLDialect dialect
+    ) throws DBException {
         this(monitor, container, dialect, true);
     }
 
-    protected JDBCDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull SQLDialect dialect, boolean initContext)
-        throws DBException
-    {
+    protected JDBCDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container,
+        @NotNull SQLDialect dialect,
+        boolean initContext
+    ) throws DBException {
         this(container, dialect);
         if (initContext) {
             try {
@@ -152,6 +157,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         connectionInfo.setUserPassword(userPassword);
         try (Connection ignored = openConnectionForPasswordValidation(monitor, connectionInfo)) {
             // The successful connection validates the supplied credentials.
+            log.trace("Connection has been established");
         } catch (SQLException e) {
             throw new DBCException("Error validating current user password", e);
         }
@@ -313,7 +319,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         }
     }
 
-    private void initializeDriverContext(Driver driverInstance) {
+    private void initializeDriverContext(@NotNull Driver driverInstance) {
         if (driverInstance instanceof ObjectWithContextParameters owcp) {
             DBPProject project = getContainer().getProject();
             owcp.setObjectContextParameter(DBConstants.CONTEXT_PARAMETER_PROJECT, getContainer().getProject());
@@ -416,7 +422,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
     @NotNull
     protected Properties getAllConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
@@ -496,7 +502,11 @@ public abstract class JDBCDataSource extends AbstractDataSource
         }
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
 
     }
 
@@ -528,7 +538,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return jdbcFactory;
     }
 
-    @NotNull
+    @Nullable
     @Override
     public JDBCRemoteInstance getDefaultInstance() {
         return defaultRemoteInstance;
@@ -682,24 +692,20 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return this;
     }
 
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) throws DBCException {
+    protected JDBCExecutionContext createExecutionContext(
+        @NotNull JDBCRemoteInstance instance,
+        @NotNull String type
+    ) throws DBCException {
         return new JDBCExecutionContext(instance, type);
     }
 
     @Nullable
     @Override
-    public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type)
-    {
-//        if (type == DBCQueryTransformType.ORDER_BY) {
-//
-//        } else if (type == DBCQueryTransformType.FILTER) {
-//
-//        }
+    public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
         return null;
     }
 
-    private static int getValueTypeByTypeName(@NotNull String typeName, int valueType)
-    {
+    private static int getValueTypeByTypeName(@NotNull String typeName, int valueType) {
         // [JDBC: SQLite driver uses VARCHAR value type for all LOBs]
         if (valueType == Types.OTHER || valueType == Types.VARCHAR) {
             if ("BLOB".equalsIgnoreCase(typeName)) {
@@ -732,8 +738,10 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
     @Nullable
     @Override
-    public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException
-    {
+    public DBSDataType resolveDataType(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String typeFullName
+    ) throws DBException {
         return getLocalDataType(typeFullName);
     }
 
@@ -750,8 +758,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
     @NotNull
     @Override
-    public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind)
-    {
+    public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         String typeName = getStandardSQLDataTypeName(dataKind);
         DBSDataType dataType = getLocalDataType(typeName);
         if (dataType == null) {
@@ -778,10 +785,8 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return false;
     }
 
-    @Nullable
-    protected Driver getDriverInstance(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+    @NotNull
+    protected Driver getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
         final DBPDriverSubstitutionDescriptor driverSubstitution = container.getDriverSubstitution();
         if (driverSubstitution != null) {
             return driverSubstitution.getInstance().getSubstitutingDriverInstance(monitor);
@@ -799,15 +804,18 @@ public abstract class JDBCDataSource extends AbstractDataSource
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
         return null;
     }
 
-    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
-    {
+    @NotNull
+    protected DBPDataSourceInfo createDataSourceInfo(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCDatabaseMetaData metaData
+    ) {
         return new JDBCDataSourceInfo(metaData);
     }
 
@@ -821,8 +829,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
     @NotNull
     @Override
-    public ErrorType discoverErrorType(@NotNull Throwable error)
-    {
+    public ErrorType discoverErrorType(@NotNull Throwable error) {
         String sqlState = SQLState.getStateFromException(error);
         if (sqlState != null) {
             if (SQLState.SQL_HY008.getCode().equals(sqlState)) {
@@ -882,7 +889,10 @@ public abstract class JDBCDataSource extends AbstractDataSource
     /////////////////////////////////////////////////
     // Canceling
 
-    public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
+    public void cancelStatementExecute(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCStatement statement
+    ) throws DBException {
         try {
             statement.cancel();
         } catch (SQLException e) {
@@ -894,7 +904,10 @@ public abstract class JDBCDataSource extends AbstractDataSource
         }
     }
 
-    public boolean cancelCurrentExecution(@NotNull Connection connection, @Nullable Thread connectionThread) throws DBException {
+    public boolean cancelCurrentExecution(
+        @NotNull Connection connection,
+        @Nullable Thread connectionThread
+    ) throws DBException {
         if (connectionThread != null) {
             connectionThread.interrupt();
         }
@@ -904,7 +917,8 @@ public abstract class JDBCDataSource extends AbstractDataSource
     /////////////////////////////////////////////////
     // Certs
 
-    protected String saveCertificateToFile(String rootCertProp) throws IOException {
+    @NotNull
+    protected String saveCertificateToFile(@NotNull String rootCertProp) throws IOException {
         Path certPath = Files.createTempFile(
             DBWorkbench.getPlatform().getCertificateStorage().getStorageFolder(),
             getContainer().getDriver().getId() + "-" + getContainer().getId(),
@@ -914,7 +928,8 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return certPath.toAbsolutePath().toString();
     }
 
-    protected String saveTrustStoreToFile(byte[] trustStoreData) throws IOException {
+    @NotNull
+    protected String saveTrustStoreToFile(@NotNull byte[] trustStoreData) throws IOException {
         Path trustStorePath = Files.createTempFile(
             DBWorkbench.getPlatform().getCertificateStorage().getStorageFolder(),
             getContainer().getDriver().getId() + "-" + getContainer().getId(),
@@ -924,7 +939,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return trustStorePath.toAbsolutePath().toString();
     }
 
-    public void trackTempFile(Path file) {
+    public void trackTempFile(@NotNull Path file) {
         if (this.tempFiles == null) {
             this.tempFiles = new ArrayList<>();
         }

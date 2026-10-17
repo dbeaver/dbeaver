@@ -317,9 +317,10 @@ public class CubridDataSource extends GenericDataSource
     }
 
     @Override
-    protected void initializeContextState(DBRProgressMonitor monitor,
-            JDBCExecutionContext context,
-            JDBCExecutionContext initFrom)
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom)
             throws DBException {
         super.initializeContextState(monitor, context, initFrom);
 
