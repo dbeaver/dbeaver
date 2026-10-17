@@ -134,6 +134,12 @@ public class CubridSQLDialect extends GenericSQLDialect
         return !isShard;
     }
 
+    @Override
+    public boolean supportsSchemaQualifiedColumnNames() {
+        // CUBRID accepts table.column in JOIN conditions, but not owner.table.column.
+        return false;
+    }
+
     private void detectAndApplyShardSettings(JDBCSession session, CubridDataSource source) {
         try {
             Object conn = session.getExecutionContext().getConnection(session.getProgressMonitor());

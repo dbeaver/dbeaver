@@ -105,9 +105,15 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
             if (columnName.sourceInfo.aliasOrNull != null) {
                 prefix = this.prepareDefiningEntryName(columnName.sourceInfo.aliasOrNull) + this.structSeparator;
             } else if (columnName.sourceInfo.referenceName != null && forceQualifiedName) {
-                prefix = this.prepareQualifiedName(columnName.sourceInfo.referenceName.stringParts) + this.structSeparator;
+                prefix = this.prepareQualifiedName(columnReferenceQualifierParts(
+                    this.dialect, columnName.sourceInfo.referenceName.stringParts)) + this.structSeparator;
             } else if (columnName.sourceInfo.tableOrNull != null && forceQualifiedName) {
-                prefix = this.prepareObjectName(columnName.sourceInfo.tableOrNull) + this.structSeparator;
+                // A resolved table without a parsed reference name may still be in a
+                // different schema. CUBRID requires table.column even in that case.
+                prefix = (this.dialect.supportsSchemaQualifiedColumnNames()
+                    ? this.prepareObjectName(columnName.sourceInfo.tableOrNull)
+                    : this.convertCaseIfNeeded(DBUtils.getQuotedIdentifier(columnName.sourceInfo.tableOrNull)))
+                    + this.structSeparator;
             } else {
                 prefix = "";
             }
@@ -116,6 +122,18 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
         }
 
         return prefix + preparedColumnName;
+    }
+
+    /**
+     * Qualify generated column references with a table name only when the dialect
+     * rejects schema.table.column, as CUBRID does in JOIN conditions.
+     */
+    @NotNull
+    public static List<String> columnReferenceQualifierParts(@NotNull SQLDialect dialect, @NotNull List<String> nameParts) {
+        if (!dialect.supportsSchemaQualifiedColumnNames() && nameParts.size() > 1) {
+            return nameParts.subList(nameParts.size() - 1, nameParts.size());
+        }
+        return nameParts;
     }
 
     @NotNull
