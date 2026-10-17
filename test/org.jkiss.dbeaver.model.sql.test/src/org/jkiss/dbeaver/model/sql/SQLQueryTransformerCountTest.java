@@ -90,6 +90,44 @@ public class SQLQueryTransformerCountTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void removesOuterLimitAndOffsetFromParenthesizedCount() throws Exception {
+        DBPDataSource dataSource = Mockito.mock(DBPDataSource.class);
+        SQLDialectRelational dialect = Mockito.mock(SQLDialectRelational.class);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
+        Mockito.when(dialect.supportsSubqueries()).thenReturn(true);
+        Mockito.when(dialect.isAmbiguousCountBroken()).thenReturn(true);
+
+        SQLQuery query = new SQLQuery(dataSource, "(SELECT id FROM t) LIMIT 5 OFFSET 10");
+        SQLQuery counted = new SQLQueryTransformerCount().transformQuery(
+            dataSource, Mockito.mock(SQLSyntaxManager.class), query);
+
+        String countText = counted.getText().toLowerCase(Locale.ROOT);
+        Assertions.assertTrue(countText.contains("count(*)"), countText);
+        Assertions.assertFalse(countText.contains("limit"), countText);
+        Assertions.assertFalse(countText.contains("offset"), countText);
+        Assertions.assertFalse(countText.contains("dbvrcnt"), countText);
+    }
+
+    @Test
+    public void removesInnerOffsetBeforeInjectingCount() throws Exception {
+        DBPDataSource dataSource = Mockito.mock(DBPDataSource.class);
+        SQLDialectRelational dialect = Mockito.mock(SQLDialectRelational.class);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
+        Mockito.when(dialect.supportsSubqueries()).thenReturn(true);
+        Mockito.when(dialect.isAmbiguousCountBroken()).thenReturn(true);
+
+        SQLQuery query = new SQLQuery(dataSource, "(SELECT id FROM t LIMIT 5 OFFSET 10)");
+        SQLQuery counted = new SQLQueryTransformerCount().transformQuery(
+            dataSource, Mockito.mock(SQLSyntaxManager.class), query);
+
+        String countText = counted.getText().toLowerCase(Locale.ROOT);
+        Assertions.assertTrue(countText.contains("count(*)"), countText);
+        Assertions.assertFalse(countText.contains("limit"), countText);
+        Assertions.assertFalse(countText.contains("offset"), countText);
+        Assertions.assertFalse(countText.contains("dbvrcnt"), countText);
+    }
+
+    @Test
     public void acceptsUnionSelect() throws Exception {
         Statement statement = SQLSemanticProcessor.parseQuery(
             BasicSQLDialect.INSTANCE,
