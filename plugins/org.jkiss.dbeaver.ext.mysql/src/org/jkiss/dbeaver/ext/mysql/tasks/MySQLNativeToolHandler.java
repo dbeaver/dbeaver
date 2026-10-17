@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolHandler;
 import org.jkiss.dbeaver.tasks.nativetool.AbstractNativeToolSettings;
 import org.jkiss.dbeaver.tasks.nativetool.NativeToolUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -42,20 +43,30 @@ import java.util.List;
 public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG>
     extends AbstractNativeToolHandler<SETTINGS, BASE_OBJECT, PROCESS_ARG> {
 
-    private Path config;
+    private final List<Path> configFiles = new ArrayList<>();
 
     @Override
     protected boolean doExecute(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log) throws DBException, InterruptedException {
         try {
             return super.doExecute(monitor, task, settings, log);
         } finally {
-            if (config != null) {
+            deleteConfigurationFiles(configFiles, log);
+        }
+    }
+
+    // A task can execute multiple native clients, each with its own option file.
+    // Always attempt to delete every file, even if one deletion fails.
+    static void deleteConfigurationFiles(@NotNull List<Path> configFiles, @NotNull Log log) {
+        try {
+            for (Path configFile : configFiles) {
                 try {
-                    Files.delete(config);
+                    Files.deleteIfExists(configFile);
                 } catch (IOException e) {
                     log.debug("Failed to delete configuration file", e);
                 }
             }
+        } finally {
+            configFiles.clear();
         }
     }
 
@@ -92,8 +103,15 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         }
 
         if (isOverrideCredentials(settings)) {
-            config = createCredentialsFile(toolUserName, toolUserPassword);
+            Path config = createCredentialsFile(toolUserName, toolUserPassword);
+            configFiles.add(config);
             cmd.add(1, "--defaults-file=" + config.toAbsolutePath());
+        } else if (RuntimeUtils.isWindows() && requiresUnicodeUsernameOptionFile(toolUserName)) {
+            // On Windows, native MySQL clients may truncate non-ASCII -u arguments.
+            // Preserve the usual password environment variable and option-file search order.
+            Path config = createUsernameOptionFile(toolUserName);
+            configFiles.add(config);
+            cmd.add(1, "--defaults-extra-file=" + config.toAbsolutePath());
         } else {
             cmd.add("-u");
             cmd.add(toolUserName);
@@ -104,21 +122,49 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
         return cmd;
     }
 
+    static boolean requiresUnicodeUsernameOptionFile(@Nullable String username) {
+        return username != null && !StandardCharsets.US_ASCII.newEncoder().canEncode(username);
+    }
+
+    @NotNull
+    static Path createUsernameOptionFile(@NotNull String username) throws IOException {
+        return createCredentialsFile(username, null, false);
+    }
+
     @NotNull
     static Path createCredentialsFile(@Nullable String username, @Nullable String password) throws IOException {
+        return createCredentialsFile(username, password, true);
+    }
+
+    @NotNull
+    private static Path createCredentialsFile(@Nullable String username, @Nullable String password,
+            boolean includePassword) throws IOException {
         Path dir = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "mysql-native-handler"); //$NON-NLS-1$
-        Path cnf = dir.resolve(".my.cnf"); //$NON-NLS-1$
+        // Separate files avoid clobbering the credentials of another running export.
+        Path cnf = Files.createTempFile(dir, "mysql-native-", ".cnf"); //$NON-NLS-1$
         cnf.toFile().deleteOnExit();
 
         try (Writer writer = Files.newBufferedWriter(cnf, StandardCharsets.UTF_8)) {
             writer.write("[client]"); //$NON-NLS-1$
-            writer.write("\nuser=" + CommonUtils.notEmpty(username)); //$NON-NLS-1$
-            writer.write("\npassword=\"" + CommonUtils.notEmpty(password)
-                .replace("\\", "\\\\")
-                .replace("\"", "\\\"") + "\""); //$NON-NLS-1$
+            writer.write("\nuser=\"" + escapeOptionFileValue(CommonUtils.notEmpty(username)) + "\""); //$NON-NLS-1$
+            if (includePassword) {
+                writer.write("\npassword=\"" + escapeOptionFileValue(CommonUtils.notEmpty(password)) + "\""); //$NON-NLS-1$
+            }
+        } catch (IOException e) {
+            Files.deleteIfExists(cnf);
+            throw e;
         }
 
         return cnf;
+    }
+
+    @NotNull
+    private static String escapeOptionFileValue(@NotNull String value) {
+        return value.replace("\\", "\\\\")
+            .replace("\"", "\\\"")
+            .replace("\n", "\\n")
+            .replace("\r", "\\r")
+            .replace("\t", "\\t");
     }
 
     private boolean isOverrideCredentials(SETTINGS settings) {
