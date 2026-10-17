@@ -55,6 +55,7 @@ import java.util.stream.Collectors;
 public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema>
         implements PostgreObject, PostgreScriptObject, PostgrePrivilegeOwner, DBPUniqueObject, DBPOverloadedObject, DBPNamedObject2, DBPRefreshableObject, DBPScriptObjectExt2 {
     private static final Log log = Log.getLog(PostgreProcedure.class);
+    private static final String MISSING_AGGREGATE_FUNCTION = "-";
     private static final String PARALLEL_SAFE_CODE = "s";
     private static final String PARALLEL_RESTRICTED_CODE = "r";
 
@@ -544,7 +545,6 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
                         StringBuilder aggregateBody = new StringBuilder("CREATE OR REPLACE AGGREGATE ");
                         final String delim = ",\n\t";
-                        final String notResult = "-";
                         aggregateBody.append(fullName).append(" (\n")
                             .append("\tSFUNC = ").append(aggtransfn).append(delim)
                             .append("STYPE = ").append(aggtranstype);
@@ -558,10 +558,10 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                             }
                         }
                         appendAggregateExecutionOptions(aggregateBody, combinefn, parallel);
-                        if (CommonUtils.isNotEmpty(serialfn) && !notResult.equals(serialfn)) {
+                        if (CommonUtils.isNotEmpty(serialfn) && !MISSING_AGGREGATE_FUNCTION.equals(serialfn)) {
                             aggregateBody.append(delim).append("SERIALFUNC = ").append(serialfn);
                         }
-                        if (CommonUtils.isNotEmpty(deserialfn) && !notResult.equals(deserialfn)) {
+                        if (CommonUtils.isNotEmpty(deserialfn) && !MISSING_AGGREGATE_FUNCTION.equals(deserialfn)) {
                             aggregateBody.append(delim).append("DESERIALFUNC = ").append(deserialfn);
                         }
                         if (CommonUtils.isNotEmpty(initval)) {
@@ -571,16 +571,16 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                             }
                             aggregateBody.append(delim).append("INITCOND = ").append(initval);
                         }
-                        if (CommonUtils.isNotEmpty(mtransfn) && !notResult.equals(mtransfn)) {
+                        if (CommonUtils.isNotEmpty(mtransfn) && !MISSING_AGGREGATE_FUNCTION.equals(mtransfn)) {
                             aggregateBody.append(delim).append("MSFUNC = ").append(mtransfn);
-                            if (CommonUtils.isNotEmpty(mtranstype) && !notResult.equals(mtranstype)) {
+                            if (CommonUtils.isNotEmpty(mtranstype) && !MISSING_AGGREGATE_FUNCTION.equals(mtranstype)) {
                                 aggregateBody.append(delim).append("MSTYPE = ").append(mtranstype);
                             }
                         }
-                        if (CommonUtils.isNotEmpty(minvtransfn) && !notResult.equals(minvtransfn)) {
+                        if (CommonUtils.isNotEmpty(minvtransfn) && !MISSING_AGGREGATE_FUNCTION.equals(minvtransfn)) {
                             aggregateBody.append(delim).append("MINVFUNC = ").append(minvtransfn);
                         }
-                        if (CommonUtils.isNotEmpty(mfinalfn) && !notResult.equals(mfinalfn)) {
+                        if (CommonUtils.isNotEmpty(mfinalfn) && !MISSING_AGGREGATE_FUNCTION.equals(mfinalfn)) {
                             aggregateBody.append(delim).append("MFINALFUNC = ").append(mfinalfn);
                             if (mfinalextra) {
                                 aggregateBody.append(delim).append("MFINALFUNC_EXTRA");
@@ -604,7 +604,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     static void appendAggregateExecutionOptions(@NotNull StringBuilder ddl, @Nullable String combineFunction, @Nullable String parallel) {
-        if (CommonUtils.isNotEmpty(combineFunction) && !"-".equals(combineFunction)) {
+        if (CommonUtils.isNotEmpty(combineFunction) && !MISSING_AGGREGATE_FUNCTION.equals(combineFunction)) {
             ddl.append(",\n\tCOMBINEFUNC = ").append(combineFunction);
         }
         // UNSAFE is PostgreSQL's default; emit only the non-default parallel modes.
