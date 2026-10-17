@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.cubrid.model;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -31,7 +32,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class CubridTableExportedKeyTest {
+class CubridTableExportedKeyTest extends DBeaverUnitTest {
 
     @Test
     void exportedKeysUseOwnerQualifiedTableName() throws SQLException {
