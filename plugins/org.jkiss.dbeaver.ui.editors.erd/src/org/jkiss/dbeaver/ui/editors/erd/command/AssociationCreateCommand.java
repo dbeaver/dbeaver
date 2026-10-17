@@ -85,10 +85,31 @@ public class AssociationCreateCommand extends Command {
     }
 
     protected boolean isAssociationExists() {
-        // Check for existence of relationship already
-        List<ERDAssociation> relationships = targetEntity.getReferences();
-        for (ERDAssociation currentRelationship : relationships) {
-            if (currentRelationship.getSourceEntity().equals(sourceEntity)) {
+        ERDElement<?> associationSource = sourceEntity;
+        ERDElement<?> associationTarget = targetEntity;
+
+        if (sourceEntity instanceof ERDEntity && targetEntity instanceof ERDEntity &&
+            !CommonUtils.isEmpty(sourceAttributes) && !CommonUtils.isEmpty(targetAttributes)) {
+            try {
+                List<DBSEntityAttribute> srcAttrs = ERDUtils.getObjectsFromERD(sourceAttributes);
+                List<DBSEntityAttribute> refAttrs = ERDUtils.getObjectsFromERD(targetAttributes);
+                if (needToSwapForeignKeyDirection(new VoidProgressMonitor(), srcAttrs, refAttrs)) {
+                    // Normalize before checking: the opposite FK direction may be a legitimate new association.
+                    associationSource = targetEntity;
+                    associationTarget = sourceEntity;
+                }
+            } catch (DBException e) {
+                log.error("Error reading constraints", e);
+            }
+        }
+
+        return isAssociationExists(associationSource, associationTarget);
+    }
+
+    private boolean isAssociationExists(@NotNull ERDElement<?> source, @NotNull ERDElement<?> target) {
+        // Check for an existing relationship in the final FK -> PK direction.
+        for (ERDAssociation currentRelationship : target.getReferences()) {
+            if (currentRelationship.getSourceEntity().equals(source)) {
                 return true;
             }
         }
@@ -153,6 +174,9 @@ public class AssociationCreateCommand extends Command {
         if (sourceEntity instanceof ERDEntity sourceERDEntity && targetEntity instanceof ERDEntity targetERDEntity) {
             DBSEntity srcEntityObject = sourceERDEntity.getObject();
             DBSEntity targetEntityObject = targetERDEntity.getObject();
+            ERDEntity associationSourceERDEntity = sourceERDEntity;
+            ERDEntity associationTargetERDEntity = targetERDEntity;
+            boolean directionSwapped = false;
 
             List<DBSEntityAttribute> srcAttrs = ERDUtils.getObjectsFromERD(sourceAttributes);
             List<DBSEntityAttribute> refAttrs = ERDUtils.getObjectsFromERD(targetAttributes);
@@ -161,6 +185,11 @@ public class AssociationCreateCommand extends Command {
                 // Maybe we need to swap source and target
                 // Ref table must have a unique constraint with ref attributes
                 if (needToSwapForeignKeyDirection(new VoidProgressMonitor(), srcAttrs, refAttrs)) {
+                    directionSwapped = true;
+                    ERDEntity tmpERDEntity = associationSourceERDEntity;
+                    associationSourceERDEntity = associationTargetERDEntity;
+                    associationTargetERDEntity = tmpERDEntity;
+
                     DBSEntity tmpEntity = targetEntityObject;
                     targetEntityObject = srcEntityObject;
                     srcEntityObject = tmpEntity;
@@ -171,6 +200,11 @@ public class AssociationCreateCommand extends Command {
                 }
             } catch (DBException e) {
                 log.error("Error reading constraints", e);
+            }
+
+            if (directionSwapped && isAssociationExists(associationSourceERDEntity, associationTargetERDEntity)) {
+                // canExecute() checked the unswapped endpoints. Avoid persisting a duplicate virtual FK.
+                return null;
             }
 
             DBVEntity vEntity = DBVUtils.getVirtualEntity(srcEntityObject, true);
@@ -188,7 +222,12 @@ public class AssociationCreateCommand extends Command {
                 return null;
             }
             vEntity.persistConfiguration();
-            association = new ERDAssociation(vfk, sourceERDEntity, targetERDEntity, true);
+            association = new ERDAssociation(vfk, associationSourceERDEntity, associationTargetERDEntity, true);
+            if (directionSwapped) {
+                // Keep undo/redo consistent with the direction of the created association.
+                this.sourceEntity = associationSourceERDEntity;
+                this.targetEntity = associationTargetERDEntity;
+            }
         } else {
             if (sourceEntity != null && targetEntity != null) {
                 association = new ERDAssociation(sourceEntity, targetEntity, true);
@@ -210,10 +249,12 @@ public class AssociationCreateCommand extends Command {
     }
 
     protected boolean needToSwapForeignKeyDirection(DBRProgressMonitor monitor, List<DBSEntityAttribute> srcAttrs, List<DBSEntityAttribute> targetAttrs) throws DBException {
+        // The reference must point to an identifying key, not originate from one.
+        // Reverse the drag only when its source is unique and its target is not.
         return !CommonUtils.isEmpty(srcAttrs) &&
             !CommonUtils.isEmpty(targetAttrs) &&
-            !DBVUtils.isIdentifyingAttributes(monitor, srcAttrs) &&
-            DBVUtils.isIdentifyingAttributes(monitor, targetAttrs);
+            DBVUtils.isIdentifyingAttributes(monitor, srcAttrs) &&
+            !DBVUtils.isIdentifyingAttributes(monitor, targetAttrs);
     }
 }
 
