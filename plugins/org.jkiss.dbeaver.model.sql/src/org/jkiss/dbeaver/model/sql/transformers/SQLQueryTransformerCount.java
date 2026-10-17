@@ -103,7 +103,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
     @NotNull
     private SQLQuery tryInjectCount(@NotNull DBPDataSource dataSource, @NotNull SQLQuery query) throws DBException {
         try {
-            Statement statement = SQLSemanticProcessor.parseQuery(query.getText());
+            Statement statement = SQLSemanticProcessor.parseQuery(dataSource.getSQLDialect(), query.getText());
             if (statement instanceof PlainSelect select) {
                 if (select.getHaving() != null) {
                     throw new DBException("Can't inject COUNT into query with HAVING clause");

@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.sql.parser;
 
-import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.LongValue;
 import net.sf.jsqlparser.expression.operators.conditional.AndExpression;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQueryGenerator;
@@ -49,9 +49,14 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.IdentityHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.*;
 
 /**
@@ -73,26 +78,22 @@ public class SQLSemanticProcessor {
     }
 
     @NotNull
-    private static CCJSqlParser buildParser(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
-        final String sqlWithoutComments = dialect == null
-            ? sql
-            : SQLUtils.stripComments(dialect, SQLUtils.maskDialectLineComments(dialect, sql));
+    private static CCJSqlParser buildParser(@NotNull SQLDialect dialect, @NotNull String sql) throws DBCException {
+        final String sqlWithoutComments = SQLUtils.stripComments(dialect, SQLUtils.maskDialectLineComments(dialect, sql));
         try {
             CCJSqlParser parser = new CCJSqlParser(sqlWithoutComments)
                 .withAllowComplexParsing(ALLOW_COMPLEX_PARSING);
 
-            if (dialect != null) {
-                for (String[] qs : ArrayUtils.safeArray(dialect.getIdentifierQuoteStrings())) {
-                    if (qs.length == 2 && "[".equals(qs[0]) && "]".equals(qs[1])) {
-                        parser.withSquareBracketQuotation(true);
-                        break;
-                    }
+            for (String[] qs : ArrayUtils.safeArray(dialect.getIdentifierQuoteStrings())) {
+                if (qs.length == 2 && "[".equals(qs[0]) && "]".equals(qs[1])) {
+                    parser.withSquareBracketQuotation(true);
+                    break;
                 }
-                // Match MySQL-style backslash escaping so the parser agrees with SQLUtils.maskDialectLineComments
-                // on where string literals end (e.g. 'O\'Brien'); otherwise the parser sees a stray closing quote.
-                if (dialect.getStringEscapeCharacter() == '\\') {
-                    parser.withBackslashEscapeCharacter(true);
-                }
+            }
+            // Match MySQL-style backslash escaping so the parser agrees with SQLUtils.maskDialectLineComments
+            // on where string literals end (e.g. 'O\'Brien'); otherwise the parser sees a stray closing quote.
+            if (dialect.getStringEscapeCharacter() == '\\') {
+                parser.withBackslashEscapeCharacter(true);
             }
             return parser;
         } catch (ParseException e) {
@@ -118,51 +119,128 @@ public class SQLSemanticProcessor {
     }
 
     @NotNull
-    public static List<Statement> parseQueries(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
+    public static List<Statement> parseQueries(@NotNull SQLDialect dialect, @NotNull String sql) throws DBCException {
         CCJSqlParser parser = buildParser(dialect, sql);
-        return callWithTimeout(parser, parser::Statements);
+        List<Statement> statements = callWithTimeout(parser, parser::Statements);
+        normalizeQuotedIdentifiers(dialect, parser.getASTRoot());
+        return statements;
     }
 
     @NotNull
-    public static Statement parseQuery(@Nullable SQLDialect dialect, @NotNull String sql) throws DBCException {
+    public static Statement parseQuery(@NotNull SQLDialect dialect, @NotNull String sql) throws DBCException {
         CCJSqlParser parser = buildParser(dialect, sql);
-        return callWithTimeout(parser, parser::Statement);
-    }
-
-    @NotNull
-    public static Statement parseQuery(@NotNull String sql) throws DBCException {
-        return parseQuery(null, sql);
+        Statement statement = callWithTimeout(parser, parser::Statement);
+        normalizeQuotedIdentifiers(dialect, parser.getASTRoot());
+        return statement;
     }
 
     @Nullable
-    public static Expression parseExpression(@NotNull String expression) throws DBCException {
-        return parseExpression(expression, true);
+    public static Expression parseExpression(@NotNull SQLDialect dialect, @NotNull String expression) throws DBCException {
+        return parseExpression(dialect, expression, true);
     }
 
     @Nullable
-    public static Expression parseExpression(@NotNull String expression, boolean allowPartialParse) throws DBCException {
+    public static Expression parseExpression(
+        @NotNull SQLDialect dialect,
+        @NotNull String expression,
+        boolean allowPartialParse
+    ) throws DBCException {
+        return parseExpression(dialect, expression, allowPartialParse, "Error parsing conditional SQL expression");
+    }
+    @Nullable
+    public static Expression parseCondExpression(@NotNull SQLDialect dialect, @NotNull String expression) throws DBCException {
+        return parseCondExpression(dialect, expression, true);
+    }
+
+    @Nullable
+    public static Expression parseCondExpression(
+        @NotNull SQLDialect dialect,
+        @NotNull String expression,
+        boolean allowPartialParse
+    ) throws DBCException {
+        return parseExpression(dialect, expression, allowPartialParse, "Error parsing SQL expression");
+    }
+
+    @Nullable
+    private static Expression parseExpression(
+        @NotNull SQLDialect dialect,
+        @NotNull String expression,
+        boolean allowPartialParse,
+        @NotNull String errorMessage
+    ) throws DBCException {
+        if (expression.isEmpty()) {
+            return null;
+        }
+        CCJSqlParser parser = buildParser(dialect, expression);
+        Expression result = callWithTimeout(parser, () -> {
+            Expression parsedExpression = parser.Expression();
+            if (!allowPartialParse && parser.getNextToken().kind != CCJSqlParserConstants.EOF) {
+                throw new ParseException("Unexpected token after SQL expression");
+            }
+            return parsedExpression;
+        });
         try {
-            return CCJSqlParserUtil.parseExpression(expression, allowPartialParse);
-        } catch (JSQLParserException e) {
-            throw new DBCException("Error parsing conditional SQL expression", e);
+            normalizeQuotedIdentifiers(dialect, parser.getASTRoot());
+            return result;
+        } catch (RuntimeException e) {
+            throw new DBCException(errorMessage, e);
         }
     }
 
-    @Nullable
-    public static Expression parseCondExpression(@NotNull String expression) throws DBCException {
-        return parseCondExpression(expression, true);
-    }
-
-    @Nullable
-    public static Expression parseCondExpression(@NotNull String expression, boolean allowPartialParse) throws DBCException {
-        try {
-            return CCJSqlParserUtil.parseCondExpression(expression, allowPartialParse);
-        } catch (JSQLParserException e) {
-            throw new DBCException("Error parsing SQL expression", e);
+    private static void normalizeQuotedIdentifiers(@NotNull SQLDialect dialect, @NotNull Node root) {
+        // JSqlParser routes quoted names through Table.setName, splitting a single dotted token into multiple parts.
+        Set<Object> normalized = Collections.newSetFromMap(new IdentityHashMap<>());
+        Deque<Node> nodes = new ArrayDeque<>();
+        nodes.push(root);
+        while (!nodes.isEmpty()) {
+            Node node = nodes.pop();
+            if (node instanceof SimpleNode simpleNode) {
+                Object value = simpleNode.jjtGetValue();
+                if (value instanceof Table table) {
+                    Token token = simpleNode.jjtGetFirstToken();
+                    if (token != null && token == simpleNode.jjtGetLastToken() && normalized.add(table)) {
+                        restoreQuotedTableName(dialect, table, token.image);
+                    }
+                } else if (value instanceof Column column && normalized.add(column)) {
+                    Token first = simpleNode.jjtGetFirstToken();
+                    Token delimiter = first == null ? null : first.next;
+                    Token last = simpleNode.jjtGetLastToken();
+                    if (delimiter != null && last != null && delimiter.next == last && ".".equals(delimiter.image)) {
+                        restoreQuotedTableName(dialect, column.getTable(), first.image);
+                    }
+                }
+            }
+            for (int i = node.jjtGetNumChildren() - 1; i >= 0; i--) {
+                nodes.push(node.jjtGetChild(i));
+            }
         }
     }
 
-    public static boolean isSelectQuery(@Nullable SQLDialect dialect, @NotNull String query) {
+    private static void restoreQuotedTableName(
+        @NotNull SQLDialect dialect,
+        @Nullable Table table,
+        @NotNull String token
+    ) {
+        if (table == null || dialect.treatsQuotedIdentifierAsQualifiedName(token) || !isQuotedDottedIdentifier(dialect, token)) {
+            return;
+        }
+        table.getNameParts().clear();
+        table.getNameParts().add(token);
+        table.getNamePartDelimiters().clear();
+    }
+
+    private static boolean isQuotedDottedIdentifier(@NotNull SQLDialect dialect, @NotNull String identifier) {
+        for (String[] quotes : ArrayUtils.safeArray(dialect.getIdentifierQuoteStrings())) {
+            if (quotes.length == 2 && !quotes[0].isEmpty() && !quotes[1].isEmpty() &&
+                identifier.length() >= quotes[0].length() + quotes[1].length() &&
+                identifier.startsWith(quotes[0]) && identifier.endsWith(quotes[1]) &&
+                identifier.substring(quotes[0].length(), identifier.length() - quotes[1].length()).contains(".")) {
+                return true;
+            }
+        }
+        return false;
+    }
+    public static boolean isSelectQuery(@NotNull SQLDialect dialect, @NotNull String query) {
         try {
             Statement statement = parseQuery(dialect, query);
             return statement instanceof PlainSelect plainSelect && CommonUtils.isEmpty(plainSelect.getIntoTables());
@@ -269,7 +347,7 @@ public class SQLSemanticProcessor {
         StringBuilder whereString = new StringBuilder();
         SQLUtils.appendConditionString(filter, dataSource, null, whereString, true);
         String condString = whereString.toString();
-        addWhereToSelect(select, condString);
+        addWhereToSelect(dataSource.getSQLDialect(), select, condString);
     }
 
     private static void addOrderByClause(
@@ -376,7 +454,7 @@ public class SQLSemanticProcessor {
             orderExpr = new Column(orderTable, attrName);
         } else {
             // TODO: set tableAlias for all column references in expression
-            orderExpr = SQLSemanticProcessor.parseExpression(attrName);
+            orderExpr = SQLSemanticProcessor.parseExpression(dataSource.getSQLDialect(), attrName);
             //orderExpr = new CustomExpression(attrName);
             //orderExpr = new LongValue(co.getAttribute().getOrdinalPosition() + 1);
         }
@@ -470,7 +548,15 @@ public class SQLSemanticProcessor {
     }
 
     public static void addWhereToSelect(@NotNull PlainSelect select, @Nullable String condString) throws DBCException {
-        Expression filterWhere = SQLSemanticProcessor.parseCondExpression(condString);
+        addWhereToSelect(BasicSQLDialect.INSTANCE, select, condString);
+    }
+
+    public static void addWhereToSelect(
+        @NotNull SQLDialect dialect,
+        @NotNull PlainSelect select,
+        @Nullable String condString
+    ) throws DBCException {
+        Expression filterWhere = SQLSemanticProcessor.parseCondExpression(dialect, condString);
         addWhereToSelect(select, filterWhere);
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -119,7 +119,10 @@ public abstract class SQLGroupingAttribute {
         @Override
         public String prepareSqlString(@Nullable String subqueryAlias) {
             try {
-                Expression expression = SQLSemanticProcessor.parseExpression(this.expressionString);
+                Expression expression = SQLSemanticProcessor.parseExpression(
+                    this.dataSource.getSQLDialect(),
+                    this.expressionString
+                );
                 if (!(expression instanceof Column)) {
                     return this.expressionString; // return valid non-column-ref expression as raw string
                 }
@@ -134,7 +137,10 @@ public abstract class SQLGroupingAttribute {
         @Override
         public Expression prepareExpression() {
             try {
-                return SQLSemanticProcessor.parseExpression(this.expressionString); // return any valid expression as its model
+                return SQLSemanticProcessor.parseExpression(
+                    this.dataSource.getSQLDialect(),
+                    this.expressionString
+                ); // return any valid expression as its model
             } catch (DBException e) {
                 log.debug("Can't parse expression " + this.expressionString, e);
                 // treat any invalid expression as identifier

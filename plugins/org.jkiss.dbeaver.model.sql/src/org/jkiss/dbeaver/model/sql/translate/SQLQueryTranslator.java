@@ -28,11 +28,13 @@ import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -115,7 +117,12 @@ public class SQLQueryTranslator implements SQLTranslator {
 
     @NotNull
     private List<? extends SQLScriptElement> translateQuery(@NotNull SQLQuery query) {
-        Statement statement = query.getStatement();
+        Statement statement;
+        try {
+            statement = SQLSemanticProcessor.parseQuery(sqlTranslateContext.getSourceDialect(), query.getText());
+        } catch (DBCException e) {
+            return Collections.singletonList(query);
+        }
         if (statement != null) {
             return translateStatement(query, statement);
         }
