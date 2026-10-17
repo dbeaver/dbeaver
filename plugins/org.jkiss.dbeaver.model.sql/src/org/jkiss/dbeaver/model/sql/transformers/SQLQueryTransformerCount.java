@@ -122,6 +122,9 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
                 // An ORDER BY attached to the parenthesized query may refer to an
                 // output alias removed by COUNT injection. Clear it at each level.
                 parenthesedSelect.setOrderByElements(null);
+                // An outer OFFSET can discard the only COUNT(*) row.
+                parenthesedSelect.setLimit(null);
+                parenthesedSelect.setOffset(null);
                 selectBody = parenthesedSelect.getSelect();
             }
             if (selectBody instanceof PlainSelect select) {
@@ -158,6 +161,9 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
                 selectItems.add(new SelectItem(countFunc));
                 select.setSelectItems(selectItems);
                 select.setOrderByElements(null);
+                // Row limits on the inner SELECT would also affect the aggregate row.
+                select.setLimit(null);
+                select.setOffset(null);
                 return new SQLQuery(dataSource, statement.toString(), query, false);
             } else {
                 throw new DBException("Query [" + query.getText() + "] can't be modified");
