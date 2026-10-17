@@ -81,6 +81,32 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
             if (CommonUtils.isNotEmpty(toolUserPassword)) {
                 process.environment().put(MySQLConstants.ENV_VAR_MYSQL_PWD, toolUserPassword);
             }
+
+            if (RuntimeUtils.isWindows()) {
+                isolateLoginPathFromUnicodeUsernameOptionFile(process);
+            }
+        }
+    }
+
+    /**
+     * MySQL reads .mylogin.cnf after --defaults-extra-file, so an existing
+     * login path may replace the selected Unicode username. Point the client
+     * at a missing login path next to the per-invocation option file instead.
+     * MYSQL_TEST_LOGIN_FILE works on MySQL 8.0 as well as newer clients,
+     * unlike --no-login-paths, which was added in MySQL 8.2.
+     *
+     * Only the Unicode option-file path uses --defaults-extra-file here.
+     * No user-wide environment variables or login files are changed.
+     */
+    static void isolateLoginPathFromUnicodeUsernameOptionFile(@NotNull ProcessBuilder process) {
+        final String optionPrefix = "--defaults-extra-file=";
+        for (String option : process.command()) {
+            if (option.startsWith(optionPrefix)) {
+                Path configFile = Path.of(option.substring(optionPrefix.length()));
+                Path unusedLoginFile = configFile.resolveSibling(configFile.getFileName() + ".missing-login-path");
+                process.environment().put("MYSQL_TEST_LOGIN_FILE", unusedLoginFile.toString());
+                return;
+            }
         }
     }
 
