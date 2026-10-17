@@ -40,6 +40,8 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
+import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -156,10 +158,17 @@ public final class WorkbenchPatcher {
     }
 
     private static void patchWorkbenchXmi(@NotNull Path workbenchXmi) throws Exception {
-        var document = XMLUtils.parseDocument(workbenchXmi);
-        var transformed = patchPartIconsRecursively(document, collectContributedParts());
+        Map<String, PartDescriptor> parts = collectContributedParts();
+        var checker = new PartIconChecker(parts);
+        try (var input = Files.newInputStream(workbenchXmi)) {
+            XMLUtils.newSecureSAXParserFactory().newSAXParser().parse(input, checker);
+        }
+        if (!checker.needsPatch) {
+            return;
+        }
 
-        if (transformed) {
+        var document = XMLUtils.parseDocument(workbenchXmi);
+        if (patchPartIconsRecursively(document, parts)) {
             var transformerFactory = XMLUtils.newSecureTransformerFactory();
             var transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -177,6 +186,62 @@ public final class WorkbenchPatcher {
 
             // Then replace the original file with the patched one
             Files.move(workbenchXmiPatch, workbenchXmi, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        }
+    }
+
+    private static final class PartIconChecker extends DefaultHandler {
+        private final Map<String, PartDescriptor> parts;
+        private int depth;
+        private int editorDepth = -1;
+        private String editorIcon;
+        private boolean editorStateSeen;
+        private boolean needsPatch;
+
+        private PartIconChecker(Map<String, PartDescriptor> parts) {
+            this.parts = parts;
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) {
+            depth++;
+            if (needsPatch) {
+                return;
+            }
+            if (depth == editorDepth + 1 && "persistedState".equals(qName) && !editorStateSeen) {
+                editorStateSeen = true;
+                if ("memento".equals(attributes.getValue("key"))) {
+                    String value = attributes.getValue("value");
+                    if (value != null) {
+                        needsPatch = iconNeedsPatch(editorIcon, extractCompatibilityEditorId(value));
+                    }
+                }
+            }
+
+            String elementId = attributes.getValue("elementId");
+            String icon = attributes.getValue("iconURI");
+            if (elementId == null || icon == null) {
+                return;
+            }
+            if (elementId.equals(CompatibilityEditor.MODEL_ELEMENT_ID)) {
+                editorDepth = depth;
+                editorIcon = icon;
+                editorStateSeen = false;
+            } else {
+                needsPatch = iconNeedsPatch(icon, elementId);
+            }
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) {
+            if (depth == editorDepth) {
+                editorDepth = -1;
+            }
+            depth--;
+        }
+
+        private boolean iconNeedsPatch(String oldIcon, String elementId) {
+            PartDescriptor part = parts.get(elementId);
+            return part != null && !oldIcon.equals(part.icon());
         }
     }
 
@@ -228,6 +293,11 @@ public final class WorkbenchPatcher {
             return null;
         }
 
+        return extractCompatibilityEditorId(value);
+    }
+
+    @Nullable
+    private static String extractCompatibilityEditorId(@NotNull String value) {
         try {
             var memento = XMLUtils.parseDocument(new StringReader(value));
             var editor = memento.getDocumentElement();
