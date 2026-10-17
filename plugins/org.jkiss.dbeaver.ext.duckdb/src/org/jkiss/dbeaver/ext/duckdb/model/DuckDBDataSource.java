@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,17 +17,29 @@
 package org.jkiss.dbeaver.ext.duckdb.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceInfo;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverPropertyInfo;
+import java.sql.SQLException;
+import java.sql.SQLFeatureNotSupportedException;
+import java.util.Properties;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 /**
@@ -57,8 +69,71 @@ public class DuckDBDataSource extends GenericDataSource {
         return new DuckDBDataSourceInfo(getContainer().getDriver(), metaData);
     }
 
+    @NotNull
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new DuckDBExecutionContext(instance, type);
+    }
+
+    @Nullable
+    @Override
+    protected Driver createDriverInstance(@NotNull DBRProgressMonitor monitor, @NotNull DBPDriver driver) throws DBCException {
+        Driver driverInstance = super.createDriverInstance(monitor, driver);
+        if (driverInstance != null && CommonUtils.toBoolean(driver.getDriverParameter(DuckDBConstants.PARAM_MOTHERDUCK_TOKEN_AUTH))) {
+            return new MotherDuckTokenDriver(driverInstance);
+        }
+        return driverInstance;
+    }
+
+    /**
+     * MotherDuck reads the token from the {@code motherduck_token} property, so it can live in secure storage
+     * instead of the URL. The password is copied at connect time, after the auth model (including
+     * "password from shell command") has put it into the connection properties.
+     */
+    private record MotherDuckTokenDriver(@NotNull Driver delegate) implements Driver {
+        @Nullable
+        @Override
+        public Connection connect(@NotNull String url, @Nullable Properties info) throws SQLException {
+            String token = info == null ? null : info.getProperty(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD);
+            if (CommonUtils.isEmpty(token) || info.containsKey(DuckDBConstants.PROP_MOTHERDUCK_TOKEN)) {
+                return delegate.connect(url, info);
+            }
+            Properties props = new Properties();
+            props.putAll(info);
+            props.setProperty(DuckDBConstants.PROP_MOTHERDUCK_TOKEN, token);
+            return delegate.connect(url, props);
+        }
+
+        @Override
+        public boolean acceptsURL(@NotNull String url) throws SQLException {
+            return delegate.acceptsURL(url);
+        }
+
+        @NotNull
+        @Override
+        public DriverPropertyInfo[] getPropertyInfo(@NotNull String url, @Nullable Properties info) throws SQLException {
+            return delegate.getPropertyInfo(url, info);
+        }
+
+        @Override
+        public int getMajorVersion() {
+            return delegate.getMajorVersion();
+        }
+
+        @Override
+        public int getMinorVersion() {
+            return delegate.getMinorVersion();
+        }
+
+        @Override
+        public boolean jdbcCompliant() {
+            return delegate.jdbcCompliant();
+        }
+
+        @NotNull
+        @Override
+        public Logger getParentLogger() throws SQLFeatureNotSupportedException {
+            return delegate.getParentLogger();
+        }
     }
 }
