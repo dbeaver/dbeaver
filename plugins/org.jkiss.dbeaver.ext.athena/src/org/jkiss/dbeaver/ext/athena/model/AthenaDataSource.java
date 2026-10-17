@@ -44,6 +44,7 @@ public class AthenaDataSource extends GenericDataSource {
         super(monitor, container, metaModel, new AthenaSQLDialect());
     }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,

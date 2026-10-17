@@ -36,21 +36,30 @@ public class NetezzaDataSource extends GenericDataSource {
     private static final Log log = Log.getLog(NetezzaDataSource.class);
     private static final String COMMAND_SYSTEM_PROPERTY = "sun.java.command";
 
-    public NetezzaDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container,
-                             @NotNull GenericMetaModel metaModel) throws DBException {
+    public NetezzaDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer container,
+        @NotNull GenericMetaModel metaModel
+    ) throws DBException {
         super(monitor, container, metaModel, new NetezzaSQLDialect());
     }
 
     // Constructor for tests
     @ForTest
-    public NetezzaDataSource(@NotNull DBRProgressMonitor monitor, @NotNull GenericMetaModel metaModel,
-                             @NotNull DBPDataSourceContainer container) throws DBException {
+    public NetezzaDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull GenericMetaModel metaModel,
+        @NotNull DBPDataSourceContainer container
+    ) throws DBException {
         super(monitor, metaModel, container, new NetezzaSQLDialect());
     }
 
     @Override
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context,
-                                          @Nullable JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
         super.initializeContextState(monitor, context, initFrom);
         final String name = getContainer().getActualConnectionConfiguration().getUserName();
         if (getSQLDialect().isQuotedIdentifier(name)) {
@@ -66,9 +75,13 @@ public class NetezzaDataSource extends GenericDataSource {
         }
     }
 
+    @NotNull
     @Override
-    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context,
-                                        @NotNull String purpose) throws DBCException {
+    protected Connection openConnection(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable JDBCExecutionContext context,
+        @NotNull String purpose
+    ) throws DBCException {
         // Workaround for an issue where older Netezza JDBC drivers get a NullPointerException
         // when system property "sun.java.command" is null.
         // See https://github.com/baztian/jaydebeapi/issues/103

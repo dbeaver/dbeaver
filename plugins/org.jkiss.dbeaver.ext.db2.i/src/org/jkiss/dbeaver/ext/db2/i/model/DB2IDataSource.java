@@ -47,6 +47,7 @@ public class DB2IDataSource extends GenericDataSource {
         super(monitor, container, metaModel, new DB2ISQLDialect());
     }
     
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,

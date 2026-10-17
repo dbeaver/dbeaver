@@ -70,6 +70,7 @@ public class SQLServerGenericDataSource extends GenericDataSource {
         super(monitor, container, metaModel, metaModel.getServerType() == ServerType.SQL_SERVER ? new SQLServerDialectMssql() : new SQLServerDialectSybase());
     }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,

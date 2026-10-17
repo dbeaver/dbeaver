@@ -111,6 +111,7 @@ public class DatabricksDataSource extends GenericDataSource implements DBDValueH
         }
     }
 
+    @NotNull
     @Override
     public JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new DatabricksExecutionContext(instance, type);

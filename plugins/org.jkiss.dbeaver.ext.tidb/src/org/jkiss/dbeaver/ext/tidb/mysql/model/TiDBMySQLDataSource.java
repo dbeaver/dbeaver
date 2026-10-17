@@ -155,6 +155,7 @@ public class TiDBMySQLDataSource extends MySQLDataSource {
         return true;
     }
     
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,

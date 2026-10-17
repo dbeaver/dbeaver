@@ -55,6 +55,7 @@ public class SpannerDataSource extends GenericDataSource {
 		return url;
 	}
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,

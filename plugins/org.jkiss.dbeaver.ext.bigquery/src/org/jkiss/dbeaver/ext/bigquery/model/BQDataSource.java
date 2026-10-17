@@ -44,6 +44,7 @@ public class BQDataSource extends GenericDataSource {
         super(monitor, container, metaModel, new BQSQLDialect());
     }
 
+    @NotNull
     @Override
     protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) throws DBCException {
         return new BQExecutionContext(instance, type);

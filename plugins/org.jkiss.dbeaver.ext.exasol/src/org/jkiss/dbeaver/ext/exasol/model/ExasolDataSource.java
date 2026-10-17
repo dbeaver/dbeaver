@@ -356,19 +356,20 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
     
     @NotNull
     @Override
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull
-													String purpose,
-                                                    @NotNull DBPConnectionConfiguration connectionInfo) throws DBCException {
-    	
-    	Properties props =  super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
-    	
-    	if (addMetaProps == null)
-    		addMetaProps = new Properties();
-    	
-		addMetaProps.clear();
-    	
-    	return props;
-    	
+    protected Properties getAllConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
+        Properties props = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
+
+        if (addMetaProps == null) {
+            addMetaProps = new Properties();
+        }
+        addMetaProps.clear();
+
+        return props;
     }
     
     @Nullable
@@ -398,21 +399,23 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
         return null;
     }
 
-	@Override
-	protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
-		return new ExasolExecutionContext(instance, type);
-	}
+    @NotNull
+    @Override
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
+        return new ExasolExecutionContext(instance, type);
+    }
 
-	protected void initializeContextState(@NotNull DBRProgressMonitor monitor,
-                                          @NotNull JDBCExecutionContext context, @Nullable JDBCExecutionContext initFrom)
-        throws DBException
-	{
-		if (initFrom != null) {
-			((ExasolExecutionContext)context).setCurrentSchema(monitor, ((ExasolExecutionContext)initFrom).getDefaultSchema());
-		} else {
-			((ExasolExecutionContext)context).refreshDefaults(monitor, true);
-		}
-	}
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
+        if (initFrom != null) {
+            ((ExasolExecutionContext) context).setCurrentSchema(monitor, ((ExasolExecutionContext) initFrom).getDefaultSchema());
+        } else {
+            ((ExasolExecutionContext) context).refreshDefaults(monitor, true);
+        }
+    }
 
 	@Override
 	public <T> T getAdapter(@NotNull Class<T> adapter)
@@ -436,36 +439,38 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 		// TODO DF: No idea what to do with this method, what it is used for...
 	}
 
-	// -----------------------
-	// Connection related Info
-	// -----------------------
+    // -----------------------
+    // Connection related Info
+    // -----------------------
 
-	@NotNull
+    @NotNull
     @Override
-	protected DBPDataSourceInfo createDataSourceInfo(
-        @NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
-	{
-		final ExasolDataSourceInfo info = new ExasolDataSourceInfo(metaData);
+    protected DBPDataSourceInfo createDataSourceInfo(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCDatabaseMetaData metaData
+    ) {
+        final ExasolDataSourceInfo info = new ExasolDataSourceInfo(metaData);
 
-		info.setSupportsResultSetScroll(false);
+        info.setSupportsResultSetScroll(false);
 
-		return info;
-	}
+        return info;
+    }
 
-	@Override
-	protected Map<String, String> getInternalConnectionProperties(
+    @NotNull
+    @Override
+    protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
         @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
-	) throws DBCException {
-		Map<String, String> props = new HashMap<>(ExasolDataSourceProvider.getConnectionsProps());
-		if (CommonUtils.getBoolean(connectionInfo.getProviderProperty(ExasolConstants.DRV_USE_LEGACY_ENCRYPTION), false)) {
-			props.put(ExasolConstants.DRV_LEGACY_ENCRYPTION, "1");
-		}
-		return props;
-	}
+    ) throws DBCException {
+        Map<String, String> props = new HashMap<>(ExasolDataSourceProvider.getConnectionsProps());
+        if (CommonUtils.getBoolean(connectionInfo.getProviderProperty(ExasolConstants.DRV_USE_LEGACY_ENCRYPTION), false)) {
+            props.put(ExasolConstants.DRV_LEGACY_ENCRYPTION, "1");
+        }
+        return props;
+    }
 
 	@Override
 	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {

@@ -58,6 +58,7 @@ public class SnowflakeDataSource extends GenericDataSource {
         super(monitor, container, metaModel, dialect);
     }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,

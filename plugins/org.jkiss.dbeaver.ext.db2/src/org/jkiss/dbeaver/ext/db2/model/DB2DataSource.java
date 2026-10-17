@@ -191,16 +191,19 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         }
     }
 
+    @NotNull
     @Override
     protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) throws DBCException {
         return new DB2ExecutionContext(instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context,
-                                          @Nullable JDBCExecutionContext initFrom) throws DBException
-    {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
         if (initFrom != null) {
-            ((DB2ExecutionContext)context).setCurrentSchema(monitor, ((DB2ExecutionContext)initFrom).getDefaultSchema());
+            ((DB2ExecutionContext) context).setCurrentSchema(monitor, ((DB2ExecutionContext) initFrom).getDefaultSchema());
         } else {
             ((DB2ExecutionContext)context).refreshDefaults(monitor, true);
         }
@@ -230,8 +233,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
 
     @NotNull
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
-    {
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
         final DB2DataSourceInfo info = new DB2DataSourceInfo(metaData);
 
         // Compute Database version
@@ -267,6 +269,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         return info;
     }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
@@ -295,6 +298,7 @@ public class DB2DataSource extends JDBCDataSource implements DBCQueryPlanner, DB
         return super.discoverErrorType(error);
     }
 
+    @NotNull
     @Override
     protected Connection openConnection(
         @NotNull DBRProgressMonitor monitor,

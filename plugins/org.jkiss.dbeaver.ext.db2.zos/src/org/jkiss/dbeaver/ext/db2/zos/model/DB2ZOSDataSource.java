@@ -46,6 +46,7 @@ public class DB2ZOSDataSource extends GenericDataSource {
         super(monitor, container, metaModel, new DB2ZOSSQLDialect());
     }
     
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,

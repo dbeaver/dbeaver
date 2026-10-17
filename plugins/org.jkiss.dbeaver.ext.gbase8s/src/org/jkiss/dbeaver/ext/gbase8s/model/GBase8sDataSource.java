@@ -77,6 +77,7 @@ public class GBase8sDataSource extends GenericDataSource {
         super(monitor, container, metaModel, new GBase8sDialect());
     }
 
+    @NotNull
     @Override
     protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         // replace the connector of the database/table in queryGetActiveDB

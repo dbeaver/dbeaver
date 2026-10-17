@@ -645,7 +645,8 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         DBSInstance defaultInstance = dataSource == null || !dataSource.hasDefaultInstance()
             ? null : dataSource.getDefaultInstance();
         DBCExecutionContext executionContext = request.getContext().getExecutionContext();
-        DBSObject selectedObject = defaultInstance == null || executionContext == null ? null : DBUtils.getActiveInstanceObject(executionContext);
+        DBSObject selectedObject = defaultInstance == null || executionContext == null
+            ? null : DBUtils.getActiveInstanceObject(executionContext);
         boolean hideDups = request.getContext().isHideDuplicates() && selectedObject != null;
         if (hideDups) {
             for (int i = 0; i < proposals.size(); i++) {

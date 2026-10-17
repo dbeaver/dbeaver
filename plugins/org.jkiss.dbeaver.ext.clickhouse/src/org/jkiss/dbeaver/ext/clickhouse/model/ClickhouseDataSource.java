@@ -100,8 +100,12 @@ public class ClickhouseDataSource extends GenericDataSource {
 
     @NotNull
     @Override
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext   context, @NotNull
-    String purpose, @NotNull DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Properties getAllConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
         Properties properties = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
         if (!CommonUtils.toBoolean(properties.getProperty(ClickhouseConstants.PROP_USE_SERVER_TIME_ZONE)) &&
             !CommonUtils.toBoolean(properties.getProperty(ClickhouseConstants.PROP_USE_TIME_ZONE))

@@ -210,6 +210,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return getClass() != GenericDataSource.class;
     }
 
+    @NotNull
     @Override
     protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) throws DBCException {
         return new GenericExecutionContext(instance, type);

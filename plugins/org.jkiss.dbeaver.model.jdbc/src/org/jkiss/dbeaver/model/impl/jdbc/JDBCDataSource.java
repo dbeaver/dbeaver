@@ -700,6 +700,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return this;
     }
 
+    @NotNull
     protected JDBCExecutionContext createExecutionContext(
         @NotNull JDBCRemoteInstance instance,
         @NotNull String type
@@ -884,6 +885,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         return null;
     }
 
+    @Nullable
     @Override
     public <T> T getAdapter(@NotNull Class<T> adapter) {
         if (adapter == DBCTransactionManager.class) {

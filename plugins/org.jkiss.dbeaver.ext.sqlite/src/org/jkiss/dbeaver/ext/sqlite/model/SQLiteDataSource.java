@@ -108,6 +108,7 @@ public class SQLiteDataSource extends GenericDataSource {
         return true;
     }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,

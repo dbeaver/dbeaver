@@ -110,7 +110,8 @@ public class AltibaseDataSource extends GenericDataSource implements DBPObjectSt
     protected void initializeContextState(
         @NotNull DBRProgressMonitor monitor,
         @NotNull JDBCExecutionContext context,
-        @Nullable JDBCExecutionContext initFrom) throws DBException {
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
 
         super.initializeContextState(monitor, context, initFrom);
 

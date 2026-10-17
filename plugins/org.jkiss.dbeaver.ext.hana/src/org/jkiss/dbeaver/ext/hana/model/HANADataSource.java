@@ -76,8 +76,7 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
 
     @NotNull
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
-    {
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
         final HANADataSourceInfo info = new HANADataSourceInfo(metaData);
         return info;
     }
@@ -132,6 +131,7 @@ public class HANADataSource extends GenericDataSource implements DBCQueryPlanner
         return false; // basically true, but different property name 
     } 
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,

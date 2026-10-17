@@ -57,14 +57,18 @@ public class DamengDataSource extends GenericDataSource {
         super(monitor, container, metaModel, new DamengSQLDialect());
     }
 
+    @NotNull
     @Override
     protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new DamengExecutionContext(instance, type);
     }
 
     @Override
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, @Nullable
-    JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
         DamengExecutionContext executionContext = (DamengExecutionContext) context;
         if (initFrom == null) {
             executionContext.refreshDefaults(monitor, true);

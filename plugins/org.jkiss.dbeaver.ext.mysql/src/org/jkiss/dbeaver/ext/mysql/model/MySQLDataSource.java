@@ -145,6 +145,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return lowerCaseTableNames;
     }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
@@ -254,15 +255,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
     }
 
+    @NotNull
     @Override
     protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new MySQLExecutionContext(instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, @Nullable
-    JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
         if (initFrom != null && !context.getDataSource().getContainer().isConnectionReadOnly()) {
-            MySQLCatalog object = ((MySQLExecutionContext)initFrom).getDefaultCatalog();
+            MySQLCatalog object = ((MySQLExecutionContext) initFrom).getDefaultCatalog();
             if (object != null) {
                 ((MySQLExecutionContext)context).setCurrentDatabase(monitor, object);
             }

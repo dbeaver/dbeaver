@@ -73,6 +73,7 @@ public class StarRocksDataSource extends GenericDataSource {
         return (StarRocksMetaModel) super.getMetaModel();
     }
 
+    @NotNull
     @Override
     protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new StarRocksExecutionContext(instance, type);

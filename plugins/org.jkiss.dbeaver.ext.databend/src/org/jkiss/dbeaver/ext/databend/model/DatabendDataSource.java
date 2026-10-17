@@ -47,9 +47,12 @@ public class DatabendDataSource extends GenericDataSource {
 
     @NotNull
     @Override
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull
-    String purpose, @NotNull DBPConnectionConfiguration connectionInfo)
-            throws DBCException {
+    protected Properties getAllConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
         Properties properties = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
 
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler("databend-ssl");

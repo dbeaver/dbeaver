@@ -269,6 +269,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return new PostgreDatabase(monitor, this, name, owner, templateName, tablespace, encoding);
     }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
@@ -380,13 +381,17 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         //initServerSSL(props, sslConfig);
     }
 
+    @NotNull
     @Override
     protected PostgreExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new PostgreExecutionContext((PostgreDatabase) instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context,
-                                          @Nullable JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
         PostgreExecutionContext postgreContext = (PostgreExecutionContext) context;
         PostgreSchema activeSchema = null;
         if (initFrom != null) {
@@ -957,8 +962,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @NotNull
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
-    {
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
         return new PostgreDataSourceInfo(this, metaData);
     }
 
