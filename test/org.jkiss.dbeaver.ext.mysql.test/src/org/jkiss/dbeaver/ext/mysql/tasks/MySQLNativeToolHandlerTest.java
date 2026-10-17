@@ -120,6 +120,41 @@ class MySQLNativeToolHandlerTest extends DBeaverUnitTest {
     }
 
     @Test
+    void unicodeOptionFileIgnoresHigherPriorityLoginPathWithoutChangingArguments() throws IOException {
+        Path optionFile = Files.createTempFile("mysql-native-test-", ".cnf");
+        try {
+            ProcessBuilder process = new ProcessBuilder(
+                "mysqldump", "--defaults-extra-file=" + optionFile.toAbsolutePath(), "--host=localhost");
+            process.environment().put("MYSQL_TEST_LOGIN_FILE", "existing-login-path");
+
+            MySQLNativeToolHandler.isolateLoginPathFromUnicodeUsernameOptionFile(process);
+
+            Path isolatedLoginFile = Path.of(process.environment().get("MYSQL_TEST_LOGIN_FILE"));
+            Assertions.assertEquals(
+                optionFile.toAbsolutePath().resolveSibling(optionFile.getFileName() + ".missing-login-path"),
+                isolatedLoginFile
+            );
+            Assertions.assertFalse(Files.exists(isolatedLoginFile));
+            Assertions.assertEquals(
+                List.of("mysqldump", "--defaults-extra-file=" + optionFile.toAbsolutePath(), "--host=localhost"),
+                process.command()
+            );
+        } finally {
+            Files.deleteIfExists(optionFile);
+        }
+    }
+
+    @Test
+    void regularCommandLineDoesNotChangeLoginPathEnvironment() {
+        ProcessBuilder process = new ProcessBuilder("mysqldump", "-u", "user");
+        process.environment().put("MYSQL_TEST_LOGIN_FILE", "existing-login-path");
+
+        MySQLNativeToolHandler.isolateLoginPathFromUnicodeUsernameOptionFile(process);
+
+        Assertions.assertEquals("existing-login-path", process.environment().get("MYSQL_TEST_LOGIN_FILE"));
+    }
+
+    @Test
     void createCredentialsFileEscapesPasswordForMySQLOptionFile() throws IOException {
         Path credentialsFile = MySQLNativeToolHandler.createCredentialsFile(
             "root",
