@@ -2378,7 +2378,7 @@ public final class DBUtils {
             }
         }
         DBPDataSource dataSource = object.getDataSource();
-        if (dataSource == null || dataSource.isConnectionRefreshing()) {
+        if (dataSource == null || dataSource.isConnectionRefreshing() || !dataSource.hasDefaultInstance()) {
             return null;
         }
         return dataSource.getDefaultInstance();
