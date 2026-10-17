@@ -579,6 +579,16 @@ public interface SQLDialect {
         return true;
     }
 
+    /**
+     * Whether a column reference may include a schema-qualified table name, for example
+     * {@code schema.table.column}, rather than just {@code table.column}.
+     *
+     * @return {@code true} when schema-qualified column references are supported
+     */
+    default boolean supportsSchemaQualifiedColumnNames() {
+        return true;
+    }
+
     @NotNull
     default String toSortableTextColumn(@NotNull String columnName) {
         return columnName;
