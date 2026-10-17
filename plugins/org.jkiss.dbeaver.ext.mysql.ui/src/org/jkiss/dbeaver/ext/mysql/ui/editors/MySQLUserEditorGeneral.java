@@ -129,19 +129,17 @@ public class MySQLUserEditorGeneral extends MySQLUserEditorAbstract
                         grant,
                         withGrantOption,
                         null,
-                        null,
                         privilege),
                     new DBECommandReflector<MySQLUser, MySQLCommandGrantPrivilege>() {
                         @Override
-                        public void redoCommand(@NotNull MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
-                        {
+                        public void redoCommand(@NotNull MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege) {
                             if (!privTable.isDisposed()) {
                                 privTable.checkPrivilege(privilege, grant);
                             }
                         }
+
                         @Override
-                        public void undoCommand(@NotNull MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege)
-                        {
+                        public void undoCommand(@NotNull MySQLCommandGrantPrivilege mySQLCommandGrantPrivilege) {
                             if (!privTable.isDisposed()) {
                                 privTable.checkPrivilege(privilege, !grant);
                             }
