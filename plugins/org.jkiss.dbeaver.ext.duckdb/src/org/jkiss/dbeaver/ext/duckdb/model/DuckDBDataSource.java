@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
@@ -69,8 +69,9 @@ public class DuckDBDataSource extends GenericDataSource {
         return new DuckDBDataSourceInfo(getContainer().getDriver(), metaData);
     }
 
+    @NotNull
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new DuckDBExecutionContext(instance, type);
     }
 
@@ -90,8 +91,9 @@ public class DuckDBDataSource extends GenericDataSource {
      * "password from shell command") has put it into the connection properties.
      */
     private record MotherDuckTokenDriver(@NotNull Driver delegate) implements Driver {
+        @Nullable
         @Override
-        public Connection connect(String url, Properties info) throws SQLException {
+        public Connection connect(@NotNull String url, @Nullable Properties info) throws SQLException {
             String token = info == null ? null : info.getProperty(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD);
             if (CommonUtils.isEmpty(token) || info.containsKey(DuckDBConstants.PROP_MOTHERDUCK_TOKEN)) {
                 return delegate.connect(url, info);
@@ -103,12 +105,13 @@ public class DuckDBDataSource extends GenericDataSource {
         }
 
         @Override
-        public boolean acceptsURL(String url) throws SQLException {
+        public boolean acceptsURL(@NotNull String url) throws SQLException {
             return delegate.acceptsURL(url);
         }
 
+        @NotNull
         @Override
-        public DriverPropertyInfo[] getPropertyInfo(String url, Properties info) throws SQLException {
+        public DriverPropertyInfo[] getPropertyInfo(@NotNull String url, @Nullable Properties info) throws SQLException {
             return delegate.getPropertyInfo(url, info);
         }
 
@@ -127,6 +130,7 @@ public class DuckDBDataSource extends GenericDataSource {
             return delegate.jdbcCompliant();
         }
 
+        @NotNull
         @Override
         public Logger getParentLogger() throws SQLFeatureNotSupportedException {
             return delegate.getParentLogger();
