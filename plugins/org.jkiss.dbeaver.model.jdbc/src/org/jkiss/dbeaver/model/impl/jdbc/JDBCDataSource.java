@@ -935,13 +935,21 @@ public abstract class JDBCDataSource extends AbstractDataSource
                     return Status.OK_STATUS;
                 }
                 try {
-                    if (context.isAutoCommit()) {
-                        log.warn("Canceled operation did not end in " + timeout + "ms, closing connection '" +
-                            context.getContextName() + "' of '" + getContainer().getName() + "'");
-                        connection.abort(Runnable::run);
+                    if (!context.isAutoCommit()) {
+                        return Status.OK_STATUS;
                     }
+                } catch (DBException e) {
+                    log.debug("Can't determine auto-commit state, connection is not aborted: " + e.getMessage());
+                    return Status.OK_STATUS;
+                }
+                log.warn("Canceled operation did not end in " + timeout + "ms, closing connection '" +
+                    context.getContextName() + "' of '" + getContainer().getName() + "'");
+                try {
+                    connection.abort(Runnable::run);
                 } catch (Throwable e) {
+                    // Not supported by the driver (JDBC 4.1): close it instead, within connection.close.timeout
                     log.debug("Error aborting connection: " + e.getMessage());
+                    closeConnection(connection, context.getContextName(), false);
                 }
                 return Status.OK_STATUS;
             }
