@@ -79,16 +79,10 @@ public class AssociationCreateCommand extends Command {
 
     @Override
     public boolean canExecute() {
-        if (sourceEntity.equals(targetEntity)) {
+        if (sourceEntity == null || targetEntity == null || sourceEntity.equals(targetEntity)) {
             return false;
-        } else {
-
-            if (targetEntity == null) {
-                return false;
-            } else {
-                return !isAssociationExists();
-            }
         }
+        return !isAssociationExists();
     }
 
     protected boolean isAssociationExists() {
