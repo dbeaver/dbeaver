@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCMetadataSnapshot;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
@@ -47,6 +49,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -734,6 +737,26 @@ public class OracleSchema extends OracleGlobalObject implements
 
 
 
+    /**
+     * Objects whose dictionary rows (type, DDL time, status) differ from the stored ones, including new and dropped objects.
+     */
+    @NotNull
+    static Set<String> findChangedObjects(@NotNull Map<String, List<String>> stored, @NotNull Map<String, List<String>> current) {
+        Set<String> changed = new HashSet<>();
+        for (Map.Entry<String, List<String>> entry : current.entrySet()) {
+            List<String> storedValues = stored.get(entry.getKey());
+            if (storedValues == null || !new HashSet<>(storedValues).equals(new HashSet<>(entry.getValue()))) {
+                changed.add(entry.getKey());
+            }
+        }
+        for (String name : stored.keySet()) {
+            if (!current.containsKey(name)) {
+                changed.add(name);
+            }
+        }
+        return changed;
+    }
+
     public class TableCache extends JDBCStructLookupCache<OracleSchema, OracleTableBase, OracleTableColumn> {
 
         protected TableCache()
@@ -742,9 +765,78 @@ public class OracleSchema extends OracleGlobalObject implements
             setListOrderComparator(DBUtils.nameComparator());
         }
 
+        @Override
+        protected boolean supportsMetadataSnapshot() {
+            return true;
+        }
+
+        @Override
+        protected boolean isMetadataRowReadOnce() {
+            // Column default values (DATA_DEFAULT) are LONG: they can be read only once
+            return true;
+        }
+
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleTableBase object, @Nullable String objectName) throws SQLException {
+        protected String[] getMetadataSnapshotSettings(@NotNull OracleSchema owner) {
+            DBPConnectionConfiguration cfg = getDataSource().getContainer().getConnectionConfiguration();
+            return new String[]{
+                CommonUtils.notEmpty(cfg.getProviderProperty(OracleConstants.PROP_ALWAYS_USE_DBA_VIEWS)),
+                CommonUtils.notEmpty(cfg.getProviderProperty(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY)),
+                CommonUtils.notEmpty(cfg.getProviderProperty(OracleConstants.PROP_METADATA_READ_COLUMN_COMMENTS)),
+                String.valueOf(getDataSource().isUseRuleHint())
+            };
+        }
+
+        /**
+         * Compares type, DDL time and status of tables and views in the dictionary with the stored rows.
+         * DDL time changes on DDL of the object itself (columns, constraints, comments); the status changes
+         * when a view becomes invalid because of a change of the objects it depends on.
+         */
+        @Nullable
+        @Override
+        protected Set<String> readChangedObjects(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull OracleSchema owner,
+            @NotNull JDBCMetadataSnapshot snapshot
+        ) throws DBException {
+            if (CommonUtils.toBoolean(getDataSource().getContainer().getConnectionConfiguration()
+                .getProviderProperty(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY))) {
+                // The alternative query does not read DDL times
+                return null;
+            }
+            Map<String, List<String>> stored = snapshot.getStoredValues(
+                SNAPSHOT_OBJECTS, OracleConstants.COLUMN_OBJECT_TYPE, OracleConstants.COLUMN_LAST_DDL_TIME, OracleConstants.COLUMN_STATUS);
+            Map<String, List<String>> current = new HashMap<>();
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Read changed tables of " + owner.getName())) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT " + OracleUtils.getSysCatalogHint(getDataSource()) + " OBJECT_NAME, OBJECT_TYPE, LAST_DDL_TIME, STATUS FROM " +
+                        OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "OBJECTS") +
+                        " WHERE OWNER=? AND OBJECT_TYPE IN ('TABLE', 'VIEW', 'MATERIALIZED VIEW')")) {
+                    dbStat.setString(1, owner.getName());
+                    dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        while (dbResult.next()) {
+                            Timestamp ddlTime = dbResult.getTimestamp(3);
+                            current.computeIfAbsent(dbResult.getString(1), name -> new ArrayList<>()).add(
+                                dbResult.getString(2) + "|" + (ddlTime == null ? null : ddlTime.getTime()) + "|" + dbResult.getString(4));
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBDatabaseException(e, getDataSource());
+            }
+            return findChangedObjects(stored, current);
+        }
+
+        @NotNull
+        @Override
+        public JDBCStatement prepareLookupStatement(
+            @NotNull JDBCSession session,
+            @NotNull OracleSchema owner,
+            @Nullable OracleTableBase object,
+            @Nullable String objectName
+        ) throws SQLException {
             String tableOper = "=";
 
             boolean hasAllAllTables = owner.getDataSource().isViewAvailable(session.getProgressMonitor(), null, "ALL_ALL_TABLES");
