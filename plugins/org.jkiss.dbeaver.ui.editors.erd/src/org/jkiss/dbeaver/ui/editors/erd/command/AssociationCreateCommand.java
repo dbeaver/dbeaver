@@ -345,7 +345,11 @@ public class AssociationCreateCommand extends Command {
         this.editor = editor;
     }
 
-    protected boolean needToSwapForeignKeyDirection(DBRProgressMonitor monitor, List<DBSEntityAttribute> srcAttrs, List<DBSEntityAttribute> targetAttrs) throws DBException {
+    protected boolean needToSwapForeignKeyDirection(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull List<DBSEntityAttribute> srcAttrs,
+        @NotNull List<DBSEntityAttribute> targetAttrs
+    ) throws DBException {
         // The reference must point to an identifying key, not originate from one.
         // Reverse the drag only when its source is unique and its target is not.
         return !CommonUtils.isEmpty(srcAttrs) &&
