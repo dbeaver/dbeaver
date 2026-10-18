@@ -26,6 +26,7 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -93,13 +94,11 @@ public class OracleMetadataSnapshotTest {
             new Object[]{"I1", "VALID", null, "1", null, null},
             new Object[]{"I2", "INVALID", null, "2", null, null}));
 
-        Assertions.assertTrue(resultSet.next());
-        Assertions.assertEquals("I1", resultSet.getString("OBJECT_NAME"));
-        Assertions.assertEquals(1, resultSet.getInt("NUM_ROWS"));
-        Assertions.assertTrue(resultSet.next());
-        Assertions.assertEquals("I2", resultSet.getString("OBJECT_NAME"));
-        Assertions.assertEquals("INVALID", resultSet.getString("STATUS"));
-        Assertions.assertFalse(resultSet.next());
+        List<String> rows = new ArrayList<>();
+        while (resultSet.next()) {
+            rows.add(resultSet.getString("OBJECT_NAME") + "/" + resultSet.getString("STATUS") + "/" + resultSet.getInt("NUM_ROWS"));
+        }
+        Assertions.assertEquals(List.of("I1/VALID/1", "I2/INVALID/2"), rows);
     }
 
     @Test

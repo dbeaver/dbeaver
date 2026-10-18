@@ -45,6 +45,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.sql.*;
+import java.sql.Date;
 import java.util.*;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
@@ -214,7 +215,7 @@ public class OracleMetadataSnapshot {
         }
 
         private Layout layoutOf(@NotNull ResultSet resultSet) throws SQLException {
-            if (resultSet != lastResultSet) {
+            if (!Objects.equals(resultSet, lastResultSet)) {
                 lastResultSet = resultSet;
                 lastLayout = Layout.of(resultSet.getMetaData());
             }
@@ -1281,7 +1282,9 @@ public class OracleMetadataSnapshot {
                     return System.identityHashCode(proxy);
                 }
                 case "equals" -> {
-                    return proxy == args[0];
+                    // Same replay, without calling equals() on the proxy itself
+                    return args[0] != null && Proxy.isProxyClass(args[0].getClass())
+                        && Proxy.getInvocationHandler(args[0]).equals(this);
                 }
                 case "toString" -> {
                     return "Metadata snapshot row";
@@ -1318,7 +1321,7 @@ public class OracleMetadataSnapshot {
                     return value instanceof Long l ? new Timestamp(l) : null;
                 }
                 case "getDate" -> {
-                    return value instanceof Long l ? new java.sql.Date(l) : null;
+                    return value instanceof Long l ? new Date(l) : null;
                 }
                 case "getObject" -> {
                     return value instanceof Long l && layout.timestamps[index] ? new Timestamp(l) : value;
