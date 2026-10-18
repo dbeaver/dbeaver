@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,12 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
 
     public GenericMetaObject getTableObject() {
         return tableObject;
+    }
+
+    @Override
+    protected boolean supportsMetadataSnapshot() {
+        // Tables and columns are built from the rows of the metadata queries only
+        return true;
     }
 
     @NotNull

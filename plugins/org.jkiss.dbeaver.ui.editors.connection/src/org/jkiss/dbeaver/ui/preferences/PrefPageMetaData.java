@@ -44,6 +44,7 @@ public class PrefPageMetaData extends TargetPrefPage
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.meta"; //$NON-NLS-1$
 
     private Button readExpensiveCheck;
+    private Button metadataSnapshotCheck;
     private Combo separateMetaConnectionCombo;
     private Button disableExtraMetadataRead;
     private Button caseSensitiveNamesCheck;
@@ -64,7 +65,8 @@ public class PrefPageMetaData extends TargetPrefPage
             store.contains(ModelPreferences.META_SEPARATE_CONNECTION) ||
             store.contains(ModelPreferences.META_CASE_SENSITIVE) ||
             store.contains(ModelPreferences.META_DISABLE_EXTRA_READ) ||
-            store.contains(ModelPreferences.META_USE_SERVER_SIDE_FILTERS)
+            store.contains(ModelPreferences.META_USE_SERVER_SIDE_FILTERS) ||
+            store.contains(ModelPreferences.META_SNAPSHOT_ENABLED)
             ;
     }
 
@@ -147,6 +149,12 @@ public class PrefPageMetaData extends TargetPrefPage
                 UIConnectionMessages.pref_page_database_general_checkbox_show_row_count_tip,
                 false,
                 1);
+            metadataSnapshotCheck = UIUtils.createCheckbox(
+                performanceGroup,
+                UIConnectionMessages.pref_page_database_general_checkbox_metadata_snapshot,
+                UIConnectionMessages.pref_page_database_general_checkbox_metadata_snapshot_tip,
+                false,
+                1);
         }
 
         return composite;
@@ -164,6 +172,7 @@ public class PrefPageMetaData extends TargetPrefPage
             disableExtraMetadataRead.setSelection(store.getBoolean(ModelPreferences.META_DISABLE_EXTRA_READ));
             addExtraDDLInfo.setSelection(store.getBoolean(ModelPreferences.META_EXTRA_DDL_INFO));
             serverSideFiltersCheck.setSelection(store.getBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS));
+            metadataSnapshotCheck.setSelection(store.getBoolean(ModelPreferences.META_SNAPSHOT_ENABLED));
 
         } catch (Exception e) {
             log.warn(e);
@@ -185,6 +194,7 @@ public class PrefPageMetaData extends TargetPrefPage
             store.setValue(ModelPreferences.META_DISABLE_EXTRA_READ, disableExtraMetadataRead.getSelection());
             store.setValue(ModelPreferences.META_EXTRA_DDL_INFO, addExtraDDLInfo.getSelection());
             store.setValue(ModelPreferences.META_USE_SERVER_SIDE_FILTERS, serverSideFiltersCheck.getSelection());
+            store.setValue(ModelPreferences.META_SNAPSHOT_ENABLED, metadataSnapshotCheck.getSelection());
 
         } catch (Exception e) {
             log.warn(e);
@@ -201,6 +211,7 @@ public class PrefPageMetaData extends TargetPrefPage
         store.setToDefault(ModelPreferences.META_DISABLE_EXTRA_READ);
         store.setToDefault(ModelPreferences.META_USE_SERVER_SIDE_FILTERS);
         store.setToDefault(ModelPreferences.META_EXTRA_DDL_INFO);
+        store.setToDefault(ModelPreferences.META_SNAPSHOT_ENABLED);
     }
 
     @Override
@@ -214,6 +225,7 @@ public class PrefPageMetaData extends TargetPrefPage
         disableExtraMetadataRead.setSelection(store.getDefaultBoolean(ModelPreferences.META_DISABLE_EXTRA_READ));
         addExtraDDLInfo.setSelection(store.getDefaultBoolean(ModelPreferences.META_EXTRA_DDL_INFO));
         serverSideFiltersCheck.setSelection(store.getDefaultBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS));
+        metadataSnapshotCheck.setSelection(store.getDefaultBoolean(ModelPreferences.META_SNAPSHOT_ENABLED));
         super.performDefaults();
     }
 

@@ -519,6 +519,8 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_database_general_checkbox_rollback_on_error;
     public static String pref_page_database_general_checkbox_show_row_count;
     public static String pref_page_database_general_checkbox_show_row_count_tip;
+    public static String pref_page_database_general_checkbox_metadata_snapshot;
+    public static String pref_page_database_general_checkbox_metadata_snapshot_tip;
     public static String pref_page_database_general_group_metadata;
     public static String pref_page_database_general_group_performance;
     public static String pref_page_database_general_separate_meta_connection;
