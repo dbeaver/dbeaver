@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,17 +21,25 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
+import org.jkiss.dbeaver.model.sql.completion.usage.SQLCompletionUsageManager;
+import org.jkiss.dbeaver.model.sql.completion.usage.SQLUsageContext;
+import org.jkiss.dbeaver.model.sql.completion.usage.SQLUsageExtractor;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryConnectionDummyContext;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.Pair;
 
 import java.lang.reflect.InvocationTargetException;
@@ -143,9 +151,89 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             }
         }
 
+        try {
+            rankByUsage(completionContext, proposals);
+        } catch (Exception e) {
+            // Usage only reorders proposals: never fail the completion because of it
+            log.debug("Error ranking proposals by usage: " + e.getMessage());
+        }
         return proposals;
     }
 
+    /**
+     * Sets usage scores of table and column proposals, from what the user uses on this connection.
+     */
+    private void rankByUsage(@NotNull SQLQueryCompletionContext completionContext, @NotNull List<SQLQueryCompletionProposal> proposals) {
+        DBPDataSourceContainer container = this.request.getContext().getDataSource() == null ? null :
+            this.request.getContext().getDataSource().getContainer();
+        if (container == null || !SQLCompletionUsageManager.isEnabled(container)) {
+            return;
+        }
+        Map<String, List<SQLQueryCompletionProposal>> byKey = new LinkedHashMap<>();
+        for (SQLQueryCompletionProposal proposal : proposals) {
+            String key = SQLUsageExtractor.objectKey(proposal.getObject());
+            if (key != null) {
+                byKey.computeIfAbsent(key, k -> new ArrayList<>()).add(proposal);
+            }
+        }
+        if (byKey.isEmpty()) {
+            return;
+        }
+        SQLUsageContext usageContext = SQLUsageExtractor.prepareContext(completionContext);
+        Map<String, Double> scores = SQLCompletionUsageManager.getInstance().score(
+            container,
+            usageContext,
+            new ArrayList<>(byKey.keySet())
+        );
+        if (scores == null) {
+            return;
+        }
+        for (Map.Entry<String, Double> score : scores.entrySet()) {
+            for (SQLQueryCompletionProposal proposal : byKey.get(score.getKey())) {
+                proposal.setProposalUsageScore(score.getValue());
+            }
+        }
+        promoteUsedSchema(byKey, scores);
+        // Order of the popup: used proposals first (the other criteria are the same for the most of them)
+        List<String> shown = new ArrayList<>(byKey.keySet());
+        shown.sort((k1, k2) -> Double.compare(scores.getOrDefault(k2, 0.0), scores.getOrDefault(k1, 0.0)));
+        this.proposalContext.setUsage(container, usageContext, shown);
+    }
+
+    /**
+     * Tables of a schema other than the default one need "schema." first: the schema used most goes above all
+     * other proposals, the recently used tables right below it. With the recent tables above it, every table
+     * which is not one of them would cost arrow keys to reach the schema.
+     */
+    private void promoteUsedSchema(
+        @NotNull Map<String, List<SQLQueryCompletionProposal>> byKey,
+        @NotNull Map<String, Double> scores
+    ) {
+        DBCExecutionContext executionContext = this.request.getContext().getExecutionContext();
+        DBCExecutionContextDefaults<?, ?> defaults = executionContext == null ? null : executionContext.getContextDefaults();
+        String topSchema = null;
+        double maxScore = 0;
+        for (Map.Entry<String, Double> score : scores.entrySet()) {
+            maxScore = Math.max(maxScore, score.getValue());
+            DBSObject object = byKey.get(score.getKey()).getFirst().getObject();
+            boolean isSchema = object instanceof DBSSchema || object instanceof DBSCatalog;
+            boolean isDefault = defaults != null &&
+                (object == defaults.getDefaultSchema() || object == defaults.getDefaultCatalog());
+            if (isSchema && !isDefault && score.getValue() > 0 &&
+                (topSchema == null || score.getValue() > scores.get(topSchema))
+            ) {
+                topSchema = score.getKey();
+            }
+        }
+        if (topSchema != null) {
+            scores.put(topSchema, maxScore + 1);
+            for (SQLQueryCompletionProposal proposal : byKey.get(topSchema)) {
+                proposal.setProposalUsageScore(maxScore + 1);
+            }
+        }
+    }
+
+    @NotNull
     protected SQLQueryCompletionProposal createProposal(
         @NotNull SQLQueryCompletionItemKind itemKind,
         @Nullable DBSObject object,

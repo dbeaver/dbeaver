@@ -79,7 +79,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.completion.usage.SQLCompletionUsageManager;
+import org.jkiss.dbeaver.model.sql.semantics.SQLDocumentScriptItemSyntaxContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLDocumentSyntaxContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLDocumentSyntaxContextListener;
 import org.jkiss.dbeaver.model.sql.semantics.SQLObjectOperationRecognizer;
+import org.jkiss.dbeaver.model.sql.semantics.SQLScriptItemAtOffset;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
@@ -192,6 +197,28 @@ public class SQLEditor extends SQLEditorBase implements
     private static volatile TransactionStatusUpdateJob transactionStatusUpdateJob;
 
     static final String STATS_CATEGORY_TRANSACTION_TIMEOUT = "TransactionTimeout";
+
+    // Query texts learned by completion usage, and the caret line they were checked at (see learnWrittenQueries)
+    private final Set<String> learnedQueries = new HashSet<>();
+    private int learnedCaretLine = -1;
+    private SQLDocumentSyntaxContext usageSyntaxContext;
+    private volatile boolean learnWrittenQueriesScheduled;
+    private final SQLDocumentSyntaxContextListener usageSyntaxListener = new SQLDocumentSyntaxContextListener() {
+        @Override
+        public void onScriptItemIntroduced(@NotNull SQLDocumentScriptItemSyntaxContext item) {
+            scheduleLearnWrittenQueries();
+        }
+
+        @Override
+        public void onScriptItemInvalidated(@NotNull SQLDocumentScriptItemSyntaxContext item) {
+            // Nothing to learn
+        }
+
+        @Override
+        public void onAllScriptItemsInvalidated() {
+            // Nothing to learn
+        }
+    };
     private ResultSetOrientation resultSetOrientation = ResultSetOrientation.HORIZONTAL;
     private CustomSashForm resultsSash;
     private Composite sqlEditorPanel;
@@ -1268,6 +1295,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
         });
         textWidget.addCaretListener(event -> {
+            learnWrittenQueries(event.caretOffset, false);
             if (suggestionTextPainter.hasContentToShow()) {
                 int caretOffset = event.caretOffset;
                 int suggestionOffset = suggestionTextPainter.getCurrentPosition();
@@ -3555,6 +3583,7 @@ public class SQLEditor extends SQLEditorBase implements
         DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
             EditorUtils.setInputDataSource(getEditorInput(), new SQLNavigatorContext(executionContext));
+            SQLCompletionUsageManager.getInstance().preloadTopTables(executionContext.getDataSource().getContainer());
         }
         refreshActions();
 
@@ -4343,6 +4372,64 @@ public class SQLEditor extends SQLEditorBase implements
         return tabName;
     }
 
+    /**
+     * Queries the caret is not in have been written: completion proposals learn the tables and columns they use,
+     * from the editor's semantic analysis (no database access). Checked when the caret moves to another line and
+     * when the analysis registers a query; each query text is learned once per editor.
+     */
+    private void learnWrittenQueries(int caretOffset, boolean force) {
+        try {
+            SQLDocumentSyntaxContext syntaxContext = getSyntaxContext();
+            DBCExecutionContext executionContext = getExecutionContext();
+            IDocument document = getDocument();
+            if (syntaxContext == null || executionContext == null || document == null || isDisposed()) {
+                return;
+            }
+            if (syntaxContext != usageSyntaxContext) {
+                // Queries are analyzed after the user stops typing: learn them when they are registered
+                syntaxContext.addListener(usageSyntaxListener);
+                usageSyntaxContext = syntaxContext;
+            }
+            int caretLine = document.getLineOfOffset(Math.min(caretOffset, document.getLength()));
+            if (!force && caretLine == learnedCaretLine) {
+                return;
+            }
+            learnedCaretLine = caretLine;
+            for (SQLScriptItemAtOffset item : syntaxContext.getScriptItems()) {
+                if (caretOffset >= item.offset && caretOffset <= item.offset + item.item.length()) {
+                    // Still being written
+                    continue;
+                }
+                String text = item.item.getOriginalText();
+                if (item.item.isDirty() || item.item.getQueryModel() == null || !learnedQueries.add(text)) {
+                    continue;
+                }
+                SQLCompletionUsageManager.getInstance().learnWrittenQuery(
+                    executionContext.getDataSource().getContainer(), item.item.getQueryModel(), text);
+            }
+        } catch (Exception e) {
+            log.debug("Error learning written queries: " + e.getMessage());
+        }
+    }
+
+    private void scheduleLearnWrittenQueries() {
+        if (!learnWrittenQueriesScheduled) {
+            learnWrittenQueriesScheduled = true;
+            UIUtils.asyncExec(() -> {
+                learnWrittenQueriesScheduled = false;
+                if (!isDisposed()) {
+                    learnWrittenQueries(getCaretOffset(), true);
+                }
+            });
+        }
+    }
+
+    private int getCaretOffset() {
+        TextViewer textViewer = getTextViewer();
+        return textViewer == null || textViewer.getTextWidget() == null || textViewer.getTextWidget().isDisposed() ? 0 :
+            textViewer.getTextWidget().getCaretOffset();
+    }
+
     public static class SQLEditorQueryListener implements SQLQueryListener {
         private final QueryProcessor queryProcessor;
         private boolean scriptMode;
@@ -4437,6 +4524,12 @@ public class SQLEditor extends SQLEditorBase implements
             try {
                 SQLEditor owner = getOwner();
                 try {
+                    if (session.getExecutionContext() != null) {
+                        // Completion proposals are ranked by what the user queries (failed queries too: their
+                        // tables are what the user means to use)
+                        SQLCompletionUsageManager.getInstance().learnExecutedQuery(
+                            session.getExecutionContext(), result.getStatement().getText());
+                    }
                     if (!result.hasError() && owner.getActivePreferenceStore().getBoolean(
                         SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION
                     )) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics.completion;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.completion.CompletionProposalBase;
 
 import java.util.Comparator;
@@ -46,7 +47,9 @@ public class SQLCompletionProposalComparator implements Comparator<CompletionPro
         int score1 = p1.getProposalScore();
         int score2 = p2.getProposalScore();
         if (score1 == Integer.MAX_VALUE && score2 == Integer.MAX_VALUE) {
-            return this.compareWhenPrefixSearch(p1, p2);
+            // Nothing typed: usage comes first, like right after the match score below
+            int urc = compareUsage(p1, p2);
+            return urc != 0 ? urc : this.compareWhenPrefixSearch(p1, p2);
         }
 
         if (score1 > 0 || score2 > 0) {
@@ -54,6 +57,10 @@ public class SQLCompletionProposalComparator implements Comparator<CompletionPro
             if (rc != 0) {
                 return rc;
             }
+        }
+        int urc = compareUsage(p1, p2);
+        if (urc != 0) {
+            return urc;
         }
         if (sortAlphabetically) {
             int rc = p1.getDisplayString().compareToIgnoreCase(p2.getDisplayString());
@@ -68,13 +75,24 @@ public class SQLCompletionProposalComparator implements Comparator<CompletionPro
     }
 
 
-    private int compareWhenPrefixSearch(CompletionProposalBase p1, CompletionProposalBase p2) {
+    /**
+     * Proposals used more come first; proposals never used keep the other order.
+     */
+    private static int compareUsage(@NotNull CompletionProposalBase p1, @NotNull CompletionProposalBase p2) {
+        return Double.compare(p2.getProposalUsageScore(), p1.getProposalUsageScore());
+    }
+
+    private int compareWhenPrefixSearch(@NotNull CompletionProposalBase p1, @NotNull CompletionProposalBase p2) {
         // all the unmatched completely filtered out already, so
         // by kind, by text
 
         int krc = Integer.compare(p1.getProposalTypeSorterScore(), p2.getProposalTypeSorterScore());
         if (krc != 0) {
             return krc;
+        }
+        int urc = compareUsage(p1, p2);
+        if (urc != 0) {
+            return urc;
         }
 
         if (sortAlphabetically) {
