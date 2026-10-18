@@ -237,7 +237,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 int paramsAssigned = 0;
                 for (int i = params.size() - 1; i >= 0; i--) {
                     DBSProcedureParameterKind parameterKind = params.get(i).getParameterKind();
-                    if (parameterKind == DBSProcedureParameterKind.OUT || parameterKind == DBSProcedureParameterKind.TABLE || parameterKind == DBSProcedureParameterKind.RETURN) {
+                    if (parameterKind == DBSProcedureParameterKind.OUT
+                        || parameterKind == DBSProcedureParameterKind.TABLE
+                        || parameterKind == DBSProcedureParameterKind.RETURN) {
                         continue;
                     }
                     String defaultValue = argDefaults[argDefaults.length - 1 - paramsAssigned];
@@ -684,7 +686,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                     } catch (NumberFormatException e) {
                         isNumeric = false;
                     }
-                    decl.append("\tSET ").append(paramName).append(" = ").append(isNumeric ? paramValue : "'" + paramValue + "'").append(lineSeparator);
+                    decl.append("\tSET ").append(paramName).append(" = ")
+                        .append(isNumeric ? paramValue : "'" + paramValue + "'")
+                        .append(lineSeparator);
                 } else {
                     log.debug("Wrong function configuration parameter [" + configLine + "]");
                 }
@@ -875,7 +879,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     @Override
-    public Collection<PostgrePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+    public Collection<PostgrePrivilege> getPrivileges(
+        @NotNull DBRProgressMonitor monitor, boolean includeNestedObjects
+    ) throws DBException {
         return PostgreUtils.extractPermissionsFromACL(monitor, this, acl, false);
     }
 
