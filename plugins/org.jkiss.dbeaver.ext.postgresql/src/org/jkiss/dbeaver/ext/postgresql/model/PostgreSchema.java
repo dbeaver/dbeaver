@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -840,6 +841,13 @@ public class PostgreSchema implements
         protected TableCache() {
             super("relname");
             setListOrderComparator(DBUtils.nameComparator());
+        }
+
+        @Override
+        protected boolean supportsMetadataSnapshot() {
+            // Tables and columns are built from the rows of the catalog queries. Other servers based on
+            // PostgreSQL may read their tables differently.
+            return getDataSource().getServerType() instanceof PostgreServerPostgreSQL;
         }
 
         @NotNull

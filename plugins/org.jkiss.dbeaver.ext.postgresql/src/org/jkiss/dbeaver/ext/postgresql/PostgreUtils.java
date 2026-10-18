@@ -740,7 +740,7 @@ public class PostgreUtils {
         @Nullable Object acl,
         boolean isDefault
     ) throws DBException {
-        if (!(acl instanceof java.sql.Array)) {
+        if (!(acl instanceof java.sql.Array) && !(acl instanceof String)) {
             if (acl == null) {
                 // Special case. NULL ACL means the object has default privileges:
                 // all privileges are granted to the object owner plus the default PUBLIC
@@ -785,11 +785,16 @@ public class PostgreUtils {
             return Collections.emptyList();
         }
         Object itemArray;
-        try {
-            itemArray = ((java.sql.Array) acl).getArray();
-        } catch (SQLException e) {
-            log.error(e);
-            return Collections.emptyList();
+        if (acl instanceof String aclString) {
+            // Text form of the array (e.g. from drivers without arrays, or from the metadata snapshot)
+            itemArray = PostgreValueParser.parsePrimitiveArray(aclString, Function.identity(), String[]::new);
+        } else {
+            try {
+                itemArray = ((java.sql.Array) acl).getArray();
+            } catch (SQLException e) {
+                log.error(e);
+                return Collections.emptyList();
+            }
         }
         int aclValuesCount = Array.getLength(itemArray);
         String[] aclValues = new String[aclValuesCount];
