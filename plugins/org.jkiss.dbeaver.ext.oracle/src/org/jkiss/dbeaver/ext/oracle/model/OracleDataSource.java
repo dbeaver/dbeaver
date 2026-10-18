@@ -100,6 +100,8 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     protected boolean isAdminVisible;
     private String planTableName;
     private boolean useRuleHint;
+    private boolean metadataWarmupScheduled;
+    private volatile Boolean metadataSnapshotEnabled;
     private boolean resolveGeometryAsStruct = true;
     private boolean hasStatistics;
     private boolean isPasswordExpireWarningShown;
@@ -458,6 +460,30 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return useRuleHint;
     }
 
+    /**
+     * Whether schema metadata is kept in a local snapshot between sessions (see {@link OracleMetadataSnapshot}).
+     * Read once per connection: it is checked on every metadata lookup.
+     */
+    public boolean isMetadataSnapshotEnabled() {
+        Boolean enabled = metadataSnapshotEnabled;
+        if (enabled == null) {
+            enabled = CommonUtils.getBoolean(
+                getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_METADATA_SNAPSHOT),
+                getContainer().getPreferenceStore().getBoolean(OracleConstants.PROP_METADATA_SNAPSHOT));
+            metadataSnapshotEnabled = enabled;
+        }
+        return enabled;
+    }
+
+    @Override
+    public void shutdown(@NotNull DBRProgressMonitor monitor) {
+        // Pending metadata snapshot changes are written before the connection goes away
+        for (OracleSchema schema : schemaCache.getCachedObjects()) {
+            schema.flushMetadataSnapshot();
+        }
+        super.shutdown(monitor);
+    }
+
     @Association
     public Collection<OracleSchema> getSchemas(@NotNull DBRProgressMonitor monitor) throws DBException {
         return schemaCache.getAllObjects(monitor, this);
@@ -597,6 +623,11 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                 }
             }
             getDataTypeCache().setCache(dtList);
+        }
+        if (!metadataWarmupScheduled && isMetadataSnapshotEnabled()) {
+            // Once per connection: an explicit refresh of the connection reads metadata from the database
+            metadataWarmupScheduled = true;
+            new OracleMetadataWarmupJob(this).schedule();
         }
     }
 

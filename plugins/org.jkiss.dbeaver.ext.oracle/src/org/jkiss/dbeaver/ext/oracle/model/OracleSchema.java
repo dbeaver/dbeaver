@@ -16,24 +16,33 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFakeStatementImpl;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetImpl;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -88,6 +97,8 @@ public class OracleSchema extends OracleGlobalObject implements
     final public SchedulerProgramCache schedulerProgramCache;
     final public RecycleBin recycleBin;
     private volatile boolean hasStatistics;
+    private final Object snapshotSync = new Object();
+    private volatile OracleMetadataSnapshot metadataSnapshot;
 
     private long id;
     private String name;
@@ -145,6 +156,37 @@ public class OracleSchema extends OracleGlobalObject implements
     public boolean isPublic()
     {
         return OracleConstants.USER_PUBLIC.equals(this.name);
+    }
+
+    /**
+     * Local copy of table metadata, or null if metadata snapshots are disabled for the connection.
+     */
+    @Nullable
+    OracleMetadataSnapshot getMetadataSnapshot() {
+        if (!isPersisted() || !getDataSource().isMetadataSnapshotEnabled()) {
+            return null;
+        }
+        OracleMetadataSnapshot snapshot = metadataSnapshot;
+        if (snapshot == null) {
+            synchronized (snapshotSync) {
+                snapshot = metadataSnapshot;
+                if (snapshot == null) {
+                    snapshot = new OracleMetadataSnapshot(this);
+                    metadataSnapshot = snapshot;
+                }
+            }
+        }
+        return snapshot;
+    }
+
+    /**
+     * Writes pending snapshot changes (if any) to disk.
+     */
+    void flushMetadataSnapshot() {
+        OracleMetadataSnapshot snapshot = metadataSnapshot;
+        if (snapshot != null) {
+            snapshot.flush();
+        }
     }
 
     @Property(order = 200)
@@ -530,9 +572,11 @@ public class OracleSchema extends OracleGlobalObject implements
     }
 
     @Override
-    public synchronized void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
         throws DBException
     {
+        // Not synchronized: each cache guards its own loading. A schema-wide lock made readers of already
+        // cached objects (e.g. SQL completion) wait for unrelated long loads.
         monitor.subTask("Cache tables");
         getTableCache().getAllObjects(monitor, this);
         if ((scope & STRUCT_ATTRIBUTES) != 0) {
@@ -554,6 +598,11 @@ public class OracleSchema extends OracleGlobalObject implements
         throws DBException
     {
         hasStatistics = false;
+        OracleMetadataSnapshot snapshot = metadataSnapshot;
+        if (snapshot != null) {
+            // Explicit refresh: packages are read from the database and the snapshot is rewritten
+            snapshot.setRestored(OracleMetadataSnapshot.Kind.PACKAGES, false);
+        }
         getTableCache().clearCache();
         getForeignKeyCache().clearCache();
         getConstraintCache().clearCache();
@@ -610,6 +659,37 @@ public class OracleSchema extends OracleGlobalObject implements
         if (hasStatistics && !forceRefresh) {
             return;
         }
+        OracleMetadataSnapshot snapshot = getMetadataSnapshot();
+        if (snapshot != null && !forceRefresh) {
+            Map<String, Long> storedSizes = snapshot.getTableSizes();
+            if (storedSizes != null) {
+                // Sizes of the last session right away; current ones are read in background
+                for (OracleTableBase table : getTableCache().getCachedObjects()) {
+                    if (table instanceof OracleTable oracleTable && !oracleTable.hasStatistics()) {
+                        oracleTable.setTableSize(storedSizes.getOrDefault(table.getName(), 0L));
+                    }
+                }
+                hasStatistics = true;
+                new AbstractJob("Read statistics of " + getName()) {
+                    {
+                        setSystem(true);
+                        setUser(false);
+                    }
+
+                    @Override
+                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                        try {
+                            collectObjectStatistics(monitor, totalSizeOnly, true);
+                        } catch (DBException e) {
+                            log.debug("Error reading statistics of " + getName() + ": " + e.getMessage());
+                        }
+                        return Status.OK_STATUS;
+                    }
+                }.schedule(OracleMetadataRefreshJob.START_DELAY_MS);
+                return;
+            }
+        }
+        Map<String, Long> sizes = new HashMap<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
             boolean hasDBA = getDataSource().isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, "DBA_SEGMENTS");
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -625,9 +705,13 @@ public class OracleSchema extends OracleGlobalObject implements
                     while (dbResult.next()) {
                         String tableName = dbResult.getString(1);
                         long bytes = dbResult.getLong(2);
-                        OracleTable table = getTable(monitor, tableName);
+                        // With the table list cached, look it up there: a lookup may trigger reading table details
+                        OracleTable table = getTableCache().isFullyCached()
+                            ? (getTableCache().getCachedObject(tableName) instanceof OracleTable t ? t : null)
+                            : getTable(monitor, tableName);
                         if (table != null) {
                             table.fetchTableSize(dbResult);
+                            sizes.put(tableName, table.getStatObjectSize());
                         }
                     }
                 }
@@ -641,6 +725,9 @@ public class OracleSchema extends OracleGlobalObject implements
                 }
             }
             hasStatistics = true;
+        }
+        if (snapshot != null) {
+            snapshot.setTableSizes(sizes);
         }
     }
 
@@ -736,6 +823,17 @@ public class OracleSchema extends OracleGlobalObject implements
 
     public class TableCache extends JDBCStructLookupCache<OracleSchema, OracleTableBase, OracleTableColumn> {
 
+        // Objects were created from names only (see loadNames); details are read on first use
+        private volatile boolean namesOnly;
+        private volatile boolean detailsScheduled;
+        // Tables whose columns are being read in background because they were looked up (e.g. typed in SQL)
+        private final Set<OracleTableBase> columnsRequested = Collections.synchronizedSet(Collections.newSetFromMap(new IdentityHashMap<>()));
+
+        @Override
+        protected int getMetadataFetchSize() {
+            return OracleConstants.METADATA_FETCH_SIZE;
+        }
+
         protected TableCache()
         {
             super(OracleConstants.COLUMN_OBJECT_NAME);
@@ -775,7 +873,505 @@ public class OracleSchema extends OracleGlobalObject implements
         }
 
         @Override
+        protected synchronized void loadObjects(DBRProgressMonitor monitor, OracleSchema owner) throws DBException {
+            OracleMetadataSnapshot snapshot = owner.getMetadataSnapshot();
+            if (snapshot == null || isFullyCached() || monitor.isForceCacheUsage() || monitor.isCanceled()) {
+                super.loadObjects(monitor, owner);
+                return;
+            }
+            if (snapshot.canRestore(OracleMetadataSnapshot.Kind.TABLES) && restoreTables(monitor, owner, snapshot)) {
+                snapshot.setRestored(OracleMetadataSnapshot.Kind.TABLES, true);
+                if (snapshot.markRefreshScheduled(OracleMetadataSnapshot.Kind.TABLES)) {
+                    new OracleMetadataRefreshJob(snapshot, OracleMetadataSnapshot.Kind.TABLES, snapshotTarget(owner))
+                        .schedule(OracleMetadataRefreshJob.START_DELAY_MS);
+                }
+                return;
+            }
+            snapshot.setRestored(OracleMetadataSnapshot.Kind.TABLES, false);
+            if (loadNames(monitor, owner)) {
+                // Names are enough for the navigator and SQL completion: details follow in background
+                scheduleDetails(owner);
+                return;
+            }
+
+            snapshot.beginObjectsPass(OracleMetadataSnapshot.Kind.TABLES, true);
+            boolean completed = false;
+            try {
+                super.loadObjects(monitor, owner);
+                completed = isFullyCached() && !monitor.isCanceled();
+            } finally {
+                snapshot.endPass(completed, null);
+            }
+            if (completed && !snapshot.isColumnsComplete()) {
+                scheduleBackgroundLoad(owner, false);
+            }
+        }
+
+        /**
+         * Fills the cache with tables, views and materialized views built from their names only: the dictionary
+         * returns names many times faster than the full table query. Other properties stay empty until
+         * {@link #loadDetails} copies them into the same objects.
+         */
+        private boolean loadNames(DBRProgressMonitor monitor, OracleSchema owner) {
+            OracleMetadataSnapshot.Layout layout = new OracleMetadataSnapshot.Layout(
+                new String[]{"OWNER", OracleConstants.COLUMN_OBJECT_NAME, OracleConstants.COLUMN_OBJECT_TYPE,
+                    OracleConstants.COLUMN_STATUS, OracleConstants.COLUMN_TEMPORARY, "SECONDARY"},
+                new boolean[6]);
+            List<Object[]> rows = new ArrayList<>();
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Load table names of " + owner.getName())) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) +
+                        " OWNER, OBJECT_NAME, OBJECT_TYPE, STATUS, TEMPORARY, SECONDARY FROM " +
+                        OracleUtils.getAdminAllViewPrefix(monitor, owner.getDataSource(), "OBJECTS") +
+                        // Packages come with the same query: SQL completion lists them next to tables
+                        " WHERE OWNER=? AND OBJECT_TYPE IN ('TABLE','VIEW','MATERIALIZED VIEW','PACKAGE')"))
+                {
+                    dbStat.setString(1, owner.getName());
+                    dbStat.setFetchSize(getMetadataFetchSize());
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        while (dbResult.next()) {
+                            if (monitor.isCanceled()) {
+                                return false;
+                            }
+                            rows.add(layout.capture(dbResult));
+                        }
+                    }
+                }
+                List<Object[]> packageRows = new ArrayList<>();
+                rows.removeIf(row -> {
+                    boolean isPackage = "PACKAGE".equals(row[2]);
+                    if (isPackage) {
+                        packageRows.add(row);
+                    }
+                    return isPackage;
+                });
+                List<OracleTableBase> tables = new ArrayList<>(rows.size());
+                try (JDBCResultSet replay = JDBCResultSetImpl.makeResultSet(
+                    session, null, OracleMetadataSnapshot.replayPartial(layout, rows), true))
+                {
+                    while (replay.next()) {
+                        tables.add(createTable(session, owner, replay));
+                    }
+                }
+                owner.getPackageCache().acceptNames(session, owner, layout, packageRows);
+                Comparator<OracleTableBase> comparator = getListOrderComparator();
+                if (comparator != null) {
+                    tables.sort(comparator);
+                }
+                detectCaseSensitivity(owner);
+                namesOnly = true;
+                setCache(tables);
+                return true;
+            } catch (Exception e) {
+                log.debug("Error loading table names of " + owner.getName() + ", reading full table list: " + e.getMessage());
+                return false;
+            }
+        }
+
+        /**
+         * Reads the full table list over a separate connection and copies the details into the cached objects
+         * (created from names by {@link #loadNames}). Rows are stored in the snapshot.
+         */
+        private void loadDetails(@NotNull DBRProgressMonitor monitor, @NotNull OracleSchema owner) throws DBException {
+            OracleMetadataSnapshot snapshot = owner.getMetadataSnapshot();
+            DBCExecutionContext context = owner.getDataSource().getDefaultInstance()
+                .openIsolatedContext(monitor, JDBCExecutionContext.TYPE_METADATA, null);
+            Map<String, OracleTableBase> loaded = new LinkedHashMap<>();
+            boolean completed = false;
+            if (snapshot != null) {
+                snapshot.beginObjectsPass(OracleMetadataSnapshot.Kind.TABLES, true);
+            }
+            try (JDBCSession session = (JDBCSession) context.openSession(monitor, DBCExecutionPurpose.META, "Read tables of " + owner.getName())) {
+                try (JDBCStatement dbStat = prepareObjectsStatement(session, owner)) {
+                    dbStat.setFetchSize(getMetadataFetchSize());
+                    dbStat.executeStatement();
+                    try (JDBCResultSet dbResult = dbStat.getResultSet()) {
+                        while (dbResult != null && dbResult.next()) {
+                            if (monitor.isCanceled()) {
+                                return;
+                            }
+                            OracleTableBase table = fetchObject(session, owner, dbResult);
+                            if (table != null) {
+                                loaded.put(table.getName(), table);
+                            }
+                        }
+                    }
+                }
+                completed = !monitor.isCanceled();
+            } catch (SQLException e) {
+                throw new DBDatabaseException(e, owner.getDataSource());
+            } finally {
+                if (snapshot != null) {
+                    snapshot.endPass(completed, null);
+                }
+                context.close();
+            }
+            for (OracleTableBase table : loaded.values()) {
+                OracleTableBase cached = getCachedObject(table.getName());
+                if (cached == null) {
+                    cacheObject(table);
+                    DBUtils.fireObjectAdd(table, Collections.emptyMap());
+                } else if (cached.getClass() == table.getClass()) {
+                    deepCopyCachedObject(table, cached);
+                } else {
+                    removeObject(cached, false);
+                    cacheObject(table);
+                    DBUtils.fireObjectRemove(cached);
+                    DBUtils.fireObjectAdd(table, Collections.emptyMap());
+                }
+            }
+            for (OracleTableBase cached : getCachedObjects()) {
+                if (!loaded.containsKey(cached.getName())) {
+                    removeObject(cached, false);
+                    DBUtils.fireObjectRemove(cached);
+                }
+            }
+            namesOnly = false;
+        }
+
+        /**
+         * Reads in background what a first session of a schema needs next: table details (if only names were loaded),
+         * columns of all tables (long ALL_TAB_COLS query) and indexes, storing them in the snapshot.
+         */
+        private void scheduleBackgroundLoad(@NotNull OracleSchema owner, boolean details) {
+            new AbstractJob("Read metadata of " + owner.getName()) {
+                {
+                    setSystem(true);
+                    setUser(false);
+                }
+
+                @Override
+                protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                    try {
+                        if (details) {
+                            loadDetails(monitor, owner);
+                            owner.getPackageCache().loadDetails(monitor, owner);
+                        }
+                        prefetchColumns(monitor, owner);
+                        owner.getIndexCache().getAllObjects(monitor, owner);
+                    } catch (DBException e) {
+                        log.debug("Error reading metadata of " + owner.getName() + ": " + e.getMessage());
+                    }
+                    return Status.OK_STATUS;
+                }
+            }.schedule();
+        }
+
+        @NotNull
+        @Override
+        public List<OracleTableBase> getAllObjects(@NotNull DBRProgressMonitor monitor, @Nullable OracleSchema owner) throws DBException {
+            if (namesOnly && owner != null) {
+                scheduleDetails(owner);
+            }
+            return super.getAllObjects(monitor, owner);
+        }
+
+        /**
+         * Loads names of tables (and packages) if nothing is cached and there is no snapshot to restore.
+         * Used right after connect: details are read when the schema is used for the first time.
+         */
+        void prefetchNames(@NotNull DBRProgressMonitor monitor, @NotNull OracleSchema owner) {
+            OracleMetadataSnapshot snapshot = owner.getMetadataSnapshot();
+            synchronized (this) {
+                if (snapshot == null || isFullyCached() || snapshot.canRestore(OracleMetadataSnapshot.Kind.TABLES)) {
+                    return;
+                }
+                snapshot.setRestored(OracleMetadataSnapshot.Kind.TABLES, false);
+                loadNames(monitor, owner);
+            }
+        }
+
+        private void scheduleDetails(@NotNull OracleSchema owner) {
+            synchronized (this) {
+                if (detailsScheduled) {
+                    return;
+                }
+                detailsScheduled = true;
+            }
+            scheduleBackgroundLoad(owner, true);
+        }
+
+        @Override
+        public OracleTableBase getObject(@NotNull DBRProgressMonitor monitor, @NotNull OracleSchema owner, @NotNull String name)
+            throws DBException
+        {
+            if (namesOnly) {
+                scheduleDetails(owner);
+            }
+            OracleMetadataSnapshot snapshot = owner.getMetadataSnapshot();
+            if (snapshot != null && !isFullyCached() && !monitor.isForceCacheUsage()) {
+                // With a snapshot the whole list is taken (from the snapshot, or read once and recorded):
+                // lookups of single objects would otherwise always query the database
+                loadObjects(monitor, owner);
+            }
+            OracleTableBase table = super.getObject(monitor, owner, name);
+            if (snapshot != null && table != null && !isChildrenCached(table) && columnsRequested.add(table)) {
+                // A table named in SQL text is resolved before its columns are asked for (e.g. "t." after
+                // "FROM T t"): read its columns now, in background, while the user is still typing
+                new AbstractJob("Read columns of " + table.getName()) {
+                    {
+                        setSystem(true);
+                        setUser(false);
+                    }
+
+                    @Override
+                    protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                        try {
+                            loadChildren(monitor, owner, table);
+                        } catch (DBException e) {
+                            log.debug("Error reading columns of " + table.getName() + ": " + e.getMessage());
+                        } finally {
+                            columnsRequested.remove(table);
+                        }
+                        return Status.OK_STATUS;
+                    }
+                }.schedule();
+            }
+            return table;
+        }
+
+        private boolean restoreTables(DBRProgressMonitor monitor, OracleSchema owner, OracleMetadataSnapshot snapshot) {
+            long start = System.currentTimeMillis();
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Restore metadata snapshot of " + owner.getName())) {
+                List<OracleTableBase> tables = snapshot.restoreObjects(
+                    OracleMetadataSnapshot.Kind.TABLES, session, rs -> createTable(session, owner, rs));
+                Comparator<OracleTableBase> comparator = getListOrderComparator();
+                if (comparator != null) {
+                    tables.sort(comparator);
+                }
+                detectCaseSensitivity(owner);
+                setCache(tables);
+                log.debug("Restored " + tables.size() + " tables of " + owner.getName() + " from metadata snapshot in " +
+                    (System.currentTimeMillis() - start) + "ms");
+                return true;
+            } catch (Exception e) {
+                log.warn("Error restoring metadata snapshot of " + owner.getName() + ", reading from database", e);
+                return false;
+            }
+        }
+
+        @Override
+        public void loadChildren(DBRProgressMonitor monitor, OracleSchema owner, @Nullable OracleTableBase forObject) throws DBException {
+            OracleMetadataSnapshot snapshot = owner.getMetadataSnapshot();
+            if (snapshot == null || monitor.isForceCacheUsage() || monitor.isCanceled()) {
+                super.loadChildren(monitor, owner, forObject);
+                return;
+            }
+            if (forObject == null) {
+                // The table list itself may come from the snapshot
+                getAllObjects(monitor, owner);
+            }
+            if (snapshot.canRestoreColumns()) {
+                restoreColumns(monitor, owner, snapshot, forObject);
+            }
+            if (forObject == null ? isAllChildrenCached() : isChildrenCached(forObject)) {
+                return;
+            }
+            snapshot.beginColumnsPass();
+            boolean completed = false;
+            try {
+                super.loadChildren(monitor, owner, forObject);
+                completed = !monitor.isCanceled() && (forObject == null ? isAllChildrenCached() : isChildrenCached(forObject));
+            } finally {
+                snapshot.endPass(completed, forObject == null ? null : forObject.getName());
+            }
+            if (completed && forObject == null) {
+                snapshot.markColumnsComplete();
+            }
+        }
+
+        private void restoreColumns(
+            DBRProgressMonitor monitor,
+            OracleSchema owner,
+            OracleMetadataSnapshot snapshot,
+            @Nullable OracleTableBase forObject
+        ) {
+            List<OracleTableBase> tables = forObject != null ? List.of(forObject) : getCachedObjects();
+            boolean restoredAll = forObject == null && snapshot.isColumnsComplete();
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Restore columns of " + owner.getName())) {
+                for (OracleTableBase table : tables) {
+                    if (isChildrenCached(table)) {
+                        continue;
+                    }
+                    List<OracleTableColumn> columns = snapshot.restoreColumns(session, table.getName(), rs -> createColumn(session, table, rs));
+                    if (columns != null) {
+                        cacheChildren(table, columns);
+                    } else {
+                        restoredAll = false;
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Error restoring columns of " + owner.getName() + " from metadata snapshot", e);
+                return;
+            }
+            if (restoredAll) {
+                markChildrenCached();
+            }
+        }
+
+        @Override
+        public void clearCache() {
+            super.clearCache();
+            OracleMetadataSnapshot snapshot = metadataSnapshot;
+            if (snapshot != null) {
+                // Explicit refresh: objects are read from the database and the snapshot is rewritten
+                snapshot.setRestored(OracleMetadataSnapshot.Kind.TABLES, false);
+            }
+        }
+
+        @NotNull
+        private OracleMetadataRefreshJob.Target<OracleTableBase> snapshotTarget(@NotNull OracleSchema owner) {
+            return new OracleMetadataRefreshJob.Target<>() {
+                @Nullable
+                @Override
+                public OracleTableBase read(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
+                    return reloadObject(monitor, owner, null, name);
+                }
+
+                @Nullable
+                @Override
+                public OracleTableBase getCached(@NotNull String name) {
+                    return getCachedObject(name);
+                }
+
+                @Override
+                public void add(@NotNull OracleTableBase object) {
+                    cacheObject(object);
+                }
+
+                @Override
+                public void remove(@NotNull OracleTableBase object) {
+                    removeObject(object, false);
+                }
+
+                @Override
+                public void copy(@NotNull OracleTableBase source, @NotNull OracleTableBase target) {
+                    deepCopyCachedObject(source, target);
+                }
+            };
+        }
+
+        /**
+         * Reads columns of one table from the database, bypassing the cache. Used by the incremental snapshot refresh.
+         */
+        @NotNull
+        List<OracleTableColumn> readColumns(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull OracleSchema owner,
+            @NotNull OracleTableBase table
+        ) throws DBException {
+            OracleMetadataSnapshot snapshot = owner.getMetadataSnapshot();
+            if (snapshot != null) {
+                snapshot.beginColumnsPass();
+            }
+            boolean completed = false;
+            List<OracleTableColumn> columns = new ArrayList<>();
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Read columns of " + table.getName())) {
+                try (JDBCStatement dbStat = prepareChildrenStatement(session, owner, table)) {
+                    dbStat.setFetchSize(getMetadataFetchSize());
+                    dbStat.executeStatement();
+                    try (JDBCResultSet dbResult = dbStat.getResultSet()) {
+                        while (dbResult != null && dbResult.next()) {
+                            OracleTableColumn column = fetchChild(session, owner, table, dbResult);
+                            if (column != null) {
+                                columns.add(column);
+                            }
+                        }
+                    }
+                }
+                completed = !monitor.isCanceled();
+            } catch (SQLException e) {
+                throw new DBDatabaseException(e, owner.getDataSource());
+            } finally {
+                if (snapshot != null) {
+                    snapshot.endPass(completed, table.getName());
+                }
+            }
+            return columns;
+        }
+
+        void putColumns(@NotNull OracleTableBase table, @NotNull List<OracleTableColumn> columns) {
+            cacheChildren(table, columns);
+        }
+
+        /**
+         * Reads columns of all tables in background, over a separate connection: the metadata connection stays free
+         * for the navigator and SQL completion while this long query runs. Columns cached meanwhile are kept.
+         */
+        void prefetchColumns(@NotNull DBRProgressMonitor monitor, @NotNull OracleSchema owner) throws DBException {
+            if (isAllChildrenCached()) {
+                return;
+            }
+            getAllObjects(monitor, owner);
+            OracleMetadataSnapshot snapshot = owner.getMetadataSnapshot();
+            if (getCachedObjects().isEmpty()) {
+                markChildrenCached();
+                if (snapshot != null) {
+                    snapshot.markColumnsComplete();
+                }
+                return;
+            }
+            // Named as the metadata context, so it gets the same session settings (e.g. meta optimizer)
+            DBCExecutionContext context = owner.getDataSource().getDefaultInstance()
+                .openIsolatedContext(monitor, JDBCExecutionContext.TYPE_METADATA, null);
+            Map<OracleTableBase, List<OracleTableColumn>> columns = new LinkedHashMap<>();
+            boolean completed = false;
+            if (snapshot != null) {
+                snapshot.beginColumnsPass();
+            }
+            try (JDBCSession session = (JDBCSession) context.openSession(monitor, DBCExecutionPurpose.META, "Read columns of " + owner.getName())) {
+                try (JDBCStatement dbStat = prepareChildrenStatement(session, owner, null)) {
+                    dbStat.setFetchSize(getMetadataFetchSize());
+                    dbStat.executeStatement();
+                    try (JDBCResultSet dbResult = dbStat.getResultSet()) {
+                        while (dbResult != null && dbResult.next()) {
+                            if (monitor.isCanceled()) {
+                                return;
+                            }
+                            String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, OracleConstants.COLUMN_OBJECT_NAME);
+                            OracleTableBase table = tableName == null ? null : getCachedObject(tableName);
+                            if (table == null || isChildrenCached(table)) {
+                                continue;
+                            }
+                            OracleTableColumn column = fetchChild(session, owner, table, dbResult);
+                            if (column != null) {
+                                columns.computeIfAbsent(table, t -> new ArrayList<>()).add(column);
+                            }
+                        }
+                    }
+                }
+                completed = !monitor.isCanceled();
+            } catch (SQLException e) {
+                throw new DBDatabaseException(e, owner.getDataSource());
+            } finally {
+                if (snapshot != null) {
+                    snapshot.endPass(completed, null);
+                }
+                context.close();
+            }
+            for (OracleTableBase table : getCachedObjects()) {
+                if (!isChildrenCached(table)) {
+                    cacheChildren(table, columns.getOrDefault(table, new ArrayList<>()));
+                }
+            }
+            markChildrenCached();
+            if (snapshot != null) {
+                snapshot.markColumnsComplete();
+            }
+        }
+
+        @Override
         protected OracleTableBase fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            OracleMetadataSnapshot snapshot = owner.getMetadataSnapshot();
+            if (snapshot != null && !OracleMetadataSnapshot.isReplay(dbResult)) {
+                return snapshot.recordObject(OracleMetadataSnapshot.Kind.TABLES, session, dbResult, rs -> createTable(session, owner, rs));
+            }
+            return createTable(session, owner, dbResult);
+        }
+
+        private OracleTableBase createTable(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
             final String tableType = JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_OBJECT_TYPE);
@@ -834,6 +1430,20 @@ public class OracleSchema extends OracleGlobalObject implements
 
         @Override
         protected OracleTableColumn fetchChild(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull OracleTableBase table, @NotNull JDBCResultSet dbResult)
+            throws DBException
+        {
+            OracleMetadataSnapshot snapshot = owner.getMetadataSnapshot();
+            if (snapshot != null && !OracleMetadataSnapshot.isReplay(dbResult)) {
+                try {
+                    return snapshot.recordColumn(session, table.getName(), dbResult, rs -> createColumn(session, table, rs));
+                } catch (SQLException e) {
+                    throw new DBDatabaseException(e, owner.getDataSource());
+                }
+            }
+            return createColumn(session, table, dbResult);
+        }
+
+        private OracleTableColumn createColumn(@NotNull JDBCSession session, @NotNull OracleTableBase table, @NotNull JDBCResultSet dbResult)
             throws DBException
         {
             return new OracleTableColumn(session.getProgressMonitor(), table, dbResult);
@@ -905,6 +1515,11 @@ public class OracleSchema extends OracleGlobalObject implements
      * Constraint cache implementation
      */
     public class ConstraintCache extends JDBCCompositeCache<OracleSchema, OracleTableBase, OracleTableConstraint, OracleTableConstraintColumn> {
+
+        @Override
+        protected int getMetadataFetchSize() {
+            return OracleConstants.METADATA_FETCH_SIZE;
+        }
         protected ConstraintCache(TableCache tableCache)
         {
             super(tableCache, OracleTableBase.class, OracleConstants.COL_TABLE_NAME, OracleConstants.COL_CONSTRAINT_NAME);
@@ -1121,6 +1736,11 @@ public class OracleSchema extends OracleGlobalObject implements
 
     public class ForeignKeyCache extends JDBCCompositeCache<OracleSchema, OracleTable, OracleTableForeignKey, OracleTableForeignKeyColumn> {
 
+        @Override
+        protected int getMetadataFetchSize() {
+            return OracleConstants.METADATA_FETCH_SIZE;
+        }
+
         protected ForeignKeyCache(TableCache tableCache)
         {
             super(tableCache, OracleTable.class, OracleConstants.COL_TABLE_NAME, OracleConstants.COL_CONSTRAINT_NAME);
@@ -1303,9 +1923,47 @@ public class OracleSchema extends OracleGlobalObject implements
      * Index cache implementation
      */
     public class IndexCache extends JDBCCompositeCache<OracleSchema, OracleTableBase, OracleTableIndex, OracleTableIndexColumn> {
+
+        @Override
+        protected int getMetadataFetchSize() {
+            return OracleConstants.METADATA_FETCH_SIZE;
+        }
+        // Stored index rows replayed by the current load in this thread
+        private final ThreadLocal<ResultSet> replayRows = new ThreadLocal<>();
+
         protected IndexCache(TableCache tableCache)
         {
             super(tableCache, OracleTableBase.class, "TABLE_NAME", "INDEX_NAME");
+        }
+
+        @Override
+        protected void loadObjects(@NotNull DBRProgressMonitor monitor, @NotNull OracleSchema owner, @Nullable OracleTableBase forParent)
+            throws DBException
+        {
+            OracleMetadataSnapshot snapshot = owner.getMetadataSnapshot();
+            if (snapshot == null || monitor.isForceCacheUsage()) {
+                super.loadObjects(monitor, owner, forParent);
+                return;
+            }
+            ResultSet stored = snapshot.replayIndexRows(forParent == null ? null : forParent.getName());
+            if (stored != null) {
+                // Same loading code, fed with the stored rows instead of a query (see prepareObjectsStatement)
+                replayRows.set(stored);
+                try {
+                    super.loadObjects(monitor, owner, forParent);
+                } finally {
+                    replayRows.remove();
+                }
+                return;
+            }
+            snapshot.beginIndexesPass(forParent == null);
+            boolean completed = false;
+            try {
+                super.loadObjects(monitor, owner, forParent);
+                completed = !monitor.isCanceled();
+            } finally {
+                snapshot.endIndexesPass(completed, forParent == null ? null : forParent.getName());
+            }
         }
 
         @NotNull
@@ -1315,6 +1973,12 @@ public class OracleSchema extends OracleGlobalObject implements
             @NotNull OracleSchema owner,
             @Nullable OracleTableBase forTable
         ) throws SQLException {
+            ResultSet stored = replayRows.get();
+            if (stored != null) {
+                JDBCFakeStatementImpl statement = new JDBCFakeStatementImpl(session, null, true);
+                JDBCResultSetImpl.makeResultSet(session, statement, stored, true);
+                return statement;
+            }
             final OracleDataSource dataSource = owner.getDataSource();
             final DBRProgressMonitor monitor = session.getProgressMonitor();
             final String indexesView = OracleUtils.getAdminAllViewPrefix(monitor, dataSource, "INDEXES");
@@ -1370,6 +2034,24 @@ public class OracleSchema extends OracleGlobalObject implements
         @Nullable
         @Override
         protected OracleTableIndexColumn[] fetchObjectRow(
+            @NotNull JDBCSession session,
+            @NotNull OracleTableBase parent,
+            @NotNull OracleTableIndex object,
+            @NotNull JDBCResultSet dbResult
+        ) throws DBException {
+            OracleMetadataSnapshot snapshot = getMetadataSnapshot();
+            if (snapshot != null && !OracleMetadataSnapshot.isReplay(dbResult)) {
+                try {
+                    return snapshot.recordIndexRow(session, parent.getName(), dbResult, rs -> createIndexRow(session, parent, object, rs));
+                } catch (SQLException e) {
+                    throw new DBDatabaseException(e, getDataSource());
+                }
+            }
+            return createIndexRow(session, parent, object, dbResult);
+        }
+
+        @Nullable
+        private OracleTableIndexColumn[] createIndexRow(
             @NotNull JDBCSession session,
             @NotNull OracleTableBase parent,
             @NotNull OracleTableIndex object,
@@ -1474,6 +2156,11 @@ public class OracleSchema extends OracleGlobalObject implements
      */
     public static class ProceduresCache extends JDBCObjectLookupCache<OracleSchema, OracleProcedureStandalone> {
 
+        @Override
+        protected int getMetadataFetchSize() {
+            return OracleConstants.METADATA_FETCH_SIZE;
+        }
+
         @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleProcedureStandalone object, @Nullable String objectName) throws SQLException {
@@ -1499,6 +2186,11 @@ public class OracleSchema extends OracleGlobalObject implements
     }
 
     public static class PackageCache extends JDBCObjectLookupCache<OracleSchema, OraclePackage> {
+
+        @Override
+        protected int getMetadataFetchSize() {
+            return OracleConstants.METADATA_FETCH_SIZE;
+        }
 
         @NotNull
         @Override
@@ -1547,9 +2239,178 @@ public class OracleSchema extends OracleGlobalObject implements
         }
 
         @Override
+        protected synchronized void loadObjects(DBRProgressMonitor monitor, OracleSchema owner) throws DBException {
+            OracleMetadataSnapshot snapshot = owner.getMetadataSnapshot();
+            if (snapshot == null || isFullyCached() || monitor.isForceCacheUsage() || monitor.isCanceled()) {
+                super.loadObjects(monitor, owner);
+                return;
+            }
+            if (snapshot.canRestore(OracleMetadataSnapshot.Kind.PACKAGES)) {
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Restore packages of " + owner.getName())) {
+                    List<OraclePackage> packages = snapshot.restoreObjects(
+                        OracleMetadataSnapshot.Kind.PACKAGES, session, rs -> new OraclePackage(owner, rs));
+                    packages.sort(DBUtils.nameComparator());
+                    setCache(packages);
+                    snapshot.setRestored(OracleMetadataSnapshot.Kind.PACKAGES, true);
+                    if (snapshot.markRefreshScheduled(OracleMetadataSnapshot.Kind.PACKAGES)) {
+                        new OracleMetadataRefreshJob(snapshot, OracleMetadataSnapshot.Kind.PACKAGES, snapshotTarget(owner))
+                            .schedule(OracleMetadataRefreshJob.START_DELAY_MS);
+                    }
+                    return;
+                } catch (Exception e) {
+                    log.warn("Error restoring packages of " + owner.getName() + " from metadata snapshot, reading from database", e);
+                }
+            }
+            snapshot.setRestored(OracleMetadataSnapshot.Kind.PACKAGES, false);
+            snapshot.beginObjectsPass(OracleMetadataSnapshot.Kind.PACKAGES, true);
+            boolean completed = false;
+            try {
+                super.loadObjects(monitor, owner);
+                completed = isFullyCached() && !monitor.isCanceled();
+            } finally {
+                snapshot.endPass(completed, null);
+            }
+        }
+
+        @Override
+        public OraclePackage getObject(@NotNull DBRProgressMonitor monitor, @NotNull OracleSchema owner, @NotNull String name)
+            throws DBException
+        {
+            OracleMetadataSnapshot snapshot = owner.getMetadataSnapshot();
+            if (snapshot != null && !isFullyCached() && !monitor.isForceCacheUsage()) {
+                // With a snapshot the whole list is taken (from the snapshot, or read once and recorded):
+                // lookups of single objects would otherwise always query the database
+                loadObjects(monitor, owner);
+            }
+            return super.getObject(monitor, owner, name);
+        }
+
+        // Packages were created from names only and wait for their details
+        private volatile boolean namesOnly;
+
+        /**
+         * Fills the cache with packages built from their names (read together with table names), if it is empty.
+         */
+        void acceptNames(
+            @NotNull JDBCSession session,
+            @NotNull OracleSchema owner,
+            @NotNull OracleMetadataSnapshot.Layout layout,
+            @NotNull List<Object[]> rows
+        ) throws SQLException, DBException {
+            if (isFullyCached()) {
+                return;
+            }
+            List<OraclePackage> packages = new ArrayList<>(rows.size());
+            try (JDBCResultSet replay = JDBCResultSetImpl.makeResultSet(session, null, OracleMetadataSnapshot.replayPartial(layout, rows), true)) {
+                while (replay.next()) {
+                    packages.add(new OraclePackage(owner, replay));
+                }
+            }
+            packages.sort(DBUtils.nameComparator());
+            OracleMetadataSnapshot snapshot = owner.getMetadataSnapshot();
+            if (snapshot != null) {
+                snapshot.setRestored(OracleMetadataSnapshot.Kind.PACKAGES, false);
+            }
+            namesOnly = true;
+            setCache(packages);
+        }
+
+        /**
+         * Reads full package rows over a separate connection and copies them into packages created from names.
+         */
+        void loadDetails(@NotNull DBRProgressMonitor monitor, @NotNull OracleSchema owner) throws DBException {
+            if (!namesOnly) {
+                return;
+            }
+            OracleMetadataSnapshot snapshot = owner.getMetadataSnapshot();
+            DBCExecutionContext context = owner.getDataSource().getDefaultInstance()
+                .openIsolatedContext(monitor, JDBCExecutionContext.TYPE_METADATA, null);
+            Map<String, OraclePackage> loaded = new LinkedHashMap<>();
+            boolean completed = false;
+            if (snapshot != null) {
+                snapshot.beginObjectsPass(OracleMetadataSnapshot.Kind.PACKAGES, true);
+            }
+            try (JDBCSession session = (JDBCSession) context.openSession(monitor, DBCExecutionPurpose.META, "Read packages of " + owner.getName())) {
+                try (JDBCStatement dbStat = prepareObjectsStatement(session, owner)) {
+                    dbStat.setFetchSize(getMetadataFetchSize());
+                    dbStat.executeStatement();
+                    try (JDBCResultSet dbResult = dbStat.getResultSet()) {
+                        while (dbResult != null && dbResult.next()) {
+                            if (monitor.isCanceled()) {
+                                return;
+                            }
+                            OraclePackage pkg = fetchObject(session, owner, dbResult);
+                            if (pkg != null) {
+                                loaded.put(pkg.getName(), pkg);
+                            }
+                        }
+                    }
+                }
+                completed = !monitor.isCanceled();
+            } catch (SQLException e) {
+                throw new DBDatabaseException(e, owner.getDataSource());
+            } finally {
+                if (snapshot != null) {
+                    snapshot.endPass(completed, null);
+                }
+                context.close();
+            }
+            for (OraclePackage pkg : loaded.values()) {
+                OraclePackage cached = getCachedObject(pkg.getName());
+                if (cached == null) {
+                    cacheObject(pkg);
+                } else {
+                    deepCopyCachedObject(pkg, cached);
+                }
+            }
+            for (OraclePackage cached : getCachedObjects()) {
+                if (!loaded.containsKey(cached.getName())) {
+                    removeObject(cached, false);
+                }
+            }
+            namesOnly = false;
+        }
+
+        @NotNull
+        private OracleMetadataRefreshJob.Target<OraclePackage> snapshotTarget(@NotNull OracleSchema owner) {
+            return new OracleMetadataRefreshJob.Target<>() {
+                @Nullable
+                @Override
+                public OraclePackage read(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
+                    return reloadObject(monitor, owner, null, name);
+                }
+
+                @Nullable
+                @Override
+                public OraclePackage getCached(@NotNull String name) {
+                    return getCachedObject(name);
+                }
+
+                @Override
+                public void add(@NotNull OraclePackage object) {
+                    cacheObject(object);
+                }
+
+                @Override
+                public void remove(@NotNull OraclePackage object) {
+                    removeObject(object, false);
+                }
+
+                @Override
+                public void copy(@NotNull OraclePackage source, @NotNull OraclePackage target) {
+                    deepCopyCachedObject(source, target);
+                }
+            };
+        }
+
+        @Override
         protected OraclePackage fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
+            OracleMetadataSnapshot snapshot = owner.getMetadataSnapshot();
+            if (snapshot != null && !OracleMetadataSnapshot.isReplay(dbResult)) {
+                return snapshot.recordObject(OracleMetadataSnapshot.Kind.PACKAGES, session, dbResult, rs -> new OraclePackage(owner, rs));
+            }
             return new OraclePackage(owner, dbResult);
         }
 
@@ -1650,6 +2511,11 @@ public class OracleSchema extends OracleGlobalObject implements
     }
 
     public class TableTriggerCache extends JDBCCompositeCache<OracleSchema, OracleTableBase, OracleTableTrigger, OracleTriggerColumn> {
+
+        @Override
+        protected int getMetadataFetchSize() {
+            return OracleConstants.METADATA_FETCH_SIZE;
+        }
         protected TableTriggerCache(TableCache tableCache) {
             super(tableCache, OracleTableBase.class, "TABLE_NAME", "TRIGGER_NAME");
         }

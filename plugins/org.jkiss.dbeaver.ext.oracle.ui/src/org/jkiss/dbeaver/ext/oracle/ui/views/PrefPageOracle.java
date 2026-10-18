@@ -46,6 +46,7 @@ public class PrefPageOracle extends TargetPrefPage {
     private Button useSimpleConstraints;
     private Button useAlternativeTableMetadataQuery;
     private Button readColumnComments;
+    private Button metadataSnapshot;
     private Button searchInSynonyms;
     private Button searchInSequences;
     private Button showDateAsDate;
@@ -70,6 +71,7 @@ public class PrefPageOracle extends TargetPrefPage {
             store.contains(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS) ||
             store.contains(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY) ||
             store.contains(OracleConstants.PROP_METADATA_READ_COLUMN_COMMENTS) ||
+            store.contains(OracleConstants.PROP_METADATA_SNAPSHOT) ||
             store.contains(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS) ||
             store.contains(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES) ||
             store.contains(OracleConstants.PROP_SHOW_DATE_AS_DATE)
@@ -153,6 +155,13 @@ public class PrefPageOracle extends TargetPrefPage {
             );
             readColumnComments.setToolTipText(OracleUIMessages.edit_create_checkbox_content_group_read_column_comments_description);
 
+            metadataSnapshot = UIUtils.createCheckbox(
+                performanceGroup,
+                OracleUIMessages.edit_create_checkbox_content_group_metadata_snapshot,
+                globalPreferences.getBoolean(OracleConstants.PROP_METADATA_SNAPSHOT)
+            );
+            metadataSnapshot.setToolTipText(OracleUIMessages.edit_create_checkbox_content_group_metadata_snapshot_description);
+
             searchInSynonyms = UIUtils.createCheckbox(
                 performanceGroup,
                 OracleUIMessages.edit_create_checkbox_content_group_search_metadata_in_synonyms,
@@ -200,6 +209,7 @@ public class PrefPageOracle extends TargetPrefPage {
         useSimpleConstraints.setSelection(store.getBoolean(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS));
         useAlternativeTableMetadataQuery.setSelection(store.getBoolean(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY));
         readColumnComments.setSelection(store.getBoolean(OracleConstants.PROP_METADATA_READ_COLUMN_COMMENTS));
+        metadataSnapshot.setSelection(store.getBoolean(OracleConstants.PROP_METADATA_SNAPSHOT));
         searchInSynonyms.setSelection(store.getBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS));
         searchInSequences.setSelection(store.getBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES));
 
@@ -220,6 +230,7 @@ public class PrefPageOracle extends TargetPrefPage {
         store.setValue(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS, useSimpleConstraints.getSelection());
         store.setValue(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY, useAlternativeTableMetadataQuery.getSelection());
         store.setValue(OracleConstants.PROP_METADATA_READ_COLUMN_COMMENTS, readColumnComments.getSelection());
+        store.setValue(OracleConstants.PROP_METADATA_SNAPSHOT, metadataSnapshot.getSelection());
         store.setValue(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS, searchInSynonyms.getSelection());
         store.setValue(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES, searchInSequences.getSelection());
 
@@ -242,6 +253,7 @@ public class PrefPageOracle extends TargetPrefPage {
         store.setToDefault(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS);
         store.setToDefault(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY);
         store.setToDefault(OracleConstants.PROP_METADATA_READ_COLUMN_COMMENTS);
+        store.setToDefault(OracleConstants.PROP_METADATA_SNAPSHOT);
         store.setToDefault(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS);
         store.setToDefault(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES);
 
