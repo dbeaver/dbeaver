@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -65,6 +65,14 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
 
     public void setListOrderComparator(Comparator<OBJECT> listOrderComparator) {
         this.listOrderComparator = listOrderComparator;
+    }
+
+    /**
+     * Rows fetched per round trip when the cache reads its objects. Drivers whose metadata queries return many rows
+     * may use larger values: on slow networks every fetch costs a full round trip.
+     */
+    protected int getMetadataFetchSize() {
+        return DBConstants.METADATA_FETCH_SIZE;
     }
 
     @NotNull

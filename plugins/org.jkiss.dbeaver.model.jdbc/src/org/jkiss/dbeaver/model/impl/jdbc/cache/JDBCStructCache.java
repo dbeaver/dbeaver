@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -71,19 +70,33 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
      * @throws org.jkiss.dbeaver.DBException
      *             on error
      */
-    public synchronized void loadChildren(DBRProgressMonitor monitor, OWNER owner, @Nullable final OBJECT forObject) throws DBException {
+    public void loadChildren(DBRProgressMonitor monitor, OWNER owner, @Nullable final OBJECT forObject) throws DBException {
+        // Cached state is checked without the cache lock: readers of already cached children
+        // must never wait for a long load running in another thread.
         if (monitor.isForceCacheUsage() || monitor.isCanceled() ||
             (forObject == null && this.childrenCached) ||
             (forObject != null && (!forObject.isPersisted() || isChildrenCached(forObject)))) {
             return;
         }
         if (forObject == null) {
-            // If we have some child objects read before that - do not clear them.
-            // We have to reuse them because there could be some references in cached model
-            //clearChildrenCache(null);
-            super.loadObjects(monitor, owner);
+            // Children of all objects are read by one thread at a time
+            synchronized (this) {
+                if (this.childrenCached || monitor.isCanceled()) {
+                    return;
+                }
+                // If we have some child objects read before that - do not clear them.
+                // We have to reuse them because there could be some references in cached model
+                //clearChildrenCache(null);
+                super.loadObjects(monitor, owner);
+                readChildren(monitor, owner, null);
+            }
+        } else {
+            // Children of a single object do not wait for a full load of the container
+            readChildren(monitor, owner, forObject);
         }
+    }
 
+    private void readChildren(DBRProgressMonitor monitor, OWNER owner, @Nullable final OBJECT forObject) throws DBException {
         DBPDataSource dataSource = owner.getDataSource();
         if (dataSource == null) {
             throw new DBException(ModelMessages.error_not_connected_to_database);
@@ -93,7 +106,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
 
             // Load columns
             try (JDBCStatement dbStat = prepareChildrenStatement(session, owner, forObject)) {
-                dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+                dbStat.setFetchSize(getMetadataFetchSize());
                 dbStat.executeStatement();
                 JDBCResultSet dbResult = dbStat.getResultSet();
                 if (dbResult != null) {
@@ -141,11 +154,8 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
 
                         // All children are read. Now assign them to parents
                         for (Map.Entry<OBJECT, List<CHILD>> colEntry : objectMap.entrySet()) {
-                            if (!isChildrenCached(colEntry.getKey())) {
-                                // isChildrenCached may return true if the same cache was read in other thread
-                                // just skip
-                                cacheChildren(colEntry.getKey(), colEntry.getValue());
-                            }
+                            // Children may have been read by another thread meanwhile: keep them
+                            cacheChildrenIfAbsent(colEntry.getKey(), colEntry.getValue());
                         }
                         if (forObject == null) {
                             if (objectMap.isEmpty()) {
@@ -154,14 +164,14 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                             } else {
                                 // Now set empty column list for other tables
                                 for (OBJECT tmpObject : getAllObjects(monitor, owner)) {
-                                    if (!isChildrenCached(tmpObject) && !objectMap.containsKey(tmpObject)) {
-                                        cacheChildren(tmpObject, new ArrayList<>());
+                                    if (!objectMap.containsKey(tmpObject)) {
+                                        cacheChildrenIfAbsent(tmpObject, new ArrayList<>());
                                     }
                                 }
                                 this.childrenCached = true;
                             }
                         } else if (!objectMap.containsKey(forObject)) {
-                            cacheChildren(forObject, new ArrayList<>());
+                            cacheChildrenIfAbsent(forObject, new ArrayList<>());
                         }
                     } finally {
                         dbResult.close();
@@ -256,6 +266,26 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
             }
             nestedCache.setCache(children);
         }
+    }
+
+    private void cacheChildrenIfAbsent(OBJECT parent, List<CHILD> children) {
+        synchronized (childrenCache) {
+            if (!childrenCache.containsKey(parent)) {
+                cacheChildren(parent, children);
+            }
+        }
+    }
+
+    /**
+     * Marks children of all objects as cached. For caches filled from a local copy of metadata
+     * instead of being read by {@link #loadChildren}.
+     */
+    protected void markChildrenCached() {
+        this.childrenCached = true;
+    }
+
+    protected boolean isAllChildrenCached() {
+        return this.childrenCached;
     }
 
     @NotNull

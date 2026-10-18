@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObjectWithOrdinalPosition;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -298,7 +297,7 @@ public abstract class JDBCCompositeCache<
         try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Load composite objects")) {
 
             try (JDBCStatement dbStat = prepareObjectsStatement(session, owner, forParent)) {
-                dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+                dbStat.setFetchSize(getMetadataFetchSize());
                 dbStat.executeStatement();
                 JDBCResultSet dbResult = dbStat.getResultSet();
                 if (dbResult != null)

@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -112,7 +111,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
                     beforeCacheLoading(session, owner);
                     try (JDBCStatement dbStat = prepareObjectsStatement(session, owner)) {
                         monitor.subTask("Load " + getCacheName());
-                        dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+                        dbStat.setFetchSize(getMetadataFetchSize());
                         dbStat.executeStatement();
                         try (JDBCResultSet dbResult = dbStat.getResultSet()) {
                             if (dbResult != null) {
