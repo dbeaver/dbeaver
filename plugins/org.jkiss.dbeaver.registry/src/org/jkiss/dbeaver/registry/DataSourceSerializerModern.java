@@ -850,7 +850,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
     }
 
-    static boolean readCloseIdleConnectionSetting(@NotNull Map<String, Object> configuration) {
+    public static boolean readCloseIdleConnectionSetting(@NotNull Map<String, Object> configuration) {
         return JSONUtils.getBoolean(
             configuration,
             RegistryConstants.ATTR_CLOSE_IDLE_ENABLED,
