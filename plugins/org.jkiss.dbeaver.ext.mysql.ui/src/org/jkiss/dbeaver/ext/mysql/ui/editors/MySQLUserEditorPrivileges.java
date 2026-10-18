@@ -116,11 +116,9 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     private List<MySQLPrivilege> procedurePrivilegeTypes;
     // All privilege types incl. administrative ones - what ALL PRIVILEGES on *.* stands for
     private List<MySQLPrivilege> allPrivilegeTypes;
-    // Commands created by this page. Only these are folded into: the General page adds its own
-    // commands (with its own reflectors) to the same command context
-    private final Set<MySQLCommandGrantPrivilege> ownCommands = Collections.newSetFromMap(new WeakHashMap<>());
     // Commands added by the current user action: one click (or "-") may create several commands,
-    // they are linked so a single Undo/Redo reverts/re-applies all of them
+    // they are linked so a single Undo/Redo reverts/re-applies all of them. Toggles fold only into
+    // these: a command of an earlier action (or of the General page) is a separate Undo step
     private final List<DBECommand<?>> undoBatch = new ArrayList<>();
 
     @Override
@@ -148,7 +146,9 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             catalogsTable.setLayoutData(gd);
             catalogsTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (catalogsTable.getSelectionIndex() < 0) {
-                    return;
+                    // Ctrl-click on the only selected row: fall back to the "% (All)" row, so the
+                    // privilege panel never targets an object that is no longer visibly selected
+                    catalogsTable.setSelection(0);
                 }
                 selectedCatalogs.clear();
                 for (TableItem item : catalogsTable.getSelection()) {
@@ -200,7 +200,8 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             tablesTable.setLayoutData(gd);
             tablesTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (tablesTable.getSelectionIndex() < 0) {
-                    return;
+                    // Nothing left selected: back to the schema level ("% (All)" row)
+                    tablesTable.setSelection(0);
                 }
                 selectedTables.clear();
                 for (TableItem item : tablesTable.getSelection()) {
@@ -244,6 +245,16 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             proceduresTable.setLayoutData(gd);
             proceduresTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (proceduresTable.getSelectionIndex() < 0) {
+                    // No routine left selected: back to the schema level ("% (All)" table row)
+                    selectedProcedure = null;
+                    selectedProcedures.clear();
+                    selectedTable = null;
+                    selectedTables.clear();
+                    selectedColumn = null;
+                    selectedColumns.clear();
+                    tablesTable.setSelection(0);
+                    showTableColumns();
+                    showGrants();
                     return;
                 }
                 selectedProcedures.clear();
@@ -292,6 +303,10 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             columnsTable.setLayoutData(gd);
             columnsTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 if (columnsTable.getSelectionIndex() < 0) {
+                    // No column left selected: the panel goes back to the selected table
+                    selectedColumn = null;
+                    selectedColumns.clear();
+                    showGrants();
                     return;
                 }
                 selectedColumns.clear();
@@ -433,9 +448,10 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     }
 
     /**
-     * Applies one privilege toggle to one grant target, folding it into an already pending
-     * command on the same target: several checks produce a single GRANT/REVOKE statement,
-     * and check+uncheck cancels out to no SQL at all.
+     * Applies one privilege toggle to one grant target, folding it into a command of the current
+     * action on the same target (e.g. "Check All" produces a single GRANT statement). A toggle of a
+     * later action gets its own command, so each action stays one Undo step; an exact opposite of an
+     * earlier command is still cancelled out to no SQL by the command merge.
      */
     private void applyPrivilegeChange(
         @NotNull MySQLPrivilege privilege,
@@ -479,7 +495,6 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             command = new MySQLCommandGrantPrivilege(getDatabaseObject(), isGrant, withGrantOption, schema, table, privilege);
         }
         command.setSchemaPattern(schemaPattern);
-        ownCommands.add(command);
         addBatchCommand(command, privilegeChangeReflector);
     }
 
@@ -574,7 +589,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         }
         for (DBECommand<?> command : commandContext.getFinalCommands()) {
             if (command instanceof MySQLCommandGrantPrivilege grantCommand
-                && ownCommands.contains(grantCommand)
+                && undoBatch.contains(grantCommand)
                 && grantCommand.isGrant() == grantDirection
                 && grantCommand.hasSameTarget(schema, schemaPattern, table, procedure, columns)
             ) {
@@ -1063,7 +1078,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
                     }
                     TableItem item = new TableItem(proceduresTable, SWT.NONE);
                     item.setText(procedure.getName());
-                    item.setImage(DBeaverIcons.getImage(DBIcon.TREE_PROCEDURE));
+                    item.setImage(DBeaverIcons.getImage(getRoutineIcon(procedure)));
                     item.setData(procedure);
                 }
                 highlightProcedures();
@@ -1185,7 +1200,8 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     }
 
     private void handleAddTable() {
-        if (selectedCatalog == null || catalogTables == null) {
+        final MySQLCatalog catalog = selectedCatalog;
+        if (catalog == null || catalogTables == null) {
             return;
         }
         Set<Object> shownTables = new HashSet<>();
@@ -1209,10 +1225,11 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             return;
         }
         tablesTable.getDisplay().timerExec(100, () -> {
-            if (tablesTable.isDisposed()) {
+            // The schema selection may change during the delay: the chosen tables belong to the old one
+            if (tablesTable.isDisposed() || selectedCatalog != catalog) {
                 return;
             }
-            extraTables.computeIfAbsent(selectedCatalog, c -> new HashSet<>()).addAll(tables);
+            extraTables.computeIfAbsent(catalog, c -> new HashSet<>()).addAll(tables);
             selectedTable = tables.get(0);
             selectedColumn = null;
             selectedColumns.clear();
@@ -1231,7 +1248,9 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     }
 
     private void handleAddColumn() {
-        if (selectedCatalog == null || selectedTable == null || tableColumns == null) {
+        final MySQLCatalog catalog = selectedCatalog;
+        final MySQLTableBase table = selectedTable;
+        if (catalog == null || table == null || tableColumns == null) {
             return;
         }
         Set<Object> shownColumns = new HashSet<>();
@@ -1255,10 +1274,11 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             return;
         }
         columnsTable.getDisplay().timerExec(100, () -> {
-            if (columnsTable.isDisposed()) {
+            // The schema/table selection may change during the delay: the chosen columns belong to the old one
+            if (columnsTable.isDisposed() || selectedCatalog != catalog || selectedTable != table) {
                 return;
             }
-            extraColumns.computeIfAbsent(selectedTable, t -> new HashSet<>()).addAll(columns);
+            extraColumns.computeIfAbsent(table, t -> new HashSet<>()).addAll(columns);
             selectedColumn = columns.get(0);
             selectedProcedure = null;
             selectedProcedures.clear();
@@ -1273,7 +1293,8 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     }
 
     private void handleAddProcedure() {
-        if (selectedCatalog == null || catalogProcedures == null) {
+        final MySQLCatalog catalog = selectedCatalog;
+        if (catalog == null || catalogProcedures == null) {
             return;
         }
         Set<Object> shownProcedures = new HashSet<>();
@@ -1297,10 +1318,11 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             return;
         }
         proceduresTable.getDisplay().timerExec(100, () -> {
-            if (proceduresTable.isDisposed()) {
+            // The schema selection may change during the delay: the chosen routines belong to the old one
+            if (proceduresTable.isDisposed() || selectedCatalog != catalog) {
                 return;
             }
-            extraProcedures.computeIfAbsent(selectedCatalog, c -> new HashSet<>()).addAll(procedures);
+            extraProcedures.computeIfAbsent(catalog, c -> new HashSet<>()).addAll(procedures);
             selectedProcedure = procedures.get(0);
             selectedTable = null;
             selectedTables.clear();
@@ -1572,6 +1594,14 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         return false;
     }
 
+    /**
+     * A procedure and a function may share a name: distinct icons tell them apart in the lists.
+     */
+    @NotNull
+    static DBIcon getRoutineIcon(@NotNull MySQLProcedure procedure) {
+        return procedure.getProcedureType() == DBSProcedureType.FUNCTION ? DBIcon.TREE_FUNCTION : DBIcon.TREE_PROCEDURE;
+    }
+
     private void updateRemoveButtons() {
         if (catalogsRemoveButton == null || catalogsRemoveButton.isDisposed()) {
             return;
@@ -1624,7 +1654,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
 
             @Override
             public @NotNull Image getImage(@NotNull Object element) {
-                return DBeaverIcons.getImage(icon);
+                return DBeaverIcons.getImage(element instanceof MySQLProcedure procedure ? getRoutineIcon(procedure) : icon);
             }
         });
         dialog.setTitle(title);

@@ -634,7 +634,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 if (hasGrant || extra.contains(procedure)) {
                     TableItem item = new TableItem(proceduresTable, SWT.NONE);
                     item.setText(procedure.getName());
-                    item.setImage(DBeaverIcons.getImage(DBIcon.TREE_PROCEDURE));
+                    item.setImage(DBeaverIcons.getImage(MySQLUserEditorPrivileges.getRoutineIcon(procedure)));
                     item.setData(procedure);
                 }
             }
@@ -906,9 +906,9 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     }
 
     /**
-     * Folds one privilege toggle into a single pending GRANT/REVOKE command per (user, object,
-     * direction), so several privileges on the same object collapse into one statement, and a
-     * check followed by an uncheck cancels out to no SQL at all.
+     * Folds one privilege toggle into a GRANT/REVOKE command of the current action per (user, object,
+     * direction), so e.g. "Check All" collapses into one statement. A later action gets its own command
+     * and stays one Undo step; an exact opposite of an earlier command is cancelled by the command merge.
      */
     private void applyUserPrivilegeChange(
         @NotNull MySQLUser user, @NotNull MySQLPrivilege privilege, boolean isGrant, boolean withGrantOption,
@@ -952,6 +952,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         }
         for (DBECommand<?> command : ctx.getFinalCommands()) {
             if (command instanceof MySQLCommandGrantPrivilege g
+                && undoBatch.contains(g)
                 && g.getObject() == user
                 && g.isGrant() == grantDirection
                 && g.hasSameTarget(catalog, schemaPattern, table, procedure, columns)
@@ -1664,7 +1665,8 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
 
             @Override
             public @NotNull Image getImage(@NotNull Object element) {
-                return DBeaverIcons.getImage(icon);
+                return DBeaverIcons.getImage(
+                    element instanceof MySQLProcedure procedure ? MySQLUserEditorPrivileges.getRoutineIcon(procedure) : icon);
             }
         });
         dialog.setTitle(title);
