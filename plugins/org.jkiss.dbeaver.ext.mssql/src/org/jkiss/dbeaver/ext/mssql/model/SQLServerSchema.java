@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -616,17 +616,21 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         @Override
         protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerTableIndex index, @NotNull List<SQLServerTableIndexColumn> rows)
         {
-            sortIndexColumns(rows);
+            SQLServerSchema.sortIndexColumns(rows);
             index.setColumns(rows);
         }
+    }
 
-        static void sortIndexColumns(@NotNull List<SQLServerTableIndexColumn> rows) {
-            // Included columns have key_ordinal = 0, but follow the index key columns.
-            // Keep the SQL Server ordinal metadata intact and use index_column_id to order includes.
-            rows.sort(Comparator.comparing(SQLServerTableIndexColumn::isIncluded)
-                .thenComparingInt(SQLServerTableIndexColumn::getOrdinalPosition)
-                .thenComparingLong(SQLServerTableIndexColumn::getObjectId));
-        }
+    /**
+     * Order key columns before included columns without changing SQL Server ordinal metadata.
+     * Public for regression tests running in a separate OSGi test bundle.
+     */
+    public static void sortIndexColumns(@NotNull List<SQLServerTableIndexColumn> rows) {
+        // Included columns have key_ordinal = 0, but follow the index key columns.
+        // Keep the SQL Server ordinal metadata intact and use index_column_id to order includes.
+        rows.sort(Comparator.comparing(SQLServerTableIndexColumn::isIncluded)
+            .thenComparingInt(SQLServerTableIndexColumn::getOrdinalPosition)
+            .thenComparingLong(SQLServerTableIndexColumn::getObjectId));
     }
 
     /**
