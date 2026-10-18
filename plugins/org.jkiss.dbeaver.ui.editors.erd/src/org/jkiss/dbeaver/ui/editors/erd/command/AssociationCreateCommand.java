@@ -122,7 +122,7 @@ public class AssociationCreateCommand extends Command {
             && !CommonUtils.isEmpty(sourceAttributes) && !CommonUtils.isEmpty(targetAttributes)) {
             resolveAssociationDirectionInBackground();
         } else {
-            association = createAssociation(sourceEntity, targetEntity, true, false);
+            association = createAssociation(sourceEntity, targetEntity, true);
         }
     }
 
