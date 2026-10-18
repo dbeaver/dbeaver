@@ -720,6 +720,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
         // Let's try with driver implementation
         Connection connection = context.getConnectionOrNull();
         if (connection != null) {
+            getDataSource().scheduleCanceledExecutionAbort(monitor, this, context);
             getDataSource().cancelCurrentExecution(connection, blockThread);
         }
     }

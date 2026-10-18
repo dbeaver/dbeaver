@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.api.ObjectWithContextParameters;
 import org.jkiss.api.verification.FileSystemAccessVerifyer;
 import org.jkiss.api.verification.ObjectWithVerification;
@@ -40,6 +42,8 @@ import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -899,6 +903,50 @@ public abstract class JDBCDataSource extends AbstractDataSource
             connectionThread.interrupt();
         }
         return true;
+    }
+
+    /**
+     * Closes the physical connection if a canceled operation still waits on the driver after
+     * {@link ModelPreferences#EXECUTE_CANCEL_ABORT_TIMEOUT}. Call it before asking the driver to cancel:
+     * the cancel request itself may block on the same dead connection.
+     * A canceled statement returns as soon as the server answers. When the network is gone (VPN dropped, NAT entry
+     * expired) the driver waits on a socket that never answers, and so would every next statement on this connection.
+     * Closing the connection makes the waiting call fail; the next execution reconnects
+     * (see {@link DBExecUtils#tryExecuteRecover}).
+     * Auto-commit connections only: closing a connection with an open transaction would roll it back.
+     */
+    public void scheduleCanceledExecutionAbort(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBRBlockingObject block,
+        @NotNull JDBCExecutionContext context
+    ) {
+        long timeout = getContainer().getPreferenceStore().getLong(ModelPreferences.EXECUTE_CANCEL_ABORT_TIMEOUT);
+        if (timeout <= 0) {
+            return;
+        }
+        AbstractJob abortJob = new AbstractJob("Abort canceled operation") {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor abortMonitor) {
+                if (!CommonUtils.safeList(monitor.getActiveBlocks()).contains(block)) {
+                    // The operation ended
+                    return Status.OK_STATUS;
+                }
+                Connection connection = context.getConnectionOrNull();
+                try {
+                    if (connection != null && context.isAutoCommit()) {
+                        log.warn("Canceled operation did not end in " + timeout + "ms, closing connection '" +
+                            context.getContextName() + "' of '" + getContainer().getName() + "'");
+                        connection.abort(Runnable::run);
+                    }
+                } catch (Throwable e) {
+                    log.debug("Error aborting connection: " + e.getMessage());
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        abortJob.setSystem(true);
+        abortJob.schedule(timeout);
     }
 
     /////////////////////////////////////////////////
