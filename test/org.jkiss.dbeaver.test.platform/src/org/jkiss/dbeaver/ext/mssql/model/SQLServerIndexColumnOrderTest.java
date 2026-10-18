@@ -16,13 +16,14 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SQLServerIndexColumnOrderTest {
+public class SQLServerIndexColumnOrderTest extends DBeaverUnitTest {
 
     @Test
     public void keyColumnsPrecedeIncludedColumnsInOrdinalOrder() {
@@ -34,7 +35,7 @@ public class SQLServerIndexColumnOrderTest {
             column(8, 0, true)
         ));
 
-        SQLServerSchema.IndexCache.sortIndexColumns(columns);
+        SQLServerSchema.sortIndexColumns(columns);
 
         Assertions.assertEquals(List.of(2L, 3L, 6L, 7L, 8L),
             columns.stream().map(SQLServerTableIndexColumn::getObjectId).toList());
@@ -53,7 +54,7 @@ public class SQLServerIndexColumnOrderTest {
             column(3, 2, false)
         ));
 
-        SQLServerSchema.IndexCache.sortIndexColumns(columns);
+        SQLServerSchema.sortIndexColumns(columns);
 
         Assertions.assertEquals(List.of(2L, 3L, 4L),
             columns.stream().map(SQLServerTableIndexColumn::getObjectId).toList());
