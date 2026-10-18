@@ -127,7 +127,8 @@ class MySQLNativeToolHandlerTest extends DBeaverUnitTest {
                 "mysqldump", "--defaults-extra-file=" + optionFile.toAbsolutePath(), "--host=localhost");
             process.environment().put("MYSQL_TEST_LOGIN_FILE", "existing-login-path");
 
-            MySQLNativeToolHandler.isolateLoginPathFromUnicodeUsernameOptionFile(process);
+            MySQLNativeToolHandler.isolateLoginPathFromUnicodeUsernameOptionFile(
+                process, List.of(optionFile.toAbsolutePath()));
 
             Path isolatedLoginFile = Path.of(process.environment().get("MYSQL_TEST_LOGIN_FILE"));
             Assertions.assertEquals(
@@ -149,9 +150,49 @@ class MySQLNativeToolHandlerTest extends DBeaverUnitTest {
         ProcessBuilder process = new ProcessBuilder("mysqldump", "-u", "user");
         process.environment().put("MYSQL_TEST_LOGIN_FILE", "existing-login-path");
 
-        MySQLNativeToolHandler.isolateLoginPathFromUnicodeUsernameOptionFile(process);
+        MySQLNativeToolHandler.isolateLoginPathFromUnicodeUsernameOptionFile(process, List.of());
 
         Assertions.assertEquals("existing-login-path", process.environment().get("MYSQL_TEST_LOGIN_FILE"));
+    }
+
+
+    @Test
+    void customDefaultsExtraFileDoesNotOverrideLoginPath() throws IOException {
+        Path customFile = Files.createTempFile("mysql-custom-options-", ".cnf");
+        try {
+            ProcessBuilder process = new ProcessBuilder(
+                "mysqldump", "--defaults-extra-file=" + customFile.toAbsolutePath(), "-u", "user");
+            process.environment().put("MYSQL_TEST_LOGIN_FILE", "existing-login-path");
+
+            MySQLNativeToolHandler.isolateLoginPathFromUnicodeUsernameOptionFile(process, List.of());
+
+            Assertions.assertEquals("existing-login-path", process.environment().get("MYSQL_TEST_LOGIN_FILE"));
+        } finally {
+            Files.deleteIfExists(customFile);
+        }
+    }
+
+    @Test
+    void customDefaultsExtraFileIsNotConfusedWithGeneratedUnicodeFile() throws IOException {
+        Path customFile = Files.createTempFile("mysql-custom-options-", ".cnf");
+        Path generatedFile = Files.createTempFile("mysql-native-", ".cnf");
+        try {
+            ProcessBuilder process = new ProcessBuilder(
+                "mysqldump",
+                "--defaults-extra-file=" + customFile.toAbsolutePath(),
+                "--defaults-extra-file=" + generatedFile.toAbsolutePath());
+            process.environment().put("MYSQL_TEST_LOGIN_FILE", "existing-login-path");
+
+            MySQLNativeToolHandler.isolateLoginPathFromUnicodeUsernameOptionFile(
+                process, List.of(generatedFile.toAbsolutePath()));
+
+            Path expected = generatedFile.toAbsolutePath()
+                .resolveSibling(generatedFile.getFileName() + ".missing-login-path");
+            Assertions.assertEquals(expected.toString(), process.environment().get("MYSQL_TEST_LOGIN_FILE"));
+        } finally {
+            Files.deleteIfExists(customFile);
+            Files.deleteIfExists(generatedFile);
+        }
     }
 
     @Test
