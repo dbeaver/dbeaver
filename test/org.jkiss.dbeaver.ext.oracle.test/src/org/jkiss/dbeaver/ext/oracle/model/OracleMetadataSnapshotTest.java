@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -202,11 +204,19 @@ public class OracleMetadataSnapshotTest {
         Assertions.assertTrue(changes.reloadObjects().isEmpty());
     }
 
-    private static OracleMetadataSnapshot.StoredObject stored(String name, String status, long readTime, boolean hasColumns, long columnsReadTime) {
+    @NotNull
+    private static OracleMetadataSnapshot.StoredObject stored(
+        @NotNull String name,
+        @Nullable String status,
+        long readTime,
+        boolean hasColumns,
+        long columnsReadTime
+    ) {
         return new OracleMetadataSnapshot.StoredObject(name, status, readTime, hasColumns, columnsReadTime);
     }
 
-    private static OracleMetadataRefreshJob.DictionaryObject dictionary(String name, long ddlTime, String status) {
+    @NotNull
+    private static OracleMetadataRefreshJob.DictionaryObject dictionary(@NotNull String name, long ddlTime, @Nullable String status) {
         return new OracleMetadataRefreshJob.DictionaryObject(name, ddlTime, status, 0);
     }
 }

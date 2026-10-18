@@ -104,6 +104,7 @@ class OracleMetadataRefreshJob extends AbstractJob {
         setUser(false);
     }
 
+    @NotNull
     @Override
     protected IStatus run(@NotNull DBRProgressMonitor monitor) {
         try {
@@ -116,7 +117,7 @@ class OracleMetadataRefreshJob extends AbstractJob {
     }
 
     private <T extends DBSObject> void refresh(@NotNull DBRProgressMonitor monitor, @NotNull Target<T> target) throws DBException {
-        long start = System.currentTimeMillis();
+        final long start = System.currentTimeMillis();
         Map<String, OracleMetadataSnapshot.StoredObject> stored = snapshot.getStoredObjects(kind);
         Map<String, Long> absent = snapshot.getAbsentObjects(kind);
 
@@ -279,7 +280,7 @@ class OracleMetadataRefreshJob extends AbstractJob {
     @NotNull
     private Map<String, DictionaryObject> readDictionary(
         @NotNull DBRProgressMonitor monitor,
-        long[] clock,
+        @NotNull long[] clock,
         @NotNull String... objectTypes
     ) throws DBException {
         Map<String, DictionaryObject> result = new HashMap<>();

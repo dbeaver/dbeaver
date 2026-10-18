@@ -70,7 +70,11 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
      * @throws org.jkiss.dbeaver.DBException
      *             on error
      */
-    public void loadChildren(DBRProgressMonitor monitor, OWNER owner, @Nullable final OBJECT forObject) throws DBException {
+    public void loadChildren(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OWNER owner,
+        @Nullable final OBJECT forObject
+    ) throws DBException {
         // Cached state is checked without the cache lock: readers of already cached children
         // must never wait for a long load running in another thread.
         if (monitor.isForceCacheUsage() || monitor.isCanceled() ||
@@ -96,7 +100,11 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
         }
     }
 
-    private void readChildren(DBRProgressMonitor monitor, OWNER owner, @Nullable final OBJECT forObject) throws DBException {
+    private void readChildren(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OWNER owner,
+        @Nullable final OBJECT forObject
+    ) throws DBException {
         DBPDataSource dataSource = owner.getDataSource();
         if (dataSource == null) {
             throw new DBException(ModelMessages.error_not_connected_to_database);
@@ -268,7 +276,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
         }
     }
 
-    private void cacheChildrenIfAbsent(OBJECT parent, List<CHILD> children) {
+    private void cacheChildrenIfAbsent(@NotNull OBJECT parent, @NotNull List<CHILD> children) {
         synchronized (childrenCache) {
             if (!childrenCache.containsKey(parent)) {
                 cacheChildren(parent, children);

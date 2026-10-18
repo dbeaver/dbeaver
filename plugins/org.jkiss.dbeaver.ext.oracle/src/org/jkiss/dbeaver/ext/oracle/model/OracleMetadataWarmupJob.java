@@ -48,6 +48,7 @@ class OracleMetadataWarmupJob extends AbstractJob {
         setUser(false);
     }
 
+    @NotNull
     @Override
     protected IStatus run(@NotNull DBRProgressMonitor monitor) {
         try {

@@ -120,6 +120,7 @@ public class OracleMetadataSnapshot {
             }
         }
 
+        @NotNull
         static Layout of(@NotNull ResultSetMetaData meta) throws SQLException {
             int count = meta.getColumnCount();
             String[] labels = new String[count];
@@ -214,6 +215,7 @@ public class OracleMetadataSnapshot {
             this.fullList = fullList;
         }
 
+        @NotNull
         private Layout layoutOf(@NotNull ResultSet resultSet) throws SQLException {
             if (!Objects.equals(resultSet, lastResultSet)) {
                 lastResultSet = resultSet;
@@ -667,9 +669,11 @@ public class OracleMetadataSnapshot {
      * Builds objects from all stored rows of this kind.
      */
     @NotNull
-    <T> List<T> restoreObjects(@NotNull Kind kind, @NotNull JDBCSession session, @NotNull RowFetcher<T> fetcher)
-        throws SQLException, DBException
-    {
+    <T> List<T> restoreObjects(
+        @NotNull Kind kind,
+        @NotNull JDBCSession session,
+        @NotNull RowFetcher<T> fetcher
+    ) throws SQLException, DBException {
         Layout layout;
         List<Object[]> rows = new ArrayList<>();
         synchronized (this) {
@@ -692,9 +696,11 @@ public class OracleMetadataSnapshot {
      * Builds columns of a table from stored rows. Returns null if columns of this table are not stored.
      */
     @Nullable
-    <T> List<T> restoreColumns(@NotNull JDBCSession session, @NotNull String tableName, @NotNull RowFetcher<T> fetcher)
-        throws SQLException, DBException
-    {
+    <T> List<T> restoreColumns(
+        @NotNull JDBCSession session,
+        @NotNull String tableName,
+        @NotNull RowFetcher<T> fetcher
+    ) throws SQLException, DBException {
         Layout layout;
         List<Object[]> rows;
         synchronized (this) {
@@ -811,8 +817,7 @@ public class OracleMetadataSnapshot {
         }
         long start = System.currentTimeMillis();
         try (JsonReader reader = new JsonReader(new InputStreamReader(
-            new GZIPInputStream(new BufferedInputStream(Files.newInputStream(file), 1 << 16)), StandardCharsets.UTF_8)))
-        {
+            new GZIPInputStream(new BufferedInputStream(Files.newInputStream(file), 1 << 16)), StandardCharsets.UTF_8))) {
             readSnapshot(reader);
             log.debug("Metadata snapshot of " + schema.getName() + " read in " + (System.currentTimeMillis() - start) +
                 "ms: " + sets.get(Kind.TABLES).entries.size() + " tables, " + sets.get(Kind.PACKAGES).entries.size() + " packages");
@@ -1056,8 +1061,7 @@ public class OracleMetadataSnapshot {
         Files.createDirectories(file.getParent());
         Path tmpFile = file.resolveSibling(file.getFileName() + ".tmp");
         try (JsonWriter writer = new JsonWriter(new OutputStreamWriter(
-            new GZIPOutputStream(new BufferedOutputStream(Files.newOutputStream(tmpFile), 1 << 16)), StandardCharsets.UTF_8)))
-        {
+            new GZIPOutputStream(new BufferedOutputStream(Files.newOutputStream(tmpFile), 1 << 16)), StandardCharsets.UTF_8))) {
             synchronized (this) {
                 readFile();
                 writeSnapshot(writer);
@@ -1212,6 +1216,7 @@ public class OracleMetadataSnapshot {
             setUser(false);
         }
 
+        @NotNull
         @Override
         protected IStatus run(@NotNull DBRProgressMonitor monitor) {
             save();
@@ -1250,13 +1255,15 @@ public class OracleMetadataSnapshot {
             this.layout = layout;
         }
 
+        @NotNull
         ResultSet newResultSet() {
             return (ResultSet) Proxy.newProxyInstance(
                 OracleMetadataSnapshot.class.getClassLoader(), new Class<?>[]{ResultSet.class}, this);
         }
 
+        @Nullable
         @Override
-        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        public Object invoke(@NotNull Object proxy, @NotNull Method method, @Nullable Object[] args) throws Throwable {
             String name = method.getName();
             switch (name) {
                 case "next" -> {
@@ -1302,7 +1309,7 @@ public class OracleMetadataSnapshot {
             }
         }
 
-        private int columnIndex(Object column) throws SQLException {
+        private int columnIndex(@NotNull Object column) throws SQLException {
             int index = column instanceof Number n ? n.intValue() - 1 : layout.indexOf(column.toString());
             if (index < 0 || index >= layout.labels.length) {
                 throw new SQLException("Column '" + column + "' not found");
@@ -1310,7 +1317,8 @@ public class OracleMetadataSnapshot {
             return index;
         }
 
-        private Object getValue(String getter, int index, Class<?> type) throws SQLException {
+        @Nullable
+        private Object getValue(@NotNull String getter, int index, @NotNull Class<?> type) throws SQLException {
             Object value = row[index];
             wasNull = value == null;
             switch (getter) {
@@ -1338,11 +1346,21 @@ public class OracleMetadataSnapshot {
                 }
                 case "getInt", "getLong", "getShort", "getByte", "getDouble", "getFloat" -> {
                     BigDecimal number = value == null ? BigDecimal.ZERO : toNumber(value);
-                    if (type == int.class) return number.intValue();
-                    if (type == long.class) return number.longValue();
-                    if (type == short.class) return number.shortValue();
-                    if (type == byte.class) return number.byteValue();
-                    if (type == double.class) return number.doubleValue();
+                    if (type == int.class) {
+                        return number.intValue();
+                    }
+                    if (type == long.class) {
+                        return number.longValue();
+                    }
+                    if (type == short.class) {
+                        return number.shortValue();
+                    }
+                    if (type == byte.class) {
+                        return number.byteValue();
+                    }
+                    if (type == double.class) {
+                        return number.doubleValue();
+                    }
                     return number.floatValue();
                 }
                 default -> throw new SQLFeatureNotSupportedException(getter + " is not supported by metadata snapshot");
@@ -1350,18 +1368,32 @@ public class OracleMetadataSnapshot {
         }
 
         @Nullable
-        private static Object defaultValue(Class<?> type) {
-            if (type == boolean.class) return false;
-            if (type == int.class) return 0;
-            if (type == long.class) return 0L;
-            if (type == short.class) return (short) 0;
-            if (type == byte.class) return (byte) 0;
-            if (type == double.class) return 0d;
-            if (type == float.class) return 0f;
+        private static Object defaultValue(@NotNull Class<?> type) {
+            if (type == boolean.class) {
+                return false;
+            }
+            if (type == int.class) {
+                return 0;
+            }
+            if (type == long.class) {
+                return 0L;
+            }
+            if (type == short.class) {
+                return (short) 0;
+            }
+            if (type == byte.class) {
+                return (byte) 0;
+            }
+            if (type == double.class) {
+                return 0d;
+            }
+            if (type == float.class) {
+                return 0f;
+            }
             return null;
         }
 
-        private static boolean isNumber(String str) {
+        private static boolean isNumber(@NotNull String str) {
             try {
                 new BigDecimal(str);
                 return true;
@@ -1370,7 +1402,8 @@ public class OracleMetadataSnapshot {
             }
         }
 
-        private static BigDecimal toNumber(Object value) throws SQLException {
+        @NotNull
+        private static BigDecimal toNumber(@NotNull Object value) throws SQLException {
             if (value instanceof Long l) {
                 return BigDecimal.valueOf(l);
             }
