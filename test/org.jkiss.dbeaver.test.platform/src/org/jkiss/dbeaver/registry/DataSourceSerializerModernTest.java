@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -32,7 +33,7 @@ import org.mockito.Mockito;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-public class DataSourceSerializerModernTest {
+public class DataSourceSerializerModernTest extends DBeaverUnitTest {
     private static final String CONNECTION_TYPE_ID = "imported-type";
     private static final String PROJECT_CONFIGURATION = """
         {
