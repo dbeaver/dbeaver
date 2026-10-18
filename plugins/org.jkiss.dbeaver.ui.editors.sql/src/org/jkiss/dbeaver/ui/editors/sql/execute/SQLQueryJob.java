@@ -117,6 +117,8 @@ public class SQLQueryJob extends DataSourceJob {
     private DBCStatement curStatement;
     private final List<DBCResultSet> curResultSets = new ArrayList<>();
     private Throwable lastError = null;
+    private boolean lastQueryCanceled;
+    private boolean lastQueryConnectionLost;
 
     private DBCStatistics statistics;
     private int fetchResultSetNumber;
@@ -486,6 +488,8 @@ public class SQLQueryJob extends DataSourceJob {
 
     private boolean executeSingleElement(@NotNull DBCSession session, boolean fireEvents, SQLQuery sqlQuery) {
         lastError = null;
+        lastQueryCanceled = false;
+        lastQueryConnectionLost = false;
 
         if (!skipConfirmation && getDataSourceContainer().getConnectionConfiguration().getConnectionType().isConfirmExecute()) {
             // Validate all transactional queries
@@ -634,6 +638,9 @@ public class SQLQueryJob extends DataSourceJob {
         catch (Throwable ex) {
             if (DBExecUtils.isExecutionCanceled(dataSource, ex) || monitor.isCanceled()) {
                 executionCanceled = true;
+                lastQueryCanceled = true;
+                // The connection was closed because the canceled query did not end (see JDBCDataSource)
+                lastQueryConnectionLost = DBExecUtils.discoverErrorType(dataSource, ex) == DBPErrorAssistant.ErrorType.CONNECTION_LOST;
             } else if (!(ex instanceof DBException)) {
                 log.error("Unexpected error while processing SQL", ex);
                 curResult.setError(ex);
@@ -1130,6 +1137,12 @@ public class SQLQueryJob extends DataSourceJob {
             } else {
                 throw new DBCException(lastError, getExecutionContext());
             }
+        } else if (!result && lastQueryCanceled) {
+            // Without an error the results panel keeps showing the previous result as if this query produced it
+            throw new DBCException(lastQueryConnectionLost ?
+                "Query canceled: the database did not respond, so the connection was closed. " +
+                    "It will reconnect on the next execution." :
+                "Query execution was canceled");
         } else if (allowStatistics && result && statistics.getStatementsCount() > 0) {
             showExecutionResult(session);
         }
