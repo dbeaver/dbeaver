@@ -47,7 +47,10 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
     implements DBSStructCache<OWNER, OBJECT, CHILD> {
     private static final Log log = Log.getLog(JDBCStructCache.class);
 
-    private static final String SNAPSHOT_CHILDREN = "children";
+    /**
+     * Snapshot set of the children of the cache (one group per parent object).
+     */
+    protected static final String SNAPSHOT_CHILDREN = "children";
 
     private final Object objectNameColumn;
     private volatile boolean childrenCached = false;
@@ -190,15 +193,27 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                                     continue;
                                 }
                             }
+                            // Recorded even if already cached: the snapshot keeps all rows of the read.
+                            // Rows which can be read only once are copied, and the child is built from the copy.
+                            Object[] row = null;
                             if (pass != null) {
-                                // Recorded even if already cached: the snapshot keeps all rows of the read
-                                pass.record(object.getName(), dbResult);
+                                if (isMetadataRowReadOnce()) {
+                                    row = pass.capture(dbResult);
+                                    if (row != null) {
+                                        pass.add(object.getName(), row);
+                                    }
+                                } else {
+                                    pass.record(object.getName(), dbResult);
+                                }
                             }
                             if (skipCached && isChildrenCached(object)) {
                                 // Already read
                                 continue;
                             }
-                            CHILD child = fetchChild(session, owner, object, dbResult);
+                            final OBJECT parent = object;
+                            CHILD child = row != null ?
+                                pass.fetchCopy(session, row, rs -> fetchChild(session, owner, parent, rs)) :
+                                fetchChild(session, owner, object, dbResult);
                             if (child == null) {
                                 continue;
                             }
@@ -296,22 +311,27 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
     }
 
     @Override
-    protected void refreshRestoredMetadata(
+    protected void refreshRestoredChildren(
         @NotNull DBRProgressMonitor monitor,
         @NotNull OWNER owner,
-        @NotNull JDBCMetadataSnapshot snapshot
+        @NotNull JDBCMetadataSnapshot snapshot,
+        @Nullable Set<String> changed
     ) throws DBException {
-        super.refreshRestoredMetadata(monitor, owner, snapshot);
         Set<String> restored;
         synchronized (this) {
             restored = new LinkedHashSet<>(restoredChildren);
             restoredChildren.clear();
         }
+        if (changed != null) {
+            // Children of unchanged objects are up to date
+            restored.retainAll(changed);
+        }
         if (restored.isEmpty() || monitor.isCanceled()) {
             return;
         }
-        // Children of all objects are read in one query, if all of them are stored. Otherwise, object by object.
-        boolean allObjects = snapshot.isComplete(SNAPSHOT_CHILDREN);
+        // Children of all objects are read in one query, if all of them are stored and the changed objects
+        // are not known. Otherwise, object by object.
+        boolean allObjects = changed == null && snapshot.isComplete(SNAPSHOT_CHILDREN);
         JDBCMetadataSnapshot.Pass pass = snapshot.beginPass(SNAPSHOT_CHILDREN, allObjects);
         Map<String, List<CHILD>> children = new HashMap<>();
         if (allObjects) {

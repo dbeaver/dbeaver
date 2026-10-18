@@ -59,7 +59,9 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -192,8 +194,23 @@ public class JDBCMetadataSnapshot {
          * only the pass is not committed.
          */
         public void record(@NotNull String group, @NotNull ResultSet resultSet) {
+            Object[] row = capture(resultSet);
+            if (row != null) {
+                add(group, row);
+            }
+        }
+
+        /**
+         * Copies the current row of the result set, for caches whose rows can be read only once
+         * (e.g. Oracle LONG columns): the object is then built from the copy with {@link #fetchCopy}
+         * and the copy is stored with {@link #add}. Errors are not thrown: the pass is not committed.
+         *
+         * @return the copy, or null if the row cannot be copied
+         */
+        @Nullable
+        public Object[] capture(@NotNull ResultSet resultSet) {
             if (failed) {
-                return;
+                return null;
             }
             try {
                 if (!Objects.equals(resultSet, lastResultSet)) {
@@ -204,10 +221,35 @@ public class JDBCMetadataSnapshot {
                     layout = newLayout;
                     lastResultSet = resultSet;
                 }
-                groups.computeIfAbsent(group, g -> new ArrayList<>()).add(layout.capture(resultSet));
+                return layout.capture(resultSet);
             } catch (Exception e) {
                 log.debug("Metadata row of " + setId + " not stored in snapshot: " + e.getMessage());
                 failed = true;
+                return null;
+            }
+        }
+
+        /**
+         * Stores a row copied by {@link #capture} in a group.
+         */
+        public void add(@NotNull String group, @NotNull Object[] row) {
+            if (!failed) {
+                groups.computeIfAbsent(group, g -> new ArrayList<>()).add(row);
+            }
+        }
+
+        /**
+         * Builds an object from a row copied by {@link #capture}.
+         */
+        @Nullable
+        public <T> T fetchCopy(
+            @NotNull JDBCSession session,
+            @NotNull Object[] row,
+            @NotNull RowFetcher<T> fetcher
+        ) throws SQLException, DBException {
+            RowReplay replay = new RowReplay(layout, Collections.singletonList(row));
+            try (JDBCResultSet resultSet = JDBCResultSetImpl.makeResultSet(session, null, replay.newResultSet(), true)) {
+                return resultSet.next() ? fetcher.fetch(resultSet) : null;
             }
         }
 
@@ -366,6 +408,65 @@ public class JDBCMetadataSnapshot {
             }
         }
         return result;
+    }
+
+    /**
+     * Values of some columns in the stored rows, by group name: one string per row, with the values joined by "|"
+     * (date and time columns as epoch milliseconds). Used to compare stored rows with the database
+     * (e.g. DDL time and status of stored objects).
+     */
+    @NotNull
+    public synchronized Map<String, List<String>> getStoredValues(@NotNull String setId, @NotNull String... labels) {
+        readFile();
+        RowSet set = sets.get(setId);
+        Map<String, List<String>> result = new HashMap<>();
+        if (set == null || set.layout == null) {
+            return result;
+        }
+        int[] indexes = new int[labels.length];
+        for (int i = 0; i < labels.length; i++) {
+            indexes[i] = set.layout.indexOf(labels[i]);
+        }
+        for (Map.Entry<String, Group> e : set.groups.entrySet()) {
+            List<String> values = new ArrayList<>(e.getValue().rows().size());
+            for (Object[] row : e.getValue().rows()) {
+                StringBuilder value = new StringBuilder();
+                for (int i = 0; i < indexes.length; i++) {
+                    if (i > 0) {
+                        value.append('|');
+                    }
+                    value.append(indexes[i] < 0 ? null : row[indexes[i]]);
+                }
+                values.add(value.toString());
+            }
+            result.put(e.getKey(), values);
+        }
+        return result;
+    }
+
+    /**
+     * Compares stored values (see {@link #getStoredValues}) with values read from the database, in the same format.
+     *
+     * @return groups whose values differ, including groups missing on either side (new or dropped objects)
+     */
+    @NotNull
+    public static Set<String> findChangedGroups(
+        @NotNull Map<String, List<String>> stored,
+        @NotNull Map<String, List<String>> current
+    ) {
+        Set<String> changed = new HashSet<>();
+        for (Map.Entry<String, List<String>> entry : current.entrySet()) {
+            List<String> storedValues = stored.get(entry.getKey());
+            if (storedValues == null || !new HashSet<>(storedValues).equals(new HashSet<>(entry.getValue()))) {
+                changed.add(entry.getKey());
+            }
+        }
+        for (String group : stored.keySet()) {
+            if (!current.containsKey(group)) {
+                changed.add(group);
+            }
+        }
+        return changed;
     }
 
     public synchronized void removeGroup(@NotNull String setId, @NotNull String group) {

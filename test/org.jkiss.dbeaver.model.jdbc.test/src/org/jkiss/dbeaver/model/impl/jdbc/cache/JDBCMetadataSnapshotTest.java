@@ -40,6 +40,7 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -220,6 +221,48 @@ public class JDBCMetadataSnapshotTest extends DBeaverUnitTest {
             (group, rs) -> group + ":" + rs.getInt("ROW_COUNT"));
         Assertions.assertEquals(Map.of("T1", List.of("T1:1", "T1:3"), "T2", List.of("T2:2"), "T3", List.of()), restored);
         Assertions.assertNull(snapshot.restoreGroups(session, TABLES, (group, rs) -> group));
+    }
+
+    @Test
+    public void buildsObjectsFromCopiedRows() throws Exception {
+        JDBCMetadataSnapshot snapshot = new JDBCMetadataSnapshot(file, SIGNATURE);
+        JDBCMetadataSnapshot.Pass pass = snapshot.beginPass(TABLES, true);
+        ResultSet resultSet = tableResultSet(new Object[][]{{"T1", 1, CREATED}, {"T2", null, null}});
+        List<String> fetched = new ArrayList<>();
+        while (resultSet.next()) {
+            Object[] row = pass.capture(resultSet);
+            Assertions.assertNotNull(row);
+            String name = pass.fetchCopy(session, row, rs -> rs.getString("TABLE_NAME") + ":" + rs.getTimestamp("CREATED"));
+            fetched.add(name);
+            pass.add(name.substring(0, 2), row);
+        }
+        pass.commit();
+        Assertions.assertEquals(List.of("T1:" + CREATED, "T2:null"), fetched);
+        Assertions.assertEquals(List.of("T1", "T2"), restoreNames(snapshot, null));
+    }
+
+    @Test
+    public void returnsStoredValues() throws Exception {
+        JDBCMetadataSnapshot snapshot = new JDBCMetadataSnapshot(file, SIGNATURE);
+        recordTables(snapshot, true, new Object[][]{{"T1", 1, CREATED}, {"T2", null, null}});
+        Assertions.assertEquals(
+            Map.of("T1", List.of("1|" + CREATED.getTime()), "T2", List.of("null|null")),
+            snapshot.getStoredValues(TABLES, "ROW_COUNT", "CREATED"));
+        Assertions.assertEquals(Map.of(), snapshot.getStoredValues(COLUMNS, "ROW_COUNT"));
+    }
+
+    @Test
+    public void comparesStoredValues() {
+        Map<String, List<String>> stored = Map.of(
+            "T1", List.of("U|1000"),
+            "T2", List.of("U|1000"),
+            "MV", List.of("A|1", "B|1"));
+        Map<String, List<String>> current = Map.of(
+            "T1", List.of("U|2000"),
+            "MV", List.of("B|1", "A|1"),
+            "T3", List.of("U|3000"));
+        Assertions.assertEquals(Set.of("T1", "T2", "T3"), JDBCMetadataSnapshot.findChangedGroups(stored, current));
+        Assertions.assertEquals(Set.of(), JDBCMetadataSnapshot.findChangedGroups(stored, stored));
     }
 
     @Test
