@@ -29,8 +29,8 @@ import org.jkiss.dbeaver.ext.oracle.model.plan.OracleQueryPlanner;
 import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
-import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
+import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -245,7 +245,11 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return false;
     }
 
-    private boolean changeExpiredPassword(DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose) throws DBCException {
+    private boolean changeExpiredPassword(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable JDBCExecutionContext context,
+        @NotNull String purpose
+    ) throws DBCException {
         // Ref: https://stackoverflow.com/questions/21733300/oracle-password-expiry-and-grace-period-handling-using-java-oracle-jdbc
 
         DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
@@ -255,7 +259,13 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
                 return false;
             }
-            passwordInfo = DBWorkbench.getPlatformUI().promptUserPasswordChange("Password has expired. Set new password.", connectionInfo.getUserName(), connectionInfo.getUserPassword(), true, true);
+            passwordInfo = DBWorkbench.getPlatformUI().promptUserPasswordChange(
+                "Password has expired. Set new password.",
+                connectionInfo.getUserName(),
+                connectionInfo.getUserPassword(),
+                true,
+                true
+            );
         }
         if (passwordInfo == null) {
             return false;
@@ -287,8 +297,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                 getContainer().persistConfiguration();
             }
             return true;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             if (!interactive) {
                 throw new DBCException("Error changing expired password", e);
             }
@@ -297,12 +306,17 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
     }
 
+    @NotNull
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new OracleExecutionContext(instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
         if (outputReader == null) {
             outputReader = new OracleOutputReader();
         }
@@ -400,8 +414,9 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return (OracleSchema) DBUtils.getDefaultContext(this, true).getContextDefaults().getDefaultSchema();
     }
 
+    @NotNull
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
         return new OracleDataSourceInfo(metaData);
     }
 
@@ -424,11 +439,12 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return super.discoverErrorType(error);
     }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
@@ -502,8 +518,9 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return profileCache;
     }
 
+    @NotNull
     @Association
-    public Collection<OracleUserProfile> getProfiles(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleUserProfile> getProfiles(@NotNull DBRProgressMonitor monitor) throws DBException {
         return profileCache.getAllObjects(monitor, this);
     }
 
@@ -664,7 +681,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     }
 
     @Override
-    public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
+    public void cancelStatementExecute(@NotNull DBRProgressMonitor monitor, @NotNull JDBCStatement statement) throws DBException {
         if (driverSupportsQueryCancel()) {
             super.cancelStatementExecute(monitor, statement);
         } else {
