@@ -273,6 +273,7 @@ public class PrefPageOracle extends TargetPrefPage {
         useSimpleConstraints.setSelection(store.getDefaultBoolean(OracleConstants.PROP_METADATA_USE_SIMPLE_CONSTRAINTS));
         useAlternativeTableMetadataQuery.setSelection(store.getDefaultBoolean(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY));
         readColumnComments.setSelection(store.getDefaultBoolean(OracleConstants.PROP_METADATA_READ_COLUMN_COMMENTS));
+        metadataSnapshot.setSelection(store.getDefaultBoolean(OracleConstants.PROP_METADATA_SNAPSHOT));
         searchInSynonyms.setSelection(store.getDefaultBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SYNONYMS));
         searchInSequences.setSelection(store.getDefaultBoolean(OracleConstants.PROP_SEARCH_METADATA_IN_SEQUENCES));
         showDateAsDate.setSelection(store.getDefaultBoolean(OracleConstants.PROP_SHOW_DATE_AS_DATE));

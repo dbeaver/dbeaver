@@ -484,6 +484,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         super.shutdown(monitor);
     }
 
+    @NotNull
     @Association
     public Collection<OracleSchema> getSchemas(@NotNull DBRProgressMonitor monitor) throws DBException {
         return schemaCache.getAllObjects(monitor, this);

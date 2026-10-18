@@ -41,6 +41,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -91,7 +92,7 @@ public class OracleMetadataSnapshot {
         }
     }
 
-    private static final int FORMAT_VERSION = 3;
+    private static final int FORMAT_VERSION = 4;
     private static final String SNAPSHOT_FOLDER = "oracle-metadata-snapshots";
     private static final long SAVE_DELAY_MS = 3000;
 
@@ -255,11 +256,13 @@ public class OracleMetadataSnapshot {
             sets.put(kind, new ObjectSet());
         }
         this.file = getSnapshotFile(schema.getDataSource().getContainer(), schema.getName());
-        this.signature = makeSignature(schema.getDataSource());
+        this.signature = makeSignature(schema.getDataSource(), schema.getName());
     }
 
     /**
      * Snapshot file of a schema. Kept in the workspace metadata, never in the project folder (which may be shared).
+     * The escaped name is lossy (e.g. quoted names "A/B" and "A_B", or case on case-insensitive file systems),
+     * so the hash of the exact name keeps files of different schemas apart.
      */
     @NotNull
     static Path getSnapshotFile(@NotNull DBPDataSourceContainer container, @NotNull String schemaName) {
@@ -267,17 +270,18 @@ public class OracleMetadataSnapshot {
             .resolve(SNAPSHOT_FOLDER)
             .resolve(CommonUtils.escapeFileName(container.getProject().getName()))
             .resolve(CommonUtils.escapeFileName(container.getId()))
-            .resolve(CommonUtils.escapeFileName(schemaName) + ".json.gz");
+            .resolve(CommonUtils.escapeFileName(schemaName) + "-" + Integer.toHexString(schemaName.hashCode()) + ".json.gz");
     }
 
     /**
      * Settings which change the content of metadata rows. A snapshot written with other settings is ignored.
      */
     @NotNull
-    private static String makeSignature(@NotNull OracleDataSource dataSource) {
+    private static String makeSignature(@NotNull OracleDataSource dataSource, @NotNull String schemaName) {
         DBPConnectionConfiguration cfg = dataSource.getContainer().getConnectionConfiguration();
         return String.join("|",
             String.valueOf(FORMAT_VERSION),
+            schemaName,
             CommonUtils.notEmpty(cfg.getUrl()),
             CommonUtils.notEmpty(cfg.getUserName()),
             String.valueOf(dataSource.isServerVersionAtLeast(12, 1)),
@@ -1068,7 +1072,12 @@ public class OracleMetadataSnapshot {
             }
         }
         // Readers never see a partially written snapshot
-        Files.move(tmpFile, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        try {
+            Files.move(tmpFile, file, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        } catch (AtomicMoveNotSupportedException e) {
+            // Some file systems (e.g. network workspaces) cannot move atomically
+            Files.move(tmpFile, file, StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 
     private void writeSnapshot(@NotNull JsonWriter writer) throws IOException {

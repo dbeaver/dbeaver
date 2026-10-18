@@ -97,11 +97,11 @@ public class OracleSchema extends OracleGlobalObject implements
     final public SchedulerProgramCache schedulerProgramCache;
     final public RecycleBin recycleBin;
     private volatile boolean hasStatistics;
-    private final Object snapshotSync = new Object();
-    private volatile OracleMetadataSnapshot metadataSnapshot;
 
     private long id;
     private String name;
+    private final Object snapshotSync = new Object();
+    private volatile OracleMetadataSnapshot metadataSnapshot;
     private Date createTime;
     private transient OracleUser user;
 
@@ -190,8 +190,7 @@ public class OracleSchema extends OracleGlobalObject implements
     }
 
     @Property(order = 200)
-    public long getId()
-    {
+    public long getId() {
         return id;
     }
 
@@ -572,9 +571,7 @@ public class OracleSchema extends OracleGlobalObject implements
     }
 
     @Override
-    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
-        throws DBException
-    {
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
         // Not synchronized: each cache guards its own loading. A schema-wide lock made readers of already
         // cached objects (e.g. SQL completion) wait for unrelated long loads.
         monitor.subTask("Cache tables");
@@ -593,10 +590,9 @@ public class OracleSchema extends OracleGlobalObject implements
         }
     }
 
+    @Nullable
     @Override
-    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+    public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         hasStatistics = false;
         OracleMetadataSnapshot snapshot = metadataSnapshot;
         if (snapshot != null) {
@@ -836,8 +832,7 @@ public class OracleSchema extends OracleGlobalObject implements
             return OracleConstants.METADATA_FETCH_SIZE;
         }
 
-        protected TableCache()
-        {
+        protected TableCache() {
             super(OracleConstants.COLUMN_OBJECT_NAME);
             setListOrderComparator(DBUtils.nameComparator());
         }
@@ -1053,6 +1048,11 @@ public class OracleSchema extends OracleGlobalObject implements
                         owner.getIndexCache().getAllObjects(monitor, owner);
                     } catch (DBException e) {
                         log.debug("Error reading metadata of " + owner.getName() + ": " + e.getMessage());
+                    } finally {
+                        if (details) {
+                            // Re-arm: a refresh (F5) or a failed load leaves names only, read details again on next use
+                            detailsScheduled = false;
+                        }
                     }
                     return Status.OK_STATUS;
                 }
@@ -1543,14 +1543,15 @@ public class OracleSchema extends OracleGlobalObject implements
     /**
      * Constraint cache implementation
      */
-    public class ConstraintCache extends JDBCCompositeCache<OracleSchema, OracleTableBase, OracleTableConstraint, OracleTableConstraintColumn> {
+    public class ConstraintCache
+        extends JDBCCompositeCache<OracleSchema, OracleTableBase, OracleTableConstraint, OracleTableConstraintColumn> {
 
         @Override
         protected int getMetadataFetchSize() {
             return OracleConstants.METADATA_FETCH_SIZE;
         }
-        protected ConstraintCache(TableCache tableCache)
-        {
+
+        protected ConstraintCache(@NotNull TableCache tableCache) {
             super(tableCache, OracleTableBase.class, OracleConstants.COL_TABLE_NAME, OracleConstants.COL_CONSTRAINT_NAME);
         }
 
@@ -1577,10 +1578,12 @@ public class OracleSchema extends OracleGlobalObject implements
                         "      SELECT LISTAGG(COLUMN_NAME || ':' || POSITION,',') WITHIN GROUP (ORDER BY \"POSITION\") \r\n" + 
                         "      FROM " +
                         OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONS_COLUMNS") + " col\r\n" +
-                        "      WHERE col.OWNER =? AND col.TABLE_NAME = ? AND col.CONSTRAINT_NAME = c.CONSTRAINT_NAME GROUP BY CONSTRAINT_NAME \r\n"+
+                        "      WHERE col.OWNER =? AND col.TABLE_NAME = ? AND col.CONSTRAINT_NAME = c.CONSTRAINT_NAME " +
+                        "GROUP BY CONSTRAINT_NAME \r\n" +
                         "    ) COLUMN_NAMES_NUMS\r\n" + 
                         "FROM\r\n" + 
-                        "    " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONSTRAINTS") + " c\r\n" + 
+                        "    " +
+                        OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONSTRAINTS") + " c\r\n" +
                         "WHERE\r\n" + 
                         "    c.CONSTRAINT_TYPE <> 'R'\r\n" + 
                         "    AND c.OWNER = ?\r\n" + 
@@ -1771,8 +1774,7 @@ public class OracleSchema extends OracleGlobalObject implements
             return OracleConstants.METADATA_FETCH_SIZE;
         }
 
-        protected ForeignKeyCache(TableCache tableCache)
-        {
+        protected ForeignKeyCache(@NotNull TableCache tableCache) {
             super(tableCache, OracleTable.class, OracleConstants.COL_TABLE_NAME, OracleConstants.COL_CONSTRAINT_NAME);
 
         }
@@ -1813,7 +1815,8 @@ public class OracleSchema extends OracleGlobalObject implements
                          + "      SELECT LISTAGG(COLUMN_NAME || ':' || POSITION,',') WITHIN GROUP (ORDER BY \"POSITION\") \r\n"
                          + "      FROM "
                          + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONS_COLUMNS") + " col\r\n"
-                         + "      WHERE col.OWNER =? AND col.TABLE_NAME = ? AND col.CONSTRAINT_NAME = c.CONSTRAINT_NAME GROUP BY CONSTRAINT_NAME \r\n"
+                         + "      WHERE col.OWNER =? AND col.TABLE_NAME = ? AND col.CONSTRAINT_NAME = c.CONSTRAINT_NAME "
+                         + "GROUP BY CONSTRAINT_NAME \r\n"
                          + "    ) COLUMN_NAMES_NUMS\r\nFROM " + constraintsView + " c\r\n"
                          + "LEFT JOIN " + constraintsView + " rc\r\n"
                          + "ON rc.OWNER = c.r_OWNER AND rc.CONSTRAINT_NAME = c.R_CONSTRAINT_NAME AND rc.CONSTRAINT_TYPE='P'\r\n"
@@ -1963,8 +1966,7 @@ public class OracleSchema extends OracleGlobalObject implements
         // Stored index rows replayed by the current load in this thread
         private final ThreadLocal<ResultSet> replayRows = new ThreadLocal<>();
 
-        protected IndexCache(TableCache tableCache)
-        {
+        protected IndexCache(@NotNull TableCache tableCache) {
             super(tableCache, OracleTableBase.class, "TABLE_NAME", "INDEX_NAME");
         }
 
@@ -2197,7 +2199,12 @@ public class OracleSchema extends OracleGlobalObject implements
 
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleProcedureStandalone object, @Nullable String objectName) throws SQLException {
+        public JDBCStatement prepareLookupStatement(
+            @NotNull JDBCSession session,
+            @NotNull OracleSchema owner,
+            @Nullable OracleProcedureStandalone object,
+            @Nullable String objectName
+        ) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM " +
                     OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "OBJECTS") + " " +
@@ -2442,10 +2449,13 @@ public class OracleSchema extends OracleGlobalObject implements
             };
         }
 
+        @Nullable
         @Override
-        protected OraclePackage fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet dbResult)
-            throws SQLException, DBException
-        {
+        protected OraclePackage fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull OracleSchema owner,
+            @NotNull JDBCResultSet dbResult
+        ) throws SQLException, DBException {
             OracleMetadataSnapshot snapshot = owner.getMetadataSnapshot();
             if (snapshot != null && !OracleMetadataSnapshot.isReplay(dbResult)) {
                 return snapshot.recordObject(OracleMetadataSnapshot.Kind.PACKAGES, session, dbResult, rs -> new OraclePackage(owner, rs));
@@ -2555,7 +2565,8 @@ public class OracleSchema extends OracleGlobalObject implements
         protected int getMetadataFetchSize() {
             return OracleConstants.METADATA_FETCH_SIZE;
         }
-        protected TableTriggerCache(TableCache tableCache) {
+
+        protected TableTriggerCache(@NotNull TableCache tableCache) {
             super(tableCache, OracleTableBase.class, "TABLE_NAME", "TRIGGER_NAME");
         }
 

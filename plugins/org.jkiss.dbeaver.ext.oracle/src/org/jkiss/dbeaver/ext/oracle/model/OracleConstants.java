@@ -108,7 +108,8 @@ public class OracleConstants {
     public static final String PROP_USE_META_OPTIMIZER_VERSION = "oracle-meta-optimizer-version";
     public static final String PROP_METADATA_USE_SYS_SCHEMA = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-sys-schema@";
     public static final String PROP_METADATA_USE_SIMPLE_CONSTRAINTS = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-simple-constraints@";
-    public static final String PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY = DBConstants.INTERNAL_PROP_PREFIX + "meta-use-alternative-table-query@";
+    public static final String PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY =
+        DBConstants.INTERNAL_PROP_PREFIX + "meta-use-alternative-table-query@";
     public static final String PROP_METADATA_READ_COLUMN_COMMENTS = DBConstants.INTERNAL_PROP_PREFIX + "meta-read-column-comments@";
     public static final String PROP_METADATA_SNAPSHOT = DBConstants.INTERNAL_PROP_PREFIX + "meta-snapshot@";
     // Dictionary queries of big schemas return tens of thousands of rows: fewer round trips on slow networks

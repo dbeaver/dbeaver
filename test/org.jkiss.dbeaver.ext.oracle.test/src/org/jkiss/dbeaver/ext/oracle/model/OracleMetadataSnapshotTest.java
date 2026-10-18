@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -32,7 +33,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class OracleMetadataSnapshotTest {
+public class OracleMetadataSnapshotTest extends DBeaverUnitTest {
 
     private static final OracleMetadataSnapshot.Layout LAYOUT = new OracleMetadataSnapshot.Layout(
         new String[]{"OBJECT_NAME", "STATUS", "LAST_DDL_TIME", "NUM_ROWS", "COMMENTS_LOADED", "DATA_SCALE"},

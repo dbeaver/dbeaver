@@ -300,7 +300,7 @@ public abstract class JDBCCompositeCache<
                 dbStat.setFetchSize(getMetadataFetchSize());
                 dbStat.executeStatement();
                 JDBCResultSet dbResult = dbStat.getResultSet();
-                if (dbResult != null)
+                if (dbResult != null) {
                     try {
                         while (dbResult.next()) {
                             if (monitor.isCanceled()) {
@@ -373,6 +373,7 @@ public abstract class JDBCCompositeCache<
                     } finally {
                         dbResult.close();
                     }
+                }
             }
         } catch (SQLException ex) {
             if (JDBCUtils.isFeatureNotSupportedError(dataSource, ex)) {
