@@ -29,6 +29,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Proxy;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -126,9 +128,8 @@ public class JDBCMetadataSnapshotTest extends DBeaverUnitTest {
         recordTables(snapshot, true, new Object[][]{{"T1", 1, CREATED}});
 
         JDBCMetadataSnapshot.Pass pass = snapshot.beginPass(TABLES, true);
-        ResultSet resultSet = tableResultSet(new Object[][]{{"T2", 2, CREATED}});
-        resultSet.next();
-        Mockito.when(resultSet.getString(2)).thenThrow(new SQLException("Unsupported type"));
+        ResultSet resultSet = tableResultSet(new Object[][]{{"T2", 2, CREATED}}, 2);
+        Assertions.assertTrue(resultSet.next());
         pass.record("T2", resultSet);
         pass.commit();
         Assertions.assertEquals(List.of("T1"), restoreNames(snapshot, null));
@@ -287,11 +288,18 @@ public class JDBCMetadataSnapshotTest extends DBeaverUnitTest {
         pass.commit();
     }
 
-    /**
-     * Result set with columns TABLE_NAME (varchar), ROW_COUNT (integer) and CREATED (timestamp).
-     */
     @NotNull
     private static ResultSet tableResultSet(@NotNull Object[][] rows) throws SQLException {
+        return tableResultSet(rows, 0);
+    }
+
+    /**
+     * Result set with columns TABLE_NAME (varchar), ROW_COUNT (integer) and CREATED (timestamp).
+     *
+     * @param failingColumn column (from 1) whose value cannot be read as a string, or 0
+     */
+    @NotNull
+    private static ResultSet tableResultSet(@NotNull Object[][] rows, int failingColumn) throws SQLException {
         ResultSetMetaData meta = Mockito.mock(ResultSetMetaData.class);
         Mockito.when(meta.getColumnCount()).thenReturn(3);
         Mockito.when(meta.getColumnLabel(1)).thenReturn("TABLE_NAME");
@@ -301,16 +309,24 @@ public class JDBCMetadataSnapshotTest extends DBeaverUnitTest {
         Mockito.when(meta.getColumnType(2)).thenReturn(Types.INTEGER);
         Mockito.when(meta.getColumnType(3)).thenReturn(Types.TIMESTAMP);
 
-        ResultSet resultSet = Mockito.mock(ResultSet.class);
         int[] position = {-1};
-        Mockito.when(resultSet.getMetaData()).thenReturn(meta);
-        Mockito.when(resultSet.next()).thenAnswer(inv -> ++position[0] < rows.length);
-        Mockito.when(resultSet.getString(Mockito.anyInt())).thenAnswer(inv -> {
-            Object value = rows[position[0]][(int) inv.getArgument(0) - 1];
-            return value == null ? null : value.toString();
-        });
-        Mockito.when(resultSet.getTimestamp(Mockito.anyInt())).thenAnswer(
-            inv -> (Timestamp) rows[position[0]][(int) inv.getArgument(0) - 1]);
-        return resultSet;
+        InvocationHandler handler = (proxy, method, args) -> switch (method.getName()) {
+            case "next" -> ++position[0] < rows.length;
+            case "getMetaData" -> meta;
+            case "getString" -> {
+                int column = (int) args[0];
+                if (column == failingColumn) {
+                    throw new SQLException("Unsupported type");
+                }
+                Object value = rows[position[0]][column - 1];
+                yield value == null ? null : value.toString();
+            }
+            case "getTimestamp" -> rows[position[0]][(int) args[0] - 1];
+            case "equals" -> proxy == args[0];
+            case "hashCode" -> System.identityHashCode(proxy);
+            default -> throw new UnsupportedOperationException(method.getName());
+        };
+        return (ResultSet) Proxy.newProxyInstance(
+            JDBCMetadataSnapshotTest.class.getClassLoader(), new Class<?>[]{ResultSet.class}, handler);
     }
 }
