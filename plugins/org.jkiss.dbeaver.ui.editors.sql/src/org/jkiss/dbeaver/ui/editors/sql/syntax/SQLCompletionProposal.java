@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -191,7 +191,7 @@ public class SQLCompletionProposal extends SQLCompletionProposalBase implements 
         this.getRequest().getActivityTracker().implicitlyTriggered();
         SQLSyntaxManager syntaxManager = this.getRequest().getContext().getSyntaxManager();
         DBPDataSource dataSource = this.getRequest().getContext().getDataSource();
-        final SQLWordPartDetector wordDetector = new SQLWordPartDetector(document, syntaxManager, offset);
+        final SQLWordPartDetector wordDetector = this.getRequest().createWordDetector(document, offset);
         String wordPart = wordDetector.getWordPart();
         int divPos = wordPart.lastIndexOf(syntaxManager.getStructSeparator());
         if (divPos != -1) {
