@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
@@ -172,21 +174,27 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
 
         // Check default active schema
         try (var session = openSession(monitor, DBCExecutionPurpose.META, "Read context defaults")) {
-            monitor.subTask("Retrieve active search path");
+            monitor.subTask("Retrieve active search path, schema and user");
 
-            var searchPathStr = CommonUtils.notEmpty(JDBCUtils.queryString(
-                session,
-                "SELECT reset_val FROM pg_settings WHERE name = 'search_path'"
-            ));
-            for (String str : searchPathStr.split(",")) {
+            // One round trip: it runs for every new connection
+            String searchPathStr = null;
+            String activeSchemaName = null;
+            String activeUserName = null;
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT (SELECT reset_val FROM pg_settings WHERE name = 'search_path'),current_schema(),session_user");
+                 JDBCResultSet dbResult = dbStat.executeQuery()
+            ) {
+                if (dbResult.next()) {
+                    searchPathStr = dbResult.getString(1);
+                    activeSchemaName = dbResult.getString(2);
+                    activeUserName = dbResult.getString(3);
+                }
+            }
+            for (String str : CommonUtils.notEmpty(searchPathStr).split(",")) {
                 searchPath.add(DBUtils.getUnQuotedIdentifier(getDataSource(), str.trim()));
             }
-
-            monitor.subTask("Retrieve active schema and user");
-
-            var result = JDBCUtils.queryStrings(session, "SELECT current_schema(),session_user");
-            setActiveSchema(monitor, result.getFirst());
-            setActiveUser(result.getLast());
+            setActiveSchema(monitor, activeSchemaName);
+            setActiveUser(activeUserName);
         } catch (SQLException e) {
             throw new DBCException(e, this);
         }
