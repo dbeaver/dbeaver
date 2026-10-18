@@ -921,7 +921,9 @@ public abstract class JDBCDataSource extends AbstractDataSource
         @NotNull JDBCExecutionContext context
     ) {
         long timeout = getContainer().getPreferenceStore().getLong(ModelPreferences.EXECUTE_CANCEL_ABORT_TIMEOUT);
-        if (timeout <= 0) {
+        // The connection the operation runs on now: if the context reconnects meanwhile, the new one must stay
+        Connection connection = context.getConnectionOrNull();
+        if (timeout <= 0 || connection == null) {
             return;
         }
         AbstractJob abortJob = new AbstractJob("Abort canceled operation") {
@@ -932,9 +934,8 @@ public abstract class JDBCDataSource extends AbstractDataSource
                     // The operation ended
                     return Status.OK_STATUS;
                 }
-                Connection connection = context.getConnectionOrNull();
                 try {
-                    if (connection != null && context.isAutoCommit()) {
+                    if (context.isAutoCommit()) {
                         log.warn("Canceled operation did not end in " + timeout + "ms, closing connection '" +
                             context.getContextName() + "' of '" + getContainer().getName() + "'");
                         connection.abort(Runnable::run);
