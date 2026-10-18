@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
@@ -30,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCMetadataSnapshot;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
@@ -46,10 +48,14 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
 * SQL Server schema
@@ -389,11 +395,94 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             setListOrderComparator(DBUtils.nameComparator());
         }
 
+        @Override
+        protected boolean supportsMetadataSnapshot() {
+            return true;
+        }
+
         @NotNull
         @Override
-        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull SQLServerSchema owner, @Nullable SQLServerTableBase object, @Nullable String objectName) throws SQLException {
+        protected String[] getMetadataSnapshotSettings(@NotNull SQLServerSchema owner) {
+            // Table filters are applied in the table query
+            DBSObjectFilter tableFilters = owner.getDataSource().getContainer().getObjectFilter(SQLServerTableBase.class, owner, false);
+            return new String[]{
+                tableFilters == null || tableFilters.isEmpty() ? "" : tableFilters.getInclude() + "/" + tableFilters.getExclude()
+            };
+        }
+
+        /**
+         * Compares type, modification time and description of tables and views, and descriptions of stored columns,
+         * with the stored rows. The modification time changes on DDL of the object (columns, constraints, renames),
+         * but not when a description (extended property) changes.
+         */
+        @NotNull
+        @Override
+        protected Set<String> readChangedObjects(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull SQLServerSchema owner,
+            @NotNull JDBCMetadataSnapshot snapshot
+        ) throws DBException {
+            SQLServerDatabase database = owner.getDatabase();
+            String descriptionJoin = SQLServerUtils.getExtendedPropsTableName(database) + " ep ON ep.class=" +
+                SQLServerObjectClass.OBJECT_OR_COLUMN.getClassId() + " AND ep.major_id=o.object_id AND ep.name='" +
+                SQLServerConstants.PROP_MS_DESCRIPTION + "'";
+            String objectsFilter = "o.type IN ('U','S','V','TT') AND o.schema_id=?";
+            Map<String, List<String>> objects = new HashMap<>();
+            Map<String, List<String>> columns = new HashMap<>();
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Read changed tables of " + owner.getName())) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT o.name, o.type, o.modify_date, ep.value FROM " +
+                        SQLServerUtils.getSystemTableName(database, "all_objects") + " o\nLEFT OUTER JOIN " + descriptionJoin +
+                        " AND ep.minor_id=0\nWHERE " + objectsFilter)) {
+                    dbStat.setLong(1, owner.getObjectId());
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        while (dbResult.next()) {
+                            Timestamp modifyDate = dbResult.getTimestamp(3);
+                            String values = dbResult.getString(2) + "|" + (modifyDate == null ? null : modifyDate.getTime()) +
+                                "|" + dbResult.getString(4);
+                            objects.computeIfAbsent(dbResult.getString(1), name -> new ArrayList<>()).add(values);
+                        }
+                    }
+                }
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT o.name, ep.minor_id, ep.value FROM " +
+                        SQLServerUtils.getSystemTableName(database, "all_objects") + " o\nJOIN " + descriptionJoin +
+                        " AND ep.minor_id>0\nWHERE " + objectsFilter)) {
+                    dbStat.setLong(1, owner.getObjectId());
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        while (dbResult.next()) {
+                            columns.computeIfAbsent(dbResult.getString(1), name -> new ArrayList<>()).add(
+                                dbResult.getString(2) + "|" + dbResult.getString(3));
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBDatabaseException(e, owner.getDataSource());
+            }
+            Set<String> changed = JDBCMetadataSnapshot.findChangedGroups(
+                snapshot.getStoredValues(SNAPSHOT_OBJECTS, "type", "modify_date", "description"), objects);
+            // Column descriptions, for tables whose columns are stored
+            Map<String, List<String>> storedColumns = snapshot.getStoredValues(SNAPSHOT_CHILDREN, "column_id", "description");
+            for (Map.Entry<String, List<String>> entry : storedColumns.entrySet()) {
+                Set<String> stored = new HashSet<>(entry.getValue());
+                stored.removeIf(value -> value.endsWith("|null"));
+                if (!stored.equals(new HashSet<>(columns.getOrDefault(entry.getKey(), List.of())))) {
+                    changed.add(entry.getKey());
+                }
+            }
+            return changed;
+        }
+
+        @NotNull
+        @Override
+        public JDBCStatement prepareLookupStatement(
+            @NotNull JDBCSession session,
+            @NotNull SQLServerSchema owner,
+            @Nullable SQLServerTableBase object,
+            @Nullable String objectName
+        ) throws SQLException {
             StringBuilder sql = new StringBuilder();
-            SQLServerDataSource dataSource = owner.getDataSource();
+            final SQLServerDataSource dataSource = owner.getDataSource();
             sql.append("SELECT o.*,ep.value as description");
             if (owner.getDataSource().supportsExternalTables(session)) {
                 sql.append(",t.is_external");
