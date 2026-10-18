@@ -16,18 +16,22 @@
  */
 package org.jkiss.dbeaver.ui.editors.erd.command;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.gef.commands.Command;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.erd.*;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 import org.jkiss.utils.CommonUtils;
@@ -49,6 +53,9 @@ public class AssociationCreateCommand extends Command {
     protected List<ERDEntityAttribute> sourceAttributes;
     protected List<ERDEntityAttribute> targetAttributes;
     private ERDEditorPart editor;
+    private AbstractJob directionLookupJob;
+    private int directionLookupGeneration;
+    private boolean undone;
 
     public AssociationCreateCommand() {
     }
@@ -110,7 +117,66 @@ public class AssociationCreateCommand extends Command {
 
     @Override
     public void execute() {
-        association = createAssociation(sourceEntity, targetEntity, true);
+        undone = false;
+        if (sourceEntity instanceof ERDEntity && targetEntity instanceof ERDEntity
+            && !CommonUtils.isEmpty(sourceAttributes) && !CommonUtils.isEmpty(targetAttributes)) {
+            resolveAssociationDirectionInBackground();
+        } else {
+            association = createAssociation(sourceEntity, targetEntity, true, false);
+        }
+    }
+
+    private void resolveAssociationDirectionInBackground() {
+        if (editor == null || editor.getDiagram() == null) {
+            log.error("Cannot create ERD association without an active diagram");
+            return;
+        }
+
+        // Capture the drag endpoints before scheduling; GEF models must only
+        // be updated on the UI thread, never from the background job.
+        final ERDElement<?> originalSource = sourceEntity;
+        final ERDElement<?> originalTarget = targetEntity;
+        final List<DBSEntityAttribute> srcAttrs = ERDUtils.getObjectsFromERD(sourceAttributes);
+        final List<DBSEntityAttribute> refAttrs = ERDUtils.getObjectsFromERD(targetAttributes);
+        final int generation = ++directionLookupGeneration;
+
+        directionLookupJob = new AbstractJob("Determine ERD foreign key direction") {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                if (monitor.isCanceled()) {
+                    return Status.CANCEL_STATUS;
+                }
+
+                boolean swap = false;
+                try {
+                    swap = needToSwapForeignKeyDirection(monitor, srcAttrs, refAttrs);
+                } catch (DBException e) {
+                    // Metadata lookup may fail even when the FK editor can work.
+                    // Preserve the original drag direction as the fallback.
+                    log.error("Cannot determine ERD foreign key direction; using drag direction", e);
+                }
+                if (monitor.isCanceled()) {
+                    return Status.CANCEL_STATUS;
+                }
+
+                final boolean shouldSwap = swap;
+                UIUtils.asyncExec(() -> {
+                    // An undo, redo, or a newer command may have invalidated
+                    // this lookup before the UI continuation is dispatched.
+                    if (undone || generation != directionLookupGeneration || editor == null
+                        || editor.getDiagram() == null
+                        || editor.getCommandStack().getUndoCommand() != AssociationCreateCommand.this) {
+                        return;
+                    }
+                    directionLookupJob = null;
+                    association = createAssociation(originalSource, originalTarget, true, shouldSwap);
+                });
+                return Status.OK_STATUS;
+            }
+        };
+        directionLookupJob.setUser(true);
+        directionLookupJob.schedule();
     }
 
     @NotNull
@@ -142,14 +208,23 @@ public class AssociationCreateCommand extends Command {
 
     @Override
     public void redo() {
+        undone = false;
         if (association != null) {
             sourceEntity.addAssociation(association, true);
             targetEntity.addReferenceAssociation(association, true);
+        } else {
+            execute();
         }
     }
 
     @Override
     public void undo() {
+        undone = true;
+        ++directionLookupGeneration;
+        if (directionLookupJob != null) {
+            directionLookupJob.cancel();
+            directionLookupJob = null;
+        }
         if (association != null) {
             sourceEntity.removeAssociation(association, true);
             targetEntity.removeReferenceAssociation(association, true);
@@ -162,16 +237,22 @@ public class AssociationCreateCommand extends Command {
         @Nullable ERDElement<?> targetEntity,
         boolean reflect
     ) {
+        return createAssociation(sourceEntity, targetEntity, reflect, false);
+    }
+
+    @Nullable
+    private ERDAssociation createAssociation(
+        @Nullable ERDElement<?> sourceEntity,
+        @Nullable ERDElement<?> targetEntity,
+        boolean reflect,
+        boolean shouldSwap
+    ) {
         ERDAssociation association = null;
         if (sourceEntity instanceof ERDEntity sourceERDEntity && targetEntity instanceof ERDEntity targetERDEntity) {
-            // Metadata lookups must use the diagram's monitor, which can be cancelled.
-            // Both the entity and attribute connection policies set the editor.
+            // Metadata was resolved in a cancellable background job before
+            // reaching this UI-only model/dialog creation path.
             if (editor == null || editor.getDiagram() == null) {
                 log.error("Cannot create ERD association without an active diagram");
-                return null;
-            }
-            DBRProgressMonitor monitor = editor.getDiagram().getMonitor();
-            if (monitor.isCanceled()) {
                 return null;
             }
 
@@ -184,29 +265,20 @@ public class AssociationCreateCommand extends Command {
             List<DBSEntityAttribute> srcAttrs = ERDUtils.getObjectsFromERD(sourceAttributes);
             List<DBSEntityAttribute> refAttrs = ERDUtils.getObjectsFromERD(targetAttributes);
 
-            try {
-                // Maybe we need to swap source and target
-                // Ref table must have a unique constraint with ref attributes
-                if (needToSwapForeignKeyDirection(monitor, srcAttrs, refAttrs)) {
-                    directionSwapped = true;
-                    ERDEntity tmpERDEntity = associationSourceERDEntity;
-                    associationSourceERDEntity = associationTargetERDEntity;
-                    associationTargetERDEntity = tmpERDEntity;
+            // Swap only after the background lookup has determined the final direction.
+            if (shouldSwap) {
+                directionSwapped = true;
+                ERDEntity tmpERDEntity = associationSourceERDEntity;
+                associationSourceERDEntity = associationTargetERDEntity;
+                associationTargetERDEntity = tmpERDEntity;
 
-                    DBSEntity tmpEntity = targetEntityObject;
-                    targetEntityObject = srcEntityObject;
-                    srcEntityObject = tmpEntity;
+                DBSEntity tmpEntity = targetEntityObject;
+                targetEntityObject = srcEntityObject;
+                srcEntityObject = tmpEntity;
 
-                    List<DBSEntityAttribute> tmpAttrs = refAttrs;
-                    refAttrs = srcAttrs;
-                    srcAttrs = tmpAttrs;
-                }
-            } catch (DBException e) {
-                log.error("Error reading constraints", e);
-                return null;
-            }
-            if (monitor.isCanceled()) {
-                return null;
+                List<DBSEntityAttribute> tmpAttrs = refAttrs;
+                refAttrs = srcAttrs;
+                srcAttrs = tmpAttrs;
             }
 
             if (isAssociationExists(associationSourceERDEntity, associationTargetERDEntity)) {
