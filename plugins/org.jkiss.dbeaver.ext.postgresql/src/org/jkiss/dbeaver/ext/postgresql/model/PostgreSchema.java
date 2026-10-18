@@ -1118,6 +1118,20 @@ public class PostgreSchema implements
             super(getTableCache(), PostgreTableBase.class, "tabrelname", "relname");
         }
 
+        @Override
+        protected void loadObjects(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull PostgreTableContainer container,
+            @Nullable PostgreTableBase forParent
+        ) throws DBException {
+            if (forParent == null && !isFullyCached() && !monitor.isForceCacheUsage()) {
+                // Each unique index looks up its owner constraint (see PostgreIndex). Read the constraints of the
+                // whole schema at once, otherwise every table with a unique index runs its own constraint query.
+                constraintCache.getAllObjects(monitor, container);
+            }
+            super.loadObjects(monitor, container, forParent);
+        }
+
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(
