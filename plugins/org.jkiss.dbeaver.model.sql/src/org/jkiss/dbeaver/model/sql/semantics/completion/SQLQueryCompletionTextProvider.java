@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,7 +40,9 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -52,6 +54,8 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
     private final SQLQueryCompletionContext queryCompletionContext;
     private final SQLTableAliasInsertMode aliasMode;
     private final SQLDialect dialect;
+    // Alias candidates (e.g. "t") repeat for most table proposals: resolve each one against the context once
+    private final Map<String, Boolean> aliasNameTaken = new HashMap<>();
     private final String structSeparator;
 
     private final DBRProgressMonitor monitor;
@@ -136,8 +140,8 @@ public class SQLQueryCompletionTextProvider implements SQLQueryCompletionItemVis
                     tableName.object,
                     s -> dialect.getKeywordType(s) != null ||
                         this.queryCompletionContext.getAliasesInUse().contains(s.toLowerCase()) ||
-                        (this.queryCompletionContext.getDataContext() != null
-                            && this.queryCompletionContext.getDataContext().resolveSource(monitor, List.of(s)) != null)
+                        this.aliasNameTaken.computeIfAbsent(s, name -> this.queryCompletionContext.getDataContext() != null
+                            && this.queryCompletionContext.getDataContext().resolveSource(monitor, List.of(name)) != null)
                 );
                 suffix = this.prepareAliasPrefix() + this.convertCaseIfNeeded(alias);
             }
