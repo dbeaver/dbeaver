@@ -496,7 +496,7 @@ public class JDBCUtils {
                 } else {
                     try {
                         // isValid takes seconds, the preference is in milliseconds (rounded up, at least 1 s)
-                        isValid[0] = connection.isValid(Math.max(1, (invalidateTimeout + 999) / 1000));
+                        isValid[0] = connection.isValid(Math.max(1, (int) ((invalidateTimeout + 999L) / 1000)));
                     } catch (Throwable e) {
                         // isValid may be unsupported by driver
                         // Let's try to read table list
