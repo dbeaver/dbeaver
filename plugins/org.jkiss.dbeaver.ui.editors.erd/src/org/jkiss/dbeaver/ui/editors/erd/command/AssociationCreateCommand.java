@@ -135,6 +135,8 @@ public class AssociationCreateCommand extends Command {
 
         // Capture the drag endpoints before scheduling; GEF models must only
         // be updated on the UI thread, never from the background job.
+        final ERDEditorPart initiatingEditor = editor;
+        final var initiatingDiagram = editor.getDiagram();
         final ERDElement<?> originalSource = sourceEntity;
         final ERDElement<?> originalTarget = targetEntity;
         final List<DBSEntityAttribute> srcAttrs = ERDUtils.getObjectsFromERD(sourceAttributes);
@@ -167,8 +169,8 @@ public class AssociationCreateCommand extends Command {
                     // wrapped in a GEF compound drag command) is still at the
                     // head of the active undo history. Otherwise it could update
                     // a diagram after a newer operation or an editor reset.
-                    if (undone || generation != directionLookupGeneration || editor == null
-                        || editor.getDiagram() == null || !containsCommand(
+                    if (undone || generation != directionLookupGeneration || editor != initiatingEditor
+                        || editor.getDiagram() != initiatingDiagram || !containsCommand(
                             editor.getCommandStack().getUndoCommand(), AssociationCreateCommand.this)) {
                         return;
                     }
