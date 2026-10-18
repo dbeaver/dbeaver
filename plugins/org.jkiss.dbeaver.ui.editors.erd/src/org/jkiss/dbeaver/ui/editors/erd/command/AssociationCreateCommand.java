@@ -162,11 +162,12 @@ public class AssociationCreateCommand extends Command {
 
                 final boolean shouldSwap = swap;
                 UIUtils.asyncExec(() -> {
-                    // An undo, redo, or a newer command may have invalidated
-                    // this lookup before the UI continuation is dispatched.
+                    // An undo or redo may have invalidated this lookup before
+                    // the UI continuation is dispatched. GEF can wrap drag
+                    // commands in a CompoundCommand, so do not compare this
+                    // command to CommandStack.getUndoCommand() by identity.
                     if (undone || generation != directionLookupGeneration || editor == null
-                        || editor.getDiagram() == null
-                        || editor.getCommandStack().getUndoCommand() != AssociationCreateCommand.this) {
+                        || editor.getDiagram() == null) {
                         return;
                     }
                     directionLookupJob = null;
