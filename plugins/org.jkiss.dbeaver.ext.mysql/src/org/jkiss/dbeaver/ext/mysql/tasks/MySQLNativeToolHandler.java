@@ -44,6 +44,7 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
     extends AbstractNativeToolHandler<SETTINGS, BASE_OBJECT, PROCESS_ARG> {
 
     private final List<Path> configFiles = new ArrayList<>();
+    private final List<Path> unicodeUsernameOptionFiles = new ArrayList<>();
 
     @Override
     protected boolean doExecute(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log) throws DBException, InterruptedException {
@@ -51,6 +52,7 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
             return super.doExecute(monitor, task, settings, log);
         } finally {
             deleteConfigurationFiles(configFiles, log);
+            unicodeUsernameOptionFiles.clear();
         }
     }
 
@@ -83,7 +85,7 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
             }
 
             if (RuntimeUtils.isWindows()) {
-                isolateLoginPathFromUnicodeUsernameOptionFile(process);
+                isolateLoginPathFromUnicodeUsernameOptionFile(process, unicodeUsernameOptionFiles);
             }
         }
     }
@@ -95,14 +97,21 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
      * MYSQL_TEST_LOGIN_FILE works on MySQL 8.0 as well as newer clients,
      * unlike --no-login-paths, which was added in MySQL 8.2.
      *
-     * Only the Unicode option-file path uses --defaults-extra-file here.
+     * Only paths created for Unicode usernames are isolated. A user-supplied
+     * --defaults-extra-file is never redirected.
      * No user-wide environment variables or login files are changed.
      */
-    static void isolateLoginPathFromUnicodeUsernameOptionFile(@NotNull ProcessBuilder process) {
+    static void isolateLoginPathFromUnicodeUsernameOptionFile(
+        @NotNull ProcessBuilder process,
+        @NotNull List<Path> unicodeUsernameOptionFiles
+    ) {
         final String optionPrefix = "--defaults-extra-file=";
         for (String option : process.command()) {
             if (option.startsWith(optionPrefix)) {
                 Path configFile = Path.of(option.substring(optionPrefix.length()));
+                if (!unicodeUsernameOptionFiles.contains(configFile)) {
+                    continue;
+                }
                 Path unusedLoginFile = configFile.resolveSibling(configFile.getFileName() + ".missing-login-path");
                 process.environment().put("MYSQL_TEST_LOGIN_FILE", unusedLoginFile.toString());
                 return;
@@ -137,6 +146,7 @@ public abstract class MySQLNativeToolHandler<SETTINGS extends AbstractNativeTool
             // Preserve the usual password environment variable and option-file search order.
             Path config = createUsernameOptionFile(toolUserName);
             configFiles.add(config);
+            unicodeUsernameOptionFiles.add(config.toAbsolutePath());
             cmd.add(1, "--defaults-extra-file=" + config.toAbsolutePath());
         } else {
             cmd.add("-u");
