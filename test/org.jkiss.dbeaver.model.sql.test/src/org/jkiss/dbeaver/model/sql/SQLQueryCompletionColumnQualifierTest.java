@@ -45,7 +45,7 @@ public class SQLQueryCompletionColumnQualifierTest extends DBeaverUnitTest {
     @Test
     void existingFullyQualifiedColumnReferencesArePreservedByDefault() {
         assertEquals(List.of("owner", "orders"), SQLQueryCompletionTextProvider.columnReferenceQualifierParts(
-            new BasicSQLDialect(), List.of("owner", "orders")));
+            BasicSQLDialect.INSTANCE, List.of("owner", "orders")));
     }
 
     @Test
