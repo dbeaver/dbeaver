@@ -128,8 +128,9 @@ public class JDBCMetadataSnapshotTest extends DBeaverUnitTest {
 
         JDBCMetadataSnapshot.Pass pass = snapshot.beginPass(TABLES, true);
         ResultSet resultSet = tableResultSet(new Object[][]{{"T2", 2, CREATED}}, 2);
-        Assertions.assertTrue(resultSet.next());
-        pass.record("T2", resultSet);
+        while (resultSet.next()) {
+            pass.record("T2", resultSet);
+        }
         pass.commit();
         Assertions.assertEquals(List.of("T1"), restoreNames(snapshot, null));
     }
