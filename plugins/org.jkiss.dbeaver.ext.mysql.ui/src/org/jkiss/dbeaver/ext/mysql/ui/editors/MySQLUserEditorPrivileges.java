@@ -119,10 +119,9 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     // Commands created by this page. Only these are folded into: the General page adds its own
     // commands (with its own reflectors) to the same command context
     private final Set<MySQLCommandGrantPrivilege> ownCommands = Collections.newSetFromMap(new WeakHashMap<>());
-    // Last command added by the current user action: one click (or "-") may create several commands,
+    // Commands added by the current user action: one click (or "-") may create several commands,
     // they are linked so a single Undo/Redo reverts/re-applies all of them
-    @Nullable
-    private DBECommand<?> undoBatchLast;
+    private final List<DBECommand<?>> undoBatch = new ArrayList<>();
 
     @Override
     public void createPartControl(@NotNull Composite parent) {
@@ -360,7 +359,9 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
 
     private void addGrantListener(@NotNull final PrivilegeTableControl privTable) {
         privTable.addListener(SWT.Modify, event -> {
-            startUndoBatch();
+            if (!PrivilegeTableControl.isContinuedAction(event)) {
+                startUndoBatch();
+            }
             final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
             final boolean isGrant = event.detail >= 1;
             final boolean withGrantOption = event.detail == 2;
@@ -454,6 +455,8 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             if (opposite.removePrivilege(privilege)) {
                 if (opposite.isEmptyCommand()) {
                     commandContext.removeCommand(opposite);
+                    // The next command of this action links to the previous one still queued
+                    undoBatch.remove(opposite);
                 } else {
                     commandContext.updateCommand(opposite, null);
                 }
@@ -481,7 +484,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
     }
 
     private void startUndoBatch() {
-        undoBatchLast = null;
+        undoBatch.clear();
     }
 
     /**
@@ -492,8 +495,8 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
         @NotNull DBECommand<MySQLUser> command,
         @NotNull DBECommandReflector<MySQLUser, ? extends DBECommand<MySQLUser>> reflector
     ) {
-        getEditorInput().getCommandContext().addCommand(command, reflector, false, undoBatchLast);
-        undoBatchLast = command;
+        getEditorInput().getCommandContext().addCommand(command, reflector, false, undoBatch.isEmpty() ? null : undoBatch.getLast());
+        undoBatch.add(command);
     }
 
     /**
@@ -611,7 +614,9 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
 
     private void addColumnGrantListener(@NotNull final PrivilegeTableControl privTable) {
         privTable.addListener(SWT.Modify, event -> {
-            startUndoBatch();
+            if (!PrivilegeTableControl.isContinuedAction(event)) {
+                startUndoBatch();
+            }
             final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
             final boolean isGrant = event.detail >= 1;
             final boolean withGrantOption = event.detail == 2;
@@ -731,7 +736,9 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
 
     private void addProcedureGrantListener(@NotNull final PrivilegeTableControl privTable) {
         privTable.addListener(SWT.Modify, event -> {
-            startUndoBatch();
+            if (!PrivilegeTableControl.isContinuedAction(event)) {
+                startUndoBatch();
+            }
             final MySQLPrivilege privilege = (MySQLPrivilege) event.data;
             final boolean isGrant = event.detail >= 1;
             final boolean withGrantOption = event.detail == 2;

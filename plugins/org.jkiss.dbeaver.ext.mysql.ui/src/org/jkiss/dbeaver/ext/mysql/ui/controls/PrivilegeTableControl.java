@@ -139,7 +139,7 @@ public class PrivilegeTableControl extends Composite {
                             if (elementPriv.enabled && elementPriv.privilege.getName().equals(MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME)) {
                                 withGrantOption = true;
                             }
-                            notifyPrivilegeCheck(elementPriv.privilege, elementPriv.enabled, withGrantOption);
+                            notifyPrivilegeCheck(elementPriv.privilege, elementPriv.enabled, withGrantOption, false);
                             tableViewer.update(elementPriv, null);
                         }
                     }
@@ -169,11 +169,13 @@ public class PrivilegeTableControl extends Composite {
         UIUtils.createPushButton(
             buttonsPanel, MySQLUIMessages.controls_privilege_table_push_button_check_all, null,
             SelectionListener.widgetSelectedAdapter(e -> {
+                boolean continuesAction = false;
                 for (MySQLObjectPrivilege userPrivilege : CommonUtils.safeCollection(currentPrivileges)) {
                     if (!userPrivilege.enabled || userPrivilege.partial) {
                         userPrivilege.enabled = true;
                         userPrivilege.partial = false;
-                        notifyPrivilegeCheck(userPrivilege.privilege, true, userPrivilege.privilege.isGrantOption());
+                        notifyPrivilegeCheck(userPrivilege.privilege, true, userPrivilege.privilege.isGrantOption(), continuesAction);
+                        continuesAction = true;
                     }
                 }
                 drawColumns(currentPrivileges);
@@ -181,20 +183,36 @@ public class PrivilegeTableControl extends Composite {
         UIUtils.createPushButton(
             buttonsPanel, MySQLUIMessages.controls_privilege_table_push_button_clear_all, null,
             SelectionListener.widgetSelectedAdapter(e -> {
+                boolean continuesAction = false;
                 for (MySQLObjectPrivilege userPrivilege : CommonUtils.safeCollection(currentPrivileges)) {
                     if (userPrivilege.enabled || userPrivilege.partial) {
                         userPrivilege.enabled = false;
                         userPrivilege.partial = false;
-                        notifyPrivilegeCheck(userPrivilege.privilege, false, false);
+                        notifyPrivilegeCheck(userPrivilege.privilege, false, false, continuesAction);
+                        continuesAction = true;
                     }
                 }
                 drawColumns(currentPrivileges);
             }));
     }
 
-    private void notifyPrivilegeCheck(@NotNull MySQLPrivilege privilege, boolean checked, boolean withGrantOption) {
+    /**
+     * Whether a privilege change event continues the user action of the previous event: "Check All" and
+     * "Clear All" send one event per changed privilege, and listeners treat them as a single action.
+     */
+    public static boolean isContinuedAction(@NotNull Event event) {
+        return event.index > 0;
+    }
+
+    private void notifyPrivilegeCheck(
+        @NotNull MySQLPrivilege privilege,
+        boolean checked,
+        boolean withGrantOption,
+        boolean continuesAction
+    ) {
         Event event = new Event();
         event.detail = withGrantOption ? 2 : checked ? 1 : 0;
+        event.index = continuesAction ? 1 : 0;
         event.widget = this;
         event.data = privilege;
         super.notifyListeners(SWT.Modify, event);

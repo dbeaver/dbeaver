@@ -85,10 +85,9 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     private boolean isLoaded;
     // Incremented on every load: a result of a superseded load (Refresh while loading) is dropped
     private int loadGeneration;
-    // Last command added by the current user action: one click (or "-") may create several commands,
+    // Commands added by the current user action: one click (or "-") may create several commands,
     // they are linked so a single Undo/Redo reverts/re-applies all of them
-    @Nullable
-    private DBECommand<?> undoBatchLast;
+    private final List<DBECommand<?>> undoBatch = new ArrayList<>();
     private MySQLCatalog catalog;
     private MySQLTableBase rootTable;
     private MySQLProcedure rootProcedure;
@@ -97,6 +96,10 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     private final Map<MySQLUser, List<MySQLGrant>> userGrants = new HashMap<>();
     private List<MySQLTableBase> catalogTables = new ArrayList<>();
     private List<MySQLProcedure> catalogProcedures = new ArrayList<>();
+    // Whether the edited schema has tables/routines at all: their sections (with the "+" button that
+    // creates the first object grant) are shown even when no grant targets an object yet
+    private boolean schemaHasTables;
+    private boolean schemaHasProcedures;
     private List<MySQLPrivilege> tablePrivTypes = new ArrayList<>();
     private List<MySQLPrivilege> procedurePrivTypes = new ArrayList<>();
     private List<MySQLPrivilege> columnPrivTypes = new ArrayList<>();
@@ -351,6 +354,8 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         Map<MySQLUser, List<MySQLGrant>> userGrants = new HashMap<>();
         List<MySQLTableBase> catalogTables = new ArrayList<>();
         List<MySQLProcedure> catalogProcedures = new ArrayList<>();
+        boolean schemaHasTables;
+        boolean schemaHasProcedures;
         List<MySQLPrivilege> tablePrivs = new ArrayList<>();
         List<MySQLPrivilege> otherPrivs = new ArrayList<>();
         List<MySQLPrivilege> procedurePrivs = new ArrayList<>();
@@ -402,7 +407,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                     continue;
                 }
                 catalogGrants.add(grant);
-                relevant |= isRelevantGrant(grant, data.procedurePrivs);
+                relevant |= isRelevantGrant(grant, data.tablePrivs, data.procedurePrivs);
             }
             if (relevant) {
                 data.users.add(user);
@@ -431,10 +436,13 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                     data.catalogTables.add(t);
                 }
             }
+            data.schemaHasTables = !catalog.getTableCache().getAllObjects(monitor, catalog).isEmpty();
+            Collection<MySQLProcedure> procedures = catalog.getProceduresCache().getAllObjects(monitor, catalog);
+            data.schemaHasProcedures = !procedures.isEmpty();
             if (!procedureNames.isEmpty()) {
                 // A procedure and a function may share a name: match each routine by name AND type
                 // instead of a name-only cache lookup, which would return just one of them
-                for (MySQLProcedure p : catalog.getProceduresCache().getAllObjects(monitor, catalog)) {
+                for (MySQLProcedure p : procedures) {
                     if (hasProcedureGrant(data.userGrants.values(), p)) {
                         data.catalogProcedures.add(p);
                     }
@@ -467,6 +475,8 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         userGrants.putAll(data.userGrants);
         catalogTables = data.catalogTables;
         catalogProcedures = data.catalogProcedures;
+        schemaHasTables = data.schemaHasTables;
+        schemaHasProcedures = data.schemaHasProcedures;
         tablePrivTypes = data.tablePrivs;
         procedurePrivTypes = data.procedurePrivs;
         columnPrivTypes = data.columnPrivs;
@@ -516,15 +526,21 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
 
     /**
      * Whether the grant makes its user show up in this editor: in a table/routine editor a direct
-     * grant on the object or an inherited schema-wide one, in a schema editor any grant of the schema.
+     * grant on the object or an inherited schema-wide one holding a privilege applicable to the object
+     * (e.g. EXECUTE on db.* doesn't make a user of a table), in a schema editor any grant of the schema.
      */
-    private boolean isRelevantGrant(@NotNull MySQLGrant grant, @NotNull List<MySQLPrivilege> procedurePrivs) {
+    private boolean isRelevantGrant(
+        @NotNull MySQLGrant grant,
+        @NotNull List<MySQLPrivilege> tablePrivs,
+        @NotNull List<MySQLPrivilege> procedurePrivs
+    ) {
         if (rootTable != null) {
-            return grant.matches(rootTable) || isSchemaLevelGrant(grant);
+            return grant.matches(rootTable)
+                || (isSchemaLevelGrant(grant) && hasAnyPrivilegeOf(grant, tablePrivs));
         }
         if (rootProcedure != null) {
             return grant.matchesProcedure(rootProcedure)
-                || (isSchemaLevelGrant(grant) && hasAnyProcedurePrivilege(grant, procedurePrivs));
+                || (isSchemaLevelGrant(grant) && hasAnyPrivilegeOf(grant, procedurePrivs));
         }
         return true;
     }
@@ -533,12 +549,12 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         return grant.getObjectType() == MySQLGrant.ObjectType.TABLE && grant.isAllTables();
     }
 
-    private static boolean hasAnyProcedurePrivilege(@NotNull MySQLGrant grant, @NotNull List<MySQLPrivilege> procedurePrivs) {
+    private static boolean hasAnyPrivilegeOf(@NotNull MySQLGrant grant, @NotNull List<MySQLPrivilege> privileges) {
         if (grant.isAllPrivileges()) {
             return true;
         }
         for (MySQLPrivilege priv : grant.getPrivileges()) {
-            if (procedurePrivs.contains(priv)) {
+            if (privileges.contains(priv)) {
                 return true;
             }
         }
@@ -789,7 +805,9 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
 
     private void addGrantListener(@NotNull PrivilegeTableControl panel, @NotNull PanelKind kind) {
         panel.addListener(SWT.Modify, event -> {
-            startUndoBatch();
+            if (!PrivilegeTableControl.isContinuedAction(event)) {
+                startUndoBatch();
+            }
             if (selectedUser == null) {
                 return;
             }
@@ -904,6 +922,8 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             if (opposite.removePrivilege(privilege)) {
                 if (opposite.isEmptyCommand()) {
                     ctx.removeCommand(opposite);
+                    // The next command of this action links to the previous one still queued
+                    undoBatch.remove(opposite);
                 } else {
                     ctx.updateCommand(opposite, null);
                 }
@@ -949,7 +969,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     }
 
     private void startUndoBatch() {
-        undoBatchLast = null;
+        undoBatch.clear();
     }
 
     /**
@@ -960,8 +980,8 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         @NotNull DBECommand<MySQLUser> command,
         @NotNull DBECommandReflector<MySQLUser, ? extends DBECommand<MySQLUser>> reflector
     ) {
-        getEditorInput().getCommandContext().addCommand(command, reflector, false, undoBatchLast);
-        undoBatchLast = command;
+        getEditorInput().getCommandContext().addCommand(command, reflector, false, undoBatch.isEmpty() ? null : undoBatch.getLast());
+        undoBatch.add(command);
     }
 
     /**
@@ -1133,12 +1153,12 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         }
         boolean changed = false;
         if (proceduresGroup != null) {
-            boolean hasProcedures = !catalogProcedures.isEmpty()
+            boolean hasProcedures = schemaHasProcedures || !catalogProcedures.isEmpty()
                 || !extraProcedures.getOrDefault(selectedUser, Collections.emptySet()).isEmpty();
             changed |= setSectionVisible(proceduresGroup, hasProcedures);
         }
         if (tablesGroup != null) {
-            boolean hasTables = !catalogTables.isEmpty()
+            boolean hasTables = schemaHasTables || !catalogTables.isEmpty()
                 || !extraTables.getOrDefault(selectedUser, Collections.emptySet()).isEmpty();
             changed |= setSectionVisible(tablesGroup, hasTables);
         }
@@ -1336,22 +1356,23 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             return;
         }
         MySQLUser user = selectedUser;
-        for (MySQLGrant grant : new ArrayList<>(grantsOfSelectedUser())) {
-            if (rootTable != null && !grant.matches(rootTable)) {
-                continue;
+        List<MySQLGrant> revoked = new ArrayList<>();
+        boolean stillRelevant = false;
+        for (MySQLGrant grant : grantsOfSelectedUser()) {
+            boolean direct = rootTable != null ? grant.matches(rootTable)
+                : rootProcedure == null || grant.matchesProcedure(rootProcedure);
+            if (!direct) {
+                // In a table/routine editor only the direct grants are revoked; an untouched inherited
+                // schema grant (db.*) still applies, so such a user stays listed with that grant
+                stillRelevant |= isRelevantGrant(grant, tablePrivTypes, procedurePrivTypes);
+            } else {
+                revoked.add(grant);
             }
-            if (rootProcedure != null && !grant.matchesProcedure(rootProcedure)) {
-                continue;
-            }
-            revokeWholeGrant(user, grant);
+        }
+        for (MySQLGrant grant : revoked) {
+            revokeWholeGrant(user, grant, !stillRelevant);
         }
         extraUsers.remove(user);
-        // In a table/routine editor only the direct grants are revoked; an untouched inherited
-        // schema grant (db.*) still applies, so such a user stays listed with that grant
-        boolean stillRelevant = false;
-        for (MySQLGrant grant : userGrants.getOrDefault(user, Collections.emptyList())) {
-            stillRelevant |= isRelevantGrant(grant, procedurePrivTypes);
-        }
         if (stillRelevant) {
             fillObjectLists();
             updatePanels();
@@ -1380,7 +1401,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         MySQLTableBase table = selectedTable;
         for (MySQLGrant grant : new ArrayList<>(grantsOfSelectedUser())) {
             if (grant.matches(table)) {
-                revokeWholeGrant(user, grant);
+                revokeWholeGrant(user, grant, false);
             }
         }
         Set<MySQLTableBase> extra = extraTables.get(user);
@@ -1403,7 +1424,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         MySQLProcedure procedure = selectedProcedure;
         for (MySQLGrant grant : new ArrayList<>(grantsOfSelectedUser())) {
             if (grant.matchesProcedure(procedure)) {
-                revokeWholeGrant(user, grant);
+                revokeWholeGrant(user, grant, false);
             }
         }
         Set<MySQLProcedure> extra = extraProcedures.get(user);
@@ -1493,8 +1514,12 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         table.setSelection(selection);
     }
 
-    /** Creates a REVOKE for the whole grant and drops it from the user's local grant list. */
-    private void revokeWholeGrant(@NotNull MySQLUser user, @NotNull MySQLGrant grant) {
+    /**
+     * Creates a REVOKE for the whole grant and drops it from the user's local grant list.
+     *
+     * @param removesUser the removal also drops the user from the list (Redo must do it again)
+     */
+    private void revokeWholeGrant(@NotNull MySQLUser user, @NotNull MySQLGrant grant, boolean removesUser) {
         // Revoke exactly the privileges the grant holds, each at its own level. Table-level and
         // column-level privileges go in separate statements: mixing them (or listing a privilege
         // that isn't actually held) makes the server reject the whole statement.
@@ -1527,7 +1552,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         // a wildcard schema grant (`tenant\_%`.*) must be revoked by its stored pattern.
         addUserRevokeCommand(
             new MySQLCommandRevokeObjectGrants(user, grant.getObjectSpec(), tablePrivNames, columnPrivNames, grant.isGrantOption()),
-            createRemovalReflector(user, grant));
+            createRemovalReflector(user, grant, removesUser));
     }
 
     private @NotNull String tableSpec(@NotNull MySQLTableBase table) {
@@ -1543,16 +1568,21 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
 
     /**
      * Undo/Redo of a removal: undo puts the removed grant (and its user, if it was removed from
-     * the list too) back into the local state, redo drops it again.
+     * the list too) back into the local state, redo drops it (and the user) again.
      */
     private @NotNull DBECommandReflector<MySQLUser, MySQLCommandRevokeObjectGrants> createRemovalReflector(
         @NotNull MySQLUser user,
-        @NotNull MySQLGrant grant
+        @NotNull MySQLGrant grant,
+        boolean removesUser
     ) {
         return new DBECommandReflector<>() {
             @Override
             public void redoCommand(@NotNull MySQLCommandRevokeObjectGrants command) {
                 userGrants.getOrDefault(user, new ArrayList<>()).remove(grant);
+                if (removesUser) {
+                    users.remove(user);
+                    extraUsers.remove(user);
+                }
                 user.clearGrantsCache();
                 refreshAfterUndoRedo();
             }
