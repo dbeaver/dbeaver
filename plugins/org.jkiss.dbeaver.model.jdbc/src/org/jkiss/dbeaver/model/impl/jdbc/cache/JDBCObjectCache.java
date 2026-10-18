@@ -56,7 +56,10 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
 
     private static final Log log = Log.getLog(JDBCObjectCache.class);
 
-    private static final String SNAPSHOT_OBJECTS = "objects";
+    /**
+     * Snapshot set of the objects of the cache (one group per object).
+     */
+    protected static final String SNAPSHOT_OBJECTS = "objects";
     // Restored objects are refreshed after the first user actions: the refresh shares the metadata connection
     private static final long SNAPSHOT_REFRESH_DELAY_MS = 5000;
 
@@ -181,12 +184,18 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
                                 return false;
                             }
 
-                            OBJECT object = fetchObject(session, owner, dbResult);
+                            // Rows which can be read only once are copied first, and the object is built from the copy
+                            Object[] row = pass != null && isMetadataRowReadOnce() ? pass.capture(dbResult) : null;
+                            OBJECT object = row != null ?
+                                pass.fetchCopy(session, row, rs -> fetchObject(session, owner, rs)) :
+                                fetchObject(session, owner, dbResult);
                             if (object == null || !isValidObject(monitor, owner, object)) {
                                 continue;
                             }
                             objects.add(object);
-                            if (pass != null) {
+                            if (row != null) {
+                                pass.add(object.getName(), row);
+                            } else if (pass != null && !isMetadataRowReadOnce()) {
                                 pass.record(object.getName(), dbResult);
                             }
 
@@ -243,6 +252,29 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
      */
     protected boolean supportsMetadataSnapshot() {
         return false;
+    }
+
+    /**
+     * Whether a row of the cache queries can be read only once (e.g. Oracle LONG columns). Then rows stored
+     * in the snapshot are copied before the object is built, and the object is built from the copy.
+     */
+    protected boolean isMetadataRowReadOnce() {
+        return false;
+    }
+
+    /**
+     * Reads names of the objects which changed since they were stored in the snapshot, for drivers which can tell
+     * it cheaply (e.g. by DDL time). Includes new and dropped objects.
+     *
+     * @return changed objects, or null if the driver cannot tell: then all restored metadata is read again
+     */
+    @Nullable
+    protected Set<String> readChangedObjects(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OWNER owner,
+        @NotNull JDBCMetadataSnapshot snapshot
+    ) throws DBException {
+        return null;
     }
 
     /**
@@ -337,18 +369,55 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
     }
 
     /**
-     * Reads objects from the database and updates restored objects which changed since the snapshot was taken.
-     * The database is read without the cache lock, so the cache stays usable meanwhile.
+     * Updates metadata restored from the snapshot which changed since the snapshot was taken.
      */
-    protected void refreshRestoredMetadata(
+    private void refreshRestoredMetadata(
         @NotNull DBRProgressMonitor monitor,
         @NotNull OWNER owner,
         @NotNull JDBCMetadataSnapshot snapshot
+    ) throws DBException {
+        Set<String> changed = readChangedObjects(monitor, owner, snapshot);
+        if (changed != null) {
+            log.debug(changed.size() + " objects of " + getCacheName() + " changed since the metadata snapshot");
+        }
+        refreshRestoredObjects(monitor, owner, snapshot, changed);
+        refreshRestoredChildren(monitor, owner, snapshot, changed);
+    }
+
+    /**
+     * Updates children restored from the snapshot (for caches with children).
+     *
+     * @param changed objects changed since the snapshot was taken, or null if unknown
+     */
+    protected void refreshRestoredChildren(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OWNER owner,
+        @NotNull JDBCMetadataSnapshot snapshot,
+        @Nullable Set<String> changed
+    ) throws DBException {
+        // No children
+    }
+
+    /**
+     * Reads objects from the database and updates restored objects which changed since the snapshot was taken.
+     * The database is read without the cache lock, so the cache stays usable meanwhile.
+     *
+     * @param changedObjects objects changed since the snapshot was taken, or null if unknown
+     */
+    private void refreshRestoredObjects(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OWNER owner,
+        @NotNull JDBCMetadataSnapshot snapshot,
+        @Nullable Set<String> changedObjects
     ) throws DBException {
         if (!objectsRefreshPending) {
             return;
         }
         objectsRefreshPending = false;
+        if (changedObjects != null && changedObjects.isEmpty()) {
+            // Nothing changed: restored objects are up to date
+            return;
+        }
         if (!isFullyCached()) {
             // Cleared meanwhile: the next load reads the database
             return;
