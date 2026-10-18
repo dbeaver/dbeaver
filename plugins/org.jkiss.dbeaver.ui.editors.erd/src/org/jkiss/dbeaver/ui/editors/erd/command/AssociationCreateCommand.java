@@ -161,8 +161,8 @@ public class AssociationCreateCommand extends Command {
                     // lookup runs. That does not invalidate the earlier creation.
                     // Undo/redo invalidates its generation explicitly; editor and
                     // diagram identity prevent applying results to a different view.
-                    if (undone || generation != directionLookupGeneration || editor != initiatingEditor
-                        || editor.getDiagram() != initiatingDiagram) {
+                    if (monitor.isCanceled() || undone || generation != directionLookupGeneration
+                        || editor != initiatingEditor || editor.getDiagram() != initiatingDiagram) {
                         return;
                     }
                     directionLookupJob = null;
