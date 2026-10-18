@@ -305,7 +305,19 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             props.put("readOnlyMode", "always");
         }
 
+        if (isClientNameEnabled()) {
+            // The driver sets application_name right after login anyway (to its own name when none is given).
+            // Giving it ours saves the extra round trip of replacing it afterwards (see openConnection)
+            props.put(JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY, DBUtils.getClientApplicationName(getContainer(), context, purpose));
+        }
+
         return props;
+    }
+
+    private boolean isClientNameEnabled() {
+        // Provide client info. Not supported by Redshift?
+        return getServerType().supportsClientInfo() &&
+            !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE);
     }
 
     private void initServerSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws DBException {
@@ -615,8 +627,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             }
         }
 
-        if (getServerType().supportsClientInfo() && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
-            // Provide client info. Not supported by Redshift?
+        if (isClientNameEnabled()) {
+            // No round trip when the name was already given as a connection property (unless the user overrides it)
             try {
                 pgConnection.setClientInfo(JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY, DBUtils.getClientApplicationName(getContainer(), context, purpose));
             } catch (Throwable e) {
