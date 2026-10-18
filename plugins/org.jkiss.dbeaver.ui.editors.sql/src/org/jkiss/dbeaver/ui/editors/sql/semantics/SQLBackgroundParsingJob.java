@@ -205,6 +205,13 @@ public class SQLBackgroundParsingJob {
                         }
                     }
                 }
+                if (this.lastParsingFinishStamp.isDone()) {
+                    // The position is still waiting for a reparse, but the last session is over: wait for the next one.
+                    // A finished session started before this request (e.g. one slowed down by metadata reading while
+                    // the user kept typing) would otherwise end the completion with an empty context.
+                    this.lastParsingFinishStamp = new CompletableFuture<>();
+                    this.schedule(null);
+                }
                 expectedParsingSessionFinishStamp = this.lastParsingFinishStamp;
             }
 
