@@ -96,10 +96,11 @@ public class SQLQueryTransformerCountTest extends DBeaverUnitTest {
         Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
         Mockito.when(dialect.supportsSubqueries()).thenReturn(true);
         Mockito.when(dialect.isAmbiguousCountBroken()).thenReturn(true);
+        Mockito.when(dialect.getSingleLineComments()).thenReturn(new String[0]);
 
         SQLQuery query = new SQLQuery(dataSource, "(SELECT id FROM t) LIMIT 5 OFFSET 10");
         SQLQuery counted = new SQLQueryTransformerCount().transformQuery(
-            dataSource, Mockito.mock(SQLSyntaxManager.class), query);
+            dataSource, mockSyntaxManagerForWrapping(), query);
 
         String countText = counted.getText().toLowerCase(Locale.ROOT);
         Assertions.assertTrue(countText.contains("count(*)"), countText);
@@ -115,16 +116,63 @@ public class SQLQueryTransformerCountTest extends DBeaverUnitTest {
         Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
         Mockito.when(dialect.supportsSubqueries()).thenReturn(true);
         Mockito.when(dialect.isAmbiguousCountBroken()).thenReturn(true);
+        Mockito.when(dialect.getSingleLineComments()).thenReturn(new String[0]);
 
         SQLQuery query = new SQLQuery(dataSource, "(SELECT id FROM t LIMIT 5 OFFSET 10)");
         SQLQuery counted = new SQLQueryTransformerCount().transformQuery(
-            dataSource, Mockito.mock(SQLSyntaxManager.class), query);
+            dataSource, mockSyntaxManagerForWrapping(), query);
 
         String countText = counted.getText().toLowerCase(Locale.ROOT);
         Assertions.assertTrue(countText.contains("count(*)"), countText);
         Assertions.assertTrue(countText.contains("limit"), countText);
         Assertions.assertTrue(countText.contains("offset"), countText);
         Assertions.assertTrue(countText.contains("dbvrcnt"), countText);
+    }
+
+
+    @Test
+    public void preservesFetchLimitWhenWrappingCount() throws Exception {
+        DBPDataSource dataSource = Mockito.mock(DBPDataSource.class);
+        SQLDialectRelational dialect = Mockito.mock(SQLDialectRelational.class);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
+        Mockito.when(dialect.supportsSubqueries()).thenReturn(true);
+        Mockito.when(dialect.isAmbiguousCountBroken()).thenReturn(true);
+        Mockito.when(dialect.getSingleLineComments()).thenReturn(new String[0]);
+
+        SQLQuery query = new SQLQuery(dataSource, "(SELECT id FROM t FETCH FIRST 5 ROWS ONLY)");
+        SQLQuery counted = new SQLQueryTransformerCount().transformQuery(
+            dataSource, mockSyntaxManagerForWrapping(), query);
+
+        String countText = counted.getText().toLowerCase(Locale.ROOT);
+        Assertions.assertTrue(countText.contains("count(*)"), countText);
+        Assertions.assertTrue(countText.contains("fetch first 5 rows only"), countText);
+        Assertions.assertTrue(countText.contains("dbvrcnt"), countText);
+    }
+
+    @Test
+    public void preservesDistinctNullRowsWhenWrappingCount() throws Exception {
+        DBPDataSource dataSource = Mockito.mock(DBPDataSource.class);
+        SQLDialectRelational dialect = Mockito.mock(SQLDialectRelational.class);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(dialect);
+        Mockito.when(dialect.supportsSubqueries()).thenReturn(true);
+        Mockito.when(dialect.isAmbiguousCountBroken()).thenReturn(true);
+        Mockito.when(dialect.getSingleLineComments()).thenReturn(new String[0]);
+
+        SQLQuery query = new SQLQuery(dataSource, "(SELECT DISTINCT nullable_col FROM t)");
+        SQLQuery counted = new SQLQueryTransformerCount().transformQuery(
+            dataSource, mockSyntaxManagerForWrapping(), query);
+
+        String countText = counted.getText().toLowerCase(Locale.ROOT);
+        Assertions.assertTrue(countText.contains("count(*)"), countText);
+        Assertions.assertTrue(countText.contains("select distinct nullable_col"), countText);
+        Assertions.assertTrue(countText.contains("dbvrcnt"), countText);
+        Assertions.assertFalse(countText.contains("count(distinct"), countText);
+    }
+
+    private static SQLSyntaxManager mockSyntaxManagerForWrapping() {
+        SQLSyntaxManager syntaxManager = Mockito.mock(SQLSyntaxManager.class);
+        Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(new String[0]);
+        return syntaxManager;
     }
 
     @Test
