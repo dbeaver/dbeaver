@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.erd.command;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.commands.CompoundCommand;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -162,12 +163,13 @@ public class AssociationCreateCommand extends Command {
 
                 final boolean shouldSwap = swap;
                 UIUtils.asyncExec(() -> {
-                    // An undo or redo may have invalidated this lookup before
-                    // the UI continuation is dispatched. GEF can wrap drag
-                    // commands in a CompoundCommand, so do not compare this
-                    // command to CommandStack.getUndoCommand() by identity.
+                    // Only apply a completed lookup while this command (possibly
+                    // wrapped in a GEF compound drag command) is still at the
+                    // head of the active undo history. Otherwise it could update
+                    // a diagram after a newer operation or an editor reset.
                     if (undone || generation != directionLookupGeneration || editor == null
-                        || editor.getDiagram() == null) {
+                        || editor.getDiagram() == null || !containsCommand(
+                            editor.getCommandStack().getUndoCommand(), AssociationCreateCommand.this)) {
                         return;
                     }
                     directionLookupJob = null;
@@ -178,6 +180,20 @@ public class AssociationCreateCommand extends Command {
         };
         directionLookupJob.setUser(true);
         directionLookupJob.schedule();
+    }
+
+    private static boolean containsCommand(@Nullable Command candidate, @NotNull Command expected) {
+        if (candidate == expected) {
+            return true;
+        }
+        if (candidate instanceof CompoundCommand compound) {
+            for (Command child : compound.getCommands()) {
+                if (containsCommand(child, expected)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     @NotNull
