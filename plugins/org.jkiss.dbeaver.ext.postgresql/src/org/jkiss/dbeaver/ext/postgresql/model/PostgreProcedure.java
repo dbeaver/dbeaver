@@ -53,7 +53,8 @@ import java.util.stream.Collectors;
  * PostgreProcedure
  */
 public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema>
-        implements PostgreObject, PostgreScriptObject, PostgrePrivilegeOwner, DBPUniqueObject, DBPOverloadedObject, DBPNamedObject2, DBPRefreshableObject, DBPScriptObjectExt2 {
+    implements PostgreObject, PostgreScriptObject, PostgrePrivilegeOwner, DBPUniqueObject,
+        DBPOverloadedObject, DBPNamedObject2, DBPRefreshableObject, DBPScriptObjectExt2 {
     private static final Log log = Log.getLog(PostgreProcedure.class);
     private static final String MISSING_AGGREGATE_FUNCTION = "-";
     private static final String PARALLEL_SAFE_CODE = "s";
@@ -520,12 +521,12 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                         // Inverse transition function for moving-aggregate mode
                         String minvtransfn = JDBCUtils.safeGetString(dbResult, "aggminvtransfn");
 
-                        String serialfn = JDBCUtils.safeGetString(dbResult, "aggserialfn");
-                        String deserialfn = JDBCUtils.safeGetString(dbResult, "aggdeserialfn");
-                        String mfinalfn = JDBCUtils.safeGetString(dbResult, "aggmfinalfn");
-                        String combinefn = getDataSource().isServerVersionAtLeast(9, 6)
+                        final String serialfn = JDBCUtils.safeGetString(dbResult, "aggserialfn");
+                        final String deserialfn = JDBCUtils.safeGetString(dbResult, "aggdeserialfn");
+                        final String mfinalfn = JDBCUtils.safeGetString(dbResult, "aggmfinalfn");
+                        final String combinefn = getDataSource().isServerVersionAtLeast(9, 6)
                             ? JDBCUtils.safeGetString(dbResult, "aggcombinefn") : null;
-                        String parallel = getDataSource().isServerVersionAtLeast(9, 6)
+                        final String parallel = getDataSource().isServerVersionAtLeast(9, 6)
                             ? JDBCUtils.safeGetString(dbResult, "proparallel") : null;
 
                         TransitionModifies finalmodify = null;
@@ -615,7 +616,12 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         }
     }
 
-    protected String generateFunctionDeclaration(PostgreLanguage language, String returnTypeName, String functionBody) {
+    @NotNull
+    protected String generateFunctionDeclaration(
+        @Nullable PostgreLanguage language,
+        @Nullable String returnTypeName,
+        @Nullable String functionBody
+    ) {
         String lineSeparator = GeneralUtils.getDefaultLineSeparator();
 
         StringBuilder decl = new StringBuilder();
