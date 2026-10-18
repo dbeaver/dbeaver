@@ -118,6 +118,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
             // Parenthesized SELECTs are valid top-level MySQL statements. Unwrap only for
             // AST rewriting; render the outer statement so its original structure remains intact.
             Select selectBody = statement instanceof Select selectStatement ? selectStatement : null;
+            boolean isParenthesized = selectBody instanceof ParenthesedSelect;
             while (selectBody instanceof ParenthesedSelect parenthesedSelect) {
                 // An ORDER BY attached to the parenthesized query may refer to an
                 // output alias removed by COUNT injection. Clear it at each level.
@@ -125,13 +126,14 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
                 // A row limit belongs to the original result set. Replacing the
                 // projection with COUNT(*) can discard the only aggregate row or
                 // over-count, so preserve the original query by wrapping instead.
-                if (parenthesedSelect.getLimit() != null || parenthesedSelect.getOffset() != null) {
+                if (parenthesedSelect.getLimit() != null || parenthesedSelect.getOffset() != null
+                    || parenthesedSelect.getFetch() != null) {
                     throw new DBException("Cannot inject COUNT into a parenthesized SELECT with LIMIT/OFFSET");
                 }
                 selectBody = parenthesedSelect.getSelect();
             }
             if (selectBody instanceof PlainSelect select) {
-                if (select.getLimit() != null || select.getOffset() != null) {
+                if (select.getLimit() != null || select.getOffset() != null || select.getFetch() != null) {
                     throw new DBException("Cannot inject COUNT into SELECT with LIMIT/OFFSET");
                 }
                 if (select.getHaving() != null) {
@@ -142,6 +144,11 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
                 }
 
                 Distinct selectDistinct = select.getDistinct();
+                // COUNT(DISTINCT expression) excludes NULL, whereas SELECT DISTINCT
+                // includes one NULL row. Keep the original projection when wrapping.
+                if (isParenthesized && selectDistinct != null) {
+                    throw new DBException("Cannot inject COUNT into parenthesized DISTINCT SELECT");
+                }
                 if (selectDistinct != null) {
                     // Remove distinct
                     select.setDistinct(null);
