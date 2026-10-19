@@ -196,7 +196,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
             @Nullable MySQLProcedure object,
             @Nullable String objectName
         ) throws SQLException {
-            // Modify the SQL query to search both the user database and the mysql system database.
+            // PolarDB-X UDFs are global but registered under the mysql schema, so expose them from every user catalog.
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM " + MySQLConstants.META_TABLE_ROUTINES +
                     "\nWHERE " + MySQLConstants.COL_ROUTINE_SCHEMA + " IN (?, 'mysql')" +
@@ -275,6 +275,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
 
                 // For functions: use a custom SQL query against the information_schema.PARAMETERS table,
                 // integrating the parsed length information.
+                // PolarDB-X stores every UDF's parameter metadata under mysql, regardless of the active catalog.
                 String sql = "SELECT " +
                     "SPECIFIC_CATALOG as PROCEDURE_CAT, " +
                     "SPECIFIC_SCHEMA as PROCEDURE_SCHEM, " +

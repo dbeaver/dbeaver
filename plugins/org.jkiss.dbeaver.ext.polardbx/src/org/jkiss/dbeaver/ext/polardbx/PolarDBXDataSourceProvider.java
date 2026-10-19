@@ -28,6 +28,9 @@ import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class PolarDBXDataSourceProvider extends MySQLDataSourceProvider {
+    public PolarDBXDataSourceProvider() {
+        super(PolarDBXMySQLDataSource.class);
+    }
 
     @NotNull
     @Override

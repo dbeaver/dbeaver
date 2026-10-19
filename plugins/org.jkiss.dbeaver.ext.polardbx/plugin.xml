@@ -11,6 +11,8 @@
             label="PolarDB-X"
             inheritProviderProperties="true">
             <drivers managable="true">
+                <!-- polardbx-connector-java exposes com.alibaba.polardbx.Driver as its JDBC entry point;
+                     com.alibaba.polardbx.jdbc.Driver is not present in the artifact. -->
                 <driver
                     id="polardbx"
                     label="PolarDB-X"
