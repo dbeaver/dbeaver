@@ -29,6 +29,7 @@ import org.mockito.Mockito;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
@@ -39,7 +40,7 @@ import java.util.List;
 
 public class CDataDriverCatalogTest extends DBeaverUnitTest {
     private static final long LAST_MODIFIED = 1_700_000_000_000L;
-    private static final String CATALOG = """
+    private static final String LEGACY_CATALOG = """
         {
           "schemaVersion": 2,
           "drivers": [
@@ -50,22 +51,41 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
               "versionYear": 2026,
               "tier": "PROFESSIONAL",
               "purchaseUrl": "https://www.cdata.com/order/options.aspx?sku=DZRN-VSDBVR"
+            }
+          ]
+        }
+        """;
+    private static final String CATALOG = """
+        {
+          "items": [
+            {
+              "datasource": "adwords",
+              "objname": "googleads",
+              "datatype_id": "google_ads",
+              "driver_name": "Google AdWords JDBC Driver",
+              "annual_price_usd": "99",
+              "version_year": "2026",
+              "tier": "Professional",
+              "purchase_url": "https://www.cdata.com/order/options.aspx?sku=DZRN-VSDBVR"
             },
             {
-              "dataSource": "azureanalysisservices",
-              "artifactId": "aas-jdbc",
-              "driverName": "Azure Analysis Services JDBC Driver",
-              "versionYear": 2026,
-              "tier": "PROFESSIONAL",
-              "purchaseUrl": "https://www.cdata.com/order/options.aspx?sku=OARN-VSDBVR"
+              "datasource": "azureanalysisservices",
+              "objname": "aas",
+              "datatype_id": "azureanalysisservices",
+              "driver_name": "Azure Analysis Services JDBC Driver",
+              "version_year": "2026",
+              "tier": "Professional",
+              "purchase_url": "https://www.cdata.com/order/options.aspx?sku=OARN-VSDBVR"
             },
             {
-              "dataSource": "jira",
-              "artifactId": "jira-jdbc",
-              "driverName": "Jira JDBC Driver",
-              "versionYear": 2025,
-              "tier": "PREMIUM",
-              "purchaseUrl": "https://www.cdata.com/order/options.aspx?sku=BJRM-VSDBVR"
+              "datasource": "jira",
+              "objname": "jira",
+              "datatype_id": "jira",
+              "driver_name": "Jira JDBC Driver",
+              "annual_price_usd": "249",
+              "version_year": "2025",
+              "tier": "Premium",
+              "purchase_url": "https://www.cdata.com/order/options.aspx?sku=BJRM-VSDBVR"
             }
           ]
         }
@@ -103,6 +123,8 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
 
         Assertions.assertEquals(3, drivers.size());
         Assertions.assertEquals("adwords", drivers.get(0).dataSource());
+        Assertions.assertEquals("google_ads", drivers.get(0).dataTypeId());
+        Assertions.assertEquals(CDataDriverTier.PROFESSIONAL, drivers.get(0).tier());
         Assertions.assertEquals("googleads-jdbc", drivers.get(0).artifactId());
         Assertions.assertEquals("googleads", drivers.get(0).jdbcName());
         Assertions.assertEquals("{26\\..*}", drivers.get(0).mavenVersionPattern());
@@ -110,6 +132,9 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
         Assertions.assertEquals("aas", drivers.get(1).jdbcName());
         Assertions.assertEquals("{25\\..*}", drivers.get(2).mavenVersionPattern());
         Assertions.assertEquals(CDataDriverTier.PREMIUM, drivers.get(2).tier());
+        Assertions.assertEquals(new BigDecimal("99"), drivers.get(0).annualPriceUsd());
+        Assertions.assertNull(drivers.get(1).annualPriceUsd());
+        Assertions.assertEquals(new BigDecimal("249"), drivers.get(2).annualPriceUsd());
         Assertions.assertEquals("https://www.cdata.com/order/options.aspx?sku=BJRM-VSDBVR", drivers.get(2).purchaseUrl());
         Assertions.assertEquals(CATALOG, Files.readString(cacheFile));
         Assertions.assertEquals(LAST_MODIFIED, Files.getLastModifiedTime(cacheFile).toMillis());
@@ -119,10 +144,26 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void loadLocalCatalog() throws Exception {
+        Path localCatalog = tempDirectory.resolve("local-catalog.json");
+        Files.writeString(localCatalog, CATALOG);
+
+        var drivers = CDataDriverCatalog.load(monitor, localCatalog.toUri().toString(), cacheFile);
+
+        Assertions.assertEquals(3, drivers.size());
+        Assertions.assertEquals("google_ads", drivers.getFirst().dataTypeId());
+        Assertions.assertEquals(CATALOG, Files.readString(cacheFile));
+    }
+
+    @Test
     public void doNotDownloadUnchangedCatalog() throws Exception {
         saveCachedCatalog(LAST_MODIFIED);
 
-        Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
+        var drivers = CDataDriverCatalog.load(monitor, cacheFile, connectionFactory);
+
+        Assertions.assertEquals(3, drivers.size());
+        Assertions.assertEquals(new BigDecimal("99"), drivers.get(0).annualPriceUsd());
+        Assertions.assertEquals(new BigDecimal("249"), drivers.get(2).annualPriceUsd());
 
         Mockito.verify(headConnection).disconnect();
         Mockito.verifyNoInteractions(downloadConnection);
@@ -157,6 +198,64 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void keepLegacyCachedCatalogWhenOffline() throws Exception {
+        Files.writeString(cacheFile, LEGACY_CATALOG);
+        connectionFactory = method -> {
+            throw new IOException("Server unavailable");
+        };
+
+        var drivers = CDataDriverCatalog.load(monitor, cacheFile, connectionFactory);
+
+        Assertions.assertEquals(1, drivers.size());
+        Assertions.assertEquals("adwords", drivers.getFirst().dataSource());
+        Assertions.assertEquals("googleads-jdbc", drivers.getFirst().artifactId());
+        Assertions.assertEquals("googleads", drivers.getFirst().jdbcName());
+        Assertions.assertEquals(CDataDriverTier.PROFESSIONAL, drivers.getFirst().tier());
+        Assertions.assertEquals(2026, drivers.getFirst().versionYear());
+        Assertions.assertEquals(LEGACY_CATALOG, Files.readString(cacheFile));
+        assertNoTemporaryFiles();
+    }
+
+    @Test
+    public void replaceLegacyCacheWithPublishedCatalog() throws Exception {
+        Files.writeString(cacheFile, LEGACY_CATALOG);
+        Files.setLastModifiedTime(cacheFile, FileTime.fromMillis(LAST_MODIFIED - 1000));
+
+        var drivers = CDataDriverCatalog.load(monitor, cacheFile, connectionFactory);
+
+        Assertions.assertEquals(3, drivers.size());
+        Assertions.assertEquals("google_ads", drivers.getFirst().dataTypeId());
+        Assertions.assertEquals(CATALOG, Files.readString(cacheFile));
+        Mockito.verify(downloadConnection).disconnect();
+        assertNoTemporaryFiles();
+    }
+
+    @Test
+    public void rejectInvalidLegacyCache() throws Exception {
+        for (String invalidCatalog : List.of(
+            LEGACY_CATALOG.replace("googleads-jdbc", "../outside-jdbc"),
+            LEGACY_CATALOG.replace("googleads-jdbc", "googleads"),
+            LEGACY_CATALOG.replace("\"schemaVersion\": 2", "\"schemaVersion\": 3"),
+            LEGACY_CATALOG.replace("\"PROFESSIONAL\"", "null")
+        )) {
+            Files.writeString(cacheFile, invalidCatalog);
+            Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
+            Assertions.assertEquals(CATALOG, Files.readString(cacheFile));
+        }
+    }
+
+    @Test
+    public void rejectDownloadedLegacyCatalog() throws Exception {
+        saveCachedCatalog(LAST_MODIFIED - 1000);
+        Mockito.when(downloadConnection.getInputStream()).thenReturn(
+            new ByteArrayInputStream(LEGACY_CATALOG.getBytes(StandardCharsets.UTF_8)));
+
+        Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
+        Assertions.assertEquals(CATALOG, Files.readString(cacheFile));
+        assertNoTemporaryFiles();
+    }
+
+    @Test
     public void handleUnavailableServerWithoutCache() throws Exception {
         connectionFactory = method -> {
             throw new IOException("Server unavailable");
@@ -171,9 +270,11 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
     public void doNotReplaceCacheWithInvalidCatalog() throws Exception {
         saveCachedCatalog(LAST_MODIFIED - 1000);
         for (String invalidCatalog : List.of(
-            "{", "null", "{\"schemaVersion\":2,\"drivers\":[]}",
-            CATALOG.replace("\"schemaVersion\": 2", "\"schemaVersion\": 999"),
-            CATALOG.replace("\"artifactId\"", "\"unusedField\""),
+            "{", "null", "{\"items\":[]}",
+            CATALOG.replace("\"items\"", "\"drivers\""),
+            CATALOG.replace("\"objname\"", "\"unusedField\""),
+            CATALOG.replace("\"datatype_id\"", "\"unusedField\""),
+            CATALOG.replace("\"Professional\"", "\"Unknown\""),
             CATALOG.replace("\"jira\"", "\"adwords\""),
             CATALOG.replace("2026", "1999")
         )) {
@@ -194,7 +295,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
             "C:\\outside-jdbc", "source:other-jdbc", "source%2fother-jdbc", "source?other-jdbc",
             "source#other-jdbc", "source other-jdbc", "source\nother-jdbc", "source..other-jdbc"
         )) {
-            String invalidCatalog = CATALOG.replace("\"googleads-jdbc\"", JSONUtils.GSON.toJson(artifactId));
+            String invalidCatalog = CATALOG.replace("\"googleads\"", JSONUtils.GSON.toJson(artifactId));
             Mockito.when(downloadConnection.getInputStream()).thenAnswer(
                 invocation -> new ByteArrayInputStream(invalidCatalog.getBytes(StandardCharsets.UTF_8)));
 
@@ -213,7 +314,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
 
     @Test
     public void replaceUnsafeCachedArtifactId() throws Exception {
-        Files.writeString(cacheFile, CATALOG.replace("googleads-jdbc", "../outside-jdbc"));
+        Files.writeString(cacheFile, CATALOG.replace("googleads", "../outside"));
         Files.setLastModifiedTime(cacheFile, FileTime.fromMillis(LAST_MODIFIED));
 
         Assertions.assertEquals("googleads-jdbc", CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).getFirst().artifactId());
@@ -223,7 +324,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
 
     @Test
     public void acceptSafeMavenArtifactCharacters() throws Exception {
-        String catalog = CATALOG.replace("googleads-jdbc", "Source_2.v3-jdbc");
+        String catalog = CATALOG.replace("googleads", "Source_2.v3");
         Mockito.when(downloadConnection.getInputStream()).thenReturn(new ByteArrayInputStream(catalog.getBytes(StandardCharsets.UTF_8)));
 
         Assertions.assertEquals("Source_2.v3", CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).getFirst().jdbcName());

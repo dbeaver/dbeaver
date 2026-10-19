@@ -60,6 +60,8 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
     private int marginTop = 0;
     private int marginRight = 0;
     private int marginBottom = 0;
+    private int horizontalSpacing = -1;
+    private int verticalSpacing = -1;
 
     private UIPanelBuilderImpl(@NotNull Kind kind) {
         this.kind = kind;
@@ -109,6 +111,14 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
 
     @NotNull
     @Override
+    public UIPanelBuilder spacing(int horizontal, int vertical) {
+        horizontalSpacing = horizontal;
+        verticalSpacing = vertical;
+        return this;
+    }
+
+    @NotNull
+    @Override
     public UIPanelBuilder row(@NotNull Consumer<? super UIRowBuilder> handler) {
         var builder = new UIRowBuilderImpl(indent);
         handler.accept(builder);
@@ -148,11 +158,14 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
             .mapToInt(row -> row.controls.size())
             .max().orElseThrow();
 
-        GridLayoutFactory.fillDefaults()
+        GridLayoutFactory layout = GridLayoutFactory.fillDefaults()
             .numColumns(columns)
             .margins(0, 0)
-            .extendedMargins(marginLeft, marginRight, marginTop, marginBottom)
-            .applyTo(client);
+            .extendedMargins(marginLeft, marginRight, marginTop, marginBottom);
+        if (horizontalSpacing >= 0 && verticalSpacing >= 0) {
+            layout.spacing(horizontalSpacing, verticalSpacing);
+        }
+        layout.applyTo(client);
 
         for (UIRowBuilderImpl row : rows) {
             buildRow(context, row, client, columns);
@@ -200,15 +213,18 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
 
             var control = builder.build(context, parent, row);
 
-            if (builder.widthHint != SWT.DEFAULT && builder.heightHint != SWT.DEFAULT) {
-                data.widthHint = builder.widthHint;
-                data.heightHint = builder.heightHint;
-            } else {
+            if (builder.widthHint == SWT.DEFAULT || builder.heightHint == SWT.DEFAULT) {
                 var size = builder.preferredSize(control);
                 if (size != null) {
                     data.widthHint = size.x;
                     data.heightHint = size.y;
                 }
+            }
+            if (builder.widthHint != SWT.DEFAULT) {
+                data.widthHint = builder.widthHint;
+            }
+            if (builder.heightHint != SWT.DEFAULT) {
+                data.heightHint = builder.heightHint;
             }
 
             // Indent the first control if needed
@@ -221,7 +237,11 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
                 data.horizontalSpan = columns - row.controls.size() + 1;
             }
 
+            // The visibility binding is installed before layout data exists. Set
+            // the initial layout state from the observables, not from the widget.
+            data.exclude = !builder.isInitiallyVisible(row);
             control.setLayoutData(data);
+            control.setVisible(!data.exclude);
         }
     }
 }

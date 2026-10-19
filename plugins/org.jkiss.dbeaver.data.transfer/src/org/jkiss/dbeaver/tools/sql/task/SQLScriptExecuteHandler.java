@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.navigator.DBNStreamData;
 import org.jkiss.dbeaver.model.rm.RMControllerProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.runtime.PrintStreamProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLScriptCommitType;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
@@ -95,7 +96,7 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         try {
             runnableContext.run(true, true, monitor -> {
                 try {
-                    runScripts(monitor, task, settings, log, logStream);
+                    runScripts(new PrintStreamProgressMonitor(monitor, logStream), task, settings, log, logStream);
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }

@@ -47,6 +47,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -657,8 +658,23 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
             try {
                 result = resourceBundle.getString(messageID);
             } catch (Exception e) {
+                Class<?> localizationOwner = propInfo.localizationOwner();
+                if (localizationOwner != void.class) {
+                    Bundle localizationBundle = FrameworkUtil.getBundle(localizationOwner);
+                    if (localizationBundle != null) {
+                        String sharedMessageID = "meta." + localizationOwner.getName() + "." + propertyName + "." + type;
+                        try {
+                            result = getPluginResourceBundle(localizationBundle, localizationOwner, locale)
+                                .getString(sharedMessageID);
+                        } catch (MissingResourceException ignored) {
+                            // A shared owner need not define every description or hint.
+                        }
+                    }
+                }
                 // Try to find the same property in parent classes
-                for (Class<?> parent = getter.getDeclaringClass().getSuperclass(); parent != null && parent != Object.class; parent = parent.getSuperclass()) {
+                for (Class<?> parent = getter.getDeclaringClass().getSuperclass();
+                    result == null && parent != null && parent != Object.class;
+                    parent = parent.getSuperclass()) {
                     try {
                         Method parentGetter = parent.getMethod(getter.getName(), getter.getParameterTypes());
                         Class<?> parentOwner = parentGetter.getDeclaringClass();

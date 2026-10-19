@@ -2,6 +2,14 @@
 <?eclipse version="3.4"?>
 <plugin>
 
+    <extension point="org.jkiss.dbeaver.app.config">
+        <feature
+            id="cdata"
+            label="%feature.cdata.label"
+            description="%feature.cdata.description"
+            enabledByDefault="true"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.generic.meta">
         <meta id="cdata" class="org.jkiss.dbeaver.ext.cdata.model.CDataMetaModel" driverClass="cdata.jdbc.*"/>
     </extension>
@@ -13,16 +21,6 @@
             label="%dialect.cdata.label"
             description="%dialect.cdata.description"
             icon="icons/cdata.svg"/>
-    </extension>
-
-    <extension point="org.jkiss.dbeaver.driverManager">
-        <category
-            id="cdata"
-            name="%category.cdata.name"
-            description="%category.cdata.description"
-            icon="#folder_database"
-            rank="101"
-            promoted="true"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.mavenRepository">

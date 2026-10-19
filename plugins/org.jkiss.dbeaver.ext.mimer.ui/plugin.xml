@@ -1,0 +1,303 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+    <extension point="org.jkiss.dbeaver.dataSourceConfigurator">
+        <configurator dataSource="mimer" class="org.jkiss.dbeaver.ext.mimer.ui.views.MimerConnectionPage"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <editor id="source.declaration"
+                class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
+                label="%editor.source_declaration.name"
+                description="%editor.source_declaration.description"
+                icon="#sql_text"
+                position="additions_middle"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
+                type="folder"
+                embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerDomain"/>
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerSynonym"/>
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerCollation"/>
+        </editor>
+        <!-- MimerModule needs the editable variant, not the plain always-read-only
+             SQLSourceViewer above - see MimerModuleSourceViewEditor's own Javadoc on why this
+             is a small local class instead of referencing ext.generic.ui's GenericSourceViewEditor
+             directly (that cross-plugin reference used to silently fail to resolve at all). -->
+        <editor id="module.source.declaration"
+                class="org.jkiss.dbeaver.ext.mimer.ui.editors.MimerModuleSourceViewEditor"
+                label="%editor.module_source_declaration.name"
+                description="%editor.module_source_declaration.description"
+                icon="#sql_text"
+                position="additions_middle"
+                contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested"
+                type="folder"
+                embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerModule"/>
+            <!-- MimerStatement/MimerUdtMethodSpec also implement DBSObjectWithScript and need an
+                 editable Source tab - SQLSourceViewer<T> is purely generic (erasure-based, no
+                 MimerModule-specific cast), so this same registered editor class works for them
+                 too. -->
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerStatement"/>
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerUdtMethodSpec"/>
+        </editor>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerSchemaConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerSchema"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerSequenceConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerSequence"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerIndexConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerTableIndex"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerDomainConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerDomain"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerCollationConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerCollation"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerLibraryConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerLibrary"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerSynonymConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerSynonym"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerProcedureConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerProcedure"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerModuleConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerModule"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerTableTriggerConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerTableTrigger"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerDatabankConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerDatabank"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerDatabankFileConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerDatabankFile"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerDatabankShadowConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerDatabankShadow"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerUserConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerUser"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerUserAuthorizationConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerUserAuthorization"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerGroupConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerGroup"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerProgramConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerProgram"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerProgramPrivilegeConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerProgramPrivilege"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerStatementConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerStatement"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerStatementPrivilegeConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerStatementPrivilege"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerGroupMemberConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerGroupMember"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerSystemPrivilegeConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerSystemPrivilege"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerSequencePrivilegeConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerSequencePrivilege"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerDatabankPrivilegeConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerDatabankPrivilege"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerDomainPrivilegeConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerDomainPrivilege"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerColumnPrivilegeConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerColumnPrivilege"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerGroupMembershipConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerIdentGroupMembership"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerObjectPrivilegeConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerObjectPrivilege"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerRoutinePrivilegeConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerRoutinePrivilege"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerUserDefinedTypeConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerUserDefinedType"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerUserDefinedTypePrivilegeConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerUserDefinedTypePrivilege"/>
+        </configurator>
+        <configurator class="org.jkiss.dbeaver.ext.mimer.ui.config.MimerUdtMethodSpecConfigurator">
+            <objectType name="org.jkiss.dbeaver.ext.mimer.model.MimerUdtMethodSpec"/>
+        </configurator>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.sql.plan.view">
+        <view id="mimerXML"
+              priority="101"
+              label="%view.mimerXML.name"
+              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_explain_plan.svg"
+              description="%view.mimerXML.description"
+              class="org.jkiss.dbeaver.ext.mimer.ui.plan.MimerSQLPlanXMLViewProvider">
+            <datasource id="mimer"/>
+        </view>
+    </extension>
+
+    <!-- Navigator actions for databank/shadow online state (SET DATABANK/SHADOW ... is its own
+         statement family, not ALTER - see MimerUtils.buildSetOnlineDDL). -->
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.ext.mimer.setOnlineState"
+                 name="%command.setOnlineState.name"
+                 description="%command.setOnlineState.description"
+                 categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.ext.mimer.shadowRestoreFromLog"
+                 name="%command.shadowRestoreFromLog.name"
+                 description="%command.shadowRestoreFromLog.description"
+                 categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.ext.mimer.shadowToMaster"
+                 name="%command.shadowToMaster.name"
+                 description="%command.shadowToMaster.description"
+                 categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.ext.mimer.shadowAddPages"
+                 name="%command.shadowAddPages.name"
+                 description="%command.shadowAddPages.description"
+                 categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.ext.mimer.addPrivileges"
+                 name="%command.addPrivileges.name"
+                 description="%command.addPrivileges.description"
+                 categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.ext.mimer.openDependencyTarget"
+                 name="%command.openDependencyTarget.name"
+                 description="%command.openDependencyTarget.description"
+                 categoryId="org.jkiss.dbeaver.core.navigator"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.ext.mimer.setOnlineState"
+                 class="org.jkiss.dbeaver.ext.mimer.ui.actions.MimerSetOnlineStateHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                            <or>
+                                <instanceof value="org.jkiss.dbeaver.ext.mimer.model.MimerDatabank"/>
+                                <instanceof value="org.jkiss.dbeaver.ext.mimer.model.MimerDatabankShadow"/>
+                            </or>
+                        </adapt>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ext.mimer.shadowRestoreFromLog"
+                 class="org.jkiss.dbeaver.ext.mimer.ui.actions.MimerShadowRestoreFromLogHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                            <instanceof value="org.jkiss.dbeaver.ext.mimer.model.MimerDatabankShadow"/>
+                        </adapt>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ext.mimer.shadowToMaster"
+                 class="org.jkiss.dbeaver.ext.mimer.ui.actions.MimerShadowToMasterHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                            <instanceof value="org.jkiss.dbeaver.ext.mimer.model.MimerDatabankShadow"/>
+                        </adapt>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ext.mimer.shadowAddPages"
+                 class="org.jkiss.dbeaver.ext.mimer.ui.actions.MimerShadowAddPagesHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                            <instanceof value="org.jkiss.dbeaver.ext.mimer.model.MimerDatabankShadow"/>
+                        </adapt>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ext.mimer.addPrivileges"
+                 class="org.jkiss.dbeaver.ext.mimer.ui.actions.MimerAddPrivilegesHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                            <or>
+                                <instanceof value="org.jkiss.dbeaver.ext.mimer.model.MimerTable"/>
+                                <instanceof value="org.jkiss.dbeaver.ext.mimer.model.MimerView"/>
+                            </or>
+                        </adapt>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ext.mimer.openDependencyTarget"
+                 class="org.jkiss.dbeaver.ext.mimer.ui.actions.MimerOpenDependencyTargetHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                            <or>
+                                <instanceof value="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUsedBy"/>
+                                <instanceof value="org.jkiss.dbeaver.ext.mimer.model.MimerObjectUses"/>
+                            </or>
+                        </adapt>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=object">
+            <command commandId="org.jkiss.dbeaver.ext.mimer.setOnlineState">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.ext.mimer.shadowRestoreFromLog">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.ext.mimer.shadowToMaster">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.ext.mimer.shadowAddPages">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.ext.mimer.addPrivileges">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.ext.mimer.openDependencyTarget">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
+    </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+        <page
+                category="org.jkiss.dbeaver.preferences.drivers"
+                id="org.jkiss.dbeaver.preferences.mimer.general"
+                class="org.jkiss.dbeaver.ext.mimer.ui.views.PrefPageMimer"
+                name="%preferences.mimer.name">
+            <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+        </page>
+    </extension>
+</plugin>
