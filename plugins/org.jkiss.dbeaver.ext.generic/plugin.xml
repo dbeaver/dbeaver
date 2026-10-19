@@ -867,7 +867,7 @@
                     category="MS Access"
                     class="net.ucanaccess.jdbc.UcanaccessDriver"
                     sampleURL="jdbc:ucanaccess://{file}"
-                    webURL="http://ucanaccess.sourceforge.net/site.html"
+                    webURL="https://spannm.github.io/ucanaccess/"
                     embedded="true"
                     description="Microsoft Access driver"
                     supportedConfigurationTypes="MANUAL,URL"
@@ -876,8 +876,8 @@
 
                     <parameter name="identifier-quotes" value="[:]"/>
 
-                    <file type="jar" path="maven:/net.sf.ucanaccess:ucanaccess:RELEASE"/>
-                    <file type="license" path="licenses/external/lgpl-2.1.txt"/>
+                    <file type="jar" path="maven:/io.github.spannm:ucanaccess:RELEASE"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
                 </driver>
                 <driver
                     id="netezza"
