@@ -45,10 +45,10 @@ public class DDAIEngine extends OpenAIEngine<DDAIEngineProperties> {
     @NotNull
     @Override
     protected OpenAIClientResponses createClient() throws DBException {
-        String token = properties.getToken();
+        String token = properties.getEffectiveToken();
         if (CommonUtils.isEmptyTrimmed(token)) {
             throw new DBException("DataDam API key is not set");
         }
-        return OpenAIClientResponses.createClient(properties.getBaseUrl(), token, properties.getCustomHeaders());
+        return OpenAIClientResponses.createClient(properties.getEffectiveBaseUrl(), token, properties.getCustomHeaders());
     }
 }
