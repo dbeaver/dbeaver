@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 
 /** Coordinates the desktop login and the locally imported project keys. */
 public class DDDesktopAccessService {
@@ -42,6 +43,7 @@ public class DDDesktopAccessService {
     private final DDDesktopTokenManager tokenManager;
     private final ReentrantLock operationLock = new ReentrantLock();
     private final List<Runnable> keyBundleListeners = new CopyOnWriteArrayList<>();
+    private final List<DDDesktopAccessListener> accessListeners = new CopyOnWriteArrayList<>();
     private final URI accountUrl = URI.create(DDEndpoints.getAccountBaseUrl());
     private final URI storageUrl = URI.create(DDEndpoints.getStorageBaseUrl());
     private final DDAccountClient accountClient = new DDAccountClient(accountUrl);
@@ -107,22 +109,24 @@ public class DDDesktopAccessService {
                 return;
             }
             log.debug("Loading DataDam desktop access");
+            notifyAccessListeners(DDDesktopAccessListener::accessChanging);
             tokenManager.load(storageUrl);
             updateKeyBundle(tokenManager.getStatus() == DDDesktopTokenManager.Status.SIGNED_IN ? DDKeyStore.load() : null);
         } finally {
-            operationLock.unlock();
+            finishAccessChange();
         }
     }
 
     public void signIn(@NotNull DBRProgressMonitor monitor) throws DBException, InterruptedException {
         operationLock.lock();
         try {
+            notifyAccessListeners(DDDesktopAccessListener::accessChanging);
             tokenManager.signIn(accountUrl, storageUrl, monitor);
             setKeyBundle(null);
             updateKeyBundle(DDKeyStore.load());
             log.debug("Signed in to DataDam desktop access");
         } finally {
-            operationLock.unlock();
+            finishAccessChange();
         }
     }
 
@@ -156,13 +160,22 @@ public class DDDesktopAccessService {
     public void signOut() throws DBException {
         operationLock.lock();
         try {
+            notifyAccessListeners(DDDesktopAccessListener::accessChanging);
             tokenManager.signOut();
             setKeyBundle(null);
             DDKeyStore.clear();
             log.debug("Signed out of DataDam desktop access");
         } finally {
-            operationLock.unlock();
+            finishAccessChange();
         }
+    }
+
+    public void addAccessListener(@NotNull DDDesktopAccessListener listener) {
+        accessListeners.add(listener);
+    }
+
+    public void removeAccessListener(@NotNull DDDesktopAccessListener listener) {
+        accessListeners.remove(listener);
     }
 
     public void addKeyBundleListener(@NotNull Runnable listener) {
@@ -171,6 +184,24 @@ public class DDDesktopAccessService {
 
     public void removeKeyBundleListener(@NotNull Runnable listener) {
         keyBundleListeners.remove(listener);
+    }
+
+    private void finishAccessChange() {
+        try {
+            notifyAccessListeners(DDDesktopAccessListener::accessChanged);
+        } finally {
+            operationLock.unlock();
+        }
+    }
+
+    private void notifyAccessListeners(@NotNull Consumer<DDDesktopAccessListener> event) {
+        for (DDDesktopAccessListener listener : accessListeners) {
+            try {
+                event.accept(listener);
+            } catch (RuntimeException e) {
+                log.warn("DataDam desktop access listener failed", e);
+            }
+        }
     }
 
     private void updateKeyBundle(@Nullable DDKeyBundle bundle) throws DBException {

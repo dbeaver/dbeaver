@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
+import com.dbeaver.datadam.external.api.DDExternalDamProtocol;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -31,9 +32,11 @@ public final class DDEndpoints {
 
     private static final String STAGE_ACCOUNT_URL = "https://account.datadam.beavers.team";
     private static final String STAGE_STORAGE_URL = "https://dbeaver-storage.datadam.beavers.team";
+    private static final String STAGE_EXTERNAL_DAM_URL = "wss://external-dam.datadam.beavers.team";
     //TODO Replace these placeholders with the production endpoints once they are available.
     private static final String PROD_ACCOUNT_URL = "https://account.prod.datadam.invalid";
     private static final String PROD_STORAGE_URL = "https://storage.prod.datadam.invalid";
+    private static final String PROD_EXTERNAL_DAM_URL = "wss://external-dam.prod.datadam.invalid";
 
     private static final boolean STAGE = ArrayUtils.contains(Platform.getApplicationArgs(), STAGE_ARGUMENT);
 
@@ -48,6 +51,21 @@ public final class DDEndpoints {
     @NotNull
     public static String getStorageBaseUrl() {
         return STAGE ? STAGE_STORAGE_URL : PROD_STORAGE_URL;
+    }
+
+    @NotNull
+    public static String getExternalDamWebSocketUrl() {
+        return (STAGE ? STAGE_EXTERNAL_DAM_URL : PROD_EXTERNAL_DAM_URL) + DDExternalDamProtocol.WEBSOCKET_PATH;
+    }
+
+    public static void requireSecureWebSocketTransport(@NotNull URI url) throws DBException {
+        if (url.getHost() == null || url.getUserInfo() != null || url.getRawQuery() != null || url.getRawFragment() != null
+            || url.getPort() == 0 || url.getPort() > 65535 || url.getRawAuthority().endsWith(":")
+            || !DDExternalDamProtocol.WEBSOCKET_PATH.equals(url.getRawPath())
+            || !("wss".equalsIgnoreCase(url.getScheme()) || "ws".equalsIgnoreCase(url.getScheme())
+                && ("localhost".equalsIgnoreCase(url.getHost()) || "127.0.0.1".equals(url.getHost())))) {
+            throw new DBException("Expected a WSS DataDam /ws URL (WS is allowed on loopback only)");
+        }
     }
 
     public static void requireSecureTransport(@NotNull URI url) throws DBException {

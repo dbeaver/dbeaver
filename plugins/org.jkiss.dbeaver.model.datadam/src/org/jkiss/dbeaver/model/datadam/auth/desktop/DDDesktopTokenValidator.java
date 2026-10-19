@@ -17,11 +17,14 @@
 package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
+import java.util.Locale;
 
 /** Checks when a token expires and whether a request targets one of its stored origins. */
 class DDDesktopTokenValidator {
@@ -40,10 +43,18 @@ class DDDesktopTokenValidator {
 
     boolean matchesResource(@NotNull DDDesktopUserToken token, @NotNull URI resource) {
         try {
+            if ("ws".equalsIgnoreCase(resource.getScheme()) || "wss".equalsIgnoreCase(resource.getScheme())) {
+                DDEndpoints.requireSecureWebSocketTransport(resource);
+                URI externalDam = URI.create(DDEndpoints.getExternalDamWebSocketUrl());
+                DDEndpoints.requireSecureWebSocketTransport(externalDam);
+                return originOf(resource).equals(originOf(externalDam))
+                    && originOf(URI.create(token.accountOrigin())).equals(originOf(URI.create(DDEndpoints.getAccountBaseUrl())))
+                    && originOf(URI.create(token.storageOrigin())).equals(originOf(URI.create(DDEndpoints.getStorageBaseUrl())));
+            }
             URI requestedOrigin = originOf(resource);
             return requestedOrigin.equals(originOf(URI.create(token.accountOrigin())))
                 || requestedOrigin.equals(originOf(URI.create(token.storageOrigin())));
-        } catch (RuntimeException e) {
+        } catch (DBException | RuntimeException e) {
             return false;
         }
     }
@@ -53,12 +64,17 @@ class DDDesktopTokenValidator {
         if (url.getScheme() == null || url.getHost() == null || url.getUserInfo() != null) {
             throw new IllegalArgumentException("Invalid DataDam URL");
         }
+        String scheme = switch (url.getScheme().toLowerCase(Locale.ROOT)) {
+            case "https", "wss" -> "https";
+            case "http", "ws" -> "http";
+            default -> throw new IllegalArgumentException("Invalid DataDam URL scheme");
+        };
         try {
             int port = url.getPort();
-            if (port == 443 && "https".equals(url.getScheme()) || port == 80 && "http".equals(url.getScheme())) {
+            if (port == 443 && "https".equals(scheme) || port == 80 && "http".equals(scheme)) {
                 port = -1;
             }
-            return new URI(url.getScheme(), null, url.getHost(), port, null, null, null);
+            return new URI(scheme, null, url.getHost(), port, null, null, null);
         } catch (URISyntaxException e) {
             throw new IllegalArgumentException("Invalid DataDam URL", e);
         }
