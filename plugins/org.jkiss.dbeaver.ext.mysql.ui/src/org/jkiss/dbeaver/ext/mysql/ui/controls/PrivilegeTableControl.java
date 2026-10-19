@@ -55,6 +55,7 @@ public class PrivilegeTableControl extends Composite {
 
     private List<MySQLPrivilege> privileges;
     private List<MySQLObjectPrivilege> currentPrivileges = new ArrayList<>();
+    private boolean showGrantOption = true;
     private final Composite buttonsPanel;
 
     public PrivilegeTableControl(@NotNull Composite parent, @NotNull String title, boolean isStatic) {
@@ -218,8 +219,22 @@ public class PrivilegeTableControl extends Composite {
         super.notifyListeners(SWT.Modify, event);
     }
 
+    /**
+     * Hides the "Grant Option" row. WITH GRANT OPTION is a single flag of the grant row, so a panel
+     * shown next to another one covering the same grant (e.g. "Other" next to the table privileges
+     * on schema level) must not expose it a second time.
+     */
+    public void setShowGrantOption(boolean showGrantOption) {
+        this.showGrantOption = showGrantOption;
+    }
+
     public void fillPrivileges(@NotNull List<MySQLPrivilege> privs) {
         this.privileges = new ArrayList<>(privs);
+        if (!showGrantOption) {
+            privileges.removeIf(p -> p.getName().equalsIgnoreCase(MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME));
+            privileges.removeIf(p -> p.getName().equals(MySQLConstants.PRIVILEGE_USAGE_NAME));
+            return;
+        }
         boolean hasGrantOption = false;
         for (MySQLPrivilege privilege : privileges) {
             if (privilege.getName().equalsIgnoreCase(MySQLConstants.PRIVILEGE_GRANT_OPTION_NAME)) {

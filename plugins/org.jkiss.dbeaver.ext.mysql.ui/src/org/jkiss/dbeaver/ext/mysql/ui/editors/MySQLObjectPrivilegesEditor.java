@@ -278,6 +278,8 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
             otherPanel = new PrivilegeTableControl(
                 panelsPane, MySQLUIMessages.editors_user_editor_privileges_control_other_privileges, false);
             otherPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+            // Shown only next to the table privileges panel, which already holds the grant's Grant Option
+            otherPanel.setShowGrantOption(false);
             // Editable panel for schema-wide (db.*) privileges that also apply to the selected object
             inheritedPanel = new PrivilegeTableControl(
                 panelsPane, MySQLUIMessages.editors_object_privileges_control_schema_inherited, false);

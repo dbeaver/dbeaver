@@ -357,6 +357,8 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             ph, MySQLUIMessages.editors_user_editor_privileges_control_other_privileges, false);
         gd = new GridData(GridData.FILL_BOTH);
         otherPrivilegesTable.setLayoutData(gd);
+        // Shown only next to the table privileges panel, which already holds the grant's Grant Option
+        otherPrivilegesTable.setShowGrantOption(false);
 
         sash.setSashBorders(new boolean[]{false, false});
 
