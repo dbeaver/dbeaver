@@ -52,6 +52,7 @@ public class OracleUserProfileTest extends DBeaverUnitTest {
         statement = Mockito.mock(JDBCPreparedStatement.class);
         resultSet = Mockito.mock(JDBCResultSet.class);
         JDBCRemoteInstance instance = Mockito.mock(JDBCRemoteInstance.class);
+        Mockito.when(dataSource.hasDefaultInstance()).thenReturn(true);
         Mockito.when(dataSource.getDefaultInstance()).thenReturn(instance);
         JDBCExecutionContext context = Mockito.mock(JDBCExecutionContext.class);
         Mockito.when(instance.getDefaultContext(monitor, true)).thenReturn(context);

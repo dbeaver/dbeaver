@@ -269,11 +269,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return new PostgreDatabase(monitor, this, name, owner, templateName, tablespace, encoding);
     }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
@@ -380,13 +381,17 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         //initServerSSL(props, sslConfig);
     }
 
+    @NotNull
     @Override
-    protected PostgreExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected PostgreExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new PostgreExecutionContext((PostgreDatabase) instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context,
-                                          @Nullable JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
         PostgreExecutionContext postgreContext = (PostgreExecutionContext) context;
         PostgreSchema activeSchema = null;
         if (initFrom != null) {
@@ -705,6 +710,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return getDefaultInstance().getDefaultDataTypeName(dataKind);
     }
 
+    @Override
+    public boolean hasDefaultInstance() {
+        return databaseCache != null && !databaseCache.getCachedObjects().isEmpty();
+    }
+
     @NotNull
     @Override
     public PostgreDatabase getDefaultInstance() {
@@ -950,9 +960,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return super.discoverErrorType(error);
     }
 
+    @NotNull
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
-    {
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
         return new PostgreDataSourceInfo(this, metaData);
     }
 

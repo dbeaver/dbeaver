@@ -42,17 +42,20 @@ public class DDKeyStore {
     }
 
     @Nullable
-    public static DDKeyBundle load() {
+    public static DDKeyBundle load() throws DBException {
         try {
             String value = DBSSecretController.getGlobalSecretController()
                 .getPrivateSecretValue(SECRET_KEY_BUNDLE);
             if (CommonUtils.isEmpty(value)) {
                 return null;
             }
-            return JSONUtils.GSON.fromJson(value, DDKeyBundle.class);
-        } catch (DBException | RuntimeException e) {
-            log.error("Error reading key bundle", e);
-            return null;
+            DDKeyBundle bundle = JSONUtils.GSON.fromJson(value, DDKeyBundle.class);
+            if (bundle == null || bundle.accountId() == null) {
+                throw new IllegalArgumentException("Key bundle has no account ID");
+            }
+            return bundle;
+        } catch (Exception e) {
+            throw new DBException("Error reading key bundle", e);
         }
     }
 
@@ -95,14 +98,16 @@ public class DDKeyStore {
     }
 
     public static void save(@NotNull DDKeyBundle bundle) throws DBException {
-        DDKeyBundle current = load();
-        if (current != null) {
-            if (!current.accountId().equals(bundle.accountId())) {
-                throw new DBException("The keys belong to another account");
-            }
-            if (bundle.generation() < current.generation()) {
-                throw new DBException("The keys are older than the stored ones");
-            }
+        DDKeyBundle current = null;
+        try {
+            current = load();
+        } catch (DBException e) {
+            log.debug("Could not read stored keys before replacement", e);
+        }
+        if (current != null
+            && current.accountId().equals(bundle.accountId())
+            && bundle.generation() < current.generation()) {
+            throw new DBException("The keys are older than the stored ones");
         }
         DBSSecretController controller = DBSSecretController.getGlobalSecretController();
         controller.setPrivateSecretValue(SECRET_KEY_BUNDLE, JSONUtils.GSON.toJson(bundle));

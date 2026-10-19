@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Base64;
+import java.util.UUID;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
@@ -30,7 +31,7 @@ class DDBundleCredentialsTest {
         dataKeyGenerator.init(256);
         SecretKey dataKey = dataKeyGenerator.generateKey();
         DDBundleCredentials credentials = new DDBundleCredentials(new DDKeyBundle(
-            "73ce9dfa-05ad-40f3-802a-bc32e256b737",
+            UUID.fromString("73ce9dfa-05ad-40f3-802a-bc32e256b737"),
             "unused-signing-key",
             Base64.getEncoder().encodeToString(dataKey.getEncoded()),
             1

@@ -22,6 +22,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.ExpansionAdapter;
@@ -55,6 +56,7 @@ public abstract class AbstractAIEngineConfigurator<ENGINE extends AIEngineDescri
     protected volatile boolean useEnvVariables;
 
     private Composite advancedSettingsClient;
+    private boolean updatingEnvironmentControls;
 
     private int timeout = AIEngineProperties.DEFAULT_TIMEOUT;
     private boolean logQuery;
@@ -93,6 +95,67 @@ public abstract class AbstractAIEngineConfigurator<ENGINE extends AIEngineDescri
     }
 
     protected void environmentSettingsChanged() {
+        updateEnvironmentControls();
+    }
+
+    protected void updateEnvironmentControls() {
+    }
+
+    protected boolean isUpdatingEnvironmentControls() {
+        return updatingEnvironmentControls;
+    }
+
+    @Nullable
+    protected String getEnvironmentValue(@NotNull String... names) {
+        if (useEnvVariables) {
+            for (String name : names) {
+                String value = System.getenv(name);
+                if (!CommonUtils.isEmptyTrimmed(value)) {
+                    return value.trim();
+                }
+            }
+        }
+        return null;
+    }
+
+    protected void updateEnvironmentText(@Nullable Text control, @Nullable String configuredValue, @Nullable String environmentValue) {
+        if (control == null || control.isDisposed()) {
+            return;
+        }
+        boolean wasUpdating = updatingEnvironmentControls;
+        updatingEnvironmentControls = true;
+        try {
+            String value = CommonUtils.notEmpty(environmentValue == null ? configuredValue : environmentValue);
+            if (!value.equals(control.getText())) {
+                control.setText(value);
+            }
+            control.setEnabled(environmentValue == null);
+        } finally {
+            updatingEnvironmentControls = wasUpdating;
+        }
+    }
+
+    protected void updateEnvironmentCombo(@NotNull Combo control, @Nullable String configuredValue, @Nullable String environmentValue) {
+        boolean wasUpdating = updatingEnvironmentControls;
+        updatingEnvironmentControls = true;
+        try {
+            String value = CommonUtils.notEmpty(environmentValue == null ? configuredValue : environmentValue);
+            if ((control.getStyle() & SWT.READ_ONLY) != 0) {
+                if (value.isEmpty()) {
+                    control.deselectAll();
+                } else {
+                    if (control.indexOf(value) < 0) {
+                        control.add(value);
+                    }
+                    control.select(control.indexOf(value));
+                }
+            } else {
+                control.setText(value);
+            }
+            control.setEnabled(environmentValue == null);
+        } finally {
+            updatingEnvironmentControls = wasUpdating;
+        }
     }
 
     @NotNull

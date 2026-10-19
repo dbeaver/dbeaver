@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam.sync.core;
 
+import com.dbeaver.datadam.share.api.exception.DDShareException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpServer;
@@ -23,7 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.DDTrackingClient;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
-import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoSession;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -62,8 +63,10 @@ class DDShareClientTest {
             }
         });
         server.start();
-        try (var session = Mockito.mockStatic(DDDesktopSsoSession.class)) {
-            session.when(() -> DDDesktopSsoSession.accessFor(Mockito.any())).thenReturn("test-token");
+        try (var session = Mockito.mockStatic(DDDesktopAccessService.class)) {
+            var manager = Mockito.mock(DDDesktopAccessService.class);
+            session.when(DDDesktopAccessService::getInstance).thenReturn(manager);
+            Mockito.when(manager.getAccessTokenForResource(Mockito.any())).thenReturn("test-token");
             DDShareClient client = new DDShareClient("http://127.0.0.1:" + server.getAddress().getPort(), credentials);
 
             response.set("{\"data\":{\"createProject\":" + project + "}}");
@@ -106,11 +109,13 @@ class DDShareClientTest {
             exchange.close();
         });
         server.start();
-        try (var session = Mockito.mockStatic(DDDesktopSsoSession.class)) {
-            session.when(() -> DDDesktopSsoSession.accessFor(Mockito.any())).thenReturn("test-token");
+        try (var session = Mockito.mockStatic(DDDesktopAccessService.class)) {
+            var manager = Mockito.mock(DDDesktopAccessService.class);
+            session.when(DDDesktopAccessService::getInstance).thenReturn(manager);
+            Mockito.when(manager.getAccessTokenForResource(Mockito.any())).thenReturn("test-token");
             DDSyncCredentials credentials = Mockito.mock(DDSyncCredentials.class);
-            Assertions.assertThrows(DBException.class, () -> new DDShareClient(base, credentials).listConfigurations());
-            Assertions.assertNull(new DDTrackingClient(base).stop(credentials, "tracking-id"));
+            Assertions.assertThrows(DDShareException.class, () -> new DDShareClient(base, credentials).listProjects());
+            Assertions.assertNull(new DDTrackingClient(base).stop("tracking-id"));
             Assertions.assertEquals(0, redirected.get());
         } finally {
             server.stop(0);
@@ -119,12 +124,11 @@ class DDShareClientTest {
 
     @Test
     void storageCallsRequireSsoInsteadOfFallingBackToBundleSignatures() throws Exception {
-        DDDesktopSsoSession.logout();
         DDSyncCredentials credentials = Mockito.mock(DDSyncCredentials.class);
         DDShareClient client = new DDShareClient("http://127.0.0.1:1", credentials);
 
-        DBException error = Assertions.assertThrows(DBException.class, client::listConfigurations);
-        Assertions.assertTrue(error.getMessage().contains("Sign in to DataDam"));
+        DDShareException error = Assertions.assertThrows(DDShareException.class, client::listProjects);
+        Assertions.assertTrue(error.getCause().getMessage().contains("Sign in to DataDam"));
         Mockito.verifyNoInteractions(credentials);
     }
 
