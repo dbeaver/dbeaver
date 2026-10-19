@@ -26,9 +26,7 @@ import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskRun;
 import org.jkiss.dbeaver.model.task.DBTTaskRunRecord;
 import org.jkiss.dbeaver.model.task.DBTTaskRunStorage;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.StandardConstants;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.UUID;
@@ -66,8 +64,7 @@ public final class QMTaskExecution implements AutoCloseable {
             id, task.getId(), task.getName(), task.getType().getId(), task.getType().getName(),
             task.getProject().getId(), task.getProject().getName(),
             run == null ? System.currentTimeMillis() : run.getStartTime().getTime(), 0,
-            run == null ? System.getProperty(StandardConstants.ENV_USER_NAME, "") : run.getStartUser(),
-            run == null ? GeneralUtils.getProductTitle() : run.getStartedBy(), DBTTaskRunRecord.Status.RUNNING, run != null);
+            DBTTaskRunRecord.Status.RUNNING, run != null);
     }
 
     @NotNull

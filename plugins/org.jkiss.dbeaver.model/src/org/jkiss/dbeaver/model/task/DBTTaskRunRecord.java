@@ -21,7 +21,7 @@ import org.jkiss.code.Nullable;
 
 import java.util.Date;
 
-/** An execution snapshot. Deliberately excludes task settings, results, errors and log contents. */
+/** An execution snapshot. Excludes user/product metadata, task settings, results, errors and log contents. */
 public record DBTTaskRunRecord(
     @NotNull String id,
     @NotNull String taskId,
@@ -32,8 +32,6 @@ public record DBTTaskRunRecord(
     @NotNull String projectName,
     long startTime,
     long finishTime,
-    @NotNull String startUser,
-    @NotNull String startedBy,
     @NotNull Status status,
     boolean hasLog,
     @Nullable String legacyRunId
@@ -52,19 +50,17 @@ public record DBTTaskRunRecord(
         @NotNull String projectName,
         long startTime,
         long finishTime,
-        @NotNull String startUser,
-        @NotNull String startedBy,
         @NotNull Status status,
         boolean hasLog
     ) {
         this(id, taskId, taskName, taskTypeId, taskTypeName, projectId, projectName,
-            startTime, finishTime, startUser, startedBy, status, hasLog, null);
+            startTime, finishTime, status, hasLog, null);
     }
 
     @NotNull
     public DBTTaskRunRecord finished(long time, @NotNull Status outcome) {
         return new DBTTaskRunRecord(id, taskId, taskName, taskTypeId, taskTypeName, projectId, projectName,
-            startTime, time, startUser, startedBy, outcome, hasLog, legacyRunId);
+            startTime, time, outcome, hasLog, legacyRunId);
     }
 
     @NotNull
@@ -79,16 +75,18 @@ public record DBTTaskRunRecord(
         return new Date(startTime);
     }
 
+    /** Desktop-local history does not retain user metadata required by other task-run implementations. */
     @NotNull
     @Override
     public String getStartUser() {
-        return startUser;
+        return "";
     }
 
+    /** Desktop-local history does not retain the product that started the run. */
     @NotNull
     @Override
     public String getStartedBy() {
-        return startedBy;
+        return "";
     }
 
     @Override
