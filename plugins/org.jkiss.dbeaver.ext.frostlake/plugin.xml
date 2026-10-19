@@ -17,10 +17,19 @@
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
 
+        <dataSourceType
+            id="frostlake"
+            label="Frostlake"
+            description="Frostlake database"
+            dataSourceInformation="Local Snowflake-compatible SQL engine"
+            icon="icons/frostlake_icon.svg"
+            iconBig="icons/frostlake_icon_big.svg"/>
+
         <datasource
                 class="org.jkiss.dbeaver.ext.frostlake.FrostlakeDataSourceProvider"
                 description="%datasource.frostlake.description"
                 id="frostlake"
+                dataSourceType="frostlake"
                 parent="generic"
                 label="Frostlake"
                 icon="icons/frostlake_icon.svg"
