@@ -47,7 +47,12 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
     protected static final List<CLITransformerDescriptor> globalTransformers = new ArrayList<>();
     //transformers for specific command
     protected static final Map<Class<?>, List<CLITransformerDescriptor>> commandTransformer = new LinkedHashMap<>();
-    static {
+    private static boolean registryInitialized;
+
+    private static synchronized void initializeCommands() {
+        if (registryInitialized) {
+            return;
+        }
         //auto width for terminal
 //        System.setProperty("picocli.usage.width", "AUTO");
 
@@ -81,6 +86,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             }
         }
         replacedBy.keySet().forEach(commands::remove);
+        registryInitialized = true;
     }
 
     protected ApplicationCommandLine() {
@@ -103,9 +109,19 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         boolean supportNewInstance,
         @NotNull String[] args
     ) throws Exception {
+        if (args.length == 0 && ArrayUtils.isEmpty(getDefaultArgs())) {
+            return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
+        }
+        initializeCommands();
         log.trace("Executing command line: " + String.join(" ", args));
         CLIProcessResult result;
-        List<CLICommandDescriptor> commandsToExecute = extractCommandsToExecuteFromArgs(args);
+        boolean rootOptionOnly = args.length == 1 && args[0].startsWith("-")
+            && !AbstractTopLevelCommand.HELP_OPTION.equals(args[0])
+            && !AbstractTopLevelCommand.SHORT_HELP_OPTION.equals(args[0])
+            && !AbstractTopLevelCommand.LEGACY_HELP_OPTION.equals(args[0]);
+        List<CLICommandDescriptor> commandsToExecute = rootOptionOnly
+            ? List.of()
+            : extractCommandsToExecuteFromArgs(args);
         try (var context = new CLIContextImpl(controller)) {
             CommandLine commandLine = initCommandLine(
                 controller,
@@ -113,29 +129,48 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                 new CLIRunMeta(uiActivated, supportNewInstance),
                 commandsToExecute
             );
-            CommandLine.ParseResult parseResult;
-            try {
-                parseResult = commandLine.parseArgs(args);
-            } catch (CommandLine.UnmatchedArgumentException e) {
-                String message;
-                if (!CommonUtils.isEmpty(e.getUnmatched())) {
-                    String command = e.getCommandLine().getCommandName();
-                    message = "Parameter(s) " + String.join(" ", e.getUnmatched()) + " cannot be specified after '" + command + "'";
-                } else {
-                    message = e.getMessage();
+            CommandLine.ParseResult parseResult = null;
+            if (rootOptionOnly) {
+                try {
+                    parseResult = commandLine.parseArgs(args);
+                } catch (CommandLine.ParameterException e) {
+                    // An unknown or incomplete option must be parsed again with every contributed command.
                 }
-                log.error(message);
-                return new CLIProcessResult(
-                    CLIProcessResult.PostAction.ERROR,
-                    List.of(message),
-                    CLIConstants.EXIT_CODE_ERROR
-                );
-            } catch (CommandLine.MissingParameterException e) {
-                return new CLIProcessResult(
-                    CLIProcessResult.PostAction.ERROR,
-                    List.of(e.getMessage()),
-                    CLIConstants.EXIT_CODE_ERROR
-                );
+                if (parseResult == null || parseResult.isUsageHelpRequested()) {
+                    commandsToExecute = extractCommandsToExecuteFromArgs(args);
+                    commandLine = initCommandLine(
+                        controller,
+                        context,
+                        new CLIRunMeta(uiActivated, supportNewInstance),
+                        commandsToExecute
+                    );
+                    parseResult = null;
+                }
+            }
+            if (parseResult == null) {
+                try {
+                    parseResult = commandLine.parseArgs(args);
+                } catch (CommandLine.UnmatchedArgumentException e) {
+                    String message;
+                    if (!CommonUtils.isEmpty(e.getUnmatched())) {
+                        String command = e.getCommandLine().getCommandName();
+                        message = "Parameter(s) " + String.join(" ", e.getUnmatched()) + " cannot be specified after '" + command + "'";
+                    } else {
+                        message = e.getMessage();
+                    }
+                    log.error(message);
+                    return new CLIProcessResult(
+                        CLIProcessResult.PostAction.ERROR,
+                        List.of(message),
+                        CLIConstants.EXIT_CODE_ERROR
+                    );
+                } catch (CommandLine.MissingParameterException e) {
+                    return new CLIProcessResult(
+                        CLIProcessResult.PostAction.ERROR,
+                        List.of(e.getMessage()),
+                        CLIConstants.EXIT_CODE_ERROR
+                    );
+                }
             }
 
             if (commandLineIsEmpty(parseResult)) {
@@ -224,6 +259,24 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
 
     @NotNull
     private static List<CLICommandDescriptor> extractCommandsToExecuteFromArgs(@NotNull String[] args) {
+        // Build only the requested command when it is unambiguous. Root help and option-first
+        // invocations still need the complete command tree to preserve parsing and help output.
+        if (args.length > 0 && !args[0].startsWith("-")) {
+            CLICommandDescriptor selected = null;
+            for (CLICommandDescriptor descriptor : commands.values()) {
+                CommandLine.Command command = descriptor.getImplClass().getAnnotation(CommandLine.Command.class);
+                if (command != null && (args[0].equals(command.name())
+                    || ArrayUtils.contains(command.aliases(), args[0]))) {
+                    if (selected != null) {
+                        return commands.values().stream().toList();
+                    }
+                    selected = descriptor;
+                }
+            }
+            if (selected != null) {
+                return List.of(selected);
+            }
+        }
         return commands.values().stream().toList();
     }
 
@@ -282,6 +335,10 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
     public void preprocessCommandLine(
         @NotNull String[] args
     ) throws DBException {
+        if (args.length == 0) {
+            return;
+        }
+        initializeCommands();
         for (CLICommandDescriptor descriptor : matchInvokedCommands(args)) {
             preprocessCommandLineParameter(
                 descriptor,
