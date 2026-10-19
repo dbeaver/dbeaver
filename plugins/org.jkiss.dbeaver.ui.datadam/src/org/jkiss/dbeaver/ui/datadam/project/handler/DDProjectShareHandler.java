@@ -29,12 +29,14 @@ import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncService;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncSnapshot;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncUIManager;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 public class DDProjectShareHandler extends AbstractHandler {
+    private final DDDesktopTokenUIManager accessUIManager = DDDesktopTokenUIManager.getInstance();
     @Nullable
     @Override
     public Object execute(@NotNull ExecutionEvent event) {
@@ -47,12 +49,15 @@ public class DDProjectShareHandler extends AbstractHandler {
         if (!ddManager.isDDEnabled()) {
             return null;
         }
-        DDProjectSyncService service = ddManager.getService();
         new AbstractJob(DDTrackingUIMessages.project_sync_share_job) {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
+                    if (!accessUIManager.ensureTokenReady(monitor)) {
+                        return Status.CANCEL_STATUS;
+                    }
+                    DDProjectSyncService service = ddManager.getService();
                     service.shareProject(project, null);
                     DDProjectSyncPropertyTester.firePropertyChange();
                     DDProjectSyncSnapshot snapshot = service.getProjectSyncSnapshot(project);

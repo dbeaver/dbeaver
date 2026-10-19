@@ -24,6 +24,7 @@ import com.dbeaver.rest.client.MediaType;
 import com.google.gson.JsonParseException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.oauth.OAuthConstants;
 
@@ -33,21 +34,21 @@ import java.util.List;
 import java.util.Map;
 
 /** HTTP operations for a public desktop client. Credentials are never attached to a browser URL. */
-public final class DDDesktopSsoClient extends AbstractRestClient implements AutoCloseable {
+public class DDDesktopSsoClient extends AbstractRestClient implements AutoCloseable {
     public DDDesktopSsoClient(@NotNull URI issuer) throws DBException {
-        super(serverUrl(issuer), DEFAULT_CONNECT_TIMEOUT, 10_000, List.of(), HttpClient.Redirect.NEVER);
+        super(CommonUtils.removeTrailingSlash(issuer.toString()), DEFAULT_CONNECT_TIMEOUT, 10_000, List.of(), HttpClient.Redirect.NEVER);
+        requireSecureServer(issuer);
     }
 
     @NotNull
-    static URI discover(@NotNull URI account) throws DBException {
-        checkOrigin(account);
-        try (DDDesktopSsoClient client = new DDDesktopSsoClient(account.resolve("/"))) {
-            DDSsoDesktopConfigResponse config = client.executeGetRequest("sso/desktop/config", DDSsoDesktopConfigResponse.class);
+    public URI discover() throws DBException {
+        try {
+            DDSsoDesktopConfigResponse config = executeGetRequest("sso/desktop/config", DDSsoDesktopConfigResponse.class);
             if (config == null || config.issuer() == null) {
                 throw new DBException("Invalid desktop SSO configuration");
             }
             URI issuer = URI.create(config.issuer());
-            checkOrigin(issuer);
+            requireSecureServer(issuer);
             return issuer;
         } catch (IllegalArgumentException e) {
             throw new DBException("Invalid desktop SSO configuration", e);
@@ -95,17 +96,10 @@ public final class DDDesktopSsoClient extends AbstractRestClient implements Auto
         super.handleRequestException(message, e);
     }
 
-    @NotNull
-    private static String serverUrl(@NotNull URI url) throws DBException {
-        checkOrigin(url);
-        return CommonUtils.removeTrailingSlash(url.toString());
-    }
-
-    static void checkOrigin(@NotNull URI url) throws DBException {
-        if (url.getHost() == null || url.getRawQuery() != null || url.getRawFragment() != null || url.getUserInfo() != null
-            || !("https".equals(url.getScheme()) || "http".equals(url.getScheme())
-                && ("localhost".equals(url.getHost()) || "127.0.0.1".equals(url.getHost())))) {
-            throw new DBException("Expected an HTTPS DataDam URL (HTTP is allowed on loopback only)");
+    private void requireSecureServer(@NotNull URI url) throws DBException {
+        DDEndpoints.requireSecureTransport(url);
+        if (url.getRawQuery() != null || url.getRawFragment() != null) {
+            throw new DBException("Expected a DataDam URL without query or fragment");
         }
     }
 

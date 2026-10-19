@@ -144,7 +144,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
-        <page category="org.eclipse.ui.preferencePages.Workbench"
+        <page
               id="org.jkiss.dbeaver.preferences.synchronization"
               class="org.jkiss.dbeaver.ui.datadam.DDSyncPreferencePage"
               name="DataDam">
