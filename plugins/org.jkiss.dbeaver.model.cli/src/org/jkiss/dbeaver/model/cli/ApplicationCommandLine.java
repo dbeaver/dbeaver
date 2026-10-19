@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.cli.command.AbstractTopLevelCommand;
+import org.jkiss.dbeaver.model.cli.command.CLIAutoComplete;
 import org.jkiss.dbeaver.model.cli.help.CLIHelpFactory;
 import org.jkiss.dbeaver.model.cli.model.NonExecutableOption;
 import org.jkiss.dbeaver.model.cli.registry.CLICommandDescriptor;
@@ -274,6 +275,10 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                 }
             }
             if (selected != null) {
+                // The completion generator reads the entire command tree to enumerate available commands.
+                if (CLIAutoComplete.class.isAssignableFrom(selected.getImplClass())) {
+                    return commands.values().stream().toList();
+                }
                 return List.of(selected);
             }
         }
