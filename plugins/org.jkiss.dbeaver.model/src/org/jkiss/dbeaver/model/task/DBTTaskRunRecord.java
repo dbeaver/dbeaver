@@ -21,7 +21,13 @@ import org.jkiss.code.Nullable;
 
 import java.util.Date;
 
-/** An execution snapshot. Excludes user/product metadata, task settings, results, errors and log contents. */
+/**
+ * An execution snapshot. Excludes user/product metadata, task settings, results, errors and log contents.
+ *
+ * @param id workspace-unique execution identity; also the log filename ID for new executions
+ * @param legacyRunId original log filename ID for imported executions, whose old IDs were only task-scoped;
+ *                    null for new executions. Logs stay in the task's statistics directory without being renamed.
+ */
 public record DBTTaskRunRecord(
     @NotNull String id,
     @NotNull String taskId,

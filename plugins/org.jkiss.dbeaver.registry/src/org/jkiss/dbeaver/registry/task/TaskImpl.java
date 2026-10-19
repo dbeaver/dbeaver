@@ -178,13 +178,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
         if (run instanceof DBTTaskRunRecord record && !record.hasLog()) {
             return null;
         }
-        return getTaskStatsFolder(false).resolve(TaskUtils.buildRunLogFileName(getRunFileId(run)));
-    }
-
-    @NotNull
-    private static String getRunFileId(@NotNull DBTTaskRun run) {
-        // Imported records use a collision-safe database ID, but their existing log files are not renamed.
-        return run instanceof DBTTaskRunRecord record && record.legacyRunId() != null ? record.legacyRunId() : run.getId();
+        return getTaskStatsFolder(false).resolve(TaskUtils.buildRunLogFileName(TaskUtils.getRunFileId(run)));
     }
 
     @NotNull
@@ -205,7 +199,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
             if (!deleteStoredRuns(taskRun.getId())) {
                 return;
             }
-            runs.removeIf(run -> getRunFileId(run).equals(getRunFileId(taskRun)));
+            runs.removeIf(run -> TaskUtils.getRunFileId(run).equals(TaskUtils.getRunFileId(taskRun)));
 
             Path runLog = getRunLog(taskRun);
 
@@ -224,7 +218,7 @@ public class TaskImpl implements DBTTask, DBPNamedObject2 {
                 Path metaFile = getTaskStatsFolder(false).resolve(META_FILE_NAME);
                 if (Files.exists(metaFile)) {
                     List<TaskRunImpl> legacy = new ArrayList<>(TaskUtils.loadRunStatistics(metaFile, gson));
-                    if (legacy.removeIf(run -> run.getId().equals(getRunFileId(taskRun)))) {
+                    if (legacy.removeIf(run -> run.getId().equals(TaskUtils.getRunFileId(taskRun)))) {
                         writeRunStatistics(legacy);
                     }
                 }
