@@ -25,6 +25,21 @@ import org.jkiss.utils.CommonUtils;
 
 public class SQLPreferenceConstants {
 
+    public enum MetadataRefreshBehavior {
+        ASK, ALWAYS, NEVER;
+
+        @NotNull
+        public static MetadataRefreshBehavior parse(String value) {
+            if ("true".equalsIgnoreCase(value)) {
+                return ASK;
+            }
+            if ("false".equalsIgnoreCase(value)) {
+                return NEVER;
+            }
+            return CommonUtils.valueOf(MetadataRefreshBehavior.class, value, ASK);
+        }
+    }
+
     public enum EmptyScriptCloseBehavior {
         NOTHING(SQLEditorMessages.script_close_behavior_do_not_delete),
         DELETE_NEW(SQLEditorMessages.script_close_behavior_delete_only_new_scripts),
