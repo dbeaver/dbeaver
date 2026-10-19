@@ -646,7 +646,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * @return the overview
      */
     protected ERDOutlinePage getOverviewOutlinePage() {
-        if (null == outlinePage || outlinePage.getControl().isDisposed()) {
+        // The outline page can be requested again before the workbench calls createControl().
+        // Keep the page in that state; replace it only after its control has been disposed.
+        Control control = outlinePage == null ? null : outlinePage.getControl();
+        if (outlinePage == null || (control != null && control.isDisposed())) {
             getGraphicalViewer();
             RootEditPart rootEditPart = getGraphicalViewer().getRootEditPart();
             if (rootEditPart instanceof ScalableFreeformRootEditPart ffp) {
