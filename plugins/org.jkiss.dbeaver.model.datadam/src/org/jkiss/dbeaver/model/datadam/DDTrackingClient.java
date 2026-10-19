@@ -22,8 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoSession;
-import org.jkiss.dbeaver.model.datadam.sync.core.DDSyncCredentials;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.HttpConstants;
 
@@ -61,8 +60,8 @@ public class DDTrackingClient implements DDTrackingService {
     }
 
     @Nullable
-    public DDTracking start(@NotNull DDSyncCredentials credentials, @NotNull DDClientInfo client) {
-        return startTransport.post(TRACK_START_ENDPOINT, credentials, client);
+    public DDTracking start(@NotNull DDClientInfo client) {
+        return startTransport.postWithDesktopSession(TRACK_START_ENDPOINT, client);
     }
 
     @Nullable
@@ -72,13 +71,14 @@ public class DDTrackingClient implements DDTrackingService {
     }
 
     @Nullable
-    public DDTracking stop(@NotNull DDSyncCredentials credentials, @NotNull String trackingId) {
-        return stopTransport.post(TRACK_STOP_ENDPOINT.replace("{trackingId}", trackingId), credentials);
+    public DDTracking stop(@NotNull String trackingId) {
+        return stopTransport.postWithDesktopSession(TRACK_STOP_ENDPOINT.replace("{trackingId}", trackingId), EMPTY_BODY, false);
     }
 
     private static final class Transport extends AbstractRestClient {
 
         private final String rootPath;
+        private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
 
         Transport(@NotNull String url, @NotNull String rootPath, int readTimeoutMs) {
             super(url, DEFAULT_CONNECT_TIMEOUT, readTimeoutMs, List.of(), HttpClient.Redirect.NEVER);
@@ -89,6 +89,7 @@ public class DDTrackingClient implements DDTrackingService {
         DDTracking post(@NotNull String path, @Nullable String authorization, @NotNull Object body) {
             try {
                 URI uri = buildUri(CommonUtils.removeLeadingSlash(rootPath + path), Map.of());
+                DDEndpoints.requireSecureTransport(uri);
                 HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
                     .header(HttpConstants.HEADER_CONTENT_TYPE, MediaType.JSON.toString())
                     .POST(createBodyPublisher(body, MediaType.JSON));
@@ -104,6 +105,7 @@ public class DDTrackingClient implements DDTrackingService {
         DDTracking post(@NotNull String path, @Nullable String authorization) {
             try {
                 URI uri = buildUri(CommonUtils.removeLeadingSlash(rootPath + path), Map.of());
+                DDEndpoints.requireSecureTransport(uri);
                 HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
                     .POST(HttpRequest.BodyPublishers.noBody());
                 applyAuth(builder, authorization);
@@ -115,14 +117,9 @@ public class DDTrackingClient implements DDTrackingService {
         }
 
         @Nullable
-        DDTracking post(@NotNull String path, @NotNull DDSyncCredentials credentials, @NotNull Object body) {
+        DDTracking postWithDesktopSession(@NotNull String path, @NotNull Object body) {
             byte[] bytes = gson.toJson(body).getBytes(StandardCharsets.UTF_8);
             return postWithDesktopSession(path, bytes, true);
-        }
-
-        @Nullable
-        DDTracking post(@NotNull String path, @NotNull DDSyncCredentials credentials) {
-            return postWithDesktopSession(path, EMPTY_BODY, false);
         }
 
         @Nullable
@@ -133,13 +130,14 @@ public class DDTrackingClient implements DDTrackingService {
         ) {
             try {
                 URI uri = buildUri(CommonUtils.removeLeadingSlash(rootPath + path), Map.of());
+                DDEndpoints.requireSecureTransport(uri);
                 HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
                     .POST(HttpRequest.BodyPublishers.ofByteArray(body));
                 if (json) {
                     builder.header(HttpConstants.HEADER_CONTENT_TYPE, MediaType.JSON.toString());
                 }
                 builder.header(HttpConstants.HEADER_AUTHORIZATION,
-                    HttpConstants.BEARER_PREFIX + DDDesktopSsoSession.accessFor(uri));
+                    HttpConstants.BEARER_PREFIX + accessService.getAccessTokenForResource(uri));
                 return execute(builder, DDTracking.class);
             } catch (DBException e) {
                 log.debug("DataDam tracking request failed", e);

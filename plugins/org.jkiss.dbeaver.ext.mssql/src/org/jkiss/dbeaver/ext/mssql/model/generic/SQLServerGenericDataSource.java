@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mssql.model.generic;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -66,14 +67,16 @@ public class SQLServerGenericDataSource extends GenericDataSource {
     public SQLServerGenericDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, SQLServerMetaModel metaModel)
         throws DBException
     {
-        super(monitor, container, metaModel, metaModel.getServerType() == ServerType.SQL_SERVER ? new SQLServerDialectMssql() : new SQLServerDialectSybase());
+        super(monitor, container, metaModel,
+            metaModel.getServerType() == ServerType.SQL_SERVER ? new SQLServerDialectMssql() : new SQLServerDialectSybase());
     }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {

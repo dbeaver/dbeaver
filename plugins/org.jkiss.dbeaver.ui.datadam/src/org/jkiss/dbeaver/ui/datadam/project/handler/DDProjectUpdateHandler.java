@@ -29,11 +29,13 @@ import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncService;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncSnapshot;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncUIManager;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 public class DDProjectUpdateHandler extends AbstractHandler {
+    private final DDDesktopTokenUIManager accessUIManager = DDDesktopTokenUIManager.getInstance();
     @Nullable
     @Override
     public Object execute(@NotNull ExecutionEvent event) {
@@ -46,12 +48,15 @@ public class DDProjectUpdateHandler extends AbstractHandler {
         if (!ddUIManager.isDDEnabled()) {
             return null;
         }
-        DDProjectSyncService service = ddUIManager.getService();
         new AbstractJob(DDTrackingUIMessages.project_sync_update_job) {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
+                    if (!accessUIManager.ensureTokenReady(monitor)) {
+                        return Status.CANCEL_STATUS;
+                    }
+                    DDProjectSyncService service = ddUIManager.getService();
                     DDProjectSyncSnapshot snapshot = service.getProjectSyncSnapshot(project);
                     switch (snapshot.change()) {
                         case UNCHANGED -> ddUIManager.showMessage(

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.generic.test;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.vertica.VerticaConstants;
@@ -156,7 +157,7 @@ public class VerticaSSLUtilsTest {
         @Override
         public Properties getAllConnectionProperties(
             @NotNull DBRProgressMonitor monitor,
-            @NotNull JDBCExecutionContext context,
+            @Nullable JDBCExecutionContext context,
             @NotNull String purpose,
             @NotNull DBPConnectionConfiguration connectionInfo
         ) throws DBCException {

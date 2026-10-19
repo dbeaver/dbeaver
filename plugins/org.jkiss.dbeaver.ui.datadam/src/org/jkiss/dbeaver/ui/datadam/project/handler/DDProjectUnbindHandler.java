@@ -26,7 +26,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -51,13 +50,12 @@ public class DDProjectUnbindHandler extends AbstractHandler {
             NLS.bind(DDTrackingUIMessages.project_sync_unbind_confirm_message, project.getName()))) {
             return null;
         }
-        DDProjectSyncService service = ddManager.getService();
         new AbstractJob(DDTrackingUIMessages.project_sync_unbind_job) {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
-                    service.unbindProject(project);
+                    ddManager.getService().unbindProject(project);
                     DDProjectSyncPropertyTester.firePropertyChange();
                     ddManager.showMessage(DDTrackingUIMessages.project_sync_unbind_success, false);
                 } catch (DBException e) {

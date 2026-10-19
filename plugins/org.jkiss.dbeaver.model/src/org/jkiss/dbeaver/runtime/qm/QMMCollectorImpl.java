@@ -312,7 +312,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
         if (sessionInfo != null) {
             QMMObject oldTxn = sessionInfo.rollback(savepoint);
             if (sessionInfo.isLoggingEnabled() && oldTxn != null) {
-                tryFireMetaEvent(oldTxn, QMEventAction.END, sessionInfo.getCloseTime(), context);
+                tryFireMetaEvent(oldTxn, QMEventAction.END, oldTxn.getCloseTime(), context);
             }
         }
     }
