@@ -158,7 +158,7 @@ public final class WorkbenchPatcher {
     }
 
     private static void patchWorkbenchXmi(@NotNull Path workbenchXmi) throws Exception {
-        Map<String, PartDescriptor> parts = collectContributedParts();
+        var parts = collectContributedParts();
         var checker = new PartIconChecker(parts);
         try (var input = Files.newInputStream(workbenchXmi)) {
             XMLUtils.newSecureSAXParserFactory().newSAXParser().parse(input, checker);
