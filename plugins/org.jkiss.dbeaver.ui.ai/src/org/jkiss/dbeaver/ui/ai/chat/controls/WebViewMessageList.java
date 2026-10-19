@@ -73,6 +73,8 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     private final IPropertyChangeListener themeChangeListener;
     private final AISettingsManager settingsManager;
     private final AIFunctionAllowMenu functionAllowMenu;
+    private final WebViewDndController dndController;
+    private final Map<String, Function<Object[], Object>> pendingFunctions = new LinkedHashMap<>();
     private final Map<Integer, PendingConfirmation> pendingConfirmations = new HashMap<>();
     private final AIMessageChunkBuffer messageChunkBuffer;
     private final WebViewMessageRenderer renderer;
@@ -225,13 +227,17 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
                 for (AIFunctionAllowMenu.PendingApproval approval : approvals) {
                     renderer.execute("approveFunctionConfirmation", approval.messageId(), approval.functionIndex());
                 }
-            }
+            },
+            true
         );
 
         browser.setVisible(false);
-        browser.setUrl(cssInitializer.getWebHtmlPath());
+        dndController = new WebViewDndController(this, browser, chat, this::getDataSource);
 
         browser.addProgressListener(ProgressListener.completedAdapter(e -> {
+            functionAllowMenu.registerBrowserFunction();
+            dndController.registerBrowserFunction();
+            registerPendingFunctions();
             browser.setVisible(true);
             isInitWaiting = false;
             renderer.initChat();
@@ -267,8 +273,9 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             messageChunkBuffer.clear();
             settingsManager.removeChangedListener(this);
         });
-        new WebViewDndController(this, browser, chat, this::getDataSource);
         createFunctions(chat);
+        // Navigating first lets WebView2 create the page before registering native browser functions.
+        browser.setUrl(cssInitializer.getWebHtmlPath());
     }
 
     @Override
@@ -569,6 +576,19 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     }
 
     protected void createFunction(@NotNull String name, @NotNull Function<Object[], Object> handler) {
+        if (isInitWaiting) {
+            pendingFunctions.put(name, handler);
+        } else {
+            registerFunction(name, handler);
+        }
+    }
+
+    private void registerPendingFunctions() {
+        pendingFunctions.forEach(this::registerFunction);
+        pendingFunctions.clear();
+    }
+
+    private void registerFunction(@NotNull String name, @NotNull Function<Object[], Object> handler) {
         new BrowserFunction(browser, name) {
             @Nullable
             @Override

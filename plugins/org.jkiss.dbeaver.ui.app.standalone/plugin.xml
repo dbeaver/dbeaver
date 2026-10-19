@@ -227,6 +227,7 @@
             </command>
             <command commandId="org.eclipse.ui.edit.paste"/>
             <command commandId="org.eclipse.ui.edit.delete"/>
+            <command commandId="org.eclipse.ui.edit.selectAll"/>
             <separator name="find.ext" visible="true"/>
             <command commandId="org.eclipse.ui.edit.findReplace">
                 <visibleWhen checkEnabled="true"/>
