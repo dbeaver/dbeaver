@@ -41,7 +41,7 @@ public class DDDesktopTokenUIManager {
     }
 
     public boolean ensureTokenReady(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (monitor.isCanceled()) {
+        if (monitor.isCanceled() || !DDProductConfig.isIntegrationEnabled()) {
             return false;
         }
         DDDesktopAccessService.Status status = accessService.getStatus();
