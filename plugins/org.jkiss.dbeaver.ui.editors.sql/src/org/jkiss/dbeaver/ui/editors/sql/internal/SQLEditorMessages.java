@@ -65,6 +65,7 @@ public class SQLEditorMessages extends NLS {
     public static String editors_sql_statistics;
     public static String editors_sql_query_canceled;
     public static String editors_sql_query_canceled_connection_closed;
+    public static String editors_sql_query_canceled_connection_closed_no_recover;
     public static String editors_sql_job_execute_query;
     public static String editors_sql_job_execute_script;
     public static String execute_script_file_error_title;

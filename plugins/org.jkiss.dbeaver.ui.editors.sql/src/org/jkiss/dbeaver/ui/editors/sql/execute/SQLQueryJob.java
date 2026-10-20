@@ -1139,9 +1139,16 @@ public class SQLQueryJob extends DataSourceJob {
             }
         } else if (!result && lastQueryCanceled) {
             // Without an error the results panel keeps showing the previous result as if this query produced it
-            throw new DBCException(lastQueryConnectionLost ?
-                SQLEditorMessages.editors_sql_query_canceled_connection_closed :
-                SQLEditorMessages.editors_sql_query_canceled);
+            String message;
+            if (!lastQueryConnectionLost) {
+                message = SQLEditorMessages.editors_sql_query_canceled;
+            } else if (getDataSourceContainer().getPreferenceStore().getBoolean(ModelPreferences.EXECUTE_RECOVER_ENABLED)) {
+                message = SQLEditorMessages.editors_sql_query_canceled_connection_closed;
+            } else {
+                // Recovery is off: the next execution fails on the closed connection instead of reconnecting
+                message = SQLEditorMessages.editors_sql_query_canceled_connection_closed_no_recover;
+            }
+            throw new DBCException(message);
         } else if (allowStatistics && result && statistics.getStatementsCount() > 0) {
             showExecutionResult(session);
         }
