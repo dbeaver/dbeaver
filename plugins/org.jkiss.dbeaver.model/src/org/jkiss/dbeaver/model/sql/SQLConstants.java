@@ -54,6 +54,7 @@ public class SQLConstants {
     public static final String KEYWORD_CROSS_JOIN = "CROSS JOIN";
     public static final String KEYWORD_NATURAL_JOIN = "NATURAL JOIN";
     public static final String KEYWORD_WHERE = "WHERE";
+    public static final String KEYWORD_DECLARE = "DECLARE";
     public static final String KEYWORD_SET = "SET";
     public static final String KEYWORD_ON = "ON";
     public static final String KEYWORD_AND = "AND";
