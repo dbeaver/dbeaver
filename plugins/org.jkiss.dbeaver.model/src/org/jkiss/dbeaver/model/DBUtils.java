@@ -973,7 +973,9 @@ public final class DBUtils {
             }
         }
         if (currentIndex < nestedIndexes.length) {
-            log.debug("Not all of nested indexes were used, we might have missed the desired value.");
+            // An index belonging to a deeper row must not resolve to this attribute's ancestor value.
+            log.debug("Not all of nested indexes were used to resolve the value.");
+            return null;
         }
         return value;
     }
