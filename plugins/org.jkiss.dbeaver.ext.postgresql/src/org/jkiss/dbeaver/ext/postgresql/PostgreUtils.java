@@ -827,7 +827,8 @@ public class PostgreUtils {
     public static String getObjectTypeName(@NotNull PostgrePrivilegeOwner object) {
         return switch (object) {
             case PostgreSequence ignored -> "SEQUENCE";
-            case PostgreProcedure postgreProcedure -> postgreProcedure.getProcedureTypeName();
+            // GRANT/REVOKE accept only FUNCTION or PROCEDURE, aggregates and window functions use FUNCTION
+            case PostgreProcedure postgreProcedure -> postgreProcedure.getKind() == PostgreProcedureKind.p ? "PROCEDURE" : "FUNCTION";
             case PostgreSchema ignored2 -> "SCHEMA";
             case PostgreDatabase ignored3 -> "DATABASE";
             default -> "TABLE";
@@ -866,6 +867,18 @@ public class PostgreUtils {
 
             // Permissions
             Collection<PostgrePrivilege> permissions = object.getPrivileges(monitor, true);
+            if (object instanceof PostgreProcedure && !hasPublicGrantee(permissions)) {
+                // Functions and procedures grant EXECUTE to PUBLIC on creation, so re-running the DDL
+                // must revoke it when the ACL no longer has it, as pg_dump does
+                PostgreObjectPrivilege publicPrivilege = new PostgreObjectPrivilege(
+                    object,
+                    new PostgreRoleReference(object.getDatabase(), PostgreConstants.PUBLIC_ROLE_NAME, null),
+                    Collections.emptyList()
+                );
+                Collections.addAll(actions,
+                    new PostgreCommandGrantPrivilege(object, false, object, publicPrivilege, new PostgrePrivilegeType[]{PostgrePrivilegeType.ALL})
+                        .getPersistActions(monitor, executionContext, options));
+            }
             if (!CommonUtils.isEmpty(permissions)) {
 
                 for (PostgrePrivilege permission : permissions) {
@@ -880,6 +893,21 @@ public class PostgreUtils {
                 }
             }
         }
+    }
+
+    private static boolean hasPublicGrantee(@Nullable Collection<PostgrePrivilege> permissions) {
+        if (permissions == null) {
+            return false;
+        }
+        for (PostgrePrivilege permission : permissions) {
+            if (permission instanceof PostgreObjectPrivilege objectPrivilege
+                && objectPrivilege.getGrantee() != null
+                && PostgreConstants.PUBLIC_ROLE_NAME.equals(objectPrivilege.getGrantee().getRoleName())
+            ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static boolean isGISDataType(@NotNull String typeName) {
