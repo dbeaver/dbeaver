@@ -148,7 +148,7 @@
 
         <activityPatternBinding activityId="dbeaver.ai.activity.policy" pattern="org.jkiss.dbeaver.ui.ai/org.jkiss.dbeaver.preferences.ai.*"/>
         <activityPatternBinding activityId="dbeaver.ai.activity.policy" pattern="org.jkiss.dbeaver.preferences.ai"/>
-        <activityPatternBinding activityId="dbeaver.ai.activity" pattern="org.jkiss.dbeaver.ui.ai/.*"/>
+        <activityPatternBinding activityId="dbeaver.ai.activity" pattern="org.jkiss.dbeaver.ui.ai/(?!org\.jkiss\.dbeaver\.preferences\.ai).*"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
