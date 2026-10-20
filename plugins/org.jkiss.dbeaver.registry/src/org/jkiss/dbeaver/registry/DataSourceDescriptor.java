@@ -132,6 +132,7 @@ public class DataSourceDescriptor
     private transient List<DBSSecretValue> availableSharedCredentials;
     @Nullable
     private transient DBSSecretValue selectedSharedCredentials;
+    private transient boolean sharedCredentialsRevoked;
 
     private boolean connectionReadOnly;
     private boolean forceUseSingleConnection;
@@ -530,16 +531,24 @@ public class DataSourceDescriptor
     }
 
     public void resetAllSecrets() {
+        // Configuration refresh can disable sharing before disconnect. The selected secret still identifies cached
+        // credentials that must be revoked after the connection is closed.
+        sharedCredentialsRevoked |= !sharedCredentials && selectedSharedCredentials != null;
         this.secretsResolved = false;
         this.secretsContainsDatabaseCreds = false;
         this.availableSharedCredentials = null;
         this.selectedSharedCredentials = null;
         // we need to reset username and password for connection that are not connected to database
         // in some cases, when connection is established, username is needed (e.g. retrieving current user info in Cubrid)
-        if (sharedCredentials && !isConnected()) {
+        if ((sharedCredentials || sharedCredentialsRevoked) && !isConnected()) {
             // For shared credentials reset cache also
             connectionInfo.setUserName(null);
             connectionInfo.setUserPassword(null);
+            if (sharedCredentialsRevoked) {
+                connectionInfo.setAuthProperties(null);
+                savePassword = false;
+                sharedCredentialsRevoked = false;
+            }
         }
     }
 
