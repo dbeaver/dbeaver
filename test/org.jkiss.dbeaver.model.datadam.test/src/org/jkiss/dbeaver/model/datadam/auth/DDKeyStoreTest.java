@@ -16,16 +16,18 @@
  */
 package org.jkiss.dbeaver.model.datadam.auth;
 
+import org.eclipse.equinox.security.storage.ISecurePreferences;
+import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
+import org.eclipse.equinox.security.storage.StorageException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPairGenerator;
 import java.security.SecureRandom;
@@ -115,44 +117,41 @@ class DDKeyStoreTest {
 
     @Test
     void loadRejectsMalformedBundle() throws Exception {
-        DBSSecretController controller = Mockito.mock(DBSSecretController.class);
-        Mockito.when(controller.getPrivateSecretValue("datadam.key-bundle")).thenReturn("not-json");
-        try (MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(DBSSecretController.class)) {
-            controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
+        ISecurePreferences node = Mockito.mock(ISecurePreferences.class);
+        Mockito.when(node.get("datadam.key-bundle", null)).thenReturn("not-json");
+        try (MockedStatic<SecurePreferencesFactory> storage = mockStorage(node)) {
 
             Assertions.assertThrows(DBException.class, DDKeyStore::load);
-            Mockito.verify(controller, Mockito.never())
-                .setPrivateSecretValue(ArgumentMatchers.anyString(), ArgumentMatchers.any());
+            Mockito.verify(node, Mockito.never()).put(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean());
         }
     }
 
     @Test
     void saveReplacesUnreadableBundle() throws Exception {
         DDKeyBundle replacement = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 1);
-        DBSSecretController controller = Mockito.mock(DBSSecretController.class);
-        DBException readError = new DBException("Cannot read stored keys");
-        Mockito.when(controller.getPrivateSecretValue("datadam.key-bundle")).thenThrow(readError);
-        try (MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(DBSSecretController.class)) {
-            controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
+        ISecurePreferences node = Mockito.mock(ISecurePreferences.class);
+        Mockito.when(node.get("datadam.key-bundle", null))
+            .thenThrow(new StorageException(StorageException.NO_PASSWORD, "Cannot read stored keys"));
+        try (MockedStatic<SecurePreferencesFactory> storage = mockStorage(node)) {
 
             Assertions.assertThrows(DBException.class, DDKeyStore::load);
             DDKeyStore.save(replacement);
 
-            Mockito.verify(controller).setPrivateSecretValue("datadam.key-bundle", JSONUtils.GSON.toJson(replacement));
-            Mockito.verify(controller).flushChanges();
+            Mockito.verify(node).put("datadam.key-bundle", JSONUtils.GSON.toJson(replacement), true);
+            Mockito.verify(node).flush();
         }
     }
 
     @Test
     void savePropagatesFlushFailure() throws Exception {
         DDKeyBundle replacement = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 1);
-        DBSSecretController controller = Mockito.mock(DBSSecretController.class);
-        DBException writeError = new DBException("Cannot flush keys");
-        Mockito.doThrow(writeError).when(controller).flushChanges();
-        try (MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(DBSSecretController.class)) {
-            controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
+        ISecurePreferences node = Mockito.mock(ISecurePreferences.class);
+        IOException writeError = new IOException("Cannot flush keys");
+        Mockito.doThrow(writeError).when(node).flush();
+        try (MockedStatic<SecurePreferencesFactory> storage = mockStorage(node)) {
 
-            Assertions.assertSame(writeError, Assertions.assertThrows(DBException.class, () -> DDKeyStore.save(replacement)));
+            DBException error = Assertions.assertThrows(DBException.class, () -> DDKeyStore.save(replacement));
+            Assertions.assertSame(writeError, error.getCause());
         }
     }
 
@@ -162,16 +161,15 @@ class DDKeyStoreTest {
         DDKeyBundle replacement = new DDKeyBundle(
             UUID.fromString("8decb064-2709-4914-b6b6-68eaef98cac4"), "new-signing-key", "new-data-key", 1);
 
-        DBSSecretController controller = Mockito.mock(DBSSecretController.class);
-        Mockito.when(controller.getPrivateSecretValue(ArgumentMatchers.anyString()))
+        ISecurePreferences node = Mockito.mock(ISecurePreferences.class);
+        Mockito.when(node.get("datadam.key-bundle", null))
             .thenReturn(JSONUtils.GSON.toJson(stored));
-        try (MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(DBSSecretController.class)) {
-            controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
+        try (MockedStatic<SecurePreferencesFactory> storage = mockStorage(node)) {
 
             DDKeyStore.save(replacement);
 
-            Mockito.verify(controller).setPrivateSecretValue("datadam.key-bundle", JSONUtils.GSON.toJson(replacement));
-            Mockito.verify(controller).flushChanges();
+            Mockito.verify(node).put("datadam.key-bundle", JSONUtils.GSON.toJson(replacement), true);
+            Mockito.verify(node).flush();
         }
     }
 
@@ -184,17 +182,24 @@ class DDKeyStoreTest {
     }
 
     private static void assertRejectedSave(@NotNull DDKeyBundle stored, @NotNull DDKeyBundle replacement) throws Exception {
-        DBSSecretController controller = Mockito.mock(DBSSecretController.class);
-        Mockito.when(controller.getPrivateSecretValue(ArgumentMatchers.anyString()))
+        ISecurePreferences node = Mockito.mock(ISecurePreferences.class);
+        Mockito.when(node.get("datadam.key-bundle", null))
             .thenReturn(JSONUtils.GSON.toJson(stored));
-        try (MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(DBSSecretController.class)) {
-            controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
+        try (MockedStatic<SecurePreferencesFactory> storage = mockStorage(node)) {
 
             Assertions.assertThrows(DBException.class, () -> DDKeyStore.save(replacement));
 
-            Mockito.verify(controller, Mockito.never())
-                .setPrivateSecretValue(ArgumentMatchers.anyString(), ArgumentMatchers.any());
+            Mockito.verify(node, Mockito.never()).put(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean());
         }
+    }
+
+    @NotNull
+    private static MockedStatic<SecurePreferencesFactory> mockStorage(@NotNull ISecurePreferences node) {
+        ISecurePreferences root = Mockito.mock(ISecurePreferences.class);
+        Mockito.when(root.node("datadam")).thenReturn(node);
+        MockedStatic<SecurePreferencesFactory> storage = Mockito.mockStatic(SecurePreferencesFactory.class);
+        storage.when(() -> SecurePreferencesFactory.open(null, Mockito.anyMap())).thenReturn(root);
+        return storage;
     }
 
     @NotNull
