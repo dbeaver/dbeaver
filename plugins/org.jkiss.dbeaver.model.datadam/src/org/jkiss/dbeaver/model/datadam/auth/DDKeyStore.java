@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -31,6 +30,9 @@ import javax.crypto.SecretKey;
 public class DDKeyStore {
 
     private static final Log log = Log.getLog(DDKeyStore.class);
+    private static final DDKeyStore INSTANCE = new DDKeyStore();
+
+    private final DDSecretStorage secretStorage = DDSecretStorage.getInstance();
 
     @Deprecated(forRemoval = true)
     public static final String ACCESS_KEY_PREFIX = "ddgk_";
@@ -44,8 +46,7 @@ public class DDKeyStore {
     @Nullable
     public static DDKeyBundle load() throws DBException {
         try {
-            String value = DBSSecretController.getGlobalSecretController()
-                .getPrivateSecretValue(SECRET_KEY_BUNDLE);
+            String value = INSTANCE.secretStorage.read(SECRET_KEY_BUNDLE);
             if (CommonUtils.isEmpty(value)) {
                 return null;
             }
@@ -109,15 +110,11 @@ public class DDKeyStore {
             && bundle.generation() < current.generation()) {
             throw new DBException("The keys are older than the stored ones");
         }
-        DBSSecretController controller = DBSSecretController.getGlobalSecretController();
-        controller.setPrivateSecretValue(SECRET_KEY_BUNDLE, JSONUtils.GSON.toJson(bundle));
-        controller.flushChanges();
+        INSTANCE.secretStorage.write(SECRET_KEY_BUNDLE, JSONUtils.GSON.toJson(bundle));
     }
 
     public static void clear() throws DBException {
-        DBSSecretController controller = DBSSecretController.getGlobalSecretController();
-        controller.setPrivateSecretValue(SECRET_KEY_BUNDLE, null);
-        controller.flushChanges();
+        INSTANCE.secretStorage.delete(SECRET_KEY_BUNDLE);
     }
 
     @Deprecated(forRemoval = true)
