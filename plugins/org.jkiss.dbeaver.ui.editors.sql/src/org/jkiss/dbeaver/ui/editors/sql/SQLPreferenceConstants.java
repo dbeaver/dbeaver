@@ -26,7 +26,16 @@ import org.jkiss.utils.CommonUtils;
 public class SQLPreferenceConstants {
 
     public enum MetadataRefreshBehavior {
-        ASK, ALWAYS, NEVER;
+        ASK(SQLEditorMessages.pref_page_sql_editor_reload_metadata_ask),
+        ALWAYS(SQLEditorMessages.pref_page_sql_editor_reload_metadata_always),
+        NEVER(SQLEditorMessages.pref_page_sql_editor_reload_metadata_never);
+
+        @NotNull
+        public final String displayName;
+
+        MetadataRefreshBehavior(@NotNull String displayName) {
+            this.displayName = displayName;
+        }
 
         @NotNull
         public static MetadataRefreshBehavior parse(String value) {

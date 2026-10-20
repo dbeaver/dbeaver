@@ -40,11 +40,18 @@ import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
 /**
  * PrefPageSQLExecute
  */
 public class PrefPageSQLExecute extends TargetPrefPage {
     private static final Log log = Log.getLog(PrefPageSQLExecute.class);
+    private static final List<MetadataRefreshBehavior> METADATA_REFRESH_BEHAVIORS = List.of(
+        MetadataRefreshBehavior.ASK,
+        MetadataRefreshBehavior.ALWAYS,
+        MetadataRefreshBehavior.NEVER
+    );
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sqlexecute"; //$NON-NLS-1$
 
@@ -168,11 +175,8 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                     SQLEditorMessages.pref_page_sql_editor_label_reload_metadata_on_ddl_tip,
                     SWT.READ_ONLY | SWT.DROP_DOWN
                 );
-                refreshOnDDLCombo.setItems(new String[] {
-                    SQLEditorMessages.pref_page_sql_editor_reload_metadata_ask,
-                    SQLEditorMessages.pref_page_sql_editor_reload_metadata_always,
-                    SQLEditorMessages.pref_page_sql_editor_reload_metadata_never
-                });
+                refreshOnDDLCombo.setItems(METADATA_REFRESH_BEHAVIORS.stream()
+                    .map(behavior -> behavior.displayName).toArray(String[]::new));
                 clearOutputBeforeExecute = UIUtils.createCheckbox(
                     commonGroup,
                     SQLEditorMessages.pref_page_sql_editor_label_clear_output_before_execute,
@@ -443,7 +447,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
             store.setValue(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE, updateDefaultAfterExecute.getSelection());
             store.setValue(
                 SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION,
-                MetadataRefreshBehavior.values()[refreshOnDDLCombo.getSelectionIndex()].name()
+                METADATA_REFRESH_BEHAVIORS.get(refreshOnDDLCombo.getSelectionIndex()).name()
             );
             store.setValue(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE, clearOutputBeforeExecute.getSelection());
 
@@ -566,7 +570,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                 ? store.getDefaultString(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION)
                 : store.getString(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION)
         );
-        refreshOnDDLCombo.select(refreshBehavior.ordinal());
+        refreshOnDDLCombo.select(METADATA_REFRESH_BEHAVIORS.indexOf(refreshBehavior));
         clearOutputBeforeExecute.setSelection(
             useDefaults
                 ? store.getDefaultBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
