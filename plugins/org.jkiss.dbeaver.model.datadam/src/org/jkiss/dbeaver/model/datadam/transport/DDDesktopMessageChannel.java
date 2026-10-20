@@ -85,7 +85,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
     }
 
     public DDDesktopMessageChannel(@NotNull URI endpoint, @NotNull DDHello hello, @NotNull TokenProvider tokens)
-        throws DBException {
+            throws DBException {
         this(endpoint, hello, tokens, BaseWebSocketClient::new);
     }
 

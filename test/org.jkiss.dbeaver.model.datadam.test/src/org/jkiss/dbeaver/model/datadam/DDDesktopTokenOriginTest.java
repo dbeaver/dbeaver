@@ -203,7 +203,7 @@ class DDDesktopTokenOriginTest {
     }
 
     private boolean matches(@NotNull String account, @NotNull String storage, @NotNull String resource)
-        throws ReflectiveOperationException {
+            throws ReflectiveOperationException {
         Object token = tokenConstructor.newInstance("existing-access-token", "https://sso.example", account, storage);
         return (boolean) matchesResource.invoke(validator, token, URI.create(resource));
     }

@@ -217,12 +217,12 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
             Peer first = ready(clients, events, "first");
             first.holdSends = true;
             CompletionStage<Void> pending = channel.send(MESSAGE);
-            Sent oldSend = first.nextSent();
+            final Sent oldSend = first.nextSent();
             channel.pause();
             fails(pending);
             Assertions.assertEquals("first", take(events.disconnected).connectionId());
             channel.start();
-            Peer second = ready(clients, events, "second");
+            final Peer second = ready(clients, events, "second");
             first.ready("late-ready");
             first.listener.onClose(first.socket, 1008, "late-close");
             first.listener.onError(first.socket, new IOException("late-error"));
@@ -386,7 +386,7 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
             Peer peer = ready(clients, events, "bounded");
             String empty = DDExternalDamProtocol.encode(message("topic", ""));
             int remaining = 65_536 - empty.getBytes(StandardCharsets.UTF_8).length;
-            DDMessage maximum = message("topic", "\u00e9".repeat(remaining / 2) + "x".repeat(remaining % 2));
+            DDMessage maximum = message("topic", "é".repeat(remaining / 2) + "x".repeat(remaining % 2));
             String encoded = DDExternalDamProtocol.encode(maximum);
             Assertions.assertEquals(65_536, encoded.getBytes(StandardCharsets.UTF_8).length);
             int middle = encoded.length() / 2;
@@ -395,8 +395,8 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
             Assertions.assertEquals(maximum, take(received));
             channel.send(maximum).toCompletableFuture().get(3, TimeUnit.SECONDS);
             fails(channel.send(message("topic", "x".repeat(65_536))));
-            peer.listener.onText(peer.socket, "\u00e9".repeat(20_000), false);
-            peer.listener.onText(peer.socket, "\u00e9".repeat(20_000), false);
+            peer.listener.onText(peer.socket, "é".repeat(20_000), false);
+            peer.listener.onText(peer.socket, "é".repeat(20_000), false);
             Assertions.assertEquals("bounded", take(events.disconnected).connectionId());
         }
     }
@@ -411,9 +411,10 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
             channel.subscribe("topic", (info, message) -> received.add(message));
             channel.start();
             Peer peer = ready(clients, events, "unicode");
-            DDMessage message = message("topic", "\ud83e\uddab");
+            String beaver = "🦫";
+            DDMessage message = message("topic", beaver);
             String encoded = DDExternalDamProtocol.encode(message);
-            int split = encoded.indexOf('\ud83e') + 1;
+            int split = encoded.indexOf(beaver) + 1;
             Assertions.assertTrue(split > 0);
             peer.listener.onText(peer.socket, encoded.substring(0, split), false);
             peer.listener.onText(peer.socket, encoded.substring(split), true);
@@ -481,11 +482,11 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
             Peer peer = clients.next();
             peer.holdSends = true;
             peer.open();
-            Sent hello = peer.nextSent();
+            final Sent hello = peer.nextSent();
             peer.ready("serialized");
             take(events.connected);
-            CompletionStage<Void> first = channel.send(MESSAGE);
-            CompletionStage<Void> second = channel.send(message("topic", "second"));
+            final CompletionStage<Void> first = channel.send(MESSAGE);
+            final CompletionStage<Void> second = channel.send(message("topic", "second"));
             Assertions.assertTrue(peer.sent.isEmpty());
             hello.result.complete(peer.socket);
             Sent sending = peer.nextSent();
@@ -511,7 +512,7 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
             peer.holdSends = true;
             List<CompletionStage<Void>> pending = new ArrayList<>();
             pending.add(channel.send(MESSAGE));
-            Sent sending = peer.nextSent();
+            final Sent sending = peer.nextSent();
             for (int i = 1; i < 64; i++) {
                 pending.add(channel.send(MESSAGE));
             }

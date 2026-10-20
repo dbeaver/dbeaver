@@ -21,14 +21,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class DDDesktopAccessLifecycleTest {
     @Test
@@ -39,10 +37,10 @@ class DDDesktopAccessLifecycleTest {
         try (var keys = Mockito.mockStatic(DDKeyStore.class)) {
             keys.when(DDKeyStore::load).thenThrow(new DBException("Keys unavailable"));
 
-            assertThrows(DBException.class, () -> access.signIn(Mockito.mock(DBRProgressMonitor.class)));
+            Assertions.assertThrows(DBException.class, () -> access.signIn(Mockito.mock(DBRProgressMonitor.class)));
         }
 
-        assertEquals(List.of("changing", "changed"), events);
+        Assertions.assertEquals(List.of("changing", "changed"), events);
     }
 
     @Test
@@ -53,10 +51,10 @@ class DDDesktopAccessLifecycleTest {
         try (var keys = Mockito.mockStatic(DDKeyStore.class)) {
             keys.when(DDKeyStore::clear).thenThrow(new DBException("Keys unavailable"));
 
-            assertThrows(DBException.class, access::signOut);
+            Assertions.assertThrows(DBException.class, access::signOut);
         }
 
-        assertEquals(List.of("changing", "changed"), events);
+        Assertions.assertEquals(List.of("changing", "changed"), events);
     }
 
     @Test
@@ -75,7 +73,7 @@ class DDDesktopAccessLifecycleTest {
             access.signOut();
         }
 
-        assertEquals(List.of("changing", "changed"), events);
+        Assertions.assertEquals(List.of("changing", "changed"), events);
     }
 
     @NotNull

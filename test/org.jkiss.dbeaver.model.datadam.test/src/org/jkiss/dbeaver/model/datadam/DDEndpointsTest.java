@@ -33,7 +33,8 @@ class DDEndpointsTest {
         );
 
         Assertions.assertEquals(externalEndpoints.get(DDEndpoints.getAccountBaseUrl()), DDEndpoints.getExternalDamWebSocketUrl());
-        Assertions.assertDoesNotThrow(() -> DDEndpoints.requireSecureWebSocketTransport(URI.create(DDEndpoints.getExternalDamWebSocketUrl())));
+        Assertions.assertDoesNotThrow(
+            () -> DDEndpoints.requireSecureWebSocketTransport(URI.create(DDEndpoints.getExternalDamWebSocketUrl())));
     }
 
     @Test

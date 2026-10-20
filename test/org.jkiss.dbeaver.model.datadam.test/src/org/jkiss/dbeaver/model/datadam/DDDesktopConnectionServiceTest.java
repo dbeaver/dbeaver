@@ -21,17 +21,12 @@ import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.transport.DDDesktopMessageChannel;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
-
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 class DDDesktopConnectionServiceTest {
     private final DDDesktopAccessService access = Mockito.mock(DDDesktopAccessService.class);
@@ -45,59 +40,59 @@ class DDDesktopConnectionServiceTest {
 
     @Test
     void startsTheChannelWithoutRequiringImportedKeys() {
-        when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
+        Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
 
         service.start();
         service.start();
 
-        verify(channel).start();
-        verify(access, never()).getKeyBundle();
-        assertSame(channel, service.getChannel());
+        Mockito.verify(channel).start();
+        Mockito.verify(access, Mockito.never()).getKeyBundle();
+        Assertions.assertSame(channel, service.getChannel());
     }
 
     @ParameterizedTest
     @EnumSource(value = DDDesktopAccessService.Status.class, names = {"SIGNED_OUT", "EXPIRED", "UNLOADED"})
     void doesNotStartLoginOrTransportWhenAuthorizationIsUnavailable(@NotNull DDDesktopAccessService.Status status) {
-        when(access.getStatus()).thenReturn(status);
+        Mockito.when(access.getStatus()).thenReturn(status);
 
         service.start();
 
-        verify(channel).pause();
-        verify(channel, never()).start();
+        Mockito.verify(channel).pause();
+        Mockito.verify(channel, Mockito.never()).start();
     }
 
     @Test
     void pausesBeforeAnIdentityChangeAndResumesAfterASuccessfulLogin() {
-        when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
+        Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
         service.start();
         DDDesktopAccessListener listener = listener();
 
         listener.accessChanging();
-        verify(channel).pause();
+        Mockito.verify(channel).pause();
         listener.accessChanged();
 
-        verify(channel, times(2)).start();
+        Mockito.verify(channel, Mockito.times(2)).start();
     }
 
     @Test
     void pausesOnLogoutAndCanResumeAfterANewLogin() {
-        when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
+        Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
         service.start();
         DDDesktopAccessListener listener = listener();
 
         listener.accessChanging();
-        when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_OUT);
+        Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_OUT);
         listener.accessChanged();
-        verify(channel, times(2)).pause();
-        when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
+        Mockito.verify(channel, Mockito.times(2)).pause();
+        Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
         listener.accessChanged();
 
-        verify(channel, times(2)).start();
+        Mockito.verify(channel, Mockito.times(2)).start();
     }
 
     @Test
     void shutdownDetachesTheListenerAndCannotBeReversedByLateAccessEvents() {
-        when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
+        Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
         service.start();
         DDDesktopAccessListener listener = listener();
 
@@ -106,15 +101,15 @@ class DDDesktopConnectionServiceTest {
         listener.accessChanged();
         service.start();
 
-        verify(channel).close();
-        verify(channel).start();
-        verify(access).removeAccessListener(listener);
+        Mockito.verify(channel).close();
+        Mockito.verify(channel).start();
+        Mockito.verify(access).removeAccessListener(listener);
     }
 
     @NotNull
     private DDDesktopAccessListener listener() {
         ArgumentCaptor<DDDesktopAccessListener> listener = ArgumentCaptor.forClass(DDDesktopAccessListener.class);
-        verify(access).addAccessListener(listener.capture());
+        Mockito.verify(access).addAccessListener(listener.capture());
         return listener.getValue();
     }
 }
