@@ -22,6 +22,8 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.PrintFigureOperation;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
+import org.eclipse.e4.core.services.events.IEventBroker;
+import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.gef.*;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStack;
@@ -117,6 +119,7 @@ import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.service.event.EventHandler;
 
 import java.io.File;
 import java.util.*;
@@ -171,6 +174,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected LoadingJob<EntityDiagram> diagramLoadingJob;
     private IPropertyChangeListener configPropertyListener;
     private PaletteRoot paletteRoot;
+    private FlyoutPaletteComposite paletteComposite;
+    private IEventBroker themeEventBroker;
+    private EventHandler themeChangeHandler;
 
     private volatile String errorMessage;
     private ERDContentProvider contentProvider;
@@ -289,6 +295,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         super.createPartControl(contentContainer);
 
+        themeEventBroker = PlatformUI.getWorkbench().getService(IEventBroker.class);
+        if (themeEventBroker != null) {
+            themeChangeHandler = event -> UIUtils.asyncExec(this::refreshTheme);
+            themeEventBroker.subscribe(IThemeEngine.Events.THEME_CHANGED, themeChangeHandler);
+        }
+
         if (hasProgressControl() && progressControl != null) {
             progressControl.createProgressPanel();
         }
@@ -324,6 +336,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     @Override
     public void dispose() {
+        if (themeEventBroker != null && themeChangeHandler != null) {
+            themeEventBroker.unsubscribe(themeChangeHandler);
+        }
         ERDUIActivator.getDefault().getPreferenceStore().removePropertyChangeListener(configPropertyListener);
 
         if (diagramLoadingJob != null) {
@@ -522,6 +537,29 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return viewer;
     }
 
+    private void refreshTheme() {
+        GraphicalViewer viewer = getGraphicalViewer();
+        if (viewer == null || viewer.getControl() == null || viewer.getControl().isDisposed()) {
+            return;
+        }
+        viewer.getControl().setBackground(ERDThemeSettings.instance.diagramBackground);
+        if (paletteComposite != null && !paletteComposite.isDisposed()) {
+            paletteComposite.setBackground(ERDThemeSettings.instance.diagramBackground);
+            paletteComposite.setForeground(ERDThemeSettings.instance.attrForeground);
+        }
+        if (editDomain.getPaletteViewer() != null && !editDomain.getPaletteViewer().getControl().isDisposed()) {
+            editDomain.getPaletteViewer().getControl().setBackground(ERDThemeSettings.instance.diagramBackground);
+            editDomain.getPaletteViewer().getControl().setForeground(ERDThemeSettings.instance.attrForeground);
+            if (editDomain.getPaletteViewer().getRootEditPart() instanceof GraphicalEditPart root) {
+                root.getFigure().setForegroundColor(ERDThemeSettings.instance.attrForeground);
+            }
+        }
+        DiagramPart diagramPart = getDiagramPart();
+        if (diagramPart != null) {
+            diagramPart.refreshTheme();
+        }
+    }
+
     protected void installKeyHandler(@NotNull GraphicalViewer viewer) {
         viewer.setKeyHandler(new DBeaverNavigationKeyHandler(viewer));
     }
@@ -690,7 +728,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     protected FlyoutPaletteComposite createPaletteComposite(Composite parent) {
-        FlyoutPaletteComposite paletteComposite = new FlyoutPaletteComposite(
+        paletteComposite = new FlyoutPaletteComposite(
             parent,
             0,
             this.getSite().getPage(),

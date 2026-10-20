@@ -26,6 +26,7 @@ import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.text.FlowPage;
 import org.eclipse.draw2d.text.TextFlow;
+import org.eclipse.swt.graphics.Color;
 import org.jkiss.dbeaver.model.erd.ERDNote;
 import org.jkiss.dbeaver.ui.editors.erd.ERDUIConstants;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDThemeSettings;
@@ -38,6 +39,8 @@ import org.jkiss.dbeaver.ui.editors.erd.editor.ERDThemeSettings;
 public class NoteFigure extends FlowPage {
 
     private final TextFlow textFlow;
+    private Color themeBackground;
+    private Color themeForeground;
 
     public NoteFigure(ERDNote note) {
         //super(note.getObject());
@@ -51,6 +54,22 @@ public class NoteFigure extends FlowPage {
             new LineBorder(ERDThemeSettings.instance.linesForeground, ERDUIConstants.DEFAULT_NOTE_BORDER_WIDTH),
             new MarginBorder(5)
         ));
+        themeBackground = getBackgroundColor();
+        themeForeground = getForegroundColor();
+    }
+
+    public void refreshTheme() {
+        if (getBackgroundColor() == themeBackground) {
+            setBackgroundColor(ERDThemeSettings.instance.noteBackground);
+        }
+        if (getForegroundColor() == themeForeground) {
+            setForegroundColor(ERDThemeSettings.instance.noteForeground);
+        }
+        themeBackground = ERDThemeSettings.instance.noteBackground;
+        themeForeground = ERDThemeSettings.instance.noteForeground;
+        if (getBorder() instanceof CompoundBorder border && border.getOuterBorder() instanceof LineBorder lineBorder) {
+            lineBorder.setColor(ERDThemeSettings.instance.linesForeground);
+        }
     }
 
     public TextFlow getTextFlow() {

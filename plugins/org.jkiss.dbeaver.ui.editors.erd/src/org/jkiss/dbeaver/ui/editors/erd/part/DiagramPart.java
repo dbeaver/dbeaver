@@ -42,7 +42,10 @@ import org.jkiss.dbeaver.ui.editors.erd.command.EntityAddCommand;
 import org.jkiss.dbeaver.ui.editors.erd.command.EntityRemoveCommand;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDThemeSettings;
+import org.jkiss.dbeaver.ui.editors.erd.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.ui.editors.erd.figures.EntityDiagramFigure;
+import org.jkiss.dbeaver.ui.editors.erd.figures.EntityFigure;
+import org.jkiss.dbeaver.ui.editors.erd.figures.NoteFigure;
 import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIActivator;
 import org.jkiss.dbeaver.ui.editors.erd.internal.ERDUIMessages;
 import org.jkiss.dbeaver.ui.editors.erd.layout.DelegatingLayoutManager;
@@ -154,6 +157,47 @@ public class DiagramPart extends PropertyAwarePart {
     @NotNull
     public Font getBoldFont() {
         return ERDThemeSettings.instance.diagramFontBold;
+    }
+
+    public void refreshTheme() {
+        getFigure().setBackgroundColor(ERDThemeSettings.instance.diagramBackground);
+        for (Object child : getChildren()) {
+            if (child instanceof EntityPart entityPart) {
+                EntityFigure figure = entityPart.getFigure();
+                figure.refreshTheme();
+                for (AttributeItemFigure attribute : figure.getAttributeFigures()) {
+                    attribute.setForegroundColor(ERDThemeSettings.instance.attrForeground);
+                    attribute.setBackgroundColor(ERDThemeSettings.instance.attrBackground);
+                    attribute.getLabel().setFont(getNormalFont());
+                    if (attribute.getAttribute().isInPrimaryKey()) {
+                        attribute.getLabel().setFont(getBoldFont());
+                    }
+                    attribute.getLabel().setForegroundColor(ERDThemeSettings.instance.attrForeground);
+                    if (attribute.getRightPanel() != null) {
+                        attribute.getRightPanel().setForegroundColor(ERDThemeSettings.instance.attrForeground);
+                        attribute.getRightPanel().setFont(attribute.getLabel().getFont());
+                    }
+                }
+            } else if (child instanceof NotePart notePart) {
+                NoteFigure figure = (NoteFigure) notePart.getFigure();
+                figure.refreshTheme();
+            }
+            if (child instanceof NodePart nodePart) {
+                for (Object connection : nodePart.getSourceConnections()) {
+                    if (connection instanceof AssociationPart associationPart) {
+                        IFigure figure = associationPart.getFigure();
+                        figure.setForegroundColor(ERDThemeSettings.instance.linesForeground);
+                        for (Object label : figure.getChildren()) {
+                            if (label instanceof IFigure labelFigure) {
+                                labelFigure.setForegroundColor(ERDThemeSettings.instance.attrForeground);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        getFigure().revalidate();
+        getFigure().repaint();
     }
 
     /**

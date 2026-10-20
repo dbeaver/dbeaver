@@ -51,6 +51,7 @@ public class EntityFigure extends Figure {
     private AttributeListFigure attributeFigure;
     private EditableLabel nameLabel;
     private Label descLabel;
+    private Color themeBackground;
 
     public EntityFigure(EntityPart part)
     {
@@ -170,6 +171,26 @@ public class EntityFigure extends Figure {
                 setBackgroundColor(ERDThemeSettings.instance.entityRegularBackground);
             }
         }
+        themeBackground = getBackgroundColor();
+    }
+
+    public void refreshTheme() {
+        Color background = getBackgroundColor();
+        boolean customBackground = background != themeBackground;
+        refreshColors();
+        if (customBackground && background != null) {
+            // Custom node colors belong to the diagram, not to the workbench theme.
+            setBackgroundColor(background);
+        }
+        if (getBorder() instanceof LineBorder border) {
+            border.setColor(getBorderColor());
+        } else if (getBorder() instanceof CompoundBorder border && border.getOuterBorder() instanceof LineBorder lineBorder) {
+            lineBorder.setColor(getBorderColor());
+        }
+        keyFigure.setBackgroundColor(ERDThemeSettings.instance.attrBackground);
+        keyFigure.setForegroundColor(ERDThemeSettings.instance.attrForeground);
+        attributeFigure.setBackgroundColor(ERDThemeSettings.instance.attrBackground);
+        attributeFigure.setForegroundColor(ERDThemeSettings.instance.attrForeground);
     }
 
     private void changeHeaderColor() {
