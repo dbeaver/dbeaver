@@ -1140,9 +1140,8 @@ public class SQLQueryJob extends DataSourceJob {
         } else if (!result && lastQueryCanceled) {
             // Without an error the results panel keeps showing the previous result as if this query produced it
             throw new DBCException(lastQueryConnectionLost ?
-                "Query canceled: the database did not respond, so the connection was closed. " +
-                    "It will reconnect on the next execution." :
-                "Query execution was canceled");
+                SQLEditorMessages.editors_sql_query_canceled_connection_closed :
+                SQLEditorMessages.editors_sql_query_canceled);
         } else if (allowStatistics && result && statistics.getStatementsCount() > 0) {
             showExecutionResult(session);
         }
