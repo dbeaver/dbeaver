@@ -20,9 +20,16 @@
 package org.jkiss.dbeaver.ui.editors.erd.editor;
 
 import org.eclipse.gef.EditDomain;
+import org.eclipse.gef.GEFColorProvider;
 import org.eclipse.gef.dnd.TemplateTransferDragSourceListener;
+import org.eclipse.gef.ui.palette.PaletteColorProvider;
 import org.eclipse.gef.ui.palette.PaletteViewer;
 import org.eclipse.gef.ui.palette.PaletteViewerProvider;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.ui.XMLMemento;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * PaletteViewerProvider subclass used for initialising drag and drop
@@ -30,6 +37,7 @@ import org.eclipse.gef.ui.palette.PaletteViewerProvider;
  */
 public class ERDPaletteViewerProvider extends PaletteViewerProvider
 {
+    private final List<PaletteViewer> viewers = new ArrayList<>();
 
 	/**
 	 * implicit constructor
@@ -43,7 +51,67 @@ public class ERDPaletteViewerProvider extends PaletteViewerProvider
     protected void configurePaletteViewer(PaletteViewer viewer)
 	{
 		super.configurePaletteViewer(viewer);
+		viewer.setColorProvider(new ThemePaletteColorProvider());
+		viewers.add(viewer);
+		viewer.getControl().addDisposeListener(event -> viewers.remove(viewer));
 		viewer.addDragSourceListener(new TemplateTransferDragSourceListener(viewer));
 	}
+
+    public void refreshTheme() {
+        for (PaletteViewer viewer : viewers) {
+            if (viewer.getControl().isDisposed()) {
+                continue;
+            }
+            viewer.setColorProvider(new ThemePaletteColorProvider());
+            if (viewer.getPaletteRoot() != null) {
+                XMLMemento state = XMLMemento.createWriteRoot("palette");
+                viewer.saveState(state);
+                var root = viewer.getPaletteRoot();
+                viewer.setPaletteRoot(null);
+                viewer.setPaletteRoot(root);
+                viewer.restoreState(state);
+            }
+            viewer.getControl().redraw();
+        }
+    }
+
+    private static class ThemePaletteColorProvider extends PaletteColorProvider {
+        private final GEFColorProvider themeColors = new GEFColorProvider();
+
+        @Override
+        public Color getButton() {
+            return themeColors.getButton();
+        }
+
+        @Override
+        public Color getButtonDarker() {
+            return themeColors.getButtonDarker();
+        }
+
+        @Override
+        public Color getButtonDarkest() {
+            return themeColors.getButtonDarkest();
+        }
+
+        @Override
+        public Color getListBackground() {
+            return themeColors.getListBackground();
+        }
+
+        @Override
+        public Color getListForeground() {
+            return themeColors.getListForeground();
+        }
+
+        @Override
+        public Color getListSelectedBackgroundColor() {
+            return themeColors.getListSelectedBackgroundColor();
+        }
+
+        @Override
+        public Color getListHoverBackgroundColor() {
+            return themeColors.getListHoverBackgroundColor();
+        }
+    }
 
 }

@@ -33,6 +33,7 @@ import org.eclipse.gef.editparts.ZoomManager;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.ui.actions.*;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite;
+import org.eclipse.gef.ui.palette.PaletteViewer;
 import org.eclipse.gef.ui.palette.PaletteViewerProvider;
 import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
 import org.eclipse.jface.action.*;
@@ -175,6 +176,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private IPropertyChangeListener configPropertyListener;
     private PaletteRoot paletteRoot;
     private FlyoutPaletteComposite paletteComposite;
+    private ERDPaletteViewerProvider paletteViewerProvider;
     private IEventBroker themeEventBroker;
     private EventHandler themeChangeHandler;
 
@@ -476,7 +478,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      */
     @Override
     protected PaletteViewerProvider createPaletteViewerProvider() {
-        return new ERDPaletteViewerProvider(editDomain);
+        paletteViewerProvider = new ERDPaletteViewerProvider(editDomain);
+        return paletteViewerProvider;
     }
 
     public GraphicalViewer getViewer() {
@@ -543,16 +546,15 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             return;
         }
         viewer.getControl().setBackground(ERDThemeSettings.instance.diagramBackground);
-        if (paletteComposite != null && !paletteComposite.isDisposed()) {
-            paletteComposite.setBackground(ERDThemeSettings.instance.diagramBackground);
-            paletteComposite.setForeground(ERDThemeSettings.instance.attrForeground);
+        if (paletteViewerProvider != null) {
+            paletteViewerProvider.refreshTheme();
         }
-        if (editDomain.getPaletteViewer() != null && !editDomain.getPaletteViewer().getControl().isDisposed()) {
-            editDomain.getPaletteViewer().getControl().setBackground(ERDThemeSettings.instance.diagramBackground);
-            editDomain.getPaletteViewer().getControl().setForeground(ERDThemeSettings.instance.attrForeground);
-            if (editDomain.getPaletteViewer().getRootEditPart() instanceof GraphicalEditPart root) {
-                root.getFigure().setForegroundColor(ERDThemeSettings.instance.attrForeground);
+        if (paletteComposite != null && !paletteComposite.isDisposed()) {
+            PaletteViewer paletteViewer = editDomain.getPaletteViewer();
+            if (paletteViewer != null) {
+                paletteComposite.setBackground(paletteViewer.getColorProvider().getListBackground());
             }
+            paletteComposite.redraw(0, 0, paletteComposite.getSize().x, paletteComposite.getSize().y, true);
         }
         DiagramPart diagramPart = getDiagramPart();
         if (diagramPart != null) {
