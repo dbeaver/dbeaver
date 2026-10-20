@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -32,8 +35,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 class StreamTransferResultSetTest {
 
     private static final String DEFAULT_FORMAT = "yyyy-MM-dd[ HH:mm:ss[.SSS]]";
@@ -41,13 +42,13 @@ class StreamTransferResultSetTest {
     @Test
     void localDateTimeIsConvertedToTimestamp() throws Exception {
         Object value = convert(DEFAULT_FORMAT, null, "2024-03-05 10:15:30.123");
-        assertEquals(Timestamp.valueOf(LocalDateTime.of(2024, 3, 5, 10, 15, 30, 123_000_000)), value);
+        Assertions.assertEquals(Timestamp.valueOf(LocalDateTime.of(2024, 3, 5, 10, 15, 30, 123_000_000)), value);
     }
 
     @Test
     void dateOnlyIsConvertedToStartOfDay() throws Exception {
         Object value = convert(DEFAULT_FORMAT, null, "2024-03-05");
-        assertEquals(Timestamp.valueOf(LocalDate.of(2024, 3, 5).atStartOfDay()), value);
+        Assertions.assertEquals(Timestamp.valueOf(LocalDate.of(2024, 3, 5).atStartOfDay()), value);
     }
 
     @Test
@@ -58,28 +59,29 @@ class StreamTransferResultSetTest {
             .atZone(ZoneId.systemDefault())
             .withZoneSameInstant(targetZone)
             .toLocalDateTime();
-        assertEquals(Timestamp.valueOf(expected), value);
+        Assertions.assertEquals(Timestamp.valueOf(expected), value);
     }
 
     @Test
     void zonedDateTimeIsConvertedToInstant() throws Exception {
         Object value = convert("yyyy-MM-dd HH:mm:ss XXX", null, "2024-03-05 10:15:30 +09:00");
-        assertEquals(Date.from(Instant.parse("2024-03-05T01:15:30Z")), value);
+        Assertions.assertEquals(Date.from(Instant.parse("2024-03-05T01:15:30Z")), value);
     }
 
     @Test
     void zonedDateWithoutTimeFallsBackToLocalDate() throws Exception {
         Object value = convert("yyyy-MM-dd XXX", null, "2024-03-05 +09:00");
-        assertEquals(Timestamp.valueOf(LocalDate.of(2024, 3, 5).atStartOfDay()), value);
+        Assertions.assertEquals(Timestamp.valueOf(LocalDate.of(2024, 3, 5).atStartOfDay()), value);
     }
 
     @Test
     void unparseableValueIsReturnedAsIs() throws Exception {
         Object value = convert(DEFAULT_FORMAT, null, "not a date");
-        assertEquals("not a date", value);
+        Assertions.assertEquals("not a date", value);
     }
 
-    private static Object convert(String pattern, ZoneId zoneId, String input) throws Exception {
+    @Nullable
+    private static Object convert(@NotNull String pattern, @Nullable ZoneId zoneId, @NotNull String input) throws Exception {
         List<StreamDataImporterColumnInfo> columns = new ArrayList<>();
         StreamEntityMapping mapping = Mockito.mock(StreamEntityMapping.class);
         Mockito.when(mapping.getStreamColumns()).thenReturn(columns);
