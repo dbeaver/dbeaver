@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.semantics.completion.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UIIcon;
 
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -75,5 +76,14 @@ public class SQLEditorQueryCompletionAnalyzer extends SQLQueryCompletionAnalyzer
             filterString,
             proposalScore
         );
+    }
+
+    @NotNull
+    @Override
+    protected DBPImage prepareProposalImage(@NotNull SQLQueryCompletionItem item) {
+        return switch (item.getKind()) {
+            case SCRIPT_VARIABLE -> UIIcon.SQL_VARIABLE2;
+            default -> super.prepareProposalImage(item);
+        };
     }
 }
