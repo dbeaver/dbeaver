@@ -155,10 +155,11 @@ booleanTest: booleanPrimary (IS (NOT)? truthValue)?;
 booleanPrimary: (predicate|LeftParen searchCondition RightParen|truthValue);
 predicate: (existsPredicate|likePredicate|rowValuePredicate);
 
-rowValuePredicate: rowValueConstructor (comparisonPredicate|betweenPredicate|inPredicate|nullPredicate|quantifiedComparisonPredicate|matchPredicate|overlapsPredicate)?;
+rowValuePredicate: rowValueConstructor (comparisonPredicate|betweenPredicate|inPredicate|distinctPredicate|nullPredicate|quantifiedComparisonPredicate|matchPredicate|overlapsPredicate)?;
 comparisonPredicate: compOp rowValueConstructor?;
 betweenPredicate: (NOT)? BETWEEN (rowValueConstructor (AND rowValueConstructor?)?)?;
 inPredicate: (NOT)? IN inPredicateValue?;
+distinctPredicate: IS NOT? DISTINCT FROM rowValueConstructor?;
 nullPredicate: IS (NOT? NULL | NOTNULL)?;
 quantifiedComparisonPredicate: compOp quantifier tableSubquery?;
 matchPredicate: MATCH (UNIQUE)? (matchType)? tableSubquery?;
@@ -293,7 +294,7 @@ valueExpressionAttributeSpec: Colon Identifier; // https://docs.snowflake.com/en
 valueExpressionCastSpec: TypeCast dataType;
 valueExpressionAtom: unsignedNumericLiteral|generalLiteral|countAllExpression
     |scalarSubquery|caseExpression|LeftParen valueExpression anyUnexpected?? RightParen|castSpecification
-    |nullSpecification|truthValue|variableExpression|generalValueSpecification|functionCallExpression|aggregateExpression|valueReference|anyWordsWithProperty;
+    |nullSpecification|truthValue|variableExpression|generalValueSpecification|extractExpression|functionCallExpression|aggregateExpression|valueReference|anyWordsWithProperty;
 
 variableExpression: BatchVariableName|ClientVariableName|namedParameter|anonymouseParameter;
 namedParameter: {isNamedParametersEnabled}? (Colon|CustomNamedParameterPrefix) Identifier;
@@ -313,11 +314,11 @@ intervalTerm: ((intervalFactor)|(term Asterisk intervalFactor)) ((Asterisk|Solid
 intervalValueExpression: ((intervalTerm)|(LeftParen datetimeValueExpression MinusSign anyWordsWithProperty RightParen intervalQualifier)) (sign intervalTerm)*;
 
 datetimeValueExpression: (anyWordsWithProperty|(intervalValueExpression PlusSign anyWordsWithProperty)) (sign intervalTerm)*;
-extractSource: (datetimeValueExpression|intervalValueExpression); // L
+extractSource: valueExpression;
 
 countAllExpression: COUNT LeftParen Asterisk RightParen;
 extractExpression: EXTRACT LeftParen extractField FROM extractSource RightParen;
-extractField: (datetimeField|timeZoneField);
+extractField: (datetimeField|timeZoneField|actualIdentifier);
 datetimeField: (nonSecondDatetimeField|SECOND);
 timeZoneField: (TIMEZONE_HOUR|TIMEZONE_MINUTE);
 
@@ -470,7 +471,7 @@ anyValue: rowValueConstructor|searchCondition;
 anyWordWithAnyValue: anyWord anyValue;
 anyProperty: LeftParen (anyValue (Comma anyValue)*) RightParen;
 anyWordsWithProperty: anyWord+ anyProperty?;
-functionCallExpression: functionCallTargetName LeftParen (functionCallOperand ((Comma|anyWord) functionCallOperand)*)? RightParen overClause?;
+functionCallExpression: functionCallTargetName LeftParen (functionCallOperand ((Comma|FROM|anyWord) functionCallOperand)*)? RightParen overClause?;
 functionCallTargetName: qualifiedName|IF;
 functionCallOperand: anyValue;
 

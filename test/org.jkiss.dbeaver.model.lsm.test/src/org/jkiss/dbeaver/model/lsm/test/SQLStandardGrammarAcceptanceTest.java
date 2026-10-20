@@ -144,7 +144,16 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
             """),
         new GrammarCase("dbeaver#22773 ORDER BY i.*", "select * from account_invoice i order by i.*;"),
         new GrammarCase("dbeaver#20996 NOTNULL", "select * from mytable where 1 notnull;"),
-        new GrammarCase("dbeaver#29316 DROP TABLE cache", "DROP TABLE cache;")
+        new GrammarCase("dbeaver#29316 DROP TABLE cache", "DROP TABLE cache;"),
+        new GrammarCase("dbeaver#42293 EXTRACT with cast", """
+            SELECT EXTRACT(YEAR FROM cal.dt)::INTEGER AS y, EXTRACT(EPOCH FROM cal.dt) AS e
+            FROM cte_datas AS cal;
+            """),
+        new GrammarCase("dbeaver#42293 SUBSTRING/TRIM/OVERLAY with FROM", """
+            SELECT SUBSTRING(x.v FROM 2 FOR 3), TRIM(BOTH 'x' FROM x.v), OVERLAY(x.v PLACING 'ZZ' FROM 3 FOR 2)
+            FROM t x;
+            """),
+        new GrammarCase("dbeaver#42293 IS DISTINCT FROM", "SELECT x.v FROM t x WHERE x.v IS DISTINCT FROM NULL AND x.w IS NOT DISTINCT FROM x.v;")
     );
 
     @TestFactory
