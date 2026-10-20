@@ -24,6 +24,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -80,12 +82,7 @@ public class NavigatorHandlerSetDefaultObject extends NavigatorHandlerObjectBase
                 DBExecUtils.tryExecuteRecover(monitor, dataSource, param -> {
                     DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(monitor, false);
 
-                    DBCExecutionContext[] contextsToChange;
-                    if (editorContext != null && editorContext != defaultContext && editorContext.getDataSource() == defaultContext.getDataSource()) {
-                        contextsToChange = new DBCExecutionContext[] { defaultContext, editorContext };
-                    } else {
-                        contextsToChange = new DBCExecutionContext[] { defaultContext };
-                    }
+                    DBCExecutionContext[] contextsToChange = getContextsToChange(defaultContext, editorContext);
 
                     for (DBCExecutionContext executionContext : contextsToChange) {
                         DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
@@ -105,6 +102,20 @@ public class NavigatorHandlerSetDefaultObject extends NavigatorHandlerObjectBase
             }
         });
 
+    }
+
+    @NotNull
+    static DBCExecutionContext[] getContextsToChange(
+        @NotNull DBCExecutionContext defaultContext,
+        @Nullable DBCExecutionContext editorContext
+    ) {
+        // Editors bound to another database instance must keep their own catalog.
+        if (editorContext != null && editorContext != defaultContext
+            && editorContext.getDataSource() == defaultContext.getDataSource()
+            && editorContext.getOwnerInstance() == defaultContext.getOwnerInstance()) {
+            return new DBCExecutionContext[] {defaultContext, editorContext};
+        }
+        return new DBCExecutionContext[] {defaultContext};
     }
 
     @Override
