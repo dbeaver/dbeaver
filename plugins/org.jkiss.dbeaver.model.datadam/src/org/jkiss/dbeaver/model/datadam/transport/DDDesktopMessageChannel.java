@@ -304,11 +304,12 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
                     throw new DBException("Desktop socket is unavailable");
                 }
                 socket.sendText(outgoing.text, true).get(SEND_TIMEOUT_MILLIS, TimeUnit.MILLISECONDS);
+            } catch (InterruptedException e) {
+                finish(attempt, true);
+                Thread.currentThread().interrupt();
+                return;
             } catch (Exception e) {
                 finish(attempt, true);
-                if (e instanceof InterruptedException) {
-                    Thread.currentThread().interrupt();
-                }
                 return;
             }
             boolean accepted;
