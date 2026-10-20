@@ -39,7 +39,7 @@ public class DDKeyStore {
     private static final String SECRET_KEY_BUNDLE = "datadam.key-bundle";
     private static final String BUNDLE_SEPARATOR = "\\.";
 
-    DDKeyStore(@NotNull DDSecretStorage secretStorage) {
+    public DDKeyStore(@NotNull DDSecretStorage secretStorage) {
         this.secretStorage = secretStorage;
     }
 
@@ -49,7 +49,7 @@ public class DDKeyStore {
     }
 
     @Nullable
-    DDKeyBundle loadBundle() throws DBException {
+    public DDKeyBundle loadBundle() throws DBException {
         try {
             String value = secretStorage.read(SECRET_KEY_BUNDLE);
             if (CommonUtils.isEmpty(value)) {
@@ -107,7 +107,7 @@ public class DDKeyStore {
         INSTANCE.saveBundle(bundle);
     }
 
-    void saveBundle(@NotNull DDKeyBundle bundle) throws DBException {
+    public void saveBundle(@NotNull DDKeyBundle bundle) throws DBException {
         DDKeyBundle current = null;
         try {
             current = loadBundle();
@@ -126,7 +126,7 @@ public class DDKeyStore {
         INSTANCE.clearBundle();
     }
 
-    void clearBundle() throws DBException {
+    public void clearBundle() throws DBException {
         secretStorage.delete(SECRET_KEY_BUNDLE);
     }
 
