@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.datadam.auth;
 
 import org.eclipse.core.runtime.ContributorFactoryOSGi;
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
@@ -86,9 +87,12 @@ public class DDSecretStorage {
 
     @Nullable
     private static String findNativeProvider() {
+        IExtensionRegistry registry = Platform.getExtensionRegistry();
+        if (registry == null) {
+            return null;
+        }
         String bundleId = "org.eclipse.equinox.security." + Platform.getOS();
-        for (IConfigurationElement provider : Platform.getExtensionRegistry()
-            .getConfigurationElementsFor(SECURE_STORAGE_EXTENSION)) {
+        for (IConfigurationElement provider : registry.getConfigurationElementsFor(SECURE_STORAGE_EXTENSION)) {
             var bundle = ContributorFactoryOSGi.resolve(provider.getContributor());
             if (bundle != null && bundleId.equals(bundle.getSymbolicName())) {
                 return provider.getDeclaringExtension().getUniqueIdentifier();

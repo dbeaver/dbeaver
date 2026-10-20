@@ -30,9 +30,8 @@ import javax.crypto.SecretKey;
 public class DDKeyStore {
 
     private static final Log log = Log.getLog(DDKeyStore.class);
-    private static final DDKeyStore INSTANCE = new DDKeyStore();
-
-    private final DDSecretStorage secretStorage = DDSecretStorage.getInstance();
+    private static final DDKeyStore INSTANCE = new DDKeyStore(DDSecretStorage.getInstance());
+    private final DDSecretStorage secretStorage;
 
     @Deprecated(forRemoval = true)
     public static final String ACCESS_KEY_PREFIX = "ddgk_";
@@ -40,13 +39,19 @@ public class DDKeyStore {
     private static final String SECRET_KEY_BUNDLE = "datadam.key-bundle";
     private static final String BUNDLE_SEPARATOR = "\\.";
 
-    private DDKeyStore() {
+    DDKeyStore(@NotNull DDSecretStorage secretStorage) {
+        this.secretStorage = secretStorage;
     }
 
     @Nullable
     public static DDKeyBundle load() throws DBException {
+        return INSTANCE.loadBundle();
+    }
+
+    @Nullable
+    DDKeyBundle loadBundle() throws DBException {
         try {
-            String value = INSTANCE.secretStorage.read(SECRET_KEY_BUNDLE);
+            String value = secretStorage.read(SECRET_KEY_BUNDLE);
             if (CommonUtils.isEmpty(value)) {
                 return null;
             }
@@ -99,9 +104,13 @@ public class DDKeyStore {
     }
 
     public static void save(@NotNull DDKeyBundle bundle) throws DBException {
+        INSTANCE.saveBundle(bundle);
+    }
+
+    void saveBundle(@NotNull DDKeyBundle bundle) throws DBException {
         DDKeyBundle current = null;
         try {
-            current = load();
+            current = loadBundle();
         } catch (DBException e) {
             log.debug("Could not read stored keys before replacement", e);
         }
@@ -110,11 +119,15 @@ public class DDKeyStore {
             && bundle.generation() < current.generation()) {
             throw new DBException("The keys are older than the stored ones");
         }
-        INSTANCE.secretStorage.write(SECRET_KEY_BUNDLE, JSONUtils.GSON.toJson(bundle));
+        secretStorage.write(SECRET_KEY_BUNDLE, JSONUtils.GSON.toJson(bundle));
     }
 
     public static void clear() throws DBException {
-        INSTANCE.secretStorage.delete(SECRET_KEY_BUNDLE);
+        INSTANCE.clearBundle();
+    }
+
+    void clearBundle() throws DBException {
+        secretStorage.delete(SECRET_KEY_BUNDLE);
     }
 
     @Deprecated(forRemoval = true)

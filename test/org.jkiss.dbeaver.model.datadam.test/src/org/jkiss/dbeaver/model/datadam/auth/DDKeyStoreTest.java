@@ -16,18 +16,14 @@
  */
 package org.jkiss.dbeaver.model.datadam.auth;
 
-import org.eclipse.equinox.security.storage.ISecurePreferences;
-import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
-import org.eclipse.equinox.security.storage.StorageException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.KeyPairGenerator;
 import java.security.SecureRandom;
@@ -45,6 +41,14 @@ class DDKeyStoreTest {
     private static final String RECOVERY_PHRASE =
         "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
     private static final int KDF_ITERATIONS = 1000;
+    private DDSecretStorage secretStorage;
+    private DDKeyStore store;
+
+    @BeforeEach
+    void setUp() {
+        secretStorage = Mockito.mock(DDSecretStorage.class);
+        store = new DDKeyStore(secretStorage);
+    }
 
     @Test
     void deriveKekMatchesWebCryptoVector() throws Exception {
@@ -117,42 +121,32 @@ class DDKeyStoreTest {
 
     @Test
     void loadRejectsMalformedBundle() throws Exception {
-        ISecurePreferences node = Mockito.mock(ISecurePreferences.class);
-        Mockito.when(node.get("datadam.key-bundle", null)).thenReturn("not-json");
-        try (MockedStatic<SecurePreferencesFactory> storage = mockStorage(node)) {
+        Mockito.when(secretStorage.read("datadam.key-bundle")).thenReturn("not-json");
 
-            Assertions.assertThrows(DBException.class, DDKeyStore::load);
-            Mockito.verify(node, Mockito.never()).put(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean());
-        }
+        Assertions.assertThrows(DBException.class, store::loadBundle);
+        Mockito.verify(secretStorage, Mockito.never()).write(Mockito.anyString(), Mockito.anyString());
     }
 
     @Test
     void saveReplacesUnreadableBundle() throws Exception {
         DDKeyBundle replacement = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 1);
-        ISecurePreferences node = Mockito.mock(ISecurePreferences.class);
-        Mockito.when(node.get("datadam.key-bundle", null))
-            .thenThrow(new StorageException(StorageException.NO_PASSWORD, "Cannot read stored keys"));
-        try (MockedStatic<SecurePreferencesFactory> storage = mockStorage(node)) {
+        Mockito.when(secretStorage.read("datadam.key-bundle"))
+            .thenThrow(new DBException("Cannot read stored keys"));
 
-            Assertions.assertThrows(DBException.class, DDKeyStore::load);
-            DDKeyStore.save(replacement);
+        Assertions.assertThrows(DBException.class, store::loadBundle);
+        store.saveBundle(replacement);
 
-            Mockito.verify(node).put("datadam.key-bundle", JSONUtils.GSON.toJson(replacement), true);
-            Mockito.verify(node).flush();
-        }
+        Mockito.verify(secretStorage).write("datadam.key-bundle", JSONUtils.GSON.toJson(replacement));
     }
 
     @Test
-    void savePropagatesFlushFailure() throws Exception {
+    void savePropagatesWriteFailure() throws Exception {
         DDKeyBundle replacement = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 1);
-        ISecurePreferences node = Mockito.mock(ISecurePreferences.class);
-        IOException writeError = new IOException("Cannot flush keys");
-        Mockito.doThrow(writeError).when(node).flush();
-        try (MockedStatic<SecurePreferencesFactory> storage = mockStorage(node)) {
+        DBException writeError = new DBException("Cannot write keys");
+        Mockito.doThrow(writeError).when(secretStorage)
+            .write("datadam.key-bundle", JSONUtils.GSON.toJson(replacement));
 
-            DBException error = Assertions.assertThrows(DBException.class, () -> DDKeyStore.save(replacement));
-            Assertions.assertSame(writeError, error.getCause());
-        }
+        Assertions.assertSame(writeError, Assertions.assertThrows(DBException.class, () -> store.saveBundle(replacement)));
     }
 
     @Test
@@ -161,16 +155,12 @@ class DDKeyStoreTest {
         DDKeyBundle replacement = new DDKeyBundle(
             UUID.fromString("8decb064-2709-4914-b6b6-68eaef98cac4"), "new-signing-key", "new-data-key", 1);
 
-        ISecurePreferences node = Mockito.mock(ISecurePreferences.class);
-        Mockito.when(node.get("datadam.key-bundle", null))
+        Mockito.when(secretStorage.read("datadam.key-bundle"))
             .thenReturn(JSONUtils.GSON.toJson(stored));
-        try (MockedStatic<SecurePreferencesFactory> storage = mockStorage(node)) {
 
-            DDKeyStore.save(replacement);
+        store.saveBundle(replacement);
 
-            Mockito.verify(node).put("datadam.key-bundle", JSONUtils.GSON.toJson(replacement), true);
-            Mockito.verify(node).flush();
-        }
+        Mockito.verify(secretStorage).write("datadam.key-bundle", JSONUtils.GSON.toJson(replacement));
     }
 
     @Test
@@ -181,25 +171,13 @@ class DDKeyStoreTest {
         assertRejectedSave(stored, replacement);
     }
 
-    private static void assertRejectedSave(@NotNull DDKeyBundle stored, @NotNull DDKeyBundle replacement) throws Exception {
-        ISecurePreferences node = Mockito.mock(ISecurePreferences.class);
-        Mockito.when(node.get("datadam.key-bundle", null))
+    private void assertRejectedSave(@NotNull DDKeyBundle stored, @NotNull DDKeyBundle replacement) throws Exception {
+        Mockito.when(secretStorage.read("datadam.key-bundle"))
             .thenReturn(JSONUtils.GSON.toJson(stored));
-        try (MockedStatic<SecurePreferencesFactory> storage = mockStorage(node)) {
 
-            Assertions.assertThrows(DBException.class, () -> DDKeyStore.save(replacement));
+        Assertions.assertThrows(DBException.class, () -> store.saveBundle(replacement));
 
-            Mockito.verify(node, Mockito.never()).put(Mockito.anyString(), Mockito.anyString(), Mockito.anyBoolean());
-        }
-    }
-
-    @NotNull
-    private static MockedStatic<SecurePreferencesFactory> mockStorage(@NotNull ISecurePreferences node) {
-        ISecurePreferences root = Mockito.mock(ISecurePreferences.class);
-        Mockito.when(root.node("datadam")).thenReturn(node);
-        MockedStatic<SecurePreferencesFactory> storage = Mockito.mockStatic(SecurePreferencesFactory.class);
-        storage.when(() -> SecurePreferencesFactory.open(null, Mockito.anyMap())).thenReturn(root);
-        return storage;
+        Mockito.verify(secretStorage, Mockito.never()).write(Mockito.anyString(), Mockito.anyString());
     }
 
     @NotNull

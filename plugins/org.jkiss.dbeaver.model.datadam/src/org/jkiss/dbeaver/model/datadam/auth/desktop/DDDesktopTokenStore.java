@@ -24,11 +24,12 @@ import org.jkiss.dbeaver.model.datadam.auth.DDSecretStorage;
 
 class DDDesktopTokenStore {
     private static final String SECRET_ID = "datadam.desktop.access-token";
-    static final DDDesktopTokenStore INSTANCE = new DDDesktopTokenStore();
+    static final DDDesktopTokenStore INSTANCE = new DDDesktopTokenStore(DDSecretStorage.getInstance());
 
-    private final DDSecretStorage secretStorage = DDSecretStorage.getInstance();
+    private final DDSecretStorage secretStorage;
 
-    private DDDesktopTokenStore() {
+    DDDesktopTokenStore(@NotNull DDSecretStorage secretStorage) {
+        this.secretStorage = secretStorage;
     }
 
     @Nullable
