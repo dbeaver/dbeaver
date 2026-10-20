@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,14 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
@@ -41,6 +44,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
@@ -242,6 +246,32 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                     element.setText(NLS.bind(UINavigatorMessages.actions_navigator_delete, node.getNodeTypeLabel()));
                 }
             }
+        }
+    }
+
+    public static class MenuContributor extends CompoundContributionItem {
+        @NotNull
+        @Override
+        protected IContributionItem[] getContributionItems() {
+            IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
+            if (!ActionUtils.isCommandEnabled(IWorkbenchCommandConstants.EDIT_DELETE, window)) {
+                return new IContributionItem[0];
+            }
+
+            String label = null;
+            ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(window);
+            if (selectionProvider != null
+                && selectionProvider.getSelection() instanceof IStructuredSelection selection
+                && !selection.isEmpty()
+                && selection.toList().stream().allMatch(DBNDataSource.class::isInstance)
+            ) {
+                label = selection.size() == 1
+                    ? UINavigatorMessages.actions_navigator_delete_connection
+                    : UINavigatorMessages.actions_navigator_delete_connections;
+            }
+            return new IContributionItem[] {
+                ActionUtils.makeCommandContribution(window, IWorkbenchCommandConstants.EDIT_DELETE, label, null)
+            };
         }
     }
 }
