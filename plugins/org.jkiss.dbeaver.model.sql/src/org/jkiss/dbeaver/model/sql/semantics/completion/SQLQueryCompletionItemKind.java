@@ -59,6 +59,11 @@ public enum SQLQueryCompletionItemKind {
      * */
     TABLE_COLUMN_NAME(false, true, 100),
     /**
+     * Script variable provided by the variable definitions across the script and batch scopes
+     * <p> (simple identifier)
+     */
+    SCRIPT_VARIABLE(false, true, 225),
+    /**
      * Global pseudo-column provided by the dialect
      * <p> (simple identifier)
      */

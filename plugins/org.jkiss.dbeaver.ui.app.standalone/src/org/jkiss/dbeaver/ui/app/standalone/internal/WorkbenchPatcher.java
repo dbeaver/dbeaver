@@ -63,6 +63,19 @@ public final class WorkbenchPatcher {
     private WorkbenchPatcher() {
     }
 
+    public static void hideUnavailableView(@NotNull Workbench workbench, @NotNull String viewId) {
+        if (workbench.getViewRegistry().find(viewId) != null) {
+            return;
+        }
+        EModelService modelService = workbench.getService(EModelService.class);
+        if (modelService != null) {
+            // restored views bypass the initial perspective layout
+            for (MPlaceholder placeholder : modelService.findElements(workbench.getApplication(), viewId, MPlaceholder.class)) {
+                placeholder.setToBeRendered(false);
+            }
+        }
+    }
+
     /**
      * Checks whether the workbench model is missing any view
      * references available via the extension registry.
