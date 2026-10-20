@@ -311,6 +311,10 @@ public class SQLScriptContext implements DBCScriptContext {
         if (CommonUtils.isEmpty(parameters)) {
             return true;
         }
+        parameters = removeUnsetCommentVariables(parameters);
+        if (parameters.isEmpty()) {
+            return true;
+        }
 
         if (parametersProvider != null) {
             // Resolve parameters (only if it is the first fetch)
@@ -350,6 +354,26 @@ public class SQLScriptContext implements DBCScriptContext {
         SQLUtils.fillQueryParameters(query, parameters.stream().filter(p -> !p.isNativeBinding()).toList());
 
         return true;
+    }
+
+    /**
+     * Variables that appear only in comments are substituted when they have a value,
+     * but must not open the bind dialog when they don't (#42360). Their text stays as is.
+     */
+    @NotNull
+    private List<SQLQueryParameter> removeUnsetCommentVariables(@NotNull List<SQLQueryParameter> parameters) {
+        Set<String> namesOutsideComments = new HashSet<>();
+        for (SQLQueryParameter parameter : parameters) {
+            if (!parameter.isInComment()) {
+                namesOutsideComments.add(parameter.getName());
+            }
+        }
+        return parameters.stream()
+            .filter(p -> !p.isInComment()
+                || namesOutsideComments.contains(p.getName())
+                || hasVariable(p.getName())
+                || hasDefaultParameterValue(p.getName()))
+            .toList();
     }
 
     private void clearFoundQueryParameters(@NotNull SQLQuery query) {

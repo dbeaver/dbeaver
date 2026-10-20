@@ -149,6 +149,7 @@ public class DefaultSQLQueryParameterParser {
                 String query = context.getDocument().get(queryOffset, queryLength);
 
                 Matcher matcher = SQLQueryParameter.getVariablePattern().matcher(query);
+                List<int[]> commentRanges = null;
                 int position = 0;
                 while (matcher.find(position)) {
                     {
@@ -176,6 +177,10 @@ public class DefaultSQLQueryParameterParser {
                                 start,
                                 matcher.end() - matcher.start()
                             );
+                            if (commentRanges == null) {
+                                commentRanges = findPlainCommentRanges();
+                            }
+                            param.setInComment(isInRange(commentRanges, start));
                             if (parameters == null) {
                                 parameters = new ArrayList<>();
                             }
@@ -191,6 +196,38 @@ public class DefaultSQLQueryParameterParser {
         }
 
         return parameters;
+    }
+
+    /**
+     * Returns query-relative ranges of comments the server ignores (#42360).
+     * Optimizer hints and MySQL executable comments are read by the server, so they don't count.
+     */
+    @NotNull
+    private List<int[]> findPlainCommentRanges() throws BadLocationException {
+        List<int[]> ranges = new ArrayList<>();
+        IDocument document = context.getDocument();
+        TPRuleBasedScanner ruleScanner = context.getScanner();
+        ruleScanner.setRange(document, queryOffset, queryLength);
+        for (TPToken token = ruleScanner.nextToken(); !token.isEOF(); token = ruleScanner.nextToken()) {
+            if (token instanceof TPTokenDefault tokenDefault && tokenDefault.getData() == SQLTokenType.T_COMMENT) {
+                int tokenOffset = ruleScanner.getTokenOffset();
+                int tokenLength = ruleScanner.getTokenLength();
+                String head = document.get(tokenOffset, Math.min(3, tokenLength));
+                if (!head.equals("/*+") && !head.equals("--+") && !head.equals("/*!")) {
+                    ranges.add(new int[]{tokenOffset - queryOffset, tokenOffset - queryOffset + tokenLength});
+                }
+            }
+        }
+        return ranges;
+    }
+
+    private static boolean isInRange(@NotNull List<int[]> ranges, int offset) {
+        for (int[] range : ranges) {
+            if (offset >= range[0] && offset < range[1]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Nullable
