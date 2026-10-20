@@ -117,6 +117,7 @@ public class SQLServerDatabaseManager extends SQLObjectEditor<SQLServerDatabase,
         final String description = CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_DESCRIPTION), null);
         final boolean commentSet = SQLServerUtils.isCommentSet(
             monitor,
+            executionContext,
             database,
             SQLServerObjectClass.DATABASE,
             0,

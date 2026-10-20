@@ -173,7 +173,7 @@ public class SQLServerDatabase
         }
         // Database-level extended properties live in the database itself, so they cannot be read
         // together with the database list and are not readable at all while the database is not online
-        if (!isExtendedPropertyAddressable(DBUtils.getDefaultContext(this, true))) {
+        if (!isExtendedPropertyAddressable(DBUtils.getDefaultContext(this, false))) {
             // Left uncached - the property becomes readable once the connection switches to this database
             return "";
         }
