@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoField;
 import java.time.temporal.TemporalAccessor;
+import java.time.temporal.TemporalQueries;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -98,10 +99,19 @@ public class StreamTransferResultSet implements DBCResultSet {
                     return null;
                 }
                 TemporalAccessor ta = dateTimeFormat.parse(strValue);
-                try {
-                    ZonedDateTime zdt = ZonedDateTime.from(ta);
-                    value = java.util.Date.from(zdt.toInstant());
-                } catch (Exception e) {
+                // ZonedDateTime.from() always throws when no zone was parsed, which is the case for the default
+                // import format. Check for a zone first to avoid creating an exception for every imported value.
+                Date zonedDate = null;
+                if (ta.query(TemporalQueries.zone()) != null) {
+                    try {
+                        zonedDate = Date.from(ZonedDateTime.from(ta).toInstant());
+                    } catch (Exception e) {
+                        // Zone is present but the value can't be converted, handle it as a local value below
+                    }
+                }
+                if (zonedDate != null) {
+                    value = zonedDate;
+                } else {
                     LocalDateTime localDT;
                     if (ta.isSupported(ChronoField.NANO_OF_SECOND)) {
                         localDT = LocalDateTime.from(ta);
