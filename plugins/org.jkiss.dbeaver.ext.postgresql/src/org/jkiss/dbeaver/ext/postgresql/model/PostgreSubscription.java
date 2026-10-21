@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -625,6 +626,21 @@ public class PostgreSubscription extends PostgreReplicationObject {
             }
         }
         return null;
+    }
+
+    public static boolean isMissingPublisherSlot(@NotNull Throwable error, @Nullable String slotName) {
+        if (CommonUtils.isEmpty(slotName)) {
+            return false;
+        }
+        String expected = "ERROR: could not drop replication slot \"" + slotName
+            + "\" on publisher: ERROR: replication slot \"" + slotName + "\" does not exist";
+        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
+            if (cause instanceof SQLException sqlError && SQLState.SQL_08006.getCode().equals(sqlError.getSQLState())
+                && expected.equals(CommonUtils.notEmpty(sqlError.getMessage()).replaceAll("\\s+", " ").strip())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @NotNull

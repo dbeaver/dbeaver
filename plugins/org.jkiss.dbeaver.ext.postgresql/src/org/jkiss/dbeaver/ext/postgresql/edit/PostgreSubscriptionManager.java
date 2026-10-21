@@ -80,10 +80,13 @@ public class PostgreSubscriptionManager extends SQLObjectEditor<PostgreSubscript
         @NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, @NotNull Object container,
         @Nullable Object copyFrom, @NotNull Map<String, Object> options
     ) {
-        PostgreSubscription subscription = new PostgreSubscription((PostgreDatabase) container, "new_subscription");
+        PostgreDatabase database = (PostgreDatabase) container;
+        String name = copyFrom instanceof PostgreSubscription configured ? configured.getName()
+            : DBUtils.makeNewObjectName(monitor, "new_subscription_{0}", database, PostgreSubscription.class,
+                (parent, progress, candidate) -> parent.getSubscriptionCache().getObject(progress, parent, candidate), context);
+        PostgreSubscription subscription = new PostgreSubscription(database, name);
         if (copyFrom instanceof PostgreSubscription configured) {
             // The modeless configurator submits its completed form through the normal create/save command lifecycle.
-            subscription.setName(configured.getName());
             subscription.setConnectionInfo(configured.getConnectionInfo());
             subscription.setPublications(configured.getPublications());
             subscription.setSlotName(configured.getSlotName());
@@ -213,6 +216,15 @@ public class PostgreSubscriptionManager extends SQLObjectEditor<PostgreSubscript
         try {
             super.executePersistAction(session, command, action);
         } catch (DBException e) {
+            if (command instanceof SQLObjectEditor<?, ?>.ObjectDeleteCommand && !session.getProgressMonitor().isCanceled()
+                && PostgreSubscription.isMissingPublisherSlot(e, command.getObject().getSlotName())) {
+                // the publisher confirmed that this slot is absent, so only its local association needs cleanup
+                String prefix = "ALTER SUBSCRIPTION " + DBUtils.getQuotedIdentifier(command.getObject());
+                for (String sql : List.of(prefix + " DISABLE", prefix + " SET (slot_name = NONE)", action.getScript())) {
+                    super.executePersistAction(session, command, new SQLDatabasePersistAction(action.getTitle(), sql));
+                }
+                return;
+            }
             if (!command.isDisableSessionLogging()) {
                 throw e;
             }

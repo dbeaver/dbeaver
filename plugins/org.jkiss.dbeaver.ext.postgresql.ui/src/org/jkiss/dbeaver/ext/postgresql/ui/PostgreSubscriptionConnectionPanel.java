@@ -207,6 +207,7 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
         authentication = UIUtils.createComposite(connectionSettings, 2);
         GridLayout authenticationLayout = (GridLayout) authentication.getLayout();
         authenticationLayout.marginLeft = PostgreSubscriptionDialogLayout.MARGIN;
+        authenticationLayout.marginTop = PostgreSubscriptionDialogLayout.ROW_SPACING;
         authenticationLayout.verticalSpacing = PostgreSubscriptionDialogLayout.ROW_SPACING;
         authentication.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         credentials.createControl(authentication, AuthModelDatabaseNative.INSTANCE, this::validateInput);

@@ -65,6 +65,7 @@ import org.mockito.InOrder;
 import java.sql.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -301,13 +302,33 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void subscriptionDefaultNameSkipsExistingAndPendingSubscriptions() throws Exception {
+        List<PostgreSubscription> existing = List.of(
+            new PostgreSubscription(database, "new_subscription_1"),
+            new PostgreSubscription(database, "new_subscription_2"));
+        database.getSubscriptionCache().setCache(new ArrayList<>(existing));
+        TestCommandContext context = new TestCommandContext(executionContext, false);
+        Map<String, Object> options = new HashMap<>(Map.of(SQLObjectEditor.OPTION_SKIP_CONFIGURATION, true));
+        PostgreSubscriptionManager manager = new PostgreSubscriptionManager();
+        PostgreSubscription first = manager.createNewObject(monitor, context, database, null, options);
+        database.getSubscriptionCache().setCache(new ArrayList<>(existing));
+        PostgreSubscription second = manager.createNewObject(monitor, context, database, null, options);
+        assertNotNull(first);
+        assertNotNull(second);
+        assertEquals("new_subscription_3", first.getName());
+        assertEquals("new_subscription_4", second.getName());
+    }
+
+    @Test
     public void subscriptionCreateAndDropActionsRequireAutocommit() throws Exception {
+        database.getSubscriptionCache().setCache(new ArrayList<>());
         PostgreSubscriptionManager manager = new PostgreSubscriptionManager();
         TestCommandContext context = new TestCommandContext(executionContext, false);
         Map<String, Object> options = new HashMap<>();
         options.put(SQLObjectEditor.OPTION_SKIP_CONFIGURATION, true);
         PostgreSubscription subscription = manager.createNewObject(monitor, context, database, null, options);
         assertNotNull(subscription);
+        assertEquals("new_subscription_1", subscription.getName());
         subscription.setConnectionInfo("host=publisher");
         subscription.setPublications("publication");
         List<DBEPersistAction> actions = DBExecUtils.getActionsListFromCommandContext(monitor, context, executionContext, Map.of(), null);
@@ -321,20 +342,46 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
         actions = DBExecUtils.getActionsListFromCommandContext(monitor, deleteContext, executionContext, Map.of(), null);
         assertEquals(1, actions.size());
         assertInstanceOf(SQLDatabasePersistActionAtomic.class, actions.getFirst());
-        assertEquals("DROP SUBSCRIPTION new_subscription", actions.getFirst().getScript());
+        assertEquals("DROP SUBSCRIPTION new_subscription_1", actions.getFirst().getScript());
     }
 
     @Test
     public void subscriptionDropIsolatesTransactionSwitchingAndCommit() throws Exception {
-        assertSubscriptionDropIsolation(false);
+        assertSubscriptionDropIsolation(false, false);
     }
 
     @Test
     public void failedSubscriptionDropDoesNotRollbackOrCommitUserWork() throws Exception {
-        assertSubscriptionDropIsolation(true);
+        assertSubscriptionDropIsolation(true, false);
     }
 
-    private void assertSubscriptionDropIsolation(boolean fail) throws Exception {
+    @Test
+    public void missingPublisherSlotIsDetachedBeforeRetryingSubscriptionDrop() throws Exception {
+        assertSubscriptionDropIsolation(false, true);
+    }
+
+    @Test
+    public void failedMissingSlotRecoveryStopsWithoutTouchingUserWork() throws Exception {
+        assertSubscriptionDropIsolation(true, true);
+    }
+
+    @Test
+    public void missingPublisherSlotDetectionRequiresExactRemoteDiagnosticAndSlotName() {
+        String message = "ERROR: could not drop replication slot \"slot\" on publisher: "
+            + "ERROR: replication slot \"slot\" does not exist";
+        SQLException missing = new SQLException(message + "\n", "08006");
+        assertTrue(PostgreSubscription.isMissingPublisherSlot(new DBException("Drop failed", missing), "slot"));
+        assertTrue(PostgreSubscription.isMissingPublisherSlot(
+            new SQLException(message.replace("publisher: ERROR: ", "publisher: ERROR:  "), "08006"), "slot"));
+        assertFalse(PostgreSubscription.isMissingPublisherSlot(missing, "another_slot"));
+        assertFalse(PostgreSubscription.isMissingPublisherSlot(missing, null));
+        assertFalse(PostgreSubscription.isMissingPublisherSlot(new SQLException(message, "42501"), "slot"));
+        assertFalse(PostgreSubscription.isMissingPublisherSlot(new SQLException("Connection refused", "08006"), "slot"));
+        assertFalse(PostgreSubscription.isMissingPublisherSlot(new SQLException(
+            "ERROR: replication slot \"slot\" does not exist", "42704"), "slot"));
+    }
+
+    private void assertSubscriptionDropIsolation(boolean fail, boolean missingSlot) throws Exception {
         PostgreDataSource subscriber = mock(PostgreDataSource.class);
         when(subscriber.getSQLDialect()).thenReturn(dataSource.getSQLDialect());
         DBPDataSourceInfo info = mock(DBPDataSourceInfo.class);
@@ -370,10 +417,20 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
         when(session.prepareStatement(eq(DBCStatementType.SCRIPT), anyString(), eq(false), eq(false), eq(false)))
             .thenReturn(statement);
         DBCException failure = new DBCException("Cannot drop subscription", null, isolated);
-        if (fail) {
+        if (missingSlot) {
+            DBCException missing = new DBCException("Drop failed", new SQLException(
+                "ERROR: could not drop replication slot \"subscription_slot\" on publisher: "
+                    + "ERROR: replication slot \"subscription_slot\" does not exist", "08006"), isolated);
+            if (fail) {
+                when(statement.executeStatement()).thenThrow(missing).thenThrow(failure);
+            } else {
+                when(statement.executeStatement()).thenThrow(missing).thenReturn(true);
+            }
+        } else if (fail) {
             when(statement.executeStatement()).thenThrow(failure);
         }
         PostgreSubscription subscription = new PostgreSubscription(owner, "subscription");
+        subscription.setSlotName("subscription_slot");
         subscription.setPersisted(true);
         TestCommandContext context = new TestCommandContext(shared, true);
         new PostgreSubscriptionManager().deleteObject(context, subscription, Map.of());
@@ -385,8 +442,19 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
         } else {
             context.saveChanges(monitor, Map.of());
         }
-        verify(session).prepareStatement(DBCStatementType.SCRIPT, "DROP SUBSCRIPTION subscription", false, false, false);
-        verify(statement).executeStatement();
+        ArgumentCaptor<String> scripts = ArgumentCaptor.forClass(String.class);
+        List<String> expectedScripts = new ArrayList<>(List.of("DROP SUBSCRIPTION subscription"));
+        if (missingSlot) {
+            expectedScripts.add("ALTER SUBSCRIPTION subscription DISABLE");
+            if (!fail) {
+                expectedScripts.add("ALTER SUBSCRIPTION subscription SET (slot_name = NONE)");
+                expectedScripts.add("DROP SUBSCRIPTION subscription");
+            }
+        }
+        verify(session, times(expectedScripts.size())).prepareStatement(
+            eq(DBCStatementType.SCRIPT), scripts.capture(), eq(false), eq(false), eq(false));
+        assertEquals(expectedScripts, scripts.getAllValues());
+        verify(statement, times(expectedScripts.size())).executeStatement();
         verify(isolated, atLeastOnce()).setAutoCommit(monitor, true);
         assertTrue(autoCommit.get());
         verify(isolated).close();
