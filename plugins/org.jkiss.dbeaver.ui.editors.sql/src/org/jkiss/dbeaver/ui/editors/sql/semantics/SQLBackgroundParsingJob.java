@@ -363,6 +363,11 @@ public class SQLBackgroundParsingJob {
     public void dispose() {
         synchronized (this.syncRoot) {
             this.cancel();
+            // No session processes the queued work after this point: a completion request waiting for it ends with
+            // an empty context instead of waiting until it is canceled (the queue is cleared so that a session
+            // finishing meanwhile does not replace the completed promise, see signalAccomplished)
+            this.queuedForReparse.clear();
+            this.lastParsingFinishStamp.complete(System.currentTimeMillis());
             TextViewer textViewer = this.editor.getTextViewer();
             if (textViewer != null) {
                 textViewer.removeViewportListener(this.documentListener);
@@ -394,7 +399,6 @@ public class SQLBackgroundParsingJob {
     @NotNull
     public SQLQueryCompletionContext obtainCompletionContext(DBRProgressMonitor monitor, @NotNull Position completionRequestPosition) {
         SQLScriptItemAtOffset scriptItem = null;
-        boolean reparseRequested = false;
         do {
             final long requestStamp = System.currentTimeMillis();
             CompletableFuture<Long> expectedParsingSessionFinishStamp;
@@ -435,19 +439,6 @@ public class SQLBackgroundParsingJob {
                             return SQLQueryCompletionContext.prepareOffquery(0, completionRequestPosition.getOffset());
                         }
                     }
-                }
-                if (this.lastParsingFinishStamp.isDone()) {
-                    if (reparseRequested) {
-                        // The session requested below is over and the position is still not parsed (e.g. the analysis
-                        // failed or was canceled): do not reschedule again
-                        return SQLQueryCompletionContext.prepareEmpty(0, completionRequestPosition.getOffset());
-                    }
-                    // The position is still waiting for a reparse, but the last session is over: wait for the next one.
-                    // A finished session started before this request (e.g. one slowed down by metadata reading while
-                    // the user kept typing) would otherwise end the completion with an empty context.
-                    reparseRequested = true;
-                    this.lastParsingFinishStamp = new CompletableFuture<>();
-                    this.schedule(null);
                 }
                 expectedParsingSessionFinishStamp = this.lastParsingFinishStamp;
             }
@@ -945,6 +936,14 @@ public class SQLBackgroundParsingJob {
         synchronized (this.syncRoot) {
             this.isRunning = false;
             this.lastParsingFinishStamp.complete(System.currentTimeMillis());
+            if (this.queuedForReparse.size() > 0) {
+                // There is work this session did not analyze (doWork takes the whole queue before the analysis, so
+                // this is the work queued meanwhile, waiting for the session scheduled on it): the completed promise
+                // is already outdated. Replace it now, as resetLastParsingFinishTime could not while the promise was
+                // pending. Otherwise a completion request waiting for that work would see a finish stamp older than
+                // the request and end with an empty context.
+                this.resetLastParsingFinishTime();
+            }
         }
     }
 
