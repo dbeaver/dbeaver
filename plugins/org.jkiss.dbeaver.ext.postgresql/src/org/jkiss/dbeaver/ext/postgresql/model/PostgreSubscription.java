@@ -46,12 +46,18 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -59,6 +65,7 @@ import java.util.stream.Collectors;
 public class PostgreSubscription extends PostgreReplicationObject {
     private static final int CONNECTION_TEST_TIMEOUT_SECONDS = 30;
     private static final String CONNECTION_TEST_PREFIX = "dbeaver_connection_test_";
+    private static final int MAX_SLOT_NAME_LENGTH = 63;
     private static final List<String> SYNCHRONOUS_COMMIT_MODES = List.of("off", "local", "remote_write", "on", "remote_apply");
 
     private String connectionInfo = "";
@@ -146,6 +153,23 @@ public class PostgreSubscription extends PostgreReplicationObject {
             throw new DBException("Publisher database is not available in this connection: " + databaseName);
         }
         return readPublicationNames(monitor, database);
+    }
+
+    public static boolean isPublisherLogicalReplicationEnabled(
+        @NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer connection
+    ) throws DBException {
+        PostgreDataSource dataSource = getPublicationDiscoveryDataSource(monitor, connection);
+        String task = "Read publisher replication settings";
+        try (PostgreExecutionContext context = dataSource.getDefaultInstance().openIsolatedContext(monitor, task, null);
+             JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.META, task);
+             JDBCPreparedStatement statement = session.prepareStatement("SHOW wal_level")) {
+            statement.setQueryTimeout(CONNECTION_TEST_TIMEOUT_SECONDS);
+            try (JDBCResultSet result = statement.executeQuery()) {
+                return result.next() && "logical".equals(result.getString(1));
+            }
+        } catch (SQLException e) {
+            throw new DBException("Cannot read publisher replication settings", e);
+        }
     }
 
     @NotNull
@@ -319,10 +343,6 @@ public class PostgreSubscription extends PostgreReplicationObject {
         if (configuration.getConfigurationType() != DBPDriverConfigurationType.MANUAL) {
             throw new DBException("Use host-based configuration, or enter a custom libpq connection string in the subscription dialog");
         }
-        if (CommonUtils.isNotEmpty(configuration.getAuthModelId())
-            && !AuthModelDatabaseNative.ID.equals(configuration.getAuthModelId())) {
-            throw new DBException("Publisher configuration requires native database authentication");
-        }
         if (CommonUtils.isEmptyTrimmed(configuration.getHostName()) || CommonUtils.isEmptyTrimmed(configuration.getDatabaseName())) {
             throw new DBException("Enter the publisher host and database as reachable from the subscriber server");
         }
@@ -340,6 +360,152 @@ public class PostgreSubscription extends PostgreReplicationObject {
         parameters.put("host", configuration.getHostName().trim());
         parameters.put("port", port);
         parameters.put("dbname", configuration.getDatabaseName().trim());
+        parameters.putAll(getPublisherConnectionParameters(configuration));
+        return buildConnectionInfo(parameters);
+    }
+
+    @NotNull
+    public static String buildConnectionUri(@NotNull String url, @NotNull DBPConnectionConfiguration configuration) throws DBException {
+        String value = url.trim();
+        if (value.startsWith("jdbc:")) {
+            value = value.substring("jdbc:".length());
+        }
+        URI uri;
+        try {
+            uri = new URI(value);
+            if ((!"postgresql".equals(uri.getScheme()) && !"postgres".equals(uri.getScheme()))
+                || uri.isOpaque() || uri.getRawFragment() != null || !value.startsWith(uri.getScheme() + "://")) {
+                throw new URISyntaxException("", "Invalid PostgreSQL connection URI");
+            }
+        } catch (URISyntaxException e) {
+            throw new DBException("Enter a PostgreSQL connection URL (postgresql://host:port/database)");
+        }
+        Map<String, String> parameters = getPublisherConnectionParameters(configuration);
+        // explicit URI settings take precedence, especially when the form still has its default SSL mode
+        String authority = uri.getRawAuthority();
+        int userInfoEnd = authority == null ? -1 : authority.lastIndexOf('@');
+        if (userInfoEnd >= 0) {
+            parameters.remove("user");
+            if (authority.substring(0, userInfoEnd).contains(":")) {
+                parameters.remove("password");
+            }
+        }
+        if (uri.getRawQuery() != null) {
+            for (String option : uri.getRawQuery().split("&")) {
+                String key = URLDecoder.decode(option.split("=", 2)[0], StandardCharsets.UTF_8);
+                parameters.remove(key);
+                if ("ssl".equals(key)) {
+                    parameters.remove("sslmode");
+                }
+            }
+        }
+        String options = parameters.entrySet().stream()
+            .filter(entry -> !entry.getValue().isEmpty())
+            .map(entry -> entry.getKey() + "=" + URLEncoder.encode(entry.getValue(), StandardCharsets.UTF_8).replace("+", "%20"))
+            .collect(Collectors.joining("&"));
+        return options.isEmpty() ? value : value + (value.contains("?") ? "&" : "?") + options;
+    }
+
+    @NotNull
+    public static DBPConnectionConfiguration createPublicationConnectionConfiguration(
+        @NotNull String connectionUri, @NotNull DBPConnectionConfiguration configuration
+    ) throws DBException {
+        URI uri;
+        try {
+            uri = new URI(connectionUri);
+        } catch (URISyntaxException e) {
+            throw new DBException("Invalid publisher connection URI");
+        }
+        if ((!"postgresql".equals(uri.getScheme()) && !"postgres".equals(uri.getScheme()))
+            || uri.isOpaque() || uri.getRawFragment() != null || !connectionUri.startsWith(uri.getScheme() + "://")) {
+            throw new DBException("Enter a PostgreSQL connection URI");
+        }
+        Map<String, String> parameters = new LinkedHashMap<>();
+        String authority = CommonUtils.notEmpty(uri.getRawAuthority());
+        int userInfoEnd = authority.lastIndexOf('@');
+        if (userInfoEnd >= 0) {
+            String[] credentials = authority.substring(0, userInfoEnd).split(":", 2);
+            parameters.put("user", decodeUriValue(credentials[0]));
+            if (credentials.length == 2) {
+                parameters.put("password", decodeUriValue(credentials[1]));
+            }
+            authority = authority.substring(userInfoEnd + 1);
+        }
+        if (uri.getRawQuery() != null) {
+            for (String option : uri.getRawQuery().split("&")) {
+                String[] pair = option.split("=", 2);
+                parameters.put(decodeUriValue(pair[0]), pair.length == 2 ? decodeUriValue(pair[1]) : "");
+            }
+        }
+        String database = decodeUriValue(CommonUtils.notEmpty(uri.getRawPath()).replaceFirst("^/", ""));
+        if (parameters.containsKey("dbname")) {
+            database = parameters.remove("dbname");
+        }
+        String host = parameters.remove("host");
+        String port = parameters.remove("port");
+        if (host != null || port != null) {
+            List<String> endpoints = new ArrayList<>();
+            String[] hosts = (host == null ? authority : host).split(",", -1);
+            String[] ports = port == null ? new String[0] : port.split(",", -1);
+            for (int index = 0; index < hosts.length; index++) {
+                String endpoint = hosts[index];
+                if (host != null && endpoint.contains(":") && !endpoint.startsWith("[")) {
+                    endpoint = "[" + endpoint + "]";
+                }
+                if (port != null) {
+                    int separator = endpoint.lastIndexOf(':');
+                    if (host == null && separator > endpoint.lastIndexOf(']')) {
+                        endpoint = endpoint.substring(0, separator);
+                    }
+                    String endpointPort = ports.length == 1 ? ports[0] : index < ports.length ? ports[index] : "";
+                    endpoint += ":" + (endpointPort.isEmpty() ? PostgreConstants.DEFAULT_PORT : endpointPort);
+                }
+                endpoints.add(endpoint);
+            }
+            authority = String.join(",", endpoints);
+        }
+        if (decodeUriValue(authority).contains("/")) {
+            throw new DBException("Use a TCP publisher address to load publications from DBeaver, or enter publication names manually");
+        }
+        DBPConnectionConfiguration copy = DBPConnectionConfiguration.copyWithIndependentRuntimeAttributes(configuration);
+        if (parameters.containsKey("user")) {
+            copy.setUserName(parameters.remove("user"));
+        }
+        if (parameters.containsKey("password")) {
+            copy.setUserPassword(parameters.remove("password"));
+        }
+        copy.setDatabaseName(database);
+        copy.setConfigurationType(DBPDriverConfigurationType.URL);
+        String query = parameters.entrySet().stream()
+            .map(entry -> encodeUriValue(entry.getKey()) + "=" + encodeUriValue(entry.getValue()))
+            .collect(Collectors.joining("&"));
+        copy.setUrl("jdbc:postgresql://" + authority + "/" + encodeUriValue(database) + (query.isEmpty() ? "" : "?" + query));
+        return copy;
+    }
+
+    @NotNull
+    private static String decodeUriValue(@NotNull String value) throws DBException {
+        try {
+            // libpq treats '+' literally, including in passwords and query parameters
+            return URLDecoder.decode(value.replace("+", "%2B"), StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            throw new DBException("Invalid percent encoding in publisher connection URI");
+        }
+    }
+
+    @NotNull
+    private static String encodeUriValue(@NotNull String value) {
+        return URLEncoder.encode(value, StandardCharsets.UTF_8).replace("+", "%20");
+    }
+
+    @NotNull
+    private static Map<String, String> getPublisherConnectionParameters(@NotNull DBPConnectionConfiguration configuration)
+        throws DBException {
+        if (CommonUtils.isNotEmpty(configuration.getAuthModelId())
+            && !AuthModelDatabaseNative.ID.equals(configuration.getAuthModelId())) {
+            throw new DBException("Publisher configuration requires native database authentication");
+        }
+        Map<String, String> parameters = new LinkedHashMap<>();
         parameters.put("user", CommonUtils.notEmpty(configuration.getUserName()));
         parameters.put("password", CommonUtils.notEmpty(configuration.getUserPassword()));
         for (String property : new String[]{"sslmode", "sslrootcert", "sslcert", "sslkey", "sslpassword"}) {
@@ -357,11 +523,12 @@ public class PostgreSubscription extends PostgreReplicationObject {
                 continue;
             }
             if (!PostgreConstants.HANDLER_SSL.equals(handler.getId())) {
-                throw new DBException("Desktop network handlers cannot be used by the subscriber server; configure a directly reachable publisher");
+                throw new DBException(
+                    "Desktop network handlers cannot be used by the subscriber server; configure a directly reachable publisher");
             }
             addPublisherSSLParameters(parameters, handler);
         }
-        return buildConnectionInfo(parameters);
+        return parameters;
     }
 
     private static void addPublisherSSLParameters(@NotNull Map<String, String> parameters, @NotNull DBWHandlerConfiguration ssl)
@@ -380,7 +547,8 @@ public class PostgreSubscription extends PostgreReplicationObject {
             "sslkey", SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY);
         for (Map.Entry<String, String> certificate : certificates.entrySet()) {
             if (CommonUtils.isNotEmpty(ssl.getSecureProperty(certificate.getValue() + SSLHandlerTrustStoreImpl.CERT_VALUE_SUFFIX))) {
-                throw new DBException("Embedded SSL certificates cannot be used by the subscriber server; specify server-side certificate paths");
+                throw new DBException(
+                    "Embedded SSL certificates cannot be used by the subscriber server; specify server-side certificate paths");
             }
             String path = ssl.getStringProperty(certificate.getValue());
             if (CommonUtils.isNotEmpty(path)) {
@@ -423,7 +591,11 @@ public class PostgreSubscription extends PostgreReplicationObject {
                 session.rollback();
             }
         } catch (SQLException e) {
-            // Driver errors can include the credential-bearing SQL/URI. Return only safe diagnostics, without its cause.
+            // driver errors can include the credential-bearing SQL/URI; keep only recognized diagnostics
+            String reason = getReplicationFailureReason(e);
+            if (reason != null) {
+                throw new DBException(reason);
+            }
             if (PostgreConstants.EC_PERMISSION_DENIED.equals(e.getSQLState())) {
                 throw new DBException("The subscriber user requires permission to create subscriptions and CREATE on this database");
             }
@@ -433,6 +605,26 @@ public class PostgreSubscription extends PostgreReplicationObject {
             throw new DBException("Publisher replication connection test failed (SQL state " + CommonUtils.notEmpty(e.getSQLState())
                 + "). Check the server-side address, database, password, and publisher replication privileges");
         }
+    }
+
+    @Nullable
+    public static String getReplicationFailureReason(@NotNull Throwable error) {
+        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
+            String message = CommonUtils.notEmpty(cause.getMessage()).replace("\"", "").toLowerCase(Locale.ROOT);
+            if (message.contains("logical decoding requires wal_level >= logical")
+                || message.contains("wal_level is insufficient to publish logical changes")) {
+                return "The publisher requires wal_level = logical. Change wal_level on the publisher and restart PostgreSQL "
+                    + "before creating a replication slot.";
+            }
+            if (message.contains("all replication slots are in use")) {
+                return "The publisher has no free replication slots. Increase max_replication_slots on the publisher "
+                    + "or use an existing slot under Advanced options.";
+            }
+            if (message.contains("must be superuser or replication role to start walsender")) {
+                return "The publisher user requires the REPLICATION privilege or superuser privileges.";
+            }
+        }
+        return null;
     }
 
     @NotNull
@@ -567,7 +759,40 @@ public class PostgreSubscription extends PostgreReplicationObject {
         if (!connect && (enabled || createSlot || copyData)) {
             throw new DBException("A disconnected subscription requires enabled, create_slot, and copy_data to be false");
         }
+        if (!isValidSlotName(CommonUtils.isEmpty(slotName) ? getName() : slotName)) {
+            throw new DBException("Replication slot names must contain 1 to 63 lowercase letters, digits, or underscores");
+        }
         return buildDefinition(connectionInfo, connect, createSlot, copyData);
+    }
+
+    public static boolean isValidSlotName(@NotNull String slotName) {
+        return slotName.length() <= MAX_SLOT_NAME_LENGTH && slotName.matches("[a-z0-9_]+");
+    }
+
+    @NotNull
+    public String getRefreshPublicationsStatement(boolean copyData) throws DBException {
+        if (!isPersisted() || !enabled) {
+            throw new DBException("Save and enable the subscription before refreshing its publications");
+        }
+        return "ALTER SUBSCRIPTION " + DBUtils.getQuotedIdentifier(this) + " REFRESH PUBLICATION WITH (copy_data = " + copyData + ")";
+    }
+
+    public void refreshPublications(@NotNull DBRProgressMonitor monitor, boolean copyData) throws DBException {
+        String sql = getRefreshPublicationsStatement(copyData);
+        if (monitor.isCanceled()) {
+            return;
+        }
+        String task = PostgreSQLMessages.action_refresh_subscription_publications;
+        try (PostgreExecutionContext context = getDatabase().openIsolatedContext(monitor, task, null);
+             JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, task)) {
+            // refreshing can drop remote synchronization slots and must run outside a transaction
+            session.setAutoCommit(true);
+            try (JDBCStatement statement = session.createStatement()) {
+                statement.execute(sql);
+            }
+        } catch (SQLException e) {
+            throw new DBException("Cannot refresh subscription publications", e);
+        }
     }
 
     @NotNull

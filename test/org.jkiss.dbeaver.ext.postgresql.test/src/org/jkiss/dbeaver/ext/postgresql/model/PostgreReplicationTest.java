@@ -204,13 +204,14 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
     public void subscriptionQuotesPublicationNamesAndConnectionString() throws Exception {
         PostgreSubscription subscription = newSubscription();
         subscription.setName("My\"Subscription");
+        subscription.setSlotName("quoted_subscription");
         subscription.setPublications("publication\nMy Publication\ncomma,name\n\n");
         subscription.setConnectionInfo("host=publisher application_name=O'Brien");
         String ddl = subscription.getCreateStatement();
         assertTrue(ddl.startsWith("CREATE SUBSCRIPTION \"My\"\"Subscription\""));
         assertTrue(ddl.contains("CONNECTION 'host=publisher application_name=O''Brien'"));
         assertTrue(ddl.contains("PUBLICATION publication, \"My Publication\", \"comma,name\""));
-        assertTrue(ddl.contains("slot_name = 'My\"Subscription'"));
+        assertTrue(ddl.contains("slot_name = 'quoted_subscription'"));
     }
 
     @Test
@@ -404,6 +405,39 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
         var command = manager.makeCreateCommand(newSubscription(), Map.of());
         DBEPersistAction action = command.getPersistActions(monitor, executionContext, Map.of())[0];
         assertCredentialSafePersistFailure(manager, command, action);
+    }
+
+    @Test
+    public void subscriptionReportsPublisherWalLevelWithoutExposingCredentials() throws Exception {
+        PostgreSubscriptionManager manager = new PostgreSubscriptionManager();
+        var command = manager.makeCreateCommand(newSubscription(), Map.of());
+        DBEPersistAction action = command.getPersistActions(monitor, executionContext, Map.of())[0];
+        JDBCSession session = mock(JDBCSession.class);
+        when(session.getDataSource()).thenReturn(dataSource);
+        JDBCStatement statement = mock(JDBCStatement.class);
+        when(session.prepareStatement(any(), anyString(), anyBoolean(), anyBoolean(), anyBoolean())).thenReturn(statement);
+        when(statement.executeStatement()).thenThrow(new DBSQLException(action.getScript(),
+            new SQLException("could not create replication slot: ERROR: logical decoding requires wal_level >= logical; "
+                + "password=private-test-password", "08P01"), executionContext));
+        DBException error = assertThrows(DBException.class, () -> manager.executePersistAction(session, command, action));
+        assertTrue(error.getMessage().contains("wal_level = logical"));
+        assertTrue(error.getMessage().contains("restart PostgreSQL"));
+        assertTrue(error.getMessage().contains("08P01"));
+        assertFalse(error.getMessage().contains("private-test-password"));
+        assertFalse(error.getMessage().contains(action.getScript()));
+        assertNull(error.getCause());
+        verify(statement).close();
+    }
+
+    @Test
+    public void replicationFailureReasonsRecognizeQuotedServerSettingsAndCapacityErrors() {
+        assertTrue(PostgreSubscription.getReplicationFailureReason(
+            new SQLException("logical decoding requires \"wal_level\" >= \"logical\"", "55000")).contains("wal_level = logical"));
+        assertTrue(PostgreSubscription.getReplicationFailureReason(
+            new SQLException("all replication slots are in use", "53400")).contains("max_replication_slots"));
+        assertTrue(PostgreSubscription.getReplicationFailureReason(
+            new SQLException("must be superuser or replication role to start walsender", "42501")).contains("REPLICATION"));
+        assertNull(PostgreSubscription.getReplicationFailureReason(new SQLException("invalid password token: private-test-password")));
     }
 
     @Test
@@ -776,6 +810,64 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void publisherUriUsesExplicitCredentialsAndSslWithoutChangingTheEndpoint() throws Exception {
+        DBPConnectionConfiguration configuration = publisherConfiguration();
+        configuration.setUserName("replicator +&");
+        configuration.setUserPassword(" secret?&=+#é ");
+        configuration.setProperty("sslmode", "verify-full");
+        configuration.setProperty("sslrootcert", "/server/ca cert.pem");
+        String url = "jdbc:postgresql://publisher.internal:5433/sales?application_name=subscription";
+        assertEquals("postgresql://publisher.internal:5433/sales?application_name=subscription"
+            + "&user=replicator%20%2B%26&password=%20secret%3F%26%3D%2B%23%C3%A9%20"
+            + "&sslmode=verify-full&sslrootcert=%2Fserver%2Fca%20cert.pem",
+            PostgreSubscription.buildConnectionUri(url, configuration));
+        assertEquals("publisher", configuration.getHostName());
+        assertEquals(" secret?&=+#é ", configuration.getUserPassword());
+    }
+
+    @Test
+    public void publisherUriKeepsEncodedAndMultipleHostAddresses() throws Exception {
+        DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
+        for (String url : List.of("postgresql://first:5432,second:5433/sales?target_session_attrs=read-write",
+            "postgresql://[2001:db8::1]:5432/sales", "postgresql:///sales?host=%2Fvar%2Flib%2Fpostgresql",
+            "postgres://replicator:p%40ss@publisher/sales")) {
+            assertEquals(url, PostgreSubscription.buildConnectionUri(url, configuration));
+        }
+        configuration.setUserName("replicator");
+        assertEquals("postgresql://publisher/sales?user=replicator",
+            PostgreSubscription.buildConnectionUri("postgresql://publisher/sales", configuration));
+    }
+
+    @Test
+    public void publisherUriPreservesExplicitCredentialsAndSslOverFormDefaults() throws Exception {
+        DBPConnectionConfiguration configuration = publisherConfiguration();
+        configuration.setUserName("form-user");
+        configuration.setUserPassword("form-password");
+        configuration.setProperty("sslmode", "prefer");
+        String url = "postgresql://uri-user:uri-password@publisher/sales?sslmode=verify-full";
+        assertEquals(url, PostgreSubscription.buildConnectionUri(url, configuration));
+        url = "postgresql://uri-user:uri-password@first:5432,second:5433/sales?sslmode=verify-full";
+        assertEquals(url, PostgreSubscription.buildConnectionUri(url, configuration));
+        url = "postgresql://publisher/sales?user=uri-user&password=uri-password&ssl=true";
+        assertEquals(url, PostgreSubscription.buildConnectionUri(url, configuration));
+    }
+
+    @Test
+    public void publisherUriRejectsInvalidUrisAndDesktopOnlySettings() {
+        DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
+        for (String url : List.of("", "jdbc:mysql://publisher/sales", "host=publisher", "postgresql:publisher",
+            "postgresql://publisher/sales#fragment", "postgresql://publisher/sales with spaces")) {
+            DBException error = assertThrows(DBException.class, () -> PostgreSubscription.buildConnectionUri(url, configuration));
+            assertEquals("Enter a PostgreSQL connection URL (postgresql://host:port/database)", error.getMessage());
+        }
+        configuration.setAuthModelId("desktop-authentication");
+        assertThrows(DBException.class, () -> PostgreSubscription.buildConnectionUri("postgresql://publisher/sales", configuration));
+        configuration.setAuthModelId(AuthModelDatabaseNative.ID);
+        configuration.updateHandler(publisherHandler("desktop-tunnel"));
+        assertThrows(DBException.class, () -> PostgreSubscription.buildConnectionUri("postgresql://publisher/sales", configuration));
+    }
+
+    @Test
     public void publisherConfigurationRejectsInvalidEndpointAndDesktopAuthentication() {
         DBPConnectionConfiguration configuration = publisherConfiguration();
         configuration.setHostPort("70000");
@@ -1041,6 +1133,21 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void publisherReadinessChecksLogicalWalAndClosesItsConnection() throws Exception {
+        for (String level : new String[]{"logical", "replica", "minimal"}) {
+            PublicationLookup lookup = publicationLookup();
+            when(lookup.result().next()).thenReturn(true);
+            when(lookup.result().getString(1)).thenReturn(level);
+            assertEquals("logical".equals(level), PostgreSubscription.isPublisherLogicalReplicationEnabled(monitor, lookup.connection()));
+            verify(lookup.session()).prepareStatement("SHOW wal_level");
+            verify(lookup.result()).close();
+            verify(lookup.statement()).close();
+            verify(lookup.session()).close();
+            verify(lookup.context()).close();
+        }
+    }
+
+    @Test
     public void publicationLookupRejectsMissingDatabaseAndFailedConnection() throws Exception {
         PublicationLookup lookup = publicationLookup();
         assertThrows(DBException.class, () -> PostgreSubscription.readPublisherPublicationNames(monitor, lookup.connection(), "missing"));
@@ -1200,6 +1307,113 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
         when(canceled.isCanceled()).thenReturn(true);
         assertThrows(DBException.class, () -> PostgreSubscription.testPublisherConnection(canceled, probe.subscriber(), "host=publisher"));
         verify(probe.subscriber(), never()).openIsolatedContext(any(), anyString(), any());
+    }
+
+    @Test
+    public void publicationDiscoveryConvertsLibpqAliasesAndAuthorityCredentialsToJdbc() throws Exception {
+        DBPConnectionConfiguration original = publisherConfiguration();
+        original.setUserName("form-user");
+        original.setUserPassword("form-password");
+        DBPConnectionConfiguration copy = PostgreSubscription.createPublicationConnectionConfiguration(
+            "postgres://uri%20user:p%40ss+word@publisher:5433/sales%20db?sslmode=require", original);
+        assertEquals("jdbc:postgresql://publisher:5433/sales%20db?sslmode=require", copy.getUrl());
+        assertEquals("uri user", copy.getUserName());
+        assertEquals("p@ss+word", copy.getUserPassword());
+        assertEquals("sales db", copy.getDatabaseName());
+        assertEquals(DBPDriverConfigurationType.URL, copy.getConfigurationType());
+        assertEquals("form-user", original.getUserName());
+        assertEquals("form-password", original.getUserPassword());
+        assertEquals("published database", original.getDatabaseName());
+    }
+
+    @Test
+    public void publicationDiscoveryUsesQueryCredentialsBeforeAuthorityCredentials() throws Exception {
+        DBPConnectionConfiguration copy = PostgreSubscription.createPublicationConnectionConfiguration(
+            "postgresql://authority:secret@publisher/sales?user=query&password=a+b%26c&sslmode=disable", publisherConfiguration());
+        assertEquals("query", copy.getUserName());
+        assertEquals("a+b&c", copy.getUserPassword());
+        assertEquals("jdbc:postgresql://publisher/sales?sslmode=disable", copy.getUrl());
+    }
+
+    @Test
+    public void publicationDiscoveryKeepsIpv6MultipleHostsAndExplicitEndpointOptions() throws Exception {
+        for (String uri : List.of("postgresql://[2001:db8::1]:5433/sales", "postgresql://first:5432,second:5433/sales")) {
+            assertEquals("jdbc:" + uri,
+                PostgreSubscription.createPublicationConnectionConfiguration(uri, publisherConfiguration()).getUrl());
+        }
+        assertEquals("jdbc:postgresql://first:5433,second:5434/other%20db",
+            PostgreSubscription.createPublicationConnectionConfiguration(
+                "postgresql://old/sales?host=first,second&port=5433,5434&dbname=other%20db", publisherConfiguration()).getUrl());
+        assertEquals("jdbc:postgresql://[::1]:5434/sales",
+            PostgreSubscription.createPublicationConnectionConfiguration(
+                "postgresql://old/sales?host=%3A%3A1&port=5434", publisherConfiguration()).getUrl());
+    }
+
+    @Test
+    public void publicationDiscoveryRejectsInvalidOrDesktopInaccessibleUrisWithoutExposingCredentials() {
+        for (String uri : List.of("postgresql:opaque", "postgresql://publisher/sales#fragment", "mysql://publisher/sales",
+            "postgresql://dummy:secret@publisher/sales?password=%GG", "postgresql:///sales?host=%2Fserver%2Fsocket")) {
+            DBException error = assertThrows(DBException.class,
+                () -> PostgreSubscription.createPublicationConnectionConfiguration(uri, publisherConfiguration()));
+            assertFalse(error.getMessage().contains("secret"));
+            assertNull(error.getCause());
+        }
+    }
+
+    @Test
+    public void subscriptionValidatesDefaultAndExplicitSlotNamesBeforeCreation() throws Exception {
+        PostgreSubscription subscription = newSubscription();
+        for (String name : List.of("SalesSub", "sales-sub", "sales sub", "a".repeat(64))) {
+            subscription.setName(name);
+            assertThrows(DBException.class, subscription::getCreateStatement);
+        }
+        subscription.setSlotName("sales_sub");
+        assertTrue(subscription.getCreateStatement().contains("slot_name = 'sales_sub'"));
+        for (String name : List.of("SalesSub", "sales-sub", "a".repeat(64))) {
+            subscription.setSlotName(name);
+            assertThrows(DBException.class, subscription::getCreateStatement);
+        }
+        assertTrue(PostgreSubscription.isValidSlotName("a".repeat(63)));
+        assertFalse(PostgreSubscription.isValidSlotName(""));
+        assertFalse(PostgreSubscription.isValidSlotName("ä"));
+        subscription.setName("subscription");
+        subscription.setSlotName(null);
+        subscription.setPersisted(true);
+        assertThrows(DBException.class, () -> alterSubscription(subscription, Map.of("slotName", "INVALID")));
+    }
+
+    @Test
+    public void subscriptionRefreshRunsInAutocommitOnAnIsolatedConnection() throws Exception {
+        ConnectionProbe probe = connectionProbe();
+        PostgreSubscription subscription = new PostgreSubscription(probe.subscriber(), "refresh_subscription");
+        subscription.setPersisted(true);
+        subscription.refreshPublications(monitor, false);
+        InOrder order = inOrder(probe.session(), probe.statement());
+        order.verify(probe.session()).setAutoCommit(true);
+        order.verify(probe.statement()).execute(
+            "ALTER SUBSCRIPTION refresh_subscription REFRESH PUBLICATION WITH (copy_data = false)");
+        order.verify(probe.statement()).close();
+        order.verify(probe.session()).close();
+        verify(probe.context()).close();
+        assertTrue(subscription.getRefreshPublicationsStatement(true).endsWith("copy_data = true)"));
+        verify(probe.session(), never()).commit();
+    }
+
+    @Test
+    public void subscriptionRefreshRequiresSavedEnabledSubscriptionAndClosesResourcesOnFailure() throws Exception {
+        ConnectionProbe probe = connectionProbe();
+        PostgreSubscription subscription = new PostgreSubscription(probe.subscriber(), "refresh_subscription");
+        assertThrows(DBException.class, () -> subscription.refreshPublications(monitor, true));
+        subscription.setPersisted(true);
+        subscription.setEnabled(false);
+        assertThrows(DBException.class, () -> subscription.refreshPublications(monitor, true));
+        verify(probe.subscriber(), never()).openIsolatedContext(any(), anyString(), any());
+        subscription.setEnabled(true);
+        when(probe.statement().execute(anyString())).thenThrow(new SQLException("Publisher is unavailable"));
+        assertThrows(DBException.class, () -> subscription.refreshPublications(monitor, true));
+        verify(probe.statement()).close();
+        verify(probe.session()).close();
+        verify(probe.context()).close();
     }
 
     @NotNull

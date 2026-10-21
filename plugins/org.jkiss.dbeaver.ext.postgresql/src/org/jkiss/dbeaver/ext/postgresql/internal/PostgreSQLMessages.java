@@ -39,6 +39,7 @@ public class PostgreSQLMessages extends NLS {
     public static String action_alter_subscription;
     public static String action_drop_subscription;
     public static String action_test_subscription_connection;
+    public static String action_refresh_subscription_publications;
     public static String action_read_publication_names;
 
     static {

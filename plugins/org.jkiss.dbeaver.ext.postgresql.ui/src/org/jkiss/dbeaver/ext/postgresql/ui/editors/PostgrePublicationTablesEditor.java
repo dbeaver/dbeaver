@@ -23,8 +23,11 @@ import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -48,24 +51,33 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import java.util.List;
 import java.util.Locale;
 
-/**
- * Table selection for the ordinary, unsaved publication metadata editor.
- */
 public class PostgrePublicationTablesEditor extends AbstractDatabaseObjectEditor<PostgrePublication> {
     private CheckboxTableViewer viewer;
     private Label message;
     private Text filterText;
+    private Label selectionCount;
+    private Button clearSelection;
+    private boolean tablesLoaded;
     private AbstractJob loadJob;
     private DBECommandAdapter listener;
 
     @Override
     public void createPartControl(@NotNull Composite parent) {
         Composite content = UIUtils.createComposite(parent, 1);
-        message = UIUtils.createControlLabel(content, PostgreMessages.dialog_create_publication_tables);
-        filterText = new Text(content, SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
+        message = new Label(content, SWT.WRAP);
+        GridData messageData = new GridData(GridData.FILL_HORIZONTAL);
+        messageData.widthHint = 0;
+        message.setLayoutData(messageData);
+        message.setText(PostgreMessages.dialog_create_publication_loading_tables);
+        Composite filter = UIUtils.createComposite(content, 3);
+        filter.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        filterText = new Text(filter, SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
         filterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         filterText.setMessage(PostgreMessages.dialog_create_publication_filter_tables);
         filterText.setEnabled(false);
+        selectionCount = UIUtils.createLabel(filter, "");
+        clearSelection = UIUtils.createDialogButton(filter, PostgreMessages.dialog_create_publication_clear_selection, null);
+        clearSelection.setEnabled(false);
         viewer = CheckboxTableViewer.newCheckList(content, SWT.BORDER | SWT.V_SCROLL);
         viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
         viewer.getTable().setEnabled(false);
@@ -90,15 +102,18 @@ public class PostgrePublicationTablesEditor extends AbstractDatabaseObjectEditor
         });
         PostgrePublication publication = getDatabaseObject();
         PropertySourceEditable source = new PropertySourceEditable(getEditorInput().getCommandContext(), publication, publication);
-        // The selection is a normal undoable property change, but its collection is not rendered as a text field.
+        // keep table selection in the editor's normal undo/save lifecycle
         ObjectPropertyDescriptor tables = ObjectAttributeDescriptor.extractAnnotations(source, PostgrePublication.class, null, null)
             .stream().filter(property -> PostgrePublication.PROP_ID_CREATION_TABLES.equals(property.getId())).findFirst().orElseThrow();
         viewer.addCheckStateListener(event -> {
             if (!publication.isPersisted()) {
                 source.setPropertyValue(null, publication, tables,
-                    PostgrePublication.mergeTableSelection(publication.getCreationTables(), (PostgreTable) event.getElement(), event.getChecked()));
+                    PostgrePublication.mergeTableSelection(
+                        publication.getCreationTables(), (PostgreTable) event.getElement(), event.getChecked()));
             }
         });
+        clearSelection.addSelectionListener(SelectionListener.widgetSelectedAdapter(event ->
+            source.setPropertyValue(null, publication, tables, List.of())));
         listener = new DBECommandAdapter() {
             @Override
             public void onCommandChange(@NotNull DBECommand<?> command) {
@@ -130,11 +145,18 @@ public class PostgrePublicationTablesEditor extends AbstractDatabaseObjectEditor
                     UIUtils.asyncExec(() -> {
                         if (!viewer.getTable().isDisposed()) {
                             viewer.setInput(available);
+                            tablesLoaded = true;
                             refreshSelection();
                         }
                     });
                     return Status.OK_STATUS;
                 } catch (Exception e) {
+                    UIUtils.asyncExec(() -> {
+                        if (!message.isDisposed()) {
+                            message.setText(PostgreMessages.dialog_create_publication_error_title);
+                            message.getParent().layout(true, true);
+                        }
+                    });
                     return GeneralUtils.makeExceptionStatus(e);
                 }
             }
@@ -148,10 +170,21 @@ public class PostgrePublicationTablesEditor extends AbstractDatabaseObjectEditor
             if (!viewer.getTable().isDisposed()) {
                 PostgrePublication publication = getDatabaseObject();
                 viewer.setCheckedElements(publication.getCreationTables().toArray());
-                viewer.getTable().setEnabled(!publication.isPersisted());
-                filterText.setEnabled(!publication.isPersisted());
-                message.setText(publication.isAllTables() && !publication.getCreationTables().isEmpty()
-                    ? PostgreMessages.dialog_create_publication_error_all_tables : PostgreMessages.dialog_create_publication_tables);
+                boolean editable = !publication.isPersisted() && tablesLoaded;
+                viewer.getTable().setEnabled(editable && !publication.isAllTables());
+                filterText.setEnabled(editable && !publication.isAllTables());
+                clearSelection.setEnabled(editable && !publication.getCreationTables().isEmpty());
+                selectionCount.setText(NLS.bind(PostgreMessages.dialog_create_publication_selected_tables,
+                    publication.getCreationTables().size()));
+                if (tablesLoaded) {
+                    message.setText(publication.isPersisted()
+                        ? PostgreMessages.dialog_create_publication_saved_tables
+                        : publication.isAllTables()
+                        ? publication.getCreationTables().isEmpty()
+                            ? PostgreMessages.dialog_create_publication_all_tables_hint
+                            : PostgreMessages.dialog_create_publication_error_all_tables
+                        : PostgreMessages.dialog_create_publication_tables);
+                }
                 message.getParent().layout(true, true);
             }
         });

@@ -122,6 +122,10 @@ public class PostgreSubscriptionManager extends SQLObjectEditor<PostgreSubscript
         if (command.hasProperty(PROP_SLOT_NAME) && CommonUtils.isEmpty(subscription.getSlotName()) && subscription.isEnabled()) {
             throw new DBException("Disable the subscription before removing its replication slot association");
         }
+        if (command.hasProperty(PROP_SLOT_NAME) && CommonUtils.isNotEmpty(subscription.getSlotName())
+            && !PostgreSubscription.isValidSlotName(subscription.getSlotName())) {
+            throw new DBException("Replication slot names must contain 1 to 63 lowercase letters, digits, or underscores");
+        }
     }
 
     @Override
@@ -212,11 +216,13 @@ public class PostgreSubscriptionManager extends SQLObjectEditor<PostgreSubscript
             if (!command.isDisableSessionLogging()) {
                 throw e;
             }
-            // libpq syntax errors can echo password tokens. Never propagate their message, SQL, or exception chain.
+            // libpq errors can echo password tokens; expose recognized reasons without their original text or cause
             String state = SQLState.getStateFromException(e);
             String diagnostic = state != null && state.matches("[0-9A-Z]{5}") ? " (SQL state " + state + ")" : "";
+            String reason = PostgreSubscription.getReplicationFailureReason(e);
             throw new DBException("Subscription command failed" + diagnostic
-                + ". Check the publisher connection string, subscription privileges, and matching subscriber tables");
+                + ". " + (reason == null
+                    ? "Check the publisher connection string, subscription privileges, and matching subscriber tables" : reason));
         }
     }
 }

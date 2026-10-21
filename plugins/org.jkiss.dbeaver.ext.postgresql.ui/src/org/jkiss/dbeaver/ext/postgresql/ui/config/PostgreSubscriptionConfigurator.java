@@ -16,12 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.ui.config;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreSubscriptionManager;
-import org.jkiss.dbeaver.ext.postgresql.internal.PostgreSQLMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreExecutionContext;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSubscription;
 import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateSubscriptionDialog;
@@ -29,17 +29,16 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.SimpleCommandContext;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class PostgreSubscriptionConfigurator implements DBEObjectConfigurator<PostgreSubscription> {
+    private static final Log log = Log.getLog(PostgreSubscriptionConfigurator.class);
     @Nullable
     @Override
     public PostgreSubscription configureObject(
@@ -51,41 +50,42 @@ public class PostgreSubscriptionConfigurator implements DBEObjectConfigurator<Po
         Map<String, Object> creationOptions = new HashMap<>(options);
         creationOptions.put(SQLObjectEditor.OPTION_SKIP_CONFIGURATION, true);
         UIUtils.asyncExec(() -> new PostgreCreateSubscriptionDialog(UIUtils.getActiveWorkbenchShell(), subscription,
-            () -> saveSubscription(subscription, creationOptions)).open());
+            saveMonitor -> saveSubscription(saveMonitor, subscription, creationOptions)).open());
         return null;
     }
 
-    private static void saveSubscription(@NotNull PostgreSubscription subscription, @NotNull Map<String, Object> options) {
-        AbstractJob job = new AbstractJob(PostgreSQLMessages.action_create_subscription) {
-            @NotNull
-            @Override
-            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-                // CREATE SUBSCRIPTION needs autocommit; never switch or commit a connection being used elsewhere.
-                try (PostgreExecutionContext executionContext = subscription.getDatabase().openIsolatedContext(
-                    monitor, PostgreSQLMessages.action_create_subscription, null)) {
-                    DBECommandContext context = new SimpleCommandContext(executionContext, true);
+    private static boolean saveSubscription(
+        @NotNull DBRProgressMonitor monitor, @NotNull PostgreSubscription subscription, @NotNull Map<String, Object> options
+    ) throws DBException {
+        // create subscription needs autocommit without committing work on the editor's connection
+        try (PostgreExecutionContext executionContext = subscription.getDatabase().openIsolatedContext(
+            monitor, PostgreMessages.dialog_create_subscription_title, null)) {
+            DBECommandContext context = new SimpleCommandContext(executionContext, true);
+            try {
+                PostgreSubscriptionManager manager = new PostgreSubscriptionManager();
+                PostgreSubscription created = manager.createNewObject(
+                    monitor, context, subscription.getDatabase(), subscription, new HashMap<>(options));
+                if (created == null || monitor.isCanceled()) {
+                    return false;
+                }
+                context.saveChanges(monitor, options);
+                if (created.isPersisted()) {
                     try {
-                        PostgreSubscriptionManager manager = new PostgreSubscriptionManager();
-                        PostgreSubscription created = manager.createNewObject(
-                            monitor, context, subscription.getDatabase(), subscription, new HashMap<>(options));
-                        if (created == null || monitor.isCanceled()) {
-                            return Status.CANCEL_STATUS;
-                        }
-                        context.saveChanges(monitor, options);
                         DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode(created);
                         if (node != null) {
-                            node.refreshNode(monitor, this);
+                            node.refreshNode(monitor, PostgreSubscriptionConfigurator.class);
+                        } else {
+                            created.refreshObject(monitor);
                         }
-                        return Status.OK_STATUS;
-                    } finally {
-                        context.resetChanges(true);
+                    } catch (DBException e) {
+                        // a metadata refresh failure must not offer to create an already saved subscription again
+                        log.warn("Cannot refresh the saved subscription", e);
                     }
-                } catch (Exception e) {
-                    return GeneralUtils.makeExceptionStatus(e);
                 }
+                return created.isPersisted();
+            } finally {
+                context.resetChanges(true);
             }
-        };
-        job.setUser(true);
-        job.schedule();
+        }
     }
 }

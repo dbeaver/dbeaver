@@ -285,7 +285,7 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgrePublication" label="%tree.publications.node.name" icon="#folder_table" description="%tree.publications.node.tip" visibleIf="connected &amp;&amp; dataSource.serverType.supportsLogicalReplication()">
                             <items label="%tree.publication.node.name" path="publication" property="publications" icon="#table">
-                                <folder label="%tree.tables.node.name" icon="#folder_table">
+                                <folder label="%tree.tables.node.name" icon="#folder_table" virtual="true" visibleIf="object.persisted">
                                     <items label="%tree.table.node.name" path="table" property="tables" icon="#table" virtual="true"/>
                                 </folder>
                             </items>

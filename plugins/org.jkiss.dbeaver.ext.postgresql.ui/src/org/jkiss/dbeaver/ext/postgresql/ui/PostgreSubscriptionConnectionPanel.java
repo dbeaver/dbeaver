@@ -16,16 +16,18 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.ui;
 
-import org.eclipse.jface.viewers.ArrayContentProvider;
-import org.eclipse.jface.viewers.ComboViewer;
-import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.IExpansionListener;
 import org.jkiss.code.NotNull;
@@ -37,27 +39,28 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSubscription;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ConfigurationFileSelector;
 import org.jkiss.dbeaver.ui.controls.DatabaseLabelProviders;
 import org.jkiss.dbeaver.ui.controls.ExpandableCompositeEx;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
 import org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator;
 import org.jkiss.dbeaver.ui.dialogs.net.SSLConfiguratorTrustStoreUI;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 
-/**
- * Publisher settings only: no JDBC, metadata, network tunnel, or datasource persistence controls.
- */
 public class PostgreSubscriptionConnectionPanel extends Composite {
     private final Runnable onChange;
     private final Runnable onLayoutChange;
@@ -65,6 +68,10 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
     private DBWHandlerConfiguration ssl;
     private final PublisherCredentialsConfigurator credentials = new PublisherCredentialsConfigurator();
     private final PublisherSSLConfigurator sslConfigurator = new PublisherSSLConfigurator();
+    private Button hostMode;
+    private Button urlMode;
+    private Text urlText;
+    private Composite endpoint;
     private Text hostText;
     private Text portText;
     private Text databaseText;
@@ -72,6 +79,13 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
     private String connectionInfo = "";
     private boolean loadingSettings;
     private Composite connectionSettings;
+    private Composite testArea;
+    private Composite connection;
+    private Composite authentication;
+    private DBPConnectionConfiguration desktopConfiguration;
+    private String copiedConnectionName;
+    private String copiedConnectionId;
+    private Button useCopiedConnection;
 
     public PostgreSubscriptionConnectionPanel(
         @NotNull Composite parent,
@@ -81,12 +95,17 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
         @NotNull Runnable onLayoutChange
     ) {
         super(parent, SWT.NONE);
-        setLayout(new GridLayout(1, false));
+        GridLayout layout = new GridLayout(1, false);
+        layout.marginWidth = 0;
+        layout.marginHeight = 0;
+        layout.verticalSpacing = PostgreSubscriptionDialogLayout.SECTION_SPACING;
+        setLayout(layout);
         setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         this.onChange = onChange;
         this.onLayoutChange = onLayoutChange;
         DBPDataSourceContainer subscriber = subscriberDatabase.getDataSource().getContainer();
-        DBPConnectionConfiguration workingConfiguration = DBPConnectionConfiguration.copyWithIndependentRuntimeAttributes(initialConfiguration);
+        DBPConnectionConfiguration workingConfiguration =
+            DBPConnectionConfiguration.copyWithIndependentRuntimeAttributes(initialConfiguration);
         publisher = subscriber.getRegistry().createDataSource(
             DataSourceDescriptor.generateNewId(subscriber.getDriver()), subscriber.getDriver(), workingConfiguration);
         publisher.setTemporary(true);
@@ -140,44 +159,34 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
 
     private void createControls() {
         Composite area = this;
-        connectionSettings = UIUtils.createComposite(area, 1);
-        connectionSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        // A shared grid keeps the saved-connection selector and all connection fields in the same label column.
-        Composite connection = UIUtils.createComposite(connectionSettings, 2);
+        connectionSettings = PostgreSubscriptionDialogLayout.createSection(area,
+            PostgreMessages.dialog_create_subscription_publisher, GridData.FILL_HORIZONTAL);
+        ((GridLayout) connectionSettings.getLayout()).marginLeft = 0;
+        ((GridLayout) connectionSettings.getLayout()).verticalSpacing = PostgreSubscriptionDialogLayout.COMPACT_SPACING;
+        connection = UIUtils.createComposite(connectionSettings, 2);
+        GridLayout connectionLayout = (GridLayout) connection.getLayout();
+        connectionLayout.marginLeft = PostgreSubscriptionDialogLayout.MARGIN;
+        connectionLayout.verticalSpacing = PostgreSubscriptionDialogLayout.ROW_SPACING;
         connection.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        UIUtils.createControlLabel(connection, PostgreMessages.dialog_create_subscription_existing_connection);
-        // Native combo popups are not shell children and cannot enter the dialog's layout during resizing.
-        ComboViewer connections = new ComboViewer(connection, SWT.DROP_DOWN | SWT.READ_ONLY);
-        connections.getCombo().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        connections.setContentProvider(ArrayContentProvider.getInstance());
-        connections.setLabelProvider(new DatabaseLabelProviders.ConnectionLabelProvider() {
-                @NotNull
-                @Override
-                public String getText(@Nullable Object element) {
-                    return element instanceof DBPDataSourceContainer ? super.getText(element)
-                        : PostgreMessages.dialog_create_subscription_manual_connection;
-                }
-            });
-        List<Object> items = new ArrayList<>();
-        items.add(PostgreMessages.dialog_create_subscription_manual_connection);
-        connections.getCombo().setToolTipText(PostgreMessages.dialog_create_subscription_existing_connection_tip);
-        for (DBPDataSourceContainer candidate : publisher.getRegistry().getDataSources()) {
-            if (!candidate.isHidden() && !candidate.isTemporary() && PostgreSubscription.supportsPublisherConnection(candidate)) {
-                items.add(candidate);
-            }
-        }
-        connections.setInput(items);
-        connections.setSelection(new StructuredSelection(items.getFirst()));
-        connections.addSelectionChangedListener(event -> {
-            Object selected = event.getStructuredSelection().getFirstElement();
-            if (selected instanceof DBPDataSourceContainer container && !loadConnection(container)) {
-                connections.setSelection(new StructuredSelection(items.getFirst()));
-                onChange.run();
-            }
-        });
+        UIUtils.createControlLabel(connection, PostgreMessages.dialog_create_subscription_connect_by);
+        Composite modes = UIUtils.createComposite(connection, 3);
+        modes.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        hostMode = UIUtils.createRadioButton(modes, PostgreMessages.dialog_create_subscription_host_mode, null, null);
+        hostMode.setSelection(true);
+        urlMode = UIUtils.createRadioButton(modes, UIConnectionMessages.dialog_connection_url_label, null, null);
+        Button copy = UIUtils.createDialogButton(modes, PostgreMessages.dialog_create_subscription_existing_connection,
+            SelectionListener.widgetSelectedAdapter(event -> showConnectionsMenu((Button) event.widget)));
+        copy.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, true, false));
+        copy.setToolTipText(PostgreMessages.dialog_create_subscription_existing_connection_tip);
+        urlText = UIUtils.createLabelText(connection, UIConnectionMessages.dialog_connection_url_label, "");
+        urlText.setMessage(PostgreMessages.dialog_create_subscription_url_placeholder);
+        urlText.setToolTipText(PostgreMessages.dialog_create_subscription_url_tip);
+        urlText.setEnabled(false);
+        hostMode.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> updateConnectionMode()));
+        urlMode.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> updateConnectionMode()));
         DBPConnectionConfiguration workingConfiguration = publisher.getConnectionConfiguration();
         UIUtils.createControlLabel(connection, PostgreMessages.dialog_setting_connection_host);
-        Composite endpoint = UIUtils.createComposite(connection, 3);
+        endpoint = UIUtils.createComposite(connection, 3);
         endpoint.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         GridLayout endpointLayout = (GridLayout) endpoint.getLayout();
         endpointLayout.marginWidth = 0;
@@ -191,30 +200,37 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
         GridData portData = new GridData(SWT.LEFT, SWT.CENTER, false, false);
         portData.widthHint = UIUtils.getFontHeight(area) * 5;
         portText.setLayoutData(portData);
-        UIUtils.createEmptyLabel(connection, 1, 1);
-        Label endpointCaption = new Label(connection, SWT.WRAP);
-        endpointCaption.setText(PostgreMessages.dialog_create_subscription_endpoint_tip);
-        GridData captionData = new GridData(GridData.FILL_HORIZONTAL);
-        captionData.widthHint = 0;
-        endpointCaption.setLayoutData(captionData);
-        Font captionFont = UIUtils.modifyFontSize(endpointCaption.getFont(), -1);
-        endpointCaption.setFont(captionFont);
-        endpointCaption.addDisposeListener(event -> captionFont.dispose());
         databaseText = UIUtils.createLabelText(connection, PostgreMessages.dialog_setting_connection_database,
             CommonUtils.notEmpty(workingConfiguration.getDatabaseName()));
         hostText.setToolTipText(PostgreMessages.dialog_create_subscription_endpoint_tip);
         portText.setToolTipText(PostgreMessages.dialog_create_subscription_endpoint_tip);
-        credentials.createControl(connection, AuthModelDatabaseNative.INSTANCE, this::validateInput);
+        UIUtils.createLabelSeparator(connectionSettings, SWT.HORIZONTAL);
+        authentication = UIUtils.createComposite(connectionSettings, 2);
+        GridLayout authenticationLayout = (GridLayout) authentication.getLayout();
+        authenticationLayout.marginLeft = PostgreSubscriptionDialogLayout.MARGIN;
+        authenticationLayout.verticalSpacing = PostgreSubscriptionDialogLayout.ROW_SPACING;
+        authentication.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        credentials.createControl(authentication, AuthModelDatabaseNative.INSTANCE, this::validateInput);
         credentials.loadSettings(publisher);
-        for (Text text : new Text[]{hostText, portText, databaseText}) {
+        for (Text text : new Text[]{hostText, portText, databaseText, urlText}) {
             text.addModifyListener(event -> validateInput());
         }
 
-        ExpandableCompositeEx sslSection = UIUtils.createExpandableCompositeWithSeparator(connectionSettings, SWT.NONE,
-            ExpandableCompositeEx.TWISTIE | ExpandableCompositeEx.CLIENT_INDENT);
+        testArea = UIUtils.createComposite(connectionSettings, 2);
+        testArea.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        useCopiedConnection = UIUtils.createCheckbox(connectionSettings,
+            PostgreMessages.dialog_create_subscription_use_copied_connection, false);
+        useCopiedConnection.setToolTipText(PostgreMessages.dialog_create_subscription_use_copied_connection_tip);
+        UIUtils.setControlVisible(useCopiedConnection, false);
+        useCopiedConnection.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> validateInput()));
+        ExpandableCompositeEx sslSection = UIUtils.createExpandableCompositeWithSeparator(area, SWT.NONE,
+            ExpandableCompositeEx.TWISTIE);
+        sslSection.setShowTextAsTitle(true);
+        sslSection.clientVerticalSpacing = PostgreSubscriptionDialogLayout.ROW_SPACING;
         sslSection.setText(PostgreMessages.dialog_create_subscription_ssl_tab);
         sslSection.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         Composite sslPage = UIUtils.createComposite(sslSection, 1);
+        ((GridLayout) sslPage.getLayout()).marginLeft = PostgreSubscriptionDialogLayout.MARGIN;
         sslSection.setClient(sslPage);
         sslConfigurator.createControl(sslPage, null, this::validateInput);
         sslConfigurator.loadSettings(ssl);
@@ -224,6 +240,52 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
         GridData errorData = new GridData(GridData.FILL_HORIZONTAL);
         errorData.widthHint = UIUtils.getFontHeight(area) * 40;
         errorLabel.setLayoutData(errorData);
+    }
+
+    void alignLabels(@NotNull Composite general) {
+        int width = PostgreSubscriptionDialogLayout.alignLabels(PostgreSubscriptionDialogLayout.LABEL_WIDTH,
+            connection, authentication);
+        int generalWidth = PostgreSubscriptionDialogLayout.alignLabels(width + PostgreSubscriptionDialogLayout.MARGIN, general);
+        width = PostgreSubscriptionDialogLayout.alignLabels(generalWidth - PostgreSubscriptionDialogLayout.MARGIN,
+            connection, authentication);
+        ((GridData) testArea.getLayoutData()).horizontalIndent = PostgreSubscriptionDialogLayout.MARGIN + width
+            + ((GridLayout) connection.getLayout()).horizontalSpacing;
+    }
+
+    @NotNull
+    public Composite getTestArea() {
+        return testArea;
+    }
+
+    private void updateConnectionMode() {
+        urlText.setEnabled(urlMode.getSelection());
+        UIUtils.enableWithChildren(endpoint, hostMode.getSelection());
+        databaseText.setEnabled(hostMode.getSelection());
+        if (urlMode.getSelection()) {
+            useCopiedConnection.setSelection(false);
+        }
+        useCopiedConnection.setEnabled(hostMode.getSelection());
+        validateInput();
+    }
+
+    private void showConnectionsMenu(@NotNull Button button) {
+        Menu menu = new Menu(button);
+        for (DBPDataSourceContainer candidate : publisher.getRegistry().getDataSources()) {
+            if (!candidate.isHidden() && !candidate.isTemporary() && PostgreSubscription.supportsPublisherConnection(candidate)) {
+                MenuItem item = new MenuItem(menu, SWT.PUSH);
+                item.setText(candidate.getName());
+                item.setImage(new DatabaseLabelProviders.ConnectionLabelProvider().getImage(candidate));
+                item.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> loadConnection(candidate)));
+            }
+        }
+        menu.addListener(SWT.Hide, event -> getDisplay().asyncExec(() -> {
+            if (!menu.isDisposed()) {
+                menu.dispose();
+            }
+        }));
+        Point position = button.toDisplay(0, button.getSize().y);
+        menu.setLocation(position);
+        menu.setVisible(true);
     }
 
     private void saveInput() {
@@ -242,6 +304,11 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
             if (copy == null) {
                 return false;
             }
+            desktopConfiguration = DBPConnectionConfiguration.copyWithIndependentRuntimeAttributes(selected.getConnectionConfiguration());
+            desktopConfiguration.setUserName(copy.getUserName());
+            desktopConfiguration.setUserPassword(copy.getUserPassword());
+            copiedConnectionName = selected.getName();
+            copiedConnectionId = selected.getId();
             loadingSettings = true;
             try {
                 publisher.setConnectionInfo(copy);
@@ -250,8 +317,18 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
                 portText.setText(CommonUtils.isEmpty(copy.getHostPort())
                     ? Integer.toString(PostgreConstants.DEFAULT_PORT) : copy.getHostPort());
                 databaseText.setText(CommonUtils.notEmpty(copy.getDatabaseName()));
+                hostMode.setSelection(true);
+                urlMode.setSelection(false);
+                urlText.setEnabled(false);
+                UIUtils.enableWithChildren(endpoint, true);
+                databaseText.setEnabled(true);
                 credentials.loadSettings(publisher);
                 sslConfigurator.loadSettings(ssl);
+                useCopiedConnection.setText(NLS.bind(PostgreMessages.dialog_create_subscription_use_copied_connection,
+                    copiedConnectionName));
+                useCopiedConnection.setSelection(true);
+                useCopiedConnection.setEnabled(true);
+                UIUtils.setControlVisible(useCopiedConnection, true);
             } finally {
                 loadingSettings = false;
             }
@@ -263,6 +340,10 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
             UIUtils.updateDialogSize(errorLabel);
             onLayoutChange.run();
             return false;
+        } finally {
+            if (!isDisposed()) {
+                getShell().forceActive();
+            }
         }
     }
 
@@ -272,11 +353,32 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
         }
         saveInput();
         try {
-            connectionInfo = PostgreSubscription.buildConnectionInfo(publisher.getConnectionConfiguration());
+            if (urlMode.getSelection()) {
+                connectionInfo = PostgreSubscription.buildConnectionUri(urlText.getText(), publisher.getConnectionConfiguration());
+            } else {
+                connectionInfo = PostgreSubscription.buildConnectionInfo(publisher.getConnectionConfiguration());
+                boolean wasLoading = loadingSettings;
+                loadingSettings = true;
+                try {
+                    String host = hostText.getText().trim();
+                    if (host.contains(":") && !host.startsWith("[") && !host.contains(",")) {
+                        host = "[" + host + "]";
+                    } else if (host.contains("/")) {
+                        host = URLEncoder.encode(host, StandardCharsets.UTF_8).replace("+", "%20");
+                    }
+                    String port = portText.getText().isBlank()
+                        ? Integer.toString(PostgreConstants.DEFAULT_PORT) : portText.getText().trim();
+                    String database = URLEncoder.encode(databaseText.getText().trim(), StandardCharsets.UTF_8).replace("+", "%20");
+                    urlText.setText("postgresql://" + host + ":" + port + "/" + database);
+                } finally {
+                    loadingSettings = wasLoading;
+                }
+            }
             errorLabel.setText("");
         } catch (DBException e) {
             connectionInfo = "";
-            errorLabel.setText(hostText.getText().isBlank() || databaseText.getText().isBlank() ? "" : e.getMessage());
+            errorLabel.setText(urlMode.getSelection() ? urlText.getText().isBlank() ? "" : e.getMessage()
+                : hostText.getText().isBlank() || databaseText.getText().isBlank() ? "" : e.getMessage());
         }
         UIUtils.setControlVisible(errorLabel, !errorLabel.getText().isEmpty());
         UIUtils.updateDialogSize(errorLabel);
@@ -289,32 +391,105 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
         return connectionInfo;
     }
 
+    @NotNull
+    public String getPublicationSourceName() {
+        if (useCopiedConnection.getSelection()) {
+            return copiedConnectionName + " / " + publisher.getConnectionConfiguration().getDatabaseName();
+        }
+        return PostgreMessages.dialog_create_subscription_configured_publisher;
+    }
+
+    @NotNull
+    public DataSourceDescriptor createPublicationConnection() throws DBException {
+        DBPConnectionConfiguration currentConfiguration = publisher.getConnectionConfiguration();
+        DBPConnectionConfiguration configuration = DBPConnectionConfiguration.copyWithIndependentRuntimeAttributes(
+            useCopiedConnection.getSelection() ? desktopConfiguration : currentConfiguration);
+        configuration.setDatabaseName(currentConfiguration.getDatabaseName());
+        configuration.setUserName(currentConfiguration.getUserName());
+        configuration.setUserPassword(currentConfiguration.getUserPassword());
+        if (urlMode.getSelection()) {
+            configuration = PostgreSubscription.createPublicationConnectionConfiguration(connectionInfo, configuration);
+        } else {
+            configuration.setConfigurationType(DBPDriverConfigurationType.MANUAL);
+            configuration.setUrl(publisher.getDriver().getDataSourceProvider().getConnectionURL(publisher.getDriver(), configuration));
+        }
+        DataSourceDescriptor discovery = (DataSourceDescriptor) publisher.getRegistry().createDataSource(
+            DataSourceDescriptor.generateNewId(publisher.getDriver()), publisher.getDriver(), configuration);
+        discovery.setName(getPublicationSourceName());
+        discovery.setTemporary(true);
+        discovery.setSavePassword(true);
+        return discovery;
+    }
+
+    @Nullable
+    public String getPublicationSourceKey() {
+        if (connectionInfo.isBlank()) {
+            return null;
+        }
+        try {
+            String url;
+            if (useCopiedConnection.getSelection()) {
+                DBPConnectionConfiguration configuration =
+                    DBPConnectionConfiguration.copyWithIndependentRuntimeAttributes(desktopConfiguration);
+                configuration.setDatabaseName(publisher.getConnectionConfiguration().getDatabaseName());
+                url = publisher.getDriver().getDataSourceProvider().getConnectionURL(publisher.getDriver(), configuration);
+            } else {
+                String uri = urlMode.getSelection() ? connectionInfo
+                    : PostgreSubscription.buildConnectionUri(urlText.getText(), publisher.getConnectionConfiguration());
+                url = PostgreSubscription.createPublicationConnectionConfiguration(uri, publisher.getConnectionConfiguration()).getUrl();
+            }
+            String endpoint = url.split("\\?", 2)[0];
+            int databaseStart = endpoint.indexOf('/', "jdbc:postgresql://".length());
+            if (databaseStart < 0) {
+                return endpoint;
+            }
+            return (useCopiedConnection.getSelection() ? copiedConnectionId + ":" : "")
+                + endpoint.substring(0, databaseStart).toLowerCase(Locale.ROOT).replaceAll(":5432(?=,|$)", "")
+                + endpoint.substring(databaseStart);
+        } catch (DBException e) {
+            return null;
+        }
+    }
+
     private static class PublisherCredentialsConfigurator extends DatabaseNativeAuthModelConfigurator {
         @Override
         protected void createPasswordControls(@NotNull Composite parent, @NotNull Runnable propertyChangeListener) {
-            passwordLabel = UIUtils.createLabel(parent, getPasswordFieldLabel());
-            Text password = createPasswordText(parent, null);
-            password.getParent().setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            password.addModifyListener(event -> propertyChangeListener.run());
+            super.createPasswordControls(parent, propertyChangeListener);
+            GridData passwordData = new GridData(SWT.LEFT, SWT.CENTER, false, false);
+            passwordData.widthHint = UIUtils.getFontHeight(parent) * 18;
+            passwordText.getParent().setLayoutData(passwordData);
+            if (savePasswordCheck != null) {
+                savePasswordCheck.dispose();
+                savePasswordCheck = null;
+            }
         }
 
         @NotNull
         @Override
         protected GridData makeAuthControlLayoutData(@NotNull Composite parent) {
-            return new GridData(GridData.FILL_HORIZONTAL);
+            GridData data = new GridData(SWT.LEFT, SWT.CENTER, false, false);
+            data.widthHint = UIUtils.getFontHeight(parent) * 18;
+            return data;
         }
 
         @Override
         public void loadSettings(@NotNull DBPDataSourceContainer dataSource) {
             super.loadSettings(dataSource);
             passwordText.setEnabled(canEditCredentialsPerPolicy);
+            if (savePasswordCheck != null) {
+                savePasswordCheck.setEnabled(canEditCredentialsPerPolicy);
+                savePasswordCheck.setSelection(dataSource.isSavePassword());
+            }
+            if (showPasswordButton != null) {
+                showPasswordButton.setEnabled(canEditCredentialsPerPolicy);
+            }
         }
 
         @Override
         public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
             super.saveSettings(dataSource);
             if (canEditCredentialsPerPolicy) {
-                // Whitespace is significant in libpq passwords; the standard datasource configurator trims it.
+                // whitespace is significant in libpq passwords; the standard datasource configurator trims it.
                 dataSource.getConnectionConfiguration().setUserPassword(passwordText.getText());
             }
         }
@@ -325,13 +500,19 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
 
         @Override
         public void createControl(@NotNull Composite parent, @Nullable Object object, @NotNull Runnable propertyChangeListener) {
-            Composite mode = UIUtils.createComposite(parent, 2);
-            mode.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            modeCombo = UIUtils.createLabelCombo(mode, PostgreMessages.dialog_connection_network_postgres_ssl_advanced_ssl_mode,
-                SWT.DROP_DOWN | SWT.READ_ONLY);
+            sslCertComposite = UIUtils.createComposite(parent, 2);
+            sslCertComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            ((GridLayout) sslCertComposite.getLayout()).verticalSpacing = PostgreSubscriptionDialogLayout.ROW_SPACING;
+            modeCombo = UIUtils.createLabelCombo(sslCertComposite,
+                PostgreMessages.dialog_connection_network_postgres_ssl_advanced_ssl_mode, SWT.DROP_DOWN | SWT.READ_ONLY);
             modeCombo.setItems(Arrays.stream(PostgreSSLConfigurator.SSL_MODES).filter(value -> !value.isEmpty()).toArray(String[]::new));
-            createTrustStoreConfigGroup(parent);
-            // These paths refer to the subscriber server, not the desktop filesystem.
+            caCertPath = createCertificateControl(sslCertComposite, UIConnectionMessages.dialog_setting_ssl_configurator_certs_ca_name);
+            clientCertPath = createCertificateControl(sslCertComposite,
+                UIConnectionMessages.dialog_setting_ssl_configurator_certs_client_name);
+            clientKeyPath = createCertificateControl(sslCertComposite,
+                UIConnectionMessages.dialog_setting_ssl_configurator_certs_client_key_name);
+            sslKeyStoreComposite = UIUtils.createComposite(parent, 1);
+            // paths refer to the subscriber server
             for (TextWithOpen path : new TextWithOpen[]{caCertPath, clientCertPath, clientKeyPath}) {
                 UIUtils.setControlVisible(path.getToolbar(), false);
                 path.getTextControl().addModifyListener(event -> propertyChangeListener.run());
@@ -341,6 +522,14 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
                 updateCertificateControls();
                 propertyChangeListener.run();
             });
+        }
+
+        @NotNull
+        private TextWithOpen createCertificateControl(@NotNull Composite parent, @NotNull String label) {
+            UIUtils.createControlLabel(parent, label);
+            TextWithOpen field = new ConfigurationFileSelector(parent, label, new String[]{"*.*"});
+            field.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            return field;
         }
 
         @Override
