@@ -46,7 +46,6 @@ public class DataSourceDescriptorTest extends DBeaverUnitTest {
         Assertions.assertNotNull(secret);
         dataSource.setSelectedSharedCredentials(new DBSSecretValue("test-team", "test-secret", "Test secret", secret));
 
-        dataSource.forceSetSharedCredentials(false);
         Mockito.doReturn(true, false).when(dataSource).isConnected();
         dataSource.resetAllSecrets();
 
@@ -57,6 +56,7 @@ public class DataSourceDescriptorTest extends DBeaverUnitTest {
             () -> Assertions.assertTrue(dataSource.isSavePassword())
         );
 
+        dataSource.forceSetSharedCredentials(false);
         dataSource.resetAllSecrets();
 
         Assertions.assertAll(
