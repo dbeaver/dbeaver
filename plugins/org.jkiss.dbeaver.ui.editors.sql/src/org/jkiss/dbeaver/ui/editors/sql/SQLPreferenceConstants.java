@@ -25,6 +25,30 @@ import org.jkiss.utils.CommonUtils;
 
 public class SQLPreferenceConstants {
 
+    public enum MetadataRefreshBehavior {
+        ASK(SQLEditorMessages.pref_page_sql_editor_reload_metadata_ask),
+        ALWAYS(SQLEditorMessages.pref_page_sql_editor_reload_metadata_always),
+        NEVER(SQLEditorMessages.pref_page_sql_editor_reload_metadata_never);
+
+        @NotNull
+        public final String displayName;
+
+        MetadataRefreshBehavior(@NotNull String displayName) {
+            this.displayName = displayName;
+        }
+
+        @NotNull
+        public static MetadataRefreshBehavior parse(String value) {
+            if ("true".equalsIgnoreCase(value)) {
+                return ASK;
+            }
+            if ("false".equalsIgnoreCase(value)) {
+                return NEVER;
+            }
+            return CommonUtils.valueOf(MetadataRefreshBehavior.class, value, ASK);
+        }
+    }
+
     public enum EmptyScriptCloseBehavior {
         NOTHING(SQLEditorMessages.script_close_behavior_do_not_delete),
         DELETE_NEW(SQLEditorMessages.script_close_behavior_delete_only_new_scripts),
