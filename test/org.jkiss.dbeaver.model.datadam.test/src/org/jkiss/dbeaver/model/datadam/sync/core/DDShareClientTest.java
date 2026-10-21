@@ -115,7 +115,7 @@ class DDShareClientTest {
             Mockito.when(manager.getAccessTokenForResource(Mockito.any())).thenReturn("test-token");
             DDSyncCredentials credentials = Mockito.mock(DDSyncCredentials.class);
             Assertions.assertThrows(DDShareException.class, () -> new DDShareClient(base, credentials).listProjects());
-            Assertions.assertNull(new DDTrackingClient(base).stop("tracking-id"));
+            Assertions.assertThrows(DBException.class, () -> new DDTrackingClient(base).stop("tracking-id"));
             Assertions.assertEquals(0, redirected.get());
         } finally {
             server.stop(0);

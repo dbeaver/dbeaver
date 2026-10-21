@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.datadam;
 
+import com.dbeaver.datadam.share.api.tracking.DDClientInfo;
+import com.dbeaver.datadam.share.api.tracking.DDTracking;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.IWorkbench;
@@ -26,9 +28,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.datadam.DDClientInfo;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
-import org.jkiss.dbeaver.model.datadam.DDTracking;
 import org.jkiss.dbeaver.model.datadam.DDTrackingClient;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -159,14 +159,19 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
                     localMacAddress(),
                     localIpAddress()
                 );
-                DDTracking tracking = client.start(info);
-                if (tracking != null) {
-                    if (ACTIVE_SESSION.get() == session) {
-                        session.trackingId.set(tracking.trackingId());
-                    } else {
-                        // stop() already ran and saw no trackingId yet - clean up the session we just started
-                        client.stop(tracking.trackingId());
+                try {
+                    DDTracking tracking = client.start(info);
+                    if (tracking != null) {
+                        if (ACTIVE_SESSION.get() == session) {
+                            session.trackingId.set(tracking.trackingId());
+                        } else {
+                            // stop() already ran and saw no trackingId yet - clean up the session we just started
+                            client.stop(tracking.trackingId());
+                        }
                     }
+                } catch (DBException e) {
+                    log.debug("DataDam tracking request failed", e);
+                    ACTIVE_SESSION.compareAndSet(session, null);
                 }
                 return Status.OK_STATUS;
             }
@@ -185,7 +190,11 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
         }
         String id = session.trackingId.get();
         if (id != null) {
-            session.client.stop(id);
+            try {
+                session.client.stop(id);
+            } catch (DBException e) {
+                log.debug("DataDam tracking stop failed", e);
+            }
         }
     }
 
