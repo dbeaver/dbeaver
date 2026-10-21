@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2026 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,15 +20,10 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IExecutionListener;
 import org.eclipse.core.commands.NotHandledException;
-import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
-import org.eclipse.e4.ui.model.application.ui.menu.MHandledMenuItem;
-import org.eclipse.e4.ui.workbench.modeling.EModelService;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
-import org.eclipse.ui.services.IServiceScopes;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -36,12 +31,10 @@ import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
-import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarHandler;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.NodeEditorInput;
-import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.perspective.DBeaverPerspective;
 
 import java.util.*;
@@ -58,13 +51,6 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
 
     private final Set<IWorkbenchWindow> registeredWindows = new HashSet<>();
     private final DBPProjectListener projectListener;
-    private final INullSelectionListener selectionListener = (part, selection) -> {
-        if (part == null) {
-            registeredWindows.forEach(this::refreshDeleteLabels);
-        } else {
-            refreshDeleteLabels(part.getSite().getWorkbenchWindow());
-        }
-    };
 
     public WorkbenchContextListener() {
         IWorkbench workbench = PlatformUI.getWorkbench();
@@ -149,7 +135,6 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
             DataSourceToolbarHandler toolbarHandler = new DataSourceToolbarHandler(window);
             window.getShell().addDisposeListener(e -> toolbarHandler.dispose());
             registeredWindows.add(window);
-            window.getSelectionService().addSelectionListener(selectionListener);
         }
 
         IPerspectiveListener perspectiveListener = new IPerspectiveListener() {
@@ -198,7 +183,7 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
 
     @Override
     public void windowActivated(IWorkbenchWindow window) {
-        refreshDeleteLabels(window);
+
     }
 
     @Override
@@ -214,8 +199,6 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
     @Override
     public void windowClosed(IWorkbenchWindow window) {
         window.removePageListener(this);
-        window.getSelectionService().removeSelectionListener(selectionListener);
-        registeredWindows.remove(window);
     }
 
     /////////////////////////////////////////////////
@@ -241,7 +224,6 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
     @Override
     public void partActivated(IWorkbenchPart part) {
         EditorUtils.activatePartContexts(part);
-        refreshDeleteLabels(part.getSite().getWorkbenchWindow());
 //        log.info(part.getClass().getSimpleName() + " ACTIVATED: " + contextService.getActiveContextIds());
     }
 
@@ -274,37 +256,7 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
         }
     }
 
-    private void refreshDeleteLabels(@NotNull IWorkbenchWindow window) {
-        UIUtils.asyncExec(() -> {
-            Shell shell = window.getShell();
-            if (shell == null || shell.isDisposed()) {
-                return;
-            }
-            ICommandService commandService = window.getService(ICommandService.class);
-            MWindow modelWindow = window.getService(MWindow.class);
-            EModelService modelService = window.getService(EModelService.class);
-            if (commandService == null || modelWindow == null || modelWindow.getMainMenu() == null || modelService == null) {
-                return;
-            }
-            String commandId = IWorkbenchCommandConstants.EDIT_DELETE;
-            String defaultLabel = ActionUtils.findCommandName(commandId);
-            // the next handler may not supply a label when focus leaves the navigator
-            for (MHandledMenuItem item : modelService.findElements(modelWindow.getMainMenu(), null, MHandledMenuItem.class)) {
-                if (item.getCommand() != null && commandId.equals(item.getCommand().getElementId())) {
-                    item.setLabel(defaultLabel);
-                }
-            }
-            Map<String, Object> filter = Map.of(IServiceScopes.WINDOW_SCOPE, window);
-            commandService.refreshElements(commandId, filter);
-            commandService.refreshElements(NavigatorCommands.CMD_OBJECT_DELETE, filter);
-        });
-    }
-
     public void dispose() {
-        for (IWorkbenchWindow window : registeredWindows) {
-            window.getSelectionService().removeSelectionListener(selectionListener);
-        }
-        registeredWindows.clear();
         DBPPlatformDesktop.getInstance().getWorkspace().removeProjectListener(projectListener);
     }
 
