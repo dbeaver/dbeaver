@@ -23,6 +23,7 @@ import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.erd.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -49,13 +50,17 @@ import java.util.stream.Stream;
 /**
  * GraphML exporter
  */
-public class ERDExportGraphML implements ERDExportFormatHandler
-{
+public class ERDExportGraphML implements ERDExportFormatHandler {
     private static final Log log = Log.getLog(ERDExportGraphML.class);
     private static final int fontSize = 12;
 
     @Override
-    public void exportDiagram(EntityDiagram diagram, IFigure figure, DiagramPart diagramPart, File targetFile) {
+    public void exportDiagram(
+        @NotNull EntityDiagram diagram,
+        @NotNull IFigure figure,
+        @NotNull DiagramPart diagramPart,
+        @NotNull File targetFile
+    ) {
         try {
             try (final OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(targetFile), GeneralUtils.UTF8_CHARSET)) {
                 XMLBuilder xml = new XMLBuilder(osw, GeneralUtils.UTF8_ENCODING);
@@ -136,8 +141,15 @@ public class ERDExportGraphML implements ERDExportFormatHandler
         }
     }
 
-    private static void exportEntity(int index, ERDEntity entity, EntityPart entityPart, EntityDiagram diagram,
-        Map<ERDElement<?>, String> associations, Map<ERDElement<?>, NodeCenter> nodeCenters, XMLBuilder xml) throws IOException {
+    private static void exportEntity(
+        int index,
+        @NotNull ERDEntity entity,
+        @NotNull EntityPart entityPart,
+        @NotNull EntityDiagram diagram,
+        @NotNull Map<ERDElement<?>, String> associations,
+        @NotNull Map<ERDElement<?>, NodeCenter> nodeCenters,
+        @NotNull XMLBuilder xml
+    ) throws IOException {
         final String entityId = "entity" + index;
         final EntityFigure entityFigure = entityPart.getFigure();
         final Rectangle partBounds = entityPart.getBounds();
@@ -268,8 +280,14 @@ public class ERDExportGraphML implements ERDExportFormatHandler
         xml.endElement();
     }
 
-    private static void exportNote(int index, ERDNote note, NotePart notePart,
-        Map<ERDElement<?>, String> associations, Map<ERDElement<?>, NodeCenter> nodeCenters, XMLBuilder xml) throws IOException {
+    private static void exportNote(
+        int index,
+        @NotNull ERDNote note,
+        @NotNull NotePart notePart,
+        @NotNull Map<ERDElement<?>, String> associations,
+        @NotNull Map<ERDElement<?>, NodeCenter> nodeCenters,
+        @NotNull XMLBuilder xml
+    ) throws IOException {
         final String noteId = "note" + index;
         final IFigure noteFigure = notePart.getFigure();
         final Rectangle noteBounds = notePart.getBounds();
@@ -340,8 +358,14 @@ public class ERDExportGraphML implements ERDExportFormatHandler
         xml.endElement();
     }
 
-    private static void exportEdge(int index, ERDElement<?> node, NodePart nodePart,
-        Map<ERDElement<?>, String> associations, Map<ERDElement<?>, NodeCenter> nodeCenters, XMLBuilder xml) throws IOException {
+    private static void exportEdge(
+        int index,
+        @NotNull ERDElement<?> node,
+        @NotNull NodePart nodePart,
+        @NotNull Map<ERDElement<?>, String> associations,
+        @NotNull Map<ERDElement<?>, NodeCenter> nodeCenters,
+        @NotNull XMLBuilder xml
+    ) throws IOException {
         int associationIndex = 0;
         for (ERDAssociation association : node.getAssociations()) {
             AssociationPart associationPart = nodePart.getConnectionPart(association, true);
@@ -386,8 +410,13 @@ public class ERDExportGraphML implements ERDExportFormatHandler
         }
     }
 
-    private static void exportPath(ERDAssociation association, AssociationPart associationPart,
-        Map<ERDElement<?>, NodeCenter> nodeCenters, IFigure diagramFigure, XMLBuilder xml) throws IOException {
+    private static void exportPath(
+        @NotNull ERDAssociation association,
+        @NotNull AssociationPart associationPart,
+        @NotNull Map<ERDElement<?>, NodeCenter> nodeCenters,
+        @NotNull IFigure diagramFigure,
+        @NotNull XMLBuilder xml
+    ) throws IOException {
         Connection connection = associationPart.getConnectionFigure();
         PointList points = connection.getPoints().getCopy();
         NodeCenter source = nodeCenters.get(association.getSourceEntity());
@@ -436,7 +465,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
     private record NodeCenter(double x, double y) {
     }
 
-    private static double getExtraTableLength(EntityDiagram diagram, ERDEntity entity) {
+    private static double getExtraTableLength(@NotNull EntityDiagram diagram, @NotNull ERDEntity entity) {
         int maxLength = 0;
         for (ERDEntityAttribute attr : entity.getAttributes()) {
             int attributeLength = (ERDUIUtils.getFullAttributeLabel(diagram, attr, true)).length();
@@ -453,14 +482,14 @@ public class ERDExportGraphML implements ERDExportFormatHandler
         return (maxLength * (fontSize * 0.12));
     }
 
-    private static String getHtmlColor(Color color) {
+    @NotNull
+    private static String getHtmlColor(@NotNull Color color) {
         return "#" + getHexColor(color.getRed()) + getHexColor(color.getGreen()) + getHexColor(color.getBlue());
     }
 
+    @NotNull
     private static String getHexColor(int value) {
         String hex = Integer.toHexString(value).toUpperCase();
         return hex.length() < 2 ? "0" + hex : hex;
     }
-
-
 }
