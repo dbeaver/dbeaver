@@ -263,11 +263,18 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             if (selectionProvider != null
                 && selectionProvider.getSelection() instanceof IStructuredSelection selection
                 && !selection.isEmpty()
-                && selection.toList().stream().allMatch(DBNDataSource.class::isInstance)
             ) {
-                label = selection.size() == 1
-                    ? UINavigatorMessages.actions_navigator_delete_connection
-                    : UINavigatorMessages.actions_navigator_delete_connections;
+                List<DBNNode> nodes = NavigatorUtils.getSelectedNodes(selection);
+                if (nodes.size() == selection.size()) {
+                    String nodeType = nodes.getFirst().getNodeTypeLabel();
+                    if (!CommonUtils.isEmpty(nodeType) && nodes.stream().allMatch(node -> nodeType.equals(node.getNodeTypeLabel()))) {
+                        label = selection.size() == 1
+                            ? NLS.bind(UINavigatorMessages.actions_navigator_delete, nodeType)
+                            : NLS.bind(UINavigatorMessages.actions_navigator_delete_multiple, nodeType, selection.size());
+                    } else if (selection.size() > 1) {
+                        label = NLS.bind(UINavigatorMessages.actions_navigator_delete_objects, selection.size());
+                    }
+                }
             }
             return new IContributionItem[] {
                 ActionUtils.makeCommandContribution(window, IWorkbenchCommandConstants.EDIT_DELETE, label, null)
