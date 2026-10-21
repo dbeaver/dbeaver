@@ -345,4 +345,44 @@ public class MySQLGrantTest extends DBeaverUnitTest {
         // Revokes address the stored escaped row
         Assertions.assertEquals("tenant\\_1", grant.getWildcardSchemaPattern(catalog("tenant_1")));
     }
+
+    @NotNull
+    private static MySQLUser userWithPartialRevokes(int lowerCaseTableNames) {
+        MySQLUser user = userWithLowerCaseTableNames(lowerCaseTableNames);
+        Mockito.when(user.getDataSource().isPartialRevokes()).thenReturn(true);
+        return user;
+    }
+
+    @Test
+    public void partialRevokesMatchesSchemaLiterally() {
+        // partial_revokes=ON: _ and % in a schema grant are plain characters, tenant_1 does not cover tenantX1
+        MySQLGrant grant = new MySQLGrant(
+            userWithPartialRevokes(1), new ArrayList<>(), "tenant_1", "*", false, false, MySQLGrant.ObjectType.TABLE);
+        Assertions.assertTrue(grant.matches(catalog("tenant_1")));
+        Assertions.assertTrue(grant.matches(catalog("TENANT_1")));
+        Assertions.assertFalse(grant.matches(catalog("tenantX1")));
+        Assertions.assertNull(grant.getWildcardSchemaPattern(catalog("tenant_1")));
+
+        MySQLGrant percent = new MySQLGrant(
+            userWithPartialRevokes(1), new ArrayList<>(), "tenant%", "*", false, false, MySQLGrant.ObjectType.TABLE);
+        Assertions.assertFalse(percent.matches(catalog("tenant_1")));
+        Assertions.assertTrue(percent.matches(catalog("tenant%")));
+    }
+
+    @Test
+    public void partialRevokesMatchesSchemaCaseSensitivelyWhenServerIs() {
+        MySQLGrant grant = new MySQLGrant(
+            userWithPartialRevokes(0), new ArrayList<>(), "Tenant_1", "*", false, false, MySQLGrant.ObjectType.TABLE);
+        Assertions.assertTrue(grant.matches(catalog("Tenant_1")));
+        Assertions.assertFalse(grant.matches(catalog("tenant_1")));
+        Assertions.assertFalse(grant.matches(catalog("TenantX1")));
+    }
+
+    @Test
+    public void allCatalogsGrantMatchesOnlyGlobalLevel() {
+        MySQLGrant grant = tableGrant("*", "*", List.of(), false);
+        Assertions.assertTrue(grant.matches((MySQLCatalog) null));
+        Assertions.assertFalse(grant.matches(catalog("mydb")));
+        Assertions.assertFalse(tableGrant("mydb", "*", List.of(), false).matches((MySQLCatalog) null));
+    }
 }

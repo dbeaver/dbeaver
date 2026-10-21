@@ -301,13 +301,19 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
     /**
      * Returns true if the given catalog exists and it is comparable to this grant catalog
      * or the given catalog is empty, but the grant applies to all catalogs.
+     * The grant catalog is a LIKE pattern unless partial_revokes is enabled, then it is a literal name.
      */
     public boolean matches(@Nullable MySQLCatalog catalog) {
-        return (catalog == null && isAllCatalogs())
-            || (catalog != null && CommonUtils.isNotEmpty(catalogName) && !isAllCatalogs()
-            && (isCaseSensitiveNames()
-                ? Pattern.compile(SQLUtils.makeLikePattern(catalogName)).matcher(catalog.getName()).matches()
-                : SQLUtils.matchesLike(catalog.getName(), catalogName)));
+        if (catalog == null || CommonUtils.isEmpty(catalogName) || isAllCatalogs()) {
+            return catalog == null && isAllCatalogs();
+        }
+        boolean caseSensitive = isCaseSensitiveNames();
+        if (isPartialRevokes()) {
+            return caseSensitive ? catalog.getName().equals(catalogName) : catalog.getName().equalsIgnoreCase(catalogName);
+        }
+        return caseSensitive
+            ? Pattern.compile(SQLUtils.makeLikePattern(catalogName)).matcher(catalog.getName()).matches()
+            : SQLUtils.matchesLike(catalog.getName(), catalogName);
     }
 
     public boolean matches(@Nullable MySQLTableBase table) {
@@ -318,6 +324,14 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
             return isAllTables();
         }
         return isCaseSensitiveNames() ? table.getName().equals(tableName) : table.getName().equalsIgnoreCase(tableName);
+    }
+
+    /**
+     * With partial_revokes enabled MySQL takes {@code %} and {@code _} in schema names of grants literally.
+     */
+    private boolean isPartialRevokes() {
+        MySQLDataSource dataSource = user.getDataSource();
+        return dataSource != null && dataSource.isPartialRevokes();
     }
 
     /**

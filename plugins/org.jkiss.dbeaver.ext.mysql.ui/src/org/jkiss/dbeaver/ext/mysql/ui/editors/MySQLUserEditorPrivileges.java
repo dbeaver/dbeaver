@@ -20,6 +20,7 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
@@ -150,6 +151,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
                     // privilege panel never targets an object that is no longer visibly selected
                     catalogsTable.setSelection(0);
                 }
+                keepAllObjectsRowExclusive(catalogsTable, e);
                 selectedCatalogs.clear();
                 for (TableItem item : catalogsTable.getSelection()) {
                     if (item.getData() != null) {
@@ -203,6 +205,7 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
                     // Nothing left selected: back to the schema level ("% (All)" row)
                     tablesTable.setSelection(0);
                 }
+                keepAllObjectsRowExclusive(tablesTable, e);
                 selectedTables.clear();
                 for (TableItem item : tablesTable.getSelection()) {
                     if (item.getData() != null) {
@@ -1594,6 +1597,28 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             return true;
         }
         return false;
+    }
+
+    /**
+     * The "% (All)" row (an item without data) addresses a whole level (*.* or db.*), so it can't be a grant
+     * target together with concrete objects: Ctrl-clicking it leaves only it selected, Ctrl-clicking an object
+     * while it is selected deselects it. Otherwise the list would show it selected while edits ignore it.
+     */
+    private static void keepAllObjectsRowExclusive(@NotNull Table table, @NotNull SelectionEvent e) {
+        TableItem[] selection = table.getSelection();
+        if (selection.length < 2) {
+            return;
+        }
+        for (TableItem item : selection) {
+            if (item.getData() == null) {
+                if (e.item == item) {
+                    table.setSelection(item);
+                } else {
+                    table.deselect(table.indexOf(item));
+                }
+                return;
+            }
+        }
     }
 
     /**
