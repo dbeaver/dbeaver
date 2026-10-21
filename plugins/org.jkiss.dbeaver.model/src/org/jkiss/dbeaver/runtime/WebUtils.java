@@ -158,7 +158,9 @@ public class WebUtils {
                 connection.connect();
                 if (connection instanceof HttpURLConnection httpConnection) {
                     final int responseCode = httpConnection.getResponseCode();
-                    if (responseCode != 200) {
+                    if (responseCode != HttpURLConnection.HTTP_OK
+                        && !(responseCode == HttpURLConnection.HTTP_NOT_MODIFIED
+                            && headers != null && headers.containsKey("If-None-Match"))) {
                         if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
                             String newUrl = connection.getHeaderField("Location");
                             return openURLConnection(newUrl, authInfo, referrer, retryNumber + 1);
