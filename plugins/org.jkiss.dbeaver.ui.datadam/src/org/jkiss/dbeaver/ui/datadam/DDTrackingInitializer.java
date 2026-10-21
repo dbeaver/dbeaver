@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.datadam;
 
-import com.dbeaver.datadam.share.api.tracking.DDClientInfo;
-import com.dbeaver.datadam.share.api.tracking.DDTracking;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.IWorkbench;
@@ -25,154 +23,55 @@ import org.eclipse.ui.IWorkbenchListener;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.datadam.DDEndpoints;
+import org.jkiss.dbeaver.model.datadam.DDDesktopTrackingService;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
-import org.jkiss.dbeaver.model.datadam.DDTrackingClient;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.StandardConstants;
 
-import java.io.IOException;
-import java.util.HexFormat;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
 
     private static final Log log = Log.getLog(DDTrackingInitializer.class);
-
-    private static final AtomicBoolean LISTENER_REGISTERED = new AtomicBoolean(false);
-    private static final AtomicBoolean TOKEN_RESTORE_STARTED = new AtomicBoolean(false);
-    private static final AtomicReference<Session> ACTIVE_SESSION = new AtomicReference<>();
+    private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
 
     @Override
     public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
-        if (!DDProductConfig.isIntegrationEnabled()) {
+        if (!DDProductConfig.isIntegrationEnabled() || !INITIALIZED.compareAndSet(false, true)) {
             return;
         }
-        if (LISTENER_REGISTERED.compareAndSet(false, true)) {
-            PlatformUI.getWorkbench().addWorkbenchListener(new IWorkbenchListener() {
-                @Override
-                public boolean preShutdown(@NotNull IWorkbench workbench, boolean forced) {
-                    stop();
-                    return true;
-                }
-
-                @Override
-                public void postShutdown(@NotNull IWorkbench workbench) {
-                    //empty
-                }
-            });
-        }
-        restoreDesktopLogin();
-    }
-
-    private static void restoreDesktopLogin() {
-        if (!TOKEN_RESTORE_STARTED.compareAndSet(false, true)) {
-            return;
-        }
-        DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
-        if (accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_OUT) {
-            return;
-        }
-        AbstractJob restoreJob = new AbstractJob("DataDam desktop session restore") {
-            @NotNull
+        PlatformUI.getWorkbench().addWorkbenchListener(new IWorkbenchListener() {
             @Override
-            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-                if (!DDProductConfig.isIntegrationEnabled()) {
-                    return Status.CANCEL_STATUS;
-                }
+            public boolean preShutdown(@NotNull IWorkbench workbench, boolean forced) {
                 try {
-                    accessService.load();
+                    DDDesktopTrackingService.getInstance().stop();
                 } catch (DBException e) {
-                    log.debug("DataDam desktop token could not be restored", e);
-                    if (accessService.getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
-                        return Status.OK_STATUS;
-                    }
+                    log.debug("DataDam tracking stop failed", e);
                 }
-                start();
-                return Status.OK_STATUS;
+                return true;
             }
-        };
-        restoreJob.setSystem(true);
-        restoreJob.schedule();
-    }
 
-    /**
-     * Starts tracking if a desktop token is available and tracking is not already running.
-     * Safe to call again after a login, it is a no-op while a session is already active.
-     */
-    public static void start() {
-        if (!DDProductConfig.isIntegrationEnabled()) {
-            return;
-        }
-        DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
-        if (accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_OUT) {
-            log.debug("DataDam tracking disabled (not signed in to SSO)");
-            return;
-        }
-        String url = DDEndpoints.getStorageBaseUrl();
-        DDTrackingClient client = new DDTrackingClient(url);
-        Session session = new Session(client);
-        if (!ACTIVE_SESSION.compareAndSet(null, session)) {
-            // already tracking
-            return;
-        }
+            @Override
+            public void postShutdown(@NotNull IWorkbench workbench) {
+                //empty
+            }
+        });
 
         AbstractJob startJob = new AbstractJob("DataDam tracking start") {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-                if (ACTIVE_SESSION.get() != session) {
-                    // stopped before the request went out
-                    return Status.OK_STATUS;
-                }
                 try {
                     if (!DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
-                        ACTIVE_SESSION.compareAndSet(session, null);
                         return Status.CANCEL_STATUS;
                     }
+                    DDDesktopTrackingService.getInstance().start();
                 } catch (DBException e) {
-                    log.debug("DataDam access initialization failed", e);
-                    if (accessService.getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
-                        ACTIVE_SESSION.compareAndSet(session, null);
-                        return Status.CANCEL_STATUS;
-                    }
-                }
-                if (ACTIVE_SESSION.get() != session) {
+                    log.debug("DataDam tracking start failed", e);
                     return Status.CANCEL_STATUS;
-                }
-                DDClientInfo info = new DDClientInfo(
-                    DBWorkbench.getPlatform().getDeploymentId(),
-                    DBWorkbench.getPlatform().getWorkspace().getWorkspaceId(),
-                    GeneralUtils.getProductName(),
-                    GeneralUtils.getProductVersion().toString(),
-                    System.getProperty(StandardConstants.ENV_OS_NAME),
-                    RuntimeUtils.getOSVersion().toString(),
-                    localMacAddress(),
-                    localIpAddress()
-                );
-                try {
-                    DDTracking tracking = client.start(info);
-                    if (tracking != null) {
-                        if (ACTIVE_SESSION.get() == session) {
-                            session.trackingId.set(tracking.trackingId());
-                        } else {
-                            // stop() already ran and saw no trackingId yet - clean up the session we just started
-                            client.stop(tracking.trackingId());
-                        }
-                    }
-                } catch (DBException e) {
-                    log.debug("DataDam tracking request failed", e);
-                    ACTIVE_SESSION.compareAndSet(session, null);
                 }
                 return Status.OK_STATUS;
             }
@@ -180,52 +79,4 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
         startJob.setSystem(true);
         startJob.schedule();
     }
-
-    /**
-     * Stops the active tracking session, if any. Safe to call after a logout or on shutdown.
-     */
-    public static void stop() {
-        Session session = ACTIVE_SESSION.getAndSet(null);
-        if (session == null) {
-            return;
-        }
-        String id = session.trackingId.get();
-        if (id != null) {
-            try {
-                session.client.stop(id);
-            } catch (DBException e) {
-                log.debug("DataDam tracking stop failed", e);
-            }
-        }
-    }
-
-    private static final class Session {
-        @NotNull
-        private final DDTrackingClient client;
-        @NotNull
-        private final AtomicReference<String> trackingId = new AtomicReference<>();
-
-        private Session(@NotNull DDTrackingClient client) {
-            this.client = client;
-        }
-    }
-
-    @NotNull
-    private static String localIpAddress() {
-        return RuntimeUtils.getLocalHostOrLoopback().getHostAddress();
-    }
-
-    @Nullable
-    private static String localMacAddress() {
-        try {
-
-            return HexFormat.ofDelimiter("-")
-                .withUpperCase()
-                .formatHex(RuntimeUtils.getLocalMacAddress());
-
-        } catch (IOException e) {
-            return null;
-        }
-    }
-
 }

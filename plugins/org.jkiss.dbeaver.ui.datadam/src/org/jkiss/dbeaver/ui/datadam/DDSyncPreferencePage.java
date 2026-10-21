@@ -27,6 +27,8 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.datadam.DDDesktopTrackingService;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -40,8 +42,11 @@ import java.lang.reflect.InvocationTargetException;
 
 public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
 
+    private static final Log log = Log.getLog(DDSyncPreferencePage.class);
+
     private static final String SYNC_TITLE = DDTrackingUIMessages.sync_preference_page_title;
     private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
+    private final DDDesktopTrackingService tracker = DDDesktopTrackingService.getInstance();
     private AbstractJob userViewJob;
 
     private Text accountText;
@@ -180,12 +185,16 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     private void logIn() {
         runOperation(DDTrackingUIMessages.sync_preference_page_login_failed, monitor -> {
-            DDTrackingInitializer.stop();
+            stopTracking();
             try {
                 accessService.signIn(monitor);
             } finally {
                 if (accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
-                    DDTrackingInitializer.start();
+                    try {
+                        tracker.start();
+                    } catch (DBException e) {
+                        log.debug("DataDam tracking start failed", e);
+                    }
                 }
             }
         });
@@ -193,9 +202,17 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     private void logOut() {
         runOperation(DDTrackingUIMessages.sync_preference_page_logout_failed, monitor -> {
-            DDTrackingInitializer.stop();
+            stopTracking();
             accessService.signOut();
         });
+    }
+
+    private void stopTracking() {
+        try {
+            tracker.stop();
+        } catch (DBException e) {
+            log.debug("DataDam tracking stop failed", e);
+        }
     }
 
     private void refresh() {
