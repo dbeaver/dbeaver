@@ -710,8 +710,9 @@
             <command commandId="org.jkiss.dbeaver.core.edit.copy.special" label="%command.org.jkiss.dbeaver.core.edit.copy.adv_info">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <dynamic id="org.jkiss.dbeaver.core.object.delete.menu"
-                     class="org.jkiss.dbeaver.ui.navigator.actions.NavigatorHandlerObjectDelete$MenuContributor"/>
+            <command commandId="org.eclipse.ui.edit.delete">
+                <visibleWhen checkEnabled="true"/>
+            </command>
             <command commandId="org.eclipse.ui.edit.rename">
                 <visibleWhen checkEnabled="true"/>
             </command>

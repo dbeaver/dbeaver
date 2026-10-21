@@ -18,14 +18,11 @@ package org.jkiss.dbeaver.ui.navigator.actions;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
@@ -44,7 +41,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
@@ -226,59 +222,28 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
     }
 
     @Override
-    public void updateElement(UIElement element, Map parameters) {
+    public void updateElement(@NotNull UIElement element, @NotNull Map parameters) {
         if (!updateUI) {
             return;
         }
-        if (!UPDATE_GLOBAL_ACTION_LABELS) {
-            // We cannot update labels/icons for context-dependent global actions
-            // Because main menu is not updated on every menu show. And only the first text is saved
+        ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
+        if (selectionProvider == null
+            || !(selectionProvider.getSelection() instanceof IStructuredSelection selection)
+            || selection.isEmpty()
+        ) {
             return;
         }
-
-        final ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
-        if (selectionProvider != null) {
-            ISelection selection = selectionProvider.getSelection();
-
-            if (selection instanceof IStructuredSelection structuredSelection && structuredSelection.size() == 1) {
-                DBNNode node = NavigatorUtils.getSelectedNode(structuredSelection);
-                if (node != null) {
-                    element.setText(NLS.bind(UINavigatorMessages.actions_navigator_delete, node.getNodeTypeLabel()));
-                }
-            }
+        List<DBNNode> nodes = NavigatorUtils.getSelectedNodes(selection);
+        if (nodes.size() != selection.size()) {
+            return;
         }
-    }
-
-    public static class MenuContributor extends CompoundContributionItem {
-        @NotNull
-        @Override
-        protected IContributionItem[] getContributionItems() {
-            IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
-            if (!ActionUtils.isCommandEnabled(IWorkbenchCommandConstants.EDIT_DELETE, window)) {
-                return new IContributionItem[0];
-            }
-
-            String label = null;
-            ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(window);
-            if (selectionProvider != null
-                && selectionProvider.getSelection() instanceof IStructuredSelection selection
-                && !selection.isEmpty()
-            ) {
-                List<DBNNode> nodes = NavigatorUtils.getSelectedNodes(selection);
-                if (nodes.size() == selection.size()) {
-                    String nodeType = nodes.getFirst().getNodeTypeLabel();
-                    if (!CommonUtils.isEmpty(nodeType) && nodes.stream().allMatch(node -> nodeType.equals(node.getNodeTypeLabel()))) {
-                        label = selection.size() == 1
-                            ? NLS.bind(UINavigatorMessages.actions_navigator_delete, nodeType)
-                            : NLS.bind(UINavigatorMessages.actions_navigator_delete_multiple, nodeType, selection.size());
-                    } else if (selection.size() > 1) {
-                        label = NLS.bind(UINavigatorMessages.actions_navigator_delete_objects, selection.size());
-                    }
-                }
-            }
-            return new IContributionItem[] {
-                ActionUtils.makeCommandContribution(window, IWorkbenchCommandConstants.EDIT_DELETE, label, null)
-            };
+        String nodeType = nodes.getFirst().getNodeTypeLabel();
+        if (!CommonUtils.isEmpty(nodeType) && nodes.stream().allMatch(node -> nodeType.equals(node.getNodeTypeLabel()))) {
+            element.setText(selection.size() == 1
+                ? NLS.bind(UINavigatorMessages.actions_navigator_delete, nodeType)
+                : NLS.bind(UINavigatorMessages.actions_navigator_delete_multiple, nodeType, selection.size()));
+        } else if (selection.size() > 1) {
+            element.setText(NLS.bind(UINavigatorMessages.actions_navigator_delete_objects, selection.size()));
         }
     }
 }
