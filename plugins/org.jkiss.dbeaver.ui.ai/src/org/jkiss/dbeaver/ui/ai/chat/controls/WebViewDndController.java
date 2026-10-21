@@ -63,6 +63,7 @@ final class WebViewDndController {
     private final StackLayout stackLayout;
     private final AIChatControl chat;
     private final Supplier<DBPDataSource> dataSourceSupplier;
+    private boolean functionRegistered;
 
     WebViewDndController(
         @NotNull Composite owner,
@@ -154,6 +155,23 @@ final class WebViewDndController {
             }
         });
 
+        owner.addTraverseListener(e -> {
+            if (e.detail == SWT.TRAVERSE_ESCAPE) {
+                hideDndOverlay();
+            }
+        });
+
+        Display display = owner.getDisplay();
+        Listener dragEndListener = event -> hideDndOverlay();
+        display.addFilter(DND.DragEnd, dragEndListener);
+        owner.addDisposeListener(event -> display.removeFilter(DND.DragEnd, dragEndListener));
+    }
+
+    void registerBrowserFunction() {
+        if (functionRegistered) {
+            return;
+        }
+        functionRegistered = true;
         new BrowserFunction(browser, "onDragEnter") {
             @Nullable
             @Override
@@ -166,17 +184,6 @@ final class WebViewDndController {
                 return null;
             }
         };
-
-        owner.addTraverseListener(e -> {
-            if (e.detail == SWT.TRAVERSE_ESCAPE) {
-                hideDndOverlay();
-            }
-        });
-
-        Display display = owner.getDisplay();
-        Listener dragEndListener = event -> hideDndOverlay();
-        display.addFilter(DND.DragEnd, dragEndListener);
-        owner.addDisposeListener(event -> display.removeFilter(DND.DragEnd, dragEndListener));
     }
 
     private boolean isDropSupported(@NotNull Object[] arguments) {
