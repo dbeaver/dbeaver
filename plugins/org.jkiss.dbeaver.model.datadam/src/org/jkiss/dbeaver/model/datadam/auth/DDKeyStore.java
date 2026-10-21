@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.impl.app.SecurePreferencesSecretController;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.utils.CommonUtils;
 
@@ -32,7 +31,7 @@ import javax.crypto.SecretKey;
 public class DDKeyStore {
 
     private static final Log log = Log.getLog(DDKeyStore.class);
-    private static final DDKeyStore INSTANCE = new DDKeyStore(SecurePreferencesSecretController.INSTANCE);
+    private static final DDKeyStore INSTANCE = new DDKeyStore(DDSecretStorage.getInstance());
     private final DBSSecretController secretStorage;
 
     @Deprecated(forRemoval = true)

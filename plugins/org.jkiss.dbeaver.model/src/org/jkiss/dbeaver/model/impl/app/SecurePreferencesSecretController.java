@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.app;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.StorageException;
+import org.eclipse.equinox.security.storage.provider.IProviderHints;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -30,6 +31,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -39,12 +41,23 @@ public class SecurePreferencesSecretController implements DBSSecretController, D
 
     public static final String SECRET_PREFS_ROOT = "dbeaver";
 
-    public static final SecurePreferencesSecretController INSTANCE = new SecurePreferencesSecretController("");
+    public static final SecurePreferencesSecretController INSTANCE = new SecurePreferencesSecretController(
+        "", SECRET_PREFS_ROOT, Map.of());
 
     private final Path root;
+    private final String nodeName;
+    private final Map<String, String> options;
 
-    private SecurePreferencesSecretController(String root) {
+    private SecurePreferencesSecretController(String root, String nodeName, Map<String, String> options) {
         this.root = Path.of(root);
+        this.nodeName = nodeName;
+        this.options = options;
+    }
+
+    @NotNull
+    public static SecurePreferencesSecretController create(@NotNull String nodeName, @Nullable String providerId) {
+        return new SecurePreferencesSecretController("", nodeName, providerId == null
+            ? Map.of() : Map.of(IProviderHints.REQUIRED_MODULE_ID, providerId));
     }
 
     @Nullable
@@ -91,20 +104,35 @@ public class SecurePreferencesSecretController implements DBSSecretController, D
     @Override
     public void flushChanges() throws DBException {
         try {
-            SecurePreferencesFactory.getDefault().flush();
+            getNodeByPath(null).flush();
         } catch (IOException e) {
             throw new DBException("Error flushing secure preferences", e);
         }
     }
 
-    private static ISecurePreferences getNodeByPath(Path path) {
-        ISecurePreferences rootNode = SecurePreferencesFactory.getDefault().node(SECRET_PREFS_ROOT);
-        if (path != null) {
-            for (Path name : path) {
-                rootNode = rootNode.node(name.toString());
+    private ISecurePreferences getNodeByPath(@Nullable Path path) throws DBException {
+        try {
+            ISecurePreferences rootNode = (options.isEmpty()
+                ? SecurePreferencesFactory.getDefault()
+                : SecurePreferencesFactory.open(null, options)).node(nodeName);
+            if (path != null) {
+                for (Path name : path) {
+                    rootNode = rootNode.node(name.toString());
+                }
             }
+            return rootNode;
+        } catch (IOException e) {
+            throw new DBException("Error opening secure preferences", e);
         }
-        return rootNode;
+    }
+
+    public boolean isPrivateSecretEncrypted(@NotNull String secretId) throws DBException {
+        try {
+            Path keyPath = root.resolve(escapeSecretKey(secretId));
+            return getNodeByPath(keyPath.getParent()).isEncrypted(keyPath.getFileName().toString());
+        } catch (StorageException e) {
+            throw new DBSecurityException("Error checking encryption of preference value '" + secretId + "'", e);
+        }
     }
 
     @NotNull
