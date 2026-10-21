@@ -28,10 +28,18 @@ public class RedshiftQueries {
             SELECT waiting.pid AS blocked_pid, waiting.txn_owner AS blocked_user,
                    waiting.xid AS blocked_xid, holding.pid AS blocking_pid,
                    holding.txn_owner AS blocking_user, holding.xid AS blocking_xid,
-                   ROW_NUMBER() OVER (PARTITION BY waiting.pid ORDER BY holding.txn_start, holding.pid) AS lock_rank
+                   ROW_NUMBER() OVER (
+                       PARTITION BY waiting.pid
+                       ORDER BY CASE WHEN holding.granted THEN 1 ELSE 0 END, holding.txn_start, holding.pid
+                   ) AS lock_rank
             FROM locks waiting
             JOIN locks holding ON waiting.txn_db = holding.txn_db AND waiting.relation = holding.relation
-                AND waiting.pid <> holding.pid AND waiting.xid <> holding.xid AND holding.granted
+                AND waiting.pid <> holding.pid AND waiting.xid <> holding.xid
+                AND (holding.granted OR (
+                    holding.lock_mode = 'AccessExclusiveLock'
+                    AND (holding.txn_start < waiting.txn_start
+                        OR (holding.txn_start = waiting.txn_start AND holding.pid < waiting.pid))
+                ))
                 AND CASE waiting.lock_mode
                     WHEN 'AccessShareLock' THEN holding.lock_mode IN ('AccessExclusiveLock')
                     WHEN 'RowShareLock' THEN holding.lock_mode IN ('ExclusiveLock', 'AccessExclusiveLock')

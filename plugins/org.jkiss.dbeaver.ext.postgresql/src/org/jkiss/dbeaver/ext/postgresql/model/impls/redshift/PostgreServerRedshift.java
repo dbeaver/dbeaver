@@ -63,7 +63,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     private Version redshiftVersion;
     private Boolean supportsRecentQueries;
 
-    public PostgreServerRedshift(PostgreDataSource dataSource) {
+    public PostgreServerRedshift(@NotNull PostgreDataSource dataSource) {
         super(dataSource);
     }
     

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.RedshiftQueries;
@@ -25,6 +26,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.lock.PostgreLockManager;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.admin.locks.LockGraph;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphManager;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
@@ -34,9 +36,13 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
 
 public class PostgreLockManagerTest extends DBeaverUnitTest {
     @Mock
@@ -151,5 +157,60 @@ public class PostgreLockManagerTest extends DBeaverUnitTest {
     @Test
     public void redshiftSupportsLockManager() {
         Assertions.assertTrue(dataSource.getServerType().supportsLocks());
+    }
+
+    @Test
+    public void graphRefreshPublishesOnlyCompleteSnapshot() throws Exception {
+        PostgreLock previousLock = mockLock(11);
+        manager.buildGraphs(Map.of(11, previousLock));
+        LockGraph previousGraph = manager.getGraph(previousLock);
+        PostgreLock nextLock = mockLock(22);
+        CountDownLatch building = new CountDownLatch(1);
+        CountDownLatch resume = new CountDownLatch(1);
+        Mockito.when(nextLock.getHoldID()).thenAnswer(invocation -> {
+            building.countDown();
+            if (!resume.await(5, TimeUnit.SECONDS)) {
+                throw new AssertionError("Graph refresh timed out");
+            }
+            return 0;
+        });
+        FutureTask<Void> refresh = new FutureTask<>(() -> {
+            manager.buildGraphs(Map.of(22, nextLock));
+            return null;
+        });
+        Thread.ofPlatform().start(refresh);
+        try {
+            Assertions.assertTrue(building.await(5, TimeUnit.SECONDS));
+            Assertions.assertSame(previousGraph, manager.getGraph(previousLock));
+            Assertions.assertNull(manager.getGraph(nextLock));
+        } finally {
+            resume.countDown();
+            refresh.get(5, TimeUnit.SECONDS);
+        }
+        Assertions.assertNull(manager.getGraph(previousLock));
+        Assertions.assertSame(nextLock, manager.getGraph(nextLock).getLockRoot());
+    }
+
+    @Test
+    public void failedGraphRefreshKeepsPreviousSnapshot() {
+        PostgreLock previousLock = mockLock(11);
+        manager.buildGraphs(Map.of(11, previousLock));
+        LockGraph previousGraph = manager.getGraph(previousLock);
+        PostgreLock nextLock = mockLock(22);
+        Mockito.when(nextLock.getHoldID()).thenThrow(new IllegalStateException("Invalid lock snapshot"));
+
+        Assertions.assertThrows(IllegalStateException.class, () -> manager.buildGraphs(Map.of(22, nextLock)));
+
+        Assertions.assertSame(previousGraph, manager.getGraph(previousLock));
+        Assertions.assertNull(manager.getGraph(nextLock));
+    }
+
+    @NotNull
+    private PostgreLock mockLock(int pid) {
+        PostgreLock lock = Mockito.mock(PostgreLock.class);
+        Mockito.when(lock.getId()).thenReturn(pid);
+        Mockito.when(lock.getHoldID()).thenReturn(0);
+        Mockito.when(lock.waitThis()).thenReturn(new ArrayList<>());
+        return lock;
     }
 }

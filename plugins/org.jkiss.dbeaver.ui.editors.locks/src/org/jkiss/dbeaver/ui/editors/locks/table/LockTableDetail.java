@@ -49,27 +49,33 @@ public class LockTableDetail extends DatabaseObjectListControl<DBAServerLockItem
 
     private static final int RELOAD_DELAY = 50;
 
-    private DBAServerLockManager<DBAServerLock,DBAServerLockItem> lockManager;
+    private DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager;
     private boolean reloadPending;
-    Map<String, Object> options = new HashMap<String, Object>(1); 
-    
-    public Map<String, Object> getOptions() {
-		return options;
-	}
+    private final Map<String, Object> options = new HashMap<>(1);
 
-	public LockTableDetail(Composite parent, int style, IWorkbenchSite site, DBAServerLockManager<DBAServerLock,DBAServerLockItem> lockManager)
-    {
+    @NotNull
+    public Map<String, Object> getOptions() {
+        return options;
+    }
+
+    public LockTableDetail(
+        @NotNull Composite parent,
+        int style,
+        @NotNull IWorkbenchSite site,
+        @NotNull DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager
+    ) {
         super(parent, style, site, CONTENT_PROVIDER);
         this.lockManager = lockManager;
     }
 
-    public DBAServerLockManager<DBAServerLock,DBAServerLockItem> getLockManager() {
+    @NotNull
+    public DBAServerLockManager<DBAServerLock, DBAServerLockItem> getLockManager() {
         return lockManager;
     }
 
     @NotNull
     @Override
-    protected String getListConfigId(List<Class<?>> classList) {
+    protected String getListConfigId(@NotNull List<Class<?>> classList) {
         return "LocksDetail/" + lockManager.getDataSource().getContainer().getDriver().getId();
     }
 
@@ -120,8 +126,7 @@ public class LockTableDetail extends DatabaseObjectListControl<DBAServerLockItem
         }
     }
 
-      public void init(DBAServerLockManager<DBAServerLock,DBAServerLockItem> lockManager)
-    {
+    public void init(@NotNull DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager) {
         this.lockManager = lockManager;
     }
 
@@ -146,28 +151,29 @@ public class LockTableDetail extends DatabaseObjectListControl<DBAServerLockItem
         }
 
     };
-   
 
-	private class LoadLockDetailService extends DatabaseLoadService<Collection<DBAServerLockItem>> {
+
+    private class LoadLockDetailService extends DatabaseLoadService<Collection<DBAServerLockItem>> {
 
         private final Map<String, Object> loadOptions;
 
-        protected LoadLockDetailService(@NotNull Map<String, Object> loadOptions)
-        {
+        protected LoadLockDetailService(@NotNull Map<String, Object> loadOptions) {
             super(String.format("Load lock details"), lockManager.getDataSource());
             this.loadOptions = loadOptions;
         }
 
+        @NotNull
         @Override
         public Collection<DBAServerLockItem> evaluate(@NotNull DBRProgressMonitor monitor)
-            throws InvocationTargetException, InterruptedException
-        {
+                throws InvocationTargetException, InterruptedException {
             if (loadOptions.isEmpty()) {
                 return List.of();
             }
             try {
-                try (DBCExecutionContext isolatedContext = lockManager.getDataSource().getDefaultInstance().openIsolatedContext(monitor, "View Lock item", null)) {
-                    try (DBCSession session = isolatedContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Retrieve server lock detail")) {
+                try (DBCExecutionContext isolatedContext = lockManager.getDataSource().getDefaultInstance()
+                    .openIsolatedContext(monitor, "View Lock item", null)) {
+                    try (DBCSession session = isolatedContext.openSession(
+                        monitor, DBCExecutionPurpose.UTIL, "Retrieve server lock detail")) {
                         return lockManager.getLockItems(session, loadOptions);
                     }
                 }
