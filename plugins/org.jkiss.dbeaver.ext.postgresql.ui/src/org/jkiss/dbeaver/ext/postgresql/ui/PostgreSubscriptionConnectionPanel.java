@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.ui;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
@@ -203,7 +204,6 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
             CommonUtils.notEmpty(workingConfiguration.getDatabaseName()));
         hostText.setToolTipText(PostgreMessages.dialog_create_subscription_endpoint_tip);
         portText.setToolTipText(PostgreMessages.dialog_create_subscription_endpoint_tip);
-        UIUtils.createLabelSeparator(connectionSettings, SWT.HORIZONTAL);
         authentication = UIUtils.createComposite(connectionSettings, 2);
         GridLayout authenticationLayout = (GridLayout) authentication.getLayout();
         authenticationLayout.marginLeft = PostgreSubscriptionDialogLayout.MARGIN;
@@ -380,46 +380,38 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
         return connectionInfo;
     }
 
-    public boolean hasCopiedConnection() {
+    private boolean hasCopiedConnection() {
         return desktopConfiguration != null && hostMode.getSelection();
     }
 
-    public void showPublicationSourcesMenu(@NotNull Button button) {
-        Menu menu = new Menu(button);
-        MenuItem configured = new MenuItem(menu, SWT.RADIO);
-        configured.setText(PostgreMessages.dialog_create_subscription_configured_publisher);
-        configured.setSelection(!useCopiedConnection);
-        configured.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
-            if (configured.getSelection()) {
-                useCopiedConnection = false;
-                validateInput();
-            }
-        }));
-        if (hasCopiedConnection()) {
-            MenuItem copied = new MenuItem(menu, SWT.RADIO);
-            copied.setText(copiedConnectionName);
-            copied.setSelection(useCopiedConnection);
-            copied.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
-                if (copied.getSelection()) {
-                    useCopiedConnection = true;
-                    validateInput();
-                }
-            }));
+    @NotNull
+    public String[] getPublicationSources() {
+        String configured = PostgreMessages.dialog_create_subscription_configured_publisher;
+        return hasCopiedConnection() ? new String[]{configured, getCopiedPublicationSourceName()} : new String[]{configured};
+    }
+
+    public int getPublicationSourceIndex() {
+        return useCopiedConnection ? 1 : 0;
+    }
+
+    public void selectPublicationSource(int index) {
+        boolean copied = index == 1 && hasCopiedConnection();
+        if (useCopiedConnection != copied) {
+            useCopiedConnection = copied;
+            validateInput();
         }
-        Point location = button.toDisplay(0, button.getSize().y);
-        menu.setLocation(location);
-        menu.addListener(SWT.Hide, event -> getDisplay().asyncExec(() -> {
-            if (!menu.isDisposed()) {
-                menu.dispose();
-            }
-        }));
-        menu.setVisible(true);
+    }
+
+    @NotNull
+    private String getCopiedPublicationSourceName() {
+        return NLS.bind(PostgreMessages.dialog_create_subscription_copied_publisher,
+            copiedConnectionName + " / " + publisher.getConnectionConfiguration().getDatabaseName());
     }
 
     @NotNull
     public String getPublicationSourceName() {
         if (useCopiedConnection) {
-            return copiedConnectionName + " / " + publisher.getConnectionConfiguration().getDatabaseName();
+            return getCopiedPublicationSourceName();
         }
         return PostgreMessages.dialog_create_subscription_configured_publisher;
     }

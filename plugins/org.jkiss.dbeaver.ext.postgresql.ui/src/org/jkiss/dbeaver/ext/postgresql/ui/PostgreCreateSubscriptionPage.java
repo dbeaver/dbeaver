@@ -40,12 +40,14 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.forms.events.IExpansionListener;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSubscription;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -98,8 +100,8 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
     private StackLayout publicationsListLayout;
     private Composite publicationsEmptyArea;
     private Label publicationsEmpty;
-    private Button publicationSource;
-    private Button publisherSetup;
+    private Combo publicationSource;
+    private ToolBar publisherSetup;
     private Boolean publisherLogicalReplicationEnabled;
     private boolean publicationsDirty = true;
     private Text publicationsFilter;
@@ -264,8 +266,11 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
         ((GridLayout) source.getLayout()).verticalSpacing = PostgreSubscriptionDialogLayout.COMPACT_SPACING;
         source.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         UIUtils.createControlLabel(source, PostgreMessages.dialog_create_subscription_publications_datasource);
-        publicationSource = UIUtils.createDialogButton(source, "",
-            SelectionListener.widgetSelectedAdapter(event -> publisherPanel.showPublicationSourcesMenu(publicationSource)));
+        publicationSource = new Combo(source, SWT.DROP_DOWN | SWT.READ_ONLY);
+        publicationSource.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
+            publisherPanel.selectPublicationSource(publicationSource.getSelectionIndex());
+            loadPublications();
+        }));
         publicationSource.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         publicationSource.setToolTipText(PostgreMessages.dialog_create_subscription_publications_datasource_tip);
         loadPublicationsButton = UIUtils.createDialogButton(source, PostgreMessages.dialog_create_subscription_load_publications,
@@ -412,8 +417,9 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
 
     private void updatePublicationSource() {
         String source = publisherPanel.getPublicationSourceName();
-        publicationSource.setText(source + (publisherPanel.hasCopiedConnection() ? " \u25BE" : ""));
-        publicationSource.setEnabled(publisherPanel.hasCopiedConnection());
+        publicationSource.setItems(publisherPanel.getPublicationSources());
+        publicationSource.select(publisherPanel.getPublicationSourceIndex());
+        publicationSource.setEnabled(publicationSource.getItemCount() > 1);
         loadPublicationsButton.setToolTipText(NLS.bind(PostgreMessages.dialog_create_subscription_publications_source, source)
             + "\n" + PostgreMessages.dialog_create_subscription_load_publications_tip);
     }
@@ -570,9 +576,17 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
         ((GridLayout) dependent.getLayout()).verticalSpacing = PostgreSubscriptionDialogLayout.ROW_SPACING;
         enabledButton = UIUtils.createCheckbox(dependent, PostgreMessages.dialog_create_subscription_enabled, subscription.isEnabled());
         enabledButton.setToolTipText(PostgreMessages.dialog_create_subscription_enabled_tip);
-        createSlot = UIUtils.createCheckbox(dependent,
+        Composite slotOption = UIUtils.createComposite(dependent, 2);
+        ((GridLayout) slotOption.getLayout()).marginWidth = 0;
+        ((GridLayout) slotOption.getLayout()).marginHeight = 0;
+        createSlot = UIUtils.createCheckbox(slotOption,
             PostgreMessages.dialog_create_subscription_create_slot, subscription.isCreateSlot());
         createSlot.setToolTipText(PostgreMessages.dialog_create_subscription_create_slot_tip);
+        publisherSetup = new ToolBar(slotOption, SWT.FLAT);
+        UIUtils.createToolItem(publisherSetup, PostgreMessages.dialog_create_subscription_publisher_setup_tip,
+            DBIcon.SMALL_WARNING, SelectionListener.widgetSelectedAdapter(event -> MessageDialog.openInformation(getShell(),
+                PostgreMessages.dialog_create_subscription_publisher_setup,
+                PostgreMessages.dialog_create_subscription_publisher_setup_instructions)));
         copyData = UIUtils.createCheckbox(dependent, PostgreMessages.dialog_create_subscription_copy_data, subscription.isCopyData());
         copyData.setToolTipText(PostgreMessages.dialog_create_subscription_copy_data_tip);
         createSlot.setEnabled(connectButton.getSelection());
@@ -595,11 +609,6 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
             updatePublisherSetup();
             validateProperties();
         }));
-        publisherSetup = UIUtils.createDialogButton(startup, PostgreMessages.dialog_create_subscription_publisher_setup,
-            SelectionListener.widgetSelectedAdapter(event -> MessageDialog.openInformation(getShell(),
-                PostgreMessages.dialog_create_subscription_publisher_setup,
-                PostgreMessages.dialog_create_subscription_publisher_setup_instructions)));
-        publisherSetup.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         updatePublisherSetup();
     }
 
@@ -672,6 +681,11 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
     }
 
     @Nullable
+    public String getStepError() {
+        return currentStep == Step.REPLICATION ? getReplicationError(false) : null;
+    }
+
+    @Nullable
     @Override
     protected String getEditError() {
         if (nameText == null) {
@@ -680,7 +694,7 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
         return switch (currentStep) {
             case PUBLISHER -> getPublisherError();
             case PUBLICATIONS -> getPublicationsError();
-            case REPLICATION -> getReplicationError();
+            case REPLICATION -> getReplicationError(true);
         };
     }
 
@@ -701,7 +715,7 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
     }
 
     @Nullable
-    private String getReplicationError() {
+    private String getReplicationError(boolean checkPublisherSetup) {
         String error = getPublisherError() != null ? getPublisherError() : getPublicationsError();
         if (error != null) {
             return error;
@@ -710,7 +724,8 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
         if (!PostgreSubscription.isValidSlotName(slot)) {
             return PostgreMessages.dialog_create_subscription_error_slot;
         }
-        if (Boolean.FALSE.equals(publisherLogicalReplicationEnabled) && connectButton.getSelection() && createSlot.getSelection()) {
+        if (checkPublisherSetup && Boolean.FALSE.equals(publisherLogicalReplicationEnabled)
+            && connectButton.getSelection() && createSlot.getSelection()) {
             return PostgreMessages.dialog_create_subscription_publisher_wal_level;
         }
         return null;
@@ -723,7 +738,7 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
 
     @Override
     public void performFinish() throws DBException {
-        String error = getReplicationError();
+        String error = getReplicationError(true);
         if (error != null) {
             throw new DBException(error);
         }

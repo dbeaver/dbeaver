@@ -31,6 +31,7 @@ public class PostgreMessages extends NLS {
     public static String dialog_create_publication_clear_selection;
     public static String dialog_create_subscription_publisher_wal_level;
     public static String dialog_create_subscription_publisher_setup;
+    public static String dialog_create_subscription_publisher_setup_tip;
     public static String dialog_create_subscription_publisher_setup_instructions;
     public static String dialog_create_subscription_title;
     public static String dialog_create_subscription_settings_tab;
@@ -48,6 +49,7 @@ public class PostgreMessages extends NLS {
     public static String dialog_create_subscription_publications_datasource;
     public static String dialog_create_subscription_publications_datasource_tip;
     public static String dialog_create_subscription_configured_publisher;
+    public static String dialog_create_subscription_copied_publisher;
     public static String dialog_create_subscription_loading_publications;
     public static String dialog_create_subscription_load_publications_error;
     public static String dialog_create_subscription_no_publications;
