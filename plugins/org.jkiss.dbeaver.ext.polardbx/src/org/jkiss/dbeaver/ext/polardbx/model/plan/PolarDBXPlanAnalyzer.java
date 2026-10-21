@@ -70,7 +70,7 @@ public class PolarDBXPlanAnalyzer extends MySQLPlanAnalyser {
         if (PolarDBXPlanAnalyzer.block(firstKeyword)) {
             throw new DBCException("This statement could not produce execution plan");
         }
-        return new PolarDBXPlainClassic(session, query);
+        return new PolarDBXPlanClassic(session, query);
     }
 
     @Override
@@ -111,6 +111,6 @@ public class PolarDBXPlanAnalyzer extends MySQLPlanAnalyser {
             plan,
             (source, node, parent) -> new PolarDBXPlanNodePlain(parent, getNodeAttributesAsStrings(node))
         );
-        return new PolarDBXPlainClassic(dataSource, getQuery(plan), rootNodes);
+        return new PolarDBXPlanClassic(dataSource, getQuery(plan), rootNodes);
     }
 }

@@ -32,10 +32,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-public class PolarDBXPlainClassic extends MySQLPlanAbstract {
+public class PolarDBXPlanClassic extends MySQLPlanAbstract {
     private List<PolarDBXPlanNodePlain> rootNodes;
 
-    public PolarDBXPlainClassic(@NotNull JDBCSession session, @NotNull String query) throws DBCException {
+    public PolarDBXPlanClassic(@NotNull JDBCSession session, @NotNull String query) throws DBCException {
         super((MySQLDataSource) session.getDataSource(), query);
         try (JDBCPreparedStatement dbStat = session.prepareStatement(getPlanQueryString())) {
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -51,7 +51,7 @@ public class PolarDBXPlainClassic extends MySQLPlanAbstract {
         }
     }
 
-    public PolarDBXPlainClassic(
+    public PolarDBXPlanClassic(
         @NotNull MySQLDataSource dataSource,
         @NotNull String query,
         @NotNull List<PolarDBXPlanNodePlain> rootNodes
