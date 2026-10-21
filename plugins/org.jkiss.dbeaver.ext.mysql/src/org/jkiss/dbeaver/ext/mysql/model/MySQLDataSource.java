@@ -727,8 +727,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
     }
 
+    /**
+     * Converts a {@code GRANTEE} value of the INFORMATION_SCHEMA privilege views ({@code 'user'@'host'},
+     * each part an SQL string literal) to the raw {@code user@host} account key of {@link MySQLUser}.
+     */
     @Nullable
-    private static String granteeToKey(@Nullable String grantee) {
+    static String granteeToKey(@Nullable String grantee) {
         if (grantee == null) {
             return null;
         }
@@ -745,10 +749,43 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         if (trimmed.length() >= 2) {
             char q = trimmed.charAt(0);
             if ((q == '\'' || q == '`' || q == '"') && trimmed.charAt(trimmed.length() - 1) == q) {
-                return trimmed.substring(1, trimmed.length() - 1).replace("''", "'");
+                String body = trimmed.substring(1, trimmed.length() - 1);
+                return q == '`' ? body.replace("``", "`") : unescapeStringLiteral(body, q);
             }
         }
         return trimmed;
+    }
+
+    /**
+     * Decodes the body of a MySQL string literal: a doubled quote and the backslash escapes
+     * ({@code \'}, {@code \\}, {@code \n}, ...) stand for one character each.
+     */
+    @NotNull
+    private static String unescapeStringLiteral(@NotNull String body, char quote) {
+        StringBuilder result = new StringBuilder(body.length());
+        for (int i = 0; i < body.length(); i++) {
+            char c = body.charAt(i);
+            if (c == '\\' && i + 1 < body.length()) {
+                char next = body.charAt(++i);
+                switch (next) {
+                    case '0' -> result.append('\0');
+                    case 'b' -> result.append('\b');
+                    case 'n' -> result.append('\n');
+                    case 'r' -> result.append('\r');
+                    case 't' -> result.append('\t');
+                    case 'Z' -> result.append('\u001A');
+                    // As in LIKE patterns, \% and \_ keep the backslash
+                    case '%', '_' -> result.append(c).append(next);
+                    default -> result.append(next);
+                }
+            } else if (c == quote && i + 1 < body.length() && body.charAt(i + 1) == quote) {
+                result.append(quote);
+                i++;
+            } else {
+                result.append(c);
+            }
+        }
+        return result.toString();
     }
 
     @NotNull

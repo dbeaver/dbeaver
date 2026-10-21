@@ -587,6 +587,17 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
         return schemaName.replace("_", "\\_").replace("%", "\\%");
     }
 
+    /**
+     * The schema name a new schema-level grant ({@code `db`.*}) of the given concrete schema is stored under:
+     * its {@code _}/{@code %} escaped unless partial_revokes makes them literal. Pending local grant rows use it,
+     * so every later statement on the row addresses the same target as the GRANT that created it.
+     */
+    @NotNull
+    public static String getSchemaGrantName(@NotNull MySQLCatalog catalog) {
+        MySQLDataSource dataSource = catalog.getDataSource();
+        return dataSource != null && dataSource.isPartialRevokes() ? catalog.getName() : escapeSchemaWildcards(catalog.getName());
+    }
+
     @NotNull
     private static String quoteIdentifier(@NotNull String name) {
         return "`" + name.replace("`", "``") + "`";

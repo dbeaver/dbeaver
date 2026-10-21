@@ -61,4 +61,20 @@ public class MySQLUserAccountTest extends DBeaverUnitTest {
     public void anonymousAccountIsQuoted() {
         Assertions.assertEquals("``@`localhost`", user("", "localhost").getFullName());
     }
+
+    @Test
+    public void granteeOfPlainAccount() {
+        Assertions.assertEquals("app@%", MySQLDataSource.granteeToKey("'app'@'%'"));
+        Assertions.assertEquals("@localhost", MySQLDataSource.granteeToKey("''@'localhost'"));
+        Assertions.assertNull(MySQLDataSource.granteeToKey("app"));
+    }
+
+    @Test
+    public void granteeEscapesAreDecoded() {
+        // INFORMATION_SCHEMA quotes GRANTEE parts as string literals: the key must be the raw user@host
+        Assertions.assertEquals("o'brien@%", MySQLDataSource.granteeToKey("'o\\'brien'@'%'"));
+        Assertions.assertEquals("o'brien@%", MySQLDataSource.granteeToKey("'o''brien'@'%'"));
+        Assertions.assertEquals("a\\b@%", MySQLDataSource.granteeToKey("'a\\\\b'@'%'"));
+        Assertions.assertEquals("app@10.0.%", MySQLDataSource.granteeToKey("'app'@'10.0.%'"));
+    }
 }

@@ -385,4 +385,27 @@ public class MySQLGrantTest extends DBeaverUnitTest {
         Assertions.assertFalse(grant.matches(catalog("mydb")));
         Assertions.assertFalse(tableGrant("mydb", "*", List.of(), false).matches((MySQLCatalog) null));
     }
+
+    @Test
+    public void schemaGrantNameEscapesWildcardsUnlessPartialRevokes() {
+        Assertions.assertEquals("tenant\\_1", MySQLGrant.getSchemaGrantName(catalog("tenant_1")));
+        MySQLDataSource dataSource = Mockito.mock(MySQLDataSource.class);
+        Mockito.when(dataSource.isPartialRevokes()).thenReturn(true);
+        MySQLCatalog literal = catalog("tenant_1");
+        Mockito.when(literal.getDataSource()).thenReturn(dataSource);
+        Assertions.assertEquals("tenant_1", MySQLGrant.getSchemaGrantName(literal));
+    }
+
+    @Test
+    public void pendingEscapedSchemaRowIsAddressedByItsStoredName() {
+        // A new local row for tenant_1 is stored as tenant\_1: a later REVOKE on it targets the same
+        // escaped name as the GRANT that created it, not the raw (wildcard) tenant_1
+        MySQLGrant row = tableGrant(MySQLGrant.getSchemaGrantName(catalog("tenant_1")), "*", List.of(object("SELECT")), false);
+        Assertions.assertTrue(row.matches(catalog("tenant_1")));
+        Assertions.assertEquals("tenant\\_1", row.getWildcardSchemaPattern(catalog("tenant_1")));
+        Assertions.assertEquals("`tenant\\_1`.*", row.getObjectSpec());
+        // Without wildcard characters nothing changes
+        MySQLGrant plain = tableGrant(MySQLGrant.getSchemaGrantName(catalog("mydb")), "*", List.of(), false);
+        Assertions.assertNull(plain.getWildcardSchemaPattern(catalog("mydb")));
+    }
 }

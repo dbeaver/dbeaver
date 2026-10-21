@@ -59,6 +59,8 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 /**
  * Object-centric privileges editor: shows which users have grants on a schema/table/procedure
@@ -1119,7 +1121,9 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                     ? MySQLGrant.ObjectType.FUNCTION : MySQLGrant.ObjectType.PROCEDURE)
                 : MySQLGrant.ObjectType.TABLE;
             String objName = procedure != null ? procedure.getName() : (table == null ? "*" : table.getName()); //$NON-NLS-1$
-            target = new MySQLGrant(user, new ArrayList<>(), catalog.getName(), objName, false, false, type);
+            // A new schema-level row is stored under the escaped schema name, as its GRANT addresses it
+            String schemaName = procedure == null && table == null ? MySQLGrant.getSchemaGrantName(catalog) : catalog.getName();
+            target = new MySQLGrant(user, new ArrayList<>(), schemaName, objName, false, false, type);
             grants.add(target);
         }
         if (privilege.isGrantOption()) {
@@ -1402,15 +1406,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         }
         MySQLUser user = selectedUser;
         MySQLTableBase table = selectedTable;
-        for (MySQLGrant grant : new ArrayList<>(grantsOfSelectedUser())) {
-            if (grant.matches(table)) {
-                revokeWholeGrant(user, grant, false);
-            }
-        }
-        Set<MySQLTableBase> extra = extraTables.get(user);
-        if (extra != null) {
-            extra.remove(table);
-        }
+        revokeObjectGrants(user, extraTables, table, grant -> grant.matches(table));
         selectedTable = null;
         selectedColumn = null;
         fillObjectLists();
@@ -1425,15 +1421,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         }
         MySQLUser user = selectedUser;
         MySQLProcedure procedure = selectedProcedure;
-        for (MySQLGrant grant : new ArrayList<>(grantsOfSelectedUser())) {
-            if (grant.matchesProcedure(procedure)) {
-                revokeWholeGrant(user, grant, false);
-            }
-        }
-        Set<MySQLProcedure> extra = extraProcedures.get(user);
-        if (extra != null) {
-            extra.remove(procedure);
-        }
+        revokeObjectGrants(user, extraProcedures, procedure, grant -> grant.matchesProcedure(procedure));
         selectedProcedure = null;
         fillObjectLists();
         updatePanels();
@@ -1518,11 +1506,48 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     }
 
     /**
+     * Revokes every grant of the user on a table/routine and drops the object from the list. An object
+     * added via "+" in this session (no grant on the server) is shown only through its transient entry,
+     * so Undo of the removal puts that entry back together with the grants, and Redo drops it again.
+     */
+    private <T> void revokeObjectGrants(
+        @NotNull MySQLUser user,
+        @NotNull Map<MySQLUser, Set<T>> extraObjects,
+        @NotNull T object,
+        @NotNull Predicate<MySQLGrant> matchesObject
+    ) {
+        Set<T> extra = extraObjects.get(user);
+        boolean transientTarget = extra != null && extra.remove(object);
+        Consumer<Boolean> showTarget = !transientTarget ? null : show -> {
+            if (show) {
+                extraObjects.computeIfAbsent(user, u -> new HashSet<>()).add(object);
+            } else {
+                extraObjects.getOrDefault(user, Collections.emptySet()).remove(object);
+            }
+        };
+        for (MySQLGrant grant : new ArrayList<>(grantsOfSelectedUser())) {
+            if (matchesObject.test(grant)) {
+                revokeWholeGrant(user, grant, false, showTarget);
+            }
+        }
+    }
+
+    private void revokeWholeGrant(@NotNull MySQLUser user, @NotNull MySQLGrant grant, boolean removesUser) {
+        revokeWholeGrant(user, grant, removesUser, null);
+    }
+
+    /**
      * Creates a REVOKE for the whole grant and drops it from the user's local grant list.
      *
      * @param removesUser the removal also drops the user from the list (Redo must do it again)
+     * @param showTarget  shows (true, on Undo) or hides (false, on Redo) the transient list entry of the object
      */
-    private void revokeWholeGrant(@NotNull MySQLUser user, @NotNull MySQLGrant grant, boolean removesUser) {
+    private void revokeWholeGrant(
+        @NotNull MySQLUser user,
+        @NotNull MySQLGrant grant,
+        boolean removesUser,
+        @Nullable Consumer<Boolean> showTarget
+    ) {
         // Revoke exactly the privileges the grant holds, each at its own level. Table-level and
         // column-level privileges go in separate statements: mixing them (or listing a privilege
         // that isn't actually held) makes the server reject the whole statement.
@@ -1555,7 +1580,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         // a wildcard schema grant (`tenant\_%`.*) must be revoked by its stored pattern.
         addUserRevokeCommand(
             new MySQLCommandRevokeObjectGrants(user, grant.getObjectSpec(), tablePrivNames, columnPrivNames, grant.isGrantOption()),
-            createRemovalReflector(user, grant, removesUser));
+            createRemovalReflector(user, grant, removesUser, showTarget));
     }
 
     private @NotNull String tableSpec(@NotNull MySQLTableBase table) {
@@ -1576,7 +1601,8 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
     private @NotNull DBECommandReflector<MySQLUser, MySQLCommandRevokeObjectGrants> createRemovalReflector(
         @NotNull MySQLUser user,
         @NotNull MySQLGrant grant,
-        boolean removesUser
+        boolean removesUser,
+        @Nullable Consumer<Boolean> showTarget
     ) {
         return new DBECommandReflector<>() {
             @Override
@@ -1585,6 +1611,9 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 if (removesUser) {
                     users.remove(user);
                     extraUsers.remove(user);
+                }
+                if (showTarget != null) {
+                    showTarget.accept(false);
                 }
                 user.clearGrantsCache();
                 refreshAfterUndoRedo();
@@ -1598,6 +1627,9 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 }
                 if (!users.contains(user)) {
                     users.add(user);
+                }
+                if (showTarget != null) {
+                    showTarget.accept(true);
                 }
                 user.clearGrantsCache();
                 refreshAfterUndoRedo();

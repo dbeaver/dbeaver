@@ -885,10 +885,13 @@ public class MySQLUserEditorPrivileges extends MySQLUserEditorAbstract {
             if (!privilege.isGrantOption()) {
                 privileges.add(privilege);
             }
+            // A new schema-level row is stored under the escaped schema name, as its GRANT addresses it
+            String schemaName = curCatalog == null ? "*" //$NON-NLS-1$
+                : (curTable == null ? MySQLGrant.getSchemaGrantName(curCatalog) : curCatalog.getName());
             MySQLGrant grant = new MySQLGrant(
                 getDatabaseObject(),
                 privileges,
-                curCatalog == null ? "*" : curCatalog.getName(), //$NON-NLS-1$
+                schemaName,
                 curTable == null ? "*" : curTable.getName(), //$NON-NLS-1$
                 false,
                 withGrantOption);
