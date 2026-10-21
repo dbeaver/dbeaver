@@ -66,6 +66,7 @@ import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.OperationSystemState;
 import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
@@ -292,6 +293,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     @Override
     public void preStartup() {
         super.preStartup();
+
+        WorkbenchPatcher.hideUnavailableView(Workbench.getInstance(), IActionConstants.CHAT_VIEW_ID);
 
         // Activate proxy
         activateProxyService(CoreApplicationActivator.getDefault().getBundle().getBundleContext());
