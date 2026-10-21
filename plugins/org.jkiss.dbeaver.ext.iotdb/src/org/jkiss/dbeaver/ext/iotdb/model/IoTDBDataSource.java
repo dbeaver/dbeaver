@@ -56,7 +56,7 @@ public class IoTDBDataSource extends GenericDataSource {
 
     @NotNull
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new IoTDBExecutionContext(instance, type);
     }
 

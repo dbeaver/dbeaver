@@ -25,6 +25,7 @@ import org.eclipse.swt.events.PaintEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -62,6 +63,7 @@ final class WebViewDndController {
     private final StackLayout stackLayout;
     private final AIChatControl chat;
     private final Supplier<DBPDataSource> dataSourceSupplier;
+    private boolean functionRegistered;
 
     WebViewDndController(
         @NotNull Composite owner,
@@ -89,7 +91,7 @@ final class WebViewDndController {
         dndOverlay.addPaintListener(this::drawDNDWindow);
 
         DropTarget dropTarget = new DropTarget(dndOverlay, DND.DROP_COPY | DND.DROP_DEFAULT);
-        dropTarget.setTransfer(TreeNodeTransfer.getInstance(), FileTransfer.getInstance());
+        dropTarget.setTransfer(TreeNodeTransfer.getInstance(), FileTransfer.getInstance(), ImageTransfer.getInstance());
 
         dropTarget.addDropListener(new DropTargetAdapter() {
             @Override
@@ -126,6 +128,8 @@ final class WebViewDndController {
 
                 if (event.data instanceof Collection<?> nodes) {
                     chat.describeDroppedObjects(nodes);
+                } else if (event.data instanceof ImageData image) {
+                    chat.attachImage(image);
                 } else if (event.data instanceof String[] files) {
                     List<Path> paths = new ArrayList<>();
                     for (String file : files) {
@@ -151,19 +155,6 @@ final class WebViewDndController {
             }
         });
 
-        new BrowserFunction(browser, "onDragEnter") {
-            @Nullable
-            @Override
-            public Object function(@NotNull Object[] arguments1) {
-                super.function(arguments1);
-                if (isDropSupported(arguments1)) {
-                    log.debug("DND: onDragEnter from JS");
-                    showDndOverlay();
-                }
-                return null;
-            }
-        };
-
         owner.addTraverseListener(e -> {
             if (e.detail == SWT.TRAVERSE_ESCAPE) {
                 hideDndOverlay();
@@ -176,13 +167,33 @@ final class WebViewDndController {
         owner.addDisposeListener(event -> display.removeFilter(DND.DragEnd, dragEndListener));
     }
 
+    void registerBrowserFunction() {
+        if (functionRegistered) {
+            return;
+        }
+        functionRegistered = true;
+        new BrowserFunction(browser, "onDragEnter") {
+            @Nullable
+            @Override
+            public Object function(@NotNull Object[] arguments1) {
+                super.function(arguments1);
+                if (isDropSupported(arguments1)) {
+                    log.debug("DND: onDragEnter from JS");
+                    showDndOverlay();
+                }
+                return null;
+            }
+        };
+    }
+
     private boolean isDropSupported(@NotNull Object[] arguments) {
         Collection<DBNNode> draggedNodes = TreeNodeTransfer.getInstance().getDraggedNodes();
         if (draggedNodes != null) {
             return chat.canDescribeDroppedObjects(draggedNodes) || chat.canAttachDroppedFiles(draggedNodes);
         }
         return arguments.length > 0 && arguments[0] instanceof Object[] types
-            && Arrays.asList(types).contains(BROWSER_FILE_TRANSFER_TYPE);
+            && (Arrays.asList(types).contains(BROWSER_FILE_TRANSFER_TYPE)
+                || Arrays.stream(types).anyMatch(type -> type instanceof String mimeType && mimeType.startsWith("image/")));
     }
 
     private void drawDNDWindow(@NotNull PaintEvent e) {

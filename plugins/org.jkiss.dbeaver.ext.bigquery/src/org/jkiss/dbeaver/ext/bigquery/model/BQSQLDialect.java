@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLScriptVariableScope;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserActionKind;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateFactory;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateSet;
@@ -48,6 +49,12 @@ public class BQSQLDialect extends GenericSQLDialect {
 
     public BQSQLDialect() {
         super("BigQuery", "google_bigquery");
+    }
+
+    @NotNull
+    @Override
+    public SQLScriptVariableScope getScriptVariableScope() {
+        return SQLScriptVariableScope.SCRIPT;
     }
 
     @NotNull

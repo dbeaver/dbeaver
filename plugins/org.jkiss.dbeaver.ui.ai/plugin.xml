@@ -20,7 +20,7 @@
         <!-- Enabled by the user -->
         <definition id="org.jkiss.dbeaver.core.ai.completion.enabled.by.user">
             <not>
-                <test property="org.jkiss.dbeaver.ui.ai.isDisabled" forcePluginActivation="true" />
+                <test property="org.jkiss.dbeaver.ui.ai.isDisabled" forcePluginActivation="false" />
             </not>
         </definition>
     </extension>
@@ -73,6 +73,10 @@
                         namespace="org.jkiss.dbeaver.ui.ai"
                         properties="isDisabled"
                         type="java.lang.Object"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.startup">
+        <startup class="org.jkiss.dbeaver.ui.ai.internal.AIUIStartup"/>
     </extension>
 
     <extension point="org.eclipse.ui.commands">
@@ -142,9 +146,9 @@
             </enabledWhen>
         </activity>
 
-        <activityPatternBinding activityId="dbeaver.ai.activity.policy" pattern="org.jkiss.dbeaver.ui.ai.*"/>
+        <activityPatternBinding activityId="dbeaver.ai.activity.policy" pattern="org.jkiss.dbeaver.ui.ai/org.jkiss.dbeaver.preferences.ai.*"/>
         <activityPatternBinding activityId="dbeaver.ai.activity.policy" pattern="org.jkiss.dbeaver.preferences.ai"/>
-        <activityPatternBinding activityId="dbeaver.ai.activity" pattern="org.jkiss.dbeaver.ui.ai/org.jkiss.dbeaver.ai.*"/>
+        <activityPatternBinding activityId="dbeaver.ai.activity" pattern="org.jkiss.dbeaver.ui.ai/(?!org\.jkiss\.dbeaver\.preferences\.ai).*"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">

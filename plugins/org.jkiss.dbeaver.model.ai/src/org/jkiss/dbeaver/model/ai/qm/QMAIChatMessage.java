@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai.qm;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.utils.CommonUtils;
 
 import java.time.Instant;
@@ -32,8 +33,23 @@ public record QMAIChatMessage(
     @Nullable String functionResult,
     @NotNull Instant timestamp,
     boolean deleted,
-    @Nullable List<QMAIMessageMeta> meta
+    @Nullable List<QMAIMessageMeta> meta,
+    @Nullable List<AIImageAttachment> images
 ) {
+    public QMAIChatMessage(
+        int id,
+        @NotNull String content,
+        @Nullable String displayMessage,
+        @NotNull QMAIChatRole role,
+        @Nullable String functionCall,
+        @Nullable String functionResult,
+        @NotNull Instant timestamp,
+        boolean deleted,
+        @Nullable List<QMAIMessageMeta> meta
+    ) {
+        this(id, content, displayMessage, role, functionCall, functionResult, timestamp, deleted, meta, null);
+    }
+
     @NotNull
     @Override
     public String toString() {

@@ -931,7 +931,7 @@ public class OracleSchema extends OracleGlobalObject implements
                         "    c.SEARCH_CONDITION,\r\n" + 
                         "    (\r\n" + 
                         "      SELECT LISTAGG(COLUMN_NAME || ':' || POSITION,',') WITHIN GROUP (ORDER BY \"POSITION\") \r\n" + 
-                        "      FROM ALL_CONS_COLUMNS col\r\n" + 
+                        "      FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONS_COLUMNS") + " col\r\n" +
                         "      WHERE col.OWNER =? AND col.TABLE_NAME = ? AND col.CONSTRAINT_NAME = c.CONSTRAINT_NAME GROUP BY CONSTRAINT_NAME \r\n"+
                         "    ) COLUMN_NAMES_NUMS\r\n" + 
                         "FROM\r\n" + 
@@ -1161,7 +1161,7 @@ public class OracleSchema extends OracleGlobalObject implements
                          + "    c.DELETE_RULE,\r\n"
                          + "    (\r\n"
                          + "      SELECT LISTAGG(COLUMN_NAME || ':' || POSITION,',') WITHIN GROUP (ORDER BY \"POSITION\") \r\n"
-                         + "      FROM ALL_CONS_COLUMNS col\r\n"
+                         + "      FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONS_COLUMNS") + " col\r\n"
                          + "      WHERE col.OWNER =? AND col.TABLE_NAME = ? AND col.CONSTRAINT_NAME = c.CONSTRAINT_NAME GROUP BY CONSTRAINT_NAME \r\n"
                          + "    ) COLUMN_NAMES_NUMS\r\nFROM " + constraintsView + " c\r\n"
                          + "LEFT JOIN " + constraintsView + " rc\r\n"
@@ -1498,21 +1498,52 @@ public class OracleSchema extends OracleGlobalObject implements
 
     }
 
-    public static class PackageCache extends JDBCObjectCache<OracleSchema, OraclePackage> {
+    public static class PackageCache extends JDBCObjectLookupCache<OracleSchema, OraclePackage> {
 
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner)
-            throws SQLException
-        {
+        public JDBCStatement prepareLookupStatement(
+            @NotNull JDBCSession session,
+            @NotNull OracleSchema owner,
+            @Nullable OraclePackage object,
+            @Nullable String objectName
+        ) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) +
-                    " OBJECT_NAME, STATUS, CREATED, LAST_DDL_TIME, TEMPORARY FROM " +
-                OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "OBJECTS") +
-                " WHERE OBJECT_TYPE='PACKAGE' AND OWNER=? " +
-                " ORDER BY OBJECT_NAME");
+                    " P.OBJECT_NAME, P.STATUS, P.CREATED, P.LAST_DDL_TIME, P.TEMPORARY, B.LAST_DDL_TIME AS BODY_LAST_DDL_TIME FROM " +
+                OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "OBJECTS") + " P " +
+                "LEFT JOIN " +
+                OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner.getDataSource(), "OBJECTS") + " B " +
+                "ON B.OWNER = P.OWNER AND B.OBJECT_NAME = P.OBJECT_NAME AND B.OBJECT_TYPE = 'PACKAGE BODY' " +
+                "WHERE P.OBJECT_TYPE='PACKAGE' AND P.OWNER=? " +
+                (object == null && objectName == null ? "" : "AND P.OBJECT_NAME=? ") +
+                "ORDER BY P.OBJECT_NAME");
             dbStat.setString(1, owner.getName());
+            if (object != null || objectName != null) {
+                dbStat.setString(2, object != null ? object.getName() : objectName);
+            }
             return dbStat;
+        }
+
+        /**
+         * Always reload a single package row and copy into the existing instance.
+         * {@link JDBCObjectLookupCache#refreshObject} falls back to {@code loadObjects()} when the
+         * cache is not fully loaded; that merge keeps the old instance and drops freshly fetched
+         * DDL timestamps (common for packages obtained via findObject/getChild).
+         */
+        @Override
+        public OraclePackage refreshObject(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull OracleSchema owner,
+            @NotNull OraclePackage oldObject
+        ) throws DBException {
+            OraclePackage reloaded = reloadObject(monitor, owner, oldObject, null);
+            if (reloaded != null) {
+                deepCopyCachedObject(reloaded, oldObject);
+            } else {
+                removeObject(oldObject, false);
+            }
+            return oldObject;
         }
 
         @Override

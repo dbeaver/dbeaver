@@ -459,8 +459,8 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
         DataSourceTypeDescriptor type = dataSourceTypes.get(resolvedId);
         if (type == null) {
-            // Shouldn't be here
-            log.debug("Create new datasource type '" + resolvedId + "'");
+            // Shouldn't be here. But it happens in unit tests.
+            log.trace("Create new datasource type '" + resolvedId + "'");
             type = new DataSourceTypeDescriptor(resolvedId, driver);
             dataSourceTypes.put(resolvedId, type);
         }

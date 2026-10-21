@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.datadam.DDProductConfig;
 
 public class DDProjectSyncPropertyTester extends PropertyTester {
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.datadam.projectSync";
@@ -40,7 +41,7 @@ public class DDProjectSyncPropertyTester extends PropertyTester {
         @NotNull Object[] args,
         @Nullable Object expectedValue
     ) {
-        if (!(receiver instanceof DBNProject projectNode)) {
+        if (!(receiver instanceof DBNProject projectNode) || !DDProductConfig.isIntegrationEnabled()) {
             return false;
         }
         DDProjectSyncUIManager manager = DDProjectSyncUIManager.getInstance();
