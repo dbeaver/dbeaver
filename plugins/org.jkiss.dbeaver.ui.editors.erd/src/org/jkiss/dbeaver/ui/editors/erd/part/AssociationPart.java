@@ -70,13 +70,16 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     private ERDHighlightingHandle associatedAttributesHighlighing = null;
     protected AccessibleGraphicalEditPart accPart;
+    @NotNull
     private Color labelForegroundColor;
+    @Nullable
     private Color notationBackgroundColor;
 
     public AssociationPart() {
         labelForegroundColor = createLabelForegroundColor();
     }
 
+    @NotNull
     private static Color createLabelForegroundColor() {
         Color foreground = ERDThemeSettings.instance.attrForeground;
         final Color contrastColor = UIStyles.getContrastColor(foreground);

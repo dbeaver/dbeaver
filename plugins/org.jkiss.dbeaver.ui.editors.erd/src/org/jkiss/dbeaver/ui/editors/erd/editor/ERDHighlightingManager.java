@@ -43,6 +43,7 @@ public class ERDHighlightingManager {
     // we are removing entry somewhere in the middle of the highlighting stack, so reference identity is required,
     // which Color class does not follow, as it supports by-value equivalence
     private static final class HighlightingEntry {
+        @NotNull
         private final Color color;
         private final boolean fkHighlight;
         private final boolean searchHighlight;
@@ -53,6 +54,7 @@ public class ERDHighlightingManager {
             this.searchHighlight = color == ERDThemeSettings.instance.searchHighlightColor;
         }
 
+        @NotNull
         private Color getColor() {
             if (fkHighlight) {
                 return ERDThemeSettings.instance.fkHighlightColor;

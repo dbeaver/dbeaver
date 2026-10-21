@@ -156,6 +156,7 @@ public class DiagramPart extends PropertyAwarePart {
         return ERDThemeSettings.instance.diagramFontBold;
     }
 
+    @Override
     public void refreshTheme() {
         getFigure().setBackgroundColor(ERDThemeSettings.instance.diagramBackground);
         super.refreshTheme();

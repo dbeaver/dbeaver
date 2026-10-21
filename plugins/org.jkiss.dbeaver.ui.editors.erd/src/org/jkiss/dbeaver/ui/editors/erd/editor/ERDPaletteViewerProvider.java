@@ -27,6 +27,7 @@ import org.eclipse.gef.ui.palette.PaletteViewer;
 import org.eclipse.gef.ui.palette.PaletteViewerProvider;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.ui.XMLMemento;
+import org.jkiss.code.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,18 +38,19 @@ import java.util.List;
  */
 public class ERDPaletteViewerProvider extends PaletteViewerProvider
 {
+    @NotNull
     private final List<PaletteViewer> viewers = new ArrayList<>();
 
 	/**
 	 * implicit constructor
 	 */
-	public ERDPaletteViewerProvider(EditDomain graphicalViewerDomain)
+	public ERDPaletteViewerProvider(@NotNull EditDomain graphicalViewerDomain)
 	{
 		super(graphicalViewerDomain);
 	}
 
 	@Override
-    protected void configurePaletteViewer(PaletteViewer viewer)
+    protected void configurePaletteViewer(@NotNull PaletteViewer viewer)
 	{
 		super.configurePaletteViewer(viewer);
 		viewer.setColorProvider(new ThemePaletteColorProvider());
@@ -79,36 +81,43 @@ public class ERDPaletteViewerProvider extends PaletteViewerProvider
         private final GEFColorProvider themeColors = new GEFColorProvider();
 
         @Override
+        @NotNull
         public Color getButton() {
             return themeColors.getButton();
         }
 
         @Override
+        @NotNull
         public Color getButtonDarker() {
             return themeColors.getButtonDarker();
         }
 
         @Override
+        @NotNull
         public Color getButtonDarkest() {
             return themeColors.getButtonDarkest();
         }
 
         @Override
+        @NotNull
         public Color getListBackground() {
             return themeColors.getListBackground();
         }
 
         @Override
+        @NotNull
         public Color getListForeground() {
             return themeColors.getListForeground();
         }
 
         @Override
+        @NotNull
         public Color getListSelectedBackgroundColor() {
             return themeColors.getListSelectedBackgroundColor();
         }
 
         @Override
+        @NotNull
         public Color getListHoverBackgroundColor() {
             return themeColors.getListHoverBackgroundColor();
         }

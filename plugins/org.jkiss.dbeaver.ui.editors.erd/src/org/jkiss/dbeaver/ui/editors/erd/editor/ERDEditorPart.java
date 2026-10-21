@@ -175,9 +175,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected LoadingJob<EntityDiagram> diagramLoadingJob;
     private IPropertyChangeListener configPropertyListener;
     private PaletteRoot paletteRoot;
+    @Nullable
     private FlyoutPaletteComposite paletteComposite;
+    @Nullable
     private ERDPaletteViewerProvider paletteViewerProvider;
+    @Nullable
     private IEventBroker themeEventBroker;
+    @Nullable
     private EventHandler themeChangeHandler;
 
     private volatile String errorMessage;
@@ -477,6 +481,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * @return the palette provider
      */
     @Override
+    @NotNull
     protected PaletteViewerProvider createPaletteViewerProvider() {
         paletteViewerProvider = new ERDPaletteViewerProvider(editDomain);
         return paletteViewerProvider;
@@ -734,7 +739,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     }
 
-    protected FlyoutPaletteComposite createPaletteComposite(Composite parent) {
+    @Override
+    @NotNull
+    protected FlyoutPaletteComposite createPaletteComposite(@NotNull Composite parent) {
         paletteComposite = new FlyoutPaletteComposite(
             parent,
             0,
