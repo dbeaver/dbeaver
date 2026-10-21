@@ -16,22 +16,61 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
+import com.dbeaver.datadam.external.api.model.DDConnectionInfo;
+import com.dbeaver.datadam.external.api.rpc.DDRpcServices;
+import com.dbeaver.datadam.external.api.transport.DDChannelState;
+import com.dbeaver.datadam.external.api.transport.DDChannelStatus;
+import com.dbeaver.datadam.external.api.transport.DDSubscription;
+import com.dbeaver.messaging.rpc.RpcEndpoint;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.transport.DDDesktopMessageChannel;
+import org.jkiss.dbeaver.osgi.test.runner.DBeaverUnitTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-class DDDesktopConnectionServiceTest {
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+
+@Timeout(15)
+class DDDesktopConnectionServiceTest extends DBeaverUnitTest {
     private final DDDesktopAccessService access = Mockito.mock(DDDesktopAccessService.class);
     private final DDDesktopMessageChannel channel = Mockito.mock(DDDesktopMessageChannel.class);
     private final DDDesktopConnectionService service = new DDDesktopConnectionService(access, channel);
+    private final AtomicReference<DDChannelStatus> status = new AtomicReference<>(
+        new DDChannelStatus(DDChannelState.DISCONNECTED, null));
+    private final List<Consumer<DDChannelStatus>> observers = new CopyOnWriteArrayList<>();
+
+    @BeforeEach
+    void configureChannel() {
+        Mockito.when(channel.getStatus()).thenAnswer(invocation -> status.get());
+        Mockito.when(channel.observeState(Mockito.any())).thenAnswer(invocation -> {
+            Consumer<DDChannelStatus> observer = invocation.getArgument(0);
+            observers.add(observer);
+            observer.accept(status.get());
+            return (DDSubscription) () -> observers.remove(observer);
+        });
+        Mockito.when(channel.subscribe(Mockito.anyString(), Mockito.any())).thenAnswer(invocation -> (DDSubscription) () -> { });
+        Mockito.doAnswer(invocation -> {
+            setStatus(new DDChannelStatus(DDChannelState.DISCONNECTED, null));
+            return null;
+        }).when(channel).pause();
+    }
 
     @AfterEach
     void close() {
@@ -104,6 +143,116 @@ class DDDesktopConnectionServiceTest {
         Mockito.verify(channel).close();
         Mockito.verify(channel).start();
         Mockito.verify(access).removeAccessListener(listener);
+        Assertions.assertTrue(observers.isEmpty());
+    }
+
+    @Test
+    void opensDefaultRpcLanesOnlyAfterReadyWithoutStartingLogin() throws Exception {
+        Assertions.assertThrows(DBException.class, () -> service.getRpc(DDRpcServices.ACCOUNT));
+        Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
+        service.start();
+        Assertions.assertThrows(DBException.class, () -> service.getRpc(DDRpcServices.ACCOUNT));
+
+        ready("first");
+
+        RpcEndpoint account = service.getRpc(DDRpcServices.ACCOUNT);
+        RpcEndpoint storage = service.getRpc(DDRpcServices.STORAGE);
+        Assertions.assertNotSame(account, storage);
+        Assertions.assertSame(account, service.getRpc(DDRpcServices.ACCOUNT));
+        Mockito.verify(channel).subscribe(Mockito.eq(DDRpcServices.topic(DDRpcServices.ACCOUNT)), Mockito.any());
+        Mockito.verify(channel).subscribe(Mockito.eq(DDRpcServices.topic(DDRpcServices.STORAGE)), Mockito.any());
+        Mockito.verify(access, Mockito.never()).getAccessTokenForResource(Mockito.any());
+    }
+
+    @Test
+    void identityChangeClosesRpcBeforePausingAndRequiresFreshEndpoints() throws Exception {
+        Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
+        service.start();
+        ready("first");
+        RpcEndpoint account = service.getRpc(DDRpcServices.ACCOUNT);
+        RpcEndpoint storage = service.getRpc(DDRpcServices.STORAGE);
+        Mockito.doAnswer(invocation -> {
+            Assertions.assertTrue(account.isClosed());
+            Assertions.assertTrue(storage.isClosed());
+            Assertions.assertThrows(DBException.class, () -> service.getRpc(DDRpcServices.ACCOUNT));
+            setStatus(new DDChannelStatus(DDChannelState.DISCONNECTED, null));
+            return null;
+        }).when(channel).pause();
+
+        DDDesktopAccessListener listener = listener();
+        listener.accessChanging();
+        listener.accessChanged();
+        Assertions.assertThrows(DBException.class, () -> service.getRpc(DDRpcServices.ACCOUNT));
+        ready("second");
+
+        Assertions.assertNotSame(account, service.getRpc(DDRpcServices.ACCOUNT));
+        Assertions.assertNotSame(storage, service.getRpc(DDRpcServices.STORAGE));
+    }
+
+    @Test
+    void shutdownClosesRpcBeforeThePhysicalChannel() throws Exception {
+        Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
+        service.start();
+        ready("first");
+        RpcEndpoint account = service.getRpc(DDRpcServices.ACCOUNT);
+        Mockito.doAnswer(invocation -> {
+            Assertions.assertTrue(account.isClosed());
+            Assertions.assertTrue(observers.isEmpty());
+            return null;
+        }).when(channel).close();
+
+        service.close();
+
+        Assertions.assertThrows(DBException.class, () -> service.getRpc(DDRpcServices.ACCOUNT));
+    }
+
+    @ParameterizedTest
+    @EnumSource(value = DDDesktopAccessService.Status.class, names = {"SIGNED_IN", "SIGNED_OUT"})
+    void identityChangeDuringStartupCannotRestoreAnOutdatedAuthorizationSnapshot(
+        @NotNull DDDesktopAccessService.Status initialStatus
+    ) throws Exception {
+        CountDownLatch reading = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        AtomicInteger reads = new AtomicInteger();
+        DDDesktopAccessService.Status nextStatus = initialStatus == DDDesktopAccessService.Status.SIGNED_IN
+            ? DDDesktopAccessService.Status.SIGNED_OUT : DDDesktopAccessService.Status.SIGNED_IN;
+        Mockito.when(access.getStatus()).thenAnswer(invocation -> {
+            if (reads.incrementAndGet() == 1) {
+                reading.countDown();
+                Assertions.assertTrue(release.await(3, TimeUnit.SECONDS));
+                return initialStatus;
+            }
+            return nextStatus;
+        });
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            var starting = executor.submit(service::start);
+            try {
+                Assertions.assertTrue(reading.await(3, TimeUnit.SECONDS));
+                DDDesktopAccessListener listener = listener();
+                listener.accessChanging();
+                listener.accessChanged();
+            } finally {
+                release.countDown();
+            }
+            starting.get(3, TimeUnit.SECONDS);
+        }
+        if (nextStatus == DDDesktopAccessService.Status.SIGNED_IN) {
+            Mockito.verify(channel).start();
+            ready("new-identity");
+            Assertions.assertFalse(service.getRpc(DDRpcServices.ACCOUNT).isClosed());
+        } else {
+            Mockito.verify(channel, Mockito.never()).start();
+            Assertions.assertThrows(DBException.class, () -> service.getRpc(DDRpcServices.ACCOUNT));
+        }
+    }
+
+    private void ready(@NotNull String connectionId) {
+        setStatus(new DDChannelStatus(DDChannelState.CONNECTED, new DDConnectionInfo("deployment", "run", connectionId)));
+    }
+
+    private void setStatus(@NotNull DDChannelStatus next) {
+        status.set(next);
+        List.copyOf(observers).forEach(observer -> observer.accept(next));
     }
 
     @NotNull

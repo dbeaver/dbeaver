@@ -17,7 +17,12 @@
 package org.jkiss.dbeaver.model.datadam;
 
 import com.dbeaver.datadam.external.api.model.DDHello;
+import com.dbeaver.datadam.external.api.rpc.DDGsonRpcCodec;
 import com.dbeaver.datadam.external.api.transport.DDMessageChannel;
+import com.dbeaver.messaging.rpc.RpcCodec;
+import com.dbeaver.messaging.rpc.RpcEndpoint;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -38,23 +43,34 @@ public final class DDDesktopConnectionService implements AutoCloseable {
 
     private final DDDesktopAccessService access;
     private final DDDesktopMessageChannel channel;
+    private final DDDesktopRpcService rpc;
     private final AtomicBoolean started = new AtomicBoolean();
     private final AtomicBoolean closed = new AtomicBoolean();
     private final DDDesktopAccessListener accessListener = new DDDesktopAccessListener() {
         @Override
         public void accessChanging() {
+            rpc.suspend(false);
             channel.pause();
         }
 
         @Override
         public void accessChanged() {
-            updateAccess();
+            updateAccess(false);
         }
     };
 
     public DDDesktopConnectionService(@NotNull DDDesktopAccessService access, @NotNull DDDesktopMessageChannel channel) {
+        this(access, channel, new DDGsonRpcCodec(new Gson()));
+    }
+
+    public DDDesktopConnectionService(
+        @NotNull DDDesktopAccessService access,
+        @NotNull DDDesktopMessageChannel channel,
+        @NotNull RpcCodec<JsonElement> codec
+    ) {
         this.access = access;
         this.channel = channel;
+        this.rpc = new DDDesktopRpcService(channel, codec);
     }
 
     @NotNull
@@ -82,7 +98,8 @@ public final class DDDesktopConnectionService implements AutoCloseable {
             access.removeAccessListener(accessListener);
             return;
         }
-        updateAccess();
+        rpc.start();
+        updateAccess(true);
     }
 
     @NotNull
@@ -90,21 +107,32 @@ public final class DDDesktopConnectionService implements AutoCloseable {
         return channel;
     }
 
+    @NotNull
+    public RpcEndpoint getRpc(@NotNull String serviceId) throws DBException {
+        return rpc.getRpc(serviceId);
+    }
+
     @Override
     public void close() {
         if (closed.compareAndSet(false, true)) {
             access.removeAccessListener(accessListener);
-            channel.close();
+            try {
+                rpc.close();
+            } finally {
+                channel.close();
+            }
         }
     }
 
-    private void updateAccess() {
+    private void updateAccess(boolean initial) {
         if (closed.get() || !started.get()) {
             return;
         }
         if (access.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
-            channel.start();
-        } else {
+            if (rpc.resume(initial)) {
+                channel.start();
+            }
+        } else if (rpc.suspend(initial)) {
             channel.pause();
         }
     }
