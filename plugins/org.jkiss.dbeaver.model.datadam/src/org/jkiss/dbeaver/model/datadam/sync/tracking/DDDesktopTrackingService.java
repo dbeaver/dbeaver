@@ -37,7 +37,8 @@ public class DDDesktopTrackingService {
 
     private final DDTrackingClient client;
     @Nullable
-    private DDTracking tracking;
+    private volatile DDTracking tracking;
+    private volatile boolean isStopping;
 
     private DDDesktopTrackingService() {
         this.client = new DDTrackingClient(DDEndpoints.getStorageBaseUrl());
@@ -48,21 +49,27 @@ public class DDDesktopTrackingService {
         return INSTANCE;
     }
 
-    public synchronized void start() throws DBException {
+    public void start() throws DBException {
         if (tracking != null) {
             return;
         }
-        tracking = client.start(clientInfo());
+        isStopping = false;
+        DDTracking started = client.start(clientInfo());
+        if (!isStopping) {
+            tracking = started;
+        }
     }
 
-    public synchronized void stop() throws DBException {
-        if (tracking != null) {
-            client.stop(tracking.trackingId());
+    public void stop() throws DBException {
+        isStopping = true;
+        DDTracking current = tracking;
+        if (current != null) {
+            client.stop(current.trackingId());
             tracking = null;
         }
     }
 
-    public synchronized void reset() {
+    public void reset() {
         tracking = null;
     }
 
