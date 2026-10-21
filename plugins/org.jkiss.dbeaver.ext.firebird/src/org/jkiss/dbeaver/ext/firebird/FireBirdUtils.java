@@ -370,4 +370,23 @@ public class FireBirdUtils {
             }
         }
     }
+
+    @NotNull
+    public static Map<String, Map<String, String>> readAllColumnDomainTypes(@NotNull JDBCSession session) throws SQLException {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT RF.RDB$RELATION_NAME,RF.RDB$FIELD_NAME,RF.RDB$FIELD_SOURCE FROM RDB$RELATION_FIELDS RF")) {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                Map<String, Map<String, String>> domainsByTable = new HashMap<>();
+                while (dbResult.next()) {
+                    String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, 1);
+                    String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, 2);
+                    String domainTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, 3);
+                    if (!CommonUtils.isEmpty(tableName) && !CommonUtils.isEmpty(columnName) && !CommonUtils.isEmpty(domainTypeName)) {
+                        domainsByTable.computeIfAbsent(tableName, key -> new HashMap<>()).put(columnName, domainTypeName);
+                    }
+                }
+                return domainsByTable;
+            }
+        }
+    }
 }
