@@ -23,6 +23,9 @@ import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.e4.ui.model.application.ui.basic.MWindow;
 import org.eclipse.e4.ui.model.application.ui.menu.MHandledMenuItem;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
@@ -66,6 +69,15 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
         }
     };
 
+    private final Listener focusListener = event -> {
+        if (event.widget instanceof Control control) {
+            IWorkbenchWindow window = UIUtils.findWorkbenchWindow(control);
+            if (window != null && registeredWindows.contains(window)) {
+                refreshDeleteLabels(window);
+            }
+        }
+    };
+
     public WorkbenchContextListener() {
         IWorkbench workbench = PlatformUI.getWorkbench();
 
@@ -73,6 +85,7 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
         for (IWorkbenchWindow window : workbench.getWorkbenchWindows()) {
             listenWindowEvents(window);
         }
+        workbench.getDisplay().addFilter(SWT.FocusIn, focusListener);
         workbench.addWindowListener(this);
 
         {
@@ -301,6 +314,7 @@ public class WorkbenchContextListener implements IWindowListener, IPageListener,
     }
 
     public void dispose() {
+        PlatformUI.getWorkbench().getDisplay().removeFilter(SWT.FocusIn, focusListener);
         for (IWorkbenchWindow window : registeredWindows) {
             window.getSelectionService().removeSelectionListener(selectionListener);
         }
