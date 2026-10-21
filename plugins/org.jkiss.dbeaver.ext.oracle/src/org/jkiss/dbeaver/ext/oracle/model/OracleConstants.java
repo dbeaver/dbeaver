@@ -177,6 +177,7 @@ public class OracleConstants {
 
     static final String COLUMN_CREATED = "CREATED";
     static final String COLUMN_LAST_DDL_TIME = "LAST_DDL_TIME";
+    static final String COLUMN_BODY_LAST_DDL_TIME = "BODY_LAST_DDL_TIME";
     static final String COLUMN_OBJECT_NAME = "OBJECT_NAME";
     public static final String COLUMN_OBJECT_TYPE = "OBJECT_TYPE";
     public static final String COLUMN_STATUS = "STATUS";
@@ -232,6 +233,7 @@ public class OracleConstants {
     public static final int EC_NO_RESULTSET_AVAILABLE = 17283;
     public static final int EC_PASSWORD_EXPIRED = 28001;
     public static final int EC_PASSWORD_WILL_EXPIRE = 28002;
+    public static final int EC_PASSWORD_GRACE_PERIOD = 28098;
     public static final int NUMERIC_MAX_PRECISION = 38;
     public static final int INTERVAL_DEFAULT_SECONDS_PRECISION = 6;
     public static final int INTERVAL_DEFAULT_YEAR_DAY_PRECISION = 2;

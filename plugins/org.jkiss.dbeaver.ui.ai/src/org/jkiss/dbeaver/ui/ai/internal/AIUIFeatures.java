@@ -29,13 +29,12 @@ import java.util.Map;
  */
 public interface AIUIFeatures {
 
-    DBRFeature SQL_AI_POPUP = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_SQL_AI, "Show AI popup");
-    DBRFeature SQL_AI_GENERATE_PROPOSALS = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_SQL_AI, "Generate AI proposal");
-    DBRFeature AI_CHAT = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_AI_CHAT, "Show AI Chat");
-    DBRFeature AI_CHAT_DROP_EVENT = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_AI_CHAT, "AI Drop event");
-    DBRFeature AI_CHAT_OPEN_AS_EVENT = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_AI_CHAT, "Open File with specific handler");
-    DBRFeature AI_CHAT_ATTACHMENT_INTERACT = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_AI_CHAT, "AI Chat attachment interaction");
-    DBRFeature SEND_PROMPT_EVENT = DBRFeature.createFeature(AIBaseFeatures.CATEGORY_AI_CHAT, "Send user prompt event");
+    DBRFeature CATEGORY_AI_CHAT = DBRFeature.createCategory("AI Chat", "AI Chat features");
+    DBRFeature AI_CHAT = DBRFeature.createFeature(CATEGORY_AI_CHAT, "Show AI Chat");
+    DBRFeature AI_CHAT_DROP_EVENT = DBRFeature.createFeature(CATEGORY_AI_CHAT, "AI Drop event");
+    DBRFeature AI_CHAT_OPEN_AS_EVENT = DBRFeature.createFeature(CATEGORY_AI_CHAT, "Open File with specific handler");
+    DBRFeature AI_CHAT_ATTACHMENT_INTERACT = DBRFeature.createFeature(CATEGORY_AI_CHAT, "AI Chat attachment interaction");
+    DBRFeature SEND_PROMPT_EVENT = DBRFeature.createFeature(CATEGORY_AI_CHAT, "Send user prompt event");
     String PARAM_FILE_TYPE = "fileType";
     String ATTACHMENT_HANDLER_ID = "handlerID";
     String ATTACHMENT_INTERACTION_NAME = "interactionName";

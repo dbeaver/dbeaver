@@ -18,6 +18,9 @@ package org.jkiss.dbeaver.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDCollection;
+import org.jkiss.dbeaver.model.data.DBDVoid;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
@@ -140,6 +143,31 @@ public class DBUtilsTest extends DBeaverUnitTest {
         Mockito.lenient().<Class<?>>when(mockSchema.getPrimaryChildType(monitor)).thenReturn(DBSTable.class);
         Mockito.lenient().when(mockSchema.getChild(monitor, "table_test")).thenReturn(mockEntity);
         Mockito.lenient().when(mockSchemaDBO.getChild(monitor, "table_test")).thenReturn(mockEntityDBO);
+    }
+
+    @Test
+    public void testArrayIndexesDoNotResolveToSiblingCollection() {
+        DBDAttributeBinding attribute = Mockito.mock(DBDAttributeBinding.class);
+        Mockito.when(attribute.getTopParent()).thenReturn(attribute);
+        Mockito.when(attribute.getOrdinalPosition()).thenReturn(0);
+
+        DBDCollection outer = Mockito.mock(DBDCollection.class);
+        DBDCollection inner = Mockito.mock(DBDCollection.class);
+        Mockito.when(outer.getItemCount()).thenReturn(1);
+        Mockito.when(outer.get(0)).thenReturn(inner);
+        Mockito.when(inner.getItemCount()).thenReturn(1);
+        Mockito.when(inner.get(0)).thenReturn(42);
+
+        Object[] values = { outer };
+        DBDAttributeBinding[] attributes = { attribute };
+        Assertions.assertSame(outer, DBUtils.getAttributeValue(attribute, attributes, values, null, false));
+        Assertions.assertSame(inner, DBUtils.getAttributeValue(attribute, attributes, values, new int[] { 0 }, false));
+        Assertions.assertEquals(42, DBUtils.getAttributeValue(attribute, attributes, values, new int[] { 0, 0 }, false));
+        Assertions.assertSame(DBDVoid.INSTANCE, DBUtils.getAttributeValue(attribute, attributes, values, new int[] { 0, 0, 0 }, false));
+
+        // A shallower array in another column must not reappear at deeper row levels.
+        Mockito.when(outer.get(0)).thenReturn(42);
+        Assertions.assertSame(DBDVoid.INSTANCE, DBUtils.getAttributeValue(attribute, attributes, values, new int[] { 0, 0 }, false));
     }
 
     @Test

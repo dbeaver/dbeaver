@@ -132,6 +132,34 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void shouldNotTreatNextLineAsPartOfEmptyComment() {
+        //given
+        String expectedString = "--" + lineBreak + "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tmytable;";
+        String inputString = "--" + lineBreak + "select * from mytable;";
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertEquals(expectedString, formattedString);
+    }
+
+    @Test
+    public void shouldEndCommentAtAnyLineSeparator() {
+        for (String separator : new String[]{"\n", "\r\n"}) {
+            //given
+            String inputString = "-- test" + separator + "select * from mytable;";
+
+            //when
+            String formattedString = format(inputString);
+
+            //then
+            Assertions.assertTrue(formattedString.startsWith("-- test"), formattedString);
+            Assertions.assertTrue(formattedString.endsWith("SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tmytable;"), formattedString);
+        }
+    }
+
+    @Test
     public void shouldAddLineBreakBeforeBraceBySpecialSetting() {
         //given
         String expectedString = getExpectedStringWithLineBreakBeforeBraces();

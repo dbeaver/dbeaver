@@ -210,15 +210,16 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return getClass() != GenericDataSource.class;
     }
 
+    @NotNull
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) throws DBCException {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) throws DBCException {
         return new GenericExecutionContext(instance, type);
     }
 
     protected void initializeContextState(
         @NotNull DBRProgressMonitor monitor,
         @NotNull JDBCExecutionContext context,
-        JDBCExecutionContext initFrom
+        @Nullable JDBCExecutionContext initFrom
     ) throws DBException {
         super.initializeContextState(monitor, context, initFrom);
         if (initFrom != null) {
@@ -243,9 +244,10 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return metaModel.getMetaObject(id);
     }
 
+    @NotNull
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(
-        DBRProgressMonitor monitor,
+        @NotNull DBRProgressMonitor monitor,
         @NotNull JDBCDatabaseMetaData metaData
     ) {
         return new GenericDataSourceInfo(container.getDriver(), metaData);
