@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCComposite;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeStatic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
@@ -46,8 +47,11 @@ import java.sql.SQLException;
 import java.sql.Struct;
 import java.sql.Types;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.StringJoiner;
+import java.util.WeakHashMap;
 
 /**
  * PostgreStructValueHandler
@@ -55,6 +59,7 @@ import java.util.StringJoiner;
 public class PostgreStructValueHandler extends JDBCStructValueHandler {
     private static final Log log = Log.getLog(PostgreStructValueHandler.class);
     public static final PostgreStructValueHandler INSTANCE = new PostgreStructValueHandler();
+    private final Set<DBSTypedObject> unresolvedColumns = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
 
     @Override
     protected void bindParameter(
@@ -88,15 +93,29 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         boolean copy,
         boolean validateValue
     ) throws DBCException {
+        if (type instanceof JDBCColumnMetaData && unresolvedColumns.contains(type)) {
+            return object;
+        }
         PostgreDataSource dataSource = (PostgreDataSource) session.getDataSource();
         PostgreDataType structType = PostgreUtils.findDataType(session, dataSource, type);
         if (structType == null) {
-            log.debug("Can't resolve struct type '" + type.getTypeName() + "'");
+            if (type instanceof JDBCColumnMetaData) {
+                // A temporary row type is invisible to the metadata connection. Retry for new result sets,
+                // but do not repeat the failed lookup for every row of this result set.
+                unresolvedColumns.add(type);
+            }
+            if (!(type instanceof JDBCColumnMetaData)) {
+                log.debug("Can't resolve struct type '" + type.getTypeName() + "'");
+            }
             return object;
         }
         if (structType.getTypeType() == PostgreTypeType.d) {
             // Domains are just wrappers around underlying type.
             structType = structType.getBaseType(session.getProgressMonitor());
+        }
+        if (structType == null || structType.getTypeID() != Types.STRUCT) {
+            // The resolved table attribute may be a fallback type for a temporary row type.
+            return object;
         }
         try {
             if (object == null) {
