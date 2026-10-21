@@ -740,7 +740,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                                         new TabbedFolderInfo(
                                             nodeName,
                                             nodeName,
-                                            node.getNodeIconDefault(),
+                                            CommonUtils.notNull(child.getIcon(databaseNode), node.getNodeIconDefault()),
                                             node.getNodeDescription(),
                                             false,
                                             new TabbedFolderPageNode(part, node, child)));

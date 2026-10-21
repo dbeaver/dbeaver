@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.navigator.itemlist;
 
+import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jface.text.Region;
+import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
@@ -368,11 +370,20 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode>
         @Nullable IWorkbenchSite workbenchSite
     ) {
         return cellValue != ownerObject
-            && (cellValue instanceof DBSObject || workbenchSite != null && cellValue instanceof DBSObjectReference);
+            && (cellValue instanceof DBSObject || workbenchSite != null
+                && (cellValue instanceof DBSObjectReference || getValueHyperlink(cellValue) != null));
+    }
+
+    @Nullable
+    private static IHyperlink getValueHyperlink(@Nullable Object value) {
+        return Adapters.adapt(value, IHyperlink.class);
     }
 
     protected static void navigateHyperlinkValue(@Nullable Object cellValue, @Nullable IWorkbenchSite workbenchSite) {
-        if (cellValue instanceof DBSObject object) {
+        IHyperlink hyperlink = workbenchSite == null ? null : getValueHyperlink(cellValue);
+        if (hyperlink != null) {
+            hyperlink.open();
+        } else if (cellValue instanceof DBSObject object) {
             NavigatorHandlerObjectOpen.openEntityEditor(object);
         } else if (cellValue instanceof DBSObjectReference reference && workbenchSite != null) {
             new EntityHyperlink(workbenchSite, reference, new Region(0, 0)).open();
@@ -382,7 +393,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode>
     private class NodeRenderer extends ViewerRenderer {
         @Override
         protected boolean isHyperlinkActivation(@Nullable Object cellValue, int stateMask) {
-            if (cellValue instanceof DBSObjectReference && !(cellValue instanceof DBSObject)) {
+            if ((cellValue instanceof DBSObjectReference && !(cellValue instanceof DBSObject)) || getValueHyperlink(cellValue) != null) {
                 return (stateMask & (SWT.SHIFT | SWT.COMMAND)) == 0;
             }
             return super.isHyperlinkActivation(cellValue, stateMask);
