@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,87 @@ package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
  * RedshiftConstants
  */
 public class RedshiftQueries {
+
+    private static final String LOCK_QUERY_TEMPLATE = """
+        WITH locks AS (
+            SELECT * FROM svv_transactions WHERE lockable_object_type = 'relation'
+        ), conflicts AS (
+            SELECT waiting.pid AS blocked_pid, waiting.txn_owner AS blocked_user,
+                   waiting.xid AS blocked_xid, holding.pid AS blocking_pid,
+                   holding.txn_owner AS blocking_user, holding.xid AS blocking_xid,
+                   ROW_NUMBER() OVER (PARTITION BY waiting.pid ORDER BY holding.txn_start, holding.pid) AS lock_rank
+            FROM locks waiting
+            JOIN locks holding ON waiting.txn_db = holding.txn_db AND waiting.relation = holding.relation
+                AND waiting.pid <> holding.pid AND waiting.xid <> holding.xid AND holding.granted
+                AND CASE waiting.lock_mode
+                    WHEN 'AccessShareLock' THEN holding.lock_mode IN ('AccessExclusiveLock')
+                    WHEN 'RowShareLock' THEN holding.lock_mode IN ('ExclusiveLock', 'AccessExclusiveLock')
+                    WHEN 'RowExclusiveLock' THEN holding.lock_mode IN (
+                        'ShareLock', 'ShareRowExclusiveLock', 'ExclusiveLock', 'AccessExclusiveLock')
+                    WHEN 'ShareUpdateExclusiveLock' THEN holding.lock_mode IN (
+                        'ShareUpdateExclusiveLock', 'ShareLock', 'ShareRowExclusiveLock', 'ExclusiveLock', 'AccessExclusiveLock')
+                    WHEN 'ShareLock' THEN holding.lock_mode IN (
+                        'RowExclusiveLock', 'ShareUpdateExclusiveLock', 'ShareRowExclusiveLock', 'ExclusiveLock', 'AccessExclusiveLock')
+                    WHEN 'ShareRowExclusiveLock' THEN holding.lock_mode IN (
+                        'RowExclusiveLock', 'ShareUpdateExclusiveLock', 'ShareLock',
+                        'ShareRowExclusiveLock', 'ExclusiveLock', 'AccessExclusiveLock')
+                    WHEN 'ExclusiveLock' THEN holding.lock_mode IN (
+                        'RowShareLock', 'RowExclusiveLock', 'ShareUpdateExclusiveLock', 'ShareLock',
+                        'ShareRowExclusiveLock', 'ExclusiveLock', 'AccessExclusiveLock')
+                    WHEN 'AccessExclusiveLock' THEN TRUE
+                    ELSE FALSE
+                END
+            WHERE NOT waiting.granted
+        ), queries AS (
+            SELECT history.session_id, history.transaction_id, TRIM(history.query_text) AS query_text,
+                   ROW_NUMBER() OVER (
+                       PARTITION BY history.session_id, history.transaction_id
+                       ORDER BY history.start_time DESC, history.query_id DESC
+                   ) AS query_rank
+            FROM sys_query_history history
+            JOIN (SELECT DISTINCT pid, xid FROM locks) transactions
+                ON history.session_id = transactions.pid AND history.transaction_id = transactions.xid
+        ), current_queries AS (
+            %s
+        ), real_locks AS (
+            SELECT conflicts.blocked_pid, conflicts.blocked_user, conflicts.blocking_pid, conflicts.blocking_user,
+                   COALESCE(current_waiting.query_text, waiting_query.query_text) AS blocked_statement,
+                   COALESCE(current_holding.query_text, holding_query.query_text) AS statement_in
+            FROM conflicts
+            LEFT JOIN queries waiting_query ON waiting_query.session_id = conflicts.blocked_pid
+                AND waiting_query.transaction_id = conflicts.blocked_xid AND waiting_query.query_rank = 1
+            LEFT JOIN queries holding_query ON holding_query.session_id = conflicts.blocking_pid
+                AND holding_query.transaction_id = conflicts.blocking_xid AND holding_query.query_rank = 1
+            LEFT JOIN current_queries current_waiting ON current_waiting.pid = conflicts.blocked_pid
+                AND current_waiting.query_rank = 1
+            LEFT JOIN current_queries current_holding ON current_holding.pid = conflicts.blocking_pid
+                AND current_holding.query_rank = 1
+            WHERE conflicts.lock_rank = 1
+        )
+        SELECT blocked_pid, blocked_user, blocking_pid, blocking_user, blocked_statement, statement_in
+        FROM real_locks
+        UNION
+        SELECT blocking_pid, blocking_user, NULL::integer, NULL::text, statement_in, NULL::text
+        FROM real_locks
+        WHERE blocking_pid NOT IN (SELECT blocked_pid FROM real_locks)
+        """;
+
+    public static final String LOCK_QUERY = LOCK_QUERY_TEMPLATE.formatted(
+        "SELECT NULL::integer AS pid, NULL::text AS query_text, 1 AS query_rank WHERE FALSE");
+
+    // lock-waiting queries may not appear in sys_query_history until the lock is acquired
+    public static final String LOCK_QUERY_WITH_RECENTS = LOCK_QUERY_TEMPLATE.formatted("""
+        SELECT pid, TRIM(query) AS query_text,
+               ROW_NUMBER() OVER (PARTITION BY pid ORDER BY starttime DESC) AS query_rank
+        FROM stv_recents WHERE status = 'Running'
+        """);
+
+    public static final String LOCK_ITEM_QUERY = """
+        SELECT txn_db AS datname, lockable_object_type AS locktype, relation::varchar AS relation,
+               lock_mode AS mode, xid::varchar AS tid, NULL::integer AS page, NULL::integer AS tuple, pid, granted
+        FROM svv_transactions
+        WHERE pid = ?
+        """;
 
     /**
      * Slightly modified official AWS script for DDL:

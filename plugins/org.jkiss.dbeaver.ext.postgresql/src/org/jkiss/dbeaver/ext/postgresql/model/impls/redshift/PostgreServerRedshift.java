@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBDatabaseException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
@@ -60,6 +61,7 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
     public static final String RS_OBJECT_CLASS = "com.amazon.redshift.util.RedshiftObject";
 
     private Version redshiftVersion;
+    private Boolean supportsRecentQueries;
 
     public PostgreServerRedshift(PostgreDataSource dataSource) {
         super(dataSource);
@@ -268,7 +270,24 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
 
     @Override
     public boolean supportsLocks() {
-        return false;
+        return true;
+    }
+
+    @NotNull
+    @Override
+    public String getLocksQuery(@NotNull JDBCSession session) throws SQLException {
+        if (supportsRecentQueries == null) {
+            supportsRecentQueries = JDBCUtils.queryString(session,
+                "SELECT 1 FROM pg_catalog.pg_class cls JOIN pg_catalog.pg_namespace ns ON ns.oid = cls.relnamespace "
+                    + "WHERE ns.nspname = ? AND cls.relname = ?", PostgreConstants.CATALOG_SCHEMA_NAME, "stv_recents") != null;
+        }
+        return supportsRecentQueries ? RedshiftQueries.LOCK_QUERY_WITH_RECENTS : RedshiftQueries.LOCK_QUERY;
+    }
+
+    @NotNull
+    @Override
+    public String getLockItemsQuery() {
+        return RedshiftQueries.LOCK_ITEM_QUERY;
     }
 
     @Override
