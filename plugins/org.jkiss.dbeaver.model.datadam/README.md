@@ -33,9 +33,9 @@ State observers may run on the subscribing or state-changing thread; keep them s
 
 ## Trusted endpoints
 
-Stage mode (`-dbeaver.datadam.stage`) selects the proposed endpoint
-`wss://external-dam.datadam.beavers.team/ws`. Declaring this URL does not provision the service, DNS, TLS, or ingress.
-The production endpoint remains a `.invalid` placeholder, consistent with the Account and Storage endpoints.
+All DataDam endpoints use the shared base host in `DDEndpoints`, with `datadam.cloud` as the source default and
+build-time substitution for staging. The External DAM endpoint is `wss://external-dam.<base-host>/ws`, using the
+same environment as Account and Storage. Declaring this URL does not provision the service, DNS, TLS, or ingress.
 
 Desktop only supplies a token to the configured External DAM endpoint when the token's saved Account and Storage
 origins match the current environment. An arbitrary WebSocket host is not trusted. Remote connections require WSS;

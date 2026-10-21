@@ -17,10 +17,8 @@
 package org.jkiss.dbeaver.model.datadam;
 
 import com.dbeaver.datadam.external.api.DDExternalDamProtocol;
-import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.utils.ArrayUtils;
 
 import java.net.URI;
 
@@ -28,34 +26,27 @@ import java.net.URI;
  * Remote DataDam endpoints used for login, project synchronization and tracking.
  */
 public final class DDEndpoints {
-    private static final String STAGE_ARGUMENT = "-dbeaver.datadam.stage";
-
-    private static final String STAGE_ACCOUNT_URL = "https://account.datadam.beavers.team";
-    private static final String STAGE_STORAGE_URL = "https://dbeaver-storage.datadam.beavers.team";
-    private static final String STAGE_EXTERNAL_DAM_URL = "wss://external-dam.datadam.beavers.team";
-    //TODO Replace these placeholders with the production endpoints once they are available.
-    private static final String PROD_ACCOUNT_URL = "https://account.prod.datadam.invalid";
-    private static final String PROD_STORAGE_URL = "https://storage.prod.datadam.invalid";
-    private static final String PROD_EXTERNAL_DAM_URL = "wss://external-dam.prod.datadam.invalid";
-
-    private static final boolean STAGE = ArrayUtils.contains(Platform.getApplicationArgs(), STAGE_ARGUMENT);
+    private static final String BASE_DD_HOST = /*<DD-PROD-URL*/"datadam.cloud"/*/>*/;
+    private static final String ACCOUNT_URL = "https://account." + BASE_DD_HOST;
+    private static final String STORAGE_URL = "https://dbeaver-storage." + BASE_DD_HOST;
+    private static final String EXTERNAL_DAM_URL = "wss://external-dam." + BASE_DD_HOST;
 
     private DDEndpoints() {
     }
 
     @NotNull
     public static String getAccountBaseUrl() {
-        return STAGE ? STAGE_ACCOUNT_URL : PROD_ACCOUNT_URL;
+        return ACCOUNT_URL;
     }
 
     @NotNull
     public static String getStorageBaseUrl() {
-        return STAGE ? STAGE_STORAGE_URL : PROD_STORAGE_URL;
+        return STORAGE_URL;
     }
 
     @NotNull
     public static String getExternalDamWebSocketUrl() {
-        return (STAGE ? STAGE_EXTERNAL_DAM_URL : PROD_EXTERNAL_DAM_URL) + DDExternalDamProtocol.WEBSOCKET_PATH;
+        return EXTERNAL_DAM_URL + DDExternalDamProtocol.WEBSOCKET_PATH;
     }
 
     public static void requireSecureWebSocketTransport(@NotNull URI url) throws DBException {

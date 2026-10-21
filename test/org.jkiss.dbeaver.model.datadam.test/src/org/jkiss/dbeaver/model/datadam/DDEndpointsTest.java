@@ -29,7 +29,7 @@ class DDEndpointsTest {
     void selectsExternalEndpointForTheConfiguredEnvironment() {
         Map<String, String> externalEndpoints = Map.of(
             "https://account.datadam.beavers.team", "wss://external-dam.datadam.beavers.team/ws",
-            "https://account.prod.datadam.invalid", "wss://external-dam.prod.datadam.invalid/ws"
+            "https://account.datadam.cloud", "wss://external-dam.datadam.cloud/ws"
         );
 
         Assertions.assertEquals(externalEndpoints.get(DDEndpoints.getAccountBaseUrl()), DDEndpoints.getExternalDamWebSocketUrl());
