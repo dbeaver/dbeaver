@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSearchUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryVariablesSubset;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -52,13 +53,14 @@ public class SQLQueryConnectionRealContext extends SQLQueryConnectionContext {
 
     public SQLQueryConnectionRealContext(
         @NotNull SQLDialect dialect,
+        @NotNull SQLQueryVariablesSubset variablesSubset,
         @NotNull SQLIdentifierDetector identifierDetector,
         @NotNull DBCExecutionContext executionContext,
         boolean validateFunctions,
         @NotNull Map<String, SQLQueryResultPseudoColumn> globalPseudoColumns,
         @NotNull Function<SQLQueryRowsSourceModel, List<SQLQueryResultPseudoColumn>> rowsetPseudoColumnsProvider
     ) {
-        super(dialect);
+        super(dialect, variablesSubset);
         this.validateFunctions = validateFunctions;
         this.identifierDetector = identifierDetector;
         this.executionContext = executionContext;

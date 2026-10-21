@@ -51,6 +51,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -704,8 +705,21 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
         @Override
         protected void cacheChildren(@NotNull DBRProgressMonitor monitor, @NotNull SQLServerTableIndex index, @NotNull List<SQLServerTableIndexColumn> rows)
         {
+            SQLServerSchema.sortIndexColumns(rows);
             index.setColumns(rows);
         }
+    }
+
+    /**
+     * Order key columns before included columns without changing SQL Server ordinal metadata.
+     * Public for regression tests running in a separate OSGi test bundle.
+     */
+    public static void sortIndexColumns(@NotNull List<SQLServerTableIndexColumn> rows) {
+        // Included columns have key_ordinal = 0, but follow the index key columns.
+        // Keep the SQL Server ordinal metadata intact and use index_column_id to order includes.
+        rows.sort(Comparator.comparing(SQLServerTableIndexColumn::isIncluded)
+            .thenComparingInt(SQLServerTableIndexColumn::getOrdinalPosition)
+            .thenComparingLong(SQLServerTableIndexColumn::getObjectId));
     }
 
     /**

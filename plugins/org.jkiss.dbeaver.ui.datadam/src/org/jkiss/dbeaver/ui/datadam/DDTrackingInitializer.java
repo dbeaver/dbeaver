@@ -47,8 +47,6 @@ import java.util.concurrent.atomic.AtomicReference;
 public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
 
     private static final Log log = Log.getLog(DDTrackingInitializer.class);
-    private static final DDDesktopAccessService ACCESS_SERVICE = DDDesktopAccessService.getInstance();
-    private static final DDDesktopTokenUIManager ACCESS_UI_MANAGER = DDDesktopTokenUIManager.getInstance();
 
     private static final AtomicBoolean LISTENER_REGISTERED = new AtomicBoolean(false);
     private static final AtomicBoolean TOKEN_RESTORE_STARTED = new AtomicBoolean(false);
@@ -56,6 +54,9 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
 
     @Override
     public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
+        if (!DDProductConfig.isIntegrationEnabled()) {
+            return;
+        }
         if (LISTENER_REGISTERED.compareAndSet(false, true)) {
             PlatformUI.getWorkbench().addWorkbenchListener(new IWorkbenchListener() {
                 @Override
@@ -77,18 +78,22 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
         if (!TOKEN_RESTORE_STARTED.compareAndSet(false, true)) {
             return;
         }
-        if (ACCESS_SERVICE.getStatus() == DDDesktopAccessService.Status.SIGNED_OUT) {
+        DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
+        if (accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_OUT) {
             return;
         }
         AbstractJob restoreJob = new AbstractJob("DataDam desktop session restore") {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                if (!DDProductConfig.isIntegrationEnabled()) {
+                    return Status.CANCEL_STATUS;
+                }
                 try {
-                    ACCESS_SERVICE.load();
+                    accessService.load();
                 } catch (DBException e) {
                     log.debug("DataDam desktop token could not be restored", e);
-                    if (ACCESS_SERVICE.getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
+                    if (accessService.getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
                         return Status.OK_STATUS;
                     }
                 }
@@ -105,7 +110,11 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
      * Safe to call again after a login, it is a no-op while a session is already active.
      */
     public static void start() {
-        if (ACCESS_SERVICE.getStatus() == DDDesktopAccessService.Status.SIGNED_OUT) {
+        if (!DDProductConfig.isIntegrationEnabled()) {
+            return;
+        }
+        DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
+        if (accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_OUT) {
             log.debug("DataDam tracking disabled (not signed in to SSO)");
             return;
         }
@@ -126,13 +135,13 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
                     return Status.OK_STATUS;
                 }
                 try {
-                    if (!ACCESS_UI_MANAGER.ensureTokenReady(monitor)) {
+                    if (!DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
                         ACTIVE_SESSION.compareAndSet(session, null);
                         return Status.CANCEL_STATUS;
                     }
                 } catch (DBException e) {
                     log.debug("DataDam access initialization failed", e);
-                    if (ACCESS_SERVICE.getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
+                    if (accessService.getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
                         ACTIVE_SESSION.compareAndSet(session, null);
                         return Status.CANCEL_STATUS;
                     }

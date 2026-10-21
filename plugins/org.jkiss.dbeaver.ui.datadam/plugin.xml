@@ -2,6 +2,23 @@
 <?eclipse version="3.2"?>
 
 <plugin>
+    <extension point="org.jkiss.dbeaver.app.config">
+        <feature
+            id="datadam"
+            label="%feature.datadam.label"
+            description="%feature.datadam.description"
+            enabledByDefault="true"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.activities">
+        <activity id="dbeaver.activity.datadam" name="%feature.datadam.label">
+            <enabledWhen>
+                <test property="org.jkiss.dbeaver.app.config.isFeatureEnabled" value="datadam"/>
+            </enabledWhen>
+        </activity>
+        <activityPatternBinding activityId="dbeaver.activity.datadam" pattern="org\.jkiss\.dbeaver\.ui\.datadam/.*"/>
+    </extension>
+
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
             class="org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester"

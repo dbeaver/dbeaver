@@ -58,21 +58,15 @@ final class AIImageThumbnailBrowser {
     private Runnable timeout;
     private int nextId;
     private boolean ready;
+    private boolean functionRegistered;
 
     AIImageThumbnailBrowser(@NotNull Browser browser) {
         this.browser = browser;
-        new BrowserFunction(browser, "imageThumbnailLoaded") {
-            @Nullable
-            @Override
-            public Object function(@NotNull Object[] arguments) {
-                if (active != null && arguments.length == 2 && arguments[0] instanceof Number id
-                    && id.intValue() == active.id() && arguments[1] instanceof String source) {
-                    complete(source);
-                }
-                return null;
-            }
-        };
         browser.addProgressListener(ProgressListener.completedAdapter(event -> {
+            if (!functionRegistered) {
+                functionRegistered = true;
+                registerFunction();
+            }
             ready = true;
             loadNext();
         }));
@@ -86,6 +80,20 @@ final class AIImageThumbnailBrowser {
             }
             active = null;
         });
+    }
+
+    private void registerFunction() {
+        new BrowserFunction(browser, "imageThumbnailLoaded") {
+            @Nullable
+            @Override
+            public Object function(@NotNull Object[] arguments) {
+                if (active != null && arguments.length == 2 && arguments[0] instanceof Number id
+                    && id.intValue() == active.id() && arguments[1] instanceof String source) {
+                    complete(source);
+                }
+                return null;
+            }
+        };
     }
 
     @NotNull

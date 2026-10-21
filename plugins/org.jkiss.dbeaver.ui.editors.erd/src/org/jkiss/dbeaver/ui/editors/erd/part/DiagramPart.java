@@ -156,6 +156,23 @@ public class DiagramPart extends PropertyAwarePart {
         return ERDThemeSettings.instance.diagramFontBold;
     }
 
+    @Override
+    public void refreshTheme() {
+        getFigure().setBackgroundColor(ERDThemeSettings.instance.diagramBackground);
+        super.refreshTheme();
+        for (Object child : getChildren()) {
+            if (child instanceof NodePart nodePart) {
+                for (Object connection : nodePart.getSourceConnections()) {
+                    if (connection instanceof AssociationPart associationPart) {
+                        associationPart.refreshTheme();
+                    }
+                }
+            }
+        }
+        getFigure().revalidate();
+        getFigure().repaint();
+    }
+
     /**
      * The method designed for diagram re-arrangement, reset alignment elements
      * to original
@@ -402,6 +419,7 @@ public class DiagramPart extends PropertyAwarePart {
      *
      * @return - router
      */
+    @Nullable
     public ERDConnectionRouter getActiveRouter() {
         return router;
     }
