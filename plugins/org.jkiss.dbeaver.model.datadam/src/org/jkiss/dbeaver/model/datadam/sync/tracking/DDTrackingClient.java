@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam;
+package org.jkiss.dbeaver.model.datadam.sync.tracking;
 
 import com.dbeaver.datadam.share.api.tracking.DDClientInfo;
 import com.dbeaver.datadam.share.api.tracking.DDTracking;
@@ -25,6 +25,7 @@ import com.dbeaver.rest.client.MediaType;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.HttpConstants;
