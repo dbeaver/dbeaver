@@ -19,6 +19,9 @@ package org.jkiss.dbeaver.ui.ai.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class AIUIMessages extends NLS {
+    public static String ai_engine_configurator_use_env;
+    public static String ai_engine_configurator_use_env_tip;
+    public static String ai_engine_configurator_use_env_variables_tip;
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.ai.internal.AIUIMessages"; //$NON-NLS-1$
 
     public static String gpt_preference_page_checkbox_enable_ai_label;
@@ -39,13 +42,10 @@ public class AIUIMessages extends NLS {
     public static String gpt_preference_page_chat_use_stream_mode_tip;
     public static String gpt_preference_page_chat_execute_in_new_console_label;
     public static String gpt_preference_page_chat_execute_in_new_console_tip;
-    public static String gpt_preference_page_advanced_appearance_group;
     public static String gpt_preference_page_combo_engine;
     public static String gpt_preference_page_text_temperature;
     public static String gpt_preference_page_refresh_models;
     public static String gpt_preference_page_ai_query_confirm_group;
-    public static String gpt_preference_page_ai_query_confirm_label;
-    public static String gpt_preference_page_ai_query_confirm_tip;
     public static String gpt_preference_page_ai_query_confirm_rule_execute;
     public static String gpt_preference_page_ai_query_confirm_rule_confirm;
     public static String gpt_preference_page_ai_query_confirm_rule_disable_autocommit;
@@ -78,26 +78,56 @@ public class AIUIMessages extends NLS {
     public static String ai_function_allow_menu_allow_agent_always;
     public static String ai_function_allow_menu_always;
     public static String ai_function_allow_menu_configure;
-
-    public static String ai_suggestion_popup_title;
-    public static String ai_suggestion_popup_message;
     public static String scope_selector_customize;
     public static String scope_selector_not_available;
     public static String scope_selector_custom_objects;
     public static String openai_configurator_log_query_label;
     public static String openai_configurator_log_query_tip;
     public static String openai_configurator_temperature_tip;
-    public static String openai_configurator_token_required;
     public static String openai_configurator_token_placeholder;
+    public static String openai_configurator_custom_headers;
+    public static String openai_configurator_header_name;
+    public static String openai_configurator_header_value;
+    public static String openai_configurator_header_add;
+    public static String openai_configurator_header_remove;
+    public static String openai_configurator_header_invalid;
+    public static String openai_configurator_login_method_label;
+    public static String openai_configurator_authentication_api_token;
+    public static String openai_configurator_authentication_chatgpt_account;
+    public static String openai_configurator_account_label;
+    public static String openai_configurator_account_connected;
+    public static String openai_configurator_account_connected_as;
+    public static String openai_configurator_account_not_connected;
+    public static String openai_configurator_sign_in;
+    public static String openai_configurator_sign_out;
+    public static String openai_configurator_sign_in_failed;
+    public static String openai_configurator_sign_in_dialog_title;
+    public static String openai_configurator_sign_in_dialog_prompt;
+    public static String openai_configurator_sign_in_browser;
+    public static String openai_configurator_sign_in_browser_description;
+    public static String openai_configurator_sign_in_device_code;
+    public static String openai_configurator_sign_in_device_code_description;
+    public static String openai_configurator_sign_in_continue;
+    public static String openai_configurator_credentials_save_error_title;
+    public static String openai_configurator_credentials_save_error_message;
+    public static String openai_configurator_sign_out_save_error_title;
+    public static String openai_configurator_sign_out_save_error_message;
+    public static String openai_configurator_sign_in_to_refresh_models;
+
+    public static String model_selector_refresh_title;
+    public static String model_selector_refresh_success_message;
+    public static String model_selector_refresh_empty_message;
+    public static String model_selector_refresh_error_title;
+    public static String model_selector_token_required;
 
     public static String ai_engine_configurator_advanced_settings;
     public static String ai_engine_configurator_timeout_label;
     public static String ai_engine_configurator_timeout_tip;
 
     public static String ai_engines_page_create_profile_tip;
+    public static String ai_engines_page_duplicate_profile_tip;
     public static String ai_engines_page_delete_profile_tip;
     public static String ai_engines_page_no_active_engine;
-    public static String ai_engines_page_group_profile;
     public static String ai_engines_page_profile_id_label;
     public static String ai_engines_page_profile_name_label;
     public static String ai_engines_page_group_settings;
@@ -105,6 +135,8 @@ public class AIUIMessages extends NLS {
     public static String ai_engines_page_column_model;
     public static String ai_engines_page_create_error_title;
     public static String ai_engines_page_create_error_message;
+    public static String ai_engines_page_duplicate_error_title;
+    public static String ai_engines_page_duplicate_error_message;
     public static String ai_engines_page_delete_confirm_title;
     public static String ai_engines_page_delete_confirm_message;
     public static String ai_engines_page_save_error_title;

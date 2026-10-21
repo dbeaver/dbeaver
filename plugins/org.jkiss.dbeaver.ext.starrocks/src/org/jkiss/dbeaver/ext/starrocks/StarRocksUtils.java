@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.format.SQLFormatUtils;
 
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -56,14 +55,14 @@ public class StarRocksUtils {
     }
 
     /**
-     * Loads and formats DDL using SHOW CREATE commands for StarRocks tables and views.
+     * Loads DDL using SHOW CREATE commands for StarRocks tables and views.
      *
      * @param monitor progress monitor
      * @param table the table or view to load DDL for
      * @param sessionTitle title for the metadata session
      * @param showCommand the SHOW CREATE command (e.g., "SHOW CREATE TABLE", "SHOW CREATE VIEW")
      * @param columnName the result column name (e.g., "Create Table", "Create View")
-     * @return formatted DDL string, or null if not found
+     * @return DDL string, or null if not found
      * @throws DBCException if DDL loading fails
      */
     @Nullable
@@ -87,7 +86,7 @@ public class StarRocksUtils {
                     if (dbResult.next()) {
                         String definition = JDBCUtils.safeGetString(dbResult, columnName);
                         if (definition != null) {
-                            return SQLFormatUtils.formatSQL(table.getDataSource(), definition);
+                            return definition;
                         }
                     }
                 }

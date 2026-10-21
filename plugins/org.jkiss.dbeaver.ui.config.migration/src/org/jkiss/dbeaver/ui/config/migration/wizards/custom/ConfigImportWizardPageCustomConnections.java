@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.config.migration.wizards.custom;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -52,7 +53,7 @@ public class ConfigImportWizardPageCustomConnections extends ConfigImportWizardP
     }
 
     @Override
-    protected void loadConnections(ImportData importData) throws DBException
+    protected void loadConnections(@NotNull ImportData importData) throws DBException
     {
         setErrorMessage(null);
 
@@ -128,7 +129,12 @@ public class ConfigImportWizardPageCustomConnections extends ConfigImportWizardP
             conProps.get("user"),
             conProps.get("password")
         );
-        
+
+        String authModelId = conProps.get("authModelId");
+        if (CommonUtils.isNotEmpty(authModelId)) {
+            ici.setAuthModelId(authModelId);
+        }
+
         log.debug("load connection: " + ici.toString());
         importData.addConnection(ici);
     }

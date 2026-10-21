@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -357,7 +358,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
             persistButton.setLayoutData(gridData);
             persistButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> executeAction.run()));
         }
-        final Button copyButton = UIUtils.createPushButton(buttonsBar, DTUIMessages.page_configure_table_DDL_button_copy, null);
+        final Button copyButton = UIUtils.createPushButton(buttonsBar, WorkbenchMessages.Workbench_copy, null);
         copyButton.setLayoutData(gridData);
         copyButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> UIUtils.setClipboardContents(
             Display.getCurrent(),

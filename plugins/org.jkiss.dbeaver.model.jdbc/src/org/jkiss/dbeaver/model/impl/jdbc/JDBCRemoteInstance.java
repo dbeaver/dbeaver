@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.NotNullWhen;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -182,7 +183,7 @@ public class JDBCRemoteInstance implements DBSInstance {
         return getDefaultContext(meta);
     }
 
-    @NotNull
+    @NotNullWhen("executionContext != null")
     public JDBCExecutionContext getDefaultContext(boolean meta) {
         if (sharedInstance != null) {
             return sharedInstance.getDefaultContext(meta);

@@ -20,7 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.HttpConstants;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -60,6 +63,7 @@ public class MonitoredHttpClient implements AutoCloseable {
     private final HttpClient client;
     private final ErrorMapper errorMapper;
     private final ErrorProcessor errorProcessor;
+    private final ThreadLocal<Stream<String>> responseStream = new ThreadLocal<>();
 
     public MonitoredHttpClient(@NotNull HttpClient client, @NotNull ErrorMapper errorMapper, @NotNull ErrorProcessor processor) {
         this.client = client;
@@ -102,7 +106,11 @@ public class MonitoredHttpClient implements AutoCloseable {
             }
 
             HttpResponse<String> response = responseCompletableFuture.get();
-            if (response.statusCode() == 200) {
+            DBException redirectError = getRedirectError(response);
+            if (redirectError != null) {
+                throw redirectError;
+            }
+            if (response.statusCode() == HttpConstants.CODE_OK) {
                 return response.body();
             } else {
                 throw errorMapper.map(response.statusCode(), response.body());
@@ -137,12 +145,28 @@ public class MonitoredHttpClient implements AutoCloseable {
         AtomicBoolean suppressCompletion = new AtomicBoolean(false);
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofLines())
             .thenAccept(response -> {
-                int statusCode = response.statusCode();
-                if (errorProcessor.process(errorMapper, errorHandler, response, suppressCompletion, backupOption, statusCode)) {
-                    return;
-                }
+                Stream<String> previousStream = responseStream.get();
+                try (Stream<String> body = response.body()) {
+                    responseStream.set(body);
+                    DBException redirectError = getRedirectError(response);
+                    if (redirectError != null) {
+                        body.close();
+                        errorHandler.accept(redirectError);
+                        return;
+                    }
+                    int statusCode = response.statusCode();
+                    if (errorProcessor.process(errorMapper, errorHandler, response, suppressCompletion, backupOption, statusCode)) {
+                        return;
+                    }
 
-                response.body().forEach(eventHandler);
+                    body.forEach(eventHandler);
+                } finally {
+                    if (previousStream == null) {
+                        responseStream.remove();
+                    } else {
+                        responseStream.set(previousStream);
+                    }
+                }
             })
             .whenComplete((v, e) -> {
                 if (e != null) {
@@ -155,8 +179,51 @@ public class MonitoredHttpClient implements AutoCloseable {
             });
     }
 
+    @Nullable
+    private static DBException getRedirectError(@NotNull HttpResponse<?> response) {
+        return switch (response.statusCode()) {
+            case HttpConstants.CODE_MOVED_PERMANENTLY, HttpConstants.CODE_FOUND, HttpConstants.CODE_SEE_OTHER,
+                HttpConstants.CODE_TEMPORARY_REDIRECT, HttpConstants.CODE_PERMANENT_REDIRECT -> new DBException(
+                    "Received HTTP " + response.statusCode() + " redirect"
+                        + response.headers().firstValue("Location")
+                            .filter(location -> !location.isBlank())
+                            .map(MonitoredHttpClient::sanitizeRedirectLocation)
+                            .map(location -> " to " + location)
+                            .orElse(" without a Location header")
+                        + ". Set the API base URL to the final endpoint; redirects are not followed automatically."
+                );
+            default -> null;
+        };
+    }
+
+    @NotNull
+    private static String sanitizeRedirectLocation(@NotNull String location) {
+        try {
+            URI uri = new URI(location);
+            StringBuilder result = new StringBuilder();
+            if (uri.getScheme() != null) {
+                result.append(uri.getScheme()).append(':');
+            }
+            if (uri.getRawAuthority() != null) {
+                String authority = uri.getRawAuthority();
+                result.append("//").append(authority.substring(authority.lastIndexOf('@') + 1));
+            }
+            if (uri.getRawPath() != null) {
+                result.append(uri.getRawPath());
+            }
+            return result.isEmpty() ? "<redacted redirect target>" : result.toString();
+        } catch (URISyntaxException e) {
+            return "<invalid redirect target>";
+        }
+    }
+
     @Override
     public void close() {
+        Stream<String> body = responseStream.get();
+        if (body != null) {
+            // release this response before waiting for the client from its callback
+            body.close();
+        }
         client.close();
     }
 }

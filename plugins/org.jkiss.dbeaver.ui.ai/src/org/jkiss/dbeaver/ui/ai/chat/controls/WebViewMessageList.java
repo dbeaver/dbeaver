@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.ai.chat.controls;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
@@ -26,6 +27,7 @@ import org.eclipse.swt.browser.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.program.Program;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -44,7 +46,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
-import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessages;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIFeatures;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -53,6 +55,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
@@ -65,8 +68,13 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     public static final String ATTACHMENT_OPEN_FILE_IN_EXPLORER = "openFileInExplorer";
 
     protected final Browser browser;
+    private final AIImageThumbnailBrowser thumbnailBrowser;
+    private final WebCSSInitializer cssInitializer;
+    private final IPropertyChangeListener themeChangeListener;
     private final AISettingsManager settingsManager;
     private final AIFunctionAllowMenu functionAllowMenu;
+    private final WebViewDndController dndController;
+    private final Map<String, Function<Object[], Object>> pendingFunctions = new LinkedHashMap<>();
     private final Map<Integer, PendingConfirmation> pendingConfirmations = new HashMap<>();
     private final AIMessageChunkBuffer messageChunkBuffer;
     private final WebViewMessageRenderer renderer;
@@ -76,7 +84,19 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     public WebViewMessageList(@NotNull AIChatControl chat, @NotNull Composite parent) throws IOException {
         super(parent, SWT.NONE);
         browser = new Browser(this, SWT.NONE);
-        renderer = new WebViewMessageRenderer(browser, this::getDataSource);
+        thumbnailBrowser = new AIImageThumbnailBrowser(browser);
+        cssInitializer = createCssInitializer();
+        var refreshTheme = RuntimeUtils.debounce(
+            () -> UIUtils.asyncExec(this::refreshTheme),
+            Duration.ofMillis(500)
+        );
+        themeChangeListener = event -> refreshTheme.run();
+        PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(themeChangeListener);
+        addDisposeListener(e -> {
+            PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
+            cssInitializer.close();
+        });
+        renderer = new WebViewMessageRenderer(browser, thumbnailBrowser, this::getDataSource, cssInitializer);
 
         messageChunkBuffer = new AIMessageChunkBuffer(getDisplay(), renderer::addMessageChunk, this::isDisposed);
         chat.getChatSession().addListener(new AIChatListener() {
@@ -110,12 +130,12 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
                         resultArgs.put("messageId", message.id());
                         resultArgs.put("functionName", fc.getFunctionName());
                         resultArgs.put("result", CommonUtils.notEmpty(result));
-                        resultArgs.put("resultLabel", AIChatMessages.ai_chat_confirm_result);
+                        resultArgs.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
                         AIFunctionResult functionResult = message.message().getFunctionResult();
                         if (functionResult != null && functionResult.getException() != null) {
                             resultArgs.put("hasException", true);
-                            resultArgs.put("text", NLS.bind(AIChatMessages.ai_chat_confirm_failed, fc.getFunctionDisplayName()));
-                            resultArgs.put("paramsLabel", AIChatMessages.ai_chat_confirm_params);
+                            resultArgs.put("text", NLS.bind(AIChatMessagesUI.ai_chat_confirm_failed, fc.getFunctionDisplayName()));
+                            resultArgs.put("paramsLabel", AIChatMessagesUI.ai_chat_confirm_params);
                             Map<String, Object> arguments = fc.getArguments();
                             if (!arguments.isEmpty()) {
                                 resultArgs.put("arguments", arguments);
@@ -186,7 +206,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
         browser.getAccessible().addAccessibleListener(new AccessibleAdapter() {
             @Override
             public void getName(AccessibleEvent e) {
-                e.result = AIChatMessages.ai_chat_a11y_transcript_label;
+                e.result = AIChatMessagesUI.ai_chat_a11y_transcript_label;
             }
         });
         functionAllowMenu = new AIFunctionAllowMenu(
@@ -207,14 +227,17 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
                 for (AIFunctionAllowMenu.PendingApproval approval : approvals) {
                     renderer.execute("approveFunctionConfirmation", approval.messageId(), approval.functionIndex());
                 }
-            }
+            },
+            true
         );
 
         browser.setVisible(false);
-        WebCSSInitializer cssInitializer = createCssInitializer();
-        browser.setUrl(cssInitializer.getWebHtmlPath());
+        dndController = new WebViewDndController(this, browser, chat, this::getDataSource);
 
         browser.addProgressListener(ProgressListener.completedAdapter(e -> {
+            functionAllowMenu.registerBrowserFunction();
+            dndController.registerBrowserFunction();
+            registerPendingFunctions();
             browser.setVisible(true);
             isInitWaiting = false;
             renderer.initChat();
@@ -225,6 +248,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
                 renderer.showEmptyChat();
             }
             renderer.execute("setBusy", Map.of("busy", chat.getChatSession().isBusy()));
+            renderer.execute("setThemeStylesheet", Map.of("href", cssInitializer.getThemeStylesheetPath()));
         }));
 
         browser.addLocationListener(new LocationAdapter() {
@@ -238,7 +262,8 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             }
 
             private boolean shouldOpenExternally(@NotNull String url) {
-                return url.startsWith("http://") || url.startsWith("https://");
+                return !url.startsWith(cssInitializer.getWebPath())
+                    && (url.startsWith("http://") || url.startsWith("https://"));
             }
         });
 
@@ -248,13 +273,24 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             messageChunkBuffer.clear();
             settingsManager.removeChangedListener(this);
         });
-        new WebViewDndController(this, browser, chat, this::getDataSource);
         createFunctions(chat);
+        // Navigating first lets WebView2 create the page before registering native browser functions.
+        browser.setUrl(cssInitializer.getWebHtmlPath());
     }
 
     @Override
     public void onSettingsUpdate(@NotNull AISettingsManager registry) {
         UIUtils.asyncExec(() -> renderer.execute("settingsChanged"));
+    }
+
+    private void refreshTheme() {
+        if (browser.isDisposed()) {
+            return;
+        }
+        cssInitializer.refreshTheme();
+        if (!isInitWaiting) {
+            renderer.execute("setThemeStylesheet", Map.of("href", cssInitializer.getThemeStylesheetPath()));
+        }
     }
 
     public void focusChat() {
@@ -265,6 +301,11 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
         if (!isInitWaiting) {
             renderer.execute("focusChat");
         }
+    }
+
+    @NotNull
+    AIImageThumbnailBrowser getThumbnailBrowser() {
+        return thumbnailBrowser;
     }
 
     private void createFunctions(@NotNull AIChatControl chat) {
@@ -281,6 +322,18 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
                 throw new IllegalArgumentException("executeInEditor requires at least one argument");
             }
             AIChatUtils.executeInEditor(chat.getController(), arguments[0].toString());
+            return null;
+        });
+
+        createFunction("openImage", arguments -> {
+            if (arguments.length == 2 && arguments[1] instanceof Number number) {
+                AIChatMessage message = getMessageById(arguments[0]);
+                int index = number.intValue();
+                List<AIImageAttachment> images = message.message().getImages();
+                if (index >= 0 && index < images.size()) {
+                    UIUtils.asyncExec(() -> AIImageAttachmentViewer.open(getShell(), images.get(index)));
+                }
+            }
             return null;
         });
 
@@ -523,6 +576,19 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     }
 
     protected void createFunction(@NotNull String name, @NotNull Function<Object[], Object> handler) {
+        if (isInitWaiting) {
+            pendingFunctions.put(name, handler);
+        } else {
+            registerFunction(name, handler);
+        }
+    }
+
+    private void registerPendingFunctions() {
+        pendingFunctions.forEach(this::registerFunction);
+        pendingFunctions.clear();
+    }
+
+    private void registerFunction(@NotNull String name, @NotNull Function<Object[], Object> handler) {
         new BrowserFunction(browser, name) {
             @Nullable
             @Override
@@ -610,15 +676,15 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             AIFunctionDescriptor descriptor = fc.getOrResolveFunction(toolboxManager);
             String toolName = descriptor != null ? descriptor.getName() : fc.getFunctionName();
             String functionName = fc.getFunctionName();
-            String text = NLS.bind(AIChatMessages.ai_chat_confirm_auto_approved, toolName);
+            String text = NLS.bind(AIChatMessagesUI.ai_chat_confirm_auto_approved, toolName);
 
             Map<String, Object> args = new HashMap<>();
             args.put("messageId", message.id());
             args.put("text", text);
             args.put("functionName", functionName);
             args.put("confirmed", true);
-            args.put("paramsLabel", AIChatMessages.ai_chat_confirm_params);
-            args.put("resultLabel", AIChatMessages.ai_chat_confirm_result);
+            args.put("paramsLabel", AIChatMessagesUI.ai_chat_confirm_params);
+            args.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
 
             Map<String, Object> arguments = fc.getArguments();
             if (!arguments.isEmpty()) {
@@ -641,23 +707,23 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             AIFunctionDescriptor descriptor = fc.getOrResolveFunction(toolboxManager);
             String agentName = descriptor != null ? descriptor.getToolbox().getDisplayName() : "";
             String toolName = descriptor != null ? descriptor.getName() : fc.getFunctionName();
-            String title = NLS.bind(AIChatMessages.ai_chat_confirm_title, agentName, toolName);
+            String title = NLS.bind(AIChatMessagesUI.ai_chat_confirm_title, agentName, toolName);
 
             Map<String, Object> args = new HashMap<>();
             args.put("messageId", message.id());
             args.put("functionIndex", i);
             args.put("title", title);
-            args.put("titlePrefix", AIChatMessages.ai_chat_confirm_title_prefix);
-            args.put("titleMiddle", AIChatMessages.ai_chat_confirm_title_middle);
+            args.put("titlePrefix", AIChatMessagesUI.ai_chat_confirm_title_prefix);
+            args.put("titleMiddle", AIChatMessagesUI.ai_chat_confirm_title_middle);
             args.put("agentName", agentName);
             args.put("toolName", toolName);
             args.put("functionName", fc.getFunctionName());
-            args.put("allowText", AIChatMessages.ai_chat_confirm_approve);
-            args.put("declineText", AIChatMessages.ai_chat_confirm_deny);
-            args.put("approvedText", NLS.bind(AIChatMessages.ai_chat_confirm_approved, toolName));
-            args.put("declinedText", NLS.bind(AIChatMessages.ai_chat_confirm_declined, toolName));
-            args.put("paramsLabel", AIChatMessages.ai_chat_confirm_params);
-            args.put("resultLabel", AIChatMessages.ai_chat_confirm_result);
+            args.put("allowText", AIChatMessagesUI.ai_chat_confirm_approve);
+            args.put("declineText", AIChatMessagesUI.ai_chat_confirm_deny);
+            args.put("approvedText", NLS.bind(AIChatMessagesUI.ai_chat_confirm_approved, toolName));
+            args.put("declinedText", NLS.bind(AIChatMessagesUI.ai_chat_confirm_declined, toolName));
+            args.put("paramsLabel", AIChatMessagesUI.ai_chat_confirm_params);
+            args.put("resultLabel", AIChatMessagesUI.ai_chat_confirm_result);
 
             Map<String, Object> arguments = fc.getArguments();
             if (!arguments.isEmpty()) {

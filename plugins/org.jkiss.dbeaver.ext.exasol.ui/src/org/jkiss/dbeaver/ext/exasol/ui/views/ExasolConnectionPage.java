@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.ext.exasol.ui.views;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -54,25 +52,8 @@ public class ExasolConnectionPage extends ConnectionPageWithAuth implements IDia
     private Button encryptCommunication;
     private Button useLegacyEncryption;
 
-    private Image logoImage;
-
-    public ExasolConnectionPage() {
-        logoImage = createImage("icons/exasol.png"); //$NON-NLS-1$
-    }
-
     @Override
-    public void dispose() {
-        super.dispose();
-        UIUtils.dispose(logoImage);
-    }
-
-    @Override
-    public Image getImage() {
-        return logoImage;
-    }
-
-    @Override
-    public void createControl(Composite composite) {
+    public void createControl(@NotNull Composite composite) {
         Composite control = new Composite(composite, SWT.NONE);
         control.setLayout(new GridLayout(1, false));
         control.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -104,17 +85,14 @@ public class ExasolConnectionPage extends ConnectionPageWithAuth implements IDia
             backupHostText.addModifyListener(textListener);
 
             useBackupHostList = UIUtils.createCheckbox(bhPlaceholder, ExasolMessages.label_use_backup_host_list, null, showBackupHosts, 1);
-            useBackupHostList.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            useBackupHostList.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     backupHostLabel.setEnabled(useBackupHostList.getSelection());
                     backupHostText.setEnabled(useBackupHostList.getSelection());
 
                     //reset text if disabled
                     if (!useBackupHostList.getSelection())
                         backupHostText.setText(""); //$NON-NLS-1$
-                }
-            });
+                }));
 
             portText = UIUtils.createLabelText(addrGroup, ExasolMessages.dialog_connection_port, null, SWT.BORDER);
             gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);

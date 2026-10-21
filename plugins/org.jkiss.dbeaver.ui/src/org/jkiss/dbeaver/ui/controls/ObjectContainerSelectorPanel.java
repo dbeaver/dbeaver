@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -124,12 +126,7 @@ public abstract class ObjectContainerSelectorPanel extends Composite {
         containerNameCombo.setText("");
         UIUtils.addEmptyTextHint(containerNameCombo, text ->
             containerHintOverride != null ? containerHintOverride : containerHint);
-        containerNameCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                handleContainerChange();
-            }
-        });
+        containerNameCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> handleContainerChange()));
 
         browseButton = UIUtils.createPushButton(
             this,
@@ -158,15 +155,8 @@ public abstract class ObjectContainerSelectorPanel extends Composite {
         DBNProject rootNode = navigatorModel.getRoot().getProjectNode(project);
         assert rootNode != null;
         DBNNode selectedNode = getSelectedNode();
-        DBNNode node = DBWorkbench.getPlatformUI().selectObject(
-            getShell(),
-            containerHint != null ? containerHint : containerTitle,
-            rootNode.getDatabases(),
-            selectedNode,
-            new Class[]{ DBSInstance.class, DBSObjectContainer.class },
-            new Class[] { DBSObjectContainer.class },
-            new Class[]{ DBSSchema.class });
-        if (node != null) {
+        DBNNode node = selectContainer(rootNode.getDatabases(), selectedNode);
+        if (node != null && isContainerSelectable(node)) {
             try {
                 checkValidContainerNode(node);
                 setSelectedNode((DBNDatabaseNode) node);
@@ -178,6 +168,23 @@ public abstract class ObjectContainerSelectorPanel extends Composite {
             }
         }
         updateToolTips();
+    }
+
+    @Nullable
+    protected DBNNode selectContainer(@NotNull DBNNode rootNode, @Nullable DBNNode selectedNode) {
+        return DBWorkbench.getPlatformUI().selectObject(
+            getShell(),
+            containerHint != null ? containerHint : containerTitle,
+            rootNode,
+            selectedNode,
+            new Class[] {DBSInstance.class, DBSObjectContainer.class},
+            new Class[] {DBSObjectContainer.class},
+            new Class[] {DBSSchema.class}
+        );
+    }
+
+    protected boolean isContainerSelectable(@NotNull DBNNode node) {
+        return true;
     }
 
     public void checkValidContainerNode(DBNNode node) throws DBException {
@@ -252,6 +259,10 @@ public abstract class ObjectContainerSelectorPanel extends Composite {
                 }
             }
             if (historyItem.containerNode != null) {
+                if (!isContainerSelectable(historyItem.containerNode)) {
+                    setContainerInfo((DBNDatabaseNode) getSelectedNode());
+                    return;
+                }
                 setSelectedNode(historyItem.containerNode);
                 moveHistoryItemToBeginning(historyItem);
             } else {

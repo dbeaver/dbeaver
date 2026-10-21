@@ -18,19 +18,13 @@ package org.jkiss.dbeaver.ext.clickhouse.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseDataSource;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseMapType;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDComposite;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.data.AbstractDatabaseList;
-import org.jkiss.dbeaver.model.impl.struct.AbstractAttribute;
-import org.jkiss.dbeaver.model.impl.struct.AbstractStructDataType;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
 import java.util.List;
@@ -40,23 +34,19 @@ import java.util.stream.Collectors;
 public class ClickhouseMapValue extends AbstractDatabaseList {
     private final ClickhouseDataSource dataSource;
     private final ClickhouseMapType mapType;
-    private final EntryType entryType;
-    private final EntryAttribute[] attributes;
+    private final DBSAttributeBase[] entryAttributes;
     private List<EntryComposite> contents;
     private boolean modified;
 
     public ClickhouseMapValue(
         @NotNull ClickhouseDataSource dataSource,
         @NotNull ClickhouseMapType type,
+        @NotNull List<DBSAttributeBase> entryAttributes,
         @NotNull Map<?, ?> contents
     ) {
         this.dataSource = dataSource;
         this.mapType = type;
-        this.entryType = new EntryType(dataSource);
-        this.attributes = new EntryAttribute[]{
-            new EntryAttribute(entryType, "Key", type.getKeyType(), 0),
-            new EntryAttribute(entryType, "Value", type.getValueType(), 1)
-        };
+        this.entryAttributes = entryAttributes.toArray(DBSAttributeBase[]::new);
         this.contents = contents.entrySet().stream()
             .map(entry -> new EntryComposite(entry.getKey(), entry.getValue()))
             .collect(Collectors.toList());
@@ -65,13 +55,13 @@ public class ClickhouseMapValue extends AbstractDatabaseList {
     @NotNull
     @Override
     public DBSDataType getComponentType() {
-        return entryType;
+        return mapType.getComponentType();
     }
 
     @NotNull
     @Override
     public DBDValueHandler getComponentValueHandler() {
-        return DBUtils.findValueHandler(dataSource, entryType);
+        return DBUtils.findValueHandler(dataSource, mapType.getComponentType());
     }
 
     @Override
@@ -129,75 +119,6 @@ public class ClickhouseMapValue extends AbstractDatabaseList {
             .collect(Collectors.joining(", "));
     }
 
-    private class EntryType extends AbstractStructDataType<ClickhouseDataSource> implements DBSEntity {
-        public EntryType(@NotNull ClickhouseDataSource dataSource) {
-            super(dataSource);
-        }
-
-        @NotNull
-        @Override
-        public String getTypeName() {
-            return mapType.getFullTypeName();
-        }
-
-        @Override
-        public int getTypeID() {
-            return mapType.getTypeID();
-        }
-
-        @NotNull
-        @Override
-        public DBPDataKind getDataKind() {
-            return DBPDataKind.STRUCT;
-        }
-
-        @NotNull
-        @Override
-        public DBSEntityType getEntityType() {
-            return DBSEntityType.VIRTUAL_ENTITY;
-        }
-
-        @Nullable
-        @Override
-        public List<? extends DBSEntityAttribute> getAttributes(@NotNull DBRProgressMonitor monitor) throws DBException {
-            return List.of();
-        }
-    }
-
-    private static class EntryAttribute extends AbstractAttribute implements DBSEntityAttribute {
-        private final EntryType parent;
-        private final DBSDataType type;
-
-        public EntryAttribute(@NotNull EntryType parent, @NotNull String name, @NotNull DBSDataType type, int position) {
-            super(name, type.getFullTypeName(), type.getTypeID(), position, 0, null, null, true, false);
-            this.parent = parent;
-            this.type = type;
-        }
-
-        @Nullable
-        @Override
-        public String getDefaultValue() {
-            return null;
-        }
-
-        @NotNull
-        @Override
-        public DBSEntity getParentObject() {
-            return parent;
-        }
-
-        @Override
-        public DBPDataSource getDataSource() {
-            return parent.getDataSource();
-        }
-
-        @NotNull
-        @Override
-        public DBPDataKind getDataKind() {
-            return type.getDataKind();
-        }
-    }
-
     private class EntryComposite implements DBDComposite {
         private final Object key;
         private Object value;
@@ -210,13 +131,13 @@ public class ClickhouseMapValue extends AbstractDatabaseList {
         @NotNull
         @Override
         public DBSDataType getDataType() {
-            return entryType;
+            return mapType.getComponentType();
         }
 
         @NotNull
         @Override
         public DBSAttributeBase[] getAttributes() {
-            return attributes;
+            return entryAttributes;
         }
 
         @Nullable

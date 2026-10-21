@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.config.migration.wizards.datagrip;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.config.migration.ImportConfigMessages;
@@ -43,7 +44,7 @@ public class ConfigImportWizardPageDataGripConnections extends ConfigImportWizar
     }
 
     @Override
-    protected void loadConnections(ImportData importData) throws DBException {
+    protected void loadConnections(@NotNull ImportData importData) throws DBException {
         setErrorMessage(null);
         try {
             tryLoadConnection(importData);

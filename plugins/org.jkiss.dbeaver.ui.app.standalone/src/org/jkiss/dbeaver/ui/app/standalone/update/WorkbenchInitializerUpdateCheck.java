@@ -16,22 +16,52 @@
  */
 package org.jkiss.dbeaver.ui.app.standalone.update;
 
+import org.eclipse.e4.ui.model.application.ui.basic.MTrimBar;
+import org.eclipse.e4.ui.model.application.ui.basic.MTrimElement;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
+import org.eclipse.ui.internal.WorkbenchWindow;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.ui.services.ApplicationPolicyService;
-import org.jkiss.dbeaver.core.ui.services.UIServiceApplicationVersionUpdater;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
+import org.jkiss.dbeaver.ui.services.ApplicationPolicyService;
+import org.jkiss.dbeaver.ui.services.UIServiceApplicationVersionUpdater;
 
 public class WorkbenchInitializerUpdateCheck implements IWorkbenchWindowInitializer {
+    private static final String UPDATE_TOOLBAR_ID = "dbeaver-version-update";
+    private static final String PERSPECTIVE_SPACER_ID = "PerspectiveSpacer";
+
     @Override
     public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
+        positionUpdateToolbar(configurer);
+
         DBPApplication application = DBWorkbench.getPlatform().getApplication();
         if (isAutoupdateDisabled(application)) {
             return;
         }
         new DBeaverVersionChecker(false).schedule();
+    }
+
+    private static void positionUpdateToolbar(@NotNull IWorkbenchWindowConfigurer configurer) {
+        if (!(configurer.getWindow() instanceof WorkbenchWindow window)) {
+            return;
+        }
+        MTrimBar topTrim = window.getTopTrim();
+        MTrimElement updateToolbar = null;
+        boolean hasSpacer = false;
+        for (MTrimElement element : topTrim.getChildren()) {
+            if (UPDATE_TOOLBAR_ID.equals(element.getElementId())) {
+                updateToolbar = element;
+            } else if (PERSPECTIVE_SPACER_ID.equals(element.getElementId())) {
+                hasSpacer = true;
+            }
+        }
+        // The workbench adds its right-alignment spacer after applying trim contributions.
+        if (hasSpacer && updateToolbar != null && topTrim.getChildren().getLast() != updateToolbar) {
+            EModelService modelService = window.getService(EModelService.class);
+            modelService.move(updateToolbar, topTrim);
+        }
     }
 
     private boolean isAutoupdateDisabled(@NotNull DBPApplication application) {

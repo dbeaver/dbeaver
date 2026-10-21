@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@
 package org.jkiss.dbeaver.ui.controls.folders;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -100,9 +99,7 @@ public class TabbedFolderComposite extends ConComposite implements ITabbedFolder
                     e.gc.drawLine(0, 0, e.width - 1, 0);
                     e.gc.drawLine(0, e.height - 1, e.width - 1, e.height - 1);
                 });
-                sash.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                sash.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         // Resize folders
                         Rectangle sashBounds = sash.getBounds();
 
@@ -123,18 +120,13 @@ public class TabbedFolderComposite extends ConComposite implements ITabbedFolder
                                 TabbedFolderComposite.this.setRedraw(true);
                             }
                         }
-                    }
-                });
+                    }));
             } else {
                 this.sash = null;
             }
 
-            folderList.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    onFolderSwitch(folderList.getElementAt(folderList.getSelectionIndex()).getInfo());
-                }
-            });
+            folderList.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                onFolderSwitch(folderList.getElementAt(folderList.getSelectionIndex()).getInfo())));
         }
 
         public void setFolders(TabbedFolderInfo[] folders) {

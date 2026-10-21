@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.ai.engine;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -44,6 +46,7 @@ public class AIDatabaseContext {
     private final List<DBSObject> customEntities;
     private final Set<DBSCatalog> customCatalogs;
     private final Set<DBSSchema> customSchemas;
+    private final Set<String> excludedObjectIds;
     private final DBCExecutionContext executionContext;
 
     private final AISchemaGenerationOptions schemaGenerationOptions;
@@ -52,12 +55,14 @@ public class AIDatabaseContext {
         @NotNull DBSLogicalDataSource dataSource,
         @NotNull AIDatabaseScope scope,
         @Nullable List<DBSObject> customEntities,
+        @NotNull Set<String> excludedObjectIds,
         @NotNull DBCExecutionContext executionContext,
         @NotNull AISchemaGenerationOptions schemaGenerationOptions
     ) {
         this.dataSource = dataSource;
         this.scope = scope;
         this.customEntities = customEntities;
+        this.excludedObjectIds = excludedObjectIds;
 
         if (customEntities != null) {
             // Calculate custom catalogs and schemas
@@ -114,6 +119,23 @@ public class AIDatabaseContext {
     }
 
     @NotNull
+    public Set<String> getExcludedObjectIds() {
+        return excludedObjectIds;
+    }
+
+    public boolean isObjectExcluded(@NotNull DBSObject object) {
+        if (excludedObjectIds.isEmpty()) {
+            return false;
+        }
+        for (DBSObject current = object; current != null; current = current.getParentObject()) {
+            if (excludedObjectIds.contains(DBUtils.getObjectFullId(current))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @NotNull
     public AISchemaGenerationOptions getSchemaGenerationOptions() {
         return schemaGenerationOptions;
     }
@@ -127,11 +149,15 @@ public class AIDatabaseContext {
         private final DBSLogicalDataSource dataSource;
         private AIDatabaseScope scope;
         private List<DBSObject> customEntities;
+        private final Set<String> excludedObjectIds;
         private DBCExecutionContext executionContext;
         private AISchemaGenerationOptions schemaGenerationOptions;
 
         public Builder(@NotNull DBSLogicalDataSource dataSource) {
             this.dataSource = dataSource;
+            String[] excludedObjectIds = new AIContextSettingsDataSource(dataSource.getDataSourceContainer())
+                .getExcludedObjectIds();
+            this.excludedObjectIds = excludedObjectIds == null ? Set.of() : new LinkedHashSet<>(List.of(excludedObjectIds));
             this.schemaGenerationOptions = AISchemaGenerationOptions.builder().build();
         }
 
@@ -164,8 +190,9 @@ public class AIDatabaseContext {
             if (scope == null) {
                 throw new DBException("Scope must be specified");
             }
-            if (scope == AIDatabaseScope.CUSTOM && customEntities == null) {
-                throw new DBException("Custom entities must be specified when using custom scope");
+            if (scope == AIDatabaseScope.CUSTOM && (customEntities == null || customEntities.isEmpty())) {
+                throw new DBException(
+                    "Custom scope is empty. Add database objects or select a non-custom scope in the AI context settings.");
             }
             if (executionContext == null) {
                 throw new DBException("Execution context must be specified");
@@ -184,6 +211,7 @@ public class AIDatabaseContext {
                 dataSource,
                 scope,
                 customEntities,
+                excludedObjectIds,
                 executionContext,
                 schemaGenerationOptions
             );

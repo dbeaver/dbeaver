@@ -29,17 +29,23 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.model.task.*;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferEventProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * DTTaskHandlerTransfer
@@ -184,6 +190,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
             return error;
         } catch (InterruptedException | OperationCanceledException e) {
             log.debug("Data transfer was interrupted", e);
+            taskExecutor.recordException(new DBInterruptedException("Data transfer was canceled", e));
         }
         return taskExecutor.error;
     }
@@ -293,49 +300,85 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
             }
 
             monitor.beginTask("Performing data transfer in parallel", settings.getDataPipes().size());
-
-            if (group != null) {
-                try {
-                    group.join(0, new ProxyProgressMonitor(monitor));
-                } catch (InterruptedException | OperationCanceledException e) {
-                    group.cancel();
-                    return;
-                }
-            }
-
+            boolean canceled = false;
+            boolean interrupted = false;
             try {
-                for (DataTransferJob job : jobs) {
-                    if (group == null) {
-                        try {
-                            while (true) {
-                                // Try to join with monitor checks
-                                if (!job.join(1000, monitor.getNestedMonitor())) {
-                                    if (monitor.isCanceled()) {
-                                        break;
+                if (group != null) {
+                    try {
+                        group.join(0, new ProxyProgressMonitor(monitor));
+                    } catch (InterruptedException | OperationCanceledException e) {
+                        monitor.getNestedMonitor().setCanceled(true);
+                        group.cancel();
+                        canceled = true;
+                        interrupted = e instanceof InterruptedException;
+                    }
+                }
+
+                if (!canceled) {
+                    for (DataTransferJob job : jobs) {
+                        if (group == null) {
+                            try {
+                                while (true) {
+                                    // Try to join with monitor checks
+                                    if (!job.join(1000, monitor.getNestedMonitor())) {
+                                        if (monitor.isCanceled()) {
+                                            canceled = true;
+                                            break;
+                                        }
+                                        continue;
                                     }
-                                    continue;
+                                    break;
                                 }
-                                break;
+                            } catch (InterruptedException | OperationCanceledException e) {
+                                canceled = true;
+                                interrupted = e instanceof InterruptedException;
                             }
-                        } catch (InterruptedException | OperationCanceledException e) {
+                        }
+                        if (canceled || monitor.isCanceled()) {
+                            monitor.getNestedMonitor().setCanceled(true);
+                            canceled = true;
                             break;
                         }
                     }
-                    if (monitor.isCanceled()) {
-                        break;
+                }
+                if (canceled || monitor.isCanceled()) {
+                    for (DataTransferJob job : jobs) {
+                        job.cancel();
                     }
-                    final IStatus result = job.getResult();
+                    // Wait without the canceled monitor before accessing any consumer state.
+                    for (DataTransferJob job : jobs) {
+                        while (true) {
+                            try {
+                                job.join();
+                                break;
+                            } catch (InterruptedException e) {
+                                interrupted = true;
+                            }
+                        }
+                    }
+                    if (interrupted) {
+                        Thread.currentThread().interrupt();
+                    }
+                }
+
+                for (DataTransferJob job : jobs) {
+                    IStatus result = job.getResult();
+                    if (result == null) {
+                        // jobs canceled before starting have no result
+                        canceled = true;
+                        continue;
+                    }
+                    if (result.matches(IStatus.CANCEL)) {
+                        canceled = true;
+                    }
                     if (result.getException() != null) {
                         recordException(result.getException());
                     }
                     totalStatistics.accumulate(job.getTotalStatistics());
                 }
-                if (monitor.isCanceled()) {
-                    monitor.subTask("Canceling ");
-                    // Cancel all nested jobs
-                    for (DataTransferJob job : jobs) {
-                        job.cancel();
-                    }
+                if (canceled || monitor.isCanceled()) {
+                    recordException(new DBInterruptedException("Data transfer was canceled"));
+                    return;
                 }
 
                 monitor.done();
@@ -348,6 +391,56 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
             } finally {
                 monitor.done();
             }
+
+            if (settings.getNodeSettings(settings.getConsumer()) instanceof StreamConsumerSettings streamSettings) {
+                processBatchEvents(monitor, streamSettings);
+            }
+        }
+
+        private void processBatchEvents(@NotNull DBRProgressMonitor monitor, @NotNull StreamConsumerSettings streamSettings) {
+            List<StreamTransferConsumer> consumers = dataPipes.stream()
+                .map(DataTransferPipe::getConsumer)
+                .filter(StreamTransferConsumer.class::isInstance)
+                .map(StreamTransferConsumer.class::cast)
+                .toList();
+            if (consumers.isEmpty()) {
+                return;
+            }
+            Throwable transferError = error;
+            DataTransferRegistry registry = DataTransferRegistry.getInstance();
+            for (Map.Entry<String, Map<String, Object>> entry : streamSettings.getEventProcessors().entrySet()) {
+                DataTransferEventProcessorDescriptor descriptor = registry.getEventProcessorById(entry.getKey());
+                if (descriptor == null) {
+                    log.debug("Can't find event processor '" + entry.getKey() + "'");
+                    continue;
+                }
+                try {
+                    if (descriptor.create() instanceof IDataTransferBatchEventProcessor<?> processor) {
+                        processStreamBatch(processor, monitor, consumers, transferError, entry.getValue());
+                    }
+                } catch (DBException e) {
+                    DBWorkbench.getPlatformUI().showError(
+                        "Transfer event processor",
+                        "Error executing data transfer event processor '" + descriptor.getLabel() + "'",
+                        e
+                    );
+                    log.error("Error executing event processor '" + descriptor.getLabel() + "'", e);
+                    recordException(e);
+                }
+            }
+        }
+
+        @SuppressWarnings("unchecked")
+        private void processStreamBatch(
+            @NotNull IDataTransferBatchEventProcessor<?> processor,
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull List<StreamTransferConsumer> consumers,
+            @Nullable Throwable transferError,
+            @NotNull Map<String, Object> processorSettings
+        ) throws DBException {
+            // These processors are selected from stream consumer settings.
+            ((IDataTransferBatchEventProcessor<StreamTransferConsumer>) processor)
+                .processBatch(monitor, consumers, transferError, task, processorSettings);
         }
 
         private void recordException(@NotNull Throwable e) {

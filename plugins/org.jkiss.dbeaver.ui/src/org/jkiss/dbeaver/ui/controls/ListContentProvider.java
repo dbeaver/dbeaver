@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.viewers.IStructuredContentProvider;
-import org.eclipse.jface.viewers.Viewer;
 
 import java.util.Collection;
 
@@ -27,23 +26,12 @@ import java.util.Collection;
 public class ListContentProvider implements IStructuredContentProvider {
 
     @Override
-    public void dispose()
-    {
-    }
-
-    @Override
-    public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
-    {
-    }
-
-    @Override
-    public Object[] getElements(Object inputElement)
-    {
+    public Object[] getElements(Object inputElement) {
         if (inputElement == null) {
             return new Object[0];
         }
-        if (inputElement instanceof Collection) {
-            return ((Collection<?>)inputElement).toArray();
+        if (inputElement instanceof Collection<?> col) {
+            return col.toArray();
         } else if (inputElement.getClass().isArray()) {
             if (inputElement.getClass().getComponentType().isPrimitive()) {
                 return null;

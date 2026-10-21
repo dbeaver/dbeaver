@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,10 +26,21 @@ public class SMUserImportList {
     private final List<SMUserProvisioning> users;
     @Nullable
     private final String authRole;
+    @Nullable
+    private final String authProviderId;
 
     public SMUserImportList(@NotNull List<SMUserProvisioning> users, @Nullable String authRole) {
+        this(users, authRole, null);
+    }
+
+    public SMUserImportList(
+        @NotNull List<SMUserProvisioning> users,
+        @Nullable String authRole,
+        @Nullable String authProviderId
+    ) {
         this.users = users;
         this.authRole = authRole;
+        this.authProviderId = authProviderId;
     }
 
     @NotNull
@@ -40,5 +51,10 @@ public class SMUserImportList {
     @Nullable
     public String getAuthRole() {
         return authRole;
+    }
+
+    @Nullable
+    public String getAuthProviderId() {
+        return authProviderId;
     }
 }

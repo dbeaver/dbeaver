@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.ui.pages.stream;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
@@ -119,24 +118,19 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                 GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
                 gd.horizontalSpan = 3;
                 formatProfilesCombo.setLayoutData(gd);
-                formatProfilesCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                formatProfilesCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         if (formatProfilesCombo.getSelectionIndex() > 0) {
                             settings.setFormatterProfile(
                                 dataFormatterRegistry.getCustomProfile(UIUtils.getComboSelection(formatProfilesCombo)));
                         } else {
                             settings.setFormatterProfile(null);
                         }
-                    }
-                });
+                    }));
 
                 Button editProfileButton = UIUtils.createDialogButton(
                     generalSettings,
                     DTMessages.data_transfer_wizard_settings_button_edit,
-                    new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
+                    SelectionListener.widgetSelectedAdapter(e -> {
                             PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
                                 getShell(),
                                 dataFormatterRegistry,
@@ -148,8 +142,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                                 propDialog.open();
                                 reloadFormatProfiles();
                             }
-                        }
-                    }
+                        })
                 );
                 editProfileButton.setEnabled(true);
 
@@ -167,17 +160,14 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                     DTMessages.data_transfer_wizard_settings_binaries_item_set_to_null,
                     DTMessages.data_transfer_wizard_settings_binaries_item_save_to_file,
                     DTMessages.data_transfer_wizard_settings_binaries_item_inline);
-                lobExtractType.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                lobExtractType.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         switch (lobExtractType.getSelectionIndex()) {
                             case EXTRACT_LOB_SKIP: settings.setLobExtractType(StreamConsumerSettings.LobExtractType.SKIP); break;
                             case EXTRACT_LOB_FILES: settings.setLobExtractType(StreamConsumerSettings.LobExtractType.FILES); break;
                             case EXTRACT_LOB_INLINE: settings.setLobExtractType(StreamConsumerSettings.LobExtractType.INLINE); break;
                         }
                         updatePageCompletion();
-                    }
-                });
+                    }));
 
                 lobEncodingLabel = UIUtils.createControlLabel(binariesPanel, DTMessages.data_transfer_wizard_settings_label_encoding);
                 lobEncodingCombo = new Combo(binariesPanel, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -186,26 +176,19 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                     "Hex", //$NON-NLS-1$
                     "Binary", //$NON-NLS-1$
                     "Native"); //$NON-NLS-1$
-                lobEncodingCombo.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                lobEncodingCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         switch (lobEncodingCombo.getSelectionIndex()) {
                             case LOB_ENCODING_BASE64: settings.setLobEncoding(StreamConsumerSettings.LobEncoding.BASE64); break;
                             case LOB_ENCODING_HEX: settings.setLobEncoding(StreamConsumerSettings.LobEncoding.HEX); break;
                             case LOB_ENCODING_BINARY: settings.setLobEncoding(StreamConsumerSettings.LobEncoding.BINARY); break;
                             case LOB_ENCODING_NATIVE: settings.setLobEncoding(StreamConsumerSettings.LobEncoding.NATIVE); break;
                         }
-                    }
-                });
+                    }));
 
                 valueFormatSelector = new ValueFormatSelector(generalSettings);
                 valueFormatSelector.select(settings.getValueFormat());
-                valueFormatSelector.getCombo().addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        settings.setValueFormat(valueFormatSelector.getSelection());
-                    }
-                });
+                valueFormatSelector.getCombo().addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                    settings.setValueFormat(valueFormatSelector.getSelection())));
                 valueFormatSelector.getCombo().setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false, 4, 1));
             }
         }

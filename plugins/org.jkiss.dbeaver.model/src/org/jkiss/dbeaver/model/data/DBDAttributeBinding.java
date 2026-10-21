@@ -209,8 +209,8 @@ public abstract class DBDAttributeBinding implements DBSObject, DBSAttributeBase
     }
 
     private boolean matchesAttributes(@NotNull DBSAttributeBase attr) {
-        if (attr instanceof DBSObject attrObj && this.getEntityAttribute() != null) {
-            return attrObj.getParentObject() == this.getEntityAttribute().getParentObject() && SQLUtils.compareAliases(
+        if (attr instanceof DBSObject attrObj && this.getEntityAttribute() != null &&  attrObj.getParentObject() != null) {
+            return attrObj.getParentObject().equals(this.getEntityAttribute().getParentObject()) && SQLUtils.compareAliases(
                 attr.getName(),
                 this.getName()
             );

@@ -91,6 +91,7 @@ public class UIIcon {
     public static final DBIcon ARROW_TOP = new DBIcon("arrow_top", "misc/arrow_top.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_UP = new DBIcon("arrow_up", "misc/arrow_up.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_DOWN = new DBIcon("arrow_down", "misc/arrow_down.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DOWNLOAD = new DBIcon("download", "misc/download.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_BOTTOM = new DBIcon("arrow_bottom", "misc/arrow_bottom.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_LEFT = new DBIcon("arrow_left", "misc/arrow_left.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ARROW_LEFT_ALL = new DBIcon("arrow_left_all", "misc/arrow_left_all.svg"); //$NON-NLS-1$ //$NON-NLS-2$
@@ -187,6 +188,8 @@ public class UIIcon {
     public static final DBIcon OBJ_REFRESH = new DBIcon("object_refresh", "misc/object_refresh.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OBJ_LAYOUT = new DBIcon("layout", "misc/layout.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
+    public static final DBIcon GROUP = new DBIcon("group", "misc/group.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon UNGROUP = new DBIcon("ungroup", "misc/ungroup.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon GROUP_BY_ATTR = new DBIcon("group_attr", "misc/group_attributes.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon TREE_EXPAND = new DBIcon("expand", "misc/expand.svg"); //$NON-NLS-1$ //$NON-NLS-2$

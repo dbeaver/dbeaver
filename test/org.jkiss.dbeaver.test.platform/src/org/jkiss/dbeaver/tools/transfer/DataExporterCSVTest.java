@@ -234,7 +234,7 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         );
         // trailing new line
         assertRowsEquals(
-            "\"\nab\n\",c,d", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+            "\"'\nab\n\",c,d", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
                 {"\nab\n", "c", "d"}
             }
         );
@@ -250,19 +250,19 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         // trailing cr
         assertRowsEquals(
             """
-                "\rab\r",c,d""", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+                "'\rab\r",c,d""", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
                 {"\rab\r", "c", "d"}
             }
         );
 
         // all new line
         assertRowsEquals(
-            "\"\n\",c,d", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+            "\"'\n\",c,d", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
                 {"\n", "c", "d"}
             }
         );
         assertRowsEquals(
-            "\"\n\n\n\",c,d", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+            "\"'\n\n\n\",c,d", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
                 {"\n\n\n", "c", "d"}
             }
         );
@@ -285,7 +285,7 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         );
         // trailing new line
         assertRowsEquals(
-            "\"\tab\t\",c,d", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
+            "\"'\tab\t\",c,d", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{
                 {"\nab\n", "c", "d"}
             }
         );
@@ -446,6 +446,88 @@ public class DataExporterCSVTest extends DBeaverUnitTest {
         };
 
         assertRowsEquals(" a ,b , c", valueSeparator, quoteSeparator, rowContentCreator, rows);
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testEscapeFormulas(
+        @NotNull String valueSeparator, @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        String[][] formulaCases = {
+            {"=1+1", "'=1+1"},
+            {"=\"cmd\"", "\"'=\"\"cmd\"\"\""},
+            {"\"=1+1\"", "\"\"\"=1+1\"\"\""},
+            {"+1+1", "'+1+1"},
+            {"-1+1", "'-1+1"},
+            {"@SUM(A1)", "'@SUM(A1)"},
+            {"\t=1+1", "'\t=1+1"},
+            {"\r=1+1", "\"'\r=1+1\""},
+            {"\uFF1D1+1", "'\uFF1D1+1"},
+            {"\uFF0B1+1", "'\uFF0B1+1"},
+            {"\uFF0D1+1", "'\uFF0D1+1"},
+            {"\uFF20SUM(A1)", "'\uFF20SUM(A1)"},
+            {"safe \"quoted\"", "\"safe \"\"quoted\"\"\""},
+            {"safe", "safe"}
+        };
+        for (String[] formulaCase : formulaCases) {
+            assertRowsEquals(
+                formulaCase[1], valueSeparator, quoteSeparator, rowContentCreator, new String[][]{{formulaCase[0]}}
+            );
+        }
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testEscapeFormulasWithQuotes(
+        @NotNull String valueSeparator, @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        properties.put("quoteAlways", "all");
+
+        String[][] formulaCases = {
+            {"=1+1", "\"'=1+1\""},
+            {"=\"cmd\"", "\"'=\"\"cmd\"\"\""},
+            {"\"=1+1\"", "\"\"\"=1+1\"\"\""},
+            {"+1+1", "\"'+1+1\""},
+            {"-1+1", "\"'-1+1\""},
+            {"@SUM(A1)", "\"'@SUM(A1)\""},
+            {"\t=1+1", "\"'\t=1+1\""},
+            {"\r=1+1", "\"'\r=1+1\""},
+            {"\uFF1D1+1", "\"'\uFF1D1+1\""},
+            {"\uFF0B1+1", "\"'\uFF0B1+1\""},
+            {"\uFF0D1+1", "\"'\uFF0D1+1\""},
+            {"\uFF20SUM(A1)", "\"'\uFF20SUM(A1)\""},
+            {"safe \"quoted\"", "\"safe \"\"quoted\"\"\""},
+            {"safe", "\"safe\""}
+        };
+        for (String[] formulaCase : formulaCases) {
+            assertRowsEquals(
+                formulaCase[1], valueSeparator, quoteSeparator, rowContentCreator, new String[][]{{formulaCase[0]}}
+            );
+        }
+    }
+
+    @ParameterizedTest
+    @ArgumentsSource(SeparatorsAndContentCreatorProvider.class)
+    public void testDisableFormulaEscaping(
+        @NotNull String valueSeparator, @NotNull String quoteSeparator,
+        @NotNull RowContentCreator rowContentCreator
+    ) throws DBException, IOException {
+        properties.put(DataExporterCSV.PROP_ESCAPE_FORMULAS, false);
+
+        assertRowsEquals("=1+1", valueSeparator, quoteSeparator, rowContentCreator, new String[][]{{"=1+1"}});
+    }
+
+    @Test
+    public void testNegativeNumberIsNotEscaped() throws DBException, IOException {
+        addColumn("VALUE", "Value", JDBCStringValueHandler.INSTANCE);
+        initExporter();
+        dataExporterCSV.exportHeader(dbcSession);
+
+        dataExporterCSV.exportRow(dbcSession, resultSetMock, new Object[]{-42});
+
+        assertEquals("-42" + rowsSeparator, stringWriter.toString().replaceFirst(".*" + rowsSeparator, ""));
     }
 
     @ParameterizedTest

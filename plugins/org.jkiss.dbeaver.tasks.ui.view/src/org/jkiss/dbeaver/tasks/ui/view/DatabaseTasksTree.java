@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Item;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBPObjectWithOrdinalPosition;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -54,7 +56,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.text.Collator;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -73,26 +74,30 @@ public class DatabaseTasksTree {
     private boolean groupByCategory = false;
 
     private final DateFormat dateFormat;
-    private final Color colorError, colorErrorForeground;
 
     public DatabaseTasksTree(Composite composite, boolean selector) {
         dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
         dateFormat.setTimeZone(TimeZone.getTimeZone(TimezoneRegistry.getUserDefaultTimezone()));
-        colorError = BaseThemeSettings.instance.colorError;
-        colorErrorForeground = UIStyles.getContrastColor(colorError);
         
         taskViewer = DialogUtils.createFilteredTree(composite,
             SWT.MULTI | SWT.FULL_SELECTION | (selector ? SWT.BORDER | SWT.CHECK : SWT.NONE),
             new NamedObjectPatternFilter(), TaskUIViewMessages.db_tasks_tree_text_tasks_type);
         Tree taskTree = taskViewer.getTree();
         taskTree.setHeaderVisible(true);
+        NativeThemeUtils.installTreeSelectionFix(taskTree);
         taskTree.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         taskColumnController = new ViewerColumnController<>(TaskUIViewMessages.db_tasks_tree_column_controller_tasks, taskViewer);
-        taskColumnController.setComparator(new ViewerColumnController.DefaultComparator(Collator.getInstance()) {
+        taskColumnController.setComparator(new ViewerColumnController.DefaultComparator() {
             @Override
             public int category(Object element) {
                 return element instanceof DBTTaskFolder ? 0 : 1;
+            }
+
+            @Nullable
+            @Override
+            protected Integer getPosition(@Nullable Object element) {
+                return element instanceof DBPObjectWithOrdinalPosition o ? o.getOrdinalPosition() : null;
             }
         });
         taskColumnController.addColumn(TaskUIViewMessages.db_tasks_tree_column_controller_add_name, TaskUIViewMessages.db_tasks_tree_column_controller_add_descr_name, SWT.LEFT, true, true, new TaskLabelProvider() {
@@ -254,10 +259,6 @@ public class DatabaseTasksTree {
 
     DateFormat getDateFormat() {
         return dateFormat;
-    }
-
-    Color getColorError() {
-        return colorError;
     }
 
     ViewerColumnController getColumnController() {
@@ -738,36 +739,40 @@ public class DatabaseTasksTree {
     }
 
     private abstract class TaskLabelProvider extends ColumnLabelProvider {
+        @Nullable
         @Override
-        public final void update(ViewerCell cell) {
-            Object element = cell.getElement();
-            if (element instanceof DBTTask) {
-                DBTTaskRun lastRun = ((DBTTask) element).getLastRun();
-                if (lastRun != null && !lastRun.isRunSuccess()) {
-                    cell.setBackground(colorError);
-                    cell.setForeground(colorErrorForeground);
-                } else {
-                    cell.setBackground(null);
-                    cell.setForeground(null);
-                }
-            }
-            cell.setText(CommonUtils.notEmpty(getCellText(element)));
-            DBPImage cellImage = getCellImage(element);
-            if (cellImage != null) {
-                cell.setImage(DBeaverIcons.getImage(cellImage));
-            }
-
+        public Color getForeground(@NotNull Object element) {
+            Color background = getBackground(element);
+            return background == null ? null : UIStyles.getContrastColor(background);
         }
 
-        protected DBPImage getCellImage(Object element) {
+        @Nullable
+        @Override
+        public Color getBackground(@NotNull Object element) {
+            DBTTaskRun lastRun = element instanceof DBTTask task ? task.getLastRun() : null;
+            return lastRun != null && lastRun.isFinished() && !lastRun.isRunSuccess()
+                ? BaseThemeSettings.instance.colorError : null;
+        }
+
+        @Nullable
+        @Override
+        public Image getImage(@NotNull Object element) {
+            DBPImage cellImage = getCellImage(element);
+            return cellImage == null ? null : DBeaverIcons.getImage(cellImage);
+        }
+
+        @Nullable
+        protected DBPImage getCellImage(@NotNull Object element) {
             return null;
         }
 
-        protected abstract String getCellText(Object element);
+        @Nullable
+        protected abstract String getCellText(@NotNull Object element);
 
+        @NotNull
         @Override
-        public String getText(Object element) {
-            return getCellText(element);
+        public String getText(@NotNull Object element) {
+            return CommonUtils.notEmpty(getCellText(element));
         }
     }
 

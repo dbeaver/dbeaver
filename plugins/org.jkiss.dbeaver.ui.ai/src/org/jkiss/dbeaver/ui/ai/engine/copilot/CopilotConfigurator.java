@@ -22,9 +22,11 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
@@ -51,13 +53,13 @@ import java.util.concurrent.CompletableFuture;
 
 public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends CopilotProperties>
     extends AbstractAIEngineConfigurator<ENGINE, PROPERTIES> {
-
     private static final Log log = Log.getLog(CopilotConfigurator.class);
 
     private Text temperatureText;
     private ContextWindowSizeField contextWindowSizeField;
     private ModelSelectorField modelSelectorField;
-    private Text accessTokenText;
+    protected Text accessTokenText;
+    private Button authorizeButton;
 
     protected volatile String accessToken;
     protected String token = "";
@@ -67,8 +69,8 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
 
     @NotNull
     private List<AIModel> fetchCopilotModels(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (accessToken == null || accessToken.isEmpty()) {
-            throw new DBException("Access token is not set");
+        if (CommonUtils.isEmpty(createConnectionProperties().getEffectiveToken())) {
+            throw new DBException(CopilotMessages.copilot_access_token_required);
         }
 
         try (CopilotCompletionEngine engine = createEngine()) {
@@ -87,6 +89,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         createConnectionParameters(composite);
         createModelParameters(composite);
         createAdditionalSettings(composite);
+        createEnvironmentSettings(propertyChangeListener);
         UIUtils.syncExec(this::applySettings);
     }
 
@@ -100,6 +103,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         accessTokenText.setText(accessToken);
         applySettings();
         loadAdvancedSettings(configuration);
+        updateEnvironmentControls();
 
         modelSelectorField.refreshModelListSilently(true);
     }
@@ -107,7 +111,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
     @Override
     public void saveSettings(@NotNull PROPERTIES properties) {
         properties.setToken(accessToken);
-        properties.setModel(modelSelectorField.getSelectedModel());
+        properties.setModel(modelSelectorField.getSelectedModelName());
         properties.setContextWindowSize(contextWindowSizeField.getValue());
         properties.setTemperature(CommonUtils.toDouble(temperature));
         saveAdvancedSettings(properties);
@@ -124,16 +128,16 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
     }
 
     protected void createModelParameters(@NotNull Composite parent) {
-        ModelSelectorField.ModelListProvider modelListProvider = (monitor, forceRefresh) -> modelsCache.get(monitor, forceRefresh).stream()
+        ModelSelectorField.ModelListProvider modelListProvider = (monitor, forceRefresh) ->
+            modelsCache.get(monitor, forceRefresh).stream()
             .filter(it -> it.features().contains(AIModelFeature.CHAT))
-            .map(AIModel::name)
             .toList();
 
         modelSelectorField = ModelSelectorField.builder()
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
             .withModifyListener(() -> {
-                CopilotModels.getModelByName(modelSelectorField.getSelectedModel())
+                CopilotModels.getModelByName(modelSelectorField.getSelectedModelName())
                     .ifPresentOrElse(
                         model -> {
                             contextWindowSizeField.setValue(model.contextWindowSize());
@@ -143,6 +147,10 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
                             temperatureText.setText("0.0");
                         }
                     );
+                AIModel selectedModel = modelSelectorField.getSelectedModel();
+                if (selectedModel != null) {
+                    contextWindowSizeField.setValue(selectedModel.contextWindowSize());
+                }
             })
             .withModelListSupplier(modelListProvider)
             .build();
@@ -180,9 +188,14 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.widthHint = 150;
         accessTokenText.setLayoutData(gd);
-        accessTokenText.addModifyListener((e -> accessToken = accessTokenText.getText()));
+        accessTokenText.addModifyListener(e -> {
+            if (!isUpdatingEnvironmentControls()) {
+                accessToken = accessTokenText.getText();
+            }
+        });
         accessTokenText.setMessage(CopilotMessages.copilot_preference_page_token_info);
-        UIUtils.createDialogButton(parent, CopilotMessages.copilot_access_token_authorize, SelectionListener.widgetSelectedAdapter(e -> {
+        authorizeButton = UIUtils.createDialogButton(
+            parent, CopilotMessages.copilot_access_token_authorize, SelectionListener.widgetSelectedAdapter(e -> {
             try {
                 accessToken = UIUtils.runWithDialog(monitor -> {
                     var future = new CompletableFuture<Void>();
@@ -236,7 +249,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
 
     @NotNull
     protected String getCurrentAuthURL() {
-        return CopilotConstants.BASE_AUTH_URL;
+        return createConnectionProperties().getEffectiveBaseAuthUrl();
     }
 
     @NotNull
@@ -250,8 +263,34 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
     @NotNull
     protected CopilotCompletionEngine createEngine() {
         CopilotProperties properties = new CopilotProperties();
+        saveAdvancedSettings(properties);
         properties.setToken(accessToken);
 
         return new CopilotCompletionEngine(properties);
+    }
+
+    @NotNull
+    private CopilotProperties createConnectionProperties() {
+        CopilotProperties currentProperties = new CopilotProperties();
+        currentProperties.setUseEnvVariables(useEnvVariables);
+        currentProperties.setToken(accessToken);
+        return currentProperties;
+    }
+
+    @Override
+    protected void updateEnvironmentControls() {
+        String environmentToken = getEnvironmentValue(CopilotProperties.ENV_TOKEN, CopilotProperties.ENV_GH_TOKEN,
+            CopilotProperties.ENV_GITHUB_TOKEN);
+        updateEnvironmentText(accessTokenText, accessToken, environmentToken);
+        authorizeButton.setEnabled(environmentToken == null);
+        CopilotProperties currentProperties = createConnectionProperties();
+        modelSelectorField.setEnvironmentModel(
+            currentProperties.isModelSelectionSupported() ? null : currentProperties.getEffectiveModel());
+    }
+
+    @Override
+    protected void environmentSettingsChanged() {
+        super.environmentSettingsChanged();
+        modelSelectorField.refreshModelListSilently(true);
     }
 }

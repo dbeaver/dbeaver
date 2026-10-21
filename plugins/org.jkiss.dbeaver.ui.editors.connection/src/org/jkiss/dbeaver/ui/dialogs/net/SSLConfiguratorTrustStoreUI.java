@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.net;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -79,12 +78,8 @@ public class SSLConfiguratorTrustStoreUI extends SSLConfiguratorAbstractUI {
         );
 
         if (certificatesSupported && keyStoreSupported) {
-            final SelectionAdapter methodSwitcher = new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    showMethodControls((SSLConfigurationMethod) e.widget.getData());
-                }
-            };
+            final SelectionListener methodSwitcher = SelectionListener.widgetSelectedAdapter(e ->
+                showMethodControls((SSLConfigurationMethod) e.widget.getData()));
 
             Composite sslMethodComposite = UIUtils.createComposite(sslParameters, 3);
 

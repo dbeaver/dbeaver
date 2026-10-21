@@ -20,8 +20,7 @@ package org.jkiss.dbeaver.ui.config.migration.wizards.datagrip;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -103,15 +102,12 @@ public class ConfigImportWizardPageDataGripSettings extends WizardPage {
             ImportConfigMessages.config_import_wizard_jetbrains_input_mode_project,
             ImportConfigMessages.config_import_wizard_jetbrains_project_folder,
             UIIcon.OPEN,
-            new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            SelectionListener.widgetSelectedAdapter(e -> {
                     String file = DialogUtils.openDirectoryDialog(getShell(), ImportConfigMessages.config_import_wizard_jetbrains_project_folder, null);
                     if (file != null) {
                         filePathText.setText(file);
                     }
-                }
-            }
+                })
         );
 
         pasteConfigurationComposite = new Composite(placeholder, SWT.NONE);
@@ -134,16 +130,13 @@ public class ConfigImportWizardPageDataGripSettings extends WizardPage {
 
         UIUtils.createInfoLabel(pasteConfigurationComposite, ImportConfigMessages.config_import_wizard_jetbrains_paste_description);
 
-        SelectionAdapter modeSelectionListener = new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        SelectionListener modeSelectionListener = SelectionListener.widgetSelectedAdapter(e -> {
                 inputMode = pasteConfigurationButton.getSelection() ?
                     ConfigImportWizardDataGrip.InputMode.PASTED_CONFIGURATION :
                     ConfigImportWizardDataGrip.InputMode.PROJECT_FOLDER;
                 updateInputModeControls();
                 validateConfigurationInput();
-            }
-        };
+            });
         projectFolderButton.addSelectionListener(modeSelectionListener);
         pasteConfigurationButton.addSelectionListener(modeSelectionListener);
 

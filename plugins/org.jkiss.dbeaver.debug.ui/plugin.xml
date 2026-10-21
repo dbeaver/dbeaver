@@ -214,7 +214,7 @@
             </enabledWhen>
         </activity>
 
-        <activityPatternBinding activityId="dbeaver.activity.debug" pattern="org.jkiss.dbeaver.debug.*"/>
+        <activityPatternBinding activityId="dbeaver.activity.debug" pattern="org\.jkiss\.dbeaver\.debug.*"/>
     </extension>
 
 </plugin>

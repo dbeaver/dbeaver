@@ -33,8 +33,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * A SashForm that allows hide/restore controls on sash.
@@ -318,13 +320,15 @@ public class CustomSashForm extends SashForm {
         if (newSash == null) {
             // We have no sashes at all.
             // Sashes are created by sash layout
-            // If SashForm is created an layouted before actual panel become visible
+            // If SashForm is created as layouted before actual panel become visible
             // then we cannot customize sash.
             // Dirty hack - we try to re-layout in async hoping that it'll be ok
             if (children.length > 1 && getData("lazyLayout") == null) {
                 UIUtils.asyncExec(() -> {
-                    setData("lazyLayout", true);
-                    layout(changed);
+                    if (!isDisposed()) {
+                        setData("lazyLayout", true);
+                        layout(changed);
+                    }
                 });
             }
             return;

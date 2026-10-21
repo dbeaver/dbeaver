@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
@@ -51,7 +52,6 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.task.DTTaskHandlerTransfer;
 import org.jkiss.dbeaver.tools.transfer.ui.DataTransferFeatures;
 import org.jkiss.dbeaver.tools.transfer.ui.dialog.DataTransferConfigurationWizardDialog;
-import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIActivator;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.tools.transfer.ui.registry.DataTransferConfiguratorRegistry;
@@ -119,9 +119,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
 
     @NotNull
     public static IDialogSettings getWizardDialogSettings() {
-        return UIUtils.getSettingsSection(
-            DTUIActivator.getDefault().getDialogSettings(),
-            RS_EXPORT_WIZARD_DIALOG_SETTINGS);
+        return UIUtils.getDialogSettings(RS_EXPORT_WIZARD_DIALOG_SETTINGS);
     }
 
     @Override
@@ -138,7 +136,8 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                 for (Throwable error : loadErrors) {
                     childStatuses.add(GeneralUtils.makeExceptionStatus(error));
                 }
-                MultiStatus status = new MultiStatus(DTUIActivator.PLUGIN_ID, 0, childStatuses.toArray(new IStatus[0]), "Multiple configuration errors", null);
+                MultiStatus status = new MultiStatus(
+                    DTConstants.PLUGIN_ID, 0, childStatuses.toArray(new IStatus[0]), "Multiple configuration errors", null);
                 DBWorkbench.getPlatformUI().showError(
                     "Error loading configuration",
                     status.getMessage(), status);
@@ -381,6 +380,8 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                     throw new DBException("Data transfer error", executor.getError());
                 }
             }
+        } catch (DBInterruptedException e) {
+            return true;
         } catch (DBException e) {
             DBWorkbench.getPlatformUI().showError(e.getMessage(), null, e);
             return false;
@@ -395,7 +396,6 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         DialogSettingsMap dialogSettings = new DialogSettingsMap(getDialogSettings());
         saveConfiguration(dialogSettings);
 
-        DTUIActivator.getDefault().saveDialogSettings();
     }
 
     @Override
@@ -571,10 +571,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             }
             Map<String, Object> nodeSection = new LinkedHashMap<>();
 
-            IDataTransferSettings settings = this.settings.getNodeSettings(nodePageSettings.sourceNode);
-            if (settings != null) {
-                settings.saveSettings(nodeSection);
-            }
+            settings.saveNodeSettings(nodePageSettings.sourceNode, nodeSection);
             // Note: do it in the end because of limitation of IDialogSettings wrapper
             config.put(entry.getKey().getSimpleName(), nodeSection);
         }
@@ -667,14 +664,14 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         @Override
         protected void runTask() throws DBException {
             DTTaskHandlerTransfer handlerTransfer = new DTTaskHandlerTransfer();
-            handlerTransfer.executeWithSettings(
+            executeTaskWithHistory(() -> handlerTransfer.executeWithSettings(
                 this,
                 getCurrentTask(),
                 Locale.getDefault(),
                 log,
                 null,
                 this,
-                settings);
+                settings));
         }
 
     }

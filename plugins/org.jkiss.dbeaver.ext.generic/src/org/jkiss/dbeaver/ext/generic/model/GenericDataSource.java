@@ -210,12 +210,17 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return getClass() != GenericDataSource.class;
     }
 
+    @NotNull
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) throws DBCException {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) throws DBCException {
         return new GenericExecutionContext(instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
         super.initializeContextState(monitor, context, initFrom);
         if (initFrom != null) {
             GenericExecutionContext metaContext = (GenericExecutionContext) initFrom;
@@ -239,8 +244,12 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return metaModel.getMetaObject(id);
     }
 
+    @NotNull
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
+    protected DBPDataSourceInfo createDataSourceInfo(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCDatabaseMetaData metaData
+    ) {
         return new GenericDataSourceInfo(container.getDriver(), metaData);
     }
 
@@ -275,9 +284,12 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
 
                 final Driver driver = getDriverInstance(new VoidProgressMonitor()); // Use void monitor - driver already loaded
                 if (driver != null) {
-                    driver.connect(
+                    try (var con = driver.connect(
                         getContainer().getActualConnectionConfiguration().getUrl() + paramShutdown,
-                        shutdownProps.isEmpty() ? null : shutdownProps);
+                        shutdownProps.isEmpty() ? null : shutdownProps)
+                    ) {
+                        // just close it
+                    }
                 }
             } catch (Exception e) {
                 log.debug("Shutdown finished: :" + e.getMessage());
@@ -626,8 +638,8 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
     @Nullable
     @Override
     public DBCQueryTransformer createQueryTransformer(@NotNull DBCQueryTransformType type) {
-        if (metaModel instanceof DBCQueryTransformProvider) {
-            DBCQueryTransformer transformer = ((DBCQueryTransformProvider) metaModel).createQueryTransformer(type);
+        if (metaModel instanceof DBCQueryTransformProvider qtp) {
+            DBCQueryTransformer transformer = qtp.createQueryTransformer(type);
             if (transformer != null) {
                 return transformer;
             }
@@ -921,7 +933,11 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         }
 
         @Override
-        protected GenericTableType fetchObject(@NotNull JDBCSession session, @NotNull GenericDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
+        protected GenericTableType fetchObject(
+            @NotNull JDBCSession session,
+            @NotNull GenericDataSource owner,
+            @NotNull JDBCResultSet resultSet
+        ) {
             return new GenericTableType(
                 GenericDataSource.this,
                 GenericUtils.safeGetString(

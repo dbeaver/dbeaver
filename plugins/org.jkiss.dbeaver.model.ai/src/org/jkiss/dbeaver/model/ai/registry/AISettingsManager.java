@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.engine.AICredentialsProvider;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
+import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -56,6 +58,7 @@ public class AISettingsManager {
             AI_CONFIGURATION_FILE_NAME, o -> {
                 // reset current context for settings to be lazily reloaded when needed
                 this.getSettingsHolder().reset();
+                this.notifyProfilesChanged();
                 this.raiseChangedEvent(this); // consider detailed event info
             });
     }
@@ -83,6 +86,12 @@ public class AISettingsManager {
     private void raiseChangedEvent(AISettingsManager registry) {
         for (AISettingsEventListener listener : this.settingsChangedListeners.toArray(AISettingsEventListener[]::new)) {
             listener.onSettingsUpdate(registry);
+        }
+    }
+
+    public void notifyProfilesChanged() {
+        for (AISettingsEventListener listener : this.settingsChangedListeners.toArray(AISettingsEventListener[]::new)) {
+            listener.onProfilesUpdate(this);
         }
     }
 
@@ -123,31 +132,43 @@ public class AISettingsManager {
     public void modifySettings(@NotNull Consumer<AISettings> consumer) {
         AISettings settings = this.getSettings();
         consumer.accept(settings);
-        this.saveSettings();
+        this.saveSettings(settings);
     }
 
     public void saveSettings() {
+        saveSettings(getSettings());
+    }
+
+    /**
+     * Saves the given settings and makes them current
+     */
+    public void saveSettings(@NotNull AISettings settings) {
         try {
             if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
                 log.warn("The user has no permission to save AI configuration");
                 return;
             }
 
-            AISettings settings = getSettings();
+            if (!saveSecretsAsPlainText()) {
+                AIConfigurationProfile defaultProfile = settings.getDefaultConfigurationOrNull();
+                for (AIConfigurationProfile profile : settings.getConfigurations()) {
+                    if (profile == defaultProfile) {
+                        profile.saveSecrets();
+                    } else if (profile.getConfiguration() instanceof OpenAIProperties properties) {
+                        properties.saveCustomHeaderSecrets(profile);
+                    }
+                }
+            }
+
             String content = SAVE_PROPS_GSON.toJson(settings);
 
             DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
 
-            if (!saveSecretsAsPlainText()) {
-                AIConfigurationProfile profile = settings.getDefaultConfigurationOrNull();
-                if (profile != null) {
-                    profile.saveSecrets();
-                }
-            }
-
             this.getSettingsHolder().setSettings(settings);
         } catch (Exception e) {
             log.error("Error saving AI configuration", e);
+            // the settings were entered by the user, so a failed save must not stay in the log only
+            DBWorkbench.getPlatformUI().showError(AIMessages.ai_settings_save_error_title, null, e);
         }
         raiseChangedEvent(this);
     }
@@ -293,15 +314,15 @@ public class AISettingsManager {
             in.beginObject();
             while (in.hasNext()) {
                 String engineId = in.nextName();
-                in.beginObject();
-
                 AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
                 if (engineDescriptor == null) {
                     log.error("AI engine '" + engineId + "' not found. Ignore config");
+                    in.skipValue();
                     continue;
                 }
 
-                in.nextName();// properties
+                in.beginObject();
+                in.nextName(); // properties
                 AIEngineProperties engineProperties = AISettingsManager.READ_PROPS_GSON.fromJson(
                     in, engineDescriptor.getPropertiesType());
                 result.put(engineId, engineProperties);

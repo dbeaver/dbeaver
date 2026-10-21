@@ -345,6 +345,12 @@ public class UIUtils {
             if (clientArea.isEmpty()) {
                 return;
             }
+            if (RuntimeUtils.isMacOS()) {
+                ScrollBar verticalBar = tree.getVerticalBar();
+                if (verticalBar != null) {
+                    clientArea.width -= verticalBar.getSize().x;
+                }
+            }
             int totalWidth = 0;
             for (TreeColumn column : columns) {
                 int colWidth = column.getWidth();
@@ -715,8 +721,7 @@ public class UIUtils {
         host.setLayoutData(gd);
 
         var client = new Composite(host, SWT.NONE);
-        GridLayoutFactory.fillDefaults()
-            .margins(0, 5)
+        GridLayoutFactory.swtDefaults()
             .numColumns(columns)
             .applyTo(client);
 
@@ -926,15 +931,12 @@ public class UIUtils {
         //editButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         //editButton.setText("...");
         editButton.setImage(DBeaverIcons.getImage(UIIcon.EDIT)); //$NON-NLS-1$
-        editButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        editButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 String newText = EditTextDialog.editText(parent.getShell(), label, text.getText());
                 if (newText != null) {
                     text.setText(newText);
                 }
-            }
-        });
+            }));
         editTB.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
         return text;
@@ -1230,19 +1232,56 @@ public class UIUtils {
         scrolledComposite.setContent(content);
         scrolledComposite.setExpandHorizontal(true);
         scrolledComposite.setExpandVertical(true);
-        scrolledComposite.addControlListener(new ControlAdapter() {
-            @Override
-            public void controlResized(ControlEvent e) {
-                Rectangle area = scrolledComposite.getClientArea();
-                Point size = content.computeSize(
-                    (scrolledComposite.getStyle() & SWT.H_SCROLL) != 0 ? SWT.DEFAULT : area.width,
-                    (scrolledComposite.getStyle() & SWT.V_SCROLL) != 0 ? SWT.DEFAULT : area.height
-                );
+        scrolledComposite.addControlListener(ControlListener.controlResizedAdapter(e -> refreshScrolledComposite(scrolledComposite)));
+        refreshScrolledComposite(scrolledComposite);
+    }
 
-                content.setSize(size);
-                scrolledComposite.setMinSize(size);
+    /**
+     * Updates the scroll range after the content's preferred size changes, even if the viewport has not resized.
+     */
+    public static void refreshScrolledComposite(@NotNull ScrolledComposite scrolledComposite) {
+        Control content = scrolledComposite.getContent();
+        if (content == null || content.isDisposed()) {
+            return;
+        }
+        boolean horizontalScroll = (scrolledComposite.getStyle() & SWT.H_SCROLL) != 0;
+        boolean verticalScroll = (scrolledComposite.getStyle() & SWT.V_SCROLL) != 0;
+        Point availableSize = scrolledComposite.getSize();
+        int border = scrolledComposite.getBorderWidth() * 2;
+        availableSize.x -= border;
+        availableSize.y -= border;
+        // Start without scrollbar trim so an existing scrollbar cannot keep wrapping content unnecessarily tall.
+        // Then account for any scrollbar needed by the new content. Before initial layout, use its natural size.
+        for (int pass = 0; pass < 2; pass++) {
+            scrolledComposite.setMinSize(content.computeSize(
+                horizontalScroll || availableSize.x <= 0 ? SWT.DEFAULT : availableSize.x,
+                verticalScroll || availableSize.y <= 0 ? SWT.DEFAULT : availableSize.y,
+                true
+            ));
+            Rectangle area = scrolledComposite.getClientArea();
+            if ((horizontalScroll || availableSize.x == area.width) && (verticalScroll || availableSize.y == area.height)) {
+                break;
             }
-        });
+            availableSize = new Point(area.width, area.height);
+        }
+        scrolledComposite.layout(true, true);
+    }
+
+    /**
+     * Relayouts a changed dialog form. Scrollable forms keep their window size; other forms may grow their shell.
+     */
+    public static void updateDialogSize(@NotNull Control control) {
+        if (control.isDisposed()) {
+            return;
+        }
+        ScrolledComposite scrolledComposite = getParentOfType(control, ScrolledComposite.class);
+        if (scrolledComposite != null) {
+            refreshScrolledComposite(scrolledComposite);
+        } else {
+            Shell shell = control.getShell();
+            shell.layout(true, true);
+            resizeShell(shell);
+        }
     }
 
     @NotNull
@@ -2162,6 +2201,14 @@ public class UIUtils {
         }
     }
 
+    public static void runInUIThread(@NotNull Runnable runnable) {
+        if (isUIThread()) {
+            runnable.run();
+        } else {
+            asyncExec(runnable);
+        }
+    }
+
     public static void syncExec(@NotNull Runnable runnable) {
         try {
             Display display = getDisplay();
@@ -2224,19 +2271,24 @@ public class UIUtils {
         if (CommonUtils.isEmpty(rgbStringOrId)) {
             return null;
         }
+        Color connectionColor;
         if (Character.isAlphabetic(rgbStringOrId.charAt(0))) {
             // Some color constant
             RGB rgb = getCurrentTheme().getColorRegistry().getRGB(rgbStringOrId);
-            return getSharedColor(rgb);
+            connectionColor = getSharedColor(rgb);
         } else {
-            Color connectionColor = SHARED_TEXT_COLORS.getColor(rgbStringOrId);
-            if (connectionColor.getBlue() == 255 && connectionColor.getRed() == 255 && connectionColor.getGreen() == 255) {
-                // For white color return just null to avoid explicit color set.
-                // It is important for dark themes
-                return null;
-            }
-            return connectionColor;
+            connectionColor = SHARED_TEXT_COLORS.getColor(rgbStringOrId);
         }
+        if (connectionColor != null &&
+            connectionColor.getRed() == 255 &&
+            connectionColor.getGreen() == 255 &&
+            connectionColor.getBlue() == 255
+        ) {
+            // For white color return just null to avoid explicit color set.
+            // It is important for dark themes
+            connectionColor = null;
+        }
+        return connectionColor;
     }
 
     /**

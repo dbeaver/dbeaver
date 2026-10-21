@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomToolTipHandler;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -55,7 +54,7 @@ public class AdvancedList extends Canvas {
     private AdvancedListItem selectedItem;
     private AdvancedListItem hoverItem;
 
-    private final Color backgroundColor, selectionBackgroundColor, foregroundColor, selectionForegroundColor, hoverBackgroundColor;
+    private final Color backgroundColor, selectionBackgroundColor, foregroundColor, selectionForegroundColor;
     private final Point textSize;
     private final ScrollBar vScroll;
     private int topRowIndex;
@@ -71,8 +70,6 @@ public class AdvancedList extends Canvas {
         this.foregroundColor = UIStyles.getDefaultTextForeground();
         this.selectionBackgroundColor = UIStyles.getDefaultTextSelectionBackground();
         this.selectionForegroundColor = UIStyles.getDefaultTextSelectionForeground();
-        this.hoverBackgroundColor = UIUtils.getSharedTextColors().getColor(
-            UIUtils.blend(this.selectionBackgroundColor.getRGB(), new RGB(255, 255, 255), 70));
 
         Font normalFont = BaseThemeSettings.instance.baseFont;
         FontData[] fontData = normalFont.getFontData();
@@ -92,12 +89,7 @@ public class AdvancedList extends Canvas {
 
         vScroll = getVerticalBar();
         vScroll.setVisible(true);
-        vScroll.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                onVerticalScroll();
-            }
-        });
+        vScroll.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> onVerticalScroll()));
 
         GC gc = new GC(getDisplay());
         textSize = gc.stringExtent("X");
@@ -135,15 +127,12 @@ public class AdvancedList extends Canvas {
         this.addMouseTrackListener(new MouseTrackAdapter() {
             @Override
             public void mouseEnter(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseExit(MouseEvent e) {
                 onMouseMove(e);
             }
 
             @Override
-            public void mouseHover(MouseEvent e) {
+            public void mouseExit(MouseEvent e) {
+                updateHover(null);
             }
         });
         this.addMouseListener(new MouseAdapter() {
@@ -166,7 +155,7 @@ public class AdvancedList extends Canvas {
             public void focusGained(FocusEvent e) {
                 super.focusGained(e);
                 if (getSelectedItem() == null && !items.isEmpty()) {
-                    setSelection(items.get(0));
+                    setSelection(items.getFirst());
                 }
             }
         });
@@ -189,28 +178,23 @@ public class AdvancedList extends Canvas {
 
     private void onMouseMove(MouseEvent e) {
         AdvancedListItem item = getItemByPos(e.x, e.y);
+        updateHover(item);
+    }
+
+    private void updateHover(@Nullable AdvancedListItem item) {
         if (item == hoverItem) {
             return;
         }
-        AdvancedListItem[] redrawItems = new AdvancedListItem[] { item, hoverItem };
         hoverItem = item;
-        if (item == null) {
-            toolTipHandler.updateToolTipText(null);
-        } else {
+        String toolTipText = null;
+        if (item != null) {
             ILabelProvider labelProvider = item.getLabelProvider();
-            if (labelProvider instanceof IToolTipProvider) {
-                String toolTipText = ((IToolTipProvider) labelProvider).getToolTipText(item.getData());
-                if (!CommonUtils.isEmpty(toolTipText)) {
-                    toolTipHandler.updateToolTipText(toolTipText);
-                }
+            if (labelProvider instanceof IToolTipProvider toolTipProvider) {
+                toolTipText = toolTipProvider.getToolTipText(item.getData());
             }
         }
-        GC gc = new GC(this);
-        try {
-            paintList(gc, redrawItems);
-        } finally {
-            gc.dispose();
-        }
+        toolTipHandler.updateToolTipText(CommonUtils.isEmpty(toolTipText) ? null : toolTipText);
+        redraw();
     }
 
     private AdvancedListItem getItemByPos(int x, int y) {
@@ -234,19 +218,31 @@ public class AdvancedList extends Canvas {
 
     private void updateMeasures() {
         int itemsPerRow = getItemsPerRow();
-        int totalRows = itemsPerRow == 0 ? 0 : (items.size() / itemsPerRow) + 2;
+        int totalRows = (items.size() + itemsPerRow - 1) / itemsPerRow;
         int itemHeight = getItemSize().y;
-        int visibleRowCount = getVisibleRowCount();
+        int viewportHeight = getClientArea().height;
+        int contentHeight = totalRows * itemHeight;
+        int maximum = Math.max(1, contentHeight);
+        int thumb = Math.max(1, Math.min(maximum, viewportHeight));
+        int selection = Math.min(vScroll.getSelection(), maximum - thumb);
 
-        vScroll.setValues(0, 0, totalRows * itemHeight, visibleRowCount * itemHeight, itemHeight / 2, itemHeight);
-        vScroll.setVisible(totalRows * itemHeight > getSize().y);
+        vScroll.setValues(selection, 0, maximum, thumb, Math.max(1, itemHeight / 2), itemHeight);
+
+        boolean scrollVisible = contentHeight > viewportHeight;
+        if (vScroll.getVisible() != scrollVisible) {
+            UIUtils.asyncExec(() -> {
+                if (!vScroll.isDisposed() && vScroll.getVisible() != scrollVisible) {
+                    vScroll.setVisible(scrollVisible);
+                }
+            });
+        }
     }
 
-    private void onPaint(PaintEvent e) {
-        paintList(e.gc, null);
+    private void onPaint(@NotNull PaintEvent e) {
+        paintList(e.gc);
     }
 
-    private void paintList(@NotNull GC gc, @Nullable AdvancedListItem[] redrawItems) {
+    private void paintList(@NotNull GC gc) {
         Point itemSize = getItemSize();
         int itemsPerRow = getItemsPerRow();
         int itemRowsVisible = getVisibleRowCount() + 1;
@@ -269,9 +265,7 @@ public class AdvancedList extends Canvas {
                     break;
                 }
                 AdvancedListItem item = items.get(itemIndex);
-                if (redrawItems == null || ArrayUtils.contains(redrawItems, item)) {
-                    item.painItem(gc, x, y);
-                }
+                item.painItem(gc, x, y);
 
                 x += itemSize.x;
             }
@@ -281,9 +275,11 @@ public class AdvancedList extends Canvas {
     }
 
     private int getVisibleRowCount() {
-        return getSize().y / getItemSize().y + 1;
+        int itemHeight = getItemSize().y;
+        return Math.max(1, (getClientArea().height + itemHeight - 1) / itemHeight);
     }
 
+    @NotNull
     Point getItemSize() {
         Point imageSize = getImageSize();
         int itemLength = imageSize.x + AdvancedListItem.BORDER_MARGIN * 4 + getTextSize().y;
@@ -292,11 +288,11 @@ public class AdvancedList extends Canvas {
 
     private int getItemsPerRow() {
         Point itemSize = getItemSize();
-        Point containerSize = getSize();
-        return Math.floorDiv(containerSize.x, itemSize.x);
+        Rectangle clientArea = getClientArea();
+        return Math.max(1, Math.floorDiv(clientArea.width, itemSize.x));
     }
 
-    private void navigateByKey(KeyEvent e) {
+    private void navigateByKey(@NotNull KeyEvent e) {
         if (selectedItem == null) {
             return;
         }
@@ -339,12 +335,12 @@ public class AdvancedList extends Canvas {
                 break;
             case SWT.HOME:
                 if (!items.isEmpty()) {
-                    setSelection(items.get(0));
+                    setSelection(items.getFirst());
                 }
                 break;
             case SWT.END:
                 if (!items.isEmpty()) {
-                    setSelection(items.get(items.size() - 1));
+                    setSelection(items.getLast());
                 }
                 break;
             case SWT.CR:
@@ -371,7 +367,10 @@ public class AdvancedList extends Canvas {
     }
 
     Color getHoverBackgroundColor() {
-        return hoverBackgroundColor;
+        RGB background = getBackground().getRGB();
+        return UIUtils.getSharedTextColors().getColor(UIUtils.isDark(background)
+            ? UIUtils.blend(selectionBackgroundColor.getRGB(), background, 25)
+            : UIUtils.blend(selectionBackgroundColor.getRGB(), new RGB(255, 255, 255), 25));
     }
 
     Point getTextSize() {

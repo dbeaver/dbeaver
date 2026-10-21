@@ -152,7 +152,7 @@ public abstract class AIChatControllerBase implements AIChatController {
             }
             editor.processQueries(
                 queriesToExecute,
-                true,
+                queriesToExecute.size() > 1,
                 false,
                 false,
                 true,

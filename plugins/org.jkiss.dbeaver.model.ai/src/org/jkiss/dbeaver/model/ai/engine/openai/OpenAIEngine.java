@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIFunctionCall;
+import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
@@ -29,8 +30,10 @@ import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.Set;
 
 public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
 
@@ -53,15 +56,30 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         super(properties);
     }
 
+    @Override
+    public int estimateImageTokens(@NotNull AIImageAttachment image) {
+        return OpenAiUtils.estimateImageTokens(properties.getEffectiveModel(), image);
+    }
+
     @NotNull
     @Override
     public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (properties instanceof OpenAIProperties openAIProperties && openAIProperties.isChatGptAccountAuthentication()) {
+            return new OpenAIAccountAuthenticator(openAIProperties.getTimeout()).listModels(openAIProperties).stream()
+                .map(model -> OpenAIModels.KNOWN_MODELS.getOrDefault(
+                    model,
+                    new AIModel(model, OpenAIProperties.DEFAULT_ACCOUNT_CONTEXT_WINDOW_SIZE, OpenAIModels.detectModelFeatures(model))
+                ))
+                .toList();
+        }
+        String baseUrl = properties.getEffectiveBaseUrl();
+        boolean defaultEndpoint = OpenAIBaseProperties.isDefaultBaseUrl(baseUrl);
         return openAiService.getInstance().getModels(monitor)
             .stream()
-            .map(model -> OpenAIModels.KNOWN_MODELS.getOrDefault(
+            .map(model -> defaultEndpoint ? OpenAIModels.KNOWN_MODELS.getOrDefault(
                 model.id(),
                 new AIModel(model.id(), null, OpenAIModels.detectModelFeatures(model.id()))
-            ))
+            ) : new AIModel(model.id(), null, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)))
             .toList();
     }
 
@@ -103,14 +121,14 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         @NotNull AIEngineRequest request,
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
-        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), temperature());
+        OAIResponsesRequest oaiRequest = createRequest(request);
         oaiRequest.stream = true;
         openAiService.getInstance().createChatCompletionStream(monitor, oaiRequest, listener);
     }
 
     @Override
     public int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        Integer contextWindowSize = properties.getContextWindowSize();
+        Integer contextWindowSize = properties.getEffectiveContextWindowSize();
         if (contextWindowSize != null) {
             return contextWindowSize;
         }
@@ -128,27 +146,44 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         @NotNull DBRProgressMonitor monitor,
         @NotNull AIEngineRequest request
     ) throws DBException {
-        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), temperature());
+        OAIResponsesRequest oaiRequest = createRequest(request);
 
         return openAiService.getInstance().createChatCompletion(monitor, oaiRequest);
     }
 
     @NotNull
+    private OAIResponsesRequest createRequest(@NotNull AIEngineRequest request) throws DBException {
+        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), temperature());
+        if (properties instanceof OpenAIProperties openAIProperties
+            && openAIProperties.isChatGptAccountAuthentication()
+        ) {
+            OpenAiUtils.prepareChatGptAccountRequest(oaiRequest);
+        }
+        return oaiRequest;
+    }
+
+    @NotNull
     protected OpenAIClientResponses createClient() throws DBException {
-        String token = properties.getToken();
-        if (token == null || token.isEmpty()) {
+        if (properties instanceof OpenAIProperties openAIProperties && openAIProperties.isChatGptAccountAuthentication()) {
+            if (!openAIProperties.isChatGptAccountConnected()) {
+                throw new DBException("OpenAI ChatGPT account is not connected");
+            }
+            return new OpenAIAccountClient(openAIProperties);
+        }
+        String token = properties.getEffectiveToken();
+        if (properties.isTokenRequired() && CommonUtils.isEmptyTrimmed(token)) {
             throw new DBException("OpenAI API token is not set");
         }
-        String baseUrl = properties.getBaseUrl();
+        String baseUrl = properties.getEffectiveBaseUrl();
         if (baseUrl == null || baseUrl.isEmpty()) {
             baseUrl = OpenAIClientResponses.OPENAI_ENDPOINT;
         }
-        return OpenAIClientResponses.createClient(baseUrl, token);
+        return OpenAIClientResponses.createClient(baseUrl, token, properties.getCustomHeaders());
     }
 
     @Nullable
     protected String model() throws DBException {
-        return properties.getModel();
+        return properties.getEffectiveModel();
     }
 
     protected double temperature() throws DBException {

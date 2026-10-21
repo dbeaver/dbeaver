@@ -1288,6 +1288,17 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     }
 
     @Override
+    protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
+        String[] executeKeywords = getExecuteKeywords();
+        String qualifiedName = proc.getFullyQualifiedName(DBPEvaluationContext.DML);
+        if (proc.getProcedureType() == DBSProcedureType.FUNCTION || ArrayUtils.isEmpty(executeKeywords)) {
+            return SQLConstants.KEYWORD_SELECT + " * FROM " + qualifiedName;
+        } else {
+            return executeKeywords[0] + " " + qualifiedName;
+        }
+    }
+
+    @Override
     public boolean isEscapeBackslash() {
         return serverExtension != null && serverExtension.supportsBackslashStringEscape();
     }

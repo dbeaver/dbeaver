@@ -47,6 +47,7 @@ import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -181,6 +182,11 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
     public boolean isNumeric() {
         Class<?> propType = getGetter().getReturnType();
         return propType != null && BeanUtils.isNumericType(propType);
+    }
+
+    @Nullable
+    public PropertyConstraints getConstraints() {
+        return PropertyConstraints.from(propInfo);
     }
 
     public boolean isDateTime() {
@@ -542,6 +548,17 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
                     }
                 }
             }
+            PropertyConstraints constraints = getConstraints();
+            if (value instanceof Number number && constraints != null) {
+                if (constraints.min() != null && number.doubleValue() < constraints.min()) {
+                    throw new IllegalArgumentException(
+                        "Property '" + getDisplayName() + "' value must be at least " + constraints.min());
+                }
+                if (constraints.max() != null && number.doubleValue() > constraints.max()) {
+                    throw new IllegalArgumentException(
+                        "Property '" + getDisplayName() + "' value must be at most " + constraints.max());
+                }
+            }
             setter.invoke(object, value);
         } else {
             throw new IllegalAccessError("No setter found for property " + getId());
@@ -641,8 +658,23 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor
             try {
                 result = resourceBundle.getString(messageID);
             } catch (Exception e) {
+                Class<?> localizationOwner = propInfo.localizationOwner();
+                if (localizationOwner != void.class) {
+                    Bundle localizationBundle = FrameworkUtil.getBundle(localizationOwner);
+                    if (localizationBundle != null) {
+                        String sharedMessageID = "meta." + localizationOwner.getName() + "." + propertyName + "." + type;
+                        try {
+                            result = getPluginResourceBundle(localizationBundle, localizationOwner, locale)
+                                .getString(sharedMessageID);
+                        } catch (MissingResourceException ignored) {
+                            // A shared owner need not define every description or hint.
+                        }
+                    }
+                }
                 // Try to find the same property in parent classes
-                for (Class<?> parent = getter.getDeclaringClass().getSuperclass(); parent != null && parent != Object.class; parent = parent.getSuperclass()) {
+                for (Class<?> parent = getter.getDeclaringClass().getSuperclass();
+                    result == null && parent != null && parent != Object.class;
+                    parent = parent.getSuperclass()) {
                     try {
                         Method parentGetter = parent.getMethod(getter.getName(), getter.getParameterTypes());
                         Class<?> parentOwner = parentGetter.getDeclaringClass();

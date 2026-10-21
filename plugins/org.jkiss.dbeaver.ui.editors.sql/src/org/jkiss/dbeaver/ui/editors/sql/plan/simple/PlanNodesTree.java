@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.editors.sql.plan.simple;
 
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.TreeViewer;
-import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchSite;
@@ -109,8 +108,8 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
         @Override
         public Object[] getChildren(Object parentElement)
         {
-            if (parentElement instanceof DBCPlanNode) {
-                Collection<? extends DBCPlanNode> nestedNodes = ((DBCPlanNode) parentElement).getNested();
+            if (parentElement instanceof DBCPlanNode pn) {
+                Collection<? extends DBCPlanNode> nestedNodes = pn.getNested();
                 return CommonUtils.isEmpty(nestedNodes) ? new Object[0] : nestedNodes.toArray();
             }
             return null;
@@ -126,19 +125,8 @@ public class PlanNodesTree extends DatabaseObjectListControl<DBCPlanNode> {
         }
 
         @Override
-        public boolean hasChildren(Object element)
-        {
+        public boolean hasChildren(Object element) {
             return element instanceof DBCPlanNode && !CommonUtils.isEmpty(((DBCPlanNode) element).getNested());
-        }
-
-        @Override
-        public void dispose()
-        {
-        }
-
-        @Override
-        public void inputChanged(Viewer viewer, Object oldInput, Object newInput)
-        {
         }
 
     };

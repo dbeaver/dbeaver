@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ public class AIMessages extends NLS {
     public static String ai_scope_current_database;
     public static String ai_scope_current_datasource;
     public static String ai_scope_custom;
+
+    public static String ai_sync_unit_name;
 
     public static String ai_execute_query_title;
     public static String ai_execute_query_confirm_sql_message;
@@ -53,6 +55,8 @@ public class AIMessages extends NLS {
     public static String ai_error_request_timed_out;
     public static String ai_error_request_timed_out_linked;
     public static String ai_error_request_timed_out_admin;
+
+    public static String ai_settings_save_error_title;
 
     static {
         // initialize resource bundle

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -175,9 +175,11 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
         }
     }
 
-    private String convertStringValueToCell(String strValue) {
+    @NotNull
+    static String convertStringValueToCell(@NotNull String strValue) {
+        // COPY uses backslash as ESCAPE: escape existing backslashes before adding escaped quotes.
         return '"' +
-            strValue.replace("\"", "\\\"") +
+            strValue.replace("\\", "\\\\").replace("\"", "\\\"") +
             '"';
     }
 
@@ -204,7 +206,7 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
 
         session.getProgressMonitor().subTask("Copy into " + tableFQN);
 
-        String queryText = "COPY " + tableFQN + " FROM STDIN (FORMAT CSV, ESCAPE '\\')";
+        String queryText = "COPY " + tableFQN + " FROM STDIN (FORMAT CSV, ESCAPE E'\\\\')";
 
         try {
             Object rowCount;

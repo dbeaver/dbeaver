@@ -29,9 +29,9 @@ import org.eclipse.jface.wizard.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -177,8 +177,19 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
     }
 
     @Override
-    protected Control createDialogArea(Composite parent) {
-        Composite mainComposite = new Composite(parent, SWT.NONE);
+    public void setTitleImage(@Nullable Image image) {
+        super.setTitleImage(image);
+        Label label = getTitleImageLabel();
+        if (label != null && !label.isDisposed()) {
+            label.requestLayout();
+            label.getParent().layout(true, true);
+        }
+    }
+
+    @Override
+    @NotNull
+    protected Control createDialogArea(@NotNull Composite parent) {
+        final Composite mainComposite = new Composite(parent, SWT.NONE);
         GridLayout layout = new GridLayout();
         layout.marginHeight = 0;
         layout.marginWidth = 0;
@@ -216,9 +227,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
 
         updateNavigationTree();
 
-        pagesTree.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        pagesTree.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 TreeItem[] selection = pagesTree.getSelection();
                 if (selection.length > 0) {
                     Object newPage = selection[0].getData();
@@ -236,8 +245,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                     }
                 }
                 changePage();
-            }
-        });
+            }));
 
         // Horizontal separator
         UIUtils.createLabelSeparator(mainComposite, SWT.HORIZONTAL);
@@ -497,7 +505,11 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         TreeItem item = parentItem == null ?
             new TreeItem(pagesTree, SWT.NONE) :
             new TreeItem(parentItem, SWT.NONE);
-        item.setText(CommonUtils.toString(page.getTitle(), page.getClass().getSimpleName()));
+        String title = page.getTitle();
+        if (page instanceof IWizardPageActive wpa) {
+            title = wpa.getPageSubTitle();
+        }
+        item.setText(CommonUtils.toString(title, page.getClass().getSimpleName()));
         item.setForeground(computePageColor(page));
         item.setData(page);
 
@@ -608,6 +620,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         var page = getCurrentPage();
         if (page != null) {
             var title = CommonUtils.notEmpty(page.getTitle());
+            if (page instanceof IWizardPageActive wpa) {
+                title = wpa.getPageSubTitle();
+            }
             setTitle(title);
 
             var item = findPageTreeItem(page);

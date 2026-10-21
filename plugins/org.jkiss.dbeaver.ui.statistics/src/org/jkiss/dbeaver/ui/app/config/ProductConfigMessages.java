@@ -23,6 +23,7 @@ public final class ProductConfigMessages extends NLS {
     public static String data_collection_description;
     public static String data_collection_agreement_text;
     public static String data_collection_send_usage_statistics;
+    public static String data_collection_do_not_send_usage_statistics;
     public static String data_collection_cannot_opt_out_notice;
 
     static {

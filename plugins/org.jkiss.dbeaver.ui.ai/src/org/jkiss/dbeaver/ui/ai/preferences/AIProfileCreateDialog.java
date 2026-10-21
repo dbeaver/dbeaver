@@ -16,18 +16,24 @@
  */
 package org.jkiss.dbeaver.ui.ai.preferences;
 
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.accessibility.AccessibleAdapter;
+import org.eclipse.swt.accessibility.AccessibleEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.ui.CompositeBorderPainter;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
@@ -48,64 +54,119 @@ public class AIProfileCreateDialog extends BaseDialog {
     @Override
     protected Composite createDialogArea(@NotNull Composite parent) {
         Composite dialogArea = super.createDialogArea(parent);
-        Composite enginePanel = UIUtils.createTitledComposite(dialogArea, "AI Configuration", 2);
+        Composite enginePanel = UIUtils.createTitledComposite(
+            dialogArea,
+            "AI Configuration",
+            2,
+            GridData.FILL_HORIZONTAL
+        );
 
-        Combo engineCombo = UIUtils.createLabelCombo(enginePanel, "Engine", SWT.DROP_DOWN | SWT.READ_ONLY);
         aiEngines = AIEngineRegistry.getInstance().getCompletionEngines();
-        for (AIEngineDescriptor ed : aiEngines) {
-            engineCombo.add(ed.getLabel());
-        }
-        engineCombo.select(0);
         selectedEngine = aiEngines.getFirst();
         profileId = genProfileId(selectedEngine);
         profileName = selectedEngine.getLabel();
 
-        Text idText = UIUtils.createLabelText(enginePanel, "ID", genProfileId(selectedEngine));
-        idText.addModifyListener(e ->  profileId = idText.getText());
-        Text nameText = UIUtils.createLabelText(enginePanel, "Name", genProfileName(selectedEngine));
-        nameText.addModifyListener(e ->  profileName = nameText.getText());
+        UIUtils.createControlLabel(enginePanel, "Engine");
+        Composite engineSelector = new Composite(enginePanel, SWT.NONE);
+        engineSelector.setLayout(GridLayoutFactory.fillDefaults().margins(2, 2).numColumns(3).create());
+        engineSelector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        new CompositeBorderPainter(engineSelector);
 
-        engineCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-            String oldAutoId = genProfileId(selectedEngine);
-            selectedEngine = aiEngines.get(engineCombo.getSelectionIndex());
-            if (oldAutoId.equals(profileId)) {
-                profileId = genProfileId(selectedEngine);
-                profileName = genProfileName(selectedEngine);
-                idText.setText(profileId);
-                nameText.setText(profileName);
+        Label engineIcon = new Label(engineSelector, SWT.NONE);
+        engineIcon.setImage(DBeaverIcons.getImage(selectedEngine.getIcon()));
+        Label engineName = new Label(engineSelector, SWT.NONE);
+        engineName.setText(selectedEngine.getLabel());
+        engineName.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Label engineArrow = new Label(engineSelector, SWT.NONE);
+        engineArrow.setImage(DBeaverIcons.getImage(UIIcon.TREE_COLLAPSE));
+
+        Text nameText = UIUtils.createLabelText(enginePanel, "Name", genProfileName(selectedEngine.getLabel()));
+        GridData ngd = new GridData(GridData.FILL_HORIZONTAL);
+        ngd.widthHint = UIUtils.getFontHeight(nameText) * 25;
+        nameText.setLayoutData(ngd);
+        nameText.addModifyListener(e ->  profileName = nameText.getText());
+        Text idText = UIUtils.createLabelText(enginePanel, "ID", genProfileId(selectedEngine));
+        idText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        idText.addModifyListener(e ->  profileId = idText.getText());
+
+        Menu engineMenu = new Menu(engineSelector);
+        boolean hasPromotedEngines = false;
+        for (AIEngineDescriptor engine : aiEngines) {
+            if (hasPromotedEngines && !engine.isPromoted()) {
+                new MenuItem(engineMenu, SWT.SEPARATOR);
+                hasPromotedEngines = false;
+            }
+            MenuItem engineItem = new MenuItem(engineMenu, SWT.RADIO);
+            engineItem.setText(engine.getLabel().replace("&", "&&"));
+            engineItem.setImage(DBeaverIcons.getImage(engine.getIcon()));
+            engineItem.setSelection(engine == selectedEngine);
+            engineItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                if (!engineItem.getSelection()) {
+                    return;
+                }
+                for (MenuItem item : engineMenu.getItems()) {
+                    if (item != engineItem && (item.getStyle() & SWT.RADIO) != 0) {
+                        item.setSelection(false);
+                    }
+                }
+                String oldAutoId = genProfileId(selectedEngine);
+                selectedEngine = engine;
+                engineIcon.setImage(DBeaverIcons.getImage(engine.getIcon()));
+                engineName.setText(engine.getLabel());
+                engineSelector.layout(true, true);
+                if (oldAutoId.equals(profileId)) {
+                    profileId = genProfileId(selectedEngine);
+                    profileName = genProfileName(selectedEngine.getLabel());
+                    idText.setText(profileId);
+                    nameText.setText(profileName);
+                }
+            }));
+            hasPromotedEngines = engine.isPromoted();
+        }
+
+        Runnable showEngineMenu = () -> {
+            engineMenu.setLocation(engineSelector.toDisplay(0, engineSelector.getSize().y));
+            engineMenu.setVisible(true);
+        };
+        MouseListener mouseListener = MouseListener.mouseDownAdapter(e -> showEngineMenu.run());
+        engineSelector.addMouseListener(mouseListener);
+        engineIcon.addMouseListener(mouseListener);
+        engineName.addMouseListener(mouseListener);
+        engineArrow.addMouseListener(mouseListener);
+        engineSelector.addKeyListener(KeyListener.keyPressedAdapter(e -> {
+            if (e.keyCode == SWT.CR || e.keyCode == SWT.KEYPAD_CR || e.keyCode == SWT.ARROW_DOWN
+                || e.character == ' ') {
+                showEngineMenu.run();
+            } else if (e.keyCode == SWT.ESC) {
+                cancelPressed();
             }
         }));
+        engineSelector.addTraverseListener(e -> {
+            if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                e.doit = true;
+            }
+        });
+        engineSelector.addFocusListener(FocusListener.focusGainedAdapter(e -> engineSelector.redraw()));
+        engineSelector.addFocusListener(FocusListener.focusLostAdapter(e -> engineSelector.redraw()));
+        engineSelector.getAccessible().addAccessibleListener(new AccessibleAdapter() {
+            @Override
+            public void getName(@NotNull AccessibleEvent e) {
+                e.result = "Engine: " + engineName.getText();
+            }
+        });
 
         return dialogArea;
     }
 
     @NotNull
-    private String genProfileId(@NotNull AIEngineDescriptor engineDescriptor) {
-        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
-        String baseId = engineDescriptor.getId();
-        String id = baseId;
-        for (int i = 1; ; i++) {
-            if (aiSettings.getConfigurationOrNull(id) == null) {
-                break;
-            }
-            id = baseId + "_" + i;
-        }
-        return id;
+    static String genProfileId(@NotNull AIEngineDescriptor engineDescriptor) {
+        return AISettingsManager.getInstance().getSettings().generateProfileId(engineDescriptor);
     }
 
 
     @NotNull
-    private String genProfileName(@NotNull AIEngineDescriptor engineDescriptor) {
-        AISettings aiSettings = AISettingsManager.getInstance().getSettings();
-        String baseName = engineDescriptor.getLabel();
-        String name = baseName;
-        for (int i = 1; ; i++) {
-            if (aiSettings.getConfigurationByNameOrNull(name) == null) {
-                break;
-            }
-            name = baseName + " (" + i + ")";
-        }
-        return name;
+    static String genProfileName(@NotNull String baseName) {
+        return AISettingsManager.getInstance().getSettings().generateProfileName(baseName);
     }
 
     @Nullable

@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.LoggingProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tools.transfer.DTConstants;
 import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
@@ -57,12 +58,14 @@ import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferAttributeTransformerDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.ui.handlers.DataImportPropertyTester;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
+import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -93,11 +96,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     private ControlEditor chooseContainerEditor;
     private Button upButton;
     private Button downButton;
+    private Composite bottomBar;
     private Button recreateCheck;
     private Button transformCheck;
     private Combo transformCombo;
     protected Button mappingRules;
     private ObjectContainerSelectorPanel containerPanel;
+    private boolean transformComboKeyboardSelection;
     private boolean firstInit = true;
     private String mappingErrorMessage;
 
@@ -223,8 +228,29 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 getWizard().getProject(),
                 "container.data-transfer.database-consumer",
                 DTMessages.data_transfer_db_consumer_target_container,
-                DTMessages.data_transfer_db_consumer_choose_container)
-            {
+                DTMessages.data_transfer_db_consumer_choose_container) {
+                @Nullable
+                @Override
+                protected DBNNode selectContainer(@NotNull DBNNode rootNode, @Nullable DBNNode selectedNode) {
+                    return ObjectBrowserDialog.selectObject(
+                        getShell(),
+                        DTMessages.data_transfer_db_consumer_choose_container,
+                        rootNode,
+                        selectedNode,
+                        new Class[] {DBSInstance.class, DBSObjectContainer.class},
+                        new Class[] {DBSObjectContainer.class},
+                        new Class[] {DBSSchema.class},
+                        null,
+                        this::isContainerSelectable
+                    );
+                }
+
+                @Override
+                protected boolean isContainerSelectable(@NotNull DBNNode node) {
+                    return !(node instanceof DBNDatabaseNode databaseNode)
+                        || DataImportPropertyTester.supportsImport(databaseNode.getDataSource());
+                }
+
                 @Nullable
                 @Override
                 protected DBNNode getSelectedNode() {
@@ -251,6 +277,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     try {
                         node.initializeNode(null, status -> {
                             if (!status.isOK()) {
+                                return;
+                            }
+                            if (!isContainerSelectable(node)) {
+                                DBWorkbench.getPlatformUI().showError(
+                                    DTUIMessages.database_consumer_page_mapping_title_mapping_error,
+                                    DTUIMessages.database_consumer_page_mapping_error_message_import_not_supported
+                                );
                                 return;
                             }
                             settings.setContainer(DBUtils.getAdapter(DBSObjectContainer.class, node.getObject()));
@@ -340,6 +373,13 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
             mappingViewer.getTree().addKeyListener(new KeyAdapter() {
                 @Override
+                public void keyPressed(KeyEvent e) {
+                    if (e.character == SWT.SPACE) {
+                        e.doit = false;
+                    }
+                }
+
+                @Override
                 public void keyReleased(KeyEvent e) {
                     try {
                         boolean updated = false;
@@ -355,10 +395,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                             updated = true;
                         } else if (e.character == SWT.SPACE) {
                             for (TreeItem item : mappingViewer.getTree().getSelection()) {
-                                element = item.getData();
-                                applyMappingTransfer(element);
+                                if (item.getData() instanceof DatabaseMappingObject mapping
+                                    && !isConfigurationRow(mapping)) {
+                                    toggleMappingTransfer(mapping);
+                                }
                             }
-                            updated = true;
                         } else if (e.keyCode == SWT.SHIFT) {
                             TreeItem[] selection = mappingViewer.getTree().getSelection();
                             if (selection.length > 0) {
@@ -402,7 +443,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
         {
             boolean withUpDown = getWizard().getSettings().getDataPipes().size() > 1;
-            Composite bottomBar = UIUtils.createComposite(composite, 5 + (withUpDown ? 2 : 0));
+            bottomBar = UIUtils.createComposite(composite, 5 + (withUpDown ? 2 : 0));
             bottomBar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             Label hintInfo = new Label(bottomBar, SWT.NONE);
@@ -430,8 +471,41 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 DataTransferRegistry.getInstance().getAttributeTransformers()) {
                 transformCombo.add(transformer.getName());
             }
-            transformCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> onTransformComboSelected()));
+            transformCombo.addListener(SWT.KeyDown, event -> {
+                if (event.keyCode == SWT.ARROW_DOWN && !transformCombo.getListVisible()) {
+                    event.doit = false;
+                    transformCombo.setListVisible(true);
+                } else if (transformCombo.getListVisible()
+                    && (event.keyCode == SWT.ARROW_DOWN || event.keyCode == SWT.ARROW_UP)) {
+                    // Native combos fire a selection event while the user is only moving the highlighted item.
+                    transformComboKeyboardSelection = true;
+                    transformCombo.getDisplay().asyncExec(() -> transformComboKeyboardSelection = false);
+                } else if (event.keyCode == SWT.CR || event.keyCode == SWT.KEYPAD_CR) {
+                    event.doit = false;
+                    int selectionIndex = transformCombo.getSelectionIndex();
+                    transformCombo.setListVisible(false);
+                    transformCombo.select(selectionIndex);
+                    onTransformComboSelected();
+                } else if (transformCombo.getListVisible() && event.keyCode == SWT.ESC) {
+                    event.doit = false;
+                    transformCombo.setListVisible(false);
+                    updateTransformControls(getTransformableSelection());
+                }
+            });
+            transformCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (!transformComboKeyboardSelection) {
+                        onTransformComboSelected();
+                    }
+                }
 
+
+                @Override
+                public void widgetDefaultSelected(SelectionEvent e) {
+                    onTransformComboSelected();
+                }
+            });
             if (withUpDown) {
                 upButton = UIUtils.createPushButton(
                     bottomBar,
@@ -1488,13 +1562,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             }
         }
 
-        if (firstInit) {
-            firstInit = false;
-            UIUtils.asyncExec(() -> {
-                updateTreeColumnWidths();
-                this.autoAssignMappings();
-            });
-        }
+        UIUtils.asyncExec(this::updateTreeColumnWidths);
     }
 
     private void updateTreeColumnWidths() {
@@ -1569,6 +1637,16 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         }
 
         loadAndUpdateColumnsModel();
+        // loading may be deferred until the user explicitly connects to the target database
+        if (firstInit && getDatabaseConsumerSettings().getContainer() != null && !model.isEmpty()) {
+            firstInit = false;
+            UIUtils.asyncExec(() -> {
+                if (!mappingViewer.getTree().isDisposed()) {
+                    updateTreeColumnWidths();
+                    autoAssignMappings();
+                }
+            });
+        }
         updatePageCompletion();
     }
 
@@ -1748,7 +1826,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         updateRecreateCheck(selectedMapping);
         setControlExcluded(recreateCheck, !isContainer);
         setControlExcluded(transformCheck, !isColumn);
-        setControlExcluded(transformCombo, !isColumn);
+        transformCombo.setVisible(isColumn);
         layoutBottomBar();
         updateTransformControls(selectedMapping);
         updateUpAndDownButtons();
@@ -1776,12 +1854,10 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     }
 
     private void layoutBottomBar() {
-        if (recreateCheck != null && !recreateCheck.isDisposed()) {
-            Composite parent = recreateCheck.getParent();
-            if (parent != null && !parent.isDisposed()) {
-                parent.layout(true);
-            }
+        if (bottomBar == null || bottomBar.isDisposed()) {
+            return;
         }
+        bottomBar.layout(true);
     }
 
     protected boolean hasMappings(@Nullable DatabaseMappingObject mapping) {

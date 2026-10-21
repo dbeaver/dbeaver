@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.ui.dialogs.net;
 
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -79,17 +77,14 @@ public class SocksProxyConfiguratorUI extends AbstractObjectPropertyConfigurator
             passwordText.setEnabled(savePasswordCheckbox.getSelection());
         }));
 
-        UIUtils.createLink(parent, UIConnectionMessages.dialog_connection_open_global_network_preferences_link, new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        UIUtils.createLink(parent, UIConnectionMessages.dialog_connection_open_global_network_preferences_link, SelectionListener.widgetSelectedAdapter(e -> {
                 PreferenceDialog dialog = PreferencesUtil.createPreferenceDialogOn(
                     UIUtils.getActiveWorkbenchShell(),
                     NETWORK_PREF_PAGE_ID,
                     null,
                     null);
                 dialog.open();
-            }
-        });
+            }));
 
         if (this.getEditIntention() == DBPConnectionEditIntention.CREDENTIALS_ONLY) {
             hostText.setEditable(false);

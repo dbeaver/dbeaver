@@ -23,15 +23,17 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
+import org.jkiss.dbeaver.model.ai.utils.AIHttpRequestFilter;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
@@ -40,22 +42,33 @@ public class OpenAIClientResponses extends OpenAiClientBase {
     private static final Log log = Log.getLog(OpenAIClientResponses.class);
 
     public static final String OPENAI_ENDPOINT = "https://api.openai.com/v1/";
-    private static final Set<String> MODELS_WITHOUT_TEMPERATURE = new HashSet<>();
+    private static final Set<String> MODELS_WITHOUT_TEMPERATURE = ConcurrentHashMap.newKeySet();
 
+    @Nullable
     private final OpenAIClientChat backupClient;
 
     public OpenAIClientResponses(
         @NotNull String baseUrl,
-        @NotNull List<HttpRequestFilter> requestFilters
+        @NotNull List<AIHttpRequestFilter> requestFilters
+    ) {
+        this(baseUrl, requestFilters, true);
+    }
+
+    public OpenAIClientResponses(
+        @NotNull String baseUrl,
+        @NotNull List<AIHttpRequestFilter> requestFilters,
+        boolean legacyFallback
     ) {
         super(baseUrl, requestFilters);
-        this.backupClient = createBackupClient();
+        this.backupClient = legacyFallback ? createBackupClient() : null;
     }
 
     @Override
     public void setTimeout(int timeoutSeconds) {
         super.setTimeout(timeoutSeconds);
-        backupClient.setTimeout(timeoutSeconds);
+        if (backupClient != null) {
+            backupClient.setTimeout(timeoutSeconds);
+        }
     }
 
     @NotNull
@@ -64,11 +77,17 @@ public class OpenAIClientResponses extends OpenAiClientBase {
     }
 
     @NotNull
-    public static OpenAIClientResponses createClient(@NotNull String baseUrl, @NotNull String token) {
-        return new OpenAIClientResponses(
-            baseUrl,
-            List.of(new OpenAIRequestFilter(token))
-        );
+    public static OpenAIClientResponses createClient(@NotNull String baseUrl, @Nullable String token) {
+        return createClient(baseUrl, token, Map.of());
+    }
+
+    @NotNull
+    public static OpenAIClientResponses createClient(
+        @NotNull String baseUrl,
+        @Nullable String token,
+        @NotNull Map<String, String> customHeaders
+    ) {
+        return new OpenAIClientResponses(baseUrl, List.of(new OpenAIRequestFilter(token, customHeaders)));
     }
 
     @NotNull
@@ -80,10 +99,9 @@ public class OpenAIClientResponses extends OpenAiClientBase {
 
         HttpRequest modifiedRequest = applyFilters(request);
         try {
-            String responseJson = client.send(monitor, modifiedRequest);
-            return GSON.fromJson(responseJson, OAIResponsesResponse.class);
+            return parseCompletionResponse(client.send(monitor, modifiedRequest));
         } catch (Exception exception) {
-            if (OpenAiUtils.shouldFallbackToLegacyChat(exception.getMessage())) {
+            if (backupClient != null && OpenAiUtils.shouldFallbackToLegacyChat(exception.getMessage())) {
                 // If the request failed due to an unsupported model, fallback to the legacy client which might support it
                 return backupClient.createChatCompletion(monitor, completionRequest);
             } else if (completionRequest.temperature != null && OpenAiUtils.isTemperatureNotSupported(exception.getMessage())) {
@@ -113,11 +131,17 @@ public class OpenAIClientResponses extends OpenAiClientBase {
             listener::completeBlock,
             (failureReason) -> {
                 if (OpenAIConstants.LEGACY_FALLBACK.equals(failureReason)) {
-                    try {
-                        backupClient.createChatCompletionStream(monitor, completionRequest, listener);
-                    } catch (DBException ex) {
-                        log.error("Error in legacy client fallback", ex);
-                        listener.error(ex);
+                    if (backupClient == null) {
+                        listener.error(new DBException(
+                            "The selected model is not supported by the ChatGPT Responses API"
+                        ));
+                    } else {
+                        try {
+                            backupClient.createChatCompletionStream(monitor, completionRequest, listener);
+                        } catch (DBException ex) {
+                            log.error("Error in legacy client fallback", ex);
+                            listener.error(ex);
+                        }
                     }
                 } else if (OpenAIConstants.TEMPERATURE_NOT_SUPPORTED.equals(failureReason)) {
                     completionRequest.temperature = null;
@@ -135,12 +159,19 @@ public class OpenAIClientResponses extends OpenAiClientBase {
     @Override
     public void close() {
         super.close();
-        backupClient.close();
+        if (backupClient != null) {
+            backupClient.close();
+        }
     }
 
     @NotNull
     protected OpenAIClientChat createBackupClient() {
         return new OpenAIClientChat(baseUrl, requestFilters);
+    }
+
+    @NotNull
+    protected OAIResponsesResponse parseCompletionResponse(@NotNull String responseBody) throws DBException {
+        return GSON.fromJson(responseBody, OAIResponsesResponse.class);
     }
 
     @NotNull
@@ -176,4 +207,3 @@ public class OpenAIClientResponses extends OpenAiClientBase {
         return OpenAiUtils.processErrors(mapper, errorHandler, response, suppressCompletion, backupOption, statusCode);
     }
 }
-

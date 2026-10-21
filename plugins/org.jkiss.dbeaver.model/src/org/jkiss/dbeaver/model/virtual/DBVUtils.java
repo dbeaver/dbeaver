@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.model.virtual;
 
 import org.apache.commons.jexl3.JexlBuilder;
-import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
+import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -471,8 +471,8 @@ public abstract class DBVUtils {
     }
 
     @NotNull
-    static Map<String, Object> getExpressionNamespaces() {
-        Map<String, Object> nsList = new HashMap<>();
+    static Map<String, Class<?>> getExpressionNamespaces() {
+        Map<String, Class<?>> nsList = new HashMap<>();
 
         for (ExpressionNamespaceDescriptor ns : ExpressionRegistry.getInstance().getExpressionNamespaces()) {
             Class<?> implClass = ns.getImplClass();
@@ -483,15 +483,20 @@ public abstract class DBVUtils {
         return nsList;
     }
 
-    public static JexlExpression parseExpression(String expression) {
-        Map<String, Object> nsList = getExpressionNamespaces();
+    @NotNull
+    public static JexlExpression parseExpression(@NotNull String expression) {
+        var namespaces = getExpressionNamespaces();
+        var classes = namespaces.values().toArray(Class<?>[]::new);
+        var permissions = new JexlPermissions.ClassPermissions(JexlPermissions.SECURE, classes);
 
-        JexlBuilder jexlBuilder = new JexlBuilder();
-        jexlBuilder.cache(100);
-        jexlBuilder.namespaces(nsList);
+        @SuppressWarnings("unchecked")
+        var engine = new JexlBuilder()
+            .permissions(permissions)
+            .namespaces((Map<String, Object>) (Object) namespaces)
+            .cache(100)
+            .create();
 
-        JexlEngine jexlEngine = jexlBuilder.create();
-        return jexlEngine.createExpression(expression);
+        return engine.createExpression(expression);
     }
 
     public static boolean isIdentifyingAttributes(@NotNull DBRProgressMonitor monitor, @NotNull List<DBSEntityAttribute> attributes) throws DBException {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,10 @@ public class SSHUIMessages extends NLS {
 
     public static String model_ssh_dialog_edit_private_key;
     public static String model_ssh_dialog_set_private_key;
+
+    public static String model_ssh_configurator_label_agent_sock_path;
+    public static String model_ssh_configurator_label_agent_sock_path_description;
+    public static String model_ssh_configurator_dialog_choose_agent_sock;
 
     public static String jsch_remote_host_identifier_changed_warning_title;
 

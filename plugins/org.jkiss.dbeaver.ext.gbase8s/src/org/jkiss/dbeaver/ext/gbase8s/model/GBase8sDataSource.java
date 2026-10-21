@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,24 +17,30 @@
 
 package org.jkiss.dbeaver.ext.gbase8s.model;
 
-import java.lang.reflect.Field;
-import java.sql.SQLException;
-import java.util.Set;
-
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.gbase8s.GBase8sUtils;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericExecutionContext;
-import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
+
+import java.io.IOException;
+import java.lang.reflect.Field;
+import java.nio.file.Path;
+import java.sql.SQLException;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  * @author Chao Tian
@@ -48,13 +54,32 @@ public class GBase8sDataSource extends GenericDataSource {
         -79882	// this occurs when calling PreparedStatement.setNCharacterStream(), not documented
     );
 
-    public GBase8sDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
-            throws DBException {
-        super(monitor, container, metaModel, new GenericSQLDialect());
+    private static final String PROPERTY_JDBCTEMP = "JDBCTEMP"; //$NON-NLS-1$
+
+    /**
+     * Path to default JDBCTEMP.  According to Driver's documentation, driver needs JDBCTEMP just to load large CLOB/TEXT
+     * data so it could be shared with different instances.
+     */
+    private static final Path DEFAULT_JDBCTEMP;
+    static {
+        Path jdbcTemp;
+        try {
+            jdbcTemp = DBWorkbench.getPlatform().getTempFolder(new VoidProgressMonitor(), "gbase8s-jdbctemp").toAbsolutePath(); //$NON-NLS-1$
+        } catch (IOException e) {
+            log.warn("Failed to configure default JDBC temp", e);
+            jdbcTemp = null;
+        }
+        DEFAULT_JDBCTEMP = jdbcTemp;
     }
 
+    public GBase8sDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
+            throws DBException {
+        super(monitor, container, metaModel, new GBase8sDialect());
+    }
+
+    @NotNull
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         // replace the connector of the database/table in queryGetActiveDB
         replaceConnector4GetActiveDB(container);
         return new GenericExecutionContext(instance, type);
@@ -79,8 +104,9 @@ public class GBase8sDataSource extends GenericDataSource {
         }
     }
 
+    @NotNull
     @Override
-    public ErrorType discoverErrorType(Throwable error) {
+    public ErrorType discoverErrorType(@NotNull Throwable error) {
         // #41319 when calling PreparedStatement.setNCharacterStream()
         // the driver should be thrown SQLFeatureNotSupportedException, but it doesn't
         // so detect it by analyzing errorCode and handle it properly
@@ -92,5 +118,22 @@ public class GBase8sDataSource extends GenericDataSource {
         }
 
         return super.discoverErrorType(error);  // fallback case
+    }
+
+    /**
+     * override this method to set some driver properties dynamically to fix #41669
+     *
+     * @param connectionInfo {@inheritDoc}
+     * @param connectProps {@inheritDoc}
+     */
+    @Override
+    protected void fillConnectionProperties(@NotNull DBPConnectionConfiguration connectionInfo, @NotNull Properties connectProps) {
+        super.fillConnectionProperties(connectionInfo, connectProps);
+
+        // handle JDBCTEMP driver properties (#41669), use existed value first, then fallback to default value
+        String jdbcTemp = connectProps.getProperty(PROPERTY_JDBCTEMP); //$NON-NLS-1$
+        if (CommonUtils.isEmpty(jdbcTemp) && DEFAULT_JDBCTEMP != null) {
+            connectProps.setProperty(PROPERTY_JDBCTEMP, DEFAULT_JDBCTEMP.toString());
+        }
     }
 }

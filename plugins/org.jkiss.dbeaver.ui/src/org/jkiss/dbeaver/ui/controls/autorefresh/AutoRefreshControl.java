@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
@@ -215,22 +216,12 @@ public class AutoRefreshControl {
                 {
                     MenuItem mi = new MenuItem(schedulerMenu, SWT.NONE);
                     mi.setText(UIMessages.sql_editor_resultset_filter_panel_menu_customize);
-                    mi.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            runCustomized();
-                        }
-                    });
+                    mi.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> runCustomized()));
 
                     mi = new MenuItem(schedulerMenu, SWT.NONE);
                     mi.setText(UIMessages.sql_editor_resultset_filter_panel_menu_stop);
                     mi.setEnabled(isAutoRefreshEnabled());
-                    mi.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            enableAutoRefresh(false);
-                        }
-                    });
+                    mi.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> enableAutoRefresh(false)));
                     new MenuItem(schedulerMenu, SWT.SEPARATOR);
 
                     List<Integer> presetList = new ArrayList<>();
@@ -250,12 +241,7 @@ public class AutoRefreshControl {
                         if (isAutoRefreshEnabled() && timeout == defaultInterval) {
                             schedulerMenu.setDefaultItem(mi);
                         }
-                        mi.addSelectionListener(new SelectionAdapter() {
-                            @Override
-                            public void widgetSelected(SelectionEvent e) {
-                                runPreset(timeout);
-                            }
-                        });
+                        mi.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> runPreset(timeout)));
                     }
                 }
                 if (hintSupplier != null) {

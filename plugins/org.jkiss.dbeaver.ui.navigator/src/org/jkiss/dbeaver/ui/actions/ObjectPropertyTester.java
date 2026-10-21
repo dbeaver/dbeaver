@@ -174,6 +174,9 @@ public class ObjectPropertyTester extends PropertyTester {
                     ) {
                         return false;
                     }
+                    if (node instanceof DBNDatabaseNode dbNode && isMetadataChangeDisabled(dbNode)) {
+                        return false;
+                    }
                     DBEObjectMaker objectMaker = getObjectManager(object.getClass(), DBEObjectMaker.class);
                     return objectMaker != null && objectMaker.canDeleteObject(object);
                 } else if (node instanceof DBNResource dbnResource) {

@@ -64,6 +64,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.runtime.ui.UIServiceShellCommands;
 import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -545,17 +546,15 @@ public class DataSourceDescriptor
     @Nullable
     @Override
     public DBPTransactionIsolation getActiveTransactionsIsolation() {
-        if (dataSource != null) {
+        if (dataSource != null && dataSource.hasDefaultInstance()) {
             DBSInstance defaultInstance = dataSource.getDefaultInstance();
-            if (defaultInstance != null) {
-                DBCTransactionManager txnManager = DBUtils.getTransactionManager(DBUtils.getDefaultContext(defaultInstance, false));
-                if (txnManager != null) {
-                    try {
-                        return txnManager.getTransactionIsolation();
-                    } catch (DBCException e) {
-                        log.debug("Can't determine isolation level", e);
-                        return null;
-                    }
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(DBUtils.getDefaultContext(defaultInstance, false));
+            if (txnManager != null) {
+                try {
+                    return txnManager.getTransactionIsolation();
+                } catch (DBCException e) {
+                    log.debug("Can't determine isolation level", e);
+                    return null;
                 }
             }
         }
@@ -1203,10 +1202,25 @@ public class DataSourceDescriptor
 
                 openDataSource(monitor, initialize);
 
-                try {
-                    log.debug("Connected (" + getId() + ", " + getPropertyDriver() + ")");
-                } catch (Throwable e) {
-                    log.debug("Connected (" + getId() + ", driver unknown)");
+                if (monitor.isCanceled()) {
+                    // A driver may return successfully after ignoring interruption during initialization.
+                    // Throw so the connection failure path releases the partially initialized data source.
+                    throw new DBException("Connection has been canceled");
+                }
+
+                if (dataSource != null) {
+                    DBPDataSourceInfo info = dataSource.getInfo();
+                    log.debug(
+                        "Connected to a datasource: id='%s', databaseProductName='%s', databaseProductVersion='%s', driverName='%s', driverVersion='%s'."
+                        .formatted(
+                            id,
+                            info.getDatabaseProductName(),
+                            info.getDatabaseProductVersion(),
+                            info.getDriverName(),
+                            info.getDriverVersion())
+                    );
+                } else {
+                    log.debug("Connected to datasource with id=" + id);
                 }
 
                 this.connectFailed = false;
@@ -1238,7 +1252,9 @@ public class DataSourceDescriptor
             }
             proxyHandler = null;
             // Failed
-            connectFailed = true;
+            if (!CommonUtils.hasCause(e, DBCDriverLicenseException.class)) {
+                connectFailed = true;
+            }
             if (e instanceof DBException) {
                 throw (DBException) e;
             } else {
@@ -1427,6 +1443,10 @@ public class DataSourceDescriptor
         DBPConnectionConfiguration info = getActualConnectionConfiguration();
         DBRShellCommand command = info.getEvent(eventType);
         if (command != null && command.isEnabled()) {
+            UIServiceShellCommands shellCommandsService = DBWorkbench.getService(UIServiceShellCommands.class);
+            if (shellCommandsService != null) {
+                shellCommandsService.validateByUser(command, createApprovalContext(eventType));
+            }
             final DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command, getVariablesResolver(true));
 
             monitor.subTask("Execute process " + processDescriptor.getName());
@@ -1467,6 +1487,15 @@ public class DataSourceDescriptor
                 case AFTER_DISCONNECT -> handlerDesc.getInstance().beforeDisconnect(monitor, this);
             }
         }
+    }
+
+    @NotNull
+    private Map<String, String> createApprovalContext(@NotNull DBPConnectionEventType eventType) {
+        Map<String, String> context = new LinkedHashMap<>();
+        context.put(RegistryMessages.connection_add_shell_cmd_context_project, getProject().getName());
+        context.put(RegistryMessages.connection_add_shell_cmd_context_data_source, getName());
+        context.put(RegistryMessages.connection_add_shell_cmd_context_event_type, eventType.getTitle());
+        return context;
     }
 
     @Override
@@ -1932,7 +1961,8 @@ public class DataSourceDescriptor
         if (!(obj instanceof DataSourceDescriptor source)) {
             return false;
         }
-        return isLooselyEqualTo(source) && equalConfiguration(source) && equalInternalConfiguration(source);
+        return isLooselyEqualTo(source) && equalConfiguration(source) && equalNavigation(source) &&
+            equalInternalConfiguration(source);
     }
 
     public boolean isLooselyEqualTo(DataSourceDescriptor source) {
@@ -1959,9 +1989,12 @@ public class DataSourceDescriptor
                 CommonUtils.equalObjects(this.formatterProfile, source.formatterProfile) &&
                 CommonUtils.equalObjects(this.clientHome, source.clientHome) &&
                 CommonUtils.equalObjects(this.lockPasswordHash, source.lockPasswordHash) &&
-                CommonUtils.equalObjects(this.folder, source.folder) &&
                 CommonUtils.equalObjects(this.preferenceStore, source.preferenceStore) &&
                 CommonUtils.equalsContents(this.connectionModifyRestrictions, source.connectionModifyRestrictions);
+    }
+
+    public boolean equalNavigation(DataSourceDescriptor source) {
+        return CommonUtils.equalObjects(this.folder, source.folder);
     }
 
     @NotNull
@@ -2064,6 +2097,9 @@ public class DataSourceDescriptor
 
         if (networkHandler == null) {
             DBAAuthModel<?> authModel = actualConfig.getAuthModel();
+            if (!authModel.isCredentialsPromptRequired()) {
+                return true;
+            }
             if (authModel.getClass() != AuthModelDatabaseNative.class) {
                 boolean savedPasswordState = dataSourceContainer.isSavePassword();
                 DBPConnectionConfiguration savedConnectionInfo = new DBPConnectionConfiguration(connConfig);

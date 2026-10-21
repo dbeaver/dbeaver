@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
+import org.jkiss.dbeaver.ext.snowflake.SnowflakeUtils;
+import org.jkiss.dbeaver.ext.snowflake.model.auth.SnowflakeAuthModelSnowflake;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -56,15 +58,26 @@ public class SnowflakeDataSource extends GenericDataSource {
         super(monitor, container, metaModel, dialect);
     }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) {
+        return getInternalConnectionProperties(connectionInfo);
+    }
+
+    @NotNull
+    static Map<String, String> getInternalConnectionProperties(@NotNull DBPConnectionConfiguration connectionInfo) {
         Map<String, String> props = new HashMap<>();
+
+        String warehouse = SnowflakeUtils.getWarehouse(connectionInfo);
+        if (!CommonUtils.isEmpty(warehouse)) {
+            props.put(SnowflakeConstants.PROP_WAREHOUSE, warehouse);
+        }
 
         // Backward compatibility - use legacy provider property
         // Newer versions use auth model
@@ -81,11 +94,34 @@ public class SnowflakeDataSource extends GenericDataSource {
         return false;
     }
 
+    @Override
+    protected boolean isUserPasswordAuthentication(@NotNull DBPConnectionConfiguration connectionInfo) {
+        boolean passwordAuthModel = super.isUserPasswordAuthentication(connectionInfo)
+            || SnowflakeAuthModelSnowflake.ID.equals(connectionInfo.getAuthModelId());
+        return passwordAuthModel && hasPasswordAuthenticator(connectionInfo);
+    }
+
+    protected boolean hasPasswordAuthenticator(@NotNull DBPConnectionConfiguration connectionInfo) {
+        return isPasswordAuthenticator(connectionInfo.getAuthProperty(SnowflakeConstants.PROP_AUTHENTICATOR))
+            && isPasswordAuthenticator(connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR_LEGACY));
+    }
+
+    @Override
+    protected void prepareUserPasswordValidationConfiguration(@NotNull DBPConnectionConfiguration connectionInfo) {
+        // Keep Snowflake username/password model settings, including MFA configuration.
+    }
+
+    private static boolean isPasswordAuthenticator(@Nullable String authenticator) {
+        return CommonUtils.isEmpty(authenticator)
+            || SnowflakeConstants.AUTHENTICATOR_SNOWFLAKE.equalsIgnoreCase(authenticator)
+            || SnowflakeConstants.AUTHENTICATOR_USERNAME_PASSWORD_MFA.equalsIgnoreCase(authenticator);
+    }
+
     @NotNull
     @Override
     protected Properties getAllConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
@@ -98,14 +134,21 @@ public class SnowflakeDataSource extends GenericDataSource {
 
     @NotNull
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new SnowflakeExecutionContext(instance, type);
     }
 
     @Override
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context,
-                                          @Nullable JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
         SnowflakeExecutionContext executionContext = (SnowflakeExecutionContext) context;
+        String warehouse = SnowflakeUtils.getWarehouse(container.getActualConnectionConfiguration());
+        if (!CommonUtils.isEmpty(warehouse)) {
+            executionContext.setActiveWarehouse(monitor, warehouse);
+        }
         if (initFrom == null) {
             executionContext.refreshDefaults(monitor, true);
             return;

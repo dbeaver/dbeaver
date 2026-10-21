@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -377,11 +377,11 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
 
             SQLDialect sqlDialect = request.getContext().getDataSource().getSQLDialect();
             if (CommonUtils.isEmpty(prevKeyWord)) {
-                allowedKeywords = new HashSet<>();
-                Collections.addAll(allowedKeywords, sqlDialect.getQueryKeywords());
-                Collections.addAll(allowedKeywords, sqlDialect.getDMLKeywords());
-                Collections.addAll(allowedKeywords, sqlDialect.getDDLKeywords());
-                Collections.addAll(allowedKeywords, sqlDialect.getExecuteKeywords());
+                allowedKeywords = new HashSet<>(sqlDialect.getCompletionStatementKeywords());
+                if (CommonUtils.isEmpty(request.getWordPart())) {
+                    matchedKeywords = new ArrayList<>(allowedKeywords);
+                    matchedKeywords.sort(String.CASE_INSENSITIVE_ORDER);
+                }
             } else if (ArrayUtils.contains(sqlDialect.getQueryKeywords(), prevKeyWord.toUpperCase(Locale.ENGLISH))) {
                 // SELECT ..
                 // Limit with FROM if we already have some expression
@@ -642,9 +642,11 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
             i++;
         }
 
-        DBSInstance defaultInstance = dataSource == null ? null : dataSource.getDefaultInstance();
+        DBSInstance defaultInstance = dataSource == null || !dataSource.hasDefaultInstance()
+            ? null : dataSource.getDefaultInstance();
         DBCExecutionContext executionContext = request.getContext().getExecutionContext();
-        DBSObject selectedObject = defaultInstance == null || executionContext == null ? null : DBUtils.getActiveInstanceObject(executionContext);
+        DBSObject selectedObject = defaultInstance == null || executionContext == null
+            ? null : DBUtils.getActiveInstanceObject(executionContext);
         boolean hideDups = request.getContext().isHideDuplicates() && selectedObject != null;
         if (hideDups) {
             for (int i = 0; i < proposals.size(); i++) {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -174,6 +174,10 @@ public class ObjectInformationView {
     }
 
     private void createTreeControl(@NotNull DBSTable input) {
+        DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode(input);
+        if (node == null) {
+            return;
+        }
         GridData gridData = new GridData(GridData.FILL_BOTH);
         gridData.horizontalSpan = 0;
         gridData.verticalSpan = 0;
@@ -181,7 +185,6 @@ public class ObjectInformationView {
             .getActivePage()
             .getActivePart()
             .getSite());
-        DBNDatabaseNode node = DBWorkbench.getPlatform().getNavigatorModel().findNode(input);
         itemListControl = new ItemListControl(tableComposite, SWT.NONE, subSite, node, null) {
             @NotNull
             @Override
@@ -237,7 +240,12 @@ public class ObjectInformationView {
                         UIUtils.asyncExec(() -> {
                             Shell shell = tableComposite.getShell();
                             Point sz = shell.getMinimumSize();
-                            int extraHeight = ((Table) itemListControl.getItemsViewer().getControl()).getHeaderHeight();
+                            int extraHeight = 0;
+                            if (itemListControl != null && !itemListControl.isDisposed()
+                                && itemListControl.getItemsViewer() != null && !itemListControl.getItemsViewer().getControl()
+                                .isDisposed()) {
+                                extraHeight = ((Table) itemListControl.getItemsViewer().getControl()).getHeaderHeight();
+                            }
                             shell.setMinimumSize(sz.x,
                                 Math.min(
                                     sz.y + UIUtils.getFontHeight(BaseThemeSettings.instance.baseFontBold) * columnNodeList.size()

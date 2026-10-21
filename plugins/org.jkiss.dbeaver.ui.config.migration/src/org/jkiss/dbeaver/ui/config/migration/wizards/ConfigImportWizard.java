@@ -268,8 +268,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         // Extract URL query parameters as provider properties. Non-standard datasource pages
         // (e.g. Snowflake warehouse/schema/role) keep their parameters in the query string and
         // are lost otherwise because the sample URL pattern does not capture them.
-        StringTemplate.ParamEntries paramsByGenericUrl = DatabaseURL.getUrlPattern(DatabaseURL.Generic.TEMPLATE_WITH_PARAM_GROUPS)
-                                                                    .tryRecognizeHierarchical(url);
+        StringTemplate.ParamEntries paramsByGenericUrl = DatabaseURL.Generic.getUrlPatternWithParamGroups().tryRecognizeHierarchical(url);
         if (paramsByGenericUrl != null) {
             String host = paramsByGenericUrl.getFirstParamValue("host");
             if (CommonUtils.isNotEmpty(host) && CommonUtils.isEmpty(connectionInfo.getHost())) {
@@ -281,7 +280,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
             }
             String database = paramsByGenericUrl.getFirstParamValue("database");
             if (CommonUtils.isNotEmpty(database) && CommonUtils.isEmpty(connectionInfo.getDatabase())) {
-                connectionInfo.setDatabase(host);
+                connectionInfo.setDatabase(database);
             }
             for (Map.Entry<String, String> param : DatabaseURL.Generic.extractExtraParams(paramsByGenericUrl).entrySet()) {
                 switch (param.getKey()) {

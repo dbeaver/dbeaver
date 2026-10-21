@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -81,6 +82,9 @@ public class AIEngineRegistry {
             }
             list.add(entry.getValue());
         }
+        list.sort(Comparator
+            .comparing(AIEngineDescriptor::isPromoted).reversed()
+            .thenComparing(AIEngineDescriptor::getLabel, String.CASE_INSENSITIVE_ORDER));
         return list;
     }
 

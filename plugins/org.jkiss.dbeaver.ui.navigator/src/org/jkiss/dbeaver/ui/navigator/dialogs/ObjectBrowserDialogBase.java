@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,7 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -46,7 +45,6 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilterObject
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -67,6 +65,7 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
     private DatabaseNavigatorTree navigatorTree;
 
     private static boolean showConnected;
+    private DatabaseNavigatorTreeFilterObjectType filterObjectType = DatabaseNavigatorTreeFilterObjectType.connection;
 
     protected ObjectBrowserDialogBase(
         @NotNull Shell parentShell,
@@ -84,6 +83,10 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
 
     public static boolean isShowConnected() {
         return showConnected;
+    }
+
+    public void setFilterObjectType(@NotNull DatabaseNavigatorTreeFilterObjectType filterObjectType) {
+        this.filterObjectType = filterObjectType;
     }
 
     @Override
@@ -108,7 +111,7 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
         gd.heightHint = 500;
         navigatorTree.setLayoutData(gd);
 
-        navigatorTree.setFilterObjectType(DatabaseNavigatorTreeFilterObjectType.connection);
+        navigatorTree.setFilterObjectType(filterObjectType);
 
         final TreeViewer treeViewer = navigatorTree.getViewer();
         ViewerFilter viewerFilter = createViewerFilter();
@@ -117,7 +120,14 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
         }
         if (selectedNodes.length > 0) {
             treeViewer.setSelection(new StructuredSelection(selectedNodes));
-            Collections.addAll(selectedObjects, selectedNodes);
+            for (DBNNode node : selectedNodes) {
+                if (matchesResultNode(node)) {
+                    selectedObjects.add(node);
+                } else {
+                    selectedObjects.clear();
+                    break;
+                }
+            }
 
             for (DBNNode node : selectedNodes) {
                 if (!(node instanceof DBNDataSource dataSource) || dataSource.getDataSourceContainer().isConnected()) {
@@ -135,6 +145,7 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
                         selectedObjects.add((DBNNode) node);
                     } else {
                         selectedObjects.clear();
+                        break;
                     }
                 } else if (node instanceof TreeNodeSpecial) {
                     specialNode = (TreeNodeSpecial) node;
@@ -155,9 +166,7 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
             final Button showConnectedCheck = new Button(group, SWT.CHECK);
             showConnectedCheck.setText(UINavigatorMessages.label_show_connected);
             showConnectedCheck.setSelection(showConnected);
-            showConnectedCheck.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            showConnectedCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     showConnected = showConnectedCheck.getSelection();
                     treeViewer.getControl().setRedraw(false);
                     try {
@@ -168,8 +177,7 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
                     } finally {
                         treeViewer.getControl().setRedraw(true);
                     }
-                }
-            });
+                }));
         }
 
         return group;

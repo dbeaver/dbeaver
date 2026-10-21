@@ -106,7 +106,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
     }
 
     @Override
-    public void createPartControl(Composite parent) {
+    public void createPartControl(@NotNull Composite parent) {
         pageControl = new EditorPageControl(parent, SWT.SHEET);
 
         boolean hasCompiler = getCompileCommandId() != null;
@@ -272,7 +272,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
     }
 
     @Override
-    public void editorContextMenuAboutToShow(IMenuManager menu) {
+    public void editorContextMenuAboutToShow(@NotNull IMenuManager menu) {
         super.editorContextMenuAboutToShow(menu);
         menu.add(new Separator());
         contributeEditorCommands(menu);

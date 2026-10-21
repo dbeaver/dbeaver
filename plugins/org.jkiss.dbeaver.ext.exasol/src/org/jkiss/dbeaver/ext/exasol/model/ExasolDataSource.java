@@ -97,8 +97,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	// Constructors
 	// -----------------------
 
-	public ExasolDataSource(DBRProgressMonitor monitor,
-			DBPDataSourceContainer container) throws DBException
+	public ExasolDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException
 	{
 		super(monitor, container, new ExasolSQLDialect());
 	}
@@ -357,19 +356,20 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
     
     @NotNull
     @Override
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, @NotNull
-													String purpose,
-													@NotNull DBPConnectionConfiguration connectionInfo) throws DBCException {
-    	
-    	Properties props =  super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
-    	
-    	if (addMetaProps == null)
-    		addMetaProps = new Properties();
-    	
-		addMetaProps.clear();
-    	
-    	return props;
-    	
+    protected Properties getAllConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
+        Properties props = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
+
+        if (addMetaProps == null) {
+            addMetaProps = new Properties();
+        }
+        addMetaProps.clear();
+
+        return props;
     }
     
     @Nullable
@@ -399,98 +399,100 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
         return null;
     }
 
-	@Override
-	protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
-		return new ExasolExecutionContext(instance, type);
-	}
+    @NotNull
+    @Override
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
+        return new ExasolExecutionContext(instance, type);
+    }
 
-	protected void initializeContextState(@NotNull DBRProgressMonitor monitor,
-                                          @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom)
-        throws DBException
-	{
-		if (initFrom != null) {
-			((ExasolExecutionContext)context).setCurrentSchema(monitor, ((ExasolExecutionContext)initFrom).getDefaultSchema());
-		} else {
-			((ExasolExecutionContext)context).refreshDefaults(monitor, true);
-		}
-	}
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
+        if (initFrom != null) {
+            ((ExasolExecutionContext) context).setCurrentSchema(monitor, ((ExasolExecutionContext) initFrom).getDefaultSchema());
+        } else {
+            ((ExasolExecutionContext) context).refreshDefaults(monitor, true);
+        }
+    }
 
-	@Override
-	public <T> T getAdapter(@NotNull Class<T> adapter)
-	{
-		if (adapter == DBSStructureAssistant.class) {
-			return adapter.cast(new ExasolStructureAssistant(this));
-		} else if (adapter == DBAServerSessionManager.class) {
-			return adapter.cast(new ExasolServerSessionManager(this));
-		} else if (adapter == DBAUserPasswordManager.class) {
-			return adapter.cast(new ExasolChangeUserPasswordManager(this));
-		} else if (adapter == DBCQueryPlanner.class) {
-			return adapter.cast(new ExasolQueryPlanner(this));
-		}
-		return super.getAdapter(adapter);
-	}
+    @Nullable
+    @Override
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
+        if (adapter == DBSStructureAssistant.class) {
+            return adapter.cast(new ExasolStructureAssistant(this));
+        } else if (adapter == DBAServerSessionManager.class) {
+            return adapter.cast(new ExasolServerSessionManager(this));
+        } else if (adapter == DBAUserPasswordManager.class) {
+            return adapter.cast(new ExasolChangeUserPasswordManager(this));
+        } else if (adapter == DBCQueryPlanner.class) {
+            return adapter.cast(new ExasolQueryPlanner(this));
+        }
+        return super.getAdapter(adapter);
+    }
 
-	@Override
-	public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
-			throws DBException
-	{
-		// TODO DF: No idea what to do with this method, what it is used for...
-	}
+    @Override
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
+        // TODO DF: No idea what to do with this method, what it is used for...
+    }
 
-	// -----------------------
-	// Connection related Info
-	// -----------------------
+    // -----------------------
+    // Connection related Info
+    // -----------------------
 
-	@Override
-	protected DBPDataSourceInfo createDataSourceInfo(
-        DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
-	{
-		final ExasolDataSourceInfo info = new ExasolDataSourceInfo(metaData);
+    @NotNull
+    @Override
+    protected DBPDataSourceInfo createDataSourceInfo(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCDatabaseMetaData metaData
+    ) {
+        final ExasolDataSourceInfo info = new ExasolDataSourceInfo(metaData);
 
-		info.setSupportsResultSetScroll(false);
+        info.setSupportsResultSetScroll(false);
 
-		return info;
-	}
+        return info;
+    }
 
-	@Override
-	protected Map<String, String> getInternalConnectionProperties(
-		@NotNull DBRProgressMonitor monitor,
-		@NotNull DBPDriver driver,
-		@NotNull JDBCExecutionContext context,
-		@NotNull String purpose,
-		@NotNull DBPConnectionConfiguration connectionInfo
-	) throws DBCException {
-		Map<String, String> props = new HashMap<>(ExasolDataSourceProvider.getConnectionsProps());
-		if (CommonUtils.getBoolean(connectionInfo.getProviderProperty(ExasolConstants.DRV_USE_LEGACY_ENCRYPTION), false)) {
-			props.put(ExasolConstants.DRV_LEGACY_ENCRYPTION, "1");
-		}
-		return props;
-	}
+    @NotNull
+    @Override
+    protected Map<String, String> getInternalConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @Nullable JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
+        Map<String, String> props = new HashMap<>(ExasolDataSourceProvider.getConnectionsProps());
+        if (CommonUtils.getBoolean(connectionInfo.getProviderProperty(ExasolConstants.DRV_USE_LEGACY_ENCRYPTION), false)) {
+            props.put(ExasolConstants.DRV_LEGACY_ENCRYPTION, "1");
+        }
+        return props;
+    }
 
-	@Override
-	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-			throws DBException
-	{
-		super.refreshObject(monitor);
-		
-		this.schemaCache.clearCache();
-		this.connectionCache.clearCache();
-		this.userCache.clearCache();
-		//caches for security
-		if (this.roleCache != null) {
-			this.roleCache.clearCache();
-		}
-		if (this.baseTableGrantCache != null) {
-			this.baseTableGrantCache.clearCache();
-		}
-		if (this.systemGrantCache != null) {
-			this.systemGrantCache.clearCache();
-		}
-		if (this.connectionGrantCache != null) {
-			this.connectionGrantCache.clearCache();
-		}
-		return this;
-	}
+    @NotNull
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        super.refreshObject(monitor);
+
+        this.schemaCache.clearCache();
+        this.connectionCache.clearCache();
+        this.userCache.clearCache();
+        // Caches for security
+        if (this.roleCache != null) {
+            this.roleCache.clearCache();
+        }
+        if (this.baseTableGrantCache != null) {
+            this.baseTableGrantCache.clearCache();
+        }
+        if (this.systemGrantCache != null) {
+            this.systemGrantCache.clearCache();
+        }
+        if (this.connectionGrantCache != null) {
+            this.connectionGrantCache.clearCache();
+        }
+        return this;
+    }
 	
 	// --------------------------
 	// Manage Children: ExasolSchema
@@ -498,21 +500,17 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 
 	@NotNull
     @Override
-	public Class<? extends ExasolSchema> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException
-	{
+	public Class<? extends ExasolSchema> getPrimaryChildType(@Nullable DBRProgressMonitor monitor) throws DBException {
 		return ExasolSchema.class;
 	}
 
 	@Override
-	public Collection<ExasolSchema> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException
-	{
+	public Collection<ExasolSchema> getChildren(@NotNull DBRProgressMonitor monitor) throws DBException {
 		return getSchemas(monitor);
 	}
 
 	@Override
-	public ExasolSchema getChild(@NotNull DBRProgressMonitor monitor,
-								 @NotNull String childName) throws DBException
-	{
+	public ExasolSchema getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName) throws DBException {
 		if (exasolCurrentUserPrivileges.getAtLeastV6())
 			return getSchema(monitor, childName) != null ? getSchema(monitor,childName) : getVirtualSchema(monitor, childName);
 		return getSchema(monitor, childName);
@@ -523,34 +521,26 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	// --------------
 
 	@Association
-	public Collection<ExasolSchema> getSchemas(@NotNull DBRProgressMonitor monitor)
-			throws DBException
-	{
+	public Collection<ExasolSchema> getSchemas(@NotNull DBRProgressMonitor monitor) throws DBException {
 		return schemaCache.getAllObjects(monitor, this);
 	}
 
-	public ExasolSchema getSchema(DBRProgressMonitor monitor, String name)
-			throws DBException
-	{
+    @Nullable
+	public ExasolSchema getSchema(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
 		return schemaCache.getObject(monitor, this, name);
 	}
 
 	@Association
-	public Collection<ExasolVirtualSchema> getVirtualSchemas(DBRProgressMonitor monitor) 
-			throws DBException
-	{
+	public Collection<ExasolVirtualSchema> getVirtualSchemas(@NotNull DBRProgressMonitor monitor) throws DBException {
 		return virtualSchemaCache.getAllObjects(monitor, this);
 	}
 
-	public ExasolVirtualSchema getVirtualSchema(DBRProgressMonitor monitor, String name)
-			throws DBException
-	{
+    @Nullable
+	public ExasolVirtualSchema getVirtualSchema(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
 		return virtualSchemaCache.getObject(monitor, this, name);
 	}
 
-	
-	public Collection<ExasolGrantee> getAllGrantees(DBRProgressMonitor monitor) throws DBException
-	{
+	public Collection<ExasolGrantee> getAllGrantees(@NotNull DBRProgressMonitor monitor) throws DBException {
 	   	List<ExasolGrantee> grantees = new ArrayList<>();
 		grantees.addAll(this.getUsers(monitor));
 		grantees.addAll(this.getRoles(monitor));
@@ -558,41 +548,32 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	}
 	
     @Association
-	public Collection<ExasolUser> getUsers(DBRProgressMonitor monitor)
-			throws DBException
-	{
+	public Collection<ExasolUser> getUsers(@NotNull DBRProgressMonitor monitor) throws DBException {
 		return userCache.getAllObjects(monitor, this);
 	}
 
-	public ExasolUser getUser(DBRProgressMonitor monitor, String name)
-			throws DBException
-	{
+    @Nullable
+	public ExasolUser getUser(@NotNull DBRProgressMonitor monitor, @NotNull String name) throws DBException {
 		return userCache.getObject(monitor, this, name);
 	}
 
     @Association
-	public Collection<ExasolRole> getRoles(DBRProgressMonitor monitor)
-			throws DBException
-	{
+	public Collection<ExasolRole> getRoles(@NotNull DBRProgressMonitor monitor) throws DBException {
 		return roleCache.getAllObjects(monitor, this);
-		
 	}
-	
-	public ExasolRole getRole(DBRProgressMonitor monitor, String name)
-			throws DBException
-	{
+
+    @Nullable
+	public ExasolRole getRole(@NotNull DBRProgressMonitor monitor, String name) throws DBException {
 		return roleCache.getObject(monitor, this, name);
 	}
 	
 	@Association
-	public Collection<ExasolPriorityGroup> getPriorityGroups(DBRProgressMonitor monitor) throws DBException
-	{
+	public Collection<ExasolPriorityGroup> getPriorityGroups(DBRProgressMonitor monitor) throws DBException {
 		return priorityGroupCache.getAllObjects(monitor, this);
 	}
 	
 	@Association
-	public Collection<ExasolConsumerGroup> getConsumerGroups(DBRProgressMonitor monitor) throws DBException
-	{
+	public Collection<ExasolConsumerGroup> getConsumerGroups(DBRProgressMonitor monitor) throws DBException {
 		return consumerGroupCache.getAllObjects(monitor, this);
 	}
 	
@@ -607,26 +588,20 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	
 	
 	@Association
-	public Collection<ExasolSecurityPolicy> getSecurityPolicies(DBRProgressMonitor monitor) throws DBException
-	{
+	public Collection<ExasolSecurityPolicy> getSecurityPolicies(@NotNull DBRProgressMonitor monitor) throws DBException {
 		return securityPolicyCache.getAllObjects(monitor, this);
 	}
 	
-	public ExasolSecurityPolicy getSecurityPolicy(DBRProgressMonitor monitor, String name) throws DBException
-	{
+	public ExasolSecurityPolicy getSecurityPolicy(DBRProgressMonitor monitor, String name) throws DBException {
 		return securityPolicyCache.getCachedObject(name);
 	}
 
     @Association
-	public Collection<ExasolConnection> getConnections(
-			DBRProgressMonitor monitor) throws DBException
-	{
+	public Collection<ExasolConnection> getConnections(@NotNull DBRProgressMonitor monitor) throws DBException {
 		return connectionCache.getAllObjects(monitor, this);
 	}
 	
-	public ExasolConnection getConnection(DBRProgressMonitor monitor,
-			String name) throws DBException
-	{
+	public ExasolConnection getConnection(@NotNull DBRProgressMonitor monitor, String name) throws DBException {
 		return connectionCache.getObject(monitor, this, name);
 	}
 	
@@ -645,16 +620,12 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 		return securityPolicyCache;
 	}
 	
-	
-
     @Association
-	public Collection<ExasolBaseObjectGrant> getBaseTableGrants(DBRProgressMonitor monitor) throws DBException
-	{
+	public Collection<ExasolBaseObjectGrant> getBaseTableGrants(@NotNull DBRProgressMonitor monitor) throws DBException {
 		return baseTableGrantCache.getAllObjects(monitor, this);
 	}
 	
-	public Collection<ExasolTableGrant> getTableGrants(DBRProgressMonitor monitor) throws DBException
-	{
+	public Collection<ExasolTableGrant> getTableGrants(@NotNull DBRProgressMonitor monitor) throws DBException {
 		Collection<ExasolTableGrant> grants = new ArrayList<>();
 		
 		for (ExasolBaseObjectGrant grant: this.getBaseTableGrants(monitor))
@@ -666,12 +637,10 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 		return grants;
 	}
 
-	public Collection<ExasolViewGrant> getViewGrants(DBRProgressMonitor monitor) throws DBException
-	{
+	public Collection<ExasolViewGrant> getViewGrants(@NotNull DBRProgressMonitor monitor) throws DBException {
 		Collection<ExasolViewGrant> grants = new ArrayList<>();
 		
-		for (ExasolBaseObjectGrant grant: this.getBaseTableGrants(monitor))
-		{
+		for (ExasolBaseObjectGrant grant: this.getBaseTableGrants(monitor)) {
 			//only add tables
 			if (grant.getType() == ExasolTableObjectType.VIEW)
 				grants.add(new ExasolViewGrant(grant));
@@ -679,12 +648,10 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 		return grants;
 	}
 	
-	public Collection<ExasolScriptGrant> getScriptGrants(DBRProgressMonitor monitor) throws DBException
-	{
+	public Collection<ExasolScriptGrant> getScriptGrants(@NotNull DBRProgressMonitor monitor) throws DBException {
 		Collection<ExasolScriptGrant> grants = new ArrayList<>();
 		
-		for (ExasolBaseObjectGrant grant: this.getBaseTableGrants(monitor))
-		{
+		for (ExasolBaseObjectGrant grant: this.getBaseTableGrants(monitor)) {
 			//only add tables
 			if (grant.getType() == ExasolTableObjectType.SCRIPT)
 				grants.add(new ExasolScriptGrant(grant));
@@ -692,12 +659,10 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 		return grants;
 	}
 	
-	public Collection<ExasolSchemaGrant> getSchemaGrants(DBRProgressMonitor monitor) throws DBException
-	{
+	public Collection<ExasolSchemaGrant> getSchemaGrants(@NotNull DBRProgressMonitor monitor) throws DBException {
 		Collection<ExasolSchemaGrant> grants = new ArrayList<>();
 		
-		for (ExasolBaseObjectGrant grant: this.getBaseTableGrants(monitor))
-		{
+		for (ExasolBaseObjectGrant grant: this.getBaseTableGrants(monitor)) {
 			//only add tables
 			if (grant.getType() == ExasolTableObjectType.SCHEMA)
 				grants.add(new ExasolSchemaGrant(grant));
@@ -706,32 +671,24 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 	}
 	
 	
-	public Collection<ExasolConnectionGrant> getConnectionGrants(DBRProgressMonitor monitor) throws DBException
-	{
+	public Collection<ExasolConnectionGrant> getConnectionGrants(@NotNull DBRProgressMonitor monitor) throws DBException {
 		return connectionGrantCache.getAllObjects(monitor, this);
 	}
 	
-	public Collection<ExasolSystemGrant> getSystemGrants(DBRProgressMonitor monitor) throws DBException
-	{
+	public Collection<ExasolSystemGrant> getSystemGrants(@NotNull DBRProgressMonitor monitor) throws DBException {
 		return this.systemGrantCache.getAllObjects(monitor, this);
 	}
 	
-	public Collection<ExasolRoleGrant> getRoleGrants(DBRProgressMonitor monitor) throws DBException
-	{
+	public Collection<ExasolRoleGrant> getRoleGrants(@NotNull DBRProgressMonitor monitor) throws DBException {
 		return this.roleGrantCache.getAllObjects(monitor, this);
 	}
 	
-
 	@Association
-	public Collection<ExasolDataType> getDataTypes(DBRProgressMonitor monitor)
-			throws DBException
-	{
+	public Collection<ExasolDataType> getDataTypes(@NotNull DBRProgressMonitor monitor) throws DBException {
 		return dataTypeCache.getAllObjects(monitor, this);
 	}
 
-	public ExasolDataType getDataType(DBRProgressMonitor monitor, String name)
-			throws DBException
-	{
+	public ExasolDataType getDataType(@NotNull DBRProgressMonitor monitor, String name) throws DBException {
 		return dataTypeCache.getObject(monitor, this, name);
 	}
 	
@@ -843,8 +800,7 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
 
 	@NotNull
 	@Override
-	public Collection<? extends DBSDataType> getLocalDataTypes()
-	{
+	public Collection<? extends DBSDataType> getLocalDataTypes() {
 		try {
 			return getDataTypes(new VoidProgressMonitor());
 		} catch (DBException e) {

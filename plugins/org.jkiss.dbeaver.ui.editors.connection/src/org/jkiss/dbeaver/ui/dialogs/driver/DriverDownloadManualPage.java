@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -51,12 +50,8 @@ class DriverDownloadManualPage extends DriverDownloadPage {
 
         Link infoText = new Link(composite, SWT.NONE);
         infoText.setText(NLS.bind(UIConnectionMessages.dialog_driver_download_manual_page_driver_file_missing_text, driver.getFullName()));
-        infoText.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                getWizard().getContainer().buttonPressed(DriverDownloadDialog.EDIT_DRIVER_BUTTON_ID);
-            }
-        });
+        infoText.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            getWizard().getContainer().buttonPressed(DriverDownloadDialog.EDIT_DRIVER_BUTTON_ID)));
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         infoText.setLayoutData(gd);
 
@@ -77,12 +72,8 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         final Link driverLink = new Link(filesGroup, SWT.NONE);
         driverLink.setText("<a>" + driver.getDriverFileSources().get(0).getUrl() + "</a>");
         driverLink.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        driverLink.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                UIUtils.openWebBrowser(driver.getDriverFileSources().get(sourceCombo.getSelectionIndex()).getUrl());
-            }
-        });
+        driverLink.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            UIUtils.openWebBrowser(driver.getDriverFileSources().get(sourceCombo.getSelectionIndex()).getUrl())));
 
         filesTable = new Table(filesGroup, SWT.BORDER | SWT.FULL_SELECTION);
         filesTable.setHeaderVisible(true);
@@ -91,13 +82,10 @@ class DriverDownloadManualPage extends DriverDownloadPage {
         UIUtils.createTableColumn(filesTable, SWT.LEFT, UIConnectionMessages.dialog_driver_download_manual_page_column_required);
         UIUtils.createTableColumn(filesTable, SWT.LEFT, UIConnectionMessages.dialog_driver_download_manual_page_column_description);
 
-        sourceCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
+        sourceCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 selectFileSource(driver.getDriverFileSources().get(sourceCombo.getSelectionIndex()));
                 driverLink.setText("<a>" + driver.getDriverFileSources().get(sourceCombo.getSelectionIndex()).getUrl() + "</a>");
-            }
-        });
+            }));
 
         sourceCombo.select(0);
         selectFileSource(driver.getDriverFileSources().get(0));

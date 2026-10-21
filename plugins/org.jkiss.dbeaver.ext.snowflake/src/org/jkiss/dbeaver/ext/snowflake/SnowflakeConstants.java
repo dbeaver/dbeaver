@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,8 @@ public class SnowflakeConstants
 
     public static final String PROP_AUTH_ROLE = "role";
     public static final String PROP_AUTHENTICATOR = "authenticator";
+    public static final String AUTHENTICATOR_SNOWFLAKE = "snowflake";
+    public static final String AUTHENTICATOR_USERNAME_PASSWORD_MFA = "username_password_mfa";
 
     public static final String DEFAULT_HOST_PREFIX = ".snowflakecomputing.com";
     public static final String DEFAULT_DB_NAME = "TEST_DB";

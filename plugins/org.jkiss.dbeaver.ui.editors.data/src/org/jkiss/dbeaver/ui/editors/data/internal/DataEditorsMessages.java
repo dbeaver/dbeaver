@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ public class DataEditorsMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsResources"; //$NON-NLS-1$
 
 	public static String grid_tooltip_sort_by_column;
-	public static String grid_tooltip_filter_by_column;
     public static String controls_column_info_panel_property_key;
 	public static String resultset_segment_size;
 	
@@ -47,7 +46,6 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_auto_completion;
     public static String pref_page_database_resultsets_label_auto_completion_tip;
     // ResultSetGrid
-    public static String pref_page_database_resultsets_group_grid;
     public static String pref_page_database_resultsets_group_behavior;
     public static String pref_page_database_resultsets_group_appearance;
     public static String pref_page_database_resultsets_label_mark_odd_rows;
@@ -89,8 +87,6 @@ public class DataEditorsMessages extends NLS {
 
     // ResultSetPlainText
     public static String pref_page_database_resultsets_group_plain_text;
-
-    public static String pref_page_database_resultsets_label_value_format;
     public static String pref_page_database_resultsets_label_tab_width;
     public static String pref_page_database_resultsets_label_maximum_column_length;
     public static String pref_page_database_resultsets_label_text_show_nulls;
@@ -101,7 +97,6 @@ public class DataEditorsMessages extends NLS {
     public static String pref_page_database_resultsets_label_text_extra_spaces;
     public static String pref_page_database_resultsets_label_text_show_line_numbers;
     public static String pref_page_database_resultsets_label_text_show_line_numbers_tip;
-    public static String pref_page_editor_representation_content;
 
 	public static String virtual_structure_editor_abstract_job_load_entity;
 	public static String virtual_structure_editor_info_label_entity_structure;
@@ -149,8 +144,6 @@ public class DataEditorsMessages extends NLS {
     public static String spreadsheet_accessibility_rows_selected;
     public static String spreadsheet_accessibility_freeform_range_selected;
     public static String spreadsheet_accessibility_description;
-    public static String notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy;
-    public static String notification_org_jkiss_dbeaver_ui_actions_common_uuid_copy_text;
 
 
     static {

@@ -29,6 +29,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 public class ClickhouseTupleType extends ClickhouseAbstractDataType implements DBSEntity {
     private final List<ClickhouseTupleTypeAttribute> attributes;
@@ -59,9 +60,17 @@ public class ClickhouseTupleType extends ClickhouseAbstractDataType implements D
             .toList();
 
         this.baseName = name;
-        this.fullName = name + elements.stream()
-            .map(Pair::getSecond)
-            .map(DBSTypedObject::getFullTypeName)
+        this.fullName = name + prepareTupleSpec(elements.stream().map(Pair::getSecond));
+    }
+
+    @Override
+    public boolean equals(@Nullable Object obj) {
+        return obj instanceof ClickhouseTupleType other && this.attributes.equals(other.attributes);
+    }
+
+    @NotNull
+    public static String prepareTupleSpec(Stream<DBSDataType> elements) {
+        return elements.map(DBSTypedObject::getFullTypeName)
             .collect(Collectors.joining(", ", "(", ")"));
     }
 

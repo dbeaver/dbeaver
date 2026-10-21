@@ -31,7 +31,6 @@ import org.w3c.dom.NodeList;
 
 import java.io.StringReader;
 import java.io.StringWriter;
-import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -79,19 +78,15 @@ public class XMLPanelEditor extends AbstractTextPanelEditor<XMLEditor> {
     @Override
     public String minify(String value) {
         try {
-            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            DocumentBuilderFactory factory = XMLUtils.newSecureDocumentBuilderFactory();
             factory.setIgnoringElementContentWhitespace(true);
-            factory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
-            factory.setFeature(XMLUtils.FEATURE_EXTERNAL_GENERAL_ENTITIES, false);
-            factory.setFeature(XMLUtils.FEATURE_EXTERNAL_PARAMETER_ENTITIES, false);
-            factory.setFeature(XMLUtils.FEATURE_DISALLOW_DOCTYPE_DECL, true);
 
             DocumentBuilder builder = factory.newDocumentBuilder();
             Document document = builder.parse(new org.xml.sax.InputSource(new StringReader(value)));
 
             removeWhitespaceNodes(document.getDocumentElement());
 
-            TransformerFactory transformerFactory = TransformerFactory.newInstance();
+            TransformerFactory transformerFactory = XMLUtils.newSecureTransformerFactory();
             Transformer transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "no");
             if (!value.contains("<?xml")) {

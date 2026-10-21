@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPAdaptable;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
@@ -136,9 +137,68 @@ public class AISettings implements DBPAdaptable {
         AIConfigurationProfile profile = new AIConfigurationProfile();
         profile.setProfileId(id);
         profile.setEngineId(engine.getId());
+        profile.setConfiguration(engine.createPropertiesInstance());
+        profile.resolveSecrets();
         configurations.put(id, profile);
 
         return profile;
+    }
+
+    @NotNull
+    public String generateProfileId(@NotNull AIEngineDescriptor engine) {
+        String baseId = engine.getId();
+        String id = baseId;
+        for (int i = 1; getConfigurationOrNull(id) != null; i++) {
+            id = baseId + "_" + i;
+        }
+        return id;
+    }
+
+    @NotNull
+    public String generateProfileName(@NotNull String baseName) {
+        String name = baseName;
+        for (int i = 1; getConfigurationByNameOrNull(name) != null; i++) {
+            name = baseName + " (" + i + ")";
+        }
+        return name;
+    }
+
+    @NotNull
+    public synchronized AIConfigurationProfile copyConfiguration(@NotNull AIConfigurationProfile source) throws DBException {
+        return copyConfiguration(
+            source,
+            generateProfileId(source.getEngineDescriptor()),
+            generateProfileName(source.getProfileName())
+        );
+    }
+
+    @NotNull
+    public synchronized AIConfigurationProfile copyConfiguration(
+        @NotNull AIConfigurationProfile source,
+        @NotNull String id
+    ) throws DBException {
+        return copyConfiguration(source, id, generateProfileName(source.getProfileName()));
+    }
+
+    @NotNull
+    public synchronized AIConfigurationProfile copyConfiguration(
+        @NotNull AIConfigurationProfile source,
+        @NotNull String id,
+        @NotNull String name
+    ) throws DBException {
+        AIConfigurationProfile copy = createConfiguration(id, source.getEngineDescriptor());
+        copy.setProfileName(name);
+        copy.setGlobal(source.isGlobal());
+        AIEngineProperties sourceConfiguration = source.getConfiguration();
+        copy.setConfiguration(AISettingsManager.READ_PROPS_GSON.fromJson(
+            AISettingsManager.READ_PROPS_GSON.toJson(sourceConfiguration),
+            sourceConfiguration.getClass()
+        ));
+        if (!AISettingsManager.saveSecretsAsPlainText()) {
+            copy.saveSecrets();
+        }
+        copy.resolveSecrets();
+        return copy;
     }
 
     public void removeConfiguration(@NotNull AIConfigurationProfile profile) {
@@ -147,7 +207,7 @@ public class AISettings implements DBPAdaptable {
             defaultConfiguration = configurations.isEmpty() ? null : configurations.keySet().iterator().next();
         }
         // Remove in legacy config too
-        engineConfigurations.remove(profile.getProfileId());
+        engineConfigurations.remove(profile.getEngineId());
         try {
             profile.getConfiguration().deleteSecrets(profile);
         } catch (DBException e) {
@@ -204,7 +264,7 @@ public class AISettings implements DBPAdaptable {
     // Disables AI integration. Saves configuration.
     public void setAiDisabled(boolean aiDisabled) {
         this.aiDisabled = aiDisabled;
-        AISettingsManager.getInstance().saveSettings();
+        AISettingsManager.getInstance().saveSettings(this);
     }
 
     @Override
@@ -214,26 +274,36 @@ public class AISettings implements DBPAdaptable {
 
     // Patches configuration to support legacy configuration format
     public void finishSettingsLoading() {
-        // Def engine
-        if (activeEngine == null || getConfigurationOrNull(activeEngine) == null) {
-            activeEngine = OpenAIConstants.OPENAI_ENGINE;
-        }
-
-        if (configurations.isEmpty() && !engineConfigurations.isEmpty()) {
+        boolean migrateLegacyConfigurations = configurations.isEmpty() && !engineConfigurations.isEmpty();
+        if (migrateLegacyConfigurations) {
             // Profiles from engine settings
             for (Map.Entry<String, AIEngineProperties> ep : engineConfigurations.entrySet()) {
                 String engineId = ep.getKey();
                 AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
                 if (engineDescriptor != null) {
+                    AIEngineProperties engineProperties = ep.getValue();
+                    // An empty OpenAI model resolved to gpt-4o before profiles were introduced
+                    if (engineProperties instanceof OpenAIProperties openAIProperties &&
+                        CommonUtils.isEmpty(openAIProperties.getModel())) {
+                        openAIProperties.setModel(OpenAIConstants.LEGACY_DEFAULT_MODEL);
+                    }
                     AIConfigurationProfile cp = new AIConfigurationProfile();
                     cp.setMigrated(true);
                     cp.setProfileId(engineId);
                     cp.setProfileName(engineDescriptor.getId());
                     cp.setEngineId(engineId);
-                    cp.setConfiguration(ep.getValue());
+                    cp.setConfiguration(engineProperties);
                     configurations.put(ep.getKey(), cp);
                 }
             }
+        }
+
+        // Validate the legacy active engine only after its profile has been created
+        if (activeEngine == null || getConfigurationOrNull(activeEngine) == null) {
+            activeEngine = OpenAIConstants.OPENAI_ENGINE;
+        }
+
+        if (migrateLegacyConfigurations) {
             defaultConfiguration = activeEngine;
         } else if (!configurations.isEmpty()) {
             // Set profile IDs

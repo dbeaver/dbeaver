@@ -22,8 +22,8 @@ import org.jkiss.code.NotNull;
  * Driver stub. Just describes/advertises the driver which exists in another product edition.
  */
 public record DBPDriverStub(
+    @NotNull String nonAvailabilityReason,
     @NotNull String nonAvailabilityTitle,
-    @NotNull String nonAvailabilityDescription,
-    @NotNull String nonAvailabilityReason
+    @NotNull String nonAvailabilityDescription
 ) {
 }

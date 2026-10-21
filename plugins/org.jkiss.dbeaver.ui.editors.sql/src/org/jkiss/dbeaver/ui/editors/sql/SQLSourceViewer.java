@@ -51,6 +51,7 @@ import java.util.Map;
 public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLEditorNested<T> {
 
     protected Boolean separateFKStmts;
+    protected Boolean separateConstraintIndexes;
     protected Boolean showPermissions;
     protected Boolean showColumnComments;
     protected Boolean showFullDDL;
@@ -129,6 +130,9 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS) &&
                 sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS)) {
                 options.put(DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, getSeparateFKStmts());
+            }
+            if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_DDL_SEPARATE_CONSTRAINT_INDEXES)) {
+                options.put(DBPScriptObject.OPTION_DDL_SEPARATE_CONSTRAINT_INDEXES, getSeparateConstraintIndexes());
             }
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
                 options.put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, getShowColumnComments());
@@ -222,6 +226,23 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
                         }
                     }, true));
             }
+            if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_DDL_SEPARATE_CONSTRAINT_INDEXES)) {
+                toolBarManager.add(ActionUtils.makeActionContribution(
+                    new Action(SQLEditorMessages.source_viewer_separate_constraint_indexes_text, Action.AS_CHECK_BOX) {
+                        {
+                            setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_CONSTRAINT));
+                            setToolTipText(SQLEditorMessages.source_viewer_separate_constraint_indexes_tip);
+                            setChecked(getSeparateConstraintIndexes());
+                        }
+
+                        @Override
+                        public void run() {
+                            separateConstraintIndexes = isChecked();
+                            getPreferenceStore().setValue(DBPScriptObject.OPTION_DDL_SEPARATE_CONSTRAINT_INDEXES, separateConstraintIndexes);
+                            refreshPart(SQLSourceViewer.this, true);
+                        }
+                    }, true));
+            }
             if (sourceObject.supportsObjectDefinitionOption(DBPScriptObject.OPTION_INCLUDE_COMMENTS)) {
                 toolBarManager.add(ActionUtils.makeActionContribution(
                         new Action(SQLEditorMessages.source_viewer_show_comments_text, Action.AS_CHECK_BOX) {
@@ -271,6 +292,13 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
             separateFKStmts = getPreferenceStore().getBoolean(DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS);
         }
         return separateFKStmts;
+    }
+
+    protected boolean getSeparateConstraintIndexes() {
+        if (separateConstraintIndexes == null) {
+            separateConstraintIndexes = getPreferenceStore().getBoolean(DBPScriptObject.OPTION_DDL_SEPARATE_CONSTRAINT_INDEXES);
+        }
+        return separateConstraintIndexes;
     }
 
     protected Boolean getShowColumnComments() {

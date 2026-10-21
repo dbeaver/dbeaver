@@ -24,8 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -89,10 +88,7 @@ class ProjectImportWizardPageFile extends WizardPage {
         });
         Button openFolder = new Button(configGroup, SWT.PUSH);
         openFolder.setImage(DBeaverIcons.getImage(UIIcon.OPEN));
-        openFolder.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        openFolder.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 FileDialog fd = new FileDialog(getShell(), SWT.OPEN | SWT.SINGLE);
                 fd.setText(CoreMessages.dialog_project_import_wizard_file_dialog_export_archive_text);
                 fd.setFilterPath(curFolder);
@@ -103,16 +99,10 @@ class ProjectImportWizardPageFile extends WizardPage {
                     curFolder = fd.getFilterPath();
                     fileNameText.setText(selected);
                 }
-            }
-        });
+            }));
         final Button importDriverCheck = UIUtils.createCheckbox(configGroup, CoreMessages.dialog_project_import_wizard_file_checkbox_import_libraries, true);
-        importDriverCheck.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                importData.setImportDriverLibraries(importDriverCheck.getSelection());
-            }
-        });
+        importDriverCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            importData.setImportDriverLibraries(importDriverCheck.getSelection())));
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.horizontalSpan = 3;
         importDriverCheck.setLayoutData(gd);
@@ -130,14 +120,10 @@ class ProjectImportWizardPageFile extends WizardPage {
         projectsTable.setLinesVisible(true);
         gd = new GridData(GridData.FILL_BOTH);
         projectsTable.setLayoutData(gd);
-        projectsTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+        projectsTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                 updateProjectsSelection();
                 updateState();
-            }
-        });
+            }));
         UIUtils.createTableColumn(projectsTable, SWT.LEFT, CoreMessages.dialog_project_import_wizard_file_column_source_name);
         UIUtils.createTableColumn(projectsTable, SWT.LEFT, CoreMessages.dialog_project_import_wizard_file_column_target_name);
 

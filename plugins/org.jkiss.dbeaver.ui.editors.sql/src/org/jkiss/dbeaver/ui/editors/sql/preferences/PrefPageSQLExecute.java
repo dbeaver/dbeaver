@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.ui.editors.sql.preferences;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -33,6 +31,7 @@ import org.jkiss.dbeaver.model.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.MetadataRefreshBehavior;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.StatisticsTabOnExecutionBehavior;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
@@ -41,11 +40,18 @@ import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
 /**
  * PrefPageSQLExecute
  */
 public class PrefPageSQLExecute extends TargetPrefPage {
     private static final Log log = Log.getLog(PrefPageSQLExecute.class);
+    private static final List<MetadataRefreshBehavior> METADATA_REFRESH_BEHAVIORS = List.of(
+        MetadataRefreshBehavior.ASK,
+        MetadataRefreshBehavior.ALWAYS,
+        MetadataRefreshBehavior.NEVER
+    );
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sqlexecute"; //$NON-NLS-1$
 
@@ -53,6 +59,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
     private Spinner executeTimeoutText;
     private Button soundOnQueryEnd;
     private Button updateDefaultAfterExecute;
+    private Combo refreshOnDDLCombo;
     private Button clearOutputBeforeExecute;
 
     private Combo commitTypeCombo;
@@ -60,6 +67,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
     private Spinner commitNQueryText;
     private Combo errorHandlingCombo;
     private Button fetchResultSetsCheck;
+    private Button confirmLargeScriptFetchCheck;
     private Button maxEditorCheck;
     private Combo showStatisticsCombo;
     private Button setSelectionToStatisticsTabCheck;
@@ -93,6 +101,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                 store.contains(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING) ||
                 store.contains(SQLPreferenceConstants.SCRIPT_COMMIT_LINES) ||
                 store.contains(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS) ||
+                store.contains(SQLPreferenceConstants.SCRIPT_BIG_SCRIPT_NO_FETCH_CONFIRM) ||
 
                 store.contains(ModelPreferences.SCRIPT_STATEMENT_DELIMITER) ||
                 store.contains(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER) ||
@@ -111,6 +120,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                 store.contains(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB) ||
                 store.contains(SQLPreferenceConstants.CLOSE_INCLUDED_SCRIPT_AFTER_EXECUTION) ||
                 store.contains(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE) ||
+                store.contains(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION) ||
                 store.contains(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
             ;
     }
@@ -159,6 +169,14 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                     false,
                     2
                 );
+                refreshOnDDLCombo = UIUtils.createLabelCombo(
+                    commonGroup,
+                    SQLEditorMessages.pref_page_sql_editor_label_reload_metadata_on_ddl,
+                    SQLEditorMessages.pref_page_sql_editor_label_reload_metadata_on_ddl_tip,
+                    SWT.READ_ONLY | SWT.DROP_DOWN
+                );
+                refreshOnDDLCombo.setItems(METADATA_REFRESH_BEHAVIORS.stream()
+                    .map(behavior -> behavior.displayName).toArray(String[]::new));
                 clearOutputBeforeExecute = UIUtils.createCheckbox(
                     commonGroup,
                     SQLEditorMessages.pref_page_sql_editor_label_clear_output_before_execute,
@@ -240,6 +258,13 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                 SQLEditorMessages.pref_page_sql_editor_checkbox_fetch_resultsets,
                 SQLEditorMessages.pref_page_sql_editor_checkbox_fetch_resultsets_tip,
                 false,
+                2
+            );
+            confirmLargeScriptFetchCheck = UIUtils.createCheckbox(
+                scriptsGroup,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_confirm_large_script_fetch,
+                SQLEditorMessages.pref_page_sql_editor_checkbox_confirm_large_script_fetch_tip,
+                true,
                 2
             );
             maxEditorCheck = UIUtils.createCheckbox(
@@ -337,9 +362,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
             gd.horizontalSpan = 2;
             gd.verticalIndent = 12;
 
-            UIUtils.createLink(paramsGroup, SQLEditorMessages.pref_page_sql_editor_text_explanation_link, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            UIUtils.createLink(paramsGroup, SQLEditorMessages.pref_page_sql_editor_text_explanation_link, SelectionListener.widgetSelectedAdapter(e -> {
                     switch (e.text) {
                         case "params":
                             ShellUtils.launchProgram(HelpUtils.getHelpExternalReference("SQL-Execution#dynamic-parameters-binding"));
@@ -350,8 +373,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                         default:
                             break;
                     }
-                }
-            }).setLayoutData(gd);
+                })).setLayoutData(gd);
         }
 
         // Delimiters
@@ -423,6 +445,10 @@ public class PrefPageSQLExecute extends TargetPrefPage {
             store.setValue(SQLPreferenceConstants.STATEMENT_TIMEOUT, executeTimeoutText.getSelection());
             store.setValue(SQLPreferenceConstants.BEEP_ON_QUERY_END, soundOnQueryEnd.getSelection());
             store.setValue(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE, updateDefaultAfterExecute.getSelection());
+            store.setValue(
+                SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION,
+                METADATA_REFRESH_BEHAVIORS.get(refreshOnDDLCombo.getSelectionIndex()).name()
+            );
             store.setValue(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE, clearOutputBeforeExecute.getSelection());
 
             store.setValue(SQLPreferenceConstants.SCRIPT_COMMIT_TYPE, getSelectedScriptCommitType().name());
@@ -432,6 +458,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                 CommonUtils.fromOrdinal(SQLScriptErrorHandling.class, errorHandlingCombo.getSelectionIndex()).name()
             );
             store.setValue(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS, fetchResultSetsCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.SCRIPT_BIG_SCRIPT_NO_FETCH_CONFIRM, confirmLargeScriptFetchCheck.getSelection());
             store.setValue(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE, maxEditorCheck.getSelection());
             store.setValue(
                 SQLPreferenceConstants.SHOW_STATISTICS_ON_EXECUTION,
@@ -481,6 +508,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
         store.setToDefault(SQLPreferenceConstants.SCRIPT_ERROR_HANDLING);
         store.setToDefault(SQLPreferenceConstants.SCRIPT_COMMIT_LINES);
         store.setToDefault(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS);
+        store.setToDefault(SQLPreferenceConstants.SCRIPT_BIG_SCRIPT_NO_FETCH_CONFIRM);
 
         store.setToDefault(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE);
         store.setToDefault(SQLPreferenceConstants.SET_SELECTION_TO_STATISTICS_TAB);
@@ -501,6 +529,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
         store.setToDefault(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);
         store.setToDefault(SQLPreferenceConstants.BEEP_ON_QUERY_END);
         store.setToDefault(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE);
+        store.setToDefault(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION);
         store.setToDefault(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE);
     }
 
@@ -536,6 +565,12 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                 ? store.getDefaultBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
                 : store.getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
         );
+        MetadataRefreshBehavior refreshBehavior = MetadataRefreshBehavior.parse(
+            useDefaults
+                ? store.getDefaultString(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION)
+                : store.getString(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION)
+        );
+        refreshOnDDLCombo.select(METADATA_REFRESH_BEHAVIORS.indexOf(refreshBehavior));
         clearOutputBeforeExecute.setSelection(
             useDefaults
                 ? store.getDefaultBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
@@ -565,6 +600,11 @@ public class PrefPageSQLExecute extends TargetPrefPage {
             useDefaults
                 ? store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS)
                 : store.getBoolean(SQLPreferenceConstants.SCRIPT_FETCH_RESULT_SETS)
+        );
+        confirmLargeScriptFetchCheck.setSelection(
+            useDefaults
+                ? store.getDefaultBoolean(SQLPreferenceConstants.SCRIPT_BIG_SCRIPT_NO_FETCH_CONFIRM)
+                : store.getBoolean(SQLPreferenceConstants.SCRIPT_BIG_SCRIPT_NO_FETCH_CONFIRM)
         );
         maxEditorCheck.setSelection(
             useDefaults

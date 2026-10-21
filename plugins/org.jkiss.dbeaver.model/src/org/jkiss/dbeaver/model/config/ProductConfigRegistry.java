@@ -93,6 +93,19 @@ public final class ProductConfigRegistry {
         return feature.enabled();
     }
 
+    @NotNull
+    public ProductConfigFeatureTester.Enablement getFeatureEnablement(@NotNull ProductConfigFeatureDescriptor descriptor) {
+        var feature = currentState().features().get(descriptor.getId());
+        if (feature == null) {
+            return determineFeatureEnablement(descriptor);
+        }
+        if (feature.enabled()) {
+            return ProductConfigFeatureTester.Enablement.EXPLICITLY_ENABLED;
+        } else {
+            return ProductConfigFeatureTester.Enablement.EXPLICITLY_DISABLED;
+        }
+    }
+
     public void setFeatureEnabled(@NotNull ProductConfigFeatureDescriptor descriptor, boolean enabled) {
         synchronized (stateLock) {
             state = currentState()

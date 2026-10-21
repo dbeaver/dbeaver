@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.fs.DBFUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.runtime.OSDescriptorMatch;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
@@ -136,9 +137,10 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary {
         this.type = FileType.valueOf(typeStr);
 
         String osName = config.getAttribute(RegistryConstants.ATTR_OS);
-        this.system = osName == null ? null : new OSDescriptor(
+        this.system = osName == null ? null : new OSDescriptorMatch(
             osName,
-            config.getAttribute(RegistryConstants.ATTR_ARCH));
+            config.getAttribute(RegistryConstants.ATTR_ARCH),
+            CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EXCLUDE), false));
         this.path = config.getAttribute(RegistryConstants.ATTR_PATH);
         this.embedded = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDED), false);
         this.optional = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_OPTIONAL), false);

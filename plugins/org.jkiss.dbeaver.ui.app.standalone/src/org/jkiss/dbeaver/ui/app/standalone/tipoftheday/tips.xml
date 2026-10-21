@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<?eclipse version="3.2"?>
-<tips>
+<tips xmlns="https://github.com/dbeaver/dbeaver/blob/devel/plugins/org.jkiss.dbeaver.ui.app.standalone/src/org/jkiss/dbeaver/ui/app/standalone/tipoftheday/tips.xsd">
     <!--        Tips below were reviewed on 28th of November 2023   -->
     <tip>DBeaver can be customized to suit your needs. Learn detailed information about optional extensions <a href="https://dbeaver.com/docs/dbeaver/Eclipse-extensions/"> here</a>.</tip>
     <tip>You can <a href="prefs://org.eclipse.ui.window.customizePerspective">customize the menu bar and the list of menu items displayed</a> in the <b>Menu Visibility</b> tab.</tip>
@@ -18,7 +17,7 @@
     <tip> <a href="https://dbeaver.com/2022/06/02/keep-calm-and-use-connection-types/">Highlight your connection types</a>
          – Test or Production – to specify their colors in your <b>Navigation Tree, Data Editor, and SQL Editor</b>.
          This protects you from accidentally making changes to the production system.</tip>
-    <tip>You can open SQL Console with the <commandRef commandId="org.jkiss.dbeaver.core.sql.editor.console" showName="false"/> command. It's suitable for executing a query you don't want to save in a file.</tip>
+    <tip>You can open SQL Console with the <commandRef commandId="org.jkiss.dbeaver.core.sql.editor.console" /> command. It's suitable for executing a query you don't want to save in a file.</tip>
     <tip>To execute the current query, use the command <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>. Please note that queries are separated by delimiters or empty lines.</tip>
     <tip>To run the current SQL script, use the command <commandRef commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>.</tip>
     <tip>In order to format SQL statements use the command <commandRef commandId="org.jkiss.dbeaver.ui.editors.text.content.format"/>.</tip>

@@ -22,6 +22,8 @@ import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.PrintFigureOperation;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
+import org.eclipse.e4.core.services.events.IEventBroker;
+import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.gef.*;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStack;
@@ -31,6 +33,7 @@ import org.eclipse.gef.editparts.ZoomManager;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.ui.actions.*;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite;
+import org.eclipse.gef.ui.palette.PaletteViewer;
 import org.eclipse.gef.ui.palette.PaletteViewerProvider;
 import org.eclipse.gef.ui.parts.GraphicalEditorWithFlyoutPalette;
 import org.eclipse.jface.action.*;
@@ -115,7 +118,9 @@ import org.jkiss.dbeaver.ui.editors.erd.router.ERDConnectionRouterRegistry;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.service.event.EventHandler;
 
 import java.io.File;
 import java.util.*;
@@ -130,11 +135,15 @@ import java.util.regex.PatternSyntaxException;
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     implements DBPDataSourceTask, IDatabaseModellerEditor, ISearchContextProvider, IRefreshablePart, INavigatorModelView {
     private static final Log searcherLog = Log.getLog(Searcher.class);
+    private static final Log log = Log.getLog(ERDEditorPart.class);
 
     @Nullable
     protected ProgressControl progressControl;
 
     private EditModeComposite editModeComposite;
+
+    @Nullable
+    private Runnable showPaletteAction = null;
 
     /**
      * the graphical viewer
@@ -166,6 +175,14 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected LoadingJob<EntityDiagram> diagramLoadingJob;
     private IPropertyChangeListener configPropertyListener;
     private PaletteRoot paletteRoot;
+    @Nullable
+    private FlyoutPaletteComposite paletteComposite;
+    @Nullable
+    private ERDPaletteViewerProvider paletteViewerProvider;
+    @Nullable
+    private IEventBroker themeEventBroker;
+    @Nullable
+    private EventHandler themeChangeHandler;
 
     private volatile String errorMessage;
     private ERDContentProvider contentProvider;
@@ -284,6 +301,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         super.createPartControl(contentContainer);
 
+        themeEventBroker = PlatformUI.getWorkbench().getService(IEventBroker.class);
+        if (themeEventBroker != null) {
+            themeChangeHandler = event -> UIUtils.asyncExec(this::refreshTheme);
+            themeEventBroker.subscribe(IThemeEngine.Events.THEME_CHANGED, themeChangeHandler);
+        }
+
         if (hasProgressControl() && progressControl != null) {
             progressControl.createProgressPanel();
         }
@@ -312,13 +335,16 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         ActionUtils.evaluatePropertyState(ERDEditorPropertyTester.NAMESPACE + "." + ERDEditorPropertyTester.PROP_CAN_REDO);
 
         // Update actions
-        setDirty(getCommandStack().isDirty());
+        UIUtils.asyncExec(() -> setDirty(getCommandStack().isDirty()));
 
         super.stackChanged(event);
     }
 
     @Override
     public void dispose() {
+        if (themeEventBroker != null && themeChangeHandler != null) {
+            themeEventBroker.unsubscribe(themeChangeHandler);
+        }
         ERDUIActivator.getDefault().getPreferenceStore().removePropertyChangeListener(configPropertyListener);
 
         if (diagramLoadingJob != null) {
@@ -455,10 +481,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * @return the palette provider
      */
     @Override
+    @NotNull
     protected PaletteViewerProvider createPaletteViewerProvider() {
-        return new ERDPaletteViewerProvider(editDomain);
+        paletteViewerProvider = new ERDPaletteViewerProvider(editDomain);
+        return paletteViewerProvider;
     }
 
+    @NotNull
     public GraphicalViewer getViewer() {
         return super.getGraphicalViewer();
     }
@@ -515,6 +544,30 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         viewer.setEditPartFactory(getDecorator().createPartFactory());
 
         return viewer;
+    }
+
+    private void refreshTheme() {
+        GraphicalViewer viewer = getGraphicalViewer();
+        if (viewer == null || viewer.getControl() == null || viewer.getControl().isDisposed()) {
+            return;
+        }
+        viewer.getControl().setBackground(ERDThemeSettings.instance.diagramBackground);
+        if (paletteViewerProvider != null) {
+            paletteViewerProvider.refreshTheme();
+        }
+        if (paletteComposite != null && !paletteComposite.isDisposed()) {
+            PaletteViewer paletteViewer = editDomain.getPaletteViewer();
+            if (paletteViewer != null) {
+                paletteComposite.setBackground(paletteViewer.getColorProvider().getListBackground());
+            }
+            paletteComposite.redraw(0, 0, paletteComposite.getSize().x, paletteComposite.getSize().y, true);
+        }
+        DiagramPart diagramPart = getDiagramPart();
+        if (diagramPart != null) {
+            highlightingManager.restoreOriginalColors();
+            diagramPart.refreshTheme();
+            highlightingManager.reapplyHighlights();
+        }
     }
 
     protected void installKeyHandler(@NotNull GraphicalViewer viewer) {
@@ -641,7 +694,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      * @return the overview
      */
     protected ERDOutlinePage getOverviewOutlinePage() {
-        if (null == outlinePage || outlinePage.getControl().isDisposed()) {
+        // The outline page can be requested again before the workbench calls createControl().
+        // Keep the page in that state; replace it only after its control has been disposed.
+        Control control = outlinePage == null ? null : outlinePage.getControl();
+        if (outlinePage == null || (control != null && control.isDisposed())) {
             getGraphicalViewer();
             RootEditPart rootEditPart = getGraphicalViewer().getRootEditPart();
             if (rootEditPart instanceof ScalableFreeformRootEditPart ffp) {
@@ -684,8 +740,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     }
 
-    protected FlyoutPaletteComposite createPaletteComposite(Composite parent) {
-        FlyoutPaletteComposite paletteComposite = new FlyoutPaletteComposite(
+    @Override
+    @NotNull
+    protected FlyoutPaletteComposite createPaletteComposite(@NotNull Composite parent) {
+        paletteComposite = new FlyoutPaletteComposite(
             parent,
             0,
             this.getSite().getPage(),
@@ -693,7 +751,27 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             this.getPalettePreferences()
         );
         paletteComposite.setBackground(ERDThemeSettings.instance.diagramBackground);
+
+        this.showPaletteAction = () -> {
+            try {
+                BeanUtils.invokeObjectDeclaredMethod(
+                    paletteComposite,
+                    "setState",
+                    new Class<?>[] { int.class },
+                    new Object[] { FlyoutPaletteComposite.STATE_PINNED_OPEN }
+                );
+            } catch (Throwable e) {
+                log.debug("Failed to enforce palette visibility", e);
+            }
+        };
+
         return paletteComposite;
+    }
+
+    public void showPalette() {
+        if (this.showPaletteAction != null) {
+            this.showPaletteAction.run();
+        }
     }
 
     public boolean isLoaded() {
@@ -777,6 +855,18 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             proposedFileName = String.join(" - ", parts);
         }
         saveDialog.setFileName(proposedFileName);
+        if (!CommonUtils.isEmpty(exportMruFilename)) {
+            int extensionIndex = exportMruFilename.lastIndexOf('.');
+            if (extensionIndex >= 0) {
+                String extension = exportMruFilename.substring(extensionIndex + 1);
+                for (int i = 0; i < allFormats.size(); i++) {
+                    if (allFormats.get(i).getExtension().equalsIgnoreCase(extension)) {
+                        saveDialog.setFilterIndex(i);
+                        break;
+                    }
+                }
+            }
+        }
 
         String filePath = DialogUtils.openFileDialog(saveDialog);
         if (filePath == null || filePath.trim().isEmpty()) {

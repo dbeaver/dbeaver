@@ -471,6 +471,9 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     }
 
     public boolean mustBeQuoted(@NotNull String str, boolean forceCaseSensitive) {
+        if (isQuoteIdentifiersAlways()) {
+            return true;
+        }
         // Check for keyword conflict
         final DBPKeywordType keywordType = this.getKeywordType(str);
         boolean hasBadChars = (keywordType == DBPKeywordType.KEYWORD || keywordType == DBPKeywordType.TYPE || keywordType == DBPKeywordType.OTHER) &&
@@ -532,10 +535,13 @@ public abstract class AbstractSQLDialect implements SQLDialect {
         if (ArrayUtils.isEmpty(quoteStrings)) {
             quoteStrings = BasicSQLDialect.DEFAULT_IDENTIFIER_QUOTES;
         }
-        for (int i = 0; i < quoteStrings.length; i++) {
-            identifier = DBUtils.getUnQuotedIdentifier(identifier, quoteStrings[i][0], quoteStrings[i][1]);
-            if (unescapeQuotesInsideIdentifier) {
-                identifier = identifier.replace(quoteStrings[i][0] + quoteStrings[i][0], quoteStrings[i][0]);
+        for (String[] quoteString : quoteStrings) {
+            if (identifier.startsWith(quoteString[0]) && identifier.endsWith(quoteString[1])) {
+                identifier = DBUtils.getUnQuotedIdentifier(identifier, quoteString[0], quoteString[1]);
+                if (unescapeQuotesInsideIdentifier) {
+                    identifier = identifier.replace(quoteString[1] + quoteString[1], quoteString[1]);
+                }
+                return identifier;
             }
         }
         return identifier;

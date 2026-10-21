@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@
 package org.jfree.chart.swt.editor;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.FillLayout;
@@ -97,8 +96,7 @@ class SWTPlotAppearanceEditor extends Composite {
         this.selectStroke.setLayoutData(new GridData(SWT.FILL, SWT.CENTER,
                 false, false));
         this.selectStroke.addSelectionListener(
-                new SelectionAdapter() {
-                    public void widgetSelected(SelectionEvent event) {
+                SelectionListener.widgetSelectedAdapter(event -> {
                         int w = SWTPlotAppearanceEditor.this.selectStroke
                                 .getSelection();
                         if (w > 0) {
@@ -106,8 +104,7 @@ class SWTPlotAppearanceEditor extends Composite {
                                     new BasicStroke(w));
                             SWTPlotAppearanceEditor.this.strokeCanvas.redraw();
                         }
-                    }
-                }
+                    })
         );
         // row 2: outline color
         new Label(general, SWT.NONE).setText(localizationResources.getString(
@@ -124,8 +121,7 @@ class SWTPlotAppearanceEditor extends Composite {
         selectOutlineColor.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER,
                 false, false));
         selectOutlineColor.addSelectionListener(
-                new SelectionAdapter() {
-                    public void widgetSelected(SelectionEvent event) {
+                SelectionListener.widgetSelectedAdapter(event -> {
                         ColorDialog dlg = new ColorDialog(getShell());
                         dlg.setText(localizationResources.getString(
                                 "Outline_Paint"));
@@ -136,8 +132,7 @@ class SWTPlotAppearanceEditor extends Composite {
                             SWTPlotAppearanceEditor.this.outlinePaintCanvas
                                     .setColor(new Color(getDisplay(), rgb));
                         }
-                    }
-                }
+                    })
         );
         // row 3: background paint
         new Label(general, SWT.NONE).setText(localizationResources.getString(
@@ -152,8 +147,7 @@ class SWTPlotAppearanceEditor extends Composite {
         selectBgPaint.setLayoutData(new GridData(SWT.CENTER, SWT.CENTER, false,
                 false));
         selectBgPaint.addSelectionListener(
-                new SelectionAdapter() {
-                    public void widgetSelected(SelectionEvent event) {
+                SelectionListener.widgetSelectedAdapter(event -> {
                         ColorDialog dlg = new ColorDialog(getShell());
                         dlg.setText(localizationResources.getString(
                                 "Background_paint"));
@@ -164,8 +158,7 @@ class SWTPlotAppearanceEditor extends Composite {
                             SWTPlotAppearanceEditor.this.backgroundPaintCanvas
                                     .setColor(new Color(getDisplay(), rgb));
                         }
-                    }
-                }
+                    })
         );
         // row 4: orientation
         if (plot instanceof CategoryPlot) {
@@ -187,8 +180,7 @@ class SWTPlotAppearanceEditor extends Composite {
             this.orientation.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER,
                     true, false, 2, 1));
             this.orientation.addSelectionListener(
-                    new SelectionAdapter() {
-                        public void widgetSelected(SelectionEvent event) {
+                    SelectionListener.widgetSelectedAdapter(event -> {
                             switch (SWTPlotAppearanceEditor.this.orientation
                                     .getSelectionIndex()) {
                                 case ORIENTATION_VERTICAL:
@@ -203,8 +195,7 @@ class SWTPlotAppearanceEditor extends Composite {
                                     SWTPlotAppearanceEditor.this.plotOrientation
                                             = PlotOrientation.VERTICAL;
                             }
-                        }
-                    }
+                        })
             );
         }
     }

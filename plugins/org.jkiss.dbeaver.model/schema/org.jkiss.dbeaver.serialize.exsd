@@ -5,37 +5,19 @@
       <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.model" id="org.jkiss.dbeaver.serialize" name="Object serializers"/>
       </appInfo>
-      <documentation>
-         Headless database utilities
-      </documentation>
+      <documentation>Headless database utilities</documentation>
    </annotation>
 
    <element name="extension">
-      <annotation>
-         <appInfo>
-            <meta.element />
-         </appInfo>
-      </annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
       <complexType>
-         <attribute name="point" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="id" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <sequence>
+            <element ref="serializer" minOccurs="0" maxOccurs="unbounded"/>
+         </sequence>
+         <attribute name="point" type="string" use="required"/>
+         <attribute name="id" type="string"/>
          <attribute name="name" type="string">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
@@ -44,23 +26,21 @@
       </complexType>
    </element>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="apiinfo"/>
-      </appInfo>
-      <documentation>
-         [Enter API information here.]
-      </documentation>
-   </annotation>
+   <element name="serializer">
+      <complexType>
+         <attribute name="id" type="string" use="required"/>
+         <attribute name="class" type="string" use="required">
+            <annotation>
+               <appInfo>
+                  <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.tools.transfer.serialize.DTObjectSerializer"/>
+               </appInfo>
+            </annotation>
+         </attribute>
+         <attribute name="supportsDistributedMode" type="boolean"/>
+      </complexType>
+   </element>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="implementation"/>
-      </appInfo>
-      <documentation>
-         [Enter information about supplied implementation of this extension point.]
-      </documentation>
-   </annotation>
+
 
 
 </schema>

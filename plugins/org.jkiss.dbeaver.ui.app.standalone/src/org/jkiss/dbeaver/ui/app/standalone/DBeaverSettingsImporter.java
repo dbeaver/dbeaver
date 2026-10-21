@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@
 package org.jkiss.dbeaver.ui.app.standalone;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -149,23 +148,18 @@ class DBeaverSettingsImporter {
             skipButton.setText("Do not migrate");
 
             migrateButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            migrateButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            migrateButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     migrateButton.setEnabled(false);
                     skipButton.setEnabled(false);
                     progressBar.setVisible(true);
                     ((GridData)progressBar.getLayoutData()).exclude = false;
                     windowShell.pack();
                     migrateWorkspace(oldDir, newDir);
-                }
-            });
+                }));
             windowShell.setDefaultButton(migrateButton);
 
             skipButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            skipButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            skipButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     MessageBox messageBox = new MessageBox(windowShell, SWT.ICON_WARNING | SWT.YES | SWT.NO);
                     messageBox.setText("Skip workspace migration");
                     messageBox.setMessage("You will lose all previous configurations and scripts.\n\nAre you sure?");
@@ -174,8 +168,7 @@ class DBeaverSettingsImporter {
                         shellResult = SWT.IGNORE;
                         windowShell.dispose();
                     }
-                }
-            });
+                }));
         }
 
         progressLabel = new Label(windowShell, SWT.NONE);

@@ -22,6 +22,7 @@ import org.eclipse.core.internal.databinding.validation.StringToIntegerValidator
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.ShellUtils;
 
@@ -48,8 +49,31 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     @NotNull
     UIRowBuilder panel(@NotNull Consumer<? super UIPanelBuilder> handler);
 
+    /**
+     * Groups a row of controls with a description below it. The description is
+     * indented and follows the row's enabled and visible state.
+     */
     @NotNull
-    UIRowBuilder expandablePanel(@NotNull String text, boolean expanded, @NotNull Consumer<? super UIPanelBuilder> handler);
+    default UIRowBuilder withHint(@NotNull String hint, @NotNull Consumer<? super UIRowBuilder> handler) {
+        return panel(pb -> pb
+            .margins(0, 0)
+            .spacing(0, 2)
+            .row(handler)
+            .indent(p -> p.row(rb -> rb.control(parent -> new HintLabel(parent, hint)))));
+    }
+
+    @NotNull
+    default UIRowBuilder expandablePanel(@NotNull String text, boolean expanded, @NotNull Consumer<? super UIPanelBuilder> handler) {
+        return expandablePanel(text, expanded, identityConsumer(), handler);
+    }
+
+    @NotNull
+    UIRowBuilder expandablePanel(
+        @NotNull String text,
+        boolean expanded,
+        @NotNull Consumer<ExpandableComposite> onExpansionChanged,
+        @NotNull Consumer<? super UIPanelBuilder> handler
+    );
 
     @NotNull
     UIRowBuilder titledPanel(@NotNull String text, @NotNull Consumer<? super UIPanelBuilder> handler);
@@ -113,6 +137,11 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     }
 
     @NotNull
+    default UIRowBuilder weblink(@NotNull String text) {
+        return weblink(UIObservable.of(text));
+    }
+
+    @NotNull
     UIRowBuilder button(
         @NotNull UIObservable<String> text,
         @NotNull Consumer<SelectionEvent> onSelect,
@@ -137,7 +166,10 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     }
 
     @NotNull
-    UIRowBuilder radioButton(@NotNull UIObservable<String> text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler);
+    UIRowBuilder radioButton(
+        @NotNull UIObservable<String> text,
+        @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler
+    );
 
     @NotNull
     default UIRowBuilder radioButton(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler) {
@@ -150,11 +182,25 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     }
 
     @NotNull
+    default UIRowBuilder radioButton(@NotNull String text, @NotNull String tooltip, @NotNull UIObservable<Boolean> selected) {
+        return radioButton(text, bb -> bb.tooltip(tooltip).selected(selected));
+    }
+
+    @NotNull
     UIRowBuilder checkBox(@NotNull UIObservable<String> text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler);
 
     @NotNull
     default UIRowBuilder checkBox(@NotNull String text, @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler) {
         return checkBox(UIObservable.of(text), handler);
+    }
+
+    @NotNull
+    default UIRowBuilder checkBox(
+        @NotNull String text,
+        @NotNull String hint,
+        @NotNull Consumer<? super UIControlBuilder.ButtonBuilder> handler
+    ) {
+        return withHint(hint, rb -> rb.checkBox(text, handler));
     }
 
     @NotNull
@@ -165,6 +211,11 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
     @NotNull
     default UIRowBuilder checkBox(@NotNull String text, @NotNull UIObservable<Boolean> selected) {
         return checkBox(text, bb -> bb.selected(selected));
+    }
+
+    @NotNull
+    default UIRowBuilder checkBox(@NotNull String text, @NotNull String tooltip, @NotNull UIObservable<Boolean> selected) {
+        return checkBox(text, bb -> bb.tooltip(tooltip).selected(selected));
     }
 
     @NotNull

@@ -16,7 +16,7 @@
             position="additions_end"
             icon="platform:/plugin/org.jkiss.dbeaver.model.erd/icons/erd.svg">
             <objectType name="org.jkiss.dbeaver.model.struct.DBSObjectContainer" forceCheck="true" if="context.isEntityContainer(object)"/>
-            <objectType name="org.jkiss.dbeaver.model.struct.rdb.DBSTable" forceCheck="true"/>
+            <objectType name="org.jkiss.dbeaver.model.struct.rdb.DBSTable" forceCheck="true" if="context.supportsEntityDiagram(object)"/>
         </editor>
     </extension>
 

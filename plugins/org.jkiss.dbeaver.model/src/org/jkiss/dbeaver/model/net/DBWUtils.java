@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
@@ -68,7 +69,10 @@ public class DBWUtils {
         // For localhost ry to get real host name from tunnel configuration
         if (isLocalAddress(hostText)) {
             DBWNetworkProfile networkProfile = dataSourceContainer == null ? null : getNetworkProfile(dataSourceContainer);
-            for (DBWHandlerConfiguration hc : cfg.getHandlers()) {
+            List<DBWHandlerConfiguration> handlers = networkProfile != null && DBWorkbench.isDistributed()
+                ? networkProfile.getConfigurations()
+                : cfg.getHandlers();
+            for (DBWHandlerConfiguration hc : handlers) {
                 if (hc.isEnabled() && hc.getType() == DBWHandlerType.TUNNEL) {
                     String tunnelHost = null;
                     if (networkProfile != null) {
@@ -140,6 +144,16 @@ public class DBWUtils {
             .toList();
     }
 
+    @Nullable
+    public static DBWHandlerConfiguration getTunnelConfiguration(@NotNull DBPConnectionConfiguration configuration) {
+        for (DBWHandlerConfiguration handler : configuration.getHandlers()) {
+            if (handler.isEnabled() && handler.getType() == DBWHandlerType.TUNNEL) {
+                return handler;
+            }
+        }
+        return null;
+    }
+
 
     public record ConnectivityParameters(
         @Nullable String hostName,
@@ -189,9 +203,10 @@ public class DBWUtils {
                         }
                     }
                     if (urlConfiguration == null) {
-                        urlConfiguration = DatabaseURL.extractConfigurationFromUrl(DatabaseURL.Generic.TEMPLATE, activeUrl);
+                        DatabaseURL.Pattern genericPattern = DatabaseURL.Generic.getUrlPattern();
+                        urlConfiguration = DatabaseURL.extractConfigurationFromUrl(genericPattern, activeUrl);
                         if (urlConfiguration != null) {
-                            urlPattern = DatabaseURL.getUrlPattern(DatabaseURL.Generic.TEMPLATE);
+                            urlPattern = genericPattern;
                         }
                     }
                     if (urlConfiguration != null) {
@@ -239,4 +254,3 @@ public class DBWUtils {
         };
     }
 }
-

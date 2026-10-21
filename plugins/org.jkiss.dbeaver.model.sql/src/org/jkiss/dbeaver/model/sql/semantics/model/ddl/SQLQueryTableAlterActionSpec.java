@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
-import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueColumnReferenceExpression;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 public class SQLQueryTableAlterActionSpec extends SQLQueryNodeModel {
@@ -73,7 +72,7 @@ public class SQLQueryTableAlterActionSpec extends SQLQueryNodeModel {
     /**
      * Propagate semantics context and establish relations through the query model
      */
-    public void resolveRelations(
+    public boolean tryResolveRelations(
         @NotNull SQLQueryRowsSourceContext dataContext,
         @Nullable SQLQueryRowsDataContext tableContext,
         @NotNull SQLQueryRecognitionContext statistics
@@ -95,7 +94,9 @@ public class SQLQueryTableAlterActionSpec extends SQLQueryNodeModel {
                     }
                 }
 
-                this.columnSpec.resolveRelations(dataContext, tableContext, statistics);
+                if (!this.columnSpec.tryResolveRelations(dataContext, tableContext, statistics)) {
+                    return false;
+                }
             }
         }
 
@@ -116,12 +117,16 @@ public class SQLQueryTableAlterActionSpec extends SQLQueryNodeModel {
         }
 
         if (this.tableConstraintSpec != null) {
-            this.tableConstraintSpec.resolveRelations(dataContext, tableContext, statistics);
+            if (!this.tableConstraintSpec.tryResolveRelations(dataContext, tableContext, statistics)) {
+                return false;
+            }
         }
 
         if (this.tableConstraintName != null) {
             // TODO validate if constraint is missing and produce a warning
         }
+
+        return true;
     }
 
     @Override

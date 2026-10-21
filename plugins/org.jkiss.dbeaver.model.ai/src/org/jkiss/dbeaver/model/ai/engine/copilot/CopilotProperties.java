@@ -28,7 +28,15 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.SecureProperty;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
 public class CopilotProperties extends BaseAIEngineProperties {
+    public static final String ENV_TOKEN = "COPILOT_GITHUB_TOKEN";
+    public static final String ENV_GH_TOKEN = "GH_TOKEN";
+    public static final String ENV_GITHUB_TOKEN = "GITHUB_TOKEN";
+    public static final String ENV_MODEL = "COPILOT_MODEL";
+    public static final String ENV_AUTH_URL = "DBEAVER_AI_COPILOT_AUTH_URL";
+
     private static final String COPILOT_ACCESS_TOKEN = "copilot.access.token";
     private static final String GPT_MODEL = "gpt.model";
     private static final String GPT_CONTEXT_WINDOW_SIZE = "gpt.contextWindowSize";
@@ -72,27 +80,50 @@ public class CopilotProperties extends BaseAIEngineProperties {
     }
 
     @Override
+    public void selectModel(@NotNull AIModel model) {
+        setModel(model.name());
+        setContextWindowSize(model.contextWindowSize());
+    }
+
+    @Override
     @Property(order = 3)
     public double getTemperature() {
+        return resolveTemperature(getModel());
+    }
+
+    public double getEffectiveTemperature() {
+        return resolveTemperature(getEffectiveModel());
+    }
+
+    private double resolveTemperature(@Nullable String modelName) {
         if (Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
             return temperature;
         }
-        return CopilotModels.getModelByName(model)
+        return CopilotModels.getModelByName(modelName)
             .map(AIModel::defaultTemperature)
             .orElse(AIUtils.DEFAULT_TEMPERATURE);
     }
 
     @Override
     @Nullable
-    @Property(order = 4)
+    @Property(order = 4, min = 1)
     public Integer getContextWindowSize() {
         if (contextWindowSize != null) {
             return contextWindowSize;
         }
 
-        return CopilotModels.getModelByName(model)
+        return CopilotModels.getModelByName(getModel())
             .map(AIModel::contextWindowSize)
             .orElse(null);
+    }
+
+    @Nullable
+    @Override
+    public Integer getEffectiveContextWindowSize() {
+        String environmentModel = getEnvironmentModel();
+        return environmentModel == null ? getContextWindowSize() : CopilotModels.getModelByName(environmentModel)
+            .map(AIModel::contextWindowSize)
+            .orElseGet(this::getContextWindowSize);
     }
 
     public void setContextWindowSize(@Nullable Integer contextWindowSize) {
@@ -122,6 +153,28 @@ public class CopilotProperties extends BaseAIEngineProperties {
 
     @Override
     public boolean isValidConfiguration() {
-        return !CommonUtils.isEmpty(getToken());
+        return !CommonUtils.isEmpty(getEffectiveToken());
+    }
+
+    @NotNull
+    @Override
+    public List<String> getEnvironmentVariables() {
+        return List.of(ENV_TOKEN, ENV_GH_TOKEN, ENV_GITHUB_TOKEN, ENV_MODEL, ENV_AUTH_URL);
+    }
+
+    @Nullable
+    @Override
+    protected String getEnvironmentModel() {
+        return getEnvironmentValue(ENV_MODEL);
+    }
+
+    @Nullable
+    public String getEffectiveToken() {
+        return resolveEnvironmentValue(getToken(), ENV_TOKEN, ENV_GH_TOKEN, ENV_GITHUB_TOKEN);
+    }
+
+    @NotNull
+    public String getEffectiveBaseAuthUrl() {
+        return resolveEnvironmentValue(getBaseAuthUrl(), ENV_AUTH_URL);
     }
 }

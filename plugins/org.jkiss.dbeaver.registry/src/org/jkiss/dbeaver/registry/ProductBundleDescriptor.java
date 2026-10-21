@@ -46,7 +46,7 @@ public class ProductBundleDescriptor extends AbstractDescriptor {
             this.osMatches.add(new OSDescriptorMatch(
                 os.getAttribute(RegistryConstants.ATTR_NAME),
                 os.getAttribute(RegistryConstants.ATTR_ARCH),
-                CommonUtils.toBoolean(os.getAttribute("exclude"))));
+                CommonUtils.toBoolean(os.getAttribute(RegistryConstants.ATTR_EXCLUDE))));
         }
     }
 

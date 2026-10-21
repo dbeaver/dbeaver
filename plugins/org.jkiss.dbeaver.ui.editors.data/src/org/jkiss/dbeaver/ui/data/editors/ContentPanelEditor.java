@@ -52,14 +52,15 @@ import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.managers.ContentValueManager;
 import org.jkiss.dbeaver.ui.data.registry.StreamValueManagerDescriptor;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
 import java.util.*;
+import java.util.List;
 
 /**
 * ControlPanelEditor
@@ -72,8 +73,10 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
 
     private static final Map<String, String> valueToManagerMap = new HashMap<>();
 
+    private final boolean readOnly;
     private Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> streamManagers;
     private volatile StreamValueManagerDescriptor curStreamManager;
+    private StreamValueManagerDescriptor appliedStreamManager;
     private IStreamValueEditor<Control> streamEditor;
     private Control editorControl;
 
@@ -81,6 +84,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
 
     public ContentPanelEditor(IValueController controller) {
         super(controller);
+        readOnly = controller.isReadOnly();
 
         // Load manager setting for current attribute
         if (controller.getExecutionContext() != null) {
@@ -92,11 +96,30 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
     }
 
+    /**
+     * Checks whether the existing stream editor control is compatible with the controller's current value.
+     */
+    public boolean canReuseControl() {
+        if (readOnly != valueController.isReadOnly() || !isStringValue() || appliedStreamManager == null) {
+            return false;
+        }
+        curStreamManager = null;
+        try {
+            loadStringStreamManagers();
+        } catch (DBException e) {
+            curStreamManager = appliedStreamManager;
+            log.debug("Can't detect stream manager", e);
+            return false;
+        }
+        return curStreamManager == appliedStreamManager;
+    }
+
     @Override
     public void dispose() {
         if (streamEditor != null) {
             streamEditor.disposeEditor();
             streamEditor = null;
+            appliedStreamManager = null;
         }
         super.dispose();
     }
@@ -138,6 +161,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                     if (streamEditor != null) {
                         streamEditor.disposeEditor();
                         streamEditor = null;
+                        appliedStreamManager = null;
                     }
                     if (editorControl != null) {
                         editorControl.dispose();
@@ -197,9 +221,14 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             } else if (streamEditor == null) {
                 log.warn("NULL content editor.");
             } else {
+                DBDContent editedContent = ContentValueManager.copyContentForEdit(new VoidProgressMonitor(), (DBDContent) content);
                 try {
-                    streamEditor.extractEditorValue(new VoidProgressMonitor(), control, (DBDContent) content);
+                    streamEditor.extractEditorValue(new VoidProgressMonitor(), control, editedContent);
+                    return editedContent;
                 } catch (Throwable e) {
+                    if (editedContent != content) {
+                        editedContent.release();
+                    }
                     log.debug(e);
                     valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
                 }
@@ -237,6 +266,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         if (curStreamManager != null) {
             try {
                 streamEditor = curStreamManager.getInstance().createPanelEditor(valueController);
+                appliedStreamManager = curStreamManager;
             } catch (Throwable e) {
                 DBWorkbench.getPlatformUI().showError("No stream editor", "Can't create stream editor", e);
             }
@@ -573,7 +603,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                 monitor.subTask("Prime LOB value");
                 UIUtils.syncExec(() -> {
                     try {
-                        if (streamEditor != null && !control.isDisposed()) {
+                        if (streamEditor != null && !control.isDisposed() && valueController.getValue() == content) {
                             streamEditor.primeEditorValue(monitor, control, content);
                         }
                     } catch (Exception e) {

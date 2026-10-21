@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.tools.transfer.ui.wizard;
 
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -57,6 +55,7 @@ import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
+import org.jkiss.dbeaver.tools.transfer.ui.handlers.DataImportPropertyTester;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -153,7 +152,9 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                         CommonUtils.singletonOrEmpty(selNode),
                         new Class[]{DBSInstance.class, DBSObjectContainer.class, tableClass},
                         new Class[]{tableClass},
-                        null);
+                        null,
+                        isExport ? null : node -> !(node instanceof DBNDatabaseNode databaseNode)
+                            || DataImportPropertyTester.supportsImport(databaseNode.getDataSource()));
                     if (tables != null) {
                         for (DBNNode node : tables) {
                             if (node instanceof DBNDatabaseNode dbNode) {
@@ -169,9 +170,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                 }
             ));
             if (isExport) {
-                UIUtils.createDialogButton(buttonsPanel, DTUIMessages.data_transfer_task_configurator_dialog_button_label_add_query, new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
+                UIUtils.createDialogButton(buttonsPanel, DTUIMessages.data_transfer_task_configurator_dialog_button_label_add_query, SelectionListener.widgetSelectedAdapter(e -> {
                         DBSObject dataSourceObject = null;
                         DBPDataSource dataSource = null;
 
@@ -288,12 +287,9 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                                 log.error("Error setting context defaults", ex);
                             }
                         }
-                    }
-                });
+                    }));
             }
-            Button editButton = UIUtils.createDialogButton(buttonsPanel, DTMessages.data_transfer_wizard_settings_button_edit, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            Button editButton = UIUtils.createDialogButton(buttonsPanel, DTMessages.data_transfer_wizard_settings_button_edit, SelectionListener.widgetSelectedAdapter(e -> {
                     TableItem item = objectsTable.getItem(objectsTable.getSelectionIndex());
                     DataTransferPipe pipe = (DataTransferPipe) item.getData();
                     IDataTransferProducer<?> producer = pipe.getProducer();
@@ -317,11 +313,8 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                             }
                         }
                     }
-                }
-            });
-            Button removeButton = UIUtils.createDialogButton(buttonsPanel, DTUIMessages.data_transfer_task_configurator_dialog_button_label_remove, new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+                }));
+            Button removeButton = UIUtils.createDialogButton(buttonsPanel, DTUIMessages.data_transfer_task_configurator_dialog_button_label_remove, SelectionListener.widgetSelectedAdapter(e -> {
                     DataTransferPipe object = (DataTransferPipe) objectsTable.getItem(objectsTable.getSelectionIndex()).getData();
                     if (UIUtils.confirmAction(
                         DTUIMessages.data_transfer_task_configurator_confirm_action_title,
@@ -331,14 +324,11 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                         objectsTable.remove(objectsTable.getSelectionIndex());
                         updateSettings(propertyChangeListener);
                     }
-                }
-            });
+                }));
             editButton.setEnabled(false);
             removeButton.setEnabled(false);
 
-            objectsTable.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
+            objectsTable.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                     int selectionIndex = objectsTable.getSelectionIndex();
                     DataTransferPipe pipe = (selectionIndex >= 0) ?
                         (DataTransferPipe) objectsTable.getItem(selectionIndex).getData() : null;
@@ -348,8 +338,7 @@ public class DataTransferTaskConfigurator implements DBTTaskConfigurator, DBTTas
                         pipe.getProducer().getDatabaseObject() instanceof SQLQueryDataContainer);
 
                     removeButton.setEnabled(pipe != null);
-                }
-            });
+                }));
         }
 
         private void updateSettings(Runnable propertyChangeListener) {

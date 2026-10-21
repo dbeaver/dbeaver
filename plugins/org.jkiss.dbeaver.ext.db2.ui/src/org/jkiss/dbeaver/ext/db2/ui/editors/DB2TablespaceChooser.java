@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ext.db2.ui.editors;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -79,13 +78,8 @@ public class DB2TablespaceChooser extends Dialog {
         }
         tsCombo.select(0);
         tsCombo.setEnabled(true);
-        tsCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                selectedTablespace = listTablespaceNames.get(tsCombo.getSelectionIndex());
-            }
-        });
+        tsCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            selectedTablespace = listTablespaceNames.get(tsCombo.getSelectionIndex())));
 
         return parent;
     }

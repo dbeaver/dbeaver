@@ -37,6 +37,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
     private final DBPImage icon;
     private final ObjectType objectType;
     private final ObjectType propertiesType;
+    private final boolean promoted;
     private final boolean supportsFunctions;
     private final boolean providesMetadata;
 
@@ -46,6 +47,7 @@ public class AIEngineDescriptor extends AbstractDescriptor {
         this.id = contributorConfig.getAttribute("id");
         this.icon = iconToImage(contributorConfig.getAttribute(RegistryConstants.ATTR_ICON));
         this.objectType = new ObjectType(contributorConfig, RegistryConstants.ATTR_CLASS);
+        this.promoted = CommonUtils.toBoolean(contributorConfig.getAttribute("promoted"));
         this.supportsFunctions = CommonUtils.toBoolean(contributorConfig.getAttribute("supportsFunctions"));
         this.propertiesType = new ObjectType(contributorConfig, "properties");
         this.providesMetadata = CommonUtils.toBoolean(contributorConfig.getAttribute("providesMetadata"), true);
@@ -78,6 +80,10 @@ public class AIEngineDescriptor extends AbstractDescriptor {
 
     public boolean isDefault() {
         return CommonUtils.toBoolean(contributorConfig.getAttribute("default"));
+    }
+
+    public boolean isPromoted() {
+        return promoted;
     }
 
     /**

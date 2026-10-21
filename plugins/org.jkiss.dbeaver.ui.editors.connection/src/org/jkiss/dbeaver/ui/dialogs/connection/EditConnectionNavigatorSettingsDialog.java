@@ -1,0 +1,150 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ui.dialogs.connection;
+
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
+import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+
+public class EditConnectionNavigatorSettingsDialog extends BaseDialog {
+    private final DataSourceNavigatorSettings navigatorSettings;
+    @Nullable
+    private final DBPDataSourceContainer dataSourceDescriptor;
+
+    private Button showSystemObjects;
+    private Button showUtilityObjects;
+    private Button showOnlyEntities;
+    private Button mergeEntities;
+    private Button hideFolders;
+
+    public EditConnectionNavigatorSettingsDialog(
+        @NotNull Shell shell,
+        @NotNull DBNBrowseSettings navigatorSettings,
+        @Nullable DBPDataSourceContainer dataSourceDescriptor) {
+        super(shell, UIConnectionMessages.dialog_connection_wizard_final_group_navigator, null);
+        this.navigatorSettings = new DataSourceNavigatorSettings(navigatorSettings);
+        this.dataSourceDescriptor = dataSourceDescriptor;
+    }
+
+    @NotNull
+    @Override
+    protected Composite createDialogArea(@NotNull Composite parent) {
+        Composite composite = super.createDialogArea(parent);
+
+        {
+            Composite miscGroup = UIUtils.createTitledComposite(
+                composite,
+                UIConnectionMessages.pref_page_ui_general_group_general,
+                1,
+                GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
+
+            showSystemObjects = UIUtils.createCheckbox(
+                miscGroup,
+                UIConnectionMessages.dialog_connection_wizard_final_checkbox_show_system_objects,
+                UIConnectionMessages.dialog_connection_wizard_final_checkbox_show_system_objects_tip,
+                navigatorSettings.isShowSystemObjects(),
+                1);
+
+            showUtilityObjects = UIUtils.createCheckbox(
+                miscGroup,
+                UIConnectionMessages.dialog_connection_wizard_final_checkbox_show_util_objects,
+                UIConnectionMessages.dialog_connection_wizard_final_checkbox_show_util_objects_tip,
+                navigatorSettings.isShowUtilityObjects(),
+                1);
+
+            showOnlyEntities = UIUtils.createCheckbox(
+                miscGroup,
+                UIConnectionMessages.dialog_connection_wizard_final_checkbox_show_only_entities,
+                UIConnectionMessages.dialog_connection_wizard_final_checkbox_show_only_entities_tip,
+                navigatorSettings.isShowOnlyEntities(),
+                1);
+
+            mergeEntities = UIUtils.createCheckbox(
+                miscGroup,
+                UIConnectionMessages.dialog_connection_wizard_final_checkbox_merge_entities,
+                UIConnectionMessages.dialog_connection_wizard_final_checkbox_merge_entities_tip,
+                navigatorSettings.isMergeEntities(),
+                1);
+
+
+            boolean mergeEntitiesEnabled;
+            if (dataSourceDescriptor != null) {
+                mergeEntitiesEnabled = dataSourceDescriptor.getDriver().getProviderDescriptor().getTreeDescriptor().supportsEntityMerge();
+                mergeEntities.setEnabled(mergeEntitiesEnabled);
+            } else {
+                mergeEntitiesEnabled = false;
+            }
+
+            mergeEntities.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                    if (hideFolders != null) {
+                        if (mergeEntities.getSelection()) {
+                            hideFolders.setEnabled(false);
+                        } else if (!hideFolders.getEnabled()) {
+                            hideFolders.setEnabled(true);
+                        }
+                    }
+                }));
+
+            hideFolders = UIUtils.createCheckbox(
+                miscGroup,
+                UIConnectionMessages.dialog_connection_wizard_final_checkbox_hide_folders,
+                UIConnectionMessages.dialog_connection_wizard_final_checkbox_hide_folders_tip,
+                navigatorSettings.isHideFolders(),
+                1);
+
+            hideFolders.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                    if (hideFolders.getSelection()) {
+                        mergeEntities.setEnabled(false);
+                    } else if (mergeEntitiesEnabled) {
+                        mergeEntities.setEnabled(true);
+                    }
+                }));
+            if (mergeEntities.getEnabled()) {
+                hideFolders.setEnabled(false);
+            }
+            if (hideFolders.getEnabled()) {
+                mergeEntities.setEnabled(false);
+            }
+        }
+
+        return composite;
+    }
+
+    @Override
+    protected void okPressed() {
+        navigatorSettings.setShowSystemObjects(showSystemObjects.getSelection());
+        navigatorSettings.setShowUtilityObjects(showUtilityObjects.getSelection());
+        navigatorSettings.setShowOnlyEntities(showOnlyEntities.getSelection());
+        navigatorSettings.setMergeEntities(mergeEntities.getSelection());
+        navigatorSettings.setHideFolders(hideFolders.getSelection());
+        super.okPressed();
+    }
+
+    public DBNBrowseSettings getNavigatorSettings() {
+        return navigatorSettings;
+    }
+}
