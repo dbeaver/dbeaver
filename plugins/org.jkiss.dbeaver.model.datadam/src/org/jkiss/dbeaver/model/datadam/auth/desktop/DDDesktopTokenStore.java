@@ -20,21 +20,22 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
-import org.jkiss.dbeaver.model.datadam.auth.DDSecretStorage;
+import org.jkiss.dbeaver.model.impl.app.SecurePreferencesSecretController;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 
 class DDDesktopTokenStore {
     private static final String SECRET_ID = "datadam.desktop.access-token";
-    static final DDDesktopTokenStore INSTANCE = new DDDesktopTokenStore(DDSecretStorage.getInstance());
+    static final DDDesktopTokenStore INSTANCE = new DDDesktopTokenStore(SecurePreferencesSecretController.INSTANCE);
 
-    private final DDSecretStorage secretStorage;
+    private final DBSSecretController secretStorage;
 
-    DDDesktopTokenStore(@NotNull DDSecretStorage secretStorage) {
+    DDDesktopTokenStore(@NotNull DBSSecretController secretStorage) {
         this.secretStorage = secretStorage;
     }
 
     @Nullable
     DDDesktopUserToken load() throws DBException {
-        String value = secretStorage.read(SECRET_ID);
+        String value = secretStorage.getPrivateSecretValue(SECRET_ID);
         if (value == null || value.isBlank()) {
             return null;
         }
@@ -46,11 +47,13 @@ class DDDesktopTokenStore {
     }
 
     void save(@NotNull DDDesktopUserToken token) throws DBException {
-        secretStorage.write(SECRET_ID, JSONUtils.GSON.toJson(token));
+        secretStorage.setPrivateSecretValue(SECRET_ID, JSONUtils.GSON.toJson(token));
+        secretStorage.flushChanges();
     }
 
     void clear() throws DBException {
-        secretStorage.delete(SECRET_ID);
+        secretStorage.setPrivateSecretValue(SECRET_ID, null);
+        secretStorage.flushChanges();
     }
 
 }

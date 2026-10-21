@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.datadam.auth;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,12 +42,12 @@ class DDKeyStoreTest {
     private static final String RECOVERY_PHRASE =
         "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
     private static final int KDF_ITERATIONS = 1000;
-    private DDSecretStorage secretStorage;
+    private DBSSecretController secretStorage;
     private DDKeyStore store;
 
     @BeforeEach
     void setUp() {
-        secretStorage = Mockito.mock(DDSecretStorage.class);
+        secretStorage = Mockito.mock(DBSSecretController.class);
         store = new DDKeyStore(secretStorage);
     }
 
@@ -121,30 +122,30 @@ class DDKeyStoreTest {
 
     @Test
     void loadRejectsMalformedBundle() throws Exception {
-        Mockito.when(secretStorage.read("datadam.key-bundle")).thenReturn("not-json");
+        Mockito.when(secretStorage.getPrivateSecretValue("datadam.key-bundle")).thenReturn("not-json");
 
         Assertions.assertThrows(DBException.class, store::loadBundle);
-        Mockito.verify(secretStorage, Mockito.never()).write(Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(secretStorage, Mockito.never()).setPrivateSecretValue(Mockito.anyString(), Mockito.any());
     }
 
     @Test
     void saveReplacesUnreadableBundle() throws Exception {
         DDKeyBundle replacement = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 1);
-        Mockito.when(secretStorage.read("datadam.key-bundle"))
+        Mockito.when(secretStorage.getPrivateSecretValue("datadam.key-bundle"))
             .thenThrow(new DBException("Cannot read stored keys"));
 
         Assertions.assertThrows(DBException.class, store::loadBundle);
         store.saveBundle(replacement);
 
-        Mockito.verify(secretStorage).write("datadam.key-bundle", JSONUtils.GSON.toJson(replacement));
+        Mockito.verify(secretStorage).setPrivateSecretValue("datadam.key-bundle", JSONUtils.GSON.toJson(replacement));
+        Mockito.verify(secretStorage).flushChanges();
     }
 
     @Test
-    void savePropagatesWriteFailure() throws Exception {
+    void savePropagatesFlushFailure() throws Exception {
         DDKeyBundle replacement = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 1);
-        DBException writeError = new DBException("Cannot write keys");
-        Mockito.doThrow(writeError).when(secretStorage)
-            .write("datadam.key-bundle", JSONUtils.GSON.toJson(replacement));
+        DBException writeError = new DBException("Cannot flush keys");
+        Mockito.doThrow(writeError).when(secretStorage).flushChanges();
 
         Assertions.assertSame(writeError, Assertions.assertThrows(DBException.class, () -> store.saveBundle(replacement)));
     }
@@ -155,12 +156,13 @@ class DDKeyStoreTest {
         DDKeyBundle replacement = new DDKeyBundle(
             UUID.fromString("8decb064-2709-4914-b6b6-68eaef98cac4"), "new-signing-key", "new-data-key", 1);
 
-        Mockito.when(secretStorage.read("datadam.key-bundle"))
+        Mockito.when(secretStorage.getPrivateSecretValue("datadam.key-bundle"))
             .thenReturn(JSONUtils.GSON.toJson(stored));
 
         store.saveBundle(replacement);
 
-        Mockito.verify(secretStorage).write("datadam.key-bundle", JSONUtils.GSON.toJson(replacement));
+        Mockito.verify(secretStorage).setPrivateSecretValue("datadam.key-bundle", JSONUtils.GSON.toJson(replacement));
+        Mockito.verify(secretStorage).flushChanges();
     }
 
     @Test
@@ -172,12 +174,12 @@ class DDKeyStoreTest {
     }
 
     private void assertRejectedSave(@NotNull DDKeyBundle stored, @NotNull DDKeyBundle replacement) throws Exception {
-        Mockito.when(secretStorage.read("datadam.key-bundle"))
+        Mockito.when(secretStorage.getPrivateSecretValue("datadam.key-bundle"))
             .thenReturn(JSONUtils.GSON.toJson(stored));
 
         Assertions.assertThrows(DBException.class, () -> store.saveBundle(replacement));
 
-        Mockito.verify(secretStorage, Mockito.never()).write(Mockito.anyString(), Mockito.anyString());
+        Mockito.verify(secretStorage, Mockito.never()).setPrivateSecretValue(Mockito.anyString(), Mockito.any());
     }
 
     @NotNull

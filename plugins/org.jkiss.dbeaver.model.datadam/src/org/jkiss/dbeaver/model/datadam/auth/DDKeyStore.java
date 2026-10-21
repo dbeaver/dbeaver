@@ -21,6 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.impl.app.SecurePreferencesSecretController;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.utils.CommonUtils;
 
 import java.nio.charset.StandardCharsets;
@@ -30,8 +32,8 @@ import javax.crypto.SecretKey;
 public class DDKeyStore {
 
     private static final Log log = Log.getLog(DDKeyStore.class);
-    private static final DDKeyStore INSTANCE = new DDKeyStore(DDSecretStorage.getInstance());
-    private final DDSecretStorage secretStorage;
+    private static final DDKeyStore INSTANCE = new DDKeyStore(SecurePreferencesSecretController.INSTANCE);
+    private final DBSSecretController secretStorage;
 
     @Deprecated(forRemoval = true)
     public static final String ACCESS_KEY_PREFIX = "ddgk_";
@@ -39,7 +41,7 @@ public class DDKeyStore {
     private static final String SECRET_KEY_BUNDLE = "datadam.key-bundle";
     private static final String BUNDLE_SEPARATOR = "\\.";
 
-    public DDKeyStore(@NotNull DDSecretStorage secretStorage) {
+    public DDKeyStore(@NotNull DBSSecretController secretStorage) {
         this.secretStorage = secretStorage;
     }
 
@@ -51,7 +53,7 @@ public class DDKeyStore {
     @Nullable
     public DDKeyBundle loadBundle() throws DBException {
         try {
-            String value = secretStorage.read(SECRET_KEY_BUNDLE);
+            String value = secretStorage.getPrivateSecretValue(SECRET_KEY_BUNDLE);
             if (CommonUtils.isEmpty(value)) {
                 return null;
             }
@@ -119,7 +121,8 @@ public class DDKeyStore {
             && bundle.generation() < current.generation()) {
             throw new DBException("The keys are older than the stored ones");
         }
-        secretStorage.write(SECRET_KEY_BUNDLE, JSONUtils.GSON.toJson(bundle));
+        secretStorage.setPrivateSecretValue(SECRET_KEY_BUNDLE, JSONUtils.GSON.toJson(bundle));
+        secretStorage.flushChanges();
     }
 
     public static void clear() throws DBException {
@@ -127,7 +130,8 @@ public class DDKeyStore {
     }
 
     public void clearBundle() throws DBException {
-        secretStorage.delete(SECRET_KEY_BUNDLE);
+        secretStorage.setPrivateSecretValue(SECRET_KEY_BUNDLE, null);
+        secretStorage.flushChanges();
     }
 
     @Deprecated(forRemoval = true)
