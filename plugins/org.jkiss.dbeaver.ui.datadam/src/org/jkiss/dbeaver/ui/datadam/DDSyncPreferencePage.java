@@ -212,6 +212,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             tracker.stop();
         } catch (DBException e) {
             log.debug("DataDam tracking stop failed", e);
+            tracker.reset();
         }
     }
 

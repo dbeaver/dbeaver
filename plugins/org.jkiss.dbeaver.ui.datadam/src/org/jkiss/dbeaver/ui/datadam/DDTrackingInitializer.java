@@ -50,6 +50,7 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
                     DDDesktopTrackingService.getInstance().stop();
                 } catch (DBException e) {
                     log.debug("DataDam tracking stop failed", e);
+                    DDDesktopTrackingService.getInstance().reset();
                 }
                 return true;
             }

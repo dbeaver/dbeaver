@@ -62,6 +62,10 @@ public class DDDesktopTrackingService {
         }
     }
 
+    public synchronized void reset() {
+        tracking = null;
+    }
+
     @NotNull
     private DDClientInfo clientInfo() {
         return new DDClientInfo(
