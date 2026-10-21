@@ -123,7 +123,12 @@
     <extension point="org.eclipse.ui.preferencePages">
         <page category="org.jkiss.dbeaver.preferences.drivers" id="org.jkiss.dbeaver.preferences.oracle.general" class="org.jkiss.dbeaver.ext.oracle.ui.views.PrefPageOracle" name="Oracle">
             <keywordReference id="org.jkiss.dbeaver.core.keyword.dbeaver"/>
+            <keywordReference id="org.jkiss.dbeaver.ext.oracle.ui.keyword.pref.general"/>
         </page>
+    </extension>
+
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.ext.oracle.ui.keyword.pref.general" label="%keyword.org.jkiss.dbeaver.ext.oracle.ui.keyword.pref.general.label"/>
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">

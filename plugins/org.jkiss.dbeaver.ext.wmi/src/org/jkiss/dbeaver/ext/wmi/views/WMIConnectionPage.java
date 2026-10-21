@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.wmi.views;
 
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
@@ -25,10 +24,8 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.wmi.WMIMessages;
-import org.jkiss.dbeaver.ext.wmi.WMIPluginConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -48,25 +45,11 @@ public class WMIConnectionPage extends ConnectionPageWithAuth
     private Combo namespaceCombo;
     private Combo localeCombo;
 
-    private static ImageDescriptor logoImage = AbstractUIPlugin.imageDescriptorFromPlugin(
-        WMIPluginConstants.PLUGIN_ID, "icons/wmi_icon_big.png"); //$NON-NLS-1$
-
-    public WMIConnectionPage() {
-    }
-
     @Override
-    public void dispose()
-    {
-        super.dispose();
-    }
-
-    @Override
-    public void createControl(Composite composite)
+    public void createControl(@NotNull Composite composite)
     {
         //Composite group = new Composite(composite, SWT.NONE);
         //group.setLayout(new GridLayout(1, true));
-        setImageDescriptor(logoImage);
-
         ModifyListener textListener = e -> evaluateURL();
 
         Composite addrGroup = new Composite(composite, SWT.NONE);

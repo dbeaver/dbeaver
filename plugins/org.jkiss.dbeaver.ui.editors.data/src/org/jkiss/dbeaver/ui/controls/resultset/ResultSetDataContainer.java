@@ -73,6 +73,11 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         this.options = options;
     }
 
+    @NotNull
+    public ResultSetDataContainerOptions getOptions() {
+        return options;
+    }
+
     @Override
     public String getDescription() {
         return dataContainer.getDescription();

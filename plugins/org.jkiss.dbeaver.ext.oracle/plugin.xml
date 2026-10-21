@@ -4,11 +4,20 @@
 
     <extension
         point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="oracle"
+            label="Oracle Database"
+            description="Oracle Database"
+            dataSourceInformation="Enterprise relational database management system"
+            icon="icons/oracle_icon.png"
+            iconBig="icons/oracle_icon_big.png"
+            logoImage="icons/oracle_logo.png"/>
         <datasource
             class="org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider"
             description="Oracle connector"
             icon="icons/oracle_icon.png"
             id="oracle"
+            dataSourceType="oracle"
             label="Oracle"
             dialect="oracle">
             <tree
@@ -326,6 +335,9 @@
                     <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUserProfile" label="%tree.profiles.node.name" icon="#folder_profile" description="User profiles">
                         <items label="%tree.profile.node.name" path="profiles" property="profiles" icon="#profile">
                             <items label="%tree.resource.node.name" path="resource" property="resources" icon="#resource"/>
+                            <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleUser" label="%tree.users.node.name" icon="#folder_user" description="%tree.profile.users.node.description" navigable="false">
+                                <items label="%tree.user.node.name" path="users" property="users" icon="#user"/>
+                            </folder>
                         </items>
                     </folder>
                 </folder>
@@ -347,8 +359,6 @@
                     defaultUser="system"
                     customEndpoint="true"
                     webURL="https://www.oracle.com/technetwork/database/features/jdbc/"
-                    icon="icons/oracle_icon.png"
-                    iconBig="icons/oracle_icon_big.png"
                     propertiesURL="https://docs.oracle.com/cd/B19306_01/java.102/b14355/urls.htm#i1070726"
                     databaseDocumentationSuffixURL="Oracle"
                     description="%driver.oracle.description"

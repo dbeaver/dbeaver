@@ -344,27 +344,49 @@ public class FireBirdUtils {
         return new Version(0, 0, 0);
     }
 
-    public static Map<String, String> readColumnDomainTypes(DBRProgressMonitor monitor, GenericTableBase table) throws DBException {
+    @NotNull
+    public static Map<String, String> readColumnDomainTypes(@NotNull DBRProgressMonitor monitor, @NotNull GenericTableBase table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Read column domain type")) {
-            // Read metadata
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT RF.RDB$FIELD_NAME,RF.RDB$FIELD_SOURCE FROM RDB$RELATION_FIELDS RF WHERE RF.RDB$RELATION_NAME=?")) {
-                dbStat.setString(1, table.getName());
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    Map<String, String> dtMap = new HashMap<>();
-                    while (dbResult.next()) {
-                        String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, 1);
-                        String domainTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, 2);
-                        if (!CommonUtils.isEmpty(columnName) && !CommonUtils.isEmpty(domainTypeName)) {
-                            dtMap.put(columnName, domainTypeName);
-                        }
-                    }
-                    return dtMap;
-                }
-            }
-
+            return readColumnDomainTypes(session, table);
         } catch (SQLException ex) {
             throw new DBException("Error reading column domain types for " + table.getName(), ex);
         }
+    }
 
+    @NotNull
+    public static Map<String, String> readColumnDomainTypes(@NotNull JDBCSession session, @NotNull GenericTableBase table) throws SQLException {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT RF.RDB$FIELD_NAME,RF.RDB$FIELD_SOURCE FROM RDB$RELATION_FIELDS RF WHERE RF.RDB$RELATION_NAME=?")) {
+            dbStat.setString(1, table.getName());
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                Map<String, String> dtMap = new HashMap<>();
+                while (dbResult.next()) {
+                    String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, 1);
+                    String domainTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, 2);
+                    if (!CommonUtils.isEmpty(columnName) && !CommonUtils.isEmpty(domainTypeName)) {
+                        dtMap.put(columnName, domainTypeName);
+                    }
+                }
+                return dtMap;
+            }
+        }
+    }
+
+    @NotNull
+    public static Map<String, Map<String, String>> readAllColumnDomainTypes(@NotNull JDBCSession session) throws SQLException {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT RF.RDB$RELATION_NAME,RF.RDB$FIELD_NAME,RF.RDB$FIELD_SOURCE FROM RDB$RELATION_FIELDS RF")) {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                Map<String, Map<String, String>> domainsByTable = new HashMap<>();
+                while (dbResult.next()) {
+                    String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, 1);
+                    String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, 2);
+                    String domainTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, 3);
+                    if (!CommonUtils.isEmpty(tableName) && !CommonUtils.isEmpty(columnName) && !CommonUtils.isEmpty(domainTypeName)) {
+                        domainsByTable.computeIfAbsent(tableName, key -> new HashMap<>()).put(columnName, domainTypeName);
+                    }
+                }
+                return domainsByTable;
+            }
+        }
     }
 }

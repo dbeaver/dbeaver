@@ -5,40 +5,18 @@
       <appInfo>
          <meta.schema plugin="org.jkiss.dbeaver.ui.editors.data" id="org.jkiss.dbeaver.resultset.error" name="org.jkiss.dbeaver.resultset.error.name"/>
       </appInfo>
-      <documentation>
-         [Enter description of this extension point.]
-      </documentation>
    </annotation>
 
    <element name="extension">
-      <annotation>
-         <appInfo>
-            <meta.element />
-         </appInfo>
-      </annotation>
+      <annotation><appInfo><meta.element/></appInfo></annotation>
       <complexType>
          <sequence>
             <element ref="action" minOccurs="0" maxOccurs="unbounded"/>
          </sequence>
-         <attribute name="point" type="string" use="required">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="id" type="string">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="point" type="string" use="required"/>
+         <attribute name="id" type="string"/>
          <attribute name="name" type="string">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
@@ -51,9 +29,6 @@
       <complexType>
          <attribute name="label" type="string" use="required">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
@@ -61,9 +36,6 @@
          </attribute>
          <attribute name="description" type="string" use="required">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
                </appInfo>
@@ -71,26 +43,14 @@
          </attribute>
          <attribute name="icon" type="string" use="required">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute kind="resource"/>
                </appInfo>
             </annotation>
          </attribute>
-         <attribute name="order" type="string" use="default" value="0">
-            <annotation>
-               <documentation>
-                  
-               </documentation>
-            </annotation>
-         </attribute>
+          <attribute name="order" type="int" use="default" value="0"/>
          <attribute name="class" type="string" use="required">
             <annotation>
-               <documentation>
-                  
-               </documentation>
                <appInfo>
                   <meta.attribute kind="java" basedOn=":org.jkiss.dbeaver.ui.controls.resultset.IResultSetErrorAction"/>
                </appInfo>
@@ -99,41 +59,9 @@
       </complexType>
    </element>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="since"/>
-      </appInfo>
-      <documentation>
-         [Enter the first release in which this extension point appears.]
-      </documentation>
-   </annotation>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="examples"/>
-      </appInfo>
-      <documentation>
-         [Enter extension point usage example here.]
-      </documentation>
-   </annotation>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="apiinfo"/>
-      </appInfo>
-      <documentation>
-         [Enter API information here.]
-      </documentation>
-   </annotation>
 
-   <annotation>
-      <appInfo>
-         <meta.section type="implementation"/>
-      </appInfo>
-      <documentation>
-         [Enter information about supplied implementation of this extension point.]
-      </documentation>
-   </annotation>
 
 
 </schema>

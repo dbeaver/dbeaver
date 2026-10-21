@@ -116,7 +116,11 @@ public class CubridTableColumnManager extends GenericTableColumnManager implemen
             decl.append(column.isRequired() ? "" : " NULL");
         }
         if (!CommonUtils.isEmpty(column.getDefaultValue()) || ((DBECommandComposite) command).hasProperty("defaultValue")) {
-            decl.append(" DEFAULT ").append(SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDefaultValue())));
+            if (CommonUtils.isEmpty(column.getDefaultValue())) {
+                decl.append(" DEFAULT NULL");
+            } else {
+                DefaultModifier.appendModifier(monitor, column, decl, command);
+            }
         }
         if (column.isAutoIncrement()) {
             decl.append(" AUTO_INCREMENT");

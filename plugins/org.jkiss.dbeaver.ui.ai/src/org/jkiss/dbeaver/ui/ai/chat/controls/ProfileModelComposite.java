@@ -18,11 +18,14 @@ package org.jkiss.dbeaver.ui.ai.chat.controls;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
 import org.eclipse.swt.accessibility.AccessibleEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.KeyListener;
+import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -50,13 +53,8 @@ import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 
 class ProfileModelComposite extends Composite {
@@ -65,10 +63,8 @@ class ProfileModelComposite extends Composite {
     private static final int MIN_CHAT_WIDTH = 240;
 
     private final AIChatControl chat;
-    private final ToolBar profileBar;
-    private final ToolItem profileItem;
-    private final ToolBar modelBar;
-    private final ToolItem modelItem;
+    private final SelectorControl profileSelector;
+    private final SelectorControl modelSelector;
     private final Map<ProfileKey, List<AIModel>> modelsByProfile = new HashMap<>();
     private final AtomicLong modelListGeneration = new AtomicLong();
     private String profileText;
@@ -81,17 +77,11 @@ class ProfileModelComposite extends Composite {
         this.chat = chat;
         setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
-        profileBar = new ToolBar(this, SWT.FLAT | SWT.RIGHT);
-        profileItem = new ToolItem(profileBar, SWT.DROP_DOWN);
-        profileItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> showProfiles()));
-        addAccessibleName(profileBar, AIChatMessagesUI.ai_chat_profile_label, profileItem);
-
-        modelBar = new ToolBar(this, SWT.FLAT | SWT.RIGHT);
-        modelItem = new ToolItem(modelBar, SWT.DROP_DOWN);
-        modelItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> showModels(false)));
-        addAccessibleName(modelBar, AIChatMessagesUI.ai_chat_model_label, modelItem);
+        profileSelector = new SelectorControl(AIChatMessagesUI.ai_chat_profile_label, this::showProfiles);
+        modelSelector = new SelectorControl(AIChatMessagesUI.ai_chat_model_label, () -> showModels(false));
 
         setLayout(new SelectorLayout());
+        setTabList(new Control[]{profileSelector, modelSelector});
 
         AIChatListener chatListener = new AIChatListener() {
             @Override
@@ -180,10 +170,8 @@ class ProfileModelComposite extends Composite {
         String profileTip = AIChatMessagesUI.ai_chat_profile_label + ": " + profileText;
         modelText = AIChatMessagesUI.ai_chat_model_not_configured;
         boolean modelSelectionSupported = false;
-        profileItem.setImage(DBeaverIcons.getImage(AIIcons.AI));
         if (profile != null) {
             try {
-                profileItem.setImage(DBeaverIcons.getImage(profile.getEngineDescriptor().getIcon()));
                 profileTip += "\n" + profile.getEngineDescriptor().getLabel();
                 AIEngineProperties configuration = profile.getConfiguration();
                 modelSelectionSupported = configuration.isModelSelectionSupported();
@@ -197,13 +185,13 @@ class ProfileModelComposite extends Composite {
                 log.debug("Error reading AI profile", e);
             }
         }
-        profileItem.setToolTipText(profileTip);
-        profileItem.setEnabled(!chat.isBusy());
-        modelItem.setEnabled(modelSelectionSupported && !chat.isBusy() && modelLoadJob == null && canConfigure());
+        profileSelector.setSelectorToolTip(profileTip);
+        profileSelector.setSelectorEnabled(!chat.isBusy());
+        modelSelector.setSelectorEnabled(modelSelectionSupported && !chat.isBusy() && modelLoadJob == null && canConfigure());
         if (modelLoadJob != null) {
             modelText = AIChatMessagesUI.ai_chat_model_loading;
         }
-        modelItem.setToolTipText(AIChatMessagesUI.ai_chat_model_label + ": " + modelText);
+        modelSelector.setSelectorToolTip(AIChatMessagesUI.ai_chat_model_label + ": " + modelText);
         boolean visible = settings.getProperty(AIConstants.AI_CHAT_SHOW_PROFILE_AND_MODEL, true);
         GridData data = (GridData) getLayoutData();
         boolean visibilityChanged = data.exclude == visible;
@@ -235,7 +223,7 @@ class ProfileModelComposite extends Composite {
             AIUIUtils.showPreferences(getShell());
             return;
         }
-        Menu profileMenu = createMenu(profileBar);
+        Menu profileMenu = createMenu(profileSelector);
         Arrays.sort(profiles, Comparator.comparing(AIConfigurationProfile::getProfileName, String.CASE_INSENSITIVE_ORDER));
         for (AIConfigurationProfile profile : profiles) {
             MenuItem item = new MenuItem(profileMenu, SWT.RADIO);
@@ -253,7 +241,7 @@ class ProfileModelComposite extends Composite {
                 }
             }));
         }
-        showMenu(profileBar);
+        showMenu(profileSelector);
     }
 
     private void showModels(boolean forceRefresh) {
@@ -324,7 +312,7 @@ class ProfileModelComposite extends Composite {
 
     private void showModelMenu(@NotNull AIConfigurationProfile profile, @NotNull List<AIModel> models) {
         long generation = modelListGeneration.get();
-        Menu modelMenu = createMenu(modelBar);
+        Menu modelMenu = createMenu(modelSelector);
         try {
             AIEngineProperties properties = profile.getConfiguration();
             if (!properties.isModelSelectionSupported()) {
@@ -370,7 +358,7 @@ class ProfileModelComposite extends Composite {
         refreshItem.setText(AIUIMessages.gpt_preference_page_refresh_models);
         refreshItem.setImage(DBeaverIcons.getImage(UIIcon.REFRESH));
         refreshItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> showModels(true)));
-        showMenu(modelBar);
+        showMenu(modelSelector);
     }
 
     private void cancelModelLoading() {
@@ -394,13 +382,90 @@ class ProfileModelComposite extends Composite {
         menu.setVisible(true);
     }
 
-    private void addAccessibleName(@NotNull ToolBar bar, @NotNull String label, @NotNull ToolItem item) {
-        bar.getAccessible().addAccessibleListener(new AccessibleAdapter() {
-            @Override
-            public void getName(@NotNull AccessibleEvent event) {
-                event.result = item.getToolTipText() == null ? label : item.getToolTipText();
+    private class SelectorControl extends Composite {
+        private final Label textLabel;
+        private final Label arrowLabel;
+        private final String accessibleLabel;
+
+        SelectorControl(@NotNull String accessibleLabel, @NotNull Runnable showMenu) {
+            super(ProfileModelComposite.this, SWT.NONE);
+            this.accessibleLabel = accessibleLabel;
+            setLayout(GridLayoutFactory.fillDefaults().margins(2, 0).spacing(2, 0).numColumns(2).create());
+
+            textLabel = new Label(this, SWT.NONE);
+            GridData textData = new GridData(SWT.FILL, SWT.CENTER, true, false);
+            textData.minimumWidth = 0;
+            textLabel.setLayoutData(textData);
+
+            arrowLabel = new Label(this, SWT.NONE);
+            arrowLabel.setImage(DBeaverIcons.getImage(UIIcon.TREE_COLLAPSE));
+
+            // open after release so macOS menus cannot select an item with the opening click
+            MouseListener mouseListener = MouseListener.mouseUpAdapter(event -> {
+                if (event.button == 1 && isEnabled()) {
+                    setFocus();
+                    showMenu.run();
+                }
+            });
+            addMouseListener(mouseListener);
+            textLabel.addMouseListener(mouseListener);
+            arrowLabel.addMouseListener(mouseListener);
+            addKeyListener(KeyListener.keyPressedAdapter(event -> {
+                if (event.keyCode == SWT.CR || event.keyCode == SWT.KEYPAD_CR || event.keyCode == SWT.ARROW_DOWN
+                    || event.character == ' ') {
+                    showMenu.run();
+                }
+            }));
+            addTraverseListener(event -> {
+                if (event.detail == SWT.TRAVERSE_TAB_NEXT || event.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+                    event.doit = true;
+                }
+            });
+            addFocusListener(FocusListener.focusGainedAdapter(event -> redraw()));
+            addFocusListener(FocusListener.focusLostAdapter(event -> redraw()));
+            addPaintListener(event -> {
+                if (isFocusControl()) {
+                    Rectangle area = getClientArea();
+                    event.gc.drawFocus(0, 0, area.width, area.height);
+                }
+            });
+            getAccessible().addAccessibleListener(new AccessibleAdapter() {
+                @Override
+                public void getName(@NotNull AccessibleEvent event) {
+                    event.result = getToolTipText() == null
+                        ? SelectorControl.this.accessibleLabel
+                        : getToolTipText();
+                }
+            });
+        }
+
+        void setSelectorEnabled(boolean enabled) {
+            setEnabled(enabled);
+            textLabel.setEnabled(enabled);
+            arrowLabel.setEnabled(enabled);
+        }
+
+        void setSelectorToolTip(@NotNull String toolTip) {
+            setToolTipText(toolTip);
+            textLabel.setToolTipText(toolTip);
+            arrowLabel.setToolTipText(toolTip);
+        }
+
+        void setSelectorText(@NotNull String text) {
+            textLabel.setText(text.replace("&", "&&"));
+        }
+
+        void fitText(@NotNull String text) {
+            int available = textLabel.getSize().x;
+            if (text.isEmpty() || textLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT).x <= available) {
+                return;
             }
-        });
+            int end = text.length();
+            do {
+                end = text.offsetByCodePoints(end, -1);
+                setSelectorText(text.substring(0, end) + "...");
+            } while (end > 0 && textLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT).x > available);
+        }
     }
 
     private class SelectorLayout extends Layout {
@@ -408,7 +473,10 @@ class ProfileModelComposite extends Composite {
         @Override
         protected Point computeSize(@NotNull Composite composite, int widthHint, int heightHint, boolean flushCache) {
             restoreText();
-            int height = Math.max(profileBar.computeSize(SWT.DEFAULT, SWT.DEFAULT).y, modelBar.computeSize(SWT.DEFAULT, SWT.DEFAULT).y);
+            int height = Math.max(
+                profileSelector.computeSize(SWT.DEFAULT, SWT.DEFAULT).y,
+                modelSelector.computeSize(SWT.DEFAULT, SWT.DEFAULT).y
+            );
             return new Point(widthHint == SWT.DEFAULT ? MIN_CHAT_WIDTH : widthHint, heightHint == SWT.DEFAULT ? height : heightHint);
         }
 
@@ -417,34 +485,22 @@ class ProfileModelComposite extends Composite {
             restoreText();
             Rectangle area = composite.getClientArea();
             int available = Math.max(0, area.width);
-            int profileWidth = Math.min(profileBar.computeSize(SWT.DEFAULT, SWT.DEFAULT).x, Math.max(0, available - MIN_MODEL_WIDTH));
-            int modelWidth = Math.min(modelBar.computeSize(SWT.DEFAULT, SWT.DEFAULT).x, available - profileWidth);
-            fitText(profileItem, profileText, profileWidth);
-            fitText(modelItem, modelText, modelWidth);
-            profileBar.setBounds(area.x, area.y, profileWidth, area.height);
-            modelBar.setBounds(area.x + profileWidth, area.y, modelWidth, area.height);
+            int profileWidth = Math.min(
+                profileSelector.computeSize(SWT.DEFAULT, SWT.DEFAULT).x,
+                Math.max(0, available - MIN_MODEL_WIDTH)
+            );
+            int modelWidth = Math.min(modelSelector.computeSize(SWT.DEFAULT, SWT.DEFAULT).x, available - profileWidth);
+            profileSelector.setBounds(area.x, area.y, profileWidth, area.height);
+            modelSelector.setBounds(area.x + profileWidth, area.y, modelWidth, area.height);
+            profileSelector.layout(true);
+            modelSelector.layout(true);
+            profileSelector.fitText(profileText);
+            modelSelector.fitText(modelText);
         }
 
         private void restoreText() {
-            profileItem.setText(profileText.replace("&", "&&"));
-            modelItem.setText(modelText.replace("&", "&&"));
-        }
-
-        private void fitText(@NotNull ToolItem item, @NotNull String text, int width) {
-            GC gc = new GC(item.getParent());
-            try {
-                int available = width - (item.getBounds().width - gc.textExtent(text).x);
-                if (gc.textExtent(text).x <= available) {
-                    return;
-                }
-                int end = text.length();
-                while (end > 0 && gc.textExtent(text.substring(0, end) + "...").x > available) {
-                    end = text.offsetByCodePoints(end, -1);
-                }
-                item.setText((text.substring(0, end) + "...").replace("&", "&&"));
-            } finally {
-                gc.dispose();
-            }
+            profileSelector.setSelectorText(profileText);
+            modelSelector.setSelectorText(modelText);
         }
     }
 

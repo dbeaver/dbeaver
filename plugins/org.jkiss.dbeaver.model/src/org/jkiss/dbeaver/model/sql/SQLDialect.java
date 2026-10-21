@@ -34,7 +34,9 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.utils.Pair;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
@@ -119,6 +121,20 @@ public interface SQLDialect {
 
     @NotNull
     String[] getDMLKeywords();
+
+    /**
+     * Keywords that can start a statement in the SQL editor completion.
+     * Unlike execute keywords, these do not affect statement parsing or parameter binding.
+     */
+    @NotNull
+    default Collection<String> getCompletionStatementKeywords() {
+        List<String> keywords = new ArrayList<>();
+        Collections.addAll(keywords, getQueryKeywords());
+        Collections.addAll(keywords, getDMLKeywords());
+        Collections.addAll(keywords, getDDLKeywords());
+        Collections.addAll(keywords, getExecuteKeywords());
+        return keywords;
+    }
 
     /**
      * Retrieves a list of all of this database's SQL keywords
@@ -206,6 +222,22 @@ public interface SQLDialect {
      */
     @NotNull
     String[] getScriptDelimiters();
+
+    /**
+     * Script delimiters that separate batches rather than individual statements.
+     */
+    @NotNull
+    default String[] getBatchDelimiters() {
+        return new String[0];
+    }
+
+    /**
+     * Returns the lifetime of variables introduced by standalone SQL statements, or {@code null} when unsupported.
+     */
+    @Nullable
+    default SQLScriptVariableScope getScriptVariableScope() {
+        return null;
+    }
 
     @Nullable
     String getScriptDelimiterRedefiner();

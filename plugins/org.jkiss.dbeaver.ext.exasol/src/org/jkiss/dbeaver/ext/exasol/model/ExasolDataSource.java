@@ -356,19 +356,20 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
     
     @NotNull
     @Override
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, @NotNull
-													String purpose,
-													@NotNull DBPConnectionConfiguration connectionInfo) throws DBCException {
-    	
-    	Properties props =  super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
-    	
-    	if (addMetaProps == null)
-    		addMetaProps = new Properties();
-    	
-		addMetaProps.clear();
-    	
-    	return props;
-    	
+    protected Properties getAllConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
+        Properties props = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
+
+        if (addMetaProps == null) {
+            addMetaProps = new Properties();
+        }
+        addMetaProps.clear();
+
+        return props;
     }
     
     @Nullable
@@ -398,96 +399,100 @@ public class ExasolDataSource extends JDBCDataSource implements IAdaptable {
         return null;
     }
 
-	@Override
-	protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
-		return new ExasolExecutionContext(instance, type);
-	}
+    @NotNull
+    @Override
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
+        return new ExasolExecutionContext(instance, type);
+    }
 
-	protected void initializeContextState(@NotNull DBRProgressMonitor monitor,
-                                          @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom)
-        throws DBException
-	{
-		if (initFrom != null) {
-			((ExasolExecutionContext)context).setCurrentSchema(monitor, ((ExasolExecutionContext)initFrom).getDefaultSchema());
-		} else {
-			((ExasolExecutionContext)context).refreshDefaults(monitor, true);
-		}
-	}
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
+        if (initFrom != null) {
+            ((ExasolExecutionContext) context).setCurrentSchema(monitor, ((ExasolExecutionContext) initFrom).getDefaultSchema());
+        } else {
+            ((ExasolExecutionContext) context).refreshDefaults(monitor, true);
+        }
+    }
 
-	@Override
-	public <T> T getAdapter(@NotNull Class<T> adapter)
-	{
-		if (adapter == DBSStructureAssistant.class) {
-			return adapter.cast(new ExasolStructureAssistant(this));
-		} else if (adapter == DBAServerSessionManager.class) {
-			return adapter.cast(new ExasolServerSessionManager(this));
-		} else if (adapter == DBAUserPasswordManager.class) {
-			return adapter.cast(new ExasolChangeUserPasswordManager(this));
-		} else if (adapter == DBCQueryPlanner.class) {
-			return adapter.cast(new ExasolQueryPlanner(this));
-		}
-		return super.getAdapter(adapter);
-	}
+    @Nullable
+    @Override
+    public <T> T getAdapter(@NotNull Class<T> adapter) {
+        if (adapter == DBSStructureAssistant.class) {
+            return adapter.cast(new ExasolStructureAssistant(this));
+        } else if (adapter == DBAServerSessionManager.class) {
+            return adapter.cast(new ExasolServerSessionManager(this));
+        } else if (adapter == DBAUserPasswordManager.class) {
+            return adapter.cast(new ExasolChangeUserPasswordManager(this));
+        } else if (adapter == DBCQueryPlanner.class) {
+            return adapter.cast(new ExasolQueryPlanner(this));
+        }
+        return super.getAdapter(adapter);
+    }
 
-	@Override
-	public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope)
-			throws DBException
-	{
-		// TODO DF: No idea what to do with this method, what it is used for...
-	}
+    @Override
+    public void cacheStructure(@NotNull DBRProgressMonitor monitor, int scope) throws DBException {
+        // TODO DF: No idea what to do with this method, what it is used for...
+    }
 
-	// -----------------------
-	// Connection related Info
-	// -----------------------
+    // -----------------------
+    // Connection related Info
+    // -----------------------
 
-	@Override
-	protected DBPDataSourceInfo createDataSourceInfo(
-        DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
-	{
-		final ExasolDataSourceInfo info = new ExasolDataSourceInfo(metaData);
+    @NotNull
+    @Override
+    protected DBPDataSourceInfo createDataSourceInfo(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCDatabaseMetaData metaData
+    ) {
+        final ExasolDataSourceInfo info = new ExasolDataSourceInfo(metaData);
 
-		info.setSupportsResultSetScroll(false);
+        info.setSupportsResultSetScroll(false);
 
-		return info;
-	}
+        return info;
+    }
 
-	@Override
-	protected Map<String, String> getInternalConnectionProperties(
-		@NotNull DBRProgressMonitor monitor,
-		@NotNull DBPDriver driver,
-		@NotNull JDBCExecutionContext context,
-		@NotNull String purpose,
-		@NotNull DBPConnectionConfiguration connectionInfo
-	) throws DBCException {
-		Map<String, String> props = new HashMap<>(ExasolDataSourceProvider.getConnectionsProps());
-		if (CommonUtils.getBoolean(connectionInfo.getProviderProperty(ExasolConstants.DRV_USE_LEGACY_ENCRYPTION), false)) {
-			props.put(ExasolConstants.DRV_LEGACY_ENCRYPTION, "1");
-		}
-		return props;
-	}
+    @NotNull
+    @Override
+    protected Map<String, String> getInternalConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDriver driver,
+        @Nullable JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
+        Map<String, String> props = new HashMap<>(ExasolDataSourceProvider.getConnectionsProps());
+        if (CommonUtils.getBoolean(connectionInfo.getProviderProperty(ExasolConstants.DRV_USE_LEGACY_ENCRYPTION), false)) {
+            props.put(ExasolConstants.DRV_LEGACY_ENCRYPTION, "1");
+        }
+        return props;
+    }
 
-	@Override
-	public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-		super.refreshObject(monitor);
-		
-		this.schemaCache.clearCache();
-		this.connectionCache.clearCache();
-		this.userCache.clearCache();
-		//caches for security
-		if (this.roleCache != null) {
-			this.roleCache.clearCache();
-		}
-		if (this.baseTableGrantCache != null) {
-			this.baseTableGrantCache.clearCache();
-		}
-		if (this.systemGrantCache != null) {
-			this.systemGrantCache.clearCache();
-		}
-		if (this.connectionGrantCache != null) {
-			this.connectionGrantCache.clearCache();
-		}
-		return this;
-	}
+    @NotNull
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        super.refreshObject(monitor);
+
+        this.schemaCache.clearCache();
+        this.connectionCache.clearCache();
+        this.userCache.clearCache();
+        // Caches for security
+        if (this.roleCache != null) {
+            this.roleCache.clearCache();
+        }
+        if (this.baseTableGrantCache != null) {
+            this.baseTableGrantCache.clearCache();
+        }
+        if (this.systemGrantCache != null) {
+            this.systemGrantCache.clearCache();
+        }
+        if (this.connectionGrantCache != null) {
+            this.connectionGrantCache.clearCache();
+        }
+        return this;
+    }
 	
 	// --------------------------
 	// Manage Children: ExasolSchema

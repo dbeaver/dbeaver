@@ -186,4 +186,13 @@
                 group="Connections"/>
     </extension>
 
+    <extension point="org.eclipse.ui.keywords">
+        <keyword id="org.jkiss.dbeaver.ui.editors.connection.keyword.pref.errors" label="%keyword.org.jkiss.dbeaver.ui.editors.connection.keyword.pref.errors.label"/>
+        <keyword id="org.jkiss.dbeaver.ui.editors.connection.keyword.pref.client" label="%keyword.org.jkiss.dbeaver.ui.editors.connection.keyword.pref.client.label"/>
+        <keyword id="org.jkiss.dbeaver.ui.editors.connection.keyword.pref.transactions" label="%keyword.org.jkiss.dbeaver.ui.editors.connection.keyword.pref.transactions.label"/>
+        <keyword id="org.jkiss.dbeaver.ui.editors.connection.keyword.pref.maven" label="%keyword.org.jkiss.dbeaver.ui.editors.connection.keyword.pref.maven.label"/>
+        <keyword id="org.jkiss.dbeaver.ui.editors.connection.keyword.pref.classpath" label="%keyword.org.jkiss.dbeaver.ui.editors.connection.keyword.pref.classpath.label"/>
+        <keyword id="org.jkiss.dbeaver.ui.editors.connection.keyword.pref.connection.types" label="%keyword.org.jkiss.dbeaver.ui.editors.connection.keyword.pref.connection.types.label"/>
+    </extension>
+
 </plugin>

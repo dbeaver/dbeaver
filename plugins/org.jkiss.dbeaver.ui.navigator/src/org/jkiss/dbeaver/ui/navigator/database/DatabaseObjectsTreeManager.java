@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,6 +78,12 @@ public class DatabaseObjectsTreeManager implements ICheckStateListener {
 
     public void updateElementsCheck(Object[] elements, boolean checked, boolean change, boolean forceNestedCheck) {
         checkedElements.clear();
+        if (!autoCheckNested && !forceNestedCheck) {
+            for (Object element : viewer.getCheckedElements()) {
+                checkedElements.put(element, Boolean.TRUE);
+            }
+            return;
+        }
         boolean inWizard = UIUtils.isInWizard(viewer.getControl());
         try {
             runnableContext.run(!inWizard, true, (monitor -> {

@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverSubstitutionDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyLogo;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
@@ -57,8 +58,8 @@ import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
-import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
+import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -109,6 +110,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     private ToolItem handlerItem;
     private ToolItem profileItem;
     private ToolBar handlersToolbar;
+    private final Runnable logoUpdateCallback = () -> UIUtils.asyncExec(this::updateDriverLogo);
 
     /**
      * Constructor for ConnectionPageSettings
@@ -208,12 +210,13 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             } else if (connectionEditor != null) {
                 connectionEditor.loadSettings();
             }
-            activateCurrentItem();
         } finally {
             control.setRedraw(true);
         }
+        // activating driver properties may open a modal download dialog
+        control.update();
+        activateCurrentItem();
         handlersToolbar.setVisible(!getDriver().isEmbedded());
-        //getContainer().updateTitleBar();
         UIUtils.asyncExec(() -> connectionEditor.activateEditor());
     }
 
@@ -227,9 +230,18 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
+    @Nullable
     public Image getImage() {
-        if (this.connectionEditor != null) {
-            Image image = this.connectionEditor.getImage();
+        DBPDriver driver = getDriver();
+        if (driver instanceof DBPDriverWithLazyLogo lazyLogo) {
+            lazyLogo.loadLogo(logoUpdateCallback);
+        }
+        DBPImage logoImage = driver.getLogoImage();
+        if (logoImage != null) {
+            return DBeaverIcons.getImage(logoImage);
+        }
+        if (connectionEditor != null) {
+            Image image = connectionEditor.getImage();
             if (image != null) {
                 return image;
             }
@@ -237,7 +249,20 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         return super.getImage();
     }
 
-    void saveSettings(DataSourceDescriptor dataSource) {
+    private void updateDriverLogo() {
+        var container = getContainer();
+        if (container == null || container.getShell() == null || container.getShell().isDisposed()) {
+            return;
+        }
+        if (container instanceof MultiPageWizardDialog dialog) {
+            dialog.setTitleImage(getImage());
+            dialog.getShell().layout(true, true);
+        } else if (isCurrentPage()) {
+            container.updateTitleBar();
+        }
+    }
+
+    void saveSettings(@NotNull DataSourceDescriptor dataSource) {
         dataSource.getConnectionConfiguration().setConfigProfile(getActiveProfile());
         if (subPages != null) {
             for (IDialogPage page : subPages) {
@@ -544,7 +569,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     private boolean unselectProfile(@Nullable DBWHandlerDescriptor handlerToKeep) {
-        if (getActiveProfile() == null) {
+        DBWNetworkProfile activeProfile = getActiveProfile();
+        if (activeProfile == null) {
             return true;
         }
 
@@ -578,6 +604,13 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
         }
 
+        if (DBWorkbench.isDistributed()) {
+            for (DBWHandlerConfiguration configuration : activeProfile.getConfigurations()) {
+                if (configuration.isEnabled() && !handlersToRemove.contains(configuration.getHandlerDescriptor())) {
+                    getActiveDataSource().getConnectionConfiguration().updateHandler(new DBWHandlerConfiguration(configuration));
+                }
+            }
+        }
         selectProfile0(null);
 
         for (DBWHandlerDescriptor descriptor : handlersToRemove) {
@@ -745,18 +778,14 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     private boolean confirmTabClose(@NotNull CTabItem item) {
         if (item.getData() instanceof ConnectionPageNetworkHandler page) {
-            final NetworkHandlerDescriptor descriptor = page.getHandlerDescriptor();
-
-            final int decision = ConfirmationDialog.confirmAction(
+            return UIUtils.confirmAction(
                 getShell(),
-                ConfirmationDialog.INFORMATION,
-                ConnectionPreferences.CONFIRM_DISABLE_NETWORK_HANDLER,
-                ConfirmationDialog.CONFIRM,
-                descriptor.getCodeName(),
-                descriptor.getCodeName()
+                UIConnectionMessages.dialog_connection_network_handler_remove_confirmation_title,
+                NLS.bind(
+                    UIConnectionMessages.dialog_connection_network_handler_remove_confirmation_question,
+                    page.getHandlerDescriptor().getCodeName()
+                )
             );
-
-            return decision == IDialogConstants.OK_ID;
         }
 
         return false;
@@ -826,8 +855,6 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                         page.createControl(panel);
                         Dialog.applyDialogFont(panel);
                         UIUtils.configureScrolledComposite(panel, page.getControl());
-                        panel.layout(true, true);
-                        panel.setMinSize(panel.computeSize(SWT.DEFAULT, SWT.DEFAULT));
                     } catch (Throwable e) {
                         DBWorkbench.getPlatformUI().showError("Error creating configuration page", null, e);
                     } finally {
@@ -876,6 +903,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 //        if (isTemporaryConnection()) {
 //            return false;
 //        }
+        if (wizard.getPageSettings() != this) {
+            return true;
+        }
         if (subPages != null) {
             for (IDialogPage page : subPages) {
                 if (page instanceof IWizardPage wizardPage && !wizardPage.isPageComplete()) {
@@ -886,9 +916,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                 }
             }
         }
-        return wizard.getPageSettings() != this ||
-            this.connectionEditor != null &&
-                (this.connectionEditor.isExternalConfigurationProvided() || this.connectionEditor.isComplete());
+        return this.connectionEditor != null &&
+            (this.connectionEditor.isExternalConfigurationProvided() || this.connectionEditor.isComplete());
     }
 
     @Override
@@ -1009,10 +1038,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             return new IDialogPage[0];
         }
 
-        final IDataSourceConnectionEditor originalConnectionEditor = getOriginalConnectionEditor();
+        final IDataSourceConnectionEditor activeConnectionEditor = getConnectionEditor();
 
-        if (originalConnectionEditor instanceof IDialogPageProvider) {
-            subPages = ((IDialogPageProvider) originalConnectionEditor).getDialogPages(extrasOnly, true);
+        if (activeConnectionEditor instanceof IDialogPageProvider pageProvider) {
+            subPages = pageProvider.getDialogPages(extrasOnly, true);
 
             if ((!getDriver().isEmbedded() || CommonUtils.toBoolean(getDriver().getDriverParameter(DBConstants.DRIVER_PARAM_ENABLE_NETWORK_PARAMETERS)))
                 && !CommonUtils.toBoolean(getDriver().getDriverParameter(DBConstants.DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS))

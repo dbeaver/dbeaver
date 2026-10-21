@@ -132,7 +132,7 @@ public abstract class DBWNetworkProfileManager {
     public void removeProfile(@NotNull DBWNetworkProfile profile) {
         List<DBWNetworkProfile> profilesSafe = getProfilesSafe();
         synchronized (profilesSafe) {
-            profilesSafe.remove(profile);
+            profilesSafe.removeIf(p -> CommonUtils.equalObjects(p.getProfileName(), profile.getProfileName()));
         }
     }
 

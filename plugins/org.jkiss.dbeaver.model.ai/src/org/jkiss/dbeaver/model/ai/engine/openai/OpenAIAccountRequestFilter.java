@@ -18,11 +18,12 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.utils.AIHttpRequestFilter;
 import org.jkiss.utils.HttpConstants;
 
 import java.net.http.HttpRequest;
 
-public class OpenAIAccountRequestFilter implements OpenAiClientBase.HttpRequestFilter {
+public class OpenAIAccountRequestFilter implements AIHttpRequestFilter {
     private final OpenAIProperties properties;
     private final OpenAIAccountAuthenticator authenticator;
 

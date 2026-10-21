@@ -18,9 +18,7 @@ package org.jkiss.dbeaver.ui.datadam;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
@@ -32,11 +30,10 @@ import org.jkiss.dbeaver.model.datadam.DDAIEngine;
 import org.jkiss.dbeaver.model.datadam.DDAIEngineProperties;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.model.CachedValue;
 import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
 import org.jkiss.dbeaver.ui.ai.model.ModelSelectorField;
-import org.jkiss.dbeaver.ui.ai.preferences.AIIObjectPropertyConfigurator;
+import org.jkiss.dbeaver.ui.ai.preferences.AbstractAIEngineConfigurator;
 import org.jkiss.dbeaver.ui.datadam.internal.DDUIMessages;
 import org.jkiss.utils.CommonUtils;
 
@@ -44,17 +41,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDescriptor, DDAIEngineProperties> {
+public class DDConfigurator extends AbstractAIEngineConfigurator<AIEngineDescriptor, DDAIEngineProperties> {
+    @Override
+    protected void environmentSettingsChanged() {
+        super.environmentSettingsChanged();
+        modelSelectorField.refreshModelListSilently(true);
+    }
 
     private String baseUrl = DDAIEngineProperties.DEFAULT_ENDPOINT;
     private volatile String token = "";
     private String temperature = "0.0";
-    private boolean logQuery = false;
 
     private Text tokenText;
     private Text baseUrlText;
     private Text temperatureText;
-    private Button logQueryCheck;
     private ModelSelectorField modelSelectorField;
     private ContextWindowSizeField contextWindowSizeField;
 
@@ -71,16 +71,23 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
 
         tokenText = UIUtils.createLabelText(composite, DDUIMessages.datadam_configurator_label_api_key, "", SWT.BORDER | SWT.PASSWORD);
         tokenText.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).span(2, 1).create());
-        tokenText.addModifyListener(e -> token = tokenText.getText());
+        tokenText.addModifyListener(e -> {
+            if (!isUpdatingEnvironmentControls()) {
+                token = tokenText.getText();
+            }
+        });
 
         baseUrlText = UIUtils.createLabelText(composite, DDUIMessages.datadam_configurator_label_endpoint, "");
         baseUrlText.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).span(2, 1).create());
-        baseUrlText.addModifyListener(e -> baseUrl = baseUrlText.getText());
+        baseUrlText.addModifyListener(e -> {
+            if (!isUpdatingEnvironmentControls()) {
+                baseUrl = baseUrlText.getText();
+            }
+        });
 
         modelSelectorField = ModelSelectorField.builder()
             .withParent(composite)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
-            .withRequiredSetting(tokenText, AIUIMessages.model_selector_token_required)
             .withModelListSupplier(modelsCache::get)
             .withModifyListener(() -> {
             })
@@ -96,43 +103,44 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.addModifyListener(e -> temperature = temperatureText.getText());
 
-        logQueryCheck = UIUtils.createCheckbox(
-            composite,
-            DDUIMessages.datadam_configurator_log_query_label,
-            DDUIMessages.datadam_configurator_log_query_tip,
-            false,
-            2
-        );
-        logQueryCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
-            logQuery = logQueryCheck.getSelection()
-        ));
+        createAdvancedSettings(composite);
+        createEnvironmentSettings(propertyChangeListener);
     }
 
     @Override
     public void loadSettings(@NotNull DDAIEngineProperties configuration) {
+        loadAdvancedSettings(configuration);
         baseUrl = CommonUtils.toString(configuration.getBaseUrl(), DDAIEngineProperties.DEFAULT_ENDPOINT);
         token = CommonUtils.toString(configuration.getToken());
         temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
-        logQuery = configuration.isLoggingEnabled();
 
         baseUrlText.setText(baseUrl);
         tokenText.setText(token);
         temperatureText.setText(temperature);
-        logQueryCheck.setSelection(logQuery);
         modelSelectorField.setSelectedModel(CommonUtils.toString(configuration.getModel(), DDAIEngineProperties.DEFAULT_MODEL));
         contextWindowSizeField.setValue(configuration.getContextWindowSize());
 
+        updateEnvironmentControls();
         modelSelectorField.refreshModelListSilently(false);
     }
 
     @Override
     public void saveSettings(@NotNull DDAIEngineProperties configuration) {
+        saveAdvancedSettings(configuration);
         configuration.setBaseUrl(baseUrl);
         configuration.setToken(token);
         configuration.setModel(modelSelectorField.getSelectedModelName());
         configuration.setContextWindowSize(contextWindowSizeField.getValue());
         configuration.setTemperature(CommonUtils.toDouble(temperature));
-        configuration.setLoggingEnabled(logQuery);
+    }
+
+    @Override
+    protected void updateEnvironmentControls() {
+        updateEnvironmentText(tokenText, token, getEnvironmentValue(DDAIEngineProperties.ENV_API_KEY));
+        updateEnvironmentText(baseUrlText, baseUrl, getEnvironmentValue(DDAIEngineProperties.ENV_BASE_URL));
+        AIEngineProperties currentProperties = getCurrentProperties().orElseThrow();
+        modelSelectorField.setEnvironmentModel(
+            currentProperties.isModelSelectionSupported() ? null : currentProperties.getEffectiveModel());
     }
 
     @Override
@@ -143,7 +151,7 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
     @Override
     public boolean isComplete() {
         return tokenText != null
-            && !tokenText.getText().isEmpty()
+            && getCurrentProperties().orElseThrow().isValidConfiguration()
             && contextWindowSizeField.isComplete();
     }
 
@@ -151,18 +159,19 @@ public class DDConfigurator implements AIIObjectPropertyConfigurator<AIEngineDes
     @Override
     public Optional<AIEngineProperties> getCurrentProperties() {
         DDAIEngineProperties propertiesCopy = new DDAIEngineProperties();
+        saveAdvancedSettings(propertiesCopy);
         propertiesCopy.setBaseUrl(baseUrl);
         propertiesCopy.setToken(token);
         propertiesCopy.setModel(modelSelectorField.getSelectedModelName());
         propertiesCopy.setContextWindowSize(contextWindowSizeField.getValue());
         propertiesCopy.setTemperature(CommonUtils.toDouble(temperature));
-        propertiesCopy.setLoggingEnabled(logQuery);
         return Optional.of(propertiesCopy);
     }
 
     @NotNull
     private List<AIModel> fetchModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         DDAIEngineProperties properties = new DDAIEngineProperties();
+        saveAdvancedSettings(properties);
         properties.setToken(token);
         properties.setBaseUrl(baseUrl);
 

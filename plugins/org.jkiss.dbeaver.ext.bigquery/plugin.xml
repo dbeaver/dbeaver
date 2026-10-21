@@ -5,12 +5,22 @@
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
 
+        <dataSourceType
+            id="bigquery"
+            label="Google BigQuery"
+            description="Google BigQuery data warehouse"
+            dataSourceInformation="Serverless cloud data warehouse"
+            icon="icons/bigquery_icon.png"
+            iconBig="icons/bigquery_icon_big.png"
+            logoImage="icons/bigquery_logo.png"/>
+
         <!-- BigQuery -->
 
         <datasource
                 class="org.jkiss.dbeaver.ext.bigquery.BQDataSourceProvider"
                 description="%datasource.bq.description"
                 id="bigquery"
+                dataSourceType="bigquery"
                 parent="generic"
                 label="Google BigQuery"
                 icon="icons/bigquery_icon.png"
@@ -21,8 +31,6 @@
                 <driver
                         id="google_bigquery_jdbc_simba"
                         label="BigQuery (Legacy)"
-                        icon="icons/bigquery_icon.png"
-                        iconBig="icons/bigquery_icon_big.png"
                         class="com.simba.googlebigquery.jdbc42.Driver"
                         sampleURL="jdbc:bigquery://{host}:{port}"
                         defaultHost="https://www.googleapis.com/bigquery/v2"
@@ -51,8 +59,6 @@
                 <driver
                     id="google_bigquery_jdbc"
                     label="BigQuery"
-                    icon="icons/bigquery_icon.png"
-                    iconBig="icons/bigquery_icon_big.png"
                     class="com.google.cloud.bigquery.jdbc.BigQueryDriver"
                     sampleURL="jdbc:bigquery://{host}:{port}"
                     defaultHost="https://www.googleapis.com/bigquery/v2"

@@ -18,18 +18,16 @@ package org.jkiss.dbeaver.model.datadam;
 
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
-import com.dbeaver.rest.client.interceptor.HttpRequestWrapper;
-import com.dbeaver.rest.client.interceptor.HttpResponseWrapper;
-import com.dbeaver.rest.client.interceptor.InterceptorChain;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.datadam.sync.core.DDSyncCredentials;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.HttpConstants;
 
 import java.net.URI;
+import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
@@ -62,8 +60,8 @@ public class DDTrackingClient implements DDTrackingService {
     }
 
     @Nullable
-    public DDTracking start(@NotNull DDSyncCredentials credentials, @NotNull DDClientInfo client) {
-        return startTransport.post(TRACK_START_ENDPOINT, credentials, client);
+    public DDTracking start(@NotNull DDClientInfo client) {
+        return startTransport.postWithDesktopSession(TRACK_START_ENDPOINT, client);
     }
 
     @Nullable
@@ -73,17 +71,17 @@ public class DDTrackingClient implements DDTrackingService {
     }
 
     @Nullable
-    public DDTracking stop(@NotNull DDSyncCredentials credentials, @NotNull String trackingId) {
-        return stopTransport.post(TRACK_STOP_ENDPOINT.replace("{trackingId}", trackingId), credentials);
+    public DDTracking stop(@NotNull String trackingId) {
+        return stopTransport.postWithDesktopSession(TRACK_STOP_ENDPOINT.replace("{trackingId}", trackingId), EMPTY_BODY, false);
     }
 
     private static final class Transport extends AbstractRestClient {
 
         private final String rootPath;
-        private final ThreadLocal<SignedExecution> signedExecution = new ThreadLocal<>();
+        private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
 
         Transport(@NotNull String url, @NotNull String rootPath, int readTimeoutMs) {
-            super(url, DEFAULT_CONNECT_TIMEOUT, readTimeoutMs, List.of());
+            super(url, DEFAULT_CONNECT_TIMEOUT, readTimeoutMs, List.of(), HttpClient.Redirect.NEVER);
             this.rootPath = rootPath;
         }
 
@@ -91,6 +89,7 @@ public class DDTrackingClient implements DDTrackingService {
         DDTracking post(@NotNull String path, @Nullable String authorization, @NotNull Object body) {
             try {
                 URI uri = buildUri(CommonUtils.removeLeadingSlash(rootPath + path), Map.of());
+                DDEndpoints.requireSecureTransport(uri);
                 HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
                     .header(HttpConstants.HEADER_CONTENT_TYPE, MediaType.JSON.toString())
                     .POST(createBodyPublisher(body, MediaType.JSON));
@@ -106,6 +105,7 @@ public class DDTrackingClient implements DDTrackingService {
         DDTracking post(@NotNull String path, @Nullable String authorization) {
             try {
                 URI uri = buildUri(CommonUtils.removeLeadingSlash(rootPath + path), Map.of());
+                DDEndpoints.requireSecureTransport(uri);
                 HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
                     .POST(HttpRequest.BodyPublishers.noBody());
                 applyAuth(builder, authorization);
@@ -117,108 +117,32 @@ public class DDTrackingClient implements DDTrackingService {
         }
 
         @Nullable
-        DDTracking post(@NotNull String path, @NotNull DDSyncCredentials credentials, @NotNull Object body) {
+        DDTracking postWithDesktopSession(@NotNull String path, @NotNull Object body) {
             byte[] bytes = gson.toJson(body).getBytes(StandardCharsets.UTF_8);
-            return postSigned(path, credentials, bytes, true);
+            return postWithDesktopSession(path, bytes, true);
         }
 
         @Nullable
-        DDTracking post(@NotNull String path, @NotNull DDSyncCredentials credentials) {
-            return postSigned(path, credentials, EMPTY_BODY, false);
-        }
-
-        @Nullable
-        private DDTracking postSigned(
+        private DDTracking postWithDesktopSession(
             @NotNull String path,
-            @NotNull DDSyncCredentials credentials,
             @NotNull byte[] body,
             boolean json
         ) {
             try {
                 URI uri = buildUri(CommonUtils.removeLeadingSlash(rootPath + path), Map.of());
+                DDEndpoints.requireSecureTransport(uri);
                 HttpRequest.Builder builder = HttpRequest.newBuilder(uri)
                     .POST(HttpRequest.BodyPublishers.ofByteArray(body));
                 if (json) {
                     builder.header(HttpConstants.HEADER_CONTENT_TYPE, MediaType.JSON.toString());
                 }
-                return executeSigned(builder, uri, credentials, body);
+                builder.header(HttpConstants.HEADER_AUTHORIZATION,
+                    HttpConstants.BEARER_PREFIX + accessService.getAccessTokenForResource(uri));
+                return execute(builder, DDTracking.class);
             } catch (DBException e) {
                 log.debug("DataDam tracking request failed", e);
                 return null;
             }
-        }
-
-        @NotNull
-        private DDTracking executeSigned(
-            @NotNull HttpRequest.Builder builder,
-            @NotNull URI uri,
-            @NotNull DDSyncCredentials credentials,
-            @NotNull byte[] body
-        ) throws DBException {
-            String pathAndQuery = pathAndQuery(uri);
-            builder.header(
-                HttpConstants.HEADER_AUTHORIZATION,
-                HttpConstants.BEARER_PREFIX + credentials.buildToken("POST", pathAndQuery, body));
-            signedExecution.set(new SignedExecution(credentials, body));
-            try {
-                return execute(builder, DDTracking.class);
-            } finally {
-                signedExecution.remove();
-            }
-        }
-
-        @NotNull
-        private static String pathAndQuery(@NotNull URI uri) {
-            return uri.getRawQuery() == null ? uri.getRawPath() : uri.getRawPath() + "?" + uri.getRawQuery();
-        }
-
-        private static final class SignedExecution {
-            private static final String SERVER_TIME_HEADER = "X-DD-Server-Time";
-
-            private final DDSyncCredentials credentials;
-            private final byte[] body;
-
-            private SignedExecution(@NotNull DDSyncCredentials credentials, @NotNull byte[] body) {
-                this.credentials = credentials;
-                this.body = body;
-            }
-
-            @NotNull
-            private HttpResponseWrapper proceedWithRetry(
-                @NotNull InterceptorChain chain,
-                @NotNull HttpRequestWrapper request,
-                @NotNull URI uri
-            ) throws Exception {
-                HttpResponseWrapper response = chain.proceed(request);
-                String serverTime = response.headers().entrySet().stream()
-                    .filter(entry -> entry.getKey().equalsIgnoreCase(SERVER_TIME_HEADER))
-                    .flatMap(entry -> entry.getValue().stream())
-                    .findFirst()
-                    .orElse(null);
-
-                if (serverTime == null) {
-                    return response;
-                }
-
-                credentials.updateServerTime(Long.parseLong(serverTime));
-
-                request.withHeader(
-                    HttpConstants.HEADER_AUTHORIZATION,
-                    HttpConstants.BEARER_PREFIX + credentials.buildToken(request.method(), pathAndQuery(uri), body));
-
-                return chain.proceed(request);
-            }
-        }
-
-        @NotNull
-        @Override
-        protected HttpResponseWrapper executeChain(
-            @NotNull InterceptorChain chain,
-            @NotNull HttpRequestWrapper request,
-            @NotNull URI uri
-        ) throws Exception {
-            SignedExecution execution = signedExecution.get();
-            return execution == null ? chain.proceed(request) : execution.proceedWithRetry(chain, request, uri);
         }
 
         private static void applyAuth(

@@ -136,6 +136,10 @@ public interface IResultSetPresentation {
     @Nullable
     ResultSetCellLocation getCurrentCellLocation();
 
+    default void setCurrentCellLocation(@NotNull ResultSetCellLocation cellLocation) {
+        setCurrentAttribute(cellLocation.getAttribute());
+    }
+
     void setCurrentAttribute(@NotNull DBDAttributeBinding attribute);
 
     void showAttribute(@NotNull DBDAttributeBinding attribute);

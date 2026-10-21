@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.git.feature"
       label="DBeaver Git support"
-      version="1.0.175.qualifier"
+      version="1.0.178.qualifier"
       provider-name="DBeaver Corp">
 
    <copyright>DBeaver Corp and others</copyright>
@@ -16,6 +16,9 @@
    <includes id="org.eclipse.jgit.http.apache" version="0.0.0"/>
    <includes id="org.eclipse.jgit.ssh.apache" version="0.0.0"/>
    <includes id="org.eclipse.egit" version="0.0.0"/>
+
+   <!-- JGit dependency -->
+   <plugin id="com.googlecode.javaewah.JavaEWAH" version="0.0.0"/>
 
    <!-- SSH Agent provider -->
    <plugin id="org.apache.sshd.osgi" version="0.0.0"/>

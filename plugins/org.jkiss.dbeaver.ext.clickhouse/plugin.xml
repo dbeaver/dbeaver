@@ -11,10 +11,18 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="clickhouse"
+            label="ClickHouse"
+            description="ClickHouse database"
+            dataSourceInformation="Column-oriented analytical database system"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon.png"
+            iconBig="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon_big.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.clickhouse.ClickhouseDataSourceProvider"
                 description="Clickhouse"
                 id="clickhouse"
+                dataSourceType="clickhouse"
                 parent="generic"
                 label="ClickHouse"
                 icon="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon.png"
@@ -27,8 +35,6 @@
                         class="com.clickhouse.jdbc.ClickHouseDriver"
                         sampleURL="jdbc:clickhouse://{host}:{port}[/{database}]"
                         defaultPort="8123"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon.png"
-                        iconBig="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon_big.png"
                         description="ClickHouse legacy driver (server version &lt; 21.3)"
                         supportedConfigurationTypes="MANUAL,URL"
                         webURL="https://github.com/yandex/clickhouse-jdbc"
@@ -52,8 +58,6 @@
                     class="com.clickhouse.jdbc.ClickHouseDriver"
                     sampleURL="jdbc:clickhouse://{host}:{port}[/{database}]"
                     defaultPort="8123"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon.png"
-                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.clickhouse/icons/clickhouse_icon_big.png"
                     description="Official ClickHouse driver (server version 21.3+)"
                     supportedConfigurationTypes="MANUAL,URL"
                     webURL="https://github.com/ClickHouse/clickhouse-java"

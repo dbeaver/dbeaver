@@ -16,8 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.ai.controls;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
@@ -67,6 +70,14 @@ public class ScopeSelectorDialog extends BaseDialog {
     @Override
     protected IDialogSettings getDialogBoundsSettings() {
         return UIUtils.getSettingsSection(AIUIActivator.getInstance().getDialogSettings(), DIALOG_ID);
+    }
+
+    @NotNull
+    @Override
+    protected Point getInitialSize() {
+        Point size = super.getInitialSize();
+        size.x = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+        return size;
     }
 
     @NotNull
@@ -130,6 +141,8 @@ public class ScopeSelectorDialog extends BaseDialog {
         selectorPanel.getNavigatorTree().getViewer().expandToLevel(2);
         selectorPanel.checkNodes(selectedNodes, true);
         selectorPanel.setSelection(selectedNodes);
+        selectorPanel.getNavigatorTree().getCheckboxViewer().addCheckStateListener(event -> updateOkButton());
+        selectorPanel.getNavigatorTree().getViewer().addDoubleClickListener(event -> updateOkButton());
 
         UIUtils.createInfoLabel(dialogArea, "Customize database metadata accessible to AI.");
 
@@ -137,21 +150,34 @@ public class ScopeSelectorDialog extends BaseDialog {
     }
 
     @Override
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
+        super.createButtonsForButtonBar(parent);
+        updateOkButton();
+    }
+
+    private void updateOkButton() {
+        Button okButton = getButton(IDialogConstants.OK_ID);
+        if (okButton != null) {
+            okButton.setEnabled(selectorPanel.getCheckedNodes().stream().anyMatch(ScopeSelectorDialog::isSupportedNode));
+        }
+    }
+
+    private static boolean isSupportedNode(@NotNull DBNNode node) {
+        if (node instanceof DBNDatabaseNode databaseNode) {
+            DBSObject object = databaseNode.getObject();
+            return object instanceof DBSEntity || object instanceof DBSEntityContainer || object instanceof DBSStructContainer;
+        }
+        return false;
+    }
+
+    @Override
     protected void okPressed() {
         selectedNodes = selectorPanel.getCheckedNodes();
-        selectedNodes.removeIf(n -> {
-                if (n instanceof DBNDatabaseNode dbn) {
-                    DBSObject object = dbn.getObject();
-                    if (object instanceof DBSEntity ||
-                        object instanceof DBSEntityContainer ||
-                        object instanceof DBSStructContainer
-                    ) {
-                        return false;
-                    }
-                }
-                return true;
-            });
+        selectedNodes.removeIf(n -> !isSupportedNode(n));
         selectedNodes.removeIf(n -> selectedNodes.contains(n.getParentNode()));
+        if (selectedNodes.isEmpty()) {
+            return;
+        }
 
         super.okPressed();
     }

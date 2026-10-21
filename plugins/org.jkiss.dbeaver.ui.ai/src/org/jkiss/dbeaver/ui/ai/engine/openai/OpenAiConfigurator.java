@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.engine.openai.AIAccountAuthenticator;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIAccountAuthenticator;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIBaseProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClientResponses;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
@@ -49,6 +50,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.model.CachedValue;
 import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
+import org.jkiss.dbeaver.ui.ai.model.HttpHeadersField;
 import org.jkiss.dbeaver.ui.ai.model.ModelSelectorField;
 import org.jkiss.dbeaver.ui.ai.preferences.AbstractAIEngineConfigurator;
 import org.jkiss.utils.CommonUtils;
@@ -56,16 +58,18 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
 public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends OpenAIProperties>
     extends AbstractAIEngineConfigurator<ENGINE, PROPERTIES> {
-
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
     protected String baseUrl;
     protected volatile String token = "";
     private String temperature = "0.0";
+    private volatile Map<String, String> customHeaders = Map.of();
+    private HttpHeadersField headersField;
 
     @Nullable
     protected Text baseUrlText;
@@ -166,14 +170,40 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     }
 
     protected void createAdditionalSettings(@NotNull Composite parent) {
-        createAdvancedSettings(parent);
+        Composite advancedSettings = createAdvancedSettings(parent);
+        createEnvironmentSettings(propertyChangeListener);
+        if (baseUrlText != null) {
+            headersField = new HttpHeadersField(advancedSettings, () -> {
+                customHeaders = headersField.getHeaders();
+                settingsGeneration++;
+                propertyChangeListener.run();
+            });
+        }
+    }
+
+    @Override
+    protected void loadAdvancedSettings(@NotNull AIEngineProperties configuration) {
+        super.loadAdvancedSettings(configuration);
+        if (configuration instanceof OpenAIProperties openAIProperties) {
+            customHeaders = openAIProperties.getCustomHeaders();
+            if (headersField != null) {
+                headersField.setHeaders(customHeaders);
+            }
+        }
+    }
+
+    @Override
+    protected void saveAdvancedSettings(@NotNull AIEngineProperties configuration) {
+        super.saveAdvancedSettings(configuration);
+        if (configuration instanceof OpenAIProperties openAIProperties) {
+            openAIProperties.setCustomHeaders(customHeaders);
+        }
     }
 
     protected void createModelParameters(@NotNull Composite parent) {
         modelSelectorField = ModelSelectorField.builder()
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
-            .withRequiredSetting(tokenText, AIUIMessages.model_selector_token_required)
             .withModelListSupplier(
                 (monitor, forceRefresh) -> modelsCache.get(monitor, forceRefresh).stream()
                     .filter(it -> it.features().contains(AIModelFeature.CHAT))
@@ -229,14 +259,19 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                 .toList();
         }
         OpenAIProperties properties = new OpenAIProperties();
+        saveAdvancedSettings(properties);
         properties.setToken(currentToken);
         properties.setBaseUrl(currentBaseUrl);
-        if (!CommonUtils.isEmpty(currentToken)) {
-            try (OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)) {
-                return engine.getModels(monitor);
-            }
+        properties.setCustomHeaders(customHeaders);
+        if (currentProperties != null) {
+            properties.setTimeout(currentProperties.getTimeout());
         }
-        return Collections.emptyList();
+        if (properties.isTokenRequired() && CommonUtils.isEmptyTrimmed(properties.getEffectiveToken())) {
+            return Collections.emptyList();
+        }
+        try (OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)) {
+            return engine.getModels(monitor);
+        }
     }
 
     @NotNull
@@ -294,8 +329,12 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         gd.widthHint = 150;
         tokenText.setLayoutData(gd);
         tokenText.addModifyListener(e -> {
+            if (isUpdatingEnvironmentControls()) {
+                return;
+            }
             token = tokenText.getText();
             settingsGeneration++;
+            updateModelRefreshState();
         });
         tokenText.setMessage(AIUIMessages.openai_configurator_token_placeholder);
         createURLInfoLink(parent);
@@ -318,8 +357,12 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         baseUrlText = new Text(parent, SWT.BORDER);
         baseUrlText.setData("label", baseUrlLabel);
         baseUrlText.addModifyListener(e -> {
+            if (isUpdatingEnvironmentControls()) {
+                return;
+            }
             baseUrl = baseUrlText.getText();
             settingsGeneration++;
+            updateModelRefreshState();
         });
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
@@ -356,12 +399,18 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
 
     @Override
     public boolean isComplete() {
-        if (!contextWindowSizeField.isComplete()) {
+        if (!contextWindowSizeField.isComplete() || headersField != null && !headersField.isComplete()) {
             return false;
         }
         return isAccountAuthentication()
             ? properties != null && properties.isAccountConnected()
-            : tokenText != null && !tokenText.getText().isEmpty();
+            : hasApiCredentials();
+    }
+
+    @Nullable
+    @Override
+    public String getErrorMessage() {
+        return headersField == null ? null : headersField.getErrorMessage();
     }
 
     @Override
@@ -392,7 +441,8 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         boolean account = isAccountAuthentication();
         String accountTokenPlaceholder = getAccountProviderName() + " account";
         if (account && !accountTokenPlaceholder.equals(tokenText.getText())) {
-            apiToken = tokenText.getText();
+            apiToken = token;
+            updateEnvironmentText(tokenText, token, null);
             tokenText.setText(accountTokenPlaceholder);
         } else if (!account) {
             tokenText.setText(CommonUtils.notEmpty(apiToken));
@@ -408,12 +458,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             ? AIUIMessages.openai_configurator_sign_out
             : NLS.bind(AIUIMessages.openai_configurator_sign_in, getAccountProviderName()));
         accountActionButton.setEnabled(true);
-        if (modelSelectorField != null) {
-            modelSelectorField.setRefreshEnabled(
-                !account || connected,
-                NLS.bind(AIUIMessages.openai_configurator_sign_in_to_refresh_models, getAccountProviderName())
-            );
-        }
+        updateModelRefreshState();
         setVisible(accountLabel, account);
         setVisible(accountText, account);
         setVisible(accountActionButton, account);
@@ -423,6 +468,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         if (baseUrlText != null) {
             setVisible(baseUrlText, !account);
         }
+        updateEnvironmentControls();
         accountText.getParent().layout(true, true);
     }
 
@@ -432,9 +478,26 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         propertyChangeListener.run();
         boolean canLoadModels = properties != null && (isAccountAuthentication()
             ? properties.isAccountConnected()
-            : !CommonUtils.isEmpty(apiToken));
+            : hasApiCredentials());
         if (canLoadModels) {
             modelSelectorField.refreshModelListSilently(true);
+        }
+    }
+
+    protected boolean hasApiCredentials() {
+        OpenAIProperties currentProperties = createConnectionProperties();
+        return !CommonUtils.isEmptyTrimmed(currentProperties.getEffectiveToken())
+            || baseUrlText != null && !currentProperties.isTokenRequired();
+    }
+
+    protected void updateModelRefreshState() {
+        if (modelSelectorField != null) {
+            modelSelectorField.setRefreshEnabled(
+                isAccountAuthentication() ? properties != null && properties.isAccountConnected() : hasApiCredentials(),
+                isAccountAuthentication()
+                    ? NLS.bind(AIUIMessages.openai_configurator_sign_in_to_refresh_models, getAccountProviderName())
+                    : AIUIMessages.model_selector_token_required
+            );
         }
     }
 
@@ -633,4 +696,42 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         return authenticator.completeDeviceAuthorization(authorization, popupCompletion);
     }
 
+    @NotNull
+    protected OpenAIProperties createConnectionProperties() {
+        OpenAIProperties currentProperties = new OpenAIProperties();
+        currentProperties.setUseEnvVariables(useEnvVariables);
+        currentProperties.setToken(token);
+        currentProperties.setBaseUrl(baseUrl);
+        return currentProperties;
+    }
+
+    @Nullable
+    protected String getEnvironmentToken() {
+        return getEnvironmentValue(OpenAIProperties.ENV_API_KEY);
+    }
+
+    @Override
+    protected void updateEnvironmentControls() {
+        if (!isAccountAuthentication()) {
+            updateEnvironmentText(tokenText, token, getEnvironmentToken());
+        }
+        updateEnvironmentText(baseUrlText, baseUrl, isAccountAuthentication() ? null : getEnvironmentValue(OpenAIProperties.ENV_BASE_URL));
+        OpenAIProperties currentProperties = createConnectionProperties();
+        String environmentModel = currentProperties.isModelSelectionSupported() ? null : currentProperties.getEffectiveModel();
+        modelSelectorField.setEnvironmentModel(environmentModel);
+        String effectiveModel = environmentModel == null ? modelSelectorField.getSelectedModelName() : environmentModel;
+        temperatureText.setEnabled(OpenAIModels.getModelByName(effectiveModel)
+            .map(OpenAIModels::isTemperatureEditable)
+            .orElse(true));
+    }
+
+    @Override
+    protected void environmentSettingsChanged() {
+        super.environmentSettingsChanged();
+        settingsGeneration++;
+        updateModelRefreshState();
+        if (modelSelectorField != null) {
+            modelSelectorField.refreshModelListSilently(true);
+        }
+    }
 }

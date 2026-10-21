@@ -30,7 +30,9 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
@@ -108,6 +110,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
         DBDValueHint.HintType.STRING, DBDValueHint.HintType.ACTION, DBDValueHint.HintType.IMAGE);
 
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
+    private static final int MAX_FULL_ARRAY_PREVIEW_ITEMS = 100;
+    private static final int MAX_FULL_ARRAY_PREVIEW_TEXT_LENGTH = 1000;
 
     private Spreadsheet spreadsheet;
 
@@ -711,11 +715,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
                     String[][] newLines = parseGridLines(strValue, settings.isInsertMultipleRows(), settings.isIgnoreQuotes());
 
                     if (insertNewRows) {
-                        for (int i = 0; i < newLines.length; i++) {
-                            controller.addNewRow(RowPlacement.BEFORE_SELECTION, false, false);
-                        }
+                        ResultSetRow currentRow = controller.getCurrentRow();
+                        int insertionIndex = controller.isRecordMode() && currentRow != null ?
+                            currentRow.getVisualNumber() : rowNum;
+                        controller.preserveNewRows(insertionIndex, newLines.length);
                         spreadsheet.refreshRowsData();
-                        //rowNum++;
                     } else {
                         while (rangeEnd == null && rowNum + newLines.length > spreadsheet.getItemCount()) {
                             controller.addNewRow(RowPlacement.AT_END, false, false);
@@ -2440,6 +2444,18 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             info.value = cellValue;
             info.text = formatValue(colElement, rowElement, info.value);
+            if (attr != null && cellValue instanceof DBDCollection collection &&
+                !collection.isNull() && !collection.isEmpty() && !spreadsheet.isCellExpanded(rowElement, colElement)
+            ) {
+                info.fullTextProvider = () -> {
+                    try {
+                        return formatArrayPreview(attr, collection);
+                    } catch (Exception e) {
+                        // The compact preview is still available if the full value cannot be formatted.
+                        return null;
+                    }
+                };
+            }
             info.state = STATE_NONE;
 
             if (attr != null && cellValue != DBDVoid.INSTANCE) {
@@ -2624,7 +2640,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return attr.getValueRenderer().getValueDisplayString(
                     attr.getAttribute(),
                     value,
-                    getValueRenderFormat(attr, value));
+                    getValueRenderFormat(value));
             } catch (Exception e) {
                 return new DBDValueError(e);
             }
@@ -2939,9 +2955,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (row == null) {
                 return null;
             }
-            CellInformation cellInfo = getCellInfo(colElement, rowElement, false);
             int hintOptions = options;
-            if ((IGridContentProvider.STATE_EXPANDED & cellInfo.state) != 0) {
+            if (spreadsheet.isCellExpanded(rowElement, colElement)) {
                 hintOptions |= DBDValueHintProvider.OPTION_ROW_EXPANDED;
             }
             if (controller.isRecordMode()) {
@@ -3039,6 +3054,48 @@ public class SpreadsheetPresentation extends AbstractPresentation
         ResultSetRow currentRow = getController().getCurrentRow();
         IGridRow focusRow = spreadsheet.getFocusRow();
         return currentAttribute == null || currentRow == null ? null : makeResultSetCellLocation(currentAttribute, currentRow, focusRow);
+    }
+
+    @Override
+    public void setCurrentCellLocation(@NotNull ResultSetCellLocation cellLocation) {
+        boolean recordMode = getController().isRecordMode();
+        IGridColumn column = spreadsheet.getColumnByElement(recordMode ? cellLocation.getRow() : cellLocation.getAttribute());
+        if (column == null) {
+            super.setCurrentCellLocation(cellLocation);
+            return;
+        }
+
+        // Fast-path: locate the row directly by element (common case: no nested row/value path)
+        int fromIndex = recordMode ? 0 : cellLocation.getRow().getVisualNumber();
+        Object rowElement = recordMode ? cellLocation.getAttribute() : cellLocation.getRow();
+        IGridRow row = spreadsheet.getRowByElement(fromIndex, rowElement);
+        if (row != null && trySetCursor(cellLocation, column, row)) {
+            return;
+        }
+
+        // Locate the row by iterating through all rows (needed for nested rows/value paths)
+        for (int rowIndex = 0; rowIndex < spreadsheet.getItemCount(); rowIndex++) {
+            IGridRow row1 = spreadsheet.getRow(rowIndex);
+            if (row1 != null && trySetCursor(cellLocation, column, row1)) {
+                return;
+            }
+        }
+
+        super.setCurrentCellLocation(cellLocation);
+    }
+
+    private boolean trySetCursor(@NotNull ResultSetCellLocation location, @NotNull IGridColumn column, @NotNull IGridRow row) {
+        var cell = new GridCell(column, row);
+        var candidate = getCellLocation(cell);
+        if (candidate.getRow() == location.getRow()
+            && candidate.getAttribute() == location.getAttribute()
+            && Arrays.equals(candidate.getRowIndexes(), location.getRowIndexes())
+            && Objects.equals(candidate.getValuePath(), location.getValuePath())
+        ) {
+            spreadsheet.setCursor(cell, false, true, true);
+            return true;
+        }
+        return false;
     }
 
     @NotNull
@@ -3146,7 +3203,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     }
 
     @NotNull
-    private DBDDisplayFormat getValueRenderFormat(@NotNull DBDAttributeBinding attr, @Nullable Object value) {
+    private DBDDisplayFormat getValueRenderFormat(@Nullable Object value) {
         if (value instanceof Number && useNativeNumbersFormat) {
             return DBDDisplayFormat.NATIVE;
         }
@@ -3173,6 +3230,69 @@ public class SpreadsheetPresentation extends AbstractPresentation
         return value instanceof DBDCollection collection
             && !collection.isNull()
             && (collection.isEmpty() || spreadsheet.isCellExpanded(row, column));
+    }
+
+    /**
+     * Produces a complete preview using the database-specific renderer when the collection is small enough to display.
+     */
+    @Nullable
+    private String formatArrayPreview(
+        @NotNull DBDAttributeBinding attribute,
+        @NotNull DBDCollection collection
+    ) {
+        int[] remainingItems = {MAX_FULL_ARRAY_PREVIEW_ITEMS};
+        int[] remainingTextLength = {MAX_FULL_ARRAY_PREVIEW_TEXT_LENGTH};
+        boolean[] hasNumbers = {false};
+        Set<DBDCollection> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+        if (!isArrayPreviewBounded(collection, remainingItems, remainingTextLength, hasNumbers, visited)) {
+            return null;
+        }
+
+        String preview = attribute.getValueRenderer().getValueDisplayString(
+            attribute.getAttribute(),
+            collection,
+            hasNumbers[0] && useNativeNumbersFormat ? DBDDisplayFormat.NATIVE : gridValueFormat);
+        return preview.length() <= MAX_FULL_ARRAY_PREVIEW_TEXT_LENGTH ? preview : null;
+    }
+
+    /**
+     * Checks nested collection limits and cycles without invoking value handlers before the complete value is rendered.
+     */
+    private static boolean isArrayPreviewBounded(
+        @NotNull DBDCollection collection,
+        @NotNull int[] remainingItems,
+        @NotNull int[] remainingTextLength,
+        @NotNull boolean[] hasNumbers,
+        @NotNull Set<DBDCollection> visited
+    ) {
+        if (!visited.add(collection)) {
+            return false;
+        }
+        try {
+            for (int i = 0; i < collection.getItemCount(); i++) {
+                if (--remainingItems[0] < 0) {
+                    return false;
+                }
+                Object item = collection.getItem(i);
+                if (item instanceof DBDCollection nested) {
+                    if (!isArrayPreviewBounded(nested, remainingItems, remainingTextLength, hasNumbers, visited)) {
+                        return false;
+                    }
+                } else {
+                    if (item instanceof Number) {
+                        hasNumbers[0] = true;
+                    }
+                    if (item instanceof CharSequence text &&
+                        (remainingTextLength[0] -= text.length()) < 0
+                    ) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        } finally {
+            visited.remove(collection);
+        }
     }
 
     private boolean isComplexValuesExpansionEnabled() {
