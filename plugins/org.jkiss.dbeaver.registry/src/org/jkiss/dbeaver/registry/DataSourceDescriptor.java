@@ -546,17 +546,15 @@ public class DataSourceDescriptor
     @Nullable
     @Override
     public DBPTransactionIsolation getActiveTransactionsIsolation() {
-        if (dataSource != null) {
+        if (dataSource != null && dataSource.hasDefaultInstance()) {
             DBSInstance defaultInstance = dataSource.getDefaultInstance();
-            if (defaultInstance != null) {
-                DBCTransactionManager txnManager = DBUtils.getTransactionManager(DBUtils.getDefaultContext(defaultInstance, false));
-                if (txnManager != null) {
-                    try {
-                        return txnManager.getTransactionIsolation();
-                    } catch (DBCException e) {
-                        log.debug("Can't determine isolation level", e);
-                        return null;
-                    }
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(DBUtils.getDefaultContext(defaultInstance, false));
+            if (txnManager != null) {
+                try {
+                    return txnManager.getTransactionIsolation();
+                } catch (DBCException e) {
+                    log.debug("Can't determine isolation level", e);
+                    return null;
                 }
             }
         }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,10 @@
 package org.jkiss.dbeaver.registry.task;
 
 import com.google.gson.Gson;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.task.DBTTaskRun;
+import org.jkiss.dbeaver.model.task.DBTTaskRunRecord;
 
 import java.io.Reader;
 import java.nio.file.Files;
@@ -48,6 +51,15 @@ public class TaskUtils {
         }
     }
 
+
+    /**
+     * Returns the file identity within a task's statistics directory. New logs use the run ID;
+     * imported snapshots retain the original filename ID because their database ID is namespaced by task.
+     */
+    @NotNull
+    public static String getRunFileId(@NotNull DBTTaskRun run) {
+        return run instanceof DBTTaskRunRecord record && record.legacyRunId() != null ? record.legacyRunId() : run.getId();
+    }
 
     public static String buildRunLogFileName(String runId) {
         return RUN_LOG_PREFIX + runId + "." + RUN_LOG_EXT;

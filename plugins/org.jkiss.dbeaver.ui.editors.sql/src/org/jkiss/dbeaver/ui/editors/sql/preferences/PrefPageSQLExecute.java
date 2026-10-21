@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.sql.SQLScriptErrorHandling;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.MetadataRefreshBehavior;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.StatisticsTabOnExecutionBehavior;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
@@ -39,11 +40,18 @@ import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
 /**
  * PrefPageSQLExecute
  */
 public class PrefPageSQLExecute extends TargetPrefPage {
     private static final Log log = Log.getLog(PrefPageSQLExecute.class);
+    private static final List<MetadataRefreshBehavior> METADATA_REFRESH_BEHAVIORS = List.of(
+        MetadataRefreshBehavior.ASK,
+        MetadataRefreshBehavior.ALWAYS,
+        MetadataRefreshBehavior.NEVER
+    );
 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sqlexecute"; //$NON-NLS-1$
 
@@ -51,7 +59,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
     private Spinner executeTimeoutText;
     private Button soundOnQueryEnd;
     private Button updateDefaultAfterExecute;
-    private Button showMetadataRefreshNotification;
+    private Combo refreshOnDDLCombo;
     private Button clearOutputBeforeExecute;
 
     private Combo commitTypeCombo;
@@ -161,13 +169,14 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                     false,
                     2
                 );
-                showMetadataRefreshNotification = UIUtils.createCheckbox(
+                refreshOnDDLCombo = UIUtils.createLabelCombo(
                     commonGroup,
-                    SQLEditorMessages.pref_page_sql_editor_label_show_metadata_refresh_notification,
-                    SQLEditorMessages.pref_page_sql_editor_label_show_metadata_refresh_notification_tip,
-                    false,
-                    2
+                    SQLEditorMessages.pref_page_sql_editor_label_reload_metadata_on_ddl,
+                    SQLEditorMessages.pref_page_sql_editor_label_reload_metadata_on_ddl_tip,
+                    SWT.READ_ONLY | SWT.DROP_DOWN
                 );
+                refreshOnDDLCombo.setItems(METADATA_REFRESH_BEHAVIORS.stream()
+                    .map(behavior -> behavior.displayName).toArray(String[]::new));
                 clearOutputBeforeExecute = UIUtils.createCheckbox(
                     commonGroup,
                     SQLEditorMessages.pref_page_sql_editor_label_clear_output_before_execute,
@@ -438,7 +447,7 @@ public class PrefPageSQLExecute extends TargetPrefPage {
             store.setValue(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE, updateDefaultAfterExecute.getSelection());
             store.setValue(
                 SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION,
-                showMetadataRefreshNotification.getSelection()
+                METADATA_REFRESH_BEHAVIORS.get(refreshOnDDLCombo.getSelectionIndex()).name()
             );
             store.setValue(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE, clearOutputBeforeExecute.getSelection());
 
@@ -556,11 +565,12 @@ public class PrefPageSQLExecute extends TargetPrefPage {
                 ? store.getDefaultBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
                 : store.getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
         );
-        showMetadataRefreshNotification.setSelection(
+        MetadataRefreshBehavior refreshBehavior = MetadataRefreshBehavior.parse(
             useDefaults
-                ? store.getDefaultBoolean(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION)
-                : store.getBoolean(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION)
+                ? store.getDefaultString(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION)
+                : store.getString(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION)
         );
+        refreshOnDDLCombo.select(METADATA_REFRESH_BEHAVIORS.indexOf(refreshBehavior));
         clearOutputBeforeExecute.setSelection(
             useDefaults
                 ? store.getDefaultBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)

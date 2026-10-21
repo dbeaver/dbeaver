@@ -45,21 +45,23 @@ public class SpannerDataSource extends GenericDataSource {
         super(monitor, container, metaModel, new SpannerSQLDialect());
     }
 
+    @Nullable
     @Override
-	protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
-		String url = super.getConnectionURL(connectionInfo);
-		if (url != null && url.startsWith("jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s")) {
-			// Official driver.
-			return String.format(url, connectionInfo.getServerName(), connectionInfo.getHostName(), connectionInfo.getDatabaseName());
-		}
-		return url;
-	}
+    protected String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
+        String url = super.getConnectionURL(connectionInfo);
+        if (url != null && url.startsWith("jdbc:cloudspanner:/projects/%s/instances/%s/databases/%s")) {
+            // Official driver.
+            return String.format(url, connectionInfo.getServerName(), connectionInfo.getHostName(), connectionInfo.getDatabaseName());
+        }
+        return url;
+    }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
