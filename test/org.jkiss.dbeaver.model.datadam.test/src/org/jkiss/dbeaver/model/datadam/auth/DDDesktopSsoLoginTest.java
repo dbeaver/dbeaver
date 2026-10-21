@@ -53,7 +53,7 @@ class DDDesktopSsoLoginTest {
     void startSso() throws IOException {
         sso = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         issuer = URI.create("http://127.0.0.1:" + sso.getAddress().getPort());
-        sso.createContext("/sso/desktop/config", exchange -> {
+        sso.createContext("/sso/config", exchange -> {
             byte[] response = new Gson().toJson(Map.of("issuer", issuer.toString())).getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(200, response.length);
             try (var output = exchange.getResponseBody()) {
@@ -87,6 +87,13 @@ class DDDesktopSsoLoginTest {
     @AfterEach
     void stopSso() {
         sso.stop(0);
+    }
+
+    @Test
+    void discoversIssuerThroughGenericConfigurationEndpoint() throws Exception {
+        try (var client = new DDDesktopSsoClient(issuer)) {
+            Assertions.assertEquals(issuer, client.discover());
+        }
     }
 
     @Test

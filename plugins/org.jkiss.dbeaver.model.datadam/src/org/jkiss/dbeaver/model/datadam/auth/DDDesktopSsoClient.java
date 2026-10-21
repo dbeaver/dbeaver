@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.model.datadam.auth;
 
 import com.dbeaver.datadam.sso.api.DDSsoConstants;
-import com.dbeaver.datadam.sso.api.model.DDSsoDesktopConfigResponse;
+import com.dbeaver.datadam.sso.api.model.DDSsoConfigResponse;
 import com.dbeaver.datadam.sso.api.model.DDSsoDesktopTokenResponse;
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
@@ -43,7 +43,8 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
     @NotNull
     public URI discover() throws DBException {
         try {
-            DDSsoDesktopConfigResponse config = executeGetRequest("sso/desktop/config", DDSsoDesktopConfigResponse.class);
+            DDSsoConfigResponse config = executeGetRequest(
+                CommonUtils.removeLeadingSlash(DDSsoConstants.APPLICATION_CONFIG_PATH), DDSsoConfigResponse.class);
             if (config == null || config.issuer() == null) {
                 throw new DBException("Invalid desktop SSO configuration");
             }
