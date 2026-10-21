@@ -153,7 +153,7 @@ public class PostgreCreateSubscriptionDialog extends BaseTitleDialog implements 
     public void updateMessage() {
         setTitle(page.getStepTitle());
         setMessage(page.getStepDescription());
-        setErrorMessage(page.getErrorMessage());
+        setErrorMessage(page.hasNextStep() ? null : page.getErrorMessage());
         updateButtons();
     }
 

@@ -81,6 +81,7 @@ public class PostgrePublicationTablesEditor extends AbstractDatabaseObjectEditor
         viewer = CheckboxTableViewer.newCheckList(content, SWT.BORDER | SWT.V_SCROLL);
         viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
         viewer.getTable().setEnabled(false);
+        viewer.getTable().setToolTipText(PostgreMessages.dialog_create_publication_tables);
         viewer.setContentProvider(ArrayContentProvider.getInstance());
         viewer.setLabelProvider(new LabelProvider() {
             @NotNull
@@ -177,13 +178,10 @@ public class PostgrePublicationTablesEditor extends AbstractDatabaseObjectEditor
                 selectionCount.setText(NLS.bind(PostgreMessages.dialog_create_publication_selected_tables,
                     publication.getCreationTables().size()));
                 if (tablesLoaded) {
-                    message.setText(publication.isPersisted()
-                        ? PostgreMessages.dialog_create_publication_saved_tables
-                        : publication.isAllTables()
-                        ? publication.getCreationTables().isEmpty()
-                            ? PostgreMessages.dialog_create_publication_all_tables_hint
-                            : PostgreMessages.dialog_create_publication_error_all_tables
-                        : PostgreMessages.dialog_create_publication_tables);
+                    String warning = publication.isAllTables() && !publication.getCreationTables().isEmpty()
+                        ? PostgreMessages.dialog_create_publication_error_all_tables : "";
+                    message.setText(warning);
+                    UIUtils.setControlVisible(message, !warning.isEmpty());
                 }
                 message.getParent().layout(true, true);
             }

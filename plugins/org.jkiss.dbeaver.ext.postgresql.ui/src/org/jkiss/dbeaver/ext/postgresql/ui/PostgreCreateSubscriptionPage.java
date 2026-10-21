@@ -18,8 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.ui;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.preference.JFacePreferences;
-import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -64,7 +63,7 @@ import java.util.Locale;
 import java.util.Set;
 
 public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
-    private static final int DEFAULT_PAGE_HEIGHT_IN_LINES = 24;
+    private static final int DEFAULT_PAGE_HEIGHT_IN_LINES = 20;
     private static final int ADVANCED_LABEL_WIDTH = 150;
     private static final int COMMIT_CONTROL_WIDTH = 200;
     private static final int FIELD_LABEL_TOP_MARGIN = 3;
@@ -99,9 +98,8 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
     private StackLayout publicationsListLayout;
     private Composite publicationsEmptyArea;
     private Label publicationsEmpty;
-    private Label publicationSource;
-    private Label publicationConnectionStatus;
-    private Boolean subscriberConnectionVerified;
+    private Button publicationSource;
+    private Button publisherSetup;
     private Boolean publisherLogicalReplicationEnabled;
     private boolean publicationsDirty = true;
     private Text publicationsFilter;
@@ -266,21 +264,18 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
         ((GridLayout) source.getLayout()).verticalSpacing = PostgreSubscriptionDialogLayout.COMPACT_SPACING;
         source.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         UIUtils.createControlLabel(source, PostgreMessages.dialog_create_subscription_publications_datasource);
-        publicationSource = UIUtils.createLabel(source, "");
+        publicationSource = UIUtils.createDialogButton(source, "",
+            SelectionListener.widgetSelectedAdapter(event -> publisherPanel.showPublicationSourcesMenu(publicationSource)));
         publicationSource.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         publicationSource.setToolTipText(PostgreMessages.dialog_create_subscription_publications_datasource_tip);
         loadPublicationsButton = UIUtils.createDialogButton(source, PostgreMessages.dialog_create_subscription_load_publications,
             SelectionListener.widgetSelectedAdapter(event -> loadPublications()));
-        publicationConnectionStatus = createDescription(source, "");
-        ((GridData) publicationConnectionStatus.getLayoutData()).horizontalSpan = 3;
-        updatePublicationConnectionStatus();
         publicationsStatus = createHint(page, "");
         UIUtils.setControlVisible(publicationsStatus, false);
-        Composite publications = PostgreSubscriptionDialogLayout.createSection(page,
-            PostgreMessages.dialog_create_subscription_publications, GridData.FILL_BOTH);
-        ((GridLayout) publications.getLayout()).marginLeft = 0;
-        ((ExpandableCompositeEx) publications.getParent()).clientVerticalSpacing =
-            PostgreSubscriptionDialogLayout.COMPACT_SPACING;
+        Composite publications = UIUtils.createComposite(page, 1);
+        publications.setLayoutData(new GridData(GridData.FILL_BOTH));
+        ((GridLayout) publications.getLayout()).marginWidth = 0;
+        ((GridLayout) publications.getLayout()).marginHeight = 0;
         publicationsFilter = new Text(publications, SWT.SEARCH | SWT.ICON_SEARCH | SWT.ICON_CANCEL);
         publicationsFilter.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         publicationsFilter.setMessage(PostgreMessages.dialog_create_subscription_filter_publications);
@@ -346,8 +341,6 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
         String connectionInfo = getPublisherConnectionInfo();
         long revision = publisherRevision;
         connectionTestStatus.setText(PostgreMessages.dialog_create_subscription_testing_connection);
-        subscriberConnectionVerified = null;
-        updatePublicationConnectionStatus();
         updateSize();
         try {
             Boolean succeeded = UIUtils.runWithDialog(monitor -> {
@@ -355,20 +348,17 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
                 return !monitor.isCanceled();
             });
             if (!connectionTestStatus.isDisposed() && revision == publisherRevision) {
-                subscriberConnectionVerified = Boolean.TRUE.equals(succeeded) ? Boolean.TRUE : null;
                 connectionTestStatus.setText(Boolean.TRUE.equals(succeeded)
                     ? PostgreMessages.dialog_create_subscription_connection_verified : "");
                 connectionTestStatus.setToolTipText(PostgreMessages.dialog_create_subscription_test_connection_success);
             }
         } catch (DBException e) {
             if (!connectionTestStatus.isDisposed() && revision == publisherRevision) {
-                subscriberConnectionVerified = Boolean.FALSE;
                 connectionTestStatus.setText(e.getMessage());
                 connectionTestStatus.setToolTipText(e.getMessage());
             }
         }
         if (!connectionTestStatus.isDisposed()) {
-            updatePublicationConnectionStatus();
             getShell().forceActive();
             updateSize();
         }
@@ -384,8 +374,8 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
 
     private void publisherChanged() {
         publisherRevision++;
-        subscriberConnectionVerified = null;
         publisherLogicalReplicationEnabled = null;
+        updatePublisherSetup();
         if (connectionTestStatus != null) {
             connectionTestStatus.setText(PostgreMessages.dialog_create_subscription_connection_not_tested);
             connectionTestStatus.setToolTipText(null);
@@ -407,7 +397,6 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
             publicationsFilter.setText("");
             setPublicationStatus("");
             updatePublicationSource();
-            updatePublicationConnectionStatus();
             updateLoadPublicationsButton();
         }
         if (slotText != null) {
@@ -423,19 +412,10 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
 
     private void updatePublicationSource() {
         String source = publisherPanel.getPublicationSourceName();
-        publicationSource.setText(source);
+        publicationSource.setText(source + (publisherPanel.hasCopiedConnection() ? " \u25BE" : ""));
+        publicationSource.setEnabled(publisherPanel.hasCopiedConnection());
         loadPublicationsButton.setToolTipText(NLS.bind(PostgreMessages.dialog_create_subscription_publications_source, source)
             + "\n" + PostgreMessages.dialog_create_subscription_load_publications_tip);
-    }
-
-    private void updatePublicationConnectionStatus() {
-        if (publicationConnectionStatus != null) {
-            publicationConnectionStatus.setText(subscriberConnectionVerified == null
-                ? PostgreMessages.dialog_create_subscription_publications_subscriber_not_tested
-                : subscriberConnectionVerified
-                    ? PostgreMessages.dialog_create_subscription_publications_subscriber_verified
-                    : PostgreMessages.dialog_create_subscription_publications_subscriber_failed);
-        }
     }
 
     private void setPublicationStatus(@NotNull String status) {
@@ -476,9 +456,9 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
                             availablePublications = names;
                             refreshPublicationInput();
                             refreshPublicationList();
-                            setPublicationStatus(!logicalReplicationEnabled
-                                ? PostgreMessages.dialog_create_subscription_publisher_wal_level
-                                : names.isEmpty() ? PostgreMessages.dialog_create_subscription_no_publications : "");
+                            setPublicationStatus(names.isEmpty() ? PostgreMessages.dialog_create_subscription_no_publications : "");
+                            updatePublisherSetup();
+                            validateProperties();
                         }
                     });
                 } catch (Exception e) {
@@ -590,11 +570,10 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
         ((GridLayout) dependent.getLayout()).verticalSpacing = PostgreSubscriptionDialogLayout.ROW_SPACING;
         enabledButton = UIUtils.createCheckbox(dependent, PostgreMessages.dialog_create_subscription_enabled, subscription.isEnabled());
         enabledButton.setToolTipText(PostgreMessages.dialog_create_subscription_enabled_tip);
-        createSlot = createOptionWithDescription(dependent, PostgreMessages.dialog_create_subscription_create_slot,
-            PostgreMessages.dialog_create_subscription_create_slot_hint, subscription.isCreateSlot());
+        createSlot = UIUtils.createCheckbox(dependent,
+            PostgreMessages.dialog_create_subscription_create_slot, subscription.isCreateSlot());
         createSlot.setToolTipText(PostgreMessages.dialog_create_subscription_create_slot_tip);
-        copyData = createOptionWithDescription(dependent, PostgreMessages.dialog_create_subscription_copy_data,
-            PostgreMessages.dialog_create_subscription_copy_data_hint, subscription.isCopyData());
+        copyData = UIUtils.createCheckbox(dependent, PostgreMessages.dialog_create_subscription_copy_data, subscription.isCopyData());
         copyData.setToolTipText(PostgreMessages.dialog_create_subscription_copy_data_tip);
         createSlot.setEnabled(connectButton.getSelection());
         copyData.setEnabled(connectButton.getSelection());
@@ -609,20 +588,27 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
                 copyData.setSelection(false);
                 createSlot.setSelection(false);
             }
+            updatePublisherSetup();
             validateProperties();
         }));
+        createSlot.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
+            updatePublisherSetup();
+            validateProperties();
+        }));
+        publisherSetup = UIUtils.createDialogButton(startup, PostgreMessages.dialog_create_subscription_publisher_setup,
+            SelectionListener.widgetSelectedAdapter(event -> MessageDialog.openInformation(getShell(),
+                PostgreMessages.dialog_create_subscription_publisher_setup,
+                PostgreMessages.dialog_create_subscription_publisher_setup_instructions)));
+        publisherSetup.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+        updatePublisherSetup();
     }
 
-    @NotNull
-    private Button createOptionWithDescription(@NotNull Composite parent, @NotNull String title,
-        @NotNull String description, boolean selected) {
-        Composite option = UIUtils.createComposite(parent, 1);
-        option.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        ((GridLayout) option.getLayout()).verticalSpacing = 0;
-        Button button = UIUtils.createCheckbox(option, title, selected);
-        Label hint = createDescription(option, description);
-        ((GridData) hint.getLayoutData()).horizontalIndent = PostgreSubscriptionDialogLayout.MARGIN;
-        return button;
+    private void updatePublisherSetup() {
+        if (publisherSetup != null) {
+            UIUtils.setControlVisible(publisherSetup, Boolean.FALSE.equals(publisherLogicalReplicationEnabled)
+                && connectButton.getSelection() && createSlot.getSelection());
+            updateSize();
+        }
     }
 
     private void createAdvancedControls(@NotNull Composite page) {
@@ -642,7 +628,6 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
         slotText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         slotText.setToolTipText(PostgreMessages.dialog_create_subscription_slot_tip);
         slotText.setMessage(PostgreMessages.dialog_create_subscription_slot_placeholder);
-        createDescription(slotValue, PostgreMessages.dialog_create_subscription_slot_hint);
 
         binaryButton = UIUtils.createCheckbox(advanced, PostgreMessages.dialog_create_subscription_binary, subscription.isBinary());
         binaryButton.setToolTipText(PostgreMessages.dialog_create_subscription_binary_tip);
@@ -662,14 +647,6 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
         GridData slotLabelData = (GridData) slotLabel.getLayoutData();
         slotLabelData.verticalAlignment = SWT.TOP;
         slotLabelData.verticalIndent = FIELD_LABEL_TOP_MARGIN;
-    }
-
-    @NotNull
-    private static Label createDescription(@NotNull Composite parent, @NotNull String text) {
-        Label label = createHint(parent, text);
-        label.setForeground(JFaceResources.getColorRegistry().get(JFacePreferences.QUALIFIER_COLOR));
-        ((GridData) label.getLayoutData()).widthHint = 0;
-        return label;
     }
 
     @NotNull

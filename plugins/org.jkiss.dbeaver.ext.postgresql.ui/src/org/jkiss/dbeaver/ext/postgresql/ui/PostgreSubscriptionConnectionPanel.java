@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.ui;
 
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
@@ -85,7 +84,7 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
     private DBPConnectionConfiguration desktopConfiguration;
     private String copiedConnectionName;
     private String copiedConnectionId;
-    private Button useCopiedConnection;
+    private boolean useCopiedConnection;
 
     public PostgreSubscriptionConnectionPanel(
         @NotNull Composite parent,
@@ -159,8 +158,8 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
 
     private void createControls() {
         Composite area = this;
-        connectionSettings = PostgreSubscriptionDialogLayout.createSection(area,
-            PostgreMessages.dialog_create_subscription_publisher, GridData.FILL_HORIZONTAL);
+        connectionSettings = UIUtils.createComposite(area, 1);
+        connectionSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         ((GridLayout) connectionSettings.getLayout()).marginLeft = 0;
         ((GridLayout) connectionSettings.getLayout()).verticalSpacing = PostgreSubscriptionDialogLayout.COMPACT_SPACING;
         connection = UIUtils.createComposite(connectionSettings, 2);
@@ -218,11 +217,6 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
 
         testArea = UIUtils.createComposite(connectionSettings, 2);
         testArea.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        useCopiedConnection = UIUtils.createCheckbox(connectionSettings,
-            PostgreMessages.dialog_create_subscription_use_copied_connection, false);
-        useCopiedConnection.setToolTipText(PostgreMessages.dialog_create_subscription_use_copied_connection_tip);
-        UIUtils.setControlVisible(useCopiedConnection, false);
-        useCopiedConnection.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> validateInput()));
         ExpandableCompositeEx sslSection = UIUtils.createExpandableCompositeWithSeparator(area, SWT.NONE,
             ExpandableCompositeEx.TWISTIE);
         sslSection.setShowTextAsTitle(true);
@@ -262,9 +256,8 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
         UIUtils.enableWithChildren(endpoint, hostMode.getSelection());
         databaseText.setEnabled(hostMode.getSelection());
         if (urlMode.getSelection()) {
-            useCopiedConnection.setSelection(false);
+            useCopiedConnection = false;
         }
-        useCopiedConnection.setEnabled(hostMode.getSelection());
         validateInput();
     }
 
@@ -324,11 +317,7 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
                 databaseText.setEnabled(true);
                 credentials.loadSettings(publisher);
                 sslConfigurator.loadSettings(ssl);
-                useCopiedConnection.setText(NLS.bind(PostgreMessages.dialog_create_subscription_use_copied_connection,
-                    copiedConnectionName));
-                useCopiedConnection.setSelection(true);
-                useCopiedConnection.setEnabled(true);
-                UIUtils.setControlVisible(useCopiedConnection, true);
+                useCopiedConnection = true;
             } finally {
                 loadingSettings = false;
             }
@@ -391,9 +380,45 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
         return connectionInfo;
     }
 
+    public boolean hasCopiedConnection() {
+        return desktopConfiguration != null && hostMode.getSelection();
+    }
+
+    public void showPublicationSourcesMenu(@NotNull Button button) {
+        Menu menu = new Menu(button);
+        MenuItem configured = new MenuItem(menu, SWT.RADIO);
+        configured.setText(PostgreMessages.dialog_create_subscription_configured_publisher);
+        configured.setSelection(!useCopiedConnection);
+        configured.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
+            if (configured.getSelection()) {
+                useCopiedConnection = false;
+                validateInput();
+            }
+        }));
+        if (hasCopiedConnection()) {
+            MenuItem copied = new MenuItem(menu, SWT.RADIO);
+            copied.setText(copiedConnectionName);
+            copied.setSelection(useCopiedConnection);
+            copied.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
+                if (copied.getSelection()) {
+                    useCopiedConnection = true;
+                    validateInput();
+                }
+            }));
+        }
+        Point location = button.toDisplay(0, button.getSize().y);
+        menu.setLocation(location);
+        menu.addListener(SWT.Hide, event -> getDisplay().asyncExec(() -> {
+            if (!menu.isDisposed()) {
+                menu.dispose();
+            }
+        }));
+        menu.setVisible(true);
+    }
+
     @NotNull
     public String getPublicationSourceName() {
-        if (useCopiedConnection.getSelection()) {
+        if (useCopiedConnection) {
             return copiedConnectionName + " / " + publisher.getConnectionConfiguration().getDatabaseName();
         }
         return PostgreMessages.dialog_create_subscription_configured_publisher;
@@ -403,7 +428,7 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
     public DataSourceDescriptor createPublicationConnection() throws DBException {
         DBPConnectionConfiguration currentConfiguration = publisher.getConnectionConfiguration();
         DBPConnectionConfiguration configuration = DBPConnectionConfiguration.copyWithIndependentRuntimeAttributes(
-            useCopiedConnection.getSelection() ? desktopConfiguration : currentConfiguration);
+            useCopiedConnection ? desktopConfiguration : currentConfiguration);
         configuration.setDatabaseName(currentConfiguration.getDatabaseName());
         configuration.setUserName(currentConfiguration.getUserName());
         configuration.setUserPassword(currentConfiguration.getUserPassword());
@@ -428,7 +453,7 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
         }
         try {
             String url;
-            if (useCopiedConnection.getSelection()) {
+            if (useCopiedConnection) {
                 DBPConnectionConfiguration configuration =
                     DBPConnectionConfiguration.copyWithIndependentRuntimeAttributes(desktopConfiguration);
                 configuration.setDatabaseName(publisher.getConnectionConfiguration().getDatabaseName());
@@ -443,7 +468,7 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
             if (databaseStart < 0) {
                 return endpoint;
             }
-            return (useCopiedConnection.getSelection() ? copiedConnectionId + ":" : "")
+            return (useCopiedConnection ? copiedConnectionId + ":" : "")
                 + endpoint.substring(0, databaseStart).toLowerCase(Locale.ROOT).replaceAll(":5432(?=,|$)", "")
                 + endpoint.substring(databaseStart);
         } catch (DBException e) {
