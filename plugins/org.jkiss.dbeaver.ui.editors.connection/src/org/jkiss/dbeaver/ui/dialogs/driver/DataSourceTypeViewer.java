@@ -62,9 +62,7 @@ import java.util.List;
 /** Data source type gallery used by the new connection wizard. */
 public class DataSourceTypeViewer extends Viewer {
     private static final String PROP_SELECTOR_ORDER_BY = "driver.selector.orderBy"; //$NON-NLS-1$
-    private static final String CDATA_PROVIDER_ID = "cdata";
-    // keep the persisted feature id for existing product configurations
-    private static final String COMMERCIAL_DRIVERS_FEATURE_ID = "cdata";
+    private static final String COMMERCIAL_DRIVERS_FEATURE_ID = "commercial-drivers";
 
     public enum OrderBy {
         name(
@@ -166,7 +164,7 @@ public class DataSourceTypeViewer extends Viewer {
                     .anyMatch(driver -> driver.getCategories().contains(category.getId())))
                 .toList();
             if (!categoryTypes.isEmpty()) {
-                TypeListFolder folder = new TypeListFolder(categoryTypes);
+                TypeListFolder folder = new TypeListFolder(categoryTypes, category.getId());
                 folders.add(folder);
                 folderInfos.add(new TabbedFolderInfo(category.getId(), category.getName(), category.getIcon(),
                     category.getDescription(), false, folder));
@@ -263,7 +261,8 @@ public class DataSourceTypeViewer extends Viewer {
 
     private void updateFolderVisibility() {
         boolean showCommercialDrivers = isShowCommercialDrivers();
-        folderComposite.setFolderFilter(folder -> !CDATA_PROVIDER_ID.equals(folder.getId()) || showCommercialDrivers);
+        folderComposite.setFolderFilter(folder ->
+            !(folder.getContents() instanceof TypeListFolder typeFolder) || !typeFolder.commercialDriversOnly || showCommercialDrivers);
     }
 
     @NotNull
@@ -372,11 +371,21 @@ public class DataSourceTypeViewer extends Viewer {
 
     private class TypeListFolder implements ITabbedFolder {
         private final List<DBPDataSourceType> types;
+        private final boolean commercialDriversOnly;
         private int maxTypes = Integer.MAX_VALUE;
         private AdvancedListViewer viewer;
 
         private TypeListFolder(@NotNull List<DBPDataSourceType> types) {
+            this(types, null);
+        }
+
+        private TypeListFolder(@NotNull List<DBPDataSourceType> types, @Nullable String categoryId) {
             this.types = new ArrayList<>(types);
+            commercialDriversOnly = categoryId != null && types.stream()
+                .flatMap(type -> type.getEnabledDrivers().stream())
+                .filter(DataSourceTypeViewer::isDriverAvailable)
+                .filter(driver -> driver.getCategories().contains(categoryId))
+                .allMatch(DBPDriverWithLicense.class::isInstance);
         }
 
         @Override

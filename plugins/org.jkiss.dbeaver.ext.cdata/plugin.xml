@@ -4,7 +4,7 @@
 
     <extension point="org.jkiss.dbeaver.app.config">
         <feature
-            id="cdata"
+            id="commercial-drivers"
             label="%feature.commercial_drivers.label"
             description="%feature.commercial_drivers.description"
             enabledByDefault="true"/>

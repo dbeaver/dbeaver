@@ -21,8 +21,7 @@ package org.jkiss.dbeaver.ui.preferences;
  */
 public abstract class UIPreferences {
 
-    // keep the persisted key for existing preferences
-    public static final String DRIVER_SELECTOR_SHOW_COMMERCIAL_DRIVERS = "driver.selector.showCData";
+    public static final String DRIVER_SELECTOR_SHOW_COMMERCIAL_DRIVERS = "driver.selector.showCommercialDrivers";
 
     public static final String UI_USE_EMBEDDED_AUTH = "ui.use.redirect.auth"; //$NON-NLS-1$
 
