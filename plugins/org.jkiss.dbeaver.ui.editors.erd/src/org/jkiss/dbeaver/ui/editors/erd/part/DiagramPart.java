@@ -165,13 +165,6 @@ public class DiagramPart extends PropertyAwarePart {
                 for (Object connection : nodePart.getSourceConnections()) {
                     if (connection instanceof AssociationPart associationPart) {
                         associationPart.refreshTheme();
-                        IFigure figure = associationPart.getFigure();
-                        figure.setForegroundColor(ERDThemeSettings.instance.linesForeground);
-                        for (Object label : figure.getChildren()) {
-                            if (label instanceof IFigure labelFigure) {
-                                labelFigure.setForegroundColor(ERDThemeSettings.instance.attrForeground);
-                            }
-                        }
                     }
                 }
             }
@@ -426,6 +419,7 @@ public class DiagramPart extends PropertyAwarePart {
      *
      * @return - router
      */
+    @Nullable
     public ERDConnectionRouter getActiveRouter() {
         return router;
     }

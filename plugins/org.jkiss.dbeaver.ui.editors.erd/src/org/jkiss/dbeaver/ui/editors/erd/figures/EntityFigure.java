@@ -53,8 +53,7 @@ public class EntityFigure extends Figure {
     private Label descLabel;
     private Color themeBackground;
 
-    public EntityFigure(EntityPart part)
-    {
+    public EntityFigure(@NotNull EntityPart part) {
         this.part = part;
 
         ERDEntity entity = part.getEntity();

@@ -27,6 +27,7 @@ import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.text.FlowPage;
 import org.eclipse.draw2d.text.TextFlow;
 import org.eclipse.swt.graphics.Color;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.erd.ERDNote;
 import org.jkiss.dbeaver.ui.editors.erd.ERDUIConstants;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDThemeSettings;
@@ -42,7 +43,7 @@ public class NoteFigure extends FlowPage {
     private Color themeBackground;
     private Color themeForeground;
 
-    public NoteFigure(ERDNote note) {
+    public NoteFigure(@NotNull ERDNote note) {
         //super(note.getObject());
         textFlow = new TextFlow(note.getObject());
         add(textFlow);
@@ -72,6 +73,7 @@ public class NoteFigure extends FlowPage {
         }
     }
 
+    @NotNull
     public TextFlow getTextFlow() {
         return textFlow;
     }

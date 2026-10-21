@@ -87,6 +87,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         return UIUtils.getSharedColor(labelForeground);
     }
 
+    @NotNull
     public ERDAssociation getAssociation() {
         return (ERDAssociation) getModel();
     }
@@ -230,12 +231,16 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     public void refreshTheme() {
         PolylineConnection connection = (PolylineConnection) getFigure();
+        connection.setForegroundColor(ERDThemeSettings.instance.linesForeground);
         Color oldLabelColor = labelForegroundColor;
         labelForegroundColor = createLabelForegroundColor();
         Color newBackground = ERDThemeSettings.instance.diagramBackground;
         for (Object child : connection.getChildren()) {
             if (child instanceof IFigure figure && child instanceof RotatableDecoration) {
                 refreshDecoration(figure, notationBackgroundColor, newBackground, oldLabelColor);
+            } else if (child instanceof Label label) {
+                label.setForegroundColor(connection.getLayoutManager().getConstraint(label) instanceof ConnectionEndpointLocator
+                    ? labelForegroundColor : ERDThemeSettings.instance.attrForeground);
             }
         }
         notationBackgroundColor = newBackground;

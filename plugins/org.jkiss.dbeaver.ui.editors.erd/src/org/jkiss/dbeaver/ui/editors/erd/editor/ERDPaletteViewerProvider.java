@@ -36,28 +36,25 @@ import java.util.List;
  * PaletteViewerProvider subclass used for initialising drag and drop
  * @author Serge Rider
  */
-public class ERDPaletteViewerProvider extends PaletteViewerProvider
-{
+public class ERDPaletteViewerProvider extends PaletteViewerProvider {
     @NotNull
     private final List<PaletteViewer> viewers = new ArrayList<>();
 
-	/**
-	 * implicit constructor
-	 */
-	public ERDPaletteViewerProvider(@NotNull EditDomain graphicalViewerDomain)
-	{
-		super(graphicalViewerDomain);
-	}
+    /**
+     * implicit constructor
+     */
+    public ERDPaletteViewerProvider(@NotNull EditDomain graphicalViewerDomain) {
+        super(graphicalViewerDomain);
+    }
 
-	@Override
-    protected void configurePaletteViewer(@NotNull PaletteViewer viewer)
-	{
-		super.configurePaletteViewer(viewer);
-		viewer.setColorProvider(new ThemePaletteColorProvider());
-		viewers.add(viewer);
-		viewer.getControl().addDisposeListener(event -> viewers.remove(viewer));
-		viewer.addDragSourceListener(new TemplateTransferDragSourceListener(viewer));
-	}
+    @Override
+    protected void configurePaletteViewer(@NotNull PaletteViewer viewer) {
+        super.configurePaletteViewer(viewer);
+        viewer.setColorProvider(new ThemePaletteColorProvider());
+        viewers.add(viewer);
+        viewer.getControl().addDisposeListener(event -> viewers.remove(viewer));
+        viewer.addDragSourceListener(new TemplateTransferDragSourceListener(viewer));
+    }
 
     public void refreshTheme() {
         for (PaletteViewer viewer : viewers) {

@@ -487,6 +487,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return paletteViewerProvider;
     }
 
+    @NotNull
     public GraphicalViewer getViewer() {
         return super.getGraphicalViewer();
     }
