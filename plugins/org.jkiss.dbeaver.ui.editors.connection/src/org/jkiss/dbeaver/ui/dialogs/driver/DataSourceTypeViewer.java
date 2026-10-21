@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolder;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderComposite;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderInfo;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.ui.preferences.UIPreferences;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.FrameworkUtil;
@@ -60,7 +61,6 @@ import java.util.List;
 /** Data source type gallery used by the new connection wizard. */
 public class DataSourceTypeViewer extends Viewer {
     private static final String PROP_SELECTOR_ORDER_BY = "driver.selector.orderBy"; //$NON-NLS-1$
-    private static final String PROP_SELECTOR_SHOW_CDATA = "driver.selector.showCData";
     private static final String CDATA_PROVIDER_ID = "cdata";
 
     public enum OrderBy {
@@ -232,9 +232,8 @@ public class DataSourceTypeViewer extends Viewer {
     }
 
     public static boolean isShowCData() {
-        var preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-        preferenceStore.setDefault(PROP_SELECTOR_SHOW_CDATA, true);
-        return isCDataEnabled() && preferenceStore.getBoolean(PROP_SELECTOR_SHOW_CDATA);
+        return isCDataEnabled() &&
+            DBWorkbench.getPlatform().getPreferenceStore().getBoolean(UIPreferences.DRIVER_SELECTOR_SHOW_CDATA);
     }
 
     public static boolean isCDataEnabled() {
@@ -249,7 +248,7 @@ public class DataSourceTypeViewer extends Viewer {
 
     public void setShowCData(boolean showCData) {
         var preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
-        preferenceStore.setValue(PROP_SELECTOR_SHOW_CDATA, showCData);
+        preferenceStore.setValue(UIPreferences.DRIVER_SELECTOR_SHOW_CDATA, showCData);
         PrefUtils.savePreferenceStore(preferenceStore);
         updateFolderVisibility();
         refresh();
