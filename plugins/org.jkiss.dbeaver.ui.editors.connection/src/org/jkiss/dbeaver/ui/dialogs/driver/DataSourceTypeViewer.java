@@ -170,6 +170,7 @@ public class DataSourceTypeViewer extends Viewer {
             }
         }
         folderComposite.setFolders(getClass().getSimpleName(), folderInfos.toArray(new TabbedFolderInfo[0]));
+        updateFolderVisibility();
         folderComposite.switchFolder("all", false);
         folderComposite.addFolderListener(id -> {
             applyFilter();
@@ -231,7 +232,9 @@ public class DataSourceTypeViewer extends Viewer {
     }
 
     public static boolean isShowCData() {
-        return isCDataEnabled() && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PROP_SELECTOR_SHOW_CDATA);
+        var preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+        preferenceStore.setDefault(PROP_SELECTOR_SHOW_CDATA, true);
+        return isCDataEnabled() && preferenceStore.getBoolean(PROP_SELECTOR_SHOW_CDATA);
     }
 
     public static boolean isCDataEnabled() {
@@ -248,11 +251,17 @@ public class DataSourceTypeViewer extends Viewer {
         var preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
         preferenceStore.setValue(PROP_SELECTOR_SHOW_CDATA, showCData);
         PrefUtils.savePreferenceStore(preferenceStore);
+        updateFolderVisibility();
         refresh();
         applyFilter();
         if (site instanceof ISelectionChangedListener listener) {
             listener.selectionChanged(new SelectionChangedEvent(this, getSelection()));
         }
+    }
+
+    private void updateFolderVisibility() {
+        boolean showCData = isShowCData();
+        folderComposite.setFolderFilter(folder -> !CDATA_PROVIDER_ID.equals(folder.getId()) || showCData);
     }
 
     @NotNull

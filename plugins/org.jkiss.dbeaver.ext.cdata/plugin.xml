@@ -23,6 +23,16 @@
             icon="icons/cdata.svg"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.driverManager">
+        <category
+            id="cdata"
+            name="%category.cdata.name"
+            description="%category.cdata.description"
+            icon="#folder_database"
+            rank="101"
+            promoted="true"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.mavenRepository">
         <repository id="cdata-jdbc" name="CData JDBC Repository" url="https://maven.cdata.com/p/jdbc/" order="10">
             <scope group="cdata"/>
