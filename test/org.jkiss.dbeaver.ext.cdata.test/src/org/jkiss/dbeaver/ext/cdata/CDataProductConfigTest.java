@@ -31,11 +31,11 @@ public class CDataProductConfigTest extends DBeaverUnitTest {
 
         Assertions.assertTrue(feature.isEnabledByDefault());
         Assertions.assertNull(feature.getEnablementTester());
-        Assertions.assertEquals("CData integration", feature.getLabel());
+        Assertions.assertEquals("Commercial drivers", feature.getLabel());
     }
 
     @Test
-    public void canDisableAndEnableCData() {
+    public void canDisableAndEnableCommercialDrivers() {
         var registry = ProductConfigRegistry.getInstance();
         var feature = getFeature();
         boolean wasEnabled = registry.isFeatureEnabled(feature);

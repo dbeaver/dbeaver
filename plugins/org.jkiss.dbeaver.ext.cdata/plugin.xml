@@ -5,8 +5,8 @@
     <extension point="org.jkiss.dbeaver.app.config">
         <feature
             id="cdata"
-            label="%feature.cdata.label"
-            description="%feature.cdata.description"
+            label="%feature.commercial_drivers.label"
+            description="%feature.commercial_drivers.description"
             enabledByDefault="true"/>
     </extension>
 
