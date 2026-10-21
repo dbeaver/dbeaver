@@ -290,6 +290,12 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase implements
         return RedshiftQueries.LOCK_ITEM_QUERY;
     }
 
+    @NotNull
+    @Override
+    public String getSearchPathQuery() {
+        return "SHOW search_path";
+    }
+
     @Override
     public boolean supportsForeignServers() {
         return false;

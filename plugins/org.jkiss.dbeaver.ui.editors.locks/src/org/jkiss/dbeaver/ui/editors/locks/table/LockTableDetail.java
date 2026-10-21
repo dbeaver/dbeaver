@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.editors.locks.table;
 
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockItem;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;
@@ -30,6 +33,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.itemlist.DatabaseObjectListControl;
 
 import java.lang.reflect.InvocationTargetException;
@@ -43,7 +47,10 @@ import java.util.Map;
  */
 public class LockTableDetail extends DatabaseObjectListControl<DBAServerLockItem> {
 
+    private static final int RELOAD_DELAY = 50;
+
     private DBAServerLockManager<DBAServerLock,DBAServerLockItem> lockManager;
+    private boolean reloadPending;
     Map<String, Object> options = new HashMap<String, Object>(1); 
     
     public Map<String, Object> getOptions() {
@@ -66,12 +73,51 @@ public class LockTableDetail extends DatabaseObjectListControl<DBAServerLockItem
         return "LocksDetail/" + lockManager.getDataSource().getContainer().getDriver().getId();
     }
 
+    public void clearDetails() {
+        options.clear();
+        loadData();
+    }
+
     @Override
-    protected LoadingJob<Collection<DBAServerLockItem>> createLoadService(boolean forUpdate)
-    {
-        return LoadingJob.createService(
-            new LoadLockDetailService(),
-            new ObjectsLoadVisualizer());
+    protected void loadData(boolean lazy, boolean forUpdate) {
+        if (isLoading()) {
+            reloadPending = true;
+            return;
+        }
+        reloadPending = false;
+        super.loadData(true, forUpdate);
+    }
+
+    @NotNull
+    @Override
+    protected LoadingJob<Collection<DBAServerLockItem>> createLoadService(boolean forUpdate) {
+        Map<String, Object> loadOptions = new HashMap<>(options);
+        LoadingJob<Collection<DBAServerLockItem>> job = LoadingJob.createService(
+            new LoadLockDetailService(loadOptions),
+            new ObjectsLoadVisualizer() {
+                @Override
+                public void completeLoading(@Nullable Collection<DBAServerLockItem> items) {
+                    super.completeLoading(options.equals(loadOptions) ? items : List.of());
+                }
+            });
+        job.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(@NotNull IJobChangeEvent event) {
+                UIUtils.asyncExec(LockTableDetail.this::loadPendingData);
+            }
+        });
+        return job;
+    }
+
+    private void loadPendingData() {
+        if (getControl().isDisposed() || !reloadPending) {
+            return;
+        }
+        if (isLoading()) {
+            getControl().getDisplay().timerExec(RELOAD_DELAY, this::loadPendingData);
+        } else {
+            loadData();
+        }
     }
 
       public void init(DBAServerLockManager<DBAServerLock,DBAServerLockItem> lockManager)
@@ -104,19 +150,25 @@ public class LockTableDetail extends DatabaseObjectListControl<DBAServerLockItem
 
 	private class LoadLockDetailService extends DatabaseLoadService<Collection<DBAServerLockItem>> {
 
-        protected LoadLockDetailService()
+        private final Map<String, Object> loadOptions;
+
+        protected LoadLockDetailService(@NotNull Map<String, Object> loadOptions)
         {
             super(String.format("Load lock details"), lockManager.getDataSource());
+            this.loadOptions = loadOptions;
         }
 
         @Override
         public Collection<DBAServerLockItem> evaluate(@NotNull DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
+            if (loadOptions.isEmpty()) {
+                return List.of();
+            }
             try {
                 try (DBCExecutionContext isolatedContext = lockManager.getDataSource().getDefaultInstance().openIsolatedContext(monitor, "View Lock item", null)) {
                     try (DBCSession session = isolatedContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Retrieve server lock detail")) {
-                        return lockManager.getLockItems(session, options);
+                        return lockManager.getLockItems(session, loadOptions);
                     }
                 }
             } catch (Throwable ex) {

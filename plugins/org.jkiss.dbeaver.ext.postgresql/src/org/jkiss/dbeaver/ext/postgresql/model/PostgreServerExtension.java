@@ -112,6 +112,11 @@ public interface PostgreServerExtension {
 
     boolean supportsStandardSearchPath();
 
+    @NotNull
+    default String getSearchPathQuery() {
+        return "SELECT reset_val FROM pg_settings WHERE name = 'search_path'";
+    }
+
     boolean supportsRelationSizeCalc();
 
     boolean supportsExplainPlan();

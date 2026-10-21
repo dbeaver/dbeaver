@@ -60,6 +60,7 @@ public class LockManagerViewer {
     private final Label blockedLabel;
     private final Label blockingLabel;
     private DBAServerLock curLock;
+    private Object selectedLockId;
     private final LockGraphManager graphManager;
     private final LockGraphicalView gv;
 
@@ -83,7 +84,10 @@ public class LockManagerViewer {
     }
 
     public void dispose() {
+        refreshControl.cancelRefresh();
         lockTable.disposeControl();
+        blockedTable.disposeControl();
+        blockingTable.disposeControl();
     }
 
     protected LockManagerViewer(IWorkbenchPart part, Composite parent, final DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager) {
@@ -136,20 +140,29 @@ public class LockManagerViewer {
 
     }
 
-    protected void onLockSelect(DBAServerLock lock) {
+    protected void onLockSelect(@Nullable DBAServerLock lock) {
         curLock = lock;
+        selectedLockId = lock == null ? null : lock.getId();
         refreshGraph(curLock);
+        if (lock == null) {
+            blockedLabel.setText("");
+            blockingLabel.setText("");
+            blockedTable.clearDetails();
+            blockingTable.clearDetails();
+        }
     }
 
-    public void setTableLockSelect(DBAServerLock lock) {
+    public void setTableLockSelect(@Nullable DBAServerLock lock) {
         ColumnViewer itemsViewer = lockTable.getItemsViewer();
         itemsViewer.getControl().setRedraw(false);
         try {
-            itemsViewer.setSelection(new StructuredSelection(lock), true);
+            itemsViewer.setSelection(lock == null ? StructuredSelection.EMPTY : new StructuredSelection(lock), true);
         } finally {
             itemsViewer.getControl().setRedraw(true);
         }
-        curLock = lock;
+        if (curLock != lock) {
+            onLockSelect(lock);
+        }
     }
 
     protected void contributeToToolbar(DBAServerLockManager<DBAServerLock, DBAServerLockItem> sessionManager, IContributionManager contributionManager) {
@@ -169,10 +182,13 @@ public class LockManagerViewer {
         gv.drawGraf(selected);
     }
 
-    public void refreshLocks(DBAServerLock selected) {
-        lockTable.loadData(false);
-        gv.drawGraf(selected);
-        refreshControl.scheduleAutoRefresh(false);
+    public void refreshLocks(@Nullable DBAServerLock selected) {
+        if (lockTable.getControl().isDisposed() || lockTable.isLoading()) {
+            return;
+        }
+        DBAServerLock selection = selected == null ? curLock : selected;
+        selectedLockId = selection == null ? null : selection.getId();
+        lockTable.loadData();
     }
 
     protected void refreshDetail(Map<String, Object> options) {
@@ -183,12 +199,14 @@ public class LockManagerViewer {
         blockedLabel.setText(sb.toString());
         blockedTable.getOptions().putAll(options);
         blockedTable.getOptions().put(LockGraphManager.keyType, LockGraphManager.typeWait);
-        blockedTable.loadData(false);
+        blockedTable.loadData();
         sb.setLength(0);
         if (curLock != null && curLock.getHoldBy() != null) {
             sb.append("Hold - ");
             sb.append(curLock.getHoldBy().getTitle());
             blockingLabel.setText(sb.toString());
+        } else {
+            blockingLabel.setText("");
         }
         blockingTable.getOptions().putAll(options);
         blockingTable.getOptions().put(LockGraphManager.keyType, LockGraphManager.typeHold);
@@ -222,6 +240,23 @@ public class LockManagerViewer {
         @Override
         protected Class<?>[] getListBaseTypes(Collection<DBAServerLock> items) {
             return new Class[] { locksType };
+        }
+
+        @Override
+        protected void setListData(@Nullable Collection<DBAServerLock> items, boolean append, boolean forUpdate) {
+            if (getControl().isDisposed()) {
+                return;
+            }
+            Object selectionId = selectedLockId;
+            super.setListData(items, append, forUpdate);
+            if (items != null) {
+                DBAServerLock selected = items.stream()
+                    .filter(lock -> lock.getId().equals(selectionId))
+                    .findFirst()
+                    .orElse(null);
+                setTableLockSelect(selected);
+            }
+            refreshControl.scheduleAutoRefresh(items == null);
         }
 
         @Override
