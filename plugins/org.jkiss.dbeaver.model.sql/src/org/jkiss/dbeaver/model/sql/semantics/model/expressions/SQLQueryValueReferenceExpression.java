@@ -27,13 +27,9 @@ import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.function.Function;
 
 /**
  * Describes a certain value in the query value expression represented with a compound name
@@ -112,6 +108,7 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
         SQLQueryExprType type;
         SQLQueryResultColumn resultColumn;
         SQLQueryResultPseudoColumn resultPseudoColumn;
+        SQLQueryVariableInfo resultVariable;
         SQLQuerySymbolEntry columnRefEntry;
         SQLQueryRowsDataContext columnContext;
         SQLQueryRowsSourceContext.SourceResolutionInfo tableRef;
@@ -139,14 +136,20 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
                 } else {
                     resultColumn = null;
                 }
+                if (resultPseudoColumn == null && resultColumn == null) {
+                    resultVariable = context.getRowsSources().resolveScriptVariable(columnRefEntry);
+                } else {
+                    resultVariable = null;
+                }
             } else {
                 columnContext = null;
                 columnRefEntry = null;
+                resultVariable = null;
                 resultPseudoColumn = null;
                 resultColumn = null;
             }
 
-            if ((resultColumn == null && resultPseudoColumn == null) || this.name.parts.size() > 1) {
+            if ((resultColumn == null && resultPseudoColumn == null && resultVariable == null) || this.name.parts.size() > 1) {
                 // 1.2: try to resolve rowset reference prefix and classify it if resolved
                 tableRef = context.getRowsSources().findReferencedSource(this.name);
                 if (tableRef != null) {
@@ -176,7 +179,7 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
             List<? extends DBSObject> dbObjects;
             DBSObject dbObject;
             SQLQuerySymbolClass forcedClass;
-            if (resultColumn == null && resultPseudoColumn == null && tableRef == null) {
+            if (resultColumn == null && resultPseudoColumn == null && tableRef == null && resultVariable == null) {
                 // 1.3: no columns and no rowsets, so try for db objects
                 if (context.getConnection().isDummy()) {
                     // no real database - no point to treat any random name as object
@@ -287,13 +290,19 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
 
             if (type == null) {
                 if (columnRefEntry != null) {
-                    if (columnContext.getRowsSources().hasUnresolvedSource() && resultColumn == null && resultPseudoColumn == null) {
+                    if (columnContext.getRowsSources().hasUnresolvedSource() && (
+                        resultColumn == null && resultPseudoColumn == null && resultVariable == null
+                    )) {
                         // do nothing more and don't generate errors on failed column resolutions while unresolved sources presented
                         type = SQLQueryExprType.UNKNOWN;
                         columnRefEntry.setOrigin(columnRefOrigin);
                     } else {
                         // 2.2: apply column classification
-                        if (resultPseudoColumn != null) {
+                        if (resultVariable != null) {
+                            type = resultVariable.type();
+                            columnRefEntry.setDefinition(resultVariable);
+                            columnRefEntry.setOrigin(columnRefOrigin);
+                        } else if (resultPseudoColumn != null) {
                             resultColumn = null; // not a real column, so we don't need to propagate its source and don't have real entity attribute
                             type = resultPseudoColumn.type;
                             columnRefEntry.setDefinition(resultPseudoColumn);
@@ -310,7 +319,7 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
                             type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
                         }
                     }
-                    if (tableRef == null && (resultColumn != null || resultPseudoColumn != null)) {
+                    if (tableRef == null && (resultColumn != null || resultPseudoColumn != null || resultVariable != null)) {
                         restParts = restParts.subList(1, restParts.size());
                     }
                 } else {
