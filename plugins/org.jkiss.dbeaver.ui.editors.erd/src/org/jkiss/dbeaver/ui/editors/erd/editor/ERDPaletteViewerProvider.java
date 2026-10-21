@@ -34,6 +34,7 @@ import java.util.List;
 
 /**
  * PaletteViewerProvider subclass used for initialising drag and drop
+ *
  * @author Serge Rider
  */
 public class ERDPaletteViewerProvider extends PaletteViewerProvider {
