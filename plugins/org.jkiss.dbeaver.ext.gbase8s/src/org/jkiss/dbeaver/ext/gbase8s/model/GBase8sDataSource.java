@@ -17,13 +17,13 @@
 
 package org.jkiss.dbeaver.ext.gbase8s.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.gbase8s.GBase8sUtils;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericExecutionContext;
-import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -74,11 +74,12 @@ public class GBase8sDataSource extends GenericDataSource {
 
     public GBase8sDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
             throws DBException {
-        super(monitor, container, metaModel, new GenericSQLDialect());
+        super(monitor, container, metaModel, new GBase8sDialect());
     }
 
+    @NotNull
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         // replace the connector of the database/table in queryGetActiveDB
         replaceConnector4GetActiveDB(container);
         return new GenericExecutionContext(instance, type);
@@ -103,8 +104,9 @@ public class GBase8sDataSource extends GenericDataSource {
         }
     }
 
+    @NotNull
     @Override
-    public ErrorType discoverErrorType(Throwable error) {
+    public ErrorType discoverErrorType(@NotNull Throwable error) {
         // #41319 when calling PreparedStatement.setNCharacterStream()
         // the driver should be thrown SQLFeatureNotSupportedException, but it doesn't
         // so detect it by analyzing errorCode and handle it properly
@@ -125,7 +127,7 @@ public class GBase8sDataSource extends GenericDataSource {
      * @param connectProps {@inheritDoc}
      */
     @Override
-    protected void fillConnectionProperties(DBPConnectionConfiguration connectionInfo, Properties connectProps) {
+    protected void fillConnectionProperties(@NotNull DBPConnectionConfiguration connectionInfo, @NotNull Properties connectProps) {
         super.fillConnectionProperties(connectionInfo, connectProps);
 
         // handle JDBCTEMP driver properties (#41669), use existed value first, then fallback to default value

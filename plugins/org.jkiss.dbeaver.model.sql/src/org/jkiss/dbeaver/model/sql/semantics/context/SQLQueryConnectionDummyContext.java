@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryVariablesSubset;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
@@ -246,6 +247,11 @@ public class SQLQueryConnectionDummyContext extends SQLQueryConnectionContext {
             return null;
         }
 
+        @Override
+        public boolean hasDefaultInstance() {
+            return false;
+        }
+
         @NotNull
         @Override
         public Collection<? extends DBSInstance> getAvailableInstances() {
@@ -333,10 +339,11 @@ public class SQLQueryConnectionDummyContext extends SQLQueryConnectionContext {
 
     public SQLQueryConnectionDummyContext(
         @NotNull SQLDialect dialect,
+        @NotNull SQLQueryVariablesSubset variablesSubset,
         @NotNull Set<String> knownColumnNames,
         @NotNull Set<List<String>> knownTableNames
     ) {
-        super(dialect);
+        super(dialect, variablesSubset);
 
         this.knownColumnNames = knownColumnNames;
         this.knownTableNames = new HashSet<>();

@@ -50,7 +50,7 @@ public class OracleDataTypeMethod extends OracleDataTypeMember implements DBSEnt
 
     private OracleDataType resultType;
     private OracleDataTypeModifier resultTypeMod;
-    private final ParameterCache parameterCache;
+    protected ParameterCache parameterCache;
 
     public OracleDataTypeMethod(OracleDataType dataType)
     {

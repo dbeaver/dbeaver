@@ -112,7 +112,10 @@ public class DBExecUtils {
         // Note: authenticator may be changed by Eclipse framework on startup or later.
         // That's why we set new default authenticator on connection initiation
         boolean hasProxy = false;
-        for (DBWHandlerConfiguration handler : context.getConnectionConfiguration().getHandlers()) {
+        DBPConnectionConfiguration configuration = DBWorkbench.isDistributed()
+            ? context.getActualConnectionConfiguration()
+            : context.getConnectionConfiguration();
+        for (DBWHandlerConfiguration handler : configuration.getHandlers()) {
             if (handler.isEnabled() && handler.getType() == DBWHandlerType.PROXY) {
                 hasProxy = true;
                 break;
@@ -160,10 +163,23 @@ public class DBExecUtils {
     }
 
     @NotNull
-    public static DBPErrorAssistant.ErrorType discoverErrorType(@NotNull DBPDataSource dataSource, @NotNull Throwable error) {
+    public static DBPErrorAssistant.ErrorType discoverErrorType(@Nullable DBPDataSource dataSource, @NotNull Throwable error) {
+        if (dataSource == null) {
+            for (Throwable cause = error; cause != null; cause = cause.getCause()) {
+                if (cause instanceof DBDatabaseException databaseException) {
+                    dataSource = databaseException.getDataSource();
+                    if (dataSource != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        if (dataSource == null) {
+            return DBPErrorAssistant.ErrorType.NORMAL;
+        }
         DBPErrorAssistant errorAssistant = DBUtils.getAdapter(DBPErrorAssistant.class, dataSource);
         if (errorAssistant != null) {
-            return ((DBPErrorAssistant) dataSource).discoverErrorType(error);
+            return errorAssistant.discoverErrorType(error);
         }
 
         return DBPErrorAssistant.ErrorType.NORMAL;
@@ -176,8 +192,7 @@ public class DBExecUtils {
                 t instanceof ClosedByInterruptException) {
                 return true;
             }
-            if (dataSource != null &&
-                discoverErrorType(dataSource, t) == DBPErrorAssistant.ErrorType.EXECUTION_CANCELED) {
+            if (discoverErrorType(dataSource, t) == DBPErrorAssistant.ErrorType.EXECUTION_CANCELED) {
                 return true;
             }
             if (t.getCause() == t) {

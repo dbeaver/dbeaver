@@ -459,8 +459,8 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         }
         DataSourceTypeDescriptor type = dataSourceTypes.get(resolvedId);
         if (type == null) {
-            // Shouldn't be here
-            log.debug("Create new datasource type '" + resolvedId + "'");
+            // Shouldn't be here. But it happens in unit tests.
+            log.trace("Create new datasource type '" + resolvedId + "'");
             type = new DataSourceTypeDescriptor(resolvedId, driver);
             dataSourceTypes.put(resolvedId, type);
         }
@@ -558,10 +558,17 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             return new DBPEditorContribution[0];
         }
         List<EditorContributionDescriptor> ecCopy = new ArrayList<>();
+        boolean hasExactDataSourceContribution = false;
         for (EditorContributionDescriptor editor : ec) {
             if (editor.supportsDataSource(dataSource)) {
                 ecCopy.add(editor);
+                if (editor.supportsExactDataSource(dataSource)) {
+                    hasExactDataSourceContribution = true;
+                }
             }
+        }
+        if (hasExactDataSourceContribution) {
+            ecCopy.removeIf(editor -> editor.supportsInheritedDataSource(dataSource));
         }
         return ecCopy.toArray(new DBPEditorContribution[0]);
     }

@@ -170,6 +170,42 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
         Assertions.assertEquals(expectedDDL, tableDDL);
     }
 
+    @Test
+    public void generateTableDDLWhenColumnCommentContainsDashesReturnCommaBeforeFirstComment() throws Exception {
+        PostgreTableRegular tableRegular = new PostgreTableRegular(testSchema) {
+            @Override
+            public boolean isTablespaceSpecified() {
+                return false;
+            }
+        };
+        tableRegular.setName("test_table");
+        tableRegular.setPartition(false);
+        PostgreTestUtils.addColumn(tableRegular, "first_col", "text", 1)
+            .setDescription("Text with apostrophe: owner's value");
+        PostgreTestUtils.addColumn(tableRegular, "second_col", "text", 2)
+            .setDescription("Text containing -- inside the comment and \"double quotes\"");
+        PostgreTestUtils.addColumn(tableRegular, "third_col", "text", 3).setDescription("Final column comment");
+
+        String expectedDDL =
+                "CREATE TABLE test_schema.test_table (" + lineBreak +
+                "\tfirst_col text NULL, -- Text with apostrophe: owner's value" + lineBreak +
+                "\tsecond_col text NULL, -- Text containing -- inside the comment and \"double quotes\"" + lineBreak +
+                "\tthird_col text NULL -- Final column comment" + lineBreak +
+                ");" + lineBreak +
+                lineBreak +
+                "-- Column comments" + lineBreak +
+                lineBreak +
+                "COMMENT ON COLUMN test_schema.test_table.first_col IS 'Text with apostrophe: owner''s value';"
+                    + lineBreak +
+                "COMMENT ON COLUMN test_schema.test_table.second_col IS "
+                    + "'Text containing -- inside the comment and \"double quotes\"';" + lineBreak +
+                "COMMENT ON COLUMN test_schema.test_table.third_col IS 'Final column comment';" + lineBreak;
+
+        String tableDDL = tableRegular.getObjectDefinitionText(
+            monitor, Collections.singletonMap(DBPScriptObject.OPTION_INCLUDE_COMMENTS, true));
+        Assertions.assertEquals(expectedDDL, tableDDL);
+    }
+
     // Generation table/view comment statement tests
 
     @Test

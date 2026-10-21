@@ -24,6 +24,9 @@
                 <driver
                     id="tidblake"
                     label="TiDBLake"
+                    icon="icons/tidb-small.svg"
+                    iconBig="icons/tidb-big.svg"
+                    logoImage="icons/tidb_logo.png"
                     class="com.tidbcloud.jdbc.LakeDriver"
                     sampleURL="jdbc:lake://{host}:{port}[/{database}]"
                     defaultPort="443"
@@ -65,7 +68,7 @@
                 label="SSL"
                 description="SSL settings"
                 secured="false"
-                desktop="true"
+                desktop="false"
                 order="2"
                 handlerClass="org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl">
             <objectType name="org.jkiss.dbeaver.ext.tidblake.TiDBLakeDataSourceProvider"/>

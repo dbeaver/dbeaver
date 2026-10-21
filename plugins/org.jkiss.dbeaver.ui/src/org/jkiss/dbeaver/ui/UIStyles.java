@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.e4.ui.css.swt.internal.theme.Theme;
+import org.eclipse.e4.ui.css.swt.internal.theme.ThemeEngine;
 import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
 import org.eclipse.e4.ui.css.swt.theme.IThemeManager;
+import org.eclipse.e4.ui.internal.workbench.swt.E4Application;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
@@ -28,11 +30,13 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.IWorkbenchThemeConstants;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
+import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
@@ -48,28 +52,23 @@ import java.util.Collection;
 public class UIStyles {
 
     public static final Color COLOR_WHITE = new Color(null, 255, 255, 255);
-    private static final Log log = Log.getLog(UIStyles.class);
+    public static final Color COLOR_BLACK = new Color(null, 0, 0, 0);
+    public static final Color COLOR_WHITE_DARK = new Color(null, 192, 192, 192);
 
-    private static final String THEME_HIGH_CONTRAST_ID = "org.eclipse.e4.ui.css.theme.high-contrast";
-    static final Color COLOR_BLACK = new Color(null, 0, 0, 0);
-    static final Color COLOR_WHITE_DARK = new Color(null, 192, 192, 192);
+    private static final String THEME_HIGH_CONTRAST_ID = E4Application.HIGH_CONTRAST_THEME_ID;
+    private static final String THEME_DARK_ID = ThemeEngine.E4_DARK_THEME_ID;
 
-    static IPreferenceStore EDITORS_PREFERENCE_STORE;
-    
-    static IThemeEngine themeEngine = null;
+    private static IPreferenceStore EDITORS_PREFERENCE_STORE;
+    private static IThemeEngine themeEngine = null;
 
-    public static synchronized IPreferenceStore getEditorsPreferenceStore() {
+    public static synchronized @NotNull IPreferenceStore getEditorsPreferenceStore() {
         if (EDITORS_PREFERENCE_STORE == null) {
-            EDITORS_PREFERENCE_STORE = new ScopedPreferenceStore(InstanceScope.INSTANCE, "org.eclipse.ui.editors");
+            EDITORS_PREFERENCE_STORE = new ScopedPreferenceStore(InstanceScope.INSTANCE, EditorsUI.PLUGIN_ID);
         }
         return EDITORS_PREFERENCE_STORE;
     }
 
-    public static boolean isDarkTheme() {
-        return UIUtils.isDark(getDefaultTextBackground().getRGB()) || isDarkHighContrastTheme();
-    }
-
-    private static IThemeEngine getThemeEngine() {
+    private static @Nullable IThemeEngine getThemeEngine() {
         if (themeEngine == null) {
             Bundle bundle = FrameworkUtil.getBundle(Theme.class);
             if (bundle != null) {
@@ -88,28 +87,39 @@ public class UIStyles {
         return themeEngine;
     }
 
+    public static boolean isDarkTheme() {
+        var theme = getCurrentTheme();
+        if (theme == null) {
+            return false;
+        }
+        String curThemeId = theme.getId();
+        return THEME_DARK_ID.equals(curThemeId) ||
+            (THEME_HIGH_CONTRAST_ID.equals(curThemeId) && UIUtils.isDark(getDefaultTextBackground().getRGB()));
+    }
+
     public static boolean isHighContrastTheme() {
+        var theme = getCurrentTheme();
+        return theme != null && theme.getId().equals(THEME_HIGH_CONTRAST_ID);
+    }
+
+    private static @Nullable org.eclipse.e4.ui.css.swt.theme.ITheme getCurrentTheme() {
         IThemeEngine themeEngine = getThemeEngine();
-        org.eclipse.e4.ui.css.swt.theme.ITheme theme = null;
         if (themeEngine != null) {
-            theme = themeEngine.getActiveTheme(); 
+            return themeEngine.getActiveTheme();
         } else {
             themeEngine = PlatformUI.getWorkbench().getService(IThemeEngine.class);
             if (themeEngine != null) {
-                theme = themeEngine.getActiveTheme();
+                return themeEngine.getActiveTheme();
             }
         }
-        if (theme != null) {
-            return theme.getId().equals(THEME_HIGH_CONTRAST_ID);
-        }
-        return false;
+        return null;
     }
-    
+
     public static boolean isDarkHighContrastTheme() {
         return isHighContrastTheme() && UIUtils.isDark(getDefaultWidgetBackground().getRGB());
     }
 
-    public static Color getDefaultWidgetBackground() {
+    public static @NotNull Color getDefaultWidgetBackground() {
         ITheme theme = UIUtils.getCurrentTheme();
         Color color = theme.getColorRegistry().get(IWorkbenchThemeConstants.INACTIVE_TAB_BG_START);
         if (color == null) {
@@ -118,32 +128,27 @@ public class UIStyles {
         return color;
     }
 
-    public static Color getDefaultTextBackground() {
-        return getDefaultTextColor("AbstractTextEditor.Color.Background", SWT.COLOR_LIST_BACKGROUND);
+    public static @NotNull Color getDefaultTextBackground() {
+        return getDefaultTextColor(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND, SWT.COLOR_LIST_BACKGROUND);
     }
 
-    public static Color getDefaultTextForeground() {
-        return getDefaultTextColor("AbstractTextEditor.Color.Foreground", SWT.COLOR_LIST_FOREGROUND);
+    public static @NotNull Color getDefaultTextForeground() {
+        return getDefaultTextColor(AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND, SWT.COLOR_LIST_FOREGROUND);
     }
 
-    public static Color getDefaultTextSelectionBackground() {
-        return getDefaultTextColor("AbstractTextEditor.Color.SelectionBackground", SWT.COLOR_LIST_SELECTION);
+    public static @NotNull Color getDefaultTextSelectionBackground() {
+        return getDefaultTextColor(AbstractTextEditor.PREFERENCE_COLOR_SELECTION_BACKGROUND, SWT.COLOR_LIST_SELECTION);
     }
 
-    public static Color getDefaultTextSelectionForeground() {
-        return getDefaultTextColor("AbstractTextEditor.Color.SelectionForeground", SWT.COLOR_LIST_SELECTION_TEXT);
+    public static @NotNull Color getDefaultTextSelectionForeground() {
+        return getDefaultTextColor(AbstractTextEditor.PREFERENCE_COLOR_SELECTION_FOREGROUND, SWT.COLOR_LIST_SELECTION_TEXT);
     }
 
-    public static Color getDefaultTextColor(String id, int defSWT) {
+    public static @NotNull Color getDefaultTextColor(String id, int defSWT) {
         IPreferenceStore preferenceStore = getEditorsPreferenceStore();
-        String fgRGB = preferenceStore == null ? null : preferenceStore.getString(id);
+        String fgRGB = preferenceStore.getString(id);
         return CommonUtils.isEmpty(fgRGB) ? Display.getDefault().getSystemColor(defSWT) : UIUtils.getSharedColor(fgRGB);
     }
-
-    public static Color getErrorTextForeground() {
-        return getDefaultTextColor("AbstractTextEditor.Error.Color.Foreground", SWT.COLOR_RED);
-    }
-
 
     /**
      * Calculate the Contrast color based on Luma(brightness)
@@ -151,7 +156,7 @@ public class UIStyles {
      *
      * Do not dispose returned color.
      */
-    public static Color getContrastColor(Color color) {
+    public static @NotNull Color getContrastColor(Color color) {
         if (color == null) {
             return COLOR_BLACK;
         }
@@ -162,12 +167,11 @@ public class UIStyles {
         return COLOR_BLACK;
     }
 
-    public static Color getInvertedColor(Color color) {
+    public static @NotNull Color getInvertedColor(Color color) {
         return new Color(255 - color.getRed(), 255 - color.getGreen(), 255 - color.getBlue());
     }
 
-    @NotNull
-    public static Color mix(@NotNull Color color1, @NotNull Color color2, float weight) {
+    public static @NotNull Color mix(@NotNull Color color1, @NotNull Color color2, float weight) {
         // https://github.com/JFormDesigner/FlatLaf/blob/34b19f00e4488292f5dd7869205d41982bed317a/flatlaf-core/src/main/java/com/formdev/flatlaf/util/ColorFunctions.java#L133C1-L156C3
         if (weight >= 1) {
             return color1;

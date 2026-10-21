@@ -21,7 +21,9 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -31,8 +33,11 @@ import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -50,12 +55,21 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorPreferences;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.BiConsumer;
 
 public class NavigatorHandlerRefresh extends AbstractHandler {
     private static final Log log = Log.getLog(NavigatorHandlerRefresh.class);
 
-    private static final Set<String> ACTIVE_REFRESH_KEYS = ConcurrentHashMap.newKeySet();
+    private static final Set<String> ACTIVE_REFRESH_KEYS = new HashSet<>();
+    private static final List<PendingRefresh> PENDING_REFRESHES = new ArrayList<>();
+
+    private record PendingRefresh(
+        List<DBNNode> nodes,
+        Set<String> keys,
+        @Nullable BiConsumer<DBRProgressMonitor, Collection<DBNNode>> completionHandler,
+        boolean userInitiated
+    ) {
+    }
 
     public NavigatorHandlerRefresh() {
 
@@ -152,23 +166,64 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
 
     public static boolean refreshNavigator(final Collection<? extends DBNNode> refreshObjects)
     {
-        final List<DBNNode> nodesToRefresh = new ArrayList<>(refreshObjects);
-        final List<String> refreshKeys = new ArrayList<>(nodesToRefresh.size());
-        final List<String> acquiredKeys = new ArrayList<>(nodesToRefresh.size());
-        for (DBNNode node : nodesToRefresh) {
-            refreshKeys.add(getRefreshKey(node));
+        return refreshNavigator(refreshObjects, null);
+    }
+
+    /**
+     * Schedules a coordinated navigator refresh. The completion handler runs only after at least one navigator node
+     * was refreshed successfully. SQL metadata refresh uses this hook to update execution-context defaults only after
+     * the corresponding navigator metadata has been reloaded successfully.
+     */
+    public static boolean refreshNavigator(
+        final Collection<? extends DBNNode> refreshObjects,
+        @Nullable BiConsumer<DBRProgressMonitor, Collection<DBNNode>> completionHandler
+    )
+    {
+        return refreshNavigator(refreshObjects, completionHandler, true);
+    }
+
+    public static boolean refreshNavigator(
+        final Collection<? extends DBNNode> refreshObjects,
+        @Nullable BiConsumer<DBRProgressMonitor, Collection<DBNNode>> completionHandler,
+        boolean userInitiated
+    )
+    {
+        List<DBNNode> nodes = new ArrayList<>(refreshObjects);
+        Set<String> keys = new LinkedHashSet<>(nodes.size());
+        for (DBNNode node : nodes) {
+            keys.add(getRefreshKey(node));
         }
-        for (String refreshKey : refreshKeys) {
-            if (!ACTIVE_REFRESH_KEYS.add(refreshKey)) {
-                acquiredKeys.forEach(ACTIVE_REFRESH_KEYS::remove);
-                if (log.isDebugEnabled()) {
-                    log.debug("Refresh already in progress for '" + refreshKey + "'");
-                }
+        synchronized (PENDING_REFRESHES) {
+            if (userInitiated && completionHandler == null && PENDING_REFRESHES.stream().anyMatch(pending ->
+                pending.userInitiated && pending.completionHandler == null &&
+                    new HashSet<>(pending.nodes).equals(new HashSet<>(nodes)))) {
+                // Repeated manual refreshes need at most one pending run; callback-bearing DDL requests must all run.
                 return true;
             }
-            acquiredKeys.add(refreshKey);
+            PENDING_REFRESHES.add(new PendingRefresh(nodes, keys, completionHandler, userInitiated));
+            schedulePendingRefreshes();
         }
+        return true;
+    }
 
+    // Keep every request until its keys are available; a running refresh can predate a later DDL.
+    private static void schedulePendingRefreshes() {
+        Set<String> blockedKeys = new HashSet<>();
+        for (Iterator<PendingRefresh> iterator = PENDING_REFRESHES.iterator(); iterator.hasNext(); ) {
+            PendingRefresh pending = iterator.next();
+            if (pending.keys.stream().anyMatch(key -> ACTIVE_REFRESH_KEYS.contains(key) || blockedKeys.contains(key))) {
+                blockedKeys.addAll(pending.keys);
+                continue;
+            }
+            ACTIVE_REFRESH_KEYS.addAll(pending.keys);
+            iterator.remove();
+            scheduleRefresh(pending);
+        }
+    }
+
+    private static void scheduleRefresh(@NotNull PendingRefresh pending) {
+        List<DBNNode> nodesToRefresh = pending.nodes;
+        BiConsumer<DBRProgressMonitor, Collection<DBNNode>> completionHandler = pending.completionHandler;
         Job refreshJob = new AbstractJob("Refresh navigator object(s)") {
             @NotNull
             @Override
@@ -210,11 +265,11 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                         try {
                             DBNNode refreshed = node.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
                             if (refreshed != null) {
-                                refreshedSet.add(refreshed);
                                 Throwable lastLoadError = refreshed.getLastLoadError();
                                 if (lastLoadError != null) {
                                     throw lastLoadError;
                                 }
+                                refreshedSet.add(refreshed);
                             }
                         }
                         catch (Throwable ex) {
@@ -230,17 +285,47 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                         }
                         monitor.worked(1);
                     }
-                    monitor.done();
+                    if (!refreshedSet.isEmpty()) {
+                        if (completionHandler != null) {
+                            try {
+                                completionHandler.accept(monitor, Collections.unmodifiableSet(refreshedSet));
+                            } catch (Throwable e) {
+                                log.error("Error completing navigator refresh", e);
+                            }
+                        }
+                        Set<DBPDataSourceContainer> refreshedDataSources = new HashSet<>();
+                        for (DBNNode refreshedNode : refreshedSet) {
+                            DBNDataSource dataSourceNode = DBNDataSource.getDataSourceNode(refreshedNode);
+                            if (dataSourceNode != null && !(refreshedNode instanceof DBNDataSource)) {
+                                refreshedDataSources.add(dataSourceNode.getDataSourceContainer());
+                            }
+                        }
+                        for (DBPDataSourceContainer dataSource : refreshedDataSources) {
+                            dataSource.fireEvent(new DBPEvent(
+                                DBPEvent.Action.OBJECT_UPDATE,
+                                dataSource,
+                                DBPEvent.METADATA_REFRESH
+                            ));
+                        }
+                    }
                     return Status.OK_STATUS;
                 } finally {
-                    acquiredKeys.forEach(ACTIVE_REFRESH_KEYS::remove);
+                    monitor.done();
                 }
             }
         };
-        refreshJob.setUser(true);
+        refreshJob.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(IJobChangeEvent event) {
+                synchronized (PENDING_REFRESHES) {
+                    ACTIVE_REFRESH_KEYS.removeAll(pending.keys);
+                    schedulePendingRefreshes();
+                }
+            }
+        });
+        refreshJob.setUser(pending.userInitiated);
+        refreshJob.setSystem(!pending.userInitiated);
         refreshJob.schedule();
-
-        return true;
     }
 
     @NotNull

@@ -68,10 +68,13 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     public static final String ATTACHMENT_OPEN_FILE_IN_EXPLORER = "openFileInExplorer";
 
     protected final Browser browser;
+    private final AIImageThumbnailBrowser thumbnailBrowser;
     private final WebCSSInitializer cssInitializer;
     private final IPropertyChangeListener themeChangeListener;
     private final AISettingsManager settingsManager;
     private final AIFunctionAllowMenu functionAllowMenu;
+    private final WebViewDndController dndController;
+    private final Map<String, Function<Object[], Object>> pendingFunctions = new LinkedHashMap<>();
     private final Map<Integer, PendingConfirmation> pendingConfirmations = new HashMap<>();
     private final AIMessageChunkBuffer messageChunkBuffer;
     private final WebViewMessageRenderer renderer;
@@ -81,6 +84,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     public WebViewMessageList(@NotNull AIChatControl chat, @NotNull Composite parent) throws IOException {
         super(parent, SWT.NONE);
         browser = new Browser(this, SWT.NONE);
+        thumbnailBrowser = new AIImageThumbnailBrowser(browser);
         cssInitializer = createCssInitializer();
         var refreshTheme = RuntimeUtils.debounce(
             () -> UIUtils.asyncExec(this::refreshTheme),
@@ -92,7 +96,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeChangeListener);
             cssInitializer.close();
         });
-        renderer = new WebViewMessageRenderer(browser, this::getDataSource, cssInitializer);
+        renderer = new WebViewMessageRenderer(browser, thumbnailBrowser, this::getDataSource, cssInitializer);
 
         messageChunkBuffer = new AIMessageChunkBuffer(getDisplay(), renderer::addMessageChunk, this::isDisposed);
         chat.getChatSession().addListener(new AIChatListener() {
@@ -223,13 +227,17 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
                 for (AIFunctionAllowMenu.PendingApproval approval : approvals) {
                     renderer.execute("approveFunctionConfirmation", approval.messageId(), approval.functionIndex());
                 }
-            }
+            },
+            true
         );
 
         browser.setVisible(false);
-        browser.setUrl(cssInitializer.getWebHtmlPath());
+        dndController = new WebViewDndController(this, browser, chat, this::getDataSource);
 
         browser.addProgressListener(ProgressListener.completedAdapter(e -> {
+            functionAllowMenu.registerBrowserFunction();
+            dndController.registerBrowserFunction();
+            registerPendingFunctions();
             browser.setVisible(true);
             isInitWaiting = false;
             renderer.initChat();
@@ -265,8 +273,9 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             messageChunkBuffer.clear();
             settingsManager.removeChangedListener(this);
         });
-        new WebViewDndController(this, browser, chat, this::getDataSource);
         createFunctions(chat);
+        // Navigating first lets WebView2 create the page before registering native browser functions.
+        browser.setUrl(cssInitializer.getWebHtmlPath());
     }
 
     @Override
@@ -294,6 +303,11 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
         }
     }
 
+    @NotNull
+    AIImageThumbnailBrowser getThumbnailBrowser() {
+        return thumbnailBrowser;
+    }
+
     private void createFunctions(@NotNull AIChatControl chat) {
         createFunction("setClipboardContents", arguments -> {
             if (arguments.length < 1) {
@@ -308,6 +322,18 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
                 throw new IllegalArgumentException("executeInEditor requires at least one argument");
             }
             AIChatUtils.executeInEditor(chat.getController(), arguments[0].toString());
+            return null;
+        });
+
+        createFunction("openImage", arguments -> {
+            if (arguments.length == 2 && arguments[1] instanceof Number number) {
+                AIChatMessage message = getMessageById(arguments[0]);
+                int index = number.intValue();
+                List<AIImageAttachment> images = message.message().getImages();
+                if (index >= 0 && index < images.size()) {
+                    UIUtils.asyncExec(() -> AIImageAttachmentViewer.open(getShell(), images.get(index)));
+                }
+            }
             return null;
         });
 
@@ -550,6 +576,19 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
     }
 
     protected void createFunction(@NotNull String name, @NotNull Function<Object[], Object> handler) {
+        if (isInitWaiting) {
+            pendingFunctions.put(name, handler);
+        } else {
+            registerFunction(name, handler);
+        }
+    }
+
+    private void registerPendingFunctions() {
+        pendingFunctions.forEach(this::registerFunction);
+        pendingFunctions.clear();
+    }
+
+    private void registerFunction(@NotNull String name, @NotNull Function<Object[], Object> handler) {
         new BrowserFunction(browser, name) {
             @Nullable
             @Override

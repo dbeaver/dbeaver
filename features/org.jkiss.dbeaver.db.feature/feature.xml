@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.db.feature"
       label="DBeaver Databases"
-      version="1.0.179.qualifier"
+      version="1.0.181.qualifier"
       provider-name="DBeaver Corp">
 
    <copyright>DBeaver Corp and others</copyright>
@@ -23,6 +23,7 @@
    <plugin id="org.jkiss.dbeaver.ext.tidblake" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.derby" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.dameng" version="0.0.0"  />
+   <plugin id="org.jkiss.dbeaver.ext.mimer" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.duckdb" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.exasol" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.firebird" version="0.0.0" />
@@ -55,6 +56,7 @@
    <plugin id="org.jkiss.dbeaver.ext.doris" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.starrocks" version="0.0.0" />
    <plugin id="org.jkiss.dbeaver.ext.greptime" version="0.0.0" />
+   <plugin id="org.jkiss.dbeaver.ext.yashandb" version="0.0.0" />
 
    <plugin id="com.dbeaver.jdbc.api" version="0.0.0"/>
 

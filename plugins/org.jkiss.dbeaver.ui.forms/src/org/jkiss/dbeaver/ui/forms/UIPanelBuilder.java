@@ -31,7 +31,15 @@ public sealed interface UIPanelBuilder extends UIControlBuilder<UIPanelBuilder> 
     static Control build(@NotNull Composite parent, @NotNull Consumer<? super UIPanelBuilder> handler) {
         var builder = UIPanelBuilderImpl.panel();
         handler.accept(builder);
-        return builder.build(new DataBindingContext(), parent, null);
+        var context = new DataBindingContext();
+        try {
+            var control = builder.build(context, parent, null);
+            control.addDisposeListener(event -> context.dispose());
+            return control;
+        } catch (Throwable e) {
+            context.dispose();
+            throw e;
+        }
     }
 
     @NotNull
@@ -39,6 +47,9 @@ public sealed interface UIPanelBuilder extends UIControlBuilder<UIPanelBuilder> 
 
     @NotNull
     UIPanelBuilder margins(int left, int top, int right, int bottom);
+
+    @NotNull
+    UIPanelBuilder spacing(int horizontal, int vertical);
 
     @NotNull
     UIPanelBuilder row(@NotNull Consumer<? super UIRowBuilder> handler);
