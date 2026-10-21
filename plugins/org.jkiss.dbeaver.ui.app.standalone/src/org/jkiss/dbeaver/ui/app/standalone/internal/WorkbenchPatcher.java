@@ -41,6 +41,7 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.IOException;
@@ -175,9 +176,11 @@ public final class WorkbenchPatcher {
         var checker = new PartIconChecker(parts);
         try (var input = Files.newInputStream(workbenchXmi)) {
             XMLUtils.newSecureSAXParserFactory().newSAXParser().parse(input, checker);
-        }
-        if (!checker.needsPatch) {
             return;
+        } catch (SAXException e) {
+            if (e != PartIconChecker.PATCH_REQUIRED) {
+                throw e;
+            }
         }
 
         var document = XMLUtils.parseDocument(workbenchXmi);
@@ -203,29 +206,28 @@ public final class WorkbenchPatcher {
     }
 
     private static final class PartIconChecker extends DefaultHandler {
+        // The first outdated icon ends the scan; the DOM pass will locate and update all outdated icons.
+        private static final SAXException PATCH_REQUIRED = new SAXException("Workbench icon patch required");
+
         private final Map<String, PartDescriptor> parts;
         private int depth;
         private int editorDepth = -1;
         private String editorIcon;
         private boolean editorStateSeen;
-        private boolean needsPatch;
 
         private PartIconChecker(Map<String, PartDescriptor> parts) {
             this.parts = parts;
         }
 
         @Override
-        public void startElement(String uri, String localName, String qName, Attributes attributes) {
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
             depth++;
-            if (needsPatch) {
-                return;
-            }
             if (depth == editorDepth + 1 && "persistedState".equals(qName) && !editorStateSeen) {
                 editorStateSeen = true;
                 if ("memento".equals(attributes.getValue("key"))) {
                     String value = attributes.getValue("value");
                     if (value != null) {
-                        needsPatch = iconNeedsPatch(editorIcon, extractCompatibilityEditorId(value));
+                        checkIcon(editorIcon, extractCompatibilityEditorId(value));
                     }
                 }
             }
@@ -240,7 +242,7 @@ public final class WorkbenchPatcher {
                 editorIcon = icon;
                 editorStateSeen = false;
             } else {
-                needsPatch = iconNeedsPatch(icon, elementId);
+                checkIcon(icon, elementId);
             }
         }
 
@@ -252,9 +254,11 @@ public final class WorkbenchPatcher {
             depth--;
         }
 
-        private boolean iconNeedsPatch(String oldIcon, String elementId) {
+        private void checkIcon(String oldIcon, String elementId) throws SAXException {
             PartDescriptor part = parts.get(elementId);
-            return part != null && !oldIcon.equals(part.icon());
+            if (part != null && !oldIcon.equals(part.icon())) {
+                throw PATCH_REQUIRED;
+            }
         }
     }
 
