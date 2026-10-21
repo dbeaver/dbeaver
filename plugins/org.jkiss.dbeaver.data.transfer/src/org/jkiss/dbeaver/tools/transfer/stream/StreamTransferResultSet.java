@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Timestamp;
+import java.time.DateTimeException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -99,38 +101,8 @@ public class StreamTransferResultSet implements DBCResultSet {
                     return null;
                 }
                 TemporalAccessor ta = dateTimeFormat.parse(strValue);
-                // ZonedDateTime.from() always throws when no zone was parsed, which is the case for the default
-                // import format. Check for a zone first to avoid creating an exception for every imported value.
-                Date zonedDate = null;
-                if (ta.query(TemporalQueries.zone()) != null) {
-                    try {
-                        zonedDate = Date.from(ZonedDateTime.from(ta).toInstant());
-                    } catch (Exception e) {
-                        // Zone is present but the value can't be converted, handle it as a local value below
-                    }
-                }
-                if (zonedDate != null) {
-                    value = zonedDate;
-                } else {
-                    LocalDateTime localDT;
-                    if (ta.isSupported(ChronoField.NANO_OF_SECOND)) {
-                        localDT = LocalDateTime.from(ta);
-                    } else {
-                        localDT = LocalDate.from(ta).atStartOfDay();
-                        log.debug("No time present in datetime string, defaulting to the start of the day");
-                    }
-                    if (dateTimeZoneId != null) {
-                        // Shift LocalDateTime to specified zone
-                        // https://stackoverflow.com/questions/42280454/changing-localdatetime-based-on-time-difference-in-current-time-zone-vs-eastern
-                        localDT = localDT
-                            .atZone(ZoneId.systemDefault())
-                            .withZoneSameInstant(dateTimeZoneId)
-                            .toLocalDateTime();
-                    }
-                    // We use java.sql.Timestamp.valueOf because classic date/time conversion turns "pre-historic" Gregorian
-                    // dates into incorrect SQL timestamps (in Julian calendar). E.g. 0001-01-01->0001-01-03
-                    value = Timestamp.valueOf(localDT);
-                }
+                Date zonedDate = toZonedDate(ta);
+                value = zonedDate != null ? zonedDate : toLocalTimestamp(ta);
             } catch (Exception e) {
                 // Can't parse. Ignore format then
                 log.debug("Error parsing datetime string: " + e.getMessage());
@@ -143,6 +115,41 @@ public class StreamTransferResultSet implements DBCResultSet {
     @Override
     public Object getAttributeValue(String name) throws DBCException {
         return null;
+    }
+
+    @Nullable
+    private static Date toZonedDate(@NotNull TemporalAccessor ta) {
+        // ZonedDateTime.from() throws when no zone was parsed, so check first to avoid an exception for every value
+        if (ta.query(TemporalQueries.zone()) == null) {
+            return null;
+        }
+        try {
+            return Date.from(ZonedDateTime.from(ta).toInstant());
+        } catch (DateTimeException | IllegalArgumentException e) {
+            return null;
+        }
+    }
+
+    @NotNull
+    private Timestamp toLocalTimestamp(@NotNull TemporalAccessor ta) {
+        LocalDateTime localDT;
+        if (ta.isSupported(ChronoField.NANO_OF_SECOND)) {
+            localDT = LocalDateTime.from(ta);
+        } else {
+            localDT = LocalDate.from(ta).atStartOfDay();
+            log.debug("No time present in datetime string, defaulting to the start of the day");
+        }
+        if (dateTimeZoneId != null) {
+            // Shift LocalDateTime to specified zone
+            // https://stackoverflow.com/questions/42280454/changing-localdatetime-based-on-time-difference-in-current-time-zone-vs-eastern
+            localDT = localDT
+                .atZone(ZoneId.systemDefault())
+                .withZoneSameInstant(dateTimeZoneId)
+                .toLocalDateTime();
+        }
+        // We use java.sql.Timestamp.valueOf because classic date/time conversion turns "pre-historic" Gregorian
+        // dates into incorrect SQL timestamps (in Julian calendar). E.g. 0001-01-01->0001-01-03
+        return Timestamp.valueOf(localDT);
     }
 
     @Override
