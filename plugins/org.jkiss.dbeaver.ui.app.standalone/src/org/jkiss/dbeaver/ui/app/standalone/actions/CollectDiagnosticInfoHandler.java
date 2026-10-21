@@ -60,6 +60,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -287,8 +288,8 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         private String getInitialOutputFolderPath() {
             DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
             String outputFolderPath = store.getString(DBeaverPreferences.DIAGNOSTIC_INFO_OUTPUT_FOLDER);
-            if (CommonUtils.isEmpty(outputFolderPath) || !Files.isDirectory(Path.of(outputFolderPath))) {
-                outputFolderPath = System.getProperty(StandardConstants.ENV_USER_HOME);
+            if (!isOutputFolderPathValid(outputFolderPath)) {
+                return System.getProperty(StandardConstants.ENV_USER_HOME);
             }
             return outputFolderPath;
         }
@@ -296,6 +297,18 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         @Nullable
         private File getOutputFolder() {
             return outputFolder;
+        }
+
+        private static boolean isOutputFolderPathValid(@Nullable String outputFolderPathString) {
+            if (CommonUtils.isEmpty(outputFolderPathString)) {
+                return false;
+            }
+            try {
+                return Files.isDirectory(Path.of(outputFolderPathString));
+            } catch (InvalidPathException e) {
+                log.debug("Invalid path '%s'".formatted(outputFolderPathString), e);
+                return false;
+            }
         }
     }
 }
