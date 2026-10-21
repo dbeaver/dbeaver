@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 class DDDesktopAccessLifecycleTest {
+
     @Test
     void completesTheAccessChangeEvenWhenEncryptionKeysCannotBeLoaded() throws Exception {
         DDDesktopAccessService access = access();

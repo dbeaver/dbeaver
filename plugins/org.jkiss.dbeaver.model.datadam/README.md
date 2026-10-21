@@ -20,6 +20,17 @@ Service consumers obtain the channel from `DDDesktopConnectionService` and relea
 The shared WebSocket client's 90-second idle timeout detects missing server traffic; External DAM must send its
 heartbeat more frequently than this timeout (the server default is 30 seconds). Desktop does not add another heartbeat protocol.
 
+## Channel state
+
+`channel.getStatus()` returns the current immutable state: `DISCONNECTED`, `CONNECTING`, `CONNECTED`, or `CLOSED`.
+The connected snapshot contains its `DDConnectionInfo`; `status.isReady()` reports readiness for application messages.
+Readiness is a local observation, so every send must still handle failure.
+
+`channel.observeState(observer)` delivers the current state and then subsequent changes in order, without a
+check-then-subscribe gap. Its returned `DDSubscription` unregisters only that observer. Existing
+`addConnectionListener` callbacks remain transition-only and do not replay an earlier connection.
+State observers may run on the subscribing or state-changing thread; keep them short and dispatch UI work to the UI thread.
+
 ## Trusted endpoints
 
 Stage mode (`-dbeaver.datadam.stage`) selects the proposed endpoint

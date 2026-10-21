@@ -20,6 +20,8 @@ import com.dbeaver.datadam.external.api.DDExternalDamProtocol;
 import com.dbeaver.datadam.external.api.model.DDConnectionInfo;
 import com.dbeaver.datadam.external.api.model.DDHello;
 import com.dbeaver.datadam.external.api.model.DDMessage;
+import com.dbeaver.datadam.external.api.transport.DDChannelState;
+import com.dbeaver.datadam.external.api.transport.DDChannelStatus;
 import com.dbeaver.datadam.external.api.transport.DDConnectionListener;
 import com.dbeaver.datadam.external.api.transport.DDMessageChannel;
 import com.dbeaver.datadam.external.api.transport.DDMessageListener;
@@ -72,6 +74,8 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
     private final Supplier<BaseWebSocketClient> clients;
     private final List<Registration<DDMessageListener>> messageListeners = new ArrayList<>();
     private final List<Registration<DDConnectionListener>> connectionListeners = new ArrayList<>();
+    private final List<StateObservation> stateObservers = new ArrayList<>();
+    private DDChannelStatus status = new DDChannelStatus(DDChannelState.DISCONNECTED, null);
     private boolean running;
     private boolean closed;
     private long retryMillis = MIN_RETRY_MILLIS;
@@ -114,6 +118,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
             running = true;
             scheduleAttempt(0);
         }
+        notifyStateObservers();
     }
 
     public void pause() {
@@ -134,6 +139,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
             if (stopped != null) {
                 detach(stopped, false);
             }
+            updateStatus(new DDChannelStatus(closed ? DDChannelState.CLOSED : DDChannelState.DISCONNECTED, null));
             if (terminal) {
                 messageListeners.clear();
                 connectionListeners.clear();
@@ -141,6 +147,48 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
         }
         if (stopped != null) {
             cleanup(stopped);
+        }
+        notifyStateObservers();
+    }
+
+    @Override
+    @NotNull
+    public DDChannelStatus getStatus() {
+        synchronized (lock) {
+            return status;
+        }
+    }
+
+    @Override
+    @NotNull
+    public DDSubscription observeState(@NotNull Consumer<DDChannelStatus> observer) {
+        StateObservation observation = new StateObservation(observer);
+        synchronized (lock) {
+            observation.pending.add(status);
+            if (!closed) {
+                stateObservers.add(observation);
+            }
+        }
+        observation.deliver();
+        return observation;
+    }
+
+    private void updateStatus(@NotNull DDChannelStatus next) {
+        if (status.state() != DDChannelState.CLOSED && !status.equals(next)) {
+            status = next;
+            for (StateObservation observation : stateObservers) {
+                observation.pending.add(next);
+            }
+        }
+    }
+
+    private void notifyStateObservers() {
+        List<StateObservation> observers;
+        synchronized (lock) {
+            observers = List.copyOf(stateObservers);
+        }
+        for (StateObservation observation : observers) {
+            observation.deliver();
         }
     }
 
@@ -199,6 +247,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
     private void scheduleAttempt(long delay) {
         Attempt attempt = new Attempt();
         current = attempt;
+        updateStatus(new DDChannelStatus(DDChannelState.CONNECTING, null));
         attempt.connect.schedule(delay);
     }
 
@@ -396,12 +445,14 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
                     return;
                 }
                 attempt.info = ready;
+                updateStatus(new DDChannelStatus(DDChannelState.CONNECTED, ready));
                 retryMillis = MIN_RETRY_MILLIS;
                 listeners = List.copyOf(connectionListeners);
             }
             attempt.connectDeadline.cancel();
             attempt.readyDeadline.cancel();
             notifyListeners(listeners, listener -> listener.onConnected(ready));
+            notifyStateObservers();
         } else {
             DDMessage message = DDExternalDamProtocol.decode(text);
             List<Registration<DDMessageListener>> listeners;
@@ -442,6 +493,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
             detach(attempt, true);
         }
         cleanup(attempt);
+        notifyStateObservers();
     }
 
     private void finish(@NotNull Attempt attempt, boolean retry) {
@@ -452,10 +504,12 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
             detach(attempt, retry);
         }
         cleanup(attempt);
+        notifyStateObservers();
     }
 
     private void detach(@NotNull Attempt attempt, boolean retry) {
         current = null;
+        updateStatus(new DDChannelStatus(closed ? DDChannelState.CLOSED : DDChannelState.DISCONNECTED, null));
         attempt.stopped = true;
         attempt.incoming.clear();
         attempt.failed.addAll(attempt.outgoing);
@@ -621,6 +675,53 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
                 } finally {
                     super.onClose(socket, WebSocket.NORMAL_CLOSURE, "");
                 }
+            }
+        }
+    }
+
+    private final class StateObservation implements DDSubscription {
+        private final Consumer<DDChannelStatus> observer;
+        private final ArrayDeque<DDChannelStatus> pending = new ArrayDeque<>();
+        private boolean active = true;
+        private boolean delivering;
+
+        private StateObservation(@NotNull Consumer<DDChannelStatus> observer) {
+            this.observer = observer;
+        }
+
+        private void deliver() {
+            synchronized (lock) {
+                if (!active || delivering) {
+                    return;
+                }
+                delivering = true;
+            }
+            while (true) {
+                DDChannelStatus next;
+                synchronized (lock) {
+                    next = active ? pending.pollFirst() : null;
+                    if (next == null) {
+                        delivering = false;
+                        if (closed) {
+                            stateObservers.remove(this);
+                        }
+                        return;
+                    }
+                }
+                try {
+                    observer.accept(next);
+                } catch (RuntimeException e) {
+                    log.error("Desktop channel state observer failed", e);
+                }
+            }
+        }
+
+        @Override
+        public void close() {
+            synchronized (lock) {
+                active = false;
+                pending.clear();
+                stateObservers.remove(this);
             }
         }
     }

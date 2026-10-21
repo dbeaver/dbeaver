@@ -21,6 +21,8 @@ import com.dbeaver.datadam.external.api.model.DDConnectionInfo;
 import com.dbeaver.datadam.external.api.model.DDHello;
 import com.dbeaver.datadam.external.api.model.DDMessage;
 import com.dbeaver.datadam.external.api.model.DDReady;
+import com.dbeaver.datadam.external.api.transport.DDChannelState;
+import com.dbeaver.datadam.external.api.transport.DDChannelStatus;
 import com.dbeaver.datadam.external.api.transport.DDConnectionListener;
 import com.dbeaver.datadam.external.api.transport.DDSubscription;
 import com.google.gson.JsonObject;
@@ -54,6 +56,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -66,6 +69,198 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
     private static final URI ENDPOINT = URI.create("wss://external.example/ws");
     private static final DDHello HELLO = new DDHello("deployment", "application-run", "DBeaver", "26.3");
     private static final DDMessage MESSAGE = message("topic", "value");
+
+    @Test
+    void stateSnapshotTracksReadinessPauseResumeAndTerminalClose() throws Exception {
+        Clients clients = new Clients();
+        Events events = new Events();
+        BlockingQueue<DDChannelStatus> states = new LinkedBlockingQueue<>();
+        try (var channel = channel(clients, resource -> "token")) {
+            channel.addConnectionListener(events);
+            channel.observeState(states::add);
+            Assertions.assertEquals(new DDChannelStatus(DDChannelState.DISCONNECTED, null), take(states));
+            Assertions.assertFalse(channel.getStatus().isReady());
+
+            channel.start();
+            Assertions.assertEquals(new DDChannelStatus(DDChannelState.CONNECTING, null), take(states));
+            Peer peer = clients.next();
+            peer.open();
+            peer.nextSent();
+            Assertions.assertFalse(channel.getStatus().isReady());
+            peer.ready("first");
+            DDConnectionInfo first = take(events.connected);
+            Assertions.assertEquals(new DDChannelStatus(DDChannelState.CONNECTED, first), take(states));
+            Assertions.assertEquals(first, channel.getStatus().connection());
+
+            channel.pause();
+            Assertions.assertEquals(new DDChannelStatus(DDChannelState.DISCONNECTED, null), take(states));
+            Assertions.assertFalse(channel.getStatus().isReady());
+            channel.start();
+            Assertions.assertEquals(DDChannelState.CONNECTING, take(states).state());
+            final Peer resumed = ready(clients, events, "resumed");
+            Assertions.assertEquals("resumed", take(states).connection().connectionId());
+
+            channel.close();
+            Assertions.assertEquals(new DDChannelStatus(DDChannelState.CLOSED, null), take(states));
+            resumed.ready("late-ready");
+            resumed.listener.onClose(resumed.socket, 1000, "late-close");
+            channel.pause();
+            channel.start();
+            channel.close();
+            Assertions.assertEquals(DDChannelState.CLOSED, channel.getStatus().state());
+            Assertions.assertTrue(states.isEmpty());
+            BlockingQueue<DDChannelStatus> late = new LinkedBlockingQueue<>();
+            channel.observeState(late::add).close();
+            Assertions.assertEquals(channel.getStatus(), take(late));
+            Assertions.assertTrue(late.isEmpty());
+        }
+    }
+
+    @Test
+    void lateStateObserverReceivesCurrentConnectionBeforeReconnectTransitions() throws Exception {
+        Clients clients = new Clients();
+        Events events = new Events();
+        BlockingQueue<DDChannelStatus> states = new LinkedBlockingQueue<>();
+        try (var channel = channel(clients, resource -> "token")) {
+            channel.addConnectionListener(events);
+            channel.start();
+            Peer first = ready(clients, events, "first");
+            channel.observeState(states::add);
+            Assertions.assertEquals(channel.getStatus(), take(states));
+
+            first.listener.onClose(first.socket, 1008, "expired");
+
+            Assertions.assertEquals(DDChannelState.DISCONNECTED, take(states).state());
+            Assertions.assertEquals(DDChannelState.CONNECTING, take(states).state());
+            ready(clients, events, "second");
+            DDChannelStatus ready = take(states);
+            Assertions.assertEquals(DDChannelState.CONNECTED, ready.state());
+            Assertions.assertEquals("second", ready.connection().connectionId());
+            Assertions.assertEquals(ready, channel.getStatus());
+            first.ready("stale");
+            Assertions.assertTrue(states.isEmpty());
+        }
+    }
+
+    @Test
+    void blockedInitialReplayKeepsConcurrentTransitionsOrderedWithoutHoldingChannelLock() throws Exception {
+        Clients clients = new Clients();
+        Events events = new Events();
+        CountDownLatch entered = new CountDownLatch(1);
+        CompletableFuture<Void> release = new CompletableFuture<>();
+        BlockingQueue<DDChannelState> states = new LinkedBlockingQueue<>();
+        AtomicInteger callbacks = new AtomicInteger();
+        AtomicInteger concurrentCallbacks = new AtomicInteger();
+        try (var channel = channel(clients, resource -> "token");
+             var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            channel.addConnectionListener(events);
+            var observing = executor.submit(() -> channel.observeState(status -> {
+                concurrentCallbacks.accumulateAndGet(callbacks.incrementAndGet(), Math::max);
+                if (status.state() == DDChannelState.DISCONNECTED && entered.getCount() != 0) {
+                    entered.countDown();
+                    release.join();
+                }
+                states.add(status.state());
+                callbacks.decrementAndGet();
+            }));
+            try {
+                Assertions.assertTrue(entered.await(3, TimeUnit.SECONDS));
+                channel.start();
+                ready(clients, events, "racing");
+                channel.pause();
+                channel.close();
+                Assertions.assertEquals(DDChannelState.CLOSED, channel.getStatus().state());
+                Assertions.assertTrue(states.isEmpty());
+            } finally {
+                release.complete(null);
+            }
+            observing.get(3, TimeUnit.SECONDS).close();
+            Assertions.assertEquals(List.of(
+                DDChannelState.DISCONNECTED, DDChannelState.CONNECTING, DDChannelState.CONNECTED,
+                DDChannelState.DISCONNECTED, DDChannelState.CLOSED
+            ), new ArrayList<>(states));
+            Assertions.assertEquals(1, concurrentCallbacks.get());
+        } finally {
+            release.complete(null);
+        }
+    }
+
+    @Test
+    void stateCancellationDropsQueuedTransitionsDuringAnActiveCallback() throws Exception {
+        Clients clients = new Clients();
+        Events events = new Events();
+        CountDownLatch entered = new CountDownLatch(1);
+        CompletableFuture<Void> release = new CompletableFuture<>();
+        CompletableFuture<Void> delivered = new CompletableFuture<>();
+        BlockingQueue<DDChannelState> states = new LinkedBlockingQueue<>();
+        try (var channel = channel(clients, resource -> "token")) {
+            channel.addConnectionListener(events);
+            DDSubscription subscription = channel.observeState(status -> {
+                if (status.isReady()) {
+                    entered.countDown();
+                    release.join();
+                    states.add(status.state());
+                    delivered.complete(null);
+                } else {
+                    states.add(status.state());
+                }
+            });
+            Assertions.assertEquals(DDChannelState.DISCONNECTED, take(states));
+            channel.start();
+            Assertions.assertEquals(DDChannelState.CONNECTING, take(states));
+            ready(clients, events, "cancel");
+            try {
+                Assertions.assertTrue(entered.await(3, TimeUnit.SECONDS));
+                channel.pause();
+                subscription.close();
+                subscription.close();
+                channel.close();
+            } finally {
+                release.complete(null);
+            }
+            delivered.get(3, TimeUnit.SECONDS);
+            Assertions.assertEquals(List.of(DDChannelState.CONNECTED), new ArrayList<>(states));
+        } finally {
+            release.complete(null);
+        }
+    }
+
+    @Test
+    void stateObserversCanCloseReentrantlyAndFailuresDoNotSkipTerminalDelivery() throws Exception {
+        Clients clients = new Clients();
+        BlockingQueue<DDChannelState> states = new LinkedBlockingQueue<>();
+        try (var channel = channel(clients, resource -> "token")) {
+            channel.observeState(status -> {
+                states.add(status.state());
+                if (status.state() == DDChannelState.DISCONNECTED) {
+                    channel.close();
+                    throw new IllegalStateException("Failed initial observer");
+                }
+            });
+
+            Assertions.assertEquals(List.of(DDChannelState.DISCONNECTED, DDChannelState.CLOSED), new ArrayList<>(states));
+            Assertions.assertEquals(DDChannelState.CLOSED, channel.getStatus().state());
+        }
+    }
+
+    @Test
+    void missingTokenReturnsStateToDisconnectedUntilExplicitRestart() throws Exception {
+        Clients clients = new Clients();
+        AtomicReference<String> token = new AtomicReference<>();
+        BlockingQueue<DDChannelStatus> states = new LinkedBlockingQueue<>();
+        try (var channel = channel(clients, resource -> token.get())) {
+            channel.observeState(states::add);
+            take(states);
+            channel.start();
+            Assertions.assertEquals(DDChannelState.CONNECTING, take(states).state());
+            Assertions.assertEquals(DDChannelState.DISCONNECTED, take(states).state());
+            Assertions.assertFalse(channel.getStatus().isReady());
+            token.set("restored");
+            channel.start();
+            Assertions.assertEquals(DDChannelState.CONNECTING, take(states).state());
+            clients.next().open();
+        }
+    }
 
     @Test
     void sendsHelloBeforeMessagesAndWaitsForReady() throws Exception {
