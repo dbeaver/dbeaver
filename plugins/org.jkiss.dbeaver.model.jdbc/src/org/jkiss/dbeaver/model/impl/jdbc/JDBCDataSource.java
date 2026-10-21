@@ -906,6 +906,24 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     /**
+     * Cancels the operation running on the context connection. If it does not end in time, the connection is closed
+     * (see {@link #scheduleCanceledExecutionAbort}).
+     */
+    public boolean cancelCurrentExecution(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBRBlockingObject block,
+        @NotNull JDBCExecutionContext context,
+        @Nullable Thread connectionThread
+    ) throws DBException {
+        Connection connection = context.getConnectionOrNull();
+        if (connection == null) {
+            return false;
+        }
+        scheduleCanceledExecutionAbort(monitor, block, context);
+        return cancelCurrentExecution(connection, connectionThread);
+    }
+
+    /**
      * Closes the physical connection if a canceled operation still waits on the driver after
      * {@link ModelPreferences#EXECUTE_CANCEL_ABORT_TIMEOUT}. Call it before asking the driver to cancel:
      * the cancel request itself may block on the same dead connection.
