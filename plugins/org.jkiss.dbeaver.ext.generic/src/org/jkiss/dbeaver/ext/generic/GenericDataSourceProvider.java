@@ -65,6 +65,7 @@ public abstract class GenericDataSourceProvider<DATASOURCE extends GenericDataSo
         GenericMetaModelRegistry.getInstance().getMetaModel(container).initializeNewConnection(container);
     }
 
+    @NotNull
     protected GenericMetaModelDescriptor getStandardMetaModel() {
         return GenericMetaModelRegistry.getInstance().getStandardMetaModel();
     }

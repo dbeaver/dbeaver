@@ -69,6 +69,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * NodeListControl
@@ -369,7 +370,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode>
         @Nullable Object ownerObject,
         @Nullable IWorkbenchSite workbenchSite
     ) {
-        return cellValue != ownerObject
+        return !Objects.equals(cellValue, ownerObject)
             && (cellValue instanceof DBSObject || workbenchSite != null
                 && (cellValue instanceof DBSObjectReference || getValueHyperlink(cellValue) != null));
     }
@@ -400,7 +401,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode>
         }
 
         @Override
-        public boolean isHyperlink(Object element, Object cellValue) {
+        public boolean isHyperlink(@Nullable Object element, @Nullable Object cellValue) {
             Object ownerObject = null;
             if (rootNode instanceof DBNDatabaseNode node) {
                 ownerObject = node.getValueObject();
@@ -409,7 +410,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode>
         }
 
         @Override
-        public void navigateHyperlink(Object cellValue) {
+        public void navigateHyperlink(@Nullable Object cellValue) {
             navigateHyperlinkValue(cellValue, workbenchSite);
         }
 

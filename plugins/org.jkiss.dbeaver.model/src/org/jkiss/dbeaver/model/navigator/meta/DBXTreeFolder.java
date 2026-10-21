@@ -134,12 +134,13 @@ public class DBXTreeFolder extends DBXTreeNode {
         this.type = type;
     }
 
-    public void setLabel(String label) {
+    public void setLabel(@Nullable String label) {
         this.label = label;
         // explicit tree-injection labels take precedence over provider terms
         this.labelTerm = null;
     }
 
+    @Nullable
     public String getIdOrType() {
         String id = getId();
         return !CommonUtils.isEmpty(id) ? id : type;

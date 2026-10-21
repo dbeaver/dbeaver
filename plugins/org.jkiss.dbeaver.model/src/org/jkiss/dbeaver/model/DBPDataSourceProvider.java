@@ -37,6 +37,7 @@ public interface DBPDataSourceProvider<DATASOURCE extends DBPDataSource> extends
 
     /**
      * Initializes data source provider
+     *
      * @param platform application
      */
     void init(@NotNull DBPPlatform platform);
@@ -50,6 +51,7 @@ public interface DBPDataSourceProvider<DATASOURCE extends DBPDataSource> extends
 
     /**
      * Supported features
+     *
      * @return features
      */
     long getFeatures();
@@ -79,8 +81,10 @@ public interface DBPDataSourceProvider<DATASOURCE extends DBPDataSource> extends
 
     /**
      * Opens new data source
+     *
      * @param monitor progress monitor
      * @param container data source container
+     *
      * @return new data source object
      * @throws DBException on any error
      */

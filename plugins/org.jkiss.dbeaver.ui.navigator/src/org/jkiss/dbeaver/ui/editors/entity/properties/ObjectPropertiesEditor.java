@@ -721,7 +721,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 // mandatory item tabs are described by metadata; leave their data loading to the page's background job
                 DBNNode[] children = node instanceof DBNDatabaseNode databaseNode && hasOnlyMandatoryItemTabs(databaseNode)
                     ? null : DBNUtils.getNodeChildrenFiltered(monitor, node, false);
-                if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getDataSourceContainer().getNavigatorSettings().isHideFolders()) {
+                if (node instanceof DBNDatabaseNode databaseNode
+                    && databaseNode.getDataSourceContainer().getNavigatorSettings().isHideFolders()) {
                     if (children != null) {
                         // Folders are hidden in navigator. But we must show them here for all present child items
                         Map<DBXTreeFolder, List<DBNNode>> childMap = new LinkedHashMap<>();

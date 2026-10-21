@@ -390,7 +390,7 @@ public abstract class ObjectViewerRenderer {
         }
 
         @Override
-        public void keyPressed(KeyEvent e) {
+        public void keyPressed(@NotNull KeyEvent e) {
             if ((e.keyCode & SWT.MODIFIER_MASK) != 0) {
                 Point mousePoint = itemsViewer.getControl().getDisplay().getCursorLocation();
                 mousePoint = itemsViewer.getControl().getDisplay().map(null, itemsViewer.getControl(), mousePoint);
@@ -402,7 +402,7 @@ public abstract class ObjectViewerRenderer {
         }
 
         @Override
-        public void keyReleased(KeyEvent e) {
+        public void keyReleased(@NotNull KeyEvent e) {
             if ((e.keyCode & SWT.MODIFIER_MASK) != 0) {
                 Point mousePoint = itemsViewer.getControl().getDisplay().getCursorLocation();
                 mousePoint = itemsViewer.getControl().getDisplay().map(null, itemsViewer.getControl(), mousePoint);
@@ -477,8 +477,7 @@ public abstract class ObjectViewerRenderer {
         return (stateMask & (SWT.CTRL | SWT.ALT)) != 0;
     }
 
-    public boolean isHyperlink(Object element, @Nullable Object cellValue)
-    {
+    public boolean isHyperlink(@Nullable Object element, @Nullable Object cellValue) {
         return false;
     }
 

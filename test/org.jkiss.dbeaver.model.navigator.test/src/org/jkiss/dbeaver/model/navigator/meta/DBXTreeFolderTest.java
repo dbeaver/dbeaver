@@ -31,7 +31,8 @@ import org.mockito.Mockito;
 public class DBXTreeFolderTest extends DBeaverUnitTest {
     private final AbstractDescriptor source = Mockito.mock(AbstractDescriptor.class);
     private final IConfigurationElement config = Mockito.mock(IConfigurationElement.class);
-    private final DBPDataSource dataSource = Mockito.mock(DBPDataSource.class, Mockito.withSettings().extraInterfaces(DBPTermProvider.class));
+    private final DBPDataSource dataSource = Mockito.mock(
+        DBPDataSource.class, Mockito.withSettings().extraInterfaces(DBPTermProvider.class));
     private final DBPTermProvider termProvider = (DBPTermProvider) dataSource;
 
     @BeforeEach

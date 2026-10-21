@@ -844,6 +844,7 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return true;
     }
 
+    @NotNull
     public Collection<? extends DBSDataType> getDataTypes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return dataTypeCache.getAllObjects(monitor, this);
     }

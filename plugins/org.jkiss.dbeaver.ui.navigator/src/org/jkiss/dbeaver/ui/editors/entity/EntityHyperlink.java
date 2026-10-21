@@ -122,7 +122,7 @@ public class EntityHyperlink implements IHyperlink
             if (cause instanceof OperationCanceledException) {
                 return true;
             }
-            if (cause.getCause() == cause) {
+            if (cause.equals(cause.getCause())) {
                 break;
             }
         }
@@ -140,8 +140,8 @@ public class EntityHyperlink implements IHyperlink
 
         @NotNull
         @Override
-        public IStatus run(@NotNull DBRProgressMonitor monitor)
-        {
+        public IStatus run(@NotNull DBRProgressMonitor monitor) {
+
             monitor.beginTask("Resolve object " + reference.getName(), 1);
             try {
                 if (isNavigationCanceled(monitor, dataSource, null) || !isNavigationAvailable(dataSource)) {
