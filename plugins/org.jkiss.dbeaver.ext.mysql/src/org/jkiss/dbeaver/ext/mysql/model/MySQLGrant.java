@@ -564,6 +564,15 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
         return prefix + schema + "." + object;
     }
 
+    /**
+     * Escapes the LIKE wildcards {@code _} and {@code %} of a concrete schema name, so a schema-level
+     * GRANT/REVOKE ({@code `db`.*}) addresses only that schema and not every schema matching it as a pattern.
+     */
+    @NotNull
+    public static String escapeSchemaWildcards(@NotNull String schemaName) {
+        return schemaName.replace("_", "\\_").replace("%", "\\%");
+    }
+
     @NotNull
     private static String quoteIdentifier(@NotNull String name) {
         return "`" + name.replace("`", "``") + "`";

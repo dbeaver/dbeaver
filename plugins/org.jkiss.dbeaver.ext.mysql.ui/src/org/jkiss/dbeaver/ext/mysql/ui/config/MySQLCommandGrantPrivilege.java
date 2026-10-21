@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mysql.ui.config;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLPrivilege;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLProcedure;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
@@ -285,8 +286,15 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
                 (schema == null ? "*" : DBUtils.getQuotedIdentifier(schema)) + "." + //$NON-NLS-1$ //$NON-NLS-2$
                 DBUtils.getQuotedIdentifier(procedure);
         }
-        if (schemaPattern != null) {
-            return "`" + schemaPattern.replace("`", "``") + "`." + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
+        String storedSchema = schemaPattern;
+        if (grant && storedSchema == null && schema != null && table == null && !schema.getDataSource().isPartialRevokes()) {
+            // In a schema-level GRANT (db.*) MySQL treats _ and % of the schema name as wildcards even inside
+            // quotes: escape them to grant on this concrete schema only. A REVOKE keeps the name as is: it must
+            // match the stored grant row literally, and an escaped stored row is addressed by its schemaPattern
+            storedSchema = MySQLGrant.escapeSchemaWildcards(schema.getName());
+        }
+        if (storedSchema != null) {
+            return "`" + storedSchema.replace("`", "``") + "`." + //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$ //$NON-NLS-4$
                 (table == null ? "*" : DBUtils.getQuotedIdentifier(table)); //$NON-NLS-1$
         }
         return

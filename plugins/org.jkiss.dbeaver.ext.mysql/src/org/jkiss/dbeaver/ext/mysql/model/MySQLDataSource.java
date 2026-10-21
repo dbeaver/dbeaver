@@ -108,6 +108,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     private SQLHelpProvider helpProvider;
     private volatile boolean hasStatistics;
     private boolean containsCheckConstraintTable;
+    private boolean partialRevokes;
 
     private transient boolean inServerTimezoneHandle;
 
@@ -424,6 +425,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 }
             } catch (Throwable ex) {
                 log.debug("Error reading default server charset/collation", ex);
+            }
+
+            partialRevokes = false;
+            if (!isMariaDB()) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW VARIABLES LIKE 'partial_revokes'")) {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        if (dbResult.next()) {
+                            partialRevokes = "ON".equalsIgnoreCase(JDBCUtils.safeGetString(dbResult, 2)); //$NON-NLS-1$
+                        }
+                    }
+                } catch (Throwable ex) {
+                    log.debug("Error reading partial_revokes", ex);
+                }
             }
 
             // Read catalogs
@@ -1038,6 +1052,14 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     public boolean isMariaDB() {
         return MySQLConstants.DRIVER_CLASS_MARIA_DB.equals(
             getContainer().getDriver().getDriverClassName());
+    }
+
+    /**
+     * Whether the MySQL partial_revokes system variable is enabled: then {@code %} and {@code _} in schema
+     * names of schema-level GRANT/REVOKE statements are literal characters, not LIKE wildcards.
+     */
+    public boolean isPartialRevokes() {
+        return partialRevokes;
     }
 
     @NotNull

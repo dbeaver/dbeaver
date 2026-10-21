@@ -328,4 +328,21 @@ public class MySQLGrantTest extends DBeaverUnitTest {
             procedureGrant("mydb", "p", MySQLGrant.ObjectType.PROCEDURE).getWildcardSchemaPattern(catalog("mydb")));
         Assertions.assertNull(tableGrant("*", "*", List.of(), false).getWildcardSchemaPattern(catalog("mydb")));
     }
+
+    @Test
+    public void escapeSchemaWildcardsOfConcreteSchema() {
+        Assertions.assertEquals("tenant\\_1", MySQLGrant.escapeSchemaWildcards("tenant_1"));
+        Assertions.assertEquals("a\\%b\\_c", MySQLGrant.escapeSchemaWildcards("a%b_c"));
+        Assertions.assertEquals("mydb", MySQLGrant.escapeSchemaWildcards("mydb"));
+    }
+
+    @Test
+    public void escapedSchemaGrantAppliesToConcreteSchemaOnly() {
+        // GRANT ... ON `tenant\_1`.* is stored as tenant\_1: it covers tenant_1 but not tenantX1
+        MySQLGrant grant = tableGrant(MySQLGrant.escapeSchemaWildcards("tenant_1"), "*", List.of(object("SELECT")), false);
+        Assertions.assertTrue(grant.matches(catalog("tenant_1")));
+        Assertions.assertFalse(grant.matches(catalog("tenantX1")));
+        // Revokes address the stored escaped row
+        Assertions.assertEquals("tenant\\_1", grant.getWildcardSchemaPattern(catalog("tenant_1")));
+    }
 }
