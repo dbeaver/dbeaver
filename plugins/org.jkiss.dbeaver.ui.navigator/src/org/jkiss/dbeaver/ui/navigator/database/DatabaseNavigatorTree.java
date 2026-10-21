@@ -81,6 +81,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private static final boolean INLINE_RENAME_ENABLED = false;
 
     private final TreeViewer treeViewer;
+    private int horizontalScrollOffset;
     private DBNModel model;
     private TreeEditor treeEditor;
     private boolean checkEnabled;
@@ -169,6 +170,20 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
         {
             tree.addListener(SWT.PaintItem, event -> onPaintItem(tree, event));
+            if (RuntimeUtils.isMacOS()) {
+                tree.addPaintListener(event -> {
+                    int scrollOffset = tree.getClientArea().x;
+                    if (horizontalScrollOffset != scrollOffset) {
+                        horizontalScrollOffset = scrollOffset;
+                        // cocoa copies viewport-aligned node actions along with the scrolled content
+                        UIUtils.asyncExec(() -> {
+                            if (!tree.isDisposed()) {
+                                tree.redraw();
+                            }
+                        });
+                    }
+                });
+            }
             // FIXME: this is a weird workaround of paint problems
             // FIXME: whenever we click on already selected item in the tree paint breaks
             // FIXME: (only the item is paintedm the rest is whitespace)

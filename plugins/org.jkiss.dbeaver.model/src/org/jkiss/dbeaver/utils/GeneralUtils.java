@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.exec.DBCDriverLicenseException;
 import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -723,14 +724,13 @@ public class GeneralUtils {
                     getExceptionMessage(ex),
                     ex);
             } else {
-                // Pass null exception to avoid dups in error message.
-                // Real exception stacktrace will be passed in the root cause
+                // keep license errors available to the UI; other wrappers would duplicate the cause details
                 return new MultiStatus(
                     ModelPreferences.PLUGIN_ID,
                     0,
                     new IStatus[]{makeExceptionStatus(severity, cause, true)},
                     getExceptionMessage(ex),
-                    !nested ? null : ex);
+                    nested || ex instanceof DBCDriverLicenseException ? ex : null);
             }
         }
     }

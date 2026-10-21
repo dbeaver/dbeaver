@@ -42,7 +42,6 @@ public interface AIBaseFeatures {
 
 
     DBRFeature AI_CHAT_FUNCTION_CALL = DBRFeature.createFeature(CATEGORY_AI_CALLS, "AI Chat function call");
-    DBRFeature CATEGORY_AI_CHAT = DBRFeature.createCategory("AI Chat", "AI Chat features");
 
     @NotNull
     static Map<String, Object> buildFeatureParameters(

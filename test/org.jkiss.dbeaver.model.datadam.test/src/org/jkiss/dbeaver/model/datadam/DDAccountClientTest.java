@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.datadam;
 import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpServer;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoSession;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,12 +32,14 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 class DDAccountClientTest {
+    private static final UUID ACCOUNT_ID = UUID.fromString("8decb064-2709-4914-b6b6-68eaef98cac3");
     private static final String CRYPTO_RESPONSE = """
-        {"data":{"gatewayCryptoState":{"accountId":"account-id","cryptoConfigured":true,
+        {"data":{"gatewayCryptoState":{"accountId":"8decb064-2709-4914-b6b6-68eaef98cac3","cryptoConfigured":true,
         "encryptedBundle":"encrypted-bundle","generation":2,"salt":"salt","iterations":100000}}}
         """;
     private final AtomicReference<String> response = new AtomicReference<>(CRYPTO_RESPONSE);
@@ -48,7 +50,8 @@ class DDAccountClientTest {
     private final AtomicInteger requests = new AtomicInteger();
     private HttpServer server;
     private URI account;
-    private MockedStatic<DDDesktopSsoSession> session;
+    private MockedStatic<DDDesktopAccessService> session;
+    private DDDesktopAccessService manager;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -68,8 +71,10 @@ class DDAccountClientTest {
             }
         });
         server.start();
-        session = Mockito.mockStatic(DDDesktopSsoSession.class);
-        session.when(() -> DDDesktopSsoSession.accessFor(account.resolve("/graphql"))).thenReturn("test-access-token");
+        manager = Mockito.mock(DDDesktopAccessService.class);
+        session = Mockito.mockStatic(DDDesktopAccessService.class);
+        session.when(DDDesktopAccessService::getInstance).thenReturn(manager);
+        Mockito.when(manager.getAccessTokenForResource(account.resolve("/graphql"))).thenReturn("test-access-token");
     }
 
     @AfterEach
@@ -87,7 +92,7 @@ class DDAccountClientTest {
         var body = JsonParser.parseString(posted.get()).getAsJsonObject();
         Assertions.assertEquals(Set.of("query"), body.keySet());
         Assertions.assertTrue(body.get("query").getAsString().contains("gatewayCryptoState"));
-        Assertions.assertEquals("account-id", state.accountId());
+        Assertions.assertEquals(ACCOUNT_ID, state.accountId());
         Assertions.assertTrue(state.cryptoConfigured());
         Assertions.assertEquals("encrypted-bundle", state.encryptedBundle());
         Assertions.assertEquals(2L, state.generation());
@@ -96,9 +101,8 @@ class DDAccountClientTest {
     }
 
     @Test
-    void requiresSsoBeforeSendingAnyRequest() {
-        session.when(() -> DDDesktopSsoSession.accessFor(account.resolve("/graphql")))
-            .thenThrow(new DBException("Sign in to DataDam first"));
+    void requiresSsoBeforeSendingAnyRequest() throws Exception {
+        Mockito.when(manager.getAccessTokenForResource(account.resolve("/graphql"))).thenThrow(new DBException("Sign in to DataDam first"));
         Assertions.assertThrows(DBException.class, () -> new DDAccountClient(account).getCryptoState());
         Assertions.assertEquals(0, requests.get());
     }
