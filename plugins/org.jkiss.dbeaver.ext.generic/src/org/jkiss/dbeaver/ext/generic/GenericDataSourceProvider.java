@@ -60,12 +60,6 @@ public abstract class GenericDataSourceProvider<DATASOURCE extends GenericDataSo
         return getDataSourceClass().cast(metaModelInstance.createDataSourceImpl(monitor, container));
     }
 
-    @Override
-    public void initializeNewConnection(@NotNull DBPDataSourceContainer container) throws DBException {
-        GenericMetaModelRegistry.getInstance().getMetaModel(container).initializeNewConnection(container);
-    }
-
-    @NotNull
     protected GenericMetaModelDescriptor getStandardMetaModel() {
         return GenericMetaModelRegistry.getInstance().getStandardMetaModel();
     }

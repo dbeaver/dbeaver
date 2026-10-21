@@ -29,8 +29,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.INewWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -66,8 +64,6 @@ import java.util.*;
  */
 
 public abstract class ConnectionWizard extends ActiveWizard implements IConnectionWizard, INewWizard {
-
-    private static final Log log = Log.getLog(ConnectionWizard.class);
 
     static final String PROP_CONNECTION_TYPE = "connection-type";
 
@@ -135,13 +131,6 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
                 driver,
                 connectionInfo
             );
-            if (isNew()) {
-                try {
-                    driver.getDataSourceProvider().initializeNewConnection(info);
-                } catch (DBException e) {
-                    log.warn("Could not initialize new connection defaults", e);
-                }
-            }
             DBPNativeClientLocation defaultClientLocation = driver.getDefaultClientLocation();
             if (defaultClientLocation != null) {
                 info.getConnectionConfiguration().setClientHomeId(defaultClientLocation.getName());

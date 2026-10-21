@@ -37,21 +37,12 @@ public interface DBPDataSourceProvider<DATASOURCE extends DBPDataSource> extends
 
     /**
      * Initializes data source provider
-     *
      * @param platform application
      */
     void init(@NotNull DBPPlatform platform);
 
     /**
-     * Applies defaults once to a fresh connection in the creation wizard, without network access.
-     * Must preserve explicitly supplied settings. Not called for existing connections or copies.
-     */
-    default void initializeNewConnection(@NotNull DBPDataSourceContainer container) throws DBException {
-    }
-
-    /**
      * Supported features
-     *
      * @return features
      */
     long getFeatures();
@@ -81,10 +72,8 @@ public interface DBPDataSourceProvider<DATASOURCE extends DBPDataSource> extends
 
     /**
      * Opens new data source
-     *
      * @param monitor progress monitor
      * @param container data source container
-     *
      * @return new data source object
      * @throws DBException on any error
      */
