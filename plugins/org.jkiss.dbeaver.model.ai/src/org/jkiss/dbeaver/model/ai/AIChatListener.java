@@ -33,6 +33,10 @@ public interface AIChatListener {
         // do nothing by default
     }
 
+    default void conversationConnectionsChanged(@NotNull AIChatConversation conversation) {
+        // do nothing by default
+    }
+
     default void conversationRemoved(@NotNull AIChatConversation conversation) {
         // do nothing by default
     }

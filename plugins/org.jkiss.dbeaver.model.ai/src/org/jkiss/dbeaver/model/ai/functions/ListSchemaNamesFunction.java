@@ -118,6 +118,9 @@ public class ListSchemaNamesFunction extends ListStructNamesFunction {
         @NotNull AIFunctionContext context,
         @NotNull AIFunctionDescriptor function
     ) {
+        if (context.getConversation() != null && context.getConversation().getDataSources().size() > 1) {
+            return FunctionState.APPLICABLE;
+        }
         AIDatabaseContext dbContext = context.getContext();
         DBCExecutionContext executionContext = dbContext == null ? null : dbContext.getExecutionContext();
         if (executionContext != null) {
