@@ -20,11 +20,15 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.PostgreValueParser;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataTypeAttribute;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchemaMyTemp;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTypeType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDComposite;
@@ -36,11 +40,14 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCStructImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCComposite;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeDynamic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeStatic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
@@ -49,6 +56,8 @@ import java.sql.Types;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
 import java.util.WeakHashMap;
@@ -60,6 +69,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
     private static final Log log = Log.getLog(PostgreStructValueHandler.class);
     public static final PostgreStructValueHandler INSTANCE = new PostgreStructValueHandler();
     private final Set<DBSTypedObject> unresolvedColumns = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<>()));
+    private final Map<JDBCColumnMetaData, String[]> dynamicAttributeNames = Collections.synchronizedMap(new WeakHashMap<>());
 
     @Override
     protected void bindParameter(
@@ -93,8 +103,12 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         boolean copy,
         boolean validateValue
     ) throws DBCException {
+        if (PostgreConstants.TYPE_RECORD.equals(type.getTypeName())) {
+            // Anonymous records have no registered attributes to resolve through pg_type.
+            return convertToDynamicStruct(session, type, object, copy);
+        }
         if (type instanceof JDBCColumnMetaData && unresolvedColumns.contains(type)) {
-            return object;
+            return convertToDynamicStruct(session, type, object, copy);
         }
         PostgreDataSource dataSource = (PostgreDataSource) session.getDataSource();
         PostgreDataType structType = PostgreUtils.findDataType(session, dataSource, type);
@@ -107,7 +121,8 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
             if (!(type instanceof JDBCColumnMetaData)) {
                 log.debug("Can't resolve struct type '" + type.getTypeName() + "'");
             }
-            return object;
+            return type instanceof JDBCColumnMetaData || PostgreConstants.TYPE_RECORD.equals(type.getTypeName())
+                ? convertToDynamicStruct(session, type, object, copy) : object;
         }
         if (structType.getTypeType() == PostgreTypeType.d) {
             // Domains are just wrappers around underlying type.
@@ -115,7 +130,8 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         }
         if (structType == null || structType.getTypeID() != Types.STRUCT) {
             // The resolved table attribute may be a fallback type for a temporary row type.
-            return object;
+            return type instanceof JDBCColumnMetaData || PostgreConstants.TYPE_RECORD.equals(type.getTypeName())
+                ? convertToDynamicStruct(session, type, object, copy) : object;
         }
         try {
             if (object == null) {
@@ -134,6 +150,122 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
             }
         } catch (DBException e) {
             throw new DBCException("Error converting string to composite type", e, session.getExecutionContext());
+        }
+    }
+
+    @Nullable
+    private Object convertToDynamicStruct(
+        @NotNull DBCSession session,
+        @NotNull DBSTypedObject type,
+        @Nullable Object object,
+        boolean copy
+    ) throws DBCException {
+        boolean anonymousRecord = PostgreConstants.TYPE_RECORD.equals(type.getTypeName());
+        if (!anonymousRecord
+            && (!(type instanceof JDBCColumnMetaData column)
+                || column.getTypeID() != Types.STRUCT
+                || !(session instanceof JDBCSession))) {
+            return object;
+        }
+        if (object == null) {
+            return null;
+        }
+        if (object instanceof JDBCComposite composite) {
+            return copy ? composite.cloneValue(session.getProgressMonitor()) : composite;
+        }
+        try {
+            if (object instanceof Struct struct) {
+                String[] names = anonymousRecord ? null : getDynamicAttributeNames(session, type, struct.getAttributes().length);
+                return !anonymousRecord && names == null ? object : new PostgreDynamicComposite(session, struct, names);
+            }
+            PostgreDataSource dataSource = (PostgreDataSource) session.getDataSource();
+            Object value = object instanceof String ? object : PostgreUtils.extractPGObjectValue(object, dataSource);
+            if (!(value instanceof String string) || !string.startsWith("(") || !string.endsWith(")")) {
+                return object;
+            }
+            String[] attributes = PostgreValueParser.parseSingleObject(string.substring(1, string.length() - 1));
+            String[] names = anonymousRecord ? null : getDynamicAttributeNames(session, type, attributes.length);
+            if (!anonymousRecord && names == null) {
+                return object;
+            }
+            Struct struct = new JDBCStructImpl(type.getTypeName(), attributes, string);
+            return new PostgreDynamicComposite(session, struct, names);
+        } catch (DBCException | SQLException e) {
+            // Preserve the original value if a row cannot be parsed without its database type.
+            return object;
+        }
+    }
+
+    @Nullable
+    private String[] getDynamicAttributeNames(@NotNull DBCSession session, @NotNull DBSTypedObject type, int attributeCount) {
+        if (!(type instanceof JDBCColumnMetaData column) || !(session instanceof JDBCSession jdbcSession)) {
+            return null;
+        }
+        String[] names = dynamicAttributeNames.get(column);
+        if (names == null) {
+            names = loadTemporaryTypeAttributeNames(jdbcSession, type.getTypeName(), column.getCatalogName());
+            dynamicAttributeNames.put(column, names);
+        }
+        return names.length > 0 && names.length == attributeCount ? names : null;
+    }
+
+    @NotNull
+    private static String[] loadTemporaryTypeAttributeNames(
+        @NotNull JDBCSession session,
+        @NotNull String typeName,
+        @Nullable String catalogName
+    ) {
+        String[] identifiers = SQLUtils.splitFullIdentifier(
+            typeName, ".", session.getDataSource().getSQLDialect().getIdentifierQuoteStrings(), false);
+        String name = identifiers.length == 0 ? typeName : identifiers[identifiers.length - 1];
+        PostgreDataSource dataSource = (PostgreDataSource) session.getDataSource();
+        PostgreDatabase database = dataSource.getDatabase(catalogName);
+        if (database == null && session.getExecutionContext().getOwnerInstance() instanceof PostgreDatabase owner) {
+            database = owner;
+        }
+        if (database == null) {
+            return new String[0];
+        }
+        try {
+            PostgreSchemaMyTemp schema = new PostgreSchemaMyTemp(session, database);
+            if (identifiers.length > 1
+                && !schema.getName().equals(identifiers[identifiers.length - 2])
+                && !PostgreConstants.TEMP_SCHEMA_NAME.equals(identifiers[identifiers.length - 2])) {
+                return new String[0];
+            }
+            List<PostgreTableColumn> attributes = schema.readTableColumns(session, name);
+            return attributes.stream().map(PostgreTableColumn::getName).toArray(String[]::new);
+        } catch (SQLException | DBException e) {
+            // Leave the original value intact when the temporary row type is not accessible.
+        }
+        return new String[0];
+    }
+
+    private static final class PostgreDynamicComposite extends JDBCCompositeDynamic {
+        private final String rowString;
+
+        private PostgreDynamicComposite(@NotNull DBCSession session, @NotNull Struct struct, @Nullable String[] names)
+            throws DBCException {
+            super(session, struct, null, names);
+            rowString = struct.toString();
+        }
+
+        private PostgreDynamicComposite(@NotNull PostgreDynamicComposite source, @NotNull DBRProgressMonitor monitor)
+            throws DBCException {
+            super(source, monitor);
+            rowString = source.rowString;
+            modified = source.modified;
+        }
+
+        @NotNull
+        @Override
+        public PostgreDynamicComposite cloneValue(@NotNull DBRProgressMonitor monitor) throws DBCException {
+            return new PostgreDynamicComposite(this, monitor);
+        }
+
+        @Override
+        public String getStringRepresentation() {
+            return modified ? PostgreValueParser.generateObjectString(getValues()) : rowString;
         }
     }
 

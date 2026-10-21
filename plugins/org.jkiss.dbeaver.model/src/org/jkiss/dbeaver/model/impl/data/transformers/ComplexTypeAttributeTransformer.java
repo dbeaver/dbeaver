@@ -51,6 +51,17 @@ public class ComplexTypeAttributeTransformer implements DBDAttributeTransformer 
         if (dataType instanceof DBSEntity) {
             createNestedTypeBindings(session, attribute, rows, dataType);
         }
+        if (!attribute.hasNestedBindings() && attribute.getParentObject() == null) {
+            // Anonymous records have no attributes in type metadata, but their fetched values do.
+            int position = attribute.getOrdinalPosition();
+            for (Object[] row : rows) {
+                if (position >= 0 && position < row.length && row[position] instanceof DBDComposite composite
+                    && composite.getAttributes().length > 0 && composite.getDataType() instanceof DBSEntity) {
+                    createNestedTypeBindings(session, attribute, rows, composite.getDataType());
+                    break;
+                }
+            }
+        }
     }
 
     static void createNestedTypeBindings(

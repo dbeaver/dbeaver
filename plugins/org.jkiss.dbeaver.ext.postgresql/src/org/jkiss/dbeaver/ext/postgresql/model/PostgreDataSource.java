@@ -698,6 +698,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return getDefaultInstance().getLocalDataType(typeName);
     }
 
+    @NotNull
+    @Override
+    public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
+        return PostgreConstants.TYPE_RECORD.equals(typeName) ? DBPDataKind.STRUCT : super.resolveDataKind(typeName, valueType);
+    }
+
     @Nullable
     @Override
     public DBSDataType getLocalDataType(int typeID) {

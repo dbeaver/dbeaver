@@ -153,6 +153,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         if (typeType == PostgreTypeType.e) {
             // Enums are strings
             this.dataKind = DBPDataKind.STRING;
+        } else if (PostgreConstants.TYPE_RECORD.equals(name)) {
+            // Anonymous record values have members even though pg_type has no fixed attributes for them.
+            this.dataKind = DBPDataKind.STRUCT;
         } else {
             this.dataKind = JDBCDataSource.getDataKind(getName(), valueType);
             if (this.dataKind == DBPDataKind.OBJECT) {
