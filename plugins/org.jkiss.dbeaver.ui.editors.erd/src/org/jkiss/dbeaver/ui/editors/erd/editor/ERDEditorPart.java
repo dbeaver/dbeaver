@@ -558,7 +558,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         }
         DiagramPart diagramPart = getDiagramPart();
         if (diagramPart != null) {
+            highlightingManager.restoreOriginalColors();
             diagramPart.refreshTheme();
+            highlightingManager.reapplyHighlights();
         }
     }
 

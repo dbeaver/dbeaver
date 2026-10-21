@@ -185,6 +185,7 @@ public class DiagramPart extends PropertyAwarePart {
             if (child instanceof NodePart nodePart) {
                 for (Object connection : nodePart.getSourceConnections()) {
                     if (connection instanceof AssociationPart associationPart) {
+                        associationPart.refreshTheme();
                         IFigure figure = associationPart.getFigure();
                         figure.setForegroundColor(ERDThemeSettings.instance.linesForeground);
                         for (Object label : figure.getChildren()) {
