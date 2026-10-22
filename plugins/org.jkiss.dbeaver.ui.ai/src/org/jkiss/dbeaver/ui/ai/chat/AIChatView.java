@@ -42,10 +42,34 @@ public class AIChatView extends ViewPart {
     private AIChatControl chat;
     private AIChatViewHandler handler;
     private AISettingsEventListener aiSettingsEventListener;
+    private Composite chatParent;
 
     @Override
     public void createPartControl(@NotNull Composite parent) {
-        chat = new AIChatControl(parent, new AIChatControllerMain());
+        chatParent = parent;
+        if (!parent.getShell().isVisible()) {
+            // Creating the browser during workbench initialization blocks the UI thread on Windows.
+            UIUtils.asyncExec(this::initializeAfterWindowOpens);
+        } else {
+            initializeChat();
+        }
+    }
+
+    private void initializeAfterWindowOpens() {
+        if (chatParent == null || chatParent.isDisposed()) {
+            return;
+        }
+        if (chat == null) {
+            initializeChat();
+        }
+        chatParent.layout(true, true);
+        if (getSite().getPage().getActivePart() == this) {
+            chat.setFocusOnPrompt();
+        }
+    }
+
+    private void initializeChat() {
+        chat = new AIChatControl(chatParent, new AIChatControllerMain());
         handler = new AIChatViewHandler(this);
 
         IContextService service = getSite().getService(IContextService.class);
@@ -69,7 +93,9 @@ public class AIChatView extends ViewPart {
 
     @Override
     public void setFocus() {
-        chat.setFocusOnPrompt();
+        if (chat != null) {
+            chat.setFocusOnPrompt();
+        }
     }
 
     @Override
@@ -113,6 +139,9 @@ public class AIChatView extends ViewPart {
 
     @NotNull
     public AIChatControl getChat() {
+        if (chat == null) {
+            initializeChat();
+        }
         return chat;
     }
 

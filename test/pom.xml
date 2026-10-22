@@ -23,6 +23,7 @@
         <module>org.jkiss.dbeaver.ext.generic.test</module>
         <module>org.jkiss.dbeaver.ext.greenplum.test</module>
         <module>org.jkiss.dbeaver.ext.hana.test</module>
+        <module>org.jkiss.dbeaver.ext.hive.test</module>
         <module>org.jkiss.dbeaver.ext.mysql.test</module>
         <module>org.jkiss.dbeaver.ext.mimer.test</module>
         <module>org.jkiss.dbeaver.ext.oracle.test</module>
@@ -32,6 +33,7 @@
         <module>org.jkiss.dbeaver.ext.timeplus.test</module>
         <module>org.jkiss.dbeaver.model.lsm.test</module>
         <module>org.jkiss.dbeaver.model.navigator.test</module>
+        <module>org.jkiss.dbeaver.model.net.test</module>
         <module>org.jkiss.dbeaver.model.datadam.test</module>
         <module>org.jkiss.dbeaver.model.ai.test</module>
         <module>org.jkiss.dbeaver.net.ssh.sshj.test</module>

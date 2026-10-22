@@ -214,6 +214,7 @@ public class MimerUtilsExternalRoutineTest extends DBeaverUnitTest {
      */
     private void mockDatabaseChain() throws Exception {
         Mockito.when(dataSource.supportsExternalLibraries()).thenReturn(true);
+        Mockito.when(dataSource.hasDefaultInstance()).thenReturn(true);
         Mockito.when(dataSource.getDefaultInstance()).thenReturn(instance);
         Mockito.when(instance.getDefaultContext(ArgumentMatchers.any(), ArgumentMatchers.anyBoolean())).thenReturn(executionContext);
         Mockito.when(executionContext.openSession(

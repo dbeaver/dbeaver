@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.registry;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -31,7 +33,7 @@ import org.mockito.Mockito;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-public class DataSourceSerializerModernTest {
+public class DataSourceSerializerModernTest extends DBeaverUnitTest {
     private static final String CONNECTION_TYPE_ID = "imported-type";
     private static final String PROJECT_CONFIGURATION = """
         {
@@ -69,6 +71,25 @@ public class DataSourceSerializerModernTest {
         Assertions.assertEquals(
             "Parent/Child",
             TestSerializer.resolveFolderPath("Child", Map.of(RegistryConstants.ATTR_PARENT, "Parent"))
+        );
+    }
+
+    @Test
+    public void testCloseIdleConnectionDefaultsWhenOmitted() {
+        Assertions.assertEquals(
+            DBPConnectionConfiguration.CLOSE_IDLE_CONNECTION_DEFAULT,
+            DataSourceSerializerModern.readCloseIdleConnectionSetting(Map.of())
+        );
+    }
+
+    @ParameterizedTest
+    @CsvSource({"true", "false"})
+    public void testCloseIdleConnectionExplicitValue(boolean enabled) {
+        Assertions.assertEquals(
+            enabled,
+            DataSourceSerializerModern.readCloseIdleConnectionSetting(
+                Map.of(RegistryConstants.ATTR_CLOSE_IDLE_ENABLED, enabled)
+            )
         );
     }
 

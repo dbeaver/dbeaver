@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -40,7 +41,7 @@ public class DDProjectSyncPropertyTester extends PropertyTester {
         @NotNull Object[] args,
         @Nullable Object expectedValue
     ) {
-        if (!(receiver instanceof DBNProject projectNode)) {
+        if (!(receiver instanceof DBNProject projectNode) || !DDProductConfig.isIntegrationEnabled()) {
             return false;
         }
         DDProjectSyncUIManager manager = DDProjectSyncUIManager.getInstance();

@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryVariableInfo;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultPseudoColumn;
@@ -129,6 +130,15 @@ public abstract class SQLQueryCompletionItem {
         @NotNull SQLQueryResultPseudoColumn columnInfo
     ) {
         return new SQLGlobalPseudoColumnCompletionItem(score, filterKey, columnInfo);
+    }
+
+    @NotNull
+    public static SQLQueryCompletionItem forScriptVariable(
+        int score,
+        @NotNull SQLQueryWordEntry filterKey,
+        @NotNull SQLQueryVariableInfo variableDefinition
+    ) {
+        return new SQLScriptVariableCompletionItem(score, filterKey, variableDefinition);
     }
 
     @NotNull
@@ -317,6 +327,31 @@ public abstract class SQLQueryCompletionItem {
         @Override
         protected <R> R applyImpl(SQLQueryCompletionItemVisitor<R> visitor) {
             return visitor.visitGlobalPseudoColumn(this);
+        }
+    }
+
+    public static class SQLScriptVariableCompletionItem extends SQLQueryCompletionItem {
+        @NotNull
+        public final SQLQueryVariableInfo variableDefinition;
+
+        SQLScriptVariableCompletionItem(
+            int score,
+            @NotNull SQLQueryWordEntry filterKey,
+            @NotNull SQLQueryVariableInfo variableDefinition
+        ) {
+            super(score, filterKey);
+            this.variableDefinition = variableDefinition;
+        }
+
+        @NotNull
+        @Override
+        public SQLQueryCompletionItemKind getKind() {
+            return SQLQueryCompletionItemKind.SCRIPT_VARIABLE;
+        }
+
+        @Override
+        protected <R> R applyImpl(SQLQueryCompletionItemVisitor<R> visitor) {
+            return visitor.visitScriptVariable(this);
         }
     }
 
