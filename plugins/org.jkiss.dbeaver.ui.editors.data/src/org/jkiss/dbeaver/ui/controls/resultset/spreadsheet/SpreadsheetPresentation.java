@@ -3076,9 +3076,15 @@ public class SpreadsheetPresentation extends AbstractPresentation
         }
 
         /**
-         * Fail closed: every cell must resolve to an attribute and must not be {@link DBDContent}.
+         * Fail closed: need a live data source for dialect-aware literals; every cell must
+         * resolve to an attribute and must not be {@link DBDContent}.
          */
         private boolean isSingleColumnSqlLiteralDragAllowed(@NotNull List<GridCell> selectedCells) {
+            DBSDataContainer dataContainer = controller.getDataContainer();
+            if (dataContainer == null || dataContainer.getDataSource() == null) {
+                // After disconnect, display text is not a safe SQL-literal substitute.
+                return false;
+            }
             for (GridCell cell : selectedCells) {
                 if (getAttributeFromGrid(cell.col, cell.row) == null) {
                     return false;
@@ -3096,18 +3102,13 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return null;
             }
             List<String> literals = new ArrayList<>(selectedCells.size());
-            DBSDataContainer dataContainer = controller.getDataContainer();
-            DBPDataSource dataSource = dataContainer != null ? dataContainer.getDataSource() : null;
+            // Gate above ensures container, data source, and attributes are present.
+            DBSDataContainer dataContainer = Objects.requireNonNull(controller.getDataContainer());
+            DBPDataSource dataSource = Objects.requireNonNull(dataContainer.getDataSource());
             for (GridCell cell : selectedCells) {
-                DBDAttributeBinding attribute = getAttributeFromGrid(cell.col, cell.row);
+                DBDAttributeBinding attribute = Objects.requireNonNull(getAttributeFromGrid(cell.col, cell.row));
                 Object value = getCellValue(cell.col, cell.row, false);
-                String sqlValue;
-                if (dataSource != null && attribute != null) {
-                    sqlValue = SQLUtils.convertValueToSQL(dataSource, attribute, value);
-                } else {
-                    sqlValue = String.valueOf(getCellValue(cell.col, cell.row, true));
-                }
-                literals.add(sqlValue);
+                literals.add(SQLUtils.convertValueToSQL(dataSource, attribute, value));
             }
             return ResultSetCellDragText.joinSqlLiterals(literals);
         }
