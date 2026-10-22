@@ -14,6 +14,7 @@ Export-Package: org.jkiss.dbeaver.model.datadam,
  org.jkiss.dbeaver.model.datadam.sync,
  org.jkiss.dbeaver.model.datadam.sync.core,
  org.jkiss.dbeaver.model.datadam.sync.project,
+ org.jkiss.dbeaver.model.datadam.sync.tracking,
  org.jkiss.dbeaver.model.datadam.transport
 Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.ai,
