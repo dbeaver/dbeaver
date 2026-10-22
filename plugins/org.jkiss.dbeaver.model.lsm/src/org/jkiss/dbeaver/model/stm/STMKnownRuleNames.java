@@ -385,6 +385,7 @@ public class STMKnownRuleNames {
     public static final String functionCallExpression = SQLStandardParser.ruleNames[SQLStandardParser.RULE_functionCallExpression];
     public static final String functionCallTargetName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_functionCallTargetName];
     public static final String functionCallOperand = SQLStandardParser.ruleNames[SQLStandardParser.RULE_functionCallOperand];
+    public static final String trimFunctionName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_trimFunctionName];
 
     public static final String tableHintKeywords = SQLStandardParser.ruleNames[SQLStandardParser.RULE_tableHintKeywords];
 
