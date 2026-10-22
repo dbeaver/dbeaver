@@ -37,8 +37,9 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public final class DDDesktopConnectionService implements AutoCloseable {
+
     private static final String APPLICATION_RUN_ID = UUID.randomUUID().toString();
-    @Nullable
+
     private static DDDesktopConnectionService instance;
 
     private final DDDesktopAccessService access;
@@ -46,7 +47,9 @@ public final class DDDesktopConnectionService implements AutoCloseable {
     private final DDDesktopRpcService rpc;
     private final AtomicBoolean started = new AtomicBoolean();
     private final AtomicBoolean closed = new AtomicBoolean();
+
     private final DDDesktopAccessListener accessListener = new DDDesktopAccessListener() {
+
         @Override
         public void accessChanging() {
             rpc.suspend(false);

@@ -56,7 +56,9 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public final class DDDesktopMessageChannel implements DDMessageChannel {
+
     private static final Log log = Log.getLog(DDDesktopMessageChannel.class);
+
     private static final int MAX_MESSAGE_BYTES = 65_536;
     private static final int MAX_PENDING_MESSAGES = 64;
     private static final long CONNECT_TIMEOUT_MILLIS = 30_000;
@@ -79,7 +81,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
     private boolean running;
     private boolean closed;
     private long retryMillis = MIN_RETRY_MILLIS;
-    @Nullable
+
     private Attempt current;
 
     @FunctionalInterface

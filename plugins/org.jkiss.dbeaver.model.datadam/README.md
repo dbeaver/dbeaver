@@ -6,14 +6,20 @@ Imported project encryption keys and the tracking session are not prerequisites 
 
 ## Connection lifecycle
 
-- Restore the existing Desktop login during workbench startup.
+- Initialize the connection service through the model plugin's `org.jkiss.dbeaver.pluginService` contribution.
+- Open the channel only while the existing authorization service reports `SIGNED_IN`, after login or session restoration.
+  Initialization while signed out only registers observers; it does not open a socket or restore credentials.
 - Request the current access token before every connection attempt.
 - Send `hello` and wait for `ready` before accepting application messages or reporting a connection.
 - Keep the Deployment ID and application run ID across reconnects; use the new server-assigned connection ID for each socket.
 - Retry transport failures with bounded backoff. Pause when authorization is unavailable or the upgrade is rejected with HTTP 401/403.
 - Close cached RPC endpoints and pause the current channel before changing the Desktop identity or signing out.
   Resume only if authorization remains available.
-- Release the connection and subscriptions when the workbench shuts down.
+- Release the connection and subscriptions when the platform deactivates plugin services.
+
+`DDDesktopConnectionPluginService` owns activation and shutdown without Workbench, SWT or UI listeners. Repeated
+activation and deactivation are harmless, and shutdown never creates a new connection service. Authorization and
+tracking retain their existing owners; this lifecycle contribution does not load tokens or manage tracking.
 
 Messages use the shared `com.dbeaver.datadam.external.api` contracts. Topic subscriptions survive reconnects,
 but outgoing messages are rejected while disconnected rather than buffered for later delivery.
@@ -58,7 +64,7 @@ The transport topics are `rpc.account` and `rpc.storage`; the registration name 
 Additional trusted backend service IDs open lazily through `getRpc(serviceId)`, using `DDRpcServices.topic(serviceId)`.
 The local cache allows at most 32 additional service IDs per Desktop identity, with capacity reclaimed from closed endpoints.
 
-Start the connection service during workbench startup. `getRpc` never starts login or waits for a connection:
+The model plugin lifecycle starts the connection service. `getRpc` never starts login or waits for a connection:
 opening a lane before readiness fails with `DBException`. Repeated access returns the same open endpoint, including
 while temporarily disconnected; calls during a disconnect fail rather than queue. Pending calls fail on disconnect,
 and registered implementations survive a physical reconnect without re-registration.

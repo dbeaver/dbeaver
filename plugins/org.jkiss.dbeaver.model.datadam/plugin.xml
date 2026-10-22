@@ -2,6 +2,10 @@
 <?eclipse version="3.2"?>
 
 <plugin>
+    <extension point="org.jkiss.dbeaver.pluginService">
+        <service class="org.jkiss.dbeaver.model.datadam.DDDesktopConnectionPluginService"/>
+    </extension>
+
     <extension point="com.dbeaver.ai.engine">
         <completionEngine
             id="datadam" label="DataDam AI"
