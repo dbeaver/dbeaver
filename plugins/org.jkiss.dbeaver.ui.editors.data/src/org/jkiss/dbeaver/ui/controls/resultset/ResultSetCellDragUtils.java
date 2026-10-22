@@ -25,9 +25,9 @@ import java.util.List;
  * Multi-column display joins match LightGrid row-header {@code TextTransfer}
  * ({@code ", "} within a row, {@code '\n'} between rows).
  */
-public final class ResultSetCellDragText {
+public final class ResultSetCellDragUtils {
 
-    private ResultSetCellDragText() {
+    private ResultSetCellDragUtils() {
     }
 
     /**

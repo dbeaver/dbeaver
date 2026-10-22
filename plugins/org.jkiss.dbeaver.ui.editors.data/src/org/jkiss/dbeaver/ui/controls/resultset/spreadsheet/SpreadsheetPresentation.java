@@ -3125,7 +3125,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 Object value = getCellValue(cell.col, cell.row, false);
                 literals.add(SQLUtils.convertValueToSQL(dataSource, attribute, value));
             }
-            return ResultSetCellDragText.joinSqlLiterals(literals);
+            return ResultSetCellDragUtils.joinSqlLiterals(literals);
         }
 
         /**
@@ -3145,7 +3145,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 // String.valueOf matches StringBuilder.append(Object) used by row-header drag.
                 currentValues.add(String.valueOf(getCellValue(cell.col, cell.row, true)));
             }
-            return ResultSetCellDragText.joinDisplayRows(rows);
+            return ResultSetCellDragUtils.joinDisplayRows(rows);
         }
     }
 
