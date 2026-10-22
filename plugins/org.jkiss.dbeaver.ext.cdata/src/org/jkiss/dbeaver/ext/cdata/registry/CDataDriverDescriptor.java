@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLicense;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyLogo;
@@ -61,6 +62,7 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
     private final AtomicBoolean logoLoadStarted = new AtomicBoolean();
     private final Set<Runnable> logoUpdateCallbacks = ConcurrentHashMap.newKeySet();
     private volatile DBPImage logoImage;
+    private volatile boolean logoLoaded;
     private volatile long logoRetryAfterNanos;
     private volatile CDataDriverLicense currentLicense = new CDataDriverLicense(
         CDataLicenseStatus.VALIDATION_UNAVAILABLE,
@@ -104,6 +106,13 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
         if (iconLoaded || System.nanoTime() < iconRetryAfterNanos) {
             return;
         }
+        DBPDriver imageDriver = getImageDriver();
+        if (imageDriver != null) {
+            updateDriverIcons(imageDriver.getPlainIcon(), imageDriver.getIconBig());
+            iconLoaded = true;
+            onUpdate.run();
+            return;
+        }
         iconUpdateCallbacks.add(onUpdate);
         if (iconLoadStarted.compareAndSet(false, true)) {
             CDataDriverIconLoader.load(driverInfo.dataSource(), (icon, iconBig) -> {
@@ -137,7 +146,14 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
 
     @Override
     public void loadLogo(@NotNull Runnable onUpdate) {
-        if (logoImage != null || System.nanoTime() < logoRetryAfterNanos) {
+        if (logoLoaded || logoImage != null || System.nanoTime() < logoRetryAfterNanos) {
+            return;
+        }
+        DBPDriver imageDriver = getImageDriver();
+        if (imageDriver != null) {
+            logoImage = imageDriver.getLogoImage();
+            logoLoaded = true;
+            onUpdate.run();
             return;
         }
         logoUpdateCallbacks.add(onUpdate);
@@ -306,6 +322,15 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
             throw new DBException("CData trial license activation was canceled");
         }
         return license;
+    }
+
+    @Nullable
+    private DBPDriver getImageDriver() {
+        if (driverInfo.iconDriver() == null) {
+            return null;
+        }
+        DBPDriver driver = getProviderDescriptor().getRegistry().findDriver(driverInfo.iconDriver());
+        return driver instanceof CDataDriverDescriptor ? null : driver;
     }
 
     @NotNull

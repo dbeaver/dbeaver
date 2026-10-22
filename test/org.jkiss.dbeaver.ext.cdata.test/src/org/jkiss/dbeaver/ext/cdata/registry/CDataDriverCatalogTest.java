@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.cdata.registry;
 
+import com.sun.net.httpserver.HttpServer;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.junit.DBeaverUnitTest;
@@ -31,12 +32,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.net.HttpURLConnection;
+import java.net.InetSocketAddress;
 import java.net.URLConnection;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CDataDriverCatalogTest extends DBeaverUnitTest {
     private static final long LAST_MODIFIED = 1_700_000_000_000L;
@@ -96,24 +100,24 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
 
     private Path cacheFile;
     private DBRProgressMonitor monitor;
-    private HttpURLConnection headConnection;
     private HttpURLConnection downloadConnection;
-    private ThrowableFunction<String, URLConnection, IOException> connectionFactory;
+    private ThrowableFunction<Map<String, String>, URLConnection, IOException> connectionFactory;
 
     @BeforeEach
     public void setUp() throws IOException {
         cacheFile = tempDirectory.resolve("cdata-drivers.json");
+        Files.writeString(tempDirectory.resolve(CDataDriverSettings.FILE_NAME), """
+            {"adwords":{"datatype_id":"google_ads"}}
+            """);
         monitor = Mockito.mock(DBRProgressMonitor.class);
-        headConnection = Mockito.mock(HttpURLConnection.class);
         downloadConnection = Mockito.mock(HttpURLConnection.class);
-        Mockito.when(headConnection.getLastModified()).thenReturn(LAST_MODIFIED);
-        Mockito.when(downloadConnection.getLastModified()).thenReturn(LAST_MODIFIED);
+        Mockito.when(downloadConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_OK);
+        Mockito.when(downloadConnection.getHeaderField("ETag")).thenReturn("\"catalog-v1\"");
         Mockito.when(downloadConnection.getInputStream()).thenAnswer(
             invocation -> new ByteArrayInputStream(CATALOG.getBytes(StandardCharsets.UTF_8)));
-        connectionFactory = method -> switch (method) {
-            case "HEAD" -> headConnection;
-            case "GET" -> downloadConnection;
-            default -> throw new AssertionError("Unexpected HTTP method: " + method);
+        connectionFactory = headers -> {
+            downloadConnection.setRequestProperty("If-None-Match", headers.get("If-None-Match"));
+            return downloadConnection;
         };
     }
 
@@ -137,8 +141,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
         Assertions.assertEquals(new BigDecimal("249"), drivers.get(2).annualPriceUsd());
         Assertions.assertEquals("https://www.cdata.com/order/options.aspx?sku=BJRM-VSDBVR", drivers.get(2).purchaseUrl());
         Assertions.assertEquals(CATALOG, Files.readString(cacheFile));
-        Assertions.assertEquals(LAST_MODIFIED, Files.getLastModifiedTime(cacheFile).toMillis());
-        Mockito.verifyNoInteractions(headConnection);
+        Assertions.assertTrue(Files.readString(etagFile()).contains("catalog-v1"));
         Mockito.verify(downloadConnection).disconnect();
         assertNoTemporaryFiles();
     }
@@ -159,20 +162,24 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
     public void doNotDownloadUnchangedCatalog() throws Exception {
         saveCachedCatalog(LAST_MODIFIED);
 
+        Files.writeString(etagFile(), "{\"url\":\"\",\"etag\":\"\\\"catalog-v1\\\"\"}");
+        Mockito.when(downloadConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_NOT_MODIFIED);
         var drivers = CDataDriverCatalog.load(monitor, cacheFile, connectionFactory);
 
         Assertions.assertEquals(3, drivers.size());
         Assertions.assertEquals(new BigDecimal("99"), drivers.get(0).annualPriceUsd());
         Assertions.assertEquals(new BigDecimal("249"), drivers.get(2).annualPriceUsd());
 
-        Mockito.verify(headConnection).disconnect();
-        Mockito.verifyNoInteractions(downloadConnection);
+        Mockito.verify(downloadConnection).setRequestProperty("If-None-Match", "\"catalog-v1\"");
+        Mockito.verify(downloadConnection, Mockito.never()).getInputStream();
+        Mockito.verify(downloadConnection).disconnect();
         Assertions.assertEquals(CATALOG, Files.readString(cacheFile));
     }
 
     @Test
     public void replaceOutdatedCatalog() throws Exception {
         saveCachedCatalog(LAST_MODIFIED - 1000);
+        Mockito.when(downloadConnection.getHeaderField("ETag")).thenReturn("\"catalog-v2\"");
         String updatedCatalog = CATALOG.replace("2026", "2027");
         Mockito.when(downloadConnection.getInputStream()).thenReturn(
             new ByteArrayInputStream(updatedCatalog.getBytes(StandardCharsets.UTF_8)));
@@ -181,7 +188,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
 
         Assertions.assertEquals(2027, drivers.getFirst().versionYear());
         Assertions.assertEquals(updatedCatalog, Files.readString(cacheFile));
-        Assertions.assertEquals(LAST_MODIFIED, Files.getLastModifiedTime(cacheFile).toMillis());
+        Assertions.assertTrue(Files.readString(etagFile()).contains("catalog-v2"));
         assertNoTemporaryFiles();
     }
 
@@ -273,7 +280,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
             "{", "null", "{\"items\":[]}",
             CATALOG.replace("\"items\"", "\"drivers\""),
             CATALOG.replace("\"objname\"", "\"unusedField\""),
-            CATALOG.replace("\"datatype_id\"", "\"unusedField\""),
+            CATALOG.replace("\"datasource\"", "\"unusedField\""),
             CATALOG.replace("\"Professional\"", "\"Unknown\""),
             CATALOG.replace("\"jira\"", "\"adwords\""),
             CATALOG.replace("2026", "1999")
@@ -319,7 +326,6 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
 
         Assertions.assertEquals("googleads-jdbc", CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).getFirst().artifactId());
         Assertions.assertEquals(CATALOG, Files.readString(cacheFile));
-        Mockito.verifyNoInteractions(headConnection);
     }
 
     @Test
@@ -338,18 +344,17 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
 
         Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
         Assertions.assertEquals(CATALOG, Files.readString(cacheFile));
-        Mockito.verifyNoInteractions(headConnection);
     }
 
     @Test
-    public void downloadWhenServerDoesNotProvideModificationTime() throws Exception {
+    public void removeOldETagWhenServerDoesNotProvideOne() throws Exception {
         saveCachedCatalog(LAST_MODIFIED);
-        Mockito.when(headConnection.getLastModified()).thenReturn(0L);
-        Mockito.when(downloadConnection.getLastModified()).thenReturn(0L);
+        Files.writeString(etagFile(), "{\"url\":\"\",\"etag\":\"old\"}");
+        Mockito.when(downloadConnection.getHeaderField("ETag")).thenReturn(null);
 
         Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
         Mockito.verify(downloadConnection).getInputStream();
-        Assertions.assertEquals(0, Files.getLastModifiedTime(cacheFile).toMillis());
+        Assertions.assertFalse(Files.exists(etagFile()));
     }
 
     @Test
@@ -377,6 +382,110 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
         assertNoTemporaryFiles();
     }
 
+    @Test
+    public void mergeSettingsWithVendorCatalogAndIgnoreVendorMappings() throws Exception {
+        String vendorCatalog = CATALOG.replace("google_ads", "untrusted_type");
+        Files.writeString(tempDirectory.resolve(CDataDriverSettings.FILE_NAME), """
+            {"adwords":{"datatype_id":"google_ads","icon_driver":"generic:google-ads"}}
+            """);
+        Mockito.when(downloadConnection.getInputStream()).thenReturn(
+            new ByteArrayInputStream(vendorCatalog.getBytes(StandardCharsets.UTF_8)));
+
+        var drivers = CDataDriverCatalog.load(monitor, cacheFile, connectionFactory);
+
+        Assertions.assertEquals("google_ads", drivers.getFirst().dataTypeId());
+        Assertions.assertEquals("generic:google-ads", drivers.getFirst().iconDriver());
+        Assertions.assertEquals("azureanalysisservices", drivers.get(1).dataTypeId());
+        Assertions.assertNull(drivers.get(1).iconDriver());
+    }
+
+    @Test
+    public void acceptVendorCatalogWithoutDataTypes() throws Exception {
+        String vendorCatalog = CATALOG.replaceAll("\\s*\"datatype_id\": \"[^\"]*\",", "");
+        Mockito.when(downloadConnection.getInputStream()).thenReturn(
+            new ByteArrayInputStream(vendorCatalog.getBytes(StandardCharsets.UTF_8)));
+
+        Assertions.assertEquals("google_ads", CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).getFirst().dataTypeId());
+    }
+
+    @Test
+    public void redownloadCorruptCacheWithoutSendingSavedETag() throws Exception {
+        Files.writeString(cacheFile, "invalid JSON");
+        Files.writeString(etagFile(), "{\"url\":\"\",\"etag\":\"old\"}");
+
+        Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
+        Mockito.verify(downloadConnection).setRequestProperty("If-None-Match", null);
+    }
+
+    @Test
+    public void applyChangedSettingsToUnchangedCatalog() throws Exception {
+        saveCachedCatalog(LAST_MODIFIED);
+        Files.writeString(etagFile(), "{\"url\":\"\",\"etag\":\"old\"}");
+        Files.writeString(tempDirectory.resolve(CDataDriverSettings.FILE_NAME), """
+            {"adwords":{"datatype_id":"new_type"}}
+            """);
+        Mockito.when(downloadConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_NOT_MODIFIED);
+
+        Assertions.assertEquals("new_type", CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).getFirst().dataTypeId());
+        Mockito.verify(downloadConnection, Mockito.never()).getInputStream();
+    }
+
+    @Test
+    public void handleMissingSettingsWithoutCreatingLocalCopy() {
+        Path file = tempDirectory.resolve("missing-settings.json");
+
+        Assertions.assertTrue(CDataDriverSettings.load(file).isEmpty());
+        Assertions.assertFalse(Files.exists(file));
+    }
+
+    @Test
+    public void ignoreInvalidSettingsWithoutReplacingLocalFile() throws Exception {
+        Path file = tempDirectory.resolve(CDataDriverSettings.FILE_NAME);
+        Files.writeString(file, "invalid JSON");
+
+        Assertions.assertTrue(CDataDriverSettings.load(file).isEmpty());
+        Assertions.assertEquals("invalid JSON", Files.readString(file));
+    }
+
+    @Test
+    public void conditionalGetThroughWebUtils() throws Exception {
+        var requests = new AtomicInteger();
+        var conditionalRequests = new AtomicInteger();
+        var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/catalog", exchange -> {
+            requests.incrementAndGet();
+            if ("\"catalog-v1\"".equals(exchange.getRequestHeaders().getFirst("If-None-Match"))) {
+                conditionalRequests.incrementAndGet();
+                exchange.sendResponseHeaders(HttpURLConnection.HTTP_NOT_MODIFIED, -1);
+            } else {
+                byte[] content = CATALOG.getBytes(StandardCharsets.UTF_8);
+                exchange.getResponseHeaders().set("ETag", "\"catalog-v1\"");
+                exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, content.length);
+                exchange.getResponseBody().write(content);
+            }
+            exchange.close();
+        });
+        server.start();
+        try {
+            String url = "http://127.0.0.1:" + server.getAddress().getPort() + "/catalog";
+            Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, url, cacheFile).size());
+            var modifiedTime = Files.getLastModifiedTime(cacheFile);
+            Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, url, cacheFile).size());
+            Assertions.assertEquals(modifiedTime, Files.getLastModifiedTime(cacheFile));
+            Assertions.assertEquals(2, requests.get());
+            Assertions.assertEquals(1, conditionalRequests.get());
+            Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, url + "?changed-source", cacheFile).size());
+            Assertions.assertEquals(3, requests.get());
+            Assertions.assertEquals(1, conditionalRequests.get());
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    private Path etagFile() {
+        return cacheFile.resolveSibling(cacheFile.getFileName() + ".etag");
+    }
+
     private void saveCachedCatalog(long lastModified) throws IOException {
         Files.writeString(cacheFile, CATALOG);
         Files.setLastModifiedTime(cacheFile, FileTime.fromMillis(lastModified));
@@ -384,7 +493,8 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
 
     private void assertNoTemporaryFiles() throws IOException {
         try (var files = Files.list(tempDirectory)) {
-            Assertions.assertTrue(files.allMatch(file -> file.equals(cacheFile)));
+            Assertions.assertTrue(files.allMatch(file -> file.equals(cacheFile) || file.equals(etagFile())
+                || file.getFileName().toString().equals(CDataDriverSettings.FILE_NAME)));
         }
     }
 }
