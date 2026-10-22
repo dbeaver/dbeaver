@@ -44,7 +44,7 @@ public class DDProjectSyncPropertyTester extends PropertyTester {
         if (!(receiver instanceof DBNProject projectNode) || !DDProductConfig.isIntegrationEnabled()) {
             return false;
         }
-        DDProjectSyncUIManager manager = DDProjectSyncUIManager.getInstance();
+        DDProjectCatalog manager = DDProjectCatalog.getInstance();
         if (!manager.isDDEnabled()) {
             return false;
         }
@@ -52,7 +52,7 @@ public class DDProjectSyncPropertyTester extends PropertyTester {
             return true;
         }
         try {
-            boolean shared = manager.getService().isShared(projectNode.getProject());
+            boolean shared = manager.isShared(projectNode.getProject());
             return switch (property) {
                 case PROP_CAN_SHARE -> !shared;
                 case PROP_CAN_SYNC -> shared;

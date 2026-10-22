@@ -61,14 +61,31 @@ public class DDTrackingUIMessages extends NLS {
     public static String project_sync_unbind_success;
     public static String project_sync_unbind_failed;
     public static String project_sync_import_list_job;
-    public static String project_sync_import_dialog_title;
-    public static String project_sync_import_dialog_message;
-    public static String project_sync_import_button;
-    public static String project_sync_import_no_projects;
     public static String project_sync_import_list_failed;
     public static String project_sync_import_job;
-    public static String project_sync_import_success;
     public static String project_sync_import_failed;
+
+    public static String projects_show_remote;
+    public static String projects_name;
+    public static String projects_description;
+    public static String projects_status;
+    public static String projects_last_revision;
+    public static String projects_edit;
+    public static String projects_sync;
+    public static String projects_download;
+    public static String projects_disconnect;
+    public static String projects_connect;
+    public static String projects_sync_all;
+    public static String projects_choose_local;
+    public static String projects_connect_failed;
+    public static String projects_edit_placeholder;
+    public static String projects_not_on_device;
+    public static String projects_missing_on_server;
+    public static String projects_up_to_date;
+    public static String projects_local_changes;
+    public static String projects_server_changes;
+    public static String projects_both_changes;
+    public static String projects_errors;
 
     public static String import_key_dialog_title;
     public static String import_key_dialog_prompt_label;
