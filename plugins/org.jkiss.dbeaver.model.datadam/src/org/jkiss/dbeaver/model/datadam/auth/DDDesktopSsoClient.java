@@ -17,12 +17,14 @@
 package org.jkiss.dbeaver.model.datadam.auth;
 
 import com.dbeaver.datadam.sso.api.DDSsoConstants;
+import com.dbeaver.datadam.sso.api.DDSsoScopes;
 import com.dbeaver.datadam.sso.api.model.DDSsoConfigResponse;
-import com.dbeaver.datadam.sso.api.model.DDSsoDesktopTokenResponse;
+import com.dbeaver.datadam.sso.api.model.DDSsoTokenResponse;
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
 import com.google.gson.JsonParseException;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.utils.CommonUtils;
@@ -30,6 +32,7 @@ import org.jkiss.utils.oauth.OAuthConstants;
 
 import java.net.URI;
 import java.net.http.HttpClient;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -41,7 +44,7 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
     }
 
     @NotNull
-    public URI discover() throws DBException {
+    public DDSsoConfigResponse discover() throws DBException {
         try {
             DDSsoConfigResponse config = executeGetRequest(
                 CommonUtils.removeLeadingSlash(DDSsoConstants.APPLICATION_CONFIG_PATH), DDSsoConfigResponse.class);
@@ -50,35 +53,56 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
             }
             URI issuer = URI.create(config.issuer());
             requireSecureServer(issuer);
-            return issuer;
+            return config;
         } catch (IllegalArgumentException e) {
             throw new DBException("Invalid desktop SSO configuration", e);
         }
     }
 
     @NotNull
-    URI authorizationUrl(@NotNull String redirectUri, @NotNull String state, @NotNull String challenge) throws DBException {
-        return buildUri(CommonUtils.removeLeadingSlash(DDSsoConstants.AUTHORIZE_PATH), Map.of(
+    URI authorizationUrl(
+        @NotNull String redirectUri, @NotNull String state, @NotNull String challenge, @Nullable String resource, @NotNull String scope
+    ) throws DBException {
+        Map<String, String> parameters = new HashMap<>(Map.of(
+            DDSsoConstants.PARAM_RESPONSE_TYPE, DDSsoConstants.RESPONSE_TYPE_CODE,
+            DDSsoConstants.PARAM_SCOPE, scope,
             OAuthConstants.AUTH_PROP_CLIENT_ID, DDSsoConstants.DESKTOP_CLIENT_ID,
             OAuthConstants.PARAM_REDIRECT_URI, redirectUri,
             OAuthConstants.PARAM_STATE, state,
             OAuthConstants.PARAM_CODE_CHALLENGE, challenge,
             OAuthConstants.PARAM_CODE_CHALLENGE_METHOD, DDSsoConstants.PKCE_METHOD_S256));
+        if (resource != null) {
+            parameters.put(DDSsoConstants.PARAM_RESOURCE, resource);
+        }
+        return buildUri(CommonUtils.removeLeadingSlash(DDSsoConstants.AUTHORIZE_PATH), parameters);
     }
 
     @NotNull
-    DDSsoDesktopTokenResponse exchange(@NotNull String code, @NotNull String verifier, @NotNull String redirectUri) throws DBException {
-        DDSsoDesktopTokenResponse tokens = executePostRequest(CommonUtils.removeLeadingSlash(DDSsoConstants.TOKEN_PATH), Map.of(), Map.of(
+    DDSsoTokenResponse exchange(
+        @NotNull String code, @NotNull String verifier, @NotNull String redirectUri, @Nullable String resource, @NotNull String scope
+    ) throws DBException {
+        Map<String, String> parameters = new HashMap<>(Map.of(
             OAuthConstants.PARAM_GRANT_TYPE, OAuthConstants.GRANT_TYPE_AUTH_CODE,
             OAuthConstants.PARAM_CODE, code,
             OAuthConstants.PARAM_CODE_VERIFIER, verifier,
             OAuthConstants.AUTH_PROP_CLIENT_ID, DDSsoConstants.DESKTOP_CLIENT_ID,
-                OAuthConstants.PARAM_REDIRECT_URI, redirectUri
-            ), MediaType.FORM_URLENCODED, DDSsoDesktopTokenResponse.class
+            OAuthConstants.PARAM_REDIRECT_URI, redirectUri));
+        if (resource != null) {
+            parameters.put(DDSsoConstants.PARAM_RESOURCE, resource);
+        }
+        DDSsoTokenResponse tokens = executePostRequest(
+            CommonUtils.removeLeadingSlash(DDSsoConstants.TOKEN_PATH), Map.of(), parameters, MediaType.FORM_URLENCODED, DDSsoTokenResponse.class
         );
-        if (tokens == null || !DDSsoConstants.TOKEN_TYPE_BEARER.equals(tokens.tokenType()) || tokens.accessToken().isBlank()
-            || tokens.idToken().isBlank() || tokens.expiresIn() <= 0) {
+        if (tokens == null || !DDSsoConstants.TOKEN_TYPE_BEARER.equals(tokens.tokenType()) || tokens.accessToken() == null
+            || tokens.accessToken().isBlank() || tokens.expiresIn() <= 0) {
             throw new DBException("Invalid desktop SSO token response");
+        }
+        try {
+            if (!DDSsoScopes.parse(tokens.scope()).equals(DDSsoScopes.parse(scope))) {
+                throw new IllegalArgumentException();
+            }
+        } catch (IllegalArgumentException e) {
+            throw new DBException("Unexpected SSO access scopes");
         }
         return tokens;
     }
