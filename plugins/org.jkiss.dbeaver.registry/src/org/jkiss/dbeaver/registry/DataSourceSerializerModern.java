@@ -628,6 +628,10 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     dataSource.getConnectionConfiguration().setHandlers(Collections.emptyList());
                     dataSource.clearFilters();
                 }
+                boolean sharedCredentialsDisabled = !newDataSource && dataSource.isSharedCredentials() && !JSONUtils.getBoolean(
+                    conObject,
+                    RegistryConstants.ATTR_SHARED_CREDENTIALS
+                );
                 deserializeDataSource(parseResults, dataSource, conObject);
 
                 // Connection settings
@@ -640,10 +644,20 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     config.setDatabaseName(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_DATABASE));
                     config.setUrl(JSONUtils.getString(cfgObject, RegistryConstants.ATTR_URL));
 
-                        final SecureCredentials creds = configurationManager.isSecure() ?
-                            DataSourceParser.readPlainCredentials(cfgObject) :
-                            DataSourceParser.readSecuredCredentials(contextParameters, dataSource, null, null);
-                    if (shouldUpdateCreds(creds)) {
+                    final SecureCredentials creds = configurationManager.isSecure() ?
+                        DataSourceParser.readPlainCredentials(cfgObject) :
+                        DataSourceParser.readSecuredCredentials(contextParameters, dataSource, null, null);
+                    boolean credentialsUpdated = shouldUpdateCreds(creds);
+                    boolean serializedCredentialsConfigured = credentialsUpdated ||
+                        cfgObject.containsKey(RegistryConstants.ATTR_USER) ||
+                        cfgObject.containsKey(RegistryConstants.ATTR_PASSWORD) ||
+                        cfgObject.containsKey(RegistryConstants.TAG_AUTH_PROPERTIES);
+                    if (!credentialsUpdated && serializedCredentialsConfigured) {
+                        config.setUserName(null);
+                        config.setUserPassword(null);
+                        config.setAuthProperties(null);
+                    }
+                    if (credentialsUpdated) {
                         config.setUserName(creds.getUserName());
                         if (dataSource.isSavePassword() || !CommonUtils.isEmpty(creds.getUserPassword())) {
                             config.setUserPassword(creds.getUserPassword());
@@ -656,7 +670,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                             dataSource.setSavePassword(true);
                         }
                         dataSource.getConnectionConfiguration().setAuthProperties(creds.getProperties());
-                        dataSource.resetAllSecrets();
                     }
                     {
                         // Still try to read credentials directly from configuration (#6564)
@@ -702,6 +715,14 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     //in the current version the configuration should not contain auth-properties, they should be in secrets
                     if (cfgObject.containsKey(RegistryConstants.TAG_AUTH_PROPERTIES)) {
                         config.setAuthProperties(JSONUtils.deserializeStringMapOrNull(cfgObject, RegistryConstants.TAG_AUTH_PROPERTIES));
+                    }
+                    if (serializedCredentialsConfigured) {
+                        dataSource.sharedCredentialsRevoked = false;
+                    } else if (sharedCredentialsDisabled) {
+                        dataSource.sharedCredentialsRevoked = true;
+                    }
+                    if (serializedCredentialsConfigured || sharedCredentialsDisabled) {
+                        dataSource.resetAllSecrets();
                     }
 
                     // Events
@@ -860,9 +881,10 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
     ) {
         dataSource.setName(CommonUtils.notNull(JSONUtils.getString(conObject, RegistryConstants.ATTR_NAME), "?"));
         dataSource.setDescription(JSONUtils.getString(conObject, RegistryConstants.TAG_DESCRIPTION));
-        dataSource.forceSetSharedCredentials(JSONUtils.getBoolean(
+        boolean sharedCredentials = JSONUtils.getBoolean(
             conObject,
-            RegistryConstants.ATTR_SHARED_CREDENTIALS));
+            RegistryConstants.ATTR_SHARED_CREDENTIALS);
+        dataSource.forceSetSharedCredentials(sharedCredentials);
         dataSource.setSavePassword(JSONUtils.getBoolean(conObject, RegistryConstants.ATTR_SAVE_PASSWORD));
         dataSource.setDriverSubstitution(DataSourceProviderRegistry.getInstance()
             .getDriverSubstitution(CommonUtils.notEmpty(JSONUtils.getString(conObject, ATTR_DRIVER_SUBSTITUTION))));
@@ -916,7 +938,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
     }
 
     private boolean shouldUpdateCreds(@NotNull SecureCredentials creds) {
-        boolean isCredsResolved = creds.getUserName() != null && creds.getUserPassword() != null;
+        boolean isCredsResolved = (creds.getUserName() != null && creds.getUserPassword() != null) ||
+            !CommonUtils.isEmpty(creds.getProperties());
         return isCredsResolved
             // in TE secrets must be resolved by dataSource itself, if not present here
             || !DBWorkbench.isDistributed();

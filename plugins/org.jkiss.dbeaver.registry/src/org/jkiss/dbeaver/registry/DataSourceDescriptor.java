@@ -133,7 +133,7 @@ public class DataSourceDescriptor
     @Nullable
     private transient DBSSecretValue selectedSharedCredentials;
     // Keep revocation state until the connection is closed and its cached credentials can be safely cleared.
-    private transient boolean sharedCredentialsRevoked;
+    transient boolean sharedCredentialsRevoked;
 
     private boolean connectionReadOnly;
     private boolean forceUseSingleConnection;
@@ -474,14 +474,20 @@ public class DataSourceDescriptor
 
     //ignore changed store type
     public void forceSetSharedCredentials(boolean sharedCredentials) {
-        sharedCredentialsRevoked |= this.sharedCredentials && !sharedCredentials;
+        if (sharedCredentials) {
+            sharedCredentialsRevoked = false;
+        }
         this.sharedCredentials = sharedCredentials;
         this.originalShareCredentials = sharedCredentials;
     }
 
     @Override
     public void setSharedCredentials(boolean sharedCredentials) {
-        sharedCredentialsRevoked |= this.sharedCredentials && !sharedCredentials;
+        if (sharedCredentials) {
+            sharedCredentialsRevoked = false;
+        } else {
+            sharedCredentialsRevoked |= this.sharedCredentials;
+        }
         this.sharedCredentials = sharedCredentials;
     }
 

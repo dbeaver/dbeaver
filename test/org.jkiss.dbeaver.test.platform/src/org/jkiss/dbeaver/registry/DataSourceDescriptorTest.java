@@ -56,7 +56,7 @@ public class DataSourceDescriptorTest extends DBeaverUnitTest {
             () -> Assertions.assertTrue(dataSource.isSavePassword())
         );
 
-        dataSource.forceSetSharedCredentials(false);
+        dataSource.setSharedCredentials(false);
         DataSourceDescriptor dataSourceCopy = new DataSourceDescriptor(dataSource, dataSource.getRegistry(), false);
 
         Assertions.assertAll(
@@ -74,6 +74,30 @@ public class DataSourceDescriptorTest extends DBeaverUnitTest {
             () -> Assertions.assertTrue(connectionInfo.getAuthProperties().isEmpty()),
             () -> Assertions.assertFalse(dataSource.isSavePassword()),
             () -> Assertions.assertNull(dataSource.getSelectedSharedCredentials())
+        );
+    }
+
+    @Test
+    public void testForceSetSharedCredentialsKeepsReloadedPrivateCredentials() {
+        DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration();
+        connectionInfo.setUserName("shared-user");
+        connectionInfo.setUserPassword("shared-password");
+        connectionInfo.setAuthProperty("token", "shared-token");
+        DataSourceDescriptor dataSource = createDataSource(connectionInfo);
+        dataSource.setSharedCredentials(true);
+        dataSource.setSavePassword(true);
+
+        dataSource.forceSetSharedCredentials(false);
+        connectionInfo.setUserName("private-user");
+        connectionInfo.setUserPassword("private-password");
+        connectionInfo.setAuthProperty("token", "private-token");
+        dataSource.resetAllSecrets();
+
+        Assertions.assertAll(
+            () -> Assertions.assertEquals("private-user", connectionInfo.getUserName()),
+            () -> Assertions.assertEquals("private-password", connectionInfo.getUserPassword()),
+            () -> Assertions.assertEquals("private-token", connectionInfo.getAuthProperty("token")),
+            () -> Assertions.assertTrue(dataSource.isSavePassword())
         );
     }
 
