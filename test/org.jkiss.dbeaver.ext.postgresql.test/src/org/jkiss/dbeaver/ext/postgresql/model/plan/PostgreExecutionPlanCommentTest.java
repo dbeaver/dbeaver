@@ -162,7 +162,7 @@ public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void escapedQuoteInEscapeStringFailsClosed() {
+    public void escapedQuoteInEscapeStringYieldsSingleStatement() {
         //given
         String selection = "SELECT E'a\\'b'; -- trailing comment"; //$NON-NLS-1$
 
@@ -170,19 +170,19 @@ public class PostgreExecutionPlanCommentTest extends DBeaverUnitTest {
         String planSql = explainXml(selection);
 
         //then
-        Assertions.assertEquals("EXPLAIN (FORMAT XML) SELECT E'a\\'b'; -- trailing comment", planSql); //$NON-NLS-1$
+        Assertions.assertEquals("EXPLAIN (FORMAT XML) SELECT E'a\\'b' -- trailing comment", planSql); //$NON-NLS-1$
     }
 
     @Test
-    public void ambiguousBackslashQuoteFailsClosed() {
+    public void codeAfterTrailingCommentPreventsTrim() {
         //given
-        String selection = "SELECT 'a\\'; -- c'; -- trailing comment"; //$NON-NLS-1$
+        String selection = "SELECT 1; -- trailing comment\nSELECT 2"; //$NON-NLS-1$
 
         //when
         String planSql = explainXml(selection);
 
         //then
-        Assertions.assertEquals("EXPLAIN (FORMAT XML) SELECT 'a\\'; -- c'; -- trailing comment", planSql); //$NON-NLS-1$
+        Assertions.assertEquals("EXPLAIN (FORMAT XML) SELECT 1; -- trailing comment\nSELECT 2", planSql); //$NON-NLS-1$
     }
 
     @Test

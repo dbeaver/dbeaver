@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.plan;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -30,6 +31,13 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
+import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
+import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
+import org.jkiss.dbeaver.model.text.parser.TPToken;
+import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
@@ -132,151 +140,40 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
     @NotNull
     private static String trimTerminalDelimiter(@NotNull String query)
     {
-        int delimPos = findTerminalDelimiter(query);
-        if (delimPos < 0) {
+        SQLParserContext parserContext = SQLScriptParser.prepareSqlParserContext(
+            null, new PostgreDialect(), DBWorkbench.getPlatform().getPreferenceStore(), query);
+        TPRuleBasedScanner scanner = parserContext.getScanner();
+        scanner.setRange(parserContext.getDocument(), 0, query.length());
+
+        int lastDelimiter = -1;
+        int lastDelimiterLength = 0;
+        boolean commentAfterDelimiter = false;
+        boolean codeAfterDelimiter = false;
+        while (true) {
+            TPToken token = scanner.nextToken();
+            if (token.isEOF()) {
+                break;
+            }
+            SQLTokenType tokenType = token instanceof TPTokenDefault tpTokenDefault
+                ? (SQLTokenType) tpTokenDefault.getData()
+                : SQLTokenType.T_OTHER;
+            if (tokenType == SQLTokenType.T_DELIMITER) {
+                lastDelimiter = scanner.getTokenOffset();
+                lastDelimiterLength = scanner.getTokenLength();
+                commentAfterDelimiter = false;
+                codeAfterDelimiter = false;
+            } else if (tokenType == SQLTokenType.T_COMMENT) {
+                if (lastDelimiter >= 0) {
+                    commentAfterDelimiter = true;
+                }
+            } else if (!token.isWhitespace() && lastDelimiter >= 0) {
+                codeAfterDelimiter = true;
+            }
+        }
+        if (lastDelimiter < 0 || !commentAfterDelimiter || codeAfterDelimiter) {
             return query;
         }
-        return query.substring(0, delimPos) + query.substring(delimPos + 1);
-    }
-
-    // Drop a terminal delimiter only when a trailing comment hides it
-    private static int findTerminalDelimiter(@NotNull String query)
-    {
-        final int code = 0;
-        final int lineComment = 1;
-        final int blockComment = 2;
-        final int singleQuote = 3;
-        final int doubleQuote = 4;
-        final int dollarQuote = 5;
-        int state = code;
-        int blockDepth = 0;
-        String dollarTag = null;
-        int lastDelim = -1;
-        boolean codeAfterDelim = false;
-        boolean commentAfterDelim = false;
-        int i = 0;
-        while (i < query.length()) {
-            char c = query.charAt(i);
-            char n = i + 1 < query.length() ? query.charAt(i + 1) : '\0';
-            if (state == lineComment) {
-                if (c == '\n' || c == '\r') {
-                    state = code;
-                }
-                i++;
-            } else if (state == blockComment) {
-                if (c == '/' && n == '*') {
-                    blockDepth++;
-                    i += 2;
-                } else if (c == '*' && n == '/') {
-                    blockDepth--;
-                    i += 2;
-                    if (blockDepth <= 0) {
-                        state = code;
-                    }
-                } else {
-                    i++;
-                }
-            } else if (state == singleQuote) {
-                if (c == '\\' && n == '\'') {
-                    int backslashes = 0;
-                    for (int j = i; j >= 0 && query.charAt(j) == '\\'; j--) {
-                        backslashes++;
-                    }
-                    if (backslashes % 2 == 1) {
-                        return -1;
-                    }
-                    i++;
-                } else if (c == '\'') {
-                    if (n == '\'') {
-                        i += 2;
-                    } else {
-                        state = code;
-                        i++;
-                    }
-                } else {
-                    i++;
-                }
-            } else if (state == doubleQuote) {
-                if (c == '"') {
-                    if (n == '"') {
-                        i += 2;
-                    } else {
-                        state = code;
-                        i++;
-                    }
-                } else {
-                    i++;
-                }
-            } else if (state == dollarQuote) {
-                int end = query.indexOf(dollarTag, i);
-                i = end < 0 ? query.length() : end + dollarTag.length();
-                state = code;
-            } else if (c == ';') {
-                lastDelim = i;
-                codeAfterDelim = false;
-                commentAfterDelim = false;
-                i++;
-            } else if (c == '\'') {
-                state = singleQuote;
-                i++;
-            } else if (c == '"') {
-                state = doubleQuote;
-                i++;
-            } else if (c == '-' && n == '-') {
-                if (lastDelim >= 0) {
-                    commentAfterDelim = true;
-                }
-                state = lineComment;
-                i += 2;
-            } else if (c == '/' && n == '*') {
-                if (lastDelim >= 0) {
-                    commentAfterDelim = true;
-                }
-                state = blockComment;
-                blockDepth = 1;
-                i += 2;
-            } else if (c == '$') {
-                String tag = i > 0 && isIdentifierPart(query.charAt(i - 1)) ? null : matchDollarTag(query, i);
-                if (tag == null) {
-                    codeAfterDelim = true;
-                    i++;
-                } else {
-                    dollarTag = tag;
-                    state = dollarQuote;
-                    i += tag.length();
-                }
-            } else if (!Character.isWhitespace(c)) {
-                codeAfterDelim = true;
-                i++;
-            } else {
-                i++;
-            }
-        }
-        if (codeAfterDelim || !commentAfterDelim) {
-            return -1;
-        }
-        return lastDelim;
-    }
-
-    private static boolean isIdentifierPart(char c)
-    {
-        return c == '_' || c == '$' || Character.isLetterOrDigit(c);
-    }
-
-    @Nullable
-    private static String matchDollarTag(@NotNull String query, int pos)
-    {
-        int i = pos + 1;
-        if (i < query.length() && (query.charAt(i) == '_' || Character.isLetter(query.charAt(i)))) {
-            i++;
-            while (i < query.length() && (query.charAt(i) == '_' || Character.isLetterOrDigit(query.charAt(i)))) {
-                i++;
-            }
-        }
-        if (i < query.length() && query.charAt(i) == '$') {
-            return query.substring(pos, i + 1);
-        }
-        return null;
+        return query.substring(0, lastDelimiter) + query.substring(lastDelimiter + lastDelimiterLength);
     }
 
     @NotNull
