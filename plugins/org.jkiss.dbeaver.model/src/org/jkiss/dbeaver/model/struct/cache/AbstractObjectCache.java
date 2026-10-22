@@ -102,12 +102,21 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
 
     @Override
     public void cacheObject(@NotNull OBJECT object) {
+        cacheObject(object, -1);
+    }
+
+    @Override
+    public void cacheObject(@NotNull OBJECT object, int index) {
         synchronized (cacheSync) {
             if (this.objectList == null) {
                 this.objectList = new ArrayList<>();
             }
             detectCaseSensitivity(object);
-            this.objectList.add(object);
+            if (index < 0 || index >= this.objectList.size()) {
+                this.objectList.add(object);
+            } else {
+                this.objectList.add(index, object);
+            }
             if (this.objectMap != null) {
                 String name = getObjectName(object);
                 if (checkDuplicateName(name, object)) {
