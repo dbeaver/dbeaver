@@ -58,6 +58,7 @@ import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.sql.ResultSetMetaData;
+import java.sql.Savepoint;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Collections;
@@ -114,6 +115,8 @@ public class PostgreStructValueHandlerTest extends DBeaverUnitTest {
     private SQLQuery sqlQuery;
     @Mock
     private ResultSetMetaData recordMetaData;
+    @Mock
+    private Savepoint savepoint;
 
     @BeforeEach
     public void setUp() {
@@ -302,6 +305,7 @@ public class PostgreStructValueHandlerTest extends DBeaverUnitTest {
         }
         Mockito.verify(jdbcSession).prepareStatement(Mockito.contains("FROM (select x from (select * from pg_class) x)"));
         Mockito.verify(statement, Mockito.never()).executeQuery();
+        Mockito.verify(jdbcSession, Mockito.never()).setSavepoint();
     }
 
     @Test
@@ -355,6 +359,49 @@ public class PostgreStructValueHandlerTest extends DBeaverUnitTest {
         Assertions.assertEquals("(1,pg_class)", composite.getStringRepresentation());
     }
 
+    @Test
+    public void failedRecordDescribeRestoresManualTransaction() throws Exception {
+        mockRecordQuery("x", "select ROW(1,2) as x, ROW(3,4) as x", "f1", "f2");
+        Mockito.when(jdbcSession.getAutoCommit()).thenReturn(false);
+        Mockito.when(jdbcSession.setSavepoint()).thenReturn(savepoint);
+        Mockito.when(statement.getMetaData()).thenThrow(new SQLException("column x is ambiguous"));
+
+        JDBCCompositeDynamic composite = Assertions.assertInstanceOf(JDBCCompositeDynamic.class,
+            PostgreStructValueHandler.INSTANCE.getValueFromObject(jdbcSession, column, "(1,2)", false, false));
+        Assertions.assertEquals("Attr0", composite.getAttributes()[0].getName());
+        var calls = Mockito.inOrder(jdbcSession, statement);
+        calls.verify(jdbcSession).setSavepoint();
+        calls.verify(jdbcSession).prepareStatement(Mockito.anyString());
+        calls.verify(statement).getMetaData();
+        calls.verify(jdbcSession).rollback(savepoint);
+        calls.verify(jdbcSession).releaseSavepoint(savepoint);
+    }
+
+    @Test
+    public void successfulRecordDescribeReleasesSavepointWithoutRollback() throws Exception {
+        mockRecordQuery("main", "select (id,name) as main from test", "f1", "f2");
+        Mockito.when(jdbcSession.getAutoCommit()).thenReturn(false);
+        Mockito.when(jdbcSession.setSavepoint()).thenReturn(savepoint);
+
+        JDBCCompositeDynamic composite = Assertions.assertInstanceOf(JDBCCompositeDynamic.class,
+            PostgreStructValueHandler.INSTANCE.getValueFromObject(jdbcSession, column, "(1,john)", false, false));
+        Assertions.assertEquals("f1", composite.getAttributes()[0].getName());
+        Mockito.verify(jdbcSession).releaseSavepoint(savepoint);
+        Mockito.verify(jdbcSession, Mockito.never()).rollback(savepoint);
+    }
+
+    @Test
+    public void unsupportedSavepointSkipsRecordDescribe() throws Exception {
+        mockRecordQuery("main", "select (id,name) as main from test", "f1", "f2");
+        Mockito.when(jdbcSession.getAutoCommit()).thenReturn(false);
+        Mockito.when(jdbcSession.setSavepoint()).thenThrow(new SQLException("Savepoints not supported"));
+
+        JDBCCompositeDynamic composite = Assertions.assertInstanceOf(JDBCCompositeDynamic.class,
+            PostgreStructValueHandler.INSTANCE.getValueFromObject(jdbcSession, column, "(1,john)", false, false));
+        Assertions.assertEquals("Attr0", composite.getAttributes()[0].getName());
+        Mockito.verify(jdbcSession, Mockito.never()).prepareStatement(Mockito.anyString());
+    }
+
     private void mockRecordQuery(
         @NotNull String columnName,
         @NotNull String sql,
@@ -362,6 +409,7 @@ public class PostgreStructValueHandlerTest extends DBeaverUnitTest {
         @NotNull String secondName
     ) throws Exception {
         Mockito.when(jdbcSession.getDataSource()).thenReturn(dataSource);
+        Mockito.when(jdbcSession.getAutoCommit()).thenReturn(true);
         Mockito.when(jdbcSession.getDefaultValueHandler()).thenReturn(JDBCStringValueHandler.INSTANCE);
         Mockito.when(dataSource.resolveDataKind(Mockito.anyString(), Mockito.anyInt()))
             .thenAnswer(invocation -> JDBCUtils.getDataKindByTypeID(invocation.getArgument(1), invocation.getArgument(0)));

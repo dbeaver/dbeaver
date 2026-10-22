@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeDynamic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeStatic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCTransactionSavepoint;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryType;
@@ -252,26 +253,36 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         String alias = DBUtils.getQuotedIdentifier(session.getDataSource(), RECORD_QUERY_ALIAS);
         String columnName = DBUtils.getQuotedIdentifier(session.getDataSource(), column.getLabel());
         String metadataQuery = "SELECT (" + alias + "." + columnName + ").* FROM (" + sql + ") " + alias;
-        try (JDBCPreparedStatement statement = session.prepareStatement(metadataQuery)) {
-            // pgjdbc describes this SELECT without executing it or fetching any rows.
-            ResultSetMetaData metaData = statement.getMetaData();
-            if (metaData == null) {
+        try (JDBCTransactionSavepoint savepoint = new JDBCTransactionSavepoint(session)) {
+            try (JDBCPreparedStatement statement = session.prepareStatement(metadataQuery)) {
+                // pgjdbc describes this SELECT without executing it or fetching any rows.
+                ResultSetMetaData metaData = statement.getMetaData();
+                if (metaData == null) {
+                    return snapshot;
+                }
+                int count = metaData.getColumnCount();
+                snapshot.setColumnCount(count);
+                for (int i = 1; i <= count; i++) {
+                    snapshot.setColumnName(i, metaData.getColumnName(i));
+                    snapshot.setColumnTypeName(i, metaData.getColumnTypeName(i));
+                    snapshot.setColumnType(i, metaData.getColumnType(i));
+                    snapshot.setColumnDisplaySize(i, Math.max(0, metaData.getColumnDisplaySize(i)));
+                    snapshot.setPrecision(i, Math.max(0, metaData.getPrecision(i)));
+                    snapshot.setScale(i, Math.max(0, metaData.getScale(i)));
+                    snapshot.setNullable(i, metaData.isNullable(i));
+                }
                 return snapshot;
+            } catch (SQLException e) {
+                try {
+                    savepoint.rollback();
+                } catch (SQLException rollbackError) {
+                    log.error("Can't restore transaction after record metadata lookup", rollbackError);
+                }
+                // Some SELECTs cannot be wrapped; retain the synthetic names for their records.
+                return new RowSetMetaDataImpl();
             }
-            int count = metaData.getColumnCount();
-            snapshot.setColumnCount(count);
-            for (int i = 1; i <= count; i++) {
-                snapshot.setColumnName(i, metaData.getColumnName(i));
-                snapshot.setColumnTypeName(i, metaData.getColumnTypeName(i));
-                snapshot.setColumnType(i, metaData.getColumnType(i));
-                snapshot.setColumnDisplaySize(i, Math.max(0, metaData.getColumnDisplaySize(i)));
-                snapshot.setPrecision(i, Math.max(0, metaData.getPrecision(i)));
-                snapshot.setScale(i, Math.max(0, metaData.getScale(i)));
-                snapshot.setNullable(i, metaData.isNullable(i));
-            }
-            return snapshot;
         } catch (SQLException e) {
-            // Some SELECTs cannot be wrapped; retain the synthetic names for their records.
+            // Skip the lookup if a savepoint cannot be created in a manual transaction.
             return new RowSetMetaDataImpl();
         }
     }
