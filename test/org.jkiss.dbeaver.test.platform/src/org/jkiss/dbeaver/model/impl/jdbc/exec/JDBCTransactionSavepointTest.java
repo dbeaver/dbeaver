@@ -31,9 +31,11 @@ class JDBCTransactionSavepointTest {
         Savepoint savepoint = Mockito.mock(Savepoint.class);
         Mockito.when(connection.setSavepoint()).thenReturn(savepoint);
 
-        try (JDBCTransactionSavepoint transaction = new JDBCTransactionSavepoint(connection)) {
-            transaction.rollback();
-        }
+        Assertions.assertDoesNotThrow(() -> {
+            try (JDBCTransactionSavepoint transaction = new JDBCTransactionSavepoint(connection)) {
+                transaction.rollback();
+            }
+        });
 
         var calls = Mockito.inOrder(connection);
         calls.verify(connection).setSavepoint();
@@ -46,9 +48,11 @@ class JDBCTransactionSavepointTest {
         Connection connection = Mockito.mock(Connection.class);
         Mockito.when(connection.getAutoCommit()).thenReturn(true);
 
-        try (JDBCTransactionSavepoint transaction = new JDBCTransactionSavepoint(connection)) {
-            transaction.rollback();
-        }
+        Assertions.assertDoesNotThrow(() -> {
+            try (JDBCTransactionSavepoint transaction = new JDBCTransactionSavepoint(connection)) {
+                transaction.rollback();
+            }
+        });
 
         Mockito.verify(connection, Mockito.never()).setSavepoint();
         Mockito.verify(connection, Mockito.never()).rollback(Mockito.any(Savepoint.class));
