@@ -66,6 +66,7 @@ public class DefaultSQLQueryParameterParser {
         boolean scanRawMarkers = isAnonymousParametersEnabled()
             && (!syntaxManager.isAnonymousParametersEnabled() || anonymousMark != syntaxManager.getAnonymousParameterMark());
         List<SQLQueryParameter> parameters = null;
+        List<int[]> commentRanges = new ArrayList<>();
         TPRuleBasedScanner ruleScanner = context.getScanner();
         ruleScanner.setRange(document, queryOffset, queryLength);
 
@@ -82,7 +83,11 @@ public class DefaultSQLQueryParameterParser {
                 SQLTokenType tokenType = token instanceof TPTokenDefault
                                          ? (SQLTokenType) ((TPTokenDefault) token).getData()
                                          : null;
-                if (token.isWhitespace() || tokenType == SQLTokenType.T_COMMENT) {
+                if (tokenType == SQLTokenType.T_COMMENT) {
+                    commentRanges.add(new int[]{tokenOffset - queryOffset, tokenOffset - queryOffset + tokenLength});
+                    continue;
+                }
+                if (token.isWhitespace()) {
                     continue;
                 }
                 if (firstKeyword) {
@@ -135,11 +140,14 @@ public class DefaultSQLQueryParameterParser {
             }
         }
 
-        return parseVariables(parameters);
+        return parseVariables(parameters, commentRanges);
     }
 
     @Nullable
-    private List<SQLQueryParameter> parseVariables(@Nullable List<SQLQueryParameter> parameters) {
+    private List<SQLQueryParameter> parseVariables(
+        @Nullable List<SQLQueryParameter> parameters,
+        @NotNull List<int[]> commentRanges
+    ) {
         SQLParserContext context = this.context;
         SQLSyntaxManager syntaxManager = context.getSyntaxManager();
         if (syntaxManager.isVariablesEnabled()) {
@@ -176,6 +184,7 @@ public class DefaultSQLQueryParameterParser {
                                 start,
                                 matcher.end() - matcher.start()
                             );
+                            param.setInComment(isInRange(commentRanges, start));
                             if (parameters == null) {
                                 parameters = new ArrayList<>();
                             }
@@ -191,6 +200,15 @@ public class DefaultSQLQueryParameterParser {
         }
 
         return parameters;
+    }
+
+    private static boolean isInRange(@NotNull List<int[]> ranges, int offset) {
+        for (int[] range : ranges) {
+            if (offset >= range[0] && offset < range[1]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Nullable
