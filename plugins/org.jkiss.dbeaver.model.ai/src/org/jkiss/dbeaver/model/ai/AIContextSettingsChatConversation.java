@@ -64,6 +64,11 @@ public class AIContextSettingsChatConversation extends AIContextSettings {
         if (dataSourceContainer != null) {
             AIContextSettingsDataSource dsSettings = new AIContextSettingsDataSource(dataSourceContainer);
             setMetaTransferConfirmed(dsSettings.isMetaTransferConfirmed());
+            if (getScope() == null && dsSettings.getScope() != null) {
+                setScope(dsSettings.getScope());
+                String[] customObjectIds = dsSettings.getCustomObjectIds();
+                setCustomObjectIds(customObjectIds == null ? null : customObjectIds.clone());
+            }
         }
     }
 }
