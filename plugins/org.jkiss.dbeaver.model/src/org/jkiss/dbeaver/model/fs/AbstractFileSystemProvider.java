@@ -46,7 +46,7 @@ public abstract class AbstractFileSystemProvider implements DBFFileSystemProvide
             fileSystem = fileSystems.length == 0 ? null : fileSystems[0];
         } else {
             for (DBFVirtualFileSystem fs : fileSystems) {
-                if (fs.getId().equals(fsId)) {
+                if (fs.getId().equalsIgnoreCase(fsId)) {
                     fileSystem = fs;
                     break;
                 }
