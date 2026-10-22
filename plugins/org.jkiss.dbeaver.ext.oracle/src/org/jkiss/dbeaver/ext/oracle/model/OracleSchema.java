@@ -1023,7 +1023,7 @@ public class OracleSchema extends OracleGlobalObject implements
                         "    c.SEARCH_CONDITION,\r\n" + 
                         "    (\r\n" + 
                         "      SELECT LISTAGG(COLUMN_NAME || ':' || POSITION,',') WITHIN GROUP (ORDER BY \"POSITION\") \r\n" + 
-                        "      FROM ALL_CONS_COLUMNS col\r\n" + 
+                        "      FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONS_COLUMNS") + " col\r\n" +
                         "      WHERE col.OWNER =? AND col.TABLE_NAME = ? AND col.CONSTRAINT_NAME = c.CONSTRAINT_NAME GROUP BY CONSTRAINT_NAME \r\n"+
                         "    ) COLUMN_NAMES_NUMS\r\n" + 
                         "FROM\r\n" + 
@@ -1253,7 +1253,7 @@ public class OracleSchema extends OracleGlobalObject implements
                          + "    c.DELETE_RULE,\r\n"
                          + "    (\r\n"
                          + "      SELECT LISTAGG(COLUMN_NAME || ':' || POSITION,',') WITHIN GROUP (ORDER BY \"POSITION\") \r\n"
-                         + "      FROM ALL_CONS_COLUMNS col\r\n"
+                         + "      FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "CONS_COLUMNS") + " col\r\n"
                          + "      WHERE col.OWNER =? AND col.TABLE_NAME = ? AND col.CONSTRAINT_NAME = c.CONSTRAINT_NAME GROUP BY CONSTRAINT_NAME \r\n"
                          + "    ) COLUMN_NAMES_NUMS\r\nFROM " + constraintsView + " c\r\n"
                          + "LEFT JOIN " + constraintsView + " rc\r\n"
