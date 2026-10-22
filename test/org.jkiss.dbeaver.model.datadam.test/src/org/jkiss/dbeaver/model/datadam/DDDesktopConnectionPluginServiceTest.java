@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.model.datadam;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.osgi.test.runner.DBeaverUnitTest;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
