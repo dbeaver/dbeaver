@@ -32,10 +32,12 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.data.transformers.ComplexTypeAttributeTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeDynamic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStringValueHandler;
@@ -43,6 +45,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.SQLQueryType;
 import org.jkiss.dbeaver.model.virtual.DBVModel;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
@@ -51,6 +55,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.Collections;
 import java.util.Map;
@@ -100,6 +106,12 @@ public class PostgreStructValueHandlerTest extends DBeaverUnitTest {
     private DBDAttributeBindingMeta binding;
     @Mock
     private DBVModel virtualModel;
+    @Mock
+    private DBCExecutionSource executionSource;
+    @Mock
+    private SQLQuery sqlQuery;
+    @Mock
+    private ResultSetMetaData recordMetaData;
 
     @BeforeEach
     public void setUp() {
@@ -267,6 +279,86 @@ public class PostgreStructValueHandlerTest extends DBeaverUnitTest {
 
         Assertions.assertEquals(DBPDataKind.STRUCT,
             dataSource.resolveDataKind(PostgreConstants.TYPE_RECORD, Types.OTHER));
+    }
+
+    @Test
+    public void derivedRecordUsesDescribedSelectMemberNames() throws Exception {
+        mockRecordQuery("x", "select x from (select * from pg_class) x;", "oid", "relname");
+        Mockito.when(recordMetaData.getColumnType(1)).thenReturn(Types.BIGINT);
+        Mockito.when(recordMetaData.getColumnTypeName(1)).thenReturn("oid");
+
+        for (int i = 0; i < 2; i++) {
+            JDBCCompositeDynamic composite = Assertions.assertInstanceOf(JDBCCompositeDynamic.class,
+                PostgreStructValueHandler.INSTANCE.getValueFromObject(jdbcSession, column, "(1,pg_class)", false, false));
+            Assertions.assertEquals("oid", composite.getAttributes()[0].getName());
+            Assertions.assertEquals("relname", composite.getAttributes()[1].getName());
+            Assertions.assertEquals(Types.BIGINT, composite.getAttributes()[0].getTypeID());
+            Assertions.assertEquals("oid", composite.getAttributes()[0].getTypeName());
+            Assertions.assertArrayEquals(new Object[]{1L, "pg_class"}, composite.getValues());
+        }
+        Mockito.verify(jdbcSession).prepareStatement(Mockito.contains("FROM (select x from (select * from pg_class) x)"));
+        Mockito.verify(statement, Mockito.never()).executeQuery();
+    }
+
+    @Test
+    public void rowConstructorUsesPostgreSQLRecordMemberNames() throws Exception {
+        mockRecordQuery("main", "select (id,name) as main, username from test;", "f1", "f2");
+
+        JDBCCompositeDynamic composite = Assertions.assertInstanceOf(JDBCCompositeDynamic.class,
+            PostgreStructValueHandler.INSTANCE.getValueFromObject(jdbcSession, column, "(1,john)", false, false));
+        Assertions.assertEquals("f1", composite.getAttributes()[0].getName());
+        Assertions.assertEquals("f2", composite.getAttributes()[1].getName());
+        Assertions.assertEquals(Types.INTEGER, composite.getAttributes()[0].getTypeID());
+        Assertions.assertEquals("int4", composite.getAttributes()[0].getTypeName());
+        Assertions.assertArrayEquals(new Object[]{1, "john"}, composite.getValues());
+        Mockito.verify(statement, Mockito.never()).executeQuery();
+    }
+
+    @Test
+    public void unconvertibleRecordMemberKeepsOriginalValueAndDeclaredType() throws Exception {
+        mockRecordQuery("main", "select (ids,name) as main from test", "ids", "name");
+        Mockito.when(recordMetaData.getColumnType(1)).thenReturn(Types.ARRAY);
+        Mockito.when(recordMetaData.getColumnTypeName(1)).thenReturn("_int4");
+
+        JDBCCompositeDynamic composite = Assertions.assertInstanceOf(JDBCCompositeDynamic.class,
+            PostgreStructValueHandler.INSTANCE.getValueFromObject(jdbcSession, column, "(\"{1,2}\",john)", false, false));
+        Assertions.assertEquals(Types.ARRAY, composite.getAttributes()[0].getTypeID());
+        Assertions.assertEquals("_int4", composite.getAttributes()[0].getTypeName());
+        Assertions.assertEquals("{1,2}", composite.getValues()[0]);
+    }
+
+    @Test
+    public void recordKeepsSyntheticNamesWhenSelectCannotBeDescribed() throws Exception {
+        mockRecordQuery("x", "select x from (select * from pg_class) x", "oid", "relname");
+        Mockito.when(statement.getMetaData()).thenThrow(new SQLException("Cannot describe record"));
+
+        JDBCCompositeDynamic composite = Assertions.assertInstanceOf(JDBCCompositeDynamic.class,
+            PostgreStructValueHandler.INSTANCE.getValueFromObject(jdbcSession, column, "(1,pg_class)", false, false));
+        Assertions.assertEquals("Attr0", composite.getAttributes()[0].getName());
+        Assertions.assertEquals("(1,pg_class)", composite.getStringRepresentation());
+    }
+
+    private void mockRecordQuery(String columnName, String sql, String firstName, String secondName) throws Exception {
+        Mockito.when(jdbcSession.getDataSource()).thenReturn(dataSource);
+        Mockito.when(jdbcSession.getDefaultValueHandler()).thenReturn(JDBCStringValueHandler.INSTANCE);
+        Mockito.when(dataSource.resolveDataKind(Mockito.anyString(), Mockito.anyInt()))
+            .thenAnswer(invocation -> JDBCUtils.getDataKindByTypeID(invocation.getArgument(1), invocation.getArgument(0)));
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(new PostgreDialect());
+        Mockito.when(column.getTypeName()).thenReturn(PostgreConstants.TYPE_RECORD);
+        Mockito.when(column.getLabel()).thenReturn(columnName);
+        Mockito.when(column.getSource()).thenReturn(executionSource);
+        Mockito.when(executionSource.getSourceDescriptor()).thenReturn(sqlQuery);
+        Mockito.when(sqlQuery.getType()).thenReturn(SQLQueryType.SELECT);
+        Mockito.when(sqlQuery.getText()).thenReturn(sql);
+        Mockito.when(jdbcSession.prepareStatement(Mockito.anyString())).thenReturn(statement);
+        Mockito.when(statement.getMetaData()).thenReturn(recordMetaData);
+        Mockito.when(recordMetaData.getColumnCount()).thenReturn(2);
+        Mockito.when(recordMetaData.getColumnName(1)).thenReturn(firstName);
+        Mockito.when(recordMetaData.getColumnName(2)).thenReturn(secondName);
+        Mockito.when(recordMetaData.getColumnType(1)).thenReturn(Types.INTEGER);
+        Mockito.when(recordMetaData.getColumnTypeName(1)).thenReturn("int4");
+        Mockito.when(recordMetaData.getColumnType(2)).thenReturn(Types.VARCHAR);
+        Mockito.when(recordMetaData.getColumnTypeName(2)).thenReturn("text");
     }
 
     @Test
