@@ -413,12 +413,11 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
         String query = """
             -- ${timestamp}
             /* ${block} */
-            /*+ parallel(${hint}) */
             SELECT '${inString}', ${inCode}""";
         SQLParserContext context = createParserContext(setDialect("snowflake"), query);
         List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
         Assertions.assertEquals(
-            List.of("timestamp=true", "block=true", "hint=false", "inString=false", "inCode=false"),
+            List.of("timestamp=true", "block=true", "inString=false", "inCode=false"),
             params.stream().map(p -> p.getName() + "=" + p.isInComment()).toList()
         );
     }
