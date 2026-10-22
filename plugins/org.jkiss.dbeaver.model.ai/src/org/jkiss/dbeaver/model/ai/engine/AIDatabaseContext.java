@@ -46,8 +46,7 @@ public class AIDatabaseContext {
     private final List<DBSObject> customEntities;
     private final Set<DBSCatalog> customCatalogs;
     private final Set<DBSSchema> customSchemas;
-    private final boolean dataSourceCustomScope;
-    private final Set<String> dataSourceCustomObjectIds;
+    private final Set<String> excludedObjectIds;
     private final DBCExecutionContext executionContext;
 
     private final AISchemaGenerationOptions schemaGenerationOptions;
@@ -56,16 +55,14 @@ public class AIDatabaseContext {
         @NotNull DBSLogicalDataSource dataSource,
         @NotNull AIDatabaseScope scope,
         @Nullable List<DBSObject> customEntities,
-        boolean dataSourceCustomScope,
-        @NotNull Set<String> dataSourceCustomObjectIds,
+        @NotNull Set<String> excludedObjectIds,
         @NotNull DBCExecutionContext executionContext,
         @NotNull AISchemaGenerationOptions schemaGenerationOptions
     ) {
         this.dataSource = dataSource;
         this.scope = scope;
         this.customEntities = customEntities;
-        this.dataSourceCustomScope = dataSourceCustomScope;
-        this.dataSourceCustomObjectIds = dataSourceCustomObjectIds;
+        this.excludedObjectIds = excludedObjectIds;
 
         if (customEntities != null) {
             // Calculate custom catalogs and schemas
@@ -93,14 +90,7 @@ public class AIDatabaseContext {
         }
         this.executionContext = executionContext;
 
-        // Native DDL and relationships can reveal names of objects outside the connection allowlist.
-        this.schemaGenerationOptions = dataSourceCustomScope
-            ? schemaGenerationOptions.toBuilder()
-                .withSendForeignKeys(false)
-                .withSendFullDDL(false)
-                .withSendReferences(false)
-                .build()
-            : schemaGenerationOptions;
+        this.schemaGenerationOptions = schemaGenerationOptions;
     }
 
     @NotNull
@@ -129,29 +119,20 @@ public class AIDatabaseContext {
     }
 
     @NotNull
-    public Set<String> getDataSourceCustomObjectIds() {
-        return dataSourceCustomObjectIds;
+    public Set<String> getExcludedObjectIds() {
+        return excludedObjectIds;
     }
 
-    public boolean hasDataSourceCustomScope() {
-        return dataSourceCustomScope;
-    }
-
-    public boolean isObjectAllowed(@NotNull DBSObject object) {
-        if (!dataSourceCustomScope) {
-            return true;
+    public boolean isObjectExcluded(@NotNull DBSObject object) {
+        if (excludedObjectIds.isEmpty()) {
+            return false;
         }
-        String objectId = DBUtils.getObjectFullId(object);
-        for (String allowedObjectId : dataSourceCustomObjectIds) {
-            if (isSameOrDescendant(objectId, allowedObjectId) || isSameOrDescendant(allowedObjectId, objectId)) {
+        for (DBSObject current = object; current != null; current = current.getParentObject()) {
+            if (excludedObjectIds.contains(DBUtils.getObjectFullId(current))) {
                 return true;
             }
         }
         return false;
-    }
-
-    private static boolean isSameOrDescendant(@NotNull String objectId, @NotNull String parentId) {
-        return objectId.equals(parentId) || objectId.startsWith(parentId + "/");
     }
 
     @NotNull
@@ -168,20 +149,15 @@ public class AIDatabaseContext {
         private final DBSLogicalDataSource dataSource;
         private AIDatabaseScope scope;
         private List<DBSObject> customEntities;
-        private final boolean dataSourceCustomScope;
-        private final Set<String> dataSourceCustomObjectIds;
+        private final Set<String> excludedObjectIds;
         private DBCExecutionContext executionContext;
         private AISchemaGenerationOptions schemaGenerationOptions;
 
         public Builder(@NotNull DBSLogicalDataSource dataSource) {
             this.dataSource = dataSource;
-            AIContextSettingsDataSource dataSourceSettings =
-                new AIContextSettingsDataSource(dataSource.getDataSourceContainer());
-            this.dataSourceCustomScope = dataSourceSettings.getScope() == AIDatabaseScope.CUSTOM;
-            String[] customObjectIds = dataSourceSettings.getCustomObjectIds();
-            this.dataSourceCustomObjectIds = customObjectIds == null
-                ? Set.of()
-                : new LinkedHashSet<>(List.of(customObjectIds));
+            String[] excludedObjectIds = new AIContextSettingsDataSource(dataSource.getDataSourceContainer())
+                .getExcludedObjectIds();
+            this.excludedObjectIds = excludedObjectIds == null ? Set.of() : new LinkedHashSet<>(List.of(excludedObjectIds));
             this.schemaGenerationOptions = AISchemaGenerationOptions.builder().build();
         }
 
@@ -235,8 +211,7 @@ public class AIDatabaseContext {
                 dataSource,
                 scope,
                 customEntities,
-                dataSourceCustomScope,
-                dataSourceCustomObjectIds,
+                excludedObjectIds,
                 executionContext,
                 schemaGenerationOptions
             );
