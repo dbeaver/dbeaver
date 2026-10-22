@@ -23,10 +23,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.PostgreValueParser;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataTypeAttribute;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchemaMyTemp;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTypeType;
@@ -46,13 +46,14 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeStatic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryType;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 
+import java.math.BigDecimal;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Struct;
@@ -316,14 +317,17 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
             @Nullable String[] names,
             @Nullable ResultSetMetaData metaData
         )
-            throws DBCException {
+                throws DBCException {
             super(session, struct, metaData, names);
             rowString = struct.toString();
             if (metaData != null) {
                 for (int i = 0; i < values.length; i++) {
                     if (values[i] instanceof String string && !attributes[i].getDataKind().isComplex()) {
                         try {
-                            values[i] = PostgreValueParser.convertStringToValue(session, attributes[i], string);
+                            int typeId = attributes[i].getTypeID();
+                            values[i] = typeId == Types.NUMERIC || typeId == Types.DECIMAL
+                                ? new BigDecimal(string)
+                                : PostgreValueParser.convertStringToValue(session, attributes[i], string);
                         } catch (DBCException | RuntimeException e) {
                             // Preserve a member's textual value if its type cannot be converted.
                         }
@@ -333,7 +337,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
         }
 
         private PostgreDynamicComposite(@NotNull PostgreDynamicComposite source, @NotNull DBRProgressMonitor monitor)
-            throws DBCException {
+                throws DBCException {
             super(source, monitor);
             rowString = source.rowString;
             modified = source.modified;
@@ -345,6 +349,7 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
             return new PostgreDynamicComposite(this, monitor);
         }
 
+        @NotNull
         @Override
         public String getStringRepresentation() {
             return modified ? PostgreValueParser.generateObjectString(getValues()) : rowString;
@@ -353,7 +358,11 @@ public class PostgreStructValueHandler extends JDBCStructValueHandler {
 
     @NotNull
     @Override
-    public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
+    public synchronized String getValueDisplayString(
+        @NotNull DBSTypedObject column,
+        @Nullable Object value,
+        @NotNull DBDDisplayFormat format
+    ) {
         if (!DBUtils.isNullValue(value) && value instanceof JDBCComposite composite) {
             final StringJoiner output = new StringJoiner(",", "(", ")");
 

@@ -16,11 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
@@ -37,8 +38,8 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.data.transformers.ComplexTypeAttributeTransformer;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCompositeDynamic;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStringValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStructValueHandler;
@@ -55,6 +56,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import java.math.BigDecimal;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -179,7 +181,9 @@ public class PostgreStructValueHandlerTest extends DBeaverUnitTest {
         Mockito.when(lookupStatement.getResultSet()).thenReturn(tableResultSet);
         Mockito.when(tableResultSet.next()).thenReturn(true);
         Mockito.when(tableResultSet.getString("relkind")).thenReturn("v");
-        Mockito.when(serverType.createRelationOfClass(Mockito.any(PostgreSchema.class), Mockito.any(), Mockito.eq(tableResultSet))).thenReturn(view);
+        Mockito.when(serverType.createRelationOfClass(
+            Mockito.any(PostgreSchema.class), Mockito.any(), Mockito.eq(tableResultSet)))
+            .thenReturn(view);
         Mockito.when(view.getObjectId()).thenReturn(456L);
         Mockito.when(columnsStatement.getResultSet()).thenReturn(columnsResultSet);
         Mockito.when(columnsResultSet.next()).thenReturn(true, true, false);
@@ -315,6 +319,19 @@ public class PostgreStructValueHandlerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void numericRecordMemberRetainsExactPrecision() throws Exception {
+        mockRecordQuery("main", "select (amount,name) as main from test", "amount", "name");
+        Mockito.when(recordMetaData.getColumnType(1)).thenReturn(Types.NUMERIC);
+        Mockito.when(recordMetaData.getColumnTypeName(1)).thenReturn("numeric");
+
+        String numeric = "12345678901234567890.123456789";
+        JDBCCompositeDynamic composite = Assertions.assertInstanceOf(JDBCCompositeDynamic.class,
+            PostgreStructValueHandler.INSTANCE.getValueFromObject(jdbcSession, column, "(" + numeric + ",john)", false, false));
+        Assertions.assertEquals(Types.NUMERIC, composite.getAttributes()[0].getTypeID());
+        Assertions.assertEquals(new BigDecimal(numeric), composite.getValues()[0]);
+    }
+
+    @Test
     public void unconvertibleRecordMemberKeepsOriginalValueAndDeclaredType() throws Exception {
         mockRecordQuery("main", "select (ids,name) as main from test", "ids", "name");
         Mockito.when(recordMetaData.getColumnType(1)).thenReturn(Types.ARRAY);
@@ -338,7 +355,12 @@ public class PostgreStructValueHandlerTest extends DBeaverUnitTest {
         Assertions.assertEquals("(1,pg_class)", composite.getStringRepresentation());
     }
 
-    private void mockRecordQuery(String columnName, String sql, String firstName, String secondName) throws Exception {
+    private void mockRecordQuery(
+        @NotNull String columnName,
+        @NotNull String sql,
+        @NotNull String firstName,
+        @NotNull String secondName
+    ) throws Exception {
         Mockito.when(jdbcSession.getDataSource()).thenReturn(dataSource);
         Mockito.when(jdbcSession.getDefaultValueHandler()).thenReturn(JDBCStringValueHandler.INSTANCE);
         Mockito.when(dataSource.resolveDataKind(Mockito.anyString(), Mockito.anyInt()))
@@ -364,7 +386,7 @@ public class PostgreStructValueHandlerTest extends DBeaverUnitTest {
     @Test
     public void anonymousRecordBindsNestedAttributesFromFetchedValue() throws Exception {
         Mockito.when(column.getTypeName()).thenReturn(PostgreConstants.TYPE_RECORD);
-        JDBCCompositeDynamic composite = Assertions.assertInstanceOf(JDBCCompositeDynamic.class,
+        final JDBCCompositeDynamic composite = Assertions.assertInstanceOf(JDBCCompositeDynamic.class,
             PostgreStructValueHandler.INSTANCE.getValueFromObject(session, column, "(1,pg_class)", false, false));
         Mockito.when(container.getPreferenceStore()).thenReturn(preferences);
         Mockito.when(container.getVirtualModel()).thenReturn(virtualModel);

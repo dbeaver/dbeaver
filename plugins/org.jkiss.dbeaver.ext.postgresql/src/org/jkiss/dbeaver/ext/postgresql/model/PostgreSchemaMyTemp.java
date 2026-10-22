@@ -45,7 +45,7 @@ public class PostgreSchemaMyTemp extends PostgreSchema {
 
     @NotNull
     public List<PostgreTableColumn> readTableColumns(@NotNull JDBCSession session, @NotNull String tableName)
-        throws SQLException, DBException {
+            throws SQLException, DBException {
         return isPersisted() ? getTableCache().readTemporaryTableColumns(session, tableName) : List.of();
     }
 }

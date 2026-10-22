@@ -422,8 +422,10 @@ public class PostgreUtils {
                             lookedUpDatabase = database;
                             String typeName = type.getTypeName();
                             if (PostgreUtils.isCompositeTypeName(typeName)) {
-                                // Type name in JDBCColumnMetaData can be fully qualified and quoted. Let's fix it for the better search in the getDataType() method
-                                String[] identifiers = SQLUtils.splitFullIdentifier(typeName, ".", dataSource.getSQLDialect().getIdentifierQuoteStrings(), false);
+                                // Type name in JDBCColumnMetaData can be fully qualified and quoted.
+                                // Normalize it for the lookup in getDataType().
+                                String[] identifiers = SQLUtils.splitFullIdentifier(
+                                    typeName, ".", dataSource.getSQLDialect().getIdentifierQuoteStrings(), false);
                                 if (!ArrayUtils.isEmpty(identifiers)) {
                                     typeName = identifiers[identifiers.length - 1];
                                     if (identifiers.length == 2) {

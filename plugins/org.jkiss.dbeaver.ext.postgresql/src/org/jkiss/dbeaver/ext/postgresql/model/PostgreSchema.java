@@ -844,7 +844,7 @@ public class PostgreSchema implements
 
         @NotNull
         public List<PostgreTableColumn> readTemporaryTableColumns(@NotNull JDBCSession session, @NotNull String tableName)
-            throws SQLException, DBException {
+                throws SQLException, DBException {
             // A temporary relation may be absent from the navigator cache. Load it through the query
             // session rather than opening a separate metadata connection in getChildren().
             try (JDBCStatement lookup = prepareLookupStatement(session, PostgreSchema.this, null, tableName)) {

@@ -977,12 +977,14 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    public PostgreDataType getDataType(@Nullable DBRProgressMonitor monitor, String typeName) {
+    @Nullable
+    public PostgreDataType getDataType(@Nullable DBRProgressMonitor monitor, @NotNull String typeName) {
         return getDataType(monitor, typeName, true);
     }
 
     // Result-set metadata may refer to a temporary row type that the metadata connection cannot resolve.
-    public PostgreDataType getDataType(@Nullable DBRProgressMonitor monitor, String typeName, boolean verify) {
+    @Nullable
+    public PostgreDataType getDataType(@Nullable DBRProgressMonitor monitor, @NotNull String typeName, boolean verify) {
         if (typeName.endsWith("[]")) {
             // In some cases ResultSetMetadata returns it as []
             typeName = "_" + typeName.substring(0, typeName.length() - 2);
