@@ -57,6 +57,15 @@ public class DataSourceDescriptorTest extends DBeaverUnitTest {
         );
 
         dataSource.forceSetSharedCredentials(false);
+        DataSourceDescriptor dataSourceCopy = new DataSourceDescriptor(dataSource, dataSource.getRegistry(), false);
+
+        Assertions.assertAll(
+            () -> Assertions.assertNull(dataSourceCopy.getConnectionConfiguration().getUserName()),
+            () -> Assertions.assertNull(dataSourceCopy.getConnectionConfiguration().getUserPassword()),
+            () -> Assertions.assertTrue(dataSourceCopy.getConnectionConfiguration().getAuthProperties().isEmpty()),
+            () -> Assertions.assertFalse(dataSourceCopy.isSavePassword())
+        );
+
         dataSource.resetAllSecrets();
 
         Assertions.assertAll(

@@ -253,6 +253,7 @@ public class DataSourceDescriptor
         this.description = source.description;
         this.savePassword = source.savePassword;
         this.sharedCredentials = source.sharedCredentials;
+        this.sharedCredentialsRevoked = source.sharedCredentialsRevoked;
         this.originalShareCredentials = this.sharedCredentials;
         this.navigatorSettings = new DataSourceNavigatorSettings(source.navigatorSettings);
         if (navigatorSettings.isUserSettings()) {
@@ -268,6 +269,9 @@ public class DataSourceDescriptor
         this.connectionModifyRestrictions = source.connectionModifyRestrictions == null ? null : new ArrayList<>(source.connectionModifyRestrictions);
 
         this.connectionInfo = new DBPConnectionConfiguration(source.connectionInfo);
+        if (sharedCredentialsRevoked) {
+            clearRevokedSharedCredentials();
+        }
         for (Map.Entry<String, FilterMapping> fe : source.filterMap.entrySet()) {
             this.filterMap.put(fe.getKey(), new FilterMapping(fe.getValue()));
         }
@@ -542,14 +546,21 @@ public class DataSourceDescriptor
         // in some cases, when connection is established, username is needed (e.g. retrieving current user info in Cubrid)
         if ((sharedCredentials || sharedCredentialsRevoked) && !isConnected()) {
             // For shared credentials reset cache also
-            connectionInfo.setUserName(null);
-            connectionInfo.setUserPassword(null);
             if (sharedCredentialsRevoked) {
-                connectionInfo.setAuthProperties(null);
-                savePassword = false;
-                sharedCredentialsRevoked = false;
+                clearRevokedSharedCredentials();
+            } else {
+                connectionInfo.setUserName(null);
+                connectionInfo.setUserPassword(null);
             }
         }
+    }
+
+    private void clearRevokedSharedCredentials() {
+        connectionInfo.setUserName(null);
+        connectionInfo.setUserPassword(null);
+        connectionInfo.setAuthProperties(null);
+        savePassword = false;
+        sharedCredentialsRevoked = false;
     }
 
     @Nullable
