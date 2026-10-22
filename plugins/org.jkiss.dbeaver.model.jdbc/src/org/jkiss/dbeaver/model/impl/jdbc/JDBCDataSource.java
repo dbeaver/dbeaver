@@ -319,6 +319,16 @@ public abstract class JDBCDataSource extends AbstractDataSource
         }
     }
 
+    @Nullable
+    protected Connection openJdbcConnection(
+        @Nullable Driver driver,
+        @NotNull String url,
+        @NotNull Properties properties,
+        @Nullable Object authResult
+    ) throws SQLException, DBException {
+        return driver == null ? DriverManager.getConnection(url, properties) : driver.connect(url, properties);
+    }
+
     private void initializeDriverContext(@NotNull Driver driverInstance) {
         if (driverInstance instanceof ObjectWithContextParameters owcp) {
             DBPProject project = getContainer().getProject();
