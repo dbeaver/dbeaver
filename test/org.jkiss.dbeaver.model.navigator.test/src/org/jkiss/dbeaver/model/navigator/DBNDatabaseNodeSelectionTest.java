@@ -18,17 +18,20 @@ package org.jkiss.dbeaver.model.navigator;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.util.List;
 import java.util.Set;
 
 public class DBNDatabaseNodeSelectionTest {
     @Test
-    public void checksUnloadedFolderWithoutReadingChildren() {
-        DBNDatabaseNode folder = createNode(null);
+    public void checksUnloadedFolderWithoutLoadingChildren() {
+        TestNode folder = new TestNode(null);
         DBNDatabaseNodeSelection selection = new DBNDatabaseNodeSelection(node -> true);
 
         selection.setChecked(folder, true);
@@ -36,16 +39,16 @@ public class DBNDatabaseNodeSelectionTest {
         Assertions.assertTrue(selection.isChecked(folder));
         Assertions.assertFalse(selection.isGrayed(folder));
         Assertions.assertEquals(List.of(folder), selection.getSelectedNodes());
-        Mockito.verify(folder, Mockito.never()).getChildNodes();
     }
 
     @Test
     public void newlyLoadedChildrenInheritSelection() {
-        DBNDatabaseNode folder = createNode(null);
+        TestNode folder = new TestNode(null);
         DBNDatabaseNodeSelection selection = new DBNDatabaseNodeSelection(node -> true);
         selection.setChecked(folder, true);
 
-        DBNDatabaseNode table = createNode(folder);
+        TestNode table = new TestNode(folder);
+        folder.setCachedChildren(table);
 
         Assertions.assertTrue(selection.isChecked(table));
         Assertions.assertFalse(selection.isGrayed(table));
@@ -54,16 +57,15 @@ public class DBNDatabaseNodeSelectionTest {
 
     @Test
     public void unchecksNestedTableUsingOnlyCachedSiblings() {
-        DBNDatabaseNode schema = createNode(null);
-        DBNDatabaseNode tables = createNode(schema);
-        DBNDatabaseNode views = createNode(schema);
-        DBNDatabaseNode firstTable = createNode(tables);
-        DBNDatabaseNode secondTable = createNode(tables);
-        Mockito.when(schema.getChildNodes()).thenReturn(new DBNDatabaseNode[]{tables, views});
-        Mockito.when(tables.getChildNodes()).thenReturn(new DBNDatabaseNode[]{firstTable, secondTable});
+        TestNode schema = new TestNode(null);
+        TestNode tables = new TestNode(schema);
+        TestNode views = new TestNode(schema);
+        TestNode firstTable = new TestNode(tables);
+        TestNode secondTable = new TestNode(tables);
+        schema.setCachedChildren(tables, views);
+        tables.setCachedChildren(firstTable, secondTable);
         DBNDatabaseNodeSelection selection = new DBNDatabaseNodeSelection(node -> true);
         selection.setChecked(schema, true);
-        Mockito.clearInvocations(schema, tables, views, firstTable, secondTable);
 
         selection.setChecked(firstTable, false);
 
@@ -73,15 +75,12 @@ public class DBNDatabaseNodeSelectionTest {
         Assertions.assertTrue(selection.isGrayed(schema));
         Assertions.assertTrue(selection.isGrayed(tables));
         Assertions.assertEquals(Set.of(secondTable, views), Set.copyOf(selection.getSelectedNodes()));
-        Mockito.verify(schema, Mockito.atLeastOnce()).getChildNodes();
-        Mockito.verify(tables, Mockito.atLeastOnce()).getChildNodes();
-        Mockito.verifyNoMoreInteractions(Mockito.ignoreStubs(schema, tables, views, firstTable, secondTable));
     }
 
     @Test
     public void selectingAncestorReplacesIndividualSelections() {
-        DBNDatabaseNode folder = createNode(null);
-        DBNDatabaseNode table = createNode(folder);
+        TestNode folder = new TestNode(null);
+        TestNode table = new TestNode(folder);
         DBNDatabaseNodeSelection selection = new DBNDatabaseNodeSelection(node -> true);
         selection.setChecked(table, true);
         Assertions.assertTrue(selection.isGrayed(folder));
@@ -94,8 +93,8 @@ public class DBNDatabaseNodeSelectionTest {
 
     @Test
     public void uncheckingAncestorClearsDescendantSelections() {
-        DBNDatabaseNode folder = createNode(null);
-        DBNDatabaseNode table = createNode(folder);
+        TestNode folder = new TestNode(null);
+        TestNode table = new TestNode(folder);
         DBNDatabaseNodeSelection selection = new DBNDatabaseNodeSelection(node -> true);
         selection.setChecked(table, true);
 
@@ -108,9 +107,9 @@ public class DBNDatabaseNodeSelectionTest {
 
     @Test
     public void uncheckingLastChildClearsAncestorState() {
-        DBNDatabaseNode folder = createNode(null);
-        DBNDatabaseNode table = createNode(folder);
-        Mockito.when(folder.getChildNodes()).thenReturn(new DBNDatabaseNode[]{table});
+        TestNode folder = new TestNode(null);
+        TestNode table = new TestNode(folder);
+        folder.setCachedChildren(table);
         DBNDatabaseNodeSelection selection = new DBNDatabaseNodeSelection(node -> true);
         selection.setChecked(folder, true);
 
@@ -122,10 +121,10 @@ public class DBNDatabaseNodeSelectionTest {
 
     @Test
     public void ignoresUnsupportedSiblingsWhenSplittingSelection() {
-        DBNDatabaseNode schema = createNode(null);
-        DBNDatabaseNode tables = createNode(schema);
-        DBNDatabaseNode procedures = createNode(schema);
-        Mockito.when(schema.getChildNodes()).thenReturn(new DBNDatabaseNode[]{tables, procedures});
+        TestNode schema = new TestNode(null);
+        TestNode tables = new TestNode(schema);
+        TestNode procedures = new TestNode(schema);
+        schema.setCachedChildren(tables, procedures);
         DBNDatabaseNodeSelection selection = new DBNDatabaseNodeSelection(node -> node != procedures);
         selection.setChecked(schema, true);
 
@@ -137,9 +136,9 @@ public class DBNDatabaseNodeSelectionTest {
 
     @Test
     public void keepsAncestorGrayedUntilLastSelectionIsRemoved() {
-        DBNDatabaseNode folder = createNode(null);
-        DBNDatabaseNode firstTable = createNode(folder);
-        DBNDatabaseNode secondTable = createNode(folder);
+        TestNode folder = new TestNode(null);
+        TestNode firstTable = new TestNode(folder);
+        TestNode secondTable = new TestNode(folder);
         DBNDatabaseNodeSelection selection = new DBNDatabaseNodeSelection(node -> true);
         selection.setChecked(firstTable, true);
         selection.setChecked(secondTable, true);
@@ -157,10 +156,10 @@ public class DBNDatabaseNodeSelectionTest {
 
     @Test
     public void checkingAllCachedChildrenFullyChecksFolder() {
-        DBNDatabaseNode folder = createNode(null);
-        DBNDatabaseNode firstTable = createNode(folder);
-        DBNDatabaseNode secondTable = createNode(folder);
-        Mockito.when(folder.getChildNodes()).thenReturn(new DBNDatabaseNode[]{firstTable, secondTable});
+        TestNode folder = new TestNode(null);
+        TestNode firstTable = new TestNode(folder);
+        TestNode secondTable = new TestNode(folder);
+        folder.setCachedChildren(firstTable, secondTable);
         DBNDatabaseNodeSelection selection = new DBNDatabaseNodeSelection(node -> true);
         selection.setChecked(firstTable, true);
         Assertions.assertTrue(selection.isGrayed(folder));
@@ -180,10 +179,10 @@ public class DBNDatabaseNodeSelectionTest {
 
     @Test
     public void ignoresUnsupportedChildrenWhenFullyCheckingFolder() {
-        DBNDatabaseNode folder = createNode(null);
-        DBNDatabaseNode table = createNode(folder);
-        DBNDatabaseNode unsupported = createNode(folder);
-        Mockito.when(folder.getChildNodes()).thenReturn(new DBNDatabaseNode[]{table, unsupported});
+        TestNode folder = new TestNode(null);
+        TestNode table = new TestNode(folder);
+        TestNode unsupported = new TestNode(folder);
+        folder.setCachedChildren(table, unsupported);
         DBNDatabaseNodeSelection selection = new DBNDatabaseNodeSelection(node -> node != unsupported);
 
         selection.setChecked(table, true);
@@ -192,10 +191,47 @@ public class DBNDatabaseNodeSelectionTest {
         Assertions.assertEquals(List.of(table), selection.getSelectedNodes());
     }
 
-    @NotNull
-    private static DBNDatabaseNode createNode(@Nullable DBNDatabaseNode parent) {
-        DBNDatabaseNode node = Mockito.mock(DBNDatabaseNode.class);
-        Mockito.when(node.getParentNode()).thenReturn(parent);
-        return node;
+    private static class TestNode extends DBNDatabaseNode {
+        private TestNode(@Nullable DBNDatabaseNode parent) {
+            super(parent);
+        }
+
+        private void setCachedChildren(@NotNull DBNDatabaseNode... children) {
+            childNodes = children;
+        }
+
+        @NotNull
+        @Override
+        public DBNDatabaseNode[] getChildren(@NotNull DBRProgressMonitor monitor) {
+            return Assertions.fail("Selection must not load children");
+        }
+
+        @Override
+        public boolean initializeNode(@Nullable DBRProgressMonitor monitor, @Nullable DBRProgressListener onFinish) {
+            return Assertions.fail("Selection must not initialize nodes");
+        }
+
+        @Nullable
+        @Override
+        public DBSObject getObject() {
+            return null;
+        }
+
+        @Nullable
+        @Override
+        public Object getValueObject() {
+            return null;
+        }
+
+        @NotNull
+        @Override
+        public DBXTreeNode getMeta() {
+            return Assertions.fail("Selection must not read metadata");
+        }
+
+        @Override
+        protected boolean reloadObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object) {
+            return Assertions.fail("Selection must not reload objects");
+        }
     }
 }
