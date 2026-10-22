@@ -3058,6 +3058,11 @@ public class SpreadsheetPresentation extends AbstractPresentation
             ) {
                 return false;
             }
+            // Expanded collection/struct child rows keep the parent binding while values are
+            // scalars or DBDVoid — not safe for SQL literals or a coherent display join.
+            if (selectionContainsNestedRows(selectedCells)) {
+                return false;
+            }
             if (!isSingleColumnSelection(selectedCells)) {
                 return true;
             }
@@ -3075,9 +3080,18 @@ public class SpreadsheetPresentation extends AbstractPresentation
             return true;
         }
 
+        private static boolean selectionContainsNestedRows(@NotNull List<GridCell> selectedCells) {
+            for (GridCell cell : selectedCells) {
+                if (cell.row.getParent() != null) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         /**
          * Fail closed: need a live data source for dialect-aware literals; every cell must
-         * resolve to an attribute and must not be {@link DBDContent}.
+         * resolve to an attribute and must not be {@link DBDContent} or {@link DBDVoid}.
          */
         private boolean isSingleColumnSqlLiteralDragAllowed(@NotNull List<GridCell> selectedCells) {
             DBSDataContainer dataContainer = controller.getDataContainer();
@@ -3089,7 +3103,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 if (getAttributeFromGrid(cell.col, cell.row) == null) {
                     return false;
                 }
-                if (getCellValue(cell.col, cell.row, false) instanceof DBDContent) {
+                Object value = getCellValue(cell.col, cell.row, false);
+                if (value instanceof DBDContent || value == DBDVoid.INSTANCE) {
                     return false;
                 }
             }
