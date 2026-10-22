@@ -78,6 +78,9 @@ public class AIUIMessages extends NLS {
     public static String scope_selector_customize;
     public static String scope_selector_not_available;
     public static String scope_selector_custom_objects;
+    public static String scope_selector_loading;
+    public static String scope_selector_load_error;
+    public static String scope_selector_empty;
     public static String openai_configurator_log_query_label;
     public static String openai_configurator_log_query_tip;
     public static String openai_configurator_temperature_tip;
