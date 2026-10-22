@@ -104,5 +104,17 @@
         </provider>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+                id="motherduck_token"
+                label="%auth.motherduck.token.label"
+                description="%auth.motherduck.token.description"
+                class="org.jkiss.dbeaver.ext.duckdb.model.MotherDuckAuthModelToken"
+                default="true">
+            <datasource id="duckdb" if="object.getDriverParameter('motherduck-token-auth') == 'true'"/>
+            <replace model="native"/>
+        </authModel>
+    </extension>
+
 
 </plugin>
