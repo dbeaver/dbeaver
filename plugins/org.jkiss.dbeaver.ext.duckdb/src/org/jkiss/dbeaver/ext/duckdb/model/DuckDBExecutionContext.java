@@ -41,6 +41,7 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
     private static final Log log = Log.getLog(DuckDBExecutionContext.class);
     private String activeCatalogName;
     private String activeSchemaName;
+    private GenericSchema activeSchema;
 
     public DuckDBExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String purpose) {
         super(instance, purpose);
@@ -65,16 +66,7 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
     @Nullable
     @Override
     public GenericSchema getDefaultSchema() {
-        if (activeSchemaName == null) {
-            return null;
-        }
-        GenericCatalog catalog = getDefaultCatalog();
-        if (catalog == null) {
-            // No catalogs, e.g. with the omit-catalog driver setting: schemas live at the data source root
-            return getDataSource().getSchema(activeSchemaName);
-        }
-        // Cache only: this getter is called from UI code, schemas are loaded when defaults change
-        return catalog.getCachedSchema(activeSchemaName);
+        return activeSchema;
     }
 
     @Override
@@ -109,7 +101,7 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
         } catch (SQLException e) {
             log.warn("Error reading active catalog and schema", e);
         }
-        cacheDefaultSchemas(monitor);
+        resolveDefaultSchema(monitor);
 
         return changed;
     }
@@ -128,7 +120,7 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
 
         final GenericSchema oldSchema = getDefaultSchema();
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Set active catalog")) {
-            JDBCUtils.executeSQL(session, "USE " + DBUtils.getQuotedIdentifier(catalog));
+            JDBCUtils.executeSQL(session, "USE " + quoteIdentifier(newCatalogName));
             activeCatalogName = newCatalogName;
         } catch (Exception e) {
             try {
@@ -139,17 +131,15 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
         }
 
         super.setDefaultCatalog(monitor, catalog, schema);
-        cacheDefaultSchemas(monitor);
-        // Set and read the schema only now: the JDBC catalog switch above resets it to the catalog's default schema
+        // Read the schema only now: the JDBC catalog switch above resets it to the catalog's default schema
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, TASK_TITLE_SET_SCHEMA)) {
-            if (schema != null) {
-                session.setSchema(schema.getName());
-            }
             activeSchemaName = session.getSchema();
         } catch (SQLException e) {
             throw new DBCException(e, this);
         }
-        DBUtils.fireObjectSelectionChange(oldSchema, getDefaultSchema(), this);
+        resolveDefaultSchema(monitor);
+        DBUtils.fireObjectSelectionChange(oldSchema, activeSchema, this);
+        setActiveSchema(monitor, schema);
     }
 
     @Override
@@ -164,32 +154,49 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
     }
 
     private void setActiveSchema(@NotNull DBRProgressMonitor monitor, @Nullable GenericSchema schema) throws DBCException {
-        if (schema == null || schema.getName().equals(activeSchemaName)) {
+        if (schema == null) {
             return;
         }
-        GenericSchema oldSchema = getDefaultSchema();
+        final GenericSchema oldSchema = activeSchema;
         try (JDBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, TASK_TITLE_SET_SCHEMA)) {
-            session.setSchema(schema.getName());
+            // Apply the database too, because a USE in the SQL editor may have changed both without refreshing
+            // the defaults. A single USE leaves the session as it was if the schema no longer exists.
+            GenericCatalog catalog = schema.getCatalog();
+            String catalogPrefix = catalog == null ? "" : quoteIdentifier(catalog.getName()) + ".";
+            JDBCUtils.executeSQL(session, "USE " + catalogPrefix + quoteIdentifier(schema.getName()));
         } catch (SQLException e) {
             throw new DBCException(e, this);
         }
         activeSchemaName = schema.getName();
+        activeSchema = schema;
         DBUtils.fireObjectSelectionChange(oldSchema, schema, this);
     }
 
     /**
-     * Loads the schemas of the active catalog, so that {@link #getDefaultSchema()} can resolve them from cache.
+     * Always quotes, unlike {@link DBUtils#getQuotedIdentifier}, which keeps names that already look quoted as is.
      */
-    void cacheDefaultSchemas(@NotNull DBRProgressMonitor monitor) {
-        GenericCatalog catalog = getDefaultCatalog();
-        if (catalog == null) {
-            return;
+    @NotNull
+    private static String quoteIdentifier(@NotNull String name) {
+        return '"' + name.replace("\"", "\"\"") + '"';
+    }
+
+    /**
+     * Resolves the active schema object here, where a progress monitor is available, for {@link #getDefaultSchema()}.
+     */
+    void resolveDefaultSchema(@NotNull DBRProgressMonitor monitor) {
+        GenericSchema schema = null;
+        if (activeSchemaName != null) {
+            GenericCatalog catalog = getDefaultCatalog();
+            try {
+                // No catalogs, e.g. with the omit-catalog driver setting: schemas live at the data source root
+                schema = catalog == null
+                    ? getDataSource().getSchema(activeSchemaName)
+                    : catalog.getSchema(monitor, activeSchemaName);
+            } catch (DBException e) {
+                log.debug("Error reading active schema", e);
+            }
         }
-        try {
-            catalog.getSchemas(monitor);
-        } catch (DBException e) {
-            log.debug("Error caching catalog schemas", e);
-        }
+        activeSchema = schema;
     }
 
     @Override
@@ -213,7 +220,7 @@ public class DuckDBExecutionContext extends GenericExecutionContext {
             } catch (SQLException e) {
                 log.warn("Error restoring default schema", e);
             }
-            cacheDefaultSchemas(monitor);
+            resolveDefaultSchema(monitor);
         }
     }
 

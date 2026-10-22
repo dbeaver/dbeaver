@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2026 DBeaver Corp and others
+ * Copyright (C) 2010-2025 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -95,14 +95,6 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
     {
         return DBUtils.findObject(
             getSchemas(monitor),
-            name,
-            getDataSource().getSQLDialect().storesUnquotedCase() == DBPIdentifierCase.MIXED);
-    }
-
-    @Nullable
-    public GenericSchema getCachedSchema(@NotNull String name) {
-        return DBUtils.findObject(
-            schemas,
             name,
             getDataSource().getSQLDialect().storesUnquotedCase() == DBPIdentifierCase.MIXED);
     }

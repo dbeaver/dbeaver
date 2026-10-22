@@ -66,10 +66,14 @@ public class DuckDBDataSource extends GenericDataSource {
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
         super.initialize(monitor);
-        // Contexts read their defaults before catalogs are loaded, so cache the schemas of their catalogs now
+        // Contexts read their defaults before catalogs are loaded, so resolve their schemas now
+        resolveDefaultSchemas(monitor);
+    }
+
+    void resolveDefaultSchemas(@NotNull DBRProgressMonitor monitor) {
         for (JDBCExecutionContext context : getDefaultInstance().getAllContexts()) {
             if (context instanceof DuckDBExecutionContext duckDBContext) {
-                duckDBContext.cacheDefaultSchemas(monitor);
+                duckDBContext.resolveDefaultSchema(monitor);
             }
         }
     }
