@@ -50,6 +50,7 @@
                         label="YashanDB"
                         icon="icons/yashandb_icon.png"
                         iconBig="icons/yashandb_big.png"
+                        logoImage="icons/yashandb_logo.png"
                         class="com.yashandb.jdbc.Driver"
                         sampleURL="jdbc:yasdb://{host}:{port}/{database}"
                         useURL="false"
