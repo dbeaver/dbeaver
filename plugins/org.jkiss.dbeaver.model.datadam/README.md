@@ -40,39 +40,40 @@ State observers may run on the subscribing or state-changing thread; keep them s
 
 ## RPC services
 
-The connection service owns ready-to-use, bidirectional RPC endpoints for the independent Account and Storage lanes.
-It opens both lanes when the channel becomes ready. Consumers register implementations and create typed proxies directly:
+The connection service owns one bidirectional RPC endpoint for the current Desktop identity. Consumers choose
+their topics and can use the default Gson codec or supply their own codec per proxy or implementation:
 
 ```java
-RpcEndpoint account = DDDesktopConnectionService.getInstance().getRpc(DDRpcServices.ACCOUNT);
-RpcEndpoint storage = DDDesktopConnectionService.getInstance().getRpc(DDRpcServices.STORAGE);
+RpcEndpoint endpoint = DDDesktopConnectionService.getInstance().getRpc();
+StorageService ordinaryFiles = endpoint.proxy("files", StorageService.class);
+DDGsonRpcCodec codec = new DDGsonRpcCodec(new GsonBuilder().registerTypeAdapter(FileInfo.class, fileInfoAdapter).create());
 
-MessageSubscription registration = account.register("projects", ProjectCallbacks.class, callbacks);
-ProjectService projects = account.proxy("projects", ProjectService.class);
-StorageService files = storage.proxy("files", StorageService.class);
+MessageSubscription registration = endpoint.register("projects.changed", ProjectCallbacks.class, callbacks, codec);
+StorageService files = endpoint.proxy("storage.files", StorageService.class, codec);
 ```
 
 `RpcEndpoint` is from `com.dbeaver.messaging.rpc`, `MessageSubscription` is from
-`com.dbeaver.messaging.requestreply`, and `DDRpcServices` is from `com.dbeaver.datadam.external.api.rpc`.
+`com.dbeaver.messaging.requestreply`, and `DDGsonRpcCodec` is from `com.dbeaver.datadam.external.api.rpc`.
 The application supplies the public service interfaces and their implementations; each RPC operation is synchronous
 and accepts one argument. Make proxy calls on a worker thread and handle `RpcException` failures.
-The service uses the shared Gson codec by default; its codec constructor overload supports custom serialization.
+The overloads without a codec use the connection owner's default `DDGsonRpcCodec` with an uncustomized Gson instance.
+An explicitly supplied codec belongs only to that proxy or registration; one plugin's type adapters do not change
+another plugin's serialization.
+Both peers must use compatible payload representations. DataDam codecs produce and consume `JsonElement` values.
 
-Each service lane has its own bindings, pending requests, and lifecycle. The same binding name can be used independently
-in Account and Storage, and either peer can register implementations and invoke the other peer.
-The transport topics are `rpc.account` and `rpc.storage`; the registration name selects a contract within that lane.
-Additional trusted backend service IDs open lazily through `getRpc(serviceId)`, using `DDRpcServices.topic(serviceId)`.
-The local cache allows at most 32 additional service IDs per Desktop identity, with capacity reclaimed from closed endpoints.
+The supplied topic is the actual transport topic. There are no reserved Account or Storage lanes, automatic prefixes,
+or a second RPC service name. Naming conventions such as `storage.files` belong to the application.
+Either peer can register an implementation and invoke the other peer on a topic.
 
 The model plugin lifecycle starts the connection service. `getRpc` never starts login or waits for a connection:
-opening a lane before readiness fails with `DBException`. Repeated access returns the same open endpoint, including
+obtaining an endpoint before readiness fails with `DBException`. Repeated access returns the same open endpoint, including
 while temporarily disconnected; calls during a disconnect fail rather than queue. Pending calls fail on disconnect,
 and registered implementations survive a physical reconnect without re-registration.
 
-The connection service closes the endpoints on identity changes and shutdown. After a new identity becomes ready,
-consumers must obtain its fresh endpoints and register implementations again; old proxies stay closed.
-Release individual bindings with `registration.close()`. Endpoints are shared and owned by the connection service;
-explicitly closing one allows replacement after its subscription cleanup finishes. Access during cleanup fails with
+The connection service closes the endpoint on identity changes and shutdown. After a new identity becomes ready,
+consumers must obtain its fresh endpoint and register implementations again; old proxies stay closed.
+Release individual bindings with `registration.close()`. The endpoint is shared and owned by the connection service;
+explicitly closing it allows replacement after its subscription cleanup finishes. Access during cleanup fails with
 `DBException`. Closing a binding from an old endpoint
 cannot remove a replacement endpoint's binding. Endpoint closure cancels calls and interrupts handlers, but application
 handlers must cooperate with interruption to stop work already in progress.

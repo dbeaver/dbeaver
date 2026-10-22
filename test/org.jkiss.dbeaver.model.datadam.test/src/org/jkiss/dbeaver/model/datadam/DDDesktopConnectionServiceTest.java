@@ -17,10 +17,8 @@
 package org.jkiss.dbeaver.model.datadam;
 
 import com.dbeaver.datadam.external.api.model.DDConnectionInfo;
-import com.dbeaver.datadam.external.api.rpc.DDRpcServices;
 import com.dbeaver.datadam.external.api.transport.DDChannelState;
 import com.dbeaver.datadam.external.api.transport.DDChannelStatus;
-import com.dbeaver.datadam.external.api.transport.DDSubscription;
 import com.dbeaver.messaging.rpc.RpcEndpoint;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -38,14 +36,11 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.Consumer;
 
 @Timeout(15)
 class DDDesktopConnectionServiceTest extends DBeaverUnitTest {
@@ -54,18 +49,10 @@ class DDDesktopConnectionServiceTest extends DBeaverUnitTest {
     private final DDDesktopConnectionService service = new DDDesktopConnectionService(access, channel);
     private final AtomicReference<DDChannelStatus> status = new AtomicReference<>(
         new DDChannelStatus(DDChannelState.DISCONNECTED, null));
-    private final List<Consumer<DDChannelStatus>> observers = new CopyOnWriteArrayList<>();
 
     @BeforeEach
     void configureChannel() {
         Mockito.when(channel.getStatus()).thenAnswer(invocation -> status.get());
-        Mockito.when(channel.observeState(Mockito.any())).thenAnswer(invocation -> {
-            Consumer<DDChannelStatus> observer = invocation.getArgument(0);
-            observers.add(observer);
-            observer.accept(status.get());
-            return (DDSubscription) () -> observers.remove(observer);
-        });
-        Mockito.when(channel.subscribe(Mockito.anyString(), Mockito.any())).thenAnswer(invocation -> (DDSubscription) () -> { });
         Mockito.doAnswer(invocation -> {
             setStatus(new DDChannelStatus(DDChannelState.DISCONNECTED, null));
             return null;
@@ -98,6 +85,8 @@ class DDDesktopConnectionServiceTest extends DBeaverUnitTest {
 
         Mockito.verify(channel).pause();
         Mockito.verify(channel, Mockito.never()).start();
+        ready("unauthorized");
+        Assertions.assertThrows(DBException.class, service::getRpc);
     }
 
     @Test
@@ -143,24 +132,22 @@ class DDDesktopConnectionServiceTest extends DBeaverUnitTest {
         Mockito.verify(channel).close();
         Mockito.verify(channel).start();
         Mockito.verify(access).removeAccessListener(listener);
-        Assertions.assertTrue(observers.isEmpty());
+        Mockito.verify(channel, Mockito.never()).observeState(Mockito.any());
     }
 
     @Test
-    void opensDefaultRpcLanesOnlyAfterReadyWithoutStartingLogin() throws Exception {
-        Assertions.assertThrows(DBException.class, () -> service.getRpc(DDRpcServices.ACCOUNT));
+    void opensOneLazyRpcEndpointOnlyAfterReadyWithoutStartingLogin() throws Exception {
+        Assertions.assertThrows(DBException.class, service::getRpc);
         Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
         service.start();
-        Assertions.assertThrows(DBException.class, () -> service.getRpc(DDRpcServices.ACCOUNT));
+        Assertions.assertThrows(DBException.class, service::getRpc);
 
         ready("first");
 
-        RpcEndpoint account = service.getRpc(DDRpcServices.ACCOUNT);
-        RpcEndpoint storage = service.getRpc(DDRpcServices.STORAGE);
-        Assertions.assertNotSame(account, storage);
-        Assertions.assertSame(account, service.getRpc(DDRpcServices.ACCOUNT));
-        Mockito.verify(channel).subscribe(Mockito.eq(DDRpcServices.topic(DDRpcServices.ACCOUNT)), Mockito.any());
-        Mockito.verify(channel).subscribe(Mockito.eq(DDRpcServices.topic(DDRpcServices.STORAGE)), Mockito.any());
+        RpcEndpoint endpoint = service.getRpc();
+        Assertions.assertSame(endpoint, service.getRpc());
+        Mockito.verify(channel, Mockito.never()).subscribe(Mockito.anyString(), Mockito.any());
+        Mockito.verify(channel, Mockito.never()).observeState(Mockito.any());
         Mockito.verify(access, Mockito.never()).getAccessTokenForResource(Mockito.any());
     }
 
@@ -169,12 +156,10 @@ class DDDesktopConnectionServiceTest extends DBeaverUnitTest {
         Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
         service.start();
         ready("first");
-        RpcEndpoint account = service.getRpc(DDRpcServices.ACCOUNT);
-        RpcEndpoint storage = service.getRpc(DDRpcServices.STORAGE);
+        RpcEndpoint endpoint = service.getRpc();
         Mockito.doAnswer(invocation -> {
-            Assertions.assertTrue(account.isClosed());
-            Assertions.assertTrue(storage.isClosed());
-            Assertions.assertThrows(DBException.class, () -> service.getRpc(DDRpcServices.ACCOUNT));
+            Assertions.assertTrue(endpoint.isCloseComplete());
+            Assertions.assertThrows(DBException.class, service::getRpc);
             setStatus(new DDChannelStatus(DDChannelState.DISCONNECTED, null));
             return null;
         }).when(channel).pause();
@@ -182,11 +167,10 @@ class DDDesktopConnectionServiceTest extends DBeaverUnitTest {
         DDDesktopAccessListener listener = listener();
         listener.accessChanging();
         listener.accessChanged();
-        Assertions.assertThrows(DBException.class, () -> service.getRpc(DDRpcServices.ACCOUNT));
+        Assertions.assertThrows(DBException.class, service::getRpc);
         ready("second");
 
-        Assertions.assertNotSame(account, service.getRpc(DDRpcServices.ACCOUNT));
-        Assertions.assertNotSame(storage, service.getRpc(DDRpcServices.STORAGE));
+        Assertions.assertNotSame(endpoint, service.getRpc());
     }
 
     @Test
@@ -194,16 +178,15 @@ class DDDesktopConnectionServiceTest extends DBeaverUnitTest {
         Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
         service.start();
         ready("first");
-        RpcEndpoint account = service.getRpc(DDRpcServices.ACCOUNT);
+        RpcEndpoint endpoint = service.getRpc();
         Mockito.doAnswer(invocation -> {
-            Assertions.assertTrue(account.isClosed());
-            Assertions.assertTrue(observers.isEmpty());
+            Assertions.assertTrue(endpoint.isCloseComplete());
             return null;
         }).when(channel).close();
 
         service.close();
 
-        Assertions.assertThrows(DBException.class, () -> service.getRpc(DDRpcServices.ACCOUNT));
+        Assertions.assertThrows(DBException.class, service::getRpc);
     }
 
     @ParameterizedTest
@@ -239,10 +222,10 @@ class DDDesktopConnectionServiceTest extends DBeaverUnitTest {
         if (nextStatus == DDDesktopAccessService.Status.SIGNED_IN) {
             Mockito.verify(channel).start();
             ready("new-identity");
-            Assertions.assertFalse(service.getRpc(DDRpcServices.ACCOUNT).isClosed());
+            Assertions.assertFalse(service.getRpc().isClosed());
         } else {
             Mockito.verify(channel, Mockito.never()).start();
-            Assertions.assertThrows(DBException.class, () -> service.getRpc(DDRpcServices.ACCOUNT));
+            Assertions.assertThrows(DBException.class, service::getRpc);
         }
     }
 
@@ -252,7 +235,6 @@ class DDDesktopConnectionServiceTest extends DBeaverUnitTest {
 
     private void setStatus(@NotNull DDChannelStatus next) {
         status.set(next);
-        List.copyOf(observers).forEach(observer -> observer.accept(next));
     }
 
     @NotNull

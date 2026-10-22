@@ -17,14 +17,9 @@
 package org.jkiss.dbeaver.model.datadam;
 
 import com.dbeaver.datadam.external.api.model.DDHello;
-import com.dbeaver.datadam.external.api.rpc.DDGsonRpcCodec;
 import com.dbeaver.datadam.external.api.transport.DDMessageChannel;
-import com.dbeaver.messaging.rpc.RpcCodec;
 import com.dbeaver.messaging.rpc.RpcEndpoint;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
@@ -63,17 +58,9 @@ public final class DDDesktopConnectionService implements AutoCloseable {
     };
 
     public DDDesktopConnectionService(@NotNull DDDesktopAccessService access, @NotNull DDDesktopMessageChannel channel) {
-        this(access, channel, new DDGsonRpcCodec(new Gson()));
-    }
-
-    public DDDesktopConnectionService(
-        @NotNull DDDesktopAccessService access,
-        @NotNull DDDesktopMessageChannel channel,
-        @NotNull RpcCodec<JsonElement> codec
-    ) {
         this.access = access;
         this.channel = channel;
-        this.rpc = new DDDesktopRpcService(channel, codec);
+        this.rpc = new DDDesktopRpcService(channel);
     }
 
     @NotNull
@@ -101,7 +88,6 @@ public final class DDDesktopConnectionService implements AutoCloseable {
             access.removeAccessListener(accessListener);
             return;
         }
-        rpc.start();
         updateAccess(true);
     }
 
@@ -111,8 +97,8 @@ public final class DDDesktopConnectionService implements AutoCloseable {
     }
 
     @NotNull
-    public RpcEndpoint getRpc(@NotNull String serviceId) throws DBException {
-        return rpc.getRpc(serviceId);
+    public RpcEndpoint getRpc() throws DBException {
+        return rpc.getRpc();
     }
 
     @Override
