@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -222,26 +222,28 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
     }
 
     @Override
-    public void updateElement(UIElement element, Map parameters) {
+    public void updateElement(@NotNull UIElement element, @NotNull Map parameters) {
         if (!updateUI) {
             return;
         }
-        if (!UPDATE_GLOBAL_ACTION_LABELS) {
-            // We cannot update labels/icons for context-dependent global actions
-            // Because main menu is not updated on every menu show. And only the first text is saved
+        ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
+        if (selectionProvider == null
+            || !(selectionProvider.getSelection() instanceof IStructuredSelection selection)
+            || selection.isEmpty()
+        ) {
             return;
         }
-
-        final ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
-        if (selectionProvider != null) {
-            ISelection selection = selectionProvider.getSelection();
-
-            if (selection instanceof IStructuredSelection structuredSelection && structuredSelection.size() == 1) {
-                DBNNode node = NavigatorUtils.getSelectedNode(structuredSelection);
-                if (node != null) {
-                    element.setText(NLS.bind(UINavigatorMessages.actions_navigator_delete, node.getNodeTypeLabel()));
-                }
-            }
+        List<DBNNode> nodes = NavigatorUtils.getSelectedNodes(selection);
+        if (nodes.size() != selection.size()) {
+            return;
+        }
+        String nodeType = nodes.getFirst().getNodeTypeLabel();
+        if (!CommonUtils.isEmpty(nodeType) && nodes.stream().allMatch(node -> nodeType.equals(node.getNodeTypeLabel()))) {
+            element.setText(selection.size() == 1
+                ? NLS.bind(UINavigatorMessages.actions_navigator_delete, nodeType)
+                : NLS.bind(UINavigatorMessages.actions_navigator_delete_multiple, nodeType, selection.size()));
+        } else if (selection.size() > 1) {
+            element.setText(NLS.bind(UINavigatorMessages.actions_navigator_delete_objects, selection.size()));
         }
     }
 }
