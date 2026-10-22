@@ -44,9 +44,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Timeout(10)
 class DDDesktopSsoLoginTest {
-    private static final Set<String> SCOPES = Set.of("account:access", "dbeaver-storage:access");
+    private static final Set<String> SCOPES = Set.of("account:full_access", "dbeaver-storage:full_access");
     private final AtomicReference<String> form = new AtomicReference<>();
-    private final AtomicReference<String> responseScope = new AtomicReference<>("account:access dbeaver-storage:access");
+    private final AtomicReference<String> responseScope = new AtomicReference<>("account:full_access dbeaver-storage:full_access");
     private final AtomicReference<String> tokenRedirect = new AtomicReference<>();
     private final AtomicInteger redirectedRequests = new AtomicInteger();
     private final DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
@@ -112,7 +112,7 @@ class DDDesktopSsoLoginTest {
             Assertions.assertEquals("dbeaver-desktop", params.get("client_id"));
             Assertions.assertEquals("code", params.get("response_type"));
             Assertions.assertFalse(params.containsKey("resource"));
-            Assertions.assertEquals("account:access dbeaver-storage:access", params.get("scope"));
+            Assertions.assertEquals("account:full_access dbeaver-storage:full_access", params.get("scope"));
             URI callback = URI.create(params.get("redirect_uri"));
             Assertions.assertEquals("127.0.0.1", callback.getHost());
             Assertions.assertTrue(callback.getPort() > 0);
@@ -189,7 +189,7 @@ class DDDesktopSsoLoginTest {
 
     @Test
     void rejectsUnexpectedScopesInTokenResponse() {
-        responseScope.set("account:access admin:access");
+        responseScope.set("account:full_access admin:full_access");
         Assertions.assertThrows(DBException.class, () -> new DDDesktopSsoLogin().login(issuer, null, SCOPES, monitor, this::complete));
     }
 

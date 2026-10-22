@@ -27,7 +27,7 @@ import java.util.Set;
 class DDDesktopTokenValidatorTest {
     private final DDDesktopTokenValidator validator = new DDDesktopTokenValidator();
     private final DDDesktopUserToken api = new DDDesktopUserToken("api-token", "https://sso.example.test", null,
-        Set.of("https://account.example.test", "https://storage.example.test"), Set.of("account:access", "dbeaver-storage:access"));
+        Set.of("https://account.example.test", "https://storage.example.test"), Set.of("account:full_access", "dbeaver-storage:full_access"));
     private final DDDesktopUserToken mcp = new DDDesktopUserToken("mcp-token", "https://sso.example.test", "https://mcp.example.test/mcp",
         Set.of("https://mcp.example.test/mcp"), Set.of("mcp:connect"));
 

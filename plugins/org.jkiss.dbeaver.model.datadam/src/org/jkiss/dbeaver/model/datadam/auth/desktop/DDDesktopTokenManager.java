@@ -141,7 +141,7 @@ class DDDesktopTokenManager {
     ) throws DBException, InterruptedException {
         var config = discover(accountUrl);
         var saved = signInForResource(URI.create(config.issuer()), null,
-            Set.of(DDSsoConstants.SCOPE_ACCOUNT_ACCESS, DDSsoConstants.SCOPE_DBEAVER_STORAGE_ACCESS),
+            Set.of(DDSsoConstants.SCOPE_ACCOUNT_FULL_ACCESS, DDSsoConstants.SCOPE_DBEAVER_STORAGE_FULL_ACCESS),
             Set.of(accountUrl.toString(), storageUrl.toString()), monitor, browser);
         primaryTokenKey = saved.key();
     }
