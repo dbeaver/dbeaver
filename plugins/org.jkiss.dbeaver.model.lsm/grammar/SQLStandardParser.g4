@@ -479,9 +479,12 @@ anyValue: rowValueConstructor|searchCondition;
 anyWordWithAnyValue: anyWord anyValue;
 anyProperty: LeftParen (anyValue (Comma anyValue)*) RightParen;
 anyWordsWithProperty: anyWord+ anyProperty?;
-functionCallExpression: functionCallTargetName LeftParen (functionCallOperand ((Comma|FROM|anyWord) functionCallOperand)*)? RightParen overClause?;
+functionCallExpression: trimFunctionName LeftParen trimSpecification? (functionCallOperand? FROM)? functionCallOperand (Comma functionCallOperand)* RightParen
+    | functionCallTargetName LeftParen (functionCallOperand ((Comma|FROM|anyWord) functionCallOperand)*)? RightParen overClause?;
 functionCallTargetName: qualifiedName|IF;
 functionCallOperand: anyValue;
+trimFunctionName: TRIM;
+trimSpecification: BOTH|LEADING|TRAILING;
 
 aggregateExpression: actualIdentifier LeftParen aggregateExprParam+ orderByClause? separatorClause? RightParen (WITHIN GROUP LeftParen orderByClause RightParen)? (FILTER LeftParen WHERE searchCondition RightParen)?;
 aggregateExprParam: DISTINCT|ALL|LIMIT|SEPARATOR|OFFSET|Comma|rowValueConstructor;
@@ -507,5 +510,5 @@ nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
     NAMES | NO | NULLIF| ONLY | OVERLAPS| PARTIAL | PRESERVE | READ | RESTRICT | ROLLBACK | SCHEMA |
     SESSION | TEMPORARY | TIME | TIMESTAMP | TIMEZONE_HOUR | TIMEZONE_MINUTE | TRANSACTION |
     VIEW | WORK | WRITE | ARRAY | DECLARE | REPLACE | TOP | PERCENT | TIES | IN | VAR | VARIABLE |
-    INDEX | MATERIALIZED | ROLE | SEQUENCE | SYNONYM
+    INDEX | MATERIALIZED | ROLE | SEQUENCE | SYNONYM | TRIM | BOTH | LEADING | TRAILING
 ;

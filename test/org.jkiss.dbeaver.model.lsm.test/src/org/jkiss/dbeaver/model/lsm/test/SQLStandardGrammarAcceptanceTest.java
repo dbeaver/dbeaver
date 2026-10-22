@@ -153,6 +153,12 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
             SELECT SUBSTRING(x.v FROM 2 FOR 3), TRIM(BOTH 'x' FROM x.v), OVERLAY(x.v PLACING 'ZZ' FROM 3 FOR 2)
             FROM t x;
             """),
+        new GrammarCase("dbeaver#42293 TRIM variants", """
+            SELECT TRIM(x.v), TRIM(FROM x.v), TRIM(LEADING FROM x.v), TRIM(TRAILING x.c FROM x.v),
+                TRIM(BOTH FROM x.v, 'xy'), TRIM(x.v, 'xy')
+            FROM t x;
+            """),
+        new GrammarCase("dbeaver#42293 TRIM keywords as identifiers", "SELECT x.leading, x.trailing, x.both, x.trim FROM t x;"),
         new GrammarCase("dbeaver#42293 IS DISTINCT FROM", "SELECT x.v FROM t x WHERE x.v IS DISTINCT FROM NULL AND x.w IS NOT DISTINCT FROM x.v;")
     );
 
