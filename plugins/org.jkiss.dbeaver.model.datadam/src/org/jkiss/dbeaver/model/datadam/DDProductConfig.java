@@ -16,22 +16,15 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.impl.config.ProductConfigPropertyTester;
 
-/**
- * Client tracking endpoints.
- */
-public interface DDTrackingService {
+public final class DDProductConfig {
+    private static final ProductConfigPropertyTester PROPERTY_TESTER = new ProductConfigPropertyTester();
 
-    String METERING_ENDPOINT = "/metering";
-    String TRACKING_ENDPOINT = "/tracking";
-    String TRACK_START_ENDPOINT = "/track/start";
-    String TRACK_STOP_ENDPOINT = "/track/{trackingId}/stop";
+    private DDProductConfig() {
+    }
 
-    @Nullable
-    DDTracking start(@Nullable String authorization, @NotNull DDClientInfo client);
-
-    @Nullable
-    DDTracking stop(@Nullable String authorization, @NotNull String trackingId);
+    public static boolean isIntegrationEnabled() {
+        return PROPERTY_TESTER.test(null, "isFeatureEnabled", new Object[0], "datadam");
+    }
 }

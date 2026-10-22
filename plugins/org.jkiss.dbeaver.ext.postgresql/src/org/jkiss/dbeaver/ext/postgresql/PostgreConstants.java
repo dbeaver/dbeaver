@@ -118,6 +118,7 @@ public class PostgreConstants {
     public static final String TYPE_VARBIT = "varbit";
     public static final String TYPE_VARBYTE = "varbyte";
     public static final String TYPE_REFCURSOR = "refcursor";
+    public static final String TYPE_RECORD = "record";
     public static final String TYPE_MONEY = "money";
     public static final String TYPE_GEOMETRY = "geometry";
     public static final String TYPE_GEOGRAPHY = "geography";
