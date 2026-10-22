@@ -638,7 +638,7 @@ public class SQLBackgroundParsingJob {
     private void doWork(DBRProgressMonitor monitor) throws BadLocationException {
         TextViewer viewer = this.editor.getTextViewer();
         if (viewer == null || this.editor.getRuleManager() == null) {
-            this.signalAccomplished();
+            this.signalAccomplished(false);
             return;
         }
         Interval actualFragment = UIUtils.syncExec(new RunnableWithResult<>() {
@@ -669,11 +669,12 @@ public class SQLBackgroundParsingJob {
         });
 
         if (actualFragment == null) {
-            this.signalAccomplished();
+            this.signalAccomplished(false);
             return;
         }
         int workOffset;
         int workLength;
+        boolean queueTaken = false;
         try {
             synchronized (this.syncRoot) {
                 this.isRunning = true;
@@ -730,19 +731,20 @@ public class SQLBackgroundParsingJob {
                 }
 
                 this.queuedForReparse.clear();
+                queueTaken = true;
                 if (DEBUG) {
                     log.debug("doWork: queuedForReparse count is " + queuedForReparse.size());
                 }
             }
         } catch (Throwable ex) {
             log.error(ex);
-            this.signalAccomplished();
+            this.signalAccomplished(queueTaken);
             return;
         }
 
         try {
             if (workLength == 0) {
-                this.signalAccomplished();
+                this.signalAccomplished(queueTaken);
                 return;
             }
 
@@ -932,16 +934,22 @@ public class SQLBackgroundParsingJob {
         }
     }
 
-    private void signalAccomplished() {
+    /**
+     * Completes the promise of the current parse session.
+     *
+     * @param queueTaken whether doWork already took the queued work. If false, the promise is left completed, so that
+     *                   a completion request ends with an empty context rather than waiting for work this session
+     *                   never took.
+     */
+    private void signalAccomplished(boolean queueTaken) {
         synchronized (this.syncRoot) {
             this.isRunning = false;
             this.lastParsingFinishStamp.complete(System.currentTimeMillis());
-            if (this.queuedForReparse.size() > 0) {
-                // There is work this session did not analyze (doWork takes the whole queue before the analysis, so
-                // this is the work queued meanwhile, waiting for the session scheduled on it): the completed promise
-                // is already outdated. Replace it now, as resetLastParsingFinishTime could not while the promise was
-                // pending. Otherwise a completion request waiting for that work would see a finish stamp older than
-                // the request and end with an empty context.
+            if (queueTaken && this.queuedForReparse.size() > 0) {
+                // There is work this session did not analyze: the work queued meanwhile, waiting for the session
+                // scheduled on it, so the completed promise is already outdated. Replace it now, as
+                // resetLastParsingFinishTime could not while the promise was pending. Otherwise a completion request
+                // waiting for that work would see a finish stamp older than the request and end with an empty context.
                 this.resetLastParsingFinishTime();
             }
         }
@@ -954,7 +962,7 @@ public class SQLBackgroundParsingJob {
             if (DEBUG) {
                 log.debug("known is " + knownRegionStart + "-" + knownRegionEnd);
             }
-            this.signalAccomplished();
+            this.signalAccomplished(true);
         }
     }
 
