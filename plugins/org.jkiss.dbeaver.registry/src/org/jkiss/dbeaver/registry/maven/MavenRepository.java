@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -66,6 +66,7 @@ public class MavenRepository
     private boolean enabled = true;
     private String description;
     private boolean isSnapshot = false;
+    private boolean artifactory = false; // not just maven repo, and can contain additional artifacts
     private final DBPAuthInfo authInfo = new DBPAuthInfo();
 
     private final transient Map<String, MavenArtifact> cachedArtifacts = new LinkedHashMap<>();
@@ -80,6 +81,7 @@ public class MavenRepository
         this.url = urlString;
         this.type = RepositoryType.GLOBAL;
         this.isSnapshot = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_SNAPSHOT));
+        this.artifactory = CommonUtils.toBoolean(config.getAttribute("artifactory"));
         for (IConfigurationElement scope : config.getChildren("scope")) {
             final String group = scope.getAttribute("group");
             if (!CommonUtils.isEmpty(group)) {
@@ -261,4 +263,7 @@ public class MavenRepository
         return url;
     }
 
+    public boolean isArtifactory() {
+        return artifactory;
+    }
 }
