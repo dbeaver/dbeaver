@@ -93,6 +93,14 @@ public class PostgreProcedurePermissionsDDLTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void noRevokeWhenAclIsUnknown() throws DBException {
+        // extractPermissionsFromACL returns an empty list when proacl can't be read
+        String ddl = generatePermissionsDDL(PostgreProcedureKind.f);
+
+        Assertions.assertFalse(ddl.contains("REVOKE"), ddl);
+    }
+
+    @Test
     public void realRoleNamedUppercasePublicIsNotThePseudoRole() throws DBException {
         // proacl as PostgreSQL 18 stores it after GRANT EXECUTE ... TO "PUBLIC"
         String ddl = generatePermissionsDDL(PostgreProcedureKind.f, "tester=X/tester", "PUBLIC=X/tester");

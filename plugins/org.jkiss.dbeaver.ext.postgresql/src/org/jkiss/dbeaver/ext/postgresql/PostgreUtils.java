@@ -867,9 +867,10 @@ public class PostgreUtils {
 
             // Permissions
             Collection<PostgrePrivilege> permissions = object.getPrivileges(monitor, true);
-            if (object instanceof PostgreProcedure && !hasPublicGrantee(permissions)) {
+            if (object instanceof PostgreProcedure && !CommonUtils.isEmpty(permissions) && !hasPublicGrantee(permissions)) {
                 // Functions and procedures grant EXECUTE to PUBLIC on creation, so re-running the DDL
-                // must revoke it when the ACL no longer has it, as pg_dump does
+                // must revoke it when the ACL no longer has it, as pg_dump does.
+                // An empty list means the ACL couldn't be read, so PUBLIC may still be there.
                 PostgreObjectPrivilege publicPrivilege = new PostgreObjectPrivilege(
                     object,
                     new PostgreRoleReference(object.getDatabase(), PostgreConstants.PUBLIC_ROLE_NAME, null),
@@ -895,10 +896,7 @@ public class PostgreUtils {
         }
     }
 
-    private static boolean hasPublicGrantee(@Nullable Collection<PostgrePrivilege> permissions) {
-        if (permissions == null) {
-            return false;
-        }
+    private static boolean hasPublicGrantee(@NotNull Collection<PostgrePrivilege> permissions) {
         for (PostgrePrivilege permission : permissions) {
             if (permission instanceof PostgreObjectPrivilege objectPrivilege
                 && objectPrivilege.getGrantee() != null
