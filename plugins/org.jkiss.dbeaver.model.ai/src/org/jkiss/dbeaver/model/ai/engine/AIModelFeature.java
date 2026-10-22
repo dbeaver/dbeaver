@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,5 +21,11 @@ public enum AIModelFeature {
     STREAMING,
     SPEECH_TO_TEXT,
     EMBEDDING,
-    ALWAYS_DEFAULT_TEMPERATURE
+    ALWAYS_DEFAULT_TEMPERATURE,
+    TOOL_CALL,
+    REASONING,
+    VISION,
+    PDF_INPUT,
+    STRUCTURED_OUTPUT,
+    TEMPERATURE_UNSUPPORTED
 }
