@@ -413,14 +413,6 @@ public class ContextComposite extends Composite {
                 }
             });
         } else {
-            manager.add(new EmptyAction(AIChatMessagesUI.ai_chat_settings_label));
-            manager.add(new Separator());
-
-            manager.add(new EmptyAction(AIChatMessagesUI.ai_chat_context_menu_applies_to));
-            manager.add(new ChangeContextLevelAction(true));
-            manager.add(new ChangeContextLevelAction(false));
-
-            manager.add(new Separator());
             DBPDataSourceContainer dsContainer = chat.getDataSourceContainer();
             DBCExecutionContext executionContext = dsContainer == null ? null : chat.getExecutionContext(dsContainer);
             if (executionContext == null) {
@@ -456,6 +448,11 @@ public class ContextComposite extends Composite {
                     manager.add(new ChangeScopeAction(settings, scope, dsContainer, contextDefaults));
                 }
             }
+
+            manager.add(new Separator());
+            manager.add(new EmptyAction(AIChatMessagesUI.ai_chat_context_menu_applies_to));
+            manager.add(new ChangeContextLevelAction(true));
+            manager.add(new ChangeContextLevelAction(false));
         }
 
         manager.add(new Separator());

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContextTypeBase;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplateStore;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
@@ -88,6 +89,7 @@ public class PrefPageSQLTemplates extends TemplatePreferencePage implements IWor
             }
         }
         
+        updateButtons();
         return root;
     }
     
@@ -123,6 +125,15 @@ public class PrefPageSQLTemplates extends TemplatePreferencePage implements IWor
     @Nullable
     @Override
     protected Template editTemplate(@NotNull Template template, boolean edit, boolean isNameModifiable) {
+        if (!edit) {
+            template = new Template(
+                template.getName(),
+                template.getDescription(),
+                SQLContextTypeBase.ID_SQL,
+                template.getPattern(),
+                template.isAutoInsertable()
+            );
+        }
         boolean editAllowed = DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER);
         boolean isCustomTemplate = templateStore.getCustomTemplateNames().contains(template.getName());
         if (editAllowed || !isCustomTemplate) {

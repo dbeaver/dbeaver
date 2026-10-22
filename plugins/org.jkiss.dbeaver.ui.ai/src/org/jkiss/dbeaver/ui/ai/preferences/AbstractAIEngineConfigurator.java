@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.ui.ai.preferences;
 
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.forms.events.ExpansionAdapter;
@@ -47,8 +49,94 @@ public abstract class AbstractAIEngineConfigurator<ENGINE extends AIEngineDescri
     @Nullable
     private Button logQueryCheck;
 
+    @Nullable
+    protected Button useEnvVariablesCheck;
+    protected volatile boolean useEnvVariables;
+
+    private Composite advancedSettingsClient;
+    private boolean updatingEnvironmentControls;
+
     private int timeout = AIEngineProperties.DEFAULT_TIMEOUT;
     private boolean logQuery;
+
+    protected void createEnvironmentSettings(@NotNull Runnable propertyChangeListener) {
+        useEnvVariablesCheck = UIUtils.createCheckbox(
+            advancedSettingsClient,
+            AIUIMessages.ai_engine_configurator_use_env,
+            AIUIMessages.ai_engine_configurator_use_env_tip,
+            false,
+            2
+        );
+        useEnvVariablesCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
+            useEnvVariables = useEnvVariablesCheck.getSelection();
+            environmentSettingsChanged();
+            propertyChangeListener.run();
+        }));
+    }
+
+    protected void environmentSettingsChanged() {
+        updateEnvironmentControls();
+    }
+
+    protected void updateEnvironmentControls() {
+    }
+
+    protected boolean isUpdatingEnvironmentControls() {
+        return updatingEnvironmentControls;
+    }
+
+    @Nullable
+    protected String getEnvironmentValue(@NotNull String... names) {
+        if (useEnvVariables) {
+            for (String name : names) {
+                String value = System.getenv(name);
+                if (!CommonUtils.isEmptyTrimmed(value)) {
+                    return value.trim();
+                }
+            }
+        }
+        return null;
+    }
+
+    protected void updateEnvironmentText(@Nullable Text control, @Nullable String configuredValue, @Nullable String environmentValue) {
+        if (control == null || control.isDisposed()) {
+            return;
+        }
+        boolean wasUpdating = updatingEnvironmentControls;
+        updatingEnvironmentControls = true;
+        try {
+            String value = CommonUtils.notEmpty(environmentValue == null ? configuredValue : environmentValue);
+            if (!value.equals(control.getText())) {
+                control.setText(value);
+            }
+            control.setEnabled(environmentValue == null);
+        } finally {
+            updatingEnvironmentControls = wasUpdating;
+        }
+    }
+
+    protected void updateEnvironmentCombo(@NotNull Combo control, @Nullable String configuredValue, @Nullable String environmentValue) {
+        boolean wasUpdating = updatingEnvironmentControls;
+        updatingEnvironmentControls = true;
+        try {
+            String value = CommonUtils.notEmpty(environmentValue == null ? configuredValue : environmentValue);
+            if ((control.getStyle() & SWT.READ_ONLY) != 0) {
+                if (value.isEmpty()) {
+                    control.deselectAll();
+                } else {
+                    if (control.indexOf(value) < 0) {
+                        control.add(value);
+                    }
+                    control.select(control.indexOf(value));
+                }
+            } else {
+                control.setText(value);
+            }
+            control.setEnabled(environmentValue == null);
+        } finally {
+            updatingEnvironmentControls = wasUpdating;
+        }
+    }
 
     @NotNull
     protected Composite createAdvancedSettings(@NotNull Composite parent) {
@@ -63,6 +151,7 @@ public abstract class AbstractAIEngineConfigurator<ENGINE extends AIEngineDescri
         advancedSettings.setLayoutData(gd);
 
         Composite client = UIUtils.createComposite(advancedSettings, 2);
+        advancedSettingsClient = client;
 
         timeoutText = UIUtils.createLabelText(
             client,
@@ -98,6 +187,14 @@ public abstract class AbstractAIEngineConfigurator<ENGINE extends AIEngineDescri
     }
 
     protected void loadAdvancedSettings(@NotNull AIEngineProperties configuration) {
+        useEnvVariables = configuration.isUseEnvVariables();
+        if (useEnvVariablesCheck != null) {
+            useEnvVariablesCheck.setSelection(useEnvVariables);
+            useEnvVariablesCheck.setToolTipText(NLS.bind(
+                AIUIMessages.ai_engine_configurator_use_env_variables_tip,
+                String.join(", ", configuration.getEnvironmentVariables())
+            ));
+        }
         timeout = configuration.getTimeout();
         logQuery = CommonUtils.toBoolean(configuration.isLoggingEnabled());
         applyAdvancedSettings();
@@ -113,6 +210,7 @@ public abstract class AbstractAIEngineConfigurator<ENGINE extends AIEngineDescri
     }
 
     protected void saveAdvancedSettings(@NotNull AIEngineProperties configuration) {
+        configuration.setUseEnvVariables(useEnvVariables);
         configuration.setTimeout(timeout);
         configuration.setLoggingEnabled(logQuery);
     }
