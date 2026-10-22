@@ -87,8 +87,7 @@ public class DDProjectCatalog {
             DDProjectSyncLocalBinding binding = bindings.remove(remote.id());
             DDProjectView.Status status = project == null ? DDProjectView.Status.NOT_ON_DEVICE
                 : status(sync.getProjectSyncSnapshot(project).change());
-            String name = project != null && !project.getName().equals(remote.name())
-                ? project.getName() + " (" + remote.name() + ")" : remote.name();
+            String name = project == null ? remote.name() : project.getName();
             refreshed.add(new DDProjectView(
                 remote.id(), name, remote.description(), project, remote,
                 binding == null ? null : binding.lastSyncedRevision().updateTime(), status
