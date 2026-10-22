@@ -16,54 +16,46 @@
  */
 package org.jkiss.dbeaver.ui.datadam.project.handler;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectCatalog;
 import org.jkiss.dbeaver.ui.datadam.project.job.DDProjectSynchronizationJob;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.util.List;
 
-public class DDProjectUpdateHandler extends AbstractHandler {
-    @Nullable
+public class DDProjectUpdateHandler extends DDProjectHandler<DDProjectSynchronizationJob> {
+    @NotNull
     @Override
-    public Object execute(@NotNull ExecutionEvent event) {
-        DBPProject project = NavigatorUtils.getSelectedProject(
-            HandlerUtil.getCurrentSelection(event), HandlerUtil.getActivePart(event));
-        if (project == null) {
-            return null;
+    protected DDProjectSynchronizationJob createJob(@NotNull ExecutionEvent event, @NotNull DBPProject project) {
+        return new DDProjectSynchronizationJob(List.of(project));
+    }
+
+    @Override
+    protected void onSuccess(@NotNull DDProjectSynchronizationJob job) {
+        var results = job.getOperationResult();
+        if (results == null) {
+            return;
         }
-        DDProjectCatalog ddUIManager = DDProjectCatalog.getInstance();
-        if (!ddUIManager.isDDEnabled()) {
-            return null;
-        }
-        new DDProjectSynchronizationJob(List.of(project), results -> {
-            var result = results.get(0);
-            if (result.error() != null) {
-                String message = switch (result.change()) {
-                    case LOCAL -> DDTrackingUIMessages.project_sync_push_failed;
-                    case SERVER -> DDTrackingUIMessages.project_sync_pull_failed;
-                    case UNCHANGED, CONFLICT -> DDTrackingUIMessages.project_sync_update_failed;
-                    case null -> DDTrackingUIMessages.project_sync_update_failed;
-                };
-                ddUIManager.showError(message, result.error());
-            } else {
-                switch (result.change()) {
-                    case UNCHANGED -> ddUIManager.showMessage(DDTrackingUIMessages.project_sync_update_unchanged, false);
-                    case LOCAL -> ddUIManager.showMessage(DDTrackingUIMessages.project_sync_push_success, false);
-                    case SERVER -> ddUIManager.showMessage(DDTrackingUIMessages.project_sync_pull_success, false);
-                    case CONFLICT -> ddUIManager.showError(DDTrackingUIMessages.project_sync_update_failed,
-                        new DBException(DDTrackingUIMessages.project_sync_update_conflict));
-                    case null -> { }
-                }
+        var result = results.get(0);
+        if (result.error() != null) {
+            String message = switch (result.change()) {
+                case LOCAL -> DDTrackingUIMessages.project_sync_push_failed;
+                case SERVER -> DDTrackingUIMessages.project_sync_pull_failed;
+                case UNCHANGED, CONFLICT -> DDTrackingUIMessages.project_sync_update_failed;
+                case null -> DDTrackingUIMessages.project_sync_update_failed;
+            };
+            showError(message, result.error());
+        } else {
+            switch (result.change()) {
+                case UNCHANGED -> showMessage(DDTrackingUIMessages.project_sync_update_unchanged);
+                case LOCAL -> showMessage(DDTrackingUIMessages.project_sync_push_success);
+                case SERVER -> showMessage(DDTrackingUIMessages.project_sync_pull_success);
+                case CONFLICT -> showError(DDTrackingUIMessages.project_sync_update_failed,
+                    new DBException(DDTrackingUIMessages.project_sync_update_conflict));
+                case null -> { }
             }
-        }).schedule();
-        return null;
+        }
     }
 }

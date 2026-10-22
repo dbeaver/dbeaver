@@ -30,8 +30,6 @@ import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncLocalBinding;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncService;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 
 import java.util.*;
 
@@ -194,16 +192,6 @@ public class DDProjectCatalog {
         service = null;
         projects = List.of();
         DDProjectSyncPropertyTester.firePropertyChange();
-    }
-
-    public void showMessage(@NotNull String message, boolean warning) {
-        UIUtils.asyncExec(() ->
-            DBWorkbench.getPlatformUI().showMessageBox(DDTrackingUIMessages.project_sync_title, message, warning));
-    }
-
-    public void showError(@NotNull String message, @NotNull DBException exception) {
-        UIUtils.asyncExec(() ->
-            DBWorkbench.getPlatformUI().showError(DDTrackingUIMessages.project_sync_title, message, exception));
     }
 
     public record SyncResult(@NotNull DBPProject project, @Nullable DDSyncChange change, @Nullable DBException error) {

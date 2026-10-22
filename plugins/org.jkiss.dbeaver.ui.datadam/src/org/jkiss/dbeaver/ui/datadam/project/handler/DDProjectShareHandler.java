@@ -16,32 +16,21 @@
  */
 package org.jkiss.dbeaver.ui.datadam.project.handler;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectCatalog;
 import org.jkiss.dbeaver.ui.datadam.project.job.DDProjectSharingJob;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
-public class DDProjectShareHandler extends AbstractHandler {
-    @Nullable
+public class DDProjectShareHandler extends DDProjectHandler<DDProjectSharingJob> {
+    @NotNull
     @Override
-    public Object execute(@NotNull ExecutionEvent event) {
-        DBPProject project = NavigatorUtils.getSelectedProject(
-            HandlerUtil.getCurrentSelection(event), HandlerUtil.getActivePart(event));
-        if (project == null) {
-            return null;
-        }
-        DDProjectCatalog ddManager = DDProjectCatalog.getInstance();
-        if (!ddManager.isDDEnabled()) {
-            return null;
-        }
-        new DDProjectSharingJob(project, null,
-            shared -> ddManager.showMessage(DDTrackingUIMessages.project_sync_share_success, false)).schedule();
-        return null;
+    protected DDProjectSharingJob createJob(@NotNull ExecutionEvent event, @NotNull DBPProject project) {
+        return new DDProjectSharingJob(project, null);
+    }
+
+    @Override
+    protected void onSuccess(@NotNull DDProjectSharingJob job) {
+        showMessage(DDTrackingUIMessages.project_sync_share_success);
     }
 }

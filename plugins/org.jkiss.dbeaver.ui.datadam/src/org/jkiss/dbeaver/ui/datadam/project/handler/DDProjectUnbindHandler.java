@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.datadam.project.handler;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -25,28 +24,23 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectCatalog;
 import org.jkiss.dbeaver.ui.datadam.project.job.DDProjectUnbindJob;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
-public class DDProjectUnbindHandler extends AbstractHandler {
+public class DDProjectUnbindHandler extends DDProjectHandler<DDProjectUnbindJob> {
     @Nullable
     @Override
-    public Object execute(@NotNull ExecutionEvent event) {
-        DBPProject project = NavigatorUtils.getSelectedProject(
-            HandlerUtil.getCurrentSelection(event), HandlerUtil.getActivePart(event));
-        if (project == null) {
-            return null;
-        }
-        DDProjectCatalog ddManager = DDProjectCatalog.getInstance();
-        if (!ddManager.isDDEnabled() || !UIUtils.confirmAction(
+    protected DDProjectUnbindJob createJob(@NotNull ExecutionEvent event, @NotNull DBPProject project) {
+        if (!UIUtils.confirmAction(
             HandlerUtil.getActiveShell(event),
             DDTrackingUIMessages.project_sync_unbind_confirm_title,
             NLS.bind(DDTrackingUIMessages.project_sync_unbind_confirm_message, project.getName()))) {
             return null;
         }
-        new DDProjectUnbindJob(project,
-            unbound -> ddManager.showMessage(DDTrackingUIMessages.project_sync_unbind_success, false)).schedule();
-        return null;
+        return new DDProjectUnbindJob(project);
+    }
+
+    @Override
+    protected void onSuccess(@NotNull DDProjectUnbindJob job) {
+        showMessage(DDTrackingUIMessages.project_sync_unbind_success);
     }
 }
