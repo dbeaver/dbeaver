@@ -67,28 +67,10 @@ public class DDProjectSyncService {
         }
     }
 
-    @NotNull
-    public List<DDSharedProject> listNotAlreadyBindRemoteProjects() throws DBException {
-        Set<UUID> boundProjectIds = new HashSet<>();
-        for (DBPProject project : workspace.getProjects()) {
-            DDProjectSyncLocalBinding binding = getBinding(project);
-            if (binding != null) {
-                boundProjectIds.add(binding.remoteProjectId());
-            }
-        }
-        return listAllRemoteProjects().stream()
-            .filter(project -> !boundProjectIds.contains(project.id()))
-            .toList();
-    }
-
     @Nullable
     public DDProjectSyncLocalBinding getBinding(@NotNull DBPProject project) throws DBException {
         DDProjectSyncLocalBinding binding = bindingStore.load(project);
         return binding != null && accountId.equals(binding.accountId()) ? binding : null;
-    }
-
-    public boolean isShared(@NotNull DBPProject project) throws DBException {
-        return getBinding(project) != null;
     }
 
     public void unbindProject(@NotNull DBPProject project) throws DBException {
@@ -204,17 +186,6 @@ public class DDProjectSyncService {
         } catch (DDShareException e) {
             throw new DBException("Error reading current DataDam project revision", e);
         }
-    }
-
-    @NotNull
-    public List<DBPProject> getSharedProjects() throws DBException {
-        List<DBPProject> projects = new ArrayList<>();
-        for (DBPProject project : workspace.getProjects()) {
-            if (isShared(project)) {
-                projects.add(project);
-            }
-        }
-        return projects;
     }
 
     @NotNull

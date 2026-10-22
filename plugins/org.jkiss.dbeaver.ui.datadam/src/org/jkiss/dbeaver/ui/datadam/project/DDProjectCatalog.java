@@ -59,7 +59,7 @@ public class DDProjectCatalog {
     }
 
     public boolean isShared(@NotNull DBPProject project) throws DBException {
-        return getService().isShared(project);
+        return getService().getBinding(project) != null;
     }
 
     @NotNull
@@ -109,10 +109,9 @@ public class DDProjectCatalog {
 
     @NotNull
     public List<DBPProject> getNotDatadamLocalProjects() throws DBException {
-        DDProjectSyncService sync = getService();
         List<DBPProject> local = new ArrayList<>();
         for (DBPProject project : DBWorkbench.getPlatform().getWorkspace().getProjects()) {
-            if (!sync.isShared(project)) {
+            if (!isShared(project)) {
                 local.add(project);
             }
         }
