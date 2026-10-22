@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNStreamData;
@@ -717,7 +718,8 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     void enableDragAndDrop(@NotNull Control control) {
         int operations = DND.DROP_DEFAULT | DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
         DropTarget dropTarget = new DropTarget(control, operations);
-        dropTarget.setTransfer(FileTransfer.getInstance(), ImageTransfer.getInstance(), TextTransfer.getInstance());
+        dropTarget.setTransfer(TreeNodeTransfer.getInstance(), FileTransfer.getInstance(), ImageTransfer.getInstance(),
+            TextTransfer.getInstance());
         dropTarget.addDropListener(new DropTargetAdapter() {
             @Override
             public void dragEnter(@NotNull DropTargetEvent event) {
@@ -736,6 +738,10 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
 
             @Override
             public void drop(@NotNull DropTargetEvent event) {
+                if (event.data instanceof Collection<?> nodes) {
+                    attachDroppedConnections(nodes);
+                    return;
+                }
                 if (event.data instanceof String text && control instanceof StyledText styledText && styledText.getEditable()) {
                     styledText.insert(text);
                     return;
@@ -756,6 +762,10 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             }
 
             private void handleDragEvent(@NotNull DropTargetEvent event) {
+                if (canAttachDroppedConnections(TreeNodeTransfer.getInstance().getDraggedNodes())) {
+                    updateDropEvent(event);
+                    return;
+                }
                 if (!isDropSupported(event)) {
                     event.detail = DND.DROP_NONE;
                 } else if (!TextTransfer.getInstance().isSupportedType(event.currentDataType) || event.detail == DND.DROP_DEFAULT) {
@@ -772,6 +782,41 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         });
     }
 
+    protected boolean canAttachDroppedConnections(@Nullable Collection<?> objects) {
+        DBPDataSourceContainer primary = activeConversation.getDataSource();
+        return primary != null && objects != null && !objects.isEmpty() && !isBusy() && !isWaitingForResponse()
+            && !activeConversation.isActive() && objects.stream().allMatch(object -> object instanceof DBNDataSource node
+                && primary.getProject().getId().equals(node.getDataSourceContainer().getProject().getId()));
+    }
+
+    protected void attachDroppedConnections(@NotNull Collection<?> objects) {
+        if (!canAttachDroppedConnections(objects)) {
+            return;
+        }
+        AIChatConversation conversation = activeConversation;
+        List<DBPDataSourceContainer> containers = objects.stream().map(DBNDataSource.class::cast)
+            .map(DBNDataSource::getDataSourceContainer).toList();
+        for (DBPDataSourceContainer container : containers) {
+            if (!AIUIUtils.confirmMetaTransfer(new AIContextSettingsDataSource(container))) {
+                return;
+            }
+        }
+        new AbstractJob(AIChatMessagesUI.ai_chat_add_connection) {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                try {
+                    for (DBPDataSourceContainer container : containers) {
+                        chatSession.addDataSource(monitor, conversation, container);
+                    }
+                    return Status.OK_STATUS;
+                } catch (DBException exception) {
+                    return GeneralUtils.makeExceptionStatus(exception);
+                }
+            }
+        }.schedule();
+    }
+
     private boolean canDescribeDroppedObjects() {
         return !isBusy() && !isWaitingForResponse() && ActionUtils.findCommand(AIChatController.CMD_DESCRIBE_OBJECT) != null;
     }
@@ -782,7 +827,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         }
         DBSObject firstObject = null;
         for (Object object : objects) {
-            if (!(object instanceof DBNDatabaseNode node)) {
+            if (object instanceof DBNDataSource || !(object instanceof DBNDatabaseNode node)) {
                 return false;
             }
             DBSObject databaseObject = node.getObject();
@@ -826,7 +871,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             return;
         }
         Collection<DBNNode> draggedNodes = TreeNodeTransfer.getInstance().getDraggedNodes();
-        if (canDescribeDroppedObjects(draggedNodes)) {
+        if (canAttachDroppedConnections(draggedNodes) || canDescribeDroppedObjects(draggedNodes)) {
             for (TransferData dataType : event.dataTypes) {
                 if (TreeNodeTransfer.getInstance().isSupportedType(dataType)) {
                     event.currentDataType = dataType;

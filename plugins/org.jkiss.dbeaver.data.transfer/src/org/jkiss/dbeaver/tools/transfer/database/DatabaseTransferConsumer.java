@@ -88,6 +88,8 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     // Used only for non-explicit import
     // In this case consumer will be replaced with explicit consumers during configuration
     private DBSObjectContainer targetObjectContainer;
+    @Nullable
+    private String targetTableName;
     // Used in deserialized or directly instantiated consumers
     private DBSDataManipulator localTargetObject;
 
@@ -127,7 +129,17 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     public DatabaseTransferConsumer(DBSObjectContainer targetObjectContainer) {
+        this(targetObjectContainer, null);
+    }
+
+    public DatabaseTransferConsumer(@NotNull DBSObjectContainer targetObjectContainer, @Nullable String targetTableName) {
         this.targetObjectContainer = targetObjectContainer;
+        this.targetTableName = targetTableName;
+    }
+
+    @Nullable
+    public String getTargetTableName() {
+        return targetTableName;
     }
 
     public DBSObjectContainer getTargetObjectContainer() {

@@ -185,11 +185,7 @@ public class AIAssistantImpl implements AIAssistant {
         try {
             AIEngineDescriptor engineDescriptor = configurationProfile.getEngineDescriptor();
             AIEngine<?> engine = engineDescriptor.createEngineInstance(configurationProfile);
-            AIFunctionContext functionContext = new AIFunctionContext(
-                monitor,
-                request.context(),
-                conversation.getPromptGenerator()
-            );
+            AIFunctionContext functionContext = chatSession.createFunctionContext(monitor, conversation, request.context());
             List<AIMessage> curMessages = new ArrayList<>(request.messages());
 
             AIEngineResponseConsumerImpl engineResponseConsumer = new AIEngineResponseConsumerImpl(
@@ -336,16 +332,17 @@ public class AIAssistantImpl implements AIAssistant {
                     chatListener.complete(List.of(), true, false);
                     return;
                 }
-                fc.transformArguments(context, functionContext);
                 functionContext.addFunctionCall(fc);
 
                 try {
+                    AIFunctionContext selectedContext = functionContext.forFunction(function, fc.getArguments());
+                    fc.transformArguments(selectedContext.getContext(), selectedContext);
                     // Call
                     AIFunctionResult result;
                     if (function.getType() == AIFunctionType.ACTION && DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
                         result = new AIFunctionResult(AIFunctionType.ACTION, fc.getArguments());
                     } else {
-                        result = this.callFunction(functionContext, fc);
+                        result = this.callFunction(selectedContext, fc);
                     }
                     // Create meta info
                     AIMessage fcMessage = AIMessage.functionCall(fc, result);

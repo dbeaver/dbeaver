@@ -16,12 +16,19 @@
  */
 package org.jkiss.dbeaver.model.ai.qm;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 public final class QMAIContext {
+    private static final Gson GSON = new Gson();
+    private static final String ADDITIONAL_DATA_SOURCES_PROPERTY = "additionalDataSources";
+
     private final String contextJson;
     private final Set<QMAIContextObject> objects;
 
@@ -36,6 +43,29 @@ public final class QMAIContext {
     @Nullable
     public String getContextJson() {
         return contextJson;
+    }
+
+    @NotNull
+    public QMAIContext withAdditionalDataSources(@NotNull List<QMAIDataSource> dataSources) {
+        if (dataSources.isEmpty()) {
+            return this;
+        }
+        JsonObject json = contextJson == null ? new JsonObject() : GSON.fromJson(contextJson, JsonObject.class);
+        json.add(ADDITIONAL_DATA_SOURCES_PROPERTY, GSON.toJsonTree(dataSources));
+        return new QMAIContext(GSON.toJson(json), objects);
+    }
+
+    @NotNull
+    public List<QMAIDataSource> getAdditionalDataSources() {
+        if (contextJson == null) {
+            return List.of();
+        }
+        JsonObject json = GSON.fromJson(contextJson, JsonObject.class);
+        if (!json.has(ADDITIONAL_DATA_SOURCES_PROPERTY)) {
+            return List.of();
+        }
+        QMAIDataSource[] dataSources = GSON.fromJson(json.get(ADDITIONAL_DATA_SOURCES_PROPERTY), QMAIDataSource[].class);
+        return dataSources == null ? List.of() : List.copyOf(Arrays.asList(dataSources));
     }
 
     @NotNull
