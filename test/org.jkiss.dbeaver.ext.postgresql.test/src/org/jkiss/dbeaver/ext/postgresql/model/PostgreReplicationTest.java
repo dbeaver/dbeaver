@@ -91,6 +91,7 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
             }
         };
         database = new PostgreDatabase(dataSource, "testdb");
+        database.getPublicationCache().setCache(new ArrayList<>());
         executionContext = new PostgreExecutionContext(database, "Test");
     }
 
@@ -272,6 +273,27 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
         assertEquals("", subscription.getConnectionInfo());
         verify(result, never()).getString("subconninfo");
         assertTrue(subscription.getObjectDefinitionText(monitor, Map.of()).contains("slot_name = NONE"));
+    }
+
+    @Test
+    public void subscriptionDefinitionPreservesTwoPhaseStatesWithoutAddingUnsupportedOptions() throws Exception {
+        for (String state : new String[]{"e", "p", "d", null}) {
+            ResultSet result = mock(ResultSet.class);
+            when(result.getString("subname")).thenReturn("subscription");
+            when(result.getString("subsynccommit")).thenReturn("off");
+            when(result.getString("subtwophasestate")).thenReturn(state);
+            Array publications = mock(Array.class);
+            when(publications.getArray()).thenReturn(new String[]{"publication"});
+            when(result.getArray("subpublications")).thenReturn(publications);
+            PostgreSubscription subscription = new PostgreSubscription(database, result);
+            String ddl = subscription.getObjectDefinitionText(monitor, Map.of());
+            assertEquals(state, subscription.getTwoPhaseState());
+            if (state == null) {
+                assertFalse(ddl.contains("two_phase"));
+            } else {
+                assertTrue(ddl.contains("two_phase = " + !"d".equals(state)));
+            }
+        }
     }
 
     @Test
@@ -770,7 +792,27 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
         TestCommandContext deleteContext = new TestCommandContext(executionContext, false);
         manager.deleteObject(deleteContext, publication, Map.of());
         actions = DBExecUtils.getActionsListFromCommandContext(monitor, deleteContext, executionContext, Map.of(), null);
-        assertEquals("DROP PUBLICATION new_publication", actions.getFirst().getScript());
+        assertEquals("DROP PUBLICATION new_publication_1", actions.getFirst().getScript());
+    }
+
+    @Test
+    public void publicationDefaultNameSkipsExistingAndPendingPublications() throws Exception {
+        PostgrePublication existing = new PostgrePublication(database, "new_publication_1");
+        existing.setPersisted(true);
+        database.getPublicationCache().setCache(new ArrayList<>(List.of(existing)));
+        TestCommandContext context = new TestCommandContext(executionContext, false);
+        Map<String, Object> options = new HashMap<>(Map.of(SQLObjectEditor.OPTION_SKIP_CONFIGURATION, true));
+        PostgrePublicationManager manager = new PostgrePublicationManager();
+        PostgrePublication first = manager.createNewObject(monitor, context, database, null, options);
+        database.getPublicationCache().setCache(new ArrayList<>(List.of(existing)));
+        PostgrePublication second = manager.createNewObject(monitor, context, database, null, options);
+        assertNotNull(first);
+        assertNotNull(second);
+        assertEquals("new_publication_2", first.getName());
+        assertEquals("new_publication_3", second.getName());
+        for (var command : context.getFinalCommands()) {
+            command.validateCommand(monitor, new HashMap<>());
+        }
     }
 
     @Test
@@ -1401,6 +1443,32 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
         assertEquals("query", copy.getUserName());
         assertEquals("a+b&c", copy.getUserPassword());
         assertEquals("jdbc:postgresql://publisher/sales?sslmode=disable", copy.getUrl());
+    }
+
+    @Test
+    public void publicationDiscoveryPreservesLibpqSslAliasAndOptionOrderOverFormDefaults() throws Exception {
+        DBPConnectionConfiguration original = publisherConfiguration();
+        DBWHandlerConfiguration ssl = publisherHandler(PostgreConstants.HANDLER_SSL);
+        ssl.setProperty(PostgreConstants.PROP_SSL_MODE, "prefer");
+        original.updateHandler(ssl);
+        Map<String, String> options = Map.of(
+            "ssl=true", "require",
+            "sslmode=disable&ssl=true", "require",
+            "ssl=true&sslmode=verify-full", "verify-full");
+        for (var option : options.entrySet()) {
+            String uri = PostgreSubscription.buildConnectionUri("postgresql://publisher/sales?" + option.getKey(), original);
+            DBPConnectionConfiguration copy = PostgreSubscription.createPublicationConnectionConfiguration(uri, original);
+            assertEquals("jdbc:postgresql://publisher/sales?sslmode=" + option.getValue(), copy.getUrl());
+        }
+        assertEquals("prefer", original.getHandler(PostgreConstants.HANDLER_SSL).getStringProperty(PostgreConstants.PROP_SSL_MODE));
+    }
+
+    @Test
+    public void publicationDiscoveryRejectsSslAliasesThatLibpqCannotUse() {
+        for (String value : List.of("false", "1", "")) {
+            assertThrows(DBException.class, () -> PostgreSubscription.createPublicationConnectionConfiguration(
+                "postgresql://publisher/sales?ssl=" + value, publisherConfiguration()));
+        }
     }
 
     @Test

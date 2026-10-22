@@ -29,7 +29,6 @@ public class PostgreMessages extends NLS {
     public static String dialog_create_publication_loading_tables;
     public static String dialog_create_publication_selected_tables;
     public static String dialog_create_publication_clear_selection;
-    public static String dialog_create_subscription_publisher_wal_level;
     public static String dialog_create_subscription_publisher_setup;
     public static String dialog_create_subscription_publisher_setup_tip;
     public static String dialog_create_subscription_publisher_setup_instructions;

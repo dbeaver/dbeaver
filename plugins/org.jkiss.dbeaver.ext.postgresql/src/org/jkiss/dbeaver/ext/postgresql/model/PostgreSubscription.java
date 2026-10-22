@@ -435,7 +435,17 @@ public class PostgreSubscription extends PostgreReplicationObject {
         if (uri.getRawQuery() != null) {
             for (String option : uri.getRawQuery().split("&")) {
                 String[] pair = option.split("=", 2);
-                parameters.put(decodeUriValue(pair[0]), pair.length == 2 ? decodeUriValue(pair[1]) : "");
+                String key = decodeUriValue(pair[0]);
+                String value = pair.length == 2 ? decodeUriValue(pair[1]) : "";
+                if ("ssl".equals(key)) {
+                    if (!"true".equals(value)) {
+                        throw new DBException("Use sslmode to configure publisher SSL; libpq only accepts ssl=true");
+                    }
+                    // libpq maps this alias to require; JDBC would let the form's sslmode override it
+                    parameters.put("sslmode", "require");
+                } else {
+                    parameters.put(key, value);
+                }
             }
         }
         String database = decodeUriValue(CommonUtils.notEmpty(uri.getRawPath()).replaceFirst("^/", ""));
@@ -832,6 +842,7 @@ public class PostgreSubscription extends PostgreReplicationObject {
             ", enabled = " + (connect && enabled) + ", binary = " + binary +
             ", streaming = " + (parallelStreaming ? "parallel" : Boolean.toString(streaming)) +
             ", synchronous_commit = " + SQLUtils.quoteString(this, synchronousCommit) +
+            (twoPhaseState == null ? "" : ", two_phase = " + ("e".equals(twoPhaseState) || "p".equals(twoPhaseState))) +
             ", slot_name = " + (effectiveSlot == null ? "NONE" : SQLUtils.quoteString(this, effectiveSlot)) + ");";
     }
 

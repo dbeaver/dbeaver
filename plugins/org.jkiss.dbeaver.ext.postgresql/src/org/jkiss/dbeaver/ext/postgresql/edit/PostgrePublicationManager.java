@@ -64,7 +64,10 @@ public class PostgrePublicationManager extends SQLObjectEditor<PostgrePublicatio
         @NotNull DBRProgressMonitor monitor, @NotNull DBECommandContext context, @NotNull Object container,
         @Nullable Object copyFrom, @NotNull Map<String, Object> options
     ) {
-        return new PostgrePublication((PostgreDatabase) container, "new_publication");
+        PostgreDatabase database = (PostgreDatabase) container;
+        String name = DBUtils.makeNewObjectName(monitor, "new_publication_{0}", database, PostgrePublication.class,
+            (parent, progress, candidate) -> parent.getPublicationCache().getObject(progress, parent, candidate), context);
+        return new PostgrePublication(database, name);
     }
 
     @Override

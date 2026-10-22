@@ -682,7 +682,7 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
 
     @Nullable
     public String getStepError() {
-        return currentStep == Step.REPLICATION ? getReplicationError(false) : null;
+        return currentStep == Step.REPLICATION ? getReplicationError() : null;
     }
 
     @Nullable
@@ -694,7 +694,7 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
         return switch (currentStep) {
             case PUBLISHER -> getPublisherError();
             case PUBLICATIONS -> getPublicationsError();
-            case REPLICATION -> getReplicationError(true);
+            case REPLICATION -> getReplicationError();
         };
     }
 
@@ -715,7 +715,7 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
     }
 
     @Nullable
-    private String getReplicationError(boolean checkPublisherSetup) {
+    private String getReplicationError() {
         String error = getPublisherError() != null ? getPublisherError() : getPublicationsError();
         if (error != null) {
             return error;
@@ -723,10 +723,6 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
         String slot = slotText.getText().isBlank() ? nameText.getText().trim() : slotText.getText().trim();
         if (!PostgreSubscription.isValidSlotName(slot)) {
             return PostgreMessages.dialog_create_subscription_error_slot;
-        }
-        if (checkPublisherSetup && Boolean.FALSE.equals(publisherLogicalReplicationEnabled)
-            && connectButton.getSelection() && createSlot.getSelection()) {
-            return PostgreMessages.dialog_create_subscription_publisher_wal_level;
         }
         return null;
     }
@@ -738,7 +734,7 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
 
     @Override
     public void performFinish() throws DBException {
-        String error = getReplicationError(true);
+        String error = getReplicationError();
         if (error != null) {
             throw new DBException(error);
         }
