@@ -27,9 +27,11 @@ import org.jkiss.dbeaver.model.auth.SMObjectType;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public final class UserDBSObjectFilterUtils {
 
@@ -40,29 +42,44 @@ public final class UserDBSObjectFilterUtils {
     private static final FilterSerializer<DataSourceDescriptor> filterSerializer = new FilterSerializer<>();
 
     public static boolean hasUserFilters(@NotNull DBPDataSourceContainer dataSource) {
+        if (dataSource instanceof DataSourceDescriptor dataSourceDescriptor) {
+            return dataSourceDescriptor.hasUserObjectFilters();
+        }
         DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
         if (settingsProvider == null) {
             return false;
         }
         Map<String, String> settings = settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
-        return settings != null && settings.containsKey(USER_FILTER_KEY);
+        return settings != null && settings.keySet().stream().anyMatch(key -> key.startsWith(USER_FILTER_KEY));
     }
 
     public static void clearUserObjectFilters(@NotNull DBPDataSourceContainer dataSource) throws DBException {
         DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
-        if (settingsProvider == null) {
-            return;
+        if (settingsProvider != null) {
+            Map<String, String> settings = settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
+            Set<String> filterSettingIds = settings == null ? Set.of(USER_FILTER_KEY) : settings.keySet().stream()
+                .filter(key -> key.startsWith(USER_FILTER_KEY))
+                .collect(Collectors.toSet());
+            if (!filterSettingIds.isEmpty()) {
+                settingsProvider.clearObjectSettings(
+                    SMObjectType.datasource,
+                    dataSource.getId(),
+                    filterSettingIds
+                );
+            }
         }
-        settingsProvider.clearObjectSettings(
-            SMObjectType.datasource,
-            dataSource.getId(),
-            Set.of(USER_FILTER_KEY)
-        );
+        if (dataSource instanceof DataSourceDescriptor dataSourceDescriptor) {
+            dataSourceDescriptor.clearUserObjectFilters();
+        }
     }
 
     public static void updateUserObjectFilters(@NotNull DBPDataSourceContainer dataSource) throws DBException {
         DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
         if (settingsProvider == null || !(dataSource instanceof DataSourceDescriptor dataSourceDescriptor)) {
+            return;
+        }
+        if (!dataSourceDescriptor.hasUserObjectFilters()) {
+            clearUserObjectFilters(dataSource);
             return;
         }
         try {
@@ -71,6 +88,15 @@ public final class UserDBSObjectFilterUtils {
                 dataSource.getId(),
                 Map.of(USER_FILTER_KEY, filterSerializer.serializeCustomUserFilters(dataSourceDescriptor))
             );
+            Map<String, String> settings = settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
+            if (settings != null) {
+                Set<String> legacySettingIds = settings.keySet().stream()
+                    .filter(key -> key.startsWith(USER_FILTER_KEY) && !key.equals(USER_FILTER_KEY))
+                    .collect(Collectors.toSet());
+                if (!legacySettingIds.isEmpty()) {
+                    settingsProvider.clearObjectSettings(SMObjectType.datasource, dataSource.getId(), legacySettingIds);
+                }
+            }
         } catch (IOException logged) {
             log.warn("Error while serializing filter object settings", logged);
         }
@@ -82,6 +108,8 @@ public final class UserDBSObjectFilterUtils {
             .entrySet()
             .stream()
             .filter(e -> e.getKey().startsWith(USER_FILTER_KEY))
+            .sorted(Comparator.comparing((Map.Entry<String, String> entry) -> entry.getKey().equals(USER_FILTER_KEY))
+                .thenComparing(Map.Entry::getKey))
             .map(Map.Entry::getValue)
             .forEach(filterCfgString -> setUserObjectFilter(dataSourceDescriptor, filterCfgString));
     }
@@ -96,7 +124,7 @@ public final class UserDBSObjectFilterUtils {
             log.warn("Data source container '" + objectId + "' not found in registry");
             return;
         }
-        if (settingIds.stream().noneMatch(UserDBSObjectFilterUtils.USER_FILTER_KEY::contains)) {
+        if (settingIds.stream().noneMatch(settingId -> settingId.startsWith(USER_FILTER_KEY))) {
             // No relevant settings changed
             return;
         }

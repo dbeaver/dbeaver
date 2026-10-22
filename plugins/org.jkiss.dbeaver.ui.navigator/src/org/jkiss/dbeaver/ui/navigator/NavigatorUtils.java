@@ -443,7 +443,6 @@ public class NavigatorUtils {
         try {
             Map<DBNDatabaseNode, DBSObjectFilter> folders = new HashMap<>();
             UIServiceFilterConfig uiServiceFilterConfig = DBWorkbench.findService(UIServiceFilterConfig.class);
-            boolean isSaveAsCurrentUserFilterOnly = uiServiceFilterConfig != null;
             for (Object item : structuredSelection.toArray()) {
                 if (!(item instanceof DBNDatabaseNode node)) {
                     continue;
@@ -461,9 +460,12 @@ public class NavigatorUtils {
                         continue;
                     }
 
+                    boolean useUserFilter = uiServiceFilterConfig != null && uiServiceFilterConfig.isUseUserFilter(node);
                     DBSObjectFilter nodeFilter = folders.get(parentNode);
                     if (nodeFilter == null) {
-                        nodeFilter = parentNode.getNodeFilter(nodeMeta, true);
+                        nodeFilter = useUserFilter
+                            ? parentNode.getUserNodeFilter(nodeMeta, true)
+                            : parentNode.getConnectionNodeFilter(nodeMeta, true);
                         if (nodeFilter == null) {
                             nodeFilter = new DBSObjectFilter();
                         }
@@ -475,12 +477,12 @@ public class NavigatorUtils {
                         nodeFilter.addInclude(node.getNodeDisplayName());
                     }
                     nodeFilter.setEnabled(true);
-                    isSaveAsCurrentUserFilterOnly = isSaveAsCurrentUserFilterOnly && uiServiceFilterConfig.isUseUserFilter(node);
-                    nodeFilter.setUserFilter(isSaveAsCurrentUserFilterOnly);
+                    nodeFilter.setUserFilter(useUserFilter);
                 }
             }
             // Save folders
-            Set<DBPDataSourceContainer> changedContainers = new HashSet<>();
+            Set<DBPDataSourceContainer> changedUserFilterContainers = new HashSet<>();
+            Set<DBPDataSourceContainer> changedConnectionFilterContainers = new HashSet<>();
             for (Map.Entry<DBNDatabaseNode, DBSObjectFilter> entry : folders.entrySet()) {
                 DBNDatabaseNode targetNode = entry.getKey();
                 DBXTreeItem nodeMeta = UIUtils.runWithMonitor(monitor -> DBNUtils.getValidItemsMeta(monitor, targetNode));
@@ -489,15 +491,18 @@ public class NavigatorUtils {
                     entry.getValue(),
                     false
                 );
-                changedContainers.add(targetNode.getDataSourceContainer());
+                if (entry.getValue().isUserFilter()) {
+                    changedUserFilterContainers.add(targetNode.getDataSourceContainer());
+                } else {
+                    changedConnectionFilterContainers.add(targetNode.getDataSourceContainer());
+                }
             }
             // Save configs
-            for (DBPDataSourceContainer ds : changedContainers) {
-                if (isSaveAsCurrentUserFilterOnly) {
-                    UserDBSObjectFilterUtils.updateUserObjectFilters(ds);
-                } else {
-                    ds.persistConfiguration();
-                }
+            for (DBPDataSourceContainer ds : changedUserFilterContainers) {
+                UserDBSObjectFilterUtils.updateUserObjectFilters(ds);
+            }
+            for (DBPDataSourceContainer ds : changedConnectionFilterContainers) {
+                ds.persistConfiguration();
             }
             // Refresh all folders
             NavigatorHandlerRefresh.refreshNavigator(folders.keySet());

@@ -836,6 +836,26 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
     }
 
     @Nullable
+    public DBSObjectFilter getConnectionNodeFilter(DBXTreeItem meta, boolean firstMatch) {
+        DBPDataSourceContainer dataSource = getDataSourceContainer();
+        Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
+        if (childrenClass != null) {
+            return dataSource.getConnectionObjectFilter(childrenClass, getFilterObject(), firstMatch);
+        }
+        return null;
+    }
+
+    @Nullable
+    public DBSObjectFilter getUserNodeFilter(DBXTreeItem meta, boolean firstMatch) {
+        DBPDataSourceContainer dataSource = getDataSourceContainer();
+        Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
+        if (childrenClass != null) {
+            return dataSource.getUserObjectFilter(childrenClass, getFilterObject(), firstMatch);
+        }
+        return null;
+    }
+
+    @Nullable
     public DBSObject getFilterObject() {
         Object valueObject = getValueObject();
         return valueObject instanceof DBSObject dbsObject && !(valueObject instanceof DBPDataSource)
@@ -863,6 +883,17 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             log.error("Cannot detect child node type - can't save filter configuration");
             return false;
         }
+    }
+
+    public boolean setUserNodeFilter(DBXTreeItem meta, @Nullable DBSObjectFilter filter) {
+        DBPDataSourceContainer dataSource = getDataSourceContainer();
+        Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
+        if (childrenClass != null) {
+            dataSource.setUserObjectFilter(childrenClass, getFilterObject(), filter);
+            return true;
+        }
+        log.error("Cannot detect child node type - can't save user filter configuration");
+        return false;
     }
 
     @Override

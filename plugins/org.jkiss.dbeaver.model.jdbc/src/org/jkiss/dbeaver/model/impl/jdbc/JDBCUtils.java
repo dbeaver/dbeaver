@@ -725,8 +725,20 @@ public class JDBCUtils {
                                           @NotNull String columnAlias,
                                           @NotNull boolean firstClause,
                                           DBPDataSource dataSource) {
+        for (DBSObjectFilter conjunctiveFilter : filter.getConjunctiveFilters()) {
+            firstClause = appendSingleFilterClause(sql, conjunctiveFilter, columnAlias, firstClause, dataSource);
+        }
+    }
+
+    private static boolean appendSingleFilterClause(
+        @NotNull StringBuilder sql,
+        @NotNull DBSObjectFilter filter,
+        @NotNull String columnAlias,
+        boolean firstClause,
+        @Nullable DBPDataSource dataSource
+    ) {
         if (filter.isNotApplicable()) {
-            return;
+            return firstClause;
         }
         if (filter.hasSingleMask()) {
             if (columnAlias != null) {
@@ -734,7 +746,7 @@ public class JDBCUtils {
                 sql.append(columnAlias);
             }
             SQLUtils.appendLikeCondition(sql, filter.getSingleMask(), false, dataSource != null ? dataSource.getSQLDialect() : null);
-            return;
+            return firstClause;
         }
         List<String> include = filter.getInclude();
         if (!CommonUtils.isEmpty(include)) {
@@ -755,7 +767,7 @@ public class JDBCUtils {
         List<String> exclude = filter.getExclude();
         if (!CommonUtils.isEmpty(exclude)) {
             if (columnAlias != null) {
-                SQLUtils.appendFirstClause(sql, firstClause);
+                firstClause = SQLUtils.appendFirstClause(sql, firstClause);
             }
             sql.append("NOT (");
             for (int i = 0, excludeSize = exclude.size(); i < excludeSize; i++) {
@@ -769,18 +781,21 @@ public class JDBCUtils {
             }
             sql.append(")");
         }
+        return firstClause;
     }
 
     public static void setFilterParameters(PreparedStatement statement, int paramIndex, DBSObjectFilter filter)
         throws SQLException {
-        if (filter.isNotApplicable()) {
-            return;
-        }
-        for (String inc : CommonUtils.safeCollection(filter.getInclude())) {
-            statement.setString(paramIndex++, SQLUtils.makeSQLLike(inc));
-        }
-        for (String exc : CommonUtils.safeCollection(filter.getExclude())) {
-            statement.setString(paramIndex++, SQLUtils.makeSQLLike(exc));
+        for (DBSObjectFilter conjunctiveFilter : filter.getConjunctiveFilters()) {
+            if (conjunctiveFilter.isNotApplicable()) {
+                continue;
+            }
+            for (String inc : CommonUtils.safeCollection(conjunctiveFilter.getInclude())) {
+                statement.setString(paramIndex++, SQLUtils.makeSQLLike(inc));
+            }
+            for (String exc : CommonUtils.safeCollection(conjunctiveFilter.getExclude())) {
+                statement.setString(paramIndex++, SQLUtils.makeSQLLike(exc));
+            }
         }
     }
 

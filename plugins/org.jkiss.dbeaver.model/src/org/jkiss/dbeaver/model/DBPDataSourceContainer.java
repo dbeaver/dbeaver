@@ -167,7 +167,31 @@ public interface DBPDataSourceContainer extends
     @Nullable
     DBSObjectFilter getObjectFilter(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch);
 
+    /**
+     * Returns the connection-level object filter without user-specific restrictions.
+     */
+    @Nullable
+    default DBSObjectFilter getConnectionObjectFilter(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch) {
+        return getObjectFilter(type, parentObject, firstMatch);
+    }
+
+    /**
+     * Returns the current user's object filter without connection-level restrictions.
+     */
+    @Nullable
+    default DBSObjectFilter getUserObjectFilter(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch) {
+        return null;
+    }
+
     void setObjectFilter(@NotNull Class<?> type, @Nullable DBSObject parentObject, @Nullable DBSObjectFilter filter);
+
+    default void setUserObjectFilter(
+        @NotNull Class<?> type,
+        @Nullable DBSObject parentObject,
+        @Nullable DBSObjectFilter filter
+    ) {
+        throw new UnsupportedOperationException("User object filters are not supported");
+    }
 
     @Nullable
     String getClientApplicationName();

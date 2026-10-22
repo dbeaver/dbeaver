@@ -146,7 +146,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
         @NotNull
         protected DBSObjectFilter getObjectFilter() {
             return Objects.requireNonNullElseGet(
-                parentNode.getNodeFilter(itemsMeta, true),
+                parentNode.getConnectionNodeFilter(itemsMeta, true),
                 DBSObjectFilter::new
             );
         }
@@ -183,7 +183,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             }
             DBPDataSourceContainer dataSourceContainer = originalNode.getDataSourceContainer();
             DBSObjectFilter globalFilterForObject = Objects.requireNonNullElseGet(
-                dataSourceContainer.getObjectFilter(childrenClass, null, true),
+                dataSourceContainer.getConnectionObjectFilter(childrenClass, null, true),
                 DBSObjectFilter::new
             );
             EditObjectFilterDialog globalFilterDialog = new EditObjectFilterDialog(
