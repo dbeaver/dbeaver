@@ -69,6 +69,15 @@ public interface SMAdminController extends SMController {
 
     void setUserTeams(String userId, String[] teamIds, String grantorId) throws DBException;
 
+    default void setUserTeams(
+        @NotNull String userId,
+        @NotNull String[] teamIds,
+        @NotNull String grantorId,
+        @NotNull SMTeamGrantType grantType
+    ) throws DBException {
+        setUserTeams(userId, teamIds, grantorId);
+    }
+
     void addUserTeams(@NotNull String userId, @NotNull String[] teamIds, @NotNull String grantorId) throws DBException;
 
     void deleteUserTeams(@NotNull String userId, @NotNull String[] teamIds) throws DBException;
