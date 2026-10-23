@@ -2250,7 +2250,8 @@ public class DataSourceDescriptor
     public String saveToSecret() {
         Map<String, Object> props = new LinkedHashMap<>();
 
-        if (isSavePassword()) {
+        // Do not convert cached credentials awaiting revocation into a private secret.
+        if (isSavePassword() && !sharedCredentialsRevoked) {
             // Primary props
             if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
                 props.put(RegistryConstants.ATTR_USER, connectionInfo.getUserName());

@@ -78,6 +78,33 @@ public class DataSourceDescriptorTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void testRevokedSharedCredentialsAreNotPersistedBeforeDisconnect() {
+        DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration();
+        connectionInfo.setUserName("shared-user");
+        connectionInfo.setUserPassword("shared-password");
+        connectionInfo.setAuthProperty("token", "shared-token");
+
+        DataSourceDescriptor dataSource = Mockito.spy(createDataSource(connectionInfo));
+        dataSource.setSharedCredentials(true);
+        dataSource.setSavePassword(true);
+        Mockito.doReturn(true).when(dataSource).isConnected();
+
+        dataSource.setSharedCredentials(false);
+
+        SecureCredentials persistedCredentials = new SecureCredentials(dataSource);
+        Assertions.assertAll(
+            () -> Assertions.assertNull(persistedCredentials.getUserName()),
+            () -> Assertions.assertNull(persistedCredentials.getUserPassword()),
+            () -> Assertions.assertNull(persistedCredentials.getProperties()),
+            () -> Assertions.assertNull(dataSource.saveToSecret()),
+            () -> Assertions.assertEquals("shared-user", connectionInfo.getUserName()),
+            () -> Assertions.assertEquals("shared-password", connectionInfo.getUserPassword()),
+            () -> Assertions.assertEquals("shared-token", connectionInfo.getAuthProperty("token")),
+            () -> Assertions.assertTrue(dataSource.isSavePassword())
+        );
+    }
+
+    @Test
     public void testForceSetSharedCredentialsKeepsReloadedPrivateCredentials() {
         DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration();
         connectionInfo.setUserName("shared-user");
