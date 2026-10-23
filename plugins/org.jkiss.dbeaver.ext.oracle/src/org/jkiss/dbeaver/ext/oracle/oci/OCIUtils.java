@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -318,8 +318,7 @@ public class OCIUtils
         Map<String, String> aliases = new TreeMap<>();
 
         if (tnsnamesOra.exists()) {
-            try {
-                BufferedReader reader = new BufferedReader(new FileReader(tnsnamesOra));
+            try (BufferedReader reader = new BufferedReader(new FileReader(tnsnamesOra))) {
                 StringBuilder tnsDescription = new StringBuilder();
                 String curAlias = null;
                 String line;
