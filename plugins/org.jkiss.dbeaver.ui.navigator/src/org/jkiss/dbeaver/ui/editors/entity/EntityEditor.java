@@ -26,10 +26,12 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.*;
+import org.eclipse.ui.part.EditorPart;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -116,6 +118,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     private static Map<String, EditorDefaults> defaultPageMap;
 
     private final Map<String, IEditorPart> editorMap = new LinkedHashMap<>();
+    private boolean creatingDeferredPage;
     private IEditorPart activeEditor;
     private DBECommandAdapter commandListener;
     private final ITabbedFolderListener folderListener;
@@ -710,6 +713,12 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     @Override
     protected void pageChange(int newPageIndex) {
+        if (creatingDeferredPage) {
+            return;
+        }
+        if (getEditor(newPageIndex) instanceof DeferredEditorPart deferredEditor) {
+            createDeferredPage(newPageIndex, deferredEditor);
+        }
         try {
             super.pageChange(newPageIndex);
         } catch (Throwable e) {
@@ -733,6 +742,42 @@ public class EntityEditor extends MultiPageDatabaseEditor
         // Fire dirty flag refresh to re-enable Save-As command (which is enabled only for certain pages)
         firePropertyChange(IEditorPart.PROP_DIRTY);
         DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
+    }
+
+    private void createDeferredPage(int pageIndex, @NotNull DeferredEditorPart deferredEditor) {
+        EntityEditorDescriptor descriptor = deferredEditor.descriptor;
+        IEditorPart editor = descriptor.createEditor();
+        if (editor == null) {
+            return;
+        }
+        CTabItem item = ((CTabFolder) getContainer()).getItem(pageIndex);
+        String title = item.getText();
+        String tooltip = item.getToolTipText();
+        org.eclipse.swt.graphics.Image image = item.getImage();
+        try {
+            creatingDeferredPage = true;
+            removePage(pageIndex);
+            IEditorInput input = descriptor.getNestedEditorInput(getEditorInput());
+            Class<? extends IEditorActionBarContributor> contributorClass = descriptor.getContributorClass();
+            if (contributorClass != null) {
+                addActionsContributor(editor, contributorClass);
+            }
+            addPage(pageIndex, editor, input);
+            ((CTabFolder) getContainer()).setSelection(pageIndex);
+            setPageText(pageIndex, title);
+            setPageImage(pageIndex, image);
+            if (tooltip != null) {
+                setPageToolTip(pageIndex, tooltip);
+            }
+            editorMap.put(descriptor.getId(), editor);
+            if (editor instanceof ITabbedFolderContainer tfc) {
+                tfc.addFolderListener(folderListener);
+            }
+        } catch (Exception e) {
+            log.error("Error creating deferred editor '" + descriptor.getId() + "'", e);
+        } finally {
+            creatingDeferredPage = false;
+        }
     }
 
     @Nullable
@@ -917,17 +962,19 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
-    private boolean addEditorTab(EntityEditorDescriptor descriptor)
+    private boolean addEditorTab(@NotNull EntityEditorDescriptor descriptor)
     {
         try {
-            IEditorPart editor = descriptor.createEditor();
+            IEditorPart editor = descriptor.isLazy() ? new DeferredEditorPart(descriptor) : descriptor.createEditor();
             if (editor == null) {
                 return false;
             }
-            IEditorInput nestedInput = descriptor.getNestedEditorInput(getEditorInput());
-            final Class<? extends IEditorActionBarContributor> contributorClass = descriptor.getContributorClass();
-            if (contributorClass != null) {
-                addActionsContributor(editor, contributorClass);
+            IEditorInput nestedInput = descriptor.isLazy() ? getEditorInput() : descriptor.getNestedEditorInput(getEditorInput());
+            if (!descriptor.isLazy()) {
+                final Class<? extends IEditorActionBarContributor> contributorClass = descriptor.getContributorClass();
+                if (contributorClass != null) {
+                    addActionsContributor(editor, contributorClass);
+                }
             }
             int index = addPage(editor, nestedInput);
             setPageText(index, descriptor.getName());
@@ -946,6 +993,46 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return true;
         } catch (Exception ex) {
             log.error("Error adding nested editor", ex); //$NON-NLS-1$
+            return false;
+        }
+    }
+
+    private static final class DeferredEditorPart extends EditorPart {
+        private final EntityEditorDescriptor descriptor;
+
+        private DeferredEditorPart(@NotNull EntityEditorDescriptor descriptor) {
+            this.descriptor = descriptor;
+        }
+
+        @Override
+        public void init(@NotNull IEditorSite site, @NotNull IEditorInput input) {
+            setSite(site);
+            setInput(input);
+        }
+
+        @Override
+        public void createPartControl(@NotNull Composite parent) {
+        }
+
+        @Override
+        public void setFocus() {
+        }
+
+        @Override
+        public void doSave(@NotNull IProgressMonitor monitor) {
+        }
+
+        @Override
+        public void doSaveAs() {
+        }
+
+        @Override
+        public boolean isDirty() {
+            return false;
+        }
+
+        @Override
+        public boolean isSaveAsAllowed() {
             return false;
         }
     }

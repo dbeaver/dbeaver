@@ -84,7 +84,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
     public String getTypeName(@NotNull IResource resource)
     {
         if (resource instanceof IFolder) {
-            return "diagram folder";
+            return "erd_folder";
         } else {
             return "diagram";
         }

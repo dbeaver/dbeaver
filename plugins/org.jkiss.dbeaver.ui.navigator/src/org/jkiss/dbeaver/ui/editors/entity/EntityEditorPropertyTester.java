@@ -18,8 +18,11 @@ package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.text.IUndoManager;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.editors.entity.handlers.ObjectPropertySwitchToSourceHandler;
 
@@ -35,13 +38,14 @@ public class EntityEditorPropertyTester extends PropertyTester
     public static final String PROP_CAN_UNDO = "canUndo";
     public static final String PROP_CAN_REDO = "canRedo";
     public static final String PROP_HAS_SOURCE = "hasSource";
+    public static final String PROP_OBJECT_TYPE = "objectType";
 
     public EntityEditorPropertyTester() {
         super();
     }
 
     @Override
-    public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
+    public boolean test(@Nullable Object receiver, @NotNull String property, @NotNull Object[] args, @Nullable Object expectedValue) {
         if (!(receiver instanceof EntityEditor)) {
             return false;
         }
@@ -50,6 +54,16 @@ public class EntityEditorPropertyTester extends PropertyTester
             return editor.isDirty();
         } else if (PROP_HAS_SOURCE.equals(property)) {
             return ObjectPropertySwitchToSourceHandler.findSourceTextEditorId(editor) != null;
+        } else if (PROP_OBJECT_TYPE.equals(property)) {
+            DBSObject object = editor.getEditorInput() == null ? null : editor.getEditorInput().getDatabaseObject();
+            if (object != null && expectedValue instanceof String typeName) {
+                for (Class<?> type = object.getClass(); type != null; type = type.getSuperclass()) {
+                    if (type.getName().equals(typeName)) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
 
         IUndoManager undoManager = editor.getAdapter(IUndoManager.class);

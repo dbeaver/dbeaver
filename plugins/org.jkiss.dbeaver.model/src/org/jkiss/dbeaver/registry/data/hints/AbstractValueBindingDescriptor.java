@@ -50,6 +50,7 @@ public abstract class AbstractValueBindingDescriptor<TYPE, CONTEXT> extends Abst
     private final String description;
     protected ObjectType implType;
     protected final List<SupportInfo> supportInfos = new ArrayList<>();
+    @Nullable
     private TYPE instance;
 
     protected class SupportInfo {
@@ -134,6 +135,11 @@ public abstract class AbstractValueBindingDescriptor<TYPE, CONTEXT> extends Abst
                 throw new IllegalStateException("Can't instantiate value manager '" + this.getId() + "'", e); //$NON-NLS-1$
             }
         }
+        return instance;
+    }
+
+    @Nullable
+    public TYPE getExistingInstance() {
         return instance;
     }
 

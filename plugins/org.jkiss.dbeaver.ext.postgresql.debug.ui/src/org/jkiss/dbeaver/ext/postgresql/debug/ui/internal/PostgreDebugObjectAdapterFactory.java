@@ -18,10 +18,12 @@ package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.ui.IEditorPart;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.debug.DBGDebugObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
-import org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreSourceViewEditor;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 
 public class PostgreDebugObjectAdapterFactory implements IAdapterFactory {
@@ -32,25 +34,36 @@ public class PostgreDebugObjectAdapterFactory implements IAdapterFactory {
     };
 
     @Override
-    public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
+    @Nullable
+    public <T> T getAdapter(@NotNull Object adaptableObject, @NotNull Class<T> adapterType) {
         if (adapterType == DBGDebugObject.class) {
             if (adaptableObject instanceof IEditorPart editorPart) {
                 adaptableObject = editorPart.getEditorInput();
             }
-            if (adaptableObject instanceof PostgreSourceViewEditor viewEditor && viewEditor.getSourceObject() instanceof PostgreProcedure) {
+            if (adaptableObject instanceof IDatabaseEditorInput dei && isPostgreProcedure(dei.getDatabaseObject())) {
                 return adapterType.cast(DEBUG_OBJECT);
             }
-            if (adaptableObject instanceof IDatabaseEditorInput dei && dei.getDatabaseObject() instanceof PostgreProcedure) {
-                return adapterType.cast(DEBUG_OBJECT);
-            }
-            if (adaptableObject instanceof DBNDatabaseNode databaseNode && databaseNode.getObject() instanceof PostgreProcedure) {
+            if (adaptableObject instanceof DBNDatabaseNode databaseNode && isPostgreProcedure(databaseNode.getObject())) {
                 return adapterType.cast(DEBUG_OBJECT);
             }
         }
         return null;
     }
 
+    private static boolean isPostgreProcedure(@Nullable DBSObject object) {
+        if (object != null) {
+            // An instanceof check on every active editor starts the lazy PostgreSQL model bundle.
+            for (Class<?> type = object.getClass(); type != null; type = type.getSuperclass()) {
+                if (type.getName().equals("org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure")) {
+                    return object instanceof PostgreProcedure;
+                }
+            }
+        }
+        return false;
+    }
+
     @Override
+    @NotNull
     public Class<?>[] getAdapterList() {
         return CLASSES;
     }

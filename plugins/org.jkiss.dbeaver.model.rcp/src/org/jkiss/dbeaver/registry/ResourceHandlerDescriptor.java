@@ -18,6 +18,8 @@
 package org.jkiss.dbeaver.registry;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
@@ -25,12 +27,19 @@ import org.eclipse.core.runtime.content.IContentDescription;
 import org.eclipse.core.runtime.content.IContentType;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.app.DBPResourceHandlerDescriptor;
 import org.jkiss.dbeaver.model.app.DBPResourceTypeDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.utils.ArrayUtils;
+
+import java.util.List;
 
 /**
  * ResourceHandlerDescriptor
@@ -41,13 +50,21 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.resourceHandler"; //$NON-NLS-1$
 
     private final String typeId;
+    @Nullable
+    private final String folderTypeName;
+    private final boolean lazyFolder;
+    @Nullable
+    private final DBPResourceHandler folderHandler;
     private ObjectType handlerType;
     private DBPResourceHandler handler;
 
-    public ResourceHandlerDescriptor(IConfigurationElement config) {
+    public ResourceHandlerDescriptor(@NotNull IConfigurationElement config) {
         super(config);
 
         this.typeId = config.getAttribute(RegistryConstants.ATTR_TYPE);
+        this.folderTypeName = config.getAttribute("folderTypeName");
+        this.lazyFolder = Boolean.parseBoolean(config.getAttribute("lazyFolder"));
+        this.folderHandler = lazyFolder ? new FolderHandler() : null;
         this.handlerType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
     }
 
@@ -58,6 +75,12 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
 
     public String getTypeId() {
         return typeId;
+    }
+
+    @Nullable
+    public DBPResourceHandler getFolderHandler() {
+        // Root folders are shown before their contents are accessed; use extension metadata until then.
+        return lazyFolder ? folderHandler : getHandler();
     }
 
     @NotNull
@@ -143,6 +166,63 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
             }
         }
         return false;
+    }
+
+    private final class FolderHandler implements DBPResourceHandler {
+        @Override
+        public int getFeatures(@NotNull IResource resource) {
+            if (resource instanceof IFolder) {
+                return resource.getParent() instanceof IFolder
+                    ? FEATURE_DELETE | FEATURE_RENAME | FEATURE_CREATE_FOLDER | FEATURE_MOVE_INTO
+                    : FEATURE_CREATE_FOLDER | FEATURE_MOVE_INTO;
+            }
+            return getHandler().getFeatures(resource);
+        }
+
+        @NotNull
+        @Override
+        public DBNNode makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException {
+            if (resource instanceof IFolder && parentNode.getAdapter(IResource.class) instanceof IProject) {
+                return new DBNResource(parentNode, resource, this);
+            }
+            return getHandler().makeNavigatorNode(parentNode, resource);
+        }
+
+        @Override
+        public void openResource(@NotNull IResource resource) throws CoreException, DBException {
+            getHandler().openResource(resource);
+        }
+
+        @NotNull
+        @Override
+        public String getTypeName(@NotNull IResource resource) {
+            return resource instanceof IFolder && folderTypeName != null
+                ? folderTypeName : getHandler().getTypeName(resource);
+        }
+
+        @Nullable
+        @Override
+        public DBPImage getResourceIcon(@NotNull IResource resource) {
+            return resource instanceof IFolder ? getResourceType().getFolderIcon() : getHandler().getResourceIcon(resource);
+        }
+
+        @Nullable
+        @Override
+        public String getResourceDescription(@NotNull IResource resource) {
+            return resource instanceof IFolder ? resource.getName() : getHandler().getResourceDescription(resource);
+        }
+
+        @Nullable
+        @Override
+        public List<DBPDataSourceContainer> getAssociatedDataSources(@NotNull DBNResource resource) {
+            return resource.getResource() instanceof IFolder ? null : getHandler().getAssociatedDataSources(resource);
+        }
+
+        @NotNull
+        @Override
+        public String getResourceNodeName(@NotNull IResource resource) {
+            return resource.getName();
+        }
     }
 
 

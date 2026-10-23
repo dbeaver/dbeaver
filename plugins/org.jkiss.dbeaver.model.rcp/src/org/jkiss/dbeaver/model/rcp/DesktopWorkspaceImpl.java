@@ -113,10 +113,11 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
         super.dispose();
     }
 
-    private DBPResourceHandler getResourceHandler(DBPResourceTypeDescriptor resourceType) {
+    @Nullable
+    private DBPResourceHandler getResourceHandler(@NotNull DBPResourceTypeDescriptor resourceType) {
         for (ResourceHandlerDescriptor rhd : handlerDescriptors) {
             if (rhd.getTypeId().equals(resourceType.getId())) {
-                return rhd.getHandler();
+                return rhd.getFolderHandler();
             }
         }
         return null;

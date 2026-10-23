@@ -76,7 +76,7 @@ public class DashboardResourceHandler extends AbstractResourceHandler {
     @Override
     public String getTypeName(@NotNull IResource resource) {
         if (resource instanceof IFolder) {
-            return "dashboard folder";
+            return "dashboard_folder";
         } else {
             return "dashboard";
         }
