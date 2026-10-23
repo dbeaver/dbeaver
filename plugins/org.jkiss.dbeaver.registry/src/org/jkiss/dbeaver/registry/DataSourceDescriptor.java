@@ -485,8 +485,11 @@ public class DataSourceDescriptor
     public void setSharedCredentials(boolean sharedCredentials) {
         if (sharedCredentials) {
             sharedCredentialsRevoked = false;
-        } else {
-            sharedCredentialsRevoked |= this.sharedCredentials;
+        } else if (this.sharedCredentials) {
+            sharedCredentialsRevoked = true;
+            if (!isConnected()) {
+                clearRevokedSharedCredentials();
+            }
         }
         this.sharedCredentials = sharedCredentials;
     }

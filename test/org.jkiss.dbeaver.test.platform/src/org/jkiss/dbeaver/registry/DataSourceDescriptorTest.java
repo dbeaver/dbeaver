@@ -105,6 +105,27 @@ public class DataSourceDescriptorTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void testRevokedSharedCredentialsAreClearedImmediatelyWhenDisconnected() {
+        DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration();
+        connectionInfo.setUserName("shared-user");
+        connectionInfo.setUserPassword("shared-password");
+        connectionInfo.setAuthProperty("token", "shared-token");
+
+        DataSourceDescriptor dataSource = createDataSource(connectionInfo);
+        dataSource.setSharedCredentials(true);
+        dataSource.setSavePassword(true);
+
+        dataSource.setSharedCredentials(false);
+
+        Assertions.assertAll(
+            () -> Assertions.assertNull(connectionInfo.getUserName()),
+            () -> Assertions.assertNull(connectionInfo.getUserPassword()),
+            () -> Assertions.assertTrue(connectionInfo.getAuthProperties().isEmpty()),
+            () -> Assertions.assertFalse(dataSource.isSavePassword())
+        );
+    }
+
+    @Test
     public void testForceSetSharedCredentialsKeepsReloadedPrivateCredentials() {
         DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration();
         connectionInfo.setUserName("shared-user");
