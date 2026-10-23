@@ -51,29 +51,42 @@ import java.util.*;
 
 public class DDProjectUIManager {
     private static final int VIEW_LOAD_THREADS = 4;
-    private static final DDProjectUIManager INSTANCE = new DDProjectUIManager();
+    @Nullable
+    private static DDProjectUIManager instance;
 
     private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
+    @Nullable
+    private volatile DDProjectManager projectManager;
 
     private DDProjectUIManager() {
+        accessService.addKeyBundleListener(this::updateProjectManager);
+        updateProjectManager();
     }
 
     @NotNull
-    public static DDProjectUIManager getInstance() {
-        return INSTANCE;
+    public static synchronized DDProjectUIManager getInstance() {
+        if (instance == null) {
+            instance = new DDProjectUIManager();
+        }
+        return instance;
     }
 
     public boolean isDDReady() {
-        return accessService.getKeyBundle() != null;
+        return projectManager != null;
     }
 
     @NotNull
     public DDProjectManager getProjectManager() throws DBException {
-        DDKeyBundle bundle = accessService.getKeyBundle();
-        if (bundle == null) {
-            throw new DBException("Import encryption keys for the current DataDam account in Preferences > DataDam");
+        DDProjectManager manager = projectManager;
+        if (manager == null) {
+            throw new DBException("Import encryption keys for the current DataDam account in Preferences > DataDam > Projects");
         }
-        return DDProjectManager.getInstance(bundle);
+        return manager;
+    }
+
+    private void updateProjectManager() {
+        DDKeyBundle bundle = accessService.getKeyBundle();
+        projectManager = bundle == null ? null : DDProjectManager.getInstance(bundle);
     }
 
     @NotNull
