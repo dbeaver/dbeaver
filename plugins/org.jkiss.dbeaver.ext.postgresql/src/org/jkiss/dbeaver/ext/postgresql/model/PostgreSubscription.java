@@ -437,14 +437,30 @@ public class PostgreSubscription extends PostgreReplicationObject {
                 String[] pair = option.split("=", 2);
                 String key = decodeUriValue(pair[0]);
                 String value = pair.length == 2 ? decodeUriValue(pair[1]) : "";
-                if ("ssl".equals(key)) {
-                    if (!"true".equals(value)) {
-                        throw new DBException("Use sslmode to configure publisher SSL; libpq only accepts ssl=true");
+                switch (key) {
+                    case "ssl" -> {
+                        if (!"true".equals(value)) {
+                            throw new DBException("Use sslmode to configure publisher SSL; libpq only accepts ssl=true");
+                        }
+                        // libpq maps this alias to require; JDBC would let the form's sslmode override it
+                        parameters.put("sslmode", "require");
                     }
-                    // libpq maps this alias to require; JDBC would let the form's sslmode override it
-                    parameters.put("sslmode", "require");
-                } else {
-                    parameters.put(key, value);
+                    case "target_session_attrs" -> parameters.put("targetServerType", switch (value) {
+                        case "", "any" -> "any";
+                        case "read-write" -> "primary";
+                        case "read-only" -> "secondary";
+                        // the driver classifies read-only primaries as secondary, unlike libpq's standby modes
+                        default -> throw new DBException("Enter publication names manually for this publisher session requirement");
+                    });
+                    case "application_name" -> parameters.put("ApplicationName", value);
+                    case "connect_timeout" -> parameters.put("connectTimeout", value);
+                    case "channel_binding" -> parameters.put("channelBinding", value);
+                    case "gssencmode" -> parameters.put("gssEncMode", value);
+                    case "sslnegotiation" -> parameters.put("sslNegotiation", value);
+                    case "user", "password", "host", "port", "dbname", "options",
+                        "sslmode", "sslcert", "sslkey", "sslrootcert", "sslpassword" -> parameters.put(key, value);
+                    // unknown libpq options are silently ignored by JDBC, which can select a different publisher
+                    default -> throw new DBException("Enter publication names manually for publisher options not supported by JDBC");
                 }
             }
         }
@@ -454,31 +470,42 @@ public class PostgreSubscription extends PostgreReplicationObject {
         }
         String host = parameters.remove("host");
         String port = parameters.remove("port");
-        if (host != null || port != null) {
-            List<String> endpoints = new ArrayList<>();
-            String[] hosts = (host == null ? authority : host).split(",", -1);
-            String[] ports = port == null ? new String[0] : port.split(",", -1);
-            for (int index = 0; index < hosts.length; index++) {
-                String endpoint = hosts[index];
-                if (host != null && endpoint.contains(":") && !endpoint.startsWith("[")) {
-                    endpoint = "[" + endpoint + "]";
-                }
-                if (port != null) {
-                    int separator = endpoint.lastIndexOf(':');
-                    if (host == null && separator > endpoint.lastIndexOf(']')) {
-                        endpoint = endpoint.substring(0, separator);
-                    }
-                    String endpointPort = ports.length == 1 ? ports[0] : index < ports.length ? ports[index] : "";
-                    endpoint += ":" + (endpointPort.isEmpty() ? PostgreConstants.DEFAULT_PORT : endpointPort);
-                }
-                endpoints.add(endpoint);
+        String[] hosts = authority.split(",", -1);
+        String[] ports = new String[hosts.length];
+        for (int index = 0; index < hosts.length; index++) {
+            String endpoint = hosts[index];
+            int separator = endpoint.lastIndexOf(':');
+            boolean hasPort = separator > endpoint.lastIndexOf(']');
+            ports[index] = hasPort ? decodeUriValue(endpoint.substring(separator + 1)) : "";
+            hosts[index] = decodeUriValue(hasPort ? endpoint.substring(0, separator) : endpoint);
+        }
+        // libpq overrides hosts and ports independently, retaining unspecified URI ports
+        if (host != null) {
+            hosts = host.split(",", -1);
+        }
+        if (port != null) {
+            ports = port.split(",", -1);
+        }
+        if (ports.length != 1 && ports.length != hosts.length) {
+            throw new DBException("The publisher host and port lists must have matching lengths, or use a single port for all hosts");
+        }
+        List<String> endpoints = new ArrayList<>();
+        for (int index = 0; index < hosts.length; index++) {
+            String endpoint = hosts[index];
+            if (endpoint.isBlank() || endpoint.contains("/") || endpoint.contains("@") || endpoint.contains(",")
+                || endpoint.contains("?") || endpoint.contains("#") || endpoint.chars().anyMatch(Character::isWhitespace)) {
+                throw new DBException("Use a TCP publisher address to load publications from DBeaver, or enter publication names manually");
             }
-            authority = String.join(",", endpoints);
+            if (endpoint.contains(":") && !endpoint.startsWith("[")) {
+                endpoint = "[" + endpoint + "]";
+            }
+            String endpointPort = ports[ports.length == 1 ? 0 : index];
+            endpoints.add(endpoint + (endpointPort.isEmpty() ? "" : ":" + endpointPort));
         }
-        if (decodeUriValue(authority).contains("/")) {
-            throw new DBException("Use a TCP publisher address to load publications from DBeaver, or enter publication names manually");
-        }
+        authority = String.join(",", endpoints);
         DBPConnectionConfiguration copy = DBPConnectionConfiguration.copyWithIndependentRuntimeAttributes(configuration);
+        copy.setProperty("targetServerType", "any");
+        copy.setProperty("loadBalanceHosts", "false");
         if (parameters.containsKey("user")) {
             copy.setUserName(parameters.remove("user"));
         }

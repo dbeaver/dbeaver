@@ -1486,6 +1486,106 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void publicationDiscoveryTranslatesSessionRequirementsWithoutChangingSubscriberUri() throws Exception {
+        Map<String, String> modes = Map.of("any", "any", "read-write", "primary", "read-only", "secondary", "", "any");
+        for (var mode : modes.entrySet()) {
+            DBPConnectionConfiguration original = publisherConfiguration();
+            String uri = PostgreSubscription.buildConnectionUri(
+                "postgresql://first:5432,second:5433/sales?target_session_attrs=" + mode.getKey(), original);
+            DBPConnectionConfiguration discovery = PostgreSubscription.createPublicationConnectionConfiguration(uri, original);
+            assertEquals("jdbc:postgresql://first:5432,second:5433/sales?targetServerType=" + mode.getValue(), discovery.getUrl());
+            assertTrue(uri.contains("target_session_attrs=" + mode.getKey()));
+            assertFalse(uri.contains("targetServerType"));
+        }
+        assertEquals("jdbc:postgresql://publisher/sales?targetServerType=secondary",
+            PostgreSubscription.createPublicationConnectionConfiguration(
+                "postgresql://publisher/sales?target_session_attrs=read-write&target_session_attrs=read-only",
+                publisherConfiguration()).getUrl());
+    }
+
+    @Test
+    public void publicationDiscoveryPreservesAuthorityPortsWhenOnlyHostsAreOverridden() throws Exception {
+        Map<String, String> addresses = Map.of(
+            "postgresql://old:65431/sales?host=publisher", "jdbc:postgresql://publisher:65431/sales",
+            "postgresql://old:65431/sales?host=first,second", "jdbc:postgresql://first:65431,second:65431/sales",
+            "postgresql://old:65431,other:65432/sales?host=first,second", "jdbc:postgresql://first:65431,second:65432/sales",
+            "postgresql://old:65431/sales?host=%3A%3A1", "jdbc:postgresql://[::1]:65431/sales",
+            "postgresql://old:%36%35%34%33%31/sales?host=publisher", "jdbc:postgresql://publisher:65431/sales",
+            "postgresql://%70ublisher:5433/sales", "jdbc:postgresql://publisher:5433/sales",
+            "postgresql:///sales?host=publisher&port=5433", "jdbc:postgresql://publisher:5433/sales");
+        for (var address : addresses.entrySet()) {
+            assertEquals(address.getValue(), PostgreSubscription.createPublicationConnectionConfiguration(
+                address.getKey(), publisherConfiguration()).getUrl());
+        }
+    }
+
+    @Test
+    public void publicationDiscoveryRejectsMismatchedHostAndPortCounts() {
+        for (String uri : List.of(
+            "postgresql://old:65431,other:65432/sales?host=publisher",
+            "postgresql://first,second,third/sales?port=5433,5434")) {
+            assertThrows(DBException.class,
+                () -> PostgreSubscription.createPublicationConnectionConfiguration(uri, publisherConfiguration()));
+        }
+    }
+
+    @Test
+    public void publicationDiscoveryRejectsImplicitUnixSocketHosts() throws Exception {
+        for (String address : List.of("postgresql:///sales", "postgresql:///sales?port=65431",
+            "postgresql://:65431/sales", "postgresql://first,,second/sales", "postgresql://first:5432,/sales",
+            "postgresql://publisher/sales?host=", "postgresql://%40socket/sales", "postgresql://first%2Csecond/sales")) {
+            String uri = PostgreSubscription.buildConnectionUri(address, publisherConfiguration());
+            assertTrue(uri.startsWith(address));
+            DBException error = assertThrows(DBException.class,
+                () -> PostgreSubscription.createPublicationConnectionConfiguration(uri, publisherConfiguration()));
+            assertTrue(error.getMessage().contains("publication names manually"));
+            assertNull(error.getCause());
+        }
+    }
+
+    @Test
+    public void publicationDiscoveryRejectsSessionRequirementsWithoutExactJdbcEquivalent() {
+        for (String mode : List.of("primary", "standby", "prefer-standby", "invalid")) {
+            DBException error = assertThrows(DBException.class, () -> PostgreSubscription.createPublicationConnectionConfiguration(
+                "postgresql://user:secret@publisher/sales?target_session_attrs=" + mode, publisherConfiguration()));
+            assertTrue(error.getMessage().contains("publication names manually"));
+            assertFalse(error.getMessage().contains("secret"));
+            assertNull(error.getCause());
+        }
+    }
+
+    @Test
+    public void publicationDiscoveryTranslatesLibpqOptionsAndResetsCopiedHostSelection() throws Exception {
+        DBPConnectionConfiguration original = publisherConfiguration();
+        original.setProperty("targetServerType", "secondary");
+        original.setProperty("loadBalanceHosts", "true");
+        DBPConnectionConfiguration discovery = PostgreSubscription.createPublicationConnectionConfiguration(
+            "postgresql://publisher/sales?application_name=publication%20lookup&connect_timeout=5"
+                + "&channel_binding=require&gssencmode=disable&sslnegotiation=postgres&options=-c%20search_path%3Dpublic",
+            original);
+        assertEquals("jdbc:postgresql://publisher/sales?ApplicationName=publication%20lookup&connectTimeout=5"
+            + "&channelBinding=require&gssEncMode=disable&sslNegotiation=postgres&options=-c%20search_path%3Dpublic", discovery.getUrl());
+        assertEquals("any", discovery.getProperty("targetServerType"));
+        assertEquals("false", discovery.getProperty("loadBalanceHosts"));
+        assertEquals("secondary", original.getProperty("targetServerType"));
+        assertEquals("true", original.getProperty("loadBalanceHosts"));
+    }
+
+    @Test
+    public void publicationDiscoveryRejectsUnmappedOptionsInsteadOfIgnoringTheirMeaning() throws Exception {
+        for (String option : List.of("hostaddr=192.0.2.1", "service=production", "load_balance_hosts=random",
+            "require_auth=scram-sha-256", "unknown=secret")) {
+            String uri = PostgreSubscription.buildConnectionUri("postgresql://publisher/sales?" + option, publisherConfiguration());
+            DBException error = assertThrows(DBException.class,
+                () -> PostgreSubscription.createPublicationConnectionConfiguration(uri, publisherConfiguration()));
+            assertTrue(error.getMessage().contains("publication names manually"));
+            assertFalse(error.getMessage().contains("secret"));
+            assertNull(error.getCause());
+            assertTrue(uri.contains(option));
+        }
+    }
+
+    @Test
     public void publicationDiscoveryRejectsInvalidOrDesktopInaccessibleUrisWithoutExposingCredentials() {
         for (String uri : List.of("postgresql:opaque", "postgresql://publisher/sales#fragment", "mysql://publisher/sales",
             "postgresql://dummy:secret@publisher/sales?password=%GG", "postgresql:///sales?host=%2Fserver%2Fsocket")) {
