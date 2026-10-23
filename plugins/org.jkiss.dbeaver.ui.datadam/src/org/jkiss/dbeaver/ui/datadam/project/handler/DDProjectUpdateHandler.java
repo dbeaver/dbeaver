@@ -43,7 +43,7 @@ public class DDProjectUpdateHandler extends DDProjectHandler<DDProjectSynchroniz
         switch (status.status()) {
             case UP_TO_DATE -> showMessage(DDTrackingUIMessages.project_sync_update_success);
             case CONFLICT -> resolveConflict(status.project());
-            case NOT_SYNC, NOT_ON_DEVICE, MISSING_ON_SERVER, LOCAL_CHANGES, SERVER_CHANGES ->
+            default ->
                 showError(DDTrackingUIMessages.project_sync_update_failed,
                     new DBException("Project synchronization ended with status: " + status.status()));
         }

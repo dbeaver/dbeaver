@@ -87,6 +87,7 @@ public class DDProjectUIManager {
     private void updateProjectManager() {
         DDKeyBundle bundle = accessService.getKeyBundle();
         projectManager = bundle == null ? null : DDProjectManager.getInstance(bundle);
+        DDProjectSyncPropertyTester.firePropertyChange();
     }
 
     @NotNull
@@ -392,22 +393,30 @@ public class DDProjectUIManager {
         try {
             group.join(0, monitor.getNestedMonitor());
             return monitor.isCanceled();
-        } catch (OperationCanceledException | InterruptedException e) {
-            group.cancel();
-            // Backend operations finish their current transfer before the caller refreshes the table.
-            boolean interrupted = e instanceof InterruptedException;
-            while (true) {
-                try {
-                    group.join(0, null);
-                    break;
-                } catch (InterruptedException ex) {
-                    interrupted = true;
-                }
-            }
-            if (interrupted) {
-                Thread.currentThread().interrupt();
-            }
+        } catch (OperationCanceledException e) {
+            cancelAndJoin(group);
             return true;
+        } catch (InterruptedException e) {
+            cancelAndJoin(group);
+            Thread.currentThread().interrupt();
+            return true;
+        }
+    }
+
+    private void cancelAndJoin(@NotNull JobGroup group) {
+        group.cancel();
+        // Backend operations finish their current transfer before the caller refreshes the table.
+        boolean interrupted = false;
+        while (true) {
+            try {
+                group.join(0, null);
+                break;
+            } catch (InterruptedException e) {
+                interrupted = true;
+            }
+        }
+        if (interrupted) {
+            Thread.currentThread().interrupt();
         }
     }
 

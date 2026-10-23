@@ -51,8 +51,6 @@ public class DDProjectConflictDialog extends BaseDialog {
     @Override
     protected Composite createDialogArea(@NotNull Composite parent) {
         Composite area = super.createDialogArea(parent);
-        DDSharedProjectRevision lastSynced = details.revisions().lastSyncedRevision();
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
         Composite heading = UIUtils.createComposite(area, 2);
         Label warning = new Label(heading, SWT.NONE);
@@ -83,6 +81,8 @@ public class DDProjectConflictDialog extends BaseDialog {
         dateColumn.setText(DDTrackingUIMessages.project_sync_conflict_last_revision);
         dateColumn.setWidth(240);
 
+        DDSharedProjectRevision lastSynced = details.revisions().lastSyncedRevision();
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
         TableItem baseline = new TableItem(table, SWT.NONE);
         baseline.setText(new String[] {
             DDTrackingUIMessages.project_sync_conflict_last_sync,

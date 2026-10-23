@@ -71,7 +71,7 @@ abstract class DDProjectHandler<J extends Job> extends AbstractHandler {
     private void scheduleJob(@NotNull J job) {
         job.addJobChangeListener(new JobChangeAdapter() {
             @Override
-            public void done(IJobChangeEvent event) {
+            public void done(@NotNull IJobChangeEvent event) {
                 UIUtils.asyncExec(() -> {
                     IStatus status = event.getResult();
                     if (status.isOK()) {

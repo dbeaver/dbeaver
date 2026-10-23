@@ -170,7 +170,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         viewer.setContentProvider(ArrayContentProvider.getInstance());
         viewer.addFilter(new ViewerFilter() {
             @Override
-            public boolean select(Viewer viewer, Object parentElement, Object element) {
+            public boolean select(@NotNull Viewer viewer, @Nullable Object parentElement, @NotNull Object element) {
                 return showRemote.getSelection() || ((DDProjectView) element).localProject() != null;
             }
         });
@@ -242,7 +242,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         TableViewerColumn column = createColumn(DDTrackingUIMessages.projects_name, 220);
         column.setLabelProvider(new StyledCellLabelProvider() {
             @Override
-            public void update(ViewerCell cell) {
+            public void update(@NotNull ViewerCell cell) {
                 DDProjectView project = (DDProjectView) cell.getElement();
                 StyledString name = new StyledString(project.name());
                 if (project.remoteProject() != null && project.localProject() != null
@@ -265,12 +265,14 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         TableViewerColumn column = createColumn(title, width);
         column.setLabelProvider(new ColumnLabelProvider() {
             @Override
-            public String getText(Object element) {
+            @NotNull
+            public String getText(@NotNull Object element) {
                 return text.apply((DDProjectView) element);
             }
 
             @Override
-            public Image getImage(Object element) {
+            @Nullable
+            public Image getImage(@NotNull Object element) {
                 DBPImage image = icon == null ? null : icon.apply((DDProjectView) element);
                 return image == null ? null : DBeaverIcons.getImage(image);
             }
@@ -302,7 +304,6 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
 
     private void updateSelectionActions() {
         List<DDProjectView> selection = selectedRows();
-        boolean selected = !selection.isEmpty();
         SelectionSyncAction syncAction = selectionSyncAction(selection);
         boolean download = syncAction == SelectionSyncAction.DOWNLOAD;
         boolean available = !operationRunning && uiManager.isDDReady();
@@ -310,6 +311,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         syncButton.setEnabled(available && syncAction != SelectionSyncAction.NONE);
         syncButton.setImage(DBeaverIcons.getImage(download ? UIIcon.DOWNLOAD : DDTrackingUIIcons.PROJECT_SYNC));
         syncButton.setToolTipText(download ? DDTrackingUIMessages.projects_download : DDTrackingUIMessages.projects_sync);
+        boolean selected = !selection.isEmpty();
         unbindButton.setEnabled(available && selected && selection.stream().allMatch(this::canUnbind));
         boolean showUnbind = !download;
         unbindButton.setVisible(showUnbind);
@@ -516,7 +518,8 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             getShell(),
             new LabelProvider() {
                 @Override
-                public String getText(Object element) {
+                @NotNull
+                public String getText(@NotNull Object element) {
                     return ((DBPProject) element).getName();
                 }
             }
