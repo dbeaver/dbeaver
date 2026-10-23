@@ -273,9 +273,12 @@ public class DBNFileSystems extends DBNNode implements DBNNodeWithCache, DBPHidd
     }
 
     private void refreshFileSystems(DBRProgressMonitor monitor) throws DBException {
-        if (children != null) {
+        boolean childrenLoaded = children != null;
+        if (childrenLoaded) {
             disposeFileSystems();
-            getFileSystemManager().reloadFileSystems(monitor);
+        }
+        getFileSystemManager().reloadFileSystems(monitor);
+        if (childrenLoaded) {
             children = readChildNodes(monitor, null);
             getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
         }
