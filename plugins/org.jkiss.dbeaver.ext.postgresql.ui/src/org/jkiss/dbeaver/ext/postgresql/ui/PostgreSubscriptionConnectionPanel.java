@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.ui;
 
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
@@ -387,7 +386,7 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
 
     @NotNull
     public String[] getPublicationSources() {
-        String configured = PostgreMessages.dialog_create_subscription_configured_publisher;
+        String configured = getConfiguredPublicationSourceName();
         return hasCopiedConnection() ? new String[]{configured, getCopiedPublicationSourceName()} : new String[]{configured};
     }
 
@@ -405,8 +404,25 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
 
     @NotNull
     private String getCopiedPublicationSourceName() {
-        return NLS.bind(PostgreMessages.dialog_create_subscription_copied_publisher,
-            copiedConnectionName + " / " + publisher.getConnectionConfiguration().getDatabaseName());
+        return copiedConnectionName + " / " + publisher.getConnectionConfiguration().getDatabaseName();
+    }
+
+    @NotNull
+    private String getConfiguredPublicationSourceName() {
+        if (hostMode.getSelection()) {
+            String port = portText.getText().isBlank()
+                ? Integer.toString(PostgreConstants.DEFAULT_PORT) : portText.getText().trim();
+            return hostText.getText().trim() + ":" + port + " / " + databaseText.getText().trim();
+        }
+        try {
+            DBPConnectionConfiguration configuration = PostgreSubscription.createPublicationConnectionConfiguration(
+                connectionInfo, publisher.getConnectionConfiguration());
+            String url = configuration.getUrl();
+            int endpointStart = url.indexOf("://") + 3;
+            return url.substring(endpointStart, url.indexOf('/', endpointStart)) + " / " + configuration.getDatabaseName();
+        } catch (DBException e) {
+            return PostgreMessages.dialog_create_subscription_manual_connection;
+        }
     }
 
     @NotNull
@@ -414,7 +430,7 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
         if (useCopiedConnection) {
             return getCopiedPublicationSourceName();
         }
-        return PostgreMessages.dialog_create_subscription_configured_publisher;
+        return getConfiguredPublicationSourceName();
     }
 
     @NotNull

@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.DatabaseLabelProviders;
 import org.jkiss.dbeaver.ui.controls.ExpandableCompositeEx;
+import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.BaseObjectEditPage;
 
 import java.util.ArrayList;
@@ -69,6 +70,7 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
     private static final int ADVANCED_LABEL_WIDTH = 150;
     private static final int COMMIT_CONTROL_WIDTH = 200;
     private static final int FIELD_LABEL_TOP_MARGIN = 3;
+    private static final String CSS_CLASS_FORM_HINT = "dbeaverFormHint";
 
     private enum Step {
         PUBLISHER, PUBLICATIONS, REPLICATION
@@ -438,7 +440,7 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
         try {
             selectedConnection = publisherPanel.createPublicationConnection();
         } catch (DBException e) {
-            setPublicationStatus(PostgreMessages.dialog_create_subscription_load_publications_error);
+            setPublicationStatus(PostgreMessages.dialog_create_subscription_load_publications_configuration_error);
             return;
         }
         publicationsDirty = false;
@@ -576,7 +578,8 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
         ((GridLayout) dependent.getLayout()).verticalSpacing = PostgreSubscriptionDialogLayout.ROW_SPACING;
         enabledButton = UIUtils.createCheckbox(dependent, PostgreMessages.dialog_create_subscription_enabled, subscription.isEnabled());
         enabledButton.setToolTipText(PostgreMessages.dialog_create_subscription_enabled_tip);
-        Composite slotOption = UIUtils.createComposite(dependent, 2);
+        Composite slotGroup = createOptionGroup(dependent);
+        Composite slotOption = UIUtils.createComposite(slotGroup, 2);
         ((GridLayout) slotOption.getLayout()).marginWidth = 0;
         ((GridLayout) slotOption.getLayout()).marginHeight = 0;
         createSlot = UIUtils.createCheckbox(slotOption,
@@ -587,8 +590,13 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
             DBIcon.SMALL_WARNING, SelectionListener.widgetSelectedAdapter(event -> MessageDialog.openInformation(getShell(),
                 PostgreMessages.dialog_create_subscription_publisher_setup,
                 PostgreMessages.dialog_create_subscription_publisher_setup_instructions)));
-        copyData = UIUtils.createCheckbox(dependent, PostgreMessages.dialog_create_subscription_copy_data, subscription.isCopyData());
+        createOptionHint(slotGroup, PostgreMessages.dialog_create_subscription_create_slot_description,
+            PostgreSubscriptionDialogLayout.MARGIN);
+        Composite copyGroup = createOptionGroup(dependent);
+        copyData = UIUtils.createCheckbox(copyGroup, PostgreMessages.dialog_create_subscription_copy_data, subscription.isCopyData());
         copyData.setToolTipText(PostgreMessages.dialog_create_subscription_copy_data_tip);
+        createOptionHint(copyGroup, PostgreMessages.dialog_create_subscription_copy_data_description,
+            PostgreSubscriptionDialogLayout.MARGIN);
         createSlot.setEnabled(connectButton.getSelection());
         copyData.setEnabled(connectButton.getSelection());
         enabledButton.setEnabled(connectButton.getSelection());
@@ -637,6 +645,7 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
         slotText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         slotText.setToolTipText(PostgreMessages.dialog_create_subscription_slot_tip);
         slotText.setMessage(PostgreMessages.dialog_create_subscription_slot_placeholder);
+        createOptionHint(slotValue, PostgreMessages.dialog_create_subscription_slot_description, 0);
 
         binaryButton = UIUtils.createCheckbox(advanced, PostgreMessages.dialog_create_subscription_binary, subscription.isBinary());
         binaryButton.setToolTipText(PostgreMessages.dialog_create_subscription_binary_tip);
@@ -678,6 +687,24 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
         data.widthHint = UIUtils.getFontHeight(parent) * 35;
         label.setLayoutData(data);
         return label;
+    }
+
+    @NotNull
+    private static Composite createOptionGroup(@NotNull Composite parent) {
+        Composite group = UIUtils.createComposite(parent, 1);
+        group.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        GridLayout layout = (GridLayout) group.getLayout();
+        layout.marginWidth = 0;
+        layout.marginHeight = 0;
+        layout.verticalSpacing = PostgreSubscriptionDialogLayout.COMPACT_SPACING;
+        return group;
+    }
+
+    private static void createOptionHint(@NotNull Composite parent, @NotNull String text, int indent) {
+        Label hint = createHint(parent, text);
+        CSSUtils.setCSSClass(hint, CSS_CLASS_FORM_HINT);
+        CSSUtils.applyStyles(hint);
+        ((GridData) hint.getLayoutData()).horizontalIndent = indent;
     }
 
     @Nullable

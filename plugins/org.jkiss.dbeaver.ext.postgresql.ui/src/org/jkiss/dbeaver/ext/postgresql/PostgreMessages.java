@@ -47,10 +47,9 @@ public class PostgreMessages extends NLS {
     public static String dialog_create_subscription_publications_source;
     public static String dialog_create_subscription_publications_datasource;
     public static String dialog_create_subscription_publications_datasource_tip;
-    public static String dialog_create_subscription_configured_publisher;
-    public static String dialog_create_subscription_copied_publisher;
     public static String dialog_create_subscription_loading_publications;
     public static String dialog_create_subscription_load_publications_error;
+    public static String dialog_create_subscription_load_publications_configuration_error;
     public static String dialog_create_subscription_no_publications;
     public static String dialog_create_subscription_name;
     public static String dialog_create_subscription_name_tip;
@@ -83,11 +82,14 @@ public class PostgreMessages extends NLS {
     public static String dialog_create_subscription_enabled_tip;
     public static String dialog_create_subscription_copy_data;
     public static String dialog_create_subscription_copy_data_tip;
+    public static String dialog_create_subscription_copy_data_description;
     public static String dialog_create_subscription_advanced;
     public static String dialog_create_subscription_create_slot;
     public static String dialog_create_subscription_create_slot_tip;
+    public static String dialog_create_subscription_create_slot_description;
     public static String dialog_create_subscription_slot;
     public static String dialog_create_subscription_slot_tip;
+    public static String dialog_create_subscription_slot_description;
     public static String dialog_create_subscription_binary;
     public static String dialog_create_subscription_binary_tip;
     public static String dialog_create_subscription_streaming;
