@@ -264,6 +264,7 @@ public abstract class AbstractValueBindingDescriptor<TYPE, CONTEXT> extends Abst
     }
 
     @Override
+    @NotNull
     public String toString() {
         return id;
     }

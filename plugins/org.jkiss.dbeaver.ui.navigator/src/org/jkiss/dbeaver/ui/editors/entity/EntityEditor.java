@@ -783,7 +783,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Nullable
     private String getEditorPageId(@Nullable IEditorPart editorPart) {
         synchronized (editorMap) {
-            for (Map.Entry<String,IEditorPart> entry : editorMap.entrySet()) {
+            for (Map.Entry<String, IEditorPart> entry : editorMap.entrySet()) {
                 if (entry.getValue() == editorPart) {
                     return entry.getKey();
                 }
