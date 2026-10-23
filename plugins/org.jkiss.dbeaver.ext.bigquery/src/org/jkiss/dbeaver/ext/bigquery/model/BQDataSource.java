@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.bigquery.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
@@ -43,8 +44,9 @@ public class BQDataSource extends GenericDataSource {
         super(monitor, container, metaModel, new BQSQLDialect());
     }
 
+    @NotNull
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) throws DBCException {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) throws DBCException {
         return new BQExecutionContext(instance, type);
     }
 
@@ -66,7 +68,7 @@ public class BQDataSource extends GenericDataSource {
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {

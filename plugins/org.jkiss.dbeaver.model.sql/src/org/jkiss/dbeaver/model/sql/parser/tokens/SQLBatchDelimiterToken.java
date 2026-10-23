@@ -14,15 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+package org.jkiss.dbeaver.model.sql.parser.tokens;
 
-public record DDTracking(
-    @NotNull String trackingId,
-    boolean online,
-    @Nullable String startTime,
-    @Nullable String stopTime
-) {
+/**
+ * Token for a delimiter that separates script batches.
+ */
+public class SQLBatchDelimiterToken extends SQLDelimiterToken {
 }

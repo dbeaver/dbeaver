@@ -30,14 +30,11 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
 import org.jkiss.dbeaver.runtime.DBInterruptedException;
-import org.jkiss.dbeaver.tools.transfer.DataTransferJob;
-import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
-import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -63,6 +60,12 @@ class DTTaskHandlerTransferTest {
     private IDataTransferConsumer<?, ?> consumer;
     private DBRProgressMonitor monitor;
     private NullProgressMonitor nestedMonitor;
+
+    @BeforeAll
+    static void initializePlatform() {
+        // initialize shared services before transfer workers access them concurrently
+        DBWorkbench.getPlatform();
+    }
 
     @BeforeEach
     void setUp() throws Exception {
@@ -115,6 +118,7 @@ class DTTaskHandlerTransferTest {
 
         Assertions.assertFalse(monitor.isCanceled());
         assertCancellation();
+        Mockito.verify(consumer, Mockito.never()).finishTransfer(Mockito.any(), Mockito.any(), Mockito.eq(task), Mockito.eq(true));
     }
 
     @ParameterizedTest
@@ -157,7 +161,9 @@ class DTTaskHandlerTransferTest {
 
         executeTransfer();
 
+        Assertions.assertFalse(monitor.isCanceled());
         assertCancellation();
+        Mockito.verify(consumer, Mockito.never()).finishTransfer(Mockito.any(), Mockito.any(), Mockito.eq(task), Mockito.eq(true));
     }
 
     @Test

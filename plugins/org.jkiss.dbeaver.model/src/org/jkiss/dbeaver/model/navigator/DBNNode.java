@@ -60,6 +60,7 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
     protected void dispose(boolean reflect) {
     }
 
+    @Nullable
     public DBNModel getModel() {
         return parentNode == null ? null : parentNode.getModel();
     }
@@ -299,9 +300,12 @@ public abstract class DBNNode implements DBPNamedObject, DBPNamedObjectLocalized
         if (project != null) {
             return project.getWorkspace();
         }
-        DBPWorkspace modelWorkspace = getModel().getModelWorkspace();
-        if (modelWorkspace != null) {
-            return modelWorkspace;
+        DBNModel model = getModel();
+        if (model != null) {
+            DBPWorkspace modelWorkspace = model.getModelWorkspace();
+            if (modelWorkspace != null) {
+                return modelWorkspace;
+            }
         }
         return DBWorkbench.getPlatform().getWorkspace();
     }

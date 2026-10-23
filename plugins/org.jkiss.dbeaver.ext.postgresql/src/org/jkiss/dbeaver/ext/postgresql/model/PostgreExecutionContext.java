@@ -176,18 +176,28 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
         try (var session = openSession(monitor, DBCExecutionPurpose.META, "Read context defaults")) {
             monitor.subTask("Retrieve active search path, schema and user");
 
-            // One round trip: it runs for every new connection
+            String searchPathQuery = getDataSource().getServerType().getSearchPathQuery();
+            // The search path can be read in the same round trip as the schema and user only when its query is
+            // a SELECT; e.g. Redshift uses SHOW search_path, which cannot be a subquery
+            boolean searchPathInline = searchPathQuery.regionMatches(true, 0, "SELECT", 0, 6);
             String searchPathStr = null;
+            if (!searchPathInline) {
+                searchPathStr = JDBCUtils.queryString(session, searchPathQuery);
+            }
             String activeSchemaName = null;
             String activeUserName = null;
+            // One round trip: it runs for every new connection
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT (SELECT reset_val FROM pg_settings WHERE name = 'search_path'),current_schema(),session_user");
+                "SELECT " + (searchPathInline ? "(" + searchPathQuery + ")," : "") + "current_schema(),session_user");
                  JDBCResultSet dbResult = dbStat.executeQuery()
             ) {
                 if (dbResult.next()) {
-                    searchPathStr = dbResult.getString(1);
-                    activeSchemaName = dbResult.getString(2);
-                    activeUserName = dbResult.getString(3);
+                    int index = 1;
+                    if (searchPathInline) {
+                        searchPathStr = dbResult.getString(index++);
+                    }
+                    activeSchemaName = dbResult.getString(index++);
+                    activeUserName = dbResult.getString(index);
                 }
             }
             for (String str : CommonUtils.notEmpty(searchPathStr).split(",")) {
