@@ -28,7 +28,7 @@
         <geometryViewer
                 label="%extension-point.org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer.label"
                 description="%extension-point.org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer.description"
-                icon="icons/map.svg"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/browser.svg"
                 id="browser"
                 class="org.jkiss.dbeaver.ui.gis.panel.GISBrowserViewer"/>
     </extension>
@@ -84,7 +84,7 @@
                 id="results.geometry"
                 label="%presentation.geometry.name"
                 description="%presentation.geometry.description"
-                icon="icons/map.svg"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/browser.svg"
                 class="org.jkiss.dbeaver.ui.gis.presentation.GeometryPresentation"
                 type="transformer"
                 supportsRecordMode="false"
