@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryType;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 
+import java.util.Locale;
 import java.util.regex.Pattern;
 
 /**
@@ -65,7 +66,7 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
     @Override
     public String transformQueryString(SQLQuery query) throws DBCException {
         String newQuery;
-        String testQuery = query.getText().toUpperCase().trim();
+        String testQuery = query.getText().toUpperCase(Locale.ROOT).trim();
         SQLDialect dialect = SQLUtils.getDialectFromDataSource(query.getDataSource());
         boolean plainSelect = query.isPlainSelect();
         if (!plainSelect && query.getType() == SQLQueryType.UNKNOWN) {
