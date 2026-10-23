@@ -30,7 +30,7 @@ import java.net.URI;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /** Coordinates the desktop login and the locally imported project keys. */
 public class DDDesktopAccessService {
@@ -40,7 +40,7 @@ public class DDDesktopAccessService {
     private static final DDDesktopAccessService INSTANCE = new DDDesktopAccessService(DDDesktopTokenManager.getInstance());
 
     private final DDDesktopTokenManager tokenManager;
-    private final ReentrantLock operationLock = new ReentrantLock();
+    private final ReentrantReadWriteLock operationLock = new ReentrantReadWriteLock();
     private final List<Runnable> keyBundleListeners = new CopyOnWriteArrayList<>();
     private final URI accountUrl = URI.create(DDEndpoints.getAccountBaseUrl());
     private final URI storageUrl = URI.create(DDEndpoints.getStorageBaseUrl());
@@ -71,25 +71,25 @@ public class DDDesktopAccessService {
 
     @Nullable
     public DDKeyBundle getKeyBundle() {
-        if (!operationLock.tryLock()) {
+        if (!operationLock.readLock().tryLock()) {
             return null;
         }
         try {
             return getStatus() != Status.SIGNED_OUT ? keyBundle : null;
         } finally {
-            operationLock.unlock();
+            operationLock.readLock().unlock();
         }
     }
 
     @NotNull
     public String getAccessTokenForResource(@NotNull URI resource) throws DBException {
-        if (!operationLock.tryLock()) {
+        if (!operationLock.readLock().tryLock()) {
             throw new DBException("DataDam access operation is in progress");
         }
         try {
             return tokenManager.getAccessTokenForResource(resource);
         } finally {
-            operationLock.unlock();
+            operationLock.readLock().unlock();
         }
     }
 
@@ -101,7 +101,7 @@ public class DDDesktopAccessService {
     }
 
     public void load() throws DBException {
-        operationLock.lock();
+        operationLock.writeLock().lock();
         try {
             if (tokenManager.getStatus() != DDDesktopTokenManager.Status.UNLOADED) {
                 return;
@@ -110,24 +110,24 @@ public class DDDesktopAccessService {
             tokenManager.load(storageUrl);
             updateKeyBundle(tokenManager.getStatus() == DDDesktopTokenManager.Status.SIGNED_IN ? DDKeyStore.load() : null);
         } finally {
-            operationLock.unlock();
+            operationLock.writeLock().unlock();
         }
     }
 
     public void signIn(@NotNull DBRProgressMonitor monitor) throws DBException, InterruptedException {
-        operationLock.lock();
+        operationLock.writeLock().lock();
         try {
             tokenManager.signIn(accountUrl, storageUrl, monitor);
             setKeyBundle(null);
             updateKeyBundle(DDKeyStore.load());
             log.debug("Signed in to DataDam desktop access");
         } finally {
-            operationLock.unlock();
+            operationLock.writeLock().unlock();
         }
     }
 
     public void importKeys(@NotNull String recoveryPhrase) throws DBException {
-        operationLock.lock();
+        operationLock.writeLock().lock();
         try {
             if (tokenManager.getStatus() != DDDesktopTokenManager.Status.SIGNED_IN) {
                 throw new DBException("Sign in to DataDam before importing keys");
@@ -138,30 +138,30 @@ public class DDDesktopAccessService {
             setKeyBundle(bundle);
             log.debug("Imported DataDam encryption keys");
         } finally {
-            operationLock.unlock();
+            operationLock.writeLock().unlock();
         }
     }
 
     public void forgetKeys() throws DBException {
-        operationLock.lock();
+        operationLock.writeLock().lock();
         try {
             DDKeyStore.clear();
             setKeyBundle(null);
             log.debug("Forgot DataDam encryption keys");
         } finally {
-            operationLock.unlock();
+            operationLock.writeLock().unlock();
         }
     }
 
     public void signOut() throws DBException {
-        operationLock.lock();
+        operationLock.writeLock().lock();
         try {
             tokenManager.signOut();
             setKeyBundle(null);
             DDKeyStore.clear();
             log.debug("Signed out of DataDam desktop access");
         } finally {
-            operationLock.unlock();
+            operationLock.writeLock().unlock();
         }
     }
 

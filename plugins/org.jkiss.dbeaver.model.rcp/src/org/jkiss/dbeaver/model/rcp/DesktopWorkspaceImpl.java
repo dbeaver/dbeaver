@@ -447,6 +447,11 @@ public class DesktopWorkspaceImpl extends EclipseWorkspaceImpl implements DBPWor
     }
 
     @Override
+    public void deleteProject(@NotNull DBPProject project) throws DBException {
+        deleteProject(project, true);
+    }
+
+    @Override
     public void deleteProject(@NotNull DBPProject project, boolean deleteContents) throws DBException {
         if (!(project instanceof RCPProject rcpProject)) {
             throw new DBException("Project '" + project.getName() + "' is not an RCP project");
