@@ -1011,7 +1011,14 @@ public class PostgreDatabase extends JDBCRemoteInstance
         }
     }
 
-    public PostgreDataType getDataType(@Nullable DBRProgressMonitor monitor, String typeName) {
+    @Nullable
+    public PostgreDataType getDataType(@Nullable DBRProgressMonitor monitor, @NotNull String typeName) {
+        return getDataType(monitor, typeName, true);
+    }
+
+    // Result-set metadata may refer to a temporary row type that the metadata connection cannot resolve.
+    @Nullable
+    public PostgreDataType getDataType(@Nullable DBRProgressMonitor monitor, @NotNull String typeName, boolean verify) {
         if (typeName.endsWith("[]")) {
             // In some cases ResultSetMetadata returns it as []
             typeName = "_" + typeName.substring(0, typeName.length() - 2);
@@ -1063,7 +1070,9 @@ public class PostgreDatabase extends JDBCRemoteInstance
             }
             return dataType;
         } catch (Exception e) {
-            log.debug("Can't resolve data type '" + typeName + "' in database '" + getName() + "'");
+            if (verify) {
+                log.debug("Can't resolve data type '" + typeName + "' in database '" + getName() + "'");
+            }
             return null;
         }
     }
