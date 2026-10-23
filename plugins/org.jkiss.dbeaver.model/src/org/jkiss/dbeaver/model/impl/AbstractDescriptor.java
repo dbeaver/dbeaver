@@ -282,8 +282,27 @@ public abstract class AbstractDescriptor {
                 // Use only type name
                 return getTypeInfoCache(clazz).containsKey(implName);
             }
+            // Even with forceCheck, an unrelated type cannot match. Avoid loading its bundle just to reject it.
+            if (!Object.class.getName().equals(implName) && !hasTypeName(clazz, implName)) {
+                return false;
+            }
             getObjectClass();
             return implClass != null && implClass.isAssignableFrom(clazz);
+        }
+
+        private boolean hasTypeName(@Nullable Class<?> clazz, @Nullable String typeName) {
+            if (clazz == null) {
+                return false;
+            }
+            if (clazz.getName().equals(typeName)) {
+                return true;
+            }
+            for (Class<?> implementedInterface : clazz.getInterfaces()) {
+                if (hasTypeName(implementedInterface, typeName)) {
+                    return true;
+                }
+            }
+            return hasTypeName(clazz.getSuperclass(), typeName);
         }
 
         @Override
