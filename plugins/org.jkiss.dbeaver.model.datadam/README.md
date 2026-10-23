@@ -24,7 +24,7 @@ Imported project encryption keys and the tracking session are not prerequisites 
 activation and deactivation are harmless, and shutdown never creates a new connection service. Authorization and
 tracking retain their existing owners; this lifecycle contribution does not load tokens or manage tracking.
 
-Messages use the shared `com.dbeaver.datadam.external.api` contracts. Topic subscriptions survive reconnects,
+Messages use the shared contracts from the `com.dbeaver.datadam.external-dam.api` bundle. Topic subscriptions survive reconnects,
 but outgoing messages are rejected while disconnected rather than buffered for later delivery.
 Service consumers obtain the channel from `DDDesktopConnectionService` and release their subscriptions when no longer needed.
 The shared WebSocket client's 90-second idle timeout detects missing server traffic; External DAM must send its
