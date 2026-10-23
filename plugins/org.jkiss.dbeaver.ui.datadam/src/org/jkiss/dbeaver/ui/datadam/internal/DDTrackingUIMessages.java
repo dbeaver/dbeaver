@@ -52,6 +52,22 @@ public class DDTrackingUIMessages extends NLS {
     public static String project_sync_update_success;
     public static String project_sync_update_conflict;
     public static String project_sync_update_failed;
+    public static String project_sync_resolve_job;
+    public static String project_sync_resolve_failed;
+    public static String project_sync_revisions_job;
+    public static String project_sync_revisions_failed;
+    public static String project_sync_conflict_dialog_title;
+    public static String project_sync_conflict_heading;
+    public static String project_sync_conflict_project;
+    public static String project_sync_conflict_version;
+    public static String project_sync_conflict_new_revisions;
+    public static String project_sync_conflict_last_revision;
+    public static String project_sync_conflict_last_sync;
+    public static String project_sync_conflict_server_version;
+    public static String project_sync_conflict_replaces;
+    public static String project_sync_conflict_use_local;
+    public static String project_sync_conflict_use_server;
+    public static String project_sync_conflict_stop;
     public static String project_sync_push_success;
     public static String project_sync_push_failed;
     public static String project_sync_pull_success;
@@ -91,6 +107,7 @@ public class DDTrackingUIMessages extends NLS {
     public static String projects_server_changes;
     public static String projects_both_changes;
     public static String projects_errors;
+    public static String projects_conflicts;
 
     public static String import_key_dialog_title;
     public static String import_key_dialog_prompt_label;

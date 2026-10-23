@@ -20,7 +20,11 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.SyncResult;
+import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictDialog.Choice;
 import org.jkiss.dbeaver.ui.datadam.project.job.DDProjectSynchronizationJob;
 
 public class DDProjectUpdateHandler extends DDProjectHandler<DDProjectSynchronizationJob> {
@@ -36,13 +40,34 @@ public class DDProjectUpdateHandler extends DDProjectHandler<DDProjectSynchroniz
         if (status == null) {
             return;
         }
-        switch (status) {
+        switch (status.status()) {
             case UP_TO_DATE -> showMessage(DDTrackingUIMessages.project_sync_update_success);
-            case CONFLICT -> showError(DDTrackingUIMessages.project_sync_update_failed,
-                new DBException(DDTrackingUIMessages.project_sync_update_conflict));
+            case CONFLICT -> resolveConflict(status.project());
             case NOT_SYNC, NOT_ON_DEVICE, MISSING_ON_SERVER, LOCAL_CHANGES, SERVER_CHANGES ->
                 showError(DDTrackingUIMessages.project_sync_update_failed,
-                    new DBException("Project synchronization ended with status: " + status));
+                    new DBException("Project synchronization ended with status: " + status.status()));
+        }
+    }
+
+    private void resolveConflict(@NotNull DBPProject project) {
+        try {
+            Choice choice = uiManager.openConflictDialog(UIUtils.getActiveWorkbenchShell(), project);
+            if (choice == null) {
+                return;
+            }
+            var result = uiManager.applyConflictChoice(project, choice);
+            if (!result.failures().isEmpty()) {
+                var error = result.failures().get(0).error();
+                showError(error.getMessage(), new DBException(error.getMessage(), error.getException()));
+            } else if (choice == Choice.UNBIND && !result.canceled()) {
+                showMessage(DDTrackingUIMessages.project_sync_unbind_success);
+            } else if (result.results().stream().anyMatch(value ->
+                value instanceof SyncResult sync
+                    && sync.status() == ProjectStatus.UP_TO_DATE)) {
+                showMessage(DDTrackingUIMessages.project_sync_update_success);
+            }
+        } catch (DBException e) {
+            showError(DDTrackingUIMessages.project_sync_revisions_failed, e);
         }
     }
 }

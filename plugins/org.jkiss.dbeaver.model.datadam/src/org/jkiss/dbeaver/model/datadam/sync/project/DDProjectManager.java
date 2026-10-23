@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.datadam.sync.project;
 
 import com.dbeaver.datadam.share.api.exception.DDShareException;
 import com.dbeaver.datadam.share.api.model.DDSharedProject;
+import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -110,14 +111,19 @@ public class DDProjectManager {
     public List<LocalProjectInfo> getLocalProjects() throws DBException {
         List<LocalProjectInfo> result = new ArrayList<>();
         for (DBPProject project : workspace.getProjects()) {
-            DDProjectSyncLocalBinding binding = getOrCreate(project).getBinding(project);
-            result.add(new LocalProjectInfo(
-                project,
-                binding == null ? null : binding.remoteProjectId(),
-                binding == null ? null : binding.lastSyncedRevision().updateTime()
-            ));
+            result.add(getLocalProject(project));
         }
         return List.copyOf(result);
+    }
+
+    @NotNull
+    public LocalProjectInfo getLocalProject(@NotNull DBPProject project) throws DBException {
+        DDProjectSyncLocalBinding binding = getOrCreate(project).getBinding(project);
+        return new LocalProjectInfo(
+            project,
+            binding == null ? null : binding.remoteProjectId(),
+            binding == null ? null : binding.lastSyncedRevision().updateTime()
+        );
     }
 
     public boolean isBound(@NotNull DBPProject project) throws DBException {
@@ -138,8 +144,8 @@ public class DDProjectManager {
     }
 
     @NotNull
-    public ProjectStatus synchronizeProject(@NotNull DBPProject project) throws DBException {
-        return getOrCreate(project).synchronize(project);
+    public SyncResult synchronizeProject(@NotNull DBPProject project) throws DBException {
+        return new SyncResult(project, getOrCreate(project).synchronize(project));
     }
 
     public void unbindProject(@NotNull DBPProject project) throws DBException {
@@ -160,6 +166,23 @@ public class DDProjectManager {
             return client.listProjects();
         } catch (DDShareException e) {
             throw new DBException("Error listing DataDam projects", e);
+        }
+    }
+
+    @NotNull
+    public ProjectRevisions getProjectRevisions(
+        @NotNull DBPProject project, @Nullable LocalDateTime startTime, @Nullable LocalDateTime endTime
+    ) throws DBException {
+        DDProjectSyncLocalBinding binding = getOrCreate(project).getBinding(project);
+        if (binding == null) {
+            throw new DBException("Project is not bound to DataDam: " + project.getName());
+        }
+        try {
+            List<DDSharedProjectRevision> revisions = client.getProjectRevisions(
+                binding.remoteProjectId(), startTime, endTime);
+            return new ProjectRevisions(binding.lastSyncedRevision(), revisions);
+        } catch (DDShareException e) {
+            throw new DBException("Error listing DataDam project revisions for '" + project.getName() + "'", e);
         }
     }
 
@@ -208,6 +231,18 @@ public class DDProjectManager {
             name = base + " (" + suffix + ")";
         }
         return name;
+    }
+
+    public record SyncResult(@NotNull DBPProject project, @NotNull ProjectStatus status) {
+    }
+
+    public record ProjectRevisions(
+        @NotNull DDSharedProjectRevision lastSyncedRevision,
+        @NotNull List<DDSharedProjectRevision> revisions
+    ) {
+        public ProjectRevisions {
+            revisions = List.copyOf(revisions);
+        }
     }
 
     public record LocalProjectInfo(

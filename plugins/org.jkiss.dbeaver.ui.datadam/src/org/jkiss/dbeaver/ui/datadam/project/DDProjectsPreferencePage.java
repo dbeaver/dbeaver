@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.MultiStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
@@ -29,10 +30,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
@@ -42,8 +40,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.SyncResult;
 import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -51,7 +53,10 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
+import org.jkiss.dbeaver.ui.datadam.DDImportKeyDialog;
+import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIIcons;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictDialog.Choice;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager.ProjectJobBatchResult;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
@@ -62,6 +67,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -74,8 +80,17 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private static final int MAX_VISIBLE_ROWS = 12;
 
     private final DDProjectUIManager uiManager = DDProjectUIManager.getInstance();
+    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
+    private Composite accountRow;
+    private Text accountText;
+    private Button importKeysButton;
+    private Button forgetKeysButton;
+    private Composite projectsSection;
+    private AbstractJob accountViewJob;
+    @Nullable
+    private DDKeyBundle displayedBundle;
     private TableViewer viewer;
     private Button showRemote;
     private Composite actionButtons;
@@ -102,7 +117,34 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         Composite content = UIUtils.createPlaceholder(parent, 1);
         content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        showRemote = new Button(content, SWT.CHECK);
+        Composite keysGroup = UIUtils.createTitledComposite(
+            content, DDTrackingUIMessages.sync_preference_page_encryption_keys_group,
+            2, GridData.FILL_HORIZONTAL, SWT.DEFAULT
+        );
+        accountRow = UIUtils.createComposite(keysGroup, 2);
+        GridData accountRowData = new GridData(GridData.FILL_HORIZONTAL);
+        accountRowData.horizontalSpan = 2;
+        accountRow.setLayoutData(accountRowData);
+        GridData accountTextData = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        accountTextData.widthHint = UIUtils.getFontHeight(accountRow.getDisplay().getSystemFont()) * 22;
+        accountText = UIUtils.createLabelText(
+            accountRow, DDTrackingUIMessages.sync_preference_page_account_label, "", SWT.READ_ONLY, accountTextData);
+        Composite keyButtons = UIUtils.createComposite(keysGroup, 2);
+        GridData keyButtonsData = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        keyButtonsData.horizontalSpan = 2;
+        keyButtons.setLayoutData(keyButtonsData);
+        importKeysButton = UIUtils.createPushButton(
+            keyButtons, DDTrackingUIMessages.sync_preference_page_import_keys_button, null,
+            SelectionListener.widgetSelectedAdapter(e -> importKeys())
+        );
+        forgetKeysButton = UIUtils.createPushButton(
+            keyButtons, DDTrackingUIMessages.sync_preference_page_forget_keys_button, null,
+            SelectionListener.widgetSelectedAdapter(e -> forgetKeys())
+        );
+
+        projectsSection = UIUtils.createPlaceholder(content, 1);
+        projectsSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        showRemote = new Button(projectsSection, SWT.CHECK);
         showRemote.setText(DDTrackingUIMessages.projects_show_remote);
         showRemote.setSelection(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_SHOW_REMOTE_PROJECTS));
         showRemote.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
@@ -111,7 +153,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             updateSelectionActions();
         }));
 
-        Composite tableRow = new Composite(content, SWT.NONE);
+        Composite tableRow = new Composite(projectsSection, SWT.NONE);
         GridLayout tableRowLayout = new GridLayout(2, false);
         tableRowLayout.marginWidth = 0;
         tableRowLayout.marginHeight = 0;
@@ -151,13 +193,16 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         actionButtons.setLayout(actionLayout);
         actionButtons.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false));
         editButton = iconButton(actionButtons, UIIcon.EDIT, DDTrackingUIMessages.projects_edit, this::editProject);
-        syncButton = iconButton(actionButtons, UIIcon.REFRESH, DDTrackingUIMessages.projects_sync, this::syncSelected);
+        syncButton = iconButton(
+            actionButtons, DDTrackingUIIcons.PROJECT_SYNC,
+            DDTrackingUIMessages.projects_sync, this::syncSelected
+        );
         unbindButton = iconButton(
-            actionButtons, UIIcon.SQL_DISCONNECT, DDTrackingUIMessages.projects_disconnect,
+            actionButtons, DDTrackingUIIcons.PROJECT_DISCONNECT, DDTrackingUIMessages.projects_disconnect,
             this::unbindSelected
         );
 
-        Composite endButtons = new Composite(content, SWT.NONE);
+        Composite endButtons = new Composite(projectsSection, SWT.NONE);
         endButtons.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         GridLayout endLayout = new GridLayout(3, false);
         endLayout.marginWidth = 0;
@@ -173,9 +218,24 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         importAllButton.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         importAllButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> importAll()));
 
-        updateSelectionActions();
-        loadProjects();
+        refreshKeys();
         return content;
+    }
+
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (visible && viewer != null && !viewer.getControl().isDisposed()) {
+            refreshKeys();
+        }
+    }
+
+    @Override
+    public void dispose() {
+        if (accountViewJob != null) {
+            accountViewJob.cancel();
+        }
+        super.dispose();
     }
 
     private void addNameColumn() {
@@ -191,7 +251,6 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
                 }
                 cell.setText(name.getString());
                 cell.setStyleRanges(name.getStyleRanges());
-                cell.setImage(DBeaverIcons.getImage(DBIcon.PROJECT));
                 super.update(cell);
             }
         });
@@ -244,11 +303,12 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private void updateSelectionActions() {
         List<DDProjectView> selection = selectedRows();
         boolean selected = !selection.isEmpty();
-        boolean download = selected && selection.stream().allMatch(this::canImport);
-        boolean synchronize = selected && selection.stream().allMatch(this::canSynchronize);
+        SelectionSyncAction syncAction = selectionSyncAction(selection);
+        boolean download = syncAction == SelectionSyncAction.DOWNLOAD;
         boolean available = !operationRunning && uiManager.isDDReady();
         editButton.setEnabled(available && selection.size() == 1 && selection.get(0).remoteProject() != null);
-        syncButton.setEnabled(available && (download || synchronize));
+        syncButton.setEnabled(available && syncAction != SelectionSyncAction.NONE);
+        syncButton.setImage(DBeaverIcons.getImage(download ? UIIcon.DOWNLOAD : DDTrackingUIIcons.PROJECT_SYNC));
         syncButton.setToolTipText(download ? DDTrackingUIMessages.projects_download : DDTrackingUIMessages.projects_sync);
         unbindButton.setEnabled(available && selected && selection.stream().allMatch(this::canUnbind));
         boolean showUnbind = !download;
@@ -271,6 +331,97 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             ((GridData) importAllButton.getLayoutData()).exclude = !showImportAll;
             importAllButton.getParent().getParent().layout(true, true);
         }
+    }
+
+    private void refreshKeys() {
+        DDKeyBundle bundle = accessService.getKeyBundle();
+        boolean present = bundle != null;
+        accountRow.setVisible(present);
+        ((GridData) accountRow.getLayoutData()).exclude = !present;
+        importKeysButton.setEnabled(!present && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN);
+        forgetKeysButton.setEnabled(present);
+        projectsSection.setVisible(present);
+        ((GridData) projectsSection.getLayoutData()).exclude = !present;
+        projectsSection.getParent().layout(true, true);
+
+        if (!Objects.equals(displayedBundle, bundle)) {
+            displayedBundle = bundle;
+            accountText.setText(present ? bundle.accountId().toString() : DDTrackingUIMessages.sync_preference_page_unknown);
+            if (accountViewJob != null) {
+                accountViewJob.cancel();
+            }
+            if (present) {
+                loadProjects();
+                loadAccountName();
+            } else {
+                viewer.setInput(List.of());
+                updateTableHeight();
+            }
+        }
+        updateSelectionActions();
+    }
+
+    private void loadAccountName() {
+        accountViewJob = new AbstractJob("Read DataDam account information") {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                if (monitor.isCanceled()) {
+                    return Status.CANCEL_STATUS;
+                }
+                var user = accessService.getLoggedUserView();
+                UIUtils.asyncExec(() -> {
+                    if (!accountText.isDisposed() && accountViewJob == this && !monitor.isCanceled()) {
+                        accountText.setText(user.accountName() != null ? user.accountName()
+                            : user.accountId() == null ? DDTrackingUIMessages.sync_preference_page_unknown
+                                : user.accountId().toString());
+                    }
+                });
+                return Status.OK_STATUS;
+            }
+        };
+        accountViewJob.setSystem(true);
+        accountViewJob.schedule();
+    }
+
+    private void importKeys() {
+        DDImportKeyDialog dialog = new DDImportKeyDialog(getShell());
+        if (dialog.open() == Window.OK) {
+            runKeyOperation(
+                DDTrackingUIMessages.sync_preference_page_import_keys_failed,
+                () -> accessService.importKeys(dialog.getPhrase())
+            );
+        }
+    }
+
+    private void forgetKeys() {
+        if (UIUtils.confirmAction(
+            getShell(), DDTrackingUIMessages.sync_preference_page_forget_keys_confirm_title,
+            DDTrackingUIMessages.sync_preference_page_forget_keys_confirm_message
+        )) {
+            runKeyOperation(DDTrackingUIMessages.sync_preference_page_cannot_forget_keys, accessService::forgetKeys);
+        }
+    }
+
+    private void runKeyOperation(@NotNull String errorMessage, @NotNull KeyOperation operation) {
+        try {
+            UIUtils.runInProgressDialog(monitor -> {
+                try {
+                    operation.run();
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            showError(errorMessage, e.getTargetException());
+        } finally {
+            refreshKeys();
+        }
+    }
+
+    @FunctionalInterface
+    private interface KeyOperation {
+        void run() throws DBException;
     }
 
     private void loadProjects() {
@@ -351,12 +502,12 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private DBPImage statusIcon(@NotNull DDProjectView row) {
         return switch (row.status()) {
             case NOT_SYNC -> DBIcon.PROJECT;
-            case NOT_ON_DEVICE -> UIIcon.PROJECTS;
+            case NOT_ON_DEVICE -> DDTrackingUIIcons.STATUS_NOT_ON_DEVICE;
             case MISSING_ON_SERVER -> DBIcon.STATUS_WARNING;
             case UP_TO_DATE -> UIIcon.OK_MARK;
-            case LOCAL_CHANGES -> UIIcon.EXPORT;
-            case SERVER_CHANGES -> UIIcon.IMPORT;
-            case CONFLICT -> DBIcon.STATUS_WARNING;
+            case LOCAL_CHANGES -> DDTrackingUIIcons.STATUS_LOCAL_CHANGES;
+            case SERVER_CHANGES -> DDTrackingUIIcons.STATUS_SERVER_CHANGES;
+            case CONFLICT -> DDTrackingUIIcons.STATUS_CONFLICT;
         };
     }
 
@@ -406,15 +557,40 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
 
     private void syncSelected() {
         List<DDProjectView> selection = selectedRows();
-        if (selection.isEmpty()) {
-            return;
+        SelectionSyncAction syncAction = selectionSyncAction(selection);
+        if (syncAction == SelectionSyncAction.DOWNLOAD) {
+            importProjects(selection.stream().map(DDProjectView::remoteProject).toList());
+        } else if (syncAction == SelectionSyncAction.SYNCHRONIZE) {
+            syncProjects(selection.stream().map(DDProjectView::localProject).toList());
         }
-        if (selection.stream().allMatch(this::canImport)) {
-            List<DDSharedProject> projects = selection.stream().map(DDProjectView::remoteProject).toList();
-            runOperation(() -> uiManager.importProjects(projects));
-        } else if (selection.stream().allMatch(this::canSynchronize)) {
-            List<DBPProject> projects = selection.stream().map(DDProjectView::localProject).toList();
-            runOperation(() -> uiManager.synchronizeProjects(projects));
+    }
+
+    private void syncProjects(@NotNull List<DBPProject> projects) {
+        ProjectJobBatchResult<?> result = runOperation(() -> uiManager.synchronizeProjects(projects));
+        if (result != null) {
+            if (projects.size() == 1) {
+                openSingleConflictDialog(result);
+            } else {
+                showConflictWarning(result);
+            }
+        }
+    }
+
+    private void importProjects(@NotNull List<DDSharedProject> projects) {
+        runOperation(() -> uiManager.importProjects(projects));
+    }
+
+    private void resolveProjectConflict(@NotNull DBPProject project) {
+        try {
+            Choice choice = uiManager.openConflictDialog(getShell(), project);
+            if (choice != null) {
+                ProjectJobBatchResult<?> result = runOperation(() -> uiManager.applyConflictChoice(project, choice));
+                if (result != null) {
+                    showConflictWarning(result);
+                }
+            }
+        } catch (DBException e) {
+            showError(DDTrackingUIMessages.project_sync_revisions_failed, e);
         }
     }
 
@@ -435,13 +611,13 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private void syncAll() {
         List<DBPProject> projects = getProjectViews(this::canSynchronize).stream()
             .map(DDProjectView::localProject).toList();
-        runOperation(() -> uiManager.synchronizeProjects(projects));
+        syncProjects(projects);
     }
 
     private void importAll() {
         List<DDSharedProject> projects = getProjectViews(this::canImport).stream()
             .map(DDProjectView::remoteProject).toList();
-        runOperation(() -> uiManager.importProjects(projects));
+        importProjects(projects);
     }
 
     @NotNull
@@ -469,9 +645,29 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         return view.localProject() != null && view.status() != ProjectStatus.NOT_SYNC;
     }
 
-    private void runOperation(@NotNull Supplier<ProjectJobBatchResult<?>> operation) {
+    @NotNull
+    private SelectionSyncAction selectionSyncAction(@NotNull List<DDProjectView> selection) {
+        if (!selection.isEmpty()) {
+            if (selection.stream().allMatch(this::canImport)) {
+                return SelectionSyncAction.DOWNLOAD;
+            }
+            if (selection.stream().allMatch(this::canSynchronize)) {
+                return SelectionSyncAction.SYNCHRONIZE;
+            }
+        }
+        return SelectionSyncAction.NONE;
+    }
+
+    private enum SelectionSyncAction {
+        NONE,
+        DOWNLOAD,
+        SYNCHRONIZE
+    }
+
+    @Nullable
+    private ProjectJobBatchResult<?> runOperation(@NotNull Supplier<ProjectJobBatchResult<?>> operation) {
         if (operationRunning) {
-            return;
+            return null;
         }
         operationRunning = true;
         updateSelectionActions();
@@ -494,6 +690,46 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             new StandardErrorDialog(getShell(), DDTrackingUIMessages.project_sync_title, message,
                 new MultiStatus(PLUGIN_ID, 0, errors, message, null), IStatus.ERROR).open();
         }
+        return result;
+    }
+
+    private void openSingleConflictDialog(@NotNull ProjectJobBatchResult<?> result) {
+        if (viewer.getControl().isDisposed() || result.results().isEmpty()) {
+            return;
+        }
+        DBPProject project = conflictedProject(result.results().get(0));
+        if (project != null) {
+            resolveProjectConflict(project);
+        }
+    }
+
+    private void showConflictWarning(@NotNull ProjectJobBatchResult<?> result) {
+        if (viewer.getControl().isDisposed()) {
+            return;
+        }
+        List<DBPProject> conflictedProjects = getConflictedProjects(result);
+        if (!conflictedProjects.isEmpty()) {
+            MessageDialog.openWarning(getShell(), DDTrackingUIMessages.project_sync_title,
+                NLS.bind(DDTrackingUIMessages.projects_conflicts,
+                    String.join("\n", conflictedProjects.stream().map(DBPProject::getName).toList())));
+        }
+    }
+
+    @NotNull
+    private List<DBPProject> getConflictedProjects(@NotNull ProjectJobBatchResult<?> result) {
+        List<DBPProject> conflictedProjects = new ArrayList<>();
+        for (Object value : result.results()) {
+            DBPProject project = conflictedProject(value);
+            if (project != null) {
+                conflictedProjects.add(project);
+            }
+        }
+        return conflictedProjects;
+    }
+
+    @Nullable
+    private DBPProject conflictedProject(@NotNull Object value) {
+        return value instanceof SyncResult sync && sync.status() == ProjectStatus.CONFLICT ? sync.project() : null;
     }
 
     private void showError(@NotNull String message, @NotNull Throwable error) {
