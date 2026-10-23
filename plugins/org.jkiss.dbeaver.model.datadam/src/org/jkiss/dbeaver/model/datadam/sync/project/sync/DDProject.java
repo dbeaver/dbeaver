@@ -58,7 +58,7 @@ public class DDProject {
     }
 
     @NotNull
-    public synchronized ProjectStatus getStatus(@NotNull DBPProject project) throws DBException {
+    public synchronized ProjectStatus calculateSyncStatus(@NotNull DBPProject project) throws DBException {
         DDProjectSyncSnapshot snapshot = prepareSnapshot(project);
         return snapshot == null ? ProjectStatus.NOT_SYNC : status(snapshot.change());
     }
@@ -91,9 +91,11 @@ public class DDProject {
     }
 
     @NotNull
-    public synchronized DDSharedProject share(@NotNull DBPProject project, @Nullable String description) throws DBException {
+    public synchronized DDSharedProject share(
+        @NotNull DBPProject project, @NotNull String name, @Nullable String description
+    ) throws DBException {
         requireUnbound(project);
-        DDProjectSyncService.ShareResult result = syncService.createRemoteProject(project, description);
+        DDProjectSyncService.ShareResult result = syncService.createRemoteProject(project, name, description);
         bindingStore.save(result.binding());
         // Persist the new association before uploading, so a failed upload can be retried without sharing again.
         synchronize(project);

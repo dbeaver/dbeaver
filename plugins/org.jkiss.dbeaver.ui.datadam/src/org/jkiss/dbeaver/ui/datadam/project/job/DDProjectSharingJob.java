@@ -29,15 +29,19 @@ import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester;
 public class DDProjectSharingJob extends DDProjectOperationJob<DDSharedProject> {
     @NotNull
     private final DBPProject project;
+    @NotNull
+    private final String name;
     @Nullable
     private final String description;
 
     public DDProjectSharingJob(
         @NotNull DBPProject project,
+        @NotNull String name,
         @Nullable String description
     ) {
         super(DDTrackingUIMessages.project_sync_share_job, DDTrackingUIMessages.project_sync_share_failed);
         this.project = project;
+        this.name = name;
         this.description = description;
     }
 
@@ -46,7 +50,7 @@ public class DDProjectSharingJob extends DDProjectOperationJob<DDSharedProject> 
     protected DDSharedProject perform(@NotNull DBRProgressMonitor monitor) throws DBException {
         var manager = uiManager.getProjectManager();
         try {
-            return manager.shareProject(project, description);
+            return manager.shareProject(project, name, description);
         } finally {
             DDProjectSyncPropertyTester.firePropertyChange();
         }

@@ -83,8 +83,21 @@ public class DDProjectManager {
     }
 
     @NotNull
-    public DDSharedProject shareProject(@NotNull DBPProject project, @Nullable String description) throws DBException {
-        return getOrCreate(project).share(project, description);
+    public DDSharedProject shareProject(
+        @NotNull DBPProject project, @NotNull String name, @Nullable String description
+    ) throws DBException {
+        return getOrCreate(project).share(project, name, description);
+    }
+
+    @NotNull
+    public DDSharedProject updateProject(
+        @NotNull DDSharedProject project, @NotNull String name, @Nullable String description
+    ) throws DBException {
+        try {
+            return client.updateProject(project.id(), name, description);
+        } catch (DDShareException e) {
+            throw new DBException("Error updating DataDam project '" + project.name() + "'", e);
+        }
     }
 
     private void loadProjects() {
@@ -111,9 +124,17 @@ public class DDProjectManager {
         return getOrCreate(project).getBinding(project) != null;
     }
 
+    /**
+     * Calculates the current sync status by fetching the server revision and reading
+     * and fingerprinting local project files. This operation may be expensive.
+     *
+     * @param project the local project to inspect
+     * @return the current sync status, or {@link ProjectStatus#NOT_SYNC} if the project is not bound
+     * @throws DBException if the project cannot be inspected
+     */
     @NotNull
-    public ProjectStatus getStatus(@NotNull DBPProject project) throws DBException {
-        return getOrCreate(project).getStatus(project);
+    public ProjectStatus calculateSyncStatus(@NotNull DBPProject project) throws DBException {
+        return getOrCreate(project).calculateSyncStatus(project);
     }
 
     @NotNull

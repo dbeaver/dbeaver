@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.datadam.project;
 
 import com.dbeaver.datadam.share.api.model.DDSharedProject;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
@@ -379,7 +378,12 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             return;
         }
         DBPProject project = (DBPProject) dialog.getFirstResult();
-        runOperation(() -> uiManager.shareProject(project, project.getDescription()));
+        DDProjectEditDialog<DBPProject> editor = new DDProjectEditDialog<>(
+            getShell(), DDTrackingUIMessages.projects_connect, project, project.getName(), project.getDescription());
+        if (editor.open() == Window.OK) {
+            var details = editor.getDetails();
+            runOperation(() -> uiManager.shareProject(details.project(), details.name(), details.description()));
+        }
     }
 
     private void editProject() {
@@ -387,10 +391,13 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         if (selection.size() != 1 || selection.get(0).remoteProject() == null) {
             return;
         }
-        MessageDialog.openInformation(
-            getShell(), DDTrackingUIMessages.projects_edit,
-            NLS.bind(DDTrackingUIMessages.projects_edit_placeholder, selection.get(0).name())
-        );
+        DDSharedProject project = selection.get(0).remoteProject();
+        DDProjectEditDialog<DDSharedProject> editor = new DDProjectEditDialog<>(
+            getShell(), DDTrackingUIMessages.projects_edit, project, project.name(), project.description());
+        if (editor.open() == Window.OK) {
+            var details = editor.getDetails();
+            runOperation(() -> uiManager.updateProject(details.project(), details.name(), details.description()));
+        }
     }
 
     private void syncSelected() {

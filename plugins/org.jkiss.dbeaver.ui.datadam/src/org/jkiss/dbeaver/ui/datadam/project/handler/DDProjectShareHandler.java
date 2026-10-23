@@ -17,16 +17,27 @@
 package org.jkiss.dbeaver.ui.datadam.project.handler;
 
 import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.jface.window.Window;
+import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectEditDialog;
 import org.jkiss.dbeaver.ui.datadam.project.job.DDProjectSharingJob;
 
 public class DDProjectShareHandler extends DDProjectHandler<DDProjectSharingJob> {
-    @NotNull
+    @Nullable
     @Override
     protected DDProjectSharingJob createJob(@NotNull ExecutionEvent event, @NotNull DBPProject project) {
-        return new DDProjectSharingJob(project, null);
+        DDProjectEditDialog<DBPProject> dialog = new DDProjectEditDialog<>(
+            HandlerUtil.getActiveShell(event), DDTrackingUIMessages.projects_connect,
+            project, project.getName(), project.getDescription());
+        if (dialog.open() != Window.OK) {
+            return null;
+        }
+        var details = dialog.getDetails();
+        return new DDProjectSharingJob(details.project(), details.name(), details.description());
     }
 
     @Override

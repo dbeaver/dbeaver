@@ -165,7 +165,9 @@ public class DDProjectSyncService {
     }
 
     @NotNull
-    public ShareResult createRemoteProject(@NotNull DBPProject project, @Nullable String description) throws DBException {
+    public ShareResult createRemoteProject(
+        @NotNull DBPProject project, @NotNull String name, @Nullable String description
+    ) throws DBException {
         log.debug("Sharing project '" + project.getName() + "' with DataDam");
         DDProjectSyncContentAdapter content = DDProjectSyncContentAdapter.forEnabledUnits();
         if (content.getUnitIds().isEmpty()) {
@@ -174,7 +176,7 @@ public class DDProjectSyncService {
 
         UUID remoteProjectId = UUID.randomUUID();
         try {
-            DDSharedProject remote = client.createProject(remoteProjectId, project.getName(), description);
+            DDSharedProject remote = client.createProject(remoteProjectId, name, description);
 
             DDSharedProjectRevision revision = client.getCurrentProjectRevision(remoteProjectId);
             DDProjectSyncLocalBinding binding = new DDProjectSyncLocalBinding(

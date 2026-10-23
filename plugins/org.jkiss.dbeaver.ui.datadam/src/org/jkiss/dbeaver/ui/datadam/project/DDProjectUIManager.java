@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.LocalProjectInfo;
 import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -41,6 +42,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class DDProjectUIManager {
+    private static final int VIEW_LOAD_THREADS = 4;
     private static final DDProjectUIManager INSTANCE = new DDProjectUIManager();
 
     private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
@@ -76,7 +78,7 @@ public class DDProjectUIManager {
         for (DDSharedProject remote : manager.getRemoteProjects()) {
             remoteProjects.put(remote.id(), remote);
         }
-        List<DDProjectView> views = new ArrayList<>();
+        List<ProjectViewJob> jobs = new ArrayList<>();
         for (LocalProjectInfo local : manager.getLocalProjects()) {
             if (monitor.isCanceled()) {
                 return List.of();
@@ -84,13 +86,37 @@ public class DDProjectUIManager {
             if (local.remoteProjectId() == null) {
                 continue;
             }
-            DBPProject project = local.project();
             DDSharedProject remote = remoteProjects.remove(local.remoteProjectId());
-            ProjectStatus status = remote == null ? ProjectStatus.MISSING_ON_SERVER : manager.getStatus(project);
-            views.add(new DDProjectView(
-                project.getName(), remote == null ? project.getDescription() : remote.description(), project, remote,
-                local.lastSyncedRevision(), status
-            ));
+            jobs.add(new ProjectViewJob(manager, local, remote));
+        }
+        if (monitor.isCanceled()) {
+            return List.of();
+        }
+        if (!jobs.isEmpty()) {
+            JobGroup group = createJobGroup(DDTrackingUIMessages.project_sync_import_list_job,
+                Math.min(VIEW_LOAD_THREADS, jobs.size()), jobs.size());
+            for (ProjectViewJob job : jobs) {
+                job.setJobGroup(group);
+                job.setSystem(true);
+                job.schedule();
+            }
+            if (joinJobs(group, monitor)) {
+                return List.of();
+            }
+        }
+        List<DDProjectView> views = new ArrayList<>();
+        for (ProjectViewJob job : jobs) {
+            if (monitor.isCanceled()) {
+                return List.of();
+            }
+            IStatus status = job.getResult();
+            if (status == null || status.matches(IStatus.CANCEL)) {
+                return List.of();
+            }
+            if (status.getSeverity() == IStatus.ERROR) {
+                throw new DBException(status.getMessage(), status.getException());
+            }
+            views.add(job.view);
         }
         for (DDSharedProject remote : remoteProjects.values()) {
             if (monitor.isCanceled()) {
@@ -103,6 +129,47 @@ public class DDProjectUIManager {
         return monitor.isCanceled() ? List.of() : views;
     }
 
+    private class ProjectViewJob extends AbstractJob {
+        @NotNull
+        private final DDProjectManager manager;
+        @NotNull
+        private final LocalProjectInfo local;
+        @Nullable
+        private final DDSharedProject remote;
+        private DDProjectView view;
+
+        private ProjectViewJob(
+            @NotNull DDProjectManager manager, @NotNull LocalProjectInfo local, @Nullable DDSharedProject remote
+        ) {
+            super(local.project().getName());
+            this.manager = manager;
+            this.local = local;
+            this.remote = remote;
+        }
+
+        @NotNull
+        @Override
+        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+            if (monitor.isCanceled()) {
+                return Status.CANCEL_STATUS;
+            }
+            DBPProject project = local.project();
+            try {
+                ProjectStatus status = remote == null ? ProjectStatus.MISSING_ON_SERVER : manager.calculateSyncStatus(project);
+                if (monitor.isCanceled()) {
+                    return Status.CANCEL_STATUS;
+                }
+                view = new DDProjectView(
+                    project.getName(), remote == null ? project.getDescription() : remote.description(), project, remote,
+                    local.lastSyncedRevision(), status
+                );
+                return Status.OK_STATUS;
+            } catch (DBException e) {
+                return Status.error("Could not load DataDam project '" + project.getName() + "'", e);
+            }
+        }
+    }
+
     @NotNull
     public List<DBPProject> getNotDatadamLocalProjects() throws DBException {
         return getProjectManager().getLocalProjects().stream()
@@ -113,7 +180,7 @@ public class DDProjectUIManager {
 
     @NotNull
     public ProjectStatus getStatus(@NotNull DBPProject project) throws DBException {
-        return getProjectManager().getStatus(project);
+        return getProjectManager().calculateSyncStatus(project);
     }
 
     @NotNull
@@ -144,12 +211,22 @@ public class DDProjectUIManager {
     }
 
     @NotNull
-    public ProjectJobBatchResult<DDSharedProject> shareProject(@NotNull DBPProject project, @Nullable String description) {
-        DDProjectSharingJob job = new DDProjectSharingJob(project, description);
+    public ProjectJobBatchResult<DDSharedProject> shareProject(
+        @NotNull DBPProject project, @NotNull String name, @Nullable String description
+    ) {
+        DDProjectSharingJob job = new DDProjectSharingJob(project, name, description);
         return runJobs(
             DDTrackingUIMessages.project_sync_share_job, List.of(job),
             List.of(project.getName()), 0
         );
+    }
+
+    @NotNull
+    public ProjectJobBatchResult<DDSharedProject> updateProject(
+        @NotNull DDSharedProject project, @NotNull String name, @Nullable String description
+    ) {
+        DDProjectUpdateJob job = new DDProjectUpdateJob(project, name, description);
+        return runJobs(DDTrackingUIMessages.project_edit_job, List.of(job), List.of(project.name()), 0);
     }
 
     @NotNull
@@ -162,12 +239,7 @@ public class DDProjectUIManager {
         if (jobs.isEmpty()) {
             return new ProjectJobBatchResult<>(List.of(), List.of(), false);
         }
-        JobGroup group = new JobGroup(title, maxThreads, jobs.size()) {
-            @Override
-            protected boolean shouldCancel(@NotNull IStatus result, int failedJobs, int canceledJobs) {
-                return canceledJobs > 0;
-            }
-        };
+        JobGroup group = createJobGroup(title, maxThreads, jobs.size());
         DBRRunnableWithResult<Boolean> runner = new DBRRunnableWithResult<>() {
             @Override
             public void run(@NotNull DBRProgressMonitor monitor) throws InterruptedException {
@@ -179,17 +251,7 @@ public class DDProjectUIManager {
                         job.setSystem(true);
                         job.schedule();
                     }
-                    try {
-                        group.join(0, monitor.getNestedMonitor());
-                    } catch (OperationCanceledException | InterruptedException e) {
-                        result = true;
-                        group.cancel();
-                        // Backend operations finish their current transfer before the caller refreshes the table.
-                        group.join(0, null);
-                        if (e instanceof InterruptedException) {
-                            Thread.currentThread().interrupt();
-                        }
-                    }
+                    result = joinJobs(group, monitor);
                 } finally {
                     monitor.done();
                 }
@@ -226,6 +288,39 @@ public class DDProjectUIManager {
             }
         }
         return new ProjectJobBatchResult<>(results, failures, canceled);
+    }
+
+    @NotNull
+    private JobGroup createJobGroup(@NotNull String title, int maxThreads, int jobCount) {
+        return new JobGroup(title, maxThreads, jobCount) {
+            @Override
+            protected boolean shouldCancel(@NotNull IStatus result, int failedJobs, int canceledJobs) {
+                return canceledJobs > 0;
+            }
+        };
+    }
+
+    private boolean joinJobs(@NotNull JobGroup group, @NotNull DBRProgressMonitor monitor) {
+        try {
+            group.join(0, monitor.getNestedMonitor());
+            return monitor.isCanceled();
+        } catch (OperationCanceledException | InterruptedException e) {
+            group.cancel();
+            // Backend operations finish their current transfer before the caller refreshes the table.
+            boolean interrupted = e instanceof InterruptedException;
+            while (true) {
+                try {
+                    group.join(0, null);
+                    break;
+                } catch (InterruptedException ex) {
+                    interrupted = true;
+                }
+            }
+            if (interrupted) {
+                Thread.currentThread().interrupt();
+            }
+            return true;
+        }
     }
 
     public record ProjectJobFailure(@NotNull String projectName, @NotNull IStatus error) {
