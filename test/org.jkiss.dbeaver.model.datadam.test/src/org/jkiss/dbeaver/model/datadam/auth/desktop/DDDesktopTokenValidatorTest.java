@@ -16,12 +16,16 @@
  */
 package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
-import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.net.URI;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 class DDDesktopTokenValidatorTest {
@@ -32,14 +36,42 @@ class DDDesktopTokenValidatorTest {
         Set.of("https://mcp.example.test/mcp"), Set.of("mcp:connect"));
 
     @Test
-    void resourceTokensRemainSeparateAfterPersistenceRoundTrip() {
-        var stored = List.of(JSONUtils.GSON.fromJson(JSONUtils.GSON.toJson(List.of(api, mcp)), DDDesktopUserToken[].class));
+    @SuppressWarnings("unchecked")
+    void resourceTokensRemainSeparateAfterPersistenceRoundTrip() throws Exception {
+        Map<String, String> secrets = new HashMap<>();
+        DBSSecretController controller = Mockito.mock(DBSSecretController.class);
+        Mockito.when(controller.getPrivateSecretValue(Mockito.anyString()))
+            .thenAnswer(invocation -> secrets.get(invocation.getArgument(0)));
+        Mockito.doAnswer(invocation -> {
+            secrets.put(invocation.getArgument(0), invocation.getArgument(1));
+            return null;
+        }).when(controller).setPrivateSecretValue(Mockito.anyString(), Mockito.any());
+        // The store is package-private in another OSGi classloader; keep its implementation out of the public API.
+        var type = Class.forName(DDDesktopUserToken.class.getPackageName() + ".DDDesktopTokenStore",
+            true, DDDesktopUserToken.class.getClassLoader());
+        var constructor = type.getDeclaredConstructor(DBSSecretController.class);
+        var load = type.getDeclaredMethod("load");
+        var save = type.getDeclaredMethod("save", Collection.class);
+        var clear = type.getDeclaredMethod("clear");
+        constructor.setAccessible(true);
+        load.setAccessible(true);
+        save.setAccessible(true);
+        clear.setAccessible(true);
+        var store = constructor.newInstance(controller);
+        Assertions.assertEquals(List.of(), load.invoke(store));
+        save.invoke(store, List.of(api, mcp));
+        Assertions.assertTrue(secrets.containsKey("datadam.desktop.access-tokens"));
+        var restored = constructor.newInstance(controller);
+        var stored = (List<DDDesktopUserToken>) load.invoke(restored);
         Assertions.assertEquals(List.of(api, mcp), stored);
         Assertions.assertNotEquals(stored.get(0).key(), stored.get(1).key());
         Assertions.assertFalse(validator.matchesResource(api, URI.create("https://mcp.example.test/mcp")));
         Assertions.assertFalse(validator.matchesResource(mcp, URI.create("https://account.example.test/graphql")));
         Assertions.assertTrue(validator.matchesResource(api, URI.create("https://account.example.test/graphql")));
         Assertions.assertTrue(validator.matchesResource(api, URI.create("https://storage.example.test/projects")));
+        clear.invoke(restored);
+        Assertions.assertEquals(List.of(), load.invoke(store));
+        Mockito.verify(controller, Mockito.times(2)).flushChanges();
     }
 
     @Test
