@@ -86,8 +86,10 @@ public class FilterSerializer<T extends DataSourceDescriptor> {
         @NotNull T dataSource,
         boolean serialiseCustomUserFilters
     ) throws IOException {
-        Collection<FilterMapping> filterMappings = dataSource.getObjectFilters();
-        if (!CommonUtils.isEmpty(filterMappings)) {
+        Collection<FilterMapping> filterMappings = serialiseCustomUserFilters
+            ? dataSource.getUserObjectFilters()
+            : dataSource.getObjectFilters();
+        if (serialiseCustomUserFilters || !CommonUtils.isEmpty(filterMappings)) {
             if (arrayName != null) {
                 json.name(arrayName);
             }

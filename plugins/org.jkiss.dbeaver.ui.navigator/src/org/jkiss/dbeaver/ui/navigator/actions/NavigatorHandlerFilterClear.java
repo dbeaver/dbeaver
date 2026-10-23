@@ -73,8 +73,7 @@ public class NavigatorHandlerFilterClear extends AbstractHandler {
     }
 
     private boolean isUserObjectFilter(@NotNull DBNDatabaseNode parentNode, @NotNull DBXTreeItem itemsMeta) {
-        DBSObjectFilter foundFilter = parentNode.getNodeFilter(itemsMeta, true);
-        return foundFilter != null && foundFilter.isUserFilter();
+        return parentNode.getUserNodeFilter(itemsMeta, true) != null;
     }
 
 }

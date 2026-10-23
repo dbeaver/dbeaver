@@ -38,6 +38,7 @@ public class DBSObjectFilter {
     private boolean caseSensitive;
 
     private transient boolean isUserFilter;
+    private transient List<DBSObjectFilter> conjunctiveFilters;
     private transient List<Object> includePatterns = null;
     private transient List<Object> excludePatterns = null;
 
@@ -62,7 +63,36 @@ public class DBSObjectFilter {
             this.exclude = filter.exclude == null ? null : new ArrayList<>(filter.exclude);
             this.caseSensitive = filter.caseSensitive;
             this.isUserFilter = filter.isUserFilter;
+            this.conjunctiveFilters = filter.conjunctiveFilters == null
+                ? null
+                : filter.conjunctiveFilters.stream().map(DBSObjectFilter::new).toList();
         }
+    }
+
+    @Nullable
+    public static DBSObjectFilter conjunction(@Nullable DBSObjectFilter... filters) {
+        List<DBSObjectFilter> applicableFilters = Arrays.stream(filters)
+            .filter(filter -> filter != null && !filter.isNotApplicable())
+            .flatMap(filter -> filter.getConjunctiveFilters().stream())
+            .toList();
+        if (applicableFilters.isEmpty()) {
+            return null;
+        }
+        if (applicableFilters.size() == 1) {
+            return applicableFilters.getFirst();
+        }
+        DBSObjectFilter filter = new DBSObjectFilter();
+        filter.conjunctiveFilters = applicableFilters;
+        return filter;
+    }
+
+    /**
+     * Returns the filters that form this effective filter. A filter composed from multiple filters is read-only,
+     * except for case sensitivity that is propagated to every component.
+     */
+    @NotNull
+    public List<DBSObjectFilter> getConjunctiveFilters() {
+        return conjunctiveFilters == null ? List.of(this) : conjunctiveFilters;
     }
 
     public String getName() {
@@ -79,6 +109,9 @@ public class DBSObjectFilter {
 
     public void setCaseSensitive(boolean caseSensitive) {
         this.caseSensitive = caseSensitive;
+        if (conjunctiveFilters != null) {
+            conjunctiveFilters.forEach(filter -> filter.setCaseSensitive(caseSensitive));
+        }
     }
 
     public String getDescription() {
@@ -94,14 +127,17 @@ public class DBSObjectFilter {
     }
 
     public void setEnabled(boolean enabled) {
+        checkMutable();
         this.enabled = enabled;
     }
 
     public List<String> getInclude() {
+        checkMutable();
         return include;
     }
 
     public void addInclude(String name) {
+        checkMutable();
         if (include == null) {
             include = new ArrayList<>();
         }
@@ -112,16 +148,19 @@ public class DBSObjectFilter {
     }
 
     public void setInclude(@Nullable List<String> include) {
+        checkMutable();
         this.include = include;
         this.includePatterns = null;
     }
 
     @Nullable
     public List<String> getExclude() {
+        checkMutable();
         return exclude;
     }
 
     public void addExclude(@NotNull String name) {
+        checkMutable();
         if (exclude == null) {
             exclude = new ArrayList<>();
         }
@@ -132,28 +171,44 @@ public class DBSObjectFilter {
     }
 
     public void setExclude(@Nullable List<String> exclude) {
+        checkMutable();
         this.exclude = exclude;
         this.excludePatterns = null;
     }
 
     public boolean isNotApplicable() {
+        if (conjunctiveFilters != null) {
+            return conjunctiveFilters.stream().allMatch(DBSObjectFilter::isNotApplicable);
+        }
         return !enabled || isEmpty();
     }
 
     public boolean isEmpty() {
+        if (conjunctiveFilters != null) {
+            return conjunctiveFilters.stream().allMatch(DBSObjectFilter::isEmpty);
+        }
         return CommonUtils.isEmpty(include) && CommonUtils.isEmpty(exclude);
     }
 
     public boolean hasSingleMask() {
+        if (conjunctiveFilters != null) {
+            return conjunctiveFilters.size() == 1 && conjunctiveFilters.getFirst().hasSingleMask();
+        }
         return include != null && include.size() == 1 && CommonUtils.isEmpty(exclude);
     }
 
     @Nullable
     public String getSingleMask() {
+        if (conjunctiveFilters != null) {
+            return conjunctiveFilters.size() == 1 ? conjunctiveFilters.getFirst().getSingleMask() : null;
+        }
         return !CommonUtils.isEmpty(include) ? include.get(0) : null;
     }
 
     public synchronized boolean matches(String name) {
+        if (conjunctiveFilters != null) {
+            return conjunctiveFilters.stream().allMatch(filter -> filter.isNotApplicable() || filter.matches(name));
+        }
         fillIncludePatterns();
         if (includePatterns != null) {
             // Match includes (at least one should match)
@@ -191,6 +246,9 @@ public class DBSObjectFilter {
     }
 
     public synchronized boolean matchesAny(String... names) {
+        if (conjunctiveFilters != null) {
+            return conjunctiveFilters.stream().allMatch(filter -> filter.isNotApplicable() || filter.matchesAny(names));
+        }
         fillIncludePatterns();
         if (includePatterns != null) {
             boolean matched = false;
@@ -259,7 +317,14 @@ public class DBSObjectFilter {
     }
 
     public void setUserFilter(boolean userFilter) {
+        checkMutable();
         isUserFilter = userFilter;
+    }
+
+    private void checkMutable() {
+        if (conjunctiveFilters != null) {
+            throw new UnsupportedOperationException("Conjunctive object filters are read-only");
+        }
     }
 
     @Override
@@ -274,7 +339,8 @@ public class DBSObjectFilter {
             enabled == source.enabled &&
             CommonUtils.equalObjects(include, source.include) &&
             CommonUtils.equalObjects(exclude, source.exclude) &&
-            isUserFilter == source.isUserFilter;
+            isUserFilter == source.isUserFilter &&
+            CommonUtils.equalObjects(conjunctiveFilters, source.conjunctiveFilters);
     }
 
     @Override
@@ -284,6 +350,7 @@ public class DBSObjectFilter {
             (enabled ? 1 : 0) +
             CommonUtils.hashCode(include) +
             CommonUtils.hashCode(exclude) +
-            (isUserFilter ? 1 : 0);
+            (isUserFilter ? 1 : 0) +
+            CommonUtils.hashCode(conjunctiveFilters);
     }
 }

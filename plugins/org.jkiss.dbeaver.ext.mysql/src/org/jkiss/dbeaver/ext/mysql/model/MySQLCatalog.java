@@ -602,26 +602,36 @@ public class MySQLCatalog implements
                     DBSObjectFilter tableFilters = dataSource.getContainer().getObjectFilter(MySQLTable.class, owner, true);
                     if (tableFilters != null && !tableFilters.isNotApplicable()) {
                         sql.append(" WHERE ");
-                        if (!CommonUtils.isEmpty(tableFilters.getInclude())) {
-                            sql.append("(");
-                            boolean hasCond = false;
-                            for (String incName : tableFilters.getInclude()) {
-                                if (hasCond) sql.append(" OR ");
-                                hasCond = true;
-                                sql.append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), SQLUtils.makeSQLLike(incName)));
+                        boolean hasFilter = false;
+                        for (DBSObjectFilter filter : tableFilters.getConjunctiveFilters()) {
+                            if (filter.isNotApplicable()) {
+                                continue;
                             }
-                            sql.append(")");
-                        }
-                        if (!CommonUtils.isEmpty(tableFilters.getExclude())) {
-                            if (!CommonUtils.isEmpty(tableFilters.getInclude())) {
+                            if (hasFilter) {
                                 sql.append(" AND ");
                             }
+                            hasFilter = true;
                             sql.append("(");
-                            boolean hasCond = false;
-                            for (String incName : tableFilters.getExclude()) {
-                                if (hasCond) sql.append(" OR ");
-                                hasCond = true;
-                                sql.append(tableNameCol).append(" NOT LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
+                            boolean hasCondition = false;
+                            if (!CommonUtils.isEmpty(filter.getInclude())) {
+                                sql.append("(");
+                                for (String incName : filter.getInclude()) {
+                                    if (hasCondition) {
+                                        sql.append(" OR ");
+                                    }
+                                    hasCondition = true;
+                                    sql.append(tableNameCol).append(" LIKE ").append(
+                                        SQLUtils.quoteString(session.getDataSource(), SQLUtils.makeSQLLike(incName)));
+                                }
+                                sql.append(")");
+                            }
+                            for (String excName : CommonUtils.safeCollection(filter.getExclude())) {
+                                if (hasCondition) {
+                                    sql.append(" AND ");
+                                }
+                                hasCondition = true;
+                                sql.append(tableNameCol).append(" NOT LIKE ").append(
+                                    SQLUtils.quoteString(session.getDataSource(), SQLUtils.makeSQLLike(excName)));
                             }
                             sql.append(")");
                         }

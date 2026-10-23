@@ -126,7 +126,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         this.accessRestrictions = dataSourceDescriptor.getModifyPermission();
 
         for (FilterInfo filterInfo : filters) {
-            filterInfo.filter = dataSourceDescriptor.getObjectFilter(
+            filterInfo.filter = dataSourceDescriptor.getConnectionObjectFilter(
                 getDataSourceObjectType(dataSourceDescriptor, filterInfo.baseType),
                 null,
                 true
