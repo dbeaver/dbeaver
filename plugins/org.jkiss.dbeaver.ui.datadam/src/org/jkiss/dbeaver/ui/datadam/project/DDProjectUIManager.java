@@ -81,16 +81,12 @@ public class DDProjectUIManager {
             if (monitor.isCanceled()) {
                 return List.of();
             }
+            if (local.remoteProjectId() == null) {
+                continue;
+            }
             DBPProject project = local.project();
             DDSharedProject remote = remoteProjects.remove(local.remoteProjectId());
-            ProjectStatus status;
-            if (local.remoteProjectId() == null) {
-                status = ProjectStatus.NOT_SYNC;
-            } else if (remote == null) {
-                status = ProjectStatus.MISSING_ON_SERVER;
-            } else {
-                status = manager.getStatus(project);
-            }
+            ProjectStatus status = remote == null ? ProjectStatus.MISSING_ON_SERVER : manager.getStatus(project);
             views.add(new DDProjectView(
                 project.getName(), remote == null ? project.getDescription() : remote.description(), project, remote,
                 local.lastSyncedRevision(), status

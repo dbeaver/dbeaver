@@ -415,8 +415,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         List<DBPProject> projects = selection.stream().map(DDProjectView::localProject).toList();
         String message = projects.size() == 1
             ? NLS.bind(DDTrackingUIMessages.project_sync_unbind_confirm_message, projects.get(0).getName())
-            : NLS.bind(DDTrackingUIMessages.projects_unbind_selected_confirm_message,
-                String.join("\n", projects.stream().map(DBPProject::getName).toList()));
+            : DDTrackingUIMessages.projects_unbind_selected_confirm_message;
         if (UIUtils.confirmAction(getShell(), DDTrackingUIMessages.project_sync_unbind_confirm_title, message)) {
             runOperation(() -> uiManager.unbindProjects(projects));
         }
