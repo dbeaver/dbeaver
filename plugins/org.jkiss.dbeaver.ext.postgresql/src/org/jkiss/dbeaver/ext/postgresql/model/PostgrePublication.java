@@ -135,7 +135,8 @@ public class PostgrePublication extends PostgreReplicationObject {
                     statement.setString(1, getName());
                     try (JDBCResultSet result = statement.executeQuery()) {
                         while (result.next()) {
-                            PostgreTableBase table = getDatabase().findTable(monitor, result.getLong("relnamespace"), result.getLong("oid"));
+                            PostgreTableBase table = getDatabase().findTable(
+                                monitor, result.getLong("relnamespace"), result.getLong("oid"));
                             if (table instanceof PostgreTable publicationTable) {
                                 loaded.add(publicationTable);
                             }
@@ -223,7 +224,8 @@ public class PostgrePublication extends PostgreReplicationObject {
         boolean supportsFilters = getDataSource().isServerVersionAtLeast(15, 0);
         // Use explicit membership, not pg_publication_tables: that view expands partitions and schema publications.
         // ONLY prevents replay from adding inheritance descendants absent from the explicit catalog membership.
-        String sql = "SELECT " + (supportsFilters ? "'TABLE ONLY ' || " : "'ONLY ' || ") + "quote_ident(n.nspname) || '.' || quote_ident(c.relname)" +
+        String sql = "SELECT " + (supportsFilters ? "'TABLE ONLY ' || " : "'ONLY ' || ")
+            + "quote_ident(n.nspname) || '.' || quote_ident(c.relname)" +
             (supportsFilters ?
                 " || CASE WHEN pr.prattrs IS NULL THEN '' ELSE ' (' || " +
                     "(SELECT string_agg(quote_ident(a.attname), ', ' ORDER BY u.ord) " +

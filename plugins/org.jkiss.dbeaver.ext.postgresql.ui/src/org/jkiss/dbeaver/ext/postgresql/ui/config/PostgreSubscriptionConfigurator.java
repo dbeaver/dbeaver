@@ -39,6 +39,7 @@ import java.util.Map;
 
 public class PostgreSubscriptionConfigurator implements DBEObjectConfigurator<PostgreSubscription> {
     private static final Log log = Log.getLog(PostgreSubscriptionConfigurator.class);
+
     @Nullable
     @Override
     public PostgreSubscription configureObject(

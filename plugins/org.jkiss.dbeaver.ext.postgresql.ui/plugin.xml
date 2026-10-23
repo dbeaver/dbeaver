@@ -306,7 +306,7 @@
 
     <extension point="org.eclipse.ui.commands">
         <command id="org.jkiss.dbeaver.ext.postgresql.ui.refreshSubscription" name="%tools.subscription.refresh.name"/>
-    	<command id="org.jkiss.dbeaver.ext.postgresql.ui.fdw" name="Foreign data wrappers configurator"/>
+        <command id="org.jkiss.dbeaver.ext.postgresql.ui.fdw" name="Foreign data wrappers configurator"/>
     </extension>
     
     <extension point="org.eclipse.ui.handlers">

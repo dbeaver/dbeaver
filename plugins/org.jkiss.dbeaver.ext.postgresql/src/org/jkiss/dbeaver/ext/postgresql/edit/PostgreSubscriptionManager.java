@@ -119,7 +119,8 @@ public class PostgreSubscriptionManager extends SQLObjectEditor<PostgreSubscript
         if (command.hasProperty(PROP_PUBLICATIONS)) {
             subscription.getPublicationNamesSQL();
         }
-        if (command.hasProperty(PROP_SYNCHRONOUS_COMMIT) && !PostgreSubscription.isValidSynchronousCommit(subscription.getSynchronousCommit())) {
+        if (command.hasProperty(PROP_SYNCHRONOUS_COMMIT)
+            && !PostgreSubscription.isValidSynchronousCommit(subscription.getSynchronousCommit())) {
             throw new DBException("Invalid synchronous commit mode");
         }
         if (command.hasProperty(PROP_SLOT_NAME) && CommonUtils.isEmpty(subscription.getSlotName()) && subscription.isEnabled()) {
@@ -156,7 +157,8 @@ public class PostgreSubscriptionManager extends SQLObjectEditor<PostgreSubscript
         }
         if (command.hasProperty(PROP_CONNECTION_INFO)) {
             command.setDisableSessionLogging(true); // Hide replacement credentials from Query Manager.
-            actions.add(new SQLDatabasePersistAction(title, prefix + " CONNECTION " + SQLUtils.quoteString(subscription, subscription.getConnectionInfo())));
+            actions.add(new SQLDatabasePersistAction(title,
+                prefix + " CONNECTION " + SQLUtils.quoteString(subscription, subscription.getConnectionInfo())));
         }
         List<String> parameters = new ArrayList<>();
         if (command.hasProperty(PROP_SLOT_NAME)) {

@@ -181,15 +181,13 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                     }
                     if (!cmd.executed) {
                         // Persist changes
-                        //if (CommonUtils.isEmpty(cmd.persistActions)) {
-                            DBEPersistAction[] persistActions = cmd.command.getPersistActions(monitor, executionContext, options);
-                            if (!ArrayUtils.isEmpty(persistActions)) {
-                                cmd.persistActions = new ArrayList<>(persistActions.length);
-                                for (DBEPersistAction action : persistActions) {
-                                    cmd.persistActions.add(new PersistInfo(action));
-                                }
+                        DBEPersistAction[] persistActions = cmd.command.getPersistActions(monitor, executionContext, options);
+                        if (!ArrayUtils.isEmpty(persistActions)) {
+                            cmd.persistActions = new ArrayList<>(persistActions.length);
+                            for (DBEPersistAction action : persistActions) {
+                                cmd.persistActions.add(new PersistInfo(action));
                             }
-                        //}
+                        }
                         if (!CommonUtils.isEmpty(cmd.persistActions)) {
                             try (DBCSession session = executionContext == this.executionContext
                                 ? openCommandPersistContext(monitor, cmd.command)

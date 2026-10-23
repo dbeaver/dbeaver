@@ -418,10 +418,10 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
     }
 
     private void updatePublicationSource() {
-        String source = publisherPanel.getPublicationSourceName();
         publicationSource.setItems(publisherPanel.getPublicationSources());
         publicationSource.select(publisherPanel.getPublicationSourceIndex());
         publicationSource.setEnabled(publicationSource.getItemCount() > 1);
+        String source = publisherPanel.getPublicationSourceName();
         loadPublicationsButton.setToolTipText(NLS.bind(PostgreMessages.dialog_create_subscription_publications_source, source)
             + "\n" + PostgreMessages.dialog_create_subscription_load_publications_tip);
     }
@@ -457,7 +457,8 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
                     // use the publisher selected on the first step, with its desktop access settings
                     List<String> names = PostgreSubscription.readPublisherPublicationNames(
                         monitor, selectedConnection);
-                    boolean logicalReplicationEnabled = PostgreSubscription.isPublisherLogicalReplicationEnabled(monitor, selectedConnection);
+                    boolean logicalReplicationEnabled =
+                        PostgreSubscription.isPublisherLogicalReplicationEnabled(monitor, selectedConnection);
                     UIUtils.asyncExec(() -> {
                         if (!publicationsViewer.getTable().isDisposed() && revision == publicationsRevision) {
                             publisherLogicalReplicationEnabled = logicalReplicationEnabled;
@@ -638,7 +639,7 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
 
         Composite slot = UIUtils.createComposite(advanced, 2);
         slot.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        Label slotLabel = UIUtils.createControlLabel(slot, PostgreMessages.dialog_create_subscription_slot);
+        final Label slotLabel = UIUtils.createControlLabel(slot, PostgreMessages.dialog_create_subscription_slot);
         Composite slotValue = UIUtils.createComposite(slot, 1);
         slotValue.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         slotText = new Text(slotValue, SWT.BORDER | SWT.SINGLE);
