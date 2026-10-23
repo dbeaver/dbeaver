@@ -44,9 +44,9 @@ import java.util.concurrent.atomic.AtomicReference;
 
 @Timeout(10)
 class DDDesktopSsoLoginTest {
-    private static final Set<String> SCOPES = Set.of("account:full_access", "dbeaver-storage:full_access");
+    private static final Set<String> SCOPES = Set.of("account:full_access", "dbeaver-storage:full_access", "mcp:connect");
     private final AtomicReference<String> form = new AtomicReference<>();
-    private final AtomicReference<String> responseScope = new AtomicReference<>("account:full_access dbeaver-storage:full_access");
+    private final AtomicReference<String> responseScope = new AtomicReference<>("account:full_access dbeaver-storage:full_access mcp:connect");
     private final AtomicReference<String> tokenRedirect = new AtomicReference<>();
     private final AtomicInteger redirectedRequests = new AtomicInteger();
     private final DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
@@ -112,7 +112,7 @@ class DDDesktopSsoLoginTest {
             Assertions.assertEquals("dbeaver-desktop", params.get("client_id"));
             Assertions.assertEquals("code", params.get("response_type"));
             Assertions.assertFalse(params.containsKey("resource"));
-            Assertions.assertEquals("account:full_access dbeaver-storage:full_access", params.get("scope"));
+            Assertions.assertEquals("account:full_access dbeaver-storage:full_access mcp:connect", params.get("scope"));
             URI callback = URI.create(params.get("redirect_uri"));
             Assertions.assertEquals("127.0.0.1", callback.getHost());
             Assertions.assertTrue(callback.getPort() > 0);
@@ -194,17 +194,16 @@ class DDDesktopSsoLoginTest {
     }
 
     @Test
-    void canAuthorizeAnotherResourceWithIndependentScopes() throws Exception {
+    void canRequestMcpConnectWithoutResource() throws Exception {
         responseScope.set("mcp:connect");
-        URI mcp = URI.create("https://mcp.example.test/mcp");
-        var result = new DDDesktopSsoLogin().login(issuer, mcp, Set.of("mcp:connect"), monitor, url -> {
+        var result = new DDDesktopSsoLogin().login(issuer, null, Set.of("mcp:connect"), monitor, url -> {
             var parameters = parameters(URI.create(url).getRawQuery());
-            Assertions.assertEquals(mcp.toString(), parameters.get("resource"));
+            Assertions.assertFalse(parameters.containsKey("resource"));
             Assertions.assertEquals("mcp:connect", parameters.get("scope"));
             complete(url);
         });
         Assertions.assertEquals("mcp:connect", result.scope());
-        Assertions.assertEquals(mcp.toString(), parameters(form.get()).get("resource"));
+        Assertions.assertFalse(parameters(form.get()).containsKey("resource"));
     }
 
     private String issuerParameter() {
