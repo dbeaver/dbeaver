@@ -111,12 +111,12 @@ class ConnectionPageDataSource extends ActiveWizardPage<NewConnectionWizard> imp
             if (projectSelector.getSelectedProject() == null) {
                 setErrorMessage("You need to create a project first");
             }
-            if (DataSourceTypeViewer.isCDataEnabled()) {
-                Button showCData = UIUtils.createCheckbox(bottomPanel,
-                    UIConnectionMessages.dialog_connection_show_cdata, DataSourceTypeViewer.isShowCData());
-                showCData.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
-                showCData.addSelectionListener(SelectionListener.widgetSelectedAdapter(
-                    event -> dataSourceTypeViewer.setShowCData(showCData.getSelection())));
+            if (DataSourceTypeViewer.isCommercialDriversEnabled()) {
+                Button showCommercialDrivers = UIUtils.createCheckbox(bottomPanel,
+                    UIConnectionMessages.dialog_connection_show_commercial_drivers, DataSourceTypeViewer.isShowCommercialDrivers());
+                showCommercialDrivers.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
+                showCommercialDrivers.addSelectionListener(SelectionListener.widgetSelectedAdapter(
+                    event -> dataSourceTypeViewer.setShowCommercialDrivers(showCommercialDrivers.getSelection())));
             }
         }
 
