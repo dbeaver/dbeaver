@@ -31,14 +31,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Set;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
- * Owns resource-specific desktop access tokens. Reading status never starts a browser flow.
+ * Owns the desktop access token. Reading status never starts a browser flow.
  */
 class DDDesktopTokenManager {
     public enum Status { SIGNED_OUT, UNLOADED, SIGNED_IN, EXPIRED }
@@ -52,9 +48,7 @@ class DDDesktopTokenManager {
     private final DDDesktopTokenValidator validator;
     private final DDDesktopSsoLogin login;
     @Nullable
-    private volatile Map<String, DDDesktopUserToken> tokens;
-    @Nullable
-    private volatile String primaryTokenKey;
+    private volatile DDDesktopUserToken token;
 
     DDDesktopTokenManager(
         @NotNull DDDesktopTokenStore store, @NotNull DDDesktopTokenValidator validator,
@@ -75,59 +69,53 @@ class DDDesktopTokenManager {
         if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_LOGGED_IN)) {
             return Status.SIGNED_OUT;
         }
-        var current = tokens;
+        var current = token;
         if (current == null) {
             return Status.UNLOADED;
         }
-        String key = primaryTokenKey;
-        DDDesktopUserToken primary = key == null ? null : current.get(key);
-        return primary == null ? Status.SIGNED_OUT : validator.isExpired(primary) ? Status.EXPIRED : Status.SIGNED_IN;
+        return validator.isExpired(current) ? Status.EXPIRED : Status.SIGNED_IN;
     }
 
     /** Returns readable claims even for an expired token; these are not verified credentials. */
     @Nullable
     JsonObject getUnverifiedTokenClaims() {
-        var current = tokens;
-        String key = primaryTokenKey;
-        if (current == null || key == null) {
-            return null;
-        }
-        DDDesktopUserToken primary = current.get(key);
-        return primary == null ? null : JSONUtils.parseJwtClaims(primary.accessToken());
+        var current = token;
+        return current == null ? null : JSONUtils.parseJwtClaims(current.accessToken());
     }
 
     public void load(@NotNull URI resource) throws DBException {
         if (getStatus() != Status.UNLOADED) {
             return;
         }
-        var saved = store.load().stream().collect(Collectors.toMap(DDDesktopUserToken::key, Function.identity()));
+        DDDesktopUserToken saved = store.load();
+        if (saved != null && !validator.matchesResource(saved, resource)) {
+            log.debug("Saved DataDam desktop token does not match the requested endpoint");
+            saved = null;
+        }
         synchronized (this) {
-            if (getStatus() == Status.UNLOADED) {
-                primaryTokenKey = saved.values().stream().filter(token -> validator.matchesResource(token, resource))
-                    .findFirst().map(DDDesktopUserToken::key).orElse(null);
-                tokens = Map.copyOf(saved);
+            if (getStatus() != Status.UNLOADED) {
+                return;
             }
+            if (saved == null) {
+                signOut();
+                return;
+            }
+            token = saved;
         }
-        if (saved.isEmpty()) {
-            signOut();
-        } else {
-            log.debug("Loaded DataDam desktop token");
-        }
+        log.debug("Loaded DataDam desktop token");
     }
 
     @NotNull
     public String getAccessTokenForResource(@NotNull URI resource) throws DBException {
-        var current = tokens;
-        if (current == null
+        var current = token;
+        if (current == null || validator.isExpired(current)
             || !DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_LOGGED_IN)) {
             throw new DBException("Sign in to DataDam first");
         }
-        var candidates = current.values().stream()
-            .filter(token -> !validator.isExpired(token) && validator.matchesResource(token, resource)).toList();
-        if (candidates.size() != 1) {
+        if (!validator.matchesResource(current, resource)) {
             throw new DBException("DataDam token is not valid for this endpoint. Relogin to DataDam");
         }
-        return candidates.getFirst().accessToken();
+        return current.accessToken();
     }
 
     public void signIn(@NotNull URI accountUrl, @NotNull URI storageUrl, @NotNull DBRProgressMonitor monitor)
@@ -140,41 +128,25 @@ class DDDesktopTokenManager {
         @NotNull DDDesktopSsoLogin.BrowserOpener browser
     ) throws DBException, InterruptedException {
         var config = discover(accountUrl);
-        var saved = signInForResource(URI.create(config.issuer()), null,
+        var result = login.login(URI.create(config.issuer()), null,
             Set.of(DDSsoConstants.SCOPE_ACCOUNT_FULL_ACCESS, DDSsoConstants.SCOPE_DBEAVER_STORAGE_FULL_ACCESS,
-                DDSsoConstants.SCOPE_MCP_CONNECT),
-            Set.of(accountUrl.toString(), storageUrl.toString()), monitor, browser);
-        primaryTokenKey = saved.key();
-    }
-
-    @NotNull
-    public DDDesktopUserToken signInForResource(
-        @NotNull URI issuer, @Nullable URI resource, @NotNull Set<String> scopes, @NotNull Set<String> endpoints,
-        @NotNull DBRProgressMonitor monitor, @NotNull DDDesktopSsoLogin.BrowserOpener browser
-    ) throws DBException, InterruptedException {
-        var result = login.login(issuer, resource, scopes, monitor, browser);
+                DDSsoConstants.SCOPE_MCP_CONNECT), monitor, browser);
         DDDesktopUserToken saved = new DDDesktopUserToken(
-            result.accessToken(), issuer.toString(), resource == null ? null : resource.toString(), endpoints, DDSsoScopes.parse(result.scope()));
+            result.accessToken(), config.issuer(), Set.of(accountUrl.toString(), storageUrl.toString()), DDSsoScopes.parse(result.scope()));
         if (validator.isExpired(saved)) {
             throw new DBException("DataDam desktop token has expired");
         }
         synchronized (this) {
-            Map<String, DDDesktopUserToken> updated = tokens == null
-                ? store.load().stream().collect(Collectors.toMap(DDDesktopUserToken::key, Function.identity(), (a, b) -> b, HashMap::new))
-                : new HashMap<>(tokens);
-            updated.put(saved.key(), saved);
-            store.save(updated.values());
-            tokens = Map.copyOf(updated);
+            store.save(saved);
+            token = saved;
             DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, true);
         }
         log.debug("Stored DataDam desktop token");
-        return saved;
     }
 
     public void signOut() throws DBException {
         synchronized (this) {
-            tokens = null;
-            primaryTokenKey = null;
+            token = null;
             store.clear();
             DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, false);
         }

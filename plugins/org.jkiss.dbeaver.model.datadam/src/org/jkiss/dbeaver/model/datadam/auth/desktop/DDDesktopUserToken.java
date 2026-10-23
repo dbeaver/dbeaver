@@ -17,15 +17,13 @@
 package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 
 import java.util.Set;
 
-/** A resource-specific desktop bearer credential and the service endpoints allowed to receive it. */
+/** The desktop bearer credential, its scopes and the service endpoints allowed to receive it. */
 public record DDDesktopUserToken(
     @NotNull String accessToken,
     @NotNull String issuer,
-    @Nullable String resource,
     @NotNull Set<String> endpoints,
     @NotNull Set<String> scopes
 ) {
@@ -34,12 +32,8 @@ public record DDDesktopUserToken(
         scopes = Set.copyOf(scopes);
     }
 
-    @NotNull
-    public String key() {
-        return issuer + "\n" + (resource == null ? "" : resource);
-    }
     @Override
     public String toString() {
-        return "DDDesktopUserToken[issuer=" + issuer + ", resource=" + resource + "]";
+        return "DDDesktopUserToken[issuer=" + issuer + "]";
     }
 }

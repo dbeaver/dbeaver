@@ -23,7 +23,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 
-/** Checks expiry and prevents a resource-specific credential from being sent to another service. */
+/** Checks expiry and prevents the credential from being sent outside its allowed service endpoints. */
 public class DDDesktopTokenValidator {
     public boolean isExpired(@NotNull DDDesktopUserToken token) {
         try {

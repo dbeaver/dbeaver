@@ -17,16 +17,14 @@
 package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.datadam.auth.DDSecretStorage;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 
-import java.util.Collection;
-import java.util.List;
-
 class DDDesktopTokenStore {
-    private static final String SECRET_ID = "datadam.desktop.access-tokens";
+    private static final String SECRET_ID = "datadam.desktop.access-token";
     static final DDDesktopTokenStore INSTANCE = new DDDesktopTokenStore(DDSecretStorage.getInstance());
 
     private final DBSSecretController secretStorage;
@@ -35,21 +33,21 @@ class DDDesktopTokenStore {
         this.secretStorage = secretStorage;
     }
 
-    @NotNull
-    List<DDDesktopUserToken> load() throws DBException {
+    @Nullable
+    DDDesktopUserToken load() throws DBException {
         String value = secretStorage.getPrivateSecretValue(SECRET_ID);
         if (value == null || value.isBlank()) {
-            return List.of();
+            return null;
         }
         try {
-            return List.of(JSONUtils.GSON.fromJson(value, DDDesktopUserToken[].class));
+            return JSONUtils.GSON.fromJson(value, DDDesktopUserToken.class);
         } catch (RuntimeException e) {
             throw new DBException("Invalid saved DataDam desktop token", e);
         }
     }
 
-    void save(@NotNull Collection<DDDesktopUserToken> tokens) throws DBException {
-        secretStorage.setPrivateSecretValue(SECRET_ID, JSONUtils.GSON.toJson(tokens));
+    void save(@NotNull DDDesktopUserToken token) throws DBException {
+        secretStorage.setPrivateSecretValue(SECRET_ID, JSONUtils.GSON.toJson(token));
         secretStorage.flushChanges();
     }
 

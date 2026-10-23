@@ -16,13 +16,13 @@
  */
 package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
+import com.google.gson.JsonParser;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.net.URI;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -30,15 +30,14 @@ import java.util.Set;
 
 class DDDesktopTokenValidatorTest {
     private final DDDesktopTokenValidator validator = new DDDesktopTokenValidator();
-    private final DDDesktopUserToken api = new DDDesktopUserToken("api-token", "https://sso.example.test", null,
+    private final DDDesktopUserToken api = new DDDesktopUserToken("api-token", "https://sso.example.test",
         Set.of("https://account.example.test", "https://storage.example.test"),
         Set.of("account:full_access", "dbeaver-storage:full_access", "mcp:connect"));
-    private final DDDesktopUserToken mcp = new DDDesktopUserToken("mcp-token", "https://sso.example.test", "https://mcp.example.test/mcp",
+    private final DDDesktopUserToken mcp = new DDDesktopUserToken("mcp-token", "https://sso.example.test",
         Set.of("https://mcp.example.test/mcp"), Set.of("mcp:connect"));
 
     @Test
-    @SuppressWarnings("unchecked")
-    void resourceTokensRemainSeparateAfterPersistenceRoundTrip() throws Exception {
+    void storesReplacesAndClearsOneTokenUnderOriginalSecretId() throws Exception {
         Map<String, String> secrets = new HashMap<>();
         DBSSecretController controller = Mockito.mock(DBSSecretController.class);
         Mockito.when(controller.getPrivateSecretValue(Mockito.anyString()))
@@ -52,27 +51,31 @@ class DDDesktopTokenValidatorTest {
             true, DDDesktopUserToken.class.getClassLoader());
         var constructor = type.getDeclaredConstructor(DBSSecretController.class);
         var load = type.getDeclaredMethod("load");
-        var save = type.getDeclaredMethod("save", Collection.class);
+        var save = type.getDeclaredMethod("save", DDDesktopUserToken.class);
         var clear = type.getDeclaredMethod("clear");
         constructor.setAccessible(true);
         load.setAccessible(true);
         save.setAccessible(true);
         clear.setAccessible(true);
         var store = constructor.newInstance(controller);
-        Assertions.assertEquals(List.of(), load.invoke(store));
-        save.invoke(store, List.of(api, mcp));
-        Assertions.assertTrue(secrets.containsKey("datadam.desktop.access-tokens"));
+        Assertions.assertNull(load.invoke(store));
+        save.invoke(store, api);
+        Assertions.assertEquals(Set.of("datadam.desktop.access-token"), secrets.keySet());
+        Assertions.assertTrue(JsonParser.parseString(secrets.get("datadam.desktop.access-token")).isJsonObject());
         var restored = constructor.newInstance(controller);
-        var stored = (List<DDDesktopUserToken>) load.invoke(restored);
-        Assertions.assertEquals(List.of(api, mcp), stored);
-        Assertions.assertNotEquals(stored.get(0).key(), stored.get(1).key());
+        var stored = (DDDesktopUserToken) load.invoke(restored);
+        Assertions.assertEquals(api, stored);
         Assertions.assertFalse(validator.matchesResource(api, URI.create("https://mcp.example.test/mcp")));
         Assertions.assertFalse(validator.matchesResource(mcp, URI.create("https://account.example.test/graphql")));
-        Assertions.assertTrue(validator.matchesResource(api, URI.create("https://account.example.test/graphql")));
-        Assertions.assertTrue(validator.matchesResource(api, URI.create("https://storage.example.test/projects")));
+        Assertions.assertTrue(validator.matchesResource(stored, URI.create("https://account.example.test/graphql")));
+        Assertions.assertTrue(validator.matchesResource(stored, URI.create("https://storage.example.test/projects")));
+        save.invoke(restored, mcp);
+        Assertions.assertEquals(mcp, load.invoke(store));
+        Assertions.assertEquals(1, secrets.size());
         clear.invoke(restored);
-        Assertions.assertEquals(List.of(), load.invoke(store));
-        Mockito.verify(controller, Mockito.times(2)).flushChanges();
+        Assertions.assertNull(load.invoke(store));
+        Assertions.assertNull(secrets.get("datadam.desktop.access-token"));
+        Mockito.verify(controller, Mockito.times(3)).flushChanges();
     }
 
     @Test
