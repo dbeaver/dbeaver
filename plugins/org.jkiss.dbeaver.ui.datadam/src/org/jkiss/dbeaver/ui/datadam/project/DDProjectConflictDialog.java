@@ -23,6 +23,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager.ConflictDetails;
@@ -54,7 +56,7 @@ public class DDProjectConflictDialog extends BaseDialog {
 
         Composite heading = UIUtils.createComposite(area, 2);
         Label warning = new Label(heading, SWT.NONE);
-        warning.setImage(getShell().getDisplay().getSystemImage(SWT.ICON_WARNING));
+        warning.setImage(DBeaverIcons.getImage(DBIcon.SMALL_WARNING));
         UIUtils.createLabel(heading, DDTrackingUIMessages.project_sync_conflict_heading);
         UIUtils.createLabel(
             area, NLS.bind(
