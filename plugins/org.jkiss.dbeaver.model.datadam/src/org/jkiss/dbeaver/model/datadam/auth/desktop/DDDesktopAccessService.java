@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
+import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -27,6 +28,8 @@ import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.net.URI;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -50,6 +53,9 @@ public class DDDesktopAccessService {
     private final DDDesktopUserService userService;
     @Nullable
     private volatile DDKeyBundle keyBundle;
+    @Nullable
+    private Job expiryJob;
+    private long expiryVersion;
 
     DDDesktopAccessService(@NotNull DDDesktopTokenManager tokenManager) {
         this.tokenManager = tokenManager;
@@ -188,7 +194,45 @@ public class DDDesktopAccessService {
 
     private void finishAccessChange() {
         try {
-            notifyAccessListeners(DDDesktopAccessListener::accessChanged);
+            scheduleExpiry();
+        } finally {
+            try {
+                notifyAccessListeners(DDDesktopAccessListener::accessChanged);
+            } finally {
+                operationLock.unlock();
+            }
+        }
+    }
+
+    private void scheduleExpiry() {
+        long version = ++expiryVersion;
+        if (expiryJob != null) {
+            expiryJob.cancel();
+            expiryJob = null;
+        }
+        if (tokenManager.getStatus() != DDDesktopTokenManager.Status.SIGNED_IN) {
+            return;
+        }
+        Instant expiresAt = tokenManager.getExpiresAt();
+        if (expiresAt != null) {
+            Job job = Job.createSystem("Expire DataDam desktop access", monitor -> expireAccess(version));
+            expiryJob = job;
+            job.schedule(Math.max(1, Duration.between(Instant.now(), expiresAt).toMillis()));
+        }
+    }
+
+    private void expireAccess(long version) {
+        operationLock.lock();
+        try {
+            if (version != expiryVersion) {
+                return;
+            }
+            expiryJob = null;
+            if (tokenManager.getStatus() == DDDesktopTokenManager.Status.EXPIRED) {
+                notifyAccessListeners(DDDesktopAccessListener::accessChanged);
+            } else {
+                scheduleExpiry();
+            }
         } finally {
             operationLock.unlock();
         }

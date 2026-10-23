@@ -28,16 +28,23 @@ import java.util.Locale;
 
 /** Checks when a token expires and whether a request targets one of its stored origins. */
 class DDDesktopTokenValidator {
+    private static final int EXPIRY_MARGIN_SECONDS = 30;
+
     boolean isExpired(@NotNull DDDesktopUserToken token) {
+        return !expiresAt(token).isAfter(Instant.now());
+    }
+
+    @NotNull
+    Instant expiresAt(@NotNull DDDesktopUserToken token) {
         try {
             var claims = JSONUtils.parseJwtClaims(token.accessToken());
             if (claims == null) {
-                return true;
+                return Instant.EPOCH;
             }
             long seconds = claims.get("exp").getAsLong();
-            return !Instant.ofEpochSecond(seconds).isAfter(Instant.now().plusSeconds(30));
+            return Instant.ofEpochSecond(seconds).minusSeconds(EXPIRY_MARGIN_SECONDS);
         } catch (RuntimeException e) {
-            return true;
+            return Instant.EPOCH;
         }
     }
 

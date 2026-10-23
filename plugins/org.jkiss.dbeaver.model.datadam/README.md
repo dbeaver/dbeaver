@@ -15,6 +15,9 @@ Imported project encryption keys and the tracking session are not prerequisites 
 - Retry transport failures with bounded backoff. Pause when authorization is unavailable or the upgrade is rejected with HTTP 401/403.
 - Close cached RPC endpoints and pause the current channel before changing the Desktop identity or signing out.
   Resume only if authorization remains available.
+- The access service schedules token expiry using the same 30-second safety margin as its status checks. Expiry
+  invalidates cached RPC endpoints and pauses the channel without starting login or clearing saved tokens and keys.
+  A new access operation replaces the scheduled task, and stale tasks cannot invalidate a newer session.
 - Release the connection and subscriptions when the platform deactivates plugin services.
 
 `DDDesktopConnectionPluginService` owns activation and shutdown without Workbench, SWT or UI listeners. Repeated
@@ -37,6 +40,10 @@ Readiness is a local observation, so every send must still handle failure.
 check-then-subscribe gap. Its returned `DDSubscription` unregisters only that observer. Existing
 `addConnectionListener` callbacks remain transition-only and do not replay an earlier connection.
 State observers may run on the subscribing or state-changing thread; keep them short and dispatch UI work to the UI thread.
+Connection-listener callbacks and incoming messages share one channel-wide delivery job, outside the channel lock and
+WebSocket I/O callbacks. An old connection's disconnect callbacks finish before a replacement connection is announced,
+including across pause/resume. Keep listeners short: a blocked listener delays subsequent delivery rather than allowing
+callbacks from a replacement connection to overtake it. Incoming queues remain bounded during that delay.
 
 ## RPC services
 

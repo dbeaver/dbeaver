@@ -77,9 +77,13 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
     private final List<Registration<DDMessageListener>> messageListeners = new ArrayList<>();
     private final List<Registration<DDConnectionListener>> connectionListeners = new ArrayList<>();
     private final List<StateObservation> stateObservers = new ArrayList<>();
+    private final ChannelJob delivery = new ChannelJob("Deliver Desktop messages", this::deliver);
+    @Nullable
+    private PendingDisconnect pendingDisconnect;
     private DDChannelStatus status = new DDChannelStatus(DDChannelState.DISCONNECTED, null);
     private boolean running;
     private boolean closed;
+    private boolean deliveryScheduled;
     private long retryMillis = MIN_RETRY_MILLIS;
 
     private Attempt current;
@@ -385,7 +389,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
             overflow = attempt.incoming.size() >= MAX_PENDING_MESSAGES;
             if (!overflow) {
                 attempt.incoming.add(text);
-                wakeDelivery(attempt);
+                wakeDelivery();
             }
         }
         if (overflow) {
@@ -393,39 +397,36 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
         }
     }
 
-    private void wakeDelivery(@NotNull Attempt attempt) {
-        if (!attempt.deliveryScheduled) {
-            attempt.deliveryScheduled = true;
-            attempt.delivery.schedule();
+    private void wakeDelivery() {
+        if (!deliveryScheduled) {
+            deliveryScheduled = true;
+            delivery.schedule();
         }
     }
 
-    private void deliver(@NotNull Attempt attempt) {
+    private void deliver() {
         while (true) {
+            Attempt attempt;
             String text;
-            DDConnectionInfo disconnected;
-            List<Registration<DDConnectionListener>> listeners;
+            PendingDisconnect disconnected;
             synchronized (lock) {
-                disconnected = attempt.stopped ? attempt.info : null;
-                listeners = attempt.disconnectedListeners;
-                if (attempt.stopped || attempt.incoming.isEmpty()) {
-                    attempt.deliveryScheduled = false;
-                    attempt.disconnectedListeners = List.of();
-                    text = null;
-                } else {
-                    text = attempt.incoming.removeFirst();
+                disconnected = pendingDisconnect;
+                pendingDisconnect = null;
+                attempt = current;
+                text = disconnected == null && attempt != null ? attempt.incoming.pollFirst() : null;
+                if (disconnected == null && text == null) {
+                    deliveryScheduled = false;
+                    return;
                 }
             }
-            if (text == null) {
-                if (disconnected != null) {
-                    notifyListeners(listeners, listener -> listener.onDisconnected(disconnected));
+            if (disconnected != null) {
+                notifyListeners(disconnected.listeners(), listener -> listener.onDisconnected(disconnected.connection()));
+            } else if (attempt != null && text != null) {
+                try {
+                    deliverText(attempt, text);
+                } catch (RuntimeException e) {
+                    finish(attempt, true);
                 }
-                return;
-            }
-            try {
-                deliverText(attempt, text);
-            } catch (RuntimeException e) {
-                finish(attempt, true);
             }
         }
     }
@@ -512,7 +513,6 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
     private void detach(@NotNull Attempt attempt, boolean retry) {
         current = null;
         updateStatus(new DDChannelStatus(closed ? DDChannelState.CLOSED : DDChannelState.DISCONNECTED, null));
-        attempt.stopped = true;
         attempt.incoming.clear();
         attempt.failed.addAll(attempt.outgoing);
         attempt.outgoing.clear();
@@ -521,8 +521,8 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
             attempt.sending = null;
         }
         if (attempt.info != null) {
-            attempt.disconnectedListeners = List.copyOf(connectionListeners);
-            wakeDelivery(attempt);
+            pendingDisconnect = new PendingDisconnect(attempt.info, List.copyOf(connectionListeners));
+            wakeDelivery();
         }
         if (retry && running && !closed) {
             long delay = Math.min(MAX_RETRY_MILLIS, retryMillis + ThreadLocalRandom.current().nextLong(retryMillis / 4 + 1));
@@ -538,7 +538,6 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
         attempt.connectDeadline.cancel();
         attempt.readyDeadline.cancel();
         attempt.sender.cancel();
-        attempt.delivery.interruptRunner();
         if (attempt.socket != null) {
             try {
                 attempt.listener.dispose(attempt.socket, attempt.failed.isEmpty());
@@ -566,11 +565,9 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
         private final ChannelJob connectDeadline = new ChannelJob("Desktop connection deadline", () -> deadline(this, false));
         private final ChannelJob readyDeadline = new ChannelJob("Desktop ready deadline", () -> deadline(this, true));
         private final ChannelJob sender = new ChannelJob("Send Desktop messages", () -> sendPending(this));
-        private final ChannelJob delivery = new ChannelJob("Deliver Desktop messages", () -> deliver(this));
         private final ArrayDeque<String> incoming = new ArrayDeque<>();
         private final ArrayDeque<Outgoing> outgoing = new ArrayDeque<>();
         private final List<Outgoing> failed = new ArrayList<>();
-        private List<Registration<DDConnectionListener>> disconnectedListeners = List.of();
         @Nullable
         private BaseWebSocketClient client;
         @Nullable
@@ -580,8 +577,6 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
         @Nullable
         private Outgoing sending;
         private boolean senderScheduled;
-        private boolean deliveryScheduled;
-        private boolean stopped;
     }
 
     private final class AttemptListener extends BaseWebSocketClient.Listener {
@@ -751,6 +746,12 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
     }
 
     private record Outgoing(@NotNull String text, @NotNull CompletableFuture<Void> result) {
+    }
+
+    private record PendingDisconnect(
+        @NotNull DDConnectionInfo connection,
+        @NotNull List<Registration<DDConnectionListener>> listeners
+    ) {
     }
 
     private static final class ChannelJob extends AbstractJob {

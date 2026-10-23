@@ -62,6 +62,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Timeout(20)
@@ -775,6 +776,97 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
             Assertions.assertEquals(1, deliveries.get());
         } finally {
             release.countDown();
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void serializesDisconnectBeforeReplacementCallbacksWhenOldListenersIgnoreInterruption(boolean pause) throws Exception {
+        Clients clients = new Clients();
+        Events events = new Events();
+        BlockingQueue<String> callbacks = new LinkedBlockingQueue<>();
+        CountDownLatch messageEntered = new CountDownLatch(1);
+        CountDownLatch disconnectEntered = new CountDownLatch(1);
+        CompletableFuture<Void> releaseMessage = new CompletableFuture<>();
+        CompletableFuture<Void> releaseDisconnect = new CompletableFuture<>();
+        AtomicBoolean callbackOnIoThread = new AtomicBoolean();
+        try (var channel = channel(clients, resource -> "token");
+             var io = Executors.newSingleThreadExecutor()) {
+            Thread ioThread = io.submit(Thread::currentThread).get(3, TimeUnit.SECONDS);
+            Consumer<String> record = event -> {
+                if (Thread.currentThread() == ioThread) {
+                    callbackOnIoThread.set(true);
+                }
+                callbacks.add(event);
+            };
+            channel.addConnectionListener(new DDConnectionListener() {
+                @Override
+                public void onConnected(@NotNull DDConnectionInfo connection) {
+                    record.accept("connected:" + connection.connectionId());
+                }
+
+                @Override
+                public void onDisconnected(@NotNull DDConnectionInfo connection) {
+                    if (connection.connectionId().equals("first")) {
+                        disconnectEntered.countDown();
+                        releaseDisconnect.join();
+                    }
+                    record.accept("disconnected:" + connection.connectionId());
+                }
+            });
+            channel.addConnectionListener(events);
+            channel.subscribe("topic", (connection, message) -> {
+                if (connection.connectionId().equals("first")) {
+                    messageEntered.countDown();
+                    releaseMessage.join();
+                }
+                record.accept("message:" + connection.connectionId());
+            });
+            channel.start();
+            Peer first = ready(clients, events, "first");
+            Assertions.assertEquals("connected:first", take(callbacks));
+            try {
+                io.submit(() -> {
+                    first.text(DDExternalDamProtocol.encode(MESSAGE));
+                    first.text(DDExternalDamProtocol.encode(message("topic", "stale")));
+                }).get(3, TimeUnit.SECONDS);
+                Assertions.assertTrue(messageEntered.await(3, TimeUnit.SECONDS));
+                io.submit(() -> {
+                    if (pause) {
+                        channel.pause();
+                        channel.start();
+                    } else {
+                        first.listener.onClose(first.socket, 1008, "transport failure");
+                    }
+                }).get(3, TimeUnit.SECONDS);
+
+                Peer replacement = clients.next();
+                io.submit(replacement::open).get(3, TimeUnit.SECONDS);
+                Assertions.assertEquals(HELLO, DDExternalDamProtocol.decodeHello(replacement.nextSent().text));
+                io.submit(() -> {
+                    replacement.ready("second");
+                    replacement.text(DDExternalDamProtocol.encode(MESSAGE));
+                }).get(3, TimeUnit.SECONDS);
+
+                Assertions.assertNull(callbacks.poll(250, TimeUnit.MILLISECONDS));
+                Assertions.assertFalse(channel.getStatus().isReady());
+                releaseMessage.complete(null);
+                Assertions.assertEquals("message:first", take(callbacks));
+                Assertions.assertTrue(disconnectEntered.await(3, TimeUnit.SECONDS));
+                Assertions.assertNull(callbacks.poll(250, TimeUnit.MILLISECONDS));
+                releaseDisconnect.complete(null);
+
+                Assertions.assertEquals("disconnected:first", take(callbacks));
+                Assertions.assertEquals("connected:second", take(callbacks));
+                Assertions.assertEquals("message:second", take(callbacks));
+                Assertions.assertTrue(callbacks.isEmpty());
+                Assertions.assertFalse(callbackOnIoThread.get());
+                Assertions.assertEquals("second", channel.getStatus().connection().connectionId());
+                Mockito.verify(replacement.client, Mockito.never()).close();
+            } finally {
+                releaseMessage.complete(null);
+                releaseDisconnect.complete(null);
+            }
         }
     }
 
