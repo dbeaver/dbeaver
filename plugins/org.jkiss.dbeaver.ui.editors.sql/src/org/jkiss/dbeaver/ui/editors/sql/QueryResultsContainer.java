@@ -258,14 +258,14 @@ abstract class QueryResultsContainer implements
             }
         }
         try {
-            if (dataReceiver != viewer.getDataReceiver()) {
-                // Some custom receiver. Probably data export
-                queryProcessor.setCurDataReceiver(dataReceiver);
-            } else {
-                queryProcessor.setCurDataReceiver(null);
-            }
             // Count number of results for this query. If > 1 then we will refresh them all at once
             int resultCounts = getQueryResultCounts();
+            if (dataReceiver != viewer.getDataReceiver()) {
+                // Some custom receiver (data export or detached results). It must get only the results of this container
+                queryProcessor.setCurDataReceiver(dataReceiver, resultCounts > 1 ? getQueryResultIndex() : -1);
+            } else {
+                queryProcessor.setCurDataReceiver(null, -1);
+            }
 
             if (resultCounts <= 1 && resultSetNumber > 0) {
                 job.setFetchResultSetNumber(resultSetNumber);
@@ -286,7 +286,7 @@ abstract class QueryResultsContainer implements
             return job.getStatistics();
         } finally {
             // Nullify custom data receiver
-            queryProcessor.setCurDataReceiver(null);
+            queryProcessor.setCurDataReceiver(null, -1);
         }
     }
 
@@ -298,6 +298,22 @@ abstract class QueryResultsContainer implements
             }
         }
         return resultCounts;
+    }
+
+    /**
+     * Returns the number of this container's result set among the results of its query
+     */
+    private int getQueryResultIndex() {
+        int index = 0;
+        for (QueryResultsContainer qrc : queryProcessor.resultContainers) {
+            if (qrc == this) {
+                break;
+            }
+            if (qrc.query == query) {
+                index++;
+            }
+        }
+        return index;
     }
 
     @Override
