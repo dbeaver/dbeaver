@@ -80,9 +80,21 @@ handlers must cooperate with interruption to stop work already in progress.
 
 ## Trusted endpoints
 
-All DataDam endpoints use the shared base host in `DDEndpoints`, with `datadam.cloud` as the source default and
-build-time substitution for staging. The External DAM endpoint is `wss://external-dam.<base-host>/ws`, using the
-same environment as Account and Storage. Declaring this URL does not provision the service, DNS, TLS, or ingress.
+By default, DataDam endpoints use the shared base host in `DDEndpoints`, with `datadam.cloud` as the source default and
+build-time substitution for staging. The default External DAM endpoint is `wss://external-dam.<base-host>/ws`.
+Declaring this URL does not provision the service, DNS, TLS, or ingress.
+
+For local development, add these JVM options to the DBeaver Desktop run configuration:
+
+```text
+-Ddbeaver.datadam.account.url=http://localhost:9001
+-Ddbeaver.datadam.storage.url=http://localhost:9000
+-Ddbeaver.datadam.external.url=ws://localhost:9006/ws
+```
+
+Each property overrides its endpoint independently; omitted properties retain their default URLs. The External DAM
+property is the full WebSocket URL, including `/ws`. SSO is discovered through the configured Account endpoint.
+Properties are read once when `DDEndpoints` is initialized, so changing them requires a Desktop restart.
 
 Desktop only supplies a token to the configured External DAM endpoint when the token's saved Account and Storage
 origins match the current environment. An arbitrary WebSocket host is not trusted. Remote connections require WSS;

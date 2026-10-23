@@ -27,9 +27,12 @@ import java.net.URI;
  */
 public final class DDEndpoints {
     private static final String BASE_DD_HOST = /*<DD-PROD-URL*/"datadam.cloud"/*/>*/;
-    private static final String ACCOUNT_URL = "https://account." + BASE_DD_HOST;
-    private static final String STORAGE_URL = "https://dbeaver-storage." + BASE_DD_HOST;
-    private static final String EXTERNAL_DAM_URL = "wss://external-dam." + BASE_DD_HOST;
+    private static final String ACCOUNT_URL = System.getProperty(
+        "dbeaver.datadam.account.url", "https://account." + BASE_DD_HOST);
+    private static final String STORAGE_URL = System.getProperty(
+        "dbeaver.datadam.storage.url", "https://dbeaver-storage." + BASE_DD_HOST);
+    private static final String EXTERNAL_DAM_URL = System.getProperty(
+        "dbeaver.datadam.external.url", "wss://external-dam." + BASE_DD_HOST + DDExternalDamProtocol.WEBSOCKET_PATH);
 
     private DDEndpoints() {
     }
@@ -46,7 +49,7 @@ public final class DDEndpoints {
 
     @NotNull
     public static String getExternalDamWebSocketUrl() {
-        return EXTERNAL_DAM_URL + DDExternalDamProtocol.WEBSOCKET_PATH;
+        return EXTERNAL_DAM_URL;
     }
 
     public static void requireSecureWebSocketTransport(@NotNull URI url) throws DBException {
