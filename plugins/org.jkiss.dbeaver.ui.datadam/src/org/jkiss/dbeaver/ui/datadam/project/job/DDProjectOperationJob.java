@@ -24,12 +24,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectCatalog;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 
 /** Runs a DataDam project operation off the UI thread. Callers handle completion and presentation. */
-abstract class DDProjectOperationJob<T> extends AbstractJob {
+public abstract class DDProjectOperationJob<T> extends AbstractJob {
     @NotNull
-    protected final DDProjectCatalog catalog;
+    protected final DDProjectUIManager uiManager;
     @NotNull
     private final String errorMessage;
     @Nullable
@@ -37,7 +37,7 @@ abstract class DDProjectOperationJob<T> extends AbstractJob {
 
     protected DDProjectOperationJob(@NotNull String name, @NotNull String errorMessage) {
         super(name);
-        this.catalog = DDProjectCatalog.getInstance();
+        this.uiManager = DDProjectUIManager.getInstance();
         this.errorMessage = errorMessage;
     }
 

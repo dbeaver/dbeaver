@@ -30,18 +30,18 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectCatalog;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 /** Navigator selection, job scheduling and completion shared by DataDam project commands. */
 abstract class DDProjectHandler<J extends Job> extends AbstractHandler {
     @NotNull
-    protected final DDProjectCatalog catalog = DDProjectCatalog.getInstance();
+    protected final DDProjectUIManager uiManager = DDProjectUIManager.getInstance();
 
     @Nullable
     @Override
     public Object execute(@NotNull ExecutionEvent event) {
-        if (!catalog.isDDEnabled()) {
+        if (!uiManager.isDDReady()) {
             return null;
         }
         DBPProject project = NavigatorUtils.getSelectedProject(

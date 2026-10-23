@@ -17,34 +17,30 @@
 package org.jkiss.dbeaver.ui.datadam.project.job;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectCatalog;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester;
 
-import java.util.ArrayList;
-import java.util.List;
-
-/** Synchronizes one or more bound projects, reporting conflicts without modifying them. */
-public class DDProjectSynchronizationJob extends DDProjectOperationJob<List<DDProjectCatalog.SyncResult>> {
+public class DDProjectSynchronizationJob extends DDProjectOperationJob<ProjectStatus> {
     @NotNull
-    private final List<DBPProject> projects;
+    private final DBPProject project;
 
-    public DDProjectSynchronizationJob(@NotNull List<DBPProject> projects) {
+    public DDProjectSynchronizationJob(@NotNull DBPProject project) {
         super(DDTrackingUIMessages.project_sync_update_job, DDTrackingUIMessages.project_sync_update_failed);
-        this.projects = List.copyOf(projects);
+        this.project = project;
     }
 
     @Override
     @NotNull
-    protected List<DDProjectCatalog.SyncResult> perform(@NotNull DBRProgressMonitor monitor) {
-        List<DDProjectCatalog.SyncResult> collected = new ArrayList<>(projects.size());
-        for (DBPProject project : projects) {
-            if (monitor.isCanceled()) {
-                break;
-            }
-            collected.add(catalog.synchronizeProject(project));
+    protected ProjectStatus perform(@NotNull DBRProgressMonitor monitor) throws DBException {
+        var manager = uiManager.getProjectManager();
+        try {
+            return manager.synchronizeProject(project);
+        } finally {
+            DDProjectSyncPropertyTester.firePropertyChange();
         }
-        return List.copyOf(collected);
     }
 }

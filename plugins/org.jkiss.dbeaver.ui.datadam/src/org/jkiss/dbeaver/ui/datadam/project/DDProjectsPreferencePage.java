@@ -16,10 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.datadam.project;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import com.dbeaver.datadam.share.api.model.DDSharedProject;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.Window;
@@ -42,20 +40,27 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.job.*;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager.ProjectJobBatchResult;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.Predicate;
+import java.util.function.Supplier;
 
 public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.synchronization.projects";
@@ -63,7 +68,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private static final int MIN_VISIBLE_ROWS = 6;
     private static final int MAX_VISIBLE_ROWS = 12;
 
-    private final DDProjectCatalog catalog = DDProjectCatalog.getInstance();
+    private final DDProjectUIManager uiManager = DDProjectUIManager.getInstance();
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
     private TableViewer viewer;
@@ -72,8 +77,12 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private Button editButton;
     private Button syncButton;
     private Button unbindButton;
+    private Button connectButton;
+    private Button syncAllButton;
+    private Button importAllButton;
+    private boolean operationRunning;
     @Nullable
-    private DDProjectCatalogRefreshJob loadJob;
+    private ProjectJobBatchResult<?> lastOperationResult;
 
     public DDProjectsPreferencePage() {
         noDefaultAndApplyButton();
@@ -106,7 +115,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         tableRow.setLayout(tableRowLayout);
         tableRow.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
 
-        viewer = new TableViewer(tableRow, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
+        viewer = new TableViewer(tableRow, SWT.MULTI | SWT.FULL_SELECTION | SWT.BORDER | SWT.V_SCROLL | SWT.H_SCROLL);
         Table table = viewer.getTable();
         table.setHeaderVisible(true);
         GridData tableData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
@@ -139,23 +148,27 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         actionButtons.setLayout(actionLayout);
         actionButtons.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false));
         editButton = iconButton(actionButtons, UIIcon.EDIT, DDTrackingUIMessages.projects_edit, this::editProject);
+        syncButton = iconButton(actionButtons, UIIcon.REFRESH, DDTrackingUIMessages.projects_sync, this::syncSelected);
         unbindButton = iconButton(
             actionButtons, UIIcon.SQL_DISCONNECT, DDTrackingUIMessages.projects_disconnect,
             this::unbindSelected
         );
-        syncButton = iconButton(actionButtons, UIIcon.REFRESH, DDTrackingUIMessages.projects_sync, this::syncSelected);
 
         Composite endButtons = new Composite(content, SWT.NONE);
         endButtons.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-        GridLayout endLayout = new GridLayout(2, false);
+        GridLayout endLayout = new GridLayout(3, false);
         endLayout.marginWidth = 0;
         endButtons.setLayout(endLayout);
-        Button connectButton = new Button(endButtons, SWT.PUSH);
+        connectButton = new Button(endButtons, SWT.PUSH);
         connectButton.setText(DDTrackingUIMessages.projects_connect);
         connectButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> connectProject()));
-        Button syncAllButton = new Button(endButtons, SWT.PUSH);
+        syncAllButton = new Button(endButtons, SWT.PUSH);
         syncAllButton.setText(DDTrackingUIMessages.projects_sync_all);
         syncAllButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> syncAll()));
+        importAllButton = new Button(endButtons, SWT.PUSH);
+        importAllButton.setText(DDTrackingUIMessages.projects_import_all);
+        importAllButton.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+        importAllButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> importAll()));
 
         updateSelectionActions();
         loadProjects();
@@ -226,45 +239,76 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     }
 
     private void updateSelectionActions() {
-        DDProjectView row = selectedRow();
-        boolean selected = row != null;
-        boolean local = selected && row.localProject() != null;
-        editButton.setEnabled(selected);
-        syncButton.setEnabled(selected);
-        syncButton.setToolTipText(selected && !local ? DDTrackingUIMessages.projects_download : DDTrackingUIMessages.projects_sync);
-        unbindButton.setEnabled(local);
-        boolean showUnbind = !selected || local;
+        List<DDProjectView> selection = selectedRows();
+        boolean selected = !selection.isEmpty();
+        boolean download = selected && selection.stream().allMatch(this::canImport);
+        boolean synchronize = selected && selection.stream().allMatch(this::canSynchronize);
+        boolean available = !operationRunning && uiManager.isDDReady();
+        editButton.setEnabled(available && selection.size() == 1 && selection.get(0).remoteProject() != null);
+        syncButton.setEnabled(available && (download || synchronize));
+        syncButton.setToolTipText(download ? DDTrackingUIMessages.projects_download : DDTrackingUIMessages.projects_sync);
+        unbindButton.setEnabled(available && selected && selection.stream().allMatch(this::canUnbind));
+        boolean showUnbind = !download;
         unbindButton.setVisible(showUnbind);
         ((GridData) unbindButton.getLayoutData()).exclude = !showUnbind;
         actionButtons.layout(true, true);
+        connectButton.setEnabled(available);
+        boolean hasLocal = false;
+        boolean hasRemote = false;
+        for (var item : viewer.getTable().getItems()) {
+            DDProjectView view = (DDProjectView) item.getData();
+            hasLocal |= canSynchronize(view);
+            hasRemote |= canImport(view);
+        }
+        syncAllButton.setEnabled(available && hasLocal);
+        importAllButton.setEnabled(available && hasRemote);
+        boolean showImportAll = showRemote.getSelection();
+        if (importAllButton.getVisible() != showImportAll) {
+            importAllButton.setVisible(showImportAll);
+            ((GridData) importAllButton.getLayoutData()).exclude = !showImportAll;
+            importAllButton.getParent().getParent().layout(true, true);
+        }
     }
 
     private void loadProjects() {
-        if (loadJob != null) {
-            loadJob.cancel();
-        }
-        if (!catalog.isDDEnabled()) {
-            loadJob = null;
+        if (!uiManager.isDDReady()) {
             viewer.setInput(List.of());
             updateTableHeight();
             updateSelectionActions();
             return;
         }
-        DDProjectCatalogRefreshJob job = new DDProjectCatalogRefreshJob();
-        loadJob = job;
-        job.setSystem(true);
-        scheduleJob(
-            job, () -> {
-                if (!viewer.getControl().isDisposed() && loadJob == job) {
-                    List<DDProjectView> result = job.getOperationResult();
-                    if (result != null) {
-                        viewer.setInput(result);
-                        updateTableHeight();
-                        updateSelectionActions();
+        DBRRunnableWithResult<List<DDProjectView>> loader = new DBRRunnableWithResult<>() {
+            @Override
+            public void run(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
+                monitor.beginTask(DDTrackingUIMessages.project_sync_import_list_job, IProgressMonitor.UNKNOWN);
+                try {
+                    if (!DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
+                        return;
                     }
+                    List<DDProjectView> views = uiManager.loadProjectViews(monitor);
+                    if (!monitor.isCanceled()) {
+                        result = views;
+                    }
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                } finally {
+                    monitor.done();
                 }
             }
-        );
+        };
+        try {
+            UIUtils.runInProgressDialog(loader);
+            if (!viewer.getControl().isDisposed() && loader.getResult() != null) {
+                viewer.setInput(loader.getResult());
+            }
+        } catch (InvocationTargetException e) {
+            showError(DDTrackingUIMessages.project_sync_import_list_failed, e.getTargetException());
+        } finally {
+            if (!viewer.getControl().isDisposed()) {
+                updateTableHeight();
+                updateSelectionActions();
+            }
+        }
     }
 
     private void updateTableHeight() {
@@ -278,14 +322,19 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         }
     }
 
-    @Nullable
-    private DDProjectView selectedRow() {
-        return (DDProjectView) viewer.getStructuredSelection().getFirstElement();
+    @NotNull
+    private List<DDProjectView> selectedRows() {
+        List<DDProjectView> selection = new ArrayList<>();
+        for (Object element : viewer.getStructuredSelection()) {
+            selection.add((DDProjectView) element);
+        }
+        return selection;
     }
 
     @NotNull
     private String statusText(@NotNull DDProjectView row) {
         return switch (row.status()) {
+            case NOT_SYNC -> DDTrackingUIMessages.projects_not_sync;
             case NOT_ON_DEVICE -> DDTrackingUIMessages.projects_not_on_device;
             case MISSING_ON_SERVER -> DDTrackingUIMessages.projects_missing_on_server;
             case UP_TO_DATE -> DDTrackingUIMessages.projects_up_to_date;
@@ -298,6 +347,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     @NotNull
     private DBPImage statusIcon(@NotNull DDProjectView row) {
         return switch (row.status()) {
+            case NOT_SYNC -> DBIcon.PROJECT;
             case NOT_ON_DEVICE -> UIIcon.PROJECTS;
             case MISSING_ON_SERVER -> DBIcon.STATUS_WARNING;
             case UP_TO_DATE -> UIIcon.OK_MARK;
@@ -320,7 +370,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         dialog.setTitle(DDTrackingUIMessages.projects_connect);
         dialog.setMessage(DDTrackingUIMessages.projects_choose_local);
         try {
-            dialog.setElements(catalog.getNotDatadamLocalProjects().toArray());
+            dialog.setElements(uiManager.getNotDatadamLocalProjects().toArray());
         } catch (DBException e) {
             showError(DDTrackingUIMessages.projects_connect_failed, e);
             return;
@@ -329,99 +379,100 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             return;
         }
         DBPProject project = (DBPProject) dialog.getFirstResult();
-        scheduleJob(new DDProjectSharingJob(project, project.getDescription()), this::refreshAfterOperation);
+        runOperation(() -> uiManager.shareProject(project, project.getDescription()));
     }
 
     private void editProject() {
-        DDProjectView row = selectedRow();
-        if (row == null) {
+        List<DDProjectView> selection = selectedRows();
+        if (selection.size() != 1 || selection.get(0).remoteProject() == null) {
             return;
         }
         MessageDialog.openInformation(
             getShell(), DDTrackingUIMessages.projects_edit,
-            NLS.bind(DDTrackingUIMessages.projects_edit_placeholder, row.name())
+            NLS.bind(DDTrackingUIMessages.projects_edit_placeholder, selection.get(0).name())
         );
     }
 
     private void syncSelected() {
-        DDProjectView row = selectedRow();
-        if (row != null && row.status() == DDProjectView.Status.NOT_ON_DEVICE) {
-            scheduleJob(new DDProjectImportJob(row), this::refreshAfterOperation);
-        } else if (row != null && row.localProject() != null) {
-            DDProjectSynchronizationJob job = new DDProjectSynchronizationJob(List.of(row.localProject()));
-            scheduleJob(
-                job, () -> {
-                    List<DDProjectCatalog.SyncResult> results = job.getOperationResult();
-                    if (results != null) {
-                        DDProjectCatalog.SyncResult result = results.get(0);
-                        if (result.error() != null) {
-                            showError(DDTrackingUIMessages.project_sync_update_failed, result.error());
-                        }
-                    }
-                    refreshAfterOperation();
-                }
-            );
+        List<DDProjectView> selection = selectedRows();
+        if (selection.isEmpty()) {
+            return;
+        }
+        if (selection.stream().allMatch(this::canImport)) {
+            List<DDSharedProject> projects = selection.stream().map(DDProjectView::remoteProject).toList();
+            runOperation(() -> uiManager.importProjects(projects));
+        } else if (selection.stream().allMatch(this::canSynchronize)) {
+            List<DBPProject> projects = selection.stream().map(DDProjectView::localProject).toList();
+            runOperation(() -> uiManager.synchronizeProjects(projects));
         }
     }
 
     private void unbindSelected() {
-        DDProjectView row = selectedRow();
-        if (row != null && row.localProject() != null && UIUtils.confirmAction(
-            getShell(),
-            DDTrackingUIMessages.project_sync_unbind_confirm_title,
-            NLS.bind(DDTrackingUIMessages.project_sync_unbind_confirm_message, row.localProject().getName())
-        )) {
-            scheduleJob(new DDProjectUnbindJob(row.localProject()), this::refreshAfterOperation);
+        List<DDProjectView> selection = selectedRows();
+        if (selection.isEmpty() || !selection.stream().allMatch(this::canUnbind)) {
+            return;
+        }
+        List<DBPProject> projects = selection.stream().map(DDProjectView::localProject).toList();
+        String message = projects.size() == 1
+            ? NLS.bind(DDTrackingUIMessages.project_sync_unbind_confirm_message, projects.get(0).getName())
+            : NLS.bind(DDTrackingUIMessages.projects_unbind_selected_confirm_message,
+                String.join("\n", projects.stream().map(DBPProject::getName).toList()));
+        if (UIUtils.confirmAction(getShell(), DDTrackingUIMessages.project_sync_unbind_confirm_title, message)) {
+            runOperation(() -> uiManager.unbindProjects(projects));
         }
     }
 
     private void syncAll() {
-        List<DBPProject> projects = catalog.getProjects().stream()
-            .filter(view -> view.localProject() != null && view.status() != DDProjectView.Status.MISSING_ON_SERVER)
+        List<DBPProject> projects = getProjectViews(this::canSynchronize).stream()
             .map(DDProjectView::localProject).toList();
-        DDProjectSynchronizationJob job = new DDProjectSynchronizationJob(projects);
-        scheduleJob(
-            job, () -> {
-                List<String> errors = new ArrayList<>();
-                List<DDProjectCatalog.SyncResult> results = job.getOperationResult();
-                if (results != null) {
-                    for (DDProjectCatalog.SyncResult result : results) {
-                        if (result.error() != null) {
-                            errors.add(result.project().getName() + ": " + result.error().getMessage());
-                        }
-                    }
-                }
-                if (!viewer.getControl().isDisposed() && !errors.isEmpty()) {
-                    MessageDialog.openWarning(
-                        getShell(), DDTrackingUIMessages.project_sync_title,
-                        NLS.bind(DDTrackingUIMessages.projects_errors, String.join("\n", errors))
-                    );
-                }
-                refreshAfterOperation();
-            }
-        );
+        runOperation(() -> uiManager.synchronizeProjects(projects));
     }
 
-    private void scheduleJob(@NotNull Job job, @NotNull Runnable onSuccess) {
-        job.addJobChangeListener(new JobChangeAdapter() {
-            @Override
-            public void done(IJobChangeEvent event) {
-                UIUtils.asyncExec(() -> {
-                    IStatus status = event.getResult();
-                    if (status.isOK()) {
-                        onSuccess.run();
-                    } else if (status.getSeverity() == IStatus.ERROR) {
-                        showError(status.getMessage(), new DBException(status.getMessage(), status.getException()));
-                    }
-                });
-            }
-        });
-        job.schedule();
+    private void importAll() {
+        List<DDSharedProject> projects = getProjectViews(this::canImport).stream()
+            .map(DDProjectView::remoteProject).toList();
+        runOperation(() -> uiManager.importProjects(projects));
     }
 
-    private void refreshAfterOperation() {
-        if (!viewer.getControl().isDisposed()) {
-            loadProjects();
+    @NotNull
+    private List<DDProjectView> getProjectViews(@NotNull Predicate<DDProjectView> filter) {
+        List<DDProjectView> projects = new ArrayList<>();
+        for (var item : viewer.getTable().getItems()) {
+            DDProjectView view = (DDProjectView) item.getData();
+            if (filter.test(view)) {
+                projects.add(view);
+            }
+        }
+        return projects;
+    }
+
+    private boolean canSynchronize(@NotNull DDProjectView view) {
+        return view.localProject() != null && view.status() != ProjectStatus.NOT_SYNC
+            && view.status() != ProjectStatus.MISSING_ON_SERVER;
+    }
+
+    private boolean canImport(@NotNull DDProjectView view) {
+        return view.status() == ProjectStatus.NOT_ON_DEVICE && view.remoteProject() != null;
+    }
+
+    private boolean canUnbind(@NotNull DDProjectView view) {
+        return view.localProject() != null && view.status() != ProjectStatus.NOT_SYNC;
+    }
+
+    private void runOperation(@NotNull Supplier<ProjectJobBatchResult<?>> operation) {
+        if (operationRunning) {
+            return;
+        }
+        operationRunning = true;
+        lastOperationResult = null;
+        updateSelectionActions();
+        try {
+            lastOperationResult = operation.get();
+        } finally {
+            operationRunning = false;
+            if (!viewer.getControl().isDisposed()) {
+                loadProjects();
+            }
         }
     }
 
@@ -439,14 +490,6 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         store.setValue(PREF_SHOW_REMOTE_PROJECTS, showRemote.getSelection());
         PrefUtils.savePreferenceStore(store);
         return true;
-    }
-
-    @Override
-    public void dispose() {
-        if (loadJob != null) {
-            loadJob.cancel();
-        }
-        super.dispose();
     }
 
 }

@@ -16,15 +16,17 @@
  */
 package org.jkiss.dbeaver.ui.datadam.project.job;
 
+import com.dbeaver.datadam.share.api.model.DDSharedProject;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester;
 
 /** Creates a remote DataDam project and uploads the selected local project. */
-public class DDProjectSharingJob extends DDProjectOperationJob<DBPProject> {
+public class DDProjectSharingJob extends DDProjectOperationJob<DDSharedProject> {
     @NotNull
     private final DBPProject project;
     @Nullable
@@ -41,8 +43,12 @@ public class DDProjectSharingJob extends DDProjectOperationJob<DBPProject> {
 
     @Override
     @NotNull
-    protected DBPProject perform(@NotNull DBRProgressMonitor monitor) throws DBException {
-        catalog.shareProject(project, description);
-        return project;
+    protected DDSharedProject perform(@NotNull DBRProgressMonitor monitor) throws DBException {
+        var manager = uiManager.getProjectManager();
+        try {
+            return manager.shareProject(project, description);
+        } finally {
+            DDProjectSyncPropertyTester.firePropertyChange();
+        }
     }
 }

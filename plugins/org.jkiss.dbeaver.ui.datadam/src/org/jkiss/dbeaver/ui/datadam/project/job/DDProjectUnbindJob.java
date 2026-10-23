@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester;
 
 /** Removes the local DataDam binding without deleting either project. */
 public class DDProjectUnbindJob extends DDProjectOperationJob<DBPProject> {
@@ -40,7 +41,8 @@ public class DDProjectUnbindJob extends DDProjectOperationJob<DBPProject> {
     @Override
     @NotNull
     protected DBPProject perform(@NotNull DBRProgressMonitor monitor) throws DBException {
-        catalog.unbindProject(project);
+        uiManager.getProjectManager().unbindProject(project);
+        DDProjectSyncPropertyTester.firePropertyChange();
         return project;
     }
 }

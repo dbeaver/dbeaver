@@ -20,26 +20,17 @@ import com.dbeaver.datadam.share.api.model.DDSharedProject;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
 
 import java.time.LocalDateTime;
-import java.util.UUID;
 
 /** A project in the current DataDam account, with or without a local workspace copy. */
 public record DDProjectView(
-    @NotNull UUID id,
     @NotNull String name,
     @Nullable String description,
     @Nullable DBPProject localProject,
     @Nullable DDSharedProject remoteProject,
     @Nullable LocalDateTime lastSyncedRevision,
-    @NotNull Status status
+    @NotNull ProjectStatus status
 ) {
-    public enum Status {
-        NOT_ON_DEVICE,
-        MISSING_ON_SERVER,
-        UP_TO_DATE,
-        LOCAL_CHANGES,
-        SERVER_CHANGES,
-        CONFLICT
-    }
 }

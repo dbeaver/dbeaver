@@ -16,19 +16,20 @@
  */
 package org.jkiss.dbeaver.ui.datadam.project.job;
 
+import com.dbeaver.datadam.share.api.model.DDSharedProject;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectView;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester;
 
 /** Downloads the remote project selected in Preferences into the local workspace. */
 public class DDProjectImportJob extends DDProjectOperationJob<DBPProject> {
     @NotNull
-    private final DDProjectView remoteProject;
+    private final DDSharedProject remoteProject;
 
-    public DDProjectImportJob(@NotNull DDProjectView remoteProject) {
+    public DDProjectImportJob(@NotNull DDSharedProject remoteProject) {
         super(DDTrackingUIMessages.project_sync_import_job, DDTrackingUIMessages.project_sync_import_failed);
         this.remoteProject = remoteProject;
     }
@@ -36,6 +37,8 @@ public class DDProjectImportJob extends DDProjectOperationJob<DBPProject> {
     @Override
     @NotNull
     protected DBPProject perform(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return catalog.importProject(remoteProject);
+        DBPProject imported = uiManager.getProjectManager().importProject(remoteProject);
+        DDProjectSyncPropertyTester.firePropertyChange();
+        return imported;
     }
 }

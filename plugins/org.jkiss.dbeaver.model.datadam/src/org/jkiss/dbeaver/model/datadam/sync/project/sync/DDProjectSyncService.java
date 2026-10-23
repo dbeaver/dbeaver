@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam.sync.project;
+package org.jkiss.dbeaver.model.datadam.sync.project.sync;
 
 import com.dbeaver.datadam.share.api.exception.DDShareException;
 import com.dbeaver.datadam.share.api.model.DDSharedProject;
@@ -25,65 +25,44 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDShareClient;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDSharedProjectPullResult;
-import org.jkiss.dbeaver.model.datadam.sync.core.DDSyncCredentials;
 import org.jkiss.dbeaver.model.datadam.sync.core.PreparedFiles;
-import org.jkiss.utils.CommonUtils;
+import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncUtils;
 import org.jkiss.utils.Pair;
 
-import java.util.*;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.UUID;
 
 /**
- * Manages associations between local DBeaver projects and individual DataDam projects.
+ * Performs local and remote project transfers. Callers coordinate operations and persist their resulting bindings.
  */
 public class DDProjectSyncService {
 
     private static final Log log = Log.getLog(DDProjectSyncService.class);
 
     private final DDShareClient client;
-    private final DBPWorkspace workspace;
     private final UUID accountId;
-    private final DDProjectSyncBindingStore bindingStore = DDProjectSyncBindingStore.getInstance();
 
     public DDProjectSyncService(
-        @NotNull String url,
-        @NotNull DDSyncCredentials credentials,
-        @NotNull DBPWorkspace workspace,
+        @NotNull DDShareClient client,
         @NotNull UUID accountId
     ) {
-        this.client = new DDShareClient(url, credentials);
-        this.workspace = workspace;
+        this.client = client;
         this.accountId = accountId;
     }
 
     @NotNull
-    public List<DDSharedProject> listAllRemoteProjects() throws DBException {
-        try {
-            return client.listProjects();
-        } catch (DDShareException e) {
-            throw new DBException("Error listing DataDam projects", e);
-        }
-    }
-
-    @Nullable
-    public DDProjectSyncLocalBinding getBinding(@NotNull DBPProject project) throws DBException {
-        DDProjectSyncLocalBinding binding = bindingStore.load(project);
-        return binding != null && accountId.equals(binding.accountId()) ? binding : null;
-    }
-
-    public void unbindProject(@NotNull DBPProject project) throws DBException {
-        bindingStore.delete(project);
-        log.debug("Removed DataDam sync binding for project '" + project.getName() + "'");
+    UUID getAccountId() {
+        return accountId;
     }
 
     @NotNull
-    public DDProjectSyncSnapshot getProjectSyncSnapshot(@NotNull DBPProject project) throws DBException {
-        DDProjectSyncLocalBinding binding = getBinding(project);
-        if (binding == null) {
-            throw new DBException("Project is not bound to DataDam: " + project.getName());
-        }
+    public DDProjectSyncSnapshot getProjectSyncSnapshot(
+        @NotNull DBPProject project,
+        @NotNull DDProjectSyncLocalBinding binding
+    ) throws DBException {
         log.debug("Creating sync snapshot for project '" + project.getName() + "' with local binding " + binding);
         DDSharedProjectRevision serverRevision = getServerRevision(binding);
         Map<String, byte[]> content = getLocalContentAdapter(binding).read(project);
@@ -137,10 +116,8 @@ public class DDProjectSyncService {
         try {
             log.debug("Pushing project '" + project.getName() + "' to " + binding.remoteProjectId() +
                 " with expected server fingerprint " + lastKnownConfigurationFingerprint);
-            DDSharedProjectRevision revision = client.pushFiles(
+            return client.pushFiles(
                 binding.remoteProjectId(), preparedFiles, lastKnownConfigurationFingerprint);
-            saveBinding(project, binding.remoteProjectId(), revision, binding.unitIds());
-            return revision;
         } catch (DDShareException e) {
             throw new DBException("Error pushing DataDam project files", e);
         }
@@ -161,7 +138,6 @@ public class DDProjectSyncService {
         }
         DDProjectSyncContentAdapter content = getLocalContentAdapter(binding);
         content.write(project, result.files());
-        saveBinding(project, binding.remoteProjectId(), result.currentRevision(), binding.unitIds());
         return result.currentRevision();
     }
 
@@ -189,9 +165,8 @@ public class DDProjectSyncService {
     }
 
     @NotNull
-    public DDSharedProject shareProject(@NotNull DBPProject project, @Nullable String description) throws DBException {
+    public ShareResult createRemoteProject(@NotNull DBPProject project, @Nullable String description) throws DBException {
         log.debug("Sharing project '" + project.getName() + "' with DataDam");
-        requireUnbound(project);
         DDProjectSyncContentAdapter content = DDProjectSyncContentAdapter.forEnabledUnits();
         if (content.getUnitIds().isEmpty()) {
             throw new DBException("No project synchronization units are available");
@@ -202,19 +177,25 @@ public class DDProjectSyncService {
             DDSharedProject remote = client.createProject(remoteProjectId, project.getName(), description);
 
             DDSharedProjectRevision revision = client.getCurrentProjectRevision(remoteProjectId);
-            saveBinding(project, remoteProjectId, revision, content.getUnitIds());
+            DDProjectSyncLocalBinding binding = new DDProjectSyncLocalBinding(
+                remoteProjectId, accountId, revision, content.getUnitIds());
             log.debug("Shared project '" + project.getName() + "' as DataDam project " + remoteProjectId);
-            return remote;
+            return new ShareResult(remote, binding);
         } catch (Exception e) {
             throw new DBException("Error sharing project '" + project.getName() + "' with DataDam", e);
         }
     }
 
+
     @NotNull
-    public DBPProject importProject(@NotNull DDSharedProject remote) throws DBException {
+    public DDProjectSyncLocalBinding importProject(
+        @NotNull DBPProject project,
+        @NotNull DDSharedProject remote
+    ) throws DBException {
         log.debug("Importing DataDam project '" + remote.name() + "' (" + remote.id() + ")");
-        requireRemoteProjectAvailable(remote);
-        DBPProject project = null;
+        if (!accountId.equals(remote.projectOwner())) {
+            throw new DBException("DataDam project belongs to another account: " + remote.id());
+        }
         try {
             DDSharedProjectPullResult pullResult = client.pullFiles(remote.id());
             DDProjectSyncContentAdapter content = getServerContentAdapter(pullResult.files());
@@ -222,47 +203,16 @@ public class DDProjectSyncService {
                 throw new DBException("No project synchronization units are available");
             }
 
-            project = workspace.createProject(uniqueProjectName(remote.name()), remote.description());
             content.write(project, pullResult.files());
-            saveBinding(project, remote.id(), pullResult.currentRevision(), content.getUnitIds());
+            DDProjectSyncLocalBinding binding = new DDProjectSyncLocalBinding(
+                remote.id(), accountId, pullResult.currentRevision(), content.getUnitIds());
             log.debug("Imported DataDam project " + remote.id() + " as local project '" + project.getName() + "'");
-            return project;
+            return binding;
         } catch (DBException e) {
-            rollbackImport(project, e);
             throw e;
         } catch (Exception e) {
-            rollbackImport(project, e);
             throw new DBException("Error importing DataDam project '" + remote.name() + "'", e);
         }
-    }
-
-    private void rollbackImport(@Nullable DBPProject project, @NotNull Exception cause) {
-        if (project == null) {
-            return;
-        }
-        try {
-            workspace.deleteProject(project);
-        } catch (DBException cleanupError) {
-            cause.addSuppressed(cleanupError);
-        }
-    }
-
-    private void requireUnbound(@NotNull DBPProject project) throws DBException {
-        if (bindingStore.load(project) != null) {
-            throw new DBException("Project '" + project.getName() + "' is already bound to DataDam");
-        }
-    }
-
-    private void saveBinding(
-        @NotNull DBPProject project,
-        @NotNull UUID remoteProjectId,
-        @NotNull DDSharedProjectRevision revision,
-        @NotNull Set<String> syncUnitIds
-    ) throws DBException {
-        DDProjectSyncLocalBinding binding = new DDProjectSyncLocalBinding(
-            remoteProjectId, accountId, revision, syncUnitIds);
-        bindingStore.save(project, binding);
-        log.debug("Saved sync binding for project '" + project.getName() + "': " + binding);
     }
 
     @NotNull
@@ -283,25 +233,7 @@ public class DDProjectSyncService {
         return content;
     }
 
-    private void requireRemoteProjectAvailable(@NotNull DDSharedProject remote) throws DBException {
-        if (!accountId.equals(remote.projectOwner())) {
-            throw new DBException("DataDam project belongs to another account: " + remote.id());
-        }
-        for (DBPProject project : workspace.getProjects()) {
-            DDProjectSyncLocalBinding binding = bindingStore.load(project);
-            if (binding != null && accountId.equals(binding.accountId()) && remote.id().equals(binding.remoteProjectId())) {
-                throw new DBException("DataDam project '" + remote.name() + "' is already in the workspace");
-            }
-        }
+    public record ShareResult(@NotNull DDSharedProject remoteProject, @NotNull DDProjectSyncLocalBinding binding) {
     }
 
-    @NotNull
-    private String uniqueProjectName(@Nullable String remoteName) {
-        String baseName = CommonUtils.isEmpty(remoteName) ? "DataDam Project" : remoteName;
-        String name = baseName;
-        for (int suffix = 2; workspace.getProject(name) != null; suffix++) {
-            name = baseName + " (" + suffix + ")";
-        }
-        return name;
-    }
 }

@@ -23,39 +23,26 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.job.DDProjectSynchronizationJob;
 
-import java.util.List;
-
 public class DDProjectUpdateHandler extends DDProjectHandler<DDProjectSynchronizationJob> {
     @NotNull
     @Override
     protected DDProjectSynchronizationJob createJob(@NotNull ExecutionEvent event, @NotNull DBPProject project) {
-        return new DDProjectSynchronizationJob(List.of(project));
+        return new DDProjectSynchronizationJob(project);
     }
 
     @Override
     protected void onSuccess(@NotNull DDProjectSynchronizationJob job) {
-        var results = job.getOperationResult();
-        if (results == null) {
+        var status = job.getOperationResult();
+        if (status == null) {
             return;
         }
-        var result = results.get(0);
-        if (result.error() != null) {
-            String message = switch (result.change()) {
-                case LOCAL -> DDTrackingUIMessages.project_sync_push_failed;
-                case SERVER -> DDTrackingUIMessages.project_sync_pull_failed;
-                case UNCHANGED, CONFLICT -> DDTrackingUIMessages.project_sync_update_failed;
-                case null -> DDTrackingUIMessages.project_sync_update_failed;
-            };
-            showError(message, result.error());
-        } else {
-            switch (result.change()) {
-                case UNCHANGED -> showMessage(DDTrackingUIMessages.project_sync_update_unchanged);
-                case LOCAL -> showMessage(DDTrackingUIMessages.project_sync_push_success);
-                case SERVER -> showMessage(DDTrackingUIMessages.project_sync_pull_success);
-                case CONFLICT -> showError(DDTrackingUIMessages.project_sync_update_failed,
-                    new DBException(DDTrackingUIMessages.project_sync_update_conflict));
-                case null -> { }
-            }
+        switch (status) {
+            case UP_TO_DATE -> showMessage(DDTrackingUIMessages.project_sync_update_success);
+            case CONFLICT -> showError(DDTrackingUIMessages.project_sync_update_failed,
+                new DBException(DDTrackingUIMessages.project_sync_update_conflict));
+            case NOT_SYNC, NOT_ON_DEVICE, MISSING_ON_SERVER, LOCAL_CHANGES, SERVER_CHANGES ->
+                showError(DDTrackingUIMessages.project_sync_update_failed,
+                    new DBException("Project synchronization ended with status: " + status));
         }
     }
 }
