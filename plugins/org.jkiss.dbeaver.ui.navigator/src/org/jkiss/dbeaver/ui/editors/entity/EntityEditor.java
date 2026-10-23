@@ -781,8 +781,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
     }
 
     @Nullable
-    private String getEditorPageId(IEditorPart editorPart)
-    {
+    private String getEditorPageId(@Nullable IEditorPart editorPart) {
         synchronized (editorMap) {
             for (Map.Entry<String,IEditorPart> entry : editorMap.entrySet()) {
                 if (entry.getValue() == editorPart) {
@@ -962,8 +961,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
-    private boolean addEditorTab(@NotNull EntityEditorDescriptor descriptor)
-    {
+    private boolean addEditorTab(@NotNull EntityEditorDescriptor descriptor) {
         try {
             IEditorPart editor = descriptor.isLazy() ? new DeferredEditorPart(descriptor) : descriptor.createEditor();
             if (editor == null) {
@@ -1037,7 +1035,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
-    private void addActionsContributor(IEditorPart editor, Class<? extends IEditorActionBarContributor> contributorClass) throws Exception {
+    private void addActionsContributor(
+        @NotNull IEditorPart editor,
+        @NotNull Class<? extends IEditorActionBarContributor> contributorClass
+    ) throws Exception {
         GlobalContributorManager contributorManager = GlobalContributorManager.getInstance();
         IEditorActionBarContributor contributor = contributorManager.getContributor(contributorClass);
         if (contributor == null) {

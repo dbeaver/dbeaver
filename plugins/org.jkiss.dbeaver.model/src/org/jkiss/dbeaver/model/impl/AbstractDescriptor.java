@@ -306,8 +306,9 @@ public abstract class AbstractDescriptor {
         }
 
         @Override
+        @NotNull
         public String toString() {
-            return implName;
+            return String.valueOf(implName);
         }
     }
 

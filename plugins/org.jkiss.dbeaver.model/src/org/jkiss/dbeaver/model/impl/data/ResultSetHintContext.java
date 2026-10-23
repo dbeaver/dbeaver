@@ -131,7 +131,9 @@ public class ResultSetHintContext implements DBDValueHintContext {
     }
 
     @NotNull
-    public List<ValueHintProviderDescriptor> filterApplicableHintProviderDescriptors(@NotNull List<ValueHintProviderDescriptor> descriptors) {
+    public List<ValueHintProviderDescriptor> filterApplicableHintProviderDescriptors(
+        @NotNull List<ValueHintProviderDescriptor> descriptors
+    ) {
         List<ValueHintProviderDescriptor> result = new ArrayList<>(descriptors.size());
         synchronized (this.hintProvidersLock) {
             for (ValueHintProviderDescriptor desc : descriptors) {

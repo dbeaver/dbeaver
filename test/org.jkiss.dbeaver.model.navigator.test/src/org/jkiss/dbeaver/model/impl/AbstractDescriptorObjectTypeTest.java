@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -34,6 +35,7 @@ class AbstractDescriptorObjectTypeTest {
 
         AbstractDescriptor descriptor = new AbstractDescriptor("test") {
             @Override
+            @NotNull
             public Bundle getContributorBundle() {
                 return bundle;
             }

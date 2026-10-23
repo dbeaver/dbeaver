@@ -144,6 +144,8 @@ public abstract class AbstractValueBindingDescriptor<TYPE, CONTEXT> extends Abst
     }
 
     /**
+     * Checks whether this binding is enabled in the given context.
+     *
      * @param typedObject        optional attribute. If null then verify potential enablement
      * @param checkConfigDisable if true then also verify that this binding wasn't disabled by user configuration
      */

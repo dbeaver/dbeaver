@@ -81,8 +81,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
 
     @NotNull
     @Override
-    public String getTypeName(@NotNull IResource resource)
-    {
+    public String getTypeName(@NotNull IResource resource) {
         if (resource instanceof IFolder) {
             return "erd_folder";
         } else {
