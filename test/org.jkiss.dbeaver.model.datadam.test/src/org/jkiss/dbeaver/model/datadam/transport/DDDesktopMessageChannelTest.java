@@ -781,6 +781,7 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
 
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
+    @SuppressWarnings("PMD.CompareObjectsWithEquals")
     void serializesDisconnectBeforeReplacementCallbacksWhenOldListenersIgnoreInterruption(boolean pause) throws Exception {
         Clients clients = new Clients();
         Events events = new Events();

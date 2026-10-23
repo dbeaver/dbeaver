@@ -44,6 +44,7 @@ class DDDesktopTokenOriginTest {
     private Method matchesResource;
 
     @BeforeEach
+    @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
     void setUp() throws ReflectiveOperationException {
         String desktopPackage = DDDesktopAccessService.class.getPackageName();
         Class<?> tokenType = Class.forName(desktopPackage + ".DDDesktopUserToken");

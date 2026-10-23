@@ -192,6 +192,7 @@ class DDDesktopAccessLifecycleTest {
     }
 
     @NotNull
+    @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
     private static DDDesktopAccessService access(@NotNull AtomicReference<String> status) throws Exception {
         Class<?> managerType = Class.forName("org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopTokenManager");
         var statuses = new HashMap<String, Object>();
@@ -209,6 +210,7 @@ class DDDesktopAccessLifecycleTest {
     }
 
     @Nullable
+    @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
     private static Job expiryJob(@NotNull DDDesktopAccessService access) throws Exception {
         var field = DDDesktopAccessService.class.getDeclaredField("expiryJob");
         field.setAccessible(true);

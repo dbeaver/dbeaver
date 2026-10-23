@@ -46,6 +46,7 @@ class DDDesktopConnectionPluginServiceTest extends DBeaverUnitTest {
     }
 
     @Test
+    @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void shutdownWithoutActivationNeverCreatesAConnectionService() {
         var lifecycle = new DDDesktopConnectionPluginService();
         try (var services = Mockito.mockStatic(DDDesktopConnectionService.class)) {

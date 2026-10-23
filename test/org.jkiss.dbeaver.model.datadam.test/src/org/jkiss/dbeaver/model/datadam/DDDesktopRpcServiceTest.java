@@ -716,6 +716,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
             List.copyOf(observers).forEach(observer -> observer.accept(next));
         }
 
+        @SuppressWarnings("PMD.UnusedPrivateMethod")
         private void receive(@NotNull DDMessage message) {
             DDChannelStatus current = status;
             if (current.isReady()) {
