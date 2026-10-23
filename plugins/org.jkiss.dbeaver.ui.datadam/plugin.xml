@@ -74,13 +74,13 @@
     <extension point="org.eclipse.ui.commandImages">
         <image
             commandId="org.jkiss.dbeaver.datadam.commands.project.share"
-            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sync_connection.svg"/>
+            icon="platform:/plugin/org.jkiss.dbeaver.ui.datadam/icons/project_sync.svg"/>
         <image
             commandId="org.jkiss.dbeaver.datadam.commands.project.update"
-            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/refresh.svg"/>
+            icon="platform:/plugin/org.jkiss.dbeaver.ui.datadam/icons/project_sync.svg"/>
         <image
             commandId="org.jkiss.dbeaver.datadam.commands.project.unbind"
-            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/disconnect.svg"/>
+            icon="platform:/plugin/org.jkiss.dbeaver.ui.datadam/icons/project_disconnect.svg"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
