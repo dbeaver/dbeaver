@@ -837,6 +837,14 @@ public class GenericDataSource extends JDBCDataSource implements DBPTermProvider
         return dataTypeCache;
     }
 
+    /**
+     * Controls navigator folder visibility without affecting data type metadata.
+     */
+    public boolean isDataTypesVisible() {
+        return true;
+    }
+
+    @NotNull
     public Collection<? extends DBSDataType> getDataTypes(@NotNull DBRProgressMonitor monitor) throws DBException {
         return dataTypeCache.getAllObjects(monitor, this);
     }
