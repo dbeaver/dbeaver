@@ -35,6 +35,7 @@ import java.util.Properties;
 
 public class JDBCConnectionOpenerTest {
     @Test
+    @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
     public void invokesDataSourceWithDriverClassLoaderAndAuthResult() throws Exception {
         TestDataSource dataSource = Mockito.mock(TestDataSource.class);
         DBPDataSourceContainer container = Mockito.mock(DBPDataSourceContainer.class);
@@ -58,6 +59,7 @@ public class JDBCConnectionOpenerTest {
             "org.jkiss.dbeaver.model.impl.jdbc.JDBCConnectionOpener");
         var constructor = openerClass.getDeclaredConstructor(
             JDBCDataSource.class, DBPDriver.class, Driver.class, String.class, Properties.class, Object.class);
+        // package access does not cross OSGi bundle class loaders
         constructor.setAccessible(true);
         var opener = (PrivilegedExceptionAction<?>) constructor.newInstance(
             dataSource, driver, driverInstance, "jdbc:test", properties, authResult);
