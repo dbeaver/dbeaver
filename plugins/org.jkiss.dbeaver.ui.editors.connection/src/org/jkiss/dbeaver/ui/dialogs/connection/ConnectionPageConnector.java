@@ -50,7 +50,7 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
     private DBPDataSourceType dataSourceType;
     private DBPDriver selectedDriver;
     private ConnectorViewer viewer;
-    private boolean showCData;
+    private boolean showCommercialDrivers;
 
     ConnectionPageConnector(@NotNull NewConnectionWizard wizard) {
         super("newConnectionDriverChoice");
@@ -84,8 +84,8 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
             this.selectedDriver = null;
             setDescription(NLS.bind(UIConnectionMessages.dialog_new_connection_wizard_driver_description, dataSourceType.getName()));
         }
-        if (typeChanged || showCData != DataSourceTypeViewer.isShowCData()) {
-            showCData = DataSourceTypeViewer.isShowCData();
+        if (typeChanged || showCommercialDrivers != DataSourceTypeViewer.isShowCommercialDrivers()) {
+            showCommercialDrivers = DataSourceTypeViewer.isShowCommercialDrivers();
             refreshDrivers();
         }
     }

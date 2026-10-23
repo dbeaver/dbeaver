@@ -19,6 +19,9 @@ package org.jkiss.dbeaver.ui.app.config.nls;
 import org.eclipse.osgi.util.NLS;
 
 public final class ProductConfigMessages extends NLS {
+    public static String wizard_title;
+    public static String wizard_apply;
+
     public static String welcome_title;
     public static String welcome_description;
     public static String welcome_body_text;
@@ -41,6 +44,10 @@ public final class ProductConfigMessages extends NLS {
     public static String features_description;
     public static String features_list_header;
     public static String features_hint;
+    public static String features_update_title;
+    public static String features_update_description;
+    public static String features_update_header;
+    public static String features_new_label;
 
     public static String final_steps_title;
     public static String final_steps_description;

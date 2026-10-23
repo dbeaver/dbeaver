@@ -13,4 +13,5 @@ Require-Bundle: org.jkiss.dbeaver.headless,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry,
- org.jkiss.dbeaver.ext.greenplum
+ org.jkiss.dbeaver.ext.greenplum,
+ junit-jupiter-api
