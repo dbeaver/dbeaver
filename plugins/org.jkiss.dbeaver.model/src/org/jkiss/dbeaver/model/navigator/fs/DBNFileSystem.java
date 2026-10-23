@@ -224,6 +224,12 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 
     @NotNull
     @Override
+    public String getLocalizedName(@NotNull String locale) {
+        return getNodeDisplayName();
+    }
+
+    @NotNull
+    @Override
     public String getName() {
         return fileSystem.getId();
     }
