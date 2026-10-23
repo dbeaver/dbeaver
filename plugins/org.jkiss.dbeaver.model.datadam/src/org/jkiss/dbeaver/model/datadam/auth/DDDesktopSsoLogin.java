@@ -71,10 +71,14 @@ public class DDDesktopSsoLogin {
                     ) {
                         @Override
                         protected boolean isValidCallbackParameters(@NotNull Map<String, String> parameters) {
-                            return parameters.size() == 3 && issuer.toString().equals(parameters.get(DDSsoConstants.CLAIM_ISSUER))
-                                && (parameters.containsKey(OAuthConstants.PARAM_ERROR)
-                                || DDSsoConstants.BASE64URL_256_PATTERN.matcher(
-                                    parameters.getOrDefault(OAuthConstants.PARAM_CODE, "")).matches());
+                            if (!issuer.toString().equals(parameters.get(DDSsoConstants.CLAIM_ISSUER))
+                                || parameters.containsKey(OAuthConstants.PARAM_CODE) == parameters.containsKey(OAuthConstants.PARAM_ERROR)) {
+                                return false;
+                            }
+                            // OAuth response extensions are ignored; state is checked by the shared handler.
+                            return parameters.containsKey(OAuthConstants.PARAM_ERROR)
+                                ? !parameters.get(OAuthConstants.PARAM_ERROR).isBlank()
+                                : DDSsoConstants.BASE64URL_256_PATTERN.matcher(parameters.get(OAuthConstants.PARAM_CODE)).matches();
                         }
                     };
                 }

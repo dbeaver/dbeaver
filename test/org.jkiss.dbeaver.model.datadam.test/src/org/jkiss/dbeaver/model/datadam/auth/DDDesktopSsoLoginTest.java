@@ -121,11 +121,15 @@ class DDDesktopSsoLoginTest {
             Assertions.assertEquals(400, get(callback + "?code=" + "B".repeat(43) + "&state=" + params.get("state") + "&iss=https%3A%2F%2Fwrong.example"));
             Assertions.assertEquals(400, get(callback + query + "&state=other"));
             Assertions.assertEquals(400, get(callback + "/other" + query));
-            Assertions.assertEquals(400, get(callback + "?code=" + "B".repeat(43) + "&state=wrong"));
-            Assertions.assertEquals(400, get(callback + "?code=short&state=" + params.get("state")));
+            Assertions.assertEquals(400, get(callback + "?code=" + "B".repeat(43) + "&state=wrong" + issuerParameter() + "&extension=value"));
+            Assertions.assertEquals(400, get(callback + "?code=" + "B".repeat(43) + issuerParameter()));
+            Assertions.assertEquals(400, get(callback + "?code=short&state=" + params.get("state") + issuerParameter()));
+            Assertions.assertEquals(400, get(callback + "?state=" + params.get("state") + issuerParameter()));
+            Assertions.assertEquals(400, get(callback + "?error=&state=" + params.get("state") + issuerParameter()));
+            Assertions.assertEquals(400, get(callback + "?error=%20&state=" + params.get("state") + issuerParameter()));
             Assertions.assertEquals(400, get(callback + query + "&error=access_denied"));
-            Assertions.assertEquals(400, get(callback + query + "&unexpected=value"));
-            Assertions.assertEquals(200, get(callback + query));
+            Assertions.assertEquals(400, get(callback + query + "&error="));
+            Assertions.assertEquals(200, get(callback + query + "&extension=value"));
         });
         Assertions.assertEquals("access-value", result.accessToken());
         Assertions.assertNull(result.idToken());
@@ -182,7 +186,10 @@ class DDDesktopSsoLoginTest {
     void authorizationErrorCompletesLoginInsteadOfWaitingForTimeout() {
         Assertions.assertThrows(DBException.class, () -> new DDDesktopSsoLogin().login(issuer, null, SCOPES, monitor, url -> {
             Map<String, String> params = parameters(URI.create(url).getRawQuery());
-            Assertions.assertEquals(200, get(params.get("redirect_uri") + "?error=access_denied&state=" + params.get("state") + issuerParameter()));
+            String query = "?error=access_denied&state=" + params.get("state") + issuerParameter()
+                + "&error_description=User+denied+access&error_uri=https%3A%2F%2Fexample.com%2Fhelp&extension=value";
+            Assertions.assertEquals(400, get(params.get("redirect_uri") + query + "&code="));
+            Assertions.assertEquals(200, get(params.get("redirect_uri") + query));
         }));
         Assertions.assertNull(form.get());
     }
