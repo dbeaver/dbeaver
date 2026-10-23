@@ -84,7 +84,7 @@ public class DBFFileSystemManager implements DBFEventListener {
     }
 
     @NotNull
-    public Path getPathFromURI(DBRProgressMonitor monitor, URI uri) throws DBException {
+    public synchronized Path getPathFromURI(DBRProgressMonitor monitor, URI uri) throws DBException {
         if (IOUtils.isLocalURI(uri)) {
             return Path.of(uri);
         }
