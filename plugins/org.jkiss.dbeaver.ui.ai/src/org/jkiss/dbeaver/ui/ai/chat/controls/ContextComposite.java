@@ -65,8 +65,8 @@ import java.util.stream.Stream;
 
 public class ContextComposite extends Composite {
 
-    public static final DateTimeFormatter CONV_TIME_FORMAT = DateTimeFormatter.ofPattern("hh:mm");
-    public static final DateTimeFormatter CONV_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("hh:mm (MMM dd)");
+    public static final DateTimeFormatter CONV_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
+    public static final DateTimeFormatter CONV_DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm (MMM dd)");
     private static final Log log = Log.getLog(ContextComposite.class);
 
     private static final String CSS_ID = "ai-chat-context";
