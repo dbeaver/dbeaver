@@ -41,6 +41,8 @@ import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryTupleRefEntry;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsNaturalJoinModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsProjectionModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -799,6 +801,18 @@ public abstract class SQLQueryCompletionContext {
             ) {
                 SQLQueryCompletionContext completionContext = this;
                 if (!origin.isChained() && !origin.isApplicable(syntaxInspectionResult)) {
+                    if (syntaxInspectionResult.expectingJoinCondition()) {
+                        // the lexical origin resolved to a rows source, which is not applicable at
+                        // a join condition position (this happens when the ON condition is still
+                        // empty and the following clauses are already present in the same
+                        // statement), so complete the enclosing join condition instead
+                        this.tryApplyOriginContext();
+                        SQLQueryDataContextInfo joinContext = this.resolveJoinDataContext(this.deepestContext);
+                        if (joinContext.isJoin()) {
+                            this.setContextInfo(joinContext);
+                            this.prepareNonPrefixedColumnCompletions(monitor, request, joinContext, filterOrNull, results);
+                        }
+                    }
                     return;
                 }
                 origin.apply(new SQLQuerySymbolOrigin.Visitor() {
@@ -1096,6 +1110,54 @@ public abstract class SQLQueryCompletionContext {
                                 }
                             }
                         }
+                    }
+                }
+                return result;
+            }
+
+            /**
+             * A position after the ON keyword and whitespace may resolve to the rows source of the
+             * joined table instead of the join itself, which happens when the ON condition is still
+             * empty and the following clauses are already present in the same statement. The join
+             * context is then restored from the last natural join of the top-level FROM clause
+             * whose ON clause ends before the caret.
+             */
+            @NotNull
+            private SQLQueryDataContextInfo resolveJoinDataContext(@NotNull SQLQueryDataContextInfo context) {
+                if (context.isJoin()) {
+                    return context;
+                }
+                SQLQueryModel queryModel = scriptItem.item.getQueryModel();
+                if (queryModel == null || !(queryModel.getQueryModel() instanceof SQLQueryRowsProjectionModel projection)) {
+                    return context;
+                }
+                int position = this.getRequestOffset() - this.getOffset();
+                SQLQueryRowsNaturalJoinModel join;
+                try {
+                    join = this.findLastJoinCompletedBefore(projection.getFromSource(), position);
+                } catch (IllegalStateException e) {
+                    // a source subtree was left unresolved, so the join context cannot be restored here
+                    return context;
+                }
+                return join == null ? context : SQLQueryDataContextInfo.makeFor(join.getRowsDataContext());
+            }
+
+            @Nullable
+            private SQLQueryRowsNaturalJoinModel findLastJoinCompletedBefore(
+                @Nullable SQLQueryRowsSourceModel source,
+                int position
+            ) {
+                if (!(source instanceof SQLQueryRowsNaturalJoinModel join)) {
+                    return null;
+                }
+                SQLQueryRowsNaturalJoinModel result = null;
+                if (join.getRowsDataContext().getJoinInfo() != null && join.getInterval().b <= position) {
+                    result = join;
+                }
+                for (SQLQueryRowsSourceModel child : new SQLQueryRowsSourceModel[] {join.getLeft(), join.getRight()}) {
+                    SQLQueryRowsNaturalJoinModel childResult = this.findLastJoinCompletedBefore(child, position);
+                    if (childResult != null && (result == null || childResult.getInterval().b > result.getInterval().b)) {
+                        result = childResult;
                     }
                 }
                 return result;

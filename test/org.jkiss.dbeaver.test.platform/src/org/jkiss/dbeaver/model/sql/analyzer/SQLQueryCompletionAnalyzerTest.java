@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.analyzer;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.sql.analyzer.builder.TableAttributeContainerBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestResult;
 import org.jkiss.junit.DBeaverUnitTest;
@@ -773,6 +774,75 @@ public class SQLQueryCompletionAnalyzerTest extends DBeaverUnitTest {
         Set<String> proposals = request.requestNewStrings("select * FROM Artist art join Album al ON |");
         assertContains(proposals, "art.ArtistId", "art.Name", "al.AlbumId", "al.Title", "al.ArtistId");
         assertNotContains(proposals, "Artist a", "Album a");
+    }
+
+    @Test
+    public void testJoinConditionCompletionWhenWhereClauseFollowsJoin() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> {
+            final TableAttributeContainerBuilder artist = s.table("Artist", t -> {
+                t.attribute("ArtistId");
+                t.attribute("Name");
+            });
+            s.table("Album", t -> {
+                t.attribute("AlbumId");
+                t.attribute("Title");
+                t.attribute("ArtistId");
+            }).foreignKey("ArtistId", artist, "ArtistId");
+        }).prepare();
+
+        // control: the join condition is completed when the caret is placed right after the ON keyword
+        // at the end of the query
+        Set<String> proposals = request.requestNewStrings("select * FROM Artist art join Album al ON |");
+        assertContains(proposals, "art.ArtistId = al.ArtistId");
+        assertNotContains(proposals, "Artist a", "Album a");
+
+        // the same position, but with the WHERE clause already present in the same statement
+        // (previously only keyword proposals were made here)
+        proposals = request.requestNewStrings("select *\nfrom Artist art\njoin Album al on | \nwhere art.ArtistId = 5\n;");
+        assertContains(proposals, "art.ArtistId = al.ArtistId");
+        assertContains(proposals, "art.ArtistId", "art.Name", "al.AlbumId", "al.Title", "al.ArtistId");
+        assertNotContains(proposals, "Artist a", "Album a");
+
+        // table completions are still made at a FROM-clause position
+        proposals = request.requestNewStrings("select *\nfrom Artist art\njoin |");
+        assertContains(proposals, "Album a", "Artist a");
+    }
+
+    @Test
+    public void testJoinConditionCompletionInChainOfJoins() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> {
+            final TableAttributeContainerBuilder artist = s.table("Artist", t -> {
+                t.attribute("ArtistId");
+                t.attribute("Name");
+            });
+            final TableAttributeContainerBuilder album = s.table("Album", t -> {
+                t.attribute("AlbumId");
+                t.attribute("Title");
+                t.attribute("ArtistId");
+            }).foreignKey("ArtistId", artist, "ArtistId");
+            s.table("Track", t -> {
+                t.attribute("TrackId");
+                t.attribute("Name");
+                t.attribute("AlbumId");
+            }).foreignKey("AlbumId", album, "AlbumId");
+        }).prepare();
+
+        // the join condition of the first join is completed even when more joins follow it
+        Set<String> proposals = request.requestNewStrings(
+            "select *\nfrom Artist art\njoin Album al on | \njoin Track tr on tr.AlbumId = al.AlbumId\nwhere art.ArtistId = 5\n;");
+        assertContains(proposals, "art.ArtistId = al.ArtistId");
+        assertNotContains(proposals, "al.AlbumId = tr.AlbumId");
+
+        // and the join condition of the last join is completed at its own position
+        proposals = request.requestNewStrings(
+            "select *\nfrom Artist art\njoin Album al on art.ArtistId = al.ArtistId\njoin Track tr on | \nwhere art.ArtistId = 5\n;");
+        assertContains(proposals, "al.AlbumId = tr.AlbumId");
+        assertNotContains(proposals, "art.ArtistId = al.ArtistId");
+
+        // the foreign key condition is also completed when the tables are joined in the reverse order
+        proposals = request.requestNewStrings(
+            "select *\nfrom Album al\njoin Artist art on | \nwhere al.AlbumId = 1\n;");
+        assertContains(proposals, "al.ArtistId = art.ArtistId");
     }
 
     @Test
