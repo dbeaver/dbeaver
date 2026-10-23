@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
-import org.jkiss.dbeaver.model.ai.AIFunctionParameter;
 import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.dbeaver.model.ai.AIImageDimensions;
 import org.jkiss.dbeaver.model.ai.AIMessage;
@@ -109,27 +108,11 @@ public class OpenAiUtils {
         if (!CommonUtils.isEmpty(request.getFunctions())) {
             List<OAITool> tools = new ArrayList<>();
             for (AIFunctionDescriptor fd : request.getFunctions()) {
-                OAITool tool = new OAITool();
-                tool.type = OAITool.TYPE_FUNCTION;
-                tool.name = fd.getFullId();
-                tool.description = fd.getAiDescription();
-                tool.parameters = new OAIToolParameters();
-                tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
-                if (fd.getParameters().length > 0) {
-                    List<String> requiredFields = new ArrayList<>();
-                    for (AIFunctionParameter param : fd.getParameters()) {
-                        OAIToolParameter tp = new OAIToolParameter();
-                        tp.type = param.getType();
-                        tp.description = param.getDescription();
-                        tp.enumItems = param.getValidValues();
-                        if (param.isRequired()) {
-                            requiredFields.add(param.getName());
-                        }
-                        tool.parameters.properties.put(param.getName(), tp);
-                    }
-                    if (!requiredFields.isEmpty()) {
-                        tool.parameters.required = requiredFields.toArray(new String[0]);
-                    }
+                OAITool tool = OAITool.fromDescriptor(fd);
+                if (tool.parameters == null) {
+                    OAIToolParameters parameters = new OAIToolParameters();
+                    parameters.type = OAIToolParameters.TYPE_OBJECT;
+                    tool.parameters = parameters;
                 }
                 tools.add(tool);
             }
