@@ -18,6 +18,9 @@ package org.jkiss.dbeaver.ui.datadam.project;
 
 import com.dbeaver.datadam.share.api.model.DDSharedProject;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.MultiStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
@@ -50,12 +53,14 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager.ProjectJobBatchResult;
+import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.dbeaver.utils.PrefUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -63,6 +68,7 @@ import java.util.function.Supplier;
 
 public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.synchronization.projects";
+    private static final String PLUGIN_ID = "org.jkiss.dbeaver.ui.datadam";
     private static final String PREF_SHOW_REMOTE_PROJECTS = "datadam.projects.showRemoteProjects";
     private static final int MIN_VISIBLE_ROWS = 6;
     private static final int MAX_VISIBLE_ROWS = 12;
@@ -80,8 +86,6 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private Button syncAllButton;
     private Button importAllButton;
     private boolean operationRunning;
-    @Nullable
-    private ProjectJobBatchResult<?> lastOperationResult;
 
     public DDProjectsPreferencePage() {
         noDefaultAndApplyButton();
@@ -470,15 +474,25 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             return;
         }
         operationRunning = true;
-        lastOperationResult = null;
         updateSelectionActions();
+        ProjectJobBatchResult<?> result;
         try {
-            lastOperationResult = operation.get();
+            result = operation.get();
         } finally {
             operationRunning = false;
             if (!viewer.getControl().isDisposed()) {
                 loadProjects();
             }
+        }
+        if (!result.failures().isEmpty() && !viewer.getControl().isDisposed()) {
+            IStatus[] errors = result.failures().stream().map(failure -> {
+                String message = failure.projectName() + ": " + failure.error().getMessage();
+                return Status.error(message, new DBException(message, failure.error().getException()));
+            }).toArray(IStatus[]::new);
+            String message = NLS.bind(DDTrackingUIMessages.projects_errors,
+                String.join("\n", Arrays.stream(errors).map(IStatus::getMessage).toList()));
+            new StandardErrorDialog(getShell(), DDTrackingUIMessages.project_sync_title, message,
+                new MultiStatus(PLUGIN_ID, 0, errors, message, null), IStatus.ERROR).open();
         }
     }
 
