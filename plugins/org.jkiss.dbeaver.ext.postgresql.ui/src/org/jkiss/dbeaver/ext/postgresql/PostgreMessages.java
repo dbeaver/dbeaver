@@ -23,7 +23,6 @@ public class PostgreMessages extends NLS {
 
     public static String dialog_create_publication_tables;
     public static String dialog_create_publication_filter_tables;
-    public static String dialog_create_publication_title;
     public static String dialog_create_publication_error_all_tables;
     public static String dialog_create_publication_error_title;
     public static String dialog_create_publication_loading_tables;
@@ -34,12 +33,10 @@ public class PostgreMessages extends NLS {
     public static String dialog_create_subscription_publisher_setup_instructions;
     public static String dialog_create_subscription_title;
     public static String dialog_create_subscription_settings_tab;
-    public static String dialog_create_subscription_general_tab;
     public static String dialog_create_subscription_publications_tab;
     public static String dialog_create_subscription_filter_publications;
     public static String dialog_create_subscription_publications_empty;
     public static String dialog_create_subscription_publications_no_matches;
-    public static String dialog_create_subscription_error_publication_list;
     public static String dialog_create_subscription_testing_connection;
     public static String dialog_create_subscription_connection_verified;
     public static String dialog_create_subscription_load_publications;
@@ -56,9 +53,6 @@ public class PostgreMessages extends NLS {
     public static String dialog_create_subscription_subscriber;
     public static String dialog_create_subscription_subscriber_tip;
     public static String dialog_create_subscription_publisher;
-    public static String dialog_create_subscription_custom_connection;
-    public static String dialog_create_subscription_publisher_tip;
-    public static String dialog_create_subscription_connection_tab;
     public static String dialog_create_subscription_existing_connection;
     public static String dialog_create_subscription_existing_connection_tip;
     public static String dialog_create_subscription_manual_connection;
@@ -68,14 +62,7 @@ public class PostgreMessages extends NLS {
     public static String dialog_create_subscription_test_connection_success;
     public static String dialog_create_subscription_ssl_tab;
     public static String dialog_create_subscription_ssl_paths_tip;
-    public static String dialog_create_subscription_publisher_not_configured;
-    public static String dialog_create_subscription_configure_publisher;
-    public static String dialog_create_subscription_configure_publisher_tip;
-    public static String dialog_create_subscription_connection_string;
-    public static String dialog_create_subscription_connection_string_tip;
     public static String dialog_create_subscription_publications;
-    public static String dialog_create_subscription_publications_tip;
-    public static String dialog_create_subscription_startup;
     public static String dialog_create_subscription_connect;
     public static String dialog_create_subscription_connect_tip;
     public static String dialog_create_subscription_enabled;
@@ -96,9 +83,7 @@ public class PostgreMessages extends NLS {
     public static String dialog_create_subscription_streaming_tip;
     public static String dialog_create_subscription_commit;
     public static String dialog_create_subscription_commit_tip;
-    public static String dialog_create_subscription_disconnected_tip;
     public static String dialog_create_subscription_error_name;
-    public static String dialog_create_subscription_error_connection;
     public static String dialog_create_subscription_error_publisher;
     public static String dialog_create_subscription_error_publications;
 

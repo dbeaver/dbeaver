@@ -56,7 +56,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -111,15 +110,6 @@ public class PostgreSubscription extends PostgreReplicationObject {
         this.connectionInfo = connectionInfo;
     }
 
-    @NotNull
-    public static String buildConnectionInfo(@NotNull Map<String, String> parameters) {
-        // libpq keyword/value strings use backslash escapes, independently of SQL string literal escaping.
-        return parameters.entrySet().stream()
-            .filter(entry -> !entry.getValue().isEmpty())
-            .map(entry -> entry.getKey() + "='" + entry.getValue().replace("\\", "\\\\").replace("'", "\\'") + "'")
-            .collect(Collectors.joining(" "));
-    }
-
     public static boolean supportsPublisherConnection(@NotNull DBPDataSourceContainer connection) {
         String authModel = connection.getConnectionConfiguration().getAuthModelId();
         String actualAuthModel = connection.getActualConnectionConfiguration().getAuthModelId();
@@ -140,20 +130,6 @@ public class PostgreSubscription extends PostgreReplicationObject {
         // Use the desktop connection's active database, including URL-based and non-native-auth datasources.
         PostgreDataSource dataSource = getPublicationDiscoveryDataSource(monitor, connection);
         return readPublicationNames(monitor, dataSource.getDefaultInstance());
-    }
-
-    @NotNull
-    public static List<String> readPublisherPublicationNames(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBPDataSourceContainer connection,
-        @NotNull String databaseName
-    ) throws DBException {
-        PostgreDataSource dataSource = getPublicationDiscoveryDataSource(monitor, connection);
-        PostgreDatabase database = dataSource.getDatabase(databaseName);
-        if (database == null) {
-            throw new DBException("Publisher database is not available in this connection: " + databaseName);
-        }
-        return readPublicationNames(monitor, database);
     }
 
     public static boolean isPublisherLogicalReplicationEnabled(
@@ -224,83 +200,6 @@ public class PostgreSubscription extends PostgreReplicationObject {
     }
 
     @NotNull
-    public static String mergePublicationSelection(
-        @NotNull String currentNames, @NotNull List<String> availableNames, @NotNull List<String> selectedNames
-    ) {
-        // Keep manually entered names that are not in the fetched list; only replace the checklist's own selections.
-        LinkedHashSet<String> names = currentNames.lines().filter(name -> !name.isBlank())
-            .collect(Collectors.toCollection(LinkedHashSet::new));
-        names.removeAll(availableNames);
-        names.addAll(selectedNames);
-        return String.join("\n", names);
-    }
-
-    @NotNull
-    public static String formatPublicationNames(@NotNull List<String> names) {
-        return names.stream().filter(name -> !name.isBlank()).map(name -> {
-            if (name.indexOf(',') >= 0 || name.indexOf('"') >= 0 || !name.equals(name.trim())) {
-                return '"' + name.replace("\"", "\"\"") + '"';
-            }
-            return name;
-        }).collect(Collectors.joining(", "));
-    }
-
-    @NotNull
-    public static List<String> parsePublicationNames(@NotNull String text) throws DBException {
-        if (text.isBlank()) {
-            return List.of();
-        }
-        // The single-line field uses commas, so quoted names must preserve commas, whitespace, and doubled quotes.
-        List<String> names = new ArrayList<>();
-        StringBuilder value = new StringBuilder();
-        boolean quoted = false;
-        boolean quotedField = false;
-        boolean closedQuote = false;
-        for (int i = 0; i <= text.length(); i++) {
-            if (i == text.length() && quoted) {
-                throw new DBException("Unterminated quoted publication name");
-            }
-            char ch = i == text.length() ? ',' : text.charAt(i);
-            if (quoted) {
-                if (ch == '"') {
-                    if (i + 1 < text.length() && text.charAt(i + 1) == '"') {
-                        value.append(ch);
-                        i++;
-                    } else {
-                        quoted = false;
-                        closedQuote = true;
-                    }
-                } else {
-                    value.append(ch);
-                }
-            } else if (ch == ',') {
-                String name = quotedField ? value.toString() : value.toString().trim();
-                if (name.isBlank()) {
-                    throw new DBException("Publication names must not be empty");
-                }
-                names.add(name);
-                value.setLength(0);
-                quotedField = false;
-                closedQuote = false;
-            } else if (ch == '"') {
-                if (closedQuote || !value.toString().isBlank()) {
-                    throw new DBException("Double quotes must enclose the whole publication name");
-                }
-                value.setLength(0);
-                quoted = true;
-                quotedField = true;
-            } else if (closedQuote) {
-                if (!Character.isWhitespace(ch)) {
-                    throw new DBException("Expected a comma after the quoted publication name");
-                }
-            } else {
-                value.append(ch);
-            }
-        }
-        return List.copyOf(names);
-    }
-
-    @NotNull
     public static DBPConnectionConfiguration copyPublisherConnectionConfiguration(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer connection
@@ -336,6 +235,15 @@ public class PostgreSubscription extends PostgreReplicationObject {
         }
         buildConnectionInfo(copy);
         return copy;
+    }
+
+    @NotNull
+    public static String buildConnectionInfo(@NotNull Map<String, String> parameters) {
+        // libpq keyword/value strings use backslash escapes, independently of SQL string literal escaping.
+        return parameters.entrySet().stream()
+            .filter(entry -> !entry.getValue().isEmpty())
+            .map(entry -> entry.getKey() + "='" + entry.getValue().replace("\\", "\\\\").replace("'", "\\'") + "'")
+            .collect(Collectors.joining(" "));
     }
 
     @NotNull
@@ -538,7 +446,7 @@ public class PostgreSubscription extends PostgreReplicationObject {
 
     @NotNull
     private static Map<String, String> getPublisherConnectionParameters(@NotNull DBPConnectionConfiguration configuration)
-        throws DBException {
+            throws DBException {
         if (CommonUtils.isNotEmpty(configuration.getAuthModelId())
             && !AuthModelDatabaseNative.ID.equals(configuration.getAuthModelId())) {
             throw new DBException("Publisher configuration requires native database authentication");
@@ -570,7 +478,7 @@ public class PostgreSubscription extends PostgreReplicationObject {
     }
 
     private static void addPublisherSSLParameters(@NotNull Map<String, String> parameters, @NotNull DBWHandlerConfiguration ssl)
-        throws DBException {
+            throws DBException {
         if (SSLConfigurationMethod.KEYSTORE.name().equals(ssl.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))
             || ssl.getBooleanProperty(SSLHandlerTrustStoreImpl.PROP_SSL_SELF_SIGNED_CERT)
             || ssl.getBooleanProperty(SSLHandlerTrustStoreImpl.PROP_SSL_FORCE_TLS12)

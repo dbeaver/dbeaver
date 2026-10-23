@@ -77,7 +77,6 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
     private Label errorLabel;
     private String connectionInfo = "";
     private boolean loadingSettings;
-    private Composite connectionSettings;
     private Composite testArea;
     private Composite connection;
     private Composite authentication;
@@ -158,7 +157,7 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
 
     private void createControls() {
         Composite area = this;
-        connectionSettings = UIUtils.createComposite(area, 1);
+        Composite connectionSettings = UIUtils.createComposite(area, 1);
         connectionSettings.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         ((GridLayout) connectionSettings.getLayout()).marginLeft = 0;
         ((GridLayout) connectionSettings.getLayout()).verticalSpacing = PostgreSubscriptionDialogLayout.COMPACT_SPACING;
@@ -183,7 +182,6 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
         urlText.setEnabled(false);
         hostMode.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> updateConnectionMode()));
         urlMode.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> updateConnectionMode()));
-        DBPConnectionConfiguration workingConfiguration = publisher.getConnectionConfiguration();
         UIUtils.createControlLabel(connection, PostgreMessages.dialog_setting_connection_host);
         endpoint = UIUtils.createComposite(connection, 3);
         endpoint.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -192,6 +190,7 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
         endpointLayout.marginHeight = 0;
         hostText = new Text(endpoint, SWT.BORDER);
         hostText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        DBPConnectionConfiguration workingConfiguration = publisher.getConnectionConfiguration();
         hostText.setText(CommonUtils.notEmpty(workingConfiguration.getHostName()));
         portText = UIUtils.createLabelText(endpoint, PostgreMessages.dialog_setting_connection_port,
             CommonUtils.isEmpty(workingConfiguration.getHostPort())
@@ -435,6 +434,16 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
 
     @NotNull
     public DataSourceDescriptor createPublicationConnection() throws DBException {
+        DataSourceDescriptor discovery = (DataSourceDescriptor) publisher.getRegistry().createDataSource(
+            DataSourceDescriptor.generateNewId(publisher.getDriver()), publisher.getDriver(), getPublicationConfiguration());
+        discovery.setName(getPublicationSourceName());
+        discovery.setTemporary(true);
+        discovery.setSavePassword(true);
+        return discovery;
+    }
+
+    @NotNull
+    private DBPConnectionConfiguration getPublicationConfiguration() throws DBException {
         DBPConnectionConfiguration currentConfiguration = publisher.getConnectionConfiguration();
         DBPConnectionConfiguration configuration = DBPConnectionConfiguration.copyWithIndependentRuntimeAttributes(
             useCopiedConnection ? desktopConfiguration : currentConfiguration);
@@ -447,12 +456,7 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
             configuration.setConfigurationType(DBPDriverConfigurationType.MANUAL);
             configuration.setUrl(publisher.getDriver().getDataSourceProvider().getConnectionURL(publisher.getDriver(), configuration));
         }
-        DataSourceDescriptor discovery = (DataSourceDescriptor) publisher.getRegistry().createDataSource(
-            DataSourceDescriptor.generateNewId(publisher.getDriver()), publisher.getDriver(), configuration);
-        discovery.setName(getPublicationSourceName());
-        discovery.setTemporary(true);
-        discovery.setSavePassword(true);
-        return discovery;
+        return configuration;
     }
 
     @Nullable
@@ -461,17 +465,8 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
             return null;
         }
         try {
-            String url;
-            if (useCopiedConnection) {
-                DBPConnectionConfiguration configuration =
-                    DBPConnectionConfiguration.copyWithIndependentRuntimeAttributes(desktopConfiguration);
-                configuration.setDatabaseName(publisher.getConnectionConfiguration().getDatabaseName());
-                url = publisher.getDriver().getDataSourceProvider().getConnectionURL(publisher.getDriver(), configuration);
-            } else {
-                String uri = urlMode.getSelection() ? connectionInfo
-                    : PostgreSubscription.buildConnectionUri(urlText.getText(), publisher.getConnectionConfiguration());
-                url = PostgreSubscription.createPublicationConnectionConfiguration(uri, publisher.getConnectionConfiguration()).getUrl();
-            }
+            DBPConnectionConfiguration configuration = getPublicationConfiguration();
+            String url = configuration.getUrl();
             String endpoint = url.split("\\?", 2)[0];
             int databaseStart = endpoint.indexOf('/', "jdbc:postgresql://".length());
             if (databaseStart < 0) {
@@ -479,7 +474,7 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
             }
             return (useCopiedConnection ? copiedConnectionId + ":" : "")
                 + endpoint.substring(0, databaseStart).toLowerCase(Locale.ROOT).replaceAll(":5432(?=,|$)", "")
-                + endpoint.substring(databaseStart);
+                + "/" + configuration.getDatabaseName();
         } catch (DBException e) {
             return null;
         }
