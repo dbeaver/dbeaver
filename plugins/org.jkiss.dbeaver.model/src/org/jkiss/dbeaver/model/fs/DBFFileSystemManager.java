@@ -51,8 +51,10 @@ public class DBFFileSystemManager implements DBFEventListener {
     }
 
     public synchronized boolean reloadFileSystems(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (dbfFileSystems != null) {
-            for (DBFVirtualFileSystem fs : dbfFileSystems.values()) {
+        Map<String, DBFVirtualFileSystem> oldFileSystems = dbfFileSystems;
+        dbfFileSystems = null;
+        if (oldFileSystems != null) {
+            for (DBFVirtualFileSystem fs : oldFileSystems.values()) {
                 try {
                     fs.close();
                 } catch (IOException e) {
