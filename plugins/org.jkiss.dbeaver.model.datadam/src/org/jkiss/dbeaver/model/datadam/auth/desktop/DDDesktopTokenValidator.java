@@ -23,9 +23,9 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.time.Instant;
 
-/** Checks when a token expires and whether a request targets one of its stored origins. */
-class DDDesktopTokenValidator {
-    boolean isExpired(@NotNull DDDesktopUserToken token) {
+/** Checks expiry and prevents the credential from being sent outside its allowed service endpoints. */
+public class DDDesktopTokenValidator {
+    public boolean isExpired(@NotNull DDDesktopUserToken token) {
         try {
             var claims = JSONUtils.parseJwtClaims(token.accessToken());
             if (claims == null) {
@@ -38,13 +38,34 @@ class DDDesktopTokenValidator {
         }
     }
 
-    boolean matchesResource(@NotNull DDDesktopUserToken token, @NotNull URI resource) {
+    public boolean matchesResource(@NotNull DDDesktopUserToken token, @NotNull URI resource) {
         try {
             URI requestedOrigin = originOf(resource);
-            return requestedOrigin.equals(originOf(URI.create(token.accountOrigin())))
-                || requestedOrigin.equals(originOf(URI.create(token.storageOrigin())));
+            String path = normalizedPath(resource);
+            return token.endpoints().stream().map(URI::create).anyMatch(endpoint -> {
+                if (!requestedOrigin.equals(originOf(endpoint))) {
+                    return false;
+                }
+                String basePath = normalizedPath(endpoint);
+                return basePath == null || basePath.isEmpty() || "/".equals(basePath)
+                    || path.equals(basePath) || path.startsWith(basePath.endsWith("/") ? basePath : basePath + "/");
+            });
         } catch (RuntimeException e) {
             return false;
+        }
+    }
+
+    @NotNull
+    private String normalizedPath(@NotNull URI uri) {
+        String path = uri.getPath();
+        if (path == null || path.contains("\\")) {
+            throw new IllegalArgumentException("Invalid DataDam resource path");
+        }
+        try {
+            // Decode before normalizing so encoded dot segments cannot escape an allowed endpoint.
+            return new URI(null, null, path, null, null).normalize().getPath();
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Invalid DataDam resource path", e);
         }
     }
 
