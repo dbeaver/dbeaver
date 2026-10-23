@@ -938,11 +938,19 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
 
     private static final class Clients implements Supplier<BaseWebSocketClient> {
         private final BlockingQueue<Peer> attempts = new LinkedBlockingQueue<>();
+        private final AtomicReference<BaseWebSocketClient> prepared = new AtomicReference<>(createClient());
 
         @Override
         @NotNull
         public BaseWebSocketClient get() {
+            BaseWebSocketClient client = prepared.getAndSet(null);
+            return client == null ? createClient() : client;
+        }
+
+        @NotNull
+        private BaseWebSocketClient createClient() {
             BaseWebSocketClient client = Mockito.mock(BaseWebSocketClient.class);
+            WebSocket socket = Mockito.mock(WebSocket.class);
             AtomicReference<Peer> pending = new AtomicReference<>();
             AtomicBoolean closed = new AtomicBoolean();
             try {
@@ -951,7 +959,8 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
                         if (closed.get()) {
                             throw new IOException("Client closed");
                         }
-                        Peer peer = new Peer(client, invocation.getArgument(0), invocation.getArgument(1), invocation.getArgument(2));
+                        Peer peer = new Peer(client, socket,
+                            invocation.getArgument(0), invocation.getArgument(1), invocation.getArgument(2));
                         pending.set(peer);
                         attempts.add(peer);
                         if (closed.get()) {
@@ -988,18 +997,20 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
         private final URI endpoint;
         private final Map<String, String> headers;
         private final BaseWebSocketClient.Listener listener;
-        private final WebSocket socket = Mockito.mock(WebSocket.class);
+        private final WebSocket socket;
         private final CompletableFuture<WebSocket> handshake = new CompletableFuture<>();
         private final BlockingQueue<Sent> sent = new LinkedBlockingQueue<>();
         private volatile boolean holdSends;
 
         private Peer(
             @NotNull BaseWebSocketClient client,
+            @NotNull WebSocket socket,
             @NotNull URI endpoint,
             @NotNull Map<String, String> headers,
             @NotNull BaseWebSocketClient.Listener listener
         ) {
             this.client = client;
+            this.socket = socket;
             this.endpoint = endpoint;
             this.headers = Map.copyOf(headers);
             this.listener = listener;

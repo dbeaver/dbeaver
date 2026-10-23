@@ -31,9 +31,9 @@ import java.net.URI;
 import java.util.List;
 
 class DDDesktopTokenOriginTest {
-    private static final String ACCOUNT = "https://account.datadam.beavers.team";
-    private static final String STORAGE = "https://dbeaver-storage.datadam.beavers.team";
-    private static final String EXTERNAL = "wss://external-dam.datadam.beavers.team/ws";
+    private static final String ACCOUNT = "https://account.staging.datadam.invalid";
+    private static final String STORAGE = "https://dbeaver-storage.staging.datadam.invalid";
+    private static final String EXTERNAL = "wss://external-dam.staging.datadam.invalid/ws";
     private static final String PROD_ACCOUNT = "https://account.prod.datadam.invalid";
     private static final String PROD_STORAGE = "https://storage.prod.datadam.invalid";
     private static final String PROD_EXTERNAL = "wss://external-dam.prod.datadam.invalid/ws";
@@ -71,8 +71,8 @@ class DDDesktopTokenOriginTest {
     void acceptsTheExternalEndpointWithExistingSavedTokenFields() throws ReflectiveOperationException {
         Assertions.assertTrue(matches(ACCOUNT, STORAGE, EXTERNAL));
         Assertions.assertTrue(matches(ACCOUNT + ":443", STORAGE + ":443", EXTERNAL));
-        Assertions.assertTrue(matches(ACCOUNT, STORAGE, "wss://external-dam.datadam.beavers.team:443/ws"));
-        Assertions.assertTrue(matches(ACCOUNT, STORAGE, "WSS://EXTERNAL-DAM.DATADAM.BEAVERS.TEAM/ws"));
+        Assertions.assertTrue(matches(ACCOUNT, STORAGE, "wss://external-dam.staging.datadam.invalid:443/ws"));
+        Assertions.assertTrue(matches(ACCOUNT, STORAGE, "WSS://EXTERNAL-DAM.STAGING.DATADAM.INVALID/ws"));
     }
 
     @Test
@@ -102,26 +102,26 @@ class DDDesktopTokenOriginTest {
     void rejectsUntrustedWebSocketHostsPortsAndUnsafeUrls() throws ReflectiveOperationException {
         for (String resource : List.of(
             "wss://attacker.example/ws",
-            "wss://external-dam.datadam.beavers.team.attacker.example/ws",
-            "wss://other.datadam.beavers.team/ws",
-            "wss://external-dam.datadam.beavers.team:8443/ws",
-            "wss://external-dam.datadam.beavers.team:80/ws",
-            "wss://external-dam.datadam.beavers.team:0/ws",
-            "wss://external-dam.datadam.beavers.team:65536/ws",
-            "wss://external-dam.datadam.beavers.team:/ws",
-            "wss://user:password@external-dam.datadam.beavers.team/ws",
-            "wss://external-dam.datadam.beavers.team/other",
-            "wss://external-dam.datadam.beavers.team/ws/",
-            "wss://external-dam.datadam.beavers.team/w%73",
-            "wss://external-dam.datadam.beavers.team/other/../ws",
+            "wss://external-dam.staging.datadam.invalid.attacker.example/ws",
+            "wss://other.staging.datadam.invalid/ws",
+            "wss://external-dam.staging.datadam.invalid:8443/ws",
+            "wss://external-dam.staging.datadam.invalid:80/ws",
+            "wss://external-dam.staging.datadam.invalid:0/ws",
+            "wss://external-dam.staging.datadam.invalid:65536/ws",
+            "wss://external-dam.staging.datadam.invalid:/ws",
+            "wss://user:password@external-dam.staging.datadam.invalid/ws",
+            "wss://external-dam.staging.datadam.invalid/other",
+            "wss://external-dam.staging.datadam.invalid/ws/",
+            "wss://external-dam.staging.datadam.invalid/w%73",
+            "wss://external-dam.staging.datadam.invalid/other/../ws",
             EXTERNAL + "?token=value",
             EXTERNAL + "?",
             EXTERNAL + "#fragment",
             EXTERNAL + "#",
-            "ws://external-dam.datadam.beavers.team/ws",
+            "ws://external-dam.staging.datadam.invalid/ws",
             "ws://127.0.0.1/ws",
-            "https://external-dam.datadam.beavers.team/ws",
-            "ftp://external-dam.datadam.beavers.team/ws"
+            "https://external-dam.staging.datadam.invalid/ws",
+            "ftp://external-dam.staging.datadam.invalid/ws"
         )) {
             Assertions.assertFalse(matches(ACCOUNT, STORAGE, resource), resource);
         }
@@ -129,8 +129,8 @@ class DDDesktopTokenOriginTest {
 
     @Test
     void doesNotTrustWebSocketsOnSavedAccountOrStorageHosts() throws ReflectiveOperationException {
-        Assertions.assertFalse(matches(ACCOUNT, STORAGE, "wss://account.datadam.beavers.team/ws"));
-        Assertions.assertFalse(matches(ACCOUNT, STORAGE, "wss://dbeaver-storage.datadam.beavers.team/ws"));
+        Assertions.assertFalse(matches(ACCOUNT, STORAGE, "wss://account.staging.datadam.invalid/ws"));
+        Assertions.assertFalse(matches(ACCOUNT, STORAGE, "wss://dbeaver-storage.staging.datadam.invalid/ws"));
     }
 
     @Test
@@ -140,10 +140,10 @@ class DDDesktopTokenOriginTest {
         Assertions.assertTrue(matches(ACCOUNT + ":443", STORAGE + ":443", ACCOUNT + "/graphql"));
         Assertions.assertTrue(matches(ACCOUNT, STORAGE, STORAGE + ":443/graphql"));
         Assertions.assertFalse(matches(ACCOUNT, STORAGE, ACCOUNT + ":8443/graphql"));
-        Assertions.assertFalse(matches(ACCOUNT, STORAGE, "https://user@account.datadam.beavers.team/graphql"));
-        Assertions.assertFalse(matches(ACCOUNT, STORAGE, "ftp://account.datadam.beavers.team/graphql"));
-        Assertions.assertFalse(matches("ftp://account.datadam.beavers.team", STORAGE, "ftp://account.datadam.beavers.team/graphql"));
-        Assertions.assertFalse(matches(ACCOUNT, STORAGE, "http://account.datadam.beavers.team/graphql"));
+        Assertions.assertFalse(matches(ACCOUNT, STORAGE, "https://user@account.staging.datadam.invalid/graphql"));
+        Assertions.assertFalse(matches(ACCOUNT, STORAGE, "ftp://account.staging.datadam.invalid/graphql"));
+        Assertions.assertFalse(matches("ftp://account.staging.datadam.invalid", STORAGE, "ftp://account.staging.datadam.invalid/graphql"));
+        Assertions.assertFalse(matches(ACCOUNT, STORAGE, "http://account.staging.datadam.invalid/graphql"));
     }
 
     @Test
@@ -168,19 +168,19 @@ class DDDesktopTokenOriginTest {
 
     @Test
     void requiresTheConfiguredNonDefaultSecurePort() throws ReflectiveOperationException {
-        configure(ACCOUNT, STORAGE, "wss://external-dam.datadam.beavers.team:8443/ws");
-        Assertions.assertTrue(matches(ACCOUNT, STORAGE, "wss://external-dam.datadam.beavers.team:8443/ws"));
+        configure(ACCOUNT, STORAGE, "wss://external-dam.staging.datadam.invalid:8443/ws");
+        Assertions.assertTrue(matches(ACCOUNT, STORAGE, "wss://external-dam.staging.datadam.invalid:8443/ws"));
         Assertions.assertFalse(matches(ACCOUNT, STORAGE, EXTERNAL));
-        Assertions.assertFalse(matches(ACCOUNT, STORAGE, "wss://external-dam.datadam.beavers.team:443/ws"));
+        Assertions.assertFalse(matches(ACCOUNT, STORAGE, "wss://external-dam.staging.datadam.invalid:443/ws"));
     }
 
     @Test
     void rejectsUnsafeConfiguredExternalEndpoints() throws ReflectiveOperationException {
         for (String external : List.of(
-            "ws://external-dam.datadam.beavers.team/ws",
-            "https://external-dam.datadam.beavers.team/ws",
-            "wss://user@external-dam.datadam.beavers.team/ws",
-            "wss://external-dam.datadam.beavers.team/other",
+            "ws://external-dam.staging.datadam.invalid/ws",
+            "https://external-dam.staging.datadam.invalid/ws",
+            "wss://user@external-dam.staging.datadam.invalid/ws",
+            "wss://external-dam.staging.datadam.invalid/other",
             EXTERNAL + "?token=value",
             EXTERNAL + "#fragment"
         )) {
@@ -191,10 +191,12 @@ class DDDesktopTokenOriginTest {
 
     @Test
     void rejectsMalformedSavedOriginsForTheExternalEndpoint() throws ReflectiveOperationException {
-        for (String account : List.of("not-a-url", "https:/account.datadam.beavers.team", "https://user@account.datadam.beavers.team")) {
+        for (String account : List.of(
+            "not-a-url", "https:/account.staging.datadam.invalid", "https://user@account.staging.datadam.invalid"
+        )) {
             Assertions.assertFalse(matches(account, STORAGE, EXTERNAL), account);
         }
-        Assertions.assertFalse(matches(ACCOUNT, "https://user@dbeaver-storage.datadam.beavers.team", EXTERNAL));
+        Assertions.assertFalse(matches(ACCOUNT, "https://user@dbeaver-storage.staging.datadam.invalid", EXTERNAL));
     }
 
     private void configure(@NotNull String account, @NotNull String storage, @NotNull String external) {

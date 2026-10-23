@@ -16,23 +16,21 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
+import com.dbeaver.datadam.external.api.DDExternalDamProtocol;
 import org.jkiss.dbeaver.DBException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 
 class DDEndpointsTest {
     @Test
     void selectsExternalEndpointForTheConfiguredEnvironment() {
-        Map<String, String> externalEndpoints = Map.of(
-            "https://account.datadam.beavers.team", "wss://external-dam.datadam.beavers.team/ws",
-            "https://account.datadam.cloud", "wss://external-dam.datadam.cloud/ws"
-        );
+        String externalEndpoint = DDEndpoints.getAccountBaseUrl().replace("https://account.", "wss://external-dam.")
+            + DDExternalDamProtocol.WEBSOCKET_PATH;
 
-        Assertions.assertEquals(externalEndpoints.get(DDEndpoints.getAccountBaseUrl()), DDEndpoints.getExternalDamWebSocketUrl());
+        Assertions.assertEquals(externalEndpoint, DDEndpoints.getExternalDamWebSocketUrl());
         Assertions.assertDoesNotThrow(
             () -> DDEndpoints.requireSecureWebSocketTransport(URI.create(DDEndpoints.getExternalDamWebSocketUrl())));
     }
@@ -40,12 +38,12 @@ class DDEndpointsTest {
     @Test
     void acceptsSecureWebSocketsAndExplicitLoopbackExceptions() {
         for (String url : List.of(
-            "wss://external-dam.datadam.beavers.team/ws",
-            "wss://external-dam.datadam.beavers.team:1/ws",
-            "wss://external-dam.datadam.beavers.team:443/ws",
-            "wss://external-dam.datadam.beavers.team:8443/ws",
-            "wss://external-dam.datadam.beavers.team:65535/ws",
-            "WSS://EXTERNAL-DAM.DATADAM.BEAVERS.TEAM/ws",
+            "wss://external-dam.staging.datadam.invalid/ws",
+            "wss://external-dam.staging.datadam.invalid:1/ws",
+            "wss://external-dam.staging.datadam.invalid:443/ws",
+            "wss://external-dam.staging.datadam.invalid:8443/ws",
+            "wss://external-dam.staging.datadam.invalid:65535/ws",
+            "WSS://EXTERNAL-DAM.STAGING.DATADAM.INVALID/ws",
             "wss://[::1]/ws",
             "ws://localhost/ws",
             "ws://localhost:80/ws",
@@ -58,33 +56,33 @@ class DDEndpointsTest {
     @Test
     void rejectsUnsafeOrNonProtocolWebSocketEndpoints() {
         for (String url : List.of(
-            "ws://external-dam.datadam.beavers.team/ws",
+            "ws://external-dam.staging.datadam.invalid/ws",
             "ws://localhost.example/ws",
             "ws://127.0.0.2/ws",
             "ws://[::1]/ws",
-            "https://external-dam.datadam.beavers.team/ws",
+            "https://external-dam.staging.datadam.invalid/ws",
             "http://localhost/ws",
-            "ftp://external-dam.datadam.beavers.team/ws",
+            "ftp://external-dam.staging.datadam.invalid/ws",
             "/ws",
             "wss:/ws",
             "wss:///ws",
-            "wss://user@external-dam.datadam.beavers.team/ws",
-            "wss://user:password@external-dam.datadam.beavers.team/ws",
-            "wss://@external-dam.datadam.beavers.team/ws",
-            "wss://external-dam.datadam.beavers.team:0/ws",
-            "wss://external-dam.datadam.beavers.team:65536/ws",
-            "wss://external-dam.datadam.beavers.team:/ws",
-            "wss://external-dam.datadam.beavers.team:-1/ws",
-            "wss://external-dam.datadam.beavers.team",
-            "wss://external-dam.datadam.beavers.team/",
-            "wss://external-dam.datadam.beavers.team/ws/",
-            "wss://external-dam.datadam.beavers.team/other",
-            "wss://external-dam.datadam.beavers.team/w%73",
-            "wss://external-dam.datadam.beavers.team/other/../ws",
-            "wss://external-dam.datadam.beavers.team/ws?token=value",
-            "wss://external-dam.datadam.beavers.team/ws?",
-            "wss://external-dam.datadam.beavers.team/ws#fragment",
-            "wss://external-dam.datadam.beavers.team/ws#"
+            "wss://user@external-dam.staging.datadam.invalid/ws",
+            "wss://user:password@external-dam.staging.datadam.invalid/ws",
+            "wss://@external-dam.staging.datadam.invalid/ws",
+            "wss://external-dam.staging.datadam.invalid:0/ws",
+            "wss://external-dam.staging.datadam.invalid:65536/ws",
+            "wss://external-dam.staging.datadam.invalid:/ws",
+            "wss://external-dam.staging.datadam.invalid:-1/ws",
+            "wss://external-dam.staging.datadam.invalid",
+            "wss://external-dam.staging.datadam.invalid/",
+            "wss://external-dam.staging.datadam.invalid/ws/",
+            "wss://external-dam.staging.datadam.invalid/other",
+            "wss://external-dam.staging.datadam.invalid/w%73",
+            "wss://external-dam.staging.datadam.invalid/other/../ws",
+            "wss://external-dam.staging.datadam.invalid/ws?token=value",
+            "wss://external-dam.staging.datadam.invalid/ws?",
+            "wss://external-dam.staging.datadam.invalid/ws#fragment",
+            "wss://external-dam.staging.datadam.invalid/ws#"
         )) {
             Assertions.assertThrows(DBException.class, () -> DDEndpoints.requireSecureWebSocketTransport(URI.create(url)), url);
         }
