@@ -215,7 +215,9 @@ public class DDDesktopAccessService {
         }
         Instant expiresAt = tokenManager.getExpiresAt();
         if (expiresAt != null) {
-            Job job = Job.createSystem("Expire DataDam desktop access", monitor -> expireAccess(version));
+            Job job = Job.createSystem("Expire DataDam desktop access", monitor -> {
+                expireAccess(version);
+            });
             expiryJob = job;
             job.schedule(Math.max(1, Duration.between(Instant.now(), expiresAt).toMillis()));
         }
