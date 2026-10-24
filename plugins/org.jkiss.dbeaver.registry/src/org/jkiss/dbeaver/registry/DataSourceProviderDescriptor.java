@@ -86,6 +86,8 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private final Map<String, DBXTreeNode> treeNodeMap = new HashMap<>();
     private boolean driversManageable;
     private boolean supportsDriverMigration;
+    @Nullable
+    private final String migrationCompletedProperty;
     private final List<DBPPropertyDescriptor> driverProperties = new ArrayList<>();
     private final List<DBPDriver> drivers = new ArrayList<>();
     private final List<NativeClientDescriptor> nativeClients = new ArrayList<>();
@@ -130,6 +132,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         IConfigurationElement[] trees = config.getChildren(RegistryConstants.TAG_TREE);
         this.treeConfig = ArrayUtils.isEmpty(trees) ? null : trees[0];
         this.supportsDriverMigration = CommonUtils.toBoolean(config.getAttribute("supports-migration"));
+        this.migrationCompletedProperty = config.getAttribute("migration-completed-property");
         this.inheritAuthModels = CommonUtils.getBoolean(config.getAttribute("inheritAuthModels"), true);
         this.driverProvider = CommonUtils.getBoolean(config.getAttribute("driverProvider"));
     }
@@ -246,6 +249,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         this.implType = new ObjectType(MissingDataSourceProvider.class.getName());
         this.temporary = true;
         this.treeConfig = null;
+        this.migrationCompletedProperty = null;
         this.treeDescriptor = new DBXTreeDescriptor(this, null, null, id, id, false, true, false, false, true, null, null);
         this.treeInitialized = true;
         this.scriptDialect = DBWorkbench.getPlatform().getSQLDialectRegistry().getDialect(BasicSQLDialect.ID);
@@ -395,6 +399,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     @Override
     public boolean supportsDriverMigration() {
         return supportsDriverMigration;
+    }
+
+    @Nullable
+    public String getMigrationCompletedProperty() {
+        return migrationCompletedProperty;
     }
 
     @NotNull
