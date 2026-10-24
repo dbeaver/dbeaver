@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
@@ -172,21 +174,37 @@ public class PostgreExecutionContext extends JDBCExecutionContext implements DBC
 
         // Check default active schema
         try (var session = openSession(monitor, DBCExecutionPurpose.META, "Read context defaults")) {
-            monitor.subTask("Retrieve active search path");
+            monitor.subTask("Retrieve active search path, schema and user");
 
-            var searchPathStr = CommonUtils.notEmpty(JDBCUtils.queryString(
-                session,
-                getDataSource().getServerType().getSearchPathQuery()
-            ));
-            for (String str : searchPathStr.split(",")) {
+            String searchPathQuery = getDataSource().getServerType().getSearchPathQuery();
+            // The search path can be read in the same round trip as the schema and user only when its query is
+            // a SELECT; e.g. Redshift uses SHOW search_path, which cannot be a subquery
+            boolean searchPathInline = searchPathQuery.regionMatches(true, 0, "SELECT", 0, 6);
+            String searchPathStr = null;
+            if (!searchPathInline) {
+                searchPathStr = JDBCUtils.queryString(session, searchPathQuery);
+            }
+            String activeSchemaName = null;
+            String activeUserName = null;
+            // One round trip: it runs for every new connection
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT " + (searchPathInline ? "(" + searchPathQuery + ")," : "") + "current_schema(),session_user");
+                 JDBCResultSet dbResult = dbStat.executeQuery()
+            ) {
+                if (dbResult.next()) {
+                    int index = 1;
+                    if (searchPathInline) {
+                        searchPathStr = dbResult.getString(index++);
+                    }
+                    activeSchemaName = dbResult.getString(index++);
+                    activeUserName = dbResult.getString(index);
+                }
+            }
+            for (String str : CommonUtils.notEmpty(searchPathStr).split(",")) {
                 searchPath.add(DBUtils.getUnQuotedIdentifier(getDataSource(), str.trim()));
             }
-
-            monitor.subTask("Retrieve active schema and user");
-
-            var result = JDBCUtils.queryStrings(session, "SELECT current_schema(),session_user");
-            setActiveSchema(monitor, result.getFirst());
-            setActiveUser(result.getLast());
+            setActiveSchema(monitor, activeSchemaName);
+            setActiveUser(activeUserName);
         } catch (SQLException e) {
             throw new DBCException(e, this);
         }
