@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,14 @@ public abstract class CompletionProposalBase {
      * Higher scores indicate higher priority in sorting.
      */
     public abstract int getProposalTypeSorterScore();
+
+    /**
+     * How much the user uses the object of this proposal (see {@code SQLCompletionUsageModel}), 0 if not known.
+     * Breaks ties of the other sort criteria before the alphabetical order.
+     */
+    public double getProposalUsageScore() {
+        return 0;
+    }
 
     /**
      * Returns the image associated with the object of this proposal.

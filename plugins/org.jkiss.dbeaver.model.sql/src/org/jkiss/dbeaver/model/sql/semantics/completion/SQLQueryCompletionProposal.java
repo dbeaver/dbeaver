@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ public class SQLQueryCompletionProposal extends CompletionProposalBase {
     protected final SQLQueryWordEntry filterString;
 
     protected int proposalScore;
+    private double usageScore;
 
     protected boolean cachedProposalInfoComputed = false;
     protected Object cachedProposalInfo = null;
@@ -90,6 +91,12 @@ public class SQLQueryCompletionProposal extends CompletionProposalBase {
         this.proposalScore = proposalScore;
     }
 
+    @Nullable
+    public DBSObject getObject() {
+        return this.object;
+    }
+
+    @NotNull
     public SQLQueryCompletionItemKind getItemKind() {
         return this.itemKind;
     }
@@ -118,6 +125,16 @@ public class SQLQueryCompletionProposal extends CompletionProposalBase {
         return this.itemKind.sortOrder;
     }
 
+    @Override
+    public double getProposalUsageScore() {
+        return this.usageScore;
+    }
+
+    public void setProposalUsageScore(double usageScore) {
+        this.usageScore = usageScore;
+    }
+
+    @Nullable
     @Override
     public DBPImage getObjectImage() {
         return image;
@@ -185,7 +202,8 @@ public class SQLQueryCompletionProposal extends CompletionProposalBase {
         return this.replacementOffset;
     }
 
-    public void apply(IDocument document) {
+    public void apply(@NotNull IDocument document) {
+        this.proposalContext.learnChoice(this.object);
         try {
             document.replace(this.replacementOffset, this.replacementLength, this.replacementString);
         } catch (BadLocationException ex) {

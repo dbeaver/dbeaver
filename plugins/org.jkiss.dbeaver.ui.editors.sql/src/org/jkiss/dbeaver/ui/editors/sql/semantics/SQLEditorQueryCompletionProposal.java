@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -137,9 +137,10 @@ public class SQLEditorQueryCompletionProposal extends SQLQueryCompletionProposal
     }
 
     @Override
-    public void apply(ITextViewer viewer, char trigger, int stateMask, int offset) {
+    public void apply(@NotNull ITextViewer viewer, char trigger, int stateMask, int offset) {
         IDocument document = viewer.getDocument();
         if (this.validate(document, offset, null)) {
+            this.getProposalContext().learnChoice(this.object);
             try {
                 document.replace(this.replacementOffset, offset - this.replacementOffset, this.replacementString);
             } catch (BadLocationException ex) {

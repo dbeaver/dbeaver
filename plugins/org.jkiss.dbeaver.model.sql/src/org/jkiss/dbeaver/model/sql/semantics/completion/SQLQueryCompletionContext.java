@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLSearchUtils;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
+import org.jkiss.dbeaver.model.sql.completion.usage.SQLCompletionUsageManager;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
@@ -191,6 +192,22 @@ public abstract class SQLQueryCompletionContext {
         return this.requestOffset;
     }
 
+    /**
+     * Recognized query the completion is requested in, if any.
+     */
+    @Nullable
+    public SQLQueryModel getQueryModel() {
+        return null;
+    }
+
+    /**
+     * Text of the query the completion is requested in, if any. Offsets in the query model are relative to it.
+     */
+    @Nullable
+    public String getQueryText() {
+        return null;
+    }
+
     @NotNull
     public abstract SQLQueryDataContextInfo getDataContext();
 
@@ -244,6 +261,19 @@ public abstract class SQLQueryCompletionContext {
     ) {
         return new SQLQueryCompletionContext(scriptItem.offset, requestOffset) {
             private final Set<DBSObjectContainer> exposedContexts = SQLQueryCompletionContext.obtainExposedContexts(dbcExecutionContext);
+
+            @Nullable
+            @Override
+            public SQLQueryModel getQueryModel() {
+                return scriptItem.item.getQueryModel();
+            }
+
+            @Nullable
+            @Override
+            public String getQueryText() {
+                return scriptItem.item.getOriginalText();
+            }
+
             private Map<String, Boolean> columnNameConflicts = null;
 
             private SQLQueryDataContextInfo nearestContext = SQLQueryDataContextInfo.empty();
@@ -1317,6 +1347,7 @@ public abstract class SQLQueryCompletionContext {
                     try {
                         Collection<DBSObjectContainer> containers = this.obtainDefaultContext(monitor, request);
                         this.collectTables(monitor, knownSources, containers, null, filterOrNull, completions);
+                        this.collectRecentTables(monitor, request, filterOrNull, completions);
                         // usually we don't want procedures in FROM
                         //this.collectProcedures(monitor, request, containers, null, filterOrNull, completions);
                         this.collectPackages(monitor, request, knownSources, this.exposedContexts,  null, filterOrNull, completions);
@@ -1327,6 +1358,37 @@ public abstract class SQLQueryCompletionContext {
                 
                 this.makeFilteredCompletionSet(filterOrNull, completions, results);
                 this.prepareContextSchemasAndCatalogs(monitor, this.exposedContexts, null, filterOrNull, results);
+            }
+
+            /**
+             * Tables the user uses most on this connection, from any schema: tables of other schemas get
+             * qualified names, so a used table is one Enter away without typing its schema.
+             */
+            private void collectRecentTables(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull SQLCompletionRequest request,
+                @Nullable SQLQueryWordEntry filterOrNull,
+                @NotNull LinkedList<SQLQueryCompletionItem> completions
+            ) {
+                DBPDataSource dataSource = request.getContext().getDataSource();
+                if (!(dataSource instanceof DBSObjectContainer root)) {
+                    return;
+                }
+                Set<DBSObject> proposed = new HashSet<>();
+                for (SQLQueryCompletionItem item : completions) {
+                    proposed.add(item.getObject());
+                }
+                SQLCompletionUsageManager usageManager = SQLCompletionUsageManager.getInstance();
+                for (List<String> path : usageManager.getTopTables(dataSource.getContainer(), SQLCompletionUsageManager.RECENT_TABLES)) {
+                    DBSObject object = usageManager.findCachedObject(monitor, root, path);
+                    if (object instanceof DBSEntity table && !proposed.contains(table)) {
+                        SQLQueryWordEntry tableName = makeFilterInfo(filterOrNull, String.join(".", path));
+                        int score = tableName.matches(filterOrNull, this.searchInsideWords);
+                        if (score > 0) {
+                            completions.add(SQLQueryCompletionItem.forRealTable(score, tableName, null, table, false, false));
+                        }
+                    }
+                }
             }
 
             private void prepareObjectCompletions(

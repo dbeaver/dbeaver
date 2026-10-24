@@ -26,6 +26,8 @@ public final class SQLModelPreferences {
     public static final String SQL_PROPOSAL_INSERT_TABLE_ALIAS  = "sql.proposals.insert.table.alias";
     public static final String SQL_EDITOR_PROPOSAL_SHORT_NAME = "SQLEditor.ContentAssistant.proposals.short.name";
     public static final String SQL_EDITOR_PROPOSAL_ALWAYS_FQ = "SQLEditor.ContentAssistant.proposals.long.name";
+    // Proposals are ranked by what the user uses (learned locally from executed queries and accepted proposals)
+    public static final String SQL_EDITOR_PROPOSAL_USAGE_RANKING = "SQLEditor.ContentAssistant.proposals.sort.usage";
 
     public static final String ADVANCED_HIGHLIGHTING_ENABLE = "SQLEditor.Highlighting.advanced.enable";
     public static final String TRACK_SCRIPT_VARIABLES = "SQLEditor.Semantics.script.variables.tracking.enable";

@@ -56,6 +56,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage {
     private Combo csObjectNameForm;
     private Button csInsertSpace;
     private Button csSortAlphabetically;
+    private Button csSortByUsage;
     private Button csShowServerHelpTopics;
     private Button csShowValues;
     private Button csQualifiedColumnNames;
@@ -91,6 +92,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage {
             store.contains(SQLModelPreferences.SQL_EDITOR_PROPOSAL_ALWAYS_FQ) ||
             store.contains(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS) ||
             store.contains(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY) ||
+            store.contains(SQLModelPreferences.SQL_EDITOR_PROPOSAL_USAGE_RANKING) ||
             store.contains(SQLModelPreferences.SQL_PROPOSAL_INSERT_TABLE_ALIAS) ||
 
             store.contains(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS) ||
@@ -188,16 +190,55 @@ public class PrefPageSQLCompletion extends TargetPrefPage {
             csInsertCase.add(SQLEditorMessages.pref_page_sql_insert_case_upper_case);
             csInsertCase.add(SQLEditorMessages.pref_page_sql_insert_case_lower_case);
 
-            csReplaceWordAfter = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_replace_word_after, SQLEditorMessages.pref_page_sql_completion_label_replace_word_after_tip, false, 2);
-            csHideDuplicates = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_hide_duplicate_names, null, false, 2);
-            csObjectNameForm = UIUtils.createLabelCombo(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_object_names_form, SWT.READ_ONLY | SWT.DROP_DOWN);
+            csReplaceWordAfter = UIUtils.createCheckbox(
+                assistGroup,
+                SQLEditorMessages.pref_page_sql_completion_label_replace_word_after,
+                SQLEditorMessages.pref_page_sql_completion_label_replace_word_after_tip,
+                false,
+                2);
+            csHideDuplicates = UIUtils.createCheckbox(
+                assistGroup,
+                SQLEditorMessages.pref_page_sql_completion_label_hide_duplicate_names,
+                null,
+                false,
+                2);
+            csObjectNameForm = UIUtils.createLabelCombo(
+                assistGroup,
+                SQLEditorMessages.pref_page_sql_completion_label_object_names_form,
+                SWT.READ_ONLY | SWT.DROP_DOWN);
             for (SQLCompletionObjectNameFormKind mode : SQLCompletionObjectNameFormKind.values()) {
                 csObjectNameForm.add(mode.title);
             }
-            csInsertSpace = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_insert_space, null, false, 2);
-            csSortAlphabetically = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_sort_alphabetically, null, false, 2);
-            csShowServerHelpTopics = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_show_server_help_topics, SQLEditorMessages.pref_page_sql_completion_label_show_server_help_topics_tip, false, 2);
-            csShowValues = UIUtils.createCheckbox(assistGroup, SQLEditorMessages.pref_page_sql_completion_label_show_values, SQLEditorMessages.pref_page_sql_completion_label_show_values_tip, false, 2);
+            csInsertSpace = UIUtils.createCheckbox(
+                assistGroup,
+                SQLEditorMessages.pref_page_sql_completion_label_insert_space,
+                null,
+                false,
+                2);
+            csSortAlphabetically = UIUtils.createCheckbox(
+                assistGroup,
+                SQLEditorMessages.pref_page_sql_completion_label_sort_alphabetically,
+                null,
+                false,
+                2);
+            csSortByUsage = UIUtils.createCheckbox(
+                assistGroup,
+                SQLEditorMessages.pref_page_sql_completion_label_sort_by_usage,
+                SQLEditorMessages.pref_page_sql_completion_label_sort_by_usage_tip,
+                false,
+                2);
+            csShowServerHelpTopics = UIUtils.createCheckbox(
+                assistGroup,
+                SQLEditorMessages.pref_page_sql_completion_label_show_server_help_topics,
+                SQLEditorMessages.pref_page_sql_completion_label_show_server_help_topics_tip,
+                false,
+                2);
+            csShowValues = UIUtils.createCheckbox(
+                assistGroup,
+                SQLEditorMessages.pref_page_sql_completion_label_show_values,
+                SQLEditorMessages.pref_page_sql_completion_label_show_values_tip,
+                false,
+                2);
             csQualifiedColumnNames = UIUtils.createCheckbox(
                 assistGroup,
                 SQLEditorMessages.pref_page_sql_completion_label_qualified_column_names,
@@ -249,6 +290,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage {
             csObjectNameForm.select(SQLCompletionObjectNameFormKind.getFromPreferences(store).ordinal());
             csInsertSpace.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS));
             csSortAlphabetically.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY));
+            csSortByUsage.setSelection(store.getBoolean(SQLModelPreferences.SQL_EDITOR_PROPOSAL_USAGE_RANKING));
             csShowServerHelpTopics.setSelection(store.getBoolean(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS));
             csShowValues.setSelection(store.getBoolean(SQLPreferenceConstants.SHOW_VALUES));
             csQualifiedColumnNames.setSelection(store.getBoolean(SQLPreferenceConstants.QUALIFIED_COLUMN_NAMES));
@@ -284,6 +326,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage {
             SQLCompletionObjectNameFormKind.values()[csObjectNameForm.getSelectionIndex()].setToPreferences(store);
             store.setValue(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS, csInsertSpace.getSelection());
             store.setValue(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY, csSortAlphabetically.getSelection());
+            store.setValue(SQLModelPreferences.SQL_EDITOR_PROPOSAL_USAGE_RANKING, csSortByUsage.getSelection());
             store.setValue(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS, csShowServerHelpTopics.getSelection());
             store.setValue(SQLPreferenceConstants.SHOW_VALUES, csShowValues.getSelection());
             store.setValue(SQLPreferenceConstants.QUALIFIED_COLUMN_NAMES, csQualifiedColumnNames.getSelection());
@@ -316,6 +359,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage {
         store.setToDefault(SQLModelPreferences.SQL_EDITOR_PROPOSAL_ALWAYS_FQ);
         store.setToDefault(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS);
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY);
+        store.setToDefault(SQLModelPreferences.SQL_EDITOR_PROPOSAL_USAGE_RANKING);
         store.setToDefault(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS);
         store.setToDefault(SQLPreferenceConstants.SHOW_VALUES);
         store.setToDefault(SQLPreferenceConstants.QUALIFIED_COLUMN_NAMES);
@@ -342,6 +386,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage {
         csObjectNameForm.select(SQLCompletionObjectNameFormKind.getDefaultFromPreferences(store).ordinal());
         csInsertSpace.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS));
         csSortAlphabetically.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.PROPOSAL_SORT_ALPHABETICALLY));
+        csSortByUsage.setSelection(store.getDefaultBoolean(SQLModelPreferences.SQL_EDITOR_PROPOSAL_USAGE_RANKING));
         csShowServerHelpTopics.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SHOW_SERVER_HELP_TOPICS));
         csShowValues.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.SHOW_VALUES));
         csQualifiedColumnNames.setSelection(store.getDefaultBoolean(SQLPreferenceConstants.QUALIFIED_COLUMN_NAMES));
