@@ -22,9 +22,12 @@ import net.sf.jsqlparser.expression.operators.relational.ExpressionList;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.Distinct;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.SelectItem;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -46,6 +49,14 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
 
     private static final String COUNT_WRAP_PREFIX = "SELECT COUNT(*) FROM (";
     private static final String COUNT_WRAP_POSTFIX = "\n) dbvrcnt";
+
+    /**
+     * All JSQLParser SELECT variants (including CTE/parenthesized SELECT forms) can be
+     * counted by wrapping them as a subquery, not just PlainSelect and SetOperationList.
+     */
+    public static boolean isCountableSelect(@Nullable Statement statement) {
+        return statement instanceof Select;
+    }
 
     @NotNull
     @Override
@@ -104,7 +115,27 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
     private SQLQuery tryInjectCount(@NotNull DBPDataSource dataSource, @NotNull SQLQuery query) throws DBException {
         try {
             Statement statement = SQLSemanticProcessor.parseQuery(query.getText());
-            if (statement instanceof PlainSelect select) {
+            // Parenthesized SELECTs are valid top-level MySQL statements. Unwrap only for
+            // AST rewriting; render the outer statement so its original structure remains intact.
+            Select selectBody = statement instanceof Select selectStatement ? selectStatement : null;
+            boolean isParenthesized = selectBody instanceof ParenthesedSelect;
+            while (selectBody instanceof ParenthesedSelect parenthesedSelect) {
+                // An ORDER BY attached to the parenthesized query may refer to an
+                // output alias removed by COUNT injection. Clear it at each level.
+                parenthesedSelect.setOrderByElements(null);
+                // A row limit belongs to the original result set. Replacing the
+                // projection with COUNT(*) can discard the only aggregate row or
+                // over-count, so preserve the original query by wrapping instead.
+                if (parenthesedSelect.getLimit() != null || parenthesedSelect.getOffset() != null
+                    || parenthesedSelect.getFetch() != null) {
+                    throw new DBException("Cannot inject COUNT into a parenthesized SELECT with LIMIT/OFFSET");
+                }
+                selectBody = parenthesedSelect.getSelect();
+            }
+            if (selectBody instanceof PlainSelect select) {
+                if (select.getLimit() != null || select.getOffset() != null || select.getFetch() != null) {
+                    throw new DBException("Cannot inject COUNT into SELECT with LIMIT/OFFSET");
+                }
                 if (select.getHaving() != null) {
                     throw new DBException("Can't inject COUNT into query with HAVING clause");
                 }
@@ -113,6 +144,11 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
                 }
 
                 Distinct selectDistinct = select.getDistinct();
+                // COUNT(DISTINCT expression) excludes NULL, whereas SELECT DISTINCT
+                // includes one NULL row. Keep the original projection when wrapping.
+                if (isParenthesized && selectDistinct != null) {
+                    throw new DBException("Cannot inject COUNT into parenthesized DISTINCT SELECT");
+                }
                 if (selectDistinct != null) {
                     // Remove distinct
                     select.setDistinct(null);
@@ -138,7 +174,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
                 selectItems.add(new SelectItem(countFunc));
                 select.setSelectItems(selectItems);
                 select.setOrderByElements(null);
-                return new SQLQuery(dataSource, select.toString(), query, false);
+                return new SQLQuery(dataSource, statement.toString(), query, false);
             } else {
                 throw new DBException("Query [" + query.getText() + "] can't be modified");
             }
