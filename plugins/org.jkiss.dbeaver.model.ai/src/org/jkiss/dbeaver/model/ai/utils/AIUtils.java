@@ -30,9 +30,11 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
+import org.jkiss.dbeaver.model.impl.app.SecurePreferencesSecretController;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.security.DBSecurityUtils;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
@@ -122,6 +124,66 @@ public final class AIUtils {
             return;
         }
         globalSecretController.setPrivateSecretValue(secret + getSecretSuffix(profile), null);
+    }
+
+    /** Read account tokens from native secure storage, falling back to older global secrets. */
+    @Nullable
+    public static String getAccountTokenOrDefault(
+        @NotNull AIConfigurationProfile profile,
+        @NotNull String secretId,
+        @Nullable String defaultValue
+    ) throws DBException {
+        DBSSecretController nativeController = getNativeAccountTokenController();
+        if (nativeController != null) {
+            String value = nativeController.getPrivateSecretValue(secretId + getSecretSuffix(profile));
+            if (CommonUtils.isNotEmpty(value)) {
+                return value;
+            }
+        }
+        return getSecretValueOrDefault(profile, secretId, defaultValue);
+    }
+
+    public static void setAccountToken(
+        @NotNull AIConfigurationProfile profile,
+        @NotNull String secretId,
+        @Nullable String value
+    ) throws DBException {
+        DBSSecretController globalController = DBSSecretController.getGlobalSecretControllerOrNull();
+        if (globalController == null) {
+            return;
+        }
+        SecurePreferencesSecretController nativeController = getNativeAccountTokenController();
+        if (nativeController == null) {
+            globalController.setPrivateSecretValue(secretId + getSecretSuffix(profile), value);
+            return;
+        }
+
+        String key = secretId + getSecretSuffix(profile);
+        if (value == null) {
+            nativeController.setPrivateSecretValue(key, null);
+            globalController.setPrivateSecretValue(key, null);
+        } else {
+            nativeController.setPrivateSecretValue(key, value);
+            if (!nativeController.isPrivateSecretEncrypted(key)) {
+                nativeController.setPrivateSecretValue(key, null);
+                throw new DBException("Native secure storage did not encrypt account token");
+            }
+        }
+        nativeController.flushChanges();
+    }
+
+    public static void deleteAccountToken(@NotNull AIConfigurationProfile profile, @NotNull String secretId) throws DBException {
+        setAccountToken(profile, secretId, null);
+    }
+
+    @Nullable
+    private static SecurePreferencesSecretController getNativeAccountTokenController() {
+        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+            return null;
+        }
+        String providerId = DBSecurityUtils.findNativeOSProvider();
+        return providerId == null ? null : SecurePreferencesSecretController.create(
+            SecurePreferencesSecretController.SECRET_PREFS_ROOT, providerId);
     }
 
     @NotNull
