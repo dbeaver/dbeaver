@@ -754,26 +754,37 @@ public class EntityEditor extends MultiPageDatabaseEditor
         String title = item.getText();
         String tooltip = item.getToolTipText();
         org.eclipse.swt.graphics.Image image = item.getImage();
+        int originalPageCount = getPageCount();
         try {
             creatingDeferredPage = true;
-            removePage(pageIndex);
             IEditorInput input = descriptor.getNestedEditorInput(getEditorInput());
             Class<? extends IEditorActionBarContributor> contributorClass = descriptor.getContributorClass();
             if (contributorClass != null) {
                 addActionsContributor(editor, contributorClass);
             }
-            addPage(pageIndex, editor, input);
-            ((CTabFolder) getContainer()).setSelection(pageIndex);
-            setPageText(pageIndex, title);
-            setPageImage(pageIndex, image);
+            // Create the replacement before disposing the placeholder, so a failed initialization keeps the tab usable.
+            addPage(pageIndex + 1, editor, input);
+            setPageText(pageIndex + 1, title);
+            setPageImage(pageIndex + 1, image);
             if (tooltip != null) {
-                setPageToolTip(pageIndex, tooltip);
+                setPageToolTip(pageIndex + 1, tooltip);
             }
-            editorMap.put(descriptor.getId(), editor);
             if (editor instanceof ITabbedFolderContainer tfc) {
                 tfc.addFolderListener(folderListener);
             }
+            removePage(pageIndex);
+            editorMap.put(descriptor.getId(), editor);
+            ((CTabFolder) getContainer()).setSelection(pageIndex);
         } catch (Exception e) {
+            if (pageIndex < getPageCount() && getEditor(pageIndex) == deferredEditor) {
+                if (getPageCount() > originalPageCount) {
+                    removePage(pageIndex + 1);
+                }
+                IEditorActionBarContributor contributor = actionContributors.remove(editor);
+                if (contributor != null) {
+                    GlobalContributorManager.getInstance().removeContributor(contributor, editor);
+                }
+            }
             log.error("Error creating deferred editor '" + descriptor.getId() + "'", e);
         } finally {
             creatingDeferredPage = false;
