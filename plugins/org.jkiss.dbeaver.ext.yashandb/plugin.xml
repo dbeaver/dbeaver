@@ -10,10 +10,19 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+                id="yashandb"
+                label="YashanDB"
+                description="YashanDB database"
+                dataSourceInformation="Relational database management system"
+                icon="icons/yashandb_icon.png"
+                iconBig="icons/yashandb_big.png"
+                logoImage="icons/yashandb_logo.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.yashandb.YashanDBDataSourceProvider"
                 description="YashanDB connector"
                 id="yashandb"
+                dataSourceType="yashandb"
                 label="YashanDB"
                 parent="oracle"
                 icon="icons/yashandb_icon.png"
