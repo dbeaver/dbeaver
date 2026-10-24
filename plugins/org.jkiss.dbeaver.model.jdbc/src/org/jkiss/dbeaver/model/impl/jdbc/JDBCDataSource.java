@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.api.ObjectWithContextParameters;
 import org.jkiss.api.verification.FileSystemAccessVerifyer;
 import org.jkiss.api.verification.ObjectWithVerification;
@@ -40,6 +42,8 @@ import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -925,6 +929,77 @@ public abstract class JDBCDataSource extends AbstractDataSource
             connectionThread.interrupt();
         }
         return true;
+    }
+
+    /**
+     * Cancels the operation running on the context connection. If it does not end in time, the connection is closed
+     * (see {@link #scheduleCanceledExecutionAbort}).
+     */
+    public boolean cancelCurrentExecution(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBRBlockingObject block,
+        @NotNull JDBCExecutionContext context,
+        @Nullable Thread connectionThread
+    ) throws DBException {
+        Connection connection = context.getConnectionOrNull();
+        if (connection == null) {
+            return false;
+        }
+        scheduleCanceledExecutionAbort(monitor, block, context);
+        return cancelCurrentExecution(connection, connectionThread);
+    }
+
+    /**
+     * Closes the physical connection if a canceled operation still waits on the driver after
+     * {@link ModelPreferences#EXECUTE_CANCEL_ABORT_TIMEOUT}. Call it before asking the driver to cancel:
+     * the cancel request itself may block on the same dead connection.
+     * A canceled statement returns as soon as the server answers. When the network is gone (VPN dropped, NAT entry
+     * expired) the driver waits on a socket that never answers, and so would every next statement on this connection.
+     * Closing the connection makes the waiting call fail; the next execution reconnects
+     * (see {@link DBExecUtils#tryExecuteRecover}).
+     * Auto-commit connections only: closing a connection with an open transaction would roll it back.
+     */
+    public void scheduleCanceledExecutionAbort(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBRBlockingObject block,
+        @NotNull JDBCExecutionContext context
+    ) {
+        long timeout = getContainer().getPreferenceStore().getLong(ModelPreferences.EXECUTE_CANCEL_ABORT_TIMEOUT);
+        // The connection the operation runs on now: if the context reconnects meanwhile, the new one must stay
+        Connection connection = context.getConnectionOrNull();
+        if (timeout <= 0 || connection == null) {
+            return;
+        }
+        AbstractJob abortJob = new AbstractJob("Abort canceled operation") {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor abortMonitor) {
+                if (!CommonUtils.safeList(monitor.getActiveBlocks()).contains(block)) {
+                    // The operation ended
+                    return Status.OK_STATUS;
+                }
+                try {
+                    if (!context.isAutoCommit()) {
+                        return Status.OK_STATUS;
+                    }
+                } catch (DBException e) {
+                    log.debug("Can't determine auto-commit state, connection is not aborted: " + e.getMessage());
+                    return Status.OK_STATUS;
+                }
+                log.warn("Canceled operation did not end in " + timeout + "ms, closing connection '" +
+                    context.getContextName() + "' of '" + getContainer().getName() + "'");
+                try {
+                    connection.abort(Runnable::run);
+                } catch (Throwable e) {
+                    // Not supported by the driver (JDBC 4.1): close it instead, within connection.close.timeout
+                    log.debug("Error aborting connection: " + e.getMessage());
+                    closeConnection(connection, context.getContextName(), false);
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        abortJob.setSystem(true);
+        abortJob.schedule(timeout);
     }
 
     /////////////////////////////////////////////////

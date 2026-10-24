@@ -718,10 +718,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     @Override
     public void cancelBlock(@NotNull DBRProgressMonitor monitor, @Nullable Thread blockThread) throws DBException {
         // Let's try with driver implementation
-        Connection connection = context.getConnectionOrNull();
-        if (connection != null) {
-            getDataSource().cancelCurrentExecution(connection, blockThread);
-        }
+        getDataSource().cancelCurrentExecution(monitor, this, context, blockThread);
     }
 
     @Override
