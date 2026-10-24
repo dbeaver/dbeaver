@@ -850,7 +850,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
 
     }
 
-    static boolean shouldCheckProviderMigration(
+    public static boolean shouldCheckProviderMigration(
         @NotNull DBPDataSourceProviderDescriptor providerDescriptor,
         @NotNull DBPConnectionConfiguration configuration
     ) {
