@@ -21,6 +21,7 @@ import com.dbeaver.datadam.external.api.rpc.DDRpcTransport;
 import com.dbeaver.datadam.external.api.transport.DDMessageChannel;
 import com.dbeaver.messaging.rpc.RpcEndpoint;
 import com.google.gson.Gson;
+import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -85,13 +86,19 @@ final class DDDesktopRpcService implements AutoCloseable {
                 throw new DBException("DataDam RPC requires a ready message channel");
             }
             try {
-                endpoint = RpcEndpoint.open(topic -> DDRpcTransport.forChannel(channel, topic), new DDGsonRpcCodec(new Gson()));
+                endpoint = RpcEndpoint.open(
+                    topic -> DDRpcTransport.forChannel(channel, topic, DDDesktopRpcService::executeRequest),
+                    new DDGsonRpcCodec(new Gson()));
                 invalidated = false;
                 return endpoint;
             } catch (RuntimeException e) {
                 throw new DBException("Cannot open DataDam RPC endpoint", e);
             }
         }
+    }
+
+    private static void executeRequest(@NotNull Runnable request) {
+        Job.createSystem("Handle DataDam RPC request", monitor -> request.run()).schedule();
     }
 
     private void requireActive() throws DBException {

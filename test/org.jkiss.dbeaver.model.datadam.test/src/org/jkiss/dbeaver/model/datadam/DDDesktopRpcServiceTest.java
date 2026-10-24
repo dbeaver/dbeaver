@@ -33,6 +33,9 @@ import com.dbeaver.messaging.rpc.RpcMessage;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -52,9 +55,11 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
@@ -63,6 +68,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 @Timeout(15)
@@ -155,6 +161,148 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
             Assertions.assertEquals(RpcMessage.Error.CODEC_FAILED, failure.remoteError());
             Assertions.assertEquals("backend:d", call(() -> backendCalls.echo("d")));
             Assertions.assertEquals(2, desktop.subscriptions.size());
+        }
+    }
+
+    @Test
+    void blockedDesktopHandlerAllowsOrderedRepliesAndConcurrentRequests() throws Exception {
+        MemoryChannel desktop = new MemoryChannel();
+        MemoryChannel backend = new MemoryChannel();
+        desktop.forward = backend::receive;
+        desktop.ready("desktop");
+        backend.ready("backend");
+        CountDownLatch entered = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        AtomicInteger calls = new AtomicInteger();
+        Set<Job> jobs = ConcurrentHashMap.newKeySet();
+        try (var delivery = Executors.newSingleThreadExecutor();
+             var executor = Executors.newVirtualThreadPerTaskExecutor();
+             var rpc = service(desktop);
+             var remote = remote(backend)) {
+            backend.forward = message -> delivery.execute(() -> desktop.receive(message));
+            RpcEndpoint endpoint = rpc.getRpc();
+            endpoint.register(TOPIC, Echo.class, value -> {
+                Job job = Job.getJobManager().currentJob();
+                Assertions.assertNotNull(job);
+                Assertions.assertTrue(job.isSystem());
+                jobs.add(job);
+                int sequence = calls.incrementAndGet();
+                if ("blocked".equals(value)) {
+                    entered.countDown();
+                    await(release);
+                }
+                return "desktop:" + value + ":" + sequence;
+            });
+            remote.register(TOPIC, Echo.class, value -> "backend:" + value);
+            Echo desktopCalls = remote.proxy(TOPIC, Echo.class);
+            Echo backendCalls = endpoint.proxy(TOPIC, Echo.class);
+            Future<String> blocked = executor.submit(() -> desktopCalls.echo("blocked"));
+            try {
+                await(entered);
+                Assertions.assertEquals("backend:reply", call(() -> backendCalls.echo("reply")));
+                Assertions.assertEquals("desktop:fast:2", call(() -> desktopCalls.echo("fast")));
+                Assertions.assertFalse(blocked.isDone());
+                Assertions.assertEquals(2, calls.get());
+                Assertions.assertEquals(2, jobs.size());
+            } finally {
+                release.countDown();
+            }
+            Assertions.assertEquals("desktop:blocked:1", blocked.get(3, TimeUnit.SECONDS));
+        }
+    }
+
+    @Test
+    void synchronousHandlerCanCallBackendWhichCallsDesktopBackOnOrderedDelivery() throws Exception {
+        MemoryChannel desktop = new MemoryChannel();
+        MemoryChannel backend = new MemoryChannel();
+        desktop.forward = backend::receive;
+        desktop.ready("desktop");
+        backend.ready("backend");
+        try (var delivery = Executors.newSingleThreadExecutor();
+             var rpc = service(desktop);
+             var remote = remote(backend)) {
+            backend.forward = message -> delivery.execute(() -> desktop.receive(message));
+            RpcEndpoint endpoint = rpc.getRpc();
+            Echo backendCalls = endpoint.proxy(TOPIC, Echo.class);
+            Echo desktopCalls = remote.proxy(TOPIC, Echo.class);
+            endpoint.register(TOPIC, Echo.class, value -> "callback".equals(value)
+                ? "desktop:" + value : backendCalls.echo(value));
+            remote.register(TOPIC, Echo.class, value -> desktopCalls.echo("callback"));
+
+            Assertions.assertEquals("desktop:callback", call(() -> desktopCalls.echo("request")));
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void suspendingOrClosingCancelsDesktopRequestsBeforeTheirJobsRun(boolean close) throws Exception {
+        MemoryChannel desktop = new MemoryChannel();
+        MemoryChannel backend = new MemoryChannel();
+        desktop.forward = backend::receive;
+        backend.forward = desktop::receive;
+        desktop.ready("desktop");
+        backend.ready("backend");
+        AtomicInteger calls = new AtomicInteger();
+        CompletableFuture<Job> delayed = new CompletableFuture<>();
+        CompletableFuture<Void> release = new CompletableFuture<>();
+        CountDownLatch finished = new CountDownLatch(1);
+        JobChangeAdapter listener = new JobChangeAdapter() {
+            @Override
+            public void aboutToRun(@NotNull IJobChangeEvent event) {
+                Job job = event.getJob();
+                if ("Handle DataDam RPC request".equals(job.getName()) && delayed.complete(job)) {
+                    release.join();
+                }
+            }
+
+            @Override
+            public void done(@NotNull IJobChangeEvent event) {
+                if (event.getJob() == delayed.getNow(null)) {
+                    finished.countDown();
+                }
+            }
+        };
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor();
+             var rpc = service(desktop);
+             var remote = remote(backend)) {
+            RpcEndpoint endpoint = rpc.getRpc();
+            endpoint.register(TOPIC, Echo.class, value -> {
+                calls.incrementAndGet();
+                return "old:" + value;
+            });
+            Echo desktopCalls = remote.proxy(TOPIC, Echo.class);
+            Job.getJobManager().addJobChangeListener(listener);
+            try {
+                Future<String> pending = executor.submit(() -> desktopCalls.echo("delayed"));
+                delayed.get(3, TimeUnit.SECONDS);
+                if (close) {
+                    rpc.close();
+                } else {
+                    rpc.suspend();
+                }
+                Assertions.assertTrue(endpoint.isCloseComplete());
+                Assertions.assertTrue(desktop.subscriptions.isEmpty());
+                Assertions.assertTrue(desktop.observers.isEmpty());
+                Assertions.assertThrows(DBException.class, rpc::getRpc);
+                backend.disconnected();
+                Assertions.assertEquals(RpcException.Reason.DISCONNECTED, failure(pending).reason());
+                release.complete(null);
+                await(finished);
+                Assertions.assertEquals(0, calls.get());
+                if (!close) {
+                    rpc.resume();
+                    desktop.ready("next-desktop");
+                    backend.ready("next-backend");
+                    RpcEndpoint replacement = rpc.getRpc();
+                    Assertions.assertNotSame(endpoint, replacement);
+                    replacement.register(TOPIC, Echo.class, value -> "new:" + value);
+                    Assertions.assertEquals("new:current", call(() -> desktopCalls.echo("current")));
+                    Assertions.assertEquals(0, calls.get());
+                }
+            } finally {
+                release.complete(null);
+                Job.getJobManager().removeJobChangeListener(listener);
+            }
         }
     }
 
@@ -502,7 +650,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
 
     @NotNull
     private static RpcEndpoint remote(@NotNull MemoryChannel channel) {
-        return RpcEndpoint.open(topic -> DDRpcTransport.forChannel(channel, topic), codec());
+        return RpcEndpoint.open(topic -> DDRpcTransport.forChannel(channel, topic, Thread::startVirtualThread), codec());
     }
 
     @NotNull
