@@ -109,6 +109,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     private SQLHelpProvider helpProvider;
     private volatile boolean hasStatistics;
     private boolean containsCheckConstraintTable;
+    private boolean partialRevokes;
 
     private transient boolean inServerTimezoneHandle;
 
@@ -434,6 +435,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                 log.debug("Error reading default server charset/collation", ex);
             }
 
+            partialRevokes = false;
+            if (!isMariaDB()) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW VARIABLES LIKE 'partial_revokes'")) {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        if (dbResult.next()) {
+                            partialRevokes = "ON".equalsIgnoreCase(JDBCUtils.safeGetString(dbResult, 2)); //$NON-NLS-1$
+                        }
+                    }
+                } catch (Throwable ex) {
+                    log.debug("Error reading partial_revokes", ex);
+                }
+            }
+
             // Read catalogs
             catalogCache.getAllObjects(monitor, this);
             //activeCatalogName = MySQLUtils.determineCurrentDatabase(session);
@@ -636,6 +650,147 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
 
     public MySQLCollation getDefaultCollation() {
         return getCollation(defaultCollation);
+    }
+
+    /**
+     * Collects the accounts that hold any privilege on objects of the given catalog.
+     *
+     * <p>Returned keys are in {@code user@host} form (unquoted), matching
+     * {@code MySQLUser.getUserName() + "@" + MySQLUser.getHost()}.
+     */
+    @NotNull
+    public Set<String> getObjectGrantees(@NotNull DBRProgressMonitor monitor, @NotNull MySQLCatalog catalog) throws DBException {
+        Set<String> keys = new HashSet<>();
+        String catalogName = catalog.getName();
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Find users with grants on object")) {
+            if (supportsInformationSchema()) {
+                collectSchemaGrantees(session, keys, catalogName);
+                collectGrantees(session, keys,
+                    "SELECT DISTINCT GRANTEE FROM information_schema.TABLE_PRIVILEGES WHERE TABLE_SCHEMA = ?", catalogName);
+                collectGrantees(session, keys,
+                    "SELECT DISTINCT GRANTEE FROM information_schema.COLUMN_PRIVILEGES WHERE TABLE_SCHEMA = ?", catalogName);
+                // Global (*.*) grantees are intentionally not collected here: the object editor keeps
+                // only grants matching the catalog, so global grants are managed at the user level.
+            }
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT DISTINCT User, Host FROM mysql.procs_priv WHERE Db = ?")) {
+                dbStat.setString(1, catalogName);
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        keys.add(
+                            JDBCUtils.safeGetString(dbResult, "User") + "@" + JDBCUtils.safeGetString(dbResult, "Host"));
+                    }
+                }
+            } catch (SQLException e) {
+                log.debug("Can't query mysql.procs_priv: " + e.getMessage());
+            }
+        }
+        return keys;
+    }
+
+    /**
+     * Schema-level grants may target a LIKE pattern (e.g. {@code `tenant\_%`.*}), so the stored
+     * schema is matched with the same LIKE semantics as {@link MySQLGrant#matches(MySQLCatalog)}.
+     */
+    private static void collectSchemaGrantees(
+        @NotNull JDBCSession session, @NotNull Set<String> keys, @NotNull String catalogName) {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT DISTINCT GRANTEE, TABLE_SCHEMA FROM information_schema.SCHEMA_PRIVILEGES")) {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                while (dbResult.next()) {
+                    String schema = JDBCUtils.safeGetString(dbResult, "TABLE_SCHEMA");
+                    if (schema == null || !SQLUtils.matchesLike(catalogName, schema)) {
+                        continue;
+                    }
+                    String key = granteeToKey(JDBCUtils.safeGetString(dbResult, "GRANTEE"));
+                    if (key != null) {
+                        keys.add(key);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            log.debug("Can't query schema privileges: " + e.getMessage());
+        }
+    }
+
+    private static void collectGrantees(
+        @NotNull JDBCSession session, @NotNull Set<String> keys, @NotNull String sql, @Nullable String param) {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            if (param != null) {
+                dbStat.setString(1, param);
+            }
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                while (dbResult.next()) {
+                    String key = granteeToKey(JDBCUtils.safeGetString(dbResult, "GRANTEE"));
+                    if (key != null) {
+                        keys.add(key);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            log.debug("Can't query privileges view: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Converts a {@code GRANTEE} value of the INFORMATION_SCHEMA privilege views ({@code 'user'@'host'},
+     * each part an SQL string literal) to the raw {@code user@host} account key of {@link MySQLUser}.
+     */
+    @Nullable
+    static String granteeToKey(@Nullable String grantee) {
+        if (grantee == null) {
+            return null;
+        }
+        int at = grantee.lastIndexOf("@");
+        if (at < 0) {
+            return null;
+        }
+        return unquoteAccountPart(grantee.substring(0, at)) + "@" + unquoteAccountPart(grantee.substring(at + 1));
+    }
+
+    @NotNull
+    private static String unquoteAccountPart(@NotNull String value) {
+        String trimmed = value.trim();
+        if (trimmed.length() >= 2) {
+            char q = trimmed.charAt(0);
+            if ((q == '\'' || q == '`' || q == '"') && trimmed.charAt(trimmed.length() - 1) == q) {
+                String body = trimmed.substring(1, trimmed.length() - 1);
+                return q == '`' ? body.replace("``", "`") : unescapeStringLiteral(body, q);
+            }
+        }
+        return trimmed;
+    }
+
+    /**
+     * Decodes the body of a MySQL string literal: a doubled quote and the backslash escapes
+     * ({@code \'}, {@code \\}, {@code \n}, ...) stand for one character each.
+     */
+    @NotNull
+    private static String unescapeStringLiteral(@NotNull String body, char quote) {
+        StringBuilder result = new StringBuilder(body.length());
+        for (int i = 0; i < body.length(); i++) {
+            char c = body.charAt(i);
+            if (c == '\\' && i + 1 < body.length()) {
+                char next = body.charAt(++i);
+                switch (next) {
+                    case '0' -> result.append('\0');
+                    case 'b' -> result.append('\b');
+                    case 'n' -> result.append('\n');
+                    case 'r' -> result.append('\r');
+                    case 't' -> result.append('\t');
+                    case 'Z' -> result.append('\u001A');
+                    // As in LIKE patterns, \% and \_ keep the backslash
+                    case '%', '_' -> result.append(c).append(next);
+                    default -> result.append(next);
+                }
+            } else if (c == quote && i + 1 < body.length() && body.charAt(i + 1) == quote) {
+                result.append(quote);
+                i++;
+            } else {
+                result.append(c);
+            }
+        }
+        return result.toString();
     }
 
     @NotNull
@@ -939,6 +1094,14 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     public boolean isMariaDB() {
         return MySQLConstants.DRIVER_CLASS_MARIA_DB.equals(
             getContainer().getDriver().getDriverClassName());
+    }
+
+    /**
+     * Whether the MySQL partial_revokes system variable is enabled: then {@code %} and {@code _} in schema
+     * names of schema-level GRANT/REVOKE statements are literal characters, not LIKE wildcards.
+     */
+    public boolean isPartialRevokes() {
+        return partialRevokes;
     }
 
     @NotNull

@@ -408,10 +408,21 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     @Override
     public void removeCommand(@NotNull DBECommand<?> command) {
         synchronized (commands) {
+            CommandInfo removed = null;
             for (CommandInfo cmd : commands) {
                 if (cmd.command == command) {
-                    commands.remove(cmd);
+                    removed = cmd;
                     break;
+                }
+            }
+            if (removed != null) {
+                commands.remove(removed);
+                // Commands linked to the removed one (same undo batch) are relinked to its predecessor,
+                // otherwise Undo would follow the stale link and Redo would put the removed command back
+                for (CommandInfo cmd : commands) {
+                    if (cmd.linkedCommand == removed) {
+                        cmd.linkedCommand = removed.linkedCommand;
+                    }
                 }
             }
             clearUndidCommands();
