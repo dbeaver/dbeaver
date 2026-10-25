@@ -74,11 +74,14 @@ class AIAccountTokenStorageTest extends DBeaverUnitTest {
             ArgumentMatchers.anyString(), ArgumentMatchers.nullable(String.class));
         Mockito.when(nativeController.isPrivateSecretEncrypted(ArgumentMatchers.anyString())).thenReturn(true);
 
-        try (MockedStatic<DBWorkbench> workbench = Mockito.mockStatic(DBWorkbench.class);
-             MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(DBSSecretController.class);
-             MockedStatic<DBSecurityUtils> providers = Mockito.mockStatic(DBSecurityUtils.class);
+        try (MockedStatic<DBWorkbench> workbench = Mockito.mockStatic(
+                 DBWorkbench.class, Mockito.withSettings().mockMaker("mock-maker-inline"));
+             MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(
+                 DBSSecretController.class, Mockito.withSettings().mockMaker("mock-maker-inline"));
+             MockedStatic<DBSecurityUtils> providers = Mockito.mockStatic(
+                 DBSecurityUtils.class, Mockito.withSettings().mockMaker("mock-maker-inline"));
              MockedStatic<SecurePreferencesSecretController> securePreferences = Mockito.mockStatic(
-                 SecurePreferencesSecretController.class)) {
+                 SecurePreferencesSecretController.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
             workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
             workbench.when(DBWorkbench::isPlatformStarted).thenReturn(true);
             controllers.when(DBSSecretController::getGlobalSecretControllerOrNull).thenReturn(legacyController);
