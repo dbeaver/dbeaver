@@ -98,7 +98,9 @@ final class DDDesktopRpcService implements AutoCloseable {
     }
 
     private static void executeRequest(@NotNull Runnable request) {
-        Job.createSystem("Handle DataDam RPC request", monitor -> request.run()).schedule();
+        Job.createSystem("Handle DataDam RPC request", monitor -> {
+            request.run();
+        }).schedule();
     }
 
     private void requireActive() throws DBException {
