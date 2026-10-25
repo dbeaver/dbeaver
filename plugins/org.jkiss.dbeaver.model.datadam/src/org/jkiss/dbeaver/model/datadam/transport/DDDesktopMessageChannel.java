@@ -175,7 +175,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
                 stateObservers.add(observation);
             }
         }
-        observation.deliver();
+        observation.deliverPendingStates();
         return observation;
     }
 
@@ -194,7 +194,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
             observers = List.copyOf(stateObservers);
         }
         for (StateObservation observation : observers) {
-            observation.deliver();
+            observation.deliverPendingStates();
         }
     }
 
@@ -686,7 +686,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
             this.observer = observer;
         }
 
-        private void deliver() {
+        private void deliverPendingStates() {
             synchronized (lock) {
                 if (!active || delivering) {
                     return;
@@ -796,7 +796,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
 
         private void interruptRunner() {
             synchronized (runnerLock) {
-                if (runner != null && runner != Thread.currentThread()) {
+                if (runner != null && runner.threadId() != Thread.currentThread().threadId()) {
                     interrupted = true;
                     runner.interrupt();
                 }
