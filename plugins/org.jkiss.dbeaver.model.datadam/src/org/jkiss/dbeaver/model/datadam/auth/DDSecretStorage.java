@@ -20,10 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.app.SecurePreferencesSecretController;
-import org.jkiss.dbeaver.model.security.DBSecurityUtils;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.secret.DBSSecretObject;
 import org.jkiss.dbeaver.model.secret.DBSSecretValue;
+import org.jkiss.dbeaver.model.security.DBSecurityUtils;
 
 import java.util.List;
 

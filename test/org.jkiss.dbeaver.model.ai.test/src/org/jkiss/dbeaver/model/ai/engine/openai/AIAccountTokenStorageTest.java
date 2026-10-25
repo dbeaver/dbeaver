@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.security.DBSecurityProviders;
 import org.jkiss.dbeaver.model.security.DBSecurityUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
@@ -33,15 +34,12 @@ import org.mockito.Mockito;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-
 class AIAccountTokenStorageTest extends DBeaverUnitTest {
     @Test
     void subscriptionTokensUseNativeProviderAndKeepLegacyReadable() throws Exception {
         AIConfigurationProfile profile = new AIConfigurationProfile();
         profile.setProfileId("work");
-        Map<String, String> nativeSecrets = new HashMap<>();
+        final Map<String, String> nativeSecrets = new HashMap<>();
         Map<String, String> legacySecrets = new HashMap<>();
         legacySecrets.put("openai.account.refreshToken_work", "old-refresh");
 
@@ -59,7 +57,8 @@ class AIAccountTokenStorageTest extends DBeaverUnitTest {
                 legacySecrets.put(key, value);
             }
             return null;
-        }).when(legacyController).setPrivateSecretValue(ArgumentMatchers.anyString(), ArgumentMatchers.nullable(String.class));
+        }).when(legacyController).setPrivateSecretValue(
+            ArgumentMatchers.anyString(), ArgumentMatchers.nullable(String.class));
         Mockito.when(nativeController.getPrivateSecretValue(ArgumentMatchers.anyString()))
             .thenAnswer(invocation -> nativeSecrets.get(invocation.getArgument(0)));
         Mockito.doAnswer(invocation -> {
@@ -71,14 +70,17 @@ class AIAccountTokenStorageTest extends DBeaverUnitTest {
                 nativeSecrets.put(key, value);
             }
             return null;
-        }).when(nativeController).setPrivateSecretValue(ArgumentMatchers.anyString(), ArgumentMatchers.nullable(String.class));
+        }).when(nativeController).setPrivateSecretValue(
+            ArgumentMatchers.anyString(), ArgumentMatchers.nullable(String.class));
         Mockito.when(nativeController.isPrivateSecretEncrypted(ArgumentMatchers.anyString())).thenReturn(true);
 
         try (MockedStatic<DBWorkbench> workbench = Mockito.mockStatic(DBWorkbench.class);
              MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(DBSSecretController.class);
              MockedStatic<DBSecurityUtils> providers = Mockito.mockStatic(DBSecurityUtils.class);
-             MockedStatic<SecurePreferencesSecretController> securePreferences = Mockito.mockStatic(SecurePreferencesSecretController.class)) {
+             MockedStatic<SecurePreferencesSecretController> securePreferences = Mockito.mockStatic(
+                 SecurePreferencesSecretController.class)) {
             workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+            workbench.when(DBWorkbench::isPlatformStarted).thenReturn(true);
             controllers.when(DBSSecretController::getGlobalSecretControllerOrNull).thenReturn(legacyController);
             providers.when(DBSecurityUtils::findNativeOSProvider).thenReturn(DBSecurityProviders.MACOS_KEYCHAIN);
             securePreferences.when(() -> SecurePreferencesSecretController.create(
@@ -87,15 +89,15 @@ class AIAccountTokenStorageTest extends DBeaverUnitTest {
 
             OpenAIProperties openAI = new OpenAIProperties();
             openAI.resolveSecrets(profile);
-            assertEquals("old-refresh", openAI.getRefreshToken());
-            assertFalse(nativeSecrets.containsKey("openai.account.refreshToken_work"));
+            Assertions.assertEquals("old-refresh", openAI.getRefreshToken());
+            Assertions.assertFalse(nativeSecrets.containsKey("openai.account.refreshToken_work"));
 
             openAI.setAccessToken("new-access");
             openAI.setRefreshToken("new-refresh");
             openAI.saveSecrets(profile);
-            assertEquals("new-access", nativeSecrets.get("openai.account.accessToken_work"));
-            assertEquals("new-refresh", nativeSecrets.get("openai.account.refreshToken_work"));
-            assertEquals("old-refresh", legacySecrets.get("openai.account.refreshToken_work"));
+            Assertions.assertEquals("new-access", nativeSecrets.get("openai.account.accessToken_work"));
+            Assertions.assertEquals("new-refresh", nativeSecrets.get("openai.account.refreshToken_work"));
+            Assertions.assertEquals("old-refresh", legacySecrets.get("openai.account.refreshToken_work"));
 
             OpenAIProperties grok = new OpenAIProperties() {
                 @NotNull
@@ -113,13 +115,13 @@ class AIAccountTokenStorageTest extends DBeaverUnitTest {
             grok.setAccessToken("grok-access");
             grok.setRefreshToken("grok-refresh");
             grok.saveSecrets(profile);
-            assertEquals("grok-access", nativeSecrets.get("grok.account.accessToken_work"));
-            assertEquals("grok-refresh", nativeSecrets.get("grok.account.refreshToken_work"));
+            Assertions.assertEquals("grok-access", nativeSecrets.get("grok.account.accessToken_work"));
+            Assertions.assertEquals("grok-refresh", nativeSecrets.get("grok.account.refreshToken_work"));
 
             openAI.deleteSecrets(profile);
-            assertFalse(nativeSecrets.containsKey("openai.account.accessToken_work"));
-            assertFalse(nativeSecrets.containsKey("openai.account.refreshToken_work"));
-            assertFalse(legacySecrets.containsKey("openai.account.refreshToken_work"));
+            Assertions.assertFalse(nativeSecrets.containsKey("openai.account.accessToken_work"));
+            Assertions.assertFalse(nativeSecrets.containsKey("openai.account.refreshToken_work"));
+            Assertions.assertFalse(legacySecrets.containsKey("openai.account.refreshToken_work"));
         }
     }
 }

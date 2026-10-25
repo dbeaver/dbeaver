@@ -16,9 +16,8 @@
  */
 package org.jkiss.dbeaver.model.security.macos;
 
-import com.sun.jna.Library;
+import com.sun.jna.Function;
 import com.sun.jna.Memory;
-import com.sun.jna.Native;
 import com.sun.jna.NativeLibrary;
 import com.sun.jna.Pointer;
 import com.sun.jna.platform.mac.CoreFoundation;
@@ -43,8 +42,9 @@ final class MacOSKeychain {
     private static final CoreFoundation CF = CoreFoundation.INSTANCE;
     private static final NativeLibrary SECURITY_LIBRARY = NativeLibrary.getInstance("Security");
     private static final NativeLibrary CORE_FOUNDATION_LIBRARY = NativeLibrary.getInstance("CoreFoundation");
-    private static final Security SECURITY = Native.load("Security", Security.class);
-    private static final CoreFoundationNative CF_NATIVE = Native.load("CoreFoundation", CoreFoundationNative.class);
+    private static final Function SEC_ITEM_ADD = SECURITY_LIBRARY.getFunction("SecItemAdd");
+    private static final Function SEC_ITEM_COPY_MATCHING = SECURITY_LIBRARY.getFunction("SecItemCopyMatching");
+    private static final Function CF_DICTIONARY_SET_VALUE = CORE_FOUNDATION_LIBRARY.getFunction("CFDictionarySetValue");
 
     private MacOSKeychain() {
     }
@@ -55,7 +55,7 @@ final class MacOSKeychain {
         try {
             set(query, "kSecReturnData", booleanValue("kCFBooleanTrue"));
             PointerByReference result = new PointerByReference();
-            int status = SECURITY.SecItemCopyMatching(query, result);
+            int status = SEC_ITEM_COPY_MATCHING.invokeInt(new Object[] { query, result });
             if (status == ERR_SEC_ITEM_NOT_FOUND) {
                 return null;
             }
@@ -79,7 +79,7 @@ final class MacOSKeychain {
             try {
                 set(attributes, "kSecValueData", value.getPointer());
                 set(attributes, "kSecAttrAccessible", securityValue("kSecAttrAccessibleWhenUnlocked"));
-                int status = SECURITY.SecItemAdd(attributes, null);
+                int status = SEC_ITEM_ADD.invokeInt(new Object[] { attributes, null });
                 if (status == ERR_SEC_DUPLICATE_ITEM) {
                     // Another secure-storage operation created the item first. Never overwrite
                     // its encryption password, even if the generated passwords differ.
@@ -101,7 +101,12 @@ final class MacOSKeychain {
 
     @NotNull
     private static CFMutableDictionaryRef createQuery() {
-        CFMutableDictionaryRef query = CF.CFDictionaryCreateMutable(null, new CFIndex(0), callbacks("kCFTypeDictionaryKeyCallBacks"), callbacks("kCFTypeDictionaryValueCallBacks"));
+        CFMutableDictionaryRef query = CF.CFDictionaryCreateMutable(
+            null,
+            new CFIndex(0),
+            callbacks("kCFTypeDictionaryKeyCallBacks"),
+            callbacks("kCFTypeDictionaryValueCallBacks")
+        );
         set(query, "kSecClass", securityValue("kSecClassGenericPassword"));
         set(query, "kSecUseDataProtectionKeychain", booleanValue("kCFBooleanTrue"));
         putString(query, "kSecAttrService", SERVICE);
@@ -119,7 +124,7 @@ final class MacOSKeychain {
     }
 
     private static void set(@NotNull CFMutableDictionaryRef dictionary, @NotNull String key, @NotNull Pointer value) {
-        CF_NATIVE.CFDictionarySetValue(dictionary, securityValue(key), value);
+        CF_DICTIONARY_SET_VALUE.invokeVoid(new Object[] { dictionary, securityValue(key), value });
     }
 
     @NotNull
@@ -154,15 +159,5 @@ final class MacOSKeychain {
         if (status != ERR_SEC_SUCCESS) {
             throw new IllegalStateException("Cannot " + operation + " macOS Keychain password (OSStatus " + status + ")");
         }
-    }
-
-    private interface CoreFoundationNative extends Library {
-        void CFDictionarySetValue(@NotNull CFMutableDictionaryRef dictionary, @NotNull Pointer key, @NotNull Pointer value);
-    }
-
-    private interface Security extends Library {
-        int SecItemAdd(@NotNull CFMutableDictionaryRef attributes, @Nullable PointerByReference result);
-
-        int SecItemCopyMatching(@NotNull CFMutableDictionaryRef query, @NotNull PointerByReference result);
     }
 }

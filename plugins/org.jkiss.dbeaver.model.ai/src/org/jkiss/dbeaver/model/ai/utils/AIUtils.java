@@ -34,8 +34,8 @@ import org.jkiss.dbeaver.model.impl.app.SecurePreferencesSecretController;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.security.DBSecurityUtils;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.jkiss.dbeaver.model.security.DBSecurityUtils;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
@@ -133,6 +133,9 @@ public final class AIUtils {
         @NotNull String secretId,
         @Nullable String defaultValue
     ) throws DBException {
+        if (DBSSecretController.getGlobalSecretControllerOrNull() == null) {
+            return defaultValue;
+        }
         DBSSecretController nativeController = getNativeAccountTokenController();
         if (nativeController != null) {
             String value = nativeController.getPrivateSecretValue(secretId + getSecretSuffix(profile));
@@ -178,7 +181,7 @@ public final class AIUtils {
 
     @Nullable
     private static SecurePreferencesSecretController getNativeAccountTokenController() {
-        if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+        if (!DBWorkbench.isPlatformStarted() || DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
             return null;
         }
         String providerId = DBSecurityUtils.findNativeOSProvider();

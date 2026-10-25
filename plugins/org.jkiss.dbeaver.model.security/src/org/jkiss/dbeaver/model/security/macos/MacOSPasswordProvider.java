@@ -22,10 +22,10 @@ import org.eclipse.equinox.security.storage.provider.IPreferencesContainer;
 import org.eclipse.equinox.security.storage.provider.PasswordProvider;
 import org.jkiss.code.NotNull;
 
-import javax.crypto.spec.PBEKeySpec;
 import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
+import javax.crypto.spec.PBEKeySpec;
 
 /** Provides the password used to encrypt new Equinox secure preferences on macOS. */
 public class MacOSPasswordProvider extends PasswordProvider implements IValidatingPasswordProvider {
