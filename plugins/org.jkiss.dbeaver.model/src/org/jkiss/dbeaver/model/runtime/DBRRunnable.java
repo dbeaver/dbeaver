@@ -14,24 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
+package org.jkiss.dbeaver.model.runtime;
+
+import org.jkiss.dbeaver.DBException;
 
 /**
- * Client tracking endpoints.
+ * Runnable operation that can throw a database exception.
  */
-public interface DDTrackingService {
+@FunctionalInterface
+public interface DBRRunnable {
 
-    String METERING_ENDPOINT = "/metering";
-    String TRACKING_ENDPOINT = "/tracking";
-    String TRACK_START_ENDPOINT = "/track/start";
-    String TRACK_STOP_ENDPOINT = "/track/{trackingId}/stop";
+    void run() throws DBException;
 
-    @Nullable
-    DDTracking start(@Nullable String authorization, @NotNull DDClientInfo client);
-
-    @Nullable
-    DDTracking stop(@Nullable String authorization, @NotNull String trackingId);
 }

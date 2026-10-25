@@ -240,7 +240,7 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
 
     boolean hasImplementation() {
         return (implementation != null && (implementation.hasClass() ||
-            implementation.isHeadless() && type == AIFunctionType.ACTION)) ||
+            implementation.isHeadless() && (type == AIFunctionType.ACTION || ui))) ||
             CommonUtils.isNotEmpty(objectType.getImplName());
     }
 

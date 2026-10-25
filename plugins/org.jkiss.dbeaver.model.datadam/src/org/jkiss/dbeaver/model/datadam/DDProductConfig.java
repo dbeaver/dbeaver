@@ -16,11 +16,15 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
-import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.impl.config.ProductConfigPropertyTester;
 
-public class DDTrackingClientPro extends DDTrackingClient {
+public final class DDProductConfig {
+    private static final ProductConfigPropertyTester PROPERTY_TESTER = new ProductConfigPropertyTester();
 
-    public DDTrackingClientPro(@NotNull String url) {
-        super(url, METERING_ENDPOINT);
+    private DDProductConfig() {
+    }
+
+    public static boolean isIntegrationEnabled() {
+        return PROPERTY_TESTER.test(null, "isFeatureEnabled", new Object[0], "datadam");
     }
 }

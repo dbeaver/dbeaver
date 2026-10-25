@@ -686,10 +686,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     if (keepAlive > 0) {
                         config.setKeepAliveInterval(keepAlive);
                     }
-                    boolean closeIdleEnabled = JSONUtils.getBoolean(cfgObject, RegistryConstants.ATTR_CLOSE_IDLE_ENABLED);
-                    if (closeIdleEnabled != DBPConnectionConfiguration.CLOSE_IDLE_CONNECTION_DEFAULT) {
-                        config.setCloseIdleConnection(closeIdleEnabled);
-                    }
+                    config.setCloseIdleConnection(readCloseIdleConnectionSetting(cfgObject));
                     int closeIdle = JSONUtils.getInteger(cfgObject, RegistryConstants.ATTR_CLOSE_IDLE);
                     if (closeIdle > 0) {
                         config.setCloseIdleInterval(closeIdle);
@@ -762,7 +759,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     }
 
                     if (originalDriver != substitutedDriver) {
-                        if (substitutedDriver.getProviderDescriptor().supportsDriverMigration()) {
+                        if (shouldCheckProviderMigration(substitutedDriver.getProviderDescriptor(), config)) {
                             final DBPDataSourceProvider dataSourceProvider = substitutedDriver.getDataSourceProvider();
                             if (dataSourceProvider instanceof DBPConnectionConfigurationMigrator migrator) {
                                 if (migrator.migrationRequired(config)) {
@@ -851,6 +848,26 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         }
         return connectionConfigurationChanged;
 
+    }
+
+    public static boolean shouldCheckProviderMigration(
+        @NotNull DBPDataSourceProviderDescriptor providerDescriptor,
+        @NotNull DBPConnectionConfiguration configuration
+    ) {
+        if (!providerDescriptor.supportsDriverMigration()) {
+            return false;
+        }
+        String completedProperty = providerDescriptor instanceof DataSourceProviderDescriptor descriptor
+            ? descriptor.getMigrationCompletedProperty() : null;
+        return completedProperty == null || configuration.getProviderProperty(completedProperty) == null;
+    }
+
+    public static boolean readCloseIdleConnectionSetting(@NotNull Map<String, Object> configuration) {
+        return JSONUtils.getBoolean(
+            configuration,
+            RegistryConstants.ATTR_CLOSE_IDLE_ENABLED,
+            DBPConnectionConfiguration.CLOSE_IDLE_CONNECTION_DEFAULT
+        );
     }
 
     protected void deserializeDataSource(

@@ -68,6 +68,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor {
     private final Type type;
     private final String folderType;
     private boolean embeddable;
+    private final boolean lazy;
 
     EntityEditorDescriptor() {
         super(UINavigatorActivator.PLUGIN_ID);
@@ -82,6 +83,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor {
         this.icon = DBIcon.TREE_DATABASE;
         this.type = Type.editor;
         this.folderType = null;
+        this.lazy = false;
     }
 
     public EntityEditorDescriptor(@NotNull IConfigurationElement config) {
@@ -103,6 +105,7 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor {
             this.type = Type.editor;
         }
         this.embeddable = CommonUtils.toBoolean(config.getAttribute("embeddable"));
+        this.lazy = CommonUtils.toBoolean(config.getAttribute("lazy"));
         this.folderType = config.getAttribute("folderType");
     }
 
@@ -148,6 +151,10 @@ public class EntityEditorDescriptor extends AbstractContextDescriptor {
 
     public boolean isEmbeddable() {
         return embeddable;
+    }
+
+    public boolean isLazy() {
+        return lazy;
     }
 
     @Nullable

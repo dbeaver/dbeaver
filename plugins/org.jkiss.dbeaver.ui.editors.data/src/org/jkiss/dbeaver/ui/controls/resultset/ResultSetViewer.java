@@ -2214,7 +2214,8 @@ public class ResultSetViewer extends Viewer
 
         // overwrite current model's filters because otherwise they will be aggregated on resultset's metadata update while the former one
         // might have been describing different entity reference and is not adequate for the current targetEntity of intereset
-        model.setDataFilter(newFilter);
+        // The model still has source attributes and may add their constraints. Keep the target filter intact for the data pump.
+        model.setDataFilter(new DBDDataFilter(newFilter));
 
         runDataPump(targetEntity, newFilter, 0, getSegmentMaxRows(), -1, true, false, false, null);
     }
