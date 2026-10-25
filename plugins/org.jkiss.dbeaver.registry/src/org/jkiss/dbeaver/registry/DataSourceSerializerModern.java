@@ -759,7 +759,7 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
                     }
 
                     if (originalDriver != substitutedDriver) {
-                        if (substitutedDriver.getProviderDescriptor().supportsDriverMigration()) {
+                        if (shouldCheckProviderMigration(substitutedDriver.getProviderDescriptor(), config)) {
                             final DBPDataSourceProvider dataSourceProvider = substitutedDriver.getDataSourceProvider();
                             if (dataSourceProvider instanceof DBPConnectionConfigurationMigrator migrator) {
                                 if (migrator.migrationRequired(config)) {
@@ -848,6 +848,18 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         }
         return connectionConfigurationChanged;
 
+    }
+
+    public static boolean shouldCheckProviderMigration(
+        @NotNull DBPDataSourceProviderDescriptor providerDescriptor,
+        @NotNull DBPConnectionConfiguration configuration
+    ) {
+        if (!providerDescriptor.supportsDriverMigration()) {
+            return false;
+        }
+        String completedProperty = providerDescriptor instanceof DataSourceProviderDescriptor descriptor
+            ? descriptor.getMigrationCompletedProperty() : null;
+        return completedProperty == null || configuration.getProviderProperty(completedProperty) == null;
     }
 
     public static boolean readCloseIdleConnectionSetting(@NotNull Map<String, Object> configuration) {
