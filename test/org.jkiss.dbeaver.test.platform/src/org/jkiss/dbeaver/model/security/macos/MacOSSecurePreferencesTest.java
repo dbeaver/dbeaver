@@ -48,5 +48,15 @@ class MacOSSecurePreferencesTest {
 
         Assertions.assertTrue(node.isEncrypted("test"));
         Assertions.assertEquals("secret", node.get("test", null));
+
+        ISecurePreferences anotherFile = SecurePreferencesFactory.open(
+            directory.resolve("other_secure_storage").toUri().toURL(),
+            Map.of(IProviderHints.REQUIRED_MODULE_ID, DBSecurityProviders.MACOS_KEYCHAIN)
+        );
+        ISecurePreferences anotherNode = anotherFile.node("dbeaver-test");
+        anotherNode.put("test", "another secret", true);
+        anotherNode.flush();
+        Assertions.assertTrue(anotherNode.isEncrypted("test"));
+        Assertions.assertEquals("another secret", anotherNode.get("test", null));
     }
 }

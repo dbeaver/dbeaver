@@ -31,13 +31,14 @@ import org.jkiss.code.Nullable;
 
 import java.util.Arrays;
 
-/** JNA bridge to the per-application macOS data protection keychain. */
+/** JNA bridge to the macOS Keychain. */
 final class MacOSKeychain {
     private static final String SERVICE = "org.jkiss.dbeaver.secure.storage";
     private static final String ACCOUNT = "master-password";
     private static final int ERR_SEC_SUCCESS = 0;
     private static final int ERR_SEC_ITEM_NOT_FOUND = -25300;
     private static final int ERR_SEC_DUPLICATE_ITEM = -25299;
+    private static final int ERR_SEC_MISSING_ENTITLEMENT = -34018;
 
     private static final CoreFoundation CF = CoreFoundation.INSTANCE;
     private static final NativeLibrary SECURITY_LIBRARY = NativeLibrary.getInstance("Security");
@@ -51,12 +52,18 @@ final class MacOSKeychain {
 
     @Nullable
     static byte[] getPassword() {
-        CFMutableDictionaryRef query = createQuery();
+        byte[] password = getPassword(true);
+        return password != null ? password : getPassword(false);
+    }
+
+    @Nullable
+    private static byte[] getPassword(boolean dataProtection) {
+        CFMutableDictionaryRef query = createQuery(dataProtection);
         try {
             set(query, "kSecReturnData", booleanValue("kCFBooleanTrue"));
             PointerByReference result = new PointerByReference();
             int status = SEC_ITEM_COPY_MATCHING.invokeInt(new Object[] { query, result });
-            if (status == ERR_SEC_ITEM_NOT_FOUND) {
+            if (status == ERR_SEC_ITEM_NOT_FOUND || (dataProtection && status == ERR_SEC_MISSING_ENTITLEMENT)) {
                 return null;
             }
             checkStatus("read", status);
@@ -73,24 +80,35 @@ final class MacOSKeychain {
 
     @NotNull
     static byte[] addPassword(@NotNull byte[] password) {
-        CFMutableDictionaryRef attributes = createQuery();
+        int status = addPassword(password, true);
+        if (status == ERR_SEC_MISSING_ENTITLEMENT) {
+            // Unsigned launchers cannot access the data protection keychain. The login
+            // keychain does not require the entitlement and still encrypts the password.
+            status = addPassword(password, false);
+        }
+        if (status == ERR_SEC_DUPLICATE_ITEM) {
+            // Another secure-storage operation created the item first. Never overwrite
+            // its encryption password, even if the generated passwords differ.
+            byte[] existing = getPassword();
+            if (existing != null) {
+                Arrays.fill(password, (byte) 0);
+                return existing;
+            }
+        }
+        checkStatus("create", status);
+        return password;
+    }
+
+    private static int addPassword(@NotNull byte[] password, boolean dataProtection) {
+        CFMutableDictionaryRef attributes = createQuery(dataProtection);
         try {
             CFDataRef value = createData(password);
             try {
                 set(attributes, "kSecValueData", value.getPointer());
-                set(attributes, "kSecAttrAccessible", securityValue("kSecAttrAccessibleWhenUnlocked"));
-                int status = SEC_ITEM_ADD.invokeInt(new Object[] { attributes, null });
-                if (status == ERR_SEC_DUPLICATE_ITEM) {
-                    // Another secure-storage operation created the item first. Never overwrite
-                    // its encryption password, even if the generated passwords differ.
-                    byte[] existing = getPassword();
-                    if (existing != null) {
-                        Arrays.fill(password, (byte) 0);
-                        return existing;
-                    }
+                if (dataProtection) {
+                    set(attributes, "kSecAttrAccessible", securityValue("kSecAttrAccessibleWhenUnlocked"));
                 }
-                checkStatus("create", status);
-                return password;
+                return SEC_ITEM_ADD.invokeInt(new Object[] { attributes, null });
             } finally {
                 value.release();
             }
@@ -100,7 +118,7 @@ final class MacOSKeychain {
     }
 
     @NotNull
-    private static CFMutableDictionaryRef createQuery() {
+    private static CFMutableDictionaryRef createQuery(boolean dataProtection) {
         CFMutableDictionaryRef query = CF.CFDictionaryCreateMutable(
             null,
             new CFIndex(0),
@@ -108,7 +126,9 @@ final class MacOSKeychain {
             callbacks("kCFTypeDictionaryValueCallBacks")
         );
         set(query, "kSecClass", securityValue("kSecClassGenericPassword"));
-        set(query, "kSecUseDataProtectionKeychain", booleanValue("kCFBooleanTrue"));
+        if (dataProtection) {
+            set(query, "kSecUseDataProtectionKeychain", booleanValue("kCFBooleanTrue"));
+        }
         putString(query, "kSecAttrService", SERVICE);
         putString(query, "kSecAttrAccount", ACCOUNT);
         return query;

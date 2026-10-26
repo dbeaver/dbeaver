@@ -3,7 +3,7 @@
 <plugin>
     <extension id="MacOSKeychain" point="org.eclipse.equinox.security.secureStorage">
         <provider class="org.jkiss.dbeaver.model.security.macos.MacOSPasswordProvider"
-                  description="Stores the encryption password in the macOS data protection keychain"
+                  description="Stores the encryption password in the macOS Keychain"
                   priority="1">
             <hint value="AutomaticPasswordGeneration"/>
         </provider>
