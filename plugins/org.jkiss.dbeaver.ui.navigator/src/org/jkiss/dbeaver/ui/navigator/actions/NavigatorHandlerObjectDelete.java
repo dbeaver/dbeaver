@@ -16,17 +16,23 @@
  */
 package org.jkiss.dbeaver.ui.navigator.actions;
 
+import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -41,9 +47,11 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.NavigatorNodesDeletionConfirmations;
 import org.jkiss.utils.CommonUtils;
@@ -54,10 +62,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase implements IElementUpdater {
+public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase implements IElementUpdater, IExecutableExtension {
     private static final Log log = Log.getLog(NavigatorHandlerObjectDelete.class);
 
+    private String commandId = NavigatorCommands.CMD_OBJECT_DELETE;
+
     public NavigatorHandlerObjectDelete() {
+    }
+
+    @Override
+    public void setInitializationData(@NotNull IConfigurationElement config, @Nullable String propertyName, @Nullable Object data) {
+        commandId = config.getAttribute("commandId");
     }
 
     @Override
@@ -224,6 +239,17 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
     @Override
     public void updateElement(@NotNull UIElement element, @NotNull Map parameters) {
         if (!updateUI) {
+            return;
+        }
+        ICommandService commandService = element.getServiceLocator().getService(ICommandService.class);
+        IMenuService menuService = element.getServiceLocator().getService(IMenuService.class);
+        if (commandService == null || menuService == null) {
+            return;
+        }
+        element.setText(ActionUtils.findCommandName(commandId));
+        Command command = commandService.getCommand(commandId);
+        command.setEnabled(menuService.getCurrentState());
+        if (!command.isEnabled()) {
             return;
         }
         ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
