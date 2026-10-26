@@ -63,7 +63,8 @@ StorageService files = endpoint.proxy("storage.files", StorageService.class, cod
 `MessagingRpcEndpoint` is from `com.dbeaver.messaging.rpc`, `MessagingSubscription` is from
 `com.dbeaver.messaging.requestreply`, and `DDMessagingGsonRpcCodec` is from `com.dbeaver.datadam.messaging.api.rpc`.
 The application supplies the public service interfaces and their implementations; each RPC operation is synchronous
-and accepts one argument. Make proxy calls on a worker thread and handle `MessagingRpcException` failures.
+and accepts zero, one, or multiple arguments, including varargs. Make proxy calls on a worker thread and handle
+`MessagingRpcException` failures.
 The overloads without a codec use the connection owner's default `DDMessagingGsonRpcCodec` with an uncustomized Gson instance.
 An explicitly supplied codec belongs only to that proxy or registration; one plugin's type adapters do not change
 another plugin's serialization.
