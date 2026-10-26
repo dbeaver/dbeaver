@@ -18,9 +18,9 @@ package org.jkiss.dbeaver.model.sql.parser;
 
 import net.sf.jsqlparser.parser.ASTNodeAccess;
 import net.sf.jsqlparser.parser.Node;
-import net.sf.jsqlparser.parser.SimpleNode;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -45,13 +45,26 @@ public class SQLSemanticUtils {
     private static final Log log = Log.getLog(SQLSemanticUtils.class);
 
     public static void traverseQueryForTableNodes(@NotNull Statement statement, @NotNull Consumer<Table> onTableNode) {
-        SimpleNode root = ((ASTNodeAccess) statement).getASTNode();
-        ListNode<Node> stack = ListNode.of(root);
         HashSet<Table> handledSet = new HashSet<>();
+        Node root = statement instanceof ASTNodeAccess access ? access.getASTNode() : null;
+        if (root == null) {
+            // Not every statement has a parser AST (e.g. UPDATE and INSERT), but their tables still need resolving.
+            new TablesNamesFinder<Void>() {
+                @Override
+                public <S> Void visit(Table table, S context) {
+                    if (handledSet.add(table)) {
+                        onTableNode.accept(table);
+                    }
+                    return super.visit(table, context);
+                }
+            }.getTables(statement);
+            return;
+        }
+        ListNode<Node> stack = ListNode.of(root);
         while (stack != null) {
             Node node = stack.data;
             stack = stack.next;
-            if (node instanceof SimpleNode n && n.jjtGetValue() instanceof Table tableNode && handledSet.add(tableNode)) {
+            if (node.jjtGetValue() instanceof Table tableNode && handledSet.add(tableNode)) {
                 onTableNode.accept(tableNode);
             }
             for (int i = node.jjtGetNumChildren() - 1; i >= 0; i--) {
