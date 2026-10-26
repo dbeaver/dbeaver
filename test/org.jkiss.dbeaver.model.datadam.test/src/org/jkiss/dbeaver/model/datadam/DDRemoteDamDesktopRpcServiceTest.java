@@ -16,16 +16,16 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
-import com.dbeaver.datadam.messaging.api.model.DDDamConnectionInfo;
-import com.dbeaver.datadam.messaging.api.model.DDMessagingMessage;
-import com.dbeaver.datadam.messaging.api.rpc.DDMessagingGsonRpcCodec;
-import com.dbeaver.datadam.messaging.api.rpc.DDMessagingRpcTransport;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannel;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelState;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelStatus;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingConnectionListener;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingMessageListener;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingSubscription;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamMessage;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
+import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamGsonRpcCodec;
+import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamRpcTransport;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannel;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamMessageListener;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSessionListener;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
 import com.dbeaver.messaging.rpc.MessagingRpcCodec;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import com.dbeaver.messaging.rpc.MessagingRpcException;
@@ -41,7 +41,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.transport.DDMessagingDesktopChannel;
+import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -72,7 +72,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 @Timeout(15)
-class DDMessagingDesktopRpcServiceTest extends DBeaverUnitTest {
+class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
     private static final String TOPIC = "desktop/echo";
     private static final String OTHER_TOPIC = "desktop/storage";
 
@@ -651,12 +651,12 @@ class DDMessagingDesktopRpcServiceTest extends DBeaverUnitTest {
 
     @NotNull
     private static MessagingRpcEndpoint remote(@NotNull MemoryChannel channel) {
-        return MessagingRpcEndpoint.open(topic -> DDMessagingRpcTransport.forChannel(channel, topic, Thread::startVirtualThread), codec());
+        return MessagingRpcEndpoint.open(topic -> DDRemoteDamRpcTransport.forChannel(channel, topic, Thread::startVirtualThread), codec());
     }
 
     @NotNull
     private static MessagingRpcCodec<JsonElement> codec() {
-        return new DDMessagingGsonRpcCodec(new Gson());
+        return new DDRemoteDamGsonRpcCodec(new Gson());
     }
 
     @NotNull
@@ -726,8 +726,8 @@ class DDMessagingDesktopRpcServiceTest extends DBeaverUnitTest {
 
     private static final class Desktop implements AutoCloseable {
         private final DDDesktopAccessService access = Mockito.mock(DDDesktopAccessService.class);
-        private final DDMessagingDesktopChannel channel = Mockito.mock(DDMessagingDesktopChannel.class);
-        private final DDMessagingDesktopConnectionService connection;
+        private final DDRemoteDamDesktopChannel channel = Mockito.mock(DDRemoteDamDesktopChannel.class);
+        private final DDRemoteDamDesktopSessionService session;
 
         private Desktop(@NotNull MemoryChannel messages) {
             Mockito.when(channel.getStatus()).thenAnswer(invocation -> messages.getStatus());
@@ -745,11 +745,11 @@ class DDMessagingDesktopRpcServiceTest extends DBeaverUnitTest {
                 messages.close();
                 return null;
             }).when(channel).close();
-            connection = new DDMessagingDesktopConnectionService(access, channel);
+            session = new DDRemoteDamDesktopSessionService(access, channel);
         }
 
         private void start() {
-            connection.start();
+            session.start();
         }
 
         private void suspend() {
@@ -762,7 +762,7 @@ class DDMessagingDesktopRpcServiceTest extends DBeaverUnitTest {
 
         @NotNull
         private MessagingRpcEndpoint getRpc() throws DBException {
-            return connection.getRpc();
+            return session.getRpc();
         }
 
         @NotNull
@@ -774,18 +774,18 @@ class DDMessagingDesktopRpcServiceTest extends DBeaverUnitTest {
 
         @Override
         public void close() {
-            connection.close();
+            session.close();
         }
     }
 
-    private static final class MemoryChannel implements DDMessagingChannel {
+    private static final class MemoryChannel implements DDRemoteDamChannel {
         private final List<TopicSubscription> subscriptions = new CopyOnWriteArrayList<>();
         private final List<String> subscribedTopics = new CopyOnWriteArrayList<>();
-        private final List<DDMessagingMessage> sentMessages = new CopyOnWriteArrayList<>();
-        private final List<Consumer<DDMessagingChannelStatus>> observers = new CopyOnWriteArrayList<>();
-        private volatile DDMessagingChannelStatus status = new DDMessagingChannelStatus(DDMessagingChannelState.DISCONNECTED, null);
+        private final List<DDRemoteDamMessage> sentMessages = new CopyOnWriteArrayList<>();
+        private final List<Consumer<DDRemoteDamChannelStatus>> observers = new CopyOnWriteArrayList<>();
+        private volatile DDRemoteDamChannelStatus status = new DDRemoteDamChannelStatus(DDRemoteDamChannelState.DISCONNECTED, null);
         @Nullable
-        private Consumer<DDMessagingMessage> forward;
+        private Consumer<DDRemoteDamMessage> forward;
         @Nullable
         private Consumer<String> onSubscribe;
         @Nullable
@@ -798,13 +798,13 @@ class DDMessagingDesktopRpcServiceTest extends DBeaverUnitTest {
 
         @Override
         @NotNull
-        public DDMessagingChannelStatus getStatus() {
+        public DDRemoteDamChannelStatus getStatus() {
             return status;
         }
 
         @Override
         @NotNull
-        public DDMessagingSubscription observeState(@NotNull Consumer<DDMessagingChannelStatus> observer) {
+        public DDRemoteDamSubscription observeState(@NotNull Consumer<DDRemoteDamChannelStatus> observer) {
             observers.add(observer);
             observer.accept(status);
             if (onObserve != null) {
@@ -815,7 +815,7 @@ class DDMessagingDesktopRpcServiceTest extends DBeaverUnitTest {
 
         @Override
         @NotNull
-        public CompletionStage<Void> send(@NotNull DDMessagingMessage message) {
+        public CompletionStage<Void> send(@NotNull DDRemoteDamMessage message) {
             if (!status.isReady()) {
                 return CompletableFuture.failedFuture(new DBException("Channel disconnected"));
             }
@@ -828,7 +828,7 @@ class DDMessagingDesktopRpcServiceTest extends DBeaverUnitTest {
 
         @Override
         @NotNull
-        public DDMessagingSubscription subscribe(@NotNull String topic, @NotNull DDMessagingMessageListener listener) {
+        public DDRemoteDamSubscription subscribe(@NotNull String topic, @NotNull DDRemoteDamMessageListener listener) {
             if (topic.equals(failTopic)) {
                 throw new IllegalStateException("Subscription unavailable");
             }
@@ -848,31 +848,31 @@ class DDMessagingDesktopRpcServiceTest extends DBeaverUnitTest {
 
         @Override
         @NotNull
-        public DDMessagingSubscription addConnectionListener(@NotNull DDMessagingConnectionListener listener) {
+        public DDRemoteDamSubscription addSessionListener(@NotNull DDRemoteDamSessionListener listener) {
             throw new UnsupportedOperationException();
         }
 
-        private void ready(@NotNull String connectionId) {
-            setStatus(new DDMessagingChannelStatus(
-                DDMessagingChannelState.CONNECTED, new DDDamConnectionInfo("deployment", "run", connectionId)));
+        private void ready(@NotNull String damSessionId) {
+            setStatus(new DDRemoteDamChannelStatus(
+                DDRemoteDamChannelState.CONNECTED, new DDRemoteDamSessionInfo("deployment", "instance", damSessionId)));
         }
 
         private void disconnected() {
-            setStatus(new DDMessagingChannelStatus(DDMessagingChannelState.DISCONNECTED, null));
+            setStatus(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.DISCONNECTED, null));
         }
 
-        private void setStatus(@NotNull DDMessagingChannelStatus next) {
+        private void setStatus(@NotNull DDRemoteDamChannelStatus next) {
             status = next;
             List.copyOf(observers).forEach(observer -> observer.accept(next));
         }
 
         @SuppressWarnings("PMD.UnusedPrivateMethod")
-        private void receive(@NotNull DDMessagingMessage message) {
-            DDMessagingChannelStatus current = status;
+        private void receive(@NotNull DDRemoteDamMessage message) {
+            DDRemoteDamChannelStatus current = status;
             if (current.isReady()) {
                 for (TopicSubscription subscription : subscriptions) {
                     if (subscription.topic().equals(message.topic())) {
-                        subscription.listener().onMessage(Objects.requireNonNull(current.connection()), message);
+                        subscription.listener().onMessage(Objects.requireNonNull(current.session()), message);
                     }
                 }
             }
@@ -881,11 +881,11 @@ class DDMessagingDesktopRpcServiceTest extends DBeaverUnitTest {
         @Override
         public void close() {
             closed = true;
-            setStatus(new DDMessagingChannelStatus(DDMessagingChannelState.CLOSED, null));
+            setStatus(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.CLOSED, null));
         }
     }
 
-    private record TopicSubscription(@NotNull String topic, @NotNull DDMessagingMessageListener listener) {
+    private record TopicSubscription(@NotNull String topic, @NotNull DDRemoteDamMessageListener listener) {
     }
 
     private record TaggedCodec(@NotNull String tag) implements MessagingRpcCodec<JsonElement> {

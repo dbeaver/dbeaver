@@ -16,14 +16,14 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
-import com.dbeaver.datadam.messaging.api.model.DDMessagingHandshakeRequest;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannel;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamHandshakeRequest;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannel;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.transport.DDMessagingDesktopChannel;
+import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -31,15 +31,15 @@ import java.net.URI;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public final class DDMessagingDesktopConnectionService implements AutoCloseable {
+public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
 
-    private static final String APPLICATION_RUN_ID = UUID.randomUUID().toString();
+    private static final String APP_INSTANCE_ID = UUID.randomUUID().toString();
 
-    private static DDMessagingDesktopConnectionService instance;
+    private static DDRemoteDamDesktopSessionService instance;
 
     private final DDDesktopAccessService access;
-    private final DDMessagingDesktopChannel channel;
-    private final DDMessagingDesktopRpcService rpc;
+    private final DDRemoteDamDesktopChannel channel;
+    private final DDRemoteDamDesktopRpcService rpc;
     private final AtomicBoolean started = new AtomicBoolean();
     private final AtomicBoolean closed = new AtomicBoolean();
 
@@ -57,24 +57,24 @@ public final class DDMessagingDesktopConnectionService implements AutoCloseable 
         }
     };
 
-    public DDMessagingDesktopConnectionService(@NotNull DDDesktopAccessService access, @NotNull DDMessagingDesktopChannel channel) {
+    public DDRemoteDamDesktopSessionService(@NotNull DDDesktopAccessService access, @NotNull DDRemoteDamDesktopChannel channel) {
         this.access = access;
         this.channel = channel;
-        this.rpc = new DDMessagingDesktopRpcService(channel);
+        this.rpc = new DDRemoteDamDesktopRpcService(channel);
     }
 
     @NotNull
-    public static synchronized DDMessagingDesktopConnectionService getInstance() throws DBException {
+    public static synchronized DDRemoteDamDesktopSessionService getInstance() throws DBException {
         if (instance == null) {
             DDDesktopAccessService access = DDDesktopAccessService.getInstance();
-            DDMessagingHandshakeRequest hello = new DDMessagingHandshakeRequest(
-                DBWorkbench.getPlatform().getDeploymentId(), APPLICATION_RUN_ID,
+            DDRemoteDamHandshakeRequest hello = new DDRemoteDamHandshakeRequest(
+                DBWorkbench.getPlatform().getDeploymentId(), APP_INSTANCE_ID,
                 GeneralUtils.getProductName(), GeneralUtils.getProductVersion().toString());
-            DDMessagingDesktopChannel channel = new DDMessagingDesktopChannel(
-                URI.create(DDEndpoints.getMessagingWebSocketUrl()), hello,
+            DDRemoteDamDesktopChannel channel = new DDRemoteDamDesktopChannel(
+                URI.create(DDEndpoints.getRemoteDamWebSocketUrl()), hello,
                 resource -> access.getStatus() == DDDesktopAccessService.Status.SIGNED_IN
                     ? access.getAccessTokenForResource(resource) : null);
-            instance = new DDMessagingDesktopConnectionService(access, channel);
+            instance = new DDRemoteDamDesktopSessionService(access, channel);
         }
         return instance;
     }
@@ -92,7 +92,7 @@ public final class DDMessagingDesktopConnectionService implements AutoCloseable 
     }
 
     @NotNull
-    public DDMessagingChannel getChannel() {
+    public DDRemoteDamChannel getChannel() {
         return channel;
     }
 

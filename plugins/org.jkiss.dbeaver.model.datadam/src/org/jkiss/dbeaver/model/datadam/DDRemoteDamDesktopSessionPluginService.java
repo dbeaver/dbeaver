@@ -21,31 +21,31 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.IPluginService;
 
-public final class DDMessagingDesktopConnectionPluginService implements IPluginService {
-    private static final Log log = Log.getLog(DDMessagingDesktopConnectionPluginService.class);
+public final class DDRemoteDamDesktopSessionPluginService implements IPluginService {
+    private static final Log log = Log.getLog(DDRemoteDamDesktopSessionPluginService.class);
 
     @Nullable
-    private DDMessagingDesktopConnectionService connection;
+    private DDRemoteDamDesktopSessionService session;
     private boolean stopped;
 
     @Override
     public synchronized void activateService() {
-        if (stopped || connection != null) {
+        if (stopped || session != null) {
             return;
         }
-        DDMessagingDesktopConnectionService opened;
+        DDRemoteDamDesktopSessionService opened;
         try {
-            opened = DDMessagingDesktopConnectionService.getInstance();
+            opened = DDRemoteDamDesktopSessionService.getInstance();
         } catch (DBException e) {
-            log.warn("DataDam desktop connection could not be initialized", e);
+            log.warn("DataDam desktop session could not be initialized", e);
             return;
         }
-        connection = opened;
+        session = opened;
         try {
             opened.start();
         } catch (RuntimeException | Error e) {
             stopped = true;
-            connection = null;
+            session = null;
             try {
                 opened.close();
             } catch (RuntimeException closeFailure) {
@@ -58,10 +58,10 @@ public final class DDMessagingDesktopConnectionPluginService implements IPluginS
     @Override
     public synchronized void deactivateService() {
         stopped = true;
-        DDMessagingDesktopConnectionService stoppedConnection = connection;
-        connection = null;
-        if (stoppedConnection != null) {
-            stoppedConnection.close();
+        DDRemoteDamDesktopSessionService stoppedSession = session;
+        session = null;
+        if (stoppedSession != null) {
+            stoppedSession.close();
         }
     }
 }

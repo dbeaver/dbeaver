@@ -22,13 +22,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class DDMessagingDesktopConnectionPluginServiceTest extends DBeaverUnitTest {
+class DDRemoteDamDesktopSessionPluginServiceTest extends DBeaverUnitTest {
     @Test
     void activatesAndClosesTheRetainedServiceOnlyOnce() throws Exception {
-        var lifecycle = new DDMessagingDesktopConnectionPluginService();
-        var connection = Mockito.mock(DDMessagingDesktopConnectionService.class);
-        try (var services = Mockito.mockStatic(DDMessagingDesktopConnectionService.class)) {
-            services.when(DDMessagingDesktopConnectionService::getInstance).thenReturn(connection);
+        var lifecycle = new DDRemoteDamDesktopSessionPluginService();
+        var session = Mockito.mock(DDRemoteDamDesktopSessionService.class);
+        try (var services = Mockito.mockStatic(DDRemoteDamDesktopSessionService.class)) {
+            services.when(DDRemoteDamDesktopSessionService::getInstance).thenReturn(session);
 
             lifecycle.activateService();
             lifecycle.activateService();
@@ -36,20 +36,20 @@ class DDMessagingDesktopConnectionPluginServiceTest extends DBeaverUnitTest {
             lifecycle.deactivateService();
             lifecycle.activateService();
 
-            var order = Mockito.inOrder(connection);
-            order.verify(connection).start();
-            order.verify(connection).close();
-            Mockito.verifyNoMoreInteractions(connection);
-            services.verify(DDMessagingDesktopConnectionService::getInstance);
+            var order = Mockito.inOrder(session);
+            order.verify(session).start();
+            order.verify(session).close();
+            Mockito.verifyNoMoreInteractions(session);
+            services.verify(DDRemoteDamDesktopSessionService::getInstance);
             services.verifyNoMoreInteractions();
         }
     }
 
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
-    void shutdownWithoutActivationNeverCreatesAConnectionService() {
-        var lifecycle = new DDMessagingDesktopConnectionPluginService();
-        try (var services = Mockito.mockStatic(DDMessagingDesktopConnectionService.class)) {
+    void shutdownWithoutActivationNeverCreatesASessionService() {
+        var lifecycle = new DDRemoteDamDesktopSessionPluginService();
+        try (var services = Mockito.mockStatic(DDRemoteDamDesktopSessionService.class)) {
             lifecycle.deactivateService();
             lifecycle.deactivateService();
             lifecycle.activateService();
@@ -60,80 +60,80 @@ class DDMessagingDesktopConnectionPluginServiceTest extends DBeaverUnitTest {
 
     @Test
     void initializationFailureDoesNotCreateAServiceDuringShutdown() throws Exception {
-        var lifecycle = new DDMessagingDesktopConnectionPluginService();
-        try (var services = Mockito.mockStatic(DDMessagingDesktopConnectionService.class)) {
-            services.when(DDMessagingDesktopConnectionService::getInstance).thenThrow(new DBException("Initialization failed"));
+        var lifecycle = new DDRemoteDamDesktopSessionPluginService();
+        try (var services = Mockito.mockStatic(DDRemoteDamDesktopSessionService.class)) {
+            services.when(DDRemoteDamDesktopSessionService::getInstance).thenThrow(new DBException("Initialization failed"));
 
             Assertions.assertDoesNotThrow(lifecycle::activateService);
             lifecycle.deactivateService();
             lifecycle.activateService();
 
-            services.verify(DDMessagingDesktopConnectionService::getInstance);
+            services.verify(DDRemoteDamDesktopSessionService::getInstance);
             services.verifyNoMoreInteractions();
         }
     }
 
     @Test
     void rollsBackPartialActivationWithoutLeavingAServiceForShutdown() throws Exception {
-        var lifecycle = new DDMessagingDesktopConnectionPluginService();
-        var connection = Mockito.mock(DDMessagingDesktopConnectionService.class);
+        var lifecycle = new DDRemoteDamDesktopSessionPluginService();
+        var session = Mockito.mock(DDRemoteDamDesktopSessionService.class);
         var failure = new IllegalStateException("Activation failed");
-        Mockito.doThrow(failure).when(connection).start();
-        try (var services = Mockito.mockStatic(DDMessagingDesktopConnectionService.class)) {
-            services.when(DDMessagingDesktopConnectionService::getInstance).thenReturn(connection);
+        Mockito.doThrow(failure).when(session).start();
+        try (var services = Mockito.mockStatic(DDRemoteDamDesktopSessionService.class)) {
+            services.when(DDRemoteDamDesktopSessionService::getInstance).thenReturn(session);
 
             Assertions.assertSame(failure, Assertions.assertThrows(IllegalStateException.class, lifecycle::activateService));
             lifecycle.deactivateService();
             lifecycle.activateService();
 
-            Mockito.verify(connection).start();
-            Mockito.verify(connection).close();
-            Mockito.verifyNoMoreInteractions(connection);
-            services.verify(DDMessagingDesktopConnectionService::getInstance);
+            Mockito.verify(session).start();
+            Mockito.verify(session).close();
+            Mockito.verifyNoMoreInteractions(session);
+            services.verify(DDRemoteDamDesktopSessionService::getInstance);
             services.verifyNoMoreInteractions();
         }
     }
 
     @Test
     void preservesActivationFailureWhenRollbackAlsoFails() throws Exception {
-        var lifecycle = new DDMessagingDesktopConnectionPluginService();
-        var connection = Mockito.mock(DDMessagingDesktopConnectionService.class);
+        var lifecycle = new DDRemoteDamDesktopSessionPluginService();
+        var session = Mockito.mock(DDRemoteDamDesktopSessionService.class);
         var failure = new IllegalStateException("Activation failed");
         var cleanupFailure = new IllegalStateException("Cleanup failed");
-        Mockito.doThrow(failure).when(connection).start();
-        Mockito.doThrow(cleanupFailure).when(connection).close();
-        try (var services = Mockito.mockStatic(DDMessagingDesktopConnectionService.class)) {
-            services.when(DDMessagingDesktopConnectionService::getInstance).thenReturn(connection);
+        Mockito.doThrow(failure).when(session).start();
+        Mockito.doThrow(cleanupFailure).when(session).close();
+        try (var services = Mockito.mockStatic(DDRemoteDamDesktopSessionService.class)) {
+            services.when(DDRemoteDamDesktopSessionService::getInstance).thenReturn(session);
 
             Assertions.assertSame(failure, Assertions.assertThrows(IllegalStateException.class, lifecycle::activateService));
             Assertions.assertArrayEquals(new Throwable[] {cleanupFailure}, failure.getSuppressed());
             Assertions.assertDoesNotThrow(lifecycle::deactivateService);
 
-            Mockito.verify(connection).close();
-            services.verify(DDMessagingDesktopConnectionService::getInstance);
+            Mockito.verify(session).close();
+            services.verify(DDRemoteDamDesktopSessionService::getInstance);
             services.verifyNoMoreInteractions();
         }
     }
 
     @Test
     void shutdownDuringActivationCannotPublishOrRestartAStoppedService() throws Exception {
-        var lifecycle = new DDMessagingDesktopConnectionPluginService();
-        var connection = Mockito.mock(DDMessagingDesktopConnectionService.class);
+        var lifecycle = new DDRemoteDamDesktopSessionPluginService();
+        var session = Mockito.mock(DDRemoteDamDesktopSessionService.class);
         Mockito.doAnswer(invocation -> {
             lifecycle.deactivateService();
             return null;
-        }).when(connection).start();
-        try (var services = Mockito.mockStatic(DDMessagingDesktopConnectionService.class)) {
-            services.when(DDMessagingDesktopConnectionService::getInstance).thenReturn(connection);
+        }).when(session).start();
+        try (var services = Mockito.mockStatic(DDRemoteDamDesktopSessionService.class)) {
+            services.when(DDRemoteDamDesktopSessionService::getInstance).thenReturn(session);
 
             lifecycle.activateService();
             lifecycle.activateService();
             lifecycle.deactivateService();
 
-            Mockito.verify(connection).start();
-            Mockito.verify(connection).close();
-            Mockito.verifyNoMoreInteractions(connection);
-            services.verify(DDMessagingDesktopConnectionService::getInstance);
+            Mockito.verify(session).start();
+            Mockito.verify(session).close();
+            Mockito.verifyNoMoreInteractions(session);
+            services.verify(DDRemoteDamDesktopSessionService::getInstance);
             services.verifyNoMoreInteractions();
         }
     }

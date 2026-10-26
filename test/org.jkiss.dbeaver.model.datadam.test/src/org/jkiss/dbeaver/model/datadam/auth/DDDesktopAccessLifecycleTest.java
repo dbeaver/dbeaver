@@ -16,17 +16,17 @@
  */
 package org.jkiss.dbeaver.model.datadam.auth;
 
-import com.dbeaver.datadam.messaging.api.model.DDDamConnectionInfo;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelState;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelStatus;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.datadam.DDMessagingDesktopConnectionService;
+import org.jkiss.dbeaver.model.datadam.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.transport.DDMessagingDesktopChannel;
+import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -95,14 +95,14 @@ class DDDesktopAccessLifecycleTest {
         DDDesktopAccessService access = access(status);
         List<String> events = new ArrayList<>();
         access.addAccessListener(listener(events));
-        DDMessagingDesktopChannel channel = Mockito.mock(DDMessagingDesktopChannel.class);
-        Mockito.when(channel.getStatus()).thenReturn(new DDMessagingChannelStatus(
-            DDMessagingChannelState.CONNECTED, new DDDamConnectionInfo("deployment", "run", "connection")));
+        DDRemoteDamDesktopChannel channel = Mockito.mock(DDRemoteDamDesktopChannel.class);
+        Mockito.when(channel.getStatus()).thenReturn(new DDRemoteDamChannelStatus(
+            DDRemoteDamChannelState.CONNECTED, new DDRemoteDamSessionInfo("deployment", "instance", "session")));
         try (var keys = Mockito.mockStatic(DDKeyStore.class);
-             var connection = new DDMessagingDesktopConnectionService(access, channel)) {
+             var session = new DDRemoteDamDesktopSessionService(access, channel)) {
             access.signIn(Mockito.mock(DBRProgressMonitor.class));
-            connection.start();
-            final var endpoint = connection.getRpc();
+            session.start();
+            final var endpoint = session.getRpc();
             Job expiry = Assertions.assertInstanceOf(Job.class, expiryJob(access));
 
             status.set("EXPIRED");
@@ -111,7 +111,7 @@ class DDDesktopAccessLifecycleTest {
             Assertions.assertEquals(List.of("changing", "changed", "changed"), events);
             Assertions.assertNull(expiryJob(access));
             Assertions.assertTrue(endpoint.isCloseComplete());
-            Assertions.assertThrows(DBException.class, connection::getRpc);
+            Assertions.assertThrows(DBException.class, session::getRpc);
             Mockito.verify(channel).pause();
             Mockito.verify(channel).start();
             keys.verify(DDKeyStore::clear, Mockito.never());

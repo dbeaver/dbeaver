@@ -52,7 +52,7 @@ class DDDesktopTokenValidator {
         try {
             if ("ws".equalsIgnoreCase(resource.getScheme()) || "wss".equalsIgnoreCase(resource.getScheme())) {
                 DDEndpoints.requireSecureWebSocketTransport(resource);
-                URI externalDam = URI.create(DDEndpoints.getMessagingWebSocketUrl());
+                URI externalDam = URI.create(DDEndpoints.getRemoteDamWebSocketUrl());
                 DDEndpoints.requireSecureWebSocketTransport(externalDam);
                 return originOf(resource).equals(originOf(externalDam))
                     && originOf(URI.create(token.accountOrigin())).equals(originOf(URI.create(DDEndpoints.getAccountBaseUrl())))

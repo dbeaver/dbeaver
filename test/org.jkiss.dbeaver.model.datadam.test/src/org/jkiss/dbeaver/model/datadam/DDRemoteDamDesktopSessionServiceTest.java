@@ -16,15 +16,15 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
-import com.dbeaver.datadam.messaging.api.model.DDDamConnectionInfo;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelState;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelStatus;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.transport.DDMessagingDesktopChannel;
+import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -43,18 +43,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Timeout(15)
-class DDMessagingDesktopConnectionServiceTest extends DBeaverUnitTest {
+class DDRemoteDamDesktopSessionServiceTest extends DBeaverUnitTest {
     private final DDDesktopAccessService access = Mockito.mock(DDDesktopAccessService.class);
-    private final DDMessagingDesktopChannel channel = Mockito.mock(DDMessagingDesktopChannel.class);
-    private final DDMessagingDesktopConnectionService service = new DDMessagingDesktopConnectionService(access, channel);
-    private final AtomicReference<DDMessagingChannelStatus> status = new AtomicReference<>(
-        new DDMessagingChannelStatus(DDMessagingChannelState.DISCONNECTED, null));
+    private final DDRemoteDamDesktopChannel channel = Mockito.mock(DDRemoteDamDesktopChannel.class);
+    private final DDRemoteDamDesktopSessionService service = new DDRemoteDamDesktopSessionService(access, channel);
+    private final AtomicReference<DDRemoteDamChannelStatus> status = new AtomicReference<>(
+        new DDRemoteDamChannelStatus(DDRemoteDamChannelState.DISCONNECTED, null));
 
     @BeforeEach
     void configureChannel() {
         Mockito.when(channel.getStatus()).thenAnswer(invocation -> status.get());
         Mockito.doAnswer(invocation -> {
-            setStatus(new DDMessagingChannelStatus(DDMessagingChannelState.DISCONNECTED, null));
+            setStatus(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.DISCONNECTED, null));
             return null;
         }).when(channel).pause();
     }
@@ -160,7 +160,7 @@ class DDMessagingDesktopConnectionServiceTest extends DBeaverUnitTest {
         Mockito.doAnswer(invocation -> {
             Assertions.assertTrue(endpoint.isCloseComplete());
             Assertions.assertThrows(DBException.class, service::getRpc);
-            setStatus(new DDMessagingChannelStatus(DDMessagingChannelState.DISCONNECTED, null));
+            setStatus(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.DISCONNECTED, null));
             return null;
         }).when(channel).pause();
 
@@ -229,12 +229,12 @@ class DDMessagingDesktopConnectionServiceTest extends DBeaverUnitTest {
         }
     }
 
-    private void ready(@NotNull String connectionId) {
-        setStatus(new DDMessagingChannelStatus(
-            DDMessagingChannelState.CONNECTED, new DDDamConnectionInfo("deployment", "run", connectionId)));
+    private void ready(@NotNull String damSessionId) {
+        setStatus(new DDRemoteDamChannelStatus(
+            DDRemoteDamChannelState.CONNECTED, new DDRemoteDamSessionInfo("deployment", "instance", damSessionId)));
     }
 
-    private void setStatus(@NotNull DDMessagingChannelStatus next) {
+    private void setStatus(@NotNull DDRemoteDamChannelStatus next) {
         status.set(next);
     }
 

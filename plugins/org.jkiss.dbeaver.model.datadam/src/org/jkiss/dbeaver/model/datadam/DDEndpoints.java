@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
-import com.dbeaver.datadam.messaging.api.DDMessagingProtocol;
+import com.dbeaver.datadam.dam.remote.api.DDRemoteDamProtocol;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 
@@ -31,8 +31,8 @@ public final class DDEndpoints {
         "dbeaver.datadam.account.url", "https://account." + BASE_DD_HOST);
     private static final String STORAGE_URL = System.getProperty(
         "dbeaver.datadam.storage.url", "https://dbeaver-storage." + BASE_DD_HOST);
-    private static final String MESSAGING_URL = System.getProperty(
-        "dbeaver.datadam.external.url", "wss://external-dam." + BASE_DD_HOST + DDMessagingProtocol.WEBSOCKET_PATH);
+    private static final String REMOTE_DAM_URL = System.getProperty(
+        "dbeaver.datadam.external.url", "wss://external-dam." + BASE_DD_HOST + DDRemoteDamProtocol.WEBSOCKET_PATH);
 
     private DDEndpoints() {
     }
@@ -48,14 +48,14 @@ public final class DDEndpoints {
     }
 
     @NotNull
-    public static String getMessagingWebSocketUrl() {
-        return MESSAGING_URL;
+    public static String getRemoteDamWebSocketUrl() {
+        return REMOTE_DAM_URL;
     }
 
     public static void requireSecureWebSocketTransport(@NotNull URI url) throws DBException {
         if (url.getHost() == null || url.getUserInfo() != null || url.getRawQuery() != null || url.getRawFragment() != null
             || url.getPort() == 0 || url.getPort() > 65535 || url.getRawAuthority().endsWith(":")
-            || !DDMessagingProtocol.WEBSOCKET_PATH.equals(url.getRawPath())
+            || !DDRemoteDamProtocol.WEBSOCKET_PATH.equals(url.getRawPath())
             || !("wss".equalsIgnoreCase(url.getScheme()) || "ws".equalsIgnoreCase(url.getScheme())
                 && ("localhost".equalsIgnoreCase(url.getHost()) || "127.0.0.1".equals(url.getHost())))) {
             throw new DBException("Expected a WSS DataDam /ws URL (WS is allowed on loopback only)");

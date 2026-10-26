@@ -16,15 +16,15 @@
  */
 package org.jkiss.dbeaver.model.datadam.transport;
 
-import com.dbeaver.datadam.messaging.api.DDMessagingProtocol;
-import com.dbeaver.datadam.messaging.api.model.DDDamConnectionInfo;
-import com.dbeaver.datadam.messaging.api.model.DDMessagingHandshakeRequest;
-import com.dbeaver.datadam.messaging.api.model.DDMessagingHandshakeResponse;
-import com.dbeaver.datadam.messaging.api.model.DDMessagingMessage;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelState;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelStatus;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingConnectionListener;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingSubscription;
+import com.dbeaver.datadam.dam.remote.api.DDRemoteDamProtocol;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamHandshakeRequest;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamHandshakeResponse;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamMessage;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSessionListener;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
 import com.google.gson.JsonObject;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
@@ -66,52 +66,52 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Timeout(20)
-class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
+class DDRemoteDamDesktopChannelTest extends DBeaverUnitTest {
     private static final URI ENDPOINT = URI.create("wss://external.example/ws");
-    private static final DDMessagingHandshakeRequest HELLO = new DDMessagingHandshakeRequest(
-        "deployment", "application-run", "DBeaver", "26.3");
-    private static final DDMessagingMessage MESSAGE = message("topic", "value");
+    private static final DDRemoteDamHandshakeRequest HELLO = new DDRemoteDamHandshakeRequest(
+        "deployment", "app-instance", "DBeaver", "26.3");
+    private static final DDRemoteDamMessage MESSAGE = message("topic", "value");
 
     @Test
     void stateSnapshotTracksReadinessPauseResumeAndTerminalClose() throws Exception {
         Clients clients = new Clients();
         Events events = new Events();
-        BlockingQueue<DDMessagingChannelStatus> states = new LinkedBlockingQueue<>();
+        BlockingQueue<DDRemoteDamChannelStatus> states = new LinkedBlockingQueue<>();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             channel.observeState(states::add);
-            Assertions.assertEquals(new DDMessagingChannelStatus(DDMessagingChannelState.DISCONNECTED, null), take(states));
+            Assertions.assertEquals(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.DISCONNECTED, null), take(states));
             Assertions.assertFalse(channel.getStatus().isReady());
 
             channel.start();
-            Assertions.assertEquals(new DDMessagingChannelStatus(DDMessagingChannelState.CONNECTING, null), take(states));
+            Assertions.assertEquals(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.CONNECTING, null), take(states));
             Peer peer = clients.next();
             peer.open();
             peer.nextSent();
             Assertions.assertFalse(channel.getStatus().isReady());
             peer.ready("first");
-            DDDamConnectionInfo first = take(events.connected);
-            Assertions.assertEquals(new DDMessagingChannelStatus(DDMessagingChannelState.CONNECTED, first), take(states));
-            Assertions.assertEquals(first, channel.getStatus().connection());
+            DDRemoteDamSessionInfo first = take(events.connected);
+            Assertions.assertEquals(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.CONNECTED, first), take(states));
+            Assertions.assertEquals(first, channel.getStatus().session());
 
             channel.pause();
-            Assertions.assertEquals(new DDMessagingChannelStatus(DDMessagingChannelState.DISCONNECTED, null), take(states));
+            Assertions.assertEquals(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.DISCONNECTED, null), take(states));
             Assertions.assertFalse(channel.getStatus().isReady());
             channel.start();
-            Assertions.assertEquals(DDMessagingChannelState.CONNECTING, take(states).state());
+            Assertions.assertEquals(DDRemoteDamChannelState.CONNECTING, take(states).state());
             final Peer resumed = ready(clients, events, "resumed");
-            Assertions.assertEquals("resumed", take(states).connection().connectionId());
+            Assertions.assertEquals("resumed", take(states).session().damSessionId());
 
             channel.close();
-            Assertions.assertEquals(new DDMessagingChannelStatus(DDMessagingChannelState.CLOSED, null), take(states));
+            Assertions.assertEquals(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.CLOSED, null), take(states));
             resumed.ready("late-ready");
             resumed.listener.onClose(resumed.socket, 1000, "late-close");
             channel.pause();
             channel.start();
             channel.close();
-            Assertions.assertEquals(DDMessagingChannelState.CLOSED, channel.getStatus().state());
+            Assertions.assertEquals(DDRemoteDamChannelState.CLOSED, channel.getStatus().state());
             Assertions.assertTrue(states.isEmpty());
-            BlockingQueue<DDMessagingChannelStatus> late = new LinkedBlockingQueue<>();
+            BlockingQueue<DDRemoteDamChannelStatus> late = new LinkedBlockingQueue<>();
             channel.observeState(late::add).close();
             Assertions.assertEquals(channel.getStatus(), take(late));
             Assertions.assertTrue(late.isEmpty());
@@ -119,12 +119,12 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
     }
 
     @Test
-    void lateStateObserverReceivesCurrentConnectionBeforeReconnectTransitions() throws Exception {
+    void lateStateObserverReceivesCurrentSessionBeforeReconnectTransitions() throws Exception {
         Clients clients = new Clients();
         Events events = new Events();
-        BlockingQueue<DDMessagingChannelStatus> states = new LinkedBlockingQueue<>();
+        BlockingQueue<DDRemoteDamChannelStatus> states = new LinkedBlockingQueue<>();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             channel.start();
             Peer first = ready(clients, events, "first");
             channel.observeState(states::add);
@@ -132,12 +132,12 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
 
             first.listener.onClose(first.socket, 1008, "expired");
 
-            Assertions.assertEquals(DDMessagingChannelState.DISCONNECTED, take(states).state());
-            Assertions.assertEquals(DDMessagingChannelState.CONNECTING, take(states).state());
+            Assertions.assertEquals(DDRemoteDamChannelState.DISCONNECTED, take(states).state());
+            Assertions.assertEquals(DDRemoteDamChannelState.CONNECTING, take(states).state());
             ready(clients, events, "second");
-            DDMessagingChannelStatus ready = take(states);
-            Assertions.assertEquals(DDMessagingChannelState.CONNECTED, ready.state());
-            Assertions.assertEquals("second", ready.connection().connectionId());
+            DDRemoteDamChannelStatus ready = take(states);
+            Assertions.assertEquals(DDRemoteDamChannelState.CONNECTED, ready.state());
+            Assertions.assertEquals("second", ready.session().damSessionId());
             Assertions.assertEquals(ready, channel.getStatus());
             first.ready("stale");
             Assertions.assertTrue(states.isEmpty());
@@ -150,15 +150,15 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
         Events events = new Events();
         CountDownLatch entered = new CountDownLatch(1);
         CompletableFuture<Void> release = new CompletableFuture<>();
-        BlockingQueue<DDMessagingChannelState> states = new LinkedBlockingQueue<>();
+        BlockingQueue<DDRemoteDamChannelState> states = new LinkedBlockingQueue<>();
         AtomicInteger callbacks = new AtomicInteger();
         AtomicInteger concurrentCallbacks = new AtomicInteger();
         try (var channel = channel(clients, resource -> "token");
              var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             var observing = executor.submit(() -> channel.observeState(status -> {
                 concurrentCallbacks.accumulateAndGet(callbacks.incrementAndGet(), Math::max);
-                if (status.state() == DDMessagingChannelState.DISCONNECTED && entered.getCount() != 0) {
+                if (status.state() == DDRemoteDamChannelState.DISCONNECTED && entered.getCount() != 0) {
                     entered.countDown();
                     release.join();
                 }
@@ -171,15 +171,15 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
                 ready(clients, events, "racing");
                 channel.pause();
                 channel.close();
-                Assertions.assertEquals(DDMessagingChannelState.CLOSED, channel.getStatus().state());
+                Assertions.assertEquals(DDRemoteDamChannelState.CLOSED, channel.getStatus().state());
                 Assertions.assertTrue(states.isEmpty());
             } finally {
                 release.complete(null);
             }
             observing.get(3, TimeUnit.SECONDS).close();
             Assertions.assertEquals(List.of(
-                DDMessagingChannelState.DISCONNECTED, DDMessagingChannelState.CONNECTING, DDMessagingChannelState.CONNECTED,
-                DDMessagingChannelState.DISCONNECTED, DDMessagingChannelState.CLOSED
+                DDRemoteDamChannelState.DISCONNECTED, DDRemoteDamChannelState.CONNECTING, DDRemoteDamChannelState.CONNECTED,
+                DDRemoteDamChannelState.DISCONNECTED, DDRemoteDamChannelState.CLOSED
             ), new ArrayList<>(states));
             Assertions.assertEquals(1, concurrentCallbacks.get());
         } finally {
@@ -194,10 +194,10 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
         CountDownLatch entered = new CountDownLatch(1);
         CompletableFuture<Void> release = new CompletableFuture<>();
         CompletableFuture<Void> delivered = new CompletableFuture<>();
-        BlockingQueue<DDMessagingChannelState> states = new LinkedBlockingQueue<>();
+        BlockingQueue<DDRemoteDamChannelState> states = new LinkedBlockingQueue<>();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(events);
-            DDMessagingSubscription subscription = channel.observeState(status -> {
+            channel.addSessionListener(events);
+            DDRemoteDamSubscription subscription = channel.observeState(status -> {
                 if (status.isReady()) {
                     entered.countDown();
                     release.join();
@@ -207,9 +207,9 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
                     states.add(status.state());
                 }
             });
-            Assertions.assertEquals(DDMessagingChannelState.DISCONNECTED, take(states));
+            Assertions.assertEquals(DDRemoteDamChannelState.DISCONNECTED, take(states));
             channel.start();
-            Assertions.assertEquals(DDMessagingChannelState.CONNECTING, take(states));
+            Assertions.assertEquals(DDRemoteDamChannelState.CONNECTING, take(states));
             ready(clients, events, "cancel");
             try {
                 Assertions.assertTrue(entered.await(3, TimeUnit.SECONDS));
@@ -221,7 +221,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
                 release.complete(null);
             }
             delivered.get(3, TimeUnit.SECONDS);
-            Assertions.assertEquals(List.of(DDMessagingChannelState.CONNECTED), new ArrayList<>(states));
+            Assertions.assertEquals(List.of(DDRemoteDamChannelState.CONNECTED), new ArrayList<>(states));
         } finally {
             release.complete(null);
         }
@@ -230,18 +230,18 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
     @Test
     void stateObserversCanCloseReentrantlyAndFailuresDoNotSkipTerminalDelivery() throws Exception {
         Clients clients = new Clients();
-        BlockingQueue<DDMessagingChannelState> states = new LinkedBlockingQueue<>();
+        BlockingQueue<DDRemoteDamChannelState> states = new LinkedBlockingQueue<>();
         try (var channel = channel(clients, resource -> "token")) {
             channel.observeState(status -> {
                 states.add(status.state());
-                if (status.state() == DDMessagingChannelState.DISCONNECTED) {
+                if (status.state() == DDRemoteDamChannelState.DISCONNECTED) {
                     channel.close();
                     throw new IllegalStateException("Failed initial observer");
                 }
             });
 
-            Assertions.assertEquals(List.of(DDMessagingChannelState.DISCONNECTED, DDMessagingChannelState.CLOSED), new ArrayList<>(states));
-            Assertions.assertEquals(DDMessagingChannelState.CLOSED, channel.getStatus().state());
+            Assertions.assertEquals(List.of(DDRemoteDamChannelState.DISCONNECTED, DDRemoteDamChannelState.CLOSED), new ArrayList<>(states));
+            Assertions.assertEquals(DDRemoteDamChannelState.CLOSED, channel.getStatus().state());
         }
     }
 
@@ -249,17 +249,17 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
     void missingTokenReturnsStateToDisconnectedUntilExplicitRestart() throws Exception {
         Clients clients = new Clients();
         AtomicReference<String> token = new AtomicReference<>();
-        BlockingQueue<DDMessagingChannelStatus> states = new LinkedBlockingQueue<>();
+        BlockingQueue<DDRemoteDamChannelStatus> states = new LinkedBlockingQueue<>();
         try (var channel = channel(clients, resource -> token.get())) {
             channel.observeState(states::add);
             take(states);
             channel.start();
-            Assertions.assertEquals(DDMessagingChannelState.CONNECTING, take(states).state());
-            Assertions.assertEquals(DDMessagingChannelState.DISCONNECTED, take(states).state());
+            Assertions.assertEquals(DDRemoteDamChannelState.CONNECTING, take(states).state());
+            Assertions.assertEquals(DDRemoteDamChannelState.DISCONNECTED, take(states).state());
             Assertions.assertFalse(channel.getStatus().isReady());
             token.set("restored");
             channel.start();
-            Assertions.assertEquals(DDMessagingChannelState.CONNECTING, take(states).state());
+            Assertions.assertEquals(DDRemoteDamChannelState.CONNECTING, take(states).state());
             clients.next().open();
         }
     }
@@ -269,24 +269,24 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
         Clients clients = new Clients();
         Events events = new Events();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             fails(channel.send(MESSAGE));
             channel.start();
             channel.start();
             Peer peer = clients.next();
             peer.open();
-            Assertions.assertEquals(HELLO, DDMessagingProtocol.decodeHandshakeRequest(peer.nextSent().text));
+            Assertions.assertEquals(HELLO, DDRemoteDamProtocol.decodeHandshakeRequest(peer.nextSent().text));
             Assertions.assertEquals(Map.of("Authorization", "Bearer token"), peer.headers);
             Assertions.assertEquals(ENDPOINT, peer.endpoint);
             Assertions.assertTrue(events.connected.isEmpty());
             fails(channel.send(MESSAGE));
             peer.ready("first");
-            Assertions.assertEquals(new DDDamConnectionInfo("deployment", "application-run", "first"), take(events.connected));
+            Assertions.assertEquals(new DDRemoteDamSessionInfo("deployment", "app-instance", "first"), take(events.connected));
             channel.send(MESSAGE).toCompletableFuture().get(3, TimeUnit.SECONDS);
-            Assertions.assertEquals(MESSAGE, DDMessagingProtocol.decode(peer.nextSent().text));
+            Assertions.assertEquals(MESSAGE, DDRemoteDamProtocol.decode(peer.nextSent().text));
             Assertions.assertTrue(clients.attempts.isEmpty());
             channel.pause();
-            Assertions.assertEquals("first", take(events.disconnected).connectionId());
+            Assertions.assertEquals("first", take(events.disconnected).damSessionId());
             peer.listener.onClose(peer.socket, 1000, "late");
             peer.listener.onError(peer.socket, new IOException("late"));
             Assertions.assertTrue(events.disconnected.isEmpty());
@@ -300,21 +300,21 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
         Clients clients = new Clients();
         AtomicInteger tokens = new AtomicInteger();
         Events events = new Events();
-        BlockingQueue<DDDamConnectionInfo> messages = new LinkedBlockingQueue<>();
+        BlockingQueue<DDRemoteDamSessionInfo> messages = new LinkedBlockingQueue<>();
         try (var channel = channel(clients, resource -> "token-" + tokens.incrementAndGet())) {
-            channel.addConnectionListener(events);
-            channel.subscribe("topic", (info, message) -> messages.add(info));
+            channel.addSessionListener(events);
+            channel.subscribe("topic", (session, message) -> messages.add(session));
             channel.start();
             Peer first = ready(clients, events, "first");
             first.listener.onClose(first.socket, 1008, "expired");
-            Assertions.assertEquals("first", take(events.disconnected).connectionId());
+            Assertions.assertEquals("first", take(events.disconnected).damSessionId());
             Peer second = ready(clients, events, "second");
             Assertions.assertEquals("Bearer token-2", second.headers.get("Authorization"));
-            second.text(DDMessagingProtocol.encode(MESSAGE));
-            DDDamConnectionInfo connection = take(messages);
-            Assertions.assertEquals("second", connection.connectionId());
-            Assertions.assertEquals(HELLO.deploymentId(), connection.deploymentId());
-            Assertions.assertEquals(HELLO.applicationRunId(), connection.applicationRunId());
+            second.text(DDRemoteDamProtocol.encode(MESSAGE));
+            DDRemoteDamSessionInfo session = take(messages);
+            Assertions.assertEquals("second", session.damSessionId());
+            Assertions.assertEquals(HELLO.appDeploymentId(), session.appDeploymentId());
+            Assertions.assertEquals(HELLO.appInstanceId(), session.appInstanceId());
             Assertions.assertEquals(2, tokens.get());
             Mockito.verify(first.client).close();
         }
@@ -325,7 +325,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
         Clients clients = new Clients();
         Events events = new Events();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             channel.start();
             Peer first = clients.next();
             channel.pause();
@@ -340,7 +340,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
             channel.start();
             ready(clients, events, "resumed");
             channel.close();
-            Assertions.assertEquals("resumed", take(events.disconnected).connectionId());
+            Assertions.assertEquals("resumed", take(events.disconnected).damSessionId());
             channel.close();
             channel.start();
             clients.expectNoAttempt();
@@ -362,7 +362,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
             }
             return "current-token";
         })) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             channel.start();
             Assertions.assertTrue(lookingUp.await(3, TimeUnit.SECONDS));
             channel.pause();
@@ -385,11 +385,11 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
         Clients clients = new Clients();
         Events events = new Events();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             channel.start();
             Peer peer = clients.next();
             AbstractJob deadline = Arrays.stream(Job.getJobManager().find(null))
-                .filter(job -> job.getName().equals("Desktop connection deadline"))
+                .filter(job -> job.getName().equals("Desktop DAM session deadline"))
                 .map(AbstractJob.class::cast)
                 .findFirst().orElseThrow();
             peer.open();
@@ -398,7 +398,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
             deadline.runDirectly(monitor);
             peer.ready("ready");
 
-            Assertions.assertEquals("ready", take(events.connected).connectionId());
+            Assertions.assertEquals("ready", take(events.connected).damSessionId());
             Assertions.assertTrue(events.disconnected.isEmpty());
             Mockito.verify(peer.client, Mockito.never()).close();
         }
@@ -409,7 +409,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
         Clients clients = new Clients();
         Events events = new Events();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             channel.start();
             Peer first = ready(clients, events, "first");
             first.holdSends = true;
@@ -417,7 +417,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
             final Sent oldSend = first.nextSent();
             channel.pause();
             fails(pending);
-            Assertions.assertEquals("first", take(events.disconnected).connectionId());
+            Assertions.assertEquals("first", take(events.disconnected).damSessionId());
             channel.start();
             final Peer second = ready(clients, events, "second");
             first.ready("late-ready");
@@ -425,7 +425,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
             first.listener.onError(first.socket, new IOException("late-error"));
             oldSend.result.complete(first.socket);
             channel.send(MESSAGE).toCompletableFuture().get(3, TimeUnit.SECONDS);
-            Assertions.assertEquals(MESSAGE, DDMessagingProtocol.decode(second.nextSent().text));
+            Assertions.assertEquals(MESSAGE, DDRemoteDamProtocol.decode(second.nextSent().text));
             Assertions.assertTrue(events.connected.isEmpty());
             Assertions.assertTrue(events.disconnected.isEmpty());
             Mockito.verify(second.client, Mockito.never()).close();
@@ -476,7 +476,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
         Events events = new Events();
         AtomicInteger tokens = new AtomicInteger();
         try (var channel = channel(clients, resource -> "token-" + tokens.incrementAndGet())) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             channel.start();
             Peer rejected = clients.next();
             HttpResponse<?> response = Mockito.mock(HttpResponse.class);
@@ -496,7 +496,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
         Clients clients = new Clients();
         Events events = new Events();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             channel.start();
             clients.next().handshake.completeExceptionally(new IOException("Offline"));
             ready(clients, events, "reconnected");
@@ -509,7 +509,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
         Clients clients = new Clients();
         Events events = new Events();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             channel.start();
             Peer failed = clients.next();
             failed.handshake.completeExceptionally(new IOException("Offline"));
@@ -526,7 +526,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
         Clients clients = new Clients();
         Events events = new Events();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             channel.start();
             Peer silent = clients.next();
             silent.open();
@@ -544,7 +544,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
         Clients clients = new Clients();
         Events events = new Events();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             channel.start();
             Peer first = clients.next();
             first.open();
@@ -556,18 +556,18 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
     }
 
     @Test
-    void binaryFramesAndMalformedMessagesTerminateReadyConnections() throws Exception {
+    void binaryFramesAndMalformedMessagesTerminateReadySessions() throws Exception {
         Clients clients = new Clients();
         Events events = new Events();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             channel.start();
             Peer first = ready(clients, events, "binary");
             first.listener.onBinary(first.socket, ByteBuffer.wrap(new byte[] {1}), false);
-            Assertions.assertEquals("binary", take(events.disconnected).connectionId());
+            Assertions.assertEquals("binary", take(events.disconnected).damSessionId());
             Peer second = ready(clients, events, "malformed");
             second.text("{}");
-            Assertions.assertEquals("malformed", take(events.disconnected).connectionId());
+            Assertions.assertEquals("malformed", take(events.disconnected).damSessionId());
         }
     }
 
@@ -575,16 +575,16 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
     void limitsUtf8BytesAcrossFragmentsAndAllowsExactlyTheLimit() throws Exception {
         Clients clients = new Clients();
         Events events = new Events();
-        BlockingQueue<DDMessagingMessage> received = new LinkedBlockingQueue<>();
+        BlockingQueue<DDRemoteDamMessage> received = new LinkedBlockingQueue<>();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             channel.subscribe("topic", (info, message) -> received.add(message));
             channel.start();
             Peer peer = ready(clients, events, "bounded");
-            String empty = DDMessagingProtocol.encode(message("topic", ""));
+            String empty = DDRemoteDamProtocol.encode(message("topic", ""));
             int remaining = 65_536 - empty.getBytes(StandardCharsets.UTF_8).length;
-            DDMessagingMessage maximum = message("topic", "é".repeat(remaining / 2) + "x".repeat(remaining % 2));
-            String encoded = DDMessagingProtocol.encode(maximum);
+            DDRemoteDamMessage maximum = message("topic", "é".repeat(remaining / 2) + "x".repeat(remaining % 2));
+            String encoded = DDRemoteDamProtocol.encode(maximum);
             Assertions.assertEquals(65_536, encoded.getBytes(StandardCharsets.UTF_8).length);
             int middle = encoded.length() / 2;
             peer.listener.onText(peer.socket, encoded.substring(0, middle), false);
@@ -594,7 +594,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
             fails(channel.send(message("topic", "x".repeat(65_536))));
             peer.listener.onText(peer.socket, "é".repeat(20_000), false);
             peer.listener.onText(peer.socket, "é".repeat(20_000), false);
-            Assertions.assertEquals("bounded", take(events.disconnected).connectionId());
+            Assertions.assertEquals("bounded", take(events.disconnected).damSessionId());
         }
     }
 
@@ -602,15 +602,15 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
     void acceptsSurrogatePairsSplitBetweenFragments() throws Exception {
         Clients clients = new Clients();
         Events events = new Events();
-        BlockingQueue<DDMessagingMessage> received = new LinkedBlockingQueue<>();
+        BlockingQueue<DDRemoteDamMessage> received = new LinkedBlockingQueue<>();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             channel.subscribe("topic", (info, message) -> received.add(message));
             channel.start();
             Peer peer = ready(clients, events, "unicode");
             String beaver = "🦫";
-            DDMessagingMessage message = message("topic", beaver);
-            String encoded = DDMessagingProtocol.encode(message);
+            DDRemoteDamMessage message = message("topic", beaver);
+            String encoded = DDRemoteDamProtocol.encode(message);
             int split = encoded.indexOf(beaver) + 1;
             Assertions.assertTrue(split > 0);
             peer.listener.onText(peer.socket, encoded.substring(0, split), false);
@@ -623,25 +623,25 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
     void isolatesListenersRoutesTopicsAndHonorsUnsubscribe() throws Exception {
         Clients clients = new Clients();
         Events events = new Events();
-        BlockingQueue<DDMessagingMessage> received = new LinkedBlockingQueue<>();
-        BlockingQueue<DDMessagingMessage> other = new LinkedBlockingQueue<>();
-        Events removedConnections = new Events();
+        BlockingQueue<DDRemoteDamMessage> received = new LinkedBlockingQueue<>();
+        BlockingQueue<DDRemoteDamMessage> other = new LinkedBlockingQueue<>();
+        Events removedSessions = new Events();
         AtomicReference<Thread> deliveryThread = new AtomicReference<>();
         AtomicInteger removed = new AtomicInteger();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(new DDMessagingConnectionListener() {
+            channel.addSessionListener(new DDRemoteDamSessionListener() {
                 @Override
-                public void onConnected(@NotNull DDDamConnectionInfo connection) {
-                    throw new IllegalStateException("Broken connection listener");
+                public void onConnected(@NotNull DDRemoteDamSessionInfo session) {
+                    throw new IllegalStateException("Broken session listener");
                 }
 
                 @Override
-                public void onDisconnected(@NotNull DDDamConnectionInfo connection) {
+                public void onDisconnected(@NotNull DDRemoteDamSessionInfo session) {
                     throw new IllegalStateException("Broken disconnect listener");
                 }
             });
-            channel.addConnectionListener(events);
-            channel.addConnectionListener(removedConnections).close();
+            channel.addSessionListener(events);
+            channel.addSessionListener(removedSessions).close();
             channel.subscribe("topic", (info, message) -> {
                 throw new IllegalStateException("Broken message listener");
             });
@@ -650,22 +650,22 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
                 received.add(message);
             });
             channel.subscribe("other", (info, message) -> other.add(message));
-            DDMessagingSubscription subscription = channel.subscribe("topic", (info, message) -> removed.incrementAndGet());
+            DDRemoteDamSubscription subscription = channel.subscribe("topic", (info, message) -> removed.incrementAndGet());
             subscription.close();
             subscription.close();
             channel.start();
             Peer peer = ready(clients, events, "listeners");
-            peer.text(DDMessagingProtocol.encode(MESSAGE));
-            DDMessagingMessage otherMessage = message("other", "second");
-            peer.text(DDMessagingProtocol.encode(otherMessage));
+            peer.text(DDRemoteDamProtocol.encode(MESSAGE));
+            DDRemoteDamMessage otherMessage = message("other", "second");
+            peer.text(DDRemoteDamProtocol.encode(otherMessage));
             Assertions.assertEquals(MESSAGE, take(received));
             Assertions.assertEquals(otherMessage, take(other));
             Assertions.assertNotEquals(Thread.currentThread(), deliveryThread.get());
             Assertions.assertEquals(0, removed.get());
-            Assertions.assertTrue(removedConnections.connected.isEmpty());
+            Assertions.assertTrue(removedSessions.connected.isEmpty());
             Assertions.assertTrue(received.isEmpty());
             channel.pause();
-            Assertions.assertEquals("listeners", take(events.disconnected).connectionId());
+            Assertions.assertEquals("listeners", take(events.disconnected).damSessionId());
         }
     }
 
@@ -674,7 +674,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
         Clients clients = new Clients();
         Events events = new Events();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             channel.start();
             Peer peer = clients.next();
             peer.holdSends = true;
@@ -687,12 +687,12 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
             Assertions.assertTrue(peer.sent.isEmpty());
             hello.result.complete(peer.socket);
             Sent sending = peer.nextSent();
-            Assertions.assertEquals(MESSAGE, DDMessagingProtocol.decode(sending.text));
+            Assertions.assertEquals(MESSAGE, DDRemoteDamProtocol.decode(sending.text));
             Assertions.assertTrue(peer.sent.isEmpty());
             sending.result.completeExceptionally(new IOException("Send failed"));
             fails(first);
             fails(second);
-            Assertions.assertEquals("serialized", take(events.disconnected).connectionId());
+            Assertions.assertEquals("serialized", take(events.disconnected).damSessionId());
             Peer replacement = ready(clients, events, "replacement");
             Assertions.assertTrue(replacement.sent.isEmpty());
         }
@@ -703,7 +703,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
         Clients clients = new Clients();
         Events events = new Events();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             channel.start();
             Peer peer = ready(clients, events, "outgoing");
             peer.holdSends = true;
@@ -729,7 +729,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
         Clients clients = new Clients();
         Events events = new Events();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             channel.start();
             Peer peer = ready(clients, events, "stalled-send");
             peer.holdSends = true;
@@ -738,7 +738,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
             CompletionStage<Void> second = channel.send(MESSAGE);
             Assertions.assertThrows(ExecutionException.class, () -> first.toCompletableFuture().get(12, TimeUnit.SECONDS));
             fails(second);
-            Assertions.assertEquals("stalled-send", take(events.disconnected).connectionId());
+            Assertions.assertEquals("stalled-send", take(events.disconnected).damSessionId());
             ready(clients, events, "recovered");
         }
     }
@@ -751,7 +751,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
         CountDownLatch release = new CountDownLatch(1);
         AtomicInteger deliveries = new AtomicInteger();
         try (var channel = channel(clients, resource -> "token")) {
-            channel.addConnectionListener(events);
+            channel.addSessionListener(events);
             channel.subscribe("topic", (info, message) -> {
                 deliveries.incrementAndGet();
                 entered.countDown();
@@ -763,17 +763,17 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
             });
             channel.start();
             Peer peer = ready(clients, events, "incoming");
-            peer.text(DDMessagingProtocol.encode(MESSAGE));
+            peer.text(DDRemoteDamProtocol.encode(MESSAGE));
             Assertions.assertTrue(entered.await(3, TimeUnit.SECONDS));
             try {
                 for (int i = 0; i < 65; i++) {
-                    peer.text(DDMessagingProtocol.encode(MESSAGE));
+                    peer.text(DDRemoteDamProtocol.encode(MESSAGE));
                 }
                 Mockito.verify(peer.socket, Mockito.atLeastOnce()).abort();
             } finally {
                 release.countDown();
             }
-            Assertions.assertEquals("incoming", take(events.disconnected).connectionId());
+            Assertions.assertEquals("incoming", take(events.disconnected).damSessionId());
             Assertions.assertEquals(1, deliveries.get());
         } finally {
             release.countDown();
@@ -801,36 +801,36 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
                 }
                 callbacks.add(event);
             };
-            channel.addConnectionListener(new DDMessagingConnectionListener() {
+            channel.addSessionListener(new DDRemoteDamSessionListener() {
                 @Override
-                public void onConnected(@NotNull DDDamConnectionInfo connection) {
-                    record.accept("connected:" + connection.connectionId());
+                public void onConnected(@NotNull DDRemoteDamSessionInfo session) {
+                    record.accept("connected:" + session.damSessionId());
                 }
 
                 @Override
-                public void onDisconnected(@NotNull DDDamConnectionInfo connection) {
-                    if (connection.connectionId().equals("first")) {
+                public void onDisconnected(@NotNull DDRemoteDamSessionInfo session) {
+                    if (session.damSessionId().equals("first")) {
                         disconnectEntered.countDown();
                         releaseDisconnect.join();
                     }
-                    record.accept("disconnected:" + connection.connectionId());
+                    record.accept("disconnected:" + session.damSessionId());
                 }
             });
-            channel.addConnectionListener(events);
-            channel.subscribe("topic", (connection, message) -> {
-                if (connection.connectionId().equals("first")) {
+            channel.addSessionListener(events);
+            channel.subscribe("topic", (session, message) -> {
+                if (session.damSessionId().equals("first")) {
                     messageEntered.countDown();
                     releaseMessage.join();
                 }
-                record.accept("message:" + connection.connectionId());
+                record.accept("message:" + session.damSessionId());
             });
             channel.start();
             Peer first = ready(clients, events, "first");
             Assertions.assertEquals("connected:first", take(callbacks));
             try {
                 io.submit(() -> {
-                    first.text(DDMessagingProtocol.encode(MESSAGE));
-                    first.text(DDMessagingProtocol.encode(message("topic", "stale")));
+                    first.text(DDRemoteDamProtocol.encode(MESSAGE));
+                    first.text(DDRemoteDamProtocol.encode(message("topic", "stale")));
                 }).get(3, TimeUnit.SECONDS);
                 Assertions.assertTrue(messageEntered.await(3, TimeUnit.SECONDS));
                 io.submit(() -> {
@@ -844,10 +844,10 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
 
                 Peer replacement = clients.next();
                 io.submit(replacement::open).get(3, TimeUnit.SECONDS);
-                Assertions.assertEquals(HELLO, DDMessagingProtocol.decodeHandshakeRequest(replacement.nextSent().text));
+                Assertions.assertEquals(HELLO, DDRemoteDamProtocol.decodeHandshakeRequest(replacement.nextSent().text));
                 io.submit(() -> {
                     replacement.ready("second");
-                    replacement.text(DDMessagingProtocol.encode(MESSAGE));
+                    replacement.text(DDRemoteDamProtocol.encode(MESSAGE));
                 }).get(3, TimeUnit.SECONDS);
 
                 Assertions.assertNull(callbacks.poll(250, TimeUnit.MILLISECONDS));
@@ -863,7 +863,7 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
                 Assertions.assertEquals("message:second", take(callbacks));
                 Assertions.assertTrue(callbacks.isEmpty());
                 Assertions.assertFalse(callbackOnIoThread.get());
-                Assertions.assertEquals("second", channel.getStatus().connection().connectionId());
+                Assertions.assertEquals("second", channel.getStatus().session().damSessionId());
                 Mockito.verify(replacement.client, Mockito.never()).close();
             } finally {
                 releaseMessage.complete(null);
@@ -879,33 +879,33 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
     })
     void rejectsUnsafeEndpointsBeforeCreatingClients(@NotNull String endpoint) {
         Clients clients = new Clients();
-        Assertions.assertThrows(DBException.class, () -> new DDMessagingDesktopChannel(
+        Assertions.assertThrows(DBException.class, () -> new DDRemoteDamDesktopChannel(
             URI.create(endpoint), HELLO, resource -> "token", clients));
         Assertions.assertTrue(clients.attempts.isEmpty());
     }
 
     @NotNull
-    private static DDMessagingDesktopChannel channel(
+    private static DDRemoteDamDesktopChannel channel(
         @NotNull Clients clients,
-        @NotNull DDMessagingDesktopChannel.TokenProvider tokens
+        @NotNull DDRemoteDamDesktopChannel.TokenProvider tokens
     ) throws DBException {
-        return new DDMessagingDesktopChannel(ENDPOINT, HELLO, tokens, clients);
+        return new DDRemoteDamDesktopChannel(ENDPOINT, HELLO, tokens, clients);
     }
 
     @NotNull
-    private static DDMessagingMessage message(@NotNull String topic, @NotNull String value) {
+    private static DDRemoteDamMessage message(@NotNull String topic, @NotNull String value) {
         JsonObject payload = new JsonObject();
         payload.addProperty("value", value);
-        return new DDMessagingMessage(topic, "changed", payload);
+        return new DDRemoteDamMessage(topic, "changed", payload);
     }
 
     @NotNull
-    private static Peer ready(@NotNull Clients clients, @NotNull Events events, @NotNull String connectionId) throws Exception {
+    private static Peer ready(@NotNull Clients clients, @NotNull Events events, @NotNull String damSessionId) throws Exception {
         Peer peer = clients.next();
         peer.open();
-        Assertions.assertEquals(HELLO, DDMessagingProtocol.decodeHandshakeRequest(peer.nextSent().text));
-        peer.ready(connectionId);
-        Assertions.assertEquals(connectionId, take(events.connected).connectionId());
+        Assertions.assertEquals(HELLO, DDRemoteDamProtocol.decodeHandshakeRequest(peer.nextSent().text));
+        peer.ready(damSessionId);
+        Assertions.assertEquals(damSessionId, take(events.connected).damSessionId());
         return peer;
     }
 
@@ -922,18 +922,18 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
         return result;
     }
 
-    private static final class Events implements DDMessagingConnectionListener {
-        private final BlockingQueue<DDDamConnectionInfo> connected = new LinkedBlockingQueue<>();
-        private final BlockingQueue<DDDamConnectionInfo> disconnected = new LinkedBlockingQueue<>();
+    private static final class Events implements DDRemoteDamSessionListener {
+        private final BlockingQueue<DDRemoteDamSessionInfo> connected = new LinkedBlockingQueue<>();
+        private final BlockingQueue<DDRemoteDamSessionInfo> disconnected = new LinkedBlockingQueue<>();
 
         @Override
-        public void onConnected(@NotNull DDDamConnectionInfo connection) {
-            connected.add(connection);
+        public void onConnected(@NotNull DDRemoteDamSessionInfo session) {
+            connected.add(session);
         }
 
         @Override
-        public void onDisconnected(@NotNull DDDamConnectionInfo connection) {
-            disconnected.add(connection);
+        public void onDisconnected(@NotNull DDRemoteDamSessionInfo session) {
+            disconnected.add(session);
         }
     }
 
@@ -1032,8 +1032,8 @@ class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
             handshake.complete(socket);
         }
 
-        private void ready(@NotNull String connectionId) {
-            text(DDMessagingProtocol.encodeHandshakeResponse(new DDMessagingHandshakeResponse(connectionId)));
+        private void ready(@NotNull String damSessionId) {
+            text(DDRemoteDamProtocol.encodeHandshakeResponse(new DDRemoteDamHandshakeResponse(damSessionId)));
         }
 
         private void text(@NotNull String text) {

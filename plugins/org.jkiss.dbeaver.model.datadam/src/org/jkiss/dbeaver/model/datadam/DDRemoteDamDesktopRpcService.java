@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
-import com.dbeaver.datadam.messaging.api.rpc.DDMessagingGsonRpcCodec;
-import com.dbeaver.datadam.messaging.api.rpc.DDMessagingRpcTransport;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannel;
+import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamGsonRpcCodec;
+import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamRpcTransport;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannel;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import com.google.gson.Gson;
 import org.eclipse.core.runtime.jobs.Job;
@@ -27,11 +27,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 
-final class DDMessagingDesktopRpcService implements AutoCloseable {
-    private static final Log log = Log.getLog(DDMessagingDesktopRpcService.class);
+final class DDRemoteDamDesktopRpcService implements AutoCloseable {
+    private static final Log log = Log.getLog(DDRemoteDamDesktopRpcService.class);
 
     private final Object lock = new Object();
-    private final DDMessagingChannel channel;
+    private final DDRemoteDamChannel channel;
     @Nullable
     private MessagingRpcEndpoint endpoint;
     private boolean invalidated;
@@ -39,7 +39,7 @@ final class DDMessagingDesktopRpcService implements AutoCloseable {
     private boolean active;
     private boolean closed;
 
-    DDMessagingDesktopRpcService(@NotNull DDMessagingChannel channel) {
+    DDRemoteDamDesktopRpcService(@NotNull DDRemoteDamChannel channel) {
         this.channel = channel;
     }
 
@@ -87,8 +87,8 @@ final class DDMessagingDesktopRpcService implements AutoCloseable {
             }
             try {
                 endpoint = MessagingRpcEndpoint.open(
-                    topic -> DDMessagingRpcTransport.forChannel(channel, topic, DDMessagingDesktopRpcService::executeRequest),
-                    new DDMessagingGsonRpcCodec(new Gson()));
+                    topic -> DDRemoteDamRpcTransport.forChannel(channel, topic, DDRemoteDamDesktopRpcService::executeRequest),
+                    new DDRemoteDamGsonRpcCodec(new Gson()));
                 invalidated = false;
                 return endpoint;
             } catch (RuntimeException e) {
@@ -105,7 +105,7 @@ final class DDMessagingDesktopRpcService implements AutoCloseable {
 
     private void requireActive() throws DBException {
         if (closed) {
-            throw new DBException("Desktop DataDam connection service is closed");
+            throw new DBException("Desktop DataDam session service is closed");
         }
         if (!active) {
             throw new DBException("Desktop DataDam authorization is unavailable");

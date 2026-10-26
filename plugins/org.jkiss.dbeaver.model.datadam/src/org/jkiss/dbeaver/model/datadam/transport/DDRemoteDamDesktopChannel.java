@@ -16,16 +16,16 @@
  */
 package org.jkiss.dbeaver.model.datadam.transport;
 
-import com.dbeaver.datadam.messaging.api.DDMessagingProtocol;
-import com.dbeaver.datadam.messaging.api.model.DDDamConnectionInfo;
-import com.dbeaver.datadam.messaging.api.model.DDMessagingHandshakeRequest;
-import com.dbeaver.datadam.messaging.api.model.DDMessagingMessage;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannel;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelState;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelStatus;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingConnectionListener;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingMessageListener;
-import com.dbeaver.datadam.messaging.api.transport.DDMessagingSubscription;
+import com.dbeaver.datadam.dam.remote.api.DDRemoteDamProtocol;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamHandshakeRequest;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamMessage;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannel;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamMessageListener;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSessionListener;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
@@ -55,9 +55,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public final class DDMessagingDesktopChannel implements DDMessagingChannel {
+public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
 
-    private static final Log log = Log.getLog(DDMessagingDesktopChannel.class);
+    private static final Log log = Log.getLog(DDRemoteDamDesktopChannel.class);
 
     private static final int MAX_MESSAGE_BYTES = 65_536;
     private static final int MAX_PENDING_MESSAGES = 64;
@@ -70,17 +70,17 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
 
     private final Object lock = new Object();
     private final URI endpoint;
-    private final DDMessagingHandshakeRequest hello;
+    private final DDRemoteDamHandshakeRequest hello;
     private final String helloMessage;
     private final TokenProvider tokens;
     private final Supplier<BaseWebSocketClient> clients;
-    private final List<Registration<DDMessagingMessageListener>> messageListeners = new ArrayList<>();
-    private final List<Registration<DDMessagingConnectionListener>> connectionListeners = new ArrayList<>();
+    private final List<Registration<DDRemoteDamMessageListener>> messageListeners = new ArrayList<>();
+    private final List<Registration<DDRemoteDamSessionListener>> sessionListeners = new ArrayList<>();
     private final List<StateObservation> stateObservers = new ArrayList<>();
     private final ChannelJob delivery = new ChannelJob("Deliver Desktop messages", this::deliver);
     @Nullable
     private PendingDisconnect pendingDisconnect;
-    private DDMessagingChannelStatus status = new DDMessagingChannelStatus(DDMessagingChannelState.DISCONNECTED, null);
+    private DDRemoteDamChannelStatus status = new DDRemoteDamChannelStatus(DDRemoteDamChannelState.DISCONNECTED, null);
     private boolean running;
     private boolean closed;
     private boolean deliveryScheduled;
@@ -94,21 +94,21 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
         String getAccessToken(@NotNull URI resource) throws DBException;
     }
 
-    public DDMessagingDesktopChannel(@NotNull URI endpoint, @NotNull DDMessagingHandshakeRequest hello, @NotNull TokenProvider tokens)
+    public DDRemoteDamDesktopChannel(@NotNull URI endpoint, @NotNull DDRemoteDamHandshakeRequest hello, @NotNull TokenProvider tokens)
             throws DBException {
         this(endpoint, hello, tokens, BaseWebSocketClient::new);
     }
 
-    public DDMessagingDesktopChannel(
+    public DDRemoteDamDesktopChannel(
         @NotNull URI endpoint,
-        @NotNull DDMessagingHandshakeRequest hello,
+        @NotNull DDRemoteDamHandshakeRequest hello,
         @NotNull TokenProvider tokens,
         @NotNull Supplier<BaseWebSocketClient> clients
     ) throws DBException {
         DDEndpoints.requireSecureWebSocketTransport(endpoint);
         this.endpoint = endpoint;
         this.hello = hello;
-        this.helloMessage = DDMessagingProtocol.encodeHandshakeRequest(hello);
+        this.helloMessage = DDRemoteDamProtocol.encodeHandshakeRequest(hello);
         this.tokens = tokens;
         this.clients = clients;
         if (helloMessage.getBytes(StandardCharsets.UTF_8).length > MAX_MESSAGE_BYTES) {
@@ -145,11 +145,11 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
             if (stopped != null) {
                 detach(stopped, false);
             }
-            updateStatus(new DDMessagingChannelStatus(
-                closed ? DDMessagingChannelState.CLOSED : DDMessagingChannelState.DISCONNECTED, null));
+            updateStatus(new DDRemoteDamChannelStatus(
+                closed ? DDRemoteDamChannelState.CLOSED : DDRemoteDamChannelState.DISCONNECTED, null));
             if (terminal) {
                 messageListeners.clear();
-                connectionListeners.clear();
+                sessionListeners.clear();
             }
         }
         if (stopped != null) {
@@ -160,7 +160,7 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
 
     @Override
     @NotNull
-    public DDMessagingChannelStatus getStatus() {
+    public DDRemoteDamChannelStatus getStatus() {
         synchronized (lock) {
             return status;
         }
@@ -168,7 +168,7 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
 
     @Override
     @NotNull
-    public DDMessagingSubscription observeState(@NotNull Consumer<DDMessagingChannelStatus> observer) {
+    public DDRemoteDamSubscription observeState(@NotNull Consumer<DDRemoteDamChannelStatus> observer) {
         StateObservation observation = new StateObservation(observer);
         synchronized (lock) {
             observation.pending.add(status);
@@ -180,8 +180,8 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
         return observation;
     }
 
-    private void updateStatus(@NotNull DDMessagingChannelStatus next) {
-        if (status.state() != DDMessagingChannelState.CLOSED && !status.equals(next)) {
+    private void updateStatus(@NotNull DDRemoteDamChannelStatus next) {
+        if (status.state() != DDRemoteDamChannelState.CLOSED && !status.equals(next)) {
             status = next;
             for (StateObservation observation : stateObservers) {
                 observation.pending.add(next);
@@ -201,8 +201,8 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
 
     @Override
     @NotNull
-    public CompletionStage<Void> send(@NotNull DDMessagingMessage message) {
-        String encoded = DDMessagingProtocol.encode(message);
+    public CompletionStage<Void> send(@NotNull DDRemoteDamMessage message) {
+        String encoded = DDRemoteDamProtocol.encode(message);
         if (encoded.getBytes(StandardCharsets.UTF_8).length > MAX_MESSAGE_BYTES) {
             return failed("Desktop message exceeds the message size limit");
         }
@@ -210,7 +210,7 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
         String rejection = null;
         synchronized (lock) {
             Attempt attempt = current;
-            if (attempt == null || attempt.info == null) {
+            if (attempt == null || attempt.session == null) {
                 rejection = "Desktop message channel is not connected";
             } else if (attempt.outgoing.size() + (attempt.sending == null ? 0 : 1) >= MAX_PENDING_MESSAGES) {
                 rejection = "Desktop message send queue is full";
@@ -229,7 +229,7 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
 
     @Override
     @NotNull
-    public DDMessagingSubscription subscribe(@NotNull String topic, @NotNull DDMessagingMessageListener listener) {
+    public DDRemoteDamSubscription subscribe(@NotNull String topic, @NotNull DDRemoteDamMessageListener listener) {
         synchronized (lock) {
             var registration = new Registration<>(topic, listener, messageListeners);
             if (!closed) {
@@ -241,11 +241,11 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
 
     @Override
     @NotNull
-    public DDMessagingSubscription addConnectionListener(@NotNull DDMessagingConnectionListener listener) {
+    public DDRemoteDamSubscription addSessionListener(@NotNull DDRemoteDamSessionListener listener) {
         synchronized (lock) {
-            var registration = new Registration<>(null, listener, connectionListeners);
+            var registration = new Registration<>(null, listener, sessionListeners);
             if (!closed) {
-                connectionListeners.add(registration);
+                sessionListeners.add(registration);
             }
             return registration;
         }
@@ -254,7 +254,7 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
     private void scheduleAttempt(long delay) {
         Attempt attempt = new Attempt();
         current = attempt;
-        updateStatus(new DDMessagingChannelStatus(DDMessagingChannelState.CONNECTING, null));
+        updateStatus(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.CONNECTING, null));
         attempt.connect.schedule(delay);
     }
 
@@ -421,7 +421,7 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
                 }
             }
             if (disconnected != null) {
-                notifyListeners(disconnected.listeners(), listener -> listener.onDisconnected(disconnected.connection()));
+                notifyListeners(disconnected.listeners(), listener -> listener.onDisconnected(disconnected.session()));
             } else if (attempt != null && text != null) {
                 try {
                     deliverText(attempt, text);
@@ -433,33 +433,33 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
     }
 
     private void deliverText(@NotNull Attempt attempt, @NotNull String text) {
-        DDDamConnectionInfo info;
+        DDRemoteDamSessionInfo session;
         synchronized (lock) {
             if (current != attempt) {
                 return;
             }
-            info = attempt.info;
+            session = attempt.session;
         }
-        if (info == null) {
-            String connectionId = DDMessagingProtocol.decodeHandshakeResponse(text).connectionId();
-            var ready = new DDDamConnectionInfo(hello.deploymentId(), hello.applicationRunId(), connectionId);
-            List<Registration<DDMessagingConnectionListener>> listeners;
+        if (session == null) {
+            String damSessionId = DDRemoteDamProtocol.decodeHandshakeResponse(text).damSessionId();
+            var ready = new DDRemoteDamSessionInfo(hello.appDeploymentId(), hello.appInstanceId(), damSessionId);
+            List<Registration<DDRemoteDamSessionListener>> listeners;
             synchronized (lock) {
                 if (current != attempt) {
                     return;
                 }
-                attempt.info = ready;
-                updateStatus(new DDMessagingChannelStatus(DDMessagingChannelState.CONNECTED, ready));
+                attempt.session = ready;
+                updateStatus(new DDRemoteDamChannelStatus(DDRemoteDamChannelState.CONNECTED, ready));
                 retryMillis = MIN_RETRY_MILLIS;
-                listeners = List.copyOf(connectionListeners);
+                listeners = List.copyOf(sessionListeners);
             }
             attempt.connectDeadline.cancel();
             attempt.readyDeadline.cancel();
             notifyListeners(listeners, listener -> listener.onConnected(ready));
             notifyStateObservers();
         } else {
-            DDMessagingMessage message = DDMessagingProtocol.decode(text);
-            List<Registration<DDMessagingMessageListener>> listeners;
+            DDRemoteDamMessage message = DDRemoteDamProtocol.decode(text);
+            List<Registration<DDRemoteDamMessageListener>> listeners;
             synchronized (lock) {
                 if (current != attempt) {
                     return;
@@ -468,7 +468,7 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
             }
             notifyListeners(listeners, listener -> {
                 if (isCurrent(attempt)) {
-                    listener.onMessage(info, message);
+                    listener.onMessage(session, message);
                 }
             });
         }
@@ -491,7 +491,7 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
 
     private void deadline(@NotNull Attempt attempt, boolean waitingForReady) {
         synchronized (lock) {
-            if (current != attempt || attempt.info != null || !waitingForReady && attempt.socket != null) {
+            if (current != attempt || attempt.session != null || !waitingForReady && attempt.socket != null) {
                 return;
             }
             detach(attempt, true);
@@ -513,8 +513,8 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
 
     private void detach(@NotNull Attempt attempt, boolean retry) {
         current = null;
-        updateStatus(new DDMessagingChannelStatus(
-            closed ? DDMessagingChannelState.CLOSED : DDMessagingChannelState.DISCONNECTED, null));
+        updateStatus(new DDRemoteDamChannelStatus(
+            closed ? DDRemoteDamChannelState.CLOSED : DDRemoteDamChannelState.DISCONNECTED, null));
         attempt.incoming.clear();
         attempt.failed.addAll(attempt.outgoing);
         attempt.outgoing.clear();
@@ -522,8 +522,8 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
             attempt.failed.add(attempt.sending);
             attempt.sending = null;
         }
-        if (attempt.info != null) {
-            pendingDisconnect = new PendingDisconnect(attempt.info, List.copyOf(connectionListeners));
+        if (attempt.session != null) {
+            pendingDisconnect = new PendingDisconnect(attempt.session, List.copyOf(sessionListeners));
             wakeDelivery();
         }
         if (retry && running && !closed) {
@@ -554,7 +554,7 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
                 log.debug("Desktop message client could not be closed");
             }
         }
-        DBException failure = new DBException("Desktop message connection closed");
+        DBException failure = new DBException("Desktop DAM session closed");
         for (Outgoing outgoing : attempt.failed) {
             outgoing.result.completeExceptionally(failure);
         }
@@ -564,7 +564,7 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
     private final class Attempt {
         private final AttemptListener listener = new AttemptListener(this);
         private final ChannelJob connect = new ChannelJob("Connect Desktop message channel", () -> connect(this));
-        private final ChannelJob connectDeadline = new ChannelJob("Desktop connection deadline", () -> deadline(this, false));
+        private final ChannelJob connectDeadline = new ChannelJob("Desktop DAM session deadline", () -> deadline(this, false));
         private final ChannelJob readyDeadline = new ChannelJob("Desktop ready deadline", () -> deadline(this, true));
         private final ChannelJob sender = new ChannelJob("Send Desktop messages", () -> sendPending(this));
         private final ArrayDeque<String> incoming = new ArrayDeque<>();
@@ -575,7 +575,7 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
         @Nullable
         private WebSocket socket;
         @Nullable
-        private DDDamConnectionInfo info;
+        private DDRemoteDamSessionInfo session;
         @Nullable
         private Outgoing sending;
         private boolean senderScheduled;
@@ -678,13 +678,13 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
         }
     }
 
-    private final class StateObservation implements DDMessagingSubscription {
-        private final Consumer<DDMessagingChannelStatus> observer;
-        private final ArrayDeque<DDMessagingChannelStatus> pending = new ArrayDeque<>();
+    private final class StateObservation implements DDRemoteDamSubscription {
+        private final Consumer<DDRemoteDamChannelStatus> observer;
+        private final ArrayDeque<DDRemoteDamChannelStatus> pending = new ArrayDeque<>();
         private boolean active = true;
         private boolean delivering;
 
-        private StateObservation(@NotNull Consumer<DDMessagingChannelStatus> observer) {
+        private StateObservation(@NotNull Consumer<DDRemoteDamChannelStatus> observer) {
             this.observer = observer;
         }
 
@@ -696,7 +696,7 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
                 delivering = true;
             }
             while (true) {
-                DDMessagingChannelStatus next;
+                DDRemoteDamChannelStatus next;
                 synchronized (lock) {
                     next = active ? pending.pollFirst() : null;
                     if (next == null) {
@@ -725,7 +725,7 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
         }
     }
 
-    private final class Registration<T> implements DDMessagingSubscription {
+    private final class Registration<T> implements DDRemoteDamSubscription {
         @Nullable
         private final String topic;
         private final T listener;
@@ -751,8 +751,8 @@ public final class DDMessagingDesktopChannel implements DDMessagingChannel {
     }
 
     private record PendingDisconnect(
-        @NotNull DDDamConnectionInfo connection,
-        @NotNull List<Registration<DDMessagingConnectionListener>> listeners
+        @NotNull DDRemoteDamSessionInfo session,
+        @NotNull List<Registration<DDRemoteDamSessionListener>> listeners
     ) {
     }
 

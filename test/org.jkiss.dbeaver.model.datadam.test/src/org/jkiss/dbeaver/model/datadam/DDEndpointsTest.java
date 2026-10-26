@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
-import com.dbeaver.datadam.messaging.api.DDMessagingProtocol;
+import com.dbeaver.datadam.dam.remote.api.DDRemoteDamProtocol;
 import org.jkiss.dbeaver.DBException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -28,11 +28,11 @@ class DDEndpointsTest {
     @Test
     void selectsExternalEndpointForTheConfiguredEnvironment() {
         String externalEndpoint = DDEndpoints.getAccountBaseUrl().replace("https://account.", "wss://external-dam.")
-            + DDMessagingProtocol.WEBSOCKET_PATH;
+            + DDRemoteDamProtocol.WEBSOCKET_PATH;
 
-        Assertions.assertEquals(externalEndpoint, DDEndpoints.getMessagingWebSocketUrl());
+        Assertions.assertEquals(externalEndpoint, DDEndpoints.getRemoteDamWebSocketUrl());
         Assertions.assertDoesNotThrow(
-            () -> DDEndpoints.requireSecureWebSocketTransport(URI.create(DDEndpoints.getMessagingWebSocketUrl())));
+            () -> DDEndpoints.requireSecureWebSocketTransport(URI.create(DDEndpoints.getRemoteDamWebSocketUrl())));
     }
 
     @Test

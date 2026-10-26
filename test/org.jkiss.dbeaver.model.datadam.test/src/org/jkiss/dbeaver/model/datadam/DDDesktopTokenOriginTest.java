@@ -202,7 +202,7 @@ class DDDesktopTokenOriginTest {
     private void configure(@NotNull String account, @NotNull String storage, @NotNull String external) {
         endpoints.when(DDEndpoints::getAccountBaseUrl).thenReturn(account);
         endpoints.when(DDEndpoints::getStorageBaseUrl).thenReturn(storage);
-        endpoints.when(DDEndpoints::getMessagingWebSocketUrl).thenReturn(external);
+        endpoints.when(DDEndpoints::getRemoteDamWebSocketUrl).thenReturn(external);
     }
 
     private boolean matches(@NotNull String account, @NotNull String storage, @NotNull String resource)
