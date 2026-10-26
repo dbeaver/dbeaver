@@ -16,16 +16,16 @@
  */
 package org.jkiss.dbeaver.model.datadam.transport;
 
-import com.dbeaver.datadam.external.api.DDExternalDamProtocol;
-import com.dbeaver.datadam.external.api.model.DDConnectionInfo;
-import com.dbeaver.datadam.external.api.model.DDHello;
-import com.dbeaver.datadam.external.api.model.DDMessage;
-import com.dbeaver.datadam.external.api.transport.DDChannelState;
-import com.dbeaver.datadam.external.api.transport.DDChannelStatus;
-import com.dbeaver.datadam.external.api.transport.DDConnectionListener;
-import com.dbeaver.datadam.external.api.transport.DDMessageChannel;
-import com.dbeaver.datadam.external.api.transport.DDMessageListener;
-import com.dbeaver.datadam.external.api.transport.DDSubscription;
+import com.dbeaver.datadam.messaging.api.DDMessagingProtocol;
+import com.dbeaver.datadam.messaging.api.model.DDMessagingConnectionInfo;
+import com.dbeaver.datadam.messaging.api.model.DDMessagingHandshakeRequest;
+import com.dbeaver.datadam.messaging.api.model.DDMessagingMessage;
+import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannel;
+import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelState;
+import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelStatus;
+import com.dbeaver.datadam.messaging.api.transport.DDMessagingConnectionListener;
+import com.dbeaver.datadam.messaging.api.transport.DDMessagingMessageListener;
+import com.dbeaver.datadam.messaging.api.transport.DDMessagingSubscription;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
@@ -55,7 +55,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public final class DDDesktopMessageChannel implements DDMessageChannel {
+public final class DDDesktopMessageChannel implements DDMessagingChannel {
 
     private static final Log log = Log.getLog(DDDesktopMessageChannel.class);
 
@@ -70,17 +70,17 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
 
     private final Object lock = new Object();
     private final URI endpoint;
-    private final DDHello hello;
+    private final DDMessagingHandshakeRequest hello;
     private final String helloMessage;
     private final TokenProvider tokens;
     private final Supplier<BaseWebSocketClient> clients;
-    private final List<Registration<DDMessageListener>> messageListeners = new ArrayList<>();
-    private final List<Registration<DDConnectionListener>> connectionListeners = new ArrayList<>();
+    private final List<Registration<DDMessagingMessageListener>> messageListeners = new ArrayList<>();
+    private final List<Registration<DDMessagingConnectionListener>> connectionListeners = new ArrayList<>();
     private final List<StateObservation> stateObservers = new ArrayList<>();
     private final ChannelJob delivery = new ChannelJob("Deliver Desktop messages", this::deliver);
     @Nullable
     private PendingDisconnect pendingDisconnect;
-    private DDChannelStatus status = new DDChannelStatus(DDChannelState.DISCONNECTED, null);
+    private DDMessagingChannelStatus status = new DDMessagingChannelStatus(DDMessagingChannelState.DISCONNECTED, null);
     private boolean running;
     private boolean closed;
     private boolean deliveryScheduled;
@@ -94,21 +94,21 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
         String getAccessToken(@NotNull URI resource) throws DBException;
     }
 
-    public DDDesktopMessageChannel(@NotNull URI endpoint, @NotNull DDHello hello, @NotNull TokenProvider tokens)
+    public DDDesktopMessageChannel(@NotNull URI endpoint, @NotNull DDMessagingHandshakeRequest hello, @NotNull TokenProvider tokens)
             throws DBException {
         this(endpoint, hello, tokens, BaseWebSocketClient::new);
     }
 
     public DDDesktopMessageChannel(
         @NotNull URI endpoint,
-        @NotNull DDHello hello,
+        @NotNull DDMessagingHandshakeRequest hello,
         @NotNull TokenProvider tokens,
         @NotNull Supplier<BaseWebSocketClient> clients
     ) throws DBException {
         DDEndpoints.requireSecureWebSocketTransport(endpoint);
         this.endpoint = endpoint;
         this.hello = hello;
-        this.helloMessage = DDExternalDamProtocol.encodeHello(hello);
+        this.helloMessage = DDMessagingProtocol.encodeHandshakeRequest(hello);
         this.tokens = tokens;
         this.clients = clients;
         if (helloMessage.getBytes(StandardCharsets.UTF_8).length > MAX_MESSAGE_BYTES) {
@@ -145,7 +145,8 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
             if (stopped != null) {
                 detach(stopped, false);
             }
-            updateStatus(new DDChannelStatus(closed ? DDChannelState.CLOSED : DDChannelState.DISCONNECTED, null));
+            updateStatus(new DDMessagingChannelStatus(
+                closed ? DDMessagingChannelState.CLOSED : DDMessagingChannelState.DISCONNECTED, null));
             if (terminal) {
                 messageListeners.clear();
                 connectionListeners.clear();
@@ -159,7 +160,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
 
     @Override
     @NotNull
-    public DDChannelStatus getStatus() {
+    public DDMessagingChannelStatus getStatus() {
         synchronized (lock) {
             return status;
         }
@@ -167,7 +168,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
 
     @Override
     @NotNull
-    public DDSubscription observeState(@NotNull Consumer<DDChannelStatus> observer) {
+    public DDMessagingSubscription observeState(@NotNull Consumer<DDMessagingChannelStatus> observer) {
         StateObservation observation = new StateObservation(observer);
         synchronized (lock) {
             observation.pending.add(status);
@@ -179,8 +180,8 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
         return observation;
     }
 
-    private void updateStatus(@NotNull DDChannelStatus next) {
-        if (status.state() != DDChannelState.CLOSED && !status.equals(next)) {
+    private void updateStatus(@NotNull DDMessagingChannelStatus next) {
+        if (status.state() != DDMessagingChannelState.CLOSED && !status.equals(next)) {
             status = next;
             for (StateObservation observation : stateObservers) {
                 observation.pending.add(next);
@@ -200,8 +201,8 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
 
     @Override
     @NotNull
-    public CompletionStage<Void> send(@NotNull DDMessage message) {
-        String encoded = DDExternalDamProtocol.encode(message);
+    public CompletionStage<Void> send(@NotNull DDMessagingMessage message) {
+        String encoded = DDMessagingProtocol.encode(message);
         if (encoded.getBytes(StandardCharsets.UTF_8).length > MAX_MESSAGE_BYTES) {
             return failed("Desktop message exceeds the message size limit");
         }
@@ -228,7 +229,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
 
     @Override
     @NotNull
-    public DDSubscription subscribe(@NotNull String topic, @NotNull DDMessageListener listener) {
+    public DDMessagingSubscription subscribe(@NotNull String topic, @NotNull DDMessagingMessageListener listener) {
         synchronized (lock) {
             var registration = new Registration<>(topic, listener, messageListeners);
             if (!closed) {
@@ -240,7 +241,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
 
     @Override
     @NotNull
-    public DDSubscription addConnectionListener(@NotNull DDConnectionListener listener) {
+    public DDMessagingSubscription addConnectionListener(@NotNull DDMessagingConnectionListener listener) {
         synchronized (lock) {
             var registration = new Registration<>(null, listener, connectionListeners);
             if (!closed) {
@@ -253,7 +254,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
     private void scheduleAttempt(long delay) {
         Attempt attempt = new Attempt();
         current = attempt;
-        updateStatus(new DDChannelStatus(DDChannelState.CONNECTING, null));
+        updateStatus(new DDMessagingChannelStatus(DDMessagingChannelState.CONNECTING, null));
         attempt.connect.schedule(delay);
     }
 
@@ -432,7 +433,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
     }
 
     private void deliverText(@NotNull Attempt attempt, @NotNull String text) {
-        DDConnectionInfo info;
+        DDMessagingConnectionInfo info;
         synchronized (lock) {
             if (current != attempt) {
                 return;
@@ -440,15 +441,15 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
             info = attempt.info;
         }
         if (info == null) {
-            String connectionId = DDExternalDamProtocol.decodeReady(text).connectionId();
-            var ready = new DDConnectionInfo(hello.deploymentId(), hello.applicationRunId(), connectionId);
-            List<Registration<DDConnectionListener>> listeners;
+            String connectionId = DDMessagingProtocol.decodeHandshakeResponse(text).connectionId();
+            var ready = new DDMessagingConnectionInfo(hello.deploymentId(), hello.applicationRunId(), connectionId);
+            List<Registration<DDMessagingConnectionListener>> listeners;
             synchronized (lock) {
                 if (current != attempt) {
                     return;
                 }
                 attempt.info = ready;
-                updateStatus(new DDChannelStatus(DDChannelState.CONNECTED, ready));
+                updateStatus(new DDMessagingChannelStatus(DDMessagingChannelState.CONNECTED, ready));
                 retryMillis = MIN_RETRY_MILLIS;
                 listeners = List.copyOf(connectionListeners);
             }
@@ -457,8 +458,8 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
             notifyListeners(listeners, listener -> listener.onConnected(ready));
             notifyStateObservers();
         } else {
-            DDMessage message = DDExternalDamProtocol.decode(text);
-            List<Registration<DDMessageListener>> listeners;
+            DDMessagingMessage message = DDMessagingProtocol.decode(text);
+            List<Registration<DDMessagingMessageListener>> listeners;
             synchronized (lock) {
                 if (current != attempt) {
                     return;
@@ -512,7 +513,8 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
 
     private void detach(@NotNull Attempt attempt, boolean retry) {
         current = null;
-        updateStatus(new DDChannelStatus(closed ? DDChannelState.CLOSED : DDChannelState.DISCONNECTED, null));
+        updateStatus(new DDMessagingChannelStatus(
+            closed ? DDMessagingChannelState.CLOSED : DDMessagingChannelState.DISCONNECTED, null));
         attempt.incoming.clear();
         attempt.failed.addAll(attempt.outgoing);
         attempt.outgoing.clear();
@@ -573,7 +575,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
         @Nullable
         private WebSocket socket;
         @Nullable
-        private DDConnectionInfo info;
+        private DDMessagingConnectionInfo info;
         @Nullable
         private Outgoing sending;
         private boolean senderScheduled;
@@ -676,13 +678,13 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
         }
     }
 
-    private final class StateObservation implements DDSubscription {
-        private final Consumer<DDChannelStatus> observer;
-        private final ArrayDeque<DDChannelStatus> pending = new ArrayDeque<>();
+    private final class StateObservation implements DDMessagingSubscription {
+        private final Consumer<DDMessagingChannelStatus> observer;
+        private final ArrayDeque<DDMessagingChannelStatus> pending = new ArrayDeque<>();
         private boolean active = true;
         private boolean delivering;
 
-        private StateObservation(@NotNull Consumer<DDChannelStatus> observer) {
+        private StateObservation(@NotNull Consumer<DDMessagingChannelStatus> observer) {
             this.observer = observer;
         }
 
@@ -694,7 +696,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
                 delivering = true;
             }
             while (true) {
-                DDChannelStatus next;
+                DDMessagingChannelStatus next;
                 synchronized (lock) {
                     next = active ? pending.pollFirst() : null;
                     if (next == null) {
@@ -723,7 +725,7 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
         }
     }
 
-    private final class Registration<T> implements DDSubscription {
+    private final class Registration<T> implements DDMessagingSubscription {
         @Nullable
         private final String topic;
         private final T listener;
@@ -749,8 +751,8 @@ public final class DDDesktopMessageChannel implements DDMessageChannel {
     }
 
     private record PendingDisconnect(
-        @NotNull DDConnectionInfo connection,
-        @NotNull List<Registration<DDConnectionListener>> listeners
+        @NotNull DDMessagingConnectionInfo connection,
+        @NotNull List<Registration<DDMessagingConnectionListener>> listeners
     ) {
     }
 

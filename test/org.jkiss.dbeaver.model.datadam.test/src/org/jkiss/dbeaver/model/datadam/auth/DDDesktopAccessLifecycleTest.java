@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.model.datadam.auth;
 
-import com.dbeaver.datadam.external.api.model.DDConnectionInfo;
-import com.dbeaver.datadam.external.api.transport.DDChannelState;
-import com.dbeaver.datadam.external.api.transport.DDChannelStatus;
+import com.dbeaver.datadam.messaging.api.model.DDMessagingConnectionInfo;
+import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelState;
+import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelStatus;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -96,13 +96,13 @@ class DDDesktopAccessLifecycleTest {
         List<String> events = new ArrayList<>();
         access.addAccessListener(listener(events));
         DDDesktopMessageChannel channel = Mockito.mock(DDDesktopMessageChannel.class);
-        Mockito.when(channel.getStatus()).thenReturn(new DDChannelStatus(
-            DDChannelState.CONNECTED, new DDConnectionInfo("deployment", "run", "connection")));
+        Mockito.when(channel.getStatus()).thenReturn(new DDMessagingChannelStatus(
+            DDMessagingChannelState.CONNECTED, new DDMessagingConnectionInfo("deployment", "run", "connection")));
         try (var keys = Mockito.mockStatic(DDKeyStore.class);
              var connection = new DDDesktopConnectionService(access, channel)) {
             access.signIn(Mockito.mock(DBRProgressMonitor.class));
             connection.start();
-            var endpoint = connection.getRpc();
+            final var endpoint = connection.getRpc();
             Job expiry = Assertions.assertInstanceOf(Job.class, expiryJob(access));
 
             status.set("EXPIRED");

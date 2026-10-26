@@ -33,11 +33,11 @@ heartbeat more frequently than this timeout (the server default is 30 seconds). 
 ## Channel state
 
 `channel.getStatus()` returns the current immutable state: `DISCONNECTED`, `CONNECTING`, `CONNECTED`, or `CLOSED`.
-The connected snapshot contains its `DDConnectionInfo`; `status.isReady()` reports readiness for application messages.
+The connected snapshot contains its `DDMessagingConnectionInfo`; `status.isReady()` reports readiness for application messages.
 Readiness is a local observation, so every send must still handle failure.
 
 `channel.observeState(observer)` delivers the current state and then subsequent changes in order, without a
-check-then-subscribe gap. Its returned `DDSubscription` unregisters only that observer. Existing
+check-then-subscribe gap. Its returned `DDMessagingSubscription` unregisters only that observer. Existing
 `addConnectionListener` callbacks remain transition-only and do not replay an earlier connection.
 State observers may run on the subscribing or state-changing thread; keep them short and dispatch UI work to the UI thread.
 Connection-listener callbacks and incoming messages share one channel-wide delivery job, outside the channel lock and
@@ -53,17 +53,18 @@ their topics and can use the default Gson codec or supply their own codec per pr
 ```java
 MessagingRpcEndpoint endpoint = DDDesktopConnectionService.getInstance().getRpc();
 StorageService ordinaryFiles = endpoint.proxy("files", StorageService.class);
-DDGsonRpcCodec codec = new DDGsonRpcCodec(new GsonBuilder().registerTypeAdapter(FileInfo.class, fileInfoAdapter).create());
+DDMessagingGsonRpcCodec codec = new DDMessagingGsonRpcCodec(
+    new GsonBuilder().registerTypeAdapter(FileInfo.class, fileInfoAdapter).create());
 
 MessagingSubscription registration = endpoint.register("projects.changed", ProjectCallbacks.class, callbacks, codec);
 StorageService files = endpoint.proxy("storage.files", StorageService.class, codec);
 ```
 
 `MessagingRpcEndpoint` is from `com.dbeaver.messaging.rpc`, `MessagingSubscription` is from
-`com.dbeaver.messaging.requestreply`, and `DDGsonRpcCodec` is from `com.dbeaver.datadam.external.api.rpc`.
+`com.dbeaver.messaging.requestreply`, and `DDMessagingGsonRpcCodec` is from `com.dbeaver.datadam.messaging.api.rpc`.
 The application supplies the public service interfaces and their implementations; each RPC operation is synchronous
 and accepts one argument. Make proxy calls on a worker thread and handle `MessagingRpcException` failures.
-The overloads without a codec use the connection owner's default `DDGsonRpcCodec` with an uncustomized Gson instance.
+The overloads without a codec use the connection owner's default `DDMessagingGsonRpcCodec` with an uncustomized Gson instance.
 An explicitly supplied codec belongs only to that proxy or registration; one plugin's type adapters do not change
 another plugin's serialization.
 Both peers must use compatible payload representations. DataDam codecs produce and consume `JsonElement` values.

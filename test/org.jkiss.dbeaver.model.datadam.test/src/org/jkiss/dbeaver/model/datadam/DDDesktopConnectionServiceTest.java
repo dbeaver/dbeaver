@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
-import com.dbeaver.datadam.external.api.model.DDConnectionInfo;
-import com.dbeaver.datadam.external.api.transport.DDChannelState;
-import com.dbeaver.datadam.external.api.transport.DDChannelStatus;
+import com.dbeaver.datadam.messaging.api.model.DDMessagingConnectionInfo;
+import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelState;
+import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelStatus;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -47,14 +47,14 @@ class DDDesktopConnectionServiceTest extends DBeaverUnitTest {
     private final DDDesktopAccessService access = Mockito.mock(DDDesktopAccessService.class);
     private final DDDesktopMessageChannel channel = Mockito.mock(DDDesktopMessageChannel.class);
     private final DDDesktopConnectionService service = new DDDesktopConnectionService(access, channel);
-    private final AtomicReference<DDChannelStatus> status = new AtomicReference<>(
-        new DDChannelStatus(DDChannelState.DISCONNECTED, null));
+    private final AtomicReference<DDMessagingChannelStatus> status = new AtomicReference<>(
+        new DDMessagingChannelStatus(DDMessagingChannelState.DISCONNECTED, null));
 
     @BeforeEach
     void configureChannel() {
         Mockito.when(channel.getStatus()).thenAnswer(invocation -> status.get());
         Mockito.doAnswer(invocation -> {
-            setStatus(new DDChannelStatus(DDChannelState.DISCONNECTED, null));
+            setStatus(new DDMessagingChannelStatus(DDMessagingChannelState.DISCONNECTED, null));
             return null;
         }).when(channel).pause();
     }
@@ -160,7 +160,7 @@ class DDDesktopConnectionServiceTest extends DBeaverUnitTest {
         Mockito.doAnswer(invocation -> {
             Assertions.assertTrue(endpoint.isCloseComplete());
             Assertions.assertThrows(DBException.class, service::getRpc);
-            setStatus(new DDChannelStatus(DDChannelState.DISCONNECTED, null));
+            setStatus(new DDMessagingChannelStatus(DDMessagingChannelState.DISCONNECTED, null));
             return null;
         }).when(channel).pause();
 
@@ -230,10 +230,11 @@ class DDDesktopConnectionServiceTest extends DBeaverUnitTest {
     }
 
     private void ready(@NotNull String connectionId) {
-        setStatus(new DDChannelStatus(DDChannelState.CONNECTED, new DDConnectionInfo("deployment", "run", connectionId)));
+        setStatus(new DDMessagingChannelStatus(
+            DDMessagingChannelState.CONNECTED, new DDMessagingConnectionInfo("deployment", "run", connectionId)));
     }
 
-    private void setStatus(@NotNull DDChannelStatus next) {
+    private void setStatus(@NotNull DDMessagingChannelStatus next) {
         status.set(next);
     }
 

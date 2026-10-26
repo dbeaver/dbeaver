@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
-import com.dbeaver.datadam.external.api.model.DDHello;
-import com.dbeaver.datadam.external.api.transport.DDMessageChannel;
+import com.dbeaver.datadam.messaging.api.model.DDMessagingHandshakeRequest;
+import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannel;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -67,7 +67,7 @@ public final class DDDesktopConnectionService implements AutoCloseable {
     public static synchronized DDDesktopConnectionService getInstance() throws DBException {
         if (instance == null) {
             DDDesktopAccessService access = DDDesktopAccessService.getInstance();
-            DDHello hello = new DDHello(
+            DDMessagingHandshakeRequest hello = new DDMessagingHandshakeRequest(
                 DBWorkbench.getPlatform().getDeploymentId(), APPLICATION_RUN_ID,
                 GeneralUtils.getProductName(), GeneralUtils.getProductVersion().toString());
             DDDesktopMessageChannel channel = new DDDesktopMessageChannel(
@@ -92,7 +92,7 @@ public final class DDDesktopConnectionService implements AutoCloseable {
     }
 
     @NotNull
-    public DDMessageChannel getChannel() {
+    public DDMessagingChannel getChannel() {
         return channel;
     }
 

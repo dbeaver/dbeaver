@@ -16,16 +16,16 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
-import com.dbeaver.datadam.external.api.model.DDConnectionInfo;
-import com.dbeaver.datadam.external.api.model.DDMessage;
-import com.dbeaver.datadam.external.api.rpc.DDGsonRpcCodec;
-import com.dbeaver.datadam.external.api.rpc.DDRpcTransport;
-import com.dbeaver.datadam.external.api.transport.DDChannelState;
-import com.dbeaver.datadam.external.api.transport.DDChannelStatus;
-import com.dbeaver.datadam.external.api.transport.DDConnectionListener;
-import com.dbeaver.datadam.external.api.transport.DDMessageChannel;
-import com.dbeaver.datadam.external.api.transport.DDMessageListener;
-import com.dbeaver.datadam.external.api.transport.DDSubscription;
+import com.dbeaver.datadam.messaging.api.model.DDMessagingConnectionInfo;
+import com.dbeaver.datadam.messaging.api.model.DDMessagingMessage;
+import com.dbeaver.datadam.messaging.api.rpc.DDMessagingGsonRpcCodec;
+import com.dbeaver.datadam.messaging.api.rpc.DDMessagingRpcTransport;
+import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannel;
+import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelState;
+import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelStatus;
+import com.dbeaver.datadam.messaging.api.transport.DDMessagingConnectionListener;
+import com.dbeaver.datadam.messaging.api.transport.DDMessagingMessageListener;
+import com.dbeaver.datadam.messaging.api.transport.DDMessagingSubscription;
 import com.dbeaver.messaging.rpc.MessagingRpcCodec;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import com.dbeaver.messaging.rpc.MessagingRpcException;
@@ -651,12 +651,12 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
 
     @NotNull
     private static MessagingRpcEndpoint remote(@NotNull MemoryChannel channel) {
-        return MessagingRpcEndpoint.open(topic -> DDRpcTransport.forChannel(channel, topic, Thread::startVirtualThread), codec());
+        return MessagingRpcEndpoint.open(topic -> DDMessagingRpcTransport.forChannel(channel, topic, Thread::startVirtualThread), codec());
     }
 
     @NotNull
     private static MessagingRpcCodec<JsonElement> codec() {
-        return new DDGsonRpcCodec(new Gson());
+        return new DDMessagingGsonRpcCodec(new Gson());
     }
 
     @NotNull
@@ -778,14 +778,14 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
         }
     }
 
-    private static final class MemoryChannel implements DDMessageChannel {
+    private static final class MemoryChannel implements DDMessagingChannel {
         private final List<TopicSubscription> subscriptions = new CopyOnWriteArrayList<>();
         private final List<String> subscribedTopics = new CopyOnWriteArrayList<>();
-        private final List<DDMessage> sentMessages = new CopyOnWriteArrayList<>();
-        private final List<Consumer<DDChannelStatus>> observers = new CopyOnWriteArrayList<>();
-        private volatile DDChannelStatus status = new DDChannelStatus(DDChannelState.DISCONNECTED, null);
+        private final List<DDMessagingMessage> sentMessages = new CopyOnWriteArrayList<>();
+        private final List<Consumer<DDMessagingChannelStatus>> observers = new CopyOnWriteArrayList<>();
+        private volatile DDMessagingChannelStatus status = new DDMessagingChannelStatus(DDMessagingChannelState.DISCONNECTED, null);
         @Nullable
-        private Consumer<DDMessage> forward;
+        private Consumer<DDMessagingMessage> forward;
         @Nullable
         private Consumer<String> onSubscribe;
         @Nullable
@@ -798,13 +798,13 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
 
         @Override
         @NotNull
-        public DDChannelStatus getStatus() {
+        public DDMessagingChannelStatus getStatus() {
             return status;
         }
 
         @Override
         @NotNull
-        public DDSubscription observeState(@NotNull Consumer<DDChannelStatus> observer) {
+        public DDMessagingSubscription observeState(@NotNull Consumer<DDMessagingChannelStatus> observer) {
             observers.add(observer);
             observer.accept(status);
             if (onObserve != null) {
@@ -815,7 +815,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
 
         @Override
         @NotNull
-        public CompletionStage<Void> send(@NotNull DDMessage message) {
+        public CompletionStage<Void> send(@NotNull DDMessagingMessage message) {
             if (!status.isReady()) {
                 return CompletableFuture.failedFuture(new DBException("Channel disconnected"));
             }
@@ -828,7 +828,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
 
         @Override
         @NotNull
-        public DDSubscription subscribe(@NotNull String topic, @NotNull DDMessageListener listener) {
+        public DDMessagingSubscription subscribe(@NotNull String topic, @NotNull DDMessagingMessageListener listener) {
             if (topic.equals(failTopic)) {
                 throw new IllegalStateException("Subscription unavailable");
             }
@@ -848,26 +848,27 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
 
         @Override
         @NotNull
-        public DDSubscription addConnectionListener(@NotNull DDConnectionListener listener) {
+        public DDMessagingSubscription addConnectionListener(@NotNull DDMessagingConnectionListener listener) {
             throw new UnsupportedOperationException();
         }
 
         private void ready(@NotNull String connectionId) {
-            setStatus(new DDChannelStatus(DDChannelState.CONNECTED, new DDConnectionInfo("deployment", "run", connectionId)));
+            setStatus(new DDMessagingChannelStatus(
+                DDMessagingChannelState.CONNECTED, new DDMessagingConnectionInfo("deployment", "run", connectionId)));
         }
 
         private void disconnected() {
-            setStatus(new DDChannelStatus(DDChannelState.DISCONNECTED, null));
+            setStatus(new DDMessagingChannelStatus(DDMessagingChannelState.DISCONNECTED, null));
         }
 
-        private void setStatus(@NotNull DDChannelStatus next) {
+        private void setStatus(@NotNull DDMessagingChannelStatus next) {
             status = next;
             List.copyOf(observers).forEach(observer -> observer.accept(next));
         }
 
         @SuppressWarnings("PMD.UnusedPrivateMethod")
-        private void receive(@NotNull DDMessage message) {
-            DDChannelStatus current = status;
+        private void receive(@NotNull DDMessagingMessage message) {
+            DDMessagingChannelStatus current = status;
             if (current.isReady()) {
                 for (TopicSubscription subscription : subscriptions) {
                     if (subscription.topic().equals(message.topic())) {
@@ -880,11 +881,11 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
         @Override
         public void close() {
             closed = true;
-            setStatus(new DDChannelStatus(DDChannelState.CLOSED, null));
+            setStatus(new DDMessagingChannelStatus(DDMessagingChannelState.CLOSED, null));
         }
     }
 
-    private record TopicSubscription(@NotNull String topic, @NotNull DDMessageListener listener) {
+    private record TopicSubscription(@NotNull String topic, @NotNull DDMessagingMessageListener listener) {
     }
 
     private record TaggedCodec(@NotNull String tag) implements MessagingRpcCodec<JsonElement> {

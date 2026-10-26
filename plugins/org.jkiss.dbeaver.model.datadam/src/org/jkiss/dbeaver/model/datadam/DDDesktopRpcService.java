@@ -16,9 +16,9 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
-import com.dbeaver.datadam.external.api.rpc.DDGsonRpcCodec;
-import com.dbeaver.datadam.external.api.rpc.DDRpcTransport;
-import com.dbeaver.datadam.external.api.transport.DDMessageChannel;
+import com.dbeaver.datadam.messaging.api.rpc.DDMessagingGsonRpcCodec;
+import com.dbeaver.datadam.messaging.api.rpc.DDMessagingRpcTransport;
+import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannel;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import com.google.gson.Gson;
 import org.eclipse.core.runtime.jobs.Job;
@@ -31,7 +31,7 @@ final class DDDesktopRpcService implements AutoCloseable {
     private static final Log log = Log.getLog(DDDesktopRpcService.class);
 
     private final Object lock = new Object();
-    private final DDMessageChannel channel;
+    private final DDMessagingChannel channel;
     @Nullable
     private MessagingRpcEndpoint endpoint;
     private boolean invalidated;
@@ -39,7 +39,7 @@ final class DDDesktopRpcService implements AutoCloseable {
     private boolean active;
     private boolean closed;
 
-    DDDesktopRpcService(@NotNull DDMessageChannel channel) {
+    DDDesktopRpcService(@NotNull DDMessagingChannel channel) {
         this.channel = channel;
     }
 
@@ -87,8 +87,8 @@ final class DDDesktopRpcService implements AutoCloseable {
             }
             try {
                 endpoint = MessagingRpcEndpoint.open(
-                    topic -> DDRpcTransport.forChannel(channel, topic, DDDesktopRpcService::executeRequest),
-                    new DDGsonRpcCodec(new Gson()));
+                    topic -> DDMessagingRpcTransport.forChannel(channel, topic, DDDesktopRpcService::executeRequest),
+                    new DDMessagingGsonRpcCodec(new Gson()));
                 invalidated = false;
                 return endpoint;
             } catch (RuntimeException e) {
