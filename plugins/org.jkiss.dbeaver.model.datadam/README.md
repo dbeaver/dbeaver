@@ -20,13 +20,13 @@ Imported project encryption keys and the tracking session are not prerequisites 
   A new access operation replaces the scheduled task, and stale tasks cannot invalidate a newer session.
 - Release the connection and subscriptions when the platform deactivates plugin services.
 
-`DDDesktopConnectionPluginService` owns activation and shutdown without Workbench, SWT or UI listeners. Repeated
+`DDMessagingDesktopConnectionPluginService` owns activation and shutdown without Workbench, SWT or UI listeners. Repeated
 activation and deactivation are harmless, and shutdown never creates a new connection service. Authorization and
 tracking retain their existing owners; this lifecycle contribution does not load tokens or manage tracking.
 
 Messages use the shared contracts from the `com.dbeaver.datadam.messaging.api` bundle. Topic subscriptions survive reconnects,
 but outgoing messages are rejected while disconnected rather than buffered for later delivery.
-Service consumers obtain the channel from `DDDesktopConnectionService` and release their subscriptions when no longer needed.
+Service consumers obtain the channel from `DDMessagingDesktopConnectionService` and release their subscriptions when no longer needed.
 The shared WebSocket client's 90-second idle timeout detects missing server traffic; External DAM must send its
 heartbeat more frequently than this timeout (the server default is 30 seconds). Desktop does not add another heartbeat protocol.
 
@@ -51,7 +51,7 @@ The connection service owns one bidirectional RPC endpoint for the current Deskt
 their topics and can use the default Gson codec or supply their own codec per proxy or implementation:
 
 ```java
-MessagingRpcEndpoint endpoint = DDDesktopConnectionService.getInstance().getRpc();
+MessagingRpcEndpoint endpoint = DDMessagingDesktopConnectionService.getInstance().getRpc();
 StorageService ordinaryFiles = endpoint.proxy("files", StorageService.class);
 DDMessagingGsonRpcCodec codec = new DDMessagingGsonRpcCodec(
     new GsonBuilder().registerTypeAdapter(FileInfo.class, fileInfoAdapter).create());

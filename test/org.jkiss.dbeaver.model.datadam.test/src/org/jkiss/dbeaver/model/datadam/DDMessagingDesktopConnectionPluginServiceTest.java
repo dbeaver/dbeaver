@@ -22,13 +22,13 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class DDDesktopConnectionPluginServiceTest extends DBeaverUnitTest {
+class DDMessagingDesktopConnectionPluginServiceTest extends DBeaverUnitTest {
     @Test
     void activatesAndClosesTheRetainedServiceOnlyOnce() throws Exception {
-        var lifecycle = new DDDesktopConnectionPluginService();
-        var connection = Mockito.mock(DDDesktopConnectionService.class);
-        try (var services = Mockito.mockStatic(DDDesktopConnectionService.class)) {
-            services.when(DDDesktopConnectionService::getInstance).thenReturn(connection);
+        var lifecycle = new DDMessagingDesktopConnectionPluginService();
+        var connection = Mockito.mock(DDMessagingDesktopConnectionService.class);
+        try (var services = Mockito.mockStatic(DDMessagingDesktopConnectionService.class)) {
+            services.when(DDMessagingDesktopConnectionService::getInstance).thenReturn(connection);
 
             lifecycle.activateService();
             lifecycle.activateService();
@@ -40,7 +40,7 @@ class DDDesktopConnectionPluginServiceTest extends DBeaverUnitTest {
             order.verify(connection).start();
             order.verify(connection).close();
             Mockito.verifyNoMoreInteractions(connection);
-            services.verify(DDDesktopConnectionService::getInstance);
+            services.verify(DDMessagingDesktopConnectionService::getInstance);
             services.verifyNoMoreInteractions();
         }
     }
@@ -48,8 +48,8 @@ class DDDesktopConnectionPluginServiceTest extends DBeaverUnitTest {
     @Test
     @SuppressWarnings("PMD.JUnitTestsShouldIncludeAssert")
     void shutdownWithoutActivationNeverCreatesAConnectionService() {
-        var lifecycle = new DDDesktopConnectionPluginService();
-        try (var services = Mockito.mockStatic(DDDesktopConnectionService.class)) {
+        var lifecycle = new DDMessagingDesktopConnectionPluginService();
+        try (var services = Mockito.mockStatic(DDMessagingDesktopConnectionService.class)) {
             lifecycle.deactivateService();
             lifecycle.deactivateService();
             lifecycle.activateService();
@@ -60,27 +60,27 @@ class DDDesktopConnectionPluginServiceTest extends DBeaverUnitTest {
 
     @Test
     void initializationFailureDoesNotCreateAServiceDuringShutdown() throws Exception {
-        var lifecycle = new DDDesktopConnectionPluginService();
-        try (var services = Mockito.mockStatic(DDDesktopConnectionService.class)) {
-            services.when(DDDesktopConnectionService::getInstance).thenThrow(new DBException("Initialization failed"));
+        var lifecycle = new DDMessagingDesktopConnectionPluginService();
+        try (var services = Mockito.mockStatic(DDMessagingDesktopConnectionService.class)) {
+            services.when(DDMessagingDesktopConnectionService::getInstance).thenThrow(new DBException("Initialization failed"));
 
             Assertions.assertDoesNotThrow(lifecycle::activateService);
             lifecycle.deactivateService();
             lifecycle.activateService();
 
-            services.verify(DDDesktopConnectionService::getInstance);
+            services.verify(DDMessagingDesktopConnectionService::getInstance);
             services.verifyNoMoreInteractions();
         }
     }
 
     @Test
     void rollsBackPartialActivationWithoutLeavingAServiceForShutdown() throws Exception {
-        var lifecycle = new DDDesktopConnectionPluginService();
-        var connection = Mockito.mock(DDDesktopConnectionService.class);
+        var lifecycle = new DDMessagingDesktopConnectionPluginService();
+        var connection = Mockito.mock(DDMessagingDesktopConnectionService.class);
         var failure = new IllegalStateException("Activation failed");
         Mockito.doThrow(failure).when(connection).start();
-        try (var services = Mockito.mockStatic(DDDesktopConnectionService.class)) {
-            services.when(DDDesktopConnectionService::getInstance).thenReturn(connection);
+        try (var services = Mockito.mockStatic(DDMessagingDesktopConnectionService.class)) {
+            services.when(DDMessagingDesktopConnectionService::getInstance).thenReturn(connection);
 
             Assertions.assertSame(failure, Assertions.assertThrows(IllegalStateException.class, lifecycle::activateService));
             lifecycle.deactivateService();
@@ -89,42 +89,42 @@ class DDDesktopConnectionPluginServiceTest extends DBeaverUnitTest {
             Mockito.verify(connection).start();
             Mockito.verify(connection).close();
             Mockito.verifyNoMoreInteractions(connection);
-            services.verify(DDDesktopConnectionService::getInstance);
+            services.verify(DDMessagingDesktopConnectionService::getInstance);
             services.verifyNoMoreInteractions();
         }
     }
 
     @Test
     void preservesActivationFailureWhenRollbackAlsoFails() throws Exception {
-        var lifecycle = new DDDesktopConnectionPluginService();
-        var connection = Mockito.mock(DDDesktopConnectionService.class);
+        var lifecycle = new DDMessagingDesktopConnectionPluginService();
+        var connection = Mockito.mock(DDMessagingDesktopConnectionService.class);
         var failure = new IllegalStateException("Activation failed");
         var cleanupFailure = new IllegalStateException("Cleanup failed");
         Mockito.doThrow(failure).when(connection).start();
         Mockito.doThrow(cleanupFailure).when(connection).close();
-        try (var services = Mockito.mockStatic(DDDesktopConnectionService.class)) {
-            services.when(DDDesktopConnectionService::getInstance).thenReturn(connection);
+        try (var services = Mockito.mockStatic(DDMessagingDesktopConnectionService.class)) {
+            services.when(DDMessagingDesktopConnectionService::getInstance).thenReturn(connection);
 
             Assertions.assertSame(failure, Assertions.assertThrows(IllegalStateException.class, lifecycle::activateService));
             Assertions.assertArrayEquals(new Throwable[] {cleanupFailure}, failure.getSuppressed());
             Assertions.assertDoesNotThrow(lifecycle::deactivateService);
 
             Mockito.verify(connection).close();
-            services.verify(DDDesktopConnectionService::getInstance);
+            services.verify(DDMessagingDesktopConnectionService::getInstance);
             services.verifyNoMoreInteractions();
         }
     }
 
     @Test
     void shutdownDuringActivationCannotPublishOrRestartAStoppedService() throws Exception {
-        var lifecycle = new DDDesktopConnectionPluginService();
-        var connection = Mockito.mock(DDDesktopConnectionService.class);
+        var lifecycle = new DDMessagingDesktopConnectionPluginService();
+        var connection = Mockito.mock(DDMessagingDesktopConnectionService.class);
         Mockito.doAnswer(invocation -> {
             lifecycle.deactivateService();
             return null;
         }).when(connection).start();
-        try (var services = Mockito.mockStatic(DDDesktopConnectionService.class)) {
-            services.when(DDDesktopConnectionService::getInstance).thenReturn(connection);
+        try (var services = Mockito.mockStatic(DDMessagingDesktopConnectionService.class)) {
+            services.when(DDMessagingDesktopConnectionService::getInstance).thenReturn(connection);
 
             lifecycle.activateService();
             lifecycle.activateService();
@@ -133,7 +133,7 @@ class DDDesktopConnectionPluginServiceTest extends DBeaverUnitTest {
             Mockito.verify(connection).start();
             Mockito.verify(connection).close();
             Mockito.verifyNoMoreInteractions(connection);
-            services.verify(DDDesktopConnectionService::getInstance);
+            services.verify(DDMessagingDesktopConnectionService::getInstance);
             services.verifyNoMoreInteractions();
         }
     }

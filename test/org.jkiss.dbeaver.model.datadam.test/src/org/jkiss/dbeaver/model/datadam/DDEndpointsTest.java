@@ -30,9 +30,9 @@ class DDEndpointsTest {
         String externalEndpoint = DDEndpoints.getAccountBaseUrl().replace("https://account.", "wss://external-dam.")
             + DDMessagingProtocol.WEBSOCKET_PATH;
 
-        Assertions.assertEquals(externalEndpoint, DDEndpoints.getExternalDamWebSocketUrl());
+        Assertions.assertEquals(externalEndpoint, DDEndpoints.getMessagingWebSocketUrl());
         Assertions.assertDoesNotThrow(
-            () -> DDEndpoints.requireSecureWebSocketTransport(URI.create(DDEndpoints.getExternalDamWebSocketUrl())));
+            () -> DDEndpoints.requireSecureWebSocketTransport(URI.create(DDEndpoints.getMessagingWebSocketUrl())));
     }
 
     @Test

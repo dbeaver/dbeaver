@@ -55,9 +55,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-public final class DDDesktopMessageChannel implements DDMessagingChannel {
+public final class DDMessagingDesktopChannel implements DDMessagingChannel {
 
-    private static final Log log = Log.getLog(DDDesktopMessageChannel.class);
+    private static final Log log = Log.getLog(DDMessagingDesktopChannel.class);
 
     private static final int MAX_MESSAGE_BYTES = 65_536;
     private static final int MAX_PENDING_MESSAGES = 64;
@@ -94,12 +94,12 @@ public final class DDDesktopMessageChannel implements DDMessagingChannel {
         String getAccessToken(@NotNull URI resource) throws DBException;
     }
 
-    public DDDesktopMessageChannel(@NotNull URI endpoint, @NotNull DDMessagingHandshakeRequest hello, @NotNull TokenProvider tokens)
+    public DDMessagingDesktopChannel(@NotNull URI endpoint, @NotNull DDMessagingHandshakeRequest hello, @NotNull TokenProvider tokens)
             throws DBException {
         this(endpoint, hello, tokens, BaseWebSocketClient::new);
     }
 
-    public DDDesktopMessageChannel(
+    public DDMessagingDesktopChannel(
         @NotNull URI endpoint,
         @NotNull DDMessagingHandshakeRequest hello,
         @NotNull TokenProvider tokens,

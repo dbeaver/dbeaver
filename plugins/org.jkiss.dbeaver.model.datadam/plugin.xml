@@ -3,7 +3,7 @@
 
 <plugin>
     <extension point="org.jkiss.dbeaver.pluginService">
-        <service class="org.jkiss.dbeaver.model.datadam.DDDesktopConnectionPluginService"/>
+        <service class="org.jkiss.dbeaver.model.datadam.DDMessagingDesktopConnectionPluginService"/>
     </extension>
 
     <extension point="com.dbeaver.ai.engine">

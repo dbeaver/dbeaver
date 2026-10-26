@@ -24,7 +24,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.transport.DDDesktopMessageChannel;
+import org.jkiss.dbeaver.model.datadam.transport.DDMessagingDesktopChannel;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -43,10 +43,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Timeout(15)
-class DDDesktopConnectionServiceTest extends DBeaverUnitTest {
+class DDMessagingDesktopConnectionServiceTest extends DBeaverUnitTest {
     private final DDDesktopAccessService access = Mockito.mock(DDDesktopAccessService.class);
-    private final DDDesktopMessageChannel channel = Mockito.mock(DDDesktopMessageChannel.class);
-    private final DDDesktopConnectionService service = new DDDesktopConnectionService(access, channel);
+    private final DDMessagingDesktopChannel channel = Mockito.mock(DDMessagingDesktopChannel.class);
+    private final DDMessagingDesktopConnectionService service = new DDMessagingDesktopConnectionService(access, channel);
     private final AtomicReference<DDMessagingChannelStatus> status = new AtomicReference<>(
         new DDMessagingChannelStatus(DDMessagingChannelState.DISCONNECTED, null));
 

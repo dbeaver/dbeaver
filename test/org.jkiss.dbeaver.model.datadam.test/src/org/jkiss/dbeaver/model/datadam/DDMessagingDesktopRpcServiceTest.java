@@ -41,7 +41,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.transport.DDDesktopMessageChannel;
+import org.jkiss.dbeaver.model.datadam.transport.DDMessagingDesktopChannel;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -72,7 +72,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 @Timeout(15)
-class DDDesktopRpcServiceTest extends DBeaverUnitTest {
+class DDMessagingDesktopRpcServiceTest extends DBeaverUnitTest {
     private static final String TOPIC = "desktop/echo";
     private static final String OTHER_TOPIC = "desktop/storage";
 
@@ -726,8 +726,8 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
 
     private static final class Desktop implements AutoCloseable {
         private final DDDesktopAccessService access = Mockito.mock(DDDesktopAccessService.class);
-        private final DDDesktopMessageChannel channel = Mockito.mock(DDDesktopMessageChannel.class);
-        private final DDDesktopConnectionService connection;
+        private final DDMessagingDesktopChannel channel = Mockito.mock(DDMessagingDesktopChannel.class);
+        private final DDMessagingDesktopConnectionService connection;
 
         private Desktop(@NotNull MemoryChannel messages) {
             Mockito.when(channel.getStatus()).thenAnswer(invocation -> messages.getStatus());
@@ -745,7 +745,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
                 messages.close();
                 return null;
             }).when(channel).close();
-            connection = new DDDesktopConnectionService(access, channel);
+            connection = new DDMessagingDesktopConnectionService(access, channel);
         }
 
         private void start() {

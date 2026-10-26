@@ -66,7 +66,7 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 @Timeout(20)
-class DDDesktopMessageChannelTest extends DBeaverUnitTest {
+class DDMessagingDesktopChannelTest extends DBeaverUnitTest {
     private static final URI ENDPOINT = URI.create("wss://external.example/ws");
     private static final DDMessagingHandshakeRequest HELLO = new DDMessagingHandshakeRequest(
         "deployment", "application-run", "DBeaver", "26.3");
@@ -879,17 +879,17 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
     })
     void rejectsUnsafeEndpointsBeforeCreatingClients(@NotNull String endpoint) {
         Clients clients = new Clients();
-        Assertions.assertThrows(DBException.class, () -> new DDDesktopMessageChannel(
+        Assertions.assertThrows(DBException.class, () -> new DDMessagingDesktopChannel(
             URI.create(endpoint), HELLO, resource -> "token", clients));
         Assertions.assertTrue(clients.attempts.isEmpty());
     }
 
     @NotNull
-    private static DDDesktopMessageChannel channel(
+    private static DDMessagingDesktopChannel channel(
         @NotNull Clients clients,
-        @NotNull DDDesktopMessageChannel.TokenProvider tokens
+        @NotNull DDMessagingDesktopChannel.TokenProvider tokens
     ) throws DBException {
-        return new DDDesktopMessageChannel(ENDPOINT, HELLO, tokens, clients);
+        return new DDMessagingDesktopChannel(ENDPOINT, HELLO, tokens, clients);
     }
 
     @NotNull

@@ -27,8 +27,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 
-final class DDDesktopRpcService implements AutoCloseable {
-    private static final Log log = Log.getLog(DDDesktopRpcService.class);
+final class DDMessagingDesktopRpcService implements AutoCloseable {
+    private static final Log log = Log.getLog(DDMessagingDesktopRpcService.class);
 
     private final Object lock = new Object();
     private final DDMessagingChannel channel;
@@ -39,7 +39,7 @@ final class DDDesktopRpcService implements AutoCloseable {
     private boolean active;
     private boolean closed;
 
-    DDDesktopRpcService(@NotNull DDMessagingChannel channel) {
+    DDMessagingDesktopRpcService(@NotNull DDMessagingChannel channel) {
         this.channel = channel;
     }
 
@@ -87,7 +87,7 @@ final class DDDesktopRpcService implements AutoCloseable {
             }
             try {
                 endpoint = MessagingRpcEndpoint.open(
-                    topic -> DDMessagingRpcTransport.forChannel(channel, topic, DDDesktopRpcService::executeRequest),
+                    topic -> DDMessagingRpcTransport.forChannel(channel, topic, DDMessagingDesktopRpcService::executeRequest),
                     new DDMessagingGsonRpcCodec(new Gson()));
                 invalidated = false;
                 return endpoint;

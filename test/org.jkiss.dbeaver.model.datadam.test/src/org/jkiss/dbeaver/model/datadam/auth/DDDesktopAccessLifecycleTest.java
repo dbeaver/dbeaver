@@ -23,10 +23,10 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.datadam.DDDesktopConnectionService;
+import org.jkiss.dbeaver.model.datadam.DDMessagingDesktopConnectionService;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.transport.DDDesktopMessageChannel;
+import org.jkiss.dbeaver.model.datadam.transport.DDMessagingDesktopChannel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -95,11 +95,11 @@ class DDDesktopAccessLifecycleTest {
         DDDesktopAccessService access = access(status);
         List<String> events = new ArrayList<>();
         access.addAccessListener(listener(events));
-        DDDesktopMessageChannel channel = Mockito.mock(DDDesktopMessageChannel.class);
+        DDMessagingDesktopChannel channel = Mockito.mock(DDMessagingDesktopChannel.class);
         Mockito.when(channel.getStatus()).thenReturn(new DDMessagingChannelStatus(
             DDMessagingChannelState.CONNECTED, new DDDamConnectionInfo("deployment", "run", "connection")));
         try (var keys = Mockito.mockStatic(DDKeyStore.class);
-             var connection = new DDDesktopConnectionService(access, channel)) {
+             var connection = new DDMessagingDesktopConnectionService(access, channel)) {
             access.signIn(Mockito.mock(DBRProgressMonitor.class));
             connection.start();
             final var endpoint = connection.getRpc();

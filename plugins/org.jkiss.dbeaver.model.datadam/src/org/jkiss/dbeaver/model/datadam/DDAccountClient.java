@@ -147,7 +147,7 @@ public class DDAccountClient extends AbstractRestClient {
 //    }
 //
 //    private void test() throws DBException {
-//        MessagingRpcEndpoint rpc = DDDesktopConnectionService.getInstance().getRpc();
+//        MessagingRpcEndpoint rpc = DDMessagingDesktopConnectionService.getInstance().getRpc();
 //
 //        StorageFiles files = rpc.proxy("dbeaver.storage.files", StorageFiles.class);
 //
@@ -163,7 +163,7 @@ public class DDAccountClient extends AbstractRestClient {
 //    }
 //
 //    private void test2() throws DBException {
-//        MessagingRpcEndpoint rpc = DDDesktopConnectionService.getInstance().getRpc();
+//        MessagingRpcEndpoint rpc = DDMessagingDesktopConnectionService.getInstance().getRpc();
 //
 //        DesktopProject handler = projectId -> {
 //            projectService.refresh(projectId);

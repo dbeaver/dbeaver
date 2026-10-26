@@ -23,7 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.transport.DDDesktopMessageChannel;
+import org.jkiss.dbeaver.model.datadam.transport.DDMessagingDesktopChannel;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -31,15 +31,15 @@ import java.net.URI;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public final class DDDesktopConnectionService implements AutoCloseable {
+public final class DDMessagingDesktopConnectionService implements AutoCloseable {
 
     private static final String APPLICATION_RUN_ID = UUID.randomUUID().toString();
 
-    private static DDDesktopConnectionService instance;
+    private static DDMessagingDesktopConnectionService instance;
 
     private final DDDesktopAccessService access;
-    private final DDDesktopMessageChannel channel;
-    private final DDDesktopRpcService rpc;
+    private final DDMessagingDesktopChannel channel;
+    private final DDMessagingDesktopRpcService rpc;
     private final AtomicBoolean started = new AtomicBoolean();
     private final AtomicBoolean closed = new AtomicBoolean();
 
@@ -57,24 +57,24 @@ public final class DDDesktopConnectionService implements AutoCloseable {
         }
     };
 
-    public DDDesktopConnectionService(@NotNull DDDesktopAccessService access, @NotNull DDDesktopMessageChannel channel) {
+    public DDMessagingDesktopConnectionService(@NotNull DDDesktopAccessService access, @NotNull DDMessagingDesktopChannel channel) {
         this.access = access;
         this.channel = channel;
-        this.rpc = new DDDesktopRpcService(channel);
+        this.rpc = new DDMessagingDesktopRpcService(channel);
     }
 
     @NotNull
-    public static synchronized DDDesktopConnectionService getInstance() throws DBException {
+    public static synchronized DDMessagingDesktopConnectionService getInstance() throws DBException {
         if (instance == null) {
             DDDesktopAccessService access = DDDesktopAccessService.getInstance();
             DDMessagingHandshakeRequest hello = new DDMessagingHandshakeRequest(
                 DBWorkbench.getPlatform().getDeploymentId(), APPLICATION_RUN_ID,
                 GeneralUtils.getProductName(), GeneralUtils.getProductVersion().toString());
-            DDDesktopMessageChannel channel = new DDDesktopMessageChannel(
-                URI.create(DDEndpoints.getExternalDamWebSocketUrl()), hello,
+            DDMessagingDesktopChannel channel = new DDMessagingDesktopChannel(
+                URI.create(DDEndpoints.getMessagingWebSocketUrl()), hello,
                 resource -> access.getStatus() == DDDesktopAccessService.Status.SIGNED_IN
                     ? access.getAccessTokenForResource(resource) : null);
-            instance = new DDDesktopConnectionService(access, channel);
+            instance = new DDMessagingDesktopConnectionService(access, channel);
         }
         return instance;
     }

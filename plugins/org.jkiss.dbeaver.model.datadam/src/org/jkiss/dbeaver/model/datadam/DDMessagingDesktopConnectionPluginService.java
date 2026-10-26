@@ -21,11 +21,11 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.IPluginService;
 
-public final class DDDesktopConnectionPluginService implements IPluginService {
-    private static final Log log = Log.getLog(DDDesktopConnectionPluginService.class);
+public final class DDMessagingDesktopConnectionPluginService implements IPluginService {
+    private static final Log log = Log.getLog(DDMessagingDesktopConnectionPluginService.class);
 
     @Nullable
-    private DDDesktopConnectionService connection;
+    private DDMessagingDesktopConnectionService connection;
     private boolean stopped;
 
     @Override
@@ -33,9 +33,9 @@ public final class DDDesktopConnectionPluginService implements IPluginService {
         if (stopped || connection != null) {
             return;
         }
-        DDDesktopConnectionService opened;
+        DDMessagingDesktopConnectionService opened;
         try {
-            opened = DDDesktopConnectionService.getInstance();
+            opened = DDMessagingDesktopConnectionService.getInstance();
         } catch (DBException e) {
             log.warn("DataDam desktop connection could not be initialized", e);
             return;
@@ -58,7 +58,7 @@ public final class DDDesktopConnectionPluginService implements IPluginService {
     @Override
     public synchronized void deactivateService() {
         stopped = true;
-        DDDesktopConnectionService stoppedConnection = connection;
+        DDMessagingDesktopConnectionService stoppedConnection = connection;
         connection = null;
         if (stoppedConnection != null) {
             stoppedConnection.close();
