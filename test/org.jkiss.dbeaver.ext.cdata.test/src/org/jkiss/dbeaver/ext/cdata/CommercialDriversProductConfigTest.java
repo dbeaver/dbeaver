@@ -24,18 +24,18 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-public class CDataProductConfigTest extends DBeaverUnitTest {
+public class CommercialDriversProductConfigTest extends DBeaverUnitTest {
     @Test
     public void enabledByDefault() throws Exception {
         var feature = getFeature();
 
         Assertions.assertTrue(feature.isEnabledByDefault());
         Assertions.assertNull(feature.getEnablementTester());
-        Assertions.assertEquals("CData integration", feature.getLabel());
+        Assertions.assertEquals("Commercial drivers", feature.getLabel());
     }
 
     @Test
-    public void canDisableAndEnableCData() {
+    public void canDisableAndEnableCommercialDrivers() {
         var registry = ProductConfigRegistry.getInstance();
         var feature = getFeature();
         boolean wasEnabled = registry.isFeatureEnabled(feature);
@@ -55,7 +55,7 @@ public class CDataProductConfigTest extends DBeaverUnitTest {
     @NotNull
     private static ProductConfigFeatureDescriptor getFeature() {
         return ProductConfigRegistry.getInstance().getFeatures().stream()
-            .filter(feature -> feature.getId().equals("cdata"))
+            .filter(feature -> feature.getId().equals("commercial-drivers"))
             .findFirst()
             .orElseThrow();
     }

@@ -22,6 +22,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPMessageType;
+import org.jkiss.dbeaver.model.qm.QMTaskExecution;
+import org.jkiss.dbeaver.model.runtime.DBRRunnable;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -53,6 +55,7 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
     private boolean started;
     private long timeSincePreviousTask;
     private Throwable error;
+    private QMTaskExecution executionHistory;
 
     public TaskProcessorUI(@NotNull DBRRunnableContext staticContext, @NotNull DBTTask task) {
         this.staticContext = staticContext;
@@ -81,6 +84,19 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
         runTask();
     }
 
+    protected void executeTaskWithHistory(@NotNull DBRRunnable operation) throws DBException {
+        executionHistory = new QMTaskExecution(getTask());
+        try {
+            operation.run();
+        } catch (Throwable e) {
+            executionHistory.recordError(e);
+            throw e;
+        } finally {
+            executionHistory.close();
+            executionHistory = null;
+        }
+    }
+
     @Override
     public void taskStarted(@Nullable DBTTask task) {
         this.started = true;
@@ -97,6 +113,9 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
     ) {
         this.started = false;
         this.error = error;
+        if (executionHistory != null) {
+            executionHistory.recordError(error);
+        }
 
         long elapsedTime = System.currentTimeMillis() - startTime;
 
@@ -163,7 +182,11 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
         boolean cancelable,
         @NotNull DBRRunnableWithProgress runnable
     ) throws InvocationTargetException, InterruptedException {
-        staticContext.run(fork, cancelable, runnable);
+        if (executionHistory == null) {
+            staticContext.run(fork, cancelable, runnable);
+        } else {
+            executionHistory.run(staticContext, fork, cancelable, runnable);
+        }
     }
 
 }

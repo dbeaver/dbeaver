@@ -216,7 +216,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     protected Format getNativeValueFormat(DBSTypedObject type) {
         return switch (type.getTypeID()) {
             case Types.TIMESTAMP -> DEFAULT_DATETIME_FORMAT.get();
-            case Types.TIMESTAMP_WITH_TIMEZONE -> DEFAULT_DATETIME_FORMAT.get();
+            case Types.TIMESTAMP_WITH_TIMEZONE -> DEFAULT_DATETIME_TZ_FORMAT.get();
             case Types.TIME -> DEFAULT_TIME_FORMAT.get();
             case Types.TIME_WITH_TIMEZONE -> DEFAULT_TIME_TZ_FORMAT.get();
             case Types.DATE -> DEFAULT_DATE_FORMAT.get();

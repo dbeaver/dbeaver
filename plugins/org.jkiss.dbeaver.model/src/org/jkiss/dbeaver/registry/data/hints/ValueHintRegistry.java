@@ -185,7 +185,7 @@ public class ValueHintRegistry extends AbstractValueBindingRegistry<DBDValueHint
     @Nullable
     public ValueHintProviderDescriptor getDescriptorByInstance(@NotNull DBDValueHintProvider provider) {
         for (ValueHintProviderDescriptor descriptor : descriptors) {
-            if (descriptor.getInstance() == provider) {
+            if (descriptor.getExistingInstance() == provider) {
                 return descriptor;
             }
         }
