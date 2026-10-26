@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -91,5 +92,40 @@ public class DataSourceProviderRegistryTest {
         } finally {
             registry.removeConnectionType(customType);
         }
+    }
+
+    @Test
+    public void testBuiltInDriverReplacement() {
+        DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+        DBPDriver original = registry.getDataSourceProvider("generic").getOriginalDriver("h2_embedded_v2");
+        DBPDriver replacement = registry.getDataSourceProvider("h2").getOriginalDriver("h2_embedded_v2");
+
+        Assertions.assertNotNull(original);
+        Assertions.assertNotNull(replacement);
+        Assertions.assertSame(replacement, original.getReplacedBy());
+    }
+
+    @Test
+    public void testBuiltInDriverLibrariesAreAvailable() {
+        DBPDriver driver = DataSourceProviderRegistry.getInstance()
+            .getDataSourceProvider("h2")
+            .getOriginalDriver("h2_embedded_v2");
+
+        Assertions.assertNotNull(driver);
+        Assertions.assertFalse(driver.getDriverLibraries().isEmpty());
+    }
+
+    @Test
+    public void testInheritedTreeRemainsProviderSpecific() {
+        DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+        DataSourceProviderDescriptor generic = registry.getDataSourceProvider("generic");
+        DataSourceProviderDescriptor h2 = registry.getDataSourceProvider("h2");
+
+        DBXTreeDescriptor genericTree = generic.getTreeDescriptor();
+        DBXTreeDescriptor h2Tree = h2.getTreeDescriptor();
+        Assertions.assertNotNull(genericTree);
+        Assertions.assertNotNull(h2Tree);
+        Assertions.assertNotSame(genericTree, h2Tree);
+        Assertions.assertEquals(genericTree.getPath(), h2Tree.getPath());
     }
 }
