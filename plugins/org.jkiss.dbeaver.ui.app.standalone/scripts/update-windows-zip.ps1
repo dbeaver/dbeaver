@@ -68,6 +68,92 @@ function Assert-UpdateLayout([string]$Payload, [string]$Installation, [string]$L
     }
 }
 
+function Expand-UpdateArchive([string]$Archive, [string]$Destination) {
+    Write-Output 'Extracting the update.'
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    $zip = [IO.Compression.ZipFile]::OpenRead($Archive)
+    try {
+        # Reject absolute paths, traversal, alternate data streams and symbolic links before extracting anything.
+        foreach ($entry in $zip.Entries) {
+            if ([IO.Path]::IsPathRooted($entry.FullName) -or $entry.FullName.Contains(':') -or
+                (($entry.ExternalAttributes -shr 16) -band 0xF000) -eq 0xA000) {
+                throw "Invalid archive entry: $($entry.FullName)"
+            }
+            $path = [IO.Path]::GetFullPath((Join-Path $Destination $entry.FullName))
+            if (!$path.StartsWith($Destination + '\', [StringComparison]::OrdinalIgnoreCase)) {
+                throw "Invalid archive entry: $($entry.FullName)"
+            }
+        }
+        [IO.Compression.ZipFileExtensions]::ExtractToDirectory($zip, $Destination)
+    } finally {
+        $zip.Dispose()
+    }
+}
+
+function Install-UpdatePayload([string]$Payload, [string]$Installation, [string]$Backup) {
+    [IO.Directory]::CreateDirectory($Backup) | Out-Null
+    $saved = [Collections.Generic.List[string]]::new()
+    $installed = [Collections.Generic.List[string]]::new()
+    try {
+        Write-Output "Backing up application files to $Backup"
+        foreach ($name in (Get-UpdateEntries $Payload)) {
+            $target = Join-Path $Installation $name
+            if (Test-Path -LiteralPath $target) {
+                Invoke-UpdateOperation { Move-UpdateItem $target (Join-Path $Backup $name) }
+                $saved.Add($name)
+            }
+        }
+
+        Write-Output 'Replacing application files.'
+        foreach ($item in (Get-ChildItem -LiteralPath $Payload -Force)) {
+            # Register before copying so rollback also removes a partially copied directory.
+            $installed.Add($item.Name)
+            Copy-Item -LiteralPath $item.FullName -Destination (Join-Path $Installation $item.Name) -Recurse -Force
+        }
+    } catch {
+        $failure = $_
+        Write-Output "Replacement failed; restoring the backup: $failure"
+        $restoreFailures = [Collections.Generic.List[string]]::new()
+        foreach ($name in $installed) {
+            $target = Join-Path $Installation $name
+            try {
+                Invoke-UpdateOperation {
+                    if (Test-Path -LiteralPath $target) {
+                        Remove-Item -LiteralPath $target -Recurse -Force
+                    }
+                }
+            } catch {
+                $restoreFailures.Add($name)
+                Write-Output "Cannot remove the incomplete update entry ${name}: $_"
+            }
+        }
+        foreach ($name in $saved) {
+            try {
+                Invoke-UpdateOperation { Move-UpdateItem (Join-Path $Backup $name) (Join-Path $Installation $name) }
+            } catch {
+                $restoreFailures.Add($name)
+                Write-Output "Cannot restore ${name}: $_"
+            }
+        }
+        if ($restoreFailures.Count -gt 0) {
+            throw "Update failed. Manual recovery is required for $($restoreFailures -join ', '). Backup: ${Backup}. Original error: $failure"
+        }
+        Write-Output 'Previous application files restored.'
+        throw $failure
+    }
+}
+
+function Remove-UpdateStaging([string]$Archive, [string]$Extracted) {
+    # Installation and relaunch have succeeded; leftover temporary files must not turn success into failure.
+    foreach ($path in @($Archive, $Extracted)) {
+        try {
+            Remove-Item -LiteralPath $path -Recurse -Force
+        } catch {
+            Write-Warning "Could not remove update staging '${path}': $_"
+        }
+    }
+}
+
 try {
     foreach ($name in @('ARCHIVE', 'HOME', 'LAUNCHER', 'WORKSPACE', 'PIDS')) {
         if ([string]::IsNullOrWhiteSpace([Environment]::GetEnvironmentVariable('DBEAVER_UPDATE_' + $name))) {
@@ -85,29 +171,14 @@ try {
     if ([IO.Path]::GetFileName($launcher) -ne $launcher -or ![IO.File]::Exists((Join-Path $installation $launcher))) {
         throw 'Invalid installation launcher.'
     }
-    if ($PSScriptRoot.StartsWith($installation + '\', [StringComparison]::OrdinalIgnoreCase)) {
+    if ($PSScriptRoot.Equals($installation, [StringComparison]::OrdinalIgnoreCase) -or
+        $PSScriptRoot.StartsWith($installation + '\', [StringComparison]::OrdinalIgnoreCase)) {
         throw 'Update staging must be outside the installation directory.'
     }
     $extracted = Join-Path $PSScriptRoot 'payload'
 
     if ($Prepare) {
-        Write-Output 'Extracting the update.'
-        Add-Type -AssemblyName System.IO.Compression.FileSystem
-        $zip = [IO.Compression.ZipFile]::OpenRead($archive)
-        try {
-            # Reject absolute paths, traversal, alternate data streams and symbolic links before extracting anything.
-            foreach ($entry in $zip.Entries) {
-                $path = [IO.Path]::GetFullPath((Join-Path $extracted $entry.FullName))
-                if ([IO.Path]::IsPathRooted($entry.FullName) -or $entry.FullName.Contains(':') -or
-                    !$path.StartsWith($extracted + '\', [StringComparison]::OrdinalIgnoreCase) -or
-                    (($entry.ExternalAttributes -shr 16) -band 0xF000) -eq 0xA000) {
-                    throw "Invalid archive entry: $($entry.FullName)"
-                }
-            }
-        } finally {
-            $zip.Dispose()
-        }
-        [IO.Compression.ZipFile]::ExtractToDirectory($archive, $extracted)
+        Expand-UpdateArchive $archive $extracted
     }
 
     # Windows distributions contain one product directory; the user's installation directory can have any name.
@@ -135,7 +206,7 @@ try {
         }
     }
 
-    # Serialize replacement if more than one instance has scheduled an update of this installation.
+    # Fail fast if another updater is already replacing this installation.
     $lockPath = Join-Path $installation '.update.lock'
     $updateLock = [IO.File]::Open($lockPath, [IO.FileMode]::OpenOrCreate, [IO.FileAccess]::ReadWrite, [IO.FileShare]::None)
     # A different workspace can have another instance running from the same installation.
@@ -147,55 +218,7 @@ try {
         }
     }
     $backup = Join-Path $installation ('.update-backup-' + [Guid]::NewGuid().ToString('N'))
-    [IO.Directory]::CreateDirectory($backup) | Out-Null
-    $saved = [Collections.Generic.List[string]]::new()
-    $installed = [Collections.Generic.List[string]]::new()
-    try {
-        Write-Output "Backing up application files to $backup"
-        foreach ($name in (Get-UpdateEntries $payload)) {
-            $target = Join-Path $installation $name
-            if (Test-Path -LiteralPath $target) {
-                Invoke-UpdateOperation { Move-UpdateItem $target (Join-Path $backup $name) }
-                $saved.Add($name)
-            }
-        }
-
-        Write-Output 'Replacing application files.'
-        foreach ($item in (Get-ChildItem -LiteralPath $payload -Force)) {
-            # Register before copying so rollback also removes a partially copied directory.
-            $installed.Add($item.Name)
-            Copy-Item -LiteralPath $item.FullName -Destination (Join-Path $installation $item.Name) -Recurse -Force
-        }
-    } catch {
-        $failure = $_
-        Write-Output "Replacement failed; restoring the backup: $failure"
-        $restoreFailures = [Collections.Generic.List[string]]::new()
-        foreach ($name in $installed) {
-            $target = Join-Path $installation $name
-            try {
-                Invoke-UpdateOperation {
-                    if (Test-Path -LiteralPath $target) {
-                        Remove-Item -LiteralPath $target -Recurse -Force
-                    }
-                }
-            } catch {
-                $restoreFailures.Add($name)
-                Write-Output "Cannot remove the incomplete update entry ${name}: $_"
-            }
-        }
-        foreach ($name in $saved) {
-            try {
-                Invoke-UpdateOperation { Move-UpdateItem (Join-Path $backup $name) (Join-Path $installation $name) }
-            } catch {
-                $restoreFailures.Add($name)
-                Write-Output "Cannot restore ${name}: $_"
-            }
-        }
-        if ($restoreFailures.Count -gt 0) {
-            throw "Update failed. Manual recovery is required for $($restoreFailures -join ', '). Backup: ${backup}. Original error: $failure"
-        }
-        throw $failure
-    }
+    Install-UpdatePayload $payload $installation $backup
 
     Write-Output 'Starting DBeaver.'
     # Appending \. avoids a trailing backslash escaping the closing quote in Windows command-line parsing.
@@ -206,10 +229,13 @@ try {
     $startInfo.Arguments = $arguments
     $startInfo.WorkingDirectory = $installation
     $startInfo.UseShellExecute = $false
-    [Diagnostics.Process]::Start($startInfo).Dispose()
+    try {
+        [Diagnostics.Process]::Start($startInfo).Dispose()
+    } catch {
+        throw "The update was installed, but DBeaver could not be restarted. Previous application files: ${backup}. Error: $_"
+    }
     # Keep the archive and staging when replacement or relaunch fails, along with the backup and redirected log.
-    Remove-Item -LiteralPath $archive -Force
-    Remove-Item -LiteralPath $extracted -Recurse -Force
+    Remove-UpdateStaging $archive $extracted
     Write-Output "Update complete. Previous application files are retained in $backup"
     exit 0
 } catch {
