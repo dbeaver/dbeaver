@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.datadam;
 import com.dbeaver.datadam.external.api.rpc.DDGsonRpcCodec;
 import com.dbeaver.datadam.external.api.rpc.DDRpcTransport;
 import com.dbeaver.datadam.external.api.transport.DDMessageChannel;
-import com.dbeaver.messaging.rpc.RpcEndpoint;
+import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import com.google.gson.Gson;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
@@ -33,7 +33,7 @@ final class DDDesktopRpcService implements AutoCloseable {
     private final Object lock = new Object();
     private final DDMessageChannel channel;
     @Nullable
-    private RpcEndpoint endpoint;
+    private MessagingRpcEndpoint endpoint;
     private boolean invalidated;
     private boolean accessObserved;
     private boolean active;
@@ -55,7 +55,7 @@ final class DDDesktopRpcService implements AutoCloseable {
     }
 
     boolean suspend(boolean initial) {
-        RpcEndpoint stopped;
+        MessagingRpcEndpoint stopped;
         synchronized (lock) {
             if (closed || initial && accessObserved) {
                 return false;
@@ -70,7 +70,7 @@ final class DDDesktopRpcService implements AutoCloseable {
     }
 
     @NotNull
-    RpcEndpoint getRpc() throws DBException {
+    MessagingRpcEndpoint getRpc() throws DBException {
         synchronized (lock) {
             requireActive();
             if (endpoint != null && endpoint.isCloseComplete()) {
@@ -86,7 +86,7 @@ final class DDDesktopRpcService implements AutoCloseable {
                 throw new DBException("DataDam RPC requires a ready message channel");
             }
             try {
-                endpoint = RpcEndpoint.open(
+                endpoint = MessagingRpcEndpoint.open(
                     topic -> DDRpcTransport.forChannel(channel, topic, DDDesktopRpcService::executeRequest),
                     new DDGsonRpcCodec(new Gson()));
                 invalidated = false;
@@ -112,7 +112,7 @@ final class DDDesktopRpcService implements AutoCloseable {
         }
     }
 
-    private static void closeEndpoint(@Nullable RpcEndpoint endpoint) {
+    private static void closeEndpoint(@Nullable MessagingRpcEndpoint endpoint) {
         if (endpoint != null) {
             try {
                 endpoint.close();
@@ -124,7 +124,7 @@ final class DDDesktopRpcService implements AutoCloseable {
 
     @Override
     public void close() {
-        RpcEndpoint stopped;
+        MessagingRpcEndpoint stopped;
         synchronized (lock) {
             if (closed) {
                 return;

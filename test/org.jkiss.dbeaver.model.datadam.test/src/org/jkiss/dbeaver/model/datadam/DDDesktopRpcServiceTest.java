@@ -26,10 +26,10 @@ import com.dbeaver.datadam.external.api.transport.DDConnectionListener;
 import com.dbeaver.datadam.external.api.transport.DDMessageChannel;
 import com.dbeaver.datadam.external.api.transport.DDMessageListener;
 import com.dbeaver.datadam.external.api.transport.DDSubscription;
-import com.dbeaver.messaging.rpc.RpcCodec;
-import com.dbeaver.messaging.rpc.RpcEndpoint;
-import com.dbeaver.messaging.rpc.RpcException;
-import com.dbeaver.messaging.rpc.RpcMessage;
+import com.dbeaver.messaging.rpc.MessagingRpcCodec;
+import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
+import com.dbeaver.messaging.rpc.MessagingRpcException;
+import com.dbeaver.messaging.rpc.MessagingRpcMessage;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
@@ -90,7 +90,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
 
             desktop.ready("desktop");
 
-            RpcEndpoint endpoint = rpc.getRpc();
+            MessagingRpcEndpoint endpoint = rpc.getRpc();
             Assertions.assertSame(endpoint, rpc.getRpc());
             Assertions.assertTrue(desktop.subscriptions.isEmpty());
             Assertions.assertTrue(desktop.observers.isEmpty());
@@ -127,7 +127,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
         backend.ready("backend");
         try (var rpc = service(desktop);
              var remote = remote(backend)) {
-            RpcEndpoint endpoint = rpc.getRpc();
+            MessagingRpcEndpoint endpoint = rpc.getRpc();
             endpoint.register(TOPIC, Files.class, id -> new FileInfo(id, 4));
             remote.register(TOPIC, Files.class, id -> new FileInfo(id, 8));
             Files backendFiles = endpoint.proxy(TOPIC, Files.class);
@@ -148,7 +148,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
         backend.ready("backend");
         try (var rpc = service(desktop);
              var remote = remote(backend)) {
-            RpcEndpoint endpoint = rpc.getRpc();
+            MessagingRpcEndpoint endpoint = rpc.getRpc();
             endpoint.register(TOPIC, Echo.class, value -> "desktop:" + value, new TaggedCodec("desktop:"));
             remote.register(TOPIC, Echo.class, value -> "backend:" + value, new TaggedCodec("backend:"));
             Echo backendCalls = endpoint.proxy(TOPIC, Echo.class, new TaggedCodec("backend:"));
@@ -157,8 +157,9 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
 
             Assertions.assertEquals("backend:a", call(() -> backendCalls.echo("a")));
             Assertions.assertEquals("desktop:b", call(() -> desktopCalls.echo("b")));
-            RpcException failure = Assertions.assertThrows(RpcException.class, () -> call(() -> incompatible.echo("c")));
-            Assertions.assertEquals(RpcMessage.Error.CODEC_FAILED, failure.remoteError());
+            MessagingRpcException failure = Assertions.assertThrows(MessagingRpcException.class,
+                () -> call(() -> incompatible.echo("c")));
+            Assertions.assertEquals(MessagingRpcMessage.Error.CODEC_FAILED, failure.remoteError());
             Assertions.assertEquals("backend:d", call(() -> backendCalls.echo("d")));
             Assertions.assertEquals(2, desktop.subscriptions.size());
         }
@@ -180,7 +181,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
              var rpc = service(desktop);
              var remote = remote(backend)) {
             backend.forward = message -> delivery.execute(() -> desktop.receive(message));
-            RpcEndpoint endpoint = rpc.getRpc();
+            MessagingRpcEndpoint endpoint = rpc.getRpc();
             endpoint.register(TOPIC, Echo.class, value -> {
                 Job job = Job.getJobManager().currentJob();
                 Assertions.assertNotNull(job);
@@ -222,7 +223,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
              var rpc = service(desktop);
              var remote = remote(backend)) {
             backend.forward = message -> delivery.execute(() -> desktop.receive(message));
-            RpcEndpoint endpoint = rpc.getRpc();
+            MessagingRpcEndpoint endpoint = rpc.getRpc();
             Echo backendCalls = endpoint.proxy(TOPIC, Echo.class);
             Echo desktopCalls = remote.proxy(TOPIC, Echo.class);
             endpoint.register(TOPIC, Echo.class, value -> "callback".equals(value)
@@ -265,7 +266,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
         try (var executor = Executors.newVirtualThreadPerTaskExecutor();
              var rpc = service(desktop);
              var remote = remote(backend)) {
-            RpcEndpoint endpoint = rpc.getRpc();
+            MessagingRpcEndpoint endpoint = rpc.getRpc();
             endpoint.register(TOPIC, Echo.class, value -> {
                 calls.incrementAndGet();
                 return "old:" + value;
@@ -273,7 +274,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
             Echo desktopCalls = remote.proxy(TOPIC, Echo.class);
             Job.getJobManager().addJobChangeListener(listener);
             try {
-                Future<String> pending = executor.submit(() -> desktopCalls.echo("delayed"));
+                final Future<String> pending = executor.submit(() -> desktopCalls.echo("delayed"));
                 delayed.get(3, TimeUnit.SECONDS);
                 if (close) {
                     rpc.close();
@@ -285,7 +286,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
                 Assertions.assertTrue(desktop.observers.isEmpty());
                 Assertions.assertThrows(DBException.class, rpc::getRpc);
                 backend.disconnected();
-                Assertions.assertEquals(RpcException.Reason.DISCONNECTED, failure(pending).reason());
+                Assertions.assertEquals(MessagingRpcException.Reason.DISCONNECTED, failure(pending).reason());
                 release.complete(null);
                 await(finished);
                 Assertions.assertEquals(0, calls.get());
@@ -293,7 +294,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
                     rpc.resume();
                     desktop.ready("next-desktop");
                     backend.ready("next-backend");
-                    RpcEndpoint replacement = rpc.getRpc();
+                    MessagingRpcEndpoint replacement = rpc.getRpc();
                     Assertions.assertNotSame(endpoint, replacement);
                     replacement.register(TOPIC, Echo.class, value -> "new:" + value);
                     Assertions.assertEquals("new:current", call(() -> desktopCalls.echo("current")));
@@ -319,7 +320,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
         try (var rpc = service(desktop);
              var remote = remote(backend);
              var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            RpcEndpoint endpoint = rpc.getRpc();
+            MessagingRpcEndpoint endpoint = rpc.getRpc();
             endpoint.register(TOPIC, Echo.class, value -> "retained:" + value, codec());
             remote.register(TOPIC, Echo.class, value -> {
                 entered.countDown();
@@ -331,11 +332,11 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
             try {
                 await(entered);
                 desktop.disconnected();
-                Assertions.assertEquals(RpcException.Reason.DISCONNECTED, failure(pending).reason());
+                Assertions.assertEquals(MessagingRpcException.Reason.DISCONNECTED, failure(pending).reason());
                 Assertions.assertSame(endpoint, rpc.getRpc());
                 Assertions.assertFalse(endpoint.isClosed());
-                Assertions.assertThrows(RpcException.class, () -> endpoint.proxy(OTHER_TOPIC, Echo.class, codec()));
-                Assertions.assertThrows(RpcException.class, () -> proxy.echo("offline"));
+                Assertions.assertThrows(MessagingRpcException.class, () -> endpoint.proxy(OTHER_TOPIC, Echo.class, codec()));
+                Assertions.assertThrows(MessagingRpcException.class, () -> proxy.echo("offline"));
 
                 backend.disconnected();
                 desktop.ready("second");
@@ -363,7 +364,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
         backend.ready("backend");
         try (var rpc = service(desktop);
              var remote = remote(backend)) {
-            RpcEndpoint old = rpc.getRpc();
+            MessagingRpcEndpoint old = rpc.getRpc();
             final var registration = old.register(TOPIC, Echo.class, value -> "old:" + value, codec());
             final Echo oldProxy = old.proxy(TOPIC, Echo.class, codec());
             final Echo remoteProxy = remote.proxy(TOPIC, Echo.class, codec());
@@ -371,24 +372,24 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
             Assertions.assertTrue(old.isCloseComplete());
             Assertions.assertTrue(desktop.subscriptions.isEmpty());
             Assertions.assertTrue(desktop.observers.isEmpty());
-            Assertions.assertEquals(RpcException.Reason.CLOSED,
-                Assertions.assertThrows(RpcException.class, () -> oldProxy.echo("old")).reason());
+            Assertions.assertEquals(MessagingRpcException.Reason.CLOSED,
+                Assertions.assertThrows(MessagingRpcException.class, () -> oldProxy.echo("old")).reason());
             Assertions.assertThrows(DBException.class, rpc::getRpc);
             rpc.resume();
             desktop.ready("second");
-            RpcEndpoint current = rpc.getRpc();
+            MessagingRpcEndpoint current = rpc.getRpc();
             Assertions.assertNotSame(old, current);
             Echo currentProxy = current.proxy(TOPIC, Echo.class, codec());
             Assertions.assertNotSame(oldProxy, currentProxy);
-            RpcException missing = Assertions.assertThrows(RpcException.class,
+            MessagingRpcException missing = Assertions.assertThrows(MessagingRpcException.class,
                 () -> call(() -> remoteProxy.echo("missing")));
-            Assertions.assertEquals(RpcMessage.Error.UNKNOWN_SERVICE, missing.remoteError());
+            Assertions.assertEquals(MessagingRpcMessage.Error.UNKNOWN_SERVICE, missing.remoteError());
             current.register(TOPIC, Echo.class, value -> "new:" + value, codec());
             registration.close();
 
             Assertions.assertEquals("new:value", call(() -> remoteProxy.echo("value")));
-            Assertions.assertEquals(RpcException.Reason.CLOSED,
-                Assertions.assertThrows(RpcException.class, () -> oldProxy.echo("still-old")).reason());
+            Assertions.assertEquals(MessagingRpcException.Reason.CLOSED,
+                Assertions.assertThrows(MessagingRpcException.class, () -> oldProxy.echo("still-old")).reason());
         }
     }
 
@@ -397,10 +398,10 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
         MemoryChannel channel = new MemoryChannel();
         channel.ready("first");
         try (var rpc = service(channel)) {
-            RpcEndpoint old = rpc.getRpc();
+            MessagingRpcEndpoint old = rpc.getRpc();
             old.proxy(TOPIC, Echo.class, codec());
             old.close();
-            RpcEndpoint replacement = rpc.getRpc();
+            MessagingRpcEndpoint replacement = rpc.getRpc();
             Assertions.assertNotSame(old, replacement);
             Assertions.assertFalse(replacement.isClosed());
             Assertions.assertTrue(channel.subscriptions.isEmpty());
@@ -429,7 +430,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
         };
         try (var rpc = service(channel);
              var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            RpcEndpoint endpoint = rpc.getRpc();
+            MessagingRpcEndpoint endpoint = rpc.getRpc();
             endpoint.proxy(TOPIC, Echo.class, codec());
             var closing = executor.submit(endpoint::close);
             try {
@@ -449,7 +450,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
             }
             closing.get(3, TimeUnit.SECONDS);
             Assertions.assertTrue(endpoint.isCloseComplete());
-            RpcEndpoint replacement = rpc.getRpc();
+            MessagingRpcEndpoint replacement = rpc.getRpc();
             Assertions.assertNotSame(endpoint, replacement);
             Assertions.assertFalse(replacement.isClosed());
             Assertions.assertTrue(channel.subscriptions.isEmpty());
@@ -463,10 +464,10 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
         MemoryChannel channel = new MemoryChannel();
         channel.ready("first");
         try (var rpc = service(channel)) {
-            RpcEndpoint endpoint = rpc.getRpc();
+            MessagingRpcEndpoint endpoint = rpc.getRpc();
             channel.failTopic = TOPIC;
             for (int attempt = 0; attempt < 40; attempt++) {
-                Assertions.assertThrows(RpcException.class, () -> endpoint.proxy(TOPIC, Echo.class, codec()));
+                Assertions.assertThrows(MessagingRpcException.class, () -> endpoint.proxy(TOPIC, Echo.class, codec()));
                 Assertions.assertTrue(channel.subscriptions.isEmpty());
                 Assertions.assertTrue(channel.observers.isEmpty());
                 Assertions.assertSame(endpoint, rpc.getRpc());
@@ -486,15 +487,15 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
         try (var rpc = service(channel);
              var executor = Executors.newVirtualThreadPerTaskExecutor()) {
             CyclicBarrier barrier = new CyclicBarrier(8);
-            List<Future<RpcEndpoint>> pending = new ArrayList<>();
+            List<Future<MessagingRpcEndpoint>> pending = new ArrayList<>();
             for (int index = 0; index < 8; index++) {
                 pending.add(executor.submit(() -> {
                     barrier.await(3, TimeUnit.SECONDS);
                     return rpc.getRpc();
                 }));
             }
-            RpcEndpoint endpoint = pending.getFirst().get(3, TimeUnit.SECONDS);
-            for (Future<RpcEndpoint> result : pending) {
+            MessagingRpcEndpoint endpoint = pending.getFirst().get(3, TimeUnit.SECONDS);
+            for (Future<MessagingRpcEndpoint> result : pending) {
                 Assertions.assertSame(endpoint, result.get(3, TimeUnit.SECONDS));
             }
             Assertions.assertTrue(channel.subscriptions.isEmpty());
@@ -519,7 +520,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
         MemoryChannel channel = new MemoryChannel();
         channel.ready("first");
         try (var rpc = service(channel)) {
-            RpcEndpoint endpoint = rpc.getRpc();
+            MessagingRpcEndpoint endpoint = rpc.getRpc();
             endpoint.register(TOPIC, Echo.class, value -> value, codec());
             endpoint.proxy(OTHER_TOPIC, Echo.class, codec());
             Mockito.doAnswer(invocation -> {
@@ -534,8 +535,8 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
             rpc.close();
 
             Assertions.assertTrue(channel.closed);
-            Assertions.assertEquals(RpcException.Reason.CLOSED,
-                Assertions.assertThrows(RpcException.class, () -> endpoint.proxy(TOPIC, Echo.class, codec())).reason());
+            Assertions.assertEquals(MessagingRpcException.Reason.CLOSED,
+                Assertions.assertThrows(MessagingRpcException.class, () -> endpoint.proxy(TOPIC, Echo.class, codec())).reason());
         }
     }
 
@@ -549,7 +550,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
         blockTopicOpen(channel, entered, release);
         try (var rpc = service(channel);
              var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            RpcEndpoint old = rpc.getRpc();
+            MessagingRpcEndpoint old = rpc.getRpc();
             Future<?> opening = executor.submit(() -> bind(old, handler));
             try {
                 await(entered);
@@ -565,11 +566,11 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
 
                 ExecutionException failure = Assertions.assertThrows(ExecutionException.class,
                     () -> opening.get(3, TimeUnit.SECONDS));
-                Assertions.assertInstanceOf(RpcException.class, failure.getCause());
+                Assertions.assertInstanceOf(MessagingRpcException.class, failure.getCause());
                 Assertions.assertTrue(old.isCloseComplete());
                 Assertions.assertTrue(channel.subscriptions.isEmpty());
                 Assertions.assertTrue(channel.observers.isEmpty());
-                RpcEndpoint current = rpc.getRpc();
+                MessagingRpcEndpoint current = rpc.getRpc();
                 Assertions.assertNotSame(old, current);
                 Assertions.assertSame(current, rpc.getRpc());
                 current.proxy(TOPIC, Echo.class, codec());
@@ -591,7 +592,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
         blockTopicOpen(channel, entered, release);
         try (var rpc = service(channel);
              var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            RpcEndpoint endpoint = rpc.getRpc();
+            MessagingRpcEndpoint endpoint = rpc.getRpc();
             Future<?> opening = executor.submit(() -> bind(endpoint, handler));
             try {
                 await(entered);
@@ -599,7 +600,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
                 release.countDown();
                 ExecutionException failure = Assertions.assertThrows(ExecutionException.class,
                     () -> opening.get(3, TimeUnit.SECONDS));
-                Assertions.assertInstanceOf(RpcException.class, failure.getCause());
+                Assertions.assertInstanceOf(MessagingRpcException.class, failure.getCause());
                 Assertions.assertTrue(endpoint.isCloseComplete());
                 Assertions.assertTrue(channel.subscriptions.isEmpty());
                 Assertions.assertTrue(channel.observers.isEmpty());
@@ -624,7 +625,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
         };
         try (var rpc = service(channel);
              var executor = Executors.newVirtualThreadPerTaskExecutor()) {
-            RpcEndpoint endpoint = rpc.getRpc();
+            MessagingRpcEndpoint endpoint = rpc.getRpc();
             Future<?> opening = executor.submit(() -> endpoint.proxy(TOPIC, Echo.class, codec()));
             try {
                 await(entered);
@@ -634,7 +635,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
             }
             ExecutionException failure = Assertions.assertThrows(ExecutionException.class,
                 () -> opening.get(3, TimeUnit.SECONDS));
-            Assertions.assertInstanceOf(RpcException.class, failure.getCause());
+            Assertions.assertInstanceOf(MessagingRpcException.class, failure.getCause());
             Assertions.assertTrue(endpoint.isCloseComplete());
             Assertions.assertTrue(channel.subscriptions.isEmpty());
             Assertions.assertTrue(channel.observers.isEmpty());
@@ -649,17 +650,17 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
     }
 
     @NotNull
-    private static RpcEndpoint remote(@NotNull MemoryChannel channel) {
-        return RpcEndpoint.open(topic -> DDRpcTransport.forChannel(channel, topic, Thread::startVirtualThread), codec());
+    private static MessagingRpcEndpoint remote(@NotNull MemoryChannel channel) {
+        return MessagingRpcEndpoint.open(topic -> DDRpcTransport.forChannel(channel, topic, Thread::startVirtualThread), codec());
     }
 
     @NotNull
-    private static RpcCodec<JsonElement> codec() {
+    private static MessagingRpcCodec<JsonElement> codec() {
         return new DDGsonRpcCodec(new Gson());
     }
 
     @NotNull
-    private static Object bind(@NotNull RpcEndpoint endpoint, boolean handler) {
+    private static Object bind(@NotNull MessagingRpcEndpoint endpoint, boolean handler) {
         return handler
             ? endpoint.register(TOPIC, Echo.class, value -> value, codec())
             : endpoint.proxy(TOPIC, Echo.class, codec());
@@ -680,9 +681,9 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
     }
 
     @NotNull
-    private static RpcException failure(@NotNull Future<?> pending) {
+    private static MessagingRpcException failure(@NotNull Future<?> pending) {
         ExecutionException failure = Assertions.assertThrows(ExecutionException.class, () -> pending.get(3, TimeUnit.SECONDS));
-        return Assertions.assertInstanceOf(RpcException.class, failure.getCause());
+        return Assertions.assertInstanceOf(MessagingRpcException.class, failure.getCause());
     }
 
     private static void await(@NotNull CountDownLatch latch) {
@@ -760,7 +761,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
         }
 
         @NotNull
-        private RpcEndpoint getRpc() throws DBException {
+        private MessagingRpcEndpoint getRpc() throws DBException {
             return connection.getRpc();
         }
 
@@ -886,7 +887,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
     private record TopicSubscription(@NotNull String topic, @NotNull DDMessageListener listener) {
     }
 
-    private record TaggedCodec(@NotNull String tag) implements RpcCodec<JsonElement> {
+    private record TaggedCodec(@NotNull String tag) implements MessagingRpcCodec<JsonElement> {
         @Override
         @NotNull
         public JsonElement encode(@Nullable Object value, @NotNull Type type) {

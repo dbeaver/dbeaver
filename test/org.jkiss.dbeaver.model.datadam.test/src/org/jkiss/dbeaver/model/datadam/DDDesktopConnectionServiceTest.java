@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.datadam;
 import com.dbeaver.datadam.external.api.model.DDConnectionInfo;
 import com.dbeaver.datadam.external.api.transport.DDChannelState;
 import com.dbeaver.datadam.external.api.transport.DDChannelStatus;
-import com.dbeaver.messaging.rpc.RpcEndpoint;
+import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
@@ -144,7 +144,7 @@ class DDDesktopConnectionServiceTest extends DBeaverUnitTest {
 
         ready("first");
 
-        RpcEndpoint endpoint = service.getRpc();
+        MessagingRpcEndpoint endpoint = service.getRpc();
         Assertions.assertSame(endpoint, service.getRpc());
         Mockito.verify(channel, Mockito.never()).subscribe(Mockito.anyString(), Mockito.any());
         Mockito.verify(channel, Mockito.never()).observeState(Mockito.any());
@@ -156,7 +156,7 @@ class DDDesktopConnectionServiceTest extends DBeaverUnitTest {
         Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
         service.start();
         ready("first");
-        RpcEndpoint endpoint = service.getRpc();
+        MessagingRpcEndpoint endpoint = service.getRpc();
         Mockito.doAnswer(invocation -> {
             Assertions.assertTrue(endpoint.isCloseComplete());
             Assertions.assertThrows(DBException.class, service::getRpc);
@@ -178,7 +178,7 @@ class DDDesktopConnectionServiceTest extends DBeaverUnitTest {
         Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
         service.start();
         ready("first");
-        RpcEndpoint endpoint = service.getRpc();
+        MessagingRpcEndpoint endpoint = service.getRpc();
         Mockito.doAnswer(invocation -> {
             Assertions.assertTrue(endpoint.isCloseComplete());
             return null;

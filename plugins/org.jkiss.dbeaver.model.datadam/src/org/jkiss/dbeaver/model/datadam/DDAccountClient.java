@@ -16,8 +16,8 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
-import com.dbeaver.messaging.requestreply.MessageSubscription;
-import com.dbeaver.messaging.rpc.RpcEndpoint;
+import com.dbeaver.messaging.requestreply.MessagingSubscription;
+import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.google.gson.JsonParseException;
 import org.jkiss.code.NotNull;
@@ -149,7 +149,7 @@ public class DDAccountClient extends AbstractRestClient {
     }
 
     private void test() throws DBException {
-        RpcEndpoint rpc = DDDesktopConnectionService.getInstance().getRpc();
+        MessagingRpcEndpoint rpc = DDDesktopConnectionService.getInstance().getRpc();
 
         StorageFiles files = rpc.proxy("dbeaver.storage.files", StorageFiles.class);
 
@@ -165,13 +165,13 @@ public class DDAccountClient extends AbstractRestClient {
     }
 
     private void test2() throws DBException {
-        RpcEndpoint rpc = DDDesktopConnectionService.getInstance().getRpc();
+        MessagingRpcEndpoint rpc = DDDesktopConnectionService.getInstance().getRpc();
 
         DesktopProject handler = projectId -> {
             projectService.refresh(projectId);
         };
 
-        MessageSubscription registration = rpc.register(
+        MessagingSubscription registration = rpc.register(
             "desktop.projects.changed",
             DesktopProject.class,
             handler

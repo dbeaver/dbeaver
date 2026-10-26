@@ -51,18 +51,18 @@ The connection service owns one bidirectional RPC endpoint for the current Deskt
 their topics and can use the default Gson codec or supply their own codec per proxy or implementation:
 
 ```java
-RpcEndpoint endpoint = DDDesktopConnectionService.getInstance().getRpc();
+MessagingRpcEndpoint endpoint = DDDesktopConnectionService.getInstance().getRpc();
 StorageService ordinaryFiles = endpoint.proxy("files", StorageService.class);
 DDGsonRpcCodec codec = new DDGsonRpcCodec(new GsonBuilder().registerTypeAdapter(FileInfo.class, fileInfoAdapter).create());
 
-MessageSubscription registration = endpoint.register("projects.changed", ProjectCallbacks.class, callbacks, codec);
+MessagingSubscription registration = endpoint.register("projects.changed", ProjectCallbacks.class, callbacks, codec);
 StorageService files = endpoint.proxy("storage.files", StorageService.class, codec);
 ```
 
-`RpcEndpoint` is from `com.dbeaver.messaging.rpc`, `MessageSubscription` is from
+`MessagingRpcEndpoint` is from `com.dbeaver.messaging.rpc`, `MessagingSubscription` is from
 `com.dbeaver.messaging.requestreply`, and `DDGsonRpcCodec` is from `com.dbeaver.datadam.external.api.rpc`.
 The application supplies the public service interfaces and their implementations; each RPC operation is synchronous
-and accepts one argument. Make proxy calls on a worker thread and handle `RpcException` failures.
+and accepts one argument. Make proxy calls on a worker thread and handle `MessagingRpcException` failures.
 The overloads without a codec use the connection owner's default `DDGsonRpcCodec` with an uncustomized Gson instance.
 An explicitly supplied codec belongs only to that proxy or registration; one plugin's type adapters do not change
 another plugin's serialization.

@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.datadam;
 
 import com.dbeaver.datadam.external.api.model.DDHello;
 import com.dbeaver.datadam.external.api.transport.DDMessageChannel;
-import com.dbeaver.messaging.rpc.RpcEndpoint;
+import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
@@ -97,7 +97,7 @@ public final class DDDesktopConnectionService implements AutoCloseable {
     }
 
     @NotNull
-    public RpcEndpoint getRpc() throws DBException {
+    public MessagingRpcEndpoint getRpc() throws DBException {
         return rpc.getRpc();
     }
 
