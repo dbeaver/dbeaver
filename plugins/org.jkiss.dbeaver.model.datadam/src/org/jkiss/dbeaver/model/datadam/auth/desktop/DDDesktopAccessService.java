@@ -33,7 +33,7 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 
 /** Coordinates the desktop login and the locally imported project keys. */
@@ -44,7 +44,7 @@ public class DDDesktopAccessService {
     private static final DDDesktopAccessService INSTANCE = new DDDesktopAccessService(DDDesktopTokenManager.getInstance());
 
     private final DDDesktopTokenManager tokenManager;
-    private final ReentrantLock operationLock = new ReentrantLock();
+    private final ReentrantReadWriteLock operationLock = new ReentrantReadWriteLock();
     private final List<Runnable> keyBundleListeners = new CopyOnWriteArrayList<>();
     private final List<DDDesktopAccessListener> accessListeners = new CopyOnWriteArrayList<>();
     private final URI accountUrl = URI.create(DDEndpoints.getAccountBaseUrl());
@@ -79,25 +79,25 @@ public class DDDesktopAccessService {
 
     @Nullable
     public DDKeyBundle getKeyBundle() {
-        if (!operationLock.tryLock()) {
+        if (!operationLock.readLock().tryLock()) {
             return null;
         }
         try {
             return getStatus() != Status.SIGNED_OUT ? keyBundle : null;
         } finally {
-            operationLock.unlock();
+            operationLock.readLock().unlock();
         }
     }
 
     @NotNull
     public String getAccessTokenForResource(@NotNull URI resource) throws DBException {
-        if (!operationLock.tryLock()) {
+        if (!operationLock.readLock().tryLock()) {
             throw new DBException("DataDam access operation is in progress");
         }
         try {
             return tokenManager.getAccessTokenForResource(resource);
         } finally {
-            operationLock.unlock();
+            operationLock.readLock().unlock();
         }
     }
 
@@ -109,7 +109,7 @@ public class DDDesktopAccessService {
     }
 
     public void load() throws DBException {
-        operationLock.lock();
+        operationLock.writeLock().lock();
         try {
             if (tokenManager.getStatus() != DDDesktopTokenManager.Status.UNLOADED) {
                 return;
@@ -124,7 +124,7 @@ public class DDDesktopAccessService {
     }
 
     public void signIn(@NotNull DBRProgressMonitor monitor) throws DBException, InterruptedException {
-        operationLock.lock();
+        operationLock.writeLock().lock();
         try {
             notifyAccessListeners(DDDesktopAccessListener::accessChanging);
             tokenManager.signIn(accountUrl, storageUrl, monitor);
@@ -137,7 +137,7 @@ public class DDDesktopAccessService {
     }
 
     public void importKeys(@NotNull String recoveryPhrase) throws DBException {
-        operationLock.lock();
+        operationLock.writeLock().lock();
         try {
             if (tokenManager.getStatus() != DDDesktopTokenManager.Status.SIGNED_IN) {
                 throw new DBException("Sign in to DataDam before importing keys");
@@ -148,23 +148,23 @@ public class DDDesktopAccessService {
             setKeyBundle(bundle);
             log.debug("Imported DataDam encryption keys");
         } finally {
-            operationLock.unlock();
+            operationLock.writeLock().unlock();
         }
     }
 
     public void forgetKeys() throws DBException {
-        operationLock.lock();
+        operationLock.writeLock().lock();
         try {
             DDKeyStore.clear();
             setKeyBundle(null);
             log.debug("Forgot DataDam encryption keys");
         } finally {
-            operationLock.unlock();
+            operationLock.writeLock().unlock();
         }
     }
 
     public void signOut() throws DBException {
-        operationLock.lock();
+        operationLock.writeLock().lock();
         try {
             notifyAccessListeners(DDDesktopAccessListener::accessChanging);
             tokenManager.signOut();
@@ -199,7 +199,7 @@ public class DDDesktopAccessService {
             try {
                 notifyAccessListeners(DDDesktopAccessListener::accessChanged);
             } finally {
-                operationLock.unlock();
+                operationLock.writeLock().unlock();
             }
         }
     }
@@ -224,7 +224,7 @@ public class DDDesktopAccessService {
     }
 
     private void expireAccess(long version) {
-        operationLock.lock();
+        operationLock.writeLock().lock();
         try {
             if (version != expiryVersion) {
                 return;
@@ -236,7 +236,7 @@ public class DDDesktopAccessService {
                 scheduleExpiry();
             }
         } finally {
-            operationLock.unlock();
+            operationLock.writeLock().unlock();
         }
     }
 
