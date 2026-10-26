@@ -26,11 +26,11 @@ import java.net.URISyntaxException;
 import java.time.Instant;
 import java.util.Locale;
 
-/** Checks when a token expires and whether a request targets one of its stored origins. */
-class DDDesktopTokenValidator {
+/** Checks expiry and prevents the credential from being sent outside its allowed service endpoints. */
+public class DDDesktopTokenValidator {
     private static final int EXPIRY_MARGIN_SECONDS = 30;
 
-    boolean isExpired(@NotNull DDDesktopUserToken token) {
+    public boolean isExpired(@NotNull DDDesktopUserToken token) {
         return !expiresAt(token).isAfter(Instant.now());
     }
 
@@ -48,21 +48,46 @@ class DDDesktopTokenValidator {
         }
     }
 
-    boolean matchesResource(@NotNull DDDesktopUserToken token, @NotNull URI resource) {
+    public boolean matchesResource(@NotNull DDDesktopUserToken token, @NotNull URI resource) {
         try {
             if ("ws".equalsIgnoreCase(resource.getScheme()) || "wss".equalsIgnoreCase(resource.getScheme())) {
                 DDEndpoints.requireSecureWebSocketTransport(resource);
                 URI externalDam = URI.create(DDEndpoints.getRemoteDamWebSocketUrl());
                 DDEndpoints.requireSecureWebSocketTransport(externalDam);
                 return originOf(resource).equals(originOf(externalDam))
-                    && originOf(URI.create(token.accountOrigin())).equals(originOf(URI.create(DDEndpoints.getAccountBaseUrl())))
-                    && originOf(URI.create(token.storageOrigin())).equals(originOf(URI.create(DDEndpoints.getStorageBaseUrl())));
+                    && matchesEndpoint(token, URI.create(DDEndpoints.getAccountBaseUrl()))
+                    && matchesEndpoint(token, URI.create(DDEndpoints.getStorageBaseUrl()));
             }
-            URI requestedOrigin = originOf(resource);
-            return requestedOrigin.equals(originOf(URI.create(token.accountOrigin())))
-                || requestedOrigin.equals(originOf(URI.create(token.storageOrigin())));
+            return matchesEndpoint(token, resource);
         } catch (DBException | RuntimeException e) {
             return false;
+        }
+    }
+
+    private boolean matchesEndpoint(@NotNull DDDesktopUserToken token, @NotNull URI resource) {
+        URI requestedOrigin = originOf(resource);
+        String path = normalizedPath(resource);
+        return token.endpoints().stream().map(URI::create).anyMatch(endpoint -> {
+            if (!requestedOrigin.equals(originOf(endpoint))) {
+                return false;
+            }
+            String basePath = normalizedPath(endpoint);
+            return basePath == null || basePath.isEmpty() || "/".equals(basePath)
+                || path.equals(basePath) || path.startsWith(basePath.endsWith("/") ? basePath : basePath + "/");
+        });
+    }
+
+    @NotNull
+    private String normalizedPath(@NotNull URI uri) {
+        String path = uri.getPath();
+        if (path == null || path.contains("\\")) {
+            throw new IllegalArgumentException("Invalid DataDam resource path");
+        }
+        try {
+            // Decode before normalizing so encoded dot segments cannot escape an allowed endpoint.
+            return new URI(null, null, path, null, null).normalize().getPath();
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("Invalid DataDam resource path", e);
         }
     }
 

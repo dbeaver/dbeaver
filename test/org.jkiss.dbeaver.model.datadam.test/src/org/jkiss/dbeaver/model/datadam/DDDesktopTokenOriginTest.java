@@ -29,6 +29,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.List;
+import java.util.Set;
 
 class DDDesktopTokenOriginTest {
     private static final String ACCOUNT = "https://account.staging.datadam.invalid";
@@ -48,7 +49,7 @@ class DDDesktopTokenOriginTest {
     void setUp() throws ReflectiveOperationException {
         String desktopPackage = DDDesktopAccessService.class.getPackageName();
         Class<?> tokenType = Class.forName(desktopPackage + ".DDDesktopUserToken");
-        tokenConstructor = tokenType.getDeclaredConstructor(String.class, String.class, String.class, String.class);
+        tokenConstructor = tokenType.getDeclaredConstructor(String.class, String.class, Set.class, Set.class);
         tokenConstructor.setAccessible(true);
         Class<?> validatorType = Class.forName(desktopPackage + ".DDDesktopTokenValidator");
         Constructor<?> validatorConstructor = validatorType.getDeclaredConstructor();
@@ -68,7 +69,7 @@ class DDDesktopTokenOriginTest {
     }
 
     @Test
-    void acceptsTheExternalEndpointWithExistingSavedTokenFields() throws ReflectiveOperationException {
+    void acceptsTheExternalEndpointWithSavedServiceEndpoints() throws ReflectiveOperationException {
         Assertions.assertTrue(matches(ACCOUNT, STORAGE, EXTERNAL));
         Assertions.assertTrue(matches(ACCOUNT + ":443", STORAGE + ":443", EXTERNAL));
         Assertions.assertTrue(matches(ACCOUNT, STORAGE, "wss://external-dam.staging.datadam.invalid:443/ws"));
@@ -87,6 +88,15 @@ class DDDesktopTokenOriginTest {
         Assertions.assertFalse(matches(ACCOUNT, STORAGE, EXTERNAL));
         configure(ACCOUNT, PROD_STORAGE, EXTERNAL);
         Assertions.assertFalse(matches(ACCOUNT, STORAGE, EXTERNAL));
+    }
+
+    @Test
+    void rejectsMissingOrPathRestrictedServiceEndpointsForWebSockets() throws ReflectiveOperationException {
+        for (Set<String> allowed : List.of(Set.of(ACCOUNT), Set.of(STORAGE),
+            Set.of(ACCOUNT + "/mcp", STORAGE), Set.of(ACCOUNT, STORAGE + "/mcp"))) {
+            Object token = tokenConstructor.newInstance("existing-access-token", "https://sso.example", allowed, Set.of());
+            Assertions.assertFalse((boolean) matchesResource.invoke(validator, token, URI.create(EXTERNAL)), allowed.toString());
+        }
     }
 
     @Test
@@ -207,7 +217,7 @@ class DDDesktopTokenOriginTest {
 
     private boolean matches(@NotNull String account, @NotNull String storage, @NotNull String resource)
             throws ReflectiveOperationException {
-        Object token = tokenConstructor.newInstance("existing-access-token", "https://sso.example", account, storage);
+        Object token = tokenConstructor.newInstance("existing-access-token", "https://sso.example", Set.of(account, storage), Set.of());
         return (boolean) matchesResource.invoke(validator, token, URI.create(resource));
     }
 }
