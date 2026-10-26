@@ -79,6 +79,15 @@ class DDDesktopTokenValidatorTest {
     }
 
     @Test
+    void emptyEndpointPathMatchesRootAndChildRequests() {
+        URI endpoint = URI.create("https://account.example.test");
+        Assertions.assertEquals("", endpoint.getPath());
+        Assertions.assertTrue(validator.matchesResource(api, endpoint));
+        Assertions.assertTrue(validator.matchesResource(api, endpoint.resolve("/")));
+        Assertions.assertTrue(validator.matchesResource(api, endpoint.resolve("/graphql")));
+    }
+
+    @Test
     void endpointMatchingHonorsPathBoundariesAndDecodedTraversal() {
         Assertions.assertTrue(validator.matchesResource(mcp, URI.create("https://mcp.example.test/mcp")));
         Assertions.assertTrue(validator.matchesResource(mcp, URI.create("https://mcp.example.test:443/mcp/connect")));
