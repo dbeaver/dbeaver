@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.security.macos;
 
 import org.eclipse.equinox.internal.security.storage.PasswordProviderSelector;
+import org.eclipse.equinox.internal.security.storage.friends.InternalExchangeUtils;
 import org.eclipse.equinox.security.storage.ISecurePreferences;
 import org.eclipse.equinox.security.storage.SecurePreferencesFactory;
 import org.eclipse.equinox.security.storage.provider.IProviderHints;
@@ -38,6 +39,11 @@ class MacOSSecurePreferencesTest {
     void newStorageUsesKeychain(@NotNull @TempDir Path directory) throws Exception {
         Assertions.assertEquals(DBSecurityProviders.MACOS_KEYCHAIN.toLowerCase(Locale.ROOT),
             PasswordProviderSelector.getInstance().findStorageModule(DBSecurityProviders.MACOS_KEYCHAIN).getID());
+        var provider = InternalExchangeUtils.passwordProvidersFind().stream()
+            .filter(item -> item.getId().equals(DBSecurityProviders.MACOS_KEYCHAIN.toLowerCase(Locale.ROOT)))
+            .findFirst().orElseThrow();
+        Assertions.assertEquals("macOS Keychain", provider.getName());
+        Assertions.assertTrue(provider.getDescription().contains("macOS Keychain"));
         ISecurePreferences preferences = SecurePreferencesFactory.open(
             directory.resolve("secure_storage").toUri().toURL(),
             Map.of(IProviderHints.REQUIRED_MODULE_ID, DBSecurityProviders.MACOS_KEYCHAIN)

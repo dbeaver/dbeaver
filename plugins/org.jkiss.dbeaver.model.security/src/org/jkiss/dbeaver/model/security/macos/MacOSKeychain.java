@@ -33,7 +33,8 @@ import java.util.Arrays;
 
 /** JNA bridge to the macOS Keychain. */
 final class MacOSKeychain {
-    private static final String SERVICE = "org.jkiss.dbeaver.secure.storage";
+    private static final String SERVICE = "com.dbeaver.SecureStorage";
+    private static final String LEGACY_SERVICE = "org.jkiss.dbeaver.secure.storage";
     private static final String ACCOUNT = "master-password";
     private static final int ERR_SEC_SUCCESS = 0;
     private static final int ERR_SEC_ITEM_NOT_FOUND = -25300;
@@ -52,13 +53,20 @@ final class MacOSKeychain {
 
     @Nullable
     static byte[] getPassword() {
-        byte[] password = getPassword(true);
-        return password != null ? password : getPassword(false);
+        byte[] password = getPassword(SERVICE);
+        // Existing secure preferences still need the password stored under the old service.
+        return password != null ? password : getPassword(LEGACY_SERVICE);
     }
 
     @Nullable
-    private static byte[] getPassword(boolean dataProtection) {
-        CFMutableDictionaryRef query = createQuery(dataProtection);
+    private static byte[] getPassword(@NotNull String service) {
+        byte[] password = getPassword(service, true);
+        return password != null ? password : getPassword(service, false);
+    }
+
+    @Nullable
+    private static byte[] getPassword(@NotNull String service, boolean dataProtection) {
+        CFMutableDictionaryRef query = createQuery(service, dataProtection);
         try {
             set(query, "kSecReturnData", booleanValue("kCFBooleanTrue"));
             PointerByReference result = new PointerByReference();
@@ -100,7 +108,7 @@ final class MacOSKeychain {
     }
 
     private static int addPassword(@NotNull byte[] password, boolean dataProtection) {
-        CFMutableDictionaryRef attributes = createQuery(dataProtection);
+        CFMutableDictionaryRef attributes = createQuery(SERVICE, dataProtection);
         try {
             CFDataRef value = createData(password);
             try {
@@ -118,7 +126,7 @@ final class MacOSKeychain {
     }
 
     @NotNull
-    private static CFMutableDictionaryRef createQuery(boolean dataProtection) {
+    private static CFMutableDictionaryRef createQuery(@NotNull String service, boolean dataProtection) {
         CFMutableDictionaryRef query = CF.CFDictionaryCreateMutable(
             null,
             new CFIndex(0),
@@ -129,7 +137,7 @@ final class MacOSKeychain {
         if (dataProtection) {
             set(query, "kSecUseDataProtectionKeychain", booleanValue("kCFBooleanTrue"));
         }
-        putString(query, "kSecAttrService", SERVICE);
+        putString(query, "kSecAttrService", service);
         putString(query, "kSecAttrAccount", ACCOUNT);
         return query;
     }
