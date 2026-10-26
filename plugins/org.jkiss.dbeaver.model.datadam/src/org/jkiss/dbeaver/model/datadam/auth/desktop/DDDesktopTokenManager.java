@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
+import com.dbeaver.datadam.sso.api.DDSsoConstants;
+import com.dbeaver.datadam.sso.api.DDSsoScopes;
+import com.dbeaver.datadam.sso.api.model.DDSsoConfigResponse;
 import com.google.gson.JsonObject;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -28,9 +31,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.net.URI;
+import java.util.Set;
 
 /**
- * Owns the desktop access token. Reading status or attaching a token never starts a browser flow.
+ * Owns the desktop access token. Reading status never starts a browser flow.
  */
 class DDDesktopTokenManager {
     public enum Status { SIGNED_OUT, UNLOADED, SIGNED_IN, EXPIRED }
@@ -65,7 +69,7 @@ class DDDesktopTokenManager {
         if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_LOGGED_IN)) {
             return Status.SIGNED_OUT;
         }
-        DDDesktopUserToken current = token;
+        var current = token;
         if (current == null) {
             return Status.UNLOADED;
         }
@@ -75,7 +79,7 @@ class DDDesktopTokenManager {
     /** Returns readable claims even for an expired token; these are not verified credentials. */
     @Nullable
     JsonObject getUnverifiedTokenClaims() {
-        DDDesktopUserToken current = token;
+        var current = token;
         return current == null ? null : JSONUtils.parseJwtClaims(current.accessToken());
     }
 
@@ -85,24 +89,25 @@ class DDDesktopTokenManager {
         }
         DDDesktopUserToken saved = store.load();
         if (saved != null && !validator.matchesResource(saved, resource)) {
-            log.debug("Saved DataDam desktop token does not match the requested resource");
+            log.debug("Saved DataDam desktop token does not match the requested endpoint");
             saved = null;
         }
         synchronized (this) {
-            if (getStatus() == Status.UNLOADED) {
-                token = saved;
+            if (getStatus() != Status.UNLOADED) {
+                return;
             }
+            if (saved == null) {
+                signOut();
+                return;
+            }
+            token = saved;
         }
-        if (getStatus() == Status.UNLOADED) {
-            signOut();
-        } else {
-            log.debug("Loaded DataDam desktop token");
-        }
+        log.debug("Loaded DataDam desktop token");
     }
 
     @NotNull
     public String getAccessTokenForResource(@NotNull URI resource) throws DBException {
-        DDDesktopUserToken current = token;
+        var current = token;
         if (current == null || validator.isExpired(current)
             || !DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_LOGGED_IN)) {
             throw new DBException("Sign in to DataDam first");
@@ -122,10 +127,12 @@ class DDDesktopTokenManager {
         @NotNull URI accountUrl, @NotNull URI storageUrl, @NotNull DBRProgressMonitor monitor,
         @NotNull DDDesktopSsoLogin.BrowserOpener browser
     ) throws DBException, InterruptedException {
-        URI issuer = discoverIssuer(accountUrl);
-        var result = login.login(issuer, monitor, browser);
+        var config = discover(accountUrl);
+        var result = login.login(URI.create(config.issuer()), null,
+            Set.of(DDSsoConstants.SCOPE_ACCOUNT_FULL_ACCESS, DDSsoConstants.SCOPE_DBEAVER_STORAGE_FULL_ACCESS,
+                DDSsoConstants.SCOPE_MCP_CONNECT), monitor, browser);
         DDDesktopUserToken saved = new DDDesktopUserToken(
-            result.accessToken(), issuer.toString(), accountUrl.toString(), storageUrl.toString());
+            result.accessToken(), config.issuer(), Set.of(accountUrl.toString(), storageUrl.toString()), DDSsoScopes.parse(result.scope()));
         if (validator.isExpired(saved)) {
             throw new DBException("DataDam desktop token has expired");
         }
@@ -147,7 +154,7 @@ class DDDesktopTokenManager {
     }
 
     @NotNull
-    private URI discoverIssuer(@NotNull URI accountUrl) throws DBException {
+    private DDSsoConfigResponse discover(@NotNull URI accountUrl) throws DBException {
         try (DDDesktopSsoClient client = new DDDesktopSsoClient(accountUrl)) {
             return client.discover();
         }
