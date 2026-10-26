@@ -39,10 +39,18 @@ function Get-UpdateEntries([string]$Payload) {
         Sort-Object -Unique
 }
 
+function Get-UpdateLauncherName([string]$Launcher) {
+    $name = [IO.Path]::GetFileNameWithoutExtension($Launcher)
+    # The console launcher shares dbeaver.ini with the GUI launcher; there is no dbeaverc.ini.
+    if ($name -eq 'dbeaverc') { return 'dbeaver' }
+    return $name
+}
+
 function Assert-UpdateLayout([string]$Payload, [string]$Installation, [string]$Launcher, [string]$Workspace) {
+    $ini = (Get-UpdateLauncherName $Launcher) + '.ini'
     if (![IO.File]::Exists((Join-Path $Payload $Launcher)) -or
         ![IO.Directory]::Exists((Join-Path $Payload 'plugins')) -or
-        ![IO.File]::Exists((Join-Path $Payload ([IO.Path]::ChangeExtension($Launcher, '.ini'))))) {
+        ![IO.File]::Exists((Join-Path $Payload $ini))) {
         throw 'The archive does not contain the expected DBeaver distribution.'
     }
     foreach ($name in (Get-UpdateEntries $Payload)) {
@@ -131,7 +139,7 @@ try {
     $lockPath = Join-Path $installation '.update.lock'
     $updateLock = [IO.File]::Open($lockPath, [IO.FileMode]::OpenOrCreate, [IO.FileAccess]::ReadWrite, [IO.FileShare]::None)
     # A different workspace can have another instance running from the same installation.
-    $launcherName = [IO.Path]::GetFileNameWithoutExtension($launcher)
+    $launcherName = Get-UpdateLauncherName $launcher
     foreach ($running in (Get-Process -Name @($launcherName, ($launcherName + 'c'), 'java', 'javaw') -ErrorAction SilentlyContinue)) {
         $executable = $running.Path
         if ($executable -and $executable.StartsWith($installation + '\', [StringComparison]::OrdinalIgnoreCase)) {
