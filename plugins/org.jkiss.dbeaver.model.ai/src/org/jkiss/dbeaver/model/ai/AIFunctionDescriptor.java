@@ -20,8 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 
-import java.util.Map;
-
 /**
  * AI function metadata.
  */
@@ -83,11 +81,6 @@ public interface AIFunctionDescriptor {
 
     @NotNull
     AIFunctionParameter[] getParameters();
-
-    @Nullable
-    default Map<String, Object> getInputSchema() {
-        return null;
-    }
 
     @Nullable
     AIFunctionParameter getParameter(@NotNull String name);

@@ -16,11 +16,9 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
-import com.google.gson.annotations.JsonAdapter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.AIFunctionParameter;
-import org.jkiss.dbeaver.model.ai.utils.JsonSchemaAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,8 +30,7 @@ public class OAITool {
     public String type;
     public String name;
     public String description;
-    @JsonAdapter(JsonSchemaAdapter.class)
-    public Object parameters;
+    public OAIToolParameters parameters;
 
     public OAITool() {
     }
@@ -44,11 +41,9 @@ public class OAITool {
         tool.type = OAITool.TYPE_FUNCTION;
         tool.name = fd.getFullId();
         tool.description = fd.getAiDescription();
-        if (fd.getInputSchema() != null) {
-            tool.parameters = fd.getInputSchema();
-        } else if (fd.getParameters().length > 0) {
-            OAIToolParameters parameters = new OAIToolParameters();
-            parameters.type = OAIToolParameters.TYPE_OBJECT;
+        if (fd.getParameters().length > 0) {
+            tool.parameters = new OAIToolParameters();
+            tool.parameters.type = OAIToolParameters.TYPE_OBJECT;
             List<String> requiredFields = new ArrayList<>();
             for (AIFunctionParameter param : fd.getParameters()) {
                 OAIToolParameter tp = new OAIToolParameter();
@@ -58,12 +53,11 @@ public class OAITool {
                 if (param.isRequired()) {
                     requiredFields.add(param.getName());
                 }
-                parameters.properties.put(param.getName(), tp);
+                tool.parameters.properties.put(param.getName(), tp);
             }
             if (!requiredFields.isEmpty()) {
-                parameters.required = requiredFields.toArray(new String[0]);
+                tool.parameters.required = requiredFields.toArray(new String[0]);
             }
-            tool.parameters = parameters;
         }
         return tool;
     }
