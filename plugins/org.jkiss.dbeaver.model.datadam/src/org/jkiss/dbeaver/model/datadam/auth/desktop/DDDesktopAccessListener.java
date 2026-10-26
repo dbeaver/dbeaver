@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
+/** Receives notifications about changes to the desktop DataDam access state. */
 public interface DDDesktopAccessListener {
     void accessChanging();
 
