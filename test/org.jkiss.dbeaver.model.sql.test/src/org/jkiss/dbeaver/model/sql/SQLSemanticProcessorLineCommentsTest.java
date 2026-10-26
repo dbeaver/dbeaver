@@ -16,15 +16,19 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import net.sf.jsqlparser.parser.Token;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+
+import java.util.Arrays;
 
 public class SQLSemanticProcessorLineCommentsTest extends DBeaverUnitTest {
 
@@ -156,5 +160,22 @@ public class SQLSemanticProcessorLineCommentsTest extends DBeaverUnitTest {
     public void standardDialectIsUnaffected() throws Exception {
         Statement statement = SQLSemanticProcessor.parseQuery(BasicSQLDialect.INSTANCE, "SELECT * FROM actor -- comment");
         Assertions.assertInstanceOf(PlainSelect.class, statement);
+    }
+
+    @Test
+    public void tokensFromParsedQuery() throws Exception {
+        Token[] tokens = SQLSemanticProcessor.parseSqlTextForTokens(BasicSQLDialect.INSTANCE, "SELECT name FROM actor");
+        Assertions.assertArrayEquals(
+            new String[] {"SELECT", "name", "FROM", "actor"},
+            Arrays.stream(tokens).map(token -> token.image).toArray(String[]::new)
+        );
+    }
+
+    @Test
+    public void statementWithoutAstHasNoTokens() {
+        Assertions.assertThrows(
+            DBCException.class,
+            () -> SQLSemanticProcessor.parseSqlTextForTokens(BasicSQLDialect.INSTANCE, "UPDATE actor SET name = 'test'")
+        );
     }
 }
