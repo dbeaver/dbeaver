@@ -46,7 +46,8 @@ import java.util.concurrent.atomic.AtomicReference;
 class DDDesktopSsoLoginTest {
     private static final Set<String> SCOPES = Set.of("account:full_access", "dbeaver-storage:full_access", "mcp:connect");
     private final AtomicReference<String> form = new AtomicReference<>();
-    private final AtomicReference<String> responseScope = new AtomicReference<>("account:full_access dbeaver-storage:full_access mcp:connect");
+    private final AtomicReference<String> responseScope =
+        new AtomicReference<>("account:full_access dbeaver-storage:full_access mcp:connect");
     private final AtomicReference<String> tokenRedirect = new AtomicReference<>();
     private final AtomicInteger redirectedRequests = new AtomicInteger();
     private final DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
@@ -118,10 +119,12 @@ class DDDesktopSsoLoginTest {
             Assertions.assertTrue(callback.getPort() > 0);
             String query = "?code=" + "B".repeat(43) + "&state=" + params.get("state") + issuerParameter();
             Assertions.assertEquals(400, get(callback + "?code=" + "B".repeat(43) + "&state=" + params.get("state")));
-            Assertions.assertEquals(400, get(callback + "?code=" + "B".repeat(43) + "&state=" + params.get("state") + "&iss=https%3A%2F%2Fwrong.example"));
+            Assertions.assertEquals(400, get(callback + "?code=" + "B".repeat(43)
+                + "&state=" + params.get("state") + "&iss=https%3A%2F%2Fwrong.example"));
             Assertions.assertEquals(400, get(callback + query + "&state=other"));
             Assertions.assertEquals(400, get(callback + "/other" + query));
-            Assertions.assertEquals(400, get(callback + "?code=" + "B".repeat(43) + "&state=wrong" + issuerParameter() + "&extension=value"));
+            Assertions.assertEquals(400, get(callback + "?code=" + "B".repeat(43)
+                + "&state=wrong" + issuerParameter() + "&extension=value"));
             Assertions.assertEquals(400, get(callback + "?code=" + "B".repeat(43) + issuerParameter()));
             Assertions.assertEquals(400, get(callback + "?code=short&state=" + params.get("state") + issuerParameter()));
             Assertions.assertEquals(400, get(callback + "?state=" + params.get("state") + issuerParameter()));
@@ -213,13 +216,15 @@ class DDDesktopSsoLoginTest {
         Assertions.assertFalse(parameters(form.get()).containsKey("resource"));
     }
 
+    @NotNull
     private String issuerParameter() {
         return "&iss=" + URLEncoder.encode(issuer.toString(), StandardCharsets.UTF_8);
     }
 
     private void complete(@NotNull String url) throws DBException {
         Map<String, String> params = parameters(URI.create(url).getRawQuery());
-        Assertions.assertEquals(200, get(params.get("redirect_uri") + "?code=" + "B".repeat(43) + "&state=" + params.get("state") + issuerParameter()));
+        Assertions.assertEquals(200, get(params.get("redirect_uri") + "?code=" + "B".repeat(43)
+            + "&state=" + params.get("state") + issuerParameter()));
     }
 
     private static int get(@NotNull String url) throws DBException {

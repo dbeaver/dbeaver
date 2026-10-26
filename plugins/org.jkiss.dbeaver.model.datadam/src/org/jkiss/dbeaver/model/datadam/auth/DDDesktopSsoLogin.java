@@ -72,7 +72,8 @@ public class DDDesktopSsoLogin {
                         @Override
                         protected boolean isValidCallbackParameters(@NotNull Map<String, String> parameters) {
                             if (!issuer.toString().equals(parameters.get(DDSsoConstants.CLAIM_ISSUER))
-                                || parameters.containsKey(OAuthConstants.PARAM_CODE) == parameters.containsKey(OAuthConstants.PARAM_ERROR)) {
+                                || parameters.containsKey(OAuthConstants.PARAM_CODE)
+                                    == parameters.containsKey(OAuthConstants.PARAM_ERROR)) {
                                 return false;
                             }
                             // OAuth response extensions are ignored; state is checked by the shared handler.

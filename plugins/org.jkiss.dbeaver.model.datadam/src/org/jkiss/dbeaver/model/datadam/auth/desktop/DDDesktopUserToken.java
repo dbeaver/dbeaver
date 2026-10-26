@@ -33,6 +33,7 @@ public record DDDesktopUserToken(
     }
 
     @Override
+    @NotNull
     public String toString() {
         return "DDDesktopUserToken[issuer=" + issuer + "]";
     }

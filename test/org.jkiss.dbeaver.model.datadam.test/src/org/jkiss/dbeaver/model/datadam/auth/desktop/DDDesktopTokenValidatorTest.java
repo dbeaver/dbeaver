@@ -52,7 +52,7 @@ class DDDesktopTokenValidatorTest {
         var constructor = type.getDeclaredConstructor(DBSSecretController.class);
         var load = type.getDeclaredMethod("load");
         var save = type.getDeclaredMethod("save", DDDesktopUserToken.class);
-        var clear = type.getDeclaredMethod("clear");
+        final var clear = type.getDeclaredMethod("clear");
         constructor.setAccessible(true);
         load.setAccessible(true);
         save.setAccessible(true);

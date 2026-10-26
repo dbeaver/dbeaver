@@ -91,7 +91,8 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
             parameters.put(DDSsoConstants.PARAM_RESOURCE, resource);
         }
         DDSsoTokenResponse tokens = executePostRequest(
-            CommonUtils.removeLeadingSlash(DDSsoConstants.TOKEN_PATH), Map.of(), parameters, MediaType.FORM_URLENCODED, DDSsoTokenResponse.class
+            CommonUtils.removeLeadingSlash(DDSsoConstants.TOKEN_PATH), Map.of(), parameters,
+            MediaType.FORM_URLENCODED, DDSsoTokenResponse.class
         );
         if (tokens == null || !DDSsoConstants.TOKEN_TYPE_BEARER.equals(tokens.tokenType()) || tokens.accessToken() == null
             || tokens.accessToken().isBlank() || tokens.expiresIn() <= 0) {
