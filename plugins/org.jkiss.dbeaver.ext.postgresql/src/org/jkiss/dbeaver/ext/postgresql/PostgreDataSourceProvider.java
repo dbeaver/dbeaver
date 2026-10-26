@@ -100,11 +100,12 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider<PostgreDat
             return configToUse.getUrl();
         }
 
-        if (CommonUtils.notEmpty(configToUse.getHostName()).contains(",")) {
+        String hostName = CommonUtils.notEmpty(configToUse.getHostName());
+        if (hostName.contains(",") || hostName.contains(":")) {
             configToUse = new DBPConnectionConfiguration(configToUse);
             String port = CommonUtils.notEmpty(configToUse.getHostPort());
             // the URL template appends the port to the final host
-            configToUse.setHostName(Arrays.stream(configToUse.getHostName().split(",", -1))
+            configToUse.setHostName(Arrays.stream(hostName.split(",", -1))
                 .map(host -> host.contains(":") && !host.startsWith("[") ? "[" + host + "]" : host)
                 .collect(Collectors.joining((port.isEmpty() ? "" : ":" + port) + ",")));
         }

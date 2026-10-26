@@ -1537,6 +1537,34 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void hostBasedDiscoveryBracketsSingleIpv6HostsWithoutChangingDesktopSettings() throws Exception {
+        PostgreDataSourceProvider provider = new PostgreDataSourceProvider();
+        DBPDriver driver = dataSource.getContainer().getDriver();
+        Map<String, String> hosts = Map.of(
+            "::1", "[::1]",
+            "2001:db8::1", "[2001:db8::1]",
+            "[::1]", "[::1]",
+            "[2001:db8::1]", "[2001:db8::1]"
+        );
+        for (var host : hosts.entrySet()) {
+            for (String port : List.of("", "5432", "6543")) {
+                DBPConnectionConfiguration configuration = publisherConfiguration();
+                configuration.setHostName(host.getKey());
+                configuration.setHostPort(port);
+                configuration.setDatabaseName("sales");
+                configuration.setProperty("targetServerType", "secondary");
+                configuration.updateHandler(publisherHandler("desktop-tunnel"));
+                String expected = "jdbc:postgresql://" + host.getValue() + (port.isEmpty() ? "" : ":" + port) + "/sales";
+                Assertions.assertEquals(expected, provider.getConnectionURL(driver, configuration));
+                Assertions.assertEquals(host.getKey(), configuration.getHostName());
+                Assertions.assertEquals(port, configuration.getHostPort());
+                Assertions.assertEquals("secondary", configuration.getProperty("targetServerType"));
+                Assertions.assertTrue(configuration.hasHandler("desktop-tunnel"));
+            }
+        }
+    }
+
+    @Test
     public void publicationDiscoveryRejectsMismatchedHostAndPortCounts() {
         for (String uri : List.of(
             "postgresql://old:65431,other:65432/sales?host=publisher",
