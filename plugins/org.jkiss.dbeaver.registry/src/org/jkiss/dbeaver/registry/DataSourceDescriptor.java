@@ -623,13 +623,7 @@ public class DataSourceDescriptor
     @Nullable
     @Override
     public DBSObjectFilter getObjectFilter(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch) {
-        DBSObjectFilter connectionFilter = getConnectionObjectFilter(type, parentObject, firstMatch);
-        DBSObjectFilter userFilter = getUserObjectFilter(type, parentObject, firstMatch);
-        DBSObjectFilter effectiveFilter = DBSObjectFilter.conjunction(connectionFilter, userFilter);
-        if (effectiveFilter != null || !firstMatch) {
-            return effectiveFilter;
-        }
-        return userFilter != null ? userFilter : connectionFilter;
+        return getConnectionObjectFilter(type, parentObject, firstMatch);
     }
 
     @Nullable

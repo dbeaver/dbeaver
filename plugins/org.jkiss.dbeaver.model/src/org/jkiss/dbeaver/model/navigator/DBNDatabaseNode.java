@@ -830,7 +830,14 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         DBPDataSourceContainer dataSource = getDataSourceContainer();
         Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
         if (childrenClass != null) {
-            return dataSource.getObjectFilter(childrenClass, getFilterObject(), firstMatch);
+            DBSObject parentObject = getFilterObject();
+            DBSObjectFilter connectionFilter = dataSource.getConnectionObjectFilter(childrenClass, parentObject, firstMatch);
+            DBSObjectFilter userFilter = dataSource.getUserObjectFilter(childrenClass, parentObject, firstMatch);
+            DBSObjectFilter effectiveFilter = DBSObjectFilter.conjunction(connectionFilter, userFilter);
+            if (effectiveFilter != null || !firstMatch) {
+                return effectiveFilter;
+            }
+            return userFilter != null ? userFilter : connectionFilter;
         }
         return null;
     }

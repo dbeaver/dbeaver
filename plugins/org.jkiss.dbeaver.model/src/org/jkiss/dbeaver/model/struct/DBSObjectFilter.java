@@ -86,12 +86,8 @@ public class DBSObjectFilter {
         return filter;
     }
 
-    /**
-     * Returns the filters that form this effective filter. A filter composed from multiple filters is read-only,
-     * except for case sensitivity that is propagated to every component.
-     */
     @NotNull
-    public List<DBSObjectFilter> getConjunctiveFilters() {
+    private List<DBSObjectFilter> getConjunctiveFilters() {
         return conjunctiveFilters == null ? List.of(this) : conjunctiveFilters;
     }
 

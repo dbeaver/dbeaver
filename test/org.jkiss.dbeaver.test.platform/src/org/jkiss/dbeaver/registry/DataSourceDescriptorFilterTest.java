@@ -52,7 +52,7 @@ class DataSourceDescriptorFilterTest {
     }
 
     @Test
-    void connectionAndUserFiltersAreStoredSeparatelyAndAppliedTogether() {
+    void connectionAndUserFiltersAreStoredSeparately() {
         DBSObjectFilter connectionFilter = new DBSObjectFilter();
         connectionFilter.setInclude(List.of("prod_%"));
         DBSObjectFilter userFilter = new DBSObjectFilter();
@@ -63,9 +63,7 @@ class DataSourceDescriptorFilterTest {
 
         Assertions.assertSame(connectionFilter, dataSource.getConnectionObjectFilter(String.class, null, true));
         Assertions.assertSame(userFilter, dataSource.getUserObjectFilter(String.class, null, true));
-        Assertions.assertTrue(dataSource.getObjectFilter(String.class, null, false).matches("prod_eu"));
-        Assertions.assertFalse(dataSource.getObjectFilter(String.class, null, false).matches("test_eu"));
-        Assertions.assertFalse(dataSource.getObjectFilter(String.class, null, false).matches("prod_us"));
+        Assertions.assertSame(connectionFilter, dataSource.getObjectFilter(String.class, null, false));
 
         dataSource.setUserObjectFilter(String.class, null, null);
 
@@ -117,7 +115,7 @@ class DataSourceDescriptorFilterTest {
         Assertions.assertEquals(userFilter, copy.getUserObjectFilter(String.class, null, true));
         Assertions.assertNotSame(connectionFilter, copy.getConnectionObjectFilter(String.class, null, true));
         Assertions.assertNotSame(userFilter, copy.getUserObjectFilter(String.class, null, true));
-        Assertions.assertTrue(copy.getObjectFilter(String.class, null, false).matches("prod_eu"));
+        Assertions.assertEquals(connectionFilter, copy.getObjectFilter(String.class, null, false));
     }
 
     @Test

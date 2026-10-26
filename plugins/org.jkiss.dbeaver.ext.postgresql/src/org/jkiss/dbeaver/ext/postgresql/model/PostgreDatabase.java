@@ -1372,19 +1372,12 @@ public class PostgreDatabase extends JDBCRemoteInstance
                     catalogFilters = new DBSObjectFilter();
                     catalogFilters.addInclude(object != null ? object.getName() : objectName);
                 } else {
-                    List<DBSObjectFilter> filterCopies = new ArrayList<>();
-                    for (DBSObjectFilter filter : catalogFilters.getConjunctiveFilters()) {
-                        DBSObjectFilter filterCopy = new DBSObjectFilter(filter);
-                        // Always read catalog schema
-                        List<String> includeFilters = filterCopy.getInclude();
-                        if (!CommonUtils.isEmpty(includeFilters) &&
-                            !includeFilters.contains(PostgreConstants.CATALOG_SCHEMA_NAME)
-                        ) {
-                            filterCopy.addInclude(PostgreConstants.CATALOG_SCHEMA_NAME);
-                        }
-                        filterCopies.add(filterCopy);
+                    catalogFilters = new DBSObjectFilter(catalogFilters);
+                    // Always read catalog schema
+                    List<String> includeFilters = catalogFilters.getInclude();
+                    if (!CommonUtils.isEmpty(includeFilters) && !includeFilters.contains(PostgreConstants.CATALOG_SCHEMA_NAME)) {
+                        catalogFilters.addInclude(PostgreConstants.CATALOG_SCHEMA_NAME);
                     }
-                    catalogFilters = DBSObjectFilter.conjunction(filterCopies.toArray(DBSObjectFilter[]::new));
                 }
                 JDBCUtils.appendFilterClause(
                     catalogQuery,

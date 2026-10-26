@@ -46,11 +46,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
 * SQL Server schema
@@ -410,32 +406,20 @@ public class SQLServerSchema implements DBSSchema, DBPSaveableObject, DBPQualifi
             } else {
                 DBSObjectFilter tableFilters = dataSource.getContainer().getObjectFilter(SQLServerTableBase.class, owner, false);
                 if (tableFilters != null && !tableFilters.isEmpty()) {
-                    for (DBSObjectFilter filter : tableFilters.getConjunctiveFilters()) {
-                        if (filter.isNotApplicable()) {
-                            continue;
-                        }
-                        sql.append(" AND (");
-                        boolean hasCondition = false;
-                        if (!CommonUtils.isEmpty(filter.getInclude())) {
-                            sql.append("(");
-                            for (String incName : filter.getInclude()) {
-                                if (hasCondition) {
-                                    sql.append(" OR ");
-                                }
-                                hasCondition = true;
-                                sql.append("o.name LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
-                            }
-                            sql.append(")");
-                        }
-                        for (String excName : CommonUtils.safeCollection(filter.getExclude())) {
-                            if (hasCondition) {
-                                sql.append(" AND ");
-                            }
-                            hasCondition = true;
-                            sql.append("o.name NOT LIKE ").append(SQLUtils.quoteString(session.getDataSource(), excName));
-                        }
-                        sql.append(")");
+                    sql.append(" AND (");
+                    boolean hasCond = false;
+                    for (String incName : CommonUtils.safeCollection(tableFilters.getInclude())) {
+                        if (hasCond) sql.append(" OR ");
+                        hasCond = true;
+                        sql.append(" o.name LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
                     }
+                    hasCond = false;
+                    for (String incName : CommonUtils.safeCollection(tableFilters.getExclude())) {
+                        if (hasCond) sql.append(" OR ");
+                        hasCond = true;
+                        sql.append(" o.name NOT LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
+                    }
+                    sql.append(")");
                 }
             }
 
