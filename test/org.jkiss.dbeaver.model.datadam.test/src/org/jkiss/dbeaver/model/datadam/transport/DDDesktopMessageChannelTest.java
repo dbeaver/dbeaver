@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.model.datadam.transport;
 
 import com.dbeaver.datadam.messaging.api.DDMessagingProtocol;
-import com.dbeaver.datadam.messaging.api.model.DDMessagingConnectionInfo;
+import com.dbeaver.datadam.messaging.api.model.DDDamConnectionInfo;
 import com.dbeaver.datadam.messaging.api.model.DDMessagingHandshakeRequest;
 import com.dbeaver.datadam.messaging.api.model.DDMessagingHandshakeResponse;
 import com.dbeaver.datadam.messaging.api.model.DDMessagingMessage;
@@ -90,7 +90,7 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
             peer.nextSent();
             Assertions.assertFalse(channel.getStatus().isReady());
             peer.ready("first");
-            DDMessagingConnectionInfo first = take(events.connected);
+            DDDamConnectionInfo first = take(events.connected);
             Assertions.assertEquals(new DDMessagingChannelStatus(DDMessagingChannelState.CONNECTED, first), take(states));
             Assertions.assertEquals(first, channel.getStatus().connection());
 
@@ -281,7 +281,7 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
             Assertions.assertTrue(events.connected.isEmpty());
             fails(channel.send(MESSAGE));
             peer.ready("first");
-            Assertions.assertEquals(new DDMessagingConnectionInfo("deployment", "application-run", "first"), take(events.connected));
+            Assertions.assertEquals(new DDDamConnectionInfo("deployment", "application-run", "first"), take(events.connected));
             channel.send(MESSAGE).toCompletableFuture().get(3, TimeUnit.SECONDS);
             Assertions.assertEquals(MESSAGE, DDMessagingProtocol.decode(peer.nextSent().text));
             Assertions.assertTrue(clients.attempts.isEmpty());
@@ -300,7 +300,7 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
         Clients clients = new Clients();
         AtomicInteger tokens = new AtomicInteger();
         Events events = new Events();
-        BlockingQueue<DDMessagingConnectionInfo> messages = new LinkedBlockingQueue<>();
+        BlockingQueue<DDDamConnectionInfo> messages = new LinkedBlockingQueue<>();
         try (var channel = channel(clients, resource -> "token-" + tokens.incrementAndGet())) {
             channel.addConnectionListener(events);
             channel.subscribe("topic", (info, message) -> messages.add(info));
@@ -311,7 +311,7 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
             Peer second = ready(clients, events, "second");
             Assertions.assertEquals("Bearer token-2", second.headers.get("Authorization"));
             second.text(DDMessagingProtocol.encode(MESSAGE));
-            DDMessagingConnectionInfo connection = take(messages);
+            DDDamConnectionInfo connection = take(messages);
             Assertions.assertEquals("second", connection.connectionId());
             Assertions.assertEquals(HELLO.deploymentId(), connection.deploymentId());
             Assertions.assertEquals(HELLO.applicationRunId(), connection.applicationRunId());
@@ -631,12 +631,12 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
         try (var channel = channel(clients, resource -> "token")) {
             channel.addConnectionListener(new DDMessagingConnectionListener() {
                 @Override
-                public void onConnected(@NotNull DDMessagingConnectionInfo connection) {
+                public void onConnected(@NotNull DDDamConnectionInfo connection) {
                     throw new IllegalStateException("Broken connection listener");
                 }
 
                 @Override
-                public void onDisconnected(@NotNull DDMessagingConnectionInfo connection) {
+                public void onDisconnected(@NotNull DDDamConnectionInfo connection) {
                     throw new IllegalStateException("Broken disconnect listener");
                 }
             });
@@ -803,12 +803,12 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
             };
             channel.addConnectionListener(new DDMessagingConnectionListener() {
                 @Override
-                public void onConnected(@NotNull DDMessagingConnectionInfo connection) {
+                public void onConnected(@NotNull DDDamConnectionInfo connection) {
                     record.accept("connected:" + connection.connectionId());
                 }
 
                 @Override
-                public void onDisconnected(@NotNull DDMessagingConnectionInfo connection) {
+                public void onDisconnected(@NotNull DDDamConnectionInfo connection) {
                     if (connection.connectionId().equals("first")) {
                         disconnectEntered.countDown();
                         releaseDisconnect.join();
@@ -923,16 +923,16 @@ class DDDesktopMessageChannelTest extends DBeaverUnitTest {
     }
 
     private static final class Events implements DDMessagingConnectionListener {
-        private final BlockingQueue<DDMessagingConnectionInfo> connected = new LinkedBlockingQueue<>();
-        private final BlockingQueue<DDMessagingConnectionInfo> disconnected = new LinkedBlockingQueue<>();
+        private final BlockingQueue<DDDamConnectionInfo> connected = new LinkedBlockingQueue<>();
+        private final BlockingQueue<DDDamConnectionInfo> disconnected = new LinkedBlockingQueue<>();
 
         @Override
-        public void onConnected(@NotNull DDMessagingConnectionInfo connection) {
+        public void onConnected(@NotNull DDDamConnectionInfo connection) {
             connected.add(connection);
         }
 
         @Override
-        public void onDisconnected(@NotNull DDMessagingConnectionInfo connection) {
+        public void onDisconnected(@NotNull DDDamConnectionInfo connection) {
             disconnected.add(connection);
         }
     }

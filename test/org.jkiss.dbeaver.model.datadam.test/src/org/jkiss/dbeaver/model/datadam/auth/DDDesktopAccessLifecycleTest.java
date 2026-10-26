@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam.auth;
 
-import com.dbeaver.datadam.messaging.api.model.DDMessagingConnectionInfo;
+import com.dbeaver.datadam.messaging.api.model.DDDamConnectionInfo;
 import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelState;
 import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannelStatus;
 import org.eclipse.core.runtime.jobs.Job;
@@ -97,7 +97,7 @@ class DDDesktopAccessLifecycleTest {
         access.addAccessListener(listener(events));
         DDDesktopMessageChannel channel = Mockito.mock(DDDesktopMessageChannel.class);
         Mockito.when(channel.getStatus()).thenReturn(new DDMessagingChannelStatus(
-            DDMessagingChannelState.CONNECTED, new DDMessagingConnectionInfo("deployment", "run", "connection")));
+            DDMessagingChannelState.CONNECTED, new DDDamConnectionInfo("deployment", "run", "connection")));
         try (var keys = Mockito.mockStatic(DDKeyStore.class);
              var connection = new DDDesktopConnectionService(access, channel)) {
             access.signIn(Mockito.mock(DBRProgressMonitor.class));

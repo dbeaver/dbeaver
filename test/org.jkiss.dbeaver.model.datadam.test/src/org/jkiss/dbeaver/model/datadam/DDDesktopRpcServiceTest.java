@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
-import com.dbeaver.datadam.messaging.api.model.DDMessagingConnectionInfo;
+import com.dbeaver.datadam.messaging.api.model.DDDamConnectionInfo;
 import com.dbeaver.datadam.messaging.api.model.DDMessagingMessage;
 import com.dbeaver.datadam.messaging.api.rpc.DDMessagingGsonRpcCodec;
 import com.dbeaver.datadam.messaging.api.rpc.DDMessagingRpcTransport;
@@ -854,7 +854,7 @@ class DDDesktopRpcServiceTest extends DBeaverUnitTest {
 
         private void ready(@NotNull String connectionId) {
             setStatus(new DDMessagingChannelStatus(
-                DDMessagingChannelState.CONNECTED, new DDMessagingConnectionInfo("deployment", "run", connectionId)));
+                DDMessagingChannelState.CONNECTED, new DDDamConnectionInfo("deployment", "run", connectionId)));
         }
 
         private void disconnected() {

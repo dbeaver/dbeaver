@@ -33,7 +33,7 @@ heartbeat more frequently than this timeout (the server default is 30 seconds). 
 ## Channel state
 
 `channel.getStatus()` returns the current immutable state: `DISCONNECTED`, `CONNECTING`, `CONNECTED`, or `CLOSED`.
-The connected snapshot contains its `DDMessagingConnectionInfo`; `status.isReady()` reports readiness for application messages.
+The connected snapshot contains its `DDDamConnectionInfo`; `status.isReady()` reports readiness for application messages.
 Readiness is a local observation, so every send must still handle failure.
 
 `channel.observeState(observer)` delivers the current state and then subsequent changes in order, without a

@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.model.datadam.transport;
 
 import com.dbeaver.datadam.messaging.api.DDMessagingProtocol;
-import com.dbeaver.datadam.messaging.api.model.DDMessagingConnectionInfo;
+import com.dbeaver.datadam.messaging.api.model.DDDamConnectionInfo;
 import com.dbeaver.datadam.messaging.api.model.DDMessagingHandshakeRequest;
 import com.dbeaver.datadam.messaging.api.model.DDMessagingMessage;
 import com.dbeaver.datadam.messaging.api.transport.DDMessagingChannel;
@@ -433,7 +433,7 @@ public final class DDDesktopMessageChannel implements DDMessagingChannel {
     }
 
     private void deliverText(@NotNull Attempt attempt, @NotNull String text) {
-        DDMessagingConnectionInfo info;
+        DDDamConnectionInfo info;
         synchronized (lock) {
             if (current != attempt) {
                 return;
@@ -442,7 +442,7 @@ public final class DDDesktopMessageChannel implements DDMessagingChannel {
         }
         if (info == null) {
             String connectionId = DDMessagingProtocol.decodeHandshakeResponse(text).connectionId();
-            var ready = new DDMessagingConnectionInfo(hello.deploymentId(), hello.applicationRunId(), connectionId);
+            var ready = new DDDamConnectionInfo(hello.deploymentId(), hello.applicationRunId(), connectionId);
             List<Registration<DDMessagingConnectionListener>> listeners;
             synchronized (lock) {
                 if (current != attempt) {
@@ -575,7 +575,7 @@ public final class DDDesktopMessageChannel implements DDMessagingChannel {
         @Nullable
         private WebSocket socket;
         @Nullable
-        private DDMessagingConnectionInfo info;
+        private DDDamConnectionInfo info;
         @Nullable
         private Outgoing sending;
         private boolean senderScheduled;
@@ -751,7 +751,7 @@ public final class DDDesktopMessageChannel implements DDMessagingChannel {
     }
 
     private record PendingDisconnect(
-        @NotNull DDMessagingConnectionInfo connection,
+        @NotNull DDDamConnectionInfo connection,
         @NotNull List<Registration<DDMessagingConnectionListener>> listeners
     ) {
     }
