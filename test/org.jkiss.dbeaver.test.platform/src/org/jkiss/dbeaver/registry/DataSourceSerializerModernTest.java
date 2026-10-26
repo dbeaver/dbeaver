@@ -82,6 +82,25 @@ public class DataSourceSerializerModernTest extends DBeaverUnitTest {
         );
     }
 
+    @Test
+    public void testCompletedDriverMigrationDoesNotLoadProvider() {
+        DataSourceProviderDescriptor provider = Mockito.mock(DataSourceProviderDescriptor.class);
+        Mockito.when(provider.supportsDriverMigration()).thenReturn(true);
+        Mockito.when(provider.getMigrationCompletedProperty()).thenReturn("migration-status");
+        DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
+
+        Assertions.assertTrue(DataSourceSerializerModern.shouldCheckProviderMigration(provider, configuration));
+
+        configuration.setProviderProperty("migration-status", "complete");
+        Assertions.assertFalse(DataSourceSerializerModern.shouldCheckProviderMigration(provider, configuration));
+
+        Mockito.when(provider.getMigrationCompletedProperty()).thenReturn(null);
+        Assertions.assertTrue(DataSourceSerializerModern.shouldCheckProviderMigration(provider, configuration));
+
+        Mockito.when(provider.supportsDriverMigration()).thenReturn(false);
+        Assertions.assertFalse(DataSourceSerializerModern.shouldCheckProviderMigration(provider, configuration));
+    }
+
     @ParameterizedTest
     @CsvSource({"true", "false"})
     public void testCloseIdleConnectionExplicitValue(boolean enabled) {

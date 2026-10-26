@@ -10,10 +10,18 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+                id="mimer"
+                label="%datasource.mimer.name"
+                description="%datasource.mimer.description"
+                dataSourceInformation="Relational database management system"
+                icon="icons/mimer_icon.svg"
+                iconBig="icons/mimer_icon_big.svg"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.mimer.MimerDataSourceProvider"
                 description="%datasource.mimer.description"
                 id="mimer"
+                dataSourceType="mimer"
                 parent="generic"
                 label="%datasource.mimer.name"
                 icon="icons/mimer_icon.svg"
