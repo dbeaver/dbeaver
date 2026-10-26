@@ -1,6 +1,6 @@
 # Desktop DataDam integration
 
-The Desktop remote DAM session service opens an authenticated WebSocket to External DAM at `/ws`.
+The Desktop remote DAM session service opens an authenticated WebSocket to Remote DAM at `/ws`.
 It uses the existing Desktop SSO access token and never starts a login, opens a browser, or requests credentials.
 Imported project encryption keys and the tracking session are not prerequisites for the remote DAM session.
 
@@ -27,7 +27,7 @@ tracking retain their existing owners; this lifecycle contribution does not load
 Messages use the shared contracts from the `com.dbeaver.datadam.dam.remote.api` bundle. Topic subscriptions survive reconnects,
 but outgoing messages are rejected while disconnected rather than buffered for later delivery.
 Service consumers obtain the channel from `DDRemoteDamDesktopSessionService` and release their subscriptions when no longer needed.
-The shared WebSocket client's 90-second idle timeout detects missing server traffic; External DAM must send its
+The shared WebSocket client's 90-second idle timeout detects missing server traffic; Remote DAM must send its
 heartbeat more frequently than this timeout (the server default is 30 seconds). Desktop does not add another heartbeat protocol.
 
 ## Channel state
@@ -91,7 +91,7 @@ handlers must cooperate with interruption to stop work already in progress.
 ## Trusted endpoints
 
 By default, DataDam endpoints use the shared base host in `DDEndpoints`, with `datadam.cloud` as the source default and
-build-time substitution for staging. The default External DAM endpoint is `wss://external-dam.<base-host>/ws`.
+build-time substitution for staging. The default Remote DAM endpoint is `wss://remote-dam.<base-host>/ws`.
 Declaring this URL does not provision the service, DNS, TLS, or ingress.
 
 For local development, add these JVM options to the DBeaver Desktop run configuration:
@@ -99,13 +99,13 @@ For local development, add these JVM options to the DBeaver Desktop run configur
 ```text
 -Ddbeaver.datadam.account.url=http://localhost:9001
 -Ddbeaver.datadam.storage.url=http://localhost:9000
--Ddbeaver.datadam.external.url=ws://localhost:9006/ws
+-Ddbeaver.datadam.remote.url=ws://localhost:9006/ws
 ```
 
-Each property overrides its endpoint independently; omitted properties retain their default URLs. The External DAM
+Each property overrides its endpoint independently; omitted properties retain their default URLs. The Remote DAM
 property is the full WebSocket URL, including `/ws`. SSO is discovered through the configured Account endpoint.
 Properties are read once when `DDEndpoints` is initialized, so changing them requires a Desktop restart.
 
-Desktop only supplies a token to the configured External DAM endpoint when the token's saved Account and Storage
+Desktop only supplies a token to the configured Remote DAM endpoint when the token's saved Account and Storage
 origins match the current environment. An arbitrary WebSocket host is not trusted. Remote DAM sessions require WSS;
 unencrypted WS is allowed only on loopback. Tokens and deployment-specific runtime configuration must not be committed.

@@ -32,7 +32,7 @@ public final class DDEndpoints {
     private static final String STORAGE_URL = System.getProperty(
         "dbeaver.datadam.storage.url", "https://dbeaver-storage." + BASE_DD_HOST);
     private static final String REMOTE_DAM_URL = System.getProperty(
-        "dbeaver.datadam.external.url", "wss://external-dam." + BASE_DD_HOST + DDRemoteDamProtocol.WEBSOCKET_PATH);
+        "dbeaver.datadam.remote.url", "wss://remote-dam." + BASE_DD_HOST + DDRemoteDamProtocol.WEBSOCKET_PATH);
 
     private DDEndpoints() {
     }

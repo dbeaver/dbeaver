@@ -34,10 +34,10 @@ import java.util.Set;
 class DDDesktopTokenOriginTest {
     private static final String ACCOUNT = "https://account.staging.datadam.invalid";
     private static final String STORAGE = "https://dbeaver-storage.staging.datadam.invalid";
-    private static final String EXTERNAL = "wss://external-dam.staging.datadam.invalid/ws";
+    private static final String REMOTE_DAM = "wss://remote-dam.staging.datadam.invalid/ws";
     private static final String PROD_ACCOUNT = "https://account.prod.datadam.invalid";
     private static final String PROD_STORAGE = "https://storage.prod.datadam.invalid";
-    private static final String PROD_EXTERNAL = "wss://external-dam.prod.datadam.invalid/ws";
+    private static final String PROD_REMOTE_DAM = "wss://remote-dam.prod.datadam.invalid/ws";
 
     private MockedStatic<DDEndpoints> endpoints;
     private Constructor<?> tokenConstructor;
@@ -58,7 +58,7 @@ class DDDesktopTokenOriginTest {
         matchesResource = validatorType.getDeclaredMethod("matchesResource", tokenType, URI.class);
         matchesResource.setAccessible(true);
         endpoints = Mockito.mockStatic(DDEndpoints.class, Mockito.CALLS_REAL_METHODS);
-        configure(ACCOUNT, STORAGE, EXTERNAL);
+        configure(ACCOUNT, STORAGE, REMOTE_DAM);
     }
 
     @AfterEach
@@ -69,25 +69,25 @@ class DDDesktopTokenOriginTest {
     }
 
     @Test
-    void acceptsTheExternalEndpointWithSavedServiceEndpoints() throws ReflectiveOperationException {
-        Assertions.assertTrue(matches(ACCOUNT, STORAGE, EXTERNAL));
-        Assertions.assertTrue(matches(ACCOUNT + ":443", STORAGE + ":443", EXTERNAL));
-        Assertions.assertTrue(matches(ACCOUNT, STORAGE, "wss://external-dam.staging.datadam.invalid:443/ws"));
-        Assertions.assertTrue(matches(ACCOUNT, STORAGE, "WSS://EXTERNAL-DAM.STAGING.DATADAM.INVALID/ws"));
+    void acceptsTheRemoteDamEndpointWithSavedServiceEndpoints() throws ReflectiveOperationException {
+        Assertions.assertTrue(matches(ACCOUNT, STORAGE, REMOTE_DAM));
+        Assertions.assertTrue(matches(ACCOUNT + ":443", STORAGE + ":443", REMOTE_DAM));
+        Assertions.assertTrue(matches(ACCOUNT, STORAGE, "wss://remote-dam.staging.datadam.invalid:443/ws"));
+        Assertions.assertTrue(matches(ACCOUNT, STORAGE, "WSS://REMOTE-DAM.STAGING.DATADAM.INVALID/ws"));
     }
 
     @Test
     void requiresBothSavedOriginsToMatchCurrentConfiguration() throws ReflectiveOperationException {
-        Assertions.assertFalse(matches(PROD_ACCOUNT, STORAGE, EXTERNAL));
-        Assertions.assertFalse(matches(ACCOUNT, PROD_STORAGE, EXTERNAL));
-        Assertions.assertFalse(matches(PROD_ACCOUNT, PROD_STORAGE, EXTERNAL));
-        Assertions.assertFalse(matches(ACCOUNT + ":8443", STORAGE, EXTERNAL));
-        Assertions.assertFalse(matches(ACCOUNT, STORAGE + ":8443", EXTERNAL));
+        Assertions.assertFalse(matches(PROD_ACCOUNT, STORAGE, REMOTE_DAM));
+        Assertions.assertFalse(matches(ACCOUNT, PROD_STORAGE, REMOTE_DAM));
+        Assertions.assertFalse(matches(PROD_ACCOUNT, PROD_STORAGE, REMOTE_DAM));
+        Assertions.assertFalse(matches(ACCOUNT + ":8443", STORAGE, REMOTE_DAM));
+        Assertions.assertFalse(matches(ACCOUNT, STORAGE + ":8443", REMOTE_DAM));
 
-        configure(PROD_ACCOUNT, STORAGE, EXTERNAL);
-        Assertions.assertFalse(matches(ACCOUNT, STORAGE, EXTERNAL));
-        configure(ACCOUNT, PROD_STORAGE, EXTERNAL);
-        Assertions.assertFalse(matches(ACCOUNT, STORAGE, EXTERNAL));
+        configure(PROD_ACCOUNT, STORAGE, REMOTE_DAM);
+        Assertions.assertFalse(matches(ACCOUNT, STORAGE, REMOTE_DAM));
+        configure(ACCOUNT, PROD_STORAGE, REMOTE_DAM);
+        Assertions.assertFalse(matches(ACCOUNT, STORAGE, REMOTE_DAM));
     }
 
     @Test
@@ -95,43 +95,43 @@ class DDDesktopTokenOriginTest {
         for (Set<String> allowed : List.of(Set.of(ACCOUNT), Set.of(STORAGE),
             Set.of(ACCOUNT + "/mcp", STORAGE), Set.of(ACCOUNT, STORAGE + "/mcp"))) {
             Object token = tokenConstructor.newInstance("existing-access-token", "https://sso.example", allowed, Set.of());
-            Assertions.assertFalse((boolean) matchesResource.invoke(validator, token, URI.create(EXTERNAL)), allowed.toString());
+            Assertions.assertFalse((boolean) matchesResource.invoke(validator, token, URI.create(REMOTE_DAM)), allowed.toString());
         }
     }
 
     @Test
     void rejectsCrossEnvironmentWebSocketResources() throws ReflectiveOperationException {
-        Assertions.assertFalse(matches(ACCOUNT, STORAGE, PROD_EXTERNAL));
-        configure(PROD_ACCOUNT, PROD_STORAGE, PROD_EXTERNAL);
-        Assertions.assertTrue(matches(PROD_ACCOUNT, PROD_STORAGE, PROD_EXTERNAL));
-        Assertions.assertFalse(matches(ACCOUNT, STORAGE, PROD_EXTERNAL));
-        Assertions.assertFalse(matches(PROD_ACCOUNT, PROD_STORAGE, EXTERNAL));
+        Assertions.assertFalse(matches(ACCOUNT, STORAGE, PROD_REMOTE_DAM));
+        configure(PROD_ACCOUNT, PROD_STORAGE, PROD_REMOTE_DAM);
+        Assertions.assertTrue(matches(PROD_ACCOUNT, PROD_STORAGE, PROD_REMOTE_DAM));
+        Assertions.assertFalse(matches(ACCOUNT, STORAGE, PROD_REMOTE_DAM));
+        Assertions.assertFalse(matches(PROD_ACCOUNT, PROD_STORAGE, REMOTE_DAM));
     }
 
     @Test
     void rejectsUntrustedWebSocketHostsPortsAndUnsafeUrls() throws ReflectiveOperationException {
         for (String resource : List.of(
             "wss://attacker.example/ws",
-            "wss://external-dam.staging.datadam.invalid.attacker.example/ws",
+            "wss://remote-dam.staging.datadam.invalid.attacker.example/ws",
             "wss://other.staging.datadam.invalid/ws",
-            "wss://external-dam.staging.datadam.invalid:8443/ws",
-            "wss://external-dam.staging.datadam.invalid:80/ws",
-            "wss://external-dam.staging.datadam.invalid:0/ws",
-            "wss://external-dam.staging.datadam.invalid:65536/ws",
-            "wss://external-dam.staging.datadam.invalid:/ws",
-            "wss://user:password@external-dam.staging.datadam.invalid/ws",
-            "wss://external-dam.staging.datadam.invalid/other",
-            "wss://external-dam.staging.datadam.invalid/ws/",
-            "wss://external-dam.staging.datadam.invalid/w%73",
-            "wss://external-dam.staging.datadam.invalid/other/../ws",
-            EXTERNAL + "?token=value",
-            EXTERNAL + "?",
-            EXTERNAL + "#fragment",
-            EXTERNAL + "#",
-            "ws://external-dam.staging.datadam.invalid/ws",
+            "wss://remote-dam.staging.datadam.invalid:8443/ws",
+            "wss://remote-dam.staging.datadam.invalid:80/ws",
+            "wss://remote-dam.staging.datadam.invalid:0/ws",
+            "wss://remote-dam.staging.datadam.invalid:65536/ws",
+            "wss://remote-dam.staging.datadam.invalid:/ws",
+            "wss://user:password@remote-dam.staging.datadam.invalid/ws",
+            "wss://remote-dam.staging.datadam.invalid/other",
+            "wss://remote-dam.staging.datadam.invalid/ws/",
+            "wss://remote-dam.staging.datadam.invalid/w%73",
+            "wss://remote-dam.staging.datadam.invalid/other/../ws",
+            REMOTE_DAM + "?token=value",
+            REMOTE_DAM + "?",
+            REMOTE_DAM + "#fragment",
+            REMOTE_DAM + "#",
+            "ws://remote-dam.staging.datadam.invalid/ws",
             "ws://127.0.0.1/ws",
-            "https://external-dam.staging.datadam.invalid/ws",
-            "ftp://external-dam.staging.datadam.invalid/ws"
+            "https://remote-dam.staging.datadam.invalid/ws",
+            "ftp://remote-dam.staging.datadam.invalid/ws"
         )) {
             Assertions.assertFalse(matches(ACCOUNT, STORAGE, resource), resource);
         }
@@ -158,10 +158,10 @@ class DDDesktopTokenOriginTest {
 
     @Test
     void preservesSavedHttpOriginsWhenCurrentConfigurationDiffers() throws ReflectiveOperationException {
-        configure(PROD_ACCOUNT, PROD_STORAGE, PROD_EXTERNAL);
+        configure(PROD_ACCOUNT, PROD_STORAGE, PROD_REMOTE_DAM);
         Assertions.assertTrue(matches(ACCOUNT, STORAGE, ACCOUNT + "/graphql"));
         Assertions.assertTrue(matches(ACCOUNT, STORAGE, STORAGE + "/graphql"));
-        Assertions.assertFalse(matches(ACCOUNT, STORAGE, PROD_EXTERNAL));
+        Assertions.assertFalse(matches(ACCOUNT, STORAGE, PROD_REMOTE_DAM));
     }
 
     @Test
@@ -178,41 +178,41 @@ class DDDesktopTokenOriginTest {
 
     @Test
     void requiresTheConfiguredNonDefaultSecurePort() throws ReflectiveOperationException {
-        configure(ACCOUNT, STORAGE, "wss://external-dam.staging.datadam.invalid:8443/ws");
-        Assertions.assertTrue(matches(ACCOUNT, STORAGE, "wss://external-dam.staging.datadam.invalid:8443/ws"));
-        Assertions.assertFalse(matches(ACCOUNT, STORAGE, EXTERNAL));
-        Assertions.assertFalse(matches(ACCOUNT, STORAGE, "wss://external-dam.staging.datadam.invalid:443/ws"));
+        configure(ACCOUNT, STORAGE, "wss://remote-dam.staging.datadam.invalid:8443/ws");
+        Assertions.assertTrue(matches(ACCOUNT, STORAGE, "wss://remote-dam.staging.datadam.invalid:8443/ws"));
+        Assertions.assertFalse(matches(ACCOUNT, STORAGE, REMOTE_DAM));
+        Assertions.assertFalse(matches(ACCOUNT, STORAGE, "wss://remote-dam.staging.datadam.invalid:443/ws"));
     }
 
     @Test
-    void rejectsUnsafeConfiguredExternalEndpoints() throws ReflectiveOperationException {
-        for (String external : List.of(
-            "ws://external-dam.staging.datadam.invalid/ws",
-            "https://external-dam.staging.datadam.invalid/ws",
-            "wss://user@external-dam.staging.datadam.invalid/ws",
-            "wss://external-dam.staging.datadam.invalid/other",
-            EXTERNAL + "?token=value",
-            EXTERNAL + "#fragment"
+    void rejectsUnsafeConfiguredRemoteDamEndpoints() throws ReflectiveOperationException {
+        for (String remoteDam : List.of(
+            "ws://remote-dam.staging.datadam.invalid/ws",
+            "https://remote-dam.staging.datadam.invalid/ws",
+            "wss://user@remote-dam.staging.datadam.invalid/ws",
+            "wss://remote-dam.staging.datadam.invalid/other",
+            REMOTE_DAM + "?token=value",
+            REMOTE_DAM + "#fragment"
         )) {
-            configure(ACCOUNT, STORAGE, external);
-            Assertions.assertFalse(matches(ACCOUNT, STORAGE, EXTERNAL), external);
+            configure(ACCOUNT, STORAGE, remoteDam);
+            Assertions.assertFalse(matches(ACCOUNT, STORAGE, REMOTE_DAM), remoteDam);
         }
     }
 
     @Test
-    void rejectsMalformedSavedOriginsForTheExternalEndpoint() throws ReflectiveOperationException {
+    void rejectsMalformedSavedOriginsForTheRemoteDamEndpoint() throws ReflectiveOperationException {
         for (String account : List.of(
             "not-a-url", "https:/account.staging.datadam.invalid", "https://user@account.staging.datadam.invalid"
         )) {
-            Assertions.assertFalse(matches(account, STORAGE, EXTERNAL), account);
+            Assertions.assertFalse(matches(account, STORAGE, REMOTE_DAM), account);
         }
-        Assertions.assertFalse(matches(ACCOUNT, "https://user@dbeaver-storage.staging.datadam.invalid", EXTERNAL));
+        Assertions.assertFalse(matches(ACCOUNT, "https://user@dbeaver-storage.staging.datadam.invalid", REMOTE_DAM));
     }
 
-    private void configure(@NotNull String account, @NotNull String storage, @NotNull String external) {
+    private void configure(@NotNull String account, @NotNull String storage, @NotNull String remoteDam) {
         endpoints.when(DDEndpoints::getAccountBaseUrl).thenReturn(account);
         endpoints.when(DDEndpoints::getStorageBaseUrl).thenReturn(storage);
-        endpoints.when(DDEndpoints::getRemoteDamWebSocketUrl).thenReturn(external);
+        endpoints.when(DDEndpoints::getRemoteDamWebSocketUrl).thenReturn(remoteDam);
     }
 
     private boolean matches(@NotNull String account, @NotNull String storage, @NotNull String resource)

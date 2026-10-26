@@ -26,11 +26,11 @@ import java.util.List;
 
 class DDEndpointsTest {
     @Test
-    void selectsExternalEndpointForTheConfiguredEnvironment() {
-        String externalEndpoint = DDEndpoints.getAccountBaseUrl().replace("https://account.", "wss://external-dam.")
+    void selectsRemoteDamEndpointForTheConfiguredEnvironment() {
+        String remoteDamEndpoint = DDEndpoints.getAccountBaseUrl().replace("https://account.", "wss://remote-dam.")
             + DDRemoteDamProtocol.WEBSOCKET_PATH;
 
-        Assertions.assertEquals(externalEndpoint, DDEndpoints.getRemoteDamWebSocketUrl());
+        Assertions.assertEquals(remoteDamEndpoint, DDEndpoints.getRemoteDamWebSocketUrl());
         Assertions.assertDoesNotThrow(
             () -> DDEndpoints.requireSecureWebSocketTransport(URI.create(DDEndpoints.getRemoteDamWebSocketUrl())));
     }
@@ -38,12 +38,12 @@ class DDEndpointsTest {
     @Test
     void acceptsSecureWebSocketsAndExplicitLoopbackExceptions() {
         for (String url : List.of(
-            "wss://external-dam.staging.datadam.invalid/ws",
-            "wss://external-dam.staging.datadam.invalid:1/ws",
-            "wss://external-dam.staging.datadam.invalid:443/ws",
-            "wss://external-dam.staging.datadam.invalid:8443/ws",
-            "wss://external-dam.staging.datadam.invalid:65535/ws",
-            "WSS://EXTERNAL-DAM.STAGING.DATADAM.INVALID/ws",
+            "wss://remote-dam.staging.datadam.invalid/ws",
+            "wss://remote-dam.staging.datadam.invalid:1/ws",
+            "wss://remote-dam.staging.datadam.invalid:443/ws",
+            "wss://remote-dam.staging.datadam.invalid:8443/ws",
+            "wss://remote-dam.staging.datadam.invalid:65535/ws",
+            "WSS://REMOTE-DAM.STAGING.DATADAM.INVALID/ws",
             "wss://[::1]/ws",
             "ws://localhost/ws",
             "ws://localhost:80/ws",
@@ -56,33 +56,33 @@ class DDEndpointsTest {
     @Test
     void rejectsUnsafeOrNonProtocolWebSocketEndpoints() {
         for (String url : List.of(
-            "ws://external-dam.staging.datadam.invalid/ws",
+            "ws://remote-dam.staging.datadam.invalid/ws",
             "ws://localhost.example/ws",
             "ws://127.0.0.2/ws",
             "ws://[::1]/ws",
-            "https://external-dam.staging.datadam.invalid/ws",
+            "https://remote-dam.staging.datadam.invalid/ws",
             "http://localhost/ws",
-            "ftp://external-dam.staging.datadam.invalid/ws",
+            "ftp://remote-dam.staging.datadam.invalid/ws",
             "/ws",
             "wss:/ws",
             "wss:///ws",
-            "wss://user@external-dam.staging.datadam.invalid/ws",
-            "wss://user:password@external-dam.staging.datadam.invalid/ws",
-            "wss://@external-dam.staging.datadam.invalid/ws",
-            "wss://external-dam.staging.datadam.invalid:0/ws",
-            "wss://external-dam.staging.datadam.invalid:65536/ws",
-            "wss://external-dam.staging.datadam.invalid:/ws",
-            "wss://external-dam.staging.datadam.invalid:-1/ws",
-            "wss://external-dam.staging.datadam.invalid",
-            "wss://external-dam.staging.datadam.invalid/",
-            "wss://external-dam.staging.datadam.invalid/ws/",
-            "wss://external-dam.staging.datadam.invalid/other",
-            "wss://external-dam.staging.datadam.invalid/w%73",
-            "wss://external-dam.staging.datadam.invalid/other/../ws",
-            "wss://external-dam.staging.datadam.invalid/ws?token=value",
-            "wss://external-dam.staging.datadam.invalid/ws?",
-            "wss://external-dam.staging.datadam.invalid/ws#fragment",
-            "wss://external-dam.staging.datadam.invalid/ws#"
+            "wss://user@remote-dam.staging.datadam.invalid/ws",
+            "wss://user:password@remote-dam.staging.datadam.invalid/ws",
+            "wss://@remote-dam.staging.datadam.invalid/ws",
+            "wss://remote-dam.staging.datadam.invalid:0/ws",
+            "wss://remote-dam.staging.datadam.invalid:65536/ws",
+            "wss://remote-dam.staging.datadam.invalid:/ws",
+            "wss://remote-dam.staging.datadam.invalid:-1/ws",
+            "wss://remote-dam.staging.datadam.invalid",
+            "wss://remote-dam.staging.datadam.invalid/",
+            "wss://remote-dam.staging.datadam.invalid/ws/",
+            "wss://remote-dam.staging.datadam.invalid/other",
+            "wss://remote-dam.staging.datadam.invalid/w%73",
+            "wss://remote-dam.staging.datadam.invalid/other/../ws",
+            "wss://remote-dam.staging.datadam.invalid/ws?token=value",
+            "wss://remote-dam.staging.datadam.invalid/ws?",
+            "wss://remote-dam.staging.datadam.invalid/ws#fragment",
+            "wss://remote-dam.staging.datadam.invalid/ws#"
         )) {
             Assertions.assertThrows(DBException.class, () -> DDEndpoints.requireSecureWebSocketTransport(URI.create(url)), url);
         }
