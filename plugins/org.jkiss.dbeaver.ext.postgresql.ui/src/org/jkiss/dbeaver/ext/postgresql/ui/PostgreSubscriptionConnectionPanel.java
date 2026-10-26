@@ -57,7 +57,6 @@ import org.jkiss.utils.CommonUtils;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
-import java.util.Locale;
 import java.util.Objects;
 
 public class PostgreSubscriptionConnectionPanel extends Composite {
@@ -82,7 +81,6 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
     private Composite authentication;
     private DBPConnectionConfiguration desktopConfiguration;
     private String copiedConnectionName;
-    private String copiedConnectionId;
     private boolean useCopiedConnection;
 
     public PostgreSubscriptionConnectionPanel(
@@ -300,7 +298,6 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
             desktopConfiguration.setUserName(copy.getUserName());
             desktopConfiguration.setUserPassword(copy.getUserPassword());
             copiedConnectionName = selected.getName();
-            copiedConnectionId = selected.getId();
             loadingSettings = true;
             try {
                 publisher.setConnectionInfo(copy);
@@ -457,27 +454,6 @@ public class PostgreSubscriptionConnectionPanel extends Composite {
             configuration.setUrl(publisher.getDriver().getDataSourceProvider().getConnectionURL(publisher.getDriver(), configuration));
         }
         return configuration;
-    }
-
-    @Nullable
-    public String getPublicationSourceKey() {
-        if (connectionInfo.isBlank()) {
-            return null;
-        }
-        try {
-            DBPConnectionConfiguration configuration = getPublicationConfiguration();
-            String url = configuration.getUrl();
-            String endpoint = url.split("\\?", 2)[0];
-            int databaseStart = endpoint.indexOf('/', "jdbc:postgresql://".length());
-            if (databaseStart < 0) {
-                return endpoint;
-            }
-            return (useCopiedConnection ? copiedConnectionId + ":" : "")
-                + endpoint.substring(0, databaseStart).toLowerCase(Locale.ROOT).replaceAll(":5432(?=,|$)", "")
-                + "/" + configuration.getDatabaseName();
-        } catch (DBException e) {
-            return null;
-        }
     }
 
     private static class PublisherCredentialsConfigurator extends DatabaseNativeAuthModelConfigurator {

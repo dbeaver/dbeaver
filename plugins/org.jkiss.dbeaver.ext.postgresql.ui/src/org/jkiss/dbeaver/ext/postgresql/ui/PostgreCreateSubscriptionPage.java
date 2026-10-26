@@ -112,7 +112,6 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
     private AbstractJob publicationsJob;
     private long publisherRevision;
     private long publicationsRevision;
-    private String publicationSourceKey;
     private boolean resizePending;
 
     public PostgreCreateSubscriptionPage(@NotNull PostgreSubscription subscription) {
@@ -332,12 +331,6 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
             SelectionListener.widgetSelectedAdapter(event -> addCustomPublication()));
         addPublication.setEnabled(false);
         customPublicationText.addModifyListener(event -> addPublication.setEnabled(!customPublicationText.getText().isBlank()));
-        customPublicationText.addTraverseListener(event -> {
-            if (event.detail == SWT.TRAVERSE_RETURN) {
-                addCustomPublication();
-                event.doit = false;
-            }
-        });
         refreshPublicationList();
         updatePublicationSource();
         updateTestConnectionButton();
@@ -392,14 +385,6 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
         if (publicationSource != null) {
             cancelPublicationRequest();
             availablePublications = List.of();
-            String sourceKey = publisherPanel.getPublicationSourceKey();
-            if (sourceKey != null) {
-                if (publicationSourceKey != null && !publicationSourceKey.equals(sourceKey)) {
-                    selectedPublications.clear();
-                    customPublications.clear();
-                }
-                publicationSourceKey = sourceKey;
-            }
             refreshPublicationInput();
             publicationsFilter.setText("");
             setPublicationStatus("");
@@ -495,8 +480,8 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
     }
 
     private void addCustomPublication() {
-        String name = customPublicationText.getText().trim();
-        if (name.isEmpty()) {
+        String name = customPublicationText.getText();
+        if (name.isBlank()) {
             return;
         }
         customPublications.add(name);
