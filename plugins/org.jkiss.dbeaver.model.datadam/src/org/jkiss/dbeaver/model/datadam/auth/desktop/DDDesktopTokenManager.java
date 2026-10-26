@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.net.URI;
+import java.time.Instant;
 import java.util.Set;
 
 /**
@@ -74,6 +75,12 @@ class DDDesktopTokenManager {
             return Status.UNLOADED;
         }
         return validator.isExpired(current) ? Status.EXPIRED : Status.SIGNED_IN;
+    }
+
+    @Nullable
+    Instant getExpiresAt() {
+        DDDesktopUserToken current = token;
+        return current == null ? null : validator.expiresAt(current);
     }
 
     /** Returns readable claims even for an expired token; these are not verified credentials. */
