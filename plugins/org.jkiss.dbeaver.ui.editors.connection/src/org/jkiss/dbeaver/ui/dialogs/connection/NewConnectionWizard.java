@@ -356,6 +356,7 @@ public class NewConnectionWizard extends ConnectionWizard
             pageSettings.saveSettings(dataSource);
         }
         pageGeneral.saveSettings(dataSource);
+        applyConnectionName(dataSource);
         //pageNetwork.saveSettings(dataSource);
     }
 

@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.jobs.ConnectionTestJob;
+import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.ui.ConnectionFeatures;
 import org.jkiss.dbeaver.ui.ConnectionPreferences;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
@@ -71,6 +72,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
     private final Map<DriverDescriptor, DataSourceDescriptor> infoMap = new HashMap<>();
     private final List<IPropertyChangeListener> propertyListeners = new ArrayList<>();
     private DBPDriverSubstitutionDescriptor driverSubstitution;
+    private String connectionNameOverride;
 
     protected ConnectionWizard() {
         setNeedsProgressMonitor(true);
@@ -156,6 +158,58 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
     public void setDriverSubstitution(@Nullable DBPDriverSubstitutionDescriptor driverSubstitution) {
         this.driverSubstitution = driverSubstitution;
         getActiveDataSource().setDriverSubstitution(driverSubstitution);
+    }
+
+    void setConnectionNameOverride(@NotNull String name) {
+        connectionNameOverride = name;
+        for (IWizardPage page : getPages()) {
+            if (page instanceof ConnectionPageGeneral generalPage) {
+                generalPage.setConnectionName(name);
+            }
+        }
+        ConnectionPageSettings settings = getPageSettings();
+        if (settings != null) {
+            settings.refreshConnectionName();
+        }
+    }
+
+    @Nullable
+    String getConnectionNameOverride() {
+        return connectionNameOverride;
+    }
+
+    @NotNull
+    String getConnectionNamePreview() {
+        if (connectionNameOverride != null) {
+            return connectionNameOverride;
+        }
+        if (!isNew()) {
+            return getActiveDataSource().getName();
+        }
+        String pattern = DBWorkbench.getPlatform().getPreferenceStore()
+            .getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
+        ConnectionPageSettings settings = getPageSettings();
+        return generateConnectionName(pattern, settings == null ? null : settings.getActiveDataSource());
+    }
+
+    void applyConnectionName(@NotNull DataSourceDescriptor dataSource) {
+        if (connectionNameOverride != null) {
+            dataSource.setName(generateConnectionName(connectionNameOverride, dataSource));
+        }
+    }
+
+    @NotNull
+    private String generateConnectionName(@NotNull String pattern, @Nullable DataSourceDescriptor dataSource) {
+        ConnectionPageSettings settings = getPageSettings();
+        if (settings == null || dataSource == null) {
+            return getSelectedDriver().getName();
+        }
+        if (pattern.isBlank()) {
+            pattern = GeneralUtils.variablePattern(DBPConnectionConfiguration.VAR_HOST_OR_DATABASE);
+        }
+        String name = GeneralUtils.replaceVariables(pattern,
+            new ConnectionNameResolver(dataSource, dataSource.getConnectionConfiguration(), getOriginalDataSource()));
+        return DataSourceUtils.generateUniqueDataSourceName(settings.getDataSourceRegistry(), name, 1);
     }
 
     public void testConnection() {
