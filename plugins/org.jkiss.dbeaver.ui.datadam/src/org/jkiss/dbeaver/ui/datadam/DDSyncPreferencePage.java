@@ -72,7 +72,8 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         content = UIUtils.createPlaceholder(parent, 1);
         content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         ((GridLayout) content.getLayout()).verticalSpacing = 8;
-        DDUIUtils.create(content, DDTrackingUIMessages.sync_preference_page_description);
+        DDUIUtils.create(content, DDTrackingUIMessages.sync_preference_page_description,
+            DDTrackingUIMessages.sync_preference_page_about_link, DDTrackingUIMessages.sync_preference_page_about_url);
         Composite authenticationGroup = UIUtils.createTitledComposite(
             content, DDTrackingUIMessages.sync_preference_page_authentication_group,
             2, GridData.FILL_HORIZONTAL, SWT.DEFAULT
@@ -98,12 +99,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             authenticationGroup, DDTrackingUIMessages.sync_preference_page_refresh_token, null,
             SelectionListener.widgetSelectedAdapter(e -> logIn()));
         refreshTokenButton.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-
-        Control aboutLink = UIUtils.createInfoLabel(
-            content, DDTrackingUIMessages.sync_preference_page_about_link,
-            () -> UIUtils.openWebBrowser(DDTrackingUIMessages.sync_preference_page_about_url)
-        );
-        aboutLink.setLayoutData(new GridData(SWT.END, SWT.END, true, true));
 
         refresh();
         return content;

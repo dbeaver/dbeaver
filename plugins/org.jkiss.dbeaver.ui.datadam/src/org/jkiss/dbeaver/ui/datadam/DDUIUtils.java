@@ -17,9 +17,11 @@
 package org.jkiss.dbeaver.ui.datadam;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -30,7 +32,9 @@ public class DDUIUtils {
     }
 
     @NotNull
-    public static Label create(@NotNull Composite parent, @NotNull String text) {
+    public static Label create(
+        @NotNull Composite parent, @NotNull String text, @NotNull String linkText, @NotNull String linkUrl
+    ) {
         Composite row = UIUtils.createComposite(parent, 2);
         row.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
@@ -43,6 +47,11 @@ public class DDUIUtils {
         GridData labelLayout = new GridData(SWT.FILL, SWT.CENTER, true, false);
         labelLayout.widthHint = 480;
         label.setLayoutData(labelLayout);
+
+        new Label(row, SWT.NONE);
+        Link link = UIUtils.createLink(row, "<a>" + linkText + "</a>",
+            SelectionListener.widgetSelectedAdapter(e -> UIUtils.openWebBrowser(linkUrl)));
+        link.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false));
         return label;
     }
 }

@@ -120,7 +120,8 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         content = UIUtils.createPlaceholder(parent, 1);
         content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        projectsDescription = DDUIUtils.create(content, DDTrackingUIMessages.projects_page_description);
+        projectsDescription = DDUIUtils.create(content, DDTrackingUIMessages.projects_page_description,
+            DDTrackingUIMessages.projects_page_about_link, DDTrackingUIMessages.projects_page_about_url);
         Composite keysGroup = UIUtils.createTitledComposite(
             content, DDTrackingUIMessages.sync_preference_page_encryption_keys_group,
             2, GridData.FILL_HORIZONTAL, SWT.DEFAULT
@@ -224,11 +225,6 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         importAllButton.setText(DDTrackingUIMessages.projects_import_all);
         importAllButton.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         importAllButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> importAll()));
-
-        Control aboutLink = UIUtils.createInfoLabel(
-            content, DDTrackingUIMessages.projects_page_about_link,
-            () -> UIUtils.openWebBrowser(DDTrackingUIMessages.projects_page_about_url));
-        aboutLink.setLayoutData(new GridData(SWT.END, SWT.END, true, false));
 
         refreshKeys();
         return content;
