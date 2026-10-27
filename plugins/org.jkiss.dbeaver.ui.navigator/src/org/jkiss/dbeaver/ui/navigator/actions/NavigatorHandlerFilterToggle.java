@@ -49,22 +49,23 @@ public class NavigatorHandlerFilterToggle extends AbstractHandler {
             final DBNDatabaseFolder folder = (DBNDatabaseFolder) node;
             DBXTreeItem itemsMeta = folder.getItemsMeta();
             if (itemsMeta != null) {
-                DBSObjectFilter nodeFilter = folder.getUserNodeFilter(itemsMeta, true);
-                if (nodeFilter == null) {
-                    nodeFilter = folder.getNodeFilter(itemsMeta, true);
+                UIServiceFilterConfig service = DBWorkbench.findService(UIServiceFilterConfig.class);
+                DBSObjectFilter nodeFilter = null;
+                if (service != null && service.isUseUserFilter(folder)) {
+                    nodeFilter = folder.getUserNodeFilter(itemsMeta, true);
                 }
+                boolean isUserFilter = nodeFilter != null;
+                nodeFilter = nodeFilter == null ? folder.getNodeFilter(itemsMeta, true) : nodeFilter;
                 if (nodeFilter != null) {
                     nodeFilter.setEnabled(!nodeFilter.isEnabled());
-                    UIServiceFilterConfig service = DBWorkbench.findService(UIServiceFilterConfig.class);
-                    try {
-                        if (service == null) {
-                            folder.setNodeFilter(itemsMeta, nodeFilter, true);
-                            NavigatorHandlerRefresh.refreshNavigator(Collections.singleton(folder));
-                        } else {
+                    if (isUserFilter && service != null) {
+                        try {
                             service.setParentNodeFilter(folder, itemsMeta, nodeFilter);
+                        } catch (DBException e) {
+                            log.error(e);
                         }
-                    } catch (DBException e) {
-                        log.error(e);
+                    } else {
+                        NavigatorHandlerRefresh.refreshNavigator(Collections.singleton(folder));
                     }
                 }
             }

@@ -26,11 +26,7 @@ import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.auth.SMObjectType;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 public final class UserDBSObjectFilterUtils {
@@ -136,8 +132,7 @@ public final class UserDBSObjectFilterUtils {
         filterSerializer.deserializeObjectFilterConfig(filterConfigJson)
             .stream()
             .filter(FilterSerializer.FilterConfiguration::typeNamePresent)
-            .peek(f -> f.filter().setUserFilter(true))
-            .forEach(fc -> dataSourceDescriptor.setObjectFilter(
+            .forEach(fc -> dataSourceDescriptor.setUserObjectFilter(
                 fc.typeName(),
                 fc.objectID(),
                 fc.filter()

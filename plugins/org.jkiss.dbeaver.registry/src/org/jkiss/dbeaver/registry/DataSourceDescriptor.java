@@ -276,8 +276,11 @@ public class DataSourceDescriptor
         for (Map.Entry<String, FilterMapping> fe : source.filterMap.entrySet()) {
             this.filterMap.put(fe.getKey(), new FilterMapping(fe.getValue()));
         }
-        for (Map.Entry<String, FilterMapping> fe : source.userFilterMap.entrySet()) {
-            this.userFilterMap.put(fe.getKey(), new FilterMapping(fe.getValue()));
+        // User filters are bound to the source connection ID and must not be inherited by a new connection.
+        if (!setDefaultStorage) {
+            for (Map.Entry<String, FilterMapping> fe : source.userFilterMap.entrySet()) {
+                this.userFilterMap.put(fe.getKey(), new FilterMapping(fe.getValue()));
+            }
         }
         this.lockPasswordHash = source.lockPasswordHash;
         if (source.getRegistry() == registry) {
@@ -608,15 +611,15 @@ public class DataSourceDescriptor
         return filterMap.values();
     }
 
-    public Collection<FilterMapping> getUserObjectFilters() {
+    Collection<FilterMapping> getUserObjectFilters() {
         return userFilterMap.values();
     }
 
-    public boolean hasUserObjectFilters() {
+    boolean hasUserObjectFilters() {
         return !userFilterMap.isEmpty();
     }
 
-    public void clearUserObjectFilters() {
+    void clearUserObjectFilters() {
         userFilterMap.clear();
     }
 
@@ -703,11 +706,17 @@ public class DataSourceDescriptor
 
     @Override
     public void setObjectFilter(@NotNull Class<?> type, @Nullable DBSObject parentObject, @Nullable DBSObjectFilter filter) {
-        if (filter != null && filter.isUserFilter()) {
-            setUserObjectFilter(type, parentObject, filter);
-            return;
+        FilterMapping filterMapping = getFilterMapping(filterMap, type, parentObject, true);
+        if (filterMapping != null) {
+            // Update filter
+            if (parentObject == null) {
+                filterMapping.globalFilter = filter;
+            } else {
+                filterMapping.customFilters.put(FilterMapping.getFilterContainerUniqueID(parentObject), filter);
+            }
+        } else {
+            setObjectFilter(type.getName(), toObjectID(parentObject), filter);
         }
-        setObjectFilter(filterMap, type, parentObject, filter);
     }
 
     @Override
@@ -719,7 +728,12 @@ public class DataSourceDescriptor
         if (filter != null) {
             filter.setUserFilter(true);
         }
-        setObjectFilter(userFilterMap, type, parentObject, filter);
+        FilterMapping filterMapping = getFilterMapping(userFilterMap, type, parentObject, true);
+        setUserObjectFilter(
+            filterMapping == null ? type.getName() : filterMapping.typeName,
+            toObjectID(parentObject),
+            filter
+        );
     }
 
     @Nullable
@@ -744,61 +758,43 @@ public class DataSourceDescriptor
     }
 
     protected void setObjectFilter(@NotNull String typeName, @Nullable String objectID, @Nullable DBSObjectFilter filter) {
-        Map<String, FilterMapping> filters = filter != null && filter.isUserFilter() ? userFilterMap : filterMap;
-        setObjectFilter(filters, typeName, objectID, filter);
-    }
-
-    private void setObjectFilter(
-        @NotNull Map<String, FilterMapping> filters,
-        @NotNull Class<?> type,
-        @Nullable DBSObject parentObject,
-        @Nullable DBSObjectFilter filter
-    ) {
-        FilterMapping filterMapping = getFilterMapping(filters, type, parentObject, true);
+        FilterMapping filterMapping = filterMap.get(typeName);
         if (filterMapping == null) {
-            setObjectFilter(filters, type.getName(), toObjectID(parentObject), filter);
-            return;
+            filterMapping = new FilterMapping(typeName);
+            filterMap.put(typeName, filterMapping);
         }
-        if (parentObject == null) {
+        if (objectID == null) {
             filterMapping.globalFilter = filter;
         } else {
-            String objectId = FilterMapping.getFilterContainerUniqueID(parentObject);
-            if (filter == null) {
-                filterMapping.customFilters.remove(objectId);
-            } else {
-                filterMapping.customFilters.put(objectId, filter);
-            }
-        }
-        if (filterMapping.globalFilter == null && filterMapping.customFilters.isEmpty()) {
-            filters.remove(filterMapping.typeName);
+            filterMapping.customFilters.put(objectID, filter);
         }
     }
 
-    private void setObjectFilter(
-        @NotNull Map<String, FilterMapping> filters,
+    void setUserObjectFilter(
         @NotNull String typeName,
         @Nullable String objectID,
         @Nullable DBSObjectFilter filter
     ) {
-        FilterMapping filterMapping = filters.get(typeName);
+        if (filter != null) {
+            filter.setUserFilter(true);
+        }
+        FilterMapping filterMapping = userFilterMap.get(typeName);
         if (filterMapping == null && filter != null) {
             filterMapping = new FilterMapping(typeName);
-            filters.put(typeName, filterMapping);
+            userFilterMap.put(typeName, filterMapping);
         }
         if (filterMapping == null) {
             return;
         }
         if (objectID == null) {
             filterMapping.globalFilter = filter;
+        } else if (filter == null) {
+            filterMapping.customFilters.remove(objectID);
         } else {
-            if (filter == null) {
-                filterMapping.customFilters.remove(objectID);
-            } else {
-                filterMapping.customFilters.put(objectID, filter);
-            }
+            filterMapping.customFilters.put(objectID, filter);
         }
         if (filterMapping.globalFilter == null && filterMapping.customFilters.isEmpty()) {
-            filters.remove(typeName);
+            userFilterMap.remove(typeName);
         }
     }
 

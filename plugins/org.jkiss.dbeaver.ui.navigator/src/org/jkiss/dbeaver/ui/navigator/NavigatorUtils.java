@@ -486,14 +486,11 @@ public class NavigatorUtils {
             for (Map.Entry<DBNDatabaseNode, DBSObjectFilter> entry : folders.entrySet()) {
                 DBNDatabaseNode targetNode = entry.getKey();
                 DBXTreeItem nodeMeta = UIUtils.runWithMonitor(monitor -> DBNUtils.getValidItemsMeta(monitor, targetNode));
-                targetNode.setNodeFilter(
-                    nodeMeta,
-                    entry.getValue(),
-                    false
-                );
                 if (entry.getValue().isUserFilter()) {
+                    targetNode.setUserNodeFilter(nodeMeta, entry.getValue());
                     changedUserFilterContainers.add(targetNode.getDataSourceContainer());
                 } else {
+                    targetNode.setNodeFilter(nodeMeta, entry.getValue(), false);
                     changedConnectionFilterContainers.add(targetNode.getDataSourceContainer());
                 }
             }

@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.dbeaver.model.DBPDataSourceConfigurationStorage;
 import org.jkiss.dbeaver.model.DBPDataSourceOrigin;
-import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -35,11 +35,16 @@ class DataSourceDescriptorFilterTest {
 
     @BeforeEach
     void setUp() {
-        DBPDataSourceRegistry registry = Mockito.mock(DBPDataSourceRegistry.class);
         DBPDataSourceConfigurationStorage storage = Mockito.mock(DBPDataSourceConfigurationStorage.class);
+        DataSourceConfigurationManager configurationManager = Mockito.mock(DataSourceConfigurationManager.class);
+        DataSourceRegistry registry = new DataSourceRegistry<>(
+            Mockito.mock(DBPProject.class),
+            configurationManager,
+            Mockito.mock(DBPPreferenceStore.class)
+        );
         DBPDriver driver = Mockito.mock(DBPDriver.class);
-        Mockito.when(registry.getPreferenceStore()).thenReturn(Mockito.mock(DBPPreferenceStore.class));
         Mockito.when(storage.isDefault()).thenReturn(true);
+        Mockito.when(configurationManager.getConfigurationStorages()).thenReturn(List.of(storage));
 
         dataSource = new DataSourceDescriptor(
             registry,
@@ -68,7 +73,7 @@ class DataSourceDescriptorFilterTest {
         dataSource.setUserObjectFilter(String.class, null, null);
 
         Assertions.assertSame(connectionFilter, dataSource.getObjectFilter(String.class, null, false));
-        Assertions.assertFalse(dataSource.hasUserObjectFilters());
+        Assertions.assertNull(dataSource.getUserObjectFilter(String.class, null, true));
     }
 
     @Test
@@ -125,12 +130,12 @@ class DataSourceDescriptorFilterTest {
         dataSource.setUserObjectFilter(String.class, null, userFilter);
 
         DataSourceDescriptor sameConnection = new DataSourceDescriptor(dataSource, dataSource.getRegistry(), false);
-        sameConnection.clearUserObjectFilters();
+        sameConnection.setUserObjectFilter(String.class, null, null);
         sameConnection.copyFrom(dataSource);
         Assertions.assertEquals(userFilter, sameConnection.getUserObjectFilter(String.class, null, true));
 
-        DataSourceDescriptor differentConnection = new DataSourceDescriptor(dataSource, dataSource.getRegistry(), false);
-        differentConnection.setId("copy");
+        DataSourceDescriptor differentConnection = (DataSourceDescriptor) dataSource.createCopy(dataSource.getRegistry());
+        Assertions.assertNull(differentConnection.getUserObjectFilter(String.class, null, true));
         differentConnection.copyFrom(dataSource);
         Assertions.assertNull(differentConnection.getUserObjectFilter(String.class, null, true));
     }
