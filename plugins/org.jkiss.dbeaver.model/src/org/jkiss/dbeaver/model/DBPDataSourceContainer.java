@@ -168,14 +168,6 @@ public interface DBPDataSourceContainer extends
     DBSObjectFilter getObjectFilter(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch);
 
     /**
-     * Returns the connection-level object filter without user-specific restrictions.
-     */
-    @Nullable
-    default DBSObjectFilter getConnectionObjectFilter(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch) {
-        return getObjectFilter(type, parentObject, firstMatch);
-    }
-
-    /**
      * Returns the current user's object filter without connection-level restrictions.
      */
     @Nullable

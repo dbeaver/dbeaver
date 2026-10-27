@@ -51,7 +51,7 @@ public class NavigatorHandlerFilterToggle extends AbstractHandler {
             if (itemsMeta != null) {
                 DBSObjectFilter nodeFilter = folder.getUserNodeFilter(itemsMeta, true);
                 if (nodeFilter == null) {
-                    nodeFilter = folder.getConnectionNodeFilter(itemsMeta, true);
+                    nodeFilter = folder.getNodeFilter(itemsMeta, true);
                 }
                 if (nodeFilter != null) {
                     nodeFilter.setEnabled(!nodeFilter.isEnabled());

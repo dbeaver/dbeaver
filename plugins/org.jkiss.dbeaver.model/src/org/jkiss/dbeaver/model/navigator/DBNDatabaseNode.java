@@ -49,6 +49,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 /**
  * DBNDatabaseNode
@@ -673,19 +674,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             return false;
         }
 
-        final DBSObjectFilter connectionFilter = getNodeFilter(meta, false);
-        final DBSObjectFilter userFilter = getUserNodeFilter(meta, false);
-        this.filtered = (connectionFilter != null && !connectionFilter.isNotApplicable()) ||
-            (userFilter != null && !userFilter.isNotApplicable());
-        if (dataSource != null) {
-            boolean caseSensitive = dataSource.getSQLDialect().hasCaseSensitiveFiltration();
-            if (connectionFilter != null) {
-                connectionFilter.setCaseSensitive(caseSensitive);
-            }
-            if (userFilter != null) {
-                userFilter.setCaseSensitive(caseSensitive);
-            }
-        }
+        final Predicate<DBSObject> nodeFilter = getEffectiveNodeFilter(meta, false);
         if (itemList.isEmpty()) {
             return false;
         }
@@ -724,7 +713,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                 // Skip schemas in merge entities mode
                 continue;
             }
-            if (!matchesFilters(object, connectionFilter, userFilter)) {
+            if (!nodeFilter.test(object)) {
                 continue;
             }
             boolean added = false;
@@ -823,7 +812,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         throw new IllegalStateException("No datasource is associated with database node " + this);
     }
 
-    public DBSObjectFilter getNodeFilter(DBXTreeItem meta, boolean firstMatch) {
+    @Nullable
+    public DBSObjectFilter getNodeFilter(@NotNull DBXTreeItem meta, boolean firstMatch) {
         DBPDataSourceContainer dataSource = getDataSourceContainer();
         Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
         if (childrenClass != null) {
@@ -832,32 +822,40 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         return null;
     }
 
-    static boolean matchesFilters(
-        @NotNull DBSObject object,
-        @Nullable DBSObjectFilter... filters
-    ) {
-        for (DBSObjectFilter filter : filters) {
-            if (filter == null) {
-                continue;
+    @NotNull
+    private Predicate<DBSObject> getEffectiveNodeFilter(@NotNull DBXTreeItem meta, boolean firstMatch) {
+        DBSObjectFilter connectionFilter = getNodeFilter(meta, firstMatch);
+        DBSObjectFilter userFilter = getUserNodeFilter(meta, firstMatch);
+        DBPDataSource dataSource = getDataSource();
+        if (dataSource != null) {
+            boolean caseSensitive = dataSource.getSQLDialect().hasCaseSensitiveFiltration();
+            if (connectionFilter != null) {
+                connectionFilter.setCaseSensitive(caseSensitive);
             }
-            boolean matches = object instanceof DBPOverloadedObject overloadedObject
-                ? filter.matchesAny(object.getName(), overloadedObject.getOverloadedName())
-                : filter.matches(object.getName());
-            if (!matches) {
-                return false;
+            if (userFilter != null) {
+                userFilter.setCaseSensitive(caseSensitive);
             }
         }
-        return true;
+        this.filtered = isApplicable(connectionFilter) || isApplicable(userFilter);
+        return mergeFilters(connectionFilter, userFilter);
     }
 
-    @Nullable
-    public DBSObjectFilter getConnectionNodeFilter(DBXTreeItem meta, boolean firstMatch) {
-        DBPDataSourceContainer dataSource = getDataSourceContainer();
-        Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
-        if (childrenClass != null) {
-            return dataSource.getConnectionObjectFilter(childrenClass, getFilterObject(), firstMatch);
+    @NotNull
+    static Predicate<DBSObject> mergeFilters(@Nullable DBSObjectFilter... filters) {
+        Predicate<DBSObject> effectiveFilter = object -> true;
+        for (DBSObjectFilter filter : filters) {
+            if (!isApplicable(filter)) {
+                continue;
+            }
+            effectiveFilter = effectiveFilter.and(object -> object instanceof DBPOverloadedObject overloadedObject
+                ? filter.matchesAny(object.getName(), overloadedObject.getOverloadedName())
+                : filter.matches(object.getName()));
         }
-        return null;
+        return effectiveFilter;
+    }
+
+    private static boolean isApplicable(@Nullable DBSObjectFilter filter) {
+        return filter != null && !filter.isNotApplicable();
     }
 
     @Nullable

@@ -23,8 +23,10 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Link;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -126,7 +128,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         this.accessRestrictions = dataSourceDescriptor.getModifyPermission();
 
         for (FilterInfo filterInfo : filters) {
-            filterInfo.filter = dataSourceDescriptor.getConnectionObjectFilter(
+            filterInfo.filter = dataSourceDescriptor.getObjectFilter(
                 getDataSourceObjectType(dataSourceDescriptor, filterInfo.baseType),
                 null,
                 true

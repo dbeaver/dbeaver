@@ -62,13 +62,13 @@ public class DBNDatabaseNodeTest {
         DBSObjectFilter userFilter = new DBSObjectFilter();
         userFilter.setInclude(List.of("%_eu"));
 
-        Assertions.assertTrue(DBNDatabaseNode.matchesFilters(object, connectionFilter, userFilter));
+        Assertions.assertTrue(DBNDatabaseNode.mergeFilters(connectionFilter, userFilter).test(object));
 
         Mockito.when(object.getName()).thenReturn("test_eu");
-        Assertions.assertFalse(DBNDatabaseNode.matchesFilters(object, connectionFilter, userFilter));
+        Assertions.assertFalse(DBNDatabaseNode.mergeFilters(connectionFilter, userFilter).test(object));
 
         Mockito.when(object.getName()).thenReturn("prod_us");
-        Assertions.assertFalse(DBNDatabaseNode.matchesFilters(object, connectionFilter, userFilter));
+        Assertions.assertFalse(DBNDatabaseNode.mergeFilters(connectionFilter, userFilter).test(object));
     }
 
     @Test
@@ -84,6 +84,29 @@ public class DBNDatabaseNodeTest {
         DBSObjectFilter userFilter = new DBSObjectFilter();
         userFilter.setInclude(List.of("overloaded_name"));
 
-        Assertions.assertTrue(DBNDatabaseNode.matchesFilters(object, connectionFilter, userFilter));
+        Assertions.assertTrue(DBNDatabaseNode.mergeFilters(connectionFilter, userFilter).test(object));
+    }
+
+    @Test
+    public void disabledAndEmptyFiltersAreIgnored() {
+        DBSObject object = Mockito.mock(DBSObject.class);
+        Mockito.when(object.getName()).thenReturn("prod_eu");
+        DBSObjectFilter disabledFilter = new DBSObjectFilter();
+        disabledFilter.setInclude(List.of("test_%"));
+        disabledFilter.setEnabled(false);
+        DBSObjectFilter emptyFilter = new DBSObjectFilter();
+
+        Assertions.assertTrue(DBNDatabaseNode.mergeFilters(disabledFilter, emptyFilter).test(object));
+    }
+
+    @Test
+    public void effectiveFilterPreservesCaseSensitivity() {
+        DBSObject object = Mockito.mock(DBSObject.class);
+        Mockito.when(object.getName()).thenReturn("prod_eu");
+        DBSObjectFilter filter = new DBSObjectFilter();
+        filter.setInclude(List.of("PROD_%"));
+        filter.setCaseSensitive(true);
+
+        Assertions.assertFalse(DBNDatabaseNode.mergeFilters(filter).test(object));
     }
 }

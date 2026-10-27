@@ -61,7 +61,7 @@ class DataSourceDescriptorFilterTest {
         dataSource.setObjectFilter(String.class, null, connectionFilter);
         dataSource.setUserObjectFilter(String.class, null, userFilter);
 
-        Assertions.assertSame(connectionFilter, dataSource.getConnectionObjectFilter(String.class, null, true));
+        Assertions.assertSame(connectionFilter, dataSource.getObjectFilter(String.class, null, true));
         Assertions.assertSame(userFilter, dataSource.getUserObjectFilter(String.class, null, true));
         Assertions.assertSame(connectionFilter, dataSource.getObjectFilter(String.class, null, false));
 
@@ -111,9 +111,9 @@ class DataSourceDescriptorFilterTest {
 
         DataSourceDescriptor copy = new DataSourceDescriptor(dataSource, dataSource.getRegistry(), false);
 
-        Assertions.assertEquals(connectionFilter, copy.getConnectionObjectFilter(String.class, null, true));
+        Assertions.assertEquals(connectionFilter, copy.getObjectFilter(String.class, null, true));
         Assertions.assertEquals(userFilter, copy.getUserObjectFilter(String.class, null, true));
-        Assertions.assertNotSame(connectionFilter, copy.getConnectionObjectFilter(String.class, null, true));
+        Assertions.assertNotSame(connectionFilter, copy.getObjectFilter(String.class, null, true));
         Assertions.assertNotSame(userFilter, copy.getUserObjectFilter(String.class, null, true));
         Assertions.assertEquals(connectionFilter, copy.getObjectFilter(String.class, null, false));
     }

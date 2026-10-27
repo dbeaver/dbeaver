@@ -623,12 +623,6 @@ public class DataSourceDescriptor
     @Nullable
     @Override
     public DBSObjectFilter getObjectFilter(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch) {
-        return getConnectionObjectFilter(type, parentObject, firstMatch);
-    }
-
-    @Nullable
-    @Override
-    public DBSObjectFilter getConnectionObjectFilter(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch) {
         return getObjectFilter(filterMap, type, parentObject, firstMatch);
     }
 

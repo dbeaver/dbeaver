@@ -465,7 +465,7 @@ public class NavigatorUtils {
                     if (nodeFilter == null) {
                         nodeFilter = useUserFilter
                             ? parentNode.getUserNodeFilter(nodeMeta, true)
-                            : parentNode.getConnectionNodeFilter(nodeMeta, true);
+                            : parentNode.getNodeFilter(nodeMeta, true);
                         if (nodeFilter == null) {
                             nodeFilter = new DBSObjectFilter();
                         }
