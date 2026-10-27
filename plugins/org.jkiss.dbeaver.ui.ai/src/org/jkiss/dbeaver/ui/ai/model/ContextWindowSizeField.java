@@ -62,7 +62,7 @@ public class ContextWindowSizeField {
 
     @Nullable
     public Integer getValue() {
-        return value;
+        return userDefined ? value : null;
     }
 
     public boolean isComplete() {
