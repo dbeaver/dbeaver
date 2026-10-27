@@ -140,7 +140,7 @@
             class="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
             id="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
             namespace="org.jkiss.dbeaver.ui.editors.entity"
-            properties="dirty,canUndo,canRedo,hasSource"
+            properties="dirty,canUndo,canRedo,hasSource,objectType"
             type="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.editors.entity.FolderEditorPropertyTester"

@@ -22,6 +22,7 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.app.config.pages.ProductConfigWizardPage;
@@ -38,11 +39,13 @@ public final class ProductConfigWizard extends Wizard {
     private static final Log log = Log.getLog(ProductConfigWizard.class);
 
     private final Origin origin;
+    private final boolean featureUpdate;
     private boolean restartRequired = false;
 
     public ProductConfigWizard(@NotNull Origin origin) {
         this.origin = origin;
-        setWindowTitle("Product Configuration");
+        featureUpdate = origin == Origin.AUTOMATIC && ProductConfigRegistry.getInstance().hasConfiguredFeatures();
+        setWindowTitle(ProductConfigMessages.wizard_title);
     }
 
     @Override
@@ -55,7 +58,8 @@ public final class ProductConfigWizard extends Wizard {
                 log.error("Error creating easy config page " + descriptor.getId(), e);
                 continue;
             }
-            if (page.isPageApplicable()) {
+            page.setWizard(this);
+            if ((!featureUpdate || page.isApplicableToFeatureUpdate()) && page.isPageApplicable()) {
                 addPage(page);
                 page.loadSettings();
             }
@@ -95,6 +99,10 @@ public final class ProductConfigWizard extends Wizard {
     @NotNull
     public Origin getOrigin() {
         return origin;
+    }
+
+    public boolean isFeatureUpdate() {
+        return featureUpdate;
     }
 
     private void applySettings() {
