@@ -97,6 +97,7 @@ public class DatabaseURL {
     }
 
     private static final Log log = Log.getLog(DatabaseURL.class);
+    private static final String URL_SUFFIX_PARAMETER = "dbeaverUrlSuffix";
 
     @NotNull
     private static final Object lock = new Object();
@@ -184,6 +185,37 @@ public class DatabaseURL {
         } catch (StringTemplate.StringTemplateException ex) {
             throw new DBException("Failed to generate database URL by template " + ex.getTemplateString(), ex);
         }
+    }
+
+    @NotNull
+    public static String replaceHostAndPort(
+        @NotNull DBPDriver driver,
+        @NotNull String url,
+        @NotNull String hostName,
+        int hostPort
+    ) throws DBException {
+        if (CommonUtils.isEmpty(hostName) || hostPort < 1 || hostPort > 65535) {
+            throw new DBException("Invalid tunnel endpoint");
+        }
+        String sampleUrl = CommonUtils.isNotEmpty(driver.getSampleURL()) ? driver.getSampleURL() : Generic.TEMPLATE;
+        StringTemplate template = StringTemplate.parseTemplate(
+            sampleUrl + "{" + URL_SUFFIX_PARAMETER + "}", parameter -> switch (parameter.name()) {
+                case DBConstants.PROP_HOST -> "(?:\\[[0-9a-fA-F:.%\\w-]+\\]|[\\p{L}\\p{N}_\\-.~]+)";
+                case DBConstants.PROP_PORT -> "[0-9]+";
+                case DBConstants.PROP_DATABASE -> "(?:[\\p{L}\\p{N}_\\-.~]|%[0-9a-fA-F]{2})+";
+                case URL_SUFFIX_PARAMETER -> "(?:[?;#].*)?";
+                default -> getPropertyRegex(parameter.name());
+            }
+        );
+        String localHost = hostName.indexOf(':') >= 0 && !hostName.startsWith("[") ? "[" + hostName + "]" : hostName;
+        String updated = template.replaceParameters(url, Map.of(
+            DBConstants.PROP_HOST, localHost,
+            DBConstants.PROP_PORT, Integer.toString(hostPort)
+        ));
+        if (updated != null) {
+            return updated;
+        }
+        throw new DBException("Cannot redirect database URL to a single tunnel endpoint using the driver URL template");
     }
 
     @Nullable

@@ -19,15 +19,80 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DatabaseURL;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class DatabaseURLTest extends DBeaverUnitTest {
+    @Test
+    public void replacesEndpointWithoutChangingEncodedDatabaseOrQuery() throws DBException {
+        DBPDriver driver = driver("jdbc:postgresql://{host}[:{port}]/[{database}]");
+        String tail = "/my%20db%2Fdata?sslmode=require&host=db.example&port=5432&empty=&name=a%2Bb&name=a+b#section";
+        Assertions.assertEquals(
+            "jdbc:postgresql://localhost:49505" + tail,
+            DatabaseURL.replaceHostAndPort(driver, "jdbc:postgresql://db.example:5432" + tail, "localhost", 49505)
+        );
+    }
+
+    @Test
+    public void preservesVendorSpecificEndpointSyntaxAndOptions() throws DBException {
+        String[][] cases = {
+            {"jdbc:sqlserver://{host}[:{port}][;databaseName={database}]",
+                "jdbc:sqlserver://db.example:1433;databaseName=master;encrypt=true;password={a;b}",
+                "jdbc:sqlserver://localhost:49505;databaseName=master;encrypt=true;password={a;b}"},
+            {"jdbc:oracle:thin:@{host}[:{port}]/{database}",
+                "jdbc:oracle:thin:@db.example:1521/service?option=a%20b", "jdbc:oracle:thin:@localhost:49505/service?option=a%20b"},
+            {"jdbc:teradata://{host}/DATABASE={database},DBS_PORT={port}",
+                "jdbc:teradata://db.example/DATABASE=demo,DBS_PORT=1025", "jdbc:teradata://localhost/DATABASE=demo,DBS_PORT=49505"},
+            {"jdbc:postgresql://{host}[:{port}]/[{database}]",
+                "jdbc:postgresql://[2001:db8::1]:5432/данные?option=%2520", "jdbc:postgresql://localhost:49505/данные?option=%2520"},
+            {"", "jdbc:custom://user:password@db.example:1234/demo?option=value",
+                "jdbc:custom://user:password@localhost:49505/demo?option=value"}
+        };
+        for (String[] test : cases) {
+            Assertions.assertEquals(test[2], DatabaseURL.replaceHostAndPort(driver(test[0]), test[1], "localhost", 49505));
+        }
+    }
+
+    @Test
+    public void rejectsAmbiguousOrUnrecognizedEndpointsInsteadOfReturningOriginalUrl() {
+        DBPDriver driver = driver("jdbc:postgresql://{host}[:{port}]/[{database}]");
+        for (String url : List.of(
+            "jdbc:postgresql://first:5432,second:5432/demo",
+            "jdbc:postgresql://first,second/demo",
+            "jdbc:postgresql://db.example/demo",
+            "jdbc:postgresql://db.example:invalid/demo",
+            "jdbc:postgresql://db.example:5432extra/demo",
+            "jdbc:postgresql://db.example:5432/demo trailing",
+            "jdbc:postgresql://db.example:5432/demo/other",
+            "jdbc:mysql://db.example:3306/demo",
+            "jdbc:postgresql:///demo",
+            ""
+        )) {
+            Assertions.assertThrows(DBException.class, () -> DatabaseURL.replaceHostAndPort(driver, url, "localhost", 49505), url);
+        }
+        Assertions.assertThrows(DBException.class, () -> DatabaseURL.replaceHostAndPort(
+            driver("jdbc:test://{host}:{port}[,{host}:{port}...]/[{database}]"),
+            "jdbc:test://first:1234,second:1234/demo", "localhost", 49505
+        ));
+        Assertions.assertThrows(DBException.class, () -> DatabaseURL.replaceHostAndPort(
+            driver("jdbc:test://{host}:1234/{database}"), "jdbc:test://db.example:1234/demo", "localhost", 49505
+        ));
+    }
+
+    @NotNull
+    private static DBPDriver driver(@NotNull String sampleUrl) {
+        DBPDriver driver = Mockito.mock(DBPDriver.class);
+        Mockito.when(driver.getSampleURL()).thenReturn(sampleUrl);
+        return driver;
+    }
+
     @Test
     public void recognizesQueryDelimitersAndEmptyValuesInBothGenericPatterns() {
         String url = "jdbc:mysql://localhost/demo?empty=&custom.option[0]=a%20b&expression=a=b=c&path=/tmp/данные; x&other=last";
