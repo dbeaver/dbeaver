@@ -200,7 +200,7 @@ public class DatabaseURL {
         String sampleUrl = CommonUtils.isNotEmpty(driver.getSampleURL()) ? driver.getSampleURL() : Generic.TEMPLATE;
         StringTemplate template = StringTemplate.parseTemplate(
             sampleUrl + "{" + URL_SUFFIX_PARAMETER + "}", parameter -> switch (parameter.name()) {
-                case DBConstants.PROP_HOST -> "(?:\\[[0-9a-fA-F:.%\\w-]+\\]|[\\p{L}\\p{N}_\\-.~]+)";
+                case DBConstants.PROP_HOST -> "(?:\\[[\\w:.%-]+\\]|[\\p{L}\\p{N}_\\-.~]+)";
                 case DBConstants.PROP_PORT -> "[0-9]+";
                 case DBConstants.PROP_DATABASE -> "(?:[\\p{L}\\p{N}_\\-.~]|%[0-9a-fA-F]{2})+";
                 case URL_SUFFIX_PARAMETER -> "(?:[?;#].*)?";
