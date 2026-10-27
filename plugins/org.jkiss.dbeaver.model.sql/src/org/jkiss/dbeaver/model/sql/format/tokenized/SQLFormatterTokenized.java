@@ -247,6 +247,8 @@ public class SQLFormatterTokenized implements SQLFormatter {
     private void convertEmptyLinesIntoDelimiters(List<FormatterToken> argList) {
         String[] executableCommentPrefixes = formatterCfg.getSyntaxManager().getDialect().getExecutableCommentPrefixes();
         boolean hasQueryContent = false;
+        // Position right after the last token of the current statement which is not a comment
+        int contentEndIndex = 0;
         for (int i= 0; i < argList.size(); i++) {
             FormatterToken token = argList.get(i);
             if (token.getType() == TokenType.SPACE) {
@@ -257,10 +259,10 @@ public class SQLFormatterTokenized implements SQLFormatter {
                     }
                 }
                 if (lfCount > 1) {
-                    if (i > 0 && statementDelimiters.contains(argList.get(i - 1).getString())) {
+                    if (i > 0 && isStatementDelimiter(argList.get(i - 1))) {
                         // Do nothing - there is a delimiter already
                     } else {
-                        int delimiterIndex = findDelimiterIndex(argList, i, hasQueryContent, executableCommentPrefixes);
+                        int delimiterIndex = findDelimiterIndex(argList, i, hasQueryContent, contentEndIndex, executableCommentPrefixes);
                         if (delimiterIndex >= 0) {
                             argList.add(delimiterIndex, new FormatterToken(TokenType.SYMBOL, statementDelimiters.get(0)));
                             hasQueryContent = false;
@@ -268,10 +270,11 @@ public class SQLFormatterTokenized implements SQLFormatter {
                         }
                     }
                 }
-            } else if (statementDelimiters.contains(token.getString())) {
+            } else if (isStatementDelimiter(token)) {
                 hasQueryContent = false;
             } else if (!isPlainComment(token, executableCommentPrefixes)) {
                 hasQueryContent = true;
+                contentEndIndex = i + 1;
             }
         }
     }
@@ -280,6 +283,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
         @NotNull List<FormatterToken> argList,
         int emptyLineIndex,
         boolean hasQueryContent,
+        int contentEndIndex,
         @NotNull String[] executableCommentPrefixes
     ) {
         int commentIndex = emptyLineIndex - 1;
@@ -294,12 +298,14 @@ public class SQLFormatterTokenized implements SQLFormatter {
             // The delimiter is valid right after a multi-line comment
             return emptyLineIndex;
         }
-        // A delimiter after a single-line comment would end up inside of it, so it goes before the comment
-        int delimiterIndex = commentIndex;
-        while (delimiterIndex > 0 && argList.get(delimiterIndex - 1).getType() == TokenType.SPACE) {
-            delimiterIndex--;
-        }
-        return delimiterIndex;
+        // A delimiter after a single-line comment would end up inside of it,
+        // so it goes right after the query, before all the trailing comments
+        return contentEndIndex;
+    }
+
+    private boolean isStatementDelimiter(@NotNull FormatterToken token) {
+        // Delimiters are stored in upper case, but a word delimiter (e.g. GO) may be written in any case
+        return statementDelimiters.contains(token.getString().toUpperCase(Locale.ENGLISH));
     }
 
     private static boolean isPlainComment(@NotNull FormatterToken token, @NotNull String[] executableCommentPrefixes) {

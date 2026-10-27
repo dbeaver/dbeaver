@@ -315,6 +315,39 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void shouldInsertDelimiterBeforeAllTrailingSingleLineComments() {
+        //given
+        String inputString = "SELECT 1" + lineBreak + "-- first" + lineBreak + "-- second" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains("-- first;"), formattedString);
+        Assertions.assertFalse(formattedString.contains("-- second;"), formattedString);
+        int delimiterIndex = formattedString.indexOf(';');
+        Assertions.assertTrue(delimiterIndex >= 0 && delimiterIndex < formattedString.indexOf("-- first"), formattedString);
+    }
+
+    @Test
+    public void shouldRecognizeWordDelimiterWrittenInOtherCase() {
+        //given
+        String inputString = "SELECT 1" + lineBreak + "go" + lineBreak + "-- note" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(new String[] { "GO" });
+        Mockito.when(configuration.getKeywordCase()).thenReturn(DBPIdentifierCase.LOWER);
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains("go;"), formattedString);
+    }
+
+    @Test
     public void shouldInsertDelimiterInEmptyLineBetweenQueries() {
         //given
         String expectedString = "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tt1;" + lineBreak + lineBreak +
