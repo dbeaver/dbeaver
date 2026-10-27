@@ -359,7 +359,8 @@ public class SQLScriptContext implements DBCScriptContext {
     /**
      * Variables that appear only in comments are substituted when they have a value,
      * but must not open the bind dialog when they don't (#42360). Their text stays as is.
-     * A parameter default counts as a value only when defaults are applied.
+     * A parameter default counts as a value only when defaults are applied, and only from this context,
+     * because that is where the parameters provider reads it.
      */
     @NotNull
     private List<SQLQueryParameter> removeUnsetCommentVariables(
@@ -376,7 +377,8 @@ public class SQLScriptContext implements DBCScriptContext {
             .filter(p -> !p.isInComment()
                 || namesOutsideComments.contains(p.getName())
                 || hasVariable(p.getName())
-                || (defaultsApplied && hasDefaultParameterValue(p.getName())))
+                || (defaultsApplied
+                    && (getParameterDefaultValue(p.getName()) != null || getParameterDefaultValue(p.getVarName()) != null)))
             .toList();
     }
 

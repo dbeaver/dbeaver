@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.parser;
 
 import org.eclipse.jface.text.Document;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
@@ -413,11 +414,11 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
         String query = """
             -- ${timestamp}
             /* ${block} */
-            SELECT /*+ ${hint} */ /*!50000 ${executable} */ '${inString}', ${inCode}""";
+            SELECT /*+ ${hint} */ /*!50000 ${executable} */ /*M! ${mariadb} */ '${inString}', ${inCode}""";
         SQLParserContext context = createParserContext(setDialect("snowflake"), query);
         List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
         Assertions.assertEquals(
-            List.of("timestamp=true", "block=true", "hint=false", "executable=false", "inString=false", "inCode=false"),
+            List.of("timestamp=true", "block=true", "hint=false", "executable=false", "mariadb=false", "inString=false", "inCode=false"),
             params.stream().map(p -> p.getName() + "=" + p.isInComment()).toList()
         );
     }
@@ -476,10 +477,33 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
         Assertions.assertEquals("-- ${timestamp}\n\nSELECT 1", query.getText());
     }
 
+    @Test
+    public void parentOnlyDefaultInCommentDoesNotPrompt() throws DBException {
+        // The provider reads defaults from the current context only, so a default saved on the parent must not keep the variable
+        SQLScriptContext parent = new SQLScriptContext(null, () -> null, null, new StringWriter(), null);
+        parent.setParameterDefaultValue("timestamp", "2026");
+        List<SQLQuery> prompted = new ArrayList<>();
+        SQLQuery query = fillScriptQueryParameters("-- ${timestamp}\n\nSELECT 1;", prompted, parent, true, scriptContext -> {});
+
+        Assertions.assertTrue(prompted.isEmpty());
+        Assertions.assertEquals("-- ${timestamp}\n\nSELECT 1", query.getText());
+    }
+
     @NotNull
     private SQLQuery fillScriptQueryParameters(
         @NotNull String script,
         @NotNull List<SQLQuery> prompted,
+        @NotNull Consumer<SQLScriptContext> setup
+    ) throws DBException {
+        return fillScriptQueryParameters(script, prompted, null, false, setup);
+    }
+
+    @NotNull
+    private SQLQuery fillScriptQueryParameters(
+        @NotNull String script,
+        @NotNull List<SQLQuery> prompted,
+        @Nullable SQLScriptContext parentContext,
+        boolean useDefaults,
         @NotNull Consumer<SQLScriptContext> setup
     ) throws DBException {
         SQLParserContext context = createParserContext(setDialect("snowflake"), script);
@@ -498,9 +522,9 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
                 return true;
             }
         };
-        SQLScriptContext scriptContext = new SQLScriptContext(null, () -> null, null, new StringWriter(), provider);
+        SQLScriptContext scriptContext = new SQLScriptContext(parentContext, () -> null, null, new StringWriter(), provider);
         setup.accept(scriptContext);
-        Assertions.assertTrue(scriptContext.fillQueryParameters(query, () -> null, false));
+        Assertions.assertTrue(scriptContext.fillQueryParameters(query, () -> null, useDefaults));
         return query;
     }
 

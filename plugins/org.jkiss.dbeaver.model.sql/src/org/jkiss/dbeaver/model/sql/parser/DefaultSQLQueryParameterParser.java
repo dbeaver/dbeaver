@@ -38,7 +38,7 @@ import java.util.regex.Matcher;
 /** Shared SQL parameter and variable parser for a single query. */
 public class DefaultSQLQueryParameterParser {
     private static final Log log = Log.getLog(DefaultSQLQueryParameterParser.class);
-    private static final String[] SERVER_READ_COMMENT_PREFIXES = {"/*+", "/*!", "--+"};
+    private static final String[] SERVER_READ_COMMENT_PREFIXES = {"/*+", "/*!", "/*M!", "--+"};
     @NotNull
     protected final SQLParserContext context;
     protected final int queryOffset;
@@ -208,12 +208,18 @@ public class DefaultSQLQueryParameterParser {
     }
 
     /**
-     * Optimizer hints and MySQL executable comments are read by the server,
+     * Optimizer hints and MySQL/MariaDB executable comments are read by the server,
      * so their variables are treated as code.
      */
     private static boolean isServerReadComment(@NotNull IDocument document, int offset, int length) {
         try {
-            return ArrayUtils.contains(SERVER_READ_COMMENT_PREFIXES, document.get(offset, Math.min(3, length)));
+            String start = document.get(offset, Math.min(4, length));
+            for (String prefix : SERVER_READ_COMMENT_PREFIXES) {
+                if (start.startsWith(prefix)) {
+                    return true;
+                }
+            }
+            return false;
         } catch (BadLocationException e) {
             return false;
         }
