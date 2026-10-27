@@ -61,6 +61,42 @@ public class DatabaseURLTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void preservesQueryContinuationsAlreadyStartedByTemplate() throws DBException {
+        DBPDriver snowflake = driver("jdbc:snowflake://{host}[:{port}]/?[db={database}]");
+        for (String query : List.of("db=demo&warehouse=wh&option=a%2Bb", "warehouse=wh", "db=&warehouse=wh", "")) {
+            Assertions.assertEquals(
+                "jdbc:snowflake://localhost:49505/?" + query,
+                DatabaseURL.replaceHostAndPort(snowflake, "jdbc:snowflake://db.example:443/?" + query, "localhost", 49505)
+            );
+        }
+        Assertions.assertEquals(
+            "jdbc:iotdb://localhost:49505/?sql_dialect=table&time_zone=UTC%2B3",
+            DatabaseURL.replaceHostAndPort(
+                driver("jdbc:iotdb://{host}:{port}/?sql_dialect={sqlDialect}"),
+                "jdbc:iotdb://db.example:6667/?sql_dialect=table&time_zone=UTC%2B3", "localhost", 49505
+            )
+        );
+    }
+
+    @Test
+    public void preservesEncodedCredentialsWithoutSampleUrl() throws DBException {
+        DBPDriver driver = driver("");
+        for (String credentials : List.of("user:p%40ss", "us%65r:p%3A%2F%3F%23%5B%5D%40%25", "db.example:p%40ss")) {
+            Assertions.assertEquals(
+                "jdbc:custom://" + credentials + "@localhost:49505/demo?host=db.example&port=1234",
+                DatabaseURL.replaceHostAndPort(
+                    driver, "jdbc:custom://" + credentials + "@db.example:1234/demo?host=db.example&port=1234", "localhost", 49505
+                )
+            );
+        }
+        for (String credentials : List.of("user:p%4Gss", "us%er:password", "user:p%")) {
+            Assertions.assertThrows(DBException.class, () -> DatabaseURL.replaceHostAndPort(
+                driver, "jdbc:custom://" + credentials + "@db.example:1234/demo", "localhost", 49505
+            ));
+        }
+    }
+
+    @Test
     public void rejectsAmbiguousOrUnrecognizedEndpointsInsteadOfReturningOriginalUrl() {
         DBPDriver driver = driver("jdbc:postgresql://{host}[:{port}]/[{database}]");
         for (String url : List.of(
@@ -69,8 +105,11 @@ public class DatabaseURLTest extends DBeaverUnitTest {
             "jdbc:postgresql://db.example/demo",
             "jdbc:postgresql://db.example:invalid/demo",
             "jdbc:postgresql://db.example:5432extra/demo",
+            "jdbc:postgresql://db.example:5432extra/demo?option=value",
             "jdbc:postgresql://db.example:5432/demo trailing",
             "jdbc:postgresql://db.example:5432/demo/other",
+            "jdbc:postgresql://db.example:5432/demo/other?option=value",
+            "jdbc:postgresql://first:5432,second:5432/demo?option=value",
             "jdbc:mysql://db.example:3306/demo",
             "jdbc:postgresql:///demo",
             ""
@@ -83,6 +122,10 @@ public class DatabaseURLTest extends DBeaverUnitTest {
         ));
         Assertions.assertThrows(DBException.class, () -> DatabaseURL.replaceHostAndPort(
             driver("jdbc:test://{host}:1234/{database}"), "jdbc:test://db.example:1234/demo", "localhost", 49505
+        ));
+        Assertions.assertThrows(DBException.class, () -> DatabaseURL.replaceHostAndPort(
+            driver("jdbc:test://{host}:{port}/[{database}][?mode={mode}]"),
+            "jdbc:test://db.example:1234/demo/other?mode=safe", "localhost", 49505
         ));
     }
 

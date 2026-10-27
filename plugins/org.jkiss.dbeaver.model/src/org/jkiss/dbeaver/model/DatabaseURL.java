@@ -202,16 +202,22 @@ public class DatabaseURL {
             sampleUrl + "{" + URL_SUFFIX_PARAMETER + "}", parameter -> switch (parameter.name()) {
                 case DBConstants.PROP_HOST -> "(?:\\[[\\w:.%-]+\\]|[\\p{L}\\p{N}_\\-.~]+)";
                 case DBConstants.PROP_PORT -> "[0-9]+";
-                case DBConstants.PROP_DATABASE -> "(?:[\\p{L}\\p{N}_\\-.~]|%[0-9a-fA-F]{2})+";
-                case URL_SUFFIX_PARAMETER -> "(?:[?;#].*)?";
+                case DBConstants.PROP_DATABASE, DBConstants.PROP_USER, DBConstants.PROP_PASSWORD ->
+                    "(?:[\\p{L}\\p{N}_\\-.~]|%[0-9a-fA-F]{2})+";
+                case URL_SUFFIX_PARAMETER -> ".*";
                 default -> getPropertyRegex(parameter.name());
             }
         );
+        Map<String, String> parameters = template.extractSingletonParametersMap(url);
+        String suffix = parameters == null ? null : parameters.get(URL_SUFFIX_PARAMETER);
+        int queryStart = url.indexOf('?');
+        boolean validSuffix = suffix != null && (suffix.isEmpty() || "?;#".indexOf(suffix.charAt(0)) >= 0
+            || queryStart >= 0 && queryStart < url.length() - suffix.length());
         String localHost = hostName.indexOf(':') >= 0 && !hostName.startsWith("[") ? "[" + hostName + "]" : hostName;
-        String updated = template.replaceParameters(url, Map.of(
+        String updated = validSuffix ? template.replaceParameters(url, Map.of(
             DBConstants.PROP_HOST, localHost,
             DBConstants.PROP_PORT, Integer.toString(hostPort)
-        ));
+        )) : null;
         if (updated != null) {
             return updated;
         }
