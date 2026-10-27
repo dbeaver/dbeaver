@@ -25,6 +25,7 @@ import picocli.CommandLine;
  */
 public class HiddenOptions {
     public static final String PRODUCT_OPTION = "-product";
+    public static final String ECLIPSE_KEYRING_OPTION = "-eclipse.keyring";
 
     @NonExecutableOption
     @CommandLine.Option(names = {"-cli-mode"}, hidden = true)
@@ -59,7 +60,7 @@ public class HiddenOptions {
     private String arch;
 
     @NonExecutableOption
-    @CommandLine.Option(names = {"-eclipse.keyring"}, arity = "1", hidden = true)
+    @CommandLine.Option(names = {ECLIPSE_KEYRING_OPTION}, arity = "1", hidden = true)
     private String eclipseKeyring;
 
     @NonExecutableOption

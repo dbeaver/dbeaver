@@ -32,6 +32,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
 import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 
 import java.util.Map;
@@ -53,7 +54,7 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
             null,
             parentShell
         );
-        setFinishButtonLabel("Apply");
+        setFinishButtonLabel(ProductConfigMessages.wizard_apply);
         setMinimumPageSize(0, 0);
     }
 
