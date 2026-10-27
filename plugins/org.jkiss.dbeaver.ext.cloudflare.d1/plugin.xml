@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+<plugin>
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="cloudflare_d1" class="org.jkiss.dbeaver.ext.cloudflare.d1.model.CloudflareD1MetaModel" dialect="sqlite"/>
+    </extension>
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="cloudflare_d1"
+            label="Cloudflare D1"
+            description="Cloudflare D1 database"
+            dataSourceInformation="Cloudflare serverless SQL database"
+            icon="icons/cloudflare-d1.svg"
+            iconBig="icons/cloudflare-d1-big.svg"
+            logoImage="icons/cloudflare-d1-logo.svg"/>
+        <datasource
+            class="org.jkiss.dbeaver.ext.cloudflare.d1.CloudflareD1DataSourceProvider"
+            description="Cloudflare D1"
+            id="cloudflare_d1"
+            dataSourceType="cloudflare_d1"
+            parent="sqlite"
+            label="Cloudflare D1"
+            icon="icons/cloudflare-d1.svg"
+            dialect="sqlite">
+            <drivers managable="true">
+                <driver
+                    id="cloudflare_d1_jdbc"
+                    dataSourceType="cloudflare_d1"
+                    label="Cloudflare D1"
+                    class="com.dbeaver.jdbc.d1.D1Driver"
+                    sampleURL="jdbc:d1://{database}"
+                    description="Cloudflare D1 JDBC driver"
+                    icon="icons/cloudflare-d1.svg"
+                    iconBig="icons/cloudflare-d1-big.svg"
+                    webURL="https://developers.cloudflare.com/d1/"
+                    supportedConfigurationTypes="MANUAL"
+                    supportedPageFields="database"
+                    categories="sql,cloud">
+                    <file type="jar" path="maven:/com.dbeaver.jdbc:com.dbeaver.jdbc.driver.d1:RELEASE"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
+                    <parameter name="meta-model" value="cloudflare_d1"/>
+                    <parameter name="supports-references" value="true"/>
+                    <parameter name="supports-indexes" value="true"/>
+                    <parameter name="supports-stored-code" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-ddl-transactions" value="false"/>
+                    <parameter name="omit-schema" value="false"/>
+                    <parameter name="omit-single-catalog" value="false"/>
+                </driver>
+            </drivers>
+        </datasource>
+    </extension>
+    <extension point="org.jkiss.dbeaver.objectManager">
+        <manager class="org.jkiss.dbeaver.ext.cloudflare.d1.edit.CloudflareD1CatalogManager"
+                 objectType="org.jkiss.dbeaver.ext.cloudflare.d1.model.CloudflareD1Catalog"/>
+    </extension>
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+            id="cloudflare_d1_native"
+            label="Cloudflare D1"
+            description="Cloudflare account ID and API token"
+            class="org.jkiss.dbeaver.ext.cloudflare.d1.auth.CloudflareD1AuthModel"
+            default="true"
+            requiresLocalConfiguration="true">
+            <replace model="native"/>
+            <datasource id="cloudflare_d1"/>
+        </authModel>
+    </extension>
+</plugin>
