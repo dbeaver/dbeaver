@@ -1164,7 +1164,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     protected void fillConnectionProperties(@NotNull DBPConnectionConfiguration connectionInfo, @NotNull Properties connectProps) {
         super.fillConnectionProperties(connectionInfo, connectProps);
 
-        if (!DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+        if (!DBWorkbench.getPlatform().getApplication().isMultiuser()
+            && !DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES)) {
             return;
         }
 

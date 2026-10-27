@@ -79,6 +79,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
     private Button useWinTrustStoreCheck;
     private Button closeConnectionOnOsSleepCheck;
     private Button enableShellAuthModelCheck;
+    private Button sanitizeDriverPropertiesCheck;
 
     public PrefPageConnectionsGeneral() {
         super();
@@ -163,6 +164,12 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
                 CoreMessages.pref_page_connection_label_enable_shell_auth_model,
                 CoreMessages.pref_page_connection_label_enable_shell_auth_model_tip,
                 preferences.getBoolean(ModelPreferences.CONNECTION_SHELL_AUTH_MODEL_ENABLED),
+                1);
+            sanitizeDriverPropertiesCheck = UIUtils.createCheckbox(
+                groupBehavior,
+                CoreMessages.pref_page_connection_label_sanitize_driver_properties,
+                CoreMessages.pref_page_connection_label_sanitize_driver_properties_tip,
+                preferences.getBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES),
                 1);
         }
 
@@ -297,6 +304,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
 
         closeConnectionOnOsSleepCheck.setSelection(preferences.getDefaultBoolean(ModelPreferences.CONNECTION_CLOSE_ON_SLEEP));
         enableShellAuthModelCheck.setSelection(preferences.getDefaultBoolean(ModelPreferences.CONNECTION_SHELL_AUTH_MODEL_ENABLED));
+        sanitizeDriverPropertiesCheck.setSelection(preferences.getDefaultBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES));
 
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
             useWinTrustStoreCheck.setSelection(
@@ -330,6 +338,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
         store.setValue(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN, connectionDefaultNamePatternText.getText());
         store.setValue(ModelPreferences.CONNECTION_CLOSE_ON_SLEEP, closeConnectionOnOsSleepCheck.getSelection());
         store.setValue(ModelPreferences.CONNECTION_SHELL_AUTH_MODEL_ENABLED, enableShellAuthModelCheck.getSelection());
+        store.setValue(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES, sanitizeDriverPropertiesCheck.getSelection());
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
             store.setValue(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE, useWinTrustStoreCheck.getSelection());
         }
