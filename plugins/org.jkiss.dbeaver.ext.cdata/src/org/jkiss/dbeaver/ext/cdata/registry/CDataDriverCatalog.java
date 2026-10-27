@@ -175,6 +175,7 @@ public final class CDataDriverCatalog {
                     }
                 } catch (IOException | JsonParseException e) {
                     log.debug("Error reading CData catalog ETag (" + e.getClass().getSimpleName() + ")");
+                    Files.deleteIfExists(etagFile);
                 }
             }
             URLConnection connection = connectionFactory.apply(etag == null ? Map.of() : Map.of("If-None-Match", etag));

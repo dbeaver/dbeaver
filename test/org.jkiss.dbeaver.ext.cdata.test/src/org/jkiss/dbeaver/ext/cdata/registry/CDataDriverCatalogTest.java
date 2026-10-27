@@ -618,6 +618,25 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
         }
     }
 
+    @Test
+    public void removeMalformedLegacyETagCredentialsEvenWhenOffline() throws Exception {
+        saveCachedCatalog(LAST_MODIFIED);
+        connectionFactory = headers -> {
+            throw new IOException("Server unavailable");
+        };
+        for (boolean withCatalog : List.of(true, false)) {
+            if (!withCatalog) {
+                Files.delete(cacheFile);
+            }
+            Files.writeString(etagFile(), """
+                {"url":"https://example.com/catalog?@authtoken=legacy-secret","etag":
+                """);
+
+            Assertions.assertEquals(withCatalog ? 3 : 0, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
+            Assertions.assertFalse(Files.exists(etagFile()));
+        }
+    }
+
     private void saveCachedETag(@NotNull String etag) throws IOException {
         Files.writeString(etagFile(), JSONUtils.GSON.toJson(Map.of("urlHash", SecurityUtils.sha256Hex(""), "etag", etag)));
     }
