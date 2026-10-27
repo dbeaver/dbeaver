@@ -16,18 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam.sync.project;
 
-import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.datadam.sync.DDSyncChange;
-import org.jkiss.dbeaver.model.datadam.sync.core.PreparedFiles;
-
-/**
- * Consistent local and server state used by a project synchronization operation. Used to avoid recalculating fingerprints, since it's an expensive operation.
- */
-public record DDProjectSyncSnapshot(
-    @NotNull DDProjectSyncLocalBinding binding,
-    @NotNull DDSharedProjectRevision serverRevision,
-    @NotNull PreparedFiles preparedFiles,
-    @NotNull DDSyncChange change
-) {
+public enum ConflictResolution {
+    USE_LOCAL_VERSION,
+    USE_SERVER_VERSION
 }
