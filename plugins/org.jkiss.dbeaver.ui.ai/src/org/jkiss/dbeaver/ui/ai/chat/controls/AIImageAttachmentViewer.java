@@ -24,10 +24,12 @@ import org.eclipse.swt.SWTException;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.BrowserFunction;
 import org.eclipse.swt.browser.ProgressListener;
+import org.eclipse.swt.events.ShellListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -73,6 +75,19 @@ final class AIImageAttachmentViewer {
                 Browser browser = new Browser(area, SWT.NONE);
                 browser.setLayoutData(new org.eclipse.swt.layout.GridData(SWT.FILL, SWT.FILL, true, true));
                 closeOnFocusLost(browser);
+                Shell popup = getShell();
+                popup.addShellListener(ShellListener.shellDeactivatedAdapter(event -> UIUtils.asyncExec(() -> {
+                    if (!popup.isDisposed() && popup.getDisplay().getActiveShell() != popup) {
+                        close();
+                    }
+                })));
+                Listener outsideClick = event -> {
+                    if (event.widget instanceof Control control && control.getShell() != popup && !popup.isDisposed()) {
+                        close();
+                    }
+                };
+                popup.getDisplay().addFilter(SWT.MouseDown, outsideClick);
+                popup.addDisposeListener(event -> popup.getDisplay().removeFilter(SWT.MouseDown, outsideClick));
                 browser.addProgressListener(ProgressListener.completedAdapter(event -> {
                     if (!browser.isDisposed() && browser.getShell() == browser.getDisplay().getActiveShell()) {
                         browser.setFocus();
