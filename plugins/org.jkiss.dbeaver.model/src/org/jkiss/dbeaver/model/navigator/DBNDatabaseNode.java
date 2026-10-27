@@ -673,10 +673,18 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             return false;
         }
 
-        final DBSObjectFilter filter = getNodeFilter(meta, false);
-        this.filtered = filter != null && !filter.isNotApplicable();
-        if (filter != null && dataSource != null) {
-            filter.setCaseSensitive(dataSource.getSQLDialect().hasCaseSensitiveFiltration());
+        final DBSObjectFilter connectionFilter = getNodeFilter(meta, false);
+        final DBSObjectFilter userFilter = getUserNodeFilter(meta, false);
+        this.filtered = (connectionFilter != null && !connectionFilter.isNotApplicable()) ||
+            (userFilter != null && !userFilter.isNotApplicable());
+        if (dataSource != null) {
+            boolean caseSensitive = dataSource.getSQLDialect().hasCaseSensitiveFiltration();
+            if (connectionFilter != null) {
+                connectionFilter.setCaseSensitive(caseSensitive);
+            }
+            if (userFilter != null) {
+                userFilter.setCaseSensitive(caseSensitive);
+            }
         }
         if (itemList.isEmpty()) {
             return false;
@@ -716,19 +724,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                 // Skip schemas in merge entities mode
                 continue;
             }
-            if (filter != null) {
-                boolean isMatchingFilter;
-                if (childItem instanceof DBPOverloadedObject overloadedObject) {
-                    isMatchingFilter = filter.matchesAny(
-                        object.getName(),
-                        overloadedObject.getOverloadedName()
-                    );
-                } else {
-                    isMatchingFilter = filter.matches(object.getName());
-                }
-                if (!isMatchingFilter) {
-                    continue;
-                }
+            if (!matchesFilters(object, connectionFilter, userFilter)) {
+                continue;
             }
             boolean added = false;
             if (!oldList.isEmpty()) {
@@ -830,16 +827,27 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
         DBPDataSourceContainer dataSource = getDataSourceContainer();
         Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
         if (childrenClass != null) {
-            DBSObject parentObject = getFilterObject();
-            DBSObjectFilter connectionFilter = dataSource.getConnectionObjectFilter(childrenClass, parentObject, firstMatch);
-            DBSObjectFilter userFilter = dataSource.getUserObjectFilter(childrenClass, parentObject, firstMatch);
-            DBSObjectFilter effectiveFilter = DBSObjectFilter.conjunction(connectionFilter, userFilter);
-            if (effectiveFilter != null || !firstMatch) {
-                return effectiveFilter;
-            }
-            return userFilter != null ? userFilter : connectionFilter;
+            return dataSource.getObjectFilter(childrenClass, getFilterObject(), firstMatch);
         }
         return null;
+    }
+
+    static boolean matchesFilters(
+        @NotNull DBSObject object,
+        @Nullable DBSObjectFilter... filters
+    ) {
+        for (DBSObjectFilter filter : filters) {
+            if (filter == null) {
+                continue;
+            }
+            boolean matches = object instanceof DBPOverloadedObject overloadedObject
+                ? filter.matchesAny(object.getName(), overloadedObject.getOverloadedName())
+                : filter.matches(object.getName());
+            if (!matches) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Nullable

@@ -16,10 +16,9 @@
  */
 package org.jkiss.dbeaver.model.navigator;
 
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObjectWithLongId;
+import org.jkiss.dbeaver.model.DBPOverloadedObject;
 import org.jkiss.dbeaver.model.DBPUniqueObject;
-import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.junit.jupiter.api.Assertions;
@@ -55,27 +54,36 @@ public class DBNDatabaseNodeTest {
     }
 
     @Test
-    public void connectionAndUserFiltersAreCombinedAtNavigatorLevel() {
-        DBNDatabaseNode node = Mockito.mock(DBNDatabaseNode.class, Mockito.CALLS_REAL_METHODS);
-        DBPDataSourceContainer dataSource = Mockito.mock(DBPDataSourceContainer.class);
-        DBXTreeItem itemsMeta = Mockito.mock(DBXTreeItem.class);
+    public void connectionAndUserFiltersAreAppliedAtNavigatorLevel() {
+        DBSObject object = Mockito.mock(DBSObject.class);
+        Mockito.when(object.getName()).thenReturn("prod_eu");
         DBSObjectFilter connectionFilter = new DBSObjectFilter();
         connectionFilter.setInclude(List.of("prod_%"));
         DBSObjectFilter userFilter = new DBSObjectFilter();
         userFilter.setInclude(List.of("%_eu"));
 
-        Mockito.doReturn(dataSource).when(node).getDataSourceContainer();
-        Mockito.doReturn(String.class).when(node).getChildrenOrFolderClass(itemsMeta);
-        Mockito.doReturn(null).when(node).getFilterObject();
-        Mockito.when(dataSource.getConnectionObjectFilter(String.class, null, false)).thenReturn(connectionFilter);
-        Mockito.when(dataSource.getUserObjectFilter(String.class, null, false)).thenReturn(userFilter);
+        Assertions.assertTrue(DBNDatabaseNode.matchesFilters(object, connectionFilter, userFilter));
 
-        DBSObjectFilter effectiveFilter = node.getNodeFilter(itemsMeta, false);
+        Mockito.when(object.getName()).thenReturn("test_eu");
+        Assertions.assertFalse(DBNDatabaseNode.matchesFilters(object, connectionFilter, userFilter));
 
-        Assertions.assertNotNull(effectiveFilter);
-        Assertions.assertTrue(effectiveFilter.matches("prod_eu"));
-        Assertions.assertFalse(effectiveFilter.matches("test_eu"));
-        Assertions.assertFalse(effectiveFilter.matches("prod_us"));
-        Mockito.verify(dataSource, Mockito.never()).getObjectFilter(String.class, null, false);
+        Mockito.when(object.getName()).thenReturn("prod_us");
+        Assertions.assertFalse(DBNDatabaseNode.matchesFilters(object, connectionFilter, userFilter));
+    }
+
+    @Test
+    public void overloadedObjectNamesAreMatchedByBothFilters() {
+        DBSObject object = Mockito.mock(
+            DBSObject.class,
+            Mockito.withSettings().extraInterfaces(DBPOverloadedObject.class)
+        );
+        Mockito.when(object.getName()).thenReturn("base_name");
+        Mockito.when(((DBPOverloadedObject) object).getOverloadedName()).thenReturn("overloaded_name");
+        DBSObjectFilter connectionFilter = new DBSObjectFilter();
+        connectionFilter.setInclude(List.of("base_name"));
+        DBSObjectFilter userFilter = new DBSObjectFilter();
+        userFilter.setInclude(List.of("overloaded_name"));
+
+        Assertions.assertTrue(DBNDatabaseNode.matchesFilters(object, connectionFilter, userFilter));
     }
 }

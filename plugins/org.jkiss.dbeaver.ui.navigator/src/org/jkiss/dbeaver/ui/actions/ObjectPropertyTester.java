@@ -263,20 +263,19 @@ public class ObjectPropertyTester extends PropertyTester {
                 }
                 if (node instanceof DBNDatabaseNode dbNode && dbNode.getItemsMeta() != null) {
                     DBSObjectFilter filter = dbNode.getNodeFilter(dbNode.getItemsMeta(), true);
-                    if (filter != null) {
-                        UIServiceFilterConfig service = DBWorkbench.findService(UIServiceFilterConfig.class);
-                        DBSObjectFilter changeableFilter = filter;
-                        if (service != null) {
-                            DBSObjectFilter userFilter = dbNode.getUserNodeFilter(dbNode.getItemsMeta(), true);
-                            if (userFilter != null) {
-                                changeableFilter = userFilter;
-                            }
+                    UIServiceFilterConfig service = DBWorkbench.findService(UIServiceFilterConfig.class);
+                    if (service != null) {
+                        DBSObjectFilter userFilter = dbNode.getUserNodeFilter(dbNode.getItemsMeta(), true);
+                        if (userFilter != null) {
+                            filter = userFilter;
                         }
-                        boolean isUserChangeable = service == null || service.isUserChangeable(changeableFilter);
+                    }
+                    if (filter != null) {
+                        boolean isUserChangeable = service == null || service.isUserChangeable(filter);
                         if ("defined".equals(expectedValue)) {
-                            return isUserChangeable && !changeableFilter.isEmpty();
+                            return isUserChangeable && !filter.isEmpty();
                         } else {
-                            return isUserChangeable && !changeableFilter.isNotApplicable();
+                            return isUserChangeable && !filter.isNotApplicable();
                         }
                     } else {
                         return false;
