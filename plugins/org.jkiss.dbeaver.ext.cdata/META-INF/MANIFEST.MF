@@ -11,7 +11,6 @@ Require-Bundle: org.jkiss.dbeaver.model,
 Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
-DBeaver-Experimental: true
 Bundle-Activator: org.jkiss.dbeaver.ext.cdata.internal.CDataActivator
 Export-Package: org.jkiss.dbeaver.ext.cdata,
  org.jkiss.dbeaver.ext.cdata.model,

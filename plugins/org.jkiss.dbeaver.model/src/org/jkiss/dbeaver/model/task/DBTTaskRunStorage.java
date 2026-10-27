@@ -95,6 +95,10 @@ public interface DBTTaskRunStorage {
         return List.of();
     }
 
-    /** Deletes matching runs. Null task/run IDs select all tasks/runs in the project. Never deletes log files. */
-    void deleteRuns(@NotNull String projectId, @Nullable String taskId, @Nullable String runId) throws DBException;
+    /**
+     * Deletes matching runs in the current workspace. Null project/task/run IDs leave the corresponding
+     * filter unrestricted; all three null clears the workspace, including runs of deleted projects.
+     * Never deletes log files.
+     */
+    void deleteRuns(@Nullable String projectId, @Nullable String taskId, @Nullable String runId) throws DBException;
 }
