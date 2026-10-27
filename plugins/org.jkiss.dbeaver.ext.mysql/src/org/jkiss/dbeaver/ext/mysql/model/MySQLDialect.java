@@ -121,6 +121,9 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
             SQLConstants.KEYWORD_EXPLAIN, "DESCRIBE", "DESC"}
     );
 
+    // MySQL and MariaDB comments which are executed as SQL
+    private static final String[] EXECUTABLE_COMMENT_PREFIXES = { "/*!", "/*M!" };
+
     private static final String[] ADVANCED_KEYWORDS = {
         "AUTO_INCREMENT",
         "DATABASES",
@@ -382,6 +385,12 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
     @Override
     public String[] getSingleLineComments() {
         return new String[] { "-- ", "--\t", "#" };
+    }
+
+    @NotNull
+    @Override
+    public String[] getExecutableCommentPrefixes() {
+        return EXECUTABLE_COMMENT_PREFIXES;
     }
 
     @Override

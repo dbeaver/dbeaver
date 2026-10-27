@@ -40,8 +40,6 @@ public class SQLFormatterTokenized implements SQLFormatter {
 
     private static final String[] DML_KEYWORD = { "SELECT", "UPDATE", "INSERT", "DELETE" };
 
-    // MySQL and MariaDB comments which are executed as SQL, so they are a part of a query
-    private static final String[] EXECUTABLE_COMMENT_PREFIXES = { "/*!", "/*M!" };
 
 
     private SQLFormatterConfiguration formatterCfg;
@@ -247,6 +245,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
     }
 
     private void convertEmptyLinesIntoDelimiters(List<FormatterToken> argList) {
+        String[] executableCommentPrefixes = formatterCfg.getSyntaxManager().getDialect().getExecutableCommentPrefixes();
         boolean hasQueryContent = false;
         for (int i= 0; i < argList.size(); i++) {
             FormatterToken token = argList.get(i);
@@ -261,7 +260,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
                     if (i > 0 && statementDelimiters.contains(argList.get(i - 1).getString())) {
                         // Do nothing - there is a delimiter already
                     } else {
-                        int delimiterIndex = findDelimiterIndex(argList, i, hasQueryContent);
+                        int delimiterIndex = findDelimiterIndex(argList, i, hasQueryContent, executableCommentPrefixes);
                         if (delimiterIndex >= 0) {
                             argList.add(delimiterIndex, new FormatterToken(TokenType.SYMBOL, statementDelimiters.get(0)));
                             hasQueryContent = false;
@@ -271,15 +270,20 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 }
             } else if (statementDelimiters.contains(token.getString())) {
                 hasQueryContent = false;
-            } else if (!isPlainComment(token)) {
+            } else if (!isPlainComment(token, executableCommentPrefixes)) {
                 hasQueryContent = true;
             }
         }
     }
 
-    private int findDelimiterIndex(@NotNull List<FormatterToken> argList, int emptyLineIndex, boolean hasQueryContent) {
+    private int findDelimiterIndex(
+        @NotNull List<FormatterToken> argList,
+        int emptyLineIndex,
+        boolean hasQueryContent,
+        @NotNull String[] executableCommentPrefixes
+    ) {
         int commentIndex = emptyLineIndex - 1;
-        if (commentIndex < 0 || !isPlainComment(argList.get(commentIndex))) {
+        if (commentIndex < 0 || !isPlainComment(argList.get(commentIndex), executableCommentPrefixes)) {
             return emptyLineIndex;
         }
         if (!hasQueryContent) {
@@ -298,11 +302,11 @@ public class SQLFormatterTokenized implements SQLFormatter {
         return delimiterIndex;
     }
 
-    private static boolean isPlainComment(@NotNull FormatterToken token) {
+    private static boolean isPlainComment(@NotNull FormatterToken token, @NotNull String[] executableCommentPrefixes) {
         if (token.getType() != TokenType.COMMENT) {
             return false;
         }
-        for (String prefix : EXECUTABLE_COMMENT_PREFIXES) {
+        for (String prefix : executableCommentPrefixes) {
             if (token.getString().startsWith(prefix)) {
                 return false;
             }

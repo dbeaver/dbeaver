@@ -60,4 +60,9 @@ public class MySQLDialectTest extends DBeaverUnitTest {
         // THEN
         Assertions.assertEquals("[\"{\\\\\"subjectId\\\\\":3,\\\\\"levelId\\\\\":2,\\\\\"isOur\\\\\":true}\"]", actual);
     }
+
+    @Test
+    public void getExecutableCommentPrefixes_whenMySqlDialect_thenMySqlAndMariaDbPrefixesReturn() {
+        Assertions.assertArrayEquals(new String[] { "/*!", "/*M!" }, dialect.getExecutableCommentPrefixes());
+    }
 }
