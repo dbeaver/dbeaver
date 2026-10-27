@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,13 @@ public class VariablesHintLabel {
         this(parent, hintLabel, hintTitle, vars, true);
     }
 
-    public VariablesHintLabel(Composite parent, String hintLabel, String hintTitle, String[][] vars, boolean stretch) {
+    public VariablesHintLabel(
+        @NotNull Composite parent,
+        @NotNull String hintLabel,
+        @NotNull String hintTitle,
+        @NotNull String[][] vars,
+        boolean stretch
+    ) {
         String varsText = GeneralUtils.generateVariablesLegend(vars);
 
         Layout layout = parent.getLayout();
@@ -89,7 +95,12 @@ public class VariablesHintLabel {
         private final String[][] variables;
         private final IVariableResolver resolver;
 
-        VariableListDialog(Shell parentShell, String title, String[][] variables, IVariableResolver resolver) {
+        VariableListDialog(
+            @NotNull Shell parentShell,
+            @NotNull String title,
+            @NotNull String[][] variables,
+            @NotNull IVariableResolver resolver
+        ) {
             super(parentShell, title, null);
             this.variables = variables;
             this.resolver = resolver;

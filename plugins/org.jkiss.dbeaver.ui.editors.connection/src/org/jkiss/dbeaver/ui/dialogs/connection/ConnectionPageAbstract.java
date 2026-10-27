@@ -97,6 +97,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     private ImageDescriptor curImageDescriptor;
 
+    @NotNull
     public IDataSourceConnectionEditorSite getSite() {
         return site;
     }
@@ -217,8 +218,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         }
     }
 
-    protected void createDriverPanel(Composite parent) {
-        Composite panel = UIUtils.createComposite(parent, 5);
+    protected void createDriverPanel(@NotNull Composite parent) {
+        final Composite panel = UIUtils.createComposite(parent, 5);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_END);
         gd.horizontalSpan = ((GridLayout) parent.getLayout()).numColumns;
         gd.grabExcessHorizontalSpace = true;
@@ -286,7 +287,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 manager.add(new Action(UIConnectionMessages.dialog_connection_view_driver_license) {
                     @Override
                     public void run() {
-                        AcceptLicenseDialog dialog = new AcceptLicenseDialog(getShell(), site.getDriver().getFullName(), site.getDriver().getLicense());
+                        AcceptLicenseDialog dialog = new AcceptLicenseDialog(
+                            getShell(), site.getDriver().getFullName(), site.getDriver().getLicense());
                         dialog.setViewMode(true);
                         dialog.open();
                     }
@@ -320,7 +322,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         }));
     }
 
-    protected void updateDriverInfo(DBPDriver driver) {
+    protected void updateDriverInfo(@NotNull DBPDriver driver) {
 
     }
 
