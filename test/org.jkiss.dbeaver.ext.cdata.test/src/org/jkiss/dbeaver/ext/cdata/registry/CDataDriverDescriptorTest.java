@@ -20,11 +20,15 @@ import org.jkiss.dbeaver.ext.cdata.model.CDataIcons;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.driver.DriverLoaderDescriptor;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.awt.image.BufferedImage;
 import java.nio.file.Files;
@@ -35,6 +39,46 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.imageio.ImageIO;
 
 public class CDataDriverDescriptorTest extends DBeaverUnitTest {
+    @Test
+    public void missingDriverDoesNotTriggerLicenseValidationOrAnotherDownload() throws Exception {
+        var registry = DataSourceProviderRegistry.getInstance();
+        var driver = Mockito.spy(new CDataDriverDescriptor(registry.getDataSourceProvider("generic"), "test-cdata-missing-driver",
+            new CDataDriverInfo("postgresql", "postgresql", "PostgreSQL JDBC Driver", 2026,
+                CDataDriverTier.PROFESSIONAL, "https://www.cdata.com/", "postgresql", "APRN-VSDBVR")));
+        var loader = Mockito.mock(DriverLoaderDescriptor.class);
+        Mockito.doReturn(loader).when(driver).getDefaultDriverLoader();
+        var license = driver.getCurrentLicense();
+        var monitor = new VoidProgressMonitor();
+
+        Assertions.assertNull(driver.validateInstalledLicense(monitor));
+        Assertions.assertSame(license, driver.getCurrentLicense());
+        Mockito.verify(driver, Mockito.never()).validateCurrentLicense(Mockito.any());
+        Mockito.verify(loader).isDriverInstalled();
+        Mockito.verifyNoMoreInteractions(loader);
+
+        Mockito.when(loader.isDriverInstalled()).thenReturn(true);
+        var installedLicense = new CDataDriverLicense(CDataLicenseStatus.NOT_INSTALLED, null, null);
+        Mockito.doReturn(installedLicense).when(driver).validateCurrentLicense(monitor);
+
+        Assertions.assertSame(installedLicense, driver.validateInstalledLicense(monitor));
+        Mockito.verify(driver).validateCurrentLicense(monitor);
+    }
+
+    @Test
+    public void canceledLicenseCheckDoesNotRequestDriverFiles() throws Exception {
+        var registry = DataSourceProviderRegistry.getInstance();
+        var driver = Mockito.spy(new CDataDriverDescriptor(registry.getDataSourceProvider("generic"), "test-cdata-canceled-check",
+            new CDataDriverInfo("postgresql", "postgresql", "PostgreSQL JDBC Driver", 2026,
+                CDataDriverTier.PROFESSIONAL, "https://www.cdata.com/", "postgresql", "APRN-VSDBVR")));
+        var loader = Mockito.mock(DriverLoaderDescriptor.class);
+        Mockito.doReturn(loader).when(driver).getDefaultDriverLoader();
+        var monitor = Mockito.mock(DBRProgressMonitor.class);
+        Mockito.when(monitor.isCanceled()).thenReturn(true);
+
+        Assertions.assertNull(driver.validateInstalledLicense(monitor));
+        Mockito.verifyNoInteractions(loader);
+    }
+
     @Test
     public void notifyLicenseChangesAndRemoveListener() {
         var registry = DataSourceProviderRegistry.getInstance();

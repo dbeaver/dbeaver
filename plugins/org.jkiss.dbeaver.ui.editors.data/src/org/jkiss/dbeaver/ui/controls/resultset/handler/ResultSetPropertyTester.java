@@ -31,6 +31,8 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
 /**
  * DatabaseEditorPropertyTester
  */
@@ -134,9 +136,25 @@ public class ResultSetPropertyTester extends PropertyTester
                     }
                 } else if ("add".equals(expectedValue)) {
                     return rsv.isInsertable();
-                } else if ("copy".equals(expectedValue) || "delete".equals(expectedValue)) {
+                } else if ("copy".equals(expectedValue)) {
                     ResultSetRow currentRow = rsv.getCurrentRow();
-                    return currentRow != null && ("copy".equals(expectedValue) ? rsv.isInsertable() : rsv.isDeletable());
+                    return currentRow != null && rsv.isInsertable();
+                } else if ("delete".equals(expectedValue)) {
+                    ResultSetRow currentRow = rsv.getCurrentRow();
+                    if (currentRow == null) {
+                        return false;
+                    }
+                    if (rsv.isDeletable()) {
+                        return true;
+                    }
+                    if (!rsv.isInsertable()) {
+                        return false;
+                    }
+                    if (rsv.isRecordMode()) {
+                        return currentRow.getState() == ResultSetRow.STATE_ADDED;
+                    }
+                    List<ResultSetRow> selectedRows = rsv.getSelection().getSelectedRows();
+                    return !selectedRows.isEmpty() && selectedRows.stream().allMatch(row -> row.getState() == ResultSetRow.STATE_ADDED);
                 } else {
                     return false;
                 }

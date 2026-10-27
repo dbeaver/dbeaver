@@ -81,6 +81,7 @@ public class GreenplumTableTest extends DBeaverUnitTest {
 
         Mockito.when(mockDataSource.getSQLDialect()).thenReturn(new PostgreDialect());
         Mockito.when(mockDataSource.isServerVersionAtLeast(Mockito.anyInt(), Mockito.anyInt())).thenReturn(false);
+        Mockito.when(mockDataSource.hasDefaultInstance()).thenReturn(true);
         Mockito.when(mockDataSource.getDefaultInstance()).thenReturn(mockDatabase);
         Mockito.when(mockDataSource.getServerType()).thenReturn(mockServerGreenplum);
 

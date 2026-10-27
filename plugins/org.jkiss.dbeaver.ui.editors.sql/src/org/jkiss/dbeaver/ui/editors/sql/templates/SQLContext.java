@@ -70,7 +70,7 @@ public class SQLContext extends DocumentTemplateContext implements DBPContextPro
         formatTemplate(buffer);
 /*
         // Reorder variables
-        TemplateVariable[] bufferVariables = buffer.getVariables();
+        TemplateVariable[] bufferVariables = buffer.getVariablesSubset();
 
         Arrays.sort(bufferVariables, new Comparator<TemplateVariable>() {
             @Override

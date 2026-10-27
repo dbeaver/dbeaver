@@ -188,6 +188,8 @@ public class UIIcon {
     public static final DBIcon OBJ_REFRESH = new DBIcon("object_refresh", "misc/object_refresh.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon OBJ_LAYOUT = new DBIcon("layout", "misc/layout.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
+    public static final DBIcon GROUP = new DBIcon("group", "misc/group.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon UNGROUP = new DBIcon("ungroup", "misc/ungroup.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon GROUP_BY_ATTR = new DBIcon("group_attr", "misc/group_attributes.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon TREE_EXPAND = new DBIcon("expand", "misc/expand.svg"); //$NON-NLS-1$ //$NON-NLS-2$

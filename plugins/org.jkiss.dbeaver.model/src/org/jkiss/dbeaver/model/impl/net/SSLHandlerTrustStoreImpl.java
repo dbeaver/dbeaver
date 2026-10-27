@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,18 +27,27 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
-import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.StandardOpenOption;
+import java.nio.file.attribute.PosixFileAttributeView;
+import java.nio.file.attribute.PosixFilePermission;
+import java.nio.file.attribute.PosixFilePermissions;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
+
+import javax.net.ssl.*;
 
 /**
  * Default Java SSL Handler. Saves certificate in local trust store
@@ -205,7 +214,7 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
             return false;
         }
         final Reader reader = new StringReader(new String(key, StandardCharsets.UTF_8));
-        Files.write(tempDerFile, DefaultCertificateStorage.loadDerFromPem(reader));
+        writePrivateKeyFile(tempDerFile, DefaultCertificateStorage.loadDerFromPem(reader));
         String derCertPath = tempDerFile.toAbsolutePath().toString();
         if (DBWorkbench.isDistributed() || DBWorkbench.getPlatform().getApplication().isMultiuser()) {
             handler.setSecureProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, derCertPath);
@@ -216,6 +225,35 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         // The chain is built asynchronously by the driver, and we don't know at which moment in time it will happen.
         // It will still be deleted during shutdown.
         return true;
+    }
+
+    // Stage private key bytes in an owner-only file before exposing them at the
+    // configured path. An atomic replacement also avoids following a symlink
+    // inserted between validating an existing target and writing its contents.
+    static void writePrivateKeyFile(@NotNull Path path, @NotNull byte[] contents) throws IOException {
+        if (Files.getFileStore(path.getParent()).supportsFileAttributeView(PosixFileAttributeView.class)) {
+            if (Files.exists(path, LinkOption.NOFOLLOW_LINKS)
+                    && !Files.isRegularFile(path, LinkOption.NOFOLLOW_LINKS)) {
+                throw new IOException("SSL private key target is not a regular file: " + path);
+            }
+
+            Set<PosixFilePermission> ownerOnly = PosixFilePermissions.fromString("rw-------");
+            Path staged = Files.createTempFile(path.getParent(), ".dbeaver-private-", ".tmp",
+                PosixFilePermissions.asFileAttribute(ownerOnly));
+            try {
+                Files.write(staged, contents);
+                try {
+                    Files.move(staged, path, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+                } catch (AtomicMoveNotSupportedException e) {
+                    Files.move(staged, path, StandardCopyOption.REPLACE_EXISTING);
+                }
+            } finally {
+                Files.deleteIfExists(staged);
+            }
+        } else {
+            Files.write(path, contents, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING,
+                StandardOpenOption.WRITE);
+        }
     }
 
     /**

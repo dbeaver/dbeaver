@@ -47,6 +47,7 @@ import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
@@ -67,6 +68,8 @@ import java.util.stream.Collectors;
  */
 public class SQLQuery implements SQLScriptElement {
 
+    private static final Log log = Log.getLog(SQLQuery.class);
+
     private static final Pattern QUERY_TITLE_PATTERN = Pattern.compile("^\\s*(?:--|//|/\\*)\\s*(?:name|title)\\s*:\\s*(.+)$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
     @Nullable
@@ -81,6 +84,7 @@ public class SQLQuery implements SQLScriptElement {
     private boolean representsOneStatement;
     private int offset;
     private int length;
+    private boolean hasVariableKeyword;
     private Object data;
     private int resultsOffset = -1;
     private int resultsMaxRows = -1;
@@ -124,6 +128,8 @@ public class SQLQuery implements SQLScriptElement {
         this.representsOneStatement = sourceQuery.representsOneStatement;
         this.parameters = sourceQuery.parameters;
         this.data = sourceQuery.data;
+        this.isEndsWithDelimiter = sourceQuery.isEndsWithDelimiter;
+        this.hasVariableKeyword = sourceQuery.hasVariableKeyword;
     }
 
     public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String text, int offset, int length) {
@@ -303,8 +309,9 @@ public class SQLQuery implements SQLScriptElement {
                 type = SQLQueryType.MERGE;
             } else if (statement instanceof Commit) {
                 type = SQLQueryType.COMMIT;
-            } else if (statement instanceof RollbackStatement) {
-                type = SQLQueryType.ROLLBACK;
+            } else if (statement instanceof RollbackStatement rollback) {
+                // ROLLBACK TO [SAVEPOINT] name keeps the transaction open, so it must not be treated as a full rollback
+                type = rollback.getSavepointName() == null ? SQLQueryType.ROLLBACK : SQLQueryType.UNKNOWN;
             } else {
                 type = SQLQueryType.UNKNOWN;
             }
@@ -657,6 +664,14 @@ public class SQLQuery implements SQLScriptElement {
         this.length = length;
     }
 
+    public boolean hasVariableKeyword() {
+        return this.hasVariableKeyword;
+    }
+
+    public void setHasVariableKeyword(boolean hasVariableKeyword) {
+        this.hasVariableKeyword = hasVariableKeyword;
+    }
+
     /**
      * User defined data object. May be used to identify statements.
      *
@@ -806,7 +821,11 @@ public class SQLQuery implements SQLScriptElement {
         parseQuery();
         if (statement instanceof Select) {
             SelectMutationVisitor visitor = new SelectMutationVisitor();
-            visitor.getTables(statement);
+            try {
+                visitor.getTables(statement);
+            } catch (Throwable e) {
+                log.trace("Error while evaluating whether given query is mutating.", e);
+            }
             return visitor.isMutating();
         }
         return objectOperation != null || statement != null &&
@@ -831,7 +850,7 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     private static class SelectMutationVisitor extends TablesNamesFinder<Void> {
-        private boolean mutating;
+        private boolean mutating = false;
 
         @Override
         @Nullable

@@ -110,19 +110,20 @@ public class GetTableDetailsFunction implements AIFunction {
 
         boolean fullDDL = context.getPrompt().hasFeature(AIConstants.AI_PROMPT_FEATURE_FULL_DDL);
 
+        AIDatabaseContext databaseContext = context.getContext();
+        boolean restricted = databaseContext != null && databaseContext.hasDataSourceCustomScope();
         AISchemaGenerationOptions options = AISchemaGenerationOptions.builder()
             .withSendColumnTypes(true)
-            .withSendForeignKeys(sendConstraints)
+            .withSendForeignKeys(sendConstraints && !restricted)
             .withSendConstraints(sendConstraints)
             .withSendObjectComment(sendComments)
             .withSendIndexes(sendIndexes)
-            .withSendFullDDL(fullDDL)
-            .withSendReferences(sendReferences)
+            .withSendFullDDL(fullDDL && !restricted)
+            .withSendReferences(sendReferences && !restricted)
             .withUseFQN(true)
             .build();
 
-        DBCExecutionContext executionContext = context.getContext() == null ? null :
-            context.getContext().getExecutionContext();
+        DBCExecutionContext executionContext = databaseContext == null ? null : databaseContext.getExecutionContext();
 
         StringJoiner c = new StringJoiner("\n");
         for (Map.Entry<String, Object> tee : tableMap.entrySet()) {
