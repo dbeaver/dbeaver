@@ -126,9 +126,8 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             content, DDTrackingUIMessages.sync_preference_page_encryption_keys_group,
             2, GridData.FILL_HORIZONTAL, SWT.DEFAULT
         );
-        ((GridData) keysGroup.getParent().getLayoutData()).verticalIndent = 16;
-        projectsHelp = UIUtils.createWarningLabel(
-            keysGroup, DDTrackingUIMessages.projects_page_sign_in_help, GridData.HORIZONTAL_ALIGN_BEGINNING, 2);
+        GridData keysGroupLayout = (GridData) keysGroup.getParent().getLayoutData();
+        keysGroupLayout.verticalIndent = 5;
         accountRow = UIUtils.createComposite(keysGroup, 2);
         GridData accountRowData = new GridData(GridData.FILL_HORIZONTAL);
         accountRowData.horizontalSpan = 2;
@@ -145,13 +144,24 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             keyButtons, DDTrackingUIMessages.sync_preference_page_import_keys_button, null,
             SelectionListener.widgetSelectedAdapter(e -> importKeys())
         );
+        GridData importKeysLayout = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
+        importKeysLayout.horizontalIndent = 3;
+        importKeysButton.setLayoutData(importKeysLayout);
         forgetKeysButton = UIUtils.createPushButton(
             keyButtons, DDTrackingUIMessages.sync_preference_page_forget_keys_button, null,
             SelectionListener.widgetSelectedAdapter(e -> forgetKeys())
         );
+        GridData forgetKeysLayout = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
+        forgetKeysLayout.horizontalIndent = 3;
+        forgetKeysButton.setLayoutData(forgetKeysLayout);
+        projectsHelp = UIUtils.createWarningLabel(
+            keysGroup, DDTrackingUIMessages.projects_page_sign_in_help, GridData.HORIZONTAL_ALIGN_BEGINNING, 2);
+        ((GridData) projectsHelp.getLayoutData()).verticalIndent = 5;
 
         Composite projectsSection = UIUtils.createPlaceholder(content, 1);
-        projectsSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        GridData projectsLayout = new GridData(SWT.FILL, SWT.FILL, true, true);
+        projectsLayout.verticalIndent = 3;
+        projectsSection.setLayoutData(projectsLayout);
         showRemote = new Button(projectsSection, SWT.CHECK);
         showRemote.setText(DDTrackingUIMessages.projects_show_remote);
         showRemote.setSelection(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_SHOW_REMOTE_PROJECTS));
@@ -350,7 +360,11 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         ((GridData) accountRow.getLayoutData()).exclude = !present;
         boolean signedIn = accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN;
         importKeysButton.setEnabled(!present && signedIn);
+        importKeysButton.setVisible(!present);
+        ((GridData) importKeysButton.getLayoutData()).exclude = present;
         forgetKeysButton.setEnabled(present);
+        forgetKeysButton.setVisible(present);
+        ((GridData) forgetKeysButton.getLayoutData()).exclude = !present;
         boolean ready = signedIn && present;
         projectsDescription.setText(ready
             ? DDTrackingUIMessages.projects_page_sync_help : DDTrackingUIMessages.projects_page_description);
