@@ -23,10 +23,9 @@ public class DDTrackingUIMessages extends NLS {
 
     public static String sync_preference_page_title;
     public static String sync_preference_page_description;
+    public static String sync_preference_page_authentication_group;
     public static String sync_preference_page_about_link;
     public static String sync_preference_page_about_url;
-    public static String sync_preference_page_sign_in_help;
-    public static String sync_preference_page_sign_in_url;
     public static String sync_preference_page_encryption_keys_group;
     public static String sync_preference_page_unknown;
     public static String sync_preference_page_account_label;

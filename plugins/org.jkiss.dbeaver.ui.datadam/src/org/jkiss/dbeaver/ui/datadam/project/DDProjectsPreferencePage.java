@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.DDImportKeyDialog;
+import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIIcons;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictDialog.Choice;
@@ -89,7 +90,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private Button importKeysButton;
     private Button forgetKeysButton;
     private Label projectsDescription;
-    private Link projectsHelp;
+    private Control projectsHelp;
     private AbstractJob accountViewJob;
     @Nullable
     private DDKeyBundle displayedBundle;
@@ -119,20 +120,13 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         content = UIUtils.createPlaceholder(parent, 1);
         content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
-        projectsDescription = new Label(content, SWT.WRAP);
-        projectsDescription.setText(DDTrackingUIMessages.projects_page_description);
-        GridData descriptionLayout = new GridData(SWT.FILL, SWT.CENTER, true, false);
-        descriptionLayout.widthHint = 500;
-        projectsDescription.setLayoutData(descriptionLayout);
+        projectsDescription = DDUIUtils.create(content, DDTrackingUIMessages.projects_page_description);
         Composite keysGroup = UIUtils.createTitledComposite(
             content, DDTrackingUIMessages.sync_preference_page_encryption_keys_group,
             2, GridData.FILL_HORIZONTAL, SWT.DEFAULT
         );
         ((GridData) keysGroup.getParent().getLayoutData()).verticalIndent = 16;
-        projectsHelp = UIUtils.createLink(
-            keysGroup, DDTrackingUIMessages.projects_page_sign_in_help,
-            SelectionListener.widgetSelectedAdapter(e ->
-                UIUtils.openWebBrowser(DDTrackingUIMessages.sync_preference_page_sign_in_url)));
+        projectsHelp = UIUtils.createInfoLabel(keysGroup, DDTrackingUIMessages.projects_page_sign_in_help);
         projectsHelp.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false, 2, 1));
         accountRow = UIUtils.createComposite(keysGroup, 2);
         GridData accountRowData = new GridData(GridData.FILL_HORIZONTAL);
