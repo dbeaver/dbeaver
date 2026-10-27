@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.sql.parser;
 
 import org.eclipse.jface.text.Document;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
@@ -49,6 +48,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.StringJoiner;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -413,11 +413,27 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
         String query = """
             -- ${timestamp}
             /* ${block} */
-            SELECT '${inString}', ${inCode}""";
+            SELECT /*+ ${hint} */ /*!50000 ${executable} */ '${inString}', ${inCode}""";
         SQLParserContext context = createParserContext(setDialect("snowflake"), query);
         List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
         Assertions.assertEquals(
-            List.of("timestamp=true", "block=true", "inString=false", "inCode=false"),
+            List.of("timestamp=true", "block=true", "hint=false", "executable=false", "inString=false", "inCode=false"),
+            params.stream().map(p -> p.getName() + "=" + p.isInComment()).toList()
+        );
+    }
+
+    @Test
+    public void markVariablesInCommentsWithParametersDisabled() throws DBException {
+        DBPPreferenceStore preferences = Mockito.mock(DBPPreferenceStore.class);
+        Mockito.when(preferences.getBoolean(ModelPreferences.SQL_VARIABLES_ENABLED)).thenReturn(true);
+        Mockito.when(preferences.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX)).thenReturn(":");
+        Mockito.when(dataSourceContainer.getPreferenceStore()).thenReturn(preferences);
+        String query = "-- ${timestamp}\nSELECT ${id}";
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        context.setPreferenceStore(preferences);
+        List<SQLQueryParameter> params = SQLScriptParser.parseParametersAndVariables(context, 0, query.length());
+        Assertions.assertEquals(
+            List.of("timestamp=true", "id=false"),
             params.stream().map(p -> p.getName() + "=" + p.isInComment()).toList()
         );
     }
@@ -426,7 +442,7 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
     public void unsetVariableInCommentDoesNotPrompt() throws DBException {
         // dbeaver/dbeaver#42360: a commented-out ${timestamp} opened the Bind Parameters dialog
         List<SQLQuery> prompted = new ArrayList<>();
-        SQLQuery query = fillScriptQueryParameters("-- ${timestamp}\n\nSELECT 1;", prompted, null);
+        SQLQuery query = fillScriptQueryParameters("-- ${timestamp}\n\nSELECT 1;", prompted, scriptContext -> {});
 
         Assertions.assertTrue(prompted.isEmpty());
         Assertions.assertEquals("-- ${timestamp}\n\nSELECT 1", query.getText());
@@ -435,7 +451,7 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
     @Test
     public void setVariableInCommentIsStillSubstituted() throws DBException {
         List<SQLQuery> prompted = new ArrayList<>();
-        SQLQuery query = fillScriptQueryParameters("-- ${timestamp}\n\nSELECT 1;", prompted, "2026");
+        SQLQuery query = fillScriptQueryParameters("-- ${timestamp}\n\nSELECT 1;", prompted, scriptContext -> scriptContext.setVariable("timestamp", "2026"));
 
         Assertions.assertTrue(prompted.isEmpty());
         Assertions.assertEquals("-- 2026\n\nSELECT 1", query.getText());
@@ -444,16 +460,27 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
     @Test
     public void variableInCommentAndCodeStillPrompts() throws DBException {
         List<SQLQuery> prompted = new ArrayList<>();
-        fillScriptQueryParameters("-- ${id}\nSELECT ${id};", prompted, null);
+        fillScriptQueryParameters("-- ${id}\nSELECT ${id};", prompted, scriptContext -> {});
 
         Assertions.assertEquals(1, prompted.size());
+    }
+
+    @Test
+    public void unusedDefaultInCommentDoesNotPrompt() throws DBException {
+        // Without useDefaults the provider ignores parameter defaults, so a default alone must not keep the variable
+        List<SQLQuery> prompted = new ArrayList<>();
+        SQLQuery query = fillScriptQueryParameters(
+            "-- ${timestamp}\n\nSELECT 1;", prompted, scriptContext -> scriptContext.setParameterDefaultValue("timestamp", "2026"));
+
+        Assertions.assertTrue(prompted.isEmpty());
+        Assertions.assertEquals("-- ${timestamp}\n\nSELECT 1", query.getText());
     }
 
     @NotNull
     private SQLQuery fillScriptQueryParameters(
         @NotNull String script,
         @NotNull List<SQLQuery> prompted,
-        @Nullable String timestampValue
+        @NotNull Consumer<SQLScriptContext> setup
     ) throws DBException {
         SQLParserContext context = createParserContext(setDialect("snowflake"), script);
         List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(context, 0, script.length(), true, false, true);
@@ -472,9 +499,7 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
             }
         };
         SQLScriptContext scriptContext = new SQLScriptContext(null, () -> null, null, new StringWriter(), provider);
-        if (timestampValue != null) {
-            scriptContext.setVariable("timestamp", timestampValue);
-        }
+        setup.accept(scriptContext);
         Assertions.assertTrue(scriptContext.fillQueryParameters(query, () -> null, false));
         return query;
     }

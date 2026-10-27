@@ -38,6 +38,7 @@ import java.util.regex.Matcher;
 /** Shared SQL parameter and variable parser for a single query. */
 public class DefaultSQLQueryParameterParser {
     private static final Log log = Log.getLog(DefaultSQLQueryParameterParser.class);
+    private static final String[] SERVER_READ_COMMENT_PREFIXES = {"/*+", "/*!", "--+"};
     @NotNull
     protected final SQLParserContext context;
     protected final int queryOffset;
@@ -71,7 +72,9 @@ public class DefaultSQLQueryParameterParser {
         ruleScanner.setRange(document, queryOffset, queryLength);
 
         boolean firstKeyword = true;
-        if (syntaxManager.isParametersEnabled()) {
+        boolean parametersEnabled = syntaxManager.isParametersEnabled();
+        // Variables need the comment ranges even when parameters are disabled
+        if (parametersEnabled || syntaxManager.isVariablesEnabled()) {
             for (; ; ) {
                 TPToken token = ruleScanner.nextToken();
                 final int tokenOffset = ruleScanner.getTokenOffset();
@@ -84,10 +87,12 @@ public class DefaultSQLQueryParameterParser {
                                          ? (SQLTokenType) ((TPTokenDefault) token).getData()
                                          : null;
                 if (tokenType == SQLTokenType.T_COMMENT) {
-                    commentRanges.add(new int[]{tokenOffset - queryOffset, tokenOffset - queryOffset + tokenLength});
+                    if (!isServerReadComment(document, tokenOffset, tokenLength)) {
+                        commentRanges.add(new int[]{tokenOffset - queryOffset, tokenOffset - queryOffset + tokenLength});
+                    }
                     continue;
                 }
-                if (token.isWhitespace()) {
+                if (token.isWhitespace() || !parametersEnabled) {
                     continue;
                 }
                 if (firstKeyword) {
@@ -200,6 +205,18 @@ public class DefaultSQLQueryParameterParser {
         }
 
         return parameters;
+    }
+
+    /**
+     * Optimizer hints and MySQL executable comments are read by the server,
+     * so their variables are treated as code.
+     */
+    private static boolean isServerReadComment(@NotNull IDocument document, int offset, int length) {
+        try {
+            return ArrayUtils.contains(SERVER_READ_COMMENT_PREFIXES, document.get(offset, Math.min(3, length)));
+        } catch (BadLocationException e) {
+            return false;
+        }
     }
 
     private static boolean isInRange(@NotNull List<int[]> ranges, int offset) {

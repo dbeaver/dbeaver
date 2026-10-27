@@ -311,7 +311,7 @@ public class SQLScriptContext implements DBCScriptContext {
         if (CommonUtils.isEmpty(parameters)) {
             return true;
         }
-        parameters = removeUnsetCommentVariables(parameters);
+        parameters = removeUnsetCommentVariables(parameters, useDefaults || parametersProvider == null);
         if (parameters.isEmpty()) {
             return true;
         }
@@ -359,9 +359,13 @@ public class SQLScriptContext implements DBCScriptContext {
     /**
      * Variables that appear only in comments are substituted when they have a value,
      * but must not open the bind dialog when they don't (#42360). Their text stays as is.
+     * A parameter default counts as a value only when defaults are applied.
      */
     @NotNull
-    private List<SQLQueryParameter> removeUnsetCommentVariables(@NotNull List<SQLQueryParameter> parameters) {
+    private List<SQLQueryParameter> removeUnsetCommentVariables(
+        @NotNull List<SQLQueryParameter> parameters,
+        boolean defaultsApplied
+    ) {
         Set<String> namesOutsideComments = new HashSet<>();
         for (SQLQueryParameter parameter : parameters) {
             if (!parameter.isInComment()) {
@@ -372,7 +376,7 @@ public class SQLScriptContext implements DBCScriptContext {
             .filter(p -> !p.isInComment()
                 || namesOutsideComments.contains(p.getName())
                 || hasVariable(p.getName())
-                || hasDefaultParameterValue(p.getName()))
+                || (defaultsApplied && hasDefaultParameterValue(p.getName())))
             .toList();
     }
 
