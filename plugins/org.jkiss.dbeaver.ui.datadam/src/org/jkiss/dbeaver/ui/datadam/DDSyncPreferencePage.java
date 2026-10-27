@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.datadam;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
@@ -28,7 +27,6 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.sync.tracking.DDDesktopTrackingService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -49,16 +47,11 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private final DDDesktopTrackingService tracker = DDDesktopTrackingService.getInstance();
     private AbstractJob userViewJob;
 
-    private Text accountText;
-    private Composite accountRow;
     private Text userText;
     private Composite userRow;
     private Button loginButton;
     private Button reloginButton;
     private Button logoutButton;
-    private Button importKeysButton;
-    private Button forgetKeysButton;
-    private Composite keysGroup;
 
     public DDSyncPreferencePage() {
         noDefaultAndApplyButton();
@@ -100,34 +93,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             buttons, DDTrackingUIMessages.sync_preference_page_desktop_sign_out, null,
             SelectionListener.widgetSelectedAdapter(e -> logOut()));
 
-        keysGroup = UIUtils.createTitledComposite(
-            composite, DDTrackingUIMessages.sync_preference_page_encryption_keys_group,
-            2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
-        accountRow = UIUtils.createComposite(keysGroup, 2);
-        GridData accountRowData = new GridData(GridData.FILL_HORIZONTAL);
-        accountRowData.horizontalSpan = 2;
-        accountRow.setLayoutData(accountRowData);
-        accountText = UIUtils.createLabelText(
-            accountRow, DDTrackingUIMessages.sync_preference_page_account_label, "", SWT.READ_ONLY, idFieldLayout());
-        Composite keyButtons = UIUtils.createComposite(keysGroup, 2);
-        GridData keyButtonsGd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        keyButtonsGd.horizontalSpan = 2;
-        keyButtons.setLayoutData(keyButtonsGd);
-        importKeysButton = UIUtils.createPushButton(
-            keyButtons, DDTrackingUIMessages.sync_preference_page_import_keys_button, null,
-            SelectionListener.widgetSelectedAdapter(e -> importKeys()));
-        forgetKeysButton = UIUtils.createPushButton(
-            keyButtons, DDTrackingUIMessages.sync_preference_page_forget_keys_button, null,
-            SelectionListener.widgetSelectedAdapter(e -> {
-                if (UIUtils.confirmAction(
-                    getShell(),
-                    DDTrackingUIMessages.sync_preference_page_forget_keys_confirm_title,
-                    DDTrackingUIMessages.sync_preference_page_forget_keys_confirm_message)
-                ) {
-                    forgetKeys();
-                }
-            }));
-
         refresh();
         return composite;
     }
@@ -168,21 +133,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         return gd;
     }
 
-    private void importKeys() {
-        DDImportKeyDialog dialog = new DDImportKeyDialog(getShell());
-        if (dialog.open() != Window.OK) {
-            return;
-        }
-        String phrase = dialog.getPhrase();
-        runOperation(DDTrackingUIMessages.sync_preference_page_import_keys_failed,
-            monitor -> accessService.importKeys(phrase));
-    }
-
-    private void forgetKeys() {
-        runOperation(DDTrackingUIMessages.sync_preference_page_cannot_forget_keys,
-            monitor -> accessService.forgetKeys());
-    }
-
     private void logIn() {
         runOperation(DDTrackingUIMessages.sync_preference_page_login_failed, monitor -> {
             stopTracking();
@@ -217,26 +167,16 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     private void refresh() {
-        DDKeyBundle bundle = accessService.getKeyBundle();
-        boolean present = bundle != null;
-        accountRow.setVisible(present);
-        ((GridData) accountRow.getLayoutData()).exclude = !present;
         DDDesktopAccessService.Status status = accessService.getStatus();
         boolean signedIn = status == DDDesktopAccessService.Status.SIGNED_IN;
         boolean showUser = signedIn || status == DDDesktopAccessService.Status.EXPIRED;
         userRow.setVisible(showUser);
         ((GridData) userRow.getLayoutData()).exclude = !showUser;
-        accountText.setText(present ? bundle.accountId().toString() : DDTrackingUIMessages.sync_preference_page_unknown);
         userText.setText(DDTrackingUIMessages.sync_preference_page_unknown);
         loginButton.setEnabled(!signedIn);
         reloginButton.setEnabled(signedIn || status == DDDesktopAccessService.Status.EXPIRED);
         logoutButton.setEnabled(status != DDDesktopAccessService.Status.SIGNED_OUT);
-        importKeysButton.setEnabled(signedIn);
-        forgetKeysButton.setEnabled(present);
-        Composite keysSection = keysGroup.getParent();
-        keysSection.setVisible(signedIn);
-        ((GridData) keysSection.getLayoutData()).exclude = !signedIn;
-        keysSection.getParent().layout(true, true);
+        userRow.getParent().getParent().layout(true, true);
         loadLoggedUserView();
     }
 
@@ -253,12 +193,9 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                 }
                 var user = accessService.getLoggedUserView();
                 UIUtils.asyncExec(() -> {
-                    if (!accountText.isDisposed() && userViewJob == this && !monitor.isCanceled()) {
+                    if (!userText.isDisposed() && userViewJob == this && !monitor.isCanceled()) {
                         userText.setText(user.userName() == null
                             ? DDTrackingUIMessages.sync_preference_page_unknown : user.userName());
-                        accountText.setText(user.accountName() != null ? user.accountName()
-                            : user.accountId() == null ? DDTrackingUIMessages.sync_preference_page_unknown
-                                : user.accountId().toString());
                     }
                 });
                 return Status.OK_STATUS;

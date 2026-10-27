@@ -10,6 +10,8 @@ Require-Bundle: org.jkiss.dbeaver.model.datadam,
  org.jkiss.dbeaver.model,
  com.dbeaver.datadam.share.api,
  com.dbeaver.datadam.sso.api,
+ com.dbeaver.datadam.dam.remote.api,
+ org.jkiss.dbeaver.test.platform,
  org.jkiss.dbeaver.osgi.test.runner
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: org.jkiss.dbeaver.model.datadam.test
