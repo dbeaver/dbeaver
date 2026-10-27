@@ -16,10 +16,9 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
-import org.eclipse.core.runtime.Platform;
+import com.dbeaver.datadam.dam.remote.api.DDRemoteDamProtocol;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.utils.ArrayUtils;
 
 import java.net.URI;
 
@@ -27,27 +26,40 @@ import java.net.URI;
  * Remote DataDam endpoints used for login, project synchronization and tracking.
  */
 public final class DDEndpoints {
-    private static final String STAGE_ARGUMENT = "-dbeaver.datadam.stage";
-
-    private static final String STAGE_ACCOUNT_URL = "https://account.datadam.beavers.team";
-    private static final String STAGE_STORAGE_URL = "https://dbeaver-storage.datadam.beavers.team";
-    //TODO Replace these placeholders with the production endpoints once they are available.
-    private static final String PROD_ACCOUNT_URL = "https://account.prod.datadam.invalid";
-    private static final String PROD_STORAGE_URL = "https://storage.prod.datadam.invalid";
-
-    private static final boolean STAGE = ArrayUtils.contains(Platform.getApplicationArgs(), STAGE_ARGUMENT);
+    private static final String BASE_DD_HOST = /*<DD-PROD-URL*/"datadam.cloud"/*/>*/;
+    private static final String ACCOUNT_URL = System.getProperty(
+        "dbeaver.datadam.account.url", "https://account." + BASE_DD_HOST);
+    private static final String STORAGE_URL = System.getProperty(
+        "dbeaver.datadam.storage.url", "https://dbeaver-storage." + BASE_DD_HOST);
+    private static final String REMOTE_DAM_URL = System.getProperty(
+        "dbeaver.datadam.remote.url", "wss://remote-dam." + BASE_DD_HOST + DDRemoteDamProtocol.WEBSOCKET_PATH);
 
     private DDEndpoints() {
     }
 
     @NotNull
     public static String getAccountBaseUrl() {
-        return STAGE ? STAGE_ACCOUNT_URL : PROD_ACCOUNT_URL;
+        return ACCOUNT_URL;
     }
 
     @NotNull
     public static String getStorageBaseUrl() {
-        return STAGE ? STAGE_STORAGE_URL : PROD_STORAGE_URL;
+        return STORAGE_URL;
+    }
+
+    @NotNull
+    public static String getRemoteDamWebSocketUrl() {
+        return REMOTE_DAM_URL;
+    }
+
+    public static void requireSecureWebSocketTransport(@NotNull URI url) throws DBException {
+        if (url.getHost() == null || url.getUserInfo() != null || url.getRawQuery() != null || url.getRawFragment() != null
+            || url.getPort() == 0 || url.getPort() > 65535 || url.getRawAuthority().endsWith(":")
+            || !DDRemoteDamProtocol.WEBSOCKET_PATH.equals(url.getRawPath())
+            || !("wss".equalsIgnoreCase(url.getScheme()) || "ws".equalsIgnoreCase(url.getScheme())
+                && ("localhost".equalsIgnoreCase(url.getHost()) || "127.0.0.1".equals(url.getHost())))) {
+            throw new DBException("Expected a WSS DataDam /ws URL (WS is allowed on loopback only)");
+        }
     }
 
     public static void requireSecureTransport(@NotNull URI url) throws DBException {

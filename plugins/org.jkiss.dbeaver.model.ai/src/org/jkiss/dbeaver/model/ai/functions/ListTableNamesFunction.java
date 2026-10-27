@@ -113,10 +113,7 @@ public class ListTableNamesFunction implements AIFunction {
             }
 
             if (entities.isEmpty()) {
-                return new AIFunctionResult(
-                    AIFunctionType.INFORMATION,
-                    "There are no tables in " + objectContainer.getName()
-                );
+                continue;
             }
 
             for (Map.Entry<DBSEntityType, List<DBSEntity>> e : entities.entrySet()) {
@@ -130,6 +127,12 @@ public class ListTableNamesFunction implements AIFunction {
                 }
                 result.append("\n");
             }
+        }
+        if (result.isEmpty()) {
+            return new AIFunctionResult(
+                AIFunctionType.INFORMATION,
+                "There are no tables in " + objectContainer.getName()
+            );
         }
         return new AIFunctionResult(AIFunctionType.INFORMATION, result.toString());
     }

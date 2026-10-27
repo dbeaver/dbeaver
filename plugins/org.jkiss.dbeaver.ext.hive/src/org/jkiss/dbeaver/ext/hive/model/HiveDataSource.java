@@ -46,8 +46,9 @@ public class HiveDataSource extends GenericDataSource {
         super(monitor, container, metaModel, new HiveSQLDialect());
     }
 
+    @NotNull
     @Override
-    protected HiveDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
+    protected HiveDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
         return new HiveDataSourceInfo(monitor, this, metaData);
     }
 
