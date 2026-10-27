@@ -127,8 +127,8 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             2, GridData.FILL_HORIZONTAL, SWT.DEFAULT
         );
         ((GridData) keysGroup.getParent().getLayoutData()).verticalIndent = 16;
-        projectsHelp = UIUtils.createInfoLabel(keysGroup, DDTrackingUIMessages.projects_page_sign_in_help);
-        projectsHelp.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false, 2, 1));
+        projectsHelp = UIUtils.createWarningLabel(
+            keysGroup, DDTrackingUIMessages.projects_page_sign_in_help, GridData.HORIZONTAL_ALIGN_BEGINNING, 2);
         accountRow = UIUtils.createComposite(keysGroup, 2);
         GridData accountRowData = new GridData(GridData.FILL_HORIZONTAL);
         accountRowData.horizontalSpan = 2;
