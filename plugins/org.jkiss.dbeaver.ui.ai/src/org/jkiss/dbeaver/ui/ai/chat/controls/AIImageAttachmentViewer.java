@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -60,7 +61,8 @@ final class AIImageAttachmentViewer {
 
             {
                 setModeless(true);
-                setShellStyle(SWT.BORDER | SWT.RESIZE);
+                // Windows paints a non-client strip above resizable, titleless shells.
+                setShellStyle(RuntimeUtils.isWindows() ? SWT.NO_TRIM : SWT.BORDER | SWT.RESIZE);
             }
 
             @Override
@@ -77,6 +79,8 @@ final class AIImageAttachmentViewer {
                 browser.setLayoutData(new org.eclipse.swt.layout.GridData(SWT.FILL, SWT.FILL, true, true));
                 closeOnFocusLost(browser);
                 Shell popup = getShell();
+                popup.setBackground(UIStyles.getDefaultTextBackground());
+                popup.setBackgroundMode(SWT.INHERIT_DEFAULT);
                 popup.addShellListener(ShellListener.shellDeactivatedAdapter(event -> UIUtils.asyncExec(() -> {
                     if (!popup.isDisposed() && popup.getDisplay().getActiveShell() != popup) {
                         close();
