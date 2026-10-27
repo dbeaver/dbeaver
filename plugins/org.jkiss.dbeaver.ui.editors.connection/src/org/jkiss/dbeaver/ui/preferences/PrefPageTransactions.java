@@ -150,6 +150,19 @@ public class PrefPageTransactions extends TargetPrefPage {
         }
 
         {
+            Composite ddlBehaviorRow = UIUtils.createComposite(txnNameGroup, 2);
+            ddlBehaviorRow.setLayoutData(GridDataFactory.swtDefaults().span(2, 1).create());
+
+            ddlBehaviorCombo = UIUtils.createLabelCombo(
+                ddlBehaviorRow,
+                UIConnectionMessages.pref_page_transactions_ddl_behavior_label,
+                UIConnectionMessages.pref_page_transactions_ddl_behavior_tip,
+                SWT.READ_ONLY | SWT.DROP_DOWN
+            );
+            ddlBehaviorCombo.setItems(DDL_BEHAVIORS.stream().map(behavior -> behavior.displayName).toArray(String[]::new));
+        }
+
+        {
             Composite notifyNameGroup = UIUtils.createTitledComposite(
                 composite, UIConnectionMessages.pref_page_transactions_notify_name_group_label, 2, GridData.FILL_HORIZONTAL);
             showTransactionNotificationsCheck = UIUtils.createCheckbox(
@@ -161,13 +174,6 @@ public class PrefPageTransactions extends TargetPrefPage {
             );
         }
 
-        ddlBehaviorCombo = UIUtils.createLabelCombo(
-            txnNameGroup,
-            UIConnectionMessages.pref_page_transactions_ddl_behavior_label,
-            UIConnectionMessages.pref_page_transactions_ddl_behavior_tip,
-            SWT.READ_ONLY | SWT.DROP_DOWN
-        );
-        ddlBehaviorCombo.setItems(DDL_BEHAVIORS.stream().map(behavior -> behavior.displayName).toArray(String[]::new));
         return composite;
     }
 

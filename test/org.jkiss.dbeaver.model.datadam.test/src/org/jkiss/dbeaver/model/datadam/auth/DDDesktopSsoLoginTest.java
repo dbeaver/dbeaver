@@ -21,17 +21,14 @@ import com.sun.net.httpserver.HttpServer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.URI;
 import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -41,12 +38,16 @@ import java.time.Duration;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Timeout(10)
 class DDDesktopSsoLoginTest {
+    private static final Set<String> SCOPES = Set.of("account:full_access", "dbeaver-storage:full_access", "mcp:connect");
     private final AtomicReference<String> form = new AtomicReference<>();
+    private final AtomicReference<String> responseScope =
+        new AtomicReference<>("account:full_access dbeaver-storage:full_access mcp:connect");
     private final AtomicReference<String> tokenRedirect = new AtomicReference<>();
     private final AtomicInteger redirectedRequests = new AtomicInteger();
     private final DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
@@ -55,10 +56,9 @@ class DDDesktopSsoLoginTest {
 
     @BeforeEach
     void startSso() throws IOException {
-        DDDesktopSsoSession.logout();
         sso = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         issuer = URI.create("http://127.0.0.1:" + sso.getAddress().getPort());
-        sso.createContext("/sso/desktop/config", exchange -> {
+        sso.createContext("/sso/config", exchange -> {
             byte[] response = new Gson().toJson(Map.of("issuer", issuer.toString())).getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(200, response.length);
             try (var output = exchange.getResponseBody()) {
@@ -75,7 +75,7 @@ class DDDesktopSsoLoginTest {
                 return;
             }
             byte[] response = new Gson().toJson(Map.of("access_token", "access-value",
-                "id_token", "identity-value", "token_type", "Bearer", "expires_in", 86_400)).getBytes(StandardCharsets.UTF_8);
+                "scope", responseScope.get(), "token_type", "Bearer", "expires_in", 86_400)).getBytes(StandardCharsets.UTF_8);
             exchange.sendResponseHeaders(200, response.length);
             try (var output = exchange.getResponseBody()) {
                 output.write(response);
@@ -92,33 +92,54 @@ class DDDesktopSsoLoginTest {
     @AfterEach
     void stopSso() {
         sso.stop(0);
-        DDDesktopSsoSession.logout();
+    }
+
+    @Test
+    void discoversIssuerThroughGenericConfigurationEndpoint() throws Exception {
+        try (var client = new DDDesktopSsoClient(issuer)) {
+            var config = client.discover();
+            Assertions.assertEquals(issuer.toString(), config.issuer());
+        }
     }
 
     @Test
     void usesLoopbackPkceAndExchangesCodeWithoutBackendCredentials() throws Exception {
         AtomicReference<Map<String, String>> authorization = new AtomicReference<>();
-        var result = new DDDesktopSsoLogin().login(issuer, monitor, url -> {
+        var result = new DDDesktopSsoLogin().login(issuer, null, SCOPES, monitor, url -> {
             URI opened = URI.create(url);
             Map<String, String> params = parameters(opened.getRawQuery());
             authorization.set(params);
             Assertions.assertEquals("/authorize", opened.getPath());
             Assertions.assertEquals("dbeaver-desktop", params.get("client_id"));
+            Assertions.assertEquals("code", params.get("response_type"));
+            Assertions.assertFalse(params.containsKey("resource"));
+            Assertions.assertEquals("account:full_access dbeaver-storage:full_access mcp:connect", params.get("scope"));
             URI callback = URI.create(params.get("redirect_uri"));
             Assertions.assertEquals("127.0.0.1", callback.getHost());
             Assertions.assertTrue(callback.getPort() > 0);
-            String query = "?code=" + "B".repeat(43) + "&state=" + params.get("state");
+            String query = "?code=" + "B".repeat(43) + "&state=" + params.get("state") + issuerParameter();
+            Assertions.assertEquals(400, get(callback + "?code=" + "B".repeat(43) + "&state=" + params.get("state")));
+            Assertions.assertEquals(400, get(callback + "?code=" + "B".repeat(43)
+                + "&state=" + params.get("state") + "&iss=https%3A%2F%2Fwrong.example"));
             Assertions.assertEquals(400, get(callback + query + "&state=other"));
             Assertions.assertEquals(400, get(callback + "/other" + query));
-            Assertions.assertEquals(400, get(callback + "?code=" + "B".repeat(43) + "&state=wrong"));
-            Assertions.assertEquals(400, get(callback + "?code=short&state=" + params.get("state")));
+            Assertions.assertEquals(400, get(callback + "?code=" + "B".repeat(43)
+                + "&state=wrong" + issuerParameter() + "&extension=value"));
+            Assertions.assertEquals(400, get(callback + "?code=" + "B".repeat(43) + issuerParameter()));
+            Assertions.assertEquals(400, get(callback + "?code=short&state=" + params.get("state") + issuerParameter()));
+            Assertions.assertEquals(400, get(callback + "?state=" + params.get("state") + issuerParameter()));
+            Assertions.assertEquals(400, get(callback + "?error=&state=" + params.get("state") + issuerParameter()));
+            Assertions.assertEquals(400, get(callback + "?error=%20&state=" + params.get("state") + issuerParameter()));
             Assertions.assertEquals(400, get(callback + query + "&error=access_denied"));
-            Assertions.assertEquals(400, get(callback + query + "&unexpected=value"));
-            Assertions.assertEquals(200, get(callback + query));
+            Assertions.assertEquals(400, get(callback + query + "&error="));
+            Assertions.assertEquals(200, get(callback + query + "&extension=value"));
         });
         Assertions.assertEquals("access-value", result.accessToken());
+        Assertions.assertNull(result.idToken());
         Map<String, String> exchange = parameters(form.get());
         Assertions.assertEquals("B".repeat(43), exchange.get("code"));
+        Assertions.assertFalse(exchange.containsKey("resource"));
+        Assertions.assertEquals("authorization_code", exchange.get("grant_type"));
         Assertions.assertEquals(authorization.get().get("redirect_uri"), exchange.get("redirect_uri"));
         Assertions.assertEquals("S256", authorization.get().get("code_challenge_method"));
         Assertions.assertEquals(authorization.get().get("code_challenge"), Base64.getUrlEncoder().withoutPadding()
@@ -131,37 +152,14 @@ class DDDesktopSsoLoginTest {
     @Test
     void doesNotFollowTokenEndpointRedirects() {
         tokenRedirect.set(issuer + "/redirected-token");
-        Assertions.assertThrows(DBException.class, () -> new DDDesktopSsoLogin().login(issuer, monitor, this::complete));
+        Assertions.assertThrows(DBException.class, () -> new DDDesktopSsoLogin().login(issuer, null, SCOPES, monitor, this::complete));
         Assertions.assertEquals(0, redirectedRequests.get());
-    }
-
-    @Test
-    void sessionAuthorizesAccountAndStorageOnlyUntilLogout() throws Exception {
-        Assertions.assertTrue(DDDesktopSsoSession.needsLogin());
-        DDDesktopSsoSession.login(issuer, URI.create("https://storage.example.test:443"), monitor, this::complete);
-        Assertions.assertFalse(DDDesktopSsoSession.needsLogin());
-        Assertions.assertEquals("access-value", DDDesktopSsoSession.accessFor(issuer.resolve("/graphql?query=account")));
-        Assertions.assertEquals("access-value", DDDesktopSsoSession.accessFor(URI.create("https://storage.example.test/graphql")));
-        Assertions.assertThrows(DBException.class, () -> DDDesktopSsoSession.accessFor(URI.create("https://other.example.test/graphql")));
-        DDDesktopSsoSession.logout();
-        Assertions.assertFalse(DDDesktopSsoSession.hasLogin());
-        Assertions.assertThrows(DBException.class, () -> DDDesktopSsoSession.accessFor(issuer));
-    }
-
-    @Test
-    void lateBrowserCallbackCannotRestoreSessionAfterLogout() {
-        Assertions.assertThrows(InterruptedException.class, () -> DDDesktopSsoSession.login(
-            issuer, URI.create("https://storage.example.test"), monitor, url -> {
-                DDDesktopSsoSession.logout();
-                complete(url);
-            }));
-        Assertions.assertFalse(DDDesktopSsoSession.hasLogin());
     }
 
     @Test
     void cancellationClosesLoopbackListenerWithoutExchangingToken() {
         AtomicReference<URI> callback = new AtomicReference<>();
-        Assertions.assertThrows(InterruptedException.class, () -> new DDDesktopSsoLogin().login(issuer, monitor, url -> {
+        Assertions.assertThrows(InterruptedException.class, () -> new DDDesktopSsoLogin().login(issuer, null, SCOPES, monitor, url -> {
             callback.set(URI.create(parameters(URI.create(url).getRawQuery()).get("redirect_uri")));
             Mockito.when(monitor.isCanceled()).thenReturn(true);
         }));
@@ -171,7 +169,7 @@ class DDDesktopSsoLoginTest {
 
     @Test
     void cancellationAfterCallbackDoesNotExchangeCode() {
-        Assertions.assertThrows(InterruptedException.class, () -> new DDDesktopSsoLogin().login(issuer, monitor, url -> {
+        Assertions.assertThrows(InterruptedException.class, () -> new DDDesktopSsoLogin().login(issuer, null, SCOPES, monitor, url -> {
             complete(url);
             Mockito.when(monitor.isCanceled()).thenReturn(true);
         }));
@@ -181,7 +179,7 @@ class DDDesktopSsoLoginTest {
     @Test
     void alreadyCanceledLoginDoesNotOpenBrowser() {
         Mockito.when(monitor.isCanceled()).thenReturn(true);
-        Assertions.assertThrows(InterruptedException.class, () -> new DDDesktopSsoLogin().login(issuer, monitor, url -> {
+        Assertions.assertThrows(InterruptedException.class, () -> new DDDesktopSsoLogin().login(issuer, null, SCOPES, monitor, url -> {
             throw new AssertionError("Canceled login must not open the browser");
         }));
         Assertions.assertNull(form.get());
@@ -189,16 +187,44 @@ class DDDesktopSsoLoginTest {
 
     @Test
     void authorizationErrorCompletesLoginInsteadOfWaitingForTimeout() {
-        Assertions.assertThrows(DBException.class, () -> new DDDesktopSsoLogin().login(issuer, monitor, url -> {
+        Assertions.assertThrows(DBException.class, () -> new DDDesktopSsoLogin().login(issuer, null, SCOPES, monitor, url -> {
             Map<String, String> params = parameters(URI.create(url).getRawQuery());
-            Assertions.assertEquals(200, get(params.get("redirect_uri") + "?error=access_denied&state=" + params.get("state")));
+            String query = "?error=access_denied&state=" + params.get("state") + issuerParameter()
+                + "&error_description=User+denied+access&error_uri=https%3A%2F%2Fexample.com%2Fhelp&extension=value";
+            Assertions.assertEquals(400, get(params.get("redirect_uri") + query + "&code="));
+            Assertions.assertEquals(200, get(params.get("redirect_uri") + query));
         }));
         Assertions.assertNull(form.get());
     }
 
+    @Test
+    void rejectsUnexpectedScopesInTokenResponse() {
+        responseScope.set("account:full_access admin:full_access");
+        Assertions.assertThrows(DBException.class, () -> new DDDesktopSsoLogin().login(issuer, null, SCOPES, monitor, this::complete));
+    }
+
+    @Test
+    void canRequestMcpConnectWithoutResource() throws Exception {
+        responseScope.set("mcp:connect");
+        var result = new DDDesktopSsoLogin().login(issuer, null, Set.of("mcp:connect"), monitor, url -> {
+            var parameters = parameters(URI.create(url).getRawQuery());
+            Assertions.assertFalse(parameters.containsKey("resource"));
+            Assertions.assertEquals("mcp:connect", parameters.get("scope"));
+            complete(url);
+        });
+        Assertions.assertEquals("mcp:connect", result.scope());
+        Assertions.assertFalse(parameters(form.get()).containsKey("resource"));
+    }
+
+    @NotNull
+    private String issuerParameter() {
+        return "&iss=" + URLEncoder.encode(issuer.toString(), StandardCharsets.UTF_8);
+    }
+
     private void complete(@NotNull String url) throws DBException {
         Map<String, String> params = parameters(URI.create(url).getRawQuery());
-        Assertions.assertEquals(200, get(params.get("redirect_uri") + "?code=" + "B".repeat(43) + "&state=" + params.get("state")));
+        Assertions.assertEquals(200, get(params.get("redirect_uri") + "?code=" + "B".repeat(43)
+            + "&state=" + params.get("state") + issuerParameter()));
     }
 
     private static int get(@NotNull String url) throws DBException {

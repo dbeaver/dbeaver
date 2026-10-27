@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.model.datadam.auth;
 
 import com.dbeaver.datadam.sso.api.DDSsoConstants;
-import com.dbeaver.datadam.sso.api.model.DDSsoDesktopTokenResponse;
+import com.dbeaver.datadam.sso.api.DDSsoScopes;
+import com.dbeaver.datadam.sso.api.model.DDSsoTokenResponse;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -34,10 +36,11 @@ import java.net.URI;
 import java.time.Duration;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 /** DataDam adapter for the shared browser authorization flow and the desktop REST token client. */
 public class DDDesktopSsoLogin {
-    private static final Duration TIMEOUT = Duration.ofMinutes(15);
+    private static final Duration TIMEOUT = Duration.ofMinutes(3);
     private static final String CALLBACK_HOST = "127.0.0.1";
     private static final String CALLBACK_PATH = URI.create(DDSsoConstants.DESKTOP_CALLBACK_TEMPLATE).getPath();
     private static final String DONE_PAGE = """
@@ -45,12 +48,15 @@ public class DDDesktopSsoLogin {
         """;
 
     @NotNull
-    public DDSsoDesktopTokenResponse login(
+    public DDSsoTokenResponse login(
         @NotNull URI issuer,
+        @Nullable URI resource,
+        @NotNull Set<String> scopes,
         @NotNull DBRProgressMonitor monitor,
         @NotNull BrowserOpener browser
     ) throws DBException, InterruptedException {
         try (DDDesktopSsoClient client = new DDDesktopSsoClient(issuer)) {
+            String requestedScope = DDSsoScopes.format(scopes);
             String baseUrl = CommonUtils.removeTrailingSlash(issuer.toString());
             OAuthCodeHandler handler = new OAuthCodeHandler(
                 DDSsoConstants.DESKTOP_CLIENT_ID, null,
@@ -65,9 +71,15 @@ public class DDDesktopSsoLogin {
                     ) {
                         @Override
                         protected boolean isValidCallbackParameters(@NotNull Map<String, String> parameters) {
-                            return parameters.size() == 2 && (parameters.containsKey(OAuthConstants.PARAM_ERROR)
-                                || DDSsoConstants.BASE64URL_256_PATTERN.matcher(
-                                    parameters.getOrDefault(OAuthConstants.PARAM_CODE, "")).matches());
+                            if (!issuer.toString().equals(parameters.get(DDSsoConstants.CLAIM_ISSUER))
+                                || parameters.containsKey(OAuthConstants.PARAM_CODE)
+                                    == parameters.containsKey(OAuthConstants.PARAM_ERROR)) {
+                                return false;
+                            }
+                            // OAuth response extensions are ignored; state is checked by the shared handler.
+                            return parameters.containsKey(OAuthConstants.PARAM_ERROR)
+                                ? !parameters.get(OAuthConstants.PARAM_ERROR).isBlank()
+                                : DDSsoConstants.BASE64URL_256_PATTERN.matcher(parameters.get(OAuthConstants.PARAM_CODE)).matches();
                         }
                     };
                 }
@@ -77,7 +89,8 @@ public class DDDesktopSsoLogin {
                 protected String buildAuthUrl() throws IOException {
                     try {
                         return client.authorizationUrl(
-                            getRedirectUri(), Objects.requireNonNull(state), Objects.requireNonNull(codeChallenge)).toString();
+                            getRedirectUri(), Objects.requireNonNull(state), Objects.requireNonNull(codeChallenge),
+                            resource == null ? null : resource.toString(), requestedScope).toString();
                     } catch (DBException e) {
                         throw new IOException(e);
                     }
@@ -95,7 +108,7 @@ public class DDDesktopSsoLogin {
             handler.setTimeout((int) TIMEOUT.toSeconds());
             return handler.authorize((code, verifier, redirectUri) -> {
                 try {
-                    return client.exchange(code, verifier, redirectUri);
+                    return client.exchange(code, verifier, redirectUri, resource == null ? null : resource.toString(), requestedScope);
                 } catch (DBException e) {
                     throw new IOException(e);
                 }
@@ -108,7 +121,7 @@ public class DDDesktopSsoLogin {
         }
     }
 
-    static void openBrowser(@NotNull String url) throws DBException {
+    public static void openBrowser(@NotNull String url) throws DBException {
         try {
             OAuthUtils.openBrowser(url);
         } catch (IOException e) {

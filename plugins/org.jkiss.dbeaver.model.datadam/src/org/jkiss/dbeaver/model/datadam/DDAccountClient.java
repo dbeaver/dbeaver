@@ -22,7 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.DDCryptoState;
-import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoSession;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.utils.HttpConstants;
 
 import java.lang.reflect.Type;
@@ -31,10 +31,25 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 /** Account requests authenticated by the current desktop SSO session. */
 public class DDAccountClient extends AbstractRestClient {
     private static final String GRAPHQL_PATH = "graphql";
+    private static final String ACCOUNT_INFO_QUERY = """
+        query AccountInfo {
+            accountInfo {
+                accountId accountName
+            }
+        }
+        """;
+    private static final String ACCOUNT_ID_QUERY = """
+        query GatewayAccountId {
+            gatewayCryptoState {
+                accountId
+            }
+        }
+        """;
     private static final String CRYPTO_STATE_QUERY = """
         query GatewayCryptoState {
             gatewayCryptoState {
@@ -54,17 +69,43 @@ public class DDAccountClient extends AbstractRestClient {
             throw new DBException("Could not read encryption keys from DataDam Account");
         }
         DDCryptoState state = response.data().gatewayCryptoState();
-        if (state.accountId() == null || state.accountId().isBlank()) {
+        if (state.accountId() == null) {
             throw new DBException("DataDam Account response has no account ID");
         }
         return state;
     }
 
     @NotNull
+    public UUID getAccountId() throws DBException {
+        AccountResponse response = executePostRequest(
+            GRAPHQL_PATH, Map.of(), Map.of("query", ACCOUNT_ID_QUERY), AccountResponse.class);
+        if (response == null || response.errors() != null && !response.errors().isEmpty()
+            || response.data() == null || response.data().gatewayCryptoState() == null
+            || response.data().gatewayCryptoState().accountId() == null) {
+            throw new DBException("Could not read account ID from DataDam Account");
+        }
+        return response.data().gatewayCryptoState().accountId();
+    }
+
+    @NotNull
+    public String getAccountName() throws DBException {
+        AccountResponse response = executePostRequest(
+            GRAPHQL_PATH, Map.of(), Map.of("query", ACCOUNT_INFO_QUERY), AccountResponse.class);
+        if (response == null || response.errors() != null && !response.errors().isEmpty()
+            || response.data() == null || response.data().accountInfo() == null
+            || response.data().accountInfo().accountName() == null) {
+            throw new DBException("Could not read account name from DataDam Account");
+        }
+        return response.data().accountInfo().accountName();
+    }
+
+    @NotNull
     @Override
     protected <T> T execute(@NotNull HttpRequest.Builder builder, @NotNull Type type) throws DBException {
+        URI uri = builder.build().uri();
+        DDEndpoints.requireSecureTransport(uri);
         builder.setHeader(HttpConstants.HEADER_AUTHORIZATION,
-            HttpConstants.BEARER_PREFIX + DDDesktopSsoSession.accessFor(builder.build().uri()));
+            HttpConstants.BEARER_PREFIX + DDDesktopAccessService.getInstance().getAccessTokenForResource(uri));
         return super.execute(builder, type);
     }
 
@@ -86,5 +127,14 @@ public class DDAccountClient extends AbstractRestClient {
     }
 
     private record CryptoData(@Nullable DDCryptoState gatewayCryptoState) {
+    }
+
+    private record AccountResponse(@Nullable AccountData data, @Nullable List<Object> errors) {
+    }
+
+    private record AccountData(@Nullable AccountState gatewayCryptoState, @Nullable AccountState accountInfo) {
+    }
+
+    private record AccountState(@Nullable UUID accountId, @Nullable String accountName) {
     }
 }

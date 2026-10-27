@@ -35,6 +35,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockItem;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;
+import org.jkiss.dbeaver.model.impl.admin.locks.LockGraph;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphManager;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -60,20 +61,28 @@ public class LockManagerViewer {
     private final Label blockedLabel;
     private final Label blockingLabel;
     private DBAServerLock curLock;
+    private Object selectedLockId;
     private final LockGraphManager graphManager;
     private final LockGraphicalView gv;
 
     private final AutoRefreshControl refreshControl;
 
-    private final Action killAction = new Action(LocksUIMessages.actions_refresh_control_kill_waiting_session, UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_STOP)) {
+    private final Action killAction = new Action(
+        LocksUIMessages.actions_refresh_control_kill_waiting_session,
+        UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_STOP)
+    ) {
         @Override
         public void run() {
-        	if (curLock != null) {
-                DBAServerLock root = graphManager.getGraph(curLock).getLockRoot();
+            if (curLock != null) {
+                LockGraph graph = graphManager.getGraph(curLock);
+                if (graph == null) {
+                    return;
+                }
+                DBAServerLock root = graph.getLockRoot();
                 alterSession();
                 refreshLocks(root);
-                setTableLockSelect(root);        		
-        	}
+                setTableLockSelect(root);
+            }
         }
     };
 
@@ -83,13 +92,21 @@ public class LockManagerViewer {
     }
 
     public void dispose() {
+        refreshControl.cancelRefresh();
         lockTable.disposeControl();
+        blockedTable.disposeControl();
+        blockingTable.disposeControl();
     }
 
-    protected LockManagerViewer(IWorkbenchPart part, Composite parent, final DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager) {
+    protected LockManagerViewer(
+        @NotNull IWorkbenchPart part,
+        @NotNull Composite parent,
+        @NotNull DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager
+    ) {
 
 
-        refreshControl = new AutoRefreshControl(parent, lockManager.getClass().getSimpleName(), monitor -> UIUtils.syncExec(() -> refreshLocks(null)));
+        refreshControl = new AutoRefreshControl(
+            parent, lockManager.getClass().getSimpleName(), monitor -> UIUtils.syncExec(() -> refreshLocks(null)));
         this.graphManager = (LockGraphManager) lockManager;
 
         Composite composite = UIUtils.createPlaceholder(parent, 1);
@@ -136,23 +153,35 @@ public class LockManagerViewer {
 
     }
 
-    protected void onLockSelect(DBAServerLock lock) {
+    protected void onLockSelect(@Nullable DBAServerLock lock) {
         curLock = lock;
+        selectedLockId = lock == null ? null : lock.getId();
         refreshGraph(curLock);
+        if (lock == null) {
+            blockedLabel.setText("");
+            blockingLabel.setText("");
+            blockedTable.clearDetails();
+            blockingTable.clearDetails();
+        }
     }
 
-    public void setTableLockSelect(DBAServerLock lock) {
+    public void setTableLockSelect(@Nullable DBAServerLock lock) {
         ColumnViewer itemsViewer = lockTable.getItemsViewer();
         itemsViewer.getControl().setRedraw(false);
         try {
-            itemsViewer.setSelection(new StructuredSelection(lock), true);
+            itemsViewer.setSelection(lock == null ? StructuredSelection.EMPTY : new StructuredSelection(lock), true);
         } finally {
             itemsViewer.getControl().setRedraw(true);
         }
-        curLock = lock;
+        if (curLock != lock) {
+            onLockSelect(lock);
+        }
     }
 
-    protected void contributeToToolbar(DBAServerLockManager<DBAServerLock, DBAServerLockItem> sessionManager, IContributionManager contributionManager) {
+    protected void contributeToToolbar(
+        @NotNull DBAServerLockManager<DBAServerLock, DBAServerLockItem> sessionManager,
+        @NotNull IContributionManager contributionManager
+    ) {
 
     }
 
@@ -169,13 +198,16 @@ public class LockManagerViewer {
         gv.drawGraf(selected);
     }
 
-    public void refreshLocks(DBAServerLock selected) {
-        lockTable.loadData(false);
-        gv.drawGraf(selected);
-        refreshControl.scheduleAutoRefresh(false);
+    public void refreshLocks(@Nullable DBAServerLock selected) {
+        if (lockTable.getControl().isDisposed() || lockTable.isLoading()) {
+            return;
+        }
+        DBAServerLock selection = selected == null ? curLock : selected;
+        selectedLockId = selection == null ? null : selection.getId();
+        lockTable.loadData();
     }
 
-    protected void refreshDetail(Map<String, Object> options) {
+    protected void refreshDetail(@NotNull Map<String, Object> options) {
         StringBuilder sb = new StringBuilder("Wait - ");
         if (curLock != null) {
             sb.append(curLock.getTitle());
@@ -183,12 +215,14 @@ public class LockManagerViewer {
         blockedLabel.setText(sb.toString());
         blockedTable.getOptions().putAll(options);
         blockedTable.getOptions().put(LockGraphManager.keyType, LockGraphManager.typeWait);
-        blockedTable.loadData(false);
+        blockedTable.loadData();
         sb.setLength(0);
         if (curLock != null && curLock.getHoldBy() != null) {
             sb.append("Hold - ");
             sb.append(curLock.getHoldBy().getTitle());
             blockingLabel.setText(sb.toString());
+        } else {
+            blockingLabel.setText("");
         }
         blockingTable.getOptions().putAll(options);
         blockingTable.getOptions().put(LockGraphManager.keyType, LockGraphManager.typeHold);
@@ -197,11 +231,12 @@ public class LockManagerViewer {
     }
 
     public void alterSession() {
-        if (UIUtils.confirmAction(
+        DBAServerLock selectedLock = curLock;
+        if (selectedLock != null && UIUtils.confirmAction(
                 "Terminate",
                 NLS.bind("Terminate session?", "Terminate"))) {
 
-            lockTable.createAlterService(curLock, null).schedule();
+            lockTable.createAlterService(selectedLock, null).schedule();
         }
     }
 
@@ -222,6 +257,23 @@ public class LockManagerViewer {
         @Override
         protected Class<?>[] getListBaseTypes(Collection<DBAServerLock> items) {
             return new Class[] { locksType };
+        }
+
+        @Override
+        protected void setListData(@Nullable Collection<DBAServerLock> items, boolean append, boolean forUpdate) {
+            if (getControl().isDisposed()) {
+                return;
+            }
+            Object selectionId = selectedLockId;
+            super.setListData(items, append, forUpdate);
+            if (items != null) {
+                DBAServerLock selected = items.stream()
+                    .filter(lock -> lock.getId().equals(selectionId))
+                    .findFirst()
+                    .orElse(null);
+                setTableLockSelect(selected);
+            }
+            refreshControl.scheduleAutoRefresh(items == null);
         }
 
         @Override
