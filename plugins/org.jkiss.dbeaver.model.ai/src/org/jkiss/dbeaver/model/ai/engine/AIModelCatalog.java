@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.function.ThrowableFunction;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -45,12 +44,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
-import java.util.zip.GZIPInputStream;
 
 public final class AIModelCatalog {
     private static final Log log = Log.getLog(AIModelCatalog.class);
     private static final String CATALOG_HOST = /*<LM-PROD-URL*/"dbeaver.com"/*/>*/;
-    private static final URI CATALOG_URI = URI.create("https://" + CATALOG_HOST + "/product/ai_models_api.json.gz");
+    private static final URI CATALOG_URI = URI.create("https://" + CATALOG_HOST + "/info/ai_models_api.json");
     private static final Duration REFRESH_INTERVAL = Duration.ofDays(7);
     private static final Duration RETRY_INTERVAL = Duration.ofDays(1);
     private static final Duration REQUEST_TIMEOUT = Duration.ofSeconds(10);
@@ -260,9 +258,7 @@ public final class AIModelCatalog {
             if (response.statusCode() != 200) {
                 throw new IOException("AI model catalog returned HTTP " + response.statusCode());
             }
-            try (GZIPInputStream input = new GZIPInputStream(new ByteArrayInputStream(response.body()))) {
-                return new String(input.readAllBytes(), StandardCharsets.UTF_8);
-            }
+            return new String(response.body(), StandardCharsets.UTF_8);
         } catch (ExecutionException e) {
             throw new IOException("Unable to download AI model catalog", e.getCause());
         } finally {
