@@ -52,7 +52,7 @@ public class VariablesHintLabel {
         @NotNull String[][] vars,
         boolean stretch
     ) {
-        String varsText = GeneralUtils.generateVariablesLegend(vars);
+        final String varsText = GeneralUtils.generateVariablesLegend(vars);
 
         Layout layout = parent.getLayout();
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
