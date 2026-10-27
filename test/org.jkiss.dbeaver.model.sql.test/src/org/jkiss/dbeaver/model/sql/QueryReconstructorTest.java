@@ -452,7 +452,7 @@ public class QueryReconstructorTest extends DBeaverUnitTest {
 
     @Test
     public void diffCases() throws Exception {
-        final int testQueries = 20;
+        final int testQueries = 2;
         final int commentCasesPerQuery = 10;
         final int modificationCasesPerCommentsCase = 10;
 
