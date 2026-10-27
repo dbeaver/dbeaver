@@ -110,7 +110,6 @@ final class CDataActivationDialog extends BaseDialog {
         Label logo = new Label(banner, SWT.RIGHT);
         GridData logoData = new GridData(SWT.RIGHT, SWT.CENTER, false, false);
         logoData.widthHint = 200;
-        logoData.heightHint = 80;
         logo.setLayoutData(logoData);
         driver.loadLogo(() -> UIUtils.asyncExec(() -> {
             if (!logo.isDisposed()) {
@@ -142,7 +141,7 @@ final class CDataActivationDialog extends BaseDialog {
             productKeyError = createErrorLabel(productKeyText.getParent());
         }
 
-        Composite consent = UIUtils.createPlaceholder(form, 2, 0);
+        Composite consent = UIUtils.createPlaceholder(form, 2, 8);
         consent.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 2, 1));
         eulaConsentButton = new Button(consent, SWT.CHECK);
         eulaConsentButton.setLayoutData(new GridData(SWT.LEFT, SWT.TOP, false, false));
@@ -166,7 +165,7 @@ final class CDataActivationDialog extends BaseDialog {
         feedbackLayout.marginWidth = 20;
         feedbackLayout.marginBottom = 20;
         feedback.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        progressArea = UIUtils.createPlaceholder(feedback, 2, 0);
+        progressArea = UIUtils.createPlaceholder(feedback, 2, 8);
         progressArea.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         ProgressBar progress = new ProgressBar(progressArea, SWT.INDETERMINATE);
         GridData progressData = new GridData(SWT.LEFT, SWT.CENTER, false, false);
@@ -174,7 +173,7 @@ final class CDataActivationDialog extends BaseDialog {
         progress.setLayoutData(progressData);
         UIUtils.createLabel(progressArea, isTrial()
             ? CDataUIMessages.activation_trial_progress : CDataUIMessages.activation_purchased_progress);
-        errorArea = UIUtils.createPlaceholder(feedback, 2, 0);
+        errorArea = UIUtils.createPlaceholder(feedback, 2, 8);
         errorArea.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         Label errorIcon = new Label(errorArea, SWT.NONE);
         errorIcon.setImage(DBeaverIcons.getImage(DBIcon.SMALL_ERROR));

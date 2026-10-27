@@ -185,8 +185,10 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
     }
 
     private void showProductConfigDialog() {
-        if (!ProductConfigUtils.isAvailable() || !ProductConfigRegistry.getInstance().hasNewFeatures() || ProductConfigUtils.isProductConfigSuppressed()) {
-            // Only show when the persisted configuration lacks any features defined in the registry, e.g. fresh start
+        if (!ProductConfigUtils.isAvailable()
+            || ProductConfigUtils.isProductConfigSuppressed()
+            || !ProductConfigRegistry.getInstance().hasNewFeatures()
+        ) {
             return;
         }
 

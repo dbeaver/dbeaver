@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam.sync.project;
+package org.jkiss.dbeaver.model.datadam.sync.project.sync;
 
 import com.google.gson.Gson;
 import org.jkiss.code.NotNull;
@@ -31,51 +31,52 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 
-final class DDProjectSyncBindingStore {
+public final class DDProjectSyncBindingStore {
 
     private static final Log log = Log.getLog(DDProjectSyncBindingStore.class);
     private static final String BINDING_FILE_NAME = "datadam-sync.json";
     private static final Gson GSON = JSONUtils.PRETTY_GSON;
-    private static final DDProjectSyncBindingStore INSTANCE = new DDProjectSyncBindingStore();
+    @NotNull
+    private final Path bindingFile;
 
-    private DDProjectSyncBindingStore() {
+    DDProjectSyncBindingStore(@NotNull Path bindingFile) {
+        this.bindingFile = bindingFile.toAbsolutePath().normalize();
     }
 
+    /** Canonical lookup key; resolving it does not create the metadata directory. */
     @NotNull
-    static DDProjectSyncBindingStore getInstance() {
-        return INSTANCE;
+    public static Path getBindingFile(@NotNull DBPProject project) {
+        return project.getMetadataFolder(false).resolve(BINDING_FILE_NAME).toAbsolutePath().normalize();
     }
 
     @Nullable
-    DDProjectSyncLocalBinding load(@NotNull DBPProject project) throws DBException {
-        Path file = getBindingFile(project, false);
-        if (!Files.isRegularFile(file)) {
+    DDProjectSyncLocalBinding load() throws DBException {
+        if (!Files.isRegularFile(bindingFile)) {
             return null;
         }
         try {
-            DDProjectSyncLocalBinding binding = GSON.fromJson(Files.readString(file), DDProjectSyncLocalBinding.class);
+            DDProjectSyncLocalBinding binding = GSON.fromJson(Files.readString(bindingFile), DDProjectSyncLocalBinding.class);
             validate(binding);
             return binding;
         } catch (IOException | RuntimeException e) {
-            throw new DBException("Error reading DataDam project binding from " + file, e);
+            throw new DBException("Error reading DataDam project binding from " + bindingFile, e);
         }
     }
 
-    void save(@NotNull DBPProject project, @NotNull DDProjectSyncLocalBinding binding) throws DBException {
+    void save(@NotNull DDProjectSyncLocalBinding binding) throws DBException {
         validate(binding);
-        Path file = getBindingFile(project, true);
         Path temporary = null;
         try {
-            Files.createDirectories(file.getParent());
-            temporary = Files.createTempFile(file.getParent(), BINDING_FILE_NAME + ".", ".tmp");
+            Files.createDirectories(bindingFile.getParent());
+            temporary = Files.createTempFile(bindingFile.getParent(), BINDING_FILE_NAME + ".", ".tmp");
             Files.writeString(temporary, GSON.toJson(binding));
             try {
-                Files.move(temporary, file, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+                Files.move(temporary, bindingFile, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
             } catch (AtomicMoveNotSupportedException e) {
-                Files.move(temporary, file, StandardCopyOption.REPLACE_EXISTING);
+                Files.move(temporary, bindingFile, StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (IOException e) {
-            throw new DBException("Error writing DataDam project binding to " + file, e);
+            throw new DBException("Error writing DataDam project binding to " + bindingFile, e);
         } finally {
             if (temporary != null) {
                 try {
@@ -87,12 +88,11 @@ final class DDProjectSyncBindingStore {
         }
     }
 
-    void delete(@NotNull DBPProject project) throws DBException {
-        Path file = getBindingFile(project, false);
+    void delete() throws DBException {
         try {
-            Files.deleteIfExists(file);
+            Files.deleteIfExists(bindingFile);
         } catch (IOException e) {
-            throw new DBException("Error deleting DataDam project binding " + file, e);
+            throw new DBException("Error deleting DataDam project binding " + bindingFile, e);
         }
     }
 
@@ -109,8 +109,4 @@ final class DDProjectSyncBindingStore {
         }
     }
 
-    @NotNull
-    private Path getBindingFile(@NotNull DBPProject project, boolean createMetadataFolder) {
-        return project.getMetadataFolder(createMetadataFolder).resolve(BINDING_FILE_NAME);
-    }
 }

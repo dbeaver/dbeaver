@@ -116,6 +116,7 @@
          <attribute name="dataSourceType" type="string"/>
          <attribute name="dialect" type="string"/>
          <attribute name="supports-migration" type="boolean"/>
+         <attribute name="migration-completed-property" type="string"/>
          <attribute name="inheritAuthModels" type="boolean"/>
          <attribute name="driverProvider" type="boolean"/>
          <attribute name="inheritClients" type="boolean"/>
