@@ -87,6 +87,8 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private Text accountText;
     private Button importKeysButton;
     private Button forgetKeysButton;
+    private Label projectsDescription;
+    private Link projectsHelp;
     private AbstractJob accountViewJob;
     @Nullable
     private DDKeyBundle displayedBundle;
@@ -116,10 +118,21 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         Composite content = UIUtils.createPlaceholder(parent, 1);
         content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
+        projectsDescription = new Label(content, SWT.WRAP);
+        projectsDescription.setText(DDTrackingUIMessages.projects_page_description);
+        GridData descriptionLayout = new GridData(SWT.FILL, SWT.CENTER, true, false);
+        descriptionLayout.widthHint = 500;
+        projectsDescription.setLayoutData(descriptionLayout);
         Composite keysGroup = UIUtils.createTitledComposite(
             content, DDTrackingUIMessages.sync_preference_page_encryption_keys_group,
             2, GridData.FILL_HORIZONTAL, SWT.DEFAULT
         );
+        ((GridData) keysGroup.getParent().getLayoutData()).verticalIndent = 16;
+        projectsHelp = UIUtils.createLink(
+            keysGroup, DDTrackingUIMessages.projects_page_sign_in_help,
+            SelectionListener.widgetSelectedAdapter(e ->
+                UIUtils.openWebBrowser(DDTrackingUIMessages.sync_preference_page_sign_in_url)));
+        projectsHelp.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false, 2, 1));
         accountRow = UIUtils.createComposite(keysGroup, 2);
         GridData accountRowData = new GridData(GridData.FILL_HORIZONTAL);
         accountRowData.horizontalSpan = 2;
@@ -216,6 +229,11 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         importAllButton.setText(DDTrackingUIMessages.projects_import_all);
         importAllButton.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         importAllButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> importAll()));
+
+        Control aboutLink = UIUtils.createInfoLabel(
+            content, DDTrackingUIMessages.projects_page_about_link,
+            () -> UIUtils.openWebBrowser(DDTrackingUIMessages.projects_page_about_url));
+        aboutLink.setLayoutData(new GridData(SWT.END, SWT.END, true, false));
 
         refreshKeys();
         return content;
@@ -339,8 +357,14 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         boolean present = bundle != null;
         accountRow.setVisible(present);
         ((GridData) accountRow.getLayoutData()).exclude = !present;
-        importKeysButton.setEnabled(!present && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN);
+        boolean signedIn = accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN;
+        importKeysButton.setEnabled(!present && signedIn);
         forgetKeysButton.setEnabled(present);
+        boolean ready = signedIn && present;
+        projectsDescription.setText(ready
+            ? DDTrackingUIMessages.projects_page_sync_help : DDTrackingUIMessages.projects_page_description);
+        projectsHelp.setVisible(!signedIn);
+        ((GridData) projectsHelp.getLayoutData()).exclude = signedIn;
         showRemote.setEnabled(present);
         viewer.getTable().setEnabled(present);
         accountRow.getParent().getParent().layout(true, true);

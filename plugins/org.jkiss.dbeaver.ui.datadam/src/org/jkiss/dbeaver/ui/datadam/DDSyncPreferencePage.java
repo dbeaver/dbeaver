@@ -23,10 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
@@ -55,6 +52,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private Text userText;
     private Button accountActionButton;
     private Button refreshTokenButton;
+    private Link signInHelp;
 
     public DDSyncPreferencePage() {
         noDefaultAndApplyButton();
@@ -90,6 +88,25 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             composite, DDTrackingUIMessages.sync_preference_page_refresh_token, null,
             SelectionListener.widgetSelectedAdapter(e -> logIn()));
         refreshTokenButton.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+        signInHelp = UIUtils.createLink(
+            composite, DDTrackingUIMessages.sync_preference_page_sign_in_help,
+            SelectionListener.widgetSelectedAdapter(e ->
+                UIUtils.openWebBrowser(DDTrackingUIMessages.sync_preference_page_sign_in_url))
+        );
+        signInHelp.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false, 2, 1));
+
+        Label description = new Label(composite, SWT.WRAP);
+        description.setText(DDTrackingUIMessages.sync_preference_page_description);
+        GridData descriptionLayout = new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1);
+        descriptionLayout.widthHint = 500;
+        descriptionLayout.verticalIndent = 16;
+        description.setLayoutData(descriptionLayout);
+        Link aboutLink = UIUtils.createLink(
+            composite, "<a>" + DDTrackingUIMessages.sync_preference_page_about_link + "</a>",
+            SelectionListener.widgetSelectedAdapter(e ->
+                UIUtils.openWebBrowser(DDTrackingUIMessages.sync_preference_page_about_url))
+        );
+        aboutLink.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false, 2, 1));
 
         refresh();
         return composite;
@@ -168,6 +185,8 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             : DDTrackingUIMessages.sync_preference_page_desktop_sign_in);
         refreshTokenButton.setVisible(canRefresh);
         ((GridData) refreshTokenButton.getLayoutData()).exclude = !canRefresh;
+        signInHelp.setVisible(!signedIn);
+        ((GridData) signInHelp.getLayoutData()).exclude = signedIn;
         refreshTokenButton.getParent().layout(true, true);
         if (signedIn) {
             loadLoggedUserView();
