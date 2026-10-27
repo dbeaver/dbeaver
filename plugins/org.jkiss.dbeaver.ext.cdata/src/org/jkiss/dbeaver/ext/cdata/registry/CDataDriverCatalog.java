@@ -75,7 +75,8 @@ public final class CDataDriverCatalog {
                 }
             }
             try {
-                drivers = load(monitor, catalogUrl, CDataDriverLoaderDescriptor.getStoragePath().resolve(CATALOG_FILE_NAME));
+                drivers = load(monitor, catalogUrl, CDataDriverSettings.URL,
+                    CDataDriverLoaderDescriptor.getStoragePath().resolve(CATALOG_FILE_NAME));
                 return Status.OK_STATUS;
             } catch (InterruptedException e) {
                 return Status.CANCEL_STATUS;
@@ -113,10 +114,23 @@ public final class CDataDriverCatalog {
     static List<CDataDriverInfo> load(
         @NotNull DBRProgressMonitor monitor,
         @NotNull String catalogUrl,
+        @NotNull String settingsUrl,
+        @NotNull Path cacheFile
+    ) throws InterruptedException {
+        var settings = CDataDriverSettings.load(monitor, settingsUrl, cacheFile.resolveSibling(CDataDriverSettings.FILE_NAME));
+        return load(monitor, cacheFile, catalogUrl, headers -> WebUtils.openURLConnection(
+            monitor, catalogUrl, null, null, "GET", 1, CONNECTION_TIMEOUT, headers), settings);
+    }
+
+    @NotNull
+    static List<CDataDriverInfo> load(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull String catalogUrl,
         @NotNull Path cacheFile
     ) throws InterruptedException {
         return load(monitor, cacheFile, catalogUrl, headers -> WebUtils.openURLConnection(
-            monitor, catalogUrl, null, null, "GET", 1, CONNECTION_TIMEOUT, headers));
+            monitor, catalogUrl, null, null, "GET", 1, CONNECTION_TIMEOUT, headers),
+            CDataDriverSettings.load(cacheFile.resolveSibling(CDataDriverSettings.FILE_NAME)));
     }
 
     @NotNull
@@ -125,7 +139,8 @@ public final class CDataDriverCatalog {
         @NotNull Path cacheFile,
         @NotNull ThrowableFunction<Map<String, String>, URLConnection, IOException> connectionFactory
     ) throws InterruptedException {
-        return load(monitor, cacheFile, "", connectionFactory);
+        return load(monitor, cacheFile, "", connectionFactory,
+            CDataDriverSettings.load(cacheFile.resolveSibling(CDataDriverSettings.FILE_NAME)));
     }
 
     @NotNull
@@ -133,9 +148,9 @@ public final class CDataDriverCatalog {
         @NotNull DBRProgressMonitor monitor,
         @NotNull Path cacheFile,
         @NotNull String catalogUrl,
-        @NotNull ThrowableFunction<Map<String, String>, URLConnection, IOException> connectionFactory
+        @NotNull ThrowableFunction<Map<String, String>, URLConnection, IOException> connectionFactory,
+        @NotNull Map<String, CDataDriverSettings> settings
     ) throws InterruptedException {
-        var settings = CDataDriverSettings.load(cacheFile.resolveSibling(CDataDriverSettings.FILE_NAME));
         List<CDataDriverInfo> cachedDrivers = List.of();
         if (Files.isRegularFile(cacheFile)) {
             try {

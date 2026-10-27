@@ -448,6 +448,53 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void downloadSettingsForUnchangedCatalogAndKeepThemWhenOffline() throws Exception {
+        var settingsRequests = new AtomicInteger();
+        var catalogRequests = new AtomicInteger();
+        var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/settings", exchange -> {
+            int request = settingsRequests.incrementAndGet();
+            if (request == 3) {
+                exchange.sendResponseHeaders(HttpURLConnection.HTTP_UNAVAILABLE, -1);
+            } else {
+                byte[] content = ("{\"adwords\":{\"datatype_id\":\"type" + request + "\","
+                    + "\"icon_driver\":\"generic:google-ads\"}}").getBytes(StandardCharsets.UTF_8);
+                exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, content.length);
+                exchange.getResponseBody().write(content);
+            }
+            exchange.close();
+        });
+        server.createContext("/catalog", exchange -> {
+            if (catalogRequests.incrementAndGet() > 1) {
+                Assertions.assertEquals("\"catalog-v1\"", exchange.getRequestHeaders().getFirst("If-None-Match"));
+                exchange.sendResponseHeaders(HttpURLConnection.HTTP_NOT_MODIFIED, -1);
+            } else {
+                byte[] content = CATALOG.getBytes(StandardCharsets.UTF_8);
+                exchange.getResponseHeaders().set("ETag", "\"catalog-v1\"");
+                exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, content.length);
+                exchange.getResponseBody().write(content);
+            }
+            exchange.close();
+        });
+        server.start();
+        try {
+            String url = "http://127.0.0.1:" + server.getAddress().getPort();
+            var first = CDataDriverCatalog.load(monitor, url + "/catalog", url + "/settings", cacheFile).getFirst();
+            Assertions.assertEquals("type1", first.dataTypeId());
+            Assertions.assertEquals("generic:google-ads", first.iconDriver());
+            Assertions.assertEquals("type2",
+                CDataDriverCatalog.load(monitor, url + "/catalog", url + "/settings", cacheFile).getFirst().dataTypeId());
+            Assertions.assertEquals("type2",
+                CDataDriverCatalog.load(monitor, url + "/catalog", url + "/settings", cacheFile).getFirst().dataTypeId());
+            Assertions.assertEquals(3, settingsRequests.get());
+            Assertions.assertEquals(3, catalogRequests.get());
+            assertNoTemporaryFiles();
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
     public void conditionalGetThroughWebUtils() throws Exception {
         var requests = new AtomicInteger();
         var conditionalRequests = new AtomicInteger();
