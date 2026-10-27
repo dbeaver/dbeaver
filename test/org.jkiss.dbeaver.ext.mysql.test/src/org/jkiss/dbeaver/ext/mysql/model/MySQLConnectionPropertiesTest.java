@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -158,6 +159,53 @@ public class MySQLConnectionPropertiesTest extends DBeaverUnitTest {
             dataSource.fillConnectionProperties(connectionInfo, properties);
         }
         return properties;
+    }
+
+    @Test
+    public void finalValidationSanitizesPropertiesAddedAfterPreparation() throws DBCException {
+        Properties properties = fillProperties(false, true);
+        properties.putAll(UNSAFE_PROPERTIES);
+        properties.setProperty("ALLOWLOCALINFILE", "true");
+
+        validateProperties(false, true, "jdbc:mysql://localhost/test", properties);
+
+        assertSanitized(properties);
+        Assertions.assertFalse(properties.containsKey("ALLOWLOCALINFILE"));
+    }
+
+    @Test
+    public void desktopOptOutAlsoDisablesFinalValidation() throws DBCException {
+        Properties properties = new Properties();
+        properties.putAll(UNSAFE_PROPERTIES);
+
+        validateProperties(false, false, "jdbc:mysql://localhost/test?autoDeserialize=true", properties);
+
+        Assertions.assertEquals(UNSAFE_PROPERTIES, properties);
+    }
+
+    @Test
+    public void finalValidationRejectsUnsafeUrlsWhenEnabledOrMultiuser() {
+        String url = "jdbc:mariadb://localhost/test?allowLocalInfile=true";
+        Assertions.assertThrows(DBCException.class, () -> validateProperties(false, true, url, new Properties()));
+        Assertions.assertThrows(DBCException.class, () -> validateProperties(true, false, url, new Properties()));
+        Assertions.assertThrows(DBCException.class, () -> validateProperties(true, true, url, new Properties()));
+    }
+
+    private void validateProperties(
+        boolean multiuser,
+        boolean sanitize,
+        @NotNull String url,
+        @NotNull Properties properties
+    ) throws DBCException {
+        DBPPlatform platform = Mockito.mock(DBPPlatform.class, Mockito.RETURNS_DEEP_STUBS);
+        Mockito.when(platform.getApplication().isMultiuser()).thenReturn(multiuser);
+        Mockito.when(platform.getPreferenceStore().getBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES))
+            .thenReturn(sanitize);
+        try (MockedStatic<DBWorkbench> workbench = Mockito.mockStatic(
+            DBWorkbench.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
+            workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+            dataSource.validateConnectionProperties(url, properties);
+        }
     }
 
     private void assertSanitized(@NotNull Properties properties) {

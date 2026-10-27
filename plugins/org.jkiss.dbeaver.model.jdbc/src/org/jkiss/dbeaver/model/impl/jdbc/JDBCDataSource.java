@@ -240,30 +240,35 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 throw new DBCException("Authentication error: " + e.getMessage(), e);
             }
 
-            Driver driverInstance = createDriverInstance(monitor, driver);
-            if (driverInstance != null) {
-                try {
-                    if (!driverInstance.acceptsURL(url)) {
-                        // Just set the mark. Some drivers are poorly coded and always returns false here.
-                        isInvalidURL = true;
-                    }
-                } catch (Throwable e) {
-                    log.debug("Error in " + driverInstance.getClass().getName() + ".acceptsURL() - " + url, e);
-                }
-                initializeDriverContext(driverInstance);
-            }
-
-            JDBCConnectionOpener connectTask = new JDBCConnectionOpener(
-                this,
-                driver,
-                driverInstance,
-                url,
-                connectProps,
-                authResult
-            );
-
+            JDBCConnectionOpener connectTask = null;
             boolean openTaskFinished;
             try {
+                // Authentication and driver substitution may have changed both the URL and properties.
+                // Validate before acceptsURL as some drivers parse options and instantiate extensions there.
+                validateConnectionProperties(url, connectProps);
+
+                Driver driverInstance = createDriverInstance(monitor, driver);
+                if (driverInstance != null) {
+                    try {
+                        if (!driverInstance.acceptsURL(url)) {
+                            // Just set the mark. Some drivers are poorly coded and always returns false here.
+                            isInvalidURL = true;
+                        }
+                    } catch (Throwable e) {
+                        log.debug("Error in " + driverInstance.getClass().getName() + ".acceptsURL() - " + url, e);
+                    }
+                    initializeDriverContext(driverInstance);
+                }
+
+                connectTask = new JDBCConnectionOpener(
+                    this,
+                    driver,
+                    driverInstance,
+                    url,
+                    connectProps,
+                    authResult
+                );
+
                 if (openTimeout <= 0) {
                     connectTask.run(monitor);
                     openTaskFinished = true;
@@ -273,7 +278,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
             } finally {
                 authModel.endAuthentication(container, connectionInfo, connectProps);
 
-                if (connectionConfigurer != null) {
+                if (connectionConfigurer != null && connectTask != null) {
                     try {
                         connectionConfigurer.afterConnection(
                             monitor,
@@ -317,6 +322,13 @@ public abstract class JDBCDataSource extends AbstractDataSource
         catch (Throwable e) {
             throw new DBCConnectException("Unexpected driver error occurred while connecting to the database", e);
         }
+    }
+
+    /**
+     * Enforces datasource-specific policy on the final connection inputs, before any driver URL parsing.
+     * Implementations may sanitize the transient properties or reject the connection with a DBCException.
+     */
+    protected void validateConnectionProperties(@Nullable String url, @NotNull Properties connectProps) throws DBCException {
     }
 
     private void initializeDriverContext(@NotNull Driver driverInstance) {

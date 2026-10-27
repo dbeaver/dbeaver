@@ -79,18 +79,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     private static final Log log = Log.getLog(MySQLDataSource.class);
     private static final Pattern VERSION_PATTERN = Pattern.compile("([0-9]+\\.[0-9]+\\.[0-9]+).+");
 
-    private static final Map<String, String> PROHIBITED_DRIVER_PROPERTIES = new HashMap<>();
-
-    static {
-        PROHIBITED_DRIVER_PROPERTIES.putAll(Map.of(
-            "autoDeserialize", "false",
-            "allowLocalInfile", "false",
-            "allowLoadLocalInfile", "false",
-            "allowUrlInLocalInfile", "false"
-        ));
-        PROHIBITED_DRIVER_PROPERTIES.put("allowLoadLocalInfileInPath", null);
-    }
-
     private final JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> dataTypeCache;
     private List<MySQLEngine> engines;
     private final CatalogCache catalogCache = new CatalogCache() {
@@ -1164,24 +1152,22 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     protected void fillConnectionProperties(@NotNull DBPConnectionConfiguration connectionInfo, @NotNull Properties connectProps) {
         super.fillConnectionProperties(connectionInfo, connectProps);
 
-        if (!DBWorkbench.getPlatform().getApplication().isMultiuser()
-            && !DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES)) {
-            return;
+        if (isDriverPropertySanitizationEnabled()) {
+            MySQLConnectionSecurity.sanitizeProperties(connectProps);
         }
+    }
 
-        for (String prohibitedDriverProperty : PROHIBITED_DRIVER_PROPERTIES.keySet()) {
-            if (connectProps.containsKey(prohibitedDriverProperty)) {
-                log.warn("The driver settings contain a prohibited property, this property will be forcibly removed: "
-                    + prohibitedDriverProperty);
-            }
-            String propertyValue = PROHIBITED_DRIVER_PROPERTIES.get(prohibitedDriverProperty);
-            if (propertyValue == null) {
-                connectProps.remove(prohibitedDriverProperty);
-            } else {
-                log.trace("Set " + prohibitedDriverProperty + ":" + propertyValue);
-                connectProps.put(prohibitedDriverProperty, propertyValue);
-            }
+    @Override
+    protected void validateConnectionProperties(@Nullable String url, @NotNull Properties connectProps) throws DBCException {
+        if (isDriverPropertySanitizationEnabled()) {
+            MySQLConnectionSecurity.sanitizeProperties(connectProps);
+            MySQLConnectionSecurity.validate(url, connectProps);
         }
+    }
+
+    private boolean isDriverPropertySanitizationEnabled() {
+        return DBWorkbench.getPlatform().getApplication().isMultiuser()
+            || DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES);
     }
 
     private boolean isPasswordExpired(@NotNull Throwable error) {
