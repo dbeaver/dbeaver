@@ -674,7 +674,18 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             return false;
         }
 
-        final Predicate<DBSObject> nodeFilter = getEffectiveNodeFilter(meta, false);
+        final DBSObjectFilter connectionFilter = getNodeFilter(meta, false);
+        if (connectionFilter != null && dataSource != null) {
+            connectionFilter.setCaseSensitive(dataSource.getSQLDialect().hasCaseSensitiveFiltration());
+        }
+        DBNObjectFilterProvider filterProvider = DBUtils.getAdapter(
+            DBNObjectFilterProvider.class,
+            getDataSourceContainer().getProject()
+        );
+        final Predicate<DBSObject> nodeFilter = filterProvider == null
+            ? DBNObjectFilterProvider.createFilterMatcher(connectionFilter)
+            : filterProvider.createFilter(this, meta, connectionFilter);
+        this.filtered = nodeFilter != null;
         if (itemList.isEmpty()) {
             return false;
         }
@@ -713,7 +724,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
                 // Skip schemas in merge entities mode
                 continue;
             }
-            if (!nodeFilter.test(object)) {
+            if (nodeFilter != null && !nodeFilter.test(object)) {
                 continue;
             }
             boolean added = false;
@@ -820,42 +831,6 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBNLazyNode, DB
             return dataSource.getObjectFilter(childrenClass, getFilterObject(), firstMatch);
         }
         return null;
-    }
-
-    @NotNull
-    private Predicate<DBSObject> getEffectiveNodeFilter(@NotNull DBXTreeItem meta, boolean firstMatch) {
-        DBSObjectFilter connectionFilter = getNodeFilter(meta, firstMatch);
-        DBSObjectFilter userFilter = getUserNodeFilter(meta, firstMatch);
-        DBPDataSource dataSource = getDataSource();
-        if (dataSource != null) {
-            boolean caseSensitive = dataSource.getSQLDialect().hasCaseSensitiveFiltration();
-            if (connectionFilter != null) {
-                connectionFilter.setCaseSensitive(caseSensitive);
-            }
-            if (userFilter != null) {
-                userFilter.setCaseSensitive(caseSensitive);
-            }
-        }
-        this.filtered = isApplicable(connectionFilter) || isApplicable(userFilter);
-        return mergeFilters(connectionFilter, userFilter);
-    }
-
-    @NotNull
-    static Predicate<DBSObject> mergeFilters(@Nullable DBSObjectFilter... filters) {
-        Predicate<DBSObject> effectiveFilter = object -> true;
-        for (DBSObjectFilter filter : filters) {
-            if (!isApplicable(filter)) {
-                continue;
-            }
-            effectiveFilter = effectiveFilter.and(object -> object instanceof DBPOverloadedObject overloadedObject
-                ? filter.matchesAny(object.getName(), overloadedObject.getOverloadedName())
-                : filter.matches(object.getName()));
-        }
-        return effectiveFilter;
-    }
-
-    private static boolean isApplicable(@Nullable DBSObjectFilter filter) {
-        return filter != null && !filter.isNotApplicable();
     }
 
     @Nullable

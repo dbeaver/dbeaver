@@ -26,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.List;
+import java.util.function.Predicate;
 
 public class DBNDatabaseNodeTest {
     @Test
@@ -62,13 +63,15 @@ public class DBNDatabaseNodeTest {
         DBSObjectFilter userFilter = new DBSObjectFilter();
         userFilter.setInclude(List.of("%_eu"));
 
-        Assertions.assertTrue(DBNDatabaseNode.mergeFilters(connectionFilter, userFilter).test(object));
+        Predicate<DBSObject> filterMatcher = DBNObjectFilterProvider.createFilterMatcher(connectionFilter, userFilter);
+        Assertions.assertNotNull(filterMatcher);
+        Assertions.assertTrue(filterMatcher.test(object));
 
         Mockito.when(object.getName()).thenReturn("test_eu");
-        Assertions.assertFalse(DBNDatabaseNode.mergeFilters(connectionFilter, userFilter).test(object));
+        Assertions.assertFalse(filterMatcher.test(object));
 
         Mockito.when(object.getName()).thenReturn("prod_us");
-        Assertions.assertFalse(DBNDatabaseNode.mergeFilters(connectionFilter, userFilter).test(object));
+        Assertions.assertFalse(filterMatcher.test(object));
     }
 
     @Test
@@ -84,7 +87,9 @@ public class DBNDatabaseNodeTest {
         DBSObjectFilter userFilter = new DBSObjectFilter();
         userFilter.setInclude(List.of("overloaded_name"));
 
-        Assertions.assertTrue(DBNDatabaseNode.mergeFilters(connectionFilter, userFilter).test(object));
+        Predicate<DBSObject> filterMatcher = DBNObjectFilterProvider.createFilterMatcher(connectionFilter, userFilter);
+        Assertions.assertNotNull(filterMatcher);
+        Assertions.assertTrue(filterMatcher.test(object));
     }
 
     @Test
@@ -96,7 +101,7 @@ public class DBNDatabaseNodeTest {
         disabledFilter.setEnabled(false);
         DBSObjectFilter emptyFilter = new DBSObjectFilter();
 
-        Assertions.assertTrue(DBNDatabaseNode.mergeFilters(disabledFilter, emptyFilter).test(object));
+        Assertions.assertNull(DBNObjectFilterProvider.createFilterMatcher(disabledFilter, emptyFilter));
     }
 
     @Test
@@ -107,6 +112,8 @@ public class DBNDatabaseNodeTest {
         filter.setInclude(List.of("PROD_%"));
         filter.setCaseSensitive(true);
 
-        Assertions.assertFalse(DBNDatabaseNode.mergeFilters(filter).test(object));
+        Predicate<DBSObject> filterMatcher = DBNObjectFilterProvider.createFilterMatcher(filter);
+        Assertions.assertNotNull(filterMatcher);
+        Assertions.assertFalse(filterMatcher.test(object));
     }
 }
