@@ -460,6 +460,17 @@ public interface SQLDialect {
     String[] getSingleLineComments();
 
     /**
+     * Prefixes of multi-line comments which are executed as SQL by the database (e.g. {@code /*!} in MySQL).
+     * Such comments are a part of a query, not just a comment.
+     *
+     * @return comment prefixes or an empty array if the dialect has no executable comments
+     */
+    @NotNull
+    default String[] getExecutableCommentPrefixes() {
+        return new String[0];
+    }
+
+    /**
      * True if anonymous SQL blocks must be finished with delimiter
      */
     boolean isDelimiterAfterQuery();

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.format.tokenized;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
@@ -42,6 +43,13 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
     private SQLSyntaxManager syntaxManager;
 
     private SQLDialect dialect = BasicSQLDialect.INSTANCE;
+    private final SQLDialect executableCommentsDialect = new BasicSQLDialect() {
+        @NotNull
+        @Override
+        public String[] getExecutableCommentPrefixes() {
+            return new String[] { "/*!", "/*M!" };
+        }
+    };
     private final String lineBreak = System.lineSeparator();
 
     private String format(String sql) {
@@ -211,6 +219,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         //given
         String inputString = "/*!40101 SET @x=1 */" + lineBreak + lineBreak + "SELECT 2";
 
+        Mockito.when(syntaxManager.getDialect()).thenReturn(executableCommentsDialect);
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
 
         //when
@@ -225,6 +234,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         //given
         String inputString = "/*M!100100 SET @x=1 */" + lineBreak + lineBreak + "SELECT 2";
 
+        Mockito.when(syntaxManager.getDialect()).thenReturn(executableCommentsDialect);
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
 
         //when
@@ -232,6 +242,20 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
 
         //then
         Assertions.assertTrue(formattedString.contains("*/;"), formattedString);
+    }
+
+    @Test
+    public void shouldNotTreatExecutableCommentAsQueryWhenDialectHasNoSuchComments() {
+        //given
+        String inputString = "/*!40101 SET @x=1 */" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains(";"), formattedString);
     }
 
     @Test
