@@ -40,6 +40,7 @@ import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.PosixFileAttributeView;
 import java.nio.file.attribute.PosixFilePermission;
 import java.nio.file.attribute.PosixFilePermissions;
+import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -70,6 +71,17 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
     public static final String PROP_SSL_SELF_SIGNED_CERT = "ssl.self-signed-cert";
     public static final String PROP_SSL_METHOD = "ssl.method";
     public static final String PROP_SSL_FORCE_TLS12 = "ssl.forceTls12";
+
+    private static final int PRIVATE_KEY_HEADER_SCAN_BYTES = 64 * 1024;
+    private static final String PKCS1_PRIVATE_KEY_HEADER = "-----BEGIN RSA PRIVATE KEY-----";
+    private static final String PKCS8_PRIVATE_KEY_HEADER = "-----BEGIN PRIVATE KEY-----";
+    private static final String ENCRYPTED_PKCS8_PRIVATE_KEY_HEADER = "-----BEGIN ENCRYPTED PRIVATE KEY-----";
+
+    public enum PemPrivateKeyFormat {
+        RSA_PKCS1,
+        ENCRYPTED_PKCS8,
+        OTHER
+    }
 
     public static final String TLS_PROTOCOL_VAR_NAME = "jdk.tls.client.protocols";
 
@@ -225,6 +237,68 @@ public class SSLHandlerTrustStoreImpl extends SSLHandlerImpl {
         // The chain is built asynchronously by the driver, and we don't know at which moment in time it will happen.
         // It will still be deleted during shutdown.
         return true;
+    }
+
+    /** Inspect only the start of the file, avoiding full reads for already supported key formats. */
+    @NotNull
+    public static PemPrivateKeyFormat detectPemPrivateKeyFormat(@NotNull Path keyFile) throws IOException {
+        String prefix = readPrivateKeyPrefix(keyFile);
+        if (hasPrivateKeyHeader(prefix, PKCS1_PRIVATE_KEY_HEADER)) {
+            return PemPrivateKeyFormat.RSA_PKCS1;
+        }
+        if (hasPrivateKeyHeader(prefix, ENCRYPTED_PKCS8_PRIVATE_KEY_HEADER)) {
+            return PemPrivateKeyFormat.ENCRYPTED_PKCS8;
+        }
+        return PemPrivateKeyFormat.OTHER;
+    }
+
+    public static boolean hasPkcs1PrivateKeyHeader(@NotNull Path keyFile) throws IOException {
+        return detectPemPrivateKeyFormat(keyFile) == PemPrivateKeyFormat.RSA_PKCS1;
+    }
+
+    public static boolean canRetryWithPkcs8PemKey(@NotNull DBWHandlerConfiguration handler) {
+        // A converted key is stored here in multi-user mode. Do not retry conversion on its failure.
+        if (CommonUtils.isNotEmpty(handler.getSecureProperties().get(PROP_SSL_CLIENT_KEY))) {
+            return false;
+        }
+        try {
+            String keyFile = handler.getStringProperty(PROP_SSL_CLIENT_KEY);
+            if (CommonUtils.isNotEmpty(keyFile)) {
+                String prefix = readPrivateKeyPrefix(Path.of(keyFile));
+                return hasPrivateKeyHeader(prefix, PKCS8_PRIVATE_KEY_HEADER)
+                    || hasPrivateKeyHeader(prefix, ENCRYPTED_PKCS8_PRIVATE_KEY_HEADER);
+            } else {
+                String keyValue = handler.getSecureProperty(PROP_SSL_CLIENT_KEY_VALUE);
+                return keyValue != null && (hasPrivateKeyHeader(keyValue, PKCS8_PRIVATE_KEY_HEADER)
+                    || hasPrivateKeyHeader(keyValue, ENCRYPTED_PKCS8_PRIVATE_KEY_HEADER));
+            }
+        } catch (IOException e) {
+            return false;
+        }
+    }
+
+    @NotNull
+    private static String readPrivateKeyPrefix(@NotNull Path keyFile) throws IOException {
+        try (var input = Files.newInputStream(keyFile)) {
+            return new String(input.readNBytes(PRIVATE_KEY_HEADER_SCAN_BYTES), StandardCharsets.US_ASCII);
+        }
+    }
+
+    private static boolean hasPrivateKeyHeader(@NotNull String key, @NotNull String header) {
+        return key.substring(0, Math.min(key.length(), PRIVATE_KEY_HEADER_SCAN_BYTES)).contains(header);
+    }
+
+    public static void savePkcs1PrivateKeyAsPkcs8File(@NotNull byte[] key, @NotNull Path tempDerFile) throws IOException {
+        try {
+            writePrivateKeyFile(tempDerFile, DefaultCertificateStorage.loadPrivateKeyFromPEM(key).getEncoded());
+        } catch (GeneralSecurityException e) {
+            throw new IOException("Could not convert PKCS#1 SSL private key", e);
+        }
+    }
+
+    public static void saveEncryptedPkcs8PemAsDerFile(@NotNull byte[] key, @NotNull Path tempDerFile) throws IOException {
+        Reader reader = new StringReader(new String(key, StandardCharsets.UTF_8));
+        writePrivateKeyFile(tempDerFile, DefaultCertificateStorage.loadDerFromPem(reader));
     }
 
     // Stage private key bytes in an owner-only file before exposing them at the

@@ -59,7 +59,10 @@ import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -88,6 +91,15 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private boolean supportsReltypeColumn = true;
     private PostgrePrivilegeType[] supportedPrivilegeTypes;
     private volatile boolean isConnectionRefreshing = false;
+    private Object sslKeyLock;
+    private byte[] convertedSslKeyDigest;
+    private Path convertedSslKeyFile;
+
+    @Override
+    protected void initializeLocks() {
+        super.initializeLocks();
+        this.sslKeyLock = new Object();
+    }
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -279,34 +291,99 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
         Map<String, String> props = new LinkedHashMap<>(PostgreDataSourceProvider.getConnectionsProps());
-        final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getHandler(PostgreConstants.HANDLER_SSL);
+        final DBWHandlerConfiguration sslConfig = connectionInfo.getHandler(PostgreConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled()) {
             try {
                 boolean useProxy = sslConfig.getBooleanProperty(PostgreConstants.PROP_SSL_PROXY);
                 if (useProxy) {
-                    initProxySSL(props, sslConfig);
+                    this.initProxySSL(props, sslConfig);
                 } else {
-                    initServerSSL(props, sslConfig);
+                    this.initServerSSL(props, sslConfig);
+                    String keyFile = props.get("sslkey");
+                    if (keyFile != null && CommonUtils.isEmpty(props.get("sslfactory"))
+                        && !"disable".equals(props.get("sslmode"))) {
+                        Path convertedKey = this.preparePgJdbcKeyFileIfNeeded(monitor, Path.of(keyFile));
+                        if (convertedKey != null) {
+                            props.put("sslkey", convertedKey.toString());
+                        }
+                    }
                 }
             } catch (Exception e) {
                 throw new DBCException("Error configuring SSL certificates", e);
             }
         } else {
-            getServerType().initDefaultSSLConfig(connectionInfo, props);
-        }
-        PostgreServerType serverType = getType();
-        if (serverType.turnOffPreparedStatements()
-            && !CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS))) {
-            // Turn off prepared statements using, to avoid error: "ERROR: prepared statement "S_1" already exists" from PGBouncer #10742
-            props.put("prepareThreshold", "0");
+            this.getServerType().initDefaultSSLConfig(connectionInfo, props);
         }
 
-        if (getContainer().isConnectionReadOnly()) {
+        PostgreServerType serverType = this.getType();
+        if (serverType.turnOffPreparedStatements()) {
+            boolean usePreparedStatements = CommonUtils.toBoolean(
+                this.getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_USE_PREPARED_STATEMENTS)
+            );
+            if (!usePreparedStatements) {
+                // Turn off prepared statements using, to avoid error: "ERROR: prepared statement "S_1" already exists" from PGBouncer #10742
+                props.put("prepareThreshold", "0");
+            }
+        }
+
+        if (this.getContainer().isConnectionReadOnly()) {
             props.put("readOnly", "true");
             props.put("readOnlyMode", "always");
         }
 
         return props;
+    }
+
+    @Nullable
+    Path preparePgJdbcKeyFileIfNeeded(@NotNull DBRProgressMonitor monitor, @NotNull Path keyFile) throws IOException {
+        SSLHandlerTrustStoreImpl.PemPrivateKeyFormat format = SSLHandlerTrustStoreImpl.detectPemPrivateKeyFormat(keyFile);
+        if (format == SSLHandlerTrustStoreImpl.PemPrivateKeyFormat.OTHER) {
+            // Only the two identified PEM formats need preparation; leave other keys to pgjdbc unchanged.
+            return null;
+        }
+        byte[] key = Files.readAllBytes(keyFile);
+        final byte[] digest;
+        try {
+            digest = MessageDigest.getInstance("SHA-256").digest(key);
+        } catch (NoSuchAlgorithmException e) {
+            throw new IOException("SHA-256 is unavailable", e);
+        }
+        synchronized (sslKeyLock) {
+            if (this.convertedSslKeyFile != null && Files.isRegularFile(this.convertedSslKeyFile)
+                && Arrays.equals(this.convertedSslKeyDigest, digest)) {
+                // Reuse the unchanged key without overwriting a file another handshake may still read.
+                return this.convertedSslKeyFile;
+            }
+            Path converted = Files.createTempFile(DBWorkbench.getPlatform().getTempFolder(monitor, "ssl"), "private-", ".pk8");
+            try {
+                if (format == SSLHandlerTrustStoreImpl.PemPrivateKeyFormat.RSA_PKCS1) {
+                    // pgjdbc cannot read RSA/PKCS#1 PEM keys, so convert this one to supported PKCS#8 DER.
+                    SSLHandlerTrustStoreImpl.savePkcs1PrivateKeyAsPkcs8File(key, converted);
+                } else {
+                    // Remove only the PEM envelope; keep the PKCS#8 encryption for pgjdbc's password callback.
+                    SSLHandlerTrustStoreImpl.saveEncryptedPkcs8PemAsDerFile(key, converted);
+                }
+            } catch (IOException e) {
+                Files.deleteIfExists(converted);
+                throw e;
+            }
+            this.trackTempFile(converted);
+            this.convertedSslKeyDigest = digest;
+            this.convertedSslKeyFile = converted;
+            return converted;
+        }
+    }
+
+    @Override
+    public void shutdown(@NotNull DBRProgressMonitor monitor) {
+        try {
+            super.shutdown(monitor);
+        } finally {
+            synchronized (sslKeyLock) {
+                convertedSslKeyDigest = null;
+                convertedSslKeyFile = null;
+            }
+        }
     }
 
     private void initServerSSL(Map<String, String> props, DBWHandlerConfiguration sslConfig) throws DBException {
@@ -597,15 +674,29 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
             }
         } catch (DBCException e) {
             final DBWHandlerConfiguration handler = conConfig.getHandler(PostgreConstants.HANDLER_SSL);
-            if (handler != null && isSSLKeyReadError(e)) {
+            if (handler != null && handler.isEnabled() && isSSLKeyReadError(e)
+                && SSLHandlerTrustStoreImpl.canRetryWithPkcs8PemKey(handler)) {
                 try {
-                    final Path dst = DBWorkbench.getPlatform().getTempFolder(monitor, "ssl").resolve(container.getId() + ".pk8");
-                    if (SSLHandlerTrustStoreImpl.loadDerFromPem(handler, dst)) {
-                        // Unfortunately, we can't delete the temp file here.
-                        // The chain is built asynchronously by the driver, and we don't know at which moment in time it will happen.
-                        // It will still be deleted during shutdown.
-
-                        return this.openConnection(monitor, context, conConfig, purpose);
+                    DBPConnectionConfiguration retryConfig = new DBPConnectionConfiguration(conConfig);
+                    DBWHandlerConfiguration retryHandler = Objects.requireNonNull(
+                        retryConfig.getHandler(PostgreConstants.HANDLER_SSL)
+                    );
+                    Path dst = Files.createTempFile(DBWorkbench.getPlatform().getTempFolder(monitor, "ssl"), "private-", ".pk8");
+                    boolean tracked = false;
+                    try {
+                        if (SSLHandlerTrustStoreImpl.loadDerFromPem(retryHandler, dst)) {
+                            // The driver may still need the key during the handshake; keep it until data source shutdown.
+                            this.trackTempFile(dst);
+                            tracked = true;
+                            if (CommonUtils.isEmpty(retryHandler.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD))) {
+                                retryHandler.setProperty(PostgreConstants.PROP_SSL_CLIENT_KEY, dst.toString());
+                            }
+                            return this.openConnection(monitor, context, retryConfig, purpose);
+                        }
+                    } finally {
+                        if (!tracked) {
+                            Files.deleteIfExists(dst);
+                        }
                     }
                 } catch (IOException ex) {
                     log.error("Error converting SSL key", ex);
@@ -634,11 +725,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     }
 
     private static boolean isSSLKeyReadError(@NotNull Throwable error) {
-        StackTraceElement[] rootStack = CommonUtils.getRootCause(error).getStackTrace();
-        if (rootStack.length > 0 && "sun.security.util.DerValue".equals(rootStack[0].getClassName())) {
-            return true;
-        }
-        return CommonUtils.getAllExceptionMessages(error).contains("Could not read SSL key");
+        String messages = CommonUtils.getAllExceptionMessages(error);
+        return messages.contains("Could not read SSL key") || messages.contains("Could not load the private key");
     }
 
     @Override
