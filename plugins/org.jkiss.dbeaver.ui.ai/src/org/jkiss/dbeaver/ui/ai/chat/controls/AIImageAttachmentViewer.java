@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
@@ -101,8 +102,7 @@ final class AIImageAttachmentViewer {
                         return null;
                     }
                 };
-                browser.setText("<html><body style='background:#222;color:#ddd'>"
-                    + CommonUtils.escapeHtml(AIChatMessagesUI.ai_chat_image_loading) + "</body></html>");
+                browser.setText(createStatusHtml(AIChatMessagesUI.ai_chat_image_loading));
                 imageJob = new AbstractJob(AIChatMessagesUI.ai_chat_image_loading) {
                     @NotNull
                     @Override
@@ -151,8 +151,7 @@ final class AIImageAttachmentViewer {
                     return;
                 }
                 imageErrorShown = true;
-                browser.setText("<html><body style='background:#222;color:#ddd'>"
-                    + CommonUtils.escapeHtml(CommonUtils.notEmpty(exception.getMessage())) + "</body></html>");
+                browser.setText(createStatusHtml(CommonUtils.notEmpty(exception.getMessage())));
                 DBWorkbench.getPlatformUI().showError(AIChatMessagesUI.ai_chat_image_error,
                     NLS.bind(AIChatMessagesUI.ai_chat_image_view_error, image.name()), exception);
             }
@@ -183,6 +182,14 @@ final class AIImageAttachmentViewer {
                 return new Point(x, y);
             }
         }.open();
+    }
+
+    @NotNull
+    private static String createStatusHtml(@NotNull String message) {
+        return "<html><body style='margin:0;background:%s;color:%s'>%s</body></html>".formatted(
+            WebCSSInitializer.colorToHex(UIStyles.getDefaultTextBackground()),
+            WebCSSInitializer.colorToHex(UIStyles.getDefaultTextForeground()),
+            CommonUtils.escapeHtml(message));
     }
 
     @NotNull
@@ -239,9 +246,10 @@ final class AIImageAttachmentViewer {
                 }
                 event.preventDefault();
             });
-            </script></head><body tabindex='-1' style='margin:0;background:#222;display:flex;align-items:center;justify-content:center;min-width:100vw;min-height:100vh;width:max-content;outline:none'>
+            </script></head><body tabindex='-1' style='margin:0;background:%s;display:flex;align-items:center;justify-content:center;min-width:100vw;min-height:100vh;width:max-content;outline:none'>
             <img id='preview' style='display:block;flex-shrink:0' onload='resizeImage(this)' onerror='%s()' src='%s'>
             </body></html>
-            """.formatted(MAX_DISPLAY_SIZE, ERROR_FUNCTION, ERROR_FUNCTION, source);
+            """.formatted(MAX_DISPLAY_SIZE, ERROR_FUNCTION,
+            WebCSSInitializer.colorToHex(UIStyles.getDefaultTextBackground()), ERROR_FUNCTION, source);
     }
 }
