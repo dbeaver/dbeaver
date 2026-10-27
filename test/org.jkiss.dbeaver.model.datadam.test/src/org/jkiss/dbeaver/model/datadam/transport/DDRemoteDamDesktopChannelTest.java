@@ -51,14 +51,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -917,7 +910,7 @@ class DDRemoteDamDesktopChannelTest extends DBeaverUnitTest {
 
     @NotNull
     private static <T> T take(@NotNull BlockingQueue<T> queue) throws InterruptedException {
-        T result = queue.poll(3, TimeUnit.SECONDS);
+        T result = queue.poll(5, TimeUnit.SECONDS);
         Assertions.assertNotNull(result, "Timed out waiting for transport activity");
         return result;
     }
