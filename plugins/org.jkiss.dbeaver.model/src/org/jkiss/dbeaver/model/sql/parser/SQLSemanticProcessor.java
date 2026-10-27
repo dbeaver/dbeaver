@@ -533,13 +533,8 @@ public class SQLSemanticProcessor {
     @NotNull
     public static Token[] parseSqlTextForTokens(@NotNull SQLDialect dialect, @NotNull String sqlText) throws DBCException {
         Statement statement = SQLSemanticProcessor.parseQuery(dialect, sqlText);
-        Node astNode = statement instanceof ASTNodeAccess access ? access.getASTNode() : null;
-        if (astNode == null) {
-            throw new DBCException("SQL parser did not provide tokens for this statement");
-        }
         LinkedList<Token> tokensList = new LinkedList<>();
-        // JSqlParser 5.4 can give the EOF token the image of the preceding token.
-        for (Token t = astNode.jjtGetFirstToken(); t != null && t.kind != CCJSqlParserConstants.EOF; t = t.next) {
+        for (Token t = ((ASTNodeAccess) statement).getASTNode().jjtGetFirstToken(); t != null; t = t.next) {
             if (!t.image.isEmpty()) {
                 tokensList.add(t);
             }

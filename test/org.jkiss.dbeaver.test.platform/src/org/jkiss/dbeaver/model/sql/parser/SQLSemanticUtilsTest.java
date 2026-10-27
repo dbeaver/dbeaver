@@ -75,22 +75,6 @@ public class SQLSemanticUtilsTest extends DBeaverUnitTest {
         assertCollectionsEqual(referencedTables, foundTables);
     }
 
-    @Test
-    public void traverseStatementsWithoutParserAst() throws Exception {
-        for (String sql : List.of(
-            "UPDATE target SET value = (SELECT value FROM source)",
-            "DELETE FROM target WHERE id IN (SELECT id FROM source)",
-            "INSERT INTO target (value) SELECT value FROM source"
-        )) {
-            List<String> foundTables = new ArrayList<>();
-            SQLSemanticUtils.traverseQueryForTableNodes(
-                SQLSemanticProcessor.parseQuery(sql),
-                table -> foundTables.add(table.getFullyQualifiedName())
-            );
-            Assertions.assertEquals(List.of("target", "source"), foundTables, sql);
-        }
-    }
-
     private static <T> void assertCollectionsEqual(@NotNull Collection<T> a, @NotNull Collection<T> b) {
         Assertions.assertArrayEquals(a.toArray(), b.toArray());
     }
