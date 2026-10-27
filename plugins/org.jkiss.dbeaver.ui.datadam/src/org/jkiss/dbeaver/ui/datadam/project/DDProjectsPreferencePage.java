@@ -87,7 +87,6 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private Text accountText;
     private Button importKeysButton;
     private Button forgetKeysButton;
-    private Composite projectsSection;
     private AbstractJob accountViewJob;
     @Nullable
     private DDKeyBundle displayedBundle;
@@ -142,7 +141,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             SelectionListener.widgetSelectedAdapter(e -> forgetKeys())
         );
 
-        projectsSection = UIUtils.createPlaceholder(content, 1);
+        Composite projectsSection = UIUtils.createPlaceholder(content, 1);
         projectsSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         showRemote = new Button(projectsSection, SWT.CHECK);
         showRemote.setText(DDTrackingUIMessages.projects_show_remote);
@@ -306,7 +305,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         List<DDProjectView> selection = selectedRows();
         SelectionSyncAction syncAction = selectionSyncAction(selection);
         boolean download = syncAction == SelectionSyncAction.DOWNLOAD;
-        boolean available = !operationRunning && uiManager.isDDReady();
+        boolean available = !operationRunning && displayedBundle != null && uiManager.isDDReady();
         editButton.setEnabled(available && selection.size() == 1 && selection.get(0).remoteProject() != null);
         syncButton.setEnabled(available && syncAction != SelectionSyncAction.NONE);
         syncButton.setImage(DBeaverIcons.getImage(download ? UIIcon.DOWNLOAD : DDTrackingUIIcons.PROJECT_SYNC));
@@ -342,9 +341,9 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         ((GridData) accountRow.getLayoutData()).exclude = !present;
         importKeysButton.setEnabled(!present && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN);
         forgetKeysButton.setEnabled(present);
-        projectsSection.setVisible(present);
-        ((GridData) projectsSection.getLayoutData()).exclude = !present;
-        projectsSection.getParent().layout(true, true);
+        showRemote.setEnabled(present);
+        viewer.getTable().setEnabled(present);
+        accountRow.getParent().getParent().layout(true, true);
 
         if (!Objects.equals(displayedBundle, bundle)) {
             displayedBundle = bundle;
