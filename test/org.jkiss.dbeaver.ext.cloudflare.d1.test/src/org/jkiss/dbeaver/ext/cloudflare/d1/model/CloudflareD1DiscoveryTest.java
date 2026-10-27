@@ -16,11 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.cloudflare.d1.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cloudflare.d1.CloudflareD1ConnectionSettings;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -29,8 +31,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
-import java.net.URI;
 import java.net.ServerSocket;
+import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -42,11 +44,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
 
 class CloudflareD1DiscoveryTest {
     @Test
@@ -63,16 +60,16 @@ class CloudflareD1DiscoveryTest {
                 new CloudflareD1Database("deleted-id", "deleted", null, null, null, null, null, null));
             var monitor = new VoidProgressMonitor();
             Mockito.when(source.refreshObject(monitor)).thenAnswer(invocation -> {
-                assertEquals("initial-id", saved.getProperty(CloudflareD1ConnectionSettings.DATABASE_IDS));
-                assertEquals("initial-id", resolved.getProperty(CloudflareD1ConnectionSettings.DATABASE_IDS));
-                assertEquals(List.of("initial-id"), CloudflareD1ConnectionAdapter.list(monitor, source).stream()
+                Assertions.assertEquals("initial-id", saved.getProperty(CloudflareD1ConnectionSettings.DATABASE_IDS));
+                Assertions.assertEquals("initial-id", resolved.getProperty(CloudflareD1ConnectionSettings.DATABASE_IDS));
+                Assertions.assertEquals(List.of("initial-id"), CloudflareD1ConnectionAdapter.list(monitor, source).stream()
                     .map(CloudflareD1Database::id).toList());
                 return source;
             });
 
             CloudflareD1ConnectionAdapter.delete(monitor, catalog);
 
-            assertEquals(List.of(
+            Assertions.assertEquals(List.of(
                 "DELETE /client/v4/accounts/account/d1/database/deleted-id HTTP/1.1",
                 "GET /client/v4/accounts/account/d1/database/initial-id HTTP/1.1"
             ), server.requests.get(5, TimeUnit.SECONDS));
@@ -95,11 +92,11 @@ class CloudflareD1DiscoveryTest {
             var catalog = new CloudflareD1Catalog(source,
                 new CloudflareD1Database("deleted-id", "deleted", null, null, null, null, null, null));
 
-            assertThrows(DBException.class, () -> CloudflareD1ConnectionAdapter.delete(new VoidProgressMonitor(), catalog));
+            Assertions.assertThrows(DBException.class, () -> CloudflareD1ConnectionAdapter.delete(new VoidProgressMonitor(), catalog));
 
-            assertEquals(1, server.requests.get(5, TimeUnit.SECONDS).size());
-            assertEquals("initial-id,deleted-id", saved.getProperty(CloudflareD1ConnectionSettings.DATABASE_IDS));
-            assertEquals("initial-id,deleted-id", resolved.getProperty(CloudflareD1ConnectionSettings.DATABASE_IDS));
+            Assertions.assertEquals(1, server.requests.get(5, TimeUnit.SECONDS).size());
+            Assertions.assertEquals("initial-id,deleted-id", saved.getProperty(CloudflareD1ConnectionSettings.DATABASE_IDS));
+            Assertions.assertEquals("initial-id,deleted-id", resolved.getProperty(CloudflareD1ConnectionSettings.DATABASE_IDS));
             Mockito.verify(source, Mockito.never()).removeDatabaseScope(Mockito.anyString());
             Mockito.verify(source.getContainer(), Mockito.never()).persistConfiguration(false);
             Mockito.verify(source, Mockito.never()).refreshObject(Mockito.any());
@@ -111,10 +108,11 @@ class CloudflareD1DiscoveryTest {
         var configuration = new DBPConnectionConfiguration();
         configuration.setDatabaseName("initial-id");
 
-        assertFalse(CloudflareD1ConnectionSettings.removeDatabaseFromScope(configuration, "deleted-id"));
-        assertFalse(configuration.getProperties().containsKey(CloudflareD1ConnectionSettings.DATABASE_IDS));
+        Assertions.assertFalse(CloudflareD1ConnectionSettings.removeDatabaseFromScope(configuration, "deleted-id"));
+        Assertions.assertFalse(configuration.getProperties().containsKey(CloudflareD1ConnectionSettings.DATABASE_IDS));
     }
 
+    @NotNull
     private static DBPConnectionConfiguration scopedConfiguration() {
         var configuration = new DBPConnectionConfiguration();
         configuration.setDatabaseName("initial-id");
@@ -158,7 +156,7 @@ class CloudflareD1DiscoveryTest {
             });
         }
 
-        private void configure(DBPConnectionConfiguration configuration) {
+        private void configure(@NotNull DBPConnectionConfiguration configuration) {
             configuration.setUserName("account");
             configuration.setUserPassword("test-token");
             configuration.setProperty("apiUrl", "http://127.0.0.1:" + server.getLocalPort() + "/client/v4");
@@ -180,7 +178,7 @@ class CloudflareD1DiscoveryTest {
         HttpClient httpClient = Mockito.mock(HttpClient.class);
         var first = response("{\"uuid\":\"first-id\",\"name\":\"first\"}", "");
         var second = response("{\"uuid\":\"second-id\",\"name\":\"second\"}", "");
-        Mockito.when(httpClient.send(any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any()))
+        Mockito.when(httpClient.send(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any()))
             .thenReturn(first, second);
         var configuration = new DBPConnectionConfiguration();
         configuration.setDatabaseName("first-id");
@@ -188,11 +186,12 @@ class CloudflareD1DiscoveryTest {
 
         var databases = CloudflareD1ConnectionAdapter.listDatabases(client(httpClient), configuration);
 
-        assertEquals(List.of("first-id", "second-id"), databases.stream().map(CloudflareD1Database::id).toList());
+        Assertions.assertEquals(List.of("first-id", "second-id"), databases.stream().map(CloudflareD1Database::id).toList());
         var requests = ArgumentCaptor.forClass(HttpRequest.class);
         Mockito.verify(httpClient, Mockito.times(2))
             .send(requests.capture(), Mockito.<HttpResponse.BodyHandler<String>>any());
-        assertEquals(List.of("/client/v4/accounts/account/d1/database/first-id", "/client/v4/accounts/account/d1/database/second-id"),
+        Assertions.assertEquals(List.of("/client/v4/accounts/account/d1/database/first-id",
+                "/client/v4/accounts/account/d1/database/second-id"),
             requests.getAllValues().stream().map(request -> request.uri().getPath()).toList());
     }
 
@@ -201,11 +200,11 @@ class CloudflareD1DiscoveryTest {
         HttpClient httpClient = Mockito.mock(HttpClient.class);
         var response = response("[{\"uuid\":\"first-id\",\"name\":\"first\"},{\"uuid\":\"other-id\",\"name\":\"other\"}]",
             ",\"result_info\":{\"total_count\":2}");
-        Mockito.when(httpClient.send(any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any())).thenReturn(response);
+        Mockito.when(httpClient.send(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any())).thenReturn(response);
 
         var databases = CloudflareD1ConnectionAdapter.listDatabases(client(httpClient), new DBPConnectionConfiguration());
 
-        assertEquals(List.of("first-id", "other-id"), databases.stream().map(CloudflareD1Database::id).toList());
+        Assertions.assertEquals(List.of("first-id", "other-id"), databases.stream().map(CloudflareD1Database::id).toList());
     }
 
     @Test
@@ -219,7 +218,8 @@ class CloudflareD1DiscoveryTest {
         // Stop before networking, after verifying which configuration supplies the credentials.
         Mockito.when(resolved.getUserPassword()).thenReturn(null);
 
-        assertThrows(DBException.class, () -> CloudflareD1ConnectionAdapter.list(Mockito.mock(DBRProgressMonitor.class), source));
+        Assertions.assertThrows(DBException.class,
+            () -> CloudflareD1ConnectionAdapter.list(Mockito.mock(DBRProgressMonitor.class), source));
 
         Mockito.verify(resolved).getUserName();
         Mockito.verify(resolved).getUserPassword();
@@ -232,16 +232,16 @@ class CloudflareD1DiscoveryTest {
         var first = response("[{\"uuid\":\"first-id\",\"name\":\"first database\"}]", "");
         var second = response("[{\"uuid\":\"second-id\",\"name\":\"second database\"}]", "");
         var empty = response("[]", "");
-        Mockito.when(httpClient.send(any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any()))
+        Mockito.when(httpClient.send(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any()))
             .thenReturn(first, second, empty);
 
         var databases = client(httpClient).listDatabases();
 
-        assertEquals(List.of("first-id", "second-id"), databases.stream().map(CloudflareD1Database::id).toList());
+        Assertions.assertEquals(List.of("first-id", "second-id"), databases.stream().map(CloudflareD1Database::id).toList());
         var requests = ArgumentCaptor.forClass(HttpRequest.class);
         Mockito.verify(httpClient, Mockito.times(3))
             .send(requests.capture(), Mockito.<HttpResponse.BodyHandler<String>>any());
-        assertEquals(List.of("page=1&per_page=10000", "page=2&per_page=10000", "page=3&per_page=10000"),
+        Assertions.assertEquals(List.of("page=1&per_page=10000", "page=2&per_page=10000", "page=3&per_page=10000"),
             requests.getAllValues().stream().map(request -> request.uri().getQuery()).toList());
     }
 
@@ -250,31 +250,33 @@ class CloudflareD1DiscoveryTest {
         HttpClient httpClient = Mockito.mock(HttpClient.class);
         var first = response("[{\"uuid\":\"first-id\",\"name\":\"first\"}]", ",\"result_info\":{\"total_pages\":2}");
         var second = response("[{\"uuid\":\"second-id\",\"name\":\"second\"}]", ",\"result_info\":{\"total_pages\":2}");
-        Mockito.when(httpClient.send(any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any()))
+        Mockito.when(httpClient.send(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any()))
             .thenReturn(first, second);
 
-        assertEquals(2, client(httpClient).listDatabases().size());
+        Assertions.assertEquals(2, client(httpClient).listDatabases().size());
         Mockito.verify(httpClient, Mockito.times(2))
-            .send(any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any());
+            .send(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any());
     }
 
     @Test
     void emptyAccountReturnsAnEmptyList() throws Exception {
         HttpClient httpClient = Mockito.mock(HttpClient.class);
         var empty = response("[]", "");
-        Mockito.when(httpClient.send(any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any()))
+        Mockito.when(httpClient.send(Mockito.any(HttpRequest.class), Mockito.<HttpResponse.BodyHandler<String>>any()))
             .thenReturn(empty);
 
-        assertEquals(List.of(), client(httpClient).listDatabases());
+        Assertions.assertEquals(List.of(), client(httpClient).listDatabases());
     }
 
-    private static CloudflareD1AdminClient client(HttpClient httpClient) {
+    @NotNull
+    private static CloudflareD1AdminClient client(@NotNull HttpClient httpClient) {
         return new CloudflareD1AdminClient("account", "test-token", URI.create("https://example.com/client/v4"),
             Duration.ofSeconds(30), httpClient);
     }
 
     @SuppressWarnings("unchecked")
-    private static HttpResponse<String> response(String databases, String pageInfo) {
+    @NotNull
+    private static HttpResponse<String> response(@NotNull String databases, @NotNull String pageInfo) {
         HttpResponse<String> response = Mockito.mock(HttpResponse.class);
         Mockito.when(response.statusCode()).thenReturn(200);
         Mockito.when(response.body()).thenReturn("{\"success\":true,\"result\":" + databases + pageInfo + "}");

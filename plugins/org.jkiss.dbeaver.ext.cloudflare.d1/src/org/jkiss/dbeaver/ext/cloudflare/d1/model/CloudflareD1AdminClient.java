@@ -107,7 +107,7 @@ public class CloudflareD1AdminClient {
 
     @NotNull
     CloudflareD1Database createDatabase(@NotNull String name, @NotNull CloudflareD1ConnectionAdapter.CreateOptions options)
-        throws SQLException {
+            throws SQLException {
         if (name.isBlank()) {
             throw new SQLException("Cloudflare D1 database name must not be blank", "42000");
         }
@@ -124,7 +124,7 @@ public class CloudflareD1AdminClient {
 
     @NotNull
     CloudflareD1Database setReadReplication(@NotNull String databaseId, @NotNull CloudflareD1ConnectionAdapter.ReplicationMode mode)
-        throws SQLException {
+            throws SQLException {
         JsonObject replication = new JsonObject();
         replication.addProperty("mode", mode.name().toLowerCase(Locale.ROOT));
         JsonObject body = new JsonObject();
@@ -322,7 +322,7 @@ public class CloudflareD1AdminClient {
 
     @NotNull
     private static Duration timeout(@NotNull DBPConnectionConfiguration configuration, @NotNull String property, int defaultMillis)
-        throws SQLException {
+            throws SQLException {
         String value = configuration.getProperty(property);
         if (value == null || value.isBlank()) {
             return Duration.ofMillis(defaultMillis);

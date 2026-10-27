@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,8 +45,9 @@ import java.util.Map;
 
 public class NavigatorHandlerSetDefaultObject extends NavigatorHandlerObjectBase implements IElementUpdater {
 
+    @Nullable
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         final IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
 
@@ -61,7 +62,7 @@ public class NavigatorHandlerSetDefaultObject extends NavigatorHandlerObjectBase
     }
 
     @SuppressWarnings("unchecked")
-    private void markObjectAsActive(final DBNDatabaseNode databaseNode, IEditorPart activeEditor) {
+    private void markObjectAsActive(@NotNull final DBNDatabaseNode databaseNode, @Nullable IEditorPart activeEditor) {
         DBNNode parentNode = databaseNode.getParentNode();
 
         if (parentNode instanceof DBNDatabaseItem) {
@@ -119,8 +120,7 @@ public class NavigatorHandlerSetDefaultObject extends NavigatorHandlerObjectBase
     }
 
     @Override
-    public void updateElement(UIElement element, Map parameters)
-    {
+    public void updateElement(@NotNull UIElement element, @NotNull Map parameters) {
         if (!updateUI) {
             return;
         }

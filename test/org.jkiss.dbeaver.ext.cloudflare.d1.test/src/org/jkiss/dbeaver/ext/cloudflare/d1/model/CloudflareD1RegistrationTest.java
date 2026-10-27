@@ -16,43 +16,39 @@
  */
 package org.jkiss.dbeaver.ext.cloudflare.d1.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cloudflare.d1.CloudflareD1ConnectionSettings;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.osgi.framework.FrameworkUtil;
 import org.w3c.dom.Element;
 
 import java.util.Arrays;
-
 import javax.xml.parsers.DocumentBuilderFactory;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-class CloudflareD1RegistrationTest {
+public class CloudflareD1RegistrationTest {
     @Test
     void initialMetadataConnectionBuildsItsUrlFromTheSavedDatabaseId() throws Exception {
         var configuration = new DBPConnectionConfiguration();
         CloudflareD1ConnectionSettings.save(configuration, "initial-id", false, "");
         var driver = DataSourceProviderRegistry.getInstance().getDataSourceProvider("cloudflare_d1")
             .getDriver("cloudflare_d1_jdbc");
-        assertNotNull(driver);
-        assertEquals("jdbc:d1://initial-id", driver.getConnectionURL(configuration));
-        var getConnectionURL = JDBCDataSource.class.getDeclaredMethod("getConnectionURL", DBPConnectionConfiguration.class);
-        getConnectionURL.setAccessible(true);
-        // Invoke JDBCDataSource's URL fallback rather than assuming a blank persisted URL reaches the driver unchanged.
+        Assertions.assertNotNull(driver);
+        Assertions.assertEquals("jdbc:d1://initial-id", driver.getConnectionURL(configuration));
+        // Exercise datasource URL generation rather than assuming a blank persisted URL reaches the driver unchanged.
         var container = Mockito.mock(DBPDataSourceContainer.class);
         Mockito.when(container.getDriver()).thenReturn(driver);
-        var fallback = Mockito.mock(CloudflareD1DataSource.class, Mockito.CALLS_REAL_METHODS);
+        var fallback = Mockito.mock(ConnectionUrlDataSource.class, Mockito.CALLS_REAL_METHODS);
         Mockito.doReturn(container).when(fallback).getContainer();
-        assertEquals("jdbc:d1://initial-id", getConnectionURL.invoke(fallback, configuration));
+        Assertions.assertEquals("jdbc:d1://initial-id", fallback.connectionUrl(configuration));
     }
 
     @Test
@@ -62,40 +58,40 @@ class CloudflareD1RegistrationTest {
             var factory = DocumentBuilderFactory.newInstance();
             factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
             var icon = factory.newDocumentBuilder().parse(stream).getDocumentElement();
-            assertEquals("16", icon.getAttribute("width"));
-            assertEquals("16", icon.getAttribute("height"));
-            assertEquals("0 0 16 16", icon.getAttribute("viewBox"));
+            Assertions.assertEquals("16", icon.getAttribute("width"));
+            Assertions.assertEquals("16", icon.getAttribute("height"));
+            Assertions.assertEquals("0 0 16 16", icon.getAttribute("viewBox"));
         }
     }
 
     @Test
     void driverKeepsConnectionIdsAndDeclaresMavenLibraries() throws Exception {
         var bundle = FrameworkUtil.getBundle(CloudflareD1DataSource.class);
-        assertNotNull(bundle);
-        assertEquals("org.jkiss.dbeaver.ext.cloudflare.d1", bundle.getSymbolicName());
+        Assertions.assertNotNull(bundle);
+        Assertions.assertEquals("org.jkiss.dbeaver.ext.cloudflare.d1", bundle.getSymbolicName());
         try (var stream = bundle.getEntry("plugin.xml").openStream()) {
             var factory = DocumentBuilderFactory.newInstance();
             factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
             var plugin = factory.newDocumentBuilder().parse(stream);
             var provider = (Element) plugin.getElementsByTagName("datasource").item(0);
-            assertEquals("cloudflare_d1", provider.getAttribute("id"));
+            Assertions.assertEquals("cloudflare_d1", provider.getAttribute("id"));
             var driver = (Element) plugin.getElementsByTagName("driver").item(0);
-            assertEquals("cloudflare_d1_jdbc", driver.getAttribute("id"));
-            assertEquals("com.dbeaver.jdbc.d1.D1Driver", driver.getAttribute("class"));
+            Assertions.assertEquals("cloudflare_d1_jdbc", driver.getAttribute("id"));
+            Assertions.assertEquals("com.dbeaver.jdbc.d1.D1Driver", driver.getAttribute("class"));
             var files = driver.getElementsByTagName("file");
             int libraries = 0;
             for (int index = 0; index < files.getLength(); index++) {
                 var file = (Element) files.item(index);
                 if ("jar".equals(file.getAttribute("type"))) {
                     libraries++;
-                    assertEquals("maven:/com.dbeaver.jdbc:com.dbeaver.jdbc.driver.d1:RELEASE", file.getAttribute("path"));
-                    assertFalse(file.hasAttribute("bundle"));
-                    assertNotEquals("true", file.getAttribute("ignore-dependencies"));
+                    Assertions.assertEquals("maven:/com.dbeaver.jdbc:com.dbeaver.jdbc.driver.d1:RELEASE", file.getAttribute("path"));
+                    Assertions.assertFalse(file.hasAttribute("bundle"));
+                    Assertions.assertNotEquals("true", file.getAttribute("ignore-dependencies"));
                 }
             }
-            assertEquals(1, libraries);
+            Assertions.assertEquals(1, libraries);
             var auth = (Element) plugin.getElementsByTagName("authModel").item(0);
-            assertEquals("cloudflare_d1_native", auth.getAttribute("id"));
+            Assertions.assertEquals("cloudflare_d1_native", auth.getAttribute("id"));
         }
     }
 
@@ -103,11 +99,25 @@ class CloudflareD1RegistrationTest {
     void communityModelDoesNotDependOnEnterpriseOrTheJdbcImplementation() {
         var bundle = FrameworkUtil.getBundle(CloudflareD1DataSource.class);
         var dependencies = bundle.getHeaders().get("Require-Bundle");
-        assertFalse(dependencies.contains("com.dbeaver.db."));
-        assertFalse(dependencies.contains("com.dbeaver.jdbc.driver.d1"));
+        Assertions.assertFalse(dependencies.contains("com.dbeaver.db."));
+        Assertions.assertFalse(dependencies.contains("com.dbeaver.jdbc.driver.d1"));
         for (var type : new Class<?>[] {CloudflareD1ConnectionAdapter.class, CloudflareD1AdminClient.class}) {
-            assertTrue(Arrays.stream(type.getDeclaredMethods()).noneMatch(method ->
+            Assertions.assertTrue(Arrays.stream(type.getDeclaredMethods()).noneMatch(method ->
                 method.getName().equals("restore") || method.getName().toLowerCase().contains("bookmark")));
+        }
+    }
+
+    // Public so Mockito can subclass this fixture from its OSGi class loader.
+    public static class ConnectionUrlDataSource extends CloudflareD1DataSource {
+        private ConnectionUrlDataSource(
+            @NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull GenericMetaModel metaModel
+        ) throws DBException {
+            super(monitor, container, metaModel);
+        }
+
+        @Nullable
+        private String connectionUrl(@NotNull DBPConnectionConfiguration configuration) throws DBException {
+            return super.getConnectionURL(configuration);
         }
     }
 }

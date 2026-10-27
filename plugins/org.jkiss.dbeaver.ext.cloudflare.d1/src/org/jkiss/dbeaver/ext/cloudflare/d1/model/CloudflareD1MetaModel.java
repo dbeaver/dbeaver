@@ -43,7 +43,7 @@ public class CloudflareD1MetaModel extends SQLiteMetaModel {
     @NotNull
     @Override
     public GenericDataSource createDataSourceImpl(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
-        throws DBException {
+            throws DBException {
         return new CloudflareD1DataSource(monitor, container, this);
     }
 

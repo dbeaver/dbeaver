@@ -28,8 +28,8 @@ import org.jkiss.dbeaver.ext.cloudflare.d1.ui.views.CloudflareD1CreateDatabaseDi
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Map;
 

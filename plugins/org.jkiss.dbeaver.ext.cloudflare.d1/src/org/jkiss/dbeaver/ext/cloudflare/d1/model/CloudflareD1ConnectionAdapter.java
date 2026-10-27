@@ -38,7 +38,7 @@ public final class CloudflareD1ConnectionAdapter {
 
     @NotNull
     public static List<CloudflareD1Database> list(@NotNull DBRProgressMonitor monitor, @NotNull CloudflareD1DataSource source)
-        throws DBException {
+            throws DBException {
         return call(monitor, source,
             client -> listDatabases(client, source.getContainer().getActualConnectionConfiguration()));
     }
@@ -87,13 +87,13 @@ public final class CloudflareD1ConnectionAdapter {
 
     @NotNull
     public static CloudflareD1Database details(@NotNull DBRProgressMonitor monitor, @NotNull CloudflareD1Catalog catalog)
-        throws DBException {
+            throws DBException {
         return call(monitor, catalog.getDataSource(), client -> client.getDatabase(catalog.requireDatabaseId()));
     }
 
     @NotNull
     public static CloudflareD1Database create(@NotNull DBRProgressMonitor monitor, @NotNull CloudflareD1Catalog catalog)
-        throws DBException {
+            throws DBException {
         return call(monitor, catalog.getDataSource(), client -> client.createDatabase(
             catalog.getName(), placement(catalog.getJurisdiction(), catalog.getPrimaryLocationHint())));
     }
@@ -155,6 +155,7 @@ public final class CloudflareD1ConnectionAdapter {
         return CloudflareD1ModelMessages.error_request;
     }
 
+    @NotNull
     private static <T> T call(
         @NotNull DBRProgressMonitor monitor, @NotNull CloudflareD1DataSource source, @NotNull DriverAction<T> action
     ) throws DBException {
@@ -163,6 +164,7 @@ public final class CloudflareD1ConnectionAdapter {
     }
 
     /** Runs an administration operation with cancellation and sanitized API errors. */
+    @NotNull
     public static <T> T run(@NotNull DBRProgressMonitor monitor, @NotNull AdministrationAction<T> action) throws DBException {
         if (monitor.isCanceled()) {
             throw new DBException(CloudflareD1ModelMessages.error_cancelled);
@@ -195,6 +197,7 @@ public final class CloudflareD1ConnectionAdapter {
 
     @FunctionalInterface
     private interface DriverAction<T> {
+        @NotNull
         T execute(@NotNull CloudflareD1AdminClient client) throws SQLException;
     }
 
@@ -206,8 +209,10 @@ public final class CloudflareD1ConnectionAdapter {
         DISABLED
     }
 
+    /** Administration request that can report JDBC errors to the cancellable operation runner. */
     @FunctionalInterface
     public interface AdministrationAction<T> {
+        @NotNull
         T execute() throws SQLException;
     }
 

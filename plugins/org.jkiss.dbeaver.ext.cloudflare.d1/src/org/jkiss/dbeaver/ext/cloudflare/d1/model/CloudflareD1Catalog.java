@@ -115,8 +115,22 @@ public class CloudflareD1Catalog extends GenericCatalog implements DBSInstance, 
     }
 
     @Nullable
+    @Property(viewable = true, order = 3)
+    public String getCreatedAt(@NotNull DBRProgressMonitor monitor) throws DBException {
+        this.loadDetails(monitor);
+        return this.getCreatedAt();
+    }
+
+    @Nullable
     public String getJurisdiction() {
         return this.jurisdiction;
+    }
+
+    @Nullable
+    @Property(viewable = true, order = 4)
+    public String getJurisdiction(@NotNull DBRProgressMonitor monitor) throws DBException {
+        this.loadDetails(monitor);
+        return this.getJurisdiction();
     }
 
     public void setJurisdiction(@Nullable String jurisdiction) {
@@ -138,39 +152,15 @@ public class CloudflareD1Catalog extends GenericCatalog implements DBSInstance, 
     }
 
     @Nullable
-    public Long getFileSize() {
-        return this.database == null ? null : this.database.fileSize();
-    }
-
-    @Nullable
-    public String getRunningInRegion() {
-        return this.database == null ? null : this.database.runningInRegion();
-    }
-
-    @Nullable
-    public String getReadReplicationMode() {
-        return this.replicationMode == null ? null : this.replicationMode.name();
-    }
-
-    @Nullable
-    @Property(viewable = true, order = 3)
-    public String getCreatedAt(@NotNull DBRProgressMonitor monitor) throws DBException {
-        this.loadDetails(monitor);
-        return this.getCreatedAt();
-    }
-
-    @Nullable
-    @Property(viewable = true, order = 4)
-    public String getJurisdiction(@NotNull DBRProgressMonitor monitor) throws DBException {
-        this.loadDetails(monitor);
-        return this.getJurisdiction();
-    }
-
-    @Nullable
     @Property(viewable = true, order = 5)
     public String getVersion(@NotNull DBRProgressMonitor monitor) throws DBException {
         this.loadDetails(monitor);
         return this.getVersion();
+    }
+
+    @Nullable
+    public Long getFileSize() {
+        return this.database == null ? null : this.database.fileSize();
     }
 
     @Nullable
@@ -180,12 +170,22 @@ public class CloudflareD1Catalog extends GenericCatalog implements DBSInstance, 
         return this.getFileSize();
     }
 
+    @Nullable
+    public String getRunningInRegion() {
+        return this.database == null ? null : this.database.runningInRegion();
+    }
+
     @NotNull
     @Property(viewable = true, order = 7)
     public String getRunningInRegion(@NotNull DBRProgressMonitor monitor) throws DBException {
         this.loadDetails(monitor);
         String region = this.getRunningInRegion();
         return region == null || region.isBlank() ? CloudflareD1ModelMessages.value_none : region;
+    }
+
+    @Nullable
+    public String getReadReplicationMode() {
+        return this.replicationMode == null ? null : this.replicationMode.name();
     }
 
     @Nullable

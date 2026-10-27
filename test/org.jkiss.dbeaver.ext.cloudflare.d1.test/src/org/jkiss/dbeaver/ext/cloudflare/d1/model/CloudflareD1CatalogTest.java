@@ -25,8 +25,10 @@ import org.jkiss.dbeaver.ext.cloudflare.d1.internal.CloudflareD1ModelMessages;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTable;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableForeignKey;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -34,7 +36,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.meta.Property;
-import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -55,8 +56,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class CloudflareD1CatalogTest {
-    private static Object previousQueryHandler;
+public class CloudflareD1CatalogTest {
+    private static boolean queryManagerInitialized;
 
     @Test
     void creationConfiguresTheDraftNameBeforeAddingTheCreateCommand() throws Exception {
@@ -64,6 +65,7 @@ class CloudflareD1CatalogTest {
         var context = Mockito.mock(DBECommandContext.class);
         Mockito.when(context.getUserParams()).thenReturn(new HashMap<>());
         var manager = new CloudflareD1CatalogManager() {
+            @NotNull
             @Override
             protected CloudflareD1Catalog configureObject(
                 @NotNull DBRProgressMonitor monitor,
@@ -90,18 +92,20 @@ class CloudflareD1CatalogTest {
     }
 
     @BeforeAll
-    static void initializeQueryManager() throws ReflectiveOperationException {
-        var field = QMUtils.class.getDeclaredField("defaultHandler");
-        field.setAccessible(true);
-        previousQueryHandler = field.get(null);
-        field.set(null, Mockito.mock(QMExecutionHandler.class));
+    static void initializeQueryManager() {
+        try {
+            QMUtils.getDefaultHandler();
+        } catch (IllegalStateException e) {
+            QMUtils.initPlatform(false);
+            queryManagerInitialized = true;
+        }
     }
 
     @AfterAll
-    static void restoreQueryManager() throws ReflectiveOperationException {
-        var field = QMUtils.class.getDeclaredField("defaultHandler");
-        field.setAccessible(true);
-        field.set(null, previousQueryHandler);
+    static void restoreQueryManager() {
+        if (queryManagerInitialized) {
+            QMUtils.disposePlatform();
+        }
     }
 
     @Test
@@ -280,12 +284,10 @@ class CloudflareD1CatalogTest {
 
     @Test
     void metamodelCreatesD1CatalogWithAllDatabaseProperties() throws Exception {
-        var source = Mockito.mock(CloudflareD1DataSource.class, Mockito.RETURNS_DEEP_STUBS);
+        var source = Mockito.mock(CatalogDataSource.class, Mockito.RETURNS_DEEP_STUBS);
         var database = new CloudflareD1Database("database-id", "database", "2026-09-23T12:00:00Z", "eu", "production",
             4096L, "WEUR", CloudflareD1ConnectionAdapter.ReplicationMode.AUTO);
-        var snapshots = CloudflareD1DataSource.class.getDeclaredField("databases");
-        snapshots.setAccessible(true);
-        snapshots.set(source, Map.of("database", database));
+        source.database = database;
         var catalog = Assertions.assertInstanceOf(
             CloudflareD1Catalog.class, new CloudflareD1MetaModel().createCatalogImpl(source, "database"));
         Assertions.assertEquals("database", catalog.getName());
@@ -459,6 +461,25 @@ class CloudflareD1CatalogTest {
         }
         catalog.setDatabaseDetails(new CloudflareD1Database("id", "database", null, null, null, null, "WEUR", null));
         Assertions.assertEquals("WEUR", catalog.getRunningInRegion(monitor));
+    }
+
+    // Public so Mockito can subclass this fixture from its OSGi class loader.
+    public static class CatalogDataSource extends CloudflareD1DataSource {
+        private CloudflareD1Database database;
+
+        private CatalogDataSource(
+            @NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull GenericMetaModel metaModel
+        ) throws DBException {
+            super(monitor, container, metaModel);
+        }
+
+        @NotNull
+        @Override
+        public CloudflareD1Database getDatabase(@NotNull String name) {
+            Assertions.assertNotNull(database);
+            Assertions.assertEquals(database.name(), name);
+            return database;
+        }
     }
 
 }
