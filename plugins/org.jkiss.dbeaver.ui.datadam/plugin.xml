@@ -28,6 +28,10 @@
             type="org.jkiss.dbeaver.model.navigator.DBNProject"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.ui.ai.connectionSettingsSection">
+        <section class="org.jkiss.dbeaver.ui.datadam.mcp.DDMcpConnectionSettingsSection"/>
+    </extension>
+
     <extension point="org.eclipse.core.expressions.definitions">
         <definition id="org.jkiss.dbeaver.ui.datadam.projectSync.canShareProject">
             <with variable="selection">
