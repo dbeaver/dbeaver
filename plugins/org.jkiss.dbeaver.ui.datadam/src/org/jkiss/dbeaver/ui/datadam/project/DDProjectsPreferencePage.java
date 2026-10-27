@@ -83,6 +83,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
+    private Composite content;
     private Composite accountRow;
     private Text accountText;
     private Button importKeysButton;
@@ -115,7 +116,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite content = UIUtils.createPlaceholder(parent, 1);
+        content = UIUtils.createPlaceholder(parent, 1);
         content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         projectsDescription = new Label(content, SWT.WRAP);
@@ -367,7 +368,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         ((GridData) projectsHelp.getLayoutData()).exclude = signedIn;
         showRemote.setEnabled(present);
         viewer.getTable().setEnabled(present);
-        accountRow.getParent().getParent().layout(true, true);
+        content.layout(true, true);
 
         if (!Objects.equals(displayedBundle, bundle)) {
             displayedBundle = bundle;
