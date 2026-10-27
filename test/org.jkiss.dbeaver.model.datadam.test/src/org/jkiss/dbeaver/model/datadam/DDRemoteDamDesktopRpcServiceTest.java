@@ -245,14 +245,13 @@ class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
         backend.ready("backend");
         AtomicInteger calls = new AtomicInteger();
         CompletableFuture<Job> delayed = new CompletableFuture<>();
-        CompletableFuture<Void> release = new CompletableFuture<>();
         CountDownLatch finished = new CountDownLatch(1);
         JobChangeAdapter listener = new JobChangeAdapter() {
             @Override
             public void aboutToRun(@NotNull IJobChangeEvent event) {
                 Job job = event.getJob();
-                if ("Handle DataDam RPC request".equals(job.getName()) && delayed.complete(job)) {
-                    release.join();
+                if ("Handle DataDam RPC request".equals(job.getName()) && !delayed.isDone() && job.sleep()) {
+                    delayed.complete(job);
                 }
             }
 
@@ -275,7 +274,7 @@ class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
             Job.getJobManager().addJobChangeListener(listener);
             try {
                 final Future<String> pending = executor.submit(() -> desktopCalls.echo("delayed"));
-                delayed.get(3, TimeUnit.SECONDS);
+                final Job job = delayed.get(3, TimeUnit.SECONDS);
                 if (close) {
                     rpc.close();
                 } else {
@@ -287,7 +286,7 @@ class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
                 Assertions.assertThrows(DBException.class, rpc::getRpc);
                 backend.disconnected();
                 Assertions.assertEquals(MessagingRpcException.Reason.DISCONNECTED, failure(pending).reason());
-                release.complete(null);
+                job.wakeUp();
                 await(finished);
                 Assertions.assertEquals(0, calls.get());
                 if (!close) {
@@ -301,8 +300,8 @@ class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
                     Assertions.assertEquals(0, calls.get());
                 }
             } finally {
-                release.complete(null);
                 Job.getJobManager().removeJobChangeListener(listener);
+                delayed.thenAccept(Job::wakeUp);
             }
         }
     }
