@@ -19,9 +19,9 @@ package org.jkiss.dbeaver.model.datadam;
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.interceptor.HttpInterceptor;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.net.http.HttpClient;
-import java.util.ArrayList;
 import java.util.List;
 
 /** Common HTTP configuration for DataDam desktop clients. */
@@ -33,13 +33,12 @@ public abstract class DDClient extends AbstractRestClient {
         @NotNull List<HttpInterceptor> interceptors,
         @NotNull HttpClient.Redirect redirectPolicy
     ) {
-        super(url, connectTimeoutMs, readTimeoutMs, withUserAgent(interceptors), redirectPolicy);
+        super(url, connectTimeoutMs, readTimeoutMs, interceptors, redirectPolicy);
     }
 
     @NotNull
-    private static List<HttpInterceptor> withUserAgent(@NotNull List<HttpInterceptor> interceptors) {
-        List<HttpInterceptor> result = new ArrayList<>(interceptors);
-        result.add(new DDUserAgentInterceptor());
-        return result;
+    @Override
+    protected String getUserAgent() {
+        return GeneralUtils.getProductUserAgent();
     }
 }
