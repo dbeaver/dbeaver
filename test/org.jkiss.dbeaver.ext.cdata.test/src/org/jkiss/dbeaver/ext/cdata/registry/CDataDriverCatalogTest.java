@@ -17,9 +17,13 @@
 package org.jkiss.dbeaver.ext.cdata.registry;
 
 import com.sun.net.httpserver.HttpServer;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.junit.DBeaverUnitTest;
+import org.jkiss.utils.SecurityUtils;
 import org.jkiss.utils.function.ThrowableFunction;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,6 +32,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -162,7 +167,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
     public void doNotDownloadUnchangedCatalog() throws Exception {
         saveCachedCatalog(LAST_MODIFIED);
 
-        Files.writeString(etagFile(), "{\"url\":\"\",\"etag\":\"\\\"catalog-v1\\\"\"}");
+        saveCachedETag("\"catalog-v1\"");
         Mockito.when(downloadConnection.getResponseCode()).thenReturn(HttpURLConnection.HTTP_NOT_MODIFIED);
         var drivers = CDataDriverCatalog.load(monitor, cacheFile, connectionFactory);
 
@@ -349,7 +354,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
     @Test
     public void removeOldETagWhenServerDoesNotProvideOne() throws Exception {
         saveCachedCatalog(LAST_MODIFIED);
-        Files.writeString(etagFile(), "{\"url\":\"\",\"etag\":\"old\"}");
+        saveCachedETag("old");
         Mockito.when(downloadConnection.getHeaderField("ETag")).thenReturn(null);
 
         Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
@@ -411,7 +416,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
     @Test
     public void redownloadCorruptCacheWithoutSendingSavedETag() throws Exception {
         Files.writeString(cacheFile, "invalid JSON");
-        Files.writeString(etagFile(), "{\"url\":\"\",\"etag\":\"old\"}");
+        saveCachedETag("old");
 
         Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
         Mockito.verify(downloadConnection).setRequestProperty("If-None-Match", null);
@@ -420,7 +425,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
     @Test
     public void applyChangedSettingsToUnchangedCatalog() throws Exception {
         saveCachedCatalog(LAST_MODIFIED);
-        Files.writeString(etagFile(), "{\"url\":\"\",\"etag\":\"old\"}");
+        saveCachedETag("old");
         Files.writeString(tempDirectory.resolve(CDataDriverSettings.FILE_NAME), """
             {"adwords":{"datatype_id":"new_type"}}
             """);
@@ -527,6 +532,94 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
         } finally {
             server.stop(0);
         }
+    }
+
+    @Test
+    public void keepAuthenticationTokenOutOfLogsAndETag() throws Exception {
+        String token = "test-cdata-auth-secret";
+        var requests = new AtomicInteger();
+        var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/catalog", exchange -> {
+            if (("@authtoken=" + token).equals(exchange.getRequestURI().getRawQuery())) {
+                requests.incrementAndGet();
+            }
+            byte[] content = CATALOG.getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("ETag", "catalog-v1");
+            exchange.sendResponseHeaders(HttpURLConnection.HTTP_OK, content.length);
+            exchange.getResponseBody().write(content);
+            exchange.close();
+        });
+        server.createContext("/failure", exchange -> {
+            exchange.sendResponseHeaders(HttpURLConnection.HTTP_UNAUTHORIZED, -1);
+            exchange.close();
+        });
+        server.start();
+        var output = new ByteArrayOutputStream();
+        var previousWriter = Log.getLogWriter();
+        Log.setLogWriter(output);
+        try {
+            String base = "http://127.0.0.1:" + server.getAddress().getPort();
+            String url = base + "/catalog?@authtoken=" + token;
+            Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, url, cacheFile).size());
+            Assertions.assertEquals(1, requests.get());
+            String metadata = Files.readString(etagFile());
+            Assertions.assertFalse(metadata.contains(token));
+            Assertions.assertFalse(metadata.contains(url));
+            Assertions.assertTrue(metadata.contains(SecurityUtils.sha256Hex(url)));
+
+            String failureUrl = base + "/failure?@authtoken=" + token;
+            Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, failureUrl, cacheFile).size());
+            IOException error = Assertions.assertThrows(IOException.class, () -> WebUtils.openURLConnection(
+                monitor, failureUrl, null, null, "GET", 1, 1000, null, true));
+            Assertions.assertFalse(error.getMessage().contains(token));
+            Assertions.assertNull(error.getCause());
+            Assertions.assertTrue(output.toString(StandardCharsets.UTF_8).contains("<redacted>"));
+            Assertions.assertFalse(output.toString(StandardCharsets.UTF_8).contains(token));
+        } finally {
+            Log.setLogWriter(previousWriter);
+            server.stop(0);
+        }
+    }
+
+    @Test
+    public void doNotLogCredentialsFromDownloadErrors() throws Exception {
+        String token = "test-cdata-stream-secret";
+        saveCachedCatalog(LAST_MODIFIED);
+        Mockito.when(downloadConnection.getInputStream()).thenThrow(
+            new IOException("Cannot read https://example.com/catalog?@authtoken=" + token));
+        var output = new ByteArrayOutputStream();
+        var previousWriter = Log.getLogWriter();
+        Log.setLogWriter(output);
+        try {
+            Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
+            Assertions.assertTrue(output.toString(StandardCharsets.UTF_8).contains("Error updating CData driver catalog"));
+            Assertions.assertFalse(output.toString(StandardCharsets.UTF_8).contains(token));
+        } finally {
+            Log.setLogWriter(previousWriter);
+        }
+    }
+
+    @Test
+    public void removeLegacyETagCredentialsEvenWhenOffline() throws Exception {
+        saveCachedCatalog(LAST_MODIFIED);
+        connectionFactory = headers -> {
+            throw new IOException("Server unavailable");
+        };
+        for (boolean withCatalog : List.of(true, false)) {
+            if (!withCatalog) {
+                Files.delete(cacheFile);
+            }
+            Files.writeString(etagFile(), """
+                {"url":"https://example.com/catalog?@authtoken=legacy-secret","etag":"old"}
+                """);
+
+            Assertions.assertEquals(withCatalog ? 3 : 0, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
+            Assertions.assertFalse(Files.exists(etagFile()));
+        }
+    }
+
+    private void saveCachedETag(@NotNull String etag) throws IOException {
+        Files.writeString(etagFile(), JSONUtils.GSON.toJson(Map.of("urlHash", SecurityUtils.sha256Hex(""), "etag", etag)));
     }
 
     private Path etagFile() {

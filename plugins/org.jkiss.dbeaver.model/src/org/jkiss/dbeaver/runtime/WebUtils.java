@@ -100,8 +100,24 @@ public class WebUtils {
         int timeout,
         Map<String, String> headers
     ) throws IOException {
+        return openURLConnection(monitor, urlString, authInfo, referrer, method, retryNumber, timeout, headers, false);
+    }
+
+    @NotNull
+    public static URLConnection openURLConnection(
+        @Nullable DBRProgressMonitor monitor,
+        @NotNull String urlString,
+        @Nullable DBPAuthInfo authInfo,
+        @Nullable String referrer,
+        @NotNull String method,
+        int retryNumber,
+        int timeout,
+        @Nullable Map<String, String> headers,
+        boolean sensitiveUrl
+    ) throws IOException {
+        String displayUrl = sensitiveUrl ? "<redacted>" : urlString;
         if (retryNumber > MAX_RETRY_COUNT) {
-            String message = String.format("Too many redirects (%d times to %s)", retryNumber, urlString);
+            String message = String.format("Too many redirects (%d times to %s)", retryNumber, displayUrl);
             IOException ioException = new IOException(message);
             if (monitor instanceof ProgressMonitorWithExceptionContext monitorWithExceptionContext) {
                 monitorWithExceptionContext.addException(ioException);
@@ -110,7 +126,7 @@ public class WebUtils {
         } else if (retryNumber > 1) {
             log.debug("Retry number " + retryNumber);
         }
-        log.debug("Open [" + urlString + "]");
+        log.debug("Open [" + displayUrl + "]");
 
         DBPPreferenceStore prefs = DBWorkbench.getPlatform().getPreferenceStore();
         String proxyHost = prefs.getString(ModelPreferences.UI_PROXY_HOST);
@@ -163,15 +179,25 @@ public class WebUtils {
                             && headers != null && headers.containsKey("If-None-Match"))) {
                         if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
                             String newUrl = connection.getHeaderField("Location");
+                            if (sensitiveUrl) {
+                                return openURLConnection(monitor, newUrl, authInfo, referrer, method,
+                                    retryNumber + 1, timeout, headers, true);
+                            }
                             return openURLConnection(newUrl, authInfo, referrer, retryNumber + 1);
+                        }
+                        if (sensitiveUrl) {
+                            throw new IOException("HTTP " + responseCode);
                         }
                         throw new IOException("Can't open '" + connection.getURL() + "': " + httpConnection.getResponseMessage());
                     }
                 }
             } catch (Exception e) {
-                String message = String.format("Exception during a connection to %s", connection.getURL().toString());
-                log.debug(message, e);
-                IOException ioException = new IOException(message, e);
+                String message = String.format("Exception during a connection to %s", sensitiveUrl ? displayUrl : connection.getURL());
+                if (sensitiveUrl) {
+                    message += " (" + e.getClass().getSimpleName() + ")";
+                }
+                log.debug(message, sensitiveUrl ? null : e);
+                IOException ioException = new IOException(message, sensitiveUrl ? null : e);
                 if (monitor instanceof ProgressMonitorWithExceptionContext monitorWithExceptionContext) {
                     monitorWithExceptionContext.addException(ioException);
                 }

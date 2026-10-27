@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.WebUtils;
+import org.jkiss.utils.SecurityUtils;
 import org.jkiss.utils.function.ThrowableFunction;
 
 import java.io.IOException;
@@ -119,7 +120,7 @@ public final class CDataDriverCatalog {
     ) throws InterruptedException {
         var settings = CDataDriverSettings.load(monitor, settingsUrl, cacheFile.resolveSibling(CDataDriverSettings.FILE_NAME));
         return load(monitor, cacheFile, catalogUrl, headers -> WebUtils.openURLConnection(
-            monitor, catalogUrl, null, null, "GET", 1, CONNECTION_TIMEOUT, headers), settings);
+            monitor, catalogUrl, null, null, "GET", 1, CONNECTION_TIMEOUT, headers, true), settings);
     }
 
     @NotNull
@@ -129,7 +130,7 @@ public final class CDataDriverCatalog {
         @NotNull Path cacheFile
     ) throws InterruptedException {
         return load(monitor, cacheFile, catalogUrl, headers -> WebUtils.openURLConnection(
-            monitor, catalogUrl, null, null, "GET", 1, CONNECTION_TIMEOUT, headers),
+            monitor, catalogUrl, null, null, "GET", 1, CONNECTION_TIMEOUT, headers, true),
             CDataDriverSettings.load(cacheFile.resolveSibling(CDataDriverSettings.FILE_NAME)));
     }
 
@@ -151,6 +152,7 @@ public final class CDataDriverCatalog {
         @NotNull ThrowableFunction<Map<String, String>, URLConnection, IOException> connectionFactory,
         @NotNull Map<String, CDataDriverSettings> settings
     ) throws InterruptedException {
+        String catalogHash = SecurityUtils.sha256Hex(catalogUrl);
         List<CDataDriverInfo> cachedDrivers = List.of();
         if (Files.isRegularFile(cacheFile)) {
             try {
@@ -163,14 +165,16 @@ public final class CDataDriverCatalog {
             checkCanceled(monitor);
             Path etagFile = cacheFile.resolveSibling(cacheFile.getFileName() + ".etag");
             String etag = null;
-            if (!cachedDrivers.isEmpty() && Files.isRegularFile(etagFile)) {
-                try (Reader reader = Files.newBufferedReader(etagFile)) {
-                    CatalogETag saved = JSONUtils.GSON.fromJson(reader, CatalogETag.class);
-                    if (saved != null && catalogUrl.equals(saved.url())) {
+            if (Files.isRegularFile(etagFile)) {
+                try {
+                    CatalogETag saved = JSONUtils.GSON.fromJson(Files.readString(etagFile), CatalogETag.class);
+                    if (saved == null || saved.urlHash() == null) {
+                        Files.deleteIfExists(etagFile);
+                    } else if (!cachedDrivers.isEmpty() && catalogHash.equals(saved.urlHash())) {
                         etag = saved.etag();
                     }
                 } catch (IOException | JsonParseException e) {
-                    log.debug("Error reading CData catalog ETag", e);
+                    log.debug("Error reading CData catalog ETag (" + e.getClass().getSimpleName() + ")");
                 }
             }
             URLConnection connection = connectionFactory.apply(etag == null ? Map.of() : Map.of("If-None-Match", etag));
@@ -182,12 +186,12 @@ public final class CDataDriverCatalog {
                     }
                     return cachedDrivers;
                 }
-                return download(monitor, cacheFile, etagFile, catalogUrl, connection, settings);
+                return download(monitor, cacheFile, etagFile, catalogHash, connection, settings);
             } finally {
                 disconnect(connection);
             }
         } catch (IOException | IllegalStateException | IllegalArgumentException e) {
-            log.warn("Error updating CData driver catalog; using the cached catalog", e);
+            log.warn("Error updating CData driver catalog; using the cached catalog (" + e.getClass().getSimpleName() + ")");
             return cachedDrivers;
         }
     }
@@ -197,7 +201,7 @@ public final class CDataDriverCatalog {
         @NotNull DBRProgressMonitor monitor,
         @NotNull Path cacheFile,
         @NotNull Path etagFile,
-        @NotNull String catalogUrl,
+        @NotNull String catalogHash,
         @NotNull URLConnection connection,
         @NotNull Map<String, CDataDriverSettings> settings
     ) throws IOException, InterruptedException {
@@ -224,7 +228,7 @@ public final class CDataDriverCatalog {
             String etag = connection.getHeaderField("ETag");
             if (etag != null && !etag.isBlank()) {
                 try {
-                    Files.writeString(etagFile, JSONUtils.GSON.toJson(new CatalogETag(catalogUrl, etag)));
+                    Files.writeString(etagFile, JSONUtils.GSON.toJson(new CatalogETag(catalogHash, etag)));
                 } catch (IOException e) {
                     log.debug("Error saving CData catalog ETag", e);
                 }
@@ -342,7 +346,7 @@ public final class CDataDriverCatalog {
         }
     }
 
-    private record CatalogETag(@NotNull String url, @NotNull String etag) {
+    private record CatalogETag(@NotNull String urlHash, @NotNull String etag) {
     }
 
     private static final class CatalogFile {
