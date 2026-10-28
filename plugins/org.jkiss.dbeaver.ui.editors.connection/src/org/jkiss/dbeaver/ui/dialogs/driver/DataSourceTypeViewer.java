@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.DriverCategoryDescriptor;
 import org.jkiss.dbeaver.registry.DriverManagerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ExperimentalBundles;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -54,7 +53,6 @@ import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.preferences.UIPreferences;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
-import org.osgi.framework.FrameworkUtil;
 
 import java.util.*;
 import java.util.List;
@@ -238,10 +236,6 @@ public class DataSourceTypeViewer extends Viewer {
     }
 
     public static boolean isCommercialDriversEnabled() {
-        var context = FrameworkUtil.getBundle(DataSourceTypeViewer.class).getBundleContext();
-        if (!Boolean.parseBoolean(context.getProperty(ExperimentalBundles.ENABLE_PROPERTY))) {
-            return false;
-        }
         var registry = ProductConfigRegistry.getInstance();
         return registry.getFeatures().stream()
             .anyMatch(feature -> COMMERCIAL_DRIVERS_FEATURE_ID.equals(feature.getId()) && registry.isFeatureEnabled(feature));
