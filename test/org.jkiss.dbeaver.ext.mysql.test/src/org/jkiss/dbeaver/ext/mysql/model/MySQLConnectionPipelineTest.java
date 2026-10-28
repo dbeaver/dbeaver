@@ -46,6 +46,7 @@ import org.mockito.Mockito;
 
 import java.sql.Connection;
 import java.sql.Driver;
+import java.sql.DriverPropertyInfo;
 import java.util.Map;
 import java.util.Properties;
 import java.util.function.Consumer;
@@ -83,6 +84,7 @@ public class MySQLConnectionPipelineTest extends DBeaverUnitTest {
         Mockito.when(driverLoader.getDriverInstance(monitor)).thenReturn(jdbcDriver);
         Mockito.when(driverLoader.getClassLoader()).thenReturn(getClass().getClassLoader());
         Mockito.when(jdbcDriver.acceptsURL(Mockito.anyString())).thenReturn(true);
+        Mockito.when(jdbcDriver.getPropertyInfo(Mockito.anyString(), Mockito.any(Properties.class))).thenReturn(new DriverPropertyInfo[0]);
         Mockito.when(jdbcDriver.connect(Mockito.anyString(), Mockito.any(Properties.class))).thenReturn(connection);
         connectionInfo.setHostName("localhost");
         connectionInfo.setHostPort("3306");
@@ -130,6 +132,7 @@ public class MySQLConnectionPipelineTest extends DBeaverUnitTest {
             Mockito.same(monitor), Mockito.same(dataSource), Mockito.same(credentials),
             Mockito.same(connectionInfo), Mockito.any(Properties.class));
         order.verify(driverLoader).getDriverInstance(monitor);
+        order.verify(jdbcDriver).getPropertyInfo(Mockito.eq("jdbc:mysql://localhost:3306/test"), Mockito.any(Properties.class));
         order.verify(jdbcDriver).acceptsURL("jdbc:mysql://localhost:3306/test");
         ArgumentCaptor<Properties> properties = ArgumentCaptor.forClass(Properties.class);
         order.verify(jdbcDriver).connect(Mockito.eq("jdbc:mysql://localhost:3306/test"), properties.capture());
@@ -139,13 +142,13 @@ public class MySQLConnectionPipelineTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void authenticationHostChangeIsRejectedBeforeDriverCreation() throws Exception {
+    public void authenticationHostChangeIsRejectedBeforeConnection() throws Exception {
         assertAuthenticationUrlRejected(configuration -> configuration.setHostName(
             "address=(host=localhost)(allowLoadLocalInfile=true)"), "allowLoadLocalInfile");
     }
 
     @Test
-    public void authenticationDatabaseChangeIsRejectedBeforeDriverCreation() throws Exception {
+    public void authenticationDatabaseChangeIsRejectedBeforeConnection() throws Exception {
         assertAuthenticationUrlRejected(configuration -> configuration.setDatabaseName(
             "test?autoDeserialize=true"), "autoDeserialize");
     }
@@ -172,6 +175,8 @@ public class MySQLConnectionPipelineTest extends DBeaverUnitTest {
         @NotNull Consumer<DBPConnectionConfiguration> change,
         @NotNull String prohibitedProperty
     ) throws Exception {
+        Mockito.when(jdbcDriver.getPropertyInfo(Mockito.anyString(), Mockito.any(Properties.class)))
+            .thenReturn(new DriverPropertyInfo[] {new DriverPropertyInfo(prohibitedProperty, "true")});
         Mockito.when(authModel.initAuthentication(
             Mockito.same(monitor), Mockito.same(dataSource), Mockito.same(credentials),
             Mockito.same(connectionInfo), Mockito.any(Properties.class)
@@ -192,13 +197,16 @@ public class MySQLConnectionPipelineTest extends DBeaverUnitTest {
         order.verify(driver).getConnectionURL(connectionInfo);
         order.verify(authModel).endAuthentication(container, connectionInfo, properties.getValue());
         Mockito.verify(authModel).endAuthentication(container, connectionInfo, properties.getValue());
-        Mockito.verify(driver, Mockito.never()).isInstantiable();
-        Mockito.verifyNoInteractions(driverLoader);
+        Mockito.verify(driverLoader).getDriverInstance(monitor);
+        Mockito.verify(jdbcDriver).getPropertyInfo(Mockito.eq(
+            "jdbc:mysql://" + connectionInfo.getHostName() + ":" + connectionInfo.getHostPort()
+                + "/" + connectionInfo.getDatabaseName()), Mockito.any(Properties.class));
         assertNoConnectionAttempt();
     }
 
-    private void assertNoConnectionAttempt() throws DBCException {
-        Mockito.verifyNoInteractions(jdbcDriver);
+    private void assertNoConnectionAttempt() throws Exception {
+        Mockito.verify(jdbcDriver, Mockito.never()).acceptsURL(Mockito.anyString());
+        Mockito.verify(jdbcDriver, Mockito.never()).connect(Mockito.anyString(), Mockito.any(Properties.class));
         Mockito.verify(configurer).beforeConnection(Mockito.same(monitor), Mockito.same(connectionInfo), Mockito.any(Properties.class));
         Mockito.verifyNoMoreInteractions(configurer);
     }

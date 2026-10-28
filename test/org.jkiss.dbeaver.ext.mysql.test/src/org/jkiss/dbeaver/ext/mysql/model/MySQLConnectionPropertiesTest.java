@@ -33,6 +33,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.sql.Driver;
+import java.sql.DriverPropertyInfo;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -162,7 +164,7 @@ public class MySQLConnectionPropertiesTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void finalValidationSanitizesPropertiesAddedAfterPreparation() throws DBCException {
+    public void finalValidationSanitizesPropertiesAddedAfterPreparation() throws Exception {
         Properties properties = fillProperties(false, true);
         properties.putAll(UNSAFE_PROPERTIES);
         properties.setProperty("ALLOWLOCALINFILE", "true");
@@ -174,7 +176,7 @@ public class MySQLConnectionPropertiesTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void desktopOptOutAlsoDisablesFinalValidation() throws DBCException {
+    public void desktopOptOutAlsoDisablesFinalValidation() throws Exception {
         Properties properties = new Properties();
         properties.putAll(UNSAFE_PROPERTIES);
 
@@ -196,7 +198,12 @@ public class MySQLConnectionPropertiesTest extends DBeaverUnitTest {
         boolean sanitize,
         @NotNull String url,
         @NotNull Properties properties
-    ) throws DBCException {
+    ) throws Exception {
+        Driver driver = Mockito.mock(Driver.class);
+        Mockito.when(driver.getPropertyInfo(Mockito.anyString(), Mockito.any(Properties.class))).thenReturn(new DriverPropertyInfo[0]);
+        Mockito.when(driver.getPropertyInfo(
+            Mockito.eq("jdbc:mariadb://localhost/test?allowLocalInfile=true"), Mockito.any(Properties.class)
+        )).thenReturn(new DriverPropertyInfo[] {new DriverPropertyInfo("allowLocalInfile", "true")});
         DBPPlatform platform = Mockito.mock(DBPPlatform.class, Mockito.RETURNS_DEEP_STUBS);
         Mockito.when(platform.getApplication().isMultiuser()).thenReturn(multiuser);
         Mockito.when(platform.getPreferenceStore().getBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES))
@@ -204,7 +211,7 @@ public class MySQLConnectionPropertiesTest extends DBeaverUnitTest {
         try (MockedStatic<DBWorkbench> workbench = Mockito.mockStatic(
             DBWorkbench.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
             workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
-            dataSource.validateConnectionProperties(url, properties);
+            dataSource.validateConnectionProperties(driver, url, properties);
         }
     }
 

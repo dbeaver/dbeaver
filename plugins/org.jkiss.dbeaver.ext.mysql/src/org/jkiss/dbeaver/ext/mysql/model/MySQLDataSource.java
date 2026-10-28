@@ -1158,10 +1158,15 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     }
 
     @Override
-    protected void validateConnectionProperties(@Nullable String url, @NotNull Properties connectProps) throws DBCException {
+    protected void validateConnectionProperties(
+        @Nullable Driver driver,
+        @Nullable String url,
+        @NotNull Properties connectProps
+    ) throws DBCException {
+        super.validateConnectionProperties(driver, url, connectProps);
         if (isDriverPropertySanitizationEnabled()) {
             MySQLConnectionSecurity.sanitizeProperties(connectProps);
-            MySQLConnectionSecurity.validate(url, connectProps);
+            MySQLConnectionSecurity.validate(driver, url, connectProps);
         }
     }
 

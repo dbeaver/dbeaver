@@ -20,124 +20,148 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
+import java.sql.Driver;
+import java.sql.DriverPropertyInfo;
+import java.sql.SQLException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 public class MySQLConnectionSecurityTest extends DBeaverUnitTest {
     private static final String URL = "jdbc:mysql://localhost/test";
+    private Driver driver;
+    private LegacyDriver legacyDriver;
+
+    @BeforeEach
+    public void setUp() throws SQLException {
+        driver = Mockito.mock(Driver.class);
+        Mockito.when(driver.getPropertyInfo(Mockito.anyString(), Mockito.any(Properties.class))).thenReturn(new DriverPropertyInfo[0]);
+        legacyDriver = Mockito.mock(LegacyDriver.class, Mockito.CALLS_REAL_METHODS);
+        MySQLParser.properties = new HashMap<>();
+        MySQLParser.hosts = List.of();
+        MySQLParser.hostsRead = false;
+        LegacyDriver.parsed = new Properties();
+        LegacyDriver.hostOptions = new HashMap<>();
+        LegacyDriver.parseCalls = 0;
+        MariaDBConfiguration.allowLocalInfile = false;
+        MariaDBConfiguration.parseCalls = 0;
+    }
 
     @Test
-    public void rejectsUnsafeQueryOptions() {
-        for (String option : List.of(
-            "autoDeserialize=true", "autoDeserialize=yes", "allowLocalInfile=true", "ALLOWLOCALINFILE=true",
-            "allowLocalInfile=1", "allowLocalInfile", "allowLocalInfile=", "allowLoadLocalInfile=true",
-            "allowUrlInLocalInfile=true", "allowLoadLocalInfileInPath", "allowLoadLocalInfileInPath=",
-            "allowLoadLocalInfileInPath=%2Ftest-path", "%61llowLoadLocalInfile=%74rue",
-            "allowLocalInfile=false&allowLocalInfile=true", "allowLocalInfile=true&allowLocalInfile=false",
-            "allowLocalInfile=false&ALLOWLOCALINFILE=true", "allowLocalInfile=true%ZZ",
-            "propertiesTransform=example.Transformer", "useConfigs=maxPerformance"
-        )) {
-            assertRejected(URL + "?" + option);
-            assertRejected("jdbc:mariadb://localhost/test?" + option);
+    public void checksDriverParsedQueryOptions() {
+        for (String name : List.of("autoDeserialize", "allowLocalInfile", "ALLOWLOCALINFILE", "allowLoadLocalInfile", "allowUrlInLocalInfile")) {
+            MySQLParser.properties.clear();
+            MySQLParser.properties.put(name, "true");
+            Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validateMySQLUrl(URL, MySQLParser.class));
+            MySQLParser.properties.put(name, null);
+            Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validateMySQLUrl(URL, MySQLParser.class));
         }
     }
 
     @Test
-    public void rejectsUnsafeHostOptions() {
-        for (String host : List.of(
-            "address=(host=localhost)(autoDeserialize=true)",
-            "ADDRESS=(host=localhost)(allowLoadLocalInfile=yes)",
-            "address=(host=localhost)(%61llowLoadLocalInfile=%74rue)",
-            "(host=localhost,allowLoadLocalInfile=true)",
-            "address=(host=localhost)(allowLoadLocalInfileInPath=/test-path)",
-            "localhost,address=(host=other)(autoDeserialize=true)",
-            "user:password@[(host=localhost,allowLoadLocalInfile=true),other]",
-            "[(host=localhost),(host=other,propertiesTransform=example.Transformer)]",
-            "address=(host=localhost)(useConfigs=maxPerformance)"
-        )) {
-            assertRejected("jdbc:mysql://" + host + "/test");
-            assertRejected("jdbc:mysql:loadbalance://" + host + "/test");
-            assertRejected("jdbc:mysql:replication://" + host + "/test");
+    public void readsLazyHostPropertiesForEveryHost() {
+        MySQLParser.hosts = List.of(new HostInfo(Map.of("host", "first")), new HostInfo(Map.of("allowLoadLocalInfile", "true")));
+        Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validateMySQLUrl(URL, MySQLParser.class));
+        Assertions.assertTrue(MySQLParser.hostsRead);
+    }
+
+    @Test
+    public void rejectsParsedPathAndIndirectOptions() {
+        for (String name : List.of("allowLoadLocalInfileInPath", "propertiesTransform", "useConfigs", "credentialType")) {
+            MySQLParser.hosts = List.of();
+            MySQLParser.properties = Map.of(name, "");
+            Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validateMySQLUrl(URL, MySQLParser.class));
+            MySQLParser.properties = Map.of();
+            MySQLParser.hosts = List.of(new HostInfo(Map.of(name, "test")));
+            Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validateMySQLUrl(URL, MySQLParser.class));
         }
     }
 
     @Test
-    public void rejectsAmbiguousLegacyHostSyntax() {
-        for (String host : List.of(
-            "address=(host=localhost)(autoDeserialize=\"true\")",
-            "address=(host=localhost)autoDeserialize=true)",
-            "address=XautoDeserialize=true)",
-            "address= autoDeserialize=true)",
-            "address=(host=localhost)(autoDeserialize=true",
-            "address=(host=localhost)(autoDeserialize=true)garbage",
-            "address=", "(host=localhost", "[localhost", "localhost]", "localhost)"
-        )) {
-            assertRejected("jdbc:mysql://" + host + "/test");
+    public void doesNotDecodeOrTokenizeDriverOutputAgain() throws Exception {
+        MySQLParser.properties = Map.of("%61llowLocalInfile", "true", "comment", "allowLocalInfile=true&useConfigs=test");
+        MySQLParser.hosts = List.of(new HostInfo(Map.of("password", "allowLoadLocalInfile=true")));
+        MySQLConnectionSecurity.validateMySQLUrl(URL, MySQLParser.class);
+        Assertions.assertTrue(MySQLParser.hostsRead);
+    }
+
+    @Test
+    public void usesDriverResolutionOfDuplicateQueryOptions() throws Exception {
+        MySQLParser.properties = Map.of("allowLoadLocalInfile", "false");
+        MySQLConnectionSecurity.validateMySQLUrl(URL + "?allowLoadLocalInfile=true&allowLoadLocalInfile=false", MySQLParser.class);
+    }
+
+    @Test
+    public void preventsConfigurationExecutionBeforeCallingLegacyOrMariaDbParsers() {
+        for (String name : List.of("propertiesTransform", "USECONFIGS", "credentialType")) {
+            String url = URL + "?" + name + "=test";
+            Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validateLegacyUrl(legacyDriver, url, new Properties()));
+            Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validateMariaDBUrl(url, new Properties(), MariaDBConfiguration.class));
+        }
+        Assertions.assertEquals(0, LegacyDriver.parseCalls);
+        Assertions.assertEquals(0, MariaDBConfiguration.parseCalls);
+    }
+
+    @Test
+    public void checksLegacyHostsUsingDriverExpansion() {
+        for (String key : List.of("HOST", "HOST.1", "HOST.2")) {
+            LegacyDriver.parsed.clear();
+            LegacyDriver.parsed.setProperty(key, "driver-specific-host");
+            Properties hostOptions = new Properties();
+            hostOptions.setProperty("autoDeserialize", "true");
+            LegacyDriver.hostOptions.put("driver-specific-host", hostOptions);
+            Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validateLegacyUrl(legacyDriver, URL, new Properties()));
         }
     }
 
     @Test
-    public void doesNotDiscardOptionsAfterHash() {
-        assertRejected("jdbc:mariadb://localhost/test?x=y#fragment&allowLocalInfile=true");
-        assertRejected("jdbc:mariadb://localhost/test#fragment?allowLocalInfile=true");
+    public void legacyParsingDoesNotMutateConnectionProperties() throws Exception {
+        Properties properties = new Properties();
+        properties.setProperty("password", "test-password");
+        MySQLConnectionSecurity.validateLegacyUrl(legacyDriver, URL, properties);
+        Assertions.assertEquals(Map.of("password", "test-password"), properties);
+        Assertions.assertEquals(1, LegacyDriver.parseCalls);
     }
 
     @Test
-    public void rejectsDifferentialLegacyAuthorityParsing() {
-        for (String host : List.of(
-            "address=XautoDeserialize=true=foo@address=(host=localhost)(host=localhost)",
-            "address=(host=localhost)(x=foo,address=XautoDeserialize=true)(host=localhost)",
-            "address=(host=localhost)/*comment*/,address=(host=localhost)(autoDeserialize=true)",
-            "address=(host=localhost)*/ignored,address=(host=localhost)(autoDeserialize=true)",
-            "u'@localhost/hidden',address=(host=localhost)(autoDeserialize=true)",
-            "u\"@localhost/hidden\",address=(host=localhost)(autoDeserialize=true)",
-            "localhost\\/hidden,address=(host=localhost)(autoDeserialize=true)",
-            "localhost-- /hidden\n,address=(host=localhost)(autoDeserialize=true)",
-            "localhost--\u2003/hidden\n,address=(host=localhost)(autoDeserialize=true)",
-            "localhost#/hidden\n,address=(host=localhost)(autoDeserialize=true)"
-        )) {
-            assertRejected("jdbc:mysql:loadbalance://" + host + "/test");
-        }
+    public void checksEffectiveMariaDbSettingWithoutMutatingConnectionProperties() throws Exception {
+        Properties properties = new Properties();
+        properties.setProperty("allowLocalInfile", "false");
+        MySQLConnectionSecurity.validateMariaDBUrl(URL, properties, MariaDBConfiguration.class);
+        MariaDBConfiguration.allowLocalInfile = true;
+        Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validateMariaDBUrl(URL, properties, MariaDBConfiguration.class));
+        Assertions.assertEquals(Map.of("allowLocalInfile", "false"), properties);
     }
 
     @Test
-    public void acceptsSafeConnectionSyntax() {
-        for (String url : List.of(
-            URL, "jdbc:mysql:///test", "jdbc:mysql://localhost:3306/test", "jdbc:mysql://xn--example/test",
-            "jdbc:mysql://localhost/database'with\"quotes",
-            "jdbc:mysql://[::1]:3306/test", "jdbc:mysql://[::1]:3306,other:3307/test",
-            "jdbc:mysql:replication://localhost,other/test", "jdbc:mysql+srv://localhost/test",
-            "jdbc:mysql://user:password@[localhost,other]/test",
-            "jdbc:mysql://address=(host=localhost)(port=3306)/test",
-            "jdbc:mysql://(host=localhost,port=3306)/test",
-            "jdbc:mysql://[(host=localhost),(host=other)]/test",
-            "jdbc:mysql://address=(host=localhost)(autoDeserialize=false)/test",
-            "jdbc:mysql://(host=localhost,allowLoadLocalInfile=false)/test",
-            "jdbc:mariadb://localhost/test?allowLocalInfile=false",
-            URL + "?%61llowLoadLocalInfile=%66alse", URL + "?autoDeserialize=FALSE",
-            URL + "?allowLocalInfile=false&allowLocalInfile=false",
-            URL + "?notallowLocalInfile=true", URL + "?comment=allowLocalInfile=true",
-            URL + "?comment=v%26allowLocalInfile%3Dtrue", URL + "?%2561llowLoadLocalInfile=true",
-            URL + "?comment=literal%", "jdbc:mysql://localhost/allowLocalInfile"
-        )) {
-            Assertions.assertDoesNotThrow(() -> MySQLConnectionSecurity.validate(url, new Properties()), url);
-        }
+    public void otherDriversUseTheirOwnPropertyMetadataInsteadOfBeingRejected() throws Exception {
+        MySQLConnectionSecurity.validate(driver, "jdbc:other:driver-specific-syntax", new Properties());
+        Mockito.verify(driver).getPropertyInfo(Mockito.eq("jdbc:other:driver-specific-syntax"), Mockito.any(Properties.class));
+        Mockito.when(driver.getPropertyInfo(Mockito.anyString(), Mockito.any(Properties.class)))
+            .thenReturn(new DriverPropertyInfo[] {new DriverPropertyInfo("allowLocalInfile", "true")});
+        Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validate(driver, URL, new Properties()));
+    }
+
+    @Test
+    public void guardsEncodedIndirectOptionsBeforeCallingUnknownDriver() {
+        Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validate(driver, URL + "?%70ropertiesTransform=test", new Properties()));
+        Mockito.verifyNoInteractions(driver);
     }
 
     @Test
     public void removesCaseVariantsBeforeInsertingCanonicalSafeValues() throws DBCException {
         Properties properties = new Properties();
-        properties.setProperty("allowLocalInfile", "false");
         properties.setProperty("ALLOWLOCALINFILE", "true");
         properties.setProperty("AllowLocalInfile", "true");
         properties.setProperty("ALLOWLOADLOCALINFILEINPATH", "/test-path");
         properties.setProperty("connectTimeout", "1000");
-
         MySQLConnectionSecurity.sanitizeProperties(properties);
-        MySQLConnectionSecurity.validate(URL, properties);
-
+        MySQLConnectionSecurity.validate(driver, URL, properties);
         Assertions.assertEquals("false", properties.getProperty("allowLocalInfile"));
         Assertions.assertFalse(properties.containsKey("ALLOWLOCALINFILE"));
         Assertions.assertFalse(properties.containsKey("AllowLocalInfile"));
@@ -146,59 +170,92 @@ public class MySQLConnectionSecurityTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void validatesHostSpecificationsInPropertiesAndQuery() {
-        for (String key : List.of("HOST", "HOST.1", "HOST.2")) {
-            Properties properties = new Properties();
-            properties.setProperty(key, "address=(host=localhost)(autoDeserialize=true)");
+    public void rejectsIndirectAndInheritedUnsafePropertiesBeforeDriverInvocation() {
+        for (String name : List.of("ALLOWLOCALINFILE", "propertiesTransform", "useConfigs", "credentialType")) {
+            Properties defaults = new Properties();
+            defaults.setProperty(name, "true");
+            Properties properties = new Properties(defaults);
             MySQLConnectionSecurity.sanitizeProperties(properties);
-            Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validate(URL, properties));
-            assertRejected(URL + "?" + key + "=address%3D(host%3Dlocalhost)(autoDeserialize%3Dtrue)");
-            properties.setProperty(key, "address=XautoDeserialize=true=foo@address=(host=localhost)(host=localhost)");
-            Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validate(URL, properties));
+            Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validate(driver, URL, properties));
         }
+        Mockito.verifyNoInteractions(driver);
     }
 
     @Test
-    public void rejectsIndirectConfigurationProperties() {
-        for (String name : List.of("propertiesTransform", "useConfigs")) {
-            Properties properties = new Properties();
-            properties.setProperty(name, "test");
-            MySQLConnectionSecurity.sanitizeProperties(properties);
-            Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validate(URL, properties));
-        }
-    }
-
-    @Test
-    public void doesNotIgnoreUnsafeInheritedProperties() {
-        Properties defaults = new Properties();
-        defaults.setProperty("ALLOWLOCALINFILE", "true");
-        Properties properties = new Properties(defaults);
-        MySQLConnectionSecurity.sanitizeProperties(properties);
-        Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validate(URL, properties));
-    }
-
-    @Test
-    public void doesNotDiscloseConnectionSecretsInErrors() {
-        DBCException exception = Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validate(
-            "jdbc:mysql://user:secret-password@localhost/test?allowLoadLocalInfileInPath=/private-path", new Properties()));
-        Assertions.assertTrue(exception.getMessage().contains("allowLoadLocalInfileInPath"));
+    public void parserErrorsDoNotDiscloseConnectionSecrets() throws SQLException {
+        String url = "jdbc:mysql://user:secret-password@localhost/test";
+        Mockito.when(driver.getPropertyInfo(Mockito.anyString(), Mockito.any(Properties.class))).thenThrow(new SQLException(url));
+        DBCException exception = Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validate(driver, url, new Properties()));
         Assertions.assertFalse(exception.getMessage().contains("secret-password"));
-        Assertions.assertFalse(exception.getMessage().contains("private-path"));
         Assertions.assertFalse(exception.getMessage().contains("jdbc:mysql"));
+        Assertions.assertNull(exception.getCause());
     }
 
-    @Test
-    public void rejectsExcessiveHostNestingAndMissingUrls() {
-        assertRejected("jdbc:mysql://" + "[".repeat(20) + "localhost" + "]".repeat(20) + "/test");
-        Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validate(null, new Properties()));
+    // API doubles provide already-parsed values. They intentionally do not implement any URL grammar.
+    public static class MySQLParser {
+        static Map<String, String> properties;
+        static List<HostInfo> hosts;
+        static boolean hostsRead;
+
+        @NotNull
+        public static MySQLParser parseConnectionString(@NotNull String url) {
+            return new MySQLParser();
+        }
+
+        @NotNull
+        public Map<String, String> getProperties() {
+            return properties;
+        }
+
+        @NotNull
+        public List<HostInfo> getHosts() {
+            hostsRead = true;
+            return hosts;
+        }
     }
 
-    @Test
-    public void doesNotImposeMysqlUrlSyntaxOnDsnDriverSubstitutions() {
-        Assertions.assertDoesNotThrow(() -> MySQLConnectionSecurity.validate("jdbc:odbc:test", new Properties()));
+    public record HostInfo(@NotNull Map<String, String> properties) {
+        @NotNull
+        public Map<String, String> getHostProperties() {
+            return properties;
+        }
     }
 
-    private void assertRejected(@NotNull String url) {
-        Assertions.assertThrows(DBCException.class, () -> MySQLConnectionSecurity.validate(url, new Properties()), url);
+    public abstract static class LegacyDriver implements Driver {
+        static Properties parsed;
+        static Map<String, Properties> hostOptions;
+        static int parseCalls;
+
+        @NotNull
+        public Properties parseURL(@NotNull String url, @NotNull Properties properties) {
+            parseCalls++;
+            properties.setProperty("driverMutation", "test");
+            return parsed;
+        }
+
+        public static boolean isHostPropertiesList(@NotNull String host) {
+            return hostOptions.containsKey(host);
+        }
+
+        @NotNull
+        public static Properties expandHostKeyValues(@NotNull String host) {
+            return hostOptions.getOrDefault(host, new Properties());
+        }
+    }
+
+    public static class MariaDBConfiguration {
+        static boolean allowLocalInfile;
+        static int parseCalls;
+
+        @NotNull
+        public static MariaDBConfiguration parse(@NotNull String url, @NotNull Properties properties) {
+            parseCalls++;
+            properties.setProperty("driverMutation", "test");
+            return new MariaDBConfiguration();
+        }
+
+        public boolean allowLocalInfile() {
+            return allowLocalInfile;
+        }
     }
 }
