@@ -265,7 +265,7 @@ public class ObjectPropertyTester extends PropertyTester {
                     DBSObjectFilter filter = dbNode.getNodeFilter(dbNode.getItemsMeta(), true);
                     UIServiceFilterConfig service = DBWorkbench.findService(UIServiceFilterConfig.class);
                     if (service != null) {
-                        DBSObjectFilter userFilter = dbNode.getUserNodeFilter(dbNode.getItemsMeta(), true);
+                        DBSObjectFilter userFilter = service.getUserFilter(dbNode, dbNode.getItemsMeta());
                         if (userFilter != null) {
                             filter = userFilter;
                         }

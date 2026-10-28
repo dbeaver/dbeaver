@@ -49,13 +49,13 @@ public class NavigatorHandlerFilterToggle extends AbstractHandler {
             final DBNDatabaseFolder folder = (DBNDatabaseFolder) node;
             DBXTreeItem itemsMeta = folder.getItemsMeta();
             if (itemsMeta != null) {
-                DBSObjectFilter nodeFilter = folder.getUserNodeFilter(itemsMeta, true);
+                UIServiceFilterConfig service = DBWorkbench.findService(UIServiceFilterConfig.class);
+                DBSObjectFilter nodeFilter = service == null ? null : service.getUserFilter(folder, itemsMeta);
                 if (nodeFilter == null) {
                     nodeFilter = folder.getNodeFilter(itemsMeta, true);
                 }
                 if (nodeFilter != null) {
                     nodeFilter.setEnabled(!nodeFilter.isEnabled());
-                    UIServiceFilterConfig service = DBWorkbench.findService(UIServiceFilterConfig.class);
                     try {
                         if (service == null) {
                             folder.setNodeFilter(itemsMeta, nodeFilter, true);

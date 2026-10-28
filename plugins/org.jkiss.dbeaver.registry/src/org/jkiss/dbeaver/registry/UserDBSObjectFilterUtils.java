@@ -17,13 +17,15 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPObjectSettingsProvider;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.auth.SMObjectType;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 
 import java.io.IOException;
 import java.util.*;
@@ -35,46 +37,135 @@ public final class UserDBSObjectFilterUtils {
 
     public static final String USER_FILTER_KEY = "navigator-filters";
 
-    private static final FilterSerializer<DataSourceDescriptor> filterSerializer = new FilterSerializer<>();
+    private static final FilterSerializer<DataSourceDescriptor> FILTER_SERIALIZER = new FilterSerializer<>();
+
+    private UserDBSObjectFilterUtils() {
+    }
 
     public static boolean hasUserFilters(@NotNull DBPDataSourceContainer dataSource) {
-        if (dataSource instanceof DataSourceDescriptor dataSourceDescriptor) {
-            return dataSourceDescriptor.hasUserObjectFilters();
-        }
-        DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
+        return !readUserObjectFilters(dataSource).isEmpty();
+    }
+
+    @Nullable
+    public static DBSObjectFilter getUserObjectFilter(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull Class<?> type,
+        @Nullable DBSObject parentObject,
+        boolean firstMatch
+    ) {
+        Map<String, FilterMapping> filters = readUserObjectFilters(dataSource);
+        FilterMapping filterMapping = getFilterMapping(filters, type, parentObject, firstMatch);
+        return filterMapping == null ? null : filterMapping.getFilter(parentObject, firstMatch);
+    }
+
+    public static void setUserObjectFilter(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull Class<?> type,
+        @Nullable DBSObject parentObject,
+        @Nullable DBSObjectFilter filter
+    ) throws DBException {
+        DBPObjectSettingsProvider settingsProvider = getSettingsProvider(dataSource);
         if (settingsProvider == null) {
-            return false;
+            return;
         }
-        Map<String, String> settings = settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
-        return settings != null && settings.keySet().stream().anyMatch(key -> key.startsWith(USER_FILTER_KEY));
+
+        Map<String, FilterMapping> filters = readUserObjectFilters(dataSource);
+        String objectId = toObjectId(parentObject);
+        FilterMapping filterMapping = objectId == null ? null : findCustomFilterMapping(filters, type, objectId);
+        if (filterMapping == null) {
+            filterMapping = findFilterMapping(filters, type);
+        }
+        String typeName = filterMapping == null ? type.getName() : filterMapping.typeName;
+        setUserObjectFilter(filters, typeName, objectId, filter);
+        saveUserObjectFilters(dataSource, settingsProvider, filters.values());
     }
 
     public static void clearUserObjectFilters(@NotNull DBPDataSourceContainer dataSource) throws DBException {
-        DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
-        if (settingsProvider != null) {
-            Map<String, String> settings = settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
-            Set<String> filterSettingIds = settings == null ? Set.of(USER_FILTER_KEY) : settings.keySet().stream()
-                .filter(key -> key.startsWith(USER_FILTER_KEY))
-                .collect(Collectors.toSet());
-            if (!filterSettingIds.isEmpty()) {
-                settingsProvider.clearObjectSettings(
-                    SMObjectType.datasource,
-                    dataSource.getId(),
-                    filterSettingIds
-                );
-            }
+        DBPObjectSettingsProvider settingsProvider = getSettingsProvider(dataSource);
+        if (settingsProvider == null) {
+            return;
         }
-        if (dataSource instanceof DataSourceDescriptor dataSourceDescriptor) {
-            dataSourceDescriptor.clearUserObjectFilters();
+        Map<String, String> settings = settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
+        Set<String> filterSettingIds = settings == null
+            ? Set.of(USER_FILTER_KEY)
+            : getFilterSettingIds(settings);
+        if (!filterSettingIds.isEmpty()) {
+            settingsProvider.clearObjectSettings(SMObjectType.datasource, dataSource.getId(), filterSettingIds);
         }
     }
 
-    public static void updateUserObjectFilters(@NotNull DBPDataSourceContainer dataSource) throws DBException {
-        DBPObjectSettingsProvider settingsProvider = DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
-        if (settingsProvider == null || !(dataSource instanceof DataSourceDescriptor dataSourceDescriptor)) {
+    @NotNull
+    private static Map<String, FilterMapping> readUserObjectFilters(@NotNull DBPDataSourceContainer dataSource) {
+        DBPObjectSettingsProvider settingsProvider = getSettingsProvider(dataSource);
+        if (settingsProvider == null) {
+            return new LinkedHashMap<>();
+        }
+        Map<String, String> settings = settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
+        if (settings == null) {
+            return new LinkedHashMap<>();
+        }
+
+        Map<String, FilterMapping> filters = new LinkedHashMap<>();
+        Collection<Map.Entry<String, String>> filterSettings = settings.containsKey(USER_FILTER_KEY)
+            ? settings.entrySet().stream().filter(entry -> entry.getKey().equals(USER_FILTER_KEY)).toList()
+            : settings.entrySet();
+        filterSettings.stream()
+            .filter(entry -> entry.getKey().startsWith(USER_FILTER_KEY))
+            .sorted(Comparator.comparing(Map.Entry::getKey))
+            .map(Map.Entry::getValue)
+            .forEach(filterConfig -> deserializeUserObjectFilters(filters, filterConfig));
+        return filters;
+    }
+
+    private static void deserializeUserObjectFilters(
+        @NotNull Map<String, FilterMapping> filters,
+        @NotNull String filterConfig
+    ) {
+        FILTER_SERIALIZER.deserializeObjectFilterConfig(filterConfig).stream()
+            .filter(FilterSerializer.FilterConfiguration::typeNamePresent)
+            .forEach(configuration -> setUserObjectFilter(
+                filters,
+                configuration.typeName(),
+                configuration.objectID(),
+                configuration.filter()
+            ));
+    }
+
+    private static void setUserObjectFilter(
+        @NotNull Map<String, FilterMapping> filters,
+        @NotNull String typeName,
+        @Nullable String objectId,
+        @Nullable DBSObjectFilter filter
+    ) {
+        FilterMapping mapping = filters.get(typeName);
+        if (mapping == null && filter != null) {
+            mapping = new FilterMapping(typeName);
+            filters.put(typeName, mapping);
+        }
+        if (mapping == null) {
             return;
         }
-        if (!dataSourceDescriptor.hasUserObjectFilters()) {
+        if (filter != null) {
+            filter.setUserFilter(true);
+        }
+        if (objectId == null) {
+            mapping.globalFilter = filter;
+        } else if (filter == null) {
+            mapping.customFilters.remove(objectId);
+        } else {
+            mapping.customFilters.put(objectId, filter);
+        }
+        if (mapping.globalFilter == null && mapping.customFilters.isEmpty()) {
+            filters.remove(typeName);
+        }
+    }
+
+    private static void saveUserObjectFilters(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull DBPObjectSettingsProvider settingsProvider,
+        @NotNull Collection<FilterMapping> filters
+    ) throws DBException {
+        if (filters.isEmpty()) {
             clearUserObjectFilters(dataSource);
             return;
         }
@@ -82,60 +173,178 @@ public final class UserDBSObjectFilterUtils {
             settingsProvider.setObjectSettings(
                 SMObjectType.datasource,
                 dataSource.getId(),
-                Map.of(USER_FILTER_KEY, filterSerializer.serializeCustomUserFilters(dataSourceDescriptor))
+                Map.of(USER_FILTER_KEY, FILTER_SERIALIZER.serializeObjectFilters(filters))
             );
             Map<String, String> settings = settingsProvider.getObjectSettings(SMObjectType.datasource, dataSource.getId());
-            if (settings != null) {
-                Set<String> legacySettingIds = settings.keySet().stream()
-                    .filter(key -> key.startsWith(USER_FILTER_KEY) && !key.equals(USER_FILTER_KEY))
-                    .collect(Collectors.toSet());
-                if (!legacySettingIds.isEmpty()) {
-                    settingsProvider.clearObjectSettings(SMObjectType.datasource, dataSource.getId(), legacySettingIds);
+            Set<String> legacySettingIds = getFilterSettingIds(settings).stream()
+                .filter(key -> !key.equals(USER_FILTER_KEY))
+                .collect(Collectors.toSet());
+            if (!legacySettingIds.isEmpty()) {
+                settingsProvider.clearObjectSettings(SMObjectType.datasource, dataSource.getId(), legacySettingIds);
+            }
+        } catch (IOException e) {
+            log.warn("Error while serializing filter object settings", e);
+        }
+    }
+
+    @NotNull
+    private static Set<String> getFilterSettingIds(@Nullable Map<String, String> settings) {
+        if (settings == null) {
+            return Set.of();
+        }
+        return settings.keySet().stream()
+            .filter(key -> key.startsWith(USER_FILTER_KEY))
+            .collect(Collectors.toSet());
+    }
+
+    @Nullable
+    private static DBPObjectSettingsProvider getSettingsProvider(@NotNull DBPDataSourceContainer dataSource) {
+        return DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
+    }
+
+    @Nullable
+    private static FilterMapping findCustomFilterMapping(
+        @NotNull Map<String, FilterMapping> filters,
+        @NotNull Class<?> type,
+        @NotNull String objectId
+    ) {
+        for (Class<?> interfaceType : type.getInterfaces()) {
+            FilterMapping mapping = findTypeCustomFilterMapping(filters, interfaceType, objectId);
+            if (mapping != null) {
+                return mapping;
+            }
+        }
+        for (Class<?> testType = type; testType != null; testType = testType.getSuperclass()) {
+            FilterMapping mapping = findTypeCustomFilterMapping(filters, testType, objectId);
+            if (mapping != null) {
+                return mapping;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private static FilterMapping findTypeCustomFilterMapping(
+        @NotNull Map<String, FilterMapping> filters,
+        @NotNull Class<?> type,
+        @NotNull String objectId
+    ) {
+        FilterMapping mapping = filters.get(type.getName());
+        if (mapping != null && mapping.customFilters.containsKey(objectId)) {
+            return mapping;
+        }
+        for (Class<?> interfaceType : type.getInterfaces()) {
+            mapping = findTypeCustomFilterMapping(filters, interfaceType, objectId);
+            if (mapping != null) {
+                return mapping;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private static FilterMapping findFilterMapping(
+        @NotNull Map<String, FilterMapping> filters,
+        @NotNull Class<?> type
+    ) {
+        for (Class<?> interfaceType : type.getInterfaces()) {
+            FilterMapping mapping = findTypeFilterMapping(filters, interfaceType);
+            if (mapping != null) {
+                return mapping;
+            }
+        }
+        for (Class<?> testType = type; testType != null; testType = testType.getSuperclass()) {
+            FilterMapping mapping = findTypeFilterMapping(filters, testType);
+            if (mapping != null) {
+                return mapping;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private static FilterMapping findTypeFilterMapping(
+        @NotNull Map<String, FilterMapping> filters,
+        @NotNull Class<?> type
+    ) {
+        FilterMapping mapping = filters.get(type.getName());
+        if (mapping != null) {
+            return mapping;
+        }
+        for (Class<?> interfaceType : type.getInterfaces()) {
+            mapping = findTypeFilterMapping(filters, interfaceType);
+            if (mapping != null) {
+                return mapping;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    private static FilterMapping getFilterMapping(
+        @NotNull Map<String, FilterMapping> filters,
+        @NotNull Class<?> type,
+        @Nullable DBSObject parentObject,
+        boolean firstMatch
+    ) {
+        if (filters.isEmpty()) {
+            return null;
+        }
+        String objectId = toObjectId(parentObject);
+        if (objectId != null) {
+            FilterMapping mapping = findCustomFilterMapping(filters, type, objectId);
+            if (mapping != null) {
+                DBSObjectFilter filter = mapping.getFilter(parentObject, firstMatch);
+                if (filter != null && (firstMatch || filter.isEnabled())) {
+                    return mapping;
                 }
             }
-        } catch (IOException logged) {
-            log.warn("Error while serializing filter object settings", logged);
         }
-
+        for (Class<?> testType : type.getInterfaces()) {
+            FilterMapping mapping = getTypeFilterMapping(filters, parentObject, firstMatch, testType);
+            if (mapping != null) {
+                return mapping;
+            }
+        }
+        for (Class<?> testType = type; testType != null; testType = testType.getSuperclass()) {
+            FilterMapping mapping = getTypeFilterMapping(filters, parentObject, firstMatch, testType);
+            if (mapping != null) {
+                return mapping;
+            }
+        }
+        return null;
     }
 
-    public static void setUserObjectFilters(@NotNull DataSourceDescriptor dataSourceDescriptor, @NotNull Map<String, String> userSettings) {
-        userSettings
-            .entrySet()
-            .stream()
-            .filter(e -> e.getKey().startsWith(USER_FILTER_KEY))
-            .sorted(Comparator.comparing((Map.Entry<String, String> entry) -> entry.getKey().equals(USER_FILTER_KEY))
-                .thenComparing(Map.Entry::getKey))
-            .map(Map.Entry::getValue)
-            .forEach(filterCfgString -> setUserObjectFilter(dataSourceDescriptor, filterCfgString));
-    }
-
-    public static void objectSettingUpdated(
-        @NotNull DBPProject project,
-        @NotNull String objectId,
-        @NotNull Collection<String> settingIds
+    @Nullable
+    private static FilterMapping getTypeFilterMapping(
+        @NotNull Map<String, FilterMapping> filters,
+        @Nullable DBSObject parentObject,
+        boolean firstMatch,
+        @NotNull Class<?> type
     ) {
-        DBPDataSourceContainer dataSourceContainer = project.getDataSourceRegistry().getDataSource(objectId);
-        if (dataSourceContainer == null) {
-            log.warn("Data source container '" + objectId + "' not found in registry");
-            return;
+        FilterMapping mapping = filters.get(type.getName());
+        if (mapping == null) {
+            for (Class<?> interfaceType : type.getInterfaces()) {
+                mapping = filters.get(interfaceType.getName());
+                if (mapping != null) {
+                    DBSObjectFilter filter = mapping.getFilter(parentObject, firstMatch);
+                    if (filter != null && (firstMatch || filter.isEnabled())) {
+                        return mapping;
+                    }
+                }
+            }
         }
-        if (settingIds.stream().noneMatch(settingId -> settingId.startsWith(USER_FILTER_KEY))) {
-            // No relevant settings changed
-            return;
+        if (mapping != null) {
+            DBSObjectFilter filter = mapping.getFilter(parentObject, firstMatch);
+            if (filter != null && (firstMatch || filter.isEnabled())) {
+                return mapping;
+            }
         }
-
-        dataSourceContainer.getRegistry().refreshConfig(List.of(dataSourceContainer.getId()));
+        return null;
     }
 
-    private static void setUserObjectFilter(@NotNull DataSourceDescriptor dataSourceDescriptor, @NotNull String filterConfigJson) {
-        filterSerializer.deserializeObjectFilterConfig(filterConfigJson)
-            .stream()
-            .filter(FilterSerializer.FilterConfiguration::typeNamePresent)
-            .forEach(fc -> dataSourceDescriptor.setUserObjectFilter(
-                fc.typeName(),
-                fc.objectID(),
-                fc.filter()
-            ));
+    @Nullable
+    private static String toObjectId(@Nullable DBSObject parentObject) {
+        return parentObject == null ? null : FilterMapping.getFilterContainerUniqueID(parentObject);
     }
 }

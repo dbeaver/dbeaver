@@ -928,7 +928,8 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
         if (userSettings != null) {
 
             Map<String, String> datasourceUserSettings = userSettings.entrySet().stream()
-                .filter(setting -> !DataSourceNavigatorSettings.NAVIGATOR_SETTINGS.contains(setting.getKey()))
+                .filter(setting -> !DataSourceNavigatorSettings.NAVIGATOR_SETTINGS.contains(setting.getKey())
+                    && !setting.getKey().startsWith(UserDBSObjectFilterUtils.USER_FILTER_KEY))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
             preferenceStore.putUserSettings(datasourceUserSettings);
         }
@@ -947,10 +948,6 @@ public class DataSourceSerializerModern<T extends DataSourceDescriptor> implemen
             dataSource.getNavigatorSettings().setOriginalSettings(originalSettings);
         } else {
             DataSourceNavigatorSettingsUtils.loadSettingsFromMap(dataSource.getNavigatorSettings(), conObject);
-        }
-
-        if (!CommonUtils.isEmpty(userSettings)) {
-            UserDBSObjectFilterUtils.setUserObjectFilters(dataSource, userSettings);
         }
     }
 

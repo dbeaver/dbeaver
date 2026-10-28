@@ -57,7 +57,6 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSStructContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
-import org.jkiss.dbeaver.registry.UserDBSObjectFilterUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.IActionConstants;
@@ -464,7 +463,7 @@ public class NavigatorUtils {
                     DBSObjectFilter nodeFilter = folders.get(parentNode);
                     if (nodeFilter == null) {
                         nodeFilter = useUserFilter
-                            ? parentNode.getUserNodeFilter(nodeMeta, true)
+                            ? uiServiceFilterConfig.getUserFilter(parentNode, nodeMeta)
                             : parentNode.getNodeFilter(nodeMeta, true);
                         if (nodeFilter == null) {
                             nodeFilter = new DBSObjectFilter();
@@ -481,28 +480,25 @@ public class NavigatorUtils {
                 }
             }
             // Save folders
-            Set<DBPDataSourceContainer> changedUserFilterContainers = new HashSet<>();
             Set<DBPDataSourceContainer> changedConnectionFilterContainers = new HashSet<>();
+            Set<DBNDatabaseNode> connectionFilterNodes = new HashSet<>();
             for (Map.Entry<DBNDatabaseNode, DBSObjectFilter> entry : folders.entrySet()) {
                 DBNDatabaseNode targetNode = entry.getKey();
                 DBXTreeItem nodeMeta = UIUtils.runWithMonitor(monitor -> DBNUtils.getValidItemsMeta(monitor, targetNode));
                 if (entry.getValue().isUserFilter()) {
-                    targetNode.setUserNodeFilter(nodeMeta, entry.getValue());
-                    changedUserFilterContainers.add(targetNode.getDataSourceContainer());
+                    uiServiceFilterConfig.setParentNodeFilter(targetNode, nodeMeta, entry.getValue());
                 } else {
                     targetNode.setNodeFilter(nodeMeta, entry.getValue(), false);
                     changedConnectionFilterContainers.add(targetNode.getDataSourceContainer());
+                    connectionFilterNodes.add(targetNode);
                 }
             }
             // Save configs
-            for (DBPDataSourceContainer ds : changedUserFilterContainers) {
-                UserDBSObjectFilterUtils.updateUserObjectFilters(ds);
-            }
             for (DBPDataSourceContainer ds : changedConnectionFilterContainers) {
                 ds.persistConfiguration();
             }
             // Refresh all folders
-            NavigatorHandlerRefresh.refreshNavigator(folders.keySet());
+            NavigatorHandlerRefresh.refreshNavigator(connectionFilterNodes);
         } catch (DBException e) {
             log.error(e);
         }

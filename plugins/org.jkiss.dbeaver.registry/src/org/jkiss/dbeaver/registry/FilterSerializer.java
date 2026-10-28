@@ -66,13 +66,13 @@ public class FilterSerializer<T extends DataSourceDescriptor> {
     }
 
     @NotNull
-    public String serializeCustomUserFilters(@NotNull T dataSourceDescriptor) throws IOException {
+    String serializeObjectFilters(@NotNull Collection<FilterMapping> filterMappings) throws IOException {
         ByteArrayOutputStream dsConfigBuffer = new ByteArrayOutputStream(10000);
         try (OutputStreamWriter osw = new OutputStreamWriter(dsConfigBuffer, StandardCharsets.UTF_8)) {
             try (JsonWriter jsonWriter = CONFIG_GSON.newJsonWriter(osw)) {
                 jsonWriter.setFormattingStyle(FormattingStyle.COMPACT);
                 jsonWriter.setIndent("");
-                saveObjectFilters(jsonWriter, null, dataSourceDescriptor, true);
+                saveObjectFilters(jsonWriter, null, filterMappings, true);
                 jsonWriter.flush();
                 return dsConfigBuffer.toString();
             }
@@ -86,9 +86,15 @@ public class FilterSerializer<T extends DataSourceDescriptor> {
         @NotNull T dataSource,
         boolean serialiseCustomUserFilters
     ) throws IOException {
-        Collection<FilterMapping> filterMappings = serialiseCustomUserFilters
-            ? dataSource.getUserObjectFilters()
-            : dataSource.getObjectFilters();
+        saveObjectFilters(json, arrayName, dataSource.getObjectFilters(), serialiseCustomUserFilters);
+    }
+
+    private void saveObjectFilters(
+        @NotNull JsonWriter json,
+        @Nullable String arrayName,
+        @NotNull Collection<FilterMapping> filterMappings,
+        boolean serialiseCustomUserFilters
+    ) throws IOException {
         if (serialiseCustomUserFilters || !CommonUtils.isEmpty(filterMappings)) {
             if (arrayName != null) {
                 json.name(arrayName);

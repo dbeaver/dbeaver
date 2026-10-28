@@ -44,7 +44,7 @@ public interface DBNObjectFilterProvider {
     );
 
     @Nullable
-    static Predicate<DBSObject> createFilterMatcher(@Nullable DBSObjectFilter... filters) {
+    static Predicate<DBSObject> createFilterMatcher(@NotNull DBSObjectFilter... filters) {
         Predicate<DBSObject> result = null;
         for (DBSObjectFilter filter : filters) {
             if (filter == null || filter.isNotApplicable()) {

@@ -21,7 +21,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
@@ -58,7 +57,7 @@ public class NavigatorHandlerFilterClear extends AbstractHandler {
                     parentNode.setNodeFilter(itemsMeta, emptyFilter, true);
                     NavigatorHandlerRefresh.refreshNavigator(Collections.singleton(parentNode));
                 } else {
-                    if (isUserObjectFilter(parentNode, itemsMeta)) {
+                    if (uiServiceFilterConfig.getUserFilter(parentNode, itemsMeta) != null) {
                         uiServiceFilterConfig.removeUserFilter(parentNode, itemsMeta);
                     } else {
                         uiServiceFilterConfig.setParentNodeFilter(parentNode, itemsMeta, emptyFilter);
@@ -70,10 +69,6 @@ public class NavigatorHandlerFilterClear extends AbstractHandler {
         }
 
         return null;
-    }
-
-    private boolean isUserObjectFilter(@NotNull DBNDatabaseNode parentNode, @NotNull DBXTreeItem itemsMeta) {
-        return parentNode.getUserNodeFilter(itemsMeta, true) != null;
     }
 
 }
