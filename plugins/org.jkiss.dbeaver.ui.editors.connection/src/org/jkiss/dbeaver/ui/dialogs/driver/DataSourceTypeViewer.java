@@ -262,10 +262,11 @@ public class DataSourceTypeViewer extends Viewer {
     @NotNull
     private Comparator<DBPDataSourceType> createComparator(@NotNull OrderBy orderBy) {
         Comparator<DBPDataSourceType> byName = Comparator.comparing(DBPDataSourceType::getName, String.CASE_INSENSITIVE_ORDER);
-        if (orderBy == OrderBy.name) {
-            return byName;
-        }
-        return Comparator.<DBPDataSourceType>comparingInt(this::getScore).reversed().thenComparing(byName);
+        Comparator<DBPDataSourceType> byLicense = Comparator.comparing(type -> type.getEnabledDrivers().stream()
+            .filter(DataSourceTypeViewer::isDriverAvailable)
+            .allMatch(DBPDriverWithLicense.class::isInstance));
+        return byLicense.thenComparing(orderBy == OrderBy.name ? byName :
+            Comparator.<DBPDataSourceType>comparingInt(this::getScore).reversed().thenComparing(byName));
     }
 
     private int getScore(@NotNull DBPDataSourceType type) {

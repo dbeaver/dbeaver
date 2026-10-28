@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Rectangle;
@@ -29,8 +30,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyIcon;
+import org.jkiss.dbeaver.model.connection.DBPDriverWithLicense;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIStyles;
@@ -38,11 +41,14 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.driver.DataSourceTypeViewer;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
+import org.jkiss.dbeaver.ui.preferences.UIPreferences;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StringUtils;
 
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 
@@ -51,6 +57,7 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
     private DBPDriver selectedDriver;
     private ConnectorViewer viewer;
     private boolean showCommercialDrivers;
+    private Button showCommercialDriversButton;
 
     ConnectionPageConnector(@NotNull NewConnectionWizard wizard) {
         super("newConnectionDriverChoice");
@@ -73,6 +80,18 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
                 getContainer().showPage(getWizard().getNextPage(this));
             }
         });
+        if (DataSourceTypeViewer.isCommercialDriversEnabled()) {
+            showCommercialDriversButton = UIUtils.createCheckbox(composite,
+                UIConnectionMessages.dialog_connection_show_commercial_drivers, DataSourceTypeViewer.isShowCommercialDrivers());
+            showCommercialDriversButton.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
+            showCommercialDriversButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
+                showCommercialDrivers = showCommercialDriversButton.getSelection();
+                var store = DBWorkbench.getPlatform().getPreferenceStore();
+                store.setValue(UIPreferences.DRIVER_SELECTOR_SHOW_COMMERCIAL_DRIVERS, showCommercialDrivers);
+                PrefUtils.savePreferenceStore(store);
+                refreshDrivers();
+            }));
+        }
         setControl(composite);
         refreshDrivers();
     }
@@ -106,7 +125,8 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
         }
         List<DBPDriver> drivers = new ArrayList<>(dataSourceType.getEnabledDrivers());
         drivers.removeIf(driver -> !DataSourceTypeViewer.isDriverVisible(driver));
-        drivers.sort(new DriverUtils.DriverScoreComparator(DataSourceRegistry.getAllDataSources()));
+        drivers.sort(Comparator.comparing((DBPDriver driver) -> driver instanceof DBPDriverWithLicense)
+            .thenComparing(new DriverUtils.DriverScoreComparator(DataSourceRegistry.getAllDataSources())));
         DBPDriver driverToSelect = drivers.contains(selectedDriver) ? selectedDriver : drivers.isEmpty() ? null : drivers.getFirst();
         if (viewer == null) {
             selectedDriver = driverToSelect;
@@ -119,6 +139,11 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
 
     @Override
     public void activatePage() {
+        showCommercialDrivers = DataSourceTypeViewer.isShowCommercialDrivers();
+        if (showCommercialDriversButton != null) {
+            showCommercialDriversButton.setSelection(showCommercialDrivers);
+        }
+        refreshDrivers();
         if (selectedDriver != null && viewer != null &&
             !Objects.equals(viewer.getStructuredSelection().getFirstElement(), selectedDriver)
         ) {
