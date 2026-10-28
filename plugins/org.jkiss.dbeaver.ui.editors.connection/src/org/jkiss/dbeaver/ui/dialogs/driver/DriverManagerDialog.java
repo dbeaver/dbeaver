@@ -91,10 +91,12 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     @NotNull
     @Override
     protected Composite createDialogArea(@NotNull Composite parent) {
-        List<DBPDataSourceProviderDescriptor> enabledProviders = DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders();
+        DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+        registry.refreshProvidedDrivers();
+        List<DBPDataSourceProviderDescriptor> enabledProviders = registry.getEnabledDataSourceProviders();
         {
             DBPDataSourceProviderDescriptor manProvider = null;
-            for (DBPDataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders()) {
+            for (DBPDataSourceProviderDescriptor provider : enabledProviders) {
                 if (provider.isDriversManageable()) {
                     if (manProvider != null) {
                         manProvider = null;
