@@ -55,7 +55,7 @@ public class UIServiceConnectionInitImpl implements UIServiceConnectionInit {
                         Map.of(CoreMessages.connection_init_confirmation_connection, container.getName()),
                         script,
                         CoreMessages.connection_init_confirmation_script,
-                        CoreMessages.shell_cmd_manager_add_command_confirmation_button
+                        CoreMessages.connection_init_confirmation_allow
                     ).open() == Window.OK;
             }
         }));
