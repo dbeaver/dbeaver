@@ -56,6 +56,7 @@ import java.util.stream.Stream;
 public final class AIUtils {
     private static final Log log = Log.getLog(AIUtils.class);
     public static final double DEFAULT_TEMPERATURE = 0.0;
+    private static final String INTEGRATED_ACCOUNT_TOKEN_PREFIX = "integrated.";
 
     @NotNull
     public static String getSettingsAccessMessage(
@@ -126,22 +127,28 @@ public final class AIUtils {
         globalSecretController.setPrivateSecretValue(secret + getSecretSuffix(profile), null);
     }
 
-    /** Read account tokens from native secure storage, falling back to older global secrets. */
+    /** Read account tokens from integrated storage, falling back to older global secrets. */
     @Nullable
     public static String getAccountTokenOrDefault(
         @NotNull AIConfigurationProfile profile,
         @NotNull String secretId,
         @Nullable String defaultValue
     ) throws DBException {
-        if (DBSSecretController.getGlobalSecretControllerOrNull() == null) {
+        DBSSecretController globalController = DBSSecretController.getGlobalSecretControllerOrNull();
+        if (globalController == null) {
             return defaultValue;
         }
+        String key = INTEGRATED_ACCOUNT_TOKEN_PREFIX + secretId + getSecretSuffix(profile);
         DBSSecretController nativeController = getNativeAccountTokenController();
         if (nativeController != null) {
-            String value = nativeController.getPrivateSecretValue(secretId + getSecretSuffix(profile));
-            if (CommonUtils.isNotEmpty(value)) {
+            String value = nativeController.getPrivateSecretValue(key);
+            if (value != null) {
                 return value;
             }
+        }
+        String value = globalController.getPrivateSecretValue(key);
+        if (value != null) {
+            return value;
         }
         return getSecretValueOrDefault(profile, secretId, defaultValue);
     }
@@ -155,16 +162,16 @@ public final class AIUtils {
         if (globalController == null) {
             return;
         }
+        String key = INTEGRATED_ACCOUNT_TOKEN_PREFIX + secretId + getSecretSuffix(profile);
         SecurePreferencesSecretController nativeController = getNativeAccountTokenController();
-        if (nativeController == null) {
-            globalController.setPrivateSecretValue(secretId + getSecretSuffix(profile), value);
-            return;
-        }
-
-        String key = secretId + getSecretSuffix(profile);
         if (value == null) {
-            nativeController.setPrivateSecretValue(key, null);
+            if (nativeController != null) {
+                nativeController.setPrivateSecretValue(key, null);
+            }
             globalController.setPrivateSecretValue(key, null);
+            globalController.setPrivateSecretValue(secretId + getSecretSuffix(profile), null);
+        } else if (nativeController == null) {
+            globalController.setPrivateSecretValue(key, value);
         } else {
             nativeController.setPrivateSecretValue(key, value);
             if (!nativeController.isPrivateSecretEncrypted(key)) {
@@ -172,7 +179,9 @@ public final class AIUtils {
                 throw new DBException("Native secure storage did not encrypt account token");
             }
         }
-        nativeController.flushChanges();
+        if (nativeController != null) {
+            nativeController.flushChanges();
+        }
     }
 
     public static void deleteAccountToken(@NotNull AIConfigurationProfile profile, @NotNull String secretId) throws DBException {

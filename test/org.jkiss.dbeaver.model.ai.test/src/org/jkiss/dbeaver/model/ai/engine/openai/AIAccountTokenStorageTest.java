@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.impl.app.SecurePreferencesSecretController;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
@@ -93,14 +94,25 @@ class AIAccountTokenStorageTest extends DBeaverUnitTest {
             OpenAIProperties openAI = new OpenAIProperties();
             openAI.resolveSecrets(profile);
             Assertions.assertEquals("old-refresh", openAI.getRefreshToken());
-            Assertions.assertFalse(nativeSecrets.containsKey("openai.account.refreshToken_work"));
+            Assertions.assertFalse(nativeSecrets.containsKey("integrated.openai.account.refreshToken_work"));
+
+            legacySecrets.put("integrated.openai.account.refreshToken_work", "new-global-refresh");
+            OpenAIProperties fromGlobal = new OpenAIProperties();
+            fromGlobal.resolveSecrets(profile);
+            Assertions.assertEquals("new-global-refresh", fromGlobal.getRefreshToken());
 
             openAI.setAccessToken("new-access");
             openAI.setRefreshToken("new-refresh");
             openAI.saveSecrets(profile);
-            Assertions.assertEquals("new-access", nativeSecrets.get("openai.account.accessToken_work"));
-            Assertions.assertEquals("new-refresh", nativeSecrets.get("openai.account.refreshToken_work"));
+            Assertions.assertEquals("new-access", nativeSecrets.get("integrated.openai.account.accessToken_work"));
+            Assertions.assertEquals("new-refresh", nativeSecrets.get("integrated.openai.account.refreshToken_work"));
             Assertions.assertEquals("old-refresh", legacySecrets.get("openai.account.refreshToken_work"));
+            OpenAIProperties fromNative = new OpenAIProperties();
+            fromNative.resolveSecrets(profile);
+            Assertions.assertEquals("new-refresh", fromNative.getRefreshToken());
+            nativeSecrets.put("integrated.openai.account.refreshToken_work", "");
+            Assertions.assertEquals("", AIUtils.getAccountTokenOrDefault(profile, "openai.account.refreshToken", null));
+            nativeSecrets.put("integrated.openai.account.refreshToken_work", "new-refresh");
 
             OpenAIProperties grok = new OpenAIProperties() {
                 @NotNull
@@ -115,16 +127,27 @@ class AIAccountTokenStorageTest extends DBeaverUnitTest {
                     return "grok.account.refreshToken";
                 }
             };
+            legacySecrets.put("grok.account.refreshToken_work", "old-grok-refresh");
+            grok.resolveSecrets(profile);
+            Assertions.assertEquals("old-grok-refresh", grok.getRefreshToken());
             grok.setAccessToken("grok-access");
             grok.setRefreshToken("grok-refresh");
             grok.saveSecrets(profile);
-            Assertions.assertEquals("grok-access", nativeSecrets.get("grok.account.accessToken_work"));
-            Assertions.assertEquals("grok-refresh", nativeSecrets.get("grok.account.refreshToken_work"));
+            Assertions.assertEquals("grok-access", nativeSecrets.get("integrated.grok.account.accessToken_work"));
+            Assertions.assertEquals("grok-refresh", nativeSecrets.get("integrated.grok.account.refreshToken_work"));
+            Assertions.assertEquals("old-grok-refresh", legacySecrets.get("grok.account.refreshToken_work"));
 
             openAI.deleteSecrets(profile);
-            Assertions.assertFalse(nativeSecrets.containsKey("openai.account.accessToken_work"));
-            Assertions.assertFalse(nativeSecrets.containsKey("openai.account.refreshToken_work"));
+            Assertions.assertFalse(nativeSecrets.containsKey("integrated.openai.account.accessToken_work"));
+            Assertions.assertFalse(nativeSecrets.containsKey("integrated.openai.account.refreshToken_work"));
             Assertions.assertFalse(legacySecrets.containsKey("openai.account.refreshToken_work"));
+            Assertions.assertFalse(legacySecrets.containsKey("integrated.openai.account.refreshToken_work"));
+
+            providers.when(DBSecurityUtils::findNativeOSProvider).thenReturn(null);
+            AIUtils.setAccountToken(profile, "openai.account.refreshToken", "global-refresh");
+            Assertions.assertEquals("global-refresh", legacySecrets.get("integrated.openai.account.refreshToken_work"));
+            Assertions.assertFalse(legacySecrets.containsKey("openai.account.refreshToken_work"));
+            Assertions.assertEquals("global-refresh", AIUtils.getAccountTokenOrDefault(profile, "openai.account.refreshToken", null));
         }
     }
 }

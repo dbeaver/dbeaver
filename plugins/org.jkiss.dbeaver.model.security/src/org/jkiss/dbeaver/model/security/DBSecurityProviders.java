@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.security;
 /** Equinox secure-storage provider identifiers used by DBeaver. */
 public final class DBSecurityProviders {
     public static final String MACOS_KEYCHAIN = "org.jkiss.dbeaver.model.security.MacOSSecureStorageKeychain";
+    public static final String LEGACY_MACOS_PROVIDER_EXTENSION_ID = ".osxkeystoreintegration";
     public static final String WINDOWS_INTEGRATION = "org.eclipse.equinox.security.win32.WindowsPasswordProvider64bit";
     public static final String LINUX_INTEGRATION = "org.eclipse.equinox.security.linux.LinuxKeystoreIntegrationJNA";
 
