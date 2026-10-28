@@ -103,14 +103,14 @@ public class TaskExecutionLogTest extends DBeaverUnitTest {
 
     @Test
     public void skipsCaptureWhenTaskHasNoLocalLogPath() {
-        Mockito.when(task.getRunLog(Mockito.any())).thenReturn(null);
+        Mockito.doReturn(null).when(task).getRunLog(Mockito.any());
         Assertions.assertNull(TaskExecutionLog.open(task, context));
     }
 
     @Test
     public void logCreationFailureDoesNotPreventExecution() throws Exception {
         Path file = Files.createFile(folder.resolve("not-a-directory"));
-        Mockito.when(task.getRunLog(Mockito.any())).thenReturn(file.resolve("run.log"));
+        Mockito.doReturn(file.resolve("run.log")).when(task).getRunLog(Mockito.any());
         Assertions.assertNull(TaskExecutionLog.open(task, context));
     }
 }
