@@ -423,14 +423,19 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
     @NotNull
     public synchronized List<DBPDriver> getDrivers() {
-        if (driverProvider && !driversLoaded) {
-            // Load provided drivers
+        if (driverProvider) {
             if (getInstance() instanceof DriverProvider dp) {
-                this.drivers.addAll(dp.getProvidedDrivers(this));
+                if (!driversLoaded) {
+                    this.drivers.addAll(dp.getProvidedDrivers(this));
+                    driversLoaded = true;
+                }
+                for (DBPDriver driver : dp.refreshProvidedDrivers(this, drivers)) {
+                    registry.removeDriver(driver);
+                    driver.getDataSourceType();
+                }
             } else {
                 log.error("Data source provider " + implType.getImplName() + " must implement " + DriverProvider.class);
             }
-            driversLoaded = true;
         }
 
         return drivers;

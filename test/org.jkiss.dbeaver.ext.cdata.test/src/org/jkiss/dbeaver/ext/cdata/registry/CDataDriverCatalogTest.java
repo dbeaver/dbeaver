@@ -43,6 +43,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.FileTime;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -273,9 +274,63 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
             throw new IOException("Server unavailable");
         };
 
-        Assertions.assertTrue(CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).isEmpty());
+        Assertions.assertEquals(CDataDriverCatalog.loadCached(cacheFile), CDataDriverCatalog.load(monitor, cacheFile, connectionFactory));
+        Assertions.assertFalse(CDataDriverCatalog.loadCached(cacheFile).isEmpty());
         Assertions.assertFalse(Files.exists(cacheFile));
         assertNoTemporaryFiles();
+    }
+
+    @Test
+    public void loadBundledCatalogWithoutCacheOrSettings() throws Exception {
+        Files.delete(tempDirectory.resolve(CDataDriverSettings.FILE_NAME));
+
+        var drivers = CDataDriverCatalog.loadCached(cacheFile);
+
+        Assertions.assertTrue(drivers.size() > 200);
+        Assertions.assertEquals("oracle", drivers.stream()
+            .filter(driver -> "oracledb".equals(driver.dataSource())).findFirst().orElseThrow().dataTypeId());
+        Assertions.assertFalse(Files.exists(cacheFile));
+    }
+
+    @Test
+    public void preferCachedCatalogToBundledCatalog() throws Exception {
+        Files.writeString(cacheFile, CATALOG);
+
+        Assertions.assertEquals(3, CDataDriverCatalog.loadCached(cacheFile).size());
+    }
+
+    @Test
+    public void useBundledCatalogWhenCacheIsCorrupt() throws Exception {
+        Files.writeString(cacheFile, "invalid JSON");
+
+        Assertions.assertTrue(CDataDriverCatalog.loadCached(cacheFile).size() > 200);
+        Assertions.assertEquals("invalid JSON", Files.readString(cacheFile));
+    }
+
+    @Test
+    public void returnDriversWhileCatalogRefreshIsQueued() throws Exception {
+        var field = CDataDriverCatalog.class.getDeclaredField("UPDATE_JOB");
+        field.setAccessible(true);
+        var job = (org.eclipse.core.runtime.jobs.Job) field.get(null);
+        job.cancel();
+        job.join();
+        var rule = Mockito.mock(org.eclipse.core.runtime.jobs.ISchedulingRule.class);
+        Mockito.when(rule.contains(rule)).thenReturn(true);
+        Mockito.when(rule.isConflicting(rule)).thenReturn(true);
+        job.setRule(rule);
+        var manager = org.eclipse.core.runtime.jobs.Job.getJobManager();
+        manager.beginRule(rule, null);
+        try {
+            CDataDriverCatalog.start();
+
+            Assertions.assertTimeoutPreemptively(Duration.ofSeconds(2), () ->
+                Assertions.assertFalse(CDataDriverCatalog.load().isEmpty()));
+        } finally {
+            job.cancel();
+            manager.endRule(rule);
+            job.join();
+            job.setRule(null);
+        }
     }
 
     @Test
@@ -311,7 +366,8 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
             Mockito.when(downloadConnection.getInputStream()).thenAnswer(
                 invocation -> new ByteArrayInputStream(invalidCatalog.getBytes(StandardCharsets.UTF_8)));
 
-            Assertions.assertTrue(CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).isEmpty(), artifactId);
+            Assertions.assertEquals(CDataDriverCatalog.loadCached(cacheFile),
+                CDataDriverCatalog.load(monitor, cacheFile, connectionFactory), artifactId);
             Assertions.assertFalse(Files.exists(cacheFile), artifactId);
             assertNoTemporaryFiles();
 
@@ -613,7 +669,8 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
                 {"url":"https://example.com/catalog?@authtoken=legacy-secret","etag":"old"}
                 """);
 
-            Assertions.assertEquals(withCatalog ? 3 : 0, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
+            Assertions.assertEquals(CDataDriverCatalog.loadCached(cacheFile).size(),
+                CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
             Assertions.assertFalse(Files.exists(etagFile()));
         }
     }
@@ -632,7 +689,8 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
                 {"url":"https://example.com/catalog?@authtoken=legacy-secret","etag":
                 """);
 
-            Assertions.assertEquals(withCatalog ? 3 : 0, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
+            Assertions.assertEquals(CDataDriverCatalog.loadCached(cacheFile).size(),
+                CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
             Assertions.assertFalse(Files.exists(etagFile()));
         }
     }
