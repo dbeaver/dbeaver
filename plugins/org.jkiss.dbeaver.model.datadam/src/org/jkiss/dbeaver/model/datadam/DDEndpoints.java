@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
+import com.dbeaver.datadam.dam.remote.api.DDRemoteDamProtocol;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 
@@ -26,8 +27,12 @@ import java.net.URI;
  */
 public final class DDEndpoints {
     private static final String BASE_DD_HOST = /*<DD-PROD-URL*/"datadam.cloud"/*/>*/;
-    private static final String ACCOUNT_URL = "https://account." + BASE_DD_HOST;
-    private static final String STORAGE_URL = "https://dbeaver-storage." + BASE_DD_HOST;
+    private static final String ACCOUNT_URL = System.getProperty(
+        "dbeaver.datadam.account.url", "https://account." + BASE_DD_HOST);
+    private static final String STORAGE_URL = System.getProperty(
+        "dbeaver.datadam.storage.url", "https://dbeaver-storage." + BASE_DD_HOST);
+    private static final String REMOTE_DAM_URL = System.getProperty(
+        "dbeaver.datadam.remote.url", "wss://remote-dam." + BASE_DD_HOST + DDRemoteDamProtocol.WEBSOCKET_PATH);
 
     private DDEndpoints() {
     }
@@ -40,6 +45,21 @@ public final class DDEndpoints {
     @NotNull
     public static String getStorageBaseUrl() {
         return STORAGE_URL;
+    }
+
+    @NotNull
+    public static String getRemoteDamWebSocketUrl() {
+        return REMOTE_DAM_URL;
+    }
+
+    public static void requireSecureWebSocketTransport(@NotNull URI url) throws DBException {
+        if (url.getHost() == null || url.getUserInfo() != null || url.getRawQuery() != null || url.getRawFragment() != null
+            || url.getPort() == 0 || url.getPort() > 65535 || url.getRawAuthority().endsWith(":")
+            || !DDRemoteDamProtocol.WEBSOCKET_PATH.equals(url.getRawPath())
+            || !("wss".equalsIgnoreCase(url.getScheme()) || "ws".equalsIgnoreCase(url.getScheme())
+                && ("localhost".equalsIgnoreCase(url.getHost()) || "127.0.0.1".equals(url.getHost())))) {
+            throw new DBException("Expected a WSS DataDam /ws URL (WS is allowed on loopback only)");
+        }
     }
 
     public static void requireSecureTransport(@NotNull URI url) throws DBException {

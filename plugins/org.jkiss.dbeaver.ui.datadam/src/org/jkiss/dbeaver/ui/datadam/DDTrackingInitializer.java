@@ -26,10 +26,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.sync.tracking.DDDesktopTrackingService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -66,6 +68,8 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
+                    DDDesktopAccessService.getInstance().load();
+                    DDProjectUIManager.getInstance();
                     if (!DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
                         return Status.CANCEL_STATUS;
                     }

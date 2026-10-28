@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ext.cdata;
 
 import org.eclipse.osgi.launch.EquinoxFactory;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.runtime.ExperimentalBundles;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
@@ -46,14 +48,24 @@ public class CDataBundleActivationTest extends DBeaverUnitTest {
     Path tempDirectory;
 
     @Test
-    public void requireExperimentalFlagInProduct() throws Exception {
-        Assertions.assertFalse(resolveBundle("disabled", "false", false));
-        Assertions.assertTrue(resolveBundle("enabled", "true", false));
+    public void availableWithoutExperimentalFlagInProduct() throws Exception {
+        String header = FrameworkUtil.getBundle(CDataAuthModel.class).getHeaders().get(ExperimentalBundles.BUNDLE_HEADER);
+        Assertions.assertNull(header);
+        Assertions.assertTrue(resolveBundle("cdata-default", null, header, false));
+        Assertions.assertTrue(resolveBundle("cdata-disabled", "false", header, false));
+        Assertions.assertTrue(resolveBundle("cdata-enabled", "true", header, false));
+        Assertions.assertTrue(resolveBundle("cdata-previously-enabled", "false", header, true));
+    }
+
+    @Test
+    public void experimentalBundlesStillRequireFlag() throws Exception {
+        Assertions.assertFalse(resolveBundle("disabled", "false", "true", false));
+        Assertions.assertTrue(resolveBundle("enabled", "true", "true", false));
     }
 
     @Test
     public void disablePreviouslyResolvedBundles() throws Exception {
-        Assertions.assertFalse(resolveBundle("previously-enabled", "false", true));
+        Assertions.assertFalse(resolveBundle("previously-enabled", "false", "true", true));
     }
 
     @Test
@@ -99,15 +111,20 @@ public class CDataBundleActivationTest extends DBeaverUnitTest {
         }
     }
 
-    private boolean resolveBundle(String storageName, String experimental, boolean previouslyResolved) throws Exception {
-        String header = FrameworkUtil.getBundle(CDataAuthModel.class).getHeaders().get(ExperimentalBundles.BUNDLE_HEADER);
-        Assertions.assertEquals("true", header);
+    private boolean resolveBundle(
+        @NotNull String storageName,
+        @Nullable String experimental,
+        @Nullable String header,
+        boolean previouslyResolved
+    ) throws Exception {
         Manifest manifest = new Manifest();
         var attributes = manifest.getMainAttributes();
         attributes.putValue("Manifest-Version", "1.0");
         attributes.putValue(Constants.BUNDLE_MANIFESTVERSION, "2");
         attributes.putValue(Constants.BUNDLE_SYMBOLICNAME, "org.jkiss.dbeaver.test.experimental");
-        attributes.putValue(ExperimentalBundles.BUNDLE_HEADER, header);
+        if (header != null) {
+            attributes.putValue(ExperimentalBundles.BUNDLE_HEADER, header);
+        }
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         try (var jar = new JarOutputStream(bytes, manifest)) {
             jar.finish();
@@ -115,7 +132,9 @@ public class CDataBundleActivationTest extends DBeaverUnitTest {
 
         var configuration = new HashMap<String, String>();
         configuration.put(Constants.FRAMEWORK_STORAGE, tempDirectory.resolve(storageName).toString());
-        configuration.put(ExperimentalBundles.ENABLE_PROPERTY, experimental);
+        if (experimental != null) {
+            configuration.put(ExperimentalBundles.ENABLE_PROPERTY, experimental);
+        }
         var framework = new EquinoxFactory().newFramework(configuration);
         framework.init();
         try {
@@ -130,7 +149,7 @@ public class CDataBundleActivationTest extends DBeaverUnitTest {
                 }
             });
             ExperimentalBundles.initialize(framework.getBundleContext());
-            if (previouslyResolved) {
+            if (previouslyResolved && Boolean.parseBoolean(header)) {
                 refreshed.get(5, TimeUnit.SECONDS);
             }
             return framework.adapt(FrameworkWiring.class).resolveBundles(List.of(bundle));
