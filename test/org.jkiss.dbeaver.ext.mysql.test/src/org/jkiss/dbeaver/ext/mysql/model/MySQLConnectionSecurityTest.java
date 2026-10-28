@@ -88,8 +88,15 @@ public class MySQLConnectionSecurityTest extends DBeaverUnitTest {
         assertPropertiesRejected(properties);
     }
 
-    @Test
-    public void safeInputsArePreservedAndReceiveSafeDefaults() throws DBCException {
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "jdbc:mysql://localhost/test", "jdbc:mariadb://localhost/test", "jdbc:mysql:loadbalance://localhost/test",
+        "jdbc:mysql:replication://localhost/test", "jdbc:mysql+srv://localhost/test",
+        "jdbc:mysql+srv:loadbalance://localhost/test", "jdbc:mariadb:sequential://localhost/test",
+        "JDBC:MYSQL://localhost/test", "jdbc:%6dysql://localhost/test",
+        "jdbc:mysql+srv://localhost/test?comment=hello%20world", "jdbc:%6dysql+srv://localhost/test"
+    })
+    public void safeInputsArePreservedAndReceiveSafeDefaults(@NotNull String url) throws DBCException {
         Properties defaults = new Properties();
         defaults.setProperty("connectTimeout", "1000");
         Properties properties = new Properties(defaults);
@@ -97,7 +104,7 @@ public class MySQLConnectionSecurityTest extends DBeaverUnitTest {
         properties.setProperty("password", "test-password");
         properties.setProperty("HOST", "address=(host=localhost)(port=3306)");
 
-        validator.validateConnectionProperties("jdbc:custom:arbitrary-template?comment=hello%20world", properties);
+        validator.validateConnectionProperties(url, properties);
 
         Assertions.assertEquals("1000", properties.getProperty("connectTimeout"));
         Assertions.assertEquals("test-user", properties.getProperty("user"));
@@ -111,11 +118,11 @@ public class MySQLConnectionSecurityTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void rejectsMissingUrlsAndMalformedEscapesWithoutDisclosingSecrets() {
+    public void rejectsMissingUrlsAndProhibitedNamesWithoutDisclosingSecrets() {
         Assertions.assertThrows(DBCException.class, () -> validator.validateConnectionProperties(null, new Properties()));
         for (String url : List.of(
             "jdbc:custom://user:secret@localhost/test?autoDeserialize=false",
-            "jdbc:custom://user:secret@localhost/test?comment=%secret"
+            "jdbc:custom://user:secret%@localhost/test?%61utoDeserialize=false"
         )) {
             DBCException error = Assertions.assertThrows(DBCException.class,
                 () -> validator.validateConnectionProperties(url, new Properties()));
@@ -123,9 +130,48 @@ public class MySQLConnectionSecurityTest extends DBeaverUnitTest {
             Assertions.assertFalse(error.getMessage().contains(url));
             Assertions.assertNull(error.getCause());
         }
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "jdbc:trino://localhost:8080/test", "jdbc:postgresql://localhost/test", "jdbc:custom:arbitrary-template",
+        "jdbc:custom://localhost/jdbc:mysql:", "jdbc:mysql-other://localhost/test"
+    })
+    public void otherUrlFamiliesDoNotReceiveMysqlDefaults(@NotNull String url) throws DBCException {
         Properties properties = new Properties();
-        properties.setProperty("password", "%secret");
-        assertPropertiesRejected(properties);
+        properties.setProperty("user", "test-user");
+        properties.setProperty("password", "test-password");
+        Properties original = (Properties) properties.clone();
+
+        validator.validateConnectionProperties(url, properties);
+
+        Assertions.assertEquals(original, properties);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"example%password", "%secret", "100%", "%", "%2", "%gg", "hello%20world%", "%%41"})
+    public void literalPercentValuesAreAcceptedWithoutMutation(@NotNull String value) throws DBCException {
+        Properties properties = new Properties();
+        properties.setProperty("password", value);
+        Properties original = (Properties) properties.clone();
+
+        validator.validateConnectionProperties("jdbc:custom:test?comment=" + value, properties);
+
+        Assertions.assertEquals(original, properties);
+    }
+
+    @Test
+    public void literalPercentDoesNotHideEncodedProhibitedNames() {
+        for (String text : List.of("100%&%61utoDeserialize=false", "%gg%61llowLocalInfile=true", "%2%75seConfigs")) {
+            Assertions.assertThrows(DBCException.class,
+                () -> validator.validateConnectionProperties("jdbc:custom:test?" + text, new Properties()));
+            Properties properties = new Properties();
+            properties.setProperty("HOST", text);
+            assertPropertiesRejected(properties);
+            properties.clear();
+            properties.setProperty(text, "false");
+            assertPropertiesRejected(properties);
+        }
     }
 
     @Test

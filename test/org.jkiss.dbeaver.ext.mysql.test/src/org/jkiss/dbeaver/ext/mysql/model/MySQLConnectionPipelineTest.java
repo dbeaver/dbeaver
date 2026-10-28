@@ -102,7 +102,7 @@ public class MySQLConnectionPipelineTest extends DBeaverUnitTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"jdbc:mysql://localhost/test", "jdbc:mariadb://localhost/test", "jdbc:custom:arbitrary-template"})
+    @ValueSource(strings = {"jdbc:mysql://localhost/test", "jdbc:mariadb://localhost/test", "jdbc:mysql+srv://localhost/test"})
     public void safePropertiesReceiveDefaultsOnlyAfterAuthentication(@NotNull String url) throws Exception {
         Mockito.when(driver.getConnectionURL(connectionInfo)).thenReturn(url);
         Mockito.doAnswer(invocation -> {
@@ -145,6 +145,30 @@ public class MySQLConnectionPipelineTest extends DBeaverUnitTest {
         order.verify(configurer).afterConnection(monitor, connectionInfo, properties.getValue(), connection, null);
         Mockito.verify(authModel).endAuthentication(container, connectionInfo, properties.getValue());
         Mockito.verifyNoMoreInteractions(jdbcDriver);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"jdbc:trino://localhost:8080/test", "jdbc:custom:arbitrary-template"})
+    public void strictDriversReceiveOnlyTheirOwnProperties(@NotNull String url) throws Exception {
+        Mockito.when(driver.getConnectionURL(connectionInfo)).thenReturn(url);
+        connectionInfo.setProperty("user", "test-user");
+        connectionInfo.setProperty("password", "example%password");
+        Map<String, String> expected = Map.of("user", "test-user", "password", "example%password");
+        Mockito.when(jdbcDriver.connect(Mockito.eq(url), Mockito.any(Properties.class))).thenAnswer(invocation -> {
+            Properties properties = invocation.getArgument(1);
+            // Model drivers such as Trino, which reject rather than ignore unrecognized properties.
+            for (String name : properties.stringPropertyNames()) {
+                if (!expected.containsKey(name)) {
+                    throw new SQLException("Unrecognized connection property '" + name + "'");
+                }
+            }
+            Assertions.assertEquals(expected, properties);
+            return connection;
+        });
+
+        Assertions.assertSame(connection, openConnection());
+        Assertions.assertSame(connection, openConnection(false, true));
+        Assertions.assertEquals(expected, connectionInfo.getProperties());
     }
 
     @ParameterizedTest

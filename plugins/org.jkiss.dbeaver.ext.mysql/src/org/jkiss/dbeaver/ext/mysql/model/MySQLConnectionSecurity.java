@@ -26,9 +26,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 /** Rejects prohibited parameter names without invoking a driver or interpreting its URL grammar. */
 final class MySQLConnectionSecurity implements JDBCConnectionValidator {
+    private static final List<String> MYSQL_URL_PREFIXES = List.of("jdbc:mysql:", "jdbc:mysql+srv:", "jdbc:mariadb:");
+    private static final Pattern LITERAL_PERCENT = Pattern.compile("%(?![0-9a-fA-F]{2})");
     private static final List<String> BOOLEAN_PROPERTIES = List.of(
         "autoDeserialize", "allowLocalInfile", "allowLoadLocalInfile", "allowUrlInLocalInfile"
     );
@@ -53,19 +56,27 @@ final class MySQLConnectionSecurity implements JDBCConnectionValidator {
             validateText(String.valueOf(entry.getValue()));
         }
         // Reject user-supplied options first. MariaDB enables local infile by default when the option is absent.
-        BOOLEAN_PROPERTIES.forEach(name -> properties.setProperty(name, "false"));
+        // Other drivers may reject unknown properties, so only default the MySQL/MariaDB URL families.
+        String lowerUrl = decodeText(url).toLowerCase(Locale.ROOT);
+        if (MYSQL_URL_PREFIXES.stream().anyMatch(lowerUrl::startsWith)) {
+            BOOLEAN_PROPERTIES.forEach(name -> properties.setProperty(name, "false"));
+        }
     }
 
     private static void validateText(@NotNull String text) throws DBCException {
         checkProhibitedNames(text);
         if (text.indexOf('%') >= 0) {
-            try {
-                checkProhibitedNames(URLDecoder.decode(text, StandardCharsets.UTF_8));
-            } catch (IllegalArgumentException e) {
-                // Decoder exceptions can contain connection secrets; do not propagate their message or cause.
-                throw validationFailure();
-            }
+            checkProhibitedNames(decodeText(text));
         }
+    }
+
+    @NotNull
+    private static String decodeText(@NotNull String text) {
+        // Property values (especially passwords) can contain literal '%'. Preserve those while decoding
+        // valid escapes once, so a literal percent cannot hide an encoded prohibited name later in the text.
+        // This is not form data: '+' must remain literal, including in the mysql+srv URL scheme.
+        String escapedText = LITERAL_PERCENT.matcher(text).replaceAll("%25").replace("+", "%2B");
+        return URLDecoder.decode(escapedText, StandardCharsets.UTF_8);
     }
 
     private static void checkProhibitedNames(@NotNull String text) throws DBCException {
