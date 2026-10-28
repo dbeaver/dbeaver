@@ -138,7 +138,7 @@ public final class CDataDriverCatalog {
                 throw new IOException("Bundled CData driver catalog is missing");
             }
             try (Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
-                return read(reader, false, settings, true);
+                return read(reader, false, settings);
             }
         } catch (IOException | IllegalStateException | IllegalArgumentException e) {
             log.error("Error reading bundled CData driver catalog", e);
@@ -279,7 +279,7 @@ public final class CDataDriverCatalog {
         @NotNull Map<String, CDataDriverSettings> settings
     ) throws IOException {
         try (Reader reader = Files.newBufferedReader(file)) {
-            return read(reader, allowLegacyCache, settings, false);
+            return read(reader, allowLegacyCache, settings);
         }
     }
 
@@ -287,8 +287,7 @@ public final class CDataDriverCatalog {
     private static List<CDataDriverInfo> read(
         @NotNull Reader reader,
         boolean allowLegacyCache,
-        @NotNull Map<String, CDataDriverSettings> settings,
-        boolean useBundledSettings
+        @NotNull Map<String, CDataDriverSettings> settings
     ) {
         try {
             CatalogFile catalog = JSONUtils.GSON.fromJson(reader, CatalogFile.class);
@@ -302,11 +301,7 @@ public final class CDataDriverCatalog {
                         return null;
                     }
                     requireText(driver.dataSource(), "datasource");
-                    CDataDriverSettings driverSettings = settings.get(driver.dataSource());
-                    if (driverSettings == null && useBundledSettings && driver.dataTypeId() != null) {
-                        driverSettings = new CDataDriverSettings(driver.dataTypeId(), driver.iconDriver());
-                    }
-                    return driver.withSettings(driverSettings);
+                    return driver.withSettings(settings.get(driver.dataSource()));
                 }).toList();
             }
             return validate(catalog);

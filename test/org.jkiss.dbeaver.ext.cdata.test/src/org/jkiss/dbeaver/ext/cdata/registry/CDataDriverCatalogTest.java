@@ -289,7 +289,24 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
         Assertions.assertTrue(drivers.size() > 200);
         Assertions.assertEquals("oracle", drivers.stream()
             .filter(driver -> "oracledb".equals(driver.dataSource())).findFirst().orElseThrow().dataTypeId());
+        Assertions.assertEquals("postgresql:postgres-jdbc", drivers.stream()
+            .filter(driver -> "postgresql".equals(driver.dataSource())).findFirst().orElseThrow().iconDriver());
         Assertions.assertFalse(Files.exists(cacheFile));
+    }
+
+    @Test
+    public void useBundledSettingsForDownloadedVendorCatalog() throws Exception {
+        Files.delete(tempDirectory.resolve(CDataDriverSettings.FILE_NAME));
+        String vendorCatalog = CATALOG.replace("adwords", "oracledb").replace("googleads", "oracledb");
+        Mockito.when(downloadConnection.getInputStream()).thenReturn(
+            new ByteArrayInputStream(vendorCatalog.getBytes(StandardCharsets.UTF_8)));
+
+        var drivers = CDataDriverCatalog.load(monitor, cacheFile, connectionFactory);
+
+        Assertions.assertEquals("oracle", drivers.getFirst().dataTypeId());
+        Assertions.assertEquals("generic:oracle", drivers.getFirst().iconDriver());
+        Assertions.assertEquals(vendorCatalog, Files.readString(cacheFile));
+        Assertions.assertFalse(Files.exists(tempDirectory.resolve(CDataDriverSettings.FILE_NAME)));
     }
 
     @Test
@@ -495,7 +512,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
     public void handleMissingSettingsWithoutCreatingLocalCopy() {
         Path file = tempDirectory.resolve("missing-settings.json");
 
-        Assertions.assertTrue(CDataDriverSettings.load(file).isEmpty());
+        Assertions.assertEquals("oracle", CDataDriverSettings.load(file).get("oracledb").dataTypeId());
         Assertions.assertFalse(Files.exists(file));
     }
 
@@ -504,7 +521,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
         Path file = tempDirectory.resolve(CDataDriverSettings.FILE_NAME);
         Files.writeString(file, "invalid JSON");
 
-        Assertions.assertTrue(CDataDriverSettings.load(file).isEmpty());
+        Assertions.assertEquals("oracle", CDataDriverSettings.load(file).get("oracledb").dataTypeId());
         Assertions.assertEquals("invalid JSON", Files.readString(file));
     }
 
