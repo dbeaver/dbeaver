@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.h2.model.H2DataSource;
-import org.jkiss.dbeaver.ext.h2.util.H2InitConfirmation;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplicationWorkbench;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -28,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ServiceRegistry;
+import org.jkiss.dbeaver.runtime.ui.UIServiceConnectionInit;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,7 +42,7 @@ import java.util.Properties;
 public class H2ConnectionValidationTest {
     private final DBPApplicationWorkbench workbench = Mockito.mock(DBPApplicationWorkbench.class, Mockito.RETURNS_DEEP_STUBS);
     private final ServiceRegistry services = Mockito.mock(ServiceRegistry.class);
-    private final H2InitConfirmation confirmation = Mockito.mock(H2InitConfirmation.class);
+    private final UIServiceConnectionInit confirmation = Mockito.mock(UIServiceConnectionInit.class);
     private final DBPDataSourceContainer container = Mockito.mock(DBPDataSourceContainer.class);
     private final TestDataSource dataSource = Mockito.mock(TestDataSource.class, Mockito.CALLS_REAL_METHODS);
     private final VoidProgressMonitor monitor = new VoidProgressMonitor();
@@ -62,7 +62,7 @@ public class H2ConnectionValidationTest {
         workbenchField.set(null, workbench);
         registryField.set(null, services);
         Mockito.doReturn(container).when(dataSource).getContainer();
-        Mockito.when(services.getService(H2InitConfirmation.class)).thenReturn(confirmation);
+        Mockito.when(services.getService(UIServiceConnectionInit.class)).thenReturn(confirmation);
     }
 
     @AfterEach
@@ -80,7 +80,7 @@ public class H2ConnectionValidationTest {
 
     @Test
     public void rejectsInitWhenServiceIsUnavailable() {
-        Mockito.when(services.getService(H2InitConfirmation.class)).thenReturn(null);
+        Mockito.when(services.getService(UIServiceConnectionInit.class)).thenReturn(null);
 
         Assertions.assertThrows(DBCException.class, () ->
             dataSource.validateConnectionParameters(monitor, "jdbc:h2:mem:test;INIT=CALL 1", new Properties()));

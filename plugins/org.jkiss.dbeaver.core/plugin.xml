@@ -1098,6 +1098,8 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.service">
+        <service name="org.jkiss.dbeaver.runtime.ui.UIServiceConnectionInit"
+                 class="org.jkiss.dbeaver.ui.services.UIServiceConnectionInitImpl"/>
         <service name="org.jkiss.dbeaver.runtime.ui.UIServiceAuth" class="org.jkiss.dbeaver.ui.services.UIServiceAuthImpl"/>
         <service name="org.jkiss.dbeaver.runtime.ui.UIServiceSQL" class="org.jkiss.dbeaver.ui.editors.sql.UIServiceSQLImpl"/>
         <service name="org.jkiss.dbeaver.runtime.ui.UIServiceConnections" class="org.jkiss.dbeaver.ui.actions.datasource.UIServiceConnectionsImpl"/>

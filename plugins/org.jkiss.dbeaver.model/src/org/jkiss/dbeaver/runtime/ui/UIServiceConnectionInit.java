@@ -14,12 +14,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.h2.util;
+package org.jkiss.dbeaver.runtime.ui;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
-/** Approval for SQL executed inside the H2 driver before a JDBC connection is available. */
-public interface H2InitConfirmation {
+/** Approval for driver initialization SQL executed before a JDBC connection is available. */
+public interface UIServiceConnectionInit {
     boolean confirmInitScript(@NotNull DBPDataSourceContainer container, @NotNull String script);
 }

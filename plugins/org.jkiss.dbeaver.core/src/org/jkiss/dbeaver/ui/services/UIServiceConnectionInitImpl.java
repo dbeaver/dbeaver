@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.h2.ui;
+package org.jkiss.dbeaver.ui.services;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -25,16 +25,16 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.h2.ui.internal.H2Messages;
-import org.jkiss.dbeaver.ext.h2.util.H2InitConfirmation;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceConnectionInit;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
-public class H2InitConfirmationImpl implements H2InitConfirmation {
+public class UIServiceConnectionInitImpl implements UIServiceConnectionInit {
     @Override
     public boolean confirmInitScript(@NotNull DBPDataSourceContainer container, @NotNull String script) {
         if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
@@ -56,7 +56,7 @@ public class H2InitConfirmationImpl implements H2InitConfirmation {
         private final String script;
 
         private InitScriptDialog(@NotNull Shell shell, @NotNull String connectionName, @NotNull String script) {
-            super(shell, H2Messages.init_script_confirmation_title, DBIcon.STATUS_WARNING);
+            super(shell, CoreMessages.connection_init_confirmation_title, DBIcon.STATUS_WARNING);
             this.connectionName = connectionName;
             this.script = script;
         }
@@ -68,13 +68,13 @@ public class H2InitConfirmationImpl implements H2InitConfirmation {
             Composite content = UIUtils.createComposite(area, 2);
             content.setLayoutData(new GridData(GridData.FILL_BOTH));
             Label warning = new Label(content, SWT.WRAP);
-            warning.setText(H2Messages.init_script_confirmation_message);
+            warning.setText(CoreMessages.connection_init_confirmation_message);
             warning.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).span(2, 1)
                 .hint(convertWidthInCharsToPixels(80), SWT.DEFAULT).create());
-            UIUtils.createLabelText(content, H2Messages.init_script_confirmation_connection, connectionName, SWT.READ_ONLY);
+            UIUtils.createLabelText(content, CoreMessages.connection_init_confirmation_connection, connectionName, SWT.READ_ONLY);
             UIUtils.createLabelText(
                 content,
-                H2Messages.init_script_confirmation_script,
+                CoreMessages.connection_init_confirmation_script,
                 script,
                 SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.H_SCROLL | SWT.V_SCROLL,
                 GridDataFactory.fillDefaults().grab(true, true)
@@ -85,7 +85,7 @@ public class H2InitConfirmationImpl implements H2InitConfirmation {
 
         @Override
         protected void createButtonsForButtonBar(@NotNull Composite parent) {
-            createButton(parent, IDialogConstants.OK_ID, H2Messages.init_script_confirmation_allow, false);
+            createButton(parent, IDialogConstants.OK_ID, CoreMessages.connection_init_confirmation_allow, false);
             createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
         }
     }

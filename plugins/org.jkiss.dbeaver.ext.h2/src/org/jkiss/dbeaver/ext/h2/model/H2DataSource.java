@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.h2.util.H2InitConfirmation;
 import org.jkiss.dbeaver.ext.h2.util.H2InitScriptValidator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -30,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceConnectionInit;
 
 import java.util.Properties;
 
@@ -88,7 +88,7 @@ public class H2DataSource extends GenericDataSource {
             if (application.isMultiuser()) {
                 return false;
             }
-            H2InitConfirmation confirmation = DBWorkbench.getService(H2InitConfirmation.class);
+            UIServiceConnectionInit confirmation = DBWorkbench.getService(UIServiceConnectionInit.class);
             return confirmation != null && confirmation.confirmInitScript(getContainer(), script);
         });
     }

@@ -25,11 +25,6 @@ public final class H2Messages extends NLS {
     public static String pref_unsaved_changes_hint;
     public static String pref_restart_title;
     public static String pref_restart_message;
-    public static String init_script_confirmation_title;
-    public static String init_script_confirmation_message;
-    public static String init_script_confirmation_connection;
-    public static String init_script_confirmation_script;
-    public static String init_script_confirmation_allow;
 
     static {
         NLS.initializeMessages(H2Messages.class.getName(), H2Messages.class);
