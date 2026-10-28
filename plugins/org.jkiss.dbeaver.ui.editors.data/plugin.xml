@@ -3,11 +3,11 @@
 
 <plugin>
 
-    <extension-point id="org.jkiss.dbeaver.aggregateFunction" name="%extension-point.org.jkiss.dbeaver.aggregateFunction.name" schema="schema/org.jkiss.dbeaver.aggregateFunction.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.dataManager" name="%extension-point.org.jkiss.dbeaver.dataManager.name" schema="schema/org.jkiss.dbeaver.dataManager.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.resultset.presentation" name="%extension-point.org.jkiss.dbeaver.resultset.presentation.name" schema="schema/org.jkiss.dbeaver.resultset.presentation.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.resultset.panel" name="%extension-point.org.jkiss.dbeaver.resultset.panel.name" schema="schema/org.jkiss.dbeaver.resultset.panel.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.resultset.error" name="%extension-point.org.jkiss.dbeaver.resultset.error.name" schema="schema/org.jkiss.dbeaver.resultset.error.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.aggregateFunction" name="Aggregate Functions" schema="schema/org.jkiss.dbeaver.aggregateFunction.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataManager" name="Data value managers" schema="schema/org.jkiss.dbeaver.dataManager.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.resultset.presentation" name="Result set presentations" schema="schema/org.jkiss.dbeaver.resultset.presentation.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.resultset.panel" name="Result set panels" schema="schema/org.jkiss.dbeaver.resultset.panel.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.resultset.error" name="Result set errors" schema="schema/org.jkiss.dbeaver.resultset.error.exsd"/>
     <extension-point id="org.jkiss.dbeaver.resultset.grouping" name="Grouping panel column extensions"
                      schema="schema/org.jkiss.dbeaver.resultset.groupin.exsd"/>
 
@@ -1049,7 +1049,7 @@
         <content-type
             file-extensions="databasedata"
             id="org.jkiss.dbeaver.data"
-            name="%extension-point.org.eclipse.core.contenttype.contentTypes.name"
+            name="Database data flow"
             priority="normal"/>
     </extension>
 
