@@ -25,6 +25,7 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -451,6 +452,7 @@ public class QueryReconstructorTest extends DBeaverUnitTest {
     }
 
     @Test
+    @Disabled("Superseded by focused cases in QueryReconstructorFocusedTest")
     public void diffCases() throws Exception {
         final int testQueries = 2;
         final int commentCasesPerQuery = 10;
