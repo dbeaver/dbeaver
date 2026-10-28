@@ -16,25 +16,19 @@
  */
 package org.jkiss.dbeaver.ui.services;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.window.Window;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.ConfirmedConnectionInitScriptsStore;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnectionInit;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+
+import java.util.Map;
 
 public class UIServiceConnectionInitImpl implements UIServiceConnectionInit {
     @Override
@@ -54,51 +48,20 @@ public class UIServiceConnectionInitImpl implements UIServiceConnectionInit {
             public Boolean runWithResult() {
                 Shell shell = UIUtils.getActiveWorkbenchShell();
                 return shell != null && !shell.isDisposed()
-                    && new InitScriptDialog(shell, container.getName(), script).open() == Window.OK;
+                    && new ConfirmScriptDialog(
+                        shell,
+                        CoreMessages.connection_init_confirmation_title,
+                        CoreMessages.connection_init_confirmation_message,
+                        Map.of(CoreMessages.connection_init_confirmation_connection, container.getName()),
+                        script,
+                        CoreMessages.connection_init_confirmation_script,
+                        CoreMessages.shell_cmd_manager_add_command_confirmation_button
+                    ).open() == Window.OK;
             }
         }));
         if (approved) {
             approvals.add(container, url, script);
         }
         return approved;
-    }
-
-    private static class InitScriptDialog extends BaseDialog {
-        private final String connectionName;
-        private final String script;
-
-        private InitScriptDialog(@NotNull Shell shell, @NotNull String connectionName, @NotNull String script) {
-            super(shell, CoreMessages.connection_init_confirmation_title, DBIcon.STATUS_WARNING);
-            this.connectionName = connectionName;
-            this.script = script;
-        }
-
-        @NotNull
-        @Override
-        protected Composite createDialogArea(@NotNull Composite parent) {
-            Composite area = super.createDialogArea(parent);
-            Composite content = UIUtils.createComposite(area, 2);
-            content.setLayoutData(new GridData(GridData.FILL_BOTH));
-            Label warning = new Label(content, SWT.WRAP);
-            warning.setText(CoreMessages.connection_init_confirmation_message);
-            warning.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).span(2, 1)
-                .hint(convertWidthInCharsToPixels(80), SWT.DEFAULT).create());
-            UIUtils.createLabelText(content, CoreMessages.connection_init_confirmation_connection, connectionName, SWT.READ_ONLY);
-            UIUtils.createLabelText(
-                content,
-                CoreMessages.connection_init_confirmation_script,
-                script,
-                SWT.BORDER | SWT.MULTI | SWT.READ_ONLY | SWT.H_SCROLL | SWT.V_SCROLL,
-                GridDataFactory.fillDefaults().grab(true, true)
-                    .hint(convertWidthInCharsToPixels(80), convertHeightInCharsToPixels(12)).create()
-            );
-            return area;
-        }
-
-        @Override
-        protected void createButtonsForButtonBar(@NotNull Composite parent) {
-            createButton(parent, IDialogConstants.OK_ID, CoreMessages.connection_init_confirmation_allow, false);
-            createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, true);
-        }
     }
 }
