@@ -405,6 +405,9 @@
 
 
     <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource" class="org.jkiss.dbeaver.ext.mysql.model.MySQLConnectionValidatorFactory">
+            <adapter type="org.jkiss.dbeaver.model.impl.jdbc.JDBCConnectionValidator"/>
+        </factory>
         <factory adaptableType="org.jkiss.dbeaver.ext.mysql.model.MySQLDialect" class="org.jkiss.dbeaver.ext.mysql.sql.MySQLDialectAdapterFactory">
             <adapter type="org.jkiss.dbeaver.model.text.parser.TPRuleProvider"/>
         </factory>

@@ -1148,33 +1148,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return readeAllCaches;
     }
 
-    @Override
-    protected void fillConnectionProperties(@NotNull DBPConnectionConfiguration connectionInfo, @NotNull Properties connectProps) {
-        super.fillConnectionProperties(connectionInfo, connectProps);
-
-        if (isDriverPropertySanitizationEnabled()) {
-            MySQLConnectionSecurity.sanitizeProperties(connectProps);
-        }
-    }
-
-    @Override
-    protected void validateConnectionProperties(
-        @Nullable Driver driver,
-        @Nullable String url,
-        @NotNull Properties connectProps
-    ) throws DBCException {
-        super.validateConnectionProperties(driver, url, connectProps);
-        if (isDriverPropertySanitizationEnabled()) {
-            MySQLConnectionSecurity.sanitizeProperties(connectProps);
-            MySQLConnectionSecurity.validate(driver, url, connectProps);
-        }
-    }
-
-    private boolean isDriverPropertySanitizationEnabled() {
-        return DBWorkbench.getPlatform().getApplication().isMultiuser()
-            || DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES);
-    }
-
     private boolean isPasswordExpired(@NotNull Throwable error) {
         int errorCode = isMariaDB()
             ? MySQLConstants.MARIA_ER_MUST_CHANGE_PASSWORD_LOGIN

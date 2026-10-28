@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -33,8 +34,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import java.sql.Driver;
-import java.sql.DriverPropertyInfo;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -57,7 +56,7 @@ public class MySQLConnectionPropertiesTest extends DBeaverUnitTest {
 
     private final Map<String, Object> driverProperties = new HashMap<>();
     private final DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration();
-    private MySQLDataSource dataSource;
+    private TestDataSource dataSource;
     private DBPPreferenceStore connectionPreferences;
 
     @BeforeEach
@@ -68,12 +67,7 @@ public class MySQLConnectionPropertiesTest extends DBeaverUnitTest {
         Mockito.when(container.getDriver()).thenReturn(driver);
         Mockito.when(container.getPreferenceStore()).thenReturn(connectionPreferences);
         Mockito.when(driver.getConnectionProperties()).thenReturn(driverProperties);
-        dataSource = new MySQLDataSource(monitor, container) {
-            @Override
-            protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) {
-                // Property preparation must not open a database connection.
-            }
-        };
+        dataSource = new TestDataSource(monitor, container);
     }
 
     @Test
@@ -83,68 +77,106 @@ public class MySQLConnectionPropertiesTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void desktopSanitizesConnectionPropertiesWithoutChangingSavedSettings() {
+    public void desktopRejectsConnectionPropertiesWithoutChangingSavedSettings() {
         connectionInfo.getProperties().putAll(UNSAFE_PROPERTIES);
         connectionInfo.setProperty("connectTimeout", "1000");
         Map<String, String> originalProperties = new HashMap<>(connectionInfo.getProperties());
 
         Properties properties = fillProperties(false, true);
 
-        assertSanitized(properties);
-        Assertions.assertEquals("1000", properties.getProperty("connectTimeout"));
+        Assertions.assertEquals(originalProperties, properties);
+        assertRejectedWithoutMutation(false, true, "jdbc:mysql://localhost/test", properties);
         Assertions.assertEquals(originalProperties, connectionInfo.getProperties());
     }
 
     @Test
-    public void desktopSanitizesDriverPropertiesWithoutChangingDriverSettings() {
+    public void desktopRejectsDriverPropertiesWithoutChangingDriverSettings() {
         driverProperties.putAll(UNSAFE_PROPERTIES);
         driverProperties.put("connectTimeout", "1000");
         Map<String, Object> originalProperties = new HashMap<>(driverProperties);
 
         Properties properties = fillProperties(false, true);
 
-        assertSanitized(properties);
-        Assertions.assertEquals("1000", properties.getProperty("connectTimeout"));
+        Assertions.assertEquals(originalProperties, properties);
+        assertRejectedWithoutMutation(false, true, "jdbc:mysql://localhost/test", properties);
         Assertions.assertEquals(originalProperties, driverProperties);
     }
 
     @Test
-    public void connectionPropertiesCannotOverrideSanitizedDriverProperties() {
+    public void connectionPreferenceCannotDisableGlobalValidation() {
         driverProperties.putAll(SAFE_PROPERTIES);
         connectionInfo.getProperties().putAll(UNSAFE_PROPERTIES);
         Mockito.when(connectionPreferences.getBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES)).thenReturn(false);
 
-        assertSanitized(fillProperties(false, true));
+        Properties properties = fillProperties(false, true);
+
+        Assertions.assertEquals(UNSAFE_PROPERTIES, properties);
+        assertRejectedWithoutMutation(false, true, "jdbc:mysql://localhost/test", properties);
+        Assertions.assertEquals(SAFE_PROPERTIES, driverProperties);
+        Assertions.assertEquals(UNSAFE_PROPERTIES, connectionInfo.getProperties());
     }
 
     @Test
-    public void desktopCanDisableSanitizationGlobally() {
+    public void desktopCanDisableValidationGlobally() throws DBCException {
         driverProperties.putAll(SAFE_PROPERTIES);
         connectionInfo.getProperties().putAll(UNSAFE_PROPERTIES);
         Mockito.when(connectionPreferences.getBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES)).thenReturn(true);
 
-        Assertions.assertEquals(UNSAFE_PROPERTIES, fillProperties(false, false));
+        Properties properties = fillProperties(false, false);
+
+        Assertions.assertEquals(UNSAFE_PROPERTIES, properties);
+        validateProperties(false, false, "jdbc:mysql://localhost/test?autoDeserialize=true", properties);
+        Assertions.assertEquals(UNSAFE_PROPERTIES, properties);
+        Assertions.assertEquals(SAFE_PROPERTIES, driverProperties);
+        Assertions.assertEquals(UNSAFE_PROPERTIES, connectionInfo.getProperties());
     }
 
     @Test
-    public void multiuserAlwaysSanitizesProperties() {
+    public void multiuserAlwaysRejectsProhibitedProperties() {
         connectionInfo.getProperties().putAll(UNSAFE_PROPERTIES);
 
-        assertSanitized(fillProperties(true, false));
-        assertSanitized(fillProperties(true, true));
+        Properties properties = fillProperties(true, false);
+
+        Assertions.assertEquals(UNSAFE_PROPERTIES, properties);
+        assertRejectedWithoutMutation(true, false, "jdbc:mysql://localhost/test", properties);
+        assertRejectedWithoutMutation(true, true, "jdbc:mysql://localhost/test", properties);
+        Assertions.assertEquals(UNSAFE_PROPERTIES, connectionInfo.getProperties());
     }
 
     @Test
-    public void absentPropertiesReceiveSafeDefaults() {
-        Assertions.assertEquals(SAFE_PROPERTIES, fillProperties(false, true));
+    public void absentPropertiesReceiveSafeDefaultsOnlyAfterValidation() throws DBCException {
+        connectionInfo.setProperty("connectTimeout", "1000");
+        Properties properties = fillProperties(false, true);
+
+        Assertions.assertEquals(Map.of("connectTimeout", "1000"), properties);
+        validateProperties(false, true, "jdbc:mysql://localhost/test", properties);
+
+        Map<String, String> expected = new HashMap<>(SAFE_PROPERTIES);
+        expected.put("connectTimeout", "1000");
+        Assertions.assertEquals(expected, properties);
+        Assertions.assertEquals(Map.of("connectTimeout", "1000"), connectionInfo.getProperties());
+        Assertions.assertTrue(driverProperties.isEmpty());
+    }
+
+    @Test
+    public void desktopOptOutDoesNotAddDefaults() throws DBCException {
+        Properties properties = fillProperties(false, false);
+
+        Assertions.assertTrue(properties.isEmpty());
+        validateProperties(false, false, "jdbc:mysql://localhost/test", properties);
+
+        Assertions.assertTrue(properties.isEmpty());
         Assertions.assertTrue(connectionInfo.getProperties().isEmpty());
     }
 
     @Test
-    public void alreadySafePropertiesArePreserved() {
+    public void explicitlyFalseProhibitedPropertiesAreRejected() {
         connectionInfo.getProperties().putAll(SAFE_PROPERTIES);
 
-        Assertions.assertEquals(SAFE_PROPERTIES, fillProperties(false, true));
+        Properties properties = fillProperties(false, true);
+
+        Assertions.assertEquals(SAFE_PROPERTIES, properties);
+        assertRejectedWithoutMutation(false, true, "jdbc:mysql://localhost/test", properties);
         Assertions.assertEquals(SAFE_PROPERTIES, connectionInfo.getProperties());
     }
 
@@ -158,39 +190,64 @@ public class MySQLConnectionPropertiesTest extends DBeaverUnitTest {
         try (MockedStatic<DBWorkbench> workbench = Mockito.mockStatic(
             DBWorkbench.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
             workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
-            dataSource.fillConnectionProperties(connectionInfo, properties);
+            dataSource.fillProperties(connectionInfo, properties);
         }
         return properties;
     }
 
     @Test
-    public void finalValidationSanitizesPropertiesAddedAfterPreparation() throws Exception {
+    public void finalValidationRejectsPropertiesAddedAfterPreparation() {
         Properties properties = fillProperties(false, true);
-        properties.putAll(UNSAFE_PROPERTIES);
-        properties.setProperty("ALLOWLOCALINFILE", "true");
+        Assertions.assertTrue(properties.isEmpty());
+        properties.setProperty("ALLOWLOCALINFILE", "false");
 
-        validateProperties(false, true, "jdbc:mysql://localhost/test", properties);
-
-        assertSanitized(properties);
-        Assertions.assertFalse(properties.containsKey("ALLOWLOCALINFILE"));
+        assertRejectedWithoutMutation(false, true, "jdbc:mysql://localhost/test", properties);
     }
 
     @Test
-    public void desktopOptOutAlsoDisablesFinalValidation() throws Exception {
+    public void desktopOptOutAlsoDisablesFinalValidation() throws DBCException {
         Properties properties = new Properties();
         properties.putAll(UNSAFE_PROPERTIES);
+        properties.setProperty("prefix%41LLOWLOCALINFILEsuffix", "false");
+        properties.setProperty("custom", "prefix%75seConfigsSuffix");
+        Properties originalProperties = new Properties();
+        originalProperties.putAll(properties);
 
-        validateProperties(false, false, "jdbc:mysql://localhost/test?autoDeserialize=true", properties);
+        validateProperties(false, false, "jdbc:custom:prefix%61utoDeserializeSuffix=false", properties);
 
-        Assertions.assertEquals(UNSAFE_PROPERTIES, properties);
+        Assertions.assertEquals(originalProperties, properties);
+    }
+
+    @Test
+    public void finalValidationRejectsDecodedPropertyNameSubstrings() {
+        connectionInfo.setProperty("prefix%41LLOWLOCALINFILEsuffix", "false");
+        Properties properties = fillProperties(false, true);
+
+        Assertions.assertEquals(connectionInfo.getProperties(), properties);
+        assertRejectedWithoutMutation(false, true, "jdbc:mysql://localhost/test", properties);
+    }
+
+    @Test
+    public void finalValidationRejectsDecodedPropertyValueSubstrings() {
+        connectionInfo.setProperty("custom", "prefix%75seConfigsSuffix");
+        Properties properties = fillProperties(false, true);
+
+        Assertions.assertEquals(connectionInfo.getProperties(), properties);
+        assertRejectedWithoutMutation(false, true, "jdbc:mysql://localhost/test", properties);
     }
 
     @Test
     public void finalValidationRejectsUnsafeUrlsWhenEnabledOrMultiuser() {
-        String url = "jdbc:mariadb://localhost/test?allowLocalInfile=true";
-        Assertions.assertThrows(DBCException.class, () -> validateProperties(false, true, url, new Properties()));
-        Assertions.assertThrows(DBCException.class, () -> validateProperties(true, false, url, new Properties()));
-        Assertions.assertThrows(DBCException.class, () -> validateProperties(true, true, url, new Properties()));
+        Properties properties = fillProperties(false, true);
+        for (String url : new String[] {
+            "jdbc:mysql://localhost/test?allowLocalInfile=false",
+            "jdbc:mariadb://localhost/test?allowLocalInfile=false",
+            "jdbc:custom:prefix%41LLOWLOCALINFILEsuffix=false"
+        }) {
+            assertRejectedWithoutMutation(false, true, url, properties);
+            assertRejectedWithoutMutation(true, false, url, properties);
+            assertRejectedWithoutMutation(true, true, url, properties);
+        }
     }
 
     private void validateProperties(
@@ -198,12 +255,7 @@ public class MySQLConnectionPropertiesTest extends DBeaverUnitTest {
         boolean sanitize,
         @NotNull String url,
         @NotNull Properties properties
-    ) throws Exception {
-        Driver driver = Mockito.mock(Driver.class);
-        Mockito.when(driver.getPropertyInfo(Mockito.anyString(), Mockito.any(Properties.class))).thenReturn(new DriverPropertyInfo[0]);
-        Mockito.when(driver.getPropertyInfo(
-            Mockito.eq("jdbc:mariadb://localhost/test?allowLocalInfile=true"), Mockito.any(Properties.class)
-        )).thenReturn(new DriverPropertyInfo[] {new DriverPropertyInfo("allowLocalInfile", "true")});
+    ) throws DBCException {
         DBPPlatform platform = Mockito.mock(DBPPlatform.class, Mockito.RETURNS_DEEP_STUBS);
         Mockito.when(platform.getApplication().isMultiuser()).thenReturn(multiuser);
         Mockito.when(platform.getPreferenceStore().getBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES))
@@ -211,12 +263,39 @@ public class MySQLConnectionPropertiesTest extends DBeaverUnitTest {
         try (MockedStatic<DBWorkbench> workbench = Mockito.mockStatic(
             DBWorkbench.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
             workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
-            dataSource.validateConnectionProperties(driver, url, properties);
+            dataSource.validateProperties(url, properties);
         }
     }
 
-    private void assertSanitized(@NotNull Properties properties) {
-        SAFE_PROPERTIES.forEach((key, value) -> Assertions.assertEquals(value, properties.getProperty(key), key));
-        Assertions.assertFalse(properties.containsKey("allowLoadLocalInfileInPath"));
+    private void assertRejectedWithoutMutation(
+        boolean multiuser,
+        boolean sanitize,
+        @NotNull String url,
+        @NotNull Properties properties
+    ) {
+        Properties originalProperties = new Properties();
+        originalProperties.putAll(properties);
+
+        Assertions.assertThrows(DBCException.class, () -> validateProperties(multiuser, sanitize, url, properties));
+        Assertions.assertEquals(originalProperties, properties);
+    }
+
+    private static class TestDataSource extends MySQLDataSource {
+        TestDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
+            super(monitor, container);
+        }
+
+        @Override
+        protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) {
+            // Property preparation must not open a database connection.
+        }
+
+        void fillProperties(@NotNull DBPConnectionConfiguration configuration, @NotNull Properties properties) {
+            super.fillConnectionProperties(configuration, properties);
+        }
+
+        void validateProperties(@NotNull String url, @NotNull Properties properties) throws DBCException {
+            super.validateConnectionProperties(url, properties);
+        }
     }
 }

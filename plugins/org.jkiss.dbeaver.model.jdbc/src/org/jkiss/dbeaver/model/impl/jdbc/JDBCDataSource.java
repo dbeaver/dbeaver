@@ -244,9 +244,9 @@ public abstract class JDBCDataSource extends AbstractDataSource
             boolean openTaskFinished;
             try {
                 // Authentication and driver substitution may have changed both the URL and properties.
+                // Validate before creating the driver or invoking any of its URL-processing APIs.
+                validateConnectionProperties(url, connectProps);
                 Driver driverInstance = createDriverInstance(monitor, driver);
-                // Use the actual (possibly substituted) driver, but validate before acceptsURL.
-                validateConnectionProperties(driverInstance, url, connectProps);
                 if (driverInstance != null) {
                     try {
                         if (!driverInstance.acceptsURL(url)) {
@@ -324,10 +324,17 @@ public abstract class JDBCDataSource extends AbstractDataSource
     }
 
     /**
-     * Enforces datasource-specific policy on the final connection inputs, before any driver URL parsing.
+     * Enforces connection policy on the final connection inputs, before any driver URL parsing.
      * Implementations may sanitize the transient properties or reject the connection with a DBCException.
      */
     protected void validateConnectionProperties(@Nullable String url, @NotNull Properties connectProps) throws DBCException {
+        if (DBWorkbench.getPlatform().getApplication().isMultiuser()
+            || DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES)) {
+            JDBCConnectionValidator validator = GeneralUtils.adapt(this, JDBCConnectionValidator.class);
+            if (validator != null) {
+                validator.validateConnectionProperties(url, connectProps);
+            }
+        }
     }
 
     /**
