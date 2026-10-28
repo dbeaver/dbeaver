@@ -607,16 +607,61 @@ public class DataSourceDescriptor
     @Nullable
     @Override
     public DBSObjectFilter getObjectFilter(Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch) {
-        FilterMapping filterMapping = FilterMapping.resolve(filterMap, type, parentObject, firstMatch);
+        FilterMapping filterMapping = getFilterMapping(type, parentObject, firstMatch);
         if (filterMapping != null) {
             return filterMapping.getFilter(parentObject, firstMatch);
         }
         return null;
     }
 
+    @Nullable
+    private FilterMapping getFilterMapping(@NotNull Class<?> type, @Nullable DBSObject parentObject, boolean firstMatch) {
+        if (filterMap.isEmpty()) {
+            return null;
+        }
+        // Test all interfaces
+        for (Class<?> testType : type.getInterfaces()) {
+            FilterMapping filterMapping = getTypeFilterMapping(parentObject, firstMatch, testType);
+            if (filterMapping != null) {
+                return filterMapping;
+            }
+        }
+        // Test all super classes
+        for (Class<?> testType = type; testType != null; testType = testType.getSuperclass()) {
+            FilterMapping filterMapping = getTypeFilterMapping(parentObject, firstMatch, testType);
+            if (filterMapping != null) {
+                return filterMapping;
+            }
+        }
+
+        return null;
+    }
+
+    private FilterMapping getTypeFilterMapping(@Nullable DBSObject parentObject, boolean firstMatch, Class<?> testType) {
+        FilterMapping filterMapping = filterMap.get(testType.getName());
+        DBSObjectFilter filter;
+        if (filterMapping == null) {
+            // Try to find using interfaces and superclasses
+            for (Class<?> it : testType.getInterfaces()) {
+                filterMapping = filterMap.get(it.getName());
+                if (filterMapping != null) {
+                    filter = filterMapping.getFilter(parentObject, firstMatch);
+                    if (filter != null && (firstMatch || filter.isEnabled())) return filterMapping;
+                }
+            }
+        }
+        if (filterMapping != null) {
+            filter = filterMapping.getFilter(parentObject, firstMatch);
+            if (filter != null && (firstMatch || filter.isEnabled())) {
+                return filterMapping;
+            }
+        }
+        return null;
+    }
+
     @Override
     public void setObjectFilter(@NotNull Class<?> type, @Nullable DBSObject parentObject, @Nullable DBSObjectFilter filter) {
-        FilterMapping filterMapping = FilterMapping.resolve(filterMap, type, parentObject, true);
+        FilterMapping filterMapping = getFilterMapping(type, parentObject, true);
         if (filterMapping != null) {
             // Update filter
             if (parentObject == null) {
