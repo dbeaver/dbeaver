@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?eclipse version="3.2"?>
 <plugin>
-    <extension id="MacOSKeychain" name="%macosKeychain.name" point="org.eclipse.equinox.security.secureStorage">
+    <extension id="MacOSSecureStorageKeychain" name="%macosKeychain.name" point="org.eclipse.equinox.security.secureStorage">
         <provider class="org.jkiss.dbeaver.model.security.macos.MacOSPasswordProvider"
                   description="%macosKeychain.description"
                   priority="1">
