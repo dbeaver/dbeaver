@@ -22,13 +22,17 @@ public class DDTrackingUIMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages"; //$NON-NLS-1$
 
     public static String sync_preference_page_title;
-    public static String sync_preference_page_account_group;
+    public static String sync_preference_page_description;
+    public static String sync_preference_page_authentication_group;
+    public static String sync_preference_page_about_link;
     public static String sync_preference_page_encryption_keys_group;
-    public static String sync_preference_page_user_label;
     public static String sync_preference_page_unknown;
     public static String sync_preference_page_account_label;
+    public static String sync_preference_page_account_signed_in;
+    public static String sync_preference_page_account_signed_in_as;
+    public static String sync_preference_page_account_not_signed_in;
     public static String sync_preference_page_desktop_sign_in;
-    public static String sync_preference_page_desktop_sign_in_again;
+    public static String sync_preference_page_refresh_token;
     public static String sync_preference_page_desktop_sign_out;
     public static String sync_preference_page_import_keys_button;
     public static String sync_preference_page_forget_keys_button;
@@ -85,6 +89,10 @@ public class DDTrackingUIMessages extends NLS {
     public static String project_edit_failed;
 
     public static String projects_show_remote;
+    public static String projects_page_description;
+    public static String projects_page_about_link;
+    public static String projects_page_sign_in_help;
+    public static String projects_page_sync_help;
     public static String projects_name;
     public static String projects_description;
     public static String projects_status;
