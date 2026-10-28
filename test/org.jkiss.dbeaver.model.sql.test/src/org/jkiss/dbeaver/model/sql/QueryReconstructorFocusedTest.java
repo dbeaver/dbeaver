@@ -115,7 +115,130 @@ public class QueryReconstructorFocusedTest extends DBeaverUnitTest {
         );
     }
 
-    private static void assertReconstruction(
+    @Test
+    public void insertingFirstColumnRetainsInternalComment() throws Exception {
+        assertReconstruction(
+            "SELECT\n-- name comment\nname, id\nFROM orders",
+            "SELECT new_col, name, id FROM orders",
+            "-- name comment"
+        );
+    }
+
+    @Test
+    public void insertingColumnBetweenTwoCommentedColumnsKeepsBothComments() throws Exception {
+        String actual = assertReconstruction(
+            "SELECT\n-- first column\nid,\n-- last column\nname\nFROM orders",
+            "SELECT id, new_col, name FROM orders",
+            "-- first column", "-- last column"
+        );
+        assertInOrder(actual, "-- first column", "id,", "-- last column", "name");
+    }
+
+    @Test
+    public void removingMiddleColumnKeepsCommentsOnBothNeighbors() throws Exception {
+        assertReconstruction(
+            "SELECT\n-- first column\nid, old_col,\n-- last column\nname\nFROM orders",
+            "SELECT id, name FROM orders",
+            "-- first column", "-- last column"
+        );
+    }
+
+    @Test
+    public void insertingJoinBetweenTwoCommentedJoinsKeepsBothComments() throws Exception {
+        String actual = assertReconstruction(
+            "SELECT orders.id FROM orders\n-- customer join\n" +
+                "LEFT JOIN customers ON orders.customer_id = customers.id\n-- payment join\n" +
+                "LEFT JOIN payments ON orders.id = payments.order_id",
+            "SELECT orders.id FROM orders\nLEFT JOIN customers ON orders.customer_id = customers.id\n" +
+                "INNER JOIN invoices ON orders.id = invoices.order_id\n" +
+                "LEFT JOIN payments ON orders.id = payments.order_id",
+            "-- customer join", "-- payment join"
+        );
+        assertInOrder(actual, "-- customer join", "LEFT JOIN customers", "-- payment join", "LEFT JOIN payments");
+    }
+
+    @Test
+    public void removingMiddleJoinKeepsCommentOnFollowingJoin() throws Exception {
+        String actual = assertReconstruction(
+            "SELECT orders.id FROM orders\nLEFT JOIN customers ON orders.customer_id = customers.id\n" +
+                "INNER JOIN obsolete ON orders.id = obsolete.order_id\n-- payment join\n" +
+                "LEFT JOIN payments ON orders.id = payments.order_id",
+            "SELECT orders.id FROM orders\nLEFT JOIN customers ON orders.customer_id = customers.id\n" +
+                "LEFT JOIN payments ON orders.id = payments.order_id",
+            "-- payment join"
+        );
+        assertInOrder(actual, "LEFT JOIN customers", "-- payment join", "LEFT JOIN payments");
+    }
+
+    @Test
+    public void replacingColumnNextToInlineCommentPreservesNextLine() throws Exception {
+        String actual = assertReconstruction(
+            "SELECT id, old_col\nFROM orders -- source comment\nWHERE id > 0",
+            "SELECT id, new_col\nFROM orders\nWHERE id > 0",
+            "-- source comment"
+        );
+        assertInOrder(actual, "FROM orders", "-- source comment", "WHERE id > 0");
+    }
+
+    @Test
+    public void combinedEditsPreserveInternalBlockComments() throws Exception {
+        assertReconstruction(
+            "SELECT /* column comment */ id, old_col FROM orders\n" +
+                "LEFT JOIN /* join comment */ customers ON orders.customer_id = customers.id",
+            "SELECT id, new_col FROM orders\n" +
+                "LEFT JOIN customers ON orders.customer_id = customers.id\n" +
+                "INNER JOIN invoices ON orders.id = invoices.order_id",
+            "/* column comment */", "/* join comment */"
+        );
+    }
+
+    @Test
+    public void adjacentCommentsAreBothPreservedAcrossAnInsertion() throws Exception {
+        String actual = assertReconstruction(
+            "SELECT id, /* first */ /* second */ name FROM orders",
+            "SELECT id, name, new_col FROM orders",
+            "/* first */", "/* second */"
+        );
+        assertInOrder(actual, "/* first */", "/* second */", "name");
+    }
+
+    @Test
+    public void repeatedIdentifiersStillProduceTheRequestedSql() throws Exception {
+        assertReconstruction(
+            "SELECT id, /* existing column */ name FROM orders JOIN customers ON orders.id = customers.id",
+            "SELECT id, name, city FROM orders JOIN customers ON orders.id = customers.id",
+            "/* existing column */"
+        );
+    }
+
+    @Test
+    public void formattingOnlyChangeKeepsOriginalInternalComment() throws Exception {
+        assertReconstruction(
+            "SELECT id, /* keep */ name FROM orders",
+            "SELECT\n  id,\n  name\nFROM orders",
+            "/* keep */"
+        );
+    }
+
+    @Test
+    public void leadingOnlyCommentSurvivesSqlChange() throws Exception {
+        Assertions.assertEquals(
+            "/* leading */\nSELECT id, name FROM orders",
+            reconstruct("/* leading */\nSELECT id FROM orders", "SELECT id, name FROM orders")
+        );
+    }
+
+    @Test
+    public void reorderingColumnsKeepsCommentOnUnchangedClause() throws Exception {
+        assertReconstruction(
+            "SELECT id, name FROM /* source comment */ orders",
+            "SELECT name, id FROM orders",
+            "/* source comment */"
+        );
+    }
+
+    @NotNull
+    private static String assertReconstruction(
         @NotNull String originalSql,
         @NotNull String newSql,
         @NotNull String... retainedComments
@@ -135,6 +258,7 @@ public class QueryReconstructorFocusedTest extends DBeaverUnitTest {
         for (String comment : retainedComments) {
             Assertions.assertEquals(1, actual.split(java.util.regex.Pattern.quote(comment), -1).length - 1, actual);
         }
+        return actual;
     }
 
     @NotNull
@@ -147,5 +271,14 @@ public class QueryReconstructorFocusedTest extends DBeaverUnitTest {
         return Arrays.stream(SQLSemanticProcessor.parseSqlTextForTokens(BasicSQLDialect.INSTANCE, sql))
             .map(token -> token.image)
             .toArray(String[]::new);
+    }
+
+    private static void assertInOrder(@NotNull String actual, @NotNull String... fragments) {
+        int offset = 0;
+        for (String fragment : fragments) {
+            int index = actual.indexOf(fragment, offset);
+            Assertions.assertTrue(index >= 0, "Expected " + fragment + " after offset " + offset + " in " + actual);
+            offset = index + fragment.length();
+        }
     }
 }
