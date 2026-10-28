@@ -2,6 +2,11 @@
 <?eclipse version="3.2"?>
 <plugin>
 
+    <extension point="org.jkiss.dbeaver.service">
+        <service name="org.jkiss.dbeaver.ext.h2.util.H2InitConfirmation"
+                 class="org.jkiss.dbeaver.ext.h2.ui.H2InitConfirmationImpl"/>
+    </extension>
+
     <extension point="org.eclipse.ui.preferencePages">
         <page category="org.jkiss.dbeaver.preferences.drivers"
               id="org.jkiss.dbeaver.preferences.h2.general"

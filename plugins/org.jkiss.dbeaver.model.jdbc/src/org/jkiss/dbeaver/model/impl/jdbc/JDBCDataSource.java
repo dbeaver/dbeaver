@@ -264,6 +264,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
             boolean openTaskFinished;
             try {
+                validateConnectionParameters(monitor, url, connectProps);
                 if (openTimeout <= 0) {
                     connectTask.run(monitor);
                     openTaskFinished = true;
@@ -317,6 +318,13 @@ public abstract class JDBCDataSource extends AbstractDataSource
         catch (Throwable e) {
             throw new DBCConnectException("Unexpected driver error occurred while connecting to the database", e);
         }
+    }
+
+    protected void validateConnectionParameters(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable String url,
+        @NotNull Properties connectProps
+    ) throws DBCException {
     }
 
     private void initializeDriverContext(@NotNull Driver driverInstance) {

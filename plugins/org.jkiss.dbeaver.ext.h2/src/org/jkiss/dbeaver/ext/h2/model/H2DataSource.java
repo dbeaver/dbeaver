@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.h2.util.H2InitConfirmation;
+import org.jkiss.dbeaver.ext.h2.util.H2InitScriptValidator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -27,8 +29,9 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-import java.sql.Connection;
+import java.util.Properties;
 
 /**
  * H2 datasource
@@ -39,6 +42,9 @@ public class H2DataSource extends GenericDataSource {
     public static final String H2_URL_PREFIX_SSL = "jdbc:h2:ssl:";
     public static final String H2_URL_PREFIX = "jdbc:h2:";
     public static final String H2_DB_FILE_EXTENSION = ".mv.db";
+
+    @Nullable
+    private H2InitScriptValidator initScriptValidator;
 
     public H2DataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container) throws DBException {
         super(monitor, container, new H2MetaModel(), new H2SQLDialect());
@@ -71,14 +77,29 @@ public class H2DataSource extends GenericDataSource {
         return super.getConnectionURL(connectionInfo);
     }
 
-    @NotNull
     @Override
-    protected Connection openConnection(
+    protected void validateConnectionParameters(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable JDBCExecutionContext context,
-        @NotNull String purpose
+        @Nullable String url,
+        @NotNull Properties connectProps
     ) throws DBCException {
-        return super.openConnection(monitor, context, purpose);
+        var application = DBWorkbench.getPlatform().getApplication();
+        getInitScriptValidator().validate(url, connectProps, script -> {
+            if (application.isMultiuser()) {
+                return false;
+            }
+            H2InitConfirmation confirmation = DBWorkbench.getService(H2InitConfirmation.class);
+            return confirmation != null && confirmation.confirmInitScript(getContainer(), script);
+        });
+    }
+
+    @NotNull
+    private synchronized H2InitScriptValidator getInitScriptValidator() {
+        // generic datasource opens its first connection from the superclass constructor
+        if (initScriptValidator == null) {
+            initScriptValidator = new H2InitScriptValidator();
+        }
+        return initScriptValidator;
     }
 
     @NotNull
