@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
 
 public class DuckDBDataSourceProvider extends GenericDataSourceProvider<DuckDBDataSource> {
     public DuckDBDataSourceProvider() {
@@ -40,7 +39,7 @@ public class DuckDBDataSourceProvider extends GenericDataSourceProvider<DuckDBDa
         @Nullable DBPDataSourceContainer dataSourceContainer,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBException {
-        if (CommonUtils.toBoolean(driver.getDriverParameter(DuckDBConstants.PARAM_MOTHERDUCK_TOKEN_AUTH))) {
+        if (DuckDBConstants.DRIVER_MOTHER_DUCK_ID.equals(driver.getId())) {
             // The driver lists its settings by opening a real connection, which for MotherDuck means logging in
             // without the token. Read the same DuckDB settings from an in-memory database instead.
             DBPConnectionConfiguration localInfo = new DBPConnectionConfiguration();
