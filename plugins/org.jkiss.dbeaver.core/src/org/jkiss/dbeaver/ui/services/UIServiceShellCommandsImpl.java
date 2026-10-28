@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.ui.UIServiceShellCommands;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.ExecutionConfirmationDialog;
 
 import java.util.Map;
 
@@ -66,14 +67,13 @@ public class UIServiceShellCommandsImpl implements UIServiceShellCommands {
             @NotNull
             @Override
             public Boolean runWithResult() {
-                return new ConfirmScriptDialog(
+                return new ExecutionConfirmationDialog(
                     UIUtils.getActiveWorkbenchShell(),
                     CoreMessages.shell_cmd_manager_add_command_confirmation_label,
                     CoreMessages.shell_cmd_manager_add_command_confirmation_description,
+                    CoreMessages.shell_cmd_manager_add_command_confirmation_button,
                     approvalContext,
-                    command.getCommand(),
-                    CoreMessages.shell_cmd_manager_add_command_script_label,
-                    CoreMessages.shell_cmd_manager_add_command_confirmation_button
+                    Map.of(CoreMessages.shell_cmd_manager_add_command_script_label, command.getCommand())
                 ).open() == Window.OK;
             }
         });

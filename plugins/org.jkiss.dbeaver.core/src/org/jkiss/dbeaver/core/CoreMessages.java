@@ -24,6 +24,7 @@ public class CoreMessages extends NLS {
     public static String connection_init_confirmation_title;
     public static String connection_init_confirmation_message;
     public static String connection_init_confirmation_connection;
+    public static String connection_init_confirmation_url;
     public static String connection_init_confirmation_script;
     public static String connection_init_confirmation_allow;
 

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnectionInit;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.ExecutionConfirmationDialog;
 
 import java.util.Map;
 
@@ -47,16 +48,21 @@ public class UIServiceConnectionInitImpl implements UIServiceConnectionInit {
             @Override
             public Boolean runWithResult() {
                 Shell shell = UIUtils.getActiveWorkbenchShell();
-                return shell != null && !shell.isDisposed()
-                    && new ConfirmScriptDialog(
-                        shell,
-                        CoreMessages.connection_init_confirmation_title,
-                        CoreMessages.connection_init_confirmation_message,
-                        Map.of(CoreMessages.connection_init_confirmation_connection, container.getName()),
-                        script,
-                        CoreMessages.connection_init_confirmation_script,
-                        CoreMessages.connection_init_confirmation_allow
-                    ).open() == Window.OK;
+                if (shell == null || shell.isDisposed()) {
+                    return false;
+                }
+                ExecutionConfirmationDialog dialog = new ExecutionConfirmationDialog(
+                    shell,
+                    CoreMessages.connection_init_confirmation_title,
+                    CoreMessages.connection_init_confirmation_message,
+                    CoreMessages.connection_init_confirmation_allow,
+                    Map.of(CoreMessages.connection_init_confirmation_connection, container.getName()),
+                    Map.of(CoreMessages.connection_init_confirmation_script, script)
+                );
+                if (url != null) {
+                    dialog.setAdditionalDetails(Map.of(CoreMessages.connection_init_confirmation_url, url));
+                }
+                return dialog.open() == Window.OK;
             }
         }));
         if (approved) {
