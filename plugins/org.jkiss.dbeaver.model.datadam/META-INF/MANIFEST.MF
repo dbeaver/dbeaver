@@ -22,6 +22,7 @@ Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.ai,
  com.dbeaver.rest.client;visibility:=reexport,
  com.dbeaver.datadam.share.api;visibility:=reexport,
- com.dbeaver.datadam.sso.api,
- com.dbeaver.datadam.dam.remote.api;visibility:=reexport
+  com.dbeaver.datadam.sso.api,
+  com.dbeaver.datadam.mcp.api,
+  com.dbeaver.datadam.dam.remote.api;visibility:=reexport
 Automatic-Module-Name: org.jkiss.dbeaver.model.datadam
