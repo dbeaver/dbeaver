@@ -34,7 +34,7 @@ public class PostgreDataSourceSSLNegotiationTest extends DBeaverUnitTest {
     private DBWHandlerConfiguration sslConfig;
 
     @Test
-    public void initSSLNegotiation_whenDirect_shouldPassDriverProperty() {
+    public void initSSLNegotiationWhenDirectShouldPassDriverProperty() {
         when(sslConfig.getStringProperty(PostgreConstants.PROP_SSL_NEGOTIATION))
             .thenReturn(PostgreConstants.SSL_NEGOTIATION_DIRECT);
         Map<String, String> props = new HashMap<>();
@@ -45,7 +45,7 @@ public class PostgreDataSourceSSLNegotiationTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void initSSLNegotiation_whenPostgres_shouldPassDriverProperty() {
+    public void initSSLNegotiationWhenPostgresShouldPassDriverProperty() {
         when(sslConfig.getStringProperty(PostgreConstants.PROP_SSL_NEGOTIATION))
             .thenReturn(PostgreConstants.SSL_NEGOTIATION_POSTGRES);
         Map<String, String> props = new HashMap<>();
@@ -56,7 +56,7 @@ public class PostgreDataSourceSSLNegotiationTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void initSSLNegotiation_whenEmpty_shouldKeepDriverDefault() {
+    public void initSSLNegotiationWhenEmptyShouldKeepDriverDefault() {
         when(sslConfig.getStringProperty(PostgreConstants.PROP_SSL_NEGOTIATION)).thenReturn("");
         Map<String, String> props = new HashMap<>();
 
@@ -66,7 +66,7 @@ public class PostgreDataSourceSSLNegotiationTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void initSSLNegotiation_whenNotSet_shouldKeepDriverDefault() {
+    public void initSSLNegotiationWhenNotSetShouldKeepDriverDefault() {
         Map<String, String> props = new HashMap<>();
 
         PostgreDataSource.initSSLNegotiation(props, sslConfig);
