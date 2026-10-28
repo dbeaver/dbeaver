@@ -73,7 +73,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         ((GridLayout) content.getLayout()).verticalSpacing = 8;
         DDUIUtils.create(content, DDTrackingUIMessages.sync_preference_page_description,
-            DDTrackingUIMessages.sync_preference_page_about_link, DDConfigurator.DATADAM_DOCS_URL
+            DDTrackingUIMessages.sync_preference_page_about_link, DDUIConstants.DATADAM_DOCS_URL
         );
         Composite authenticationGroup = UIUtils.createTitledComposite(
             content, DDTrackingUIMessages.sync_preference_page_authentication_group,
