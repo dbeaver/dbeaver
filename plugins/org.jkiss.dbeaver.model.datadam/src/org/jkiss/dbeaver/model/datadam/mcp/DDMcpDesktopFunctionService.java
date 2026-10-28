@@ -23,19 +23,30 @@ import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionErrorCode;
 import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionResult;
 import com.dbeaver.datadam.mcp.api.service.DDMcpFunctionService;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.datadam.mcp.function.DDMcpListDatasourcesFunction;
+import org.jkiss.dbeaver.model.datadam.mcp.function.DDMcpListSchemaNamesFunction;
 
 import java.util.List;
 
 public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
+    private final DDMcpListDatasourcesFunction listDatasources = new DDMcpListDatasourcesFunction();
+    private final DDMcpListSchemaNamesFunction listSchemaNames = new DDMcpListSchemaNamesFunction();
+
     @NotNull
     @Override
     public List<DDMcpFunctionDescriptor> getFunctions() {
-        return List.of();
+        return List.of(listDatasources.getDescriptor(), listSchemaNames.getDescriptor());
     }
 
     @NotNull
     @Override
     public DDMcpFunctionResult callFunction(@NotNull DDMcpFunctionCall call) throws DDMcpFunctionException {
+        if (listDatasources.getDescriptor().id().equals(call.functionId())) {
+            return listDatasources.call();
+        }
+        if (listSchemaNames.getDescriptor().id().equals(call.functionId())) {
+            return listSchemaNames.call(call);
+        }
         throw new DDMcpFunctionException(DDMcpFunctionErrorCode.FUNCTION_NOT_FOUND, "Function not found", null);
     }
 }

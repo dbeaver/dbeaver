@@ -19,13 +19,17 @@ package org.jkiss.dbeaver.model.datadam;
 import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamGsonRpcCodec;
 import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamRpcTransport;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannel;
+import com.dbeaver.datadam.mcp.api.service.DDMcpFunctionService;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.ToNumberPolicy;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.datadam.mcp.DDMcpDesktopFunctionService;
 
 final class DDRemoteDamDesktopRpcService implements AutoCloseable {
     private static final Log log = Log.getLog(DDRemoteDamDesktopRpcService.class);
@@ -86,15 +90,31 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
                 throw new DBException("DataDam RPC requires a ready message channel");
             }
             try {
-                endpoint = MessagingRpcEndpoint.open(
+                MessagingRpcEndpoint opened = MessagingRpcEndpoint.open(
                     topic -> DDRemoteDamRpcTransport.forChannel(channel, topic, DDRemoteDamDesktopRpcService::executeRequest),
                     new DDRemoteDamGsonRpcCodec(new Gson()));
+                try {
+                    registerDesktopServices(opened);
+                } catch (RuntimeException e) {
+                    closeEndpoint(opened);
+                    throw e;
+                }
+                endpoint = opened;
                 invalidated = false;
                 return endpoint;
             } catch (RuntimeException e) {
                 throw new DBException("Cannot open DataDam RPC endpoint", e);
             }
         }
+    }
+
+    private void registerDesktopServices(@NotNull MessagingRpcEndpoint endpoint) {
+        var codec = new DDRemoteDamGsonRpcCodec(new GsonBuilder()
+            .serializeNulls()
+            .setObjectToNumberStrategy(ToNumberPolicy.BIG_DECIMAL)
+            .create());
+        endpoint.register(DDMcpFunctionService.SERVICE_ID, DDMcpFunctionService.class,
+            new DDMcpDesktopFunctionService(), codec);
     }
 
     private static void executeRequest(@NotNull Runnable request) {
