@@ -94,9 +94,36 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
             CommonUtils.removeLeadingSlash(DDSsoConstants.TOKEN_PATH), Map.of(), parameters,
             MediaType.FORM_URLENCODED, DDSsoTokenResponse.class
         );
+        return validateTokens(tokens, scope);
+    }
+
+    @NotNull
+    public DDSsoTokenResponse refresh(@NotNull String refreshToken, @NotNull String scope) throws DBException {
+        DDSsoTokenResponse tokens = executePostRequest(CommonUtils.removeLeadingSlash(DDSsoConstants.TOKEN_PATH), Map.of(), Map.of(
+            OAuthConstants.PARAM_GRANT_TYPE, OAuthConstants.GRANT_TYPE_REFRESH_TOKEN,
+            OAuthConstants.AUTH_PROP_CLIENT_ID, DDSsoConstants.DESKTOP_CLIENT_ID,
+            OAuthConstants.RESPONSE_PARAM_REFRESH_TOKEN, refreshToken), MediaType.FORM_URLENCODED, DDSsoTokenResponse.class);
+        validateTokens(tokens, scope);
+        if (tokens.refreshToken() == null) {
+            throw new DBException("Missing rotated DataDam refresh token. Sign in again");
+        }
+        return tokens;
+    }
+
+    public void revoke(@NotNull String refreshToken) throws DBException {
+        executePostRequest(CommonUtils.removeLeadingSlash(DDSsoConstants.REVOKE_PATH), Map.of(), Map.of(
+            OAuthConstants.AUTH_PROP_CLIENT_ID, DDSsoConstants.DESKTOP_CLIENT_ID,
+            DDSsoConstants.PARAM_TOKEN, refreshToken), MediaType.FORM_URLENCODED, byte[].class);
+    }
+
+    @NotNull
+    private static DDSsoTokenResponse validateTokens(@Nullable DDSsoTokenResponse tokens, @NotNull String scope) throws DBException {
         if (tokens == null || !DDSsoConstants.TOKEN_TYPE_BEARER.equals(tokens.tokenType()) || tokens.accessToken() == null
             || tokens.accessToken().isBlank() || tokens.expiresIn() <= 0) {
             throw new DBException("Invalid desktop SSO token response");
+        }
+        if (tokens.refreshToken() != null && !DDSsoConstants.BASE64URL_256_PATTERN.matcher(tokens.refreshToken()).matches()) {
+            throw new DBException("Invalid desktop SSO refresh token response");
         }
         try {
             if (!DDSsoScopes.parse(tokens.scope()).equals(DDSsoScopes.parse(scope))) {
@@ -119,7 +146,8 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
         if (e instanceof JsonParseException) {
             throw new DBException("Invalid desktop SSO response");
         }
-        super.handleRequestException(message, e);
+        // Transport errors can include response data. A failed rotation is never retried automatically.
+        throw new DBException("Desktop SSO request failed");
     }
 
     private void requireSecureServer(@NotNull URI url) throws DBException {

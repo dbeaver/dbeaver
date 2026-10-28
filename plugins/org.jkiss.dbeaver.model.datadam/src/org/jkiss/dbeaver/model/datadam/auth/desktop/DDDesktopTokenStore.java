@@ -42,7 +42,7 @@ class DDDesktopTokenStore {
         try {
             return JSONUtils.GSON.fromJson(value, DDDesktopUserToken.class);
         } catch (RuntimeException e) {
-            throw new DBException("Invalid saved DataDam desktop token", e);
+            throw new DBException("Invalid saved DataDam desktop token");
         }
     }
 
