@@ -473,6 +473,7 @@ public interface SQLDialect {
      * List of possible single-line comment prefixes
      * @return comment prefixes or null if single line comments are nto supported
      */
+    @Nullable
     String[] getSingleLineComments();
 
     /**

@@ -330,6 +330,7 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
         return EXECUTABLE_COMMENT_PREFIXES;
     }
 
+    @NotNull
     @Override
     public String getTestSQL() {
         return "SELECT 1";

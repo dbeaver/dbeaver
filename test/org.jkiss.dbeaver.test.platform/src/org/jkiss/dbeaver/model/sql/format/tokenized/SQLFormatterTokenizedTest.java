@@ -52,7 +52,8 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
     };
     private final String lineBreak = System.lineSeparator();
 
-    private String format(String sql) {
+    @NotNull
+    private String format(@NotNull String sql) {
         return formatter.format(sql, configuration);
     }
 
@@ -142,7 +143,8 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
     @Test
     public void shouldNotInsertDelimiterAfterCommentFollowedByEmptyLine() {
         //given
-        String expectedString = "-- test" + lineBreak + lineBreak + "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tmytable;";
+        String expectedString = "-- test" + lineBreak + lineBreak +
+            "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tmytable;";
         String inputString = "-- test" + lineBreak + lineBreak + "SELECT * FROM mytable;";
 
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
@@ -170,7 +172,8 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
     @Test
     public void shouldNotInsertDelimiterAfterBlockCommentFollowedByEmptyLine() {
         //given
-        String expectedString = "/* test */" + lineBreak + lineBreak + "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tmytable;";
+        String expectedString = "/* test */" + lineBreak + lineBreak +
+            "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tmytable;";
         String inputString = "/* test */" + lineBreak + lineBreak + "SELECT * FROM mytable;";
 
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
@@ -199,7 +202,8 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
     @Test
     public void shouldNotInsertDelimiterAfterCommentFollowingDelimiter() {
         //given
-        String expectedString = "SELECT" + lineBreak + "\t1;" + lineBreak + "-- test" + lineBreak + lineBreak + "SELECT" + lineBreak + "\t2";
+        String expectedString = "SELECT" + lineBreak + "\t1;" + lineBreak + "-- test" + lineBreak + lineBreak +
+            "SELECT" + lineBreak + "\t2";
         String inputString = "SELECT 1;" + lineBreak + "-- test" + lineBreak + lineBreak + "SELECT 2";
 
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
@@ -345,6 +349,21 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
 
         //then
         Assertions.assertFalse(formattedString.contains("go;"), formattedString);
+    }
+
+    @Test
+    public void shouldNotTreatIdentifierNamedLikeWordDelimiterAsDelimiter() {
+        //given
+        String inputString = "SELECT 1 AS GO /* note */" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(new String[] { ";", "GO" });
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains("*/;"), formattedString);
     }
 
     @Test
