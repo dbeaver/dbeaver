@@ -945,13 +945,36 @@ public abstract class JDBCDataSource extends AbstractDataSource
         if (connection == null) {
             return false;
         }
+        if (isClosedQuietly(connection)) {
+            // Already closed by scheduleCanceledExecutionAbort: nothing left to cancel on it
+            return false;
+        }
         scheduleCanceledExecutionAbort(monitor, block, context);
-        return cancelCurrentExecution(connection, connectionThread);
+        try {
+            return cancelCurrentExecution(connection, connectionThread);
+        } catch (DBException e) {
+            if (isClosedQuietly(connection)) {
+                // The abort closed the connection while the driver was canceling: the operation ends anyway
+                log.debug("Cancel skipped, the connection was closed meanwhile: " + e.getMessage());
+                return false;
+            }
+            throw e;
+        }
+    }
+
+    private static boolean isClosedQuietly(@NotNull Connection connection) {
+        try {
+            return connection.isClosed();
+        } catch (SQLException e) {
+            log.debug("Can't check whether the connection is closed: " + e.getMessage());
+            return false;
+        }
     }
 
     /**
      * Closes the physical connection if a canceled operation still waits on the driver after
-     * {@link ModelPreferences#EXECUTE_CANCEL_ABORT_TIMEOUT}. Call it before asking the driver to cancel:
+     * {@link ModelPreferences#EXECUTE_CANCEL_CHECK_TIMEOUT} ("Close connection after timeout" in the connection
+     * settings, Errors and timeouts; 0, the default, never closes it). Call it before asking the driver to cancel:
      * the cancel request itself may block on the same dead connection.
      * A canceled statement returns as soon as the server answers. When the network is gone (VPN dropped, NAT entry
      * expired) the driver waits on a socket that never answers, and so would every next statement on this connection.
@@ -964,7 +987,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         @NotNull DBRBlockingObject block,
         @NotNull JDBCExecutionContext context
     ) {
-        long timeout = getContainer().getPreferenceStore().getLong(ModelPreferences.EXECUTE_CANCEL_ABORT_TIMEOUT);
+        int timeout = getContainer().getPreferenceStore().getInt(ModelPreferences.EXECUTE_CANCEL_CHECK_TIMEOUT);
         // The connection the operation runs on now: if the context reconnects meanwhile, the new one must stay
         Connection connection = context.getConnectionOrNull();
         if (timeout <= 0 || connection == null) {

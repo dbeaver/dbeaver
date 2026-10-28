@@ -38,7 +38,7 @@ import java.util.List;
  */
 public class PostgreCanceledExecutionAbortTest extends DBeaverUnitTest {
 
-    private static final long ABORT_TIMEOUT = 200;
+    private static final int ABORT_TIMEOUT = 200;
     private static final long WAIT_TIMEOUT = 5000;
 
     @Mock
@@ -51,15 +51,16 @@ public class PostgreCanceledExecutionAbortTest extends DBeaverUnitTest {
     Connection mockConnection;
 
     private PostgreDataSource dataSource;
+    private SimplePreferenceStore preferenceStore;
 
     @BeforeEach
     public void setUp() throws Exception {
-        SimplePreferenceStore preferenceStore = new SimplePreferenceStore() {
+        preferenceStore = new SimplePreferenceStore() {
             @Override
             public void save() {
             }
         };
-        preferenceStore.setValue(ModelPreferences.EXECUTE_CANCEL_ABORT_TIMEOUT, ABORT_TIMEOUT);
+        preferenceStore.setValue(ModelPreferences.EXECUTE_CANCEL_CHECK_TIMEOUT, ABORT_TIMEOUT);
         Mockito.lenient().when(mockDataSourceContainer.getDriver())
             .thenReturn(DBWorkbench.getPlatform().getDataSourceProviderRegistry().findDriver("postgresql"));
         Mockito.lenient().when(mockDataSourceContainer.getPreferenceStore()).thenReturn(preferenceStore);
@@ -91,6 +92,17 @@ public class PostgreCanceledExecutionAbortTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void keepsConnectionWhenTimeoutIsZero() throws Exception {
+        preferenceStore.setValue(ModelPreferences.EXECUTE_CANCEL_CHECK_TIMEOUT, 0);
+        operationStillRunning(true);
+        Mockito.lenient().when(mockContext.isAutoCommit()).thenReturn(true);
+
+        dataSource.scheduleCanceledExecutionAbort(monitor, mockBlock, mockContext);
+
+        Mockito.verify(mockConnection, Mockito.after(ABORT_TIMEOUT * 5).never()).abort(Mockito.any());
+    }
+
+    @Test
     public void keepsConnectionWithOpenTransaction() throws Exception {
         operationStillRunning(true);
         Mockito.when(mockContext.isAutoCommit()).thenReturn(false);
@@ -102,6 +114,6 @@ public class PostgreCanceledExecutionAbortTest extends DBeaverUnitTest {
 
     private void operationStillRunning(boolean running) {
         List<DBRBlockingObject> blocks = running ? List.of(mockBlock) : List.of();
-        Mockito.when(monitor.getActiveBlocks()).thenReturn(blocks);
+        Mockito.lenient().when(monitor.getActiveBlocks()).thenReturn(blocks);
     }
 }
