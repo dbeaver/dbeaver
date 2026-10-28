@@ -317,6 +317,18 @@ public class SQLBackgroundParsingJob {
     };
 
     private volatile boolean isRunning = false;
+    /**
+     * The promise the running session took the queue under, null when no session took it. The session completes
+     * this promise and not the current one: work enqueued after the session took the queue is waited for on a new
+     * promise, completed by the next session (see resetLastParsingFinishTime)
+     */
+    @Nullable
+    private CompletableFuture<Long> runningSessionPromise = null;
+    /**
+     * The region the running session took from the queue, null when no session took it
+     */
+    @Nullable
+    private Interval runningWorkRegion = null;
     private volatile int knownRegionStart = 0;
     private volatile int knownRegionEnd = 0;
 
@@ -364,8 +376,7 @@ public class SQLBackgroundParsingJob {
         synchronized (this.syncRoot) {
             this.cancel();
             // No session processes the queued work after this point: a completion request waiting for it ends with
-            // an empty context instead of waiting until it is canceled (the queue is cleared so that a session
-            // finishing meanwhile does not replace the completed promise, see signalAccomplished)
+            // an empty context instead of waiting until it is canceled
             this.queuedForReparse.clear();
             this.lastParsingFinishStamp.complete(System.currentTimeMillis());
             TextViewer textViewer = this.editor.getTextViewer();
@@ -414,6 +425,14 @@ public class SQLBackgroundParsingJob {
                         scriptItem = this.context.findScriptItem(requestOffset - 1);
                         if (scriptItem != null) { // TODO consider statements separation which is ignored for now
                             if (scriptItem.item.isDirty()) {
+                                if (!this.isReparsePending(scriptItem)) {
+                                    // no queued or running work covers the item, so no session is going to refresh it
+                                    // (its analysis failed or was canceled): don't wait for an unrelated parse
+                                    if (DEBUG) {
+                                        log.debug("dirty item with no pending reparse");
+                                    }
+                                    return SQLQueryCompletionContext.prepareEmpty(0, completionRequestPosition.getOffset());
+                                }
                                 // awaiting reparse, so proceed to release lock and wait for the job to finish, then retry
                                 if (DEBUG) {
                                     log.debug("awaiting reparse");
@@ -549,10 +568,32 @@ public class SQLBackgroundParsingJob {
 
     private void resetLastParsingFinishTime() {
         synchronized (this.syncRoot) {
-            if (this.lastParsingFinishStamp.isDone()) {
+            if (this.lastParsingFinishStamp.isDone() || this.lastParsingFinishStamp == this.runningSessionPromise) {
+                // Either no session is going to complete the current promise, or the running session took the queue
+                // under it, so it does not cover the work enqueued now: the next session completes the new promise
                 this.lastParsingFinishStamp = new CompletableFuture<>();
             }
         }
+    }
+
+    /**
+     * Whether queued or running work covers the script item, so that a session is going to refresh it
+     */
+    private boolean isReparsePending(@NotNull SQLScriptItemAtOffset scriptItem) {
+        int itemStart = scriptItem.offset;
+        int itemEnd = saturatedSum(scriptItem.offset, scriptItem.item.length());
+        if (this.runningWorkRegion != null && this.runningWorkRegion.a <= itemEnd && this.runningWorkRegion.b >= itemStart) {
+            return true;
+        }
+        NodesIterator<QueuedRegionInfo> it = this.queuedForReparse.nodesIteratorAt(itemStart);
+        if (it.getCurrValue() != null) {
+            return true; // a queued region starts at the item
+        }
+        if (it.prev() && it.getCurrValue() != null && saturatedSum(it.getCurrOffset(), it.getCurrValue().length) >= itemStart) {
+            return true; // a queued region starting before the item reaches it
+        }
+        it = this.queuedForReparse.nodesIteratorAt(itemStart);
+        return it.next() && it.getCurrValue() != null && it.getCurrOffset() <= itemEnd; // a queued region starts inside the item
     }
 
     private void ensureVisibleRangeIsParsed() {
@@ -638,7 +679,7 @@ public class SQLBackgroundParsingJob {
     private void doWork(DBRProgressMonitor monitor) throws BadLocationException {
         TextViewer viewer = this.editor.getTextViewer();
         if (viewer == null || this.editor.getRuleManager() == null) {
-            this.signalAccomplished(false);
+            this.signalAccomplished();
             return;
         }
         Interval actualFragment = UIUtils.syncExec(new RunnableWithResult<>() {
@@ -669,12 +710,11 @@ public class SQLBackgroundParsingJob {
         });
 
         if (actualFragment == null) {
-            this.signalAccomplished(false);
+            this.signalAccomplished();
             return;
         }
         int workOffset;
         int workLength;
-        boolean queueTaken = false;
         try {
             synchronized (this.syncRoot) {
                 this.isRunning = true;
@@ -731,20 +771,21 @@ public class SQLBackgroundParsingJob {
                 }
 
                 this.queuedForReparse.clear();
-                queueTaken = true;
+                this.runningSessionPromise = this.lastParsingFinishStamp;
+                this.runningWorkRegion = new Interval(workOffset, saturatedSum(workOffset, workLength));
                 if (DEBUG) {
                     log.debug("doWork: queuedForReparse count is " + queuedForReparse.size());
                 }
             }
         } catch (Throwable ex) {
             log.error(ex);
-            this.signalAccomplished(queueTaken);
+            this.signalAccomplished();
             return;
         }
 
         try {
             if (workLength == 0) {
-                this.signalAccomplished(queueTaken);
+                this.signalAccomplished();
                 return;
             }
 
@@ -806,6 +847,10 @@ public class SQLBackgroundParsingJob {
                 }
                 workOffset = elements.get(0).getOffset();
                 workLength = lastElement.getOffset() + lastElement.getLength() - workOffset;
+                synchronized (this.syncRoot) {
+                    // The region grew to whole statements: a completion request on a dirty item inside it waits
+                    this.runningWorkRegion = new Interval(workOffset, saturatedSum(workOffset, workLength));
+                }
                 if (DEBUG) {
                     log.debug("firstElement@" + elements.get(0).getOffset() + ":" + elements.get(0).getText());
                     log.debug(
@@ -935,23 +980,20 @@ public class SQLBackgroundParsingJob {
     }
 
     /**
-     * Completes the promise of the current parse session.
-     *
-     * @param queueTaken whether doWork already took the queued work. If false, the promise is left completed, so that
-     *                   a completion request ends with an empty context rather than waiting for work this session
-     *                   never took.
+     * Completes the promise of the current parse session: the one it took the queue under, so that a completion request
+     * waiting for work enqueued after that keeps waiting for the next session. A session which exits before taking the
+     * queue completes the current promise instead: a request waiting on it ends with an empty context rather than
+     * waiting for work this session never took.
      */
-    private void signalAccomplished(boolean queueTaken) {
+    private void signalAccomplished() {
         synchronized (this.syncRoot) {
             this.isRunning = false;
-            this.lastParsingFinishStamp.complete(System.currentTimeMillis());
-            if (queueTaken && this.queuedForReparse.size() > 0) {
-                // There is work this session did not analyze: the work queued meanwhile, waiting for the session
-                // scheduled on it, so the completed promise is already outdated. Replace it now, as
-                // resetLastParsingFinishTime could not while the promise was pending. Otherwise a completion request
-                // waiting for that work would see a finish stamp older than the request and end with an empty context.
-                this.resetLastParsingFinishTime();
-            }
+            CompletableFuture<Long> sessionPromise = this.runningSessionPromise != null
+                ? this.runningSessionPromise
+                : this.lastParsingFinishStamp;
+            this.runningSessionPromise = null;
+            this.runningWorkRegion = null;
+            sessionPromise.complete(System.currentTimeMillis());
         }
     }
 
@@ -962,7 +1004,7 @@ public class SQLBackgroundParsingJob {
             if (DEBUG) {
                 log.debug("known is " + knownRegionStart + "-" + knownRegionEnd);
             }
-            this.signalAccomplished(true);
+            this.signalAccomplished();
         }
     }
 
