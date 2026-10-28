@@ -25,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.security.DBSecurityProviders;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
 import org.junit.jupiter.api.io.TempDir;
@@ -36,7 +37,7 @@ import java.util.Map;
 class MacOSSecurePreferencesTest {
     @Test
     @EnabledOnOs(OS.MAC)
-    void newStorageUsesKeychain(@NotNull @TempDir Path directory) throws Exception {
+    void providerIsRegistered() throws Exception {
         Assertions.assertEquals(DBSecurityProviders.MACOS_KEYCHAIN.toLowerCase(Locale.ROOT),
             PasswordProviderSelector.getInstance().findStorageModule(DBSecurityProviders.MACOS_KEYCHAIN).getID());
         var provider = InternalExchangeUtils.passwordProvidersFind().stream()
@@ -44,6 +45,13 @@ class MacOSSecurePreferencesTest {
             .findFirst().orElseThrow();
         Assertions.assertEquals("macOS Keychain", provider.getName());
         Assertions.assertTrue(provider.getDescription().contains("macOS Keychain"));
+    }
+
+    // Real Keychain access may require interactive authorization; never run it in headless CI by default.
+    @Test
+    @EnabledOnOs(OS.MAC)
+    @EnabledIfEnvironmentVariable(named = "DBEAVER_TEST_MACOS_KEYCHAIN", matches = "true")
+    void newStorageUsesKeychain(@NotNull @TempDir Path directory) throws Exception {
         ISecurePreferences preferences = SecurePreferencesFactory.open(
             directory.resolve("secure_storage").toUri().toURL(),
             Map.of(IProviderHints.REQUIRED_MODULE_ID, DBSecurityProviders.MACOS_KEYCHAIN)
