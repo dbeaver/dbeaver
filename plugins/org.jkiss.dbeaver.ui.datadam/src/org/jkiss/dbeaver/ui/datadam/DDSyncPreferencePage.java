@@ -18,10 +18,15 @@ package org.jkiss.dbeaver.ui.datadam;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
@@ -47,11 +52,10 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private final DDDesktopTrackingService tracker = DDDesktopTrackingService.getInstance();
     private AbstractJob userViewJob;
 
+    private Composite content;
     private Text userText;
-    private Composite userRow;
-    private Button loginButton;
-    private Button reloginButton;
-    private Button logoutButton;
+    private Button accountActionButton;
+    private Button refreshTokenButton;
 
     public DDSyncPreferencePage() {
         noDefaultAndApplyButton();
@@ -65,36 +69,40 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
-        Composite group = UIUtils.createTitledComposite(
-            composite,
-            DDTrackingUIMessages.sync_preference_page_account_group,
-            2,
-            GridData.FILL_HORIZONTAL,
-            SWT.DEFAULT);
-        userRow = UIUtils.createComposite(group, 2);
-        GridData userRowData = new GridData(GridData.FILL_HORIZONTAL);
-        userRowData.horizontalSpan = 2;
-        userRow.setLayoutData(userRowData);
-        userText = UIUtils.createLabelText(
-            userRow, DDTrackingUIMessages.sync_preference_page_user_label, "", SWT.READ_ONLY, idFieldLayout());
-
-        Composite buttons = UIUtils.createComposite(group, 3);
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.horizontalSpan = 2;
-        buttons.setLayoutData(gd);
-        loginButton = UIUtils.createPushButton(
-            buttons, DDTrackingUIMessages.sync_preference_page_desktop_sign_in, null,
+        content = UIUtils.createPlaceholder(parent, 1);
+        content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        ((GridLayout) content.getLayout()).verticalSpacing = 8;
+        DDUIUtils.create(content, DDTrackingUIMessages.sync_preference_page_description,
+            DDTrackingUIMessages.sync_preference_page_about_link, DDConfigurator.DATADAM_DOCS_URL
+        );
+        Composite authenticationGroup = UIUtils.createTitledComposite(
+            content, DDTrackingUIMessages.sync_preference_page_authentication_group,
+            2, GridData.FILL_HORIZONTAL, SWT.DEFAULT
+        );
+        ((GridData) authenticationGroup.getParent().getLayoutData()).verticalIndent = 16;
+        userText = new Text(authenticationGroup, SWT.READ_ONLY);
+        UIUtils.fixReadonlyTextBackground(userText);
+        GridData statusLayout = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
+        statusLayout.horizontalSpan = 2;
+        userText.setLayoutData(statusLayout);
+        accountActionButton = UIUtils.createPushButton(
+            authenticationGroup, DDTrackingUIMessages.sync_preference_page_desktop_sign_in, null,
+            SelectionListener.widgetSelectedAdapter(e -> {
+                DDDesktopAccessService.Status status = accessService.getStatus();
+                if (status == DDDesktopAccessService.Status.SIGNED_IN || status == DDDesktopAccessService.Status.EXPIRED) {
+                    logOut();
+                } else {
+                    logIn();
+                }
+            })
+        );
+        refreshTokenButton = UIUtils.createPushButton(
+            authenticationGroup, DDTrackingUIMessages.sync_preference_page_refresh_token, null,
             SelectionListener.widgetSelectedAdapter(e -> logIn()));
-        reloginButton = UIUtils.createPushButton(
-            buttons, DDTrackingUIMessages.sync_preference_page_desktop_sign_in_again, null,
-            SelectionListener.widgetSelectedAdapter(e -> logIn()));
-        logoutButton = UIUtils.createPushButton(
-            buttons, DDTrackingUIMessages.sync_preference_page_desktop_sign_out, null,
-            SelectionListener.widgetSelectedAdapter(e -> logOut()));
+        refreshTokenButton.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
 
         refresh();
-        return composite;
+        return content;
     }
 
     @Override
@@ -124,13 +132,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     @FunctionalInterface
     private interface AccessOperation {
         void run(@NotNull DBRProgressMonitor monitor) throws DBException, InterruptedException;
-    }
-
-    @NotNull
-    private static GridData idFieldLayout() {
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.widthHint = UIUtils.getFontHeight(Display.getCurrent().getSystemFont()) * 22;
-        return gd;
     }
 
     private void logIn() {
@@ -169,15 +170,20 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private void refresh() {
         DDDesktopAccessService.Status status = accessService.getStatus();
         boolean signedIn = status == DDDesktopAccessService.Status.SIGNED_IN;
-        boolean showUser = signedIn || status == DDDesktopAccessService.Status.EXPIRED;
-        userRow.setVisible(showUser);
-        ((GridData) userRow.getLayoutData()).exclude = !showUser;
-        userText.setText(DDTrackingUIMessages.sync_preference_page_unknown);
-        loginButton.setEnabled(!signedIn);
-        reloginButton.setEnabled(signedIn || status == DDDesktopAccessService.Status.EXPIRED);
-        logoutButton.setEnabled(status != DDDesktopAccessService.Status.SIGNED_OUT);
-        userRow.getParent().getParent().layout(true, true);
-        loadLoggedUserView();
+        userText.setText(signedIn ? DDTrackingUIMessages.sync_preference_page_account_signed_in
+            : DDTrackingUIMessages.sync_preference_page_account_not_signed_in);
+        boolean canRefresh = signedIn || status == DDDesktopAccessService.Status.EXPIRED;
+        accountActionButton.setText(canRefresh
+            ? DDTrackingUIMessages.sync_preference_page_desktop_sign_out
+            : DDTrackingUIMessages.sync_preference_page_desktop_sign_in);
+        refreshTokenButton.setVisible(canRefresh);
+        ((GridData) refreshTokenButton.getLayoutData()).exclude = !canRefresh;
+        content.layout(true, true);
+        if (signedIn) {
+            loadLoggedUserView();
+        } else if (userViewJob != null) {
+            userViewJob.cancel();
+        }
     }
 
     private void loadLoggedUserView() {
@@ -193,9 +199,13 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                 }
                 var user = accessService.getLoggedUserView();
                 UIUtils.asyncExec(() -> {
-                    if (!userText.isDisposed() && userViewJob == this && !monitor.isCanceled()) {
+                    if (!userText.isDisposed() && userViewJob == this && !monitor.isCanceled()
+                        && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
                         userText.setText(user.userName() == null
-                            ? DDTrackingUIMessages.sync_preference_page_unknown : user.userName());
+                            ? DDTrackingUIMessages.sync_preference_page_account_signed_in
+                            : NLS.bind(
+                                DDTrackingUIMessages.sync_preference_page_account_signed_in_as, user.userName()));
+                        userText.getParent().layout(true, true);
                     }
                 });
                 return Status.OK_STATUS;

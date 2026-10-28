@@ -42,6 +42,8 @@ import java.util.Locale;
 import java.util.Optional;
 
 public class DDConfigurator extends AbstractAIEngineConfigurator<AIEngineDescriptor, DDAIEngineProperties> {
+    public static final String DATADAM_DOCS_URL = "https://docs.datadam.cloud/";
+
     @Override
     protected void environmentSettingsChanged() {
         super.environmentSettingsChanged();

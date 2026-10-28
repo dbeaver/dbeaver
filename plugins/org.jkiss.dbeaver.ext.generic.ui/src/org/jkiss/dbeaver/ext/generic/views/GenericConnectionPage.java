@@ -570,7 +570,6 @@ public class GenericConnectionPage extends ConnectionPageWithAuth implements IDi
                 showControlGroup(GROUP_DB, properties.contains(DBConstants.PROP_DATABASE));
                 showControlGroup(GROUP_PATH, properties.contains(DBConstants.PROP_FOLDER) || properties.contains(DBConstants.PROP_FILE));
                 showControlGroup(GROUP_CONNECTION_MODE, true);
-                urlText.setEditable(false);
                 controlGroupsByUrl = properties.stream().map(controlGroupByUrlProp::get).collect(Collectors.toSet());
             } else {
                 useCustomUrl = true;

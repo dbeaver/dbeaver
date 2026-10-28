@@ -42,12 +42,19 @@ class DDDesktopTokenStore {
         try {
             return JSONUtils.GSON.fromJson(value, DDDesktopUserToken.class);
         } catch (RuntimeException e) {
-            throw new DBException("Invalid saved DataDam desktop token");
+            // Gson failures may include the token contents in their message.
+            throw new DBException("Invalid saved DataDam desktop token (" + e.getClass().getName() + ")");
         }
     }
 
     void save(@NotNull DDDesktopUserToken token) throws DBException {
-        secretStorage.setPrivateSecretValue(SECRET_ID, JSONUtils.GSON.toJson(token));
+        String value;
+        try {
+            value = JSONUtils.GSON.toJson(token);
+        } catch (RuntimeException e) {
+            throw new DBException("Could not serialize DataDam desktop token (" + e.getClass().getName() + ")");
+        }
+        secretStorage.setPrivateSecretValue(SECRET_ID, value);
         secretStorage.flushChanges();
     }
 
