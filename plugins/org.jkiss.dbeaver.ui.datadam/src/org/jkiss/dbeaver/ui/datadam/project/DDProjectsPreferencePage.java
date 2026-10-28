@@ -54,6 +54,8 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.DDImportKeyDialog;
+import org.jkiss.dbeaver.ui.datadam.DDUIConstants;
+import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIIcons;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictDialog.Choice;
@@ -83,11 +85,13 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
+    private Composite content;
     private Composite accountRow;
     private Text accountText;
     private Button importKeysButton;
     private Button forgetKeysButton;
-    private Composite projectsSection;
+    private Label projectsDescription;
+    private Control projectsHelp;
     private AbstractJob accountViewJob;
     @Nullable
     private DDKeyBundle displayedBundle;
@@ -114,13 +118,17 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite content = UIUtils.createPlaceholder(parent, 1);
+        content = UIUtils.createPlaceholder(parent, 1);
         content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
+        projectsDescription = DDUIUtils.create(content, DDTrackingUIMessages.projects_page_description,
+            DDTrackingUIMessages.projects_page_about_link, DDUIConstants.DATADAM_DOCS_URL + "Projects");
         Composite keysGroup = UIUtils.createTitledComposite(
             content, DDTrackingUIMessages.sync_preference_page_encryption_keys_group,
             2, GridData.FILL_HORIZONTAL, SWT.DEFAULT
         );
+        GridData keysGroupLayout = (GridData) keysGroup.getParent().getLayoutData();
+        keysGroupLayout.verticalIndent = 5;
         accountRow = UIUtils.createComposite(keysGroup, 2);
         GridData accountRowData = new GridData(GridData.FILL_HORIZONTAL);
         accountRowData.horizontalSpan = 2;
@@ -137,13 +145,24 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             keyButtons, DDTrackingUIMessages.sync_preference_page_import_keys_button, null,
             SelectionListener.widgetSelectedAdapter(e -> importKeys())
         );
+        GridData importKeysLayout = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
+        importKeysLayout.horizontalIndent = 3;
+        importKeysButton.setLayoutData(importKeysLayout);
         forgetKeysButton = UIUtils.createPushButton(
             keyButtons, DDTrackingUIMessages.sync_preference_page_forget_keys_button, null,
             SelectionListener.widgetSelectedAdapter(e -> forgetKeys())
         );
+        GridData forgetKeysLayout = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
+        forgetKeysLayout.horizontalIndent = 3;
+        forgetKeysButton.setLayoutData(forgetKeysLayout);
+        projectsHelp = UIUtils.createWarningLabel(
+            keysGroup, DDTrackingUIMessages.projects_page_sign_in_help, GridData.HORIZONTAL_ALIGN_BEGINNING, 2);
+        ((GridData) projectsHelp.getLayoutData()).verticalIndent = 5;
 
-        projectsSection = UIUtils.createPlaceholder(content, 1);
-        projectsSection.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        Composite projectsSection = UIUtils.createPlaceholder(content, 1);
+        GridData projectsLayout = new GridData(SWT.FILL, SWT.FILL, true, true);
+        projectsLayout.verticalIndent = 3;
+        projectsSection.setLayoutData(projectsLayout);
         showRemote = new Button(projectsSection, SWT.CHECK);
         showRemote.setText(DDTrackingUIMessages.projects_show_remote);
         showRemote.setSelection(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_SHOW_REMOTE_PROJECTS));
@@ -306,7 +325,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         List<DDProjectView> selection = selectedRows();
         SelectionSyncAction syncAction = selectionSyncAction(selection);
         boolean download = syncAction == SelectionSyncAction.DOWNLOAD;
-        boolean available = !operationRunning && uiManager.isDDReady();
+        boolean available = !operationRunning && displayedBundle != null && uiManager.isDDReady();
         editButton.setEnabled(available && selection.size() == 1 && selection.get(0).remoteProject() != null);
         syncButton.setEnabled(available && syncAction != SelectionSyncAction.NONE);
         syncButton.setImage(DBeaverIcons.getImage(download ? UIIcon.DOWNLOAD : DDTrackingUIIcons.PROJECT_SYNC));
@@ -340,11 +359,21 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         boolean present = bundle != null;
         accountRow.setVisible(present);
         ((GridData) accountRow.getLayoutData()).exclude = !present;
-        importKeysButton.setEnabled(!present && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN);
+        boolean signedIn = accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN;
+        importKeysButton.setEnabled(!present && signedIn);
+        importKeysButton.setVisible(!present);
+        ((GridData) importKeysButton.getLayoutData()).exclude = present;
         forgetKeysButton.setEnabled(present);
-        projectsSection.setVisible(present);
-        ((GridData) projectsSection.getLayoutData()).exclude = !present;
-        projectsSection.getParent().layout(true, true);
+        forgetKeysButton.setVisible(present);
+        ((GridData) forgetKeysButton.getLayoutData()).exclude = !present;
+        boolean ready = signedIn && present;
+        projectsDescription.setText(ready
+            ? DDTrackingUIMessages.projects_page_sync_help : DDTrackingUIMessages.projects_page_description);
+        projectsHelp.setVisible(!signedIn);
+        ((GridData) projectsHelp.getLayoutData()).exclude = signedIn;
+        showRemote.setEnabled(present);
+        viewer.getTable().setEnabled(present);
+        content.layout(true, true);
 
         if (!Objects.equals(displayedBundle, bundle)) {
             displayedBundle = bundle;
