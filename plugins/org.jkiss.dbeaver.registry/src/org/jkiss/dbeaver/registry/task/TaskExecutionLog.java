@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.registry.task;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.runtime.DBRRunnable;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.task.DBTTask;
@@ -85,6 +87,22 @@ public final class TaskExecutionLog implements DBRRunnableContext, AutoCloseable
     @NotNull
     public PrintStream getLogStream() {
         return logStream;
+    }
+
+    /** Captures failures propagated outside a progress runnable, after its log writer has been restored. */
+    public void execute(@NotNull DBRRunnable operation) throws DBException {
+        try {
+            operation.run();
+        } catch (Throwable e) {
+            PrintStream oldLogWriter = Log.getLogWriter();
+            Log.setLogWriter(logStream);
+            try {
+                log.error("Task execution failed", e);
+            } finally {
+                Log.setLogWriter(oldLogWriter);
+            }
+            throw e;
+        }
     }
 
     @Override

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRRunnable;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -668,14 +669,17 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
             DTTaskHandlerTransfer handlerTransfer = new DTTaskHandlerTransfer();
             boolean captureLogs = DTActivator.getDefault().getPreferences().getBoolean(DTConstants.PREF_CAPTURE_UNSAVED_TASK_LOGS);
             try (TaskExecutionLog executionLog = captureLogs ? TaskExecutionLog.open(getTask(), this) : null) {
-                executeTaskWithHistory(executionLog == null ? null : executionLog.getRun(), () -> handlerTransfer.executeWithSettings(
+                DBRRunnable operation = () -> handlerTransfer.executeWithSettings(
                     executionLog == null ? this : executionLog,
                     getCurrentTask(),
                     Locale.getDefault(),
                     log,
                     executionLog == null ? null : executionLog.getLogStream(),
                     this,
-                    settings));
+                    settings);
+                executeTaskWithHistory(
+                    executionLog == null ? null : executionLog.getRun(),
+                    executionLog == null ? operation : () -> executionLog.execute(operation));
             }
         }
 

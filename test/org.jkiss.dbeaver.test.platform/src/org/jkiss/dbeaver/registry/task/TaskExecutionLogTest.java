@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.registry.task;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -99,6 +100,39 @@ public class TaskExecutionLogTest extends DBeaverUnitTest {
         } finally {
             Log.setLogWriter(original);
         }
+    }
+
+    @Test
+    public void capturesTaskFailureAfterProgressRunnableReturns() throws Exception {
+        DBException failure = new DBException("Unable to initialize transfer", new IllegalStateException("Connection rejected"));
+        PrintStream original = Log.getLogWriter();
+        ByteArrayOutputStream previousOutput = new ByteArrayOutputStream();
+        Path logPath;
+        try (PrintStream previous = new PrintStream(previousOutput);
+             TaskExecutionLog executionLog = TaskExecutionLog.open(task, context)) {
+            Assertions.assertNotNull(executionLog);
+            logPath = task.getRunLog(executionLog.getRun());
+            Log.setLogWriter(previous);
+            DBException thrown = Assertions.assertThrows(DBException.class, () -> executionLog.execute(() -> {
+                try {
+                    executionLog.run(false, true, monitor -> monitor.beginTask("Initialize pipes", 1));
+                } catch (InvocationTargetException | InterruptedException e) {
+                    throw new AssertionError(e);
+                }
+                Assertions.assertSame(previous, Log.getLogWriter());
+                // The transfer handler propagates initialization errors after the progress runnable returns.
+                throw failure;
+            }));
+            Assertions.assertSame(failure, thrown);
+            Assertions.assertSame(previous, Log.getLogWriter());
+        } finally {
+            Log.setLogWriter(original);
+        }
+        String capturedLog = Files.readString(logPath);
+        Assertions.assertTrue(capturedLog.contains("Unable to initialize transfer"));
+        Assertions.assertTrue(capturedLog.contains("Connection rejected"));
+        Assertions.assertTrue(capturedLog.indexOf("Unable to initialize transfer") < capturedLog.indexOf("finished at"));
+        Assertions.assertFalse(previousOutput.toString().contains("Unable to initialize transfer"));
     }
 
     @Test
