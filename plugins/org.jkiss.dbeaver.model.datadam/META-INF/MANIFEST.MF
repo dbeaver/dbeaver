@@ -9,6 +9,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 DBeaver-Experimental: true
 Export-Package: org.jkiss.dbeaver.model.datadam,
+ org.jkiss.dbeaver.model.datadam.ai,
  org.jkiss.dbeaver.model.datadam.auth,
  org.jkiss.dbeaver.model.datadam.auth.desktop,
  org.jkiss.dbeaver.model.datadam.sync,
