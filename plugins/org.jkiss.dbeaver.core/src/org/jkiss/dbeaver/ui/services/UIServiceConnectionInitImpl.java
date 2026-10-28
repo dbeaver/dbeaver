@@ -25,9 +25,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.preferences.ConfirmedConnectionInitScriptsStore;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnectionInit;
@@ -36,11 +38,17 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 public class UIServiceConnectionInitImpl implements UIServiceConnectionInit {
     @Override
-    public boolean confirmInitScript(@NotNull DBPDataSourceContainer container, @NotNull String script) {
+    public boolean confirmInitScript(@NotNull DBPDataSourceContainer container, @Nullable String url, @NotNull String script) {
         if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
             return false;
         }
-        return Boolean.TRUE.equals(UIUtils.syncExec(new RunnableWithResult<Boolean>() {
+        ConfirmedConnectionInitScriptsStore approvals = new ConfirmedConnectionInitScriptsStore(
+            DBWorkbench.getPlatform().getGlobalConfigurationFile(ConfirmedConnectionInitScriptsStore.FILE_NAME)
+        );
+        if (approvals.contains(container, url, script)) {
+            return true;
+        }
+        boolean approved = Boolean.TRUE.equals(UIUtils.syncExec(new RunnableWithResult<Boolean>() {
             @NotNull
             @Override
             public Boolean runWithResult() {
@@ -49,6 +57,10 @@ public class UIServiceConnectionInitImpl implements UIServiceConnectionInit {
                     && new InitScriptDialog(shell, container.getName(), script).open() == Window.OK;
             }
         }));
+        if (approved) {
+            approvals.add(container, url, script);
+        }
+        return approved;
     }
 
     private static class InitScriptDialog extends BaseDialog {

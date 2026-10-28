@@ -89,7 +89,7 @@ public class H2DataSource extends GenericDataSource {
                 return false;
             }
             UIServiceConnectionInit confirmation = DBWorkbench.getService(UIServiceConnectionInit.class);
-            return confirmation != null && confirmation.confirmInitScript(getContainer(), script);
+            return confirmation != null && confirmation.confirmInitScript(getContainer(), url, script);
         });
     }
 

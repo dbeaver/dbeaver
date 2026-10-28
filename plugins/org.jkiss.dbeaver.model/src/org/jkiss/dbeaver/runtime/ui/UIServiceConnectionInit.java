@@ -17,9 +17,10 @@
 package org.jkiss.dbeaver.runtime.ui;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 /** Approval for driver initialization SQL executed before a JDBC connection is available. */
 public interface UIServiceConnectionInit {
-    boolean confirmInitScript(@NotNull DBPDataSourceContainer container, @NotNull String script);
+    boolean confirmInitScript(@NotNull DBPDataSourceContainer container, @Nullable String url, @NotNull String script);
 }

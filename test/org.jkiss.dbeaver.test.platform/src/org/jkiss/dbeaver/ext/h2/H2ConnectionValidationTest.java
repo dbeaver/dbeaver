@@ -91,13 +91,13 @@ public class H2ConnectionValidationTest {
         Assertions.assertThrows(DBCException.class, () ->
             dataSource.validateConnectionParameters(monitor, "jdbc:h2:mem:test;INIT=CALL 1", new Properties()));
 
-        Mockito.verify(confirmation).confirmInitScript(container, "CALL 1");
+        Mockito.verify(confirmation).confirmInitScript(container, "jdbc:h2:mem:test;INIT=CALL 1", "CALL 1");
     }
 
     @Test
     public void rejectsInitInMultiuserApplicationEvenWithApprovingService() {
         Mockito.when(workbench.getPlatform().getApplication().isMultiuser()).thenReturn(true);
-        Mockito.when(confirmation.confirmInitScript(Mockito.any(), Mockito.anyString())).thenReturn(true);
+        Mockito.when(confirmation.confirmInitScript(Mockito.any(), Mockito.anyString(), Mockito.anyString())).thenReturn(true);
 
         Assertions.assertThrows(DBCException.class, () ->
             dataSource.validateConnectionParameters(monitor, "jdbc:h2:mem:test;INIT=CALL 1", new Properties()));
@@ -108,7 +108,7 @@ public class H2ConnectionValidationTest {
     @Test
     public void acceptsInitFromHeadlessServiceAndAsksAgainWhenScriptChanges() throws DBCException {
         Mockito.when(workbench.getPlatform().getApplication().isHeadlessMode()).thenReturn(true);
-        Mockito.when(confirmation.confirmInitScript(Mockito.any(), Mockito.anyString())).thenReturn(true);
+        Mockito.when(confirmation.confirmInitScript(Mockito.any(), Mockito.anyString(), Mockito.anyString())).thenReturn(true);
         Properties properties = new Properties();
         properties.setProperty("INIT", "CALL 1");
 
@@ -117,8 +117,8 @@ public class H2ConnectionValidationTest {
         properties.setProperty("INIT", "CALL 2");
         dataSource.validateConnectionParameters(monitor, "jdbc:h2:mem:test", properties);
 
-        Mockito.verify(confirmation).confirmInitScript(container, "CALL 1");
-        Mockito.verify(confirmation).confirmInitScript(container, "CALL 2");
+        Mockito.verify(confirmation).confirmInitScript(container, "jdbc:h2:mem:test", "CALL 1");
+        Mockito.verify(confirmation).confirmInitScript(container, "jdbc:h2:mem:test", "CALL 2");
         Mockito.verifyNoMoreInteractions(confirmation);
     }
 
