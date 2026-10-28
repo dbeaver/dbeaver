@@ -86,7 +86,10 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
     void setCurrentUserParameters(@NotNull Map<String, Object> parameters) throws DBException;
 
     /**
-     * Gets web UI settings of the current user.
+     * Gets the complete web UI settings JSON object of the current authenticated user.
+     *
+     * @return the settings, or an empty object if no settings are stored
+     * @throws DBException if the user is not authenticated or the settings cannot be read
      */
     @NotNull
     default Map<String, Object> getCurrentUserUISettings() throws DBException {
@@ -94,7 +97,13 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
     }
 
     /**
-     * Applies a JSON Merge Patch to web UI settings of the current user and returns the resulting settings.
+     * Replaces the complete web UI settings JSON object of the current authenticated user.
+     * An empty object clears the settings. Null-valued fields are preserved, including in nested objects.
+     * Fields omitted from the replacement are removed.
+     *
+     * @param settings the complete replacement settings object
+     * @return the resulting settings object
+     * @throws DBException if the user is not authenticated, the settings cannot be saved, or the operation is unsupported
      */
     @NotNull
     default Map<String, Object> updateCurrentUserUISettings(@NotNull Map<String, Object> settings) throws DBException {
