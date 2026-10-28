@@ -14,28 +14,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam;
+package org.jkiss.dbeaver.model.datadam.rpc;
 
 import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamGsonRpcCodec;
 import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamRpcTransport;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannel;
-import com.dbeaver.datadam.mcp.api.service.DDMcpFunctionService;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.ToNumberPolicy;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.datadam.mcp.DDMcpDesktopFunctionService;
 
 final class DDRemoteDamDesktopRpcService implements AutoCloseable {
     private static final Log log = Log.getLog(DDRemoteDamDesktopRpcService.class);
 
     private final Object lock = new Object();
     private final DDRemoteDamChannel channel;
+    private final DDDesktopRpcRegistrationRegistry registrations;
     @Nullable
     private MessagingRpcEndpoint endpoint;
     private boolean invalidated;
@@ -44,7 +41,15 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
     private boolean closed;
 
     DDRemoteDamDesktopRpcService(@NotNull DDRemoteDamChannel channel) {
+        this(channel, DDDesktopRpcRegistrationRegistry.getInstance());
+    }
+
+    DDRemoteDamDesktopRpcService(
+        @NotNull DDRemoteDamChannel channel,
+        @NotNull DDDesktopRpcRegistrationRegistry registrations
+    ) {
         this.channel = channel;
+        this.registrations = registrations;
     }
 
     boolean resume(boolean initial) {
@@ -109,12 +114,7 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
     }
 
     private void registerDesktopServices(@NotNull MessagingRpcEndpoint endpoint) {
-        var codec = new DDRemoteDamGsonRpcCodec(new GsonBuilder()
-            .serializeNulls()
-            .setObjectToNumberStrategy(ToNumberPolicy.BIG_DECIMAL)
-            .create());
-        endpoint.register(DDMcpFunctionService.SERVICE_ID, DDMcpFunctionService.class,
-            new DDMcpDesktopFunctionService(), codec);
+        registrations.registerAll(endpoint);
     }
 
     private static void executeRequest(@NotNull Runnable request) {

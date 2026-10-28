@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam;
+package org.jkiss.dbeaver.model.datadam.rpc;
 
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamHandshakeRequest;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannel;
@@ -23,6 +23,7 @@ import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
@@ -63,9 +64,17 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
     };
 
     public DDRemoteDamDesktopSessionService(@NotNull DDDesktopAccessService access, @NotNull DDRemoteDamDesktopChannel channel) {
+        this(access, channel, DDDesktopRpcRegistrationRegistry.getInstance());
+    }
+
+    public DDRemoteDamDesktopSessionService(
+        @NotNull DDDesktopAccessService access,
+        @NotNull DDRemoteDamDesktopChannel channel,
+        @NotNull DDDesktopRpcRegistrationRegistry registrations
+    ) {
         this.access = access;
         this.channel = channel;
-        this.rpc = new DDRemoteDamDesktopRpcService(channel);
+        this.rpc = new DDRemoteDamDesktopRpcService(channel, registrations);
     }
 
     @NotNull
@@ -80,6 +89,7 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
                 resource -> access.getStatus() == DDDesktopAccessService.Status.SIGNED_IN
                     ? access.getAccessTokenForResource(resource) : null);
             instance = new DDRemoteDamDesktopSessionService(access, channel);
+            log.debug("Created DataDam desktop session service");
         }
         return instance;
     }

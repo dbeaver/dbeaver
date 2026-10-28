@@ -24,8 +24,10 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.datadam.DDRemoteDamDesktopSessionService;
-import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.rpc.DDDesktopRpcRegistrationRegistry;
+import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.junit.jupiter.api.Assertions;
@@ -99,7 +101,8 @@ class DDDesktopAccessLifecycleTest {
         Mockito.when(channel.getStatus()).thenReturn(new DDRemoteDamChannelStatus(
             DDRemoteDamChannelState.CONNECTED, new DDRemoteDamSessionInfo("deployment", "instance", "session")));
         try (var keys = Mockito.mockStatic(DDKeyStore.class);
-             var session = new DDRemoteDamDesktopSessionService(access, channel);
+             var session = new DDRemoteDamDesktopSessionService(
+                 access, channel, Mockito.mock(DDDesktopRpcRegistrationRegistry.class));
              var jobs = new ExpiryJobs()) {
             access.signIn(Mockito.mock(DBRProgressMonitor.class));
             session.start();

@@ -2,8 +2,14 @@
 <?eclipse version="3.2"?>
 
 <plugin>
+    <extension-point id="desktopRpcService" name="Desktop DataDam RPC service"/>
+
+    <extension point="org.jkiss.dbeaver.model.datadam.desktopRpcService">
+        <service class="org.jkiss.dbeaver.model.datadam.mcp.DDMcpDesktopRpcRegistration"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.pluginService">
-        <service class="org.jkiss.dbeaver.model.datadam.DDRemoteDamDesktopSessionPluginService"/>
+        <service class="org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionPluginService"/>
     </extension>
 
     <extension point="com.dbeaver.ai.engine">
