@@ -54,7 +54,7 @@ public final class UserDBSObjectFilterUtils {
         boolean firstMatch
     ) {
         Map<String, FilterMapping> filters = readUserObjectFilters(dataSource);
-        FilterMapping filterMapping = getFilterMapping(filters, type, parentObject, firstMatch);
+        FilterMapping filterMapping = FilterMapping.resolveUser(filters, type, parentObject, firstMatch);
         return filterMapping == null ? null : filterMapping.getFilter(parentObject, firstMatch);
     }
 
@@ -71,9 +71,9 @@ public final class UserDBSObjectFilterUtils {
 
         Map<String, FilterMapping> filters = readUserObjectFilters(dataSource);
         String objectId = toObjectId(parentObject);
-        FilterMapping filterMapping = objectId == null ? null : findCustomFilterMapping(filters, type, objectId);
+        FilterMapping filterMapping = objectId == null ? null : FilterMapping.findCustomMapping(filters, type, objectId);
         if (filterMapping == null) {
-            filterMapping = findFilterMapping(filters, type);
+            filterMapping = FilterMapping.findMapping(filters, type);
         }
         String typeName = filterMapping == null ? type.getName() : filterMapping.typeName;
         setUserObjectFilter(filters, typeName, objectId, filter);
@@ -200,147 +200,6 @@ public final class UserDBSObjectFilterUtils {
     @Nullable
     private static DBPObjectSettingsProvider getSettingsProvider(@NotNull DBPDataSourceContainer dataSource) {
         return DBUtils.getAdapter(DBPObjectSettingsProvider.class, dataSource.getProject());
-    }
-
-    @Nullable
-    private static FilterMapping findCustomFilterMapping(
-        @NotNull Map<String, FilterMapping> filters,
-        @NotNull Class<?> type,
-        @NotNull String objectId
-    ) {
-        for (Class<?> interfaceType : type.getInterfaces()) {
-            FilterMapping mapping = findTypeCustomFilterMapping(filters, interfaceType, objectId);
-            if (mapping != null) {
-                return mapping;
-            }
-        }
-        for (Class<?> testType = type; testType != null; testType = testType.getSuperclass()) {
-            FilterMapping mapping = findTypeCustomFilterMapping(filters, testType, objectId);
-            if (mapping != null) {
-                return mapping;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    private static FilterMapping findTypeCustomFilterMapping(
-        @NotNull Map<String, FilterMapping> filters,
-        @NotNull Class<?> type,
-        @NotNull String objectId
-    ) {
-        FilterMapping mapping = filters.get(type.getName());
-        if (mapping != null && mapping.customFilters.containsKey(objectId)) {
-            return mapping;
-        }
-        for (Class<?> interfaceType : type.getInterfaces()) {
-            mapping = findTypeCustomFilterMapping(filters, interfaceType, objectId);
-            if (mapping != null) {
-                return mapping;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    private static FilterMapping findFilterMapping(
-        @NotNull Map<String, FilterMapping> filters,
-        @NotNull Class<?> type
-    ) {
-        for (Class<?> interfaceType : type.getInterfaces()) {
-            FilterMapping mapping = findTypeFilterMapping(filters, interfaceType);
-            if (mapping != null) {
-                return mapping;
-            }
-        }
-        for (Class<?> testType = type; testType != null; testType = testType.getSuperclass()) {
-            FilterMapping mapping = findTypeFilterMapping(filters, testType);
-            if (mapping != null) {
-                return mapping;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    private static FilterMapping findTypeFilterMapping(
-        @NotNull Map<String, FilterMapping> filters,
-        @NotNull Class<?> type
-    ) {
-        FilterMapping mapping = filters.get(type.getName());
-        if (mapping != null) {
-            return mapping;
-        }
-        for (Class<?> interfaceType : type.getInterfaces()) {
-            mapping = findTypeFilterMapping(filters, interfaceType);
-            if (mapping != null) {
-                return mapping;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    private static FilterMapping getFilterMapping(
-        @NotNull Map<String, FilterMapping> filters,
-        @NotNull Class<?> type,
-        @Nullable DBSObject parentObject,
-        boolean firstMatch
-    ) {
-        if (filters.isEmpty()) {
-            return null;
-        }
-        String objectId = toObjectId(parentObject);
-        if (objectId != null) {
-            FilterMapping mapping = findCustomFilterMapping(filters, type, objectId);
-            if (mapping != null) {
-                DBSObjectFilter filter = mapping.getFilter(parentObject, firstMatch);
-                if (filter != null && (firstMatch || filter.isEnabled())) {
-                    return mapping;
-                }
-            }
-        }
-        for (Class<?> testType : type.getInterfaces()) {
-            FilterMapping mapping = getTypeFilterMapping(filters, parentObject, firstMatch, testType);
-            if (mapping != null) {
-                return mapping;
-            }
-        }
-        for (Class<?> testType = type; testType != null; testType = testType.getSuperclass()) {
-            FilterMapping mapping = getTypeFilterMapping(filters, parentObject, firstMatch, testType);
-            if (mapping != null) {
-                return mapping;
-            }
-        }
-        return null;
-    }
-
-    @Nullable
-    private static FilterMapping getTypeFilterMapping(
-        @NotNull Map<String, FilterMapping> filters,
-        @Nullable DBSObject parentObject,
-        boolean firstMatch,
-        @NotNull Class<?> type
-    ) {
-        FilterMapping mapping = filters.get(type.getName());
-        if (mapping == null) {
-            for (Class<?> interfaceType : type.getInterfaces()) {
-                mapping = filters.get(interfaceType.getName());
-                if (mapping != null) {
-                    DBSObjectFilter filter = mapping.getFilter(parentObject, firstMatch);
-                    if (filter != null && (firstMatch || filter.isEnabled())) {
-                        return mapping;
-                    }
-                }
-            }
-        }
-        if (mapping != null) {
-            DBSObjectFilter filter = mapping.getFilter(parentObject, firstMatch);
-            if (filter != null && (firstMatch || filter.isEnabled())) {
-                return mapping;
-            }
-        }
-        return null;
     }
 
     @Nullable

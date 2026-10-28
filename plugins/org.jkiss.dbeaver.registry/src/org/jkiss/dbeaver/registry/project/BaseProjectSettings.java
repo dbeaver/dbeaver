@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPObjectSettingsProvider;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.auth.SMObjectType;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettingsUtils;
+import org.jkiss.dbeaver.registry.NavigatorObjectFilterUtils;
 
 import java.util.Collection;
 import java.util.LinkedHashMap;
@@ -103,6 +104,7 @@ public abstract class BaseProjectSettings implements DBPObjectSettingsProvider {
         }
 
         DataSourceNavigatorSettingsUtils.objectSettingUpdated(project, objectId, settingsToSet.keySet());
+        NavigatorObjectFilterUtils.objectSettingsChanged(project, objectType, objectId, settingsToSet.keySet());
     }
 
     public void deleteObjectSettingsCache(
@@ -129,6 +131,7 @@ public abstract class BaseProjectSettings implements DBPObjectSettingsProvider {
                 }
             }
         }
+        NavigatorObjectFilterUtils.objectSettingsChanged(project, objectType, objectId, changedSettingIds);
         if (changedSettingIds == null || changedSettingIds.isEmpty()) {
             return;
         }

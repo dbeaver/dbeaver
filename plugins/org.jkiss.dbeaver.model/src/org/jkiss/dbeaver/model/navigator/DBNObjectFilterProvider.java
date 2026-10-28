@@ -26,7 +26,8 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import java.util.function.Predicate;
 
 /**
- * Provides a context-specific object filter for navigator children.
+ * Provides a context-specific display filter for navigator children. This does not change the
+ * datasource's metadata caches or enforce database access permissions.
  */
 @FunctionalInterface
 public interface DBNObjectFilterProvider {
