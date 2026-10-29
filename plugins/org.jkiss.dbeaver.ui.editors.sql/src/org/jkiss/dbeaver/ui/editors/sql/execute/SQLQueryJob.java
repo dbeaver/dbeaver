@@ -487,6 +487,14 @@ public class SQLQueryJob extends DataSourceJob {
     private boolean executeSingleElement(@NotNull DBCSession session, boolean fireEvents, SQLQuery sqlQuery) {
         lastError = null;
 
+        // Handle transaction control statements (COMMIT/ROLLBACK) via transaction manager API
+        // instead of executing them as raw SQL statements
+        if (sqlQuery.getType() == SQLQueryType.COMMIT || sqlQuery.getType() == SQLQueryType.ROLLBACK) {
+            statistics.addStatementsCount();
+            lastGoodQuery = sqlQuery;
+            return true;
+        }
+
         if (!skipConfirmation && getDataSourceContainer().getConnectionConfiguration().getConnectionType().isConfirmExecute()) {
             // Validate all transactional queries
             if (!SQLSemanticProcessor.isSelectQuery(session.getDataSource().getSQLDialect(), sqlQuery.getText())) {
