@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.h2.model.H2DataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplicationWorkbench;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -37,6 +38,7 @@ import org.mockito.Mockito;
 
 import java.lang.reflect.Field;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Isolated
 public class H2ConnectionValidationTest {
@@ -46,6 +48,7 @@ public class H2ConnectionValidationTest {
     private final DBPDataSourceContainer container = Mockito.mock(DBPDataSourceContainer.class);
     private final TestDataSource dataSource = Mockito.mock(TestDataSource.class, Mockito.CALLS_REAL_METHODS);
     private final VoidProgressMonitor monitor = new VoidProgressMonitor();
+    private final DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
     private Field workbenchField;
     private Field registryField;
     private Object originalWorkbench;
@@ -62,6 +65,7 @@ public class H2ConnectionValidationTest {
         workbenchField.set(null, workbench);
         registryField.set(null, services);
         Mockito.doReturn(container).when(dataSource).getContainer();
+        Mockito.when(container.getActualConnectionConfiguration()).thenReturn(configuration);
         Mockito.when(services.getService(UIServiceConnectionInit.class)).thenReturn(confirmation);
     }
 
@@ -120,6 +124,67 @@ public class H2ConnectionValidationTest {
         Mockito.verify(confirmation).confirmInitScript(container, "jdbc:h2:mem:test", "CALL 1");
         Mockito.verify(confirmation).confirmInitScript(container, "jdbc:h2:mem:test", "CALL 2");
         Mockito.verifyNoMoreInteractions(confirmation);
+    }
+
+    @Test
+    public void rejectsBootstrapFileWriteWithoutInit() {
+        String script = "CALL FILE_WRITE(STRINGTOUTF8('marker'), '${project.path}/marker.txt')";
+        configuration.getBootstrap().getInitQueries().add(script);
+        Mockito.when(container.getVariablesResolver(true)).thenReturn(name -> "/tmp/h2-bootstrap-test");
+
+        Assertions.assertThrows(DBCException.class, () ->
+            dataSource.validateConnectionParameters(monitor, "jdbc:h2:mem:test", new Properties()));
+
+        Mockito.verify(confirmation).confirmInitScript(container, "jdbc:h2:mem:test",
+            "CALL FILE_WRITE(STRINGTOUTF8('marker'), '/tmp/h2-bootstrap-test/marker.txt')");
+    }
+
+    @Test
+    public void rejectsBootstrapWithoutServiceAndInMultiuserMode() {
+        configuration.getBootstrap().getInitQueries().add("CALL 1");
+        Mockito.when(services.getService(UIServiceConnectionInit.class)).thenReturn(null);
+        Assertions.assertThrows(DBCException.class, () ->
+            dataSource.validateConnectionParameters(monitor, "jdbc:h2:mem:test", new Properties()));
+
+        Mockito.when(services.getService(UIServiceConnectionInit.class)).thenReturn(confirmation);
+        Mockito.when(confirmation.confirmInitScript(Mockito.any(), Mockito.anyString(), Mockito.anyString())).thenReturn(true);
+        Mockito.when(workbench.getPlatform().getApplication().isMultiuser()).thenReturn(true);
+        Assertions.assertThrows(DBCException.class, () ->
+            dataSource.validateConnectionParameters(monitor, "jdbc:h2:mem:test", new Properties()));
+        Mockito.verifyNoInteractions(confirmation);
+    }
+
+    @Test
+    public void confirmsAllBootstrapQueriesAndRechecksChangedVariables() throws DBCException {
+        AtomicReference<String> value = new AtomicReference<>("1");
+        configuration.getBootstrap().getInitQueries().add("CALL ${value}");
+        configuration.getBootstrap().getInitQueries().add("CALL 2");
+        Mockito.when(container.getVariablesResolver(true)).thenReturn(name -> value.get());
+        Mockito.when(confirmation.confirmInitScript(Mockito.any(), Mockito.anyString(), Mockito.anyString())).thenReturn(true);
+
+        dataSource.validateConnectionParameters(monitor, "jdbc:h2:mem:test", new Properties());
+        dataSource.validateConnectionParameters(monitor, "jdbc:h2:mem:test", new Properties());
+        value.set("3");
+        dataSource.validateConnectionParameters(monitor, "jdbc:h2:mem:test", new Properties());
+        configuration.getBootstrap().getInitQueries().add("CALL 4");
+        dataSource.validateConnectionParameters(monitor, "jdbc:h2:mem:test", new Properties());
+
+        Mockito.verify(confirmation).confirmInitScript(container, "jdbc:h2:mem:test", "CALL 1;\nCALL 2");
+        Mockito.verify(confirmation).confirmInitScript(container, "jdbc:h2:mem:test", "CALL 3;\nCALL 2");
+        Mockito.verify(confirmation).confirmInitScript(container, "jdbc:h2:mem:test", "CALL 3;\nCALL 2;\nCALL 4");
+        Mockito.verifyNoMoreInteractions(confirmation);
+    }
+
+    @Test
+    public void checksInitAndBootstrapBeforeAcceptingConnection() {
+        configuration.getBootstrap().getInitQueries().add("CALL 2");
+        Mockito.when(confirmation.confirmInitScript(container, "jdbc:h2:mem:test;INIT=CALL 1", "CALL 1")).thenReturn(true);
+
+        Assertions.assertThrows(DBCException.class, () ->
+            dataSource.validateConnectionParameters(monitor, "jdbc:h2:mem:test;INIT=CALL 1", new Properties()));
+
+        Mockito.verify(confirmation).confirmInitScript(container, "jdbc:h2:mem:test;INIT=CALL 1", "CALL 1");
+        Mockito.verify(confirmation).confirmInitScript(container, "jdbc:h2:mem:test;INIT=CALL 1", "CALL 2");
     }
 
     public abstract static class TestDataSource extends H2DataSource {

@@ -30,8 +30,11 @@ import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnectionInit;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Properties;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 /**
  * H2 datasource
@@ -84,13 +87,20 @@ public class H2DataSource extends GenericDataSource {
         @NotNull Properties connectProps
     ) throws DBCException {
         var application = DBWorkbench.getPlatform().getApplication();
-        getInitScriptValidator().validate(url, connectProps, script -> {
+        Predicate<String> confirmation = script -> {
             if (application.isMultiuser()) {
                 return false;
             }
-            UIServiceConnectionInit confirmation = DBWorkbench.getService(UIServiceConnectionInit.class);
-            return confirmation != null && confirmation.confirmInitScript(getContainer(), url, script);
-        });
+            UIServiceConnectionInit service = DBWorkbench.getService(UIServiceConnectionInit.class);
+            return service != null && service.confirmInitScript(getContainer(), url, script);
+        };
+        H2InitScriptValidator validator = getInitScriptValidator();
+        validator.validate(url, connectProps, confirmation);
+        String bootstrap = getContainer().getActualConnectionConfiguration().getBootstrap().getInitQueries().stream()
+            .map(query -> GeneralUtils.replaceVariables(query, getContainer().getVariablesResolver(true)))
+            .filter(query -> !query.isBlank())
+            .collect(Collectors.joining(";\n"));
+        validator.validateScript(url, bootstrap, confirmation);
     }
 
     @NotNull

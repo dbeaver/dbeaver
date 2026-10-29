@@ -38,13 +38,24 @@ public final class H2InitScriptValidator {
         @NotNull Predicate<String> confirmation
     ) throws DBCException {
         for (String script : getInitScripts(url, properties)) {
-            Approval approval = new Approval(url, script);
-            if (!approvedScripts.contains(approval)) {
-                if (!confirmation.test(script)) {
-                    throw new DBCException("H2 initialization SQL execution was not approved. Connection cancelled");
-                }
-                approvedScripts.add(approval);
+            validateScript(url, script, confirmation);
+        }
+    }
+
+    public synchronized void validateScript(
+        @Nullable String url,
+        @NotNull String script,
+        @NotNull Predicate<String> confirmation
+    ) throws DBCException {
+        if (script.isBlank()) {
+            return;
+        }
+        Approval approval = new Approval(url, script);
+        if (!approvedScripts.contains(approval)) {
+            if (!confirmation.test(script)) {
+                throw new DBCException("H2 initialization SQL execution was not approved. Connection cancelled");
             }
+            approvedScripts.add(approval);
         }
     }
 
