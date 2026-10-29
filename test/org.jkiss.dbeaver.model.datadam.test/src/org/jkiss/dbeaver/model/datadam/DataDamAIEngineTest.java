@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClientResponses;
+import org.jkiss.dbeaver.model.datadam.ai.DDAIEngine;
+import org.jkiss.dbeaver.model.datadam.ai.DDAIEngineProperties;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
