@@ -185,6 +185,10 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         }
 
         saveSettings(targetDataSource);
+        if (targetDataSource.isTemporary()) {
+            targetDataSource.getConnectionConfiguration().setRuntimeAttribute(
+                DBPConnectionConfiguration.ATTRIBUTE_TEST_CONNECTION_SOURCE, activeDataSource);
+        }
 
         if (activeDataSource == targetDataSource) {
             persistDataSource();
@@ -202,6 +206,8 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
             }
             return;
         }
+
+        firePropertyChangeEvent(PROP_CONNECTION_TEST, null, targetDataSource);
 
         ConnectionFeatures.CONNECTION_TEST.use(Map.of("driver", targetDataSource.getDriver().getPreconfiguredId()));
 
@@ -316,6 +322,21 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         if (page != null) {
             getContainer().showPage(page);
             return true;
+        }
+        for (IWizardPage owner : getPages()) {
+            if (owner instanceof ConnectionPageSettings settings) {
+                IDialogPage[] subPages = settings.getDialogPages(false, true);
+                if (subPages == null) {
+                    continue;
+                }
+                for (IDialogPage subPage : subPages) {
+                    if (subPage.getClass().getSimpleName().equals(pageId)) {
+                        getContainer().showPage(owner);
+                        settings.showSubPage(subPage);
+                        return true;
+                    }
+                }
+            }
         }
         return false;
     }
