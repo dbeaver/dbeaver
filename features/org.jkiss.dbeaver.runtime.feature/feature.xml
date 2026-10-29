@@ -25,7 +25,14 @@
     <plugin id="com.google.gson" version="0.0.0"/>
     <plugin id="com.jcraft.jsch" version="0.0.0" />
     <plugin id="org.apache.commons.commons-logging" version="0.0.0" />
+
+    <!-- Explicit deps because they are required by OSGI services -->
     <plugin id="org.objectweb.asm" version="0.0.0" />
+    <plugin id="org.objectweb.asm.commons" version="0.0.0" />
+    <plugin id="org.objectweb.asm.tree.analysis" version="0.0.0" />
+    <plugin id="org.objectweb.asm.tree" version="0.0.0" />
+    <plugin id="org.objectweb.asm.util" version="0.0.0" />
+    <plugin id="org.apache.aries.spifly.dynamic.bundle" version="0.0.0" />
 
     <!-- our plugins -->
 
