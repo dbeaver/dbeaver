@@ -42,9 +42,9 @@ import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateCrtKey;
 import java.util.ArrayList;
 import java.util.Base64;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
 import javax.crypto.Cipher;
 import javax.crypto.EncryptedPrivateKeyInfo;
@@ -197,29 +197,103 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
         List<Path> trackedFiles = new ArrayList<>();
         PostgreSSLClientKeyManager keyManager = new PostgreSSLClientKeyManager(trackedFiles::add);
         Path source = Files.createTempFile("dbeaver-test-ssl-", ".key");
-        Map<String, String> properties = new LinkedHashMap<>();
-        properties.put("sslkey", source.toString());
+        Properties properties = new Properties();
+        properties.setProperty("sslkey", source.toString());
         try {
             Files.writeString(source, makePkcs1Key());
-            properties.put("sslfactory", "example.CustomFactory");
+            properties.setProperty("sslfactory", "example.CustomFactory");
             keyManager.prepareConnectionProperties(new VoidProgressMonitor(), properties);
-            Assertions.assertEquals(source.toString(), properties.get("sslkey"));
+            Assertions.assertEquals(source.toString(), properties.getProperty("sslkey"));
 
             properties.remove("sslfactory");
-            properties.put("sslmode", "disable");
+            properties.setProperty("sslmode", "disable");
             keyManager.prepareConnectionProperties(new VoidProgressMonitor(), properties);
-            Assertions.assertEquals(source.toString(), properties.get("sslkey"));
+            Assertions.assertEquals(source.toString(), properties.getProperty("sslkey"));
 
             properties.remove("sslmode");
             keyManager.prepareConnectionProperties(new VoidProgressMonitor(), properties);
-            Assertions.assertNotEquals(source.toString(), properties.get("sslkey"));
-            Assertions.assertEquals(List.of(Path.of(properties.get("sslkey"))), trackedFiles);
+            Assertions.assertNotEquals(source.toString(), properties.getProperty("sslkey"));
+            Assertions.assertEquals(List.of(Path.of(properties.getProperty("sslkey"))), trackedFiles);
         } finally {
             Files.deleteIfExists(source);
             for (Path tracked : trackedFiles) {
                 Files.deleteIfExists(tracked);
             }
         }
+    }
+
+    @Test
+    public void driverAndConnectionSslOverridesDoNotReadTheHandlerKey() throws Exception {
+        Path missingKey = Files.createTempFile("dbeaver-test-ssl-", ".key");
+        Files.delete(missingKey);
+        DBPDataSourceContainer container = mock(DBPDataSourceContainer.class);
+        DBPDriver driver = mock(DBPDriver.class);
+        when(container.getDriver()).thenReturn(driver);
+        DBPConnectionConfiguration config = new DBPConnectionConfiguration();
+        when(container.getActualConnectionConfiguration()).thenReturn(config);
+        PostgreDataSource dataSource = new PostgreDataSource(container, "16", "postgres");
+        DBWHandlerDescriptor descriptor = mock(DBWHandlerDescriptor.class);
+        when(descriptor.getId()).thenReturn(PostgreConstants.HANDLER_SSL);
+        DBWHandlerConfiguration handler = new DBWHandlerConfiguration(descriptor, container);
+        handler.setEnabled(true);
+        handler.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD, "CERTIFICATES");
+        handler.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, missingKey.toString());
+        config.updateHandler(handler);
+
+        try {
+            when(driver.getConnectionProperties()).thenReturn(Map.of("sslfactory", "example.CustomFactory"));
+            Properties properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+            Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
+
+            when(driver.getConnectionProperties()).thenReturn(Map.of("sslmode", "disable"));
+            properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+            Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
+
+            when(driver.getConnectionProperties()).thenReturn(Map.of());
+            config.setProperty("sslfactory", "example.CustomFactory");
+            properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+            Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
+
+            config.setProperty("sslfactory", null);
+            config.setProperty("sslmode", "disable");
+            properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+            Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
+        } finally {
+            dataSource.shutdown(new VoidProgressMonitor());
+        }
+    }
+
+    @Test
+    public void convertsTheKeyFromMergedDriverProperties() throws Exception {
+        Path source = Files.createTempFile("dbeaver-test-ssl-", ".key");
+        Path missingHandlerKey = Files.createTempFile("dbeaver-test-ssl-", ".key");
+        Files.delete(missingHandlerKey);
+        DBPDataSourceContainer container = mock(DBPDataSourceContainer.class);
+        DBPDriver driver = mock(DBPDriver.class);
+        when(container.getDriver()).thenReturn(driver);
+        when(driver.getConnectionProperties()).thenReturn(Map.of("sslkey", source.toString()));
+        DBPConnectionConfiguration config = new DBPConnectionConfiguration();
+        when(container.getActualConnectionConfiguration()).thenReturn(config);
+        PostgreDataSource dataSource = new PostgreDataSource(container, "16", "postgres");
+        DBWHandlerDescriptor descriptor = mock(DBWHandlerDescriptor.class);
+        when(descriptor.getId()).thenReturn(PostgreConstants.HANDLER_SSL);
+        DBWHandlerConfiguration handler = new DBWHandlerConfiguration(descriptor, container);
+        handler.setEnabled(true);
+        handler.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD, "CERTIFICATES");
+        handler.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, missingHandlerKey.toString());
+        config.updateHandler(handler);
+        Path converted;
+        try {
+            Files.writeString(source, makePkcs1Key());
+            Properties properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+            converted = Path.of(properties.getProperty("sslkey"));
+            Assertions.assertNotEquals(source, converted);
+            Assertions.assertTrue(Files.exists(converted));
+        } finally {
+            dataSource.shutdown(new VoidProgressMonitor());
+            Files.deleteIfExists(source);
+        }
+        Assertions.assertFalse(Files.exists(converted));
     }
 
     @Test

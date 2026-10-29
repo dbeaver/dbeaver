@@ -34,8 +34,8 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.function.Consumer;
 
 /**
@@ -56,14 +56,14 @@ public class PostgreSSLClientKeyManager {
 
     public void prepareConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull Map<String, String> properties
+        @NotNull Properties properties
     ) throws IOException {
-        String keyFile = properties.get("sslkey");
-        if (keyFile != null && CommonUtils.isEmpty(properties.get("sslfactory"))
-            && !"disable".equals(properties.get("sslmode"))) {
+        String keyFile = properties.getProperty("sslkey");
+        if (keyFile != null && CommonUtils.isEmpty(properties.getProperty("sslfactory"))
+            && !"disable".equals(properties.getProperty("sslmode"))) {
             Path convertedKey = this.prepareKeyFileIfNeeded(monitor, Path.of(keyFile));
             if (convertedKey != null) {
-                properties.put("sslkey", convertedKey.toString());
+                properties.setProperty("sslkey", convertedKey.toString());
             }
         }
     }

@@ -288,7 +288,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                     this.initProxySSL(props, sslConfig);
                 } else {
                     this.initServerSSL(props, sslConfig);
-                    this.getSSLClientKeyManager().prepareConnectionProperties(monitor, props);
                 }
             } catch (Exception e) {
                 throw new DBCException("Error configuring SSL certificates", e);
@@ -314,6 +313,26 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         }
 
         return props;
+    }
+
+    @NotNull
+    @Override
+    protected Properties getAllConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
+        Properties properties = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
+        DBWHandlerConfiguration sslConfig = connectionInfo.getHandler(PostgreConstants.HANDLER_SSL);
+        if (sslConfig != null && sslConfig.isEnabled() && !sslConfig.getBooleanProperty(PostgreConstants.PROP_SSL_PROXY)) {
+            try {
+                this.getSSLClientKeyManager().prepareConnectionProperties(monitor, properties);
+            } catch (Exception e) {
+                throw new DBCException("Error configuring SSL certificates", e);
+            }
+        }
+        return properties;
     }
 
     @NotNull
