@@ -48,11 +48,12 @@ public final class ProductConfigWizardDialog extends ActiveWizardDialog {
         @NotNull ProductConfigWizard.Origin origin,
         @Nullable Shell parentShell
     ) {
-        this(origin, parentShell);
-    }
-
-    public ProductConfigWizardDialog(@NotNull ProductConfigWizard.Origin origin, @Nullable Shell parentShell) {
-        super(new ProductConfigWizard(origin), parentShell);
+        super(
+            window,
+            new ProductConfigWizard(origin),
+            null,
+            parentShell
+        );
         setFinishButtonLabel(ProductConfigMessages.wizard_apply);
         setMinimumPageSize(0, 0);
     }

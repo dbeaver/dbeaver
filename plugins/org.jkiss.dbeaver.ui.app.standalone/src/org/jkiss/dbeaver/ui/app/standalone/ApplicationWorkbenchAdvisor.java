@@ -55,11 +55,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPApplicationDesktop;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
-import org.jkiss.dbeaver.model.impl.config.ProductConfigUtils;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.registry.BasePlatformImpl;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
@@ -70,12 +67,9 @@ import org.jkiss.dbeaver.runtime.OperationSystemState;
 import org.jkiss.dbeaver.ui.AWTUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IActionConstants;
-import org.jkiss.dbeaver.ui.NativeThemeUtils;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
-import org.jkiss.dbeaver.ui.app.config.ProductConfigWizard;
-import org.jkiss.dbeaver.ui.app.config.ProductConfigWizardDialog;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.dbeaver.ui.app.standalone.internal.WorkbenchPatcher;
@@ -310,32 +304,6 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
             Map<String, Object> params = new LinkedHashMap<>();
             params.put("startTime", DBWorkbench.getPlatform().getApplication().getApplicationStartTime());
             CoreFeatures.APP_OPEN.use(params);
-        }
-    }
-
-    @Override
-    public boolean openWindows() {
-        NativeThemeUtils.installThemeListener(Display.getCurrent());
-        showProductConfigDialog();
-        return super.openWindows();
-    }
-
-    private void showProductConfigDialog() {
-        if (!ProductConfigUtils.isAvailable()
-            || ProductConfigUtils.isProductConfigSuppressed()
-            || !ProductConfigRegistry.getInstance().hasNewFeatures()
-        ) {
-            return;
-        }
-
-        WorkbenchPlugin.unsetSplashShell(Display.getCurrent());
-        var dialog = new ProductConfigWizardDialog(
-            ProductConfigWizard.Origin.AUTOMATIC,
-            null
-        );
-        if (dialog.open() == IDialogConstants.CANCEL_ID) {
-            DBRFeatureRegistry.getInstance().endTracking();
-            System.exit(0);
         }
     }
 
