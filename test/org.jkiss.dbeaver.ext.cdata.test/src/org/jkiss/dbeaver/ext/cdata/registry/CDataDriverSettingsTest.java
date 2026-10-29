@@ -90,13 +90,44 @@ public class CDataDriverSettingsTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void tolerateUnavailableSettingsWithoutCache() throws Exception {
+    public void useBundledSettingsWhenOfflineWithoutCache() throws Exception {
         Mockito.when(connection.getInputStream()).thenThrow(new IOException("Server unavailable"));
 
-        Assertions.assertTrue(CDataDriverSettings.load(progressMonitor, cacheFile, () -> connection).isEmpty());
+        var settings = CDataDriverSettings.load(progressMonitor, cacheFile, () -> connection);
+
+        Assertions.assertEquals("oracle", settings.get("oracledb").dataTypeId());
+        Assertions.assertEquals("generic:oracle", settings.get("oracledb").iconDriver());
         Assertions.assertFalse(Files.exists(cacheFile));
         Mockito.verify(connection).disconnect();
         assertNoTemporaryFiles();
+    }
+
+    @Test
+    public void useBundledSettingsWhenCacheIsInvalid() throws Exception {
+        for (String invalid : List.of("{", "null", "{}", "[]", "{\"postgresql\":null}",
+            SETTINGS.replace("datatype_id", "unknown"), SETTINGS.replace("postgresql:postgres-jdbc", "invalid"))) {
+            Files.writeString(cacheFile, invalid);
+
+            var settings = CDataDriverSettings.load(cacheFile);
+
+            Assertions.assertEquals("oracle", settings.get("oracledb").dataTypeId());
+            Assertions.assertEquals("postgresql:postgres-jdbc", settings.get("postgresql").iconDriver());
+            Assertions.assertEquals(invalid, Files.readString(cacheFile));
+            assertNoTemporaryFiles();
+        }
+    }
+
+    @Test
+    public void preferCachedSettingsToBundledSettings() throws Exception {
+        Files.writeString(cacheFile, """
+            {"oracledb":{"datatype_id":"custom_oracle","icon_driver":"custom:oracle"}}
+            """);
+
+        var settings = CDataDriverSettings.load(cacheFile);
+
+        Assertions.assertEquals(1, settings.size());
+        Assertions.assertEquals("custom_oracle", settings.get("oracledb").dataTypeId());
+        Assertions.assertEquals("custom:oracle", settings.get("oracledb").iconDriver());
     }
 
     @Test
