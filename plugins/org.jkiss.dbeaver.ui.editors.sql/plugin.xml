@@ -3,12 +3,12 @@
 
 <plugin>
 
-    <extension-point id="org.jkiss.dbeaver.sql.covert" name="%extension-point.org.jkiss.dbeaver.sql.covertname" schema="schema/org.jkiss.dbeaver.sql.convert.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.sql.executors" name="%org.jkiss.dbeaver.sql.executors.name" schema="schema/org.jkiss.dbeaver.sql.executors.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.sqlPresentation" name="%extension-point.org.jkiss.dbeaver.sqlPresentation.name" schema="schema/org.jkiss.dbeaver.sqlPresentation.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.sql.plan.view" name="%extension-point.org.jkiss.dbeaver.sqlPlanView.name" schema="schema/org.jkiss.dbeaver.sqlPlanView.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.sql.editorAddIns" name="%extension-point.org.jkiss.dbeaver.sql.editorAddIns.name" schema="schema/org.jkiss.dbeaver.sql.editorAddIns.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.sql.quickFixProcessors" name="%extension-point.org.jkiss.dbeaver.sql.quickFixProcessors.name" />
+    <extension-point id="org.jkiss.dbeaver.sql.covert" name="SQL text conversions" schema="schema/org.jkiss.dbeaver.sql.convert.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sql.executors" name="SQL Script executors" schema="schema/org.jkiss.dbeaver.sql.executors.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlPresentation" name="SQL editor presentations" schema="schema/org.jkiss.dbeaver.sqlPresentation.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sql.plan.view" name="SQL Plan View" schema="schema/org.jkiss.dbeaver.sqlPlanView.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sql.editorAddIns" name="SQL Editor add-ins" schema="schema/org.jkiss.dbeaver.sql.editorAddIns.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sql.quickFixProcessors" name="SQL Editor Quick Fix processors" />
 
     <extension point="org.eclipse.core.filebuffers.annotationModelCreation">
         <factory contentTypeId="org.jkiss.dbeaver.sql" class="org.jkiss.dbeaver.ui.editors.sql.semantics.SQLEditorSemanticAnnotationModelFactory">
@@ -1690,4 +1690,3 @@
     </extension>
 
 </plugin>
-
