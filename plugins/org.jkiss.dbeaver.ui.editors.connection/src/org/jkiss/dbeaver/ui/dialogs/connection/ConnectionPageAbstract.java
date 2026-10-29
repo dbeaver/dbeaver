@@ -446,6 +446,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         addControlToGroup(GROUP_URL, urlText);
         setupConnectionModeSelection(useUrl, Collections.singleton(GROUP_URL), nonUrlPropGroups);
         urlText.setEnabled(true);
+        urlText.setEditable(useUrl);
         CSSUtils.setCSSClass(urlText, useUrl ? null : CSS_CLASS_READ_ONLY_CONNECTION_URL);
         CSSUtils.applyStyles(urlText);
     }

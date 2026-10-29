@@ -2,11 +2,15 @@
 <?eclipse version="3.2"?>
 
 <plugin>
+    <extension point="org.jkiss.dbeaver.pluginService">
+        <service class="org.jkiss.dbeaver.model.datadam.DDRemoteDamDesktopSessionPluginService"/>
+    </extension>
+
     <extension point="com.dbeaver.ai.engine">
         <completionEngine
             id="datadam" label="DataDam AI"
-            class="org.jkiss.dbeaver.model.datadam.DDAIEngine"
+            class="org.jkiss.dbeaver.model.datadam.ai.DDAIEngine"
             supportsFunctions="true"
-            properties="org.jkiss.dbeaver.model.datadam.DDAIEngineProperties"/>
+            properties="org.jkiss.dbeaver.model.datadam.ai.DDAIEngineProperties"/>
     </extension>
 </plugin>
