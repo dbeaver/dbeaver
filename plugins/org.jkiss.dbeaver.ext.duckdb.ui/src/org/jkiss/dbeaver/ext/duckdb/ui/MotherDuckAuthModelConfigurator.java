@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.cdata;
+package org.jkiss.dbeaver.ext.duckdb.ui;
 
+import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.runtime.ExperimentalBundles;
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
+import org.jkiss.dbeaver.model.access.DBAAuthModel;
+import org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator;
 
-public class CDataLazyBundleActivator implements BundleActivator {
+/**
+ * MotherDuck has no user name, only the access token, entered in the password field.
+ */
+public class MotherDuckAuthModelConfigurator extends DatabaseNativeAuthModelConfigurator {
     @Override
-    public void start(@NotNull BundleContext context) throws Exception {
-        ExperimentalBundles.initialize(context);
-    }
-
-    @Override
-    public void stop(@NotNull BundleContext context) {
+    public void createControl(@NotNull Composite authPanel, @NotNull DBAAuthModel<?> object, @NotNull Runnable propertyChangeListener) {
+        createPasswordControls(authPanel, propertyChangeListener);
     }
 }
