@@ -36,7 +36,6 @@ import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -575,7 +574,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         String displayName;
         DBSDataContainer dataContainer = viewer.getDataContainer();
         if (forUI && dataContainer instanceof DBSEntity && !viewer.getDataFilter().hasFilters()) {
-            displayName = ResultSetMessages.sql_editor_resultset_filter_panel_show_sql_label;
+            displayName = CommonUtils.notNull(
+                viewer.getActiveQueryTextLabel(),
+                ResultSetMessages.sql_editor_resultset_filter_panel_show_sql_label
+            );
         } else if (!forUI && dataContainer != null) {
             displayName = dataContainer.getName();
         } else {
