@@ -706,6 +706,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @NotNull
     @Override
+    public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
+        return PostgreConstants.TYPE_RECORD.equals(typeName) ? DBPDataKind.STRUCT : super.resolveDataKind(typeName, valueType);
+    }
+
+    @NotNull
+    @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         return getDefaultInstance().getDefaultDataTypeName(dataKind);
     }

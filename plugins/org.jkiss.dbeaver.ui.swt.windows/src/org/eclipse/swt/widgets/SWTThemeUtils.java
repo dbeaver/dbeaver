@@ -141,6 +141,15 @@ public final class SWTThemeUtils {
                 null
             );
         }
+        if (control instanceof Tree tree && tree.hwndHeader != 0) {
+            // SWT's columned trees have separate native parent and header windows.
+            // Neither is an SWT Control, so the skin listener cannot update them.
+            OS.AllowDarkModeForWindow(tree.hwndParent, dark);
+            OS.SetWindowTheme(tree.hwndParent, dark ? WINDOW_THEME_DEFAULT : null, null);
+            OS.AllowDarkModeForWindow(tree.hwndHeader, dark);
+            OS.SetWindowTheme(tree.hwndHeader, dark ? WINDOW_THEME_DEFAULT : null, null);
+            OS.InvalidateRect(tree.hwndHeader, null, true);
+        }
     }
 
     public static void installTreeSelectionFix(@NotNull Tree tree, @NotNull BooleanSupplier isDarkTheme) {
