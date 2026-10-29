@@ -108,7 +108,7 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
 
         String expectedDDL =
                 "CREATE TABLE test_schema.test_table (" + lineBreak +
-                "\tcolumn1 int4 NULL" + lineBreak +
+                "\tcolumn1 integer NULL" + lineBreak +
                 ");" + lineBreak;
 
         String tableDDL = tableRegular.getObjectDefinitionText(monitor, Collections.emptyMap());
@@ -130,7 +130,7 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
 
         String expectedDDL =
                 "CREATE TABLE test_schema.test_table (" + lineBreak +
-                "\tcolumn1 int4 NULL," + lineBreak +
+                "\tcolumn1 integer NULL," + lineBreak +
                 "\tcolumn2 varchar NULL" + lineBreak +
                 ");" + lineBreak;
 
@@ -154,9 +154,9 @@ public class PostgreTableBaseTest extends DBeaverUnitTest {
 
         String expectedDDL =
                 "CREATE TABLE test_schema.test_table (" + lineBreak +
-                "\tcolumn1 int4 NULL, -- PM's approver of record" + lineBreak +
+                "\tcolumn1 integer NULL, -- PM's approver of record" + lineBreak +
                 "\tcolumn2 varchar NULL, -- second comment" + lineBreak +
-                "\tcolumn3 int4 NULL -- third comment" + lineBreak +
+                "\tcolumn3 integer NULL -- third comment" + lineBreak +
                 ");" + lineBreak +
                 lineBreak +
                 "-- Column comments" + lineBreak +
