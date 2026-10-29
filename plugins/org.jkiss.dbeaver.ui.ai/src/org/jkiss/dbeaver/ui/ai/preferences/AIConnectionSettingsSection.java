@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
 /**
  * Settings contributed to the AI connection preferences page.
- * The page persists the connection configuration after saving all sections.
+ * Sections save to the connection supplied by the page, which may be a wizard validation copy.
  */
 public interface AIConnectionSettingsSection {
     boolean appliesTo(@NotNull DBPDataSourceContainer connection);
@@ -35,5 +35,5 @@ public interface AIConnectionSettingsSection {
         @Nullable DBRRunnableContext runnableContext
     );
 
-    void save();
+    void save(@NotNull DBPDataSourceContainer connection);
 }

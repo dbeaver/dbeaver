@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
-import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionWizard;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 import java.util.List;
@@ -40,7 +39,7 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite content = UIUtils.createComposite(parent, 1);
-        DBPDataSourceContainer connection = getOriginalDataSourceContainer();
+        DBPDataSourceContainer connection = getConnection();
         if (connection != null) {
             DBRRunnableContext runnableContext = getContainer() instanceof IWizardContainer wc
                 && wc.getCurrentPage().getWizard() instanceof BaseWizard wizard
@@ -66,21 +65,20 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
     }
 
     private void saveSettings() {
-        DBPDataSourceContainer connection = getOriginalDataSourceContainer();
+        DBPDataSourceContainer connection = getConnection();
         if (connection != null) {
             for (AIConnectionSettingsSection section : sections) {
-                section.save();
+                section.save(connection);
             }
-            connection.persistConfiguration();
+            if (!(getContainer() instanceof IWizardContainer)) {
+                connection.persistConfiguration();
+            }
         }
     }
 
     @Nullable
-    private DBPDataSourceContainer getOriginalDataSourceContainer() {
-        if (getContainer() instanceof IWizardContainer wc && wc.getCurrentPage().getWizard() instanceof ConnectionWizard cw) {
-            return cw.getOriginalDataSource();
-        }
-        return element.getAdapter(DBPDataSourceContainer.class);
+    private DBPDataSourceContainer getConnection() {
+        return element == null ? null : element.getAdapter(DBPDataSourceContainer.class);
     }
 
     @Override

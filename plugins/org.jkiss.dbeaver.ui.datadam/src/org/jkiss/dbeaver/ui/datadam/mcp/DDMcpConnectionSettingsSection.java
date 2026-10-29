@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.ui.datadam.internal.DDMcpMessages;
 public class DDMcpConnectionSettingsSection implements AIConnectionSettingsSection {
     private static final Log log = Log.getLog(DDMcpConnectionSettingsSection.class);
 
-    private DBPDataSourceContainer connection;
     private Button enableCheck;
 
     @Override
@@ -68,7 +67,6 @@ public class DDMcpConnectionSettingsSection implements AIConnectionSettingsSecti
         @NotNull DBPDataSourceContainer connection,
         @Nullable DBRRunnableContext runnableContext
     ) {
-        this.connection = connection;
         Composite group = UIUtils.createTitledComposite(
             parent, DDMcpMessages.mcp_connection_settings_group, 1, GridData.FILL_HORIZONTAL);
         enableCheck = UIUtils.createCheckbox(
@@ -81,7 +79,7 @@ public class DDMcpConnectionSettingsSection implements AIConnectionSettingsSecti
     }
 
     @Override
-    public void save() {
+    public void save(@NotNull DBPDataSourceContainer connection) {
         DDMcpConnectionSettings.setEnabled(connection, enableCheck.getSelection());
     }
 }
