@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.datadam.mcp.function;
 
 import com.dbeaver.datadam.mcp.api.exception.DDMcpFunctionException;
-import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionDescriptor;
 import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionResult;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -25,28 +24,25 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
+import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionCatalog;
+import org.jkiss.dbeaver.model.datadam.mcp.DDMcpFunction;
 
-import java.util.List;
+import java.util.Map;
 
-public class DDMcpListDatasourcesFunction {
-    private final DDMcpConnectionAccess connectionAccess = new DDMcpConnectionAccess();
-    private final DDMcpFunctionDescriptor descriptor = new DDMcpFunctionDescriptor(
-        "listDatasources",
-        "List datasources",
-        "Lists database connections allowed for DataDam MCP calls",
-        List.of()
-    );
+public class DDMcpListDatasourcesFunction implements DDMcpFunction {
+    private final DDMcpConnectionCatalog connections = DDMcpConnectionCatalog.getInstance();
 
     @NotNull
-    public DDMcpFunctionDescriptor getDescriptor() {
-        return descriptor;
+    @Override
+    public DDMcpFunctionResult call(@NotNull Map<String, Object> arguments) throws DDMcpFunctionException {
+        return call();
     }
 
     @NotNull
     public DDMcpFunctionResult call() throws DDMcpFunctionException {
         JsonArray datasources = new JsonArray();
-        for (DBPDataSourceContainer connection : connectionAccess.getAllowedConnections()) {
-            datasources.add(describeDatasource(connection.getProject(), connection));
+        for (DDMcpConnectionCatalog.AvailableConnection available : connections.getAllowedConnections()) {
+            datasources.add(describeDatasource(available));
         }
         JsonObject result = new JsonObject();
         result.add("datasources", datasources);
@@ -54,7 +50,9 @@ public class DDMcpListDatasourcesFunction {
     }
 
     @NotNull
-    private JsonObject describeDatasource(@NotNull DBPProject project, @NotNull DBPDataSourceContainer connection) {
+    private JsonObject describeDatasource(@NotNull DDMcpConnectionCatalog.AvailableConnection available) {
+        DBPProject project = available.project();
+        DBPDataSourceContainer connection = available.connection();
         JsonObject datasource = new JsonObject();
         datasource.addProperty("id", connection.getId());
         datasource.addProperty("name", connection.getName());
@@ -62,6 +60,7 @@ public class DDMcpListDatasourcesFunction {
         datasource.addProperty("project_name", project.getName());
         DBPDataSourceType type = connection.getDriver().getDataSourceType();
         datasource.addProperty("database_type", type == null ? connection.getDriver().getName() : type.getName());
+        datasource.addProperty("requires_manual_connection", available.requiresManualConnection());
         return datasource;
     }
 }

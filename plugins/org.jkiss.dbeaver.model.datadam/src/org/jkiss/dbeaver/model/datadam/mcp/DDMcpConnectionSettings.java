@@ -22,20 +22,17 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 /**
  * Per-connection DataDam MCP permission stored with the connection configuration.
  */
-public class DDMcpConnectionSettings {
+public final class DDMcpConnectionSettings {
     private static final String ENABLED_EXTENSION = "datadam.mcp.enabled";
 
-    private final DBPDataSourceContainer connection;
-
-    public DDMcpConnectionSettings(@NotNull DBPDataSourceContainer connection) {
-        this.connection = connection;
+    private DDMcpConnectionSettings() {
     }
 
-    public boolean isEnabled() {
+    public static boolean isEnabled(@NotNull DBPDataSourceContainer connection) {
         return Boolean.TRUE.equals(connection.getExtension(ENABLED_EXTENSION));
     }
 
-    public void setEnabled(boolean enabled) {
+    public static void setEnabled(@NotNull DBPDataSourceContainer connection, boolean enabled) {
         connection.setExtension(ENABLED_EXTENSION, enabled ? Boolean.TRUE : null);
     }
 }

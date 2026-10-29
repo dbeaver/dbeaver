@@ -3,6 +3,15 @@
 
 <plugin>
     <extension-point id="desktopRpcService" name="Desktop DataDam RPC service"/>
+    <extension-point id="desktopMcpFunction" name="Desktop DataDam MCP function"/>
+
+    <extension point="org.jkiss.dbeaver.model.datadam.desktopMcpFunction">
+        <function
+            id="listDatasources"
+            name="List datasources"
+            description="Lists database connections allowed for DataDam MCP calls. requires_manual_connection is an advisory hint that authentication may be needed if a database call fails; calls can still be attempted."
+            class="org.jkiss.dbeaver.model.datadam.mcp.function.DDMcpListDatasourcesFunction"/>
+    </extension>
 
     <extension point="org.jkiss.dbeaver.model.datadam.desktopRpcService">
         <service class="org.jkiss.dbeaver.model.datadam.mcp.DDMcpDesktopRpcRegistration"/>
