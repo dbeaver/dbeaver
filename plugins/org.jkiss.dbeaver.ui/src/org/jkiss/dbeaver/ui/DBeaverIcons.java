@@ -17,8 +17,24 @@
 
 package org.jkiss.dbeaver.ui;
 
+import org.eclipse.e4.core.services.events.IEventBroker;
+import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
+import org.eclipse.e4.ui.model.application.descriptor.basic.MPartDescriptor;
+import org.eclipse.e4.ui.model.application.ui.advanced.MPlaceholder;
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.model.application.ui.menu.MItem;
+import org.eclipse.e4.ui.workbench.IPresentationEngine;
+import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.graphics.Device;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -31,6 +47,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.WeakHashMap;
 import java.util.function.Function;
 
 /**
@@ -68,6 +85,11 @@ public class DBeaverIcons {
 
     private static final Map<String, IconDescriptor> imageMap = new HashMap<>();
     private static final Map<String, IconDescriptor> compositeMap = new HashMap<>();
+    private static final Map<Image, DBPImage> trackedImages = new WeakHashMap<>();
+    private static final String E4_MODEL_ELEMENT = "modelElement";
+    private static boolean themeListenerInstalled;
+    @NotNull
+    private static String iconBlue = SVGUtils.SVG_BLUE;
 
     @NotNull
     public static Image getImage(@Nullable DBPImage image) {
@@ -131,7 +153,7 @@ public class DBeaverIcons {
         if (!image.hasOverlays()) {
             return mainIcon;
         }
-        String compositeId = mainIcon.id + "^" +
+        String compositeId = mainIcon.id + "^" + iconBlue + "^" +
             (image.getTopLeft() == null ? "" : image.getTopLeft().getLocation()) + "^" +
             (image.getTopRight() == null ? "" : image.getTopRight().getLocation()) + "^" +
             (image.getBottomLeft() == null ? "" : image.getBottomLeft().getLocation()) + "^" +
@@ -152,7 +174,8 @@ public class DBeaverIcons {
                 ovrImage.setBottomRight(accumulateDecorations(image, DBIconComposite::getBottomRight));
             }
             Image resultImage = ovrImage.createImage();
-            icon = new IconDescriptor(compositeId, resultImage);
+            icon = new IconDescriptor(compositeId, resultImage, trackImages(image, ImageDescriptor.createFromImage(resultImage)));
+            trackedImages.put(resultImage, image);
             if (useCache) {
                 compositeMap.put(compositeId, icon);
             }
@@ -182,18 +205,255 @@ public class DBeaverIcons {
 
     @Nullable
     private static IconDescriptor getIconByLocation(@NotNull String location) {
-        IconDescriptor icon = imageMap.get(location);
+        updateTheme();
+        boolean registeredSvg = SVGUtils.isThemeableSvg(location);
+        boolean recolor = registeredSvg && !SVGUtils.SVG_BLUE.equals(iconBlue);
+        String key = recolor ? location + "#" + iconBlue : location;
+        IconDescriptor icon = imageMap.get(key);
         if (icon == null) {
             try {
-                ImageDescriptor imageDescriptor = ImageDescriptor.createFromURL(URI.create(location).toURL());
-                icon = new IconDescriptor(location, imageDescriptor);
-                imageMap.put(location, icon);
+                ImageDescriptor imageDescriptor = recolor ? SVGUtils.createRecoloredSvgDescriptor(location, iconBlue) :
+                    ImageDescriptor.createFromURL(URI.create(location).toURL());
+                if (registeredSvg) {
+                    imageDescriptor = trackImages(new DBIcon(location), imageDescriptor);
+                }
+                icon = new IconDescriptor(key, imageDescriptor);
+                imageMap.put(key, icon);
             } catch (Exception e) {
                 log.error(e);
                 return null;
             }
         }
         return icon;
+    }
+
+    @NotNull
+    private static ImageDescriptor trackImages(@NotNull DBPImage icon, @NotNull ImageDescriptor source) {
+        return new ImageDescriptor() {
+            @Nullable
+            @Override
+            public ImageData getImageData(int zoom) {
+                return source.getImageData(zoom);
+            }
+
+            @Nullable
+            @Override
+            public Image createImage(boolean returnMissingImageOnError, @Nullable Device device) {
+                Image image = source.createImage(returnMissingImageOnError, device);
+                if (image != null) {
+                    trackedImages.put(image, icon);
+                }
+                return image;
+            }
+        };
+    }
+
+    private static void updateTheme() {
+        if (!PlatformUI.isWorkbenchRunning()) {
+            return;
+        }
+        if (!themeListenerInstalled) {
+            IEventBroker eventBroker = PlatformUI.getWorkbench().getService(IEventBroker.class);
+            if (eventBroker != null && eventBroker.subscribe(IThemeEngine.Events.THEME_CHANGED,
+                event -> UIUtils.asyncExec(DBeaverIcons::refreshThemeIcons))) {
+                PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(event -> {
+                    if (SVGUtils.SVG_BLUE_LIGHT.equals(event.getProperty()) || SVGUtils.SVG_BLUE_DARK.equals(event.getProperty())) {
+                        UIUtils.asyncExec(DBeaverIcons::refreshThemeIcons);
+                    }
+                });
+                themeListenerInstalled = true;
+            }
+        }
+        iconBlue = SVGUtils.getThemeColor();
+    }
+
+    private static void refreshThemeIcons() {
+        if (!PlatformUI.isWorkbenchRunning()) {
+            return;
+        }
+        iconBlue = SVGUtils.getThemeColor();
+        // CSS theme updates do not replace images assigned with SWT setImage or JFace image descriptors.
+        for (Shell shell : Display.getCurrent().getShells()) {
+            if (!shell.isDisposed()) {
+                Image image = refreshedImage(shell.getImage());
+                if (image != shell.getImage()) {
+                    shell.setImage(image);
+                }
+                refreshMenu(shell.getMenuBar());
+                refreshControl(shell);
+            }
+        }
+    }
+
+    @Nullable
+    private static Image refreshedImage(@Nullable Image image) {
+        if (image == null || image.isDisposed()) {
+            return image;
+        }
+        DBPImage icon = trackedImages.get(image);
+        if (icon == null) {
+            return image;
+        }
+        return getIconDescriptor(icon, true).image;
+    }
+
+    @Nullable
+    private static Image refreshedModelImage(@NotNull Widget widget, @Nullable Image image) {
+        Image refreshed = refreshedImage(image);
+        if (image == null) {
+            return refreshed;
+        }
+
+        // Eclipse's command and part renderers load their icon URIs without using DBeaverIcons.
+        Object model = widget.getData(E4_MODEL_ELEMENT);
+        if (model instanceof MPlaceholder placeholder) {
+            model = placeholder.getRef();
+        }
+        String location = null;
+        if (model instanceof MPart part) {
+            location = part.getIconURI();
+            if (location == null) {
+                EModelService modelService = PlatformUI.getWorkbench().getService(EModelService.class);
+                MPartDescriptor descriptor = modelService == null ? null : modelService.getPartDescriptor(part.getElementId());
+                location = descriptor == null ? null : descriptor.getIconURI();
+            }
+            Object override = part.getTransientData().get(IPresentationEngine.OVERRIDE_ICON_IMAGE_KEY);
+            if (override != null) {
+                if (override != image) {
+                    return refreshed;
+                }
+                if (refreshed == image && (!SVGUtils.isThemeableSvg(location) || !SVGUtils.matchesOriginalIcon(image, location))) {
+                    return image;
+                }
+                if (refreshed == image) {
+                    IconDescriptor icon = getIconByLocation(location);
+                    refreshed = icon == null ? image : icon.image;
+                }
+                if (refreshed != image) {
+                    part.getTransientData().put(IPresentationEngine.OVERRIDE_ICON_IMAGE_KEY, refreshed);
+                }
+                return refreshed;
+            }
+        } else if (model instanceof MItem item) {
+            location = item.getIconURI();
+        }
+        if (refreshed != image) {
+            return refreshed;
+        }
+        if (!SVGUtils.isThemeableSvg(location)) {
+            return image;
+        }
+        IconDescriptor icon = getIconByLocation(location);
+        return icon == null ? image : icon.image;
+    }
+
+    private static void refreshControl(@NotNull Control control) {
+        if (control instanceof Label label) {
+            Image image = refreshedImage(label.getImage());
+            if (image != label.getImage()) {
+                label.setImage(image);
+            }
+        } else if (control instanceof Button button) {
+            Image image = refreshedImage(button.getImage());
+            if (image != button.getImage()) {
+                button.setImage(image);
+            }
+        } else if (control instanceof CLabel label) {
+            Image image = refreshedImage(label.getImage());
+            if (image != label.getImage()) {
+                label.setImage(image);
+            }
+        } else if (control instanceof ToolBar toolbar) {
+            for (ToolItem item : toolbar.getItems()) {
+                Image image = refreshedModelImage(item, item.getImage());
+                if (image != item.getImage()) {
+                    item.setImage(image);
+                }
+                image = refreshedImage(item.getHotImage());
+                if (image != item.getHotImage()) {
+                    item.setHotImage(image);
+                }
+                image = refreshedImage(item.getDisabledImage());
+                if (image != item.getDisabledImage()) {
+                    item.setDisabledImage(image);
+                }
+            }
+        } else if (control instanceof TabFolder folder) {
+            for (TabItem item : folder.getItems()) {
+                Image image = refreshedImage(item.getImage());
+                if (image != item.getImage()) {
+                    item.setImage(image);
+                }
+            }
+        } else if (control instanceof CTabFolder folder) {
+            for (CTabItem item : folder.getItems()) {
+                Image image = refreshedModelImage(item, item.getImage());
+                if (image != item.getImage()) {
+                    item.setImage(image);
+                }
+            }
+        } else if (control instanceof Tree tree) {
+            for (TreeColumn column : tree.getColumns()) {
+                Image image = refreshedImage(column.getImage());
+                if (image != column.getImage()) {
+                    column.setImage(image);
+                }
+            }
+            if ((tree.getStyle() & SWT.VIRTUAL) == 0) {
+                for (TreeItem item : tree.getItems()) {
+                    refreshTreeItem(item, Math.max(1, tree.getColumnCount()));
+                }
+            }
+        } else if (control instanceof Table table) {
+            for (TableColumn column : table.getColumns()) {
+                Image image = refreshedImage(column.getImage());
+                if (image != column.getImage()) {
+                    column.setImage(image);
+                }
+            }
+            if ((table.getStyle() & SWT.VIRTUAL) == 0) {
+                for (TableItem item : table.getItems()) {
+                    for (int index = 0; index < Math.max(1, table.getColumnCount()); index++) {
+                        Image image = refreshedImage(item.getImage(index));
+                        if (image != item.getImage(index)) {
+                            item.setImage(index, image);
+                        }
+                    }
+                }
+            }
+        }
+
+        refreshMenu(control.getMenu());
+        if (control instanceof Composite composite) {
+            for (Control child : composite.getChildren()) {
+                refreshControl(child);
+            }
+        }
+    }
+
+    private static void refreshTreeItem(@NotNull TreeItem item, int columns) {
+        for (int index = 0; index < columns; index++) {
+            Image image = refreshedImage(item.getImage(index));
+            if (image != item.getImage(index)) {
+                item.setImage(index, image);
+            }
+        }
+        for (TreeItem child : item.getItems()) {
+            refreshTreeItem(child, columns);
+        }
+    }
+
+    private static void refreshMenu(@Nullable Menu menu) {
+        if (menu == null || menu.isDisposed()) {
+            return;
+        }
+        for (MenuItem item : menu.getItems()) {
+            Image image = refreshedModelImage(item, item.getImage());
+            if (image != item.getImage()) {
+                item.setImage(image);
+            }
+            refreshMenu(item.getMenu());
+        }
     }
 
 }
