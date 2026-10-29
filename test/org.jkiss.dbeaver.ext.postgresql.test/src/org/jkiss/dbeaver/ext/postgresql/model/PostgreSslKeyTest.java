@@ -18,9 +18,12 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.model.net.PostgreSSLClientKeyManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
@@ -37,8 +40,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.RSAPrivateCrtKey;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.crypto.Cipher;
 import javax.crypto.EncryptedPrivateKeyInfo;
@@ -87,7 +93,7 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
         @Override
         protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
             try {
-                convertedDuringInitialization = preparePgJdbcKeyFileIfNeeded(monitor, constructorKey);
+                this.convertedDuringInitialization = this.getSSLClientKeyManager().prepareKeyFileIfNeeded(monitor, constructorKey);
             } catch (IOException e) {
                 throw new DBException("Could not prepare test key", e);
             }
@@ -105,6 +111,7 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
         DBPDataSourceContainer container = mock(DBPDataSourceContainer.class);
         when(container.getDriver()).thenReturn(mock(DBPDriver.class));
         PostgreDataSource dataSource = new PostgreDataSource(container, "16", "postgres");
+        PostgreSSLClientKeyManager keyManager = dataSource.getSSLClientKeyManager();
         VoidProgressMonitor monitor = new VoidProgressMonitor();
         Path source = Files.createTempFile("dbeaver-test-ssl-", ".key");
         Path first;
@@ -112,13 +119,13 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
         Path encryptedFile;
         try {
             Files.writeString(source, makePkcs1Key());
-            first = dataSource.preparePgJdbcKeyFileIfNeeded(monitor, source);
+            first = keyManager.prepareKeyFileIfNeeded(monitor, source);
             Assertions.assertNotNull(first);
             Assertions.assertTrue(Files.exists(first));
-            Assertions.assertEquals(first, dataSource.preparePgJdbcKeyFileIfNeeded(monitor, source));
+            Assertions.assertEquals(first, keyManager.prepareKeyFileIfNeeded(monitor, source));
 
             Files.writeString(source, makePkcs1Key());
-            second = dataSource.preparePgJdbcKeyFileIfNeeded(monitor, source);
+            second = keyManager.prepareKeyFileIfNeeded(monitor, source);
             Assertions.assertNotNull(second);
             Assertions.assertNotEquals(first, second);
             Assertions.assertTrue(Files.exists(first)); // an existing handshake may still use it
@@ -132,13 +139,13 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
             byte[] encryptedDer = new EncryptedPrivateKeyInfo(cipher.getParameters(), cipher.doFinal(pkcs8)).getEncoded();
             Files.writeString(source, "-----BEGIN ENCRYPTED PRIVATE KEY-----\n"
                 + Base64.getEncoder().encodeToString(encryptedDer) + "\n-----END ENCRYPTED PRIVATE KEY-----\n");
-            encryptedFile = dataSource.preparePgJdbcKeyFileIfNeeded(monitor, source);
+            encryptedFile = keyManager.prepareKeyFileIfNeeded(monitor, source);
             Assertions.assertNotNull(encryptedFile);
             Assertions.assertArrayEquals(encryptedDer, Files.readAllBytes(encryptedFile));
-            Assertions.assertEquals(encryptedFile, dataSource.preparePgJdbcKeyFileIfNeeded(monitor, source));
+            Assertions.assertEquals(encryptedFile, keyManager.prepareKeyFileIfNeeded(monitor, source));
 
             Files.writeString(source, "-----BEGIN PRIVATE KEY-----\nAAAA\n-----END PRIVATE KEY-----\n");
-            Assertions.assertNull(dataSource.preparePgJdbcKeyFileIfNeeded(monitor, source));
+            Assertions.assertNull(keyManager.prepareKeyFileIfNeeded(monitor, source));
         } finally {
             dataSource.shutdown(monitor);
             Files.deleteIfExists(source);
@@ -151,22 +158,67 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
     @Test
     public void legacyRetryCanConvertCopyWithoutChangingSavedConfiguration() throws Exception {
         Path source = Files.createTempFile("dbeaver-test-ssl-", ".pem");
-        Path converted = Files.createTempFile("dbeaver-test-ssl-", ".pk8");
+        List<Path> trackedFiles = new ArrayList<>();
         try {
             byte[] pkcs8 = KeyPairGenerator.getInstance("RSA").generateKeyPair().getPrivate().getEncoded();
             Files.writeString(source, "-----BEGIN PRIVATE KEY-----\n" + Base64.getEncoder().encodeToString(pkcs8)
                 + "\n-----END PRIVATE KEY-----\n");
-            DBWHandlerConfiguration original = new DBWHandlerConfiguration(mock(DBWHandlerDescriptor.class), null);
+            DBWHandlerDescriptor descriptor = mock(DBWHandlerDescriptor.class);
+            when(descriptor.getId()).thenReturn(PostgreConstants.HANDLER_SSL);
+            DBWHandlerConfiguration original = new DBWHandlerConfiguration(descriptor, null);
+            original.setEnabled(true);
+            original.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD, "CERTIFICATES");
             original.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, source.toString());
-            DBWHandlerConfiguration retry = new DBWHandlerConfiguration(original);
+            DBPConnectionConfiguration connectionInfo = new DBPConnectionConfiguration();
+            connectionInfo.updateHandler(original);
+            PostgreSSLClientKeyManager keyManager = new PostgreSSLClientKeyManager(trackedFiles::add);
+            DBPConnectionConfiguration retryConfig = keyManager.prepareRetryConfiguration(
+                new VoidProgressMonitor(), connectionInfo, new DBCException("Could not read SSL key")
+            );
 
-            Assertions.assertTrue(SSLHandlerTrustStoreImpl.loadDerFromPem(retry, converted));
+            Assertions.assertNotNull(retryConfig);
+            DBWHandlerConfiguration retry = retryConfig.getHandler(PostgreConstants.HANDLER_SSL);
+            Assertions.assertNotNull(retry);
+            Path converted = Path.of(retry.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY));
             Assertions.assertEquals(source.toString(), original.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY));
             Assertions.assertEquals(converted.toString(), retry.getStringProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY));
             Assertions.assertArrayEquals(pkcs8, Files.readAllBytes(converted));
+            Assertions.assertEquals(List.of(converted), trackedFiles);
         } finally {
             Files.deleteIfExists(source);
-            Files.deleteIfExists(converted);
+            for (Path tracked : trackedFiles) {
+                Files.deleteIfExists(tracked);
+            }
+        }
+    }
+
+    @Test
+    public void preparesConnectionPropertiesOnlyForDefaultSslFactory() throws Exception {
+        List<Path> trackedFiles = new ArrayList<>();
+        PostgreSSLClientKeyManager keyManager = new PostgreSSLClientKeyManager(trackedFiles::add);
+        Path source = Files.createTempFile("dbeaver-test-ssl-", ".key");
+        Map<String, String> properties = new LinkedHashMap<>();
+        properties.put("sslkey", source.toString());
+        try {
+            Files.writeString(source, makePkcs1Key());
+            properties.put("sslfactory", "example.CustomFactory");
+            keyManager.prepareConnectionProperties(new VoidProgressMonitor(), properties);
+            Assertions.assertEquals(source.toString(), properties.get("sslkey"));
+
+            properties.remove("sslfactory");
+            properties.put("sslmode", "disable");
+            keyManager.prepareConnectionProperties(new VoidProgressMonitor(), properties);
+            Assertions.assertEquals(source.toString(), properties.get("sslkey"));
+
+            properties.remove("sslmode");
+            keyManager.prepareConnectionProperties(new VoidProgressMonitor(), properties);
+            Assertions.assertNotEquals(source.toString(), properties.get("sslkey"));
+            Assertions.assertEquals(List.of(Path.of(properties.get("sslkey"))), trackedFiles);
+        } finally {
+            Files.deleteIfExists(source);
+            for (Path tracked : trackedFiles) {
+                Files.deleteIfExists(tracked);
+            }
         }
     }
 
