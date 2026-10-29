@@ -77,6 +77,7 @@ import java.nio.file.Path;
 import java.time.Clock;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 
 public class AIChatControl extends Composite implements AIChatContextProvider {
     private static final Log log = Log.getLog(AIChatControl.class);
@@ -86,6 +87,8 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     private final PromptComposite promptComposite;
     private volatile boolean waitingForResponse = false;
     private volatile boolean isDataSourceInitialized = false;
+    private boolean dataSourceInitializationPending;
+    private DBPDataSourceContainer requestedDataSource;
 
     private AIContextSettings activeCompletionSettings;
     private AIChatConversation activeConversation;
@@ -523,16 +526,55 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     }
 
     public void setDataSource(@Nullable DBPDataSourceContainer container) throws DBException {
-        if (container == getDataSourceContainer() && isDataSourceInitialized) {
+        if (container == getDataSourceContainer() && isDataSourceInitialized && !dataSourceInitializationPending) {
             return;
         }
-        isDataSourceInitialized = true;
-        AIChatConversation conversation = chatSession.getLastConversation(container);
-        this.setCompletionSettings(container == null || conversation == null ? null : chatSession.getConversationSettings(conversation));
-        this.selectConversation(
-            conversation != null ?
-                conversation :
-                createEmptyConversation(container));
+        requestedDataSource = container;
+        if (dataSourceInitializationPending) {
+            return;
+        }
+        dataSourceInitializationPending = true;
+        boolean deferred = false;
+        try {
+            AIChatConversation conversation = chatSession.getLastConversation(container);
+            setCompletionSettings(container == null || conversation == null ? null : chatSession.getConversationSettings(conversation));
+            selectConversation(conversation != null ? conversation : createEmptyConversation(container));
+            isDataSourceInitialized = true;
+        } catch (DBException e) {
+            if (!(e instanceof AIChatSession.InitializationInProgressException)) {
+                throw e;
+            }
+            CompletionStage<Void> completion = chatSession.getInitializationCompletion();
+            deferred = true;
+            completion.whenComplete((ignored, error) -> UIUtils.asyncExec(() -> completeDataSourceInitialization(error)));
+        } finally {
+            if (!deferred) {
+                dataSourceInitializationPending = false;
+            }
+        }
+        if (!deferred && requestedDataSource != container) {
+            setDataSource(requestedDataSource);
+        }
+    }
+
+    private void completeDataSourceInitialization(@Nullable Throwable error) {
+        if (isDisposed()) {
+            return;
+        }
+        dataSourceInitializationPending = false;
+        if (error == null) {
+            try {
+                setDataSource(requestedDataSource);
+                return;
+            } catch (DBException e) {
+                error = e;
+            }
+        }
+        DBWorkbench.getPlatformUI().showError(
+            AIChatMessagesUI.ai_chat_initialization_error,
+            AIChatMessagesUI.ai_chat_initialization_error_message,
+            error
+        );
     }
 
     public boolean hasMessages() {

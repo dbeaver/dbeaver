@@ -44,6 +44,9 @@ import java.time.format.DateTimeFormatter;
 import java.time.format.FormatStyle;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 import java.util.zip.CRC32;
 
@@ -63,6 +66,8 @@ public class AIChatSession {
     private final AIChatStorage storage;
     private final SessionIdProvider sessionIdProvider;
     private final UserTokenQuotaService quotaService;
+    private final AtomicBoolean initializationInProgress = new AtomicBoolean();
+    private volatile CompletableFuture<Void> initializationCompletion = CompletableFuture.completedFuture(null);
     private Map<UUID, AIChatConversation> conversations;
     private boolean busy;
     private AIAssistant assistant;
@@ -164,11 +169,21 @@ public class AIChatSession {
         if (initialized) {
             return;
         }
+        if (!initializationInProgress.compareAndSet(false, true)) {
+            throw new InitializationInProgressException();
+        }
+        if (initialized) {
+            initializationInProgress.set(false);
+            return;
+        }
 
-        RuntimeUtils.runTask(
+        CompletableFuture<Void> completion = new CompletableFuture<>();
+        initializationCompletion = completion;
+        AtomicReference<Exception> initializationError = new AtomicReference<>();
+        boolean completed = RuntimeUtils.runTask(
             monitor -> {
                 try {
-                    this.conversations = new LinkedHashMap<>();
+                    Map<UUID, AIChatConversation> loadedConversations = new LinkedHashMap<>();
                     List<QMAIConversationHistory> conversationsHistory = storage.findConversationSummaries(
                         sessionIdProvider.getSessionId(monitor)
                     );
@@ -186,15 +201,46 @@ public class AIChatSession {
                             convSettings.loadDataSourceDefaults();
                             conversation.setCustomSettings(convSettings);
                         }
-                        this.conversations.put(conversation.getId(), conversation);
+                        loadedConversations.put(conversation.getId(), conversation);
                     }
 
+                    this.conversations = loadedConversations;
                     initialized = true;
                 } catch (Exception e) {
+                    initializationError.set(e);
                     throw new InvocationTargetException(e);
+                } finally {
+                    initializationInProgress.set(false);
+                    Exception error = initializationError.get();
+                    if (error == null) {
+                        completion.complete(null);
+                    } else {
+                        completion.completeExceptionally(error);
+                    }
                 }
             }, "Initialize AI chat session", 10000
         );
+        if (!completed) {
+            throw new InitializationInProgressException();
+        }
+        Exception error = initializationError.get();
+        if (error instanceof DBException dbException) {
+            throw dbException;
+        }
+        if (error != null) {
+            throw new DBException("Failed to initialize AI chat session", error);
+        }
+    }
+
+    @NotNull
+    public CompletionStage<Void> getInitializationCompletion() {
+        return initializationCompletion.minimalCompletionStage();
+    }
+
+    public static class InitializationInProgressException extends DBException {
+        public InitializationInProgressException() {
+            super("AI chat session initialization is still in progress");
+        }
     }
 
     public void loadConversationImages(

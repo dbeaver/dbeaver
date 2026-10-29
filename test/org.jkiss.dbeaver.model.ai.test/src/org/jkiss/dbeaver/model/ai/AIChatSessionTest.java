@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.ai.quota.QuotaStatus;
 import org.jkiss.dbeaver.model.ai.quota.UserTokenQuotaService;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.qm.QMUnavailableException;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
@@ -31,10 +32,76 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class AIChatSessionTest extends DBeaverUnitTest {
+    @Test
+    public void limitsInitializationWaitAndPreventsDuplicateLoads() throws Exception {
+        AIChatStorage storage = Mockito.mock(AIChatStorage.class);
+        CountDownLatch historyLoadStarted = new CountDownLatch(1);
+        CountDownLatch releaseHistory = new CountDownLatch(1);
+        Mockito.when(storage.findConversationSummaries("session")).thenAnswer(invocation -> {
+            historyLoadStarted.countDown();
+            if (!releaseHistory.await(20, TimeUnit.SECONDS)) {
+                throw new DBException("Test history load timed out");
+            }
+            return List.of();
+        });
+        AIChatSession session = new AIChatSession(
+            Mockito.mock(DBPWorkspace.class), Mockito.mock(AIChatContextProvider.class), storage,
+            monitor -> "session", Mockito.mock(UserTokenQuotaService.class)
+        );
+
+        try {
+            Assertions.assertTimeoutPreemptively(Duration.ofSeconds(15), () ->
+                Assertions.assertThrows(DBException.class, session::init));
+            Assertions.assertEquals(0, historyLoadStarted.getCount());
+            Assertions.assertTimeoutPreemptively(Duration.ofSeconds(1), () ->
+                Assertions.assertThrows(DBException.class, session::init));
+            Mockito.verify(storage).findConversationSummaries("session");
+        } finally {
+            releaseHistory.countDown();
+        }
+        session.getInitializationCompletion().toCompletableFuture().get(5, TimeUnit.SECONDS);
+        Assertions.assertTrue(session.getAllConversations(null).isEmpty());
+        Mockito.verify(storage).findConversationSummaries("session");
+    }
+
+    @Test
+    public void propagatesHistoryLoadFailureAndAllowsRetry() throws DBException {
+        AIChatStorage storage = Mockito.mock(AIChatStorage.class);
+        QMUnavailableException failure = new QMUnavailableException();
+        Mockito.when(storage.findConversationSummaries("session")).thenThrow(failure).thenReturn(List.of());
+        AIChatSession session = new AIChatSession(
+            Mockito.mock(DBPWorkspace.class), Mockito.mock(AIChatContextProvider.class), storage,
+            monitor -> "session", Mockito.mock(UserTokenQuotaService.class)
+        );
+
+        Assertions.assertSame(failure, Assertions.assertThrows(DBException.class, () -> session.getAllConversations(null)));
+        Assertions.assertTrue(session.getAllConversations(null).isEmpty());
+        Assertions.assertTrue(session.getAllConversations(null).isEmpty());
+        Mockito.verify(storage, Mockito.times(2)).findConversationSummaries("session");
+    }
+
+    @Test
+    public void propagatesSessionProviderFailure() {
+        AIChatStorage storage = Mockito.mock(AIChatStorage.class);
+        QMUnavailableException failure = new QMUnavailableException();
+        AIChatSession session = new AIChatSession(
+            Mockito.mock(DBPWorkspace.class), Mockito.mock(AIChatContextProvider.class), storage,
+            monitor -> {
+                throw failure;
+            }, Mockito.mock(UserTokenQuotaService.class)
+        );
+
+        Assertions.assertSame(failure, Assertions.assertThrows(DBException.class, session::init));
+        Mockito.verifyNoInteractions(storage);
+    }
+
     @Test
     public void reportsEmptyCustomScopeWithoutConnectionWarning() throws DBException {
         DBPDataSourceContainer container = Mockito.mock(DBPDataSourceContainer.class);
