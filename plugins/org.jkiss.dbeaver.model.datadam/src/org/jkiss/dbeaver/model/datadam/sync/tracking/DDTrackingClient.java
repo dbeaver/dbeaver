@@ -20,11 +20,11 @@ import com.dbeaver.datadam.share.api.tracking.DDClientInfo;
 import com.dbeaver.datadam.share.api.tracking.DDTracking;
 import com.dbeaver.datadam.share.api.tracking.DDTrackingEndpoints;
 import com.dbeaver.datadam.share.api.tracking.DDTrackingService;
-import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.datadam.DDClient;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.utils.CommonUtils;
@@ -70,7 +70,7 @@ public class DDTrackingClient implements DDTrackingService {
             DDTrackingEndpoints.STOP.replace("{trackingId}", trackingId), EMPTY_BODY, false);
     }
 
-    private static final class Transport extends AbstractRestClient {
+    private static final class Transport extends DDClient {
 
         private final String rootPath;
         private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();

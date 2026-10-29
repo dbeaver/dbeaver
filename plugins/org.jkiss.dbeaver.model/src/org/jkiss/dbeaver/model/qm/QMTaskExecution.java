@@ -41,6 +41,8 @@ public final class QMTaskExecution implements AutoCloseable {
     private boolean failed;
     private boolean canceled;
     private boolean finished;
+    private String errorMessage;
+    private String resultMessage;
 
     public QMTaskExecution(@NotNull DBTTask task) {
         this(task, null);
@@ -100,8 +102,18 @@ public final class QMTaskExecution implements AutoCloseable {
         ) {
             canceled = true;
         } else {
+            if (!failed) {
+                errorMessage = DBTTaskRunRecord.normalizeResultSummary(error.getMessage());
+                if (errorMessage == null) {
+                    errorMessage = DBTTaskRunRecord.normalizeResultSummary(error.getClass().getName());
+                }
+            }
             failed = true;
         }
+    }
+
+    public synchronized void recordResultMessage(@Nullable String resultMessage) {
+        this.resultMessage = DBTTaskRunRecord.normalizeResultSummary(resultMessage);
     }
 
     public synchronized void recordCancellation(boolean canceled) {
@@ -140,7 +152,8 @@ public final class QMTaskExecution implements AutoCloseable {
         if (!finished) {
             finished = true;
             publish(started.finished(System.currentTimeMillis(), canceled ? DBTTaskRunRecord.Status.CANCELED :
-                failed ? DBTTaskRunRecord.Status.FAILED : DBTTaskRunRecord.Status.SUCCESS));
+                failed ? DBTTaskRunRecord.Status.FAILED : DBTTaskRunRecord.Status.SUCCESS,
+                canceled ? resultMessage : failed ? errorMessage : resultMessage));
         }
     }
 

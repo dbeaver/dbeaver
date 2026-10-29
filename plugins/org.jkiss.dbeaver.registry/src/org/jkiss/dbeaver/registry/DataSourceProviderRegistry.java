@@ -459,6 +459,10 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
         return dataSourceProviders;
     }
 
+    public void refreshProvidedDrivers() {
+        dataSourceProviders.forEach(DataSourceProviderDescriptor::refreshProvidedDrivers);
+    }
+
     @Override
     public @NotNull List<DataSourceTypeDescriptor> getDataSourceTypes() {
         for (DataSourceProviderDescriptor provider : dataSourceProviders) {
