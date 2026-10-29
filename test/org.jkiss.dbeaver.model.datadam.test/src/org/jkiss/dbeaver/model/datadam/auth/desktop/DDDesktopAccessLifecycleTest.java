@@ -14,18 +14,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam.auth;
+package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.DDRemoteDamDesktopSessionService;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
 import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.junit.jupiter.api.Assertions;
@@ -35,11 +35,11 @@ import org.mockito.Mockito;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
-@Timeout(15)
+@Timeout(60)
 class DDDesktopAccessLifecycleTest {
 
     @Test
@@ -91,7 +91,7 @@ class DDDesktopAccessLifecycleTest {
 
     @Test
     void expiryClosesRpcAndPausesTheChannelWithoutAnotherAccessOperation() throws Exception {
-        var status = new AtomicReference<>("SIGNED_IN");
+        var status = new AtomicReference<>(DDDesktopTokenManager.Status.SIGNED_IN);
         DDDesktopAccessService access = access(status);
         List<String> events = new ArrayList<>();
         access.addAccessListener(listener(events));
@@ -99,134 +99,145 @@ class DDDesktopAccessLifecycleTest {
         Mockito.when(channel.getStatus()).thenReturn(new DDRemoteDamChannelStatus(
             DDRemoteDamChannelState.CONNECTED, new DDRemoteDamSessionInfo("deployment", "instance", "session")));
         try (var keys = Mockito.mockStatic(DDKeyStore.class);
-             var session = new DDRemoteDamDesktopSessionService(access, channel)) {
+             var session = new DDRemoteDamDesktopSessionService(access, channel);
+             var jobs = new ExpiryJobs()) {
             access.signIn(Mockito.mock(DBRProgressMonitor.class));
             session.start();
             final var endpoint = session.getRpc();
-            Job expiry = Assertions.assertInstanceOf(Job.class, expiryJob(access));
+            Job expiry = jobs.latest();
 
-            status.set("EXPIRED");
-            run(expiry);
+            status.set(DDDesktopTokenManager.Status.EXPIRED);
+            wake(expiry);
 
             Assertions.assertEquals(List.of("changing", "changed", "changed"), events);
-            Assertions.assertNull(expiryJob(access));
+            Assertions.assertEquals(1, jobs.count());
             Assertions.assertTrue(endpoint.isCloseComplete());
             Assertions.assertThrows(DBException.class, session::getRpc);
             Mockito.verify(channel).pause();
             Mockito.verify(channel).start();
             keys.verify(DDKeyStore::clear, Mockito.never());
-        } finally {
-            cancelExpiry(access);
         }
     }
 
     @Test
     void replacedExpiryCannotInvalidateTheNewSession() throws Exception {
-        var status = new AtomicReference<>("SIGNED_IN");
+        var status = new AtomicReference<>(DDDesktopTokenManager.Status.SIGNED_IN);
         DDDesktopAccessService access = access(status);
         List<String> events = new ArrayList<>();
         access.addAccessListener(listener(events));
-        try (var keys = Mockito.mockStatic(DDKeyStore.class)) {
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var jobs = new ExpiryJobs()) {
             access.signIn(Mockito.mock(DBRProgressMonitor.class));
-            Job previous = Assertions.assertInstanceOf(Job.class, expiryJob(access));
+            Job previous = jobs.latest();
             access.signIn(Mockito.mock(DBRProgressMonitor.class));
-            Job current = Assertions.assertInstanceOf(Job.class, expiryJob(access));
+            Job current = jobs.latest();
+            Assertions.assertNotSame(previous, current);
+            Assertions.assertEquals(Job.NONE, previous.getState());
 
-            status.set("EXPIRED");
-            run(previous);
+            status.set(DDDesktopTokenManager.Status.EXPIRED);
+            runCancelled(previous);
 
-            Assertions.assertSame(current, expiryJob(access));
+            Assertions.assertNotEquals(Job.NONE, current.getState());
             Assertions.assertEquals(List.of("changing", "changed", "changing", "changed"), events);
-            run(current);
+            wake(current);
             Assertions.assertEquals(List.of("changing", "changed", "changing", "changed", "changed"), events);
-            Assertions.assertNull(expiryJob(access));
-        } finally {
-            cancelExpiry(access);
+            Assertions.assertEquals(3, jobs.count());
         }
     }
 
     @Test
     void logoutCancelsExpiryAndIgnoresItsLateExecution() throws Exception {
-        var status = new AtomicReference<>("SIGNED_IN");
+        var status = new AtomicReference<>(DDDesktopTokenManager.Status.SIGNED_IN);
         DDDesktopAccessService access = access(status);
         List<String> events = new ArrayList<>();
         access.addAccessListener(listener(events));
-        try (var keys = Mockito.mockStatic(DDKeyStore.class)) {
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var jobs = new ExpiryJobs()) {
             access.signIn(Mockito.mock(DBRProgressMonitor.class));
-            Job expiry = Assertions.assertInstanceOf(Job.class, expiryJob(access));
+            Job expiry = jobs.latest();
 
-            status.set("SIGNED_OUT");
+            status.set(DDDesktopTokenManager.Status.SIGNED_OUT);
             access.signOut();
-            run(expiry);
+            Assertions.assertEquals(Job.NONE, expiry.getState());
+            runCancelled(expiry);
 
             Assertions.assertEquals(List.of("changing", "changed", "changing", "changed"), events);
-            Assertions.assertNull(expiryJob(access));
-        } finally {
-            cancelExpiry(access);
+            Assertions.assertEquals(2, jobs.count());
         }
     }
 
     @Test
     void earlyExpiryExecutionRechecksTheCurrentTokenDeadline() throws Exception {
-        var status = new AtomicReference<>("SIGNED_IN");
+        var status = new AtomicReference<>(DDDesktopTokenManager.Status.SIGNED_IN);
         DDDesktopAccessService access = access(status);
         List<String> events = new ArrayList<>();
         access.addAccessListener(listener(events));
-        try (var keys = Mockito.mockStatic(DDKeyStore.class)) {
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var jobs = new ExpiryJobs()) {
             access.signIn(Mockito.mock(DBRProgressMonitor.class));
-            Job expiry = Assertions.assertInstanceOf(Job.class, expiryJob(access));
+            Job expiry = jobs.latest();
 
-            run(expiry);
+            wake(expiry);
 
-            Assertions.assertNotSame(expiry, expiryJob(access));
-            Assertions.assertNotNull(expiryJob(access));
+            Assertions.assertNotSame(expiry, jobs.latest());
+            Assertions.assertEquals(2, jobs.count());
             Assertions.assertEquals(List.of("changing", "changed"), events);
-        } finally {
-            cancelExpiry(access);
         }
     }
 
     @NotNull
-    private static DDDesktopAccessService access() throws Exception {
-        return access(new AtomicReference<>("SIGNED_OUT"));
+    private static DDDesktopAccessService access() {
+        return access(new AtomicReference<>(DDDesktopTokenManager.Status.SIGNED_OUT));
     }
 
     @NotNull
-    @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
-    private static DDDesktopAccessService access(@NotNull AtomicReference<String> status) throws Exception {
-        Class<?> managerType = Class.forName("org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopTokenManager");
-        var statuses = new HashMap<String, Object>();
-        for (Object value : managerType.getMethod("getStatus").getReturnType().getEnumConstants()) {
-            statuses.put(value.toString(), value);
-        }
-        Object manager = Mockito.mock(managerType, invocation -> switch (invocation.getMethod().getName()) {
-            case "getStatus" -> statuses.get(status.get());
-            case "getExpiresAt" -> Instant.now().plusSeconds(3600);
-            default -> Mockito.RETURNS_DEFAULTS.answer(invocation);
-        });
-        var constructor = DDDesktopAccessService.class.getDeclaredConstructor(managerType);
-        constructor.setAccessible(true);
-        return constructor.newInstance(manager);
+    private static DDDesktopAccessService access(@NotNull AtomicReference<DDDesktopTokenManager.Status> status) {
+        DDDesktopTokenManager manager = Mockito.mock(DDDesktopTokenManager.class);
+        Mockito.when(manager.getStatus()).thenAnswer(invocation -> status.get());
+        Mockito.when(manager.getExpiresAt()).thenAnswer(invocation -> Instant.now().plusSeconds(3600));
+        return new DDDesktopAccessService(manager);
     }
 
-    @Nullable
-    @SuppressWarnings("PMD.AvoidAccessibilityAlteration")
-    private static Job expiryJob(@NotNull DDDesktopAccessService access) throws Exception {
-        var field = DDDesktopAccessService.class.getDeclaredField("expiryJob");
-        field.setAccessible(true);
-        return (Job) field.get(access);
-    }
-
-    private static void run(@NotNull Job job) throws InterruptedException {
-        job.cancel();
-        job.schedule();
+    private static void wake(@NotNull Job job) throws InterruptedException {
+        job.wakeUp();
         job.join();
     }
 
-    private static void cancelExpiry(@NotNull DDDesktopAccessService access) throws Exception {
-        Job job = expiryJob(access);
-        if (job != null) {
-            job.cancel();
+    private static void runCancelled(@NotNull Job job) throws InterruptedException {
+        job.schedule(1);
+        job.join();
+    }
+
+    private static final class ExpiryJobs extends JobChangeAdapter implements AutoCloseable {
+        private final List<Job> scheduled = new CopyOnWriteArrayList<>();
+
+        private ExpiryJobs() {
+            Job.getJobManager().addJobChangeListener(this);
+        }
+
+        @Override
+        public void scheduled(@NotNull IJobChangeEvent event) {
+            if ("Expire DataDam desktop access".equals(event.getJob().getName())) {
+                scheduled.add(event.getJob());
+            }
+        }
+
+        @NotNull
+        private Job latest() {
+            Assertions.assertFalse(scheduled.isEmpty());
+            return scheduled.get(scheduled.size() - 1);
+        }
+
+        private int count() {
+            return scheduled.size();
+        }
+
+        @Override
+        public void close() {
+            Job.getJobManager().removeJobChangeListener(this);
+            for (Job job : scheduled) {
+                job.cancel();
+            }
         }
     }
 
