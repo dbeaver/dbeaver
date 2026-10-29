@@ -357,15 +357,7 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             for (DataSourceProviderDescriptor provider : dataSourceProviders) {
                 allDrivers.addAll(provider.getDrivers());
             }
-            for (DBPDriver driver1 : allDrivers) {
-                for (DBPDriver driver2 : allDrivers) {
-                    if (driver1 instanceof DriverDescriptor dd1 && driver2 instanceof DriverDescriptor dd2 &&
-                        driver1 != driver2 && dd1.replaces(dd2)
-                    ) {
-                        dd2.setReplacedBy(dd1);
-                    }
-                }
-            }
+            resolveDriverReplacements(allDrivers);
         }
 
         // Set provider properties to drivers
@@ -384,6 +376,44 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
             }
         }
         log.debug("Total database drivers: " + driverCount + " (" + (driverCount - customDriverCount) + ")");
+    }
+
+    private record DriverId(@NotNull String providerId, @NotNull String driverId) {
+    }
+
+    private static void resolveDriverReplacements(@NotNull List<DBPDriver> allDrivers) {
+        Map<DriverId, List<DriverDescriptor>> replacersByTarget = new HashMap<>();
+        for (DBPDriver driver : allDrivers) {
+            if (!(driver instanceof DriverDescriptor replacer)) {
+                continue;
+            }
+            var replacements = replacer.getDriverReplacementsInfo();
+            if (replacements.isEmpty()) {
+                continue;
+            }
+            Set<DriverId> seenTargets = new HashSet<>();
+            for (var replacement : replacements) {
+                DriverId targetId = new DriverId(replacement.getFirst(), replacement.getSecond());
+                if (seenTargets.add(targetId)) {
+                    replacersByTarget.computeIfAbsent(targetId, id -> new ArrayList<>()).add(replacer);
+                }
+            }
+        }
+        for (DBPDriver driver : allDrivers) {
+            if (driver instanceof DriverDescriptor target) {
+                List<DriverDescriptor> replacers = replacersByTarget.get(
+                    new DriverId(target.getProviderDescriptor().getId(), target.getId())
+                );
+                if (replacers != null) {
+                    // As before, the last eligible replacer in driver order takes precedence.
+                    for (DriverDescriptor replacer : replacers) {
+                        if (replacer != target) {
+                            target.setReplacedBy(replacer);
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public static void dispose() {
@@ -427,6 +457,10 @@ public class DataSourceProviderRegistry implements DBPDataSourceProviderRegistry
     @NotNull
     public List<DataSourceProviderDescriptor> getDataSourceProviders() {
         return dataSourceProviders;
+    }
+
+    public void refreshProvidedDrivers() {
+        dataSourceProviders.forEach(DataSourceProviderDescriptor::refreshProvidedDrivers);
     }
 
     @Override
