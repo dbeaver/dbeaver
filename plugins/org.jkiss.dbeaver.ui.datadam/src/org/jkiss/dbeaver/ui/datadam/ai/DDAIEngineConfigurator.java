@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.datadam;
+package org.jkiss.dbeaver.ui.datadam.ai;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
@@ -26,8 +26,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.datadam.DDAIEngine;
-import org.jkiss.dbeaver.model.datadam.DDAIEngineProperties;
+import org.jkiss.dbeaver.model.datadam.ai.DDAIEngine;
+import org.jkiss.dbeaver.model.datadam.ai.DDAIEngineProperties;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.model.CachedValue;
@@ -41,8 +41,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Optional;
 
-public class DDConfigurator extends AbstractAIEngineConfigurator<AIEngineDescriptor, DDAIEngineProperties> {
-    public static final String DATADAM_DOCS_URL = "https://docs.datadam.cloud/";
+public class DDAIEngineConfigurator extends AbstractAIEngineConfigurator<AIEngineDescriptor, DDAIEngineProperties> {
 
     @Override
     protected void environmentSettingsChanged() {

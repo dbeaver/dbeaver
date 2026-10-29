@@ -52,9 +52,9 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.datadam.DDConfigurator;
 import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.DDImportKeyDialog;
+import org.jkiss.dbeaver.ui.datadam.DDUIConstants;
 import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIIcons;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
@@ -122,7 +122,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
 
         projectsDescription = DDUIUtils.create(content, DDTrackingUIMessages.projects_page_description,
-            DDTrackingUIMessages.projects_page_about_link, DDConfigurator.DATADAM_DOCS_URL + "Projects");
+            DDTrackingUIMessages.projects_page_about_link, DDUIConstants.DATADAM_DOCS_URL + "Projects");
         Composite keysGroup = UIUtils.createTitledComposite(
             content, DDTrackingUIMessages.sync_preference_page_encryption_keys_group,
             2, GridData.FILL_HORIZONTAL, SWT.DEFAULT
