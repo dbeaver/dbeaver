@@ -7,7 +7,6 @@ Bundle-Version: 2.0.51.qualifier
 Bundle-Release-Date: 20261116
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
-Bundle-Activator: org.jkiss.dbeaver.bundle.ModelActivator
 Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.access,
