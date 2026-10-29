@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Vendor: DBeaver Corp
+Bundle-Name: DBeaver Security Model
+Bundle-SymbolicName: org.jkiss.dbeaver.model.security;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-ActivationPolicy: lazy
+Export-Package: org.jkiss.dbeaver.model.security
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.equinox.security,
+ org.jkiss.utils,
+ com.sun.jna,
+ com.sun.jna.platform
+Automatic-Module-Name: org.jkiss.dbeaver.model.security

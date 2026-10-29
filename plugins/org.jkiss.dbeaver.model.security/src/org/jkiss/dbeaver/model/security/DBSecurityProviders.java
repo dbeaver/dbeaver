@@ -14,20 +14,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.cdata;
+package org.jkiss.dbeaver.model.security;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.runtime.ExperimentalBundles;
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
+/** Equinox secure-storage provider identifiers used by DBeaver. */
+public final class DBSecurityProviders {
+    public static final String MACOS_KEYCHAIN = "org.jkiss.dbeaver.model.security.MacOSSecureStorageKeychain";
+    public static final String LEGACY_MACOS_PROVIDER_EXTENSION_ID = ".osxkeystoreintegration";
+    public static final String WINDOWS_INTEGRATION = "org.eclipse.equinox.security.win32.WindowsPasswordProvider64bit";
+    public static final String LINUX_INTEGRATION = "org.eclipse.equinox.security.linux.LinuxKeystoreIntegrationJNA";
 
-public class CDataLazyBundleActivator implements BundleActivator {
-    @Override
-    public void start(@NotNull BundleContext context) throws Exception {
-        ExperimentalBundles.initialize(context);
-    }
-
-    @Override
-    public void stop(@NotNull BundleContext context) {
+    private DBSecurityProviders() {
     }
 }
