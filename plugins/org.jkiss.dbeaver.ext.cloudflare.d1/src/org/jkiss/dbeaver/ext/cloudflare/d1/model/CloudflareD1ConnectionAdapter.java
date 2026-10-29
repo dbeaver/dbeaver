@@ -17,11 +17,9 @@
 package org.jkiss.dbeaver.ext.cloudflare.d1.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cloudflare.d1.CloudflareD1ConnectionSettings;
 import org.jkiss.dbeaver.ext.cloudflare.d1.internal.CloudflareD1ModelMessages;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -45,7 +43,7 @@ public final class CloudflareD1ConnectionAdapter {
 
     @NotNull
     static List<CloudflareD1Database> listDatabases(
-        @NotNull CloudflareD1AdminClient client, @NotNull DBPConnectionConfiguration configuration
+        @NotNull CloudflareD1Client client, @NotNull DBPConnectionConfiguration configuration
     ) throws SQLException {
         String scope = configuration.getProperty(CloudflareD1ConnectionSettings.DATABASE_IDS);
         if (scope == null || scope.isBlank()) {
@@ -63,7 +61,7 @@ public final class CloudflareD1ConnectionAdapter {
     public static List<DatabaseChoice> discoverDatabases(
         @NotNull DBRProgressMonitor monitor, @NotNull DBPConnectionConfiguration configuration
     ) throws DBException {
-        return run(monitor, () -> CloudflareD1AdminClient.from(configuration).listDatabases().stream()
+        return run(monitor, () -> CloudflareD1Client.from(configuration).listDatabases().stream()
             .map(database -> new DatabaseChoice(database.id(), database.name())).toList());
     }
 
@@ -83,51 +81,6 @@ public final class CloudflareD1ConnectionAdapter {
             .map(CloudflareD1Catalog.class::cast)
             .map(catalog -> new DatabaseChoice(catalog.requireDatabaseId(), catalog.getName()))
             .toList();
-    }
-
-    @NotNull
-    public static CloudflareD1Database details(@NotNull DBRProgressMonitor monitor, @NotNull CloudflareD1Catalog catalog)
-            throws DBException {
-        return call(monitor, catalog.getDataSource(), client -> client.getDatabase(catalog.requireDatabaseId()));
-    }
-
-    @NotNull
-    public static CloudflareD1Database create(@NotNull DBRProgressMonitor monitor, @NotNull CloudflareD1Catalog catalog)
-            throws DBException {
-        return call(monitor, catalog.getDataSource(), client -> client.createDatabase(
-            catalog.getName(), placement(catalog.getJurisdiction(), catalog.getPrimaryLocationHint())));
-    }
-
-    @NotNull
-    static CreateOptions placement(@Nullable String jurisdiction, @Nullable String location) {
-        return new CreateOptions(jurisdiction, jurisdiction == null || jurisdiction.isBlank() ? location : null);
-    }
-
-    public static void validateDeletion(@NotNull CloudflareD1Catalog catalog) throws DBException {
-        if (catalog.isInitialDatabase()) {
-            throw new DBException(CloudflareD1ModelMessages.error_delete_initial);
-        }
-    }
-
-    public static void delete(@NotNull DBRProgressMonitor monitor, @NotNull CloudflareD1Catalog catalog) throws DBException {
-        validateDeletion(catalog);
-        CloudflareD1DataSource source = catalog.getDataSource();
-        String databaseId = catalog.requireDatabaseId();
-        source.closeCatalogContexts(monitor, databaseId);
-        call(monitor, source, client -> {
-            client.deleteDatabase(databaseId);
-            return Boolean.TRUE;
-        });
-        source.removeDatabaseScope(databaseId);
-        source.refreshObject(monitor);
-    }
-
-    public static void setReplication(
-        @NotNull DBRProgressMonitor monitor, @NotNull CloudflareD1Catalog catalog, @NotNull ReplicationMode mode
-    ) throws DBException {
-        catalog.setDatabaseDetails(call(monitor, catalog.getDataSource(),
-            client -> client.setReadReplication(catalog.requireDatabaseId(), mode)));
-        DBUtils.fireObjectUpdate(catalog);
     }
 
     @NotNull
@@ -159,7 +112,7 @@ public final class CloudflareD1ConnectionAdapter {
     private static <T> T call(
         @NotNull DBRProgressMonitor monitor, @NotNull CloudflareD1DataSource source, @NotNull DriverAction<T> action
     ) throws DBException {
-        return run(monitor, () -> action.execute(CloudflareD1AdminClient.from(
+        return run(monitor, () -> action.execute(CloudflareD1Client.from(
             source.getContainer().getActualConnectionConfiguration())));
     }
 
@@ -198,10 +151,7 @@ public final class CloudflareD1ConnectionAdapter {
     @FunctionalInterface
     private interface DriverAction<T> {
         @NotNull
-        T execute(@NotNull CloudflareD1AdminClient client) throws SQLException;
-    }
-
-    public record CreateOptions(@Nullable String jurisdiction, @Nullable String primaryLocationHint) {
+        T execute(@NotNull CloudflareD1Client client) throws SQLException;
     }
 
     public enum ReplicationMode {

@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.cloudflare.d1.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
-record CloudflareD1Database(
+public record CloudflareD1Database(
     @NotNull String id,
     @NotNull String name,
     @Nullable String createdAt,

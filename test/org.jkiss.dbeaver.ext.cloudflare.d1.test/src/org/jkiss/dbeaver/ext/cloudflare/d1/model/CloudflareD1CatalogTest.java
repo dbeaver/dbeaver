@@ -16,32 +16,23 @@
  */
 package org.jkiss.dbeaver.ext.cloudflare.d1.model;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cloudflare.d1.CloudflareD1ConnectionSettings;
-import org.jkiss.dbeaver.ext.cloudflare.d1.edit.CloudflareD1CatalogManager;
 import org.jkiss.dbeaver.ext.cloudflare.d1.internal.CloudflareD1ModelMessages;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
-import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTable;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteTableForeignKey;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
-import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.runtime.properties.DataSourcePropertyFilter;
-import org.jkiss.dbeaver.runtime.properties.ObjectAttributeDescriptor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Assertions;
@@ -51,45 +42,10 @@ import org.mockito.Mockito;
 import org.osgi.framework.FrameworkUtil;
 
 import java.sql.SQLException;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class CloudflareD1CatalogTest {
     private static boolean queryManagerInitialized;
-
-    @Test
-    void creationConfiguresTheDraftNameBeforeAddingTheCreateCommand() throws Exception {
-        var source = Mockito.mock(CloudflareD1DataSource.class, Mockito.RETURNS_DEEP_STUBS);
-        var context = Mockito.mock(DBECommandContext.class);
-        Mockito.when(context.getUserParams()).thenReturn(new HashMap<>());
-        var manager = new CloudflareD1CatalogManager() {
-            @NotNull
-            @Override
-            protected CloudflareD1Catalog configureObject(
-                @NotNull DBRProgressMonitor monitor,
-                @Nullable DBECommandContext commandContext,
-                @Nullable Object parent,
-                @NotNull CloudflareD1Catalog object,
-                @NotNull Map<String, Object> options
-            ) {
-                Assertions.assertFalse(object.isPersisted());
-                object.setName("new-database");
-                object.setJurisdiction("eu");
-                return object;
-            }
-        };
-
-        var catalog = manager.createNewObject(Mockito.mock(DBRProgressMonitor.class),
-            context, source, null, new HashMap<>());
-
-        Assertions.assertNotNull(catalog);
-        Assertions.assertEquals("new-database", catalog.getName());
-        Assertions.assertEquals("eu", catalog.getJurisdiction());
-        Assertions.assertTrue(context.getUserParams().containsKey(catalog));
-        Mockito.verify(source, Mockito.never()).getDefaultInstance();
-    }
 
     @BeforeAll
     static void initializeQueryManager() {
@@ -284,10 +240,10 @@ public class CloudflareD1CatalogTest {
 
     @Test
     void metamodelCreatesD1CatalogWithAllDatabaseProperties() throws Exception {
-        var source = Mockito.mock(CatalogDataSource.class, Mockito.RETURNS_DEEP_STUBS);
+        var source = Mockito.mock(CloudflareD1DataSource.class, Mockito.RETURNS_DEEP_STUBS);
         var database = new CloudflareD1Database("database-id", "database", "2026-09-23T12:00:00Z", "eu", "production",
             4096L, "WEUR", CloudflareD1ConnectionAdapter.ReplicationMode.AUTO);
-        source.database = database;
+        Mockito.when(source.getDatabase("database")).thenReturn(database);
         var catalog = Assertions.assertInstanceOf(
             CloudflareD1Catalog.class, new CloudflareD1MetaModel().createCatalogImpl(source, "database"));
         Assertions.assertEquals("database", catalog.getName());
@@ -298,25 +254,6 @@ public class CloudflareD1CatalogTest {
         Assertions.assertEquals(4096L, catalog.getFileSize());
         Assertions.assertEquals("WEUR", catalog.getRunningInRegion());
         Assertions.assertEquals("AUTO", catalog.getReadReplicationMode());
-    }
-
-    @Test
-    void initialDatabaseDeletionIsRejectedBeforeOpeningAnyConnection() {
-        var source = Mockito.mock(CloudflareD1DataSource.class, Mockito.RETURNS_DEEP_STUBS);
-        Mockito.when(source.getContainer().getConnectionConfiguration().getDatabaseName()).thenReturn("initial-id");
-        var catalog = new CloudflareD1Catalog(source, new CloudflareD1Database(
-            "initial-id", "initial", null, null, null, null, null, null));
-        Assertions.assertTrue(catalog.isInitialDatabase());
-        Assertions.assertThrows(DBException.class,
-            () -> CloudflareD1ConnectionAdapter.delete(new VoidProgressMonitor(), catalog));
-        Mockito.verify(source, Mockito.never()).getDefaultInstance();
-    }
-
-    @Test
-    void jurisdictionExcludesLocationHint() {
-        Assertions.assertNull(CloudflareD1ConnectionAdapter.placement("eu", "weur").primaryLocationHint());
-        Assertions.assertEquals("weur", CloudflareD1ConnectionAdapter.placement(null, "weur").primaryLocationHint());
-        Assertions.assertEquals("eu", CloudflareD1ConnectionAdapter.placement("eu", "weur").jurisdiction());
     }
 
     @Test
@@ -411,46 +348,6 @@ public class CloudflareD1CatalogTest {
     }
 
     @Test
-    void propertiesLoadDetailedDatabaseOnceAndStageReplicationLocally() throws Exception {
-        var source = Mockito.mock(CloudflareD1DataSource.class, Mockito.RETURNS_DEEP_STUBS);
-        var summary = new CloudflareD1Database("id", "database", null, null, null, null, null, null);
-        var details = new CloudflareD1Database("id", "database", "2026-09-23T12:00:00Z", "eu", "production",
-            4096L, "WEUR", CloudflareD1ConnectionAdapter.ReplicationMode.AUTO);
-        var reads = new AtomicInteger();
-        var catalog = new CloudflareD1Catalog(source, summary) {
-            @NotNull
-            @Override
-            protected CloudflareD1Database readDetails(@NotNull DBRProgressMonitor monitor) {
-                reads.incrementAndGet();
-                return details;
-            }
-        };
-        var monitor = Mockito.mock(DBRProgressMonitor.class);
-        Assertions.assertEquals("eu", catalog.getJurisdiction(monitor));
-        Assertions.assertEquals("WEUR", catalog.getRunningInRegion(monitor));
-        Assertions.assertEquals(4096L, catalog.getFileSize(monitor));
-        Assertions.assertEquals(CloudflareD1ConnectionAdapter.ReplicationMode.AUTO, catalog.getReadReplicationMode(monitor));
-        Assertions.assertEquals(1, reads.get());
-        catalog.setReadReplicationMode(CloudflareD1ConnectionAdapter.ReplicationMode.DISABLED);
-        Assertions.assertEquals(CloudflareD1ConnectionAdapter.ReplicationMode.DISABLED, catalog.getReadReplicationMode(monitor));
-        Assertions.assertEquals(1, reads.get());
-        var property = CloudflareD1Catalog.class.getMethod("getReadReplicationMode",
-            DBRProgressMonitor.class).getAnnotation(Property.class);
-        Assertions.assertFalse(property.expensive());
-        Assertions.assertTrue(property.updatable());
-        var descriptors = ObjectAttributeDescriptor.extractAnnotations(
-            null, CloudflareD1Catalog.class, new DataSourcePropertyFilter(source), null);
-        Assertions.assertEquals(8, descriptors.size());
-        for (String id : List.of("jurisdiction", "runningInRegion", "readReplicationMode")) {
-            var descriptor = descriptors.stream().filter(item -> id.equals(item.getId())).findFirst().orElseThrow();
-            Assertions.assertTrue(descriptor.isLazy());
-            if (id.equals("readReplicationMode")) {
-                Assertions.assertEquals(CloudflareD1ConnectionAdapter.ReplicationMode.class, descriptor.getGetter().getReturnType());
-            }
-        }
-    }
-
-    @Test
     void missingRegionIsDisplayedAsNoneInProperties() throws Exception {
         var source = Mockito.mock(CloudflareD1DataSource.class, Mockito.RETURNS_DEEP_STUBS);
         var catalog = new CloudflareD1Catalog(source, "database");
@@ -461,25 +358,6 @@ public class CloudflareD1CatalogTest {
         }
         catalog.setDatabaseDetails(new CloudflareD1Database("id", "database", null, null, null, null, "WEUR", null));
         Assertions.assertEquals("WEUR", catalog.getRunningInRegion(monitor));
-    }
-
-    // Public so Mockito can subclass this fixture from its OSGi class loader.
-    public static class CatalogDataSource extends CloudflareD1DataSource {
-        private CloudflareD1Database database;
-
-        private CatalogDataSource(
-            @NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull GenericMetaModel metaModel
-        ) throws DBException {
-            super(monitor, container, metaModel);
-        }
-
-        @NotNull
-        @Override
-        public CloudflareD1Database getDatabase(@NotNull String name) {
-            Assertions.assertNotNull(database);
-            Assertions.assertEquals(database.name(), name);
-            return database;
-        }
     }
 
 }

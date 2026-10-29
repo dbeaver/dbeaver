@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableBase;
 import org.jkiss.dbeaver.model.DBPExclusiveResource;
-import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -36,15 +35,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 
-public class CloudflareD1Catalog extends GenericCatalog implements DBSInstance, DBPSaveableObject {
+public class CloudflareD1Catalog extends GenericCatalog implements DBSInstance {
     private CloudflareD1Database database;
     private String name;
-    private String jurisdiction;
-    private String primaryLocationHint;
-    private boolean persisted;
-    private boolean appendToScope;
     private boolean detailsLoaded;
-    private CloudflareD1ConnectionAdapter.ReplicationMode replicationMode;
 
     public CloudflareD1Catalog(@NotNull CloudflareD1DataSource dataSource, @NotNull String name) {
         super(dataSource, name);
@@ -59,10 +53,7 @@ public class CloudflareD1Catalog extends GenericCatalog implements DBSInstance, 
     public void setDatabase(@NotNull CloudflareD1Database database) {
         this.database = database;
         this.name = database.name();
-        this.jurisdiction = database.jurisdiction();
-        this.replicationMode = database.readReplicationMode();
         this.detailsLoaded = false;
-        this.persisted = true;
     }
 
     public synchronized void setDatabaseDetails(@NotNull CloudflareD1Database database) {
@@ -78,7 +69,7 @@ public class CloudflareD1Catalog extends GenericCatalog implements DBSInstance, 
 
     @NotNull
     protected CloudflareD1Database readDetails(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return CloudflareD1ConnectionAdapter.details(monitor, this);
+        return Objects.requireNonNull(database, "D1 database is not loaded");
     }
 
     @NotNull
@@ -92,10 +83,6 @@ public class CloudflareD1Catalog extends GenericCatalog implements DBSInstance, 
     @Property(viewable = true, order = 1)
     public String getName() {
         return this.name;
-    }
-
-    public void setName(@NotNull String name) {
-        this.name = name;
     }
 
     @Nullable
@@ -123,7 +110,7 @@ public class CloudflareD1Catalog extends GenericCatalog implements DBSInstance, 
 
     @Nullable
     public String getJurisdiction() {
-        return this.jurisdiction;
+        return this.database == null ? null : this.database.jurisdiction();
     }
 
     @Nullable
@@ -131,19 +118,6 @@ public class CloudflareD1Catalog extends GenericCatalog implements DBSInstance, 
     public String getJurisdiction(@NotNull DBRProgressMonitor monitor) throws DBException {
         this.loadDetails(monitor);
         return this.getJurisdiction();
-    }
-
-    public void setJurisdiction(@Nullable String jurisdiction) {
-        this.jurisdiction = jurisdiction;
-    }
-
-    @Nullable
-    public String getPrimaryLocationHint() {
-        return this.primaryLocationHint;
-    }
-
-    public void setPrimaryLocationHint(@Nullable String primaryLocationHint) {
-        this.primaryLocationHint = primaryLocationHint;
     }
 
     @Nullable
@@ -185,18 +159,15 @@ public class CloudflareD1Catalog extends GenericCatalog implements DBSInstance, 
 
     @Nullable
     public String getReadReplicationMode() {
-        return this.replicationMode == null ? null : this.replicationMode.name();
+        var mode = this.database == null ? null : this.database.readReplicationMode();
+        return mode == null ? null : mode.name();
     }
 
     @Nullable
-    @Property(viewable = true, editable = true, updatable = true, order = 8)
+    @Property(viewable = true, order = 8)
     public CloudflareD1ConnectionAdapter.ReplicationMode getReadReplicationMode(@NotNull DBRProgressMonitor monitor) throws DBException {
         this.loadDetails(monitor);
-        return this.replicationMode;
-    }
-
-    public void setReadReplicationMode(@Nullable CloudflareD1ConnectionAdapter.ReplicationMode mode) {
-        this.replicationMode = mode;
+        return this.database == null ? null : this.database.readReplicationMode();
     }
 
     @NotNull
@@ -233,14 +204,6 @@ public class CloudflareD1Catalog extends GenericCatalog implements DBSInstance, 
         return databaseId != null && databaseId.equals(getDataSource().getContainer().getConnectionConfiguration().getDatabaseName());
     }
 
-    public boolean isAppendToScope() {
-        return this.appendToScope;
-    }
-
-    public void setAppendToScope(boolean appendToScope) {
-        this.appendToScope = appendToScope;
-    }
-
     @NotNull
     @Override
     public CloudflareD1Catalog refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
@@ -249,16 +212,6 @@ public class CloudflareD1Catalog extends GenericCatalog implements DBSInstance, 
         }
         super.refreshObject(monitor);
         return this;
-    }
-
-    @Override
-    public boolean isPersisted() {
-        return this.persisted;
-    }
-
-    @Override
-    public void setPersisted(boolean persisted) {
-        this.persisted = persisted;
     }
 
     @NotNull

@@ -21,12 +21,7 @@ import org.eclipse.osgi.util.NLS;
 public class CloudflareD1ModelMessages extends NLS {
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.cloudflare.d1.internal.CloudflareD1ModelResources";
     public static String task_administration;
-    public static String task_create;
-    public static String task_delete;
-    public static String task_replication;
-    public static String error_replication_required;
     public static String value_none;
-    public static String error_delete_initial;
     public static String error_cancelled;
     public static String error_timeout;
     public static String error_authentication;

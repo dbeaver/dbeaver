@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.cloudflare.d1.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.cloudflare.d1.CloudflareD1ConnectionSettings;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
@@ -81,7 +80,7 @@ public class CloudflareD1DataSource extends SQLiteDataSource {
     }
 
     @NotNull
-    CloudflareD1Database getDatabase(@NotNull String name) {
+    public CloudflareD1Database getDatabase(@NotNull String name) {
         return Objects.requireNonNull(this.databases.get(name), "Unknown D1 database: " + name);
     }
 
@@ -127,35 +126,6 @@ public class CloudflareD1DataSource extends SQLiteDataSource {
             catalog.refreshObject(monitor);
         }
         DBUtils.fireObjectUpdate(catalog);
-    }
-
-    public void removeDatabaseScope(@NotNull String databaseId) throws DBException {
-        DBPDataSourceContainer container = getContainer();
-        boolean changed = CloudflareD1ConnectionSettings.removeDatabaseFromScope(container.getConnectionConfiguration(), databaseId);
-        CloudflareD1ConnectionSettings.removeDatabaseFromScope(container.getActualConnectionConfiguration(), databaseId);
-        if (changed) {
-            container.persistConfiguration(false);
-        }
-    }
-
-    public void appendDatabaseScope(@NotNull DBRProgressMonitor monitor, @NotNull String databaseId) throws DBException {
-        DBPDataSourceContainer container = this.getContainer();
-        DBPConnectionConfiguration configuration = container.getConnectionConfiguration();
-        String scope = configuration.getProperty(CloudflareD1ConnectionSettings.DATABASE_IDS);
-        if (scope == null || scope.isBlank()) {
-            return;
-        }
-        String updated = CloudflareD1ConnectionSettings.serializeScope(configuration.getDatabaseName(), scope + "," + databaseId);
-        configuration.setProperty(CloudflareD1ConnectionSettings.DATABASE_IDS, updated);
-        container.getActualConnectionConfiguration().setProperty(CloudflareD1ConnectionSettings.DATABASE_IDS, updated);
-        container.persistConfiguration(false);
-        for (JDBCExecutionContext context : this.getDefaultInstance().getAllContexts()) {
-            if (!context.isConnected()) {
-                continue;
-            }
-            context.invalidateContext(monitor, DBCInvalidatePhase.BEFORE_INVALIDATE);
-            context.invalidateContext(monitor, DBCInvalidatePhase.INVALIDATE);
-        }
     }
 
     @NotNull

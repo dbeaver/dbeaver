@@ -50,10 +50,6 @@
             </drivers>
         </datasource>
     </extension>
-    <extension point="org.jkiss.dbeaver.objectManager">
-        <manager class="org.jkiss.dbeaver.ext.cloudflare.d1.edit.CloudflareD1CatalogManager"
-                 objectType="org.jkiss.dbeaver.ext.cloudflare.d1.model.CloudflareD1Catalog"/>
-    </extension>
     <extension point="org.jkiss.dbeaver.dataSourceAuth">
         <authModel
             id="cloudflare_d1_native"

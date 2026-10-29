@@ -39,7 +39,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
 
-public class CloudflareD1AdminClient {
+public class CloudflareD1Client {
     private static final String DEFAULT_API_URL = "https://api.cloudflare.com/client/v4";
     private static final Pattern IDENTIFIER = Pattern.compile("[A-Za-z0-9_-]+");
     private static final int DATABASES_PER_PAGE = 10000;
@@ -49,7 +49,7 @@ public class CloudflareD1AdminClient {
     private final Duration requestTimeout;
     private final HttpClient httpClient;
 
-    protected CloudflareD1AdminClient(
+    protected CloudflareD1Client(
         @NotNull String accountId, @NotNull String apiToken, @NotNull URI apiUrl,
         @NotNull Duration requestTimeout, @NotNull HttpClient httpClient
     ) {
@@ -61,11 +61,11 @@ public class CloudflareD1AdminClient {
     }
 
     @NotNull
-    static CloudflareD1AdminClient from(@NotNull DBPConnectionConfiguration configuration) throws SQLException {
-        return new CloudflareD1AdminClient(configuration);
+    static CloudflareD1Client from(@NotNull DBPConnectionConfiguration configuration) throws SQLException {
+        return new CloudflareD1Client(configuration);
     }
 
-    protected CloudflareD1AdminClient(@NotNull DBPConnectionConfiguration configuration) throws SQLException {
+    protected CloudflareD1Client(@NotNull DBPConnectionConfiguration configuration) throws SQLException {
         this(requiredIdentifier("account ID", configuration.getUserName()),
             required("API token", configuration.getUserPassword()), apiUrl(configuration.getProperty("apiUrl")),
             timeout(configuration, "queryTimeout", 30000),
@@ -106,33 +106,6 @@ public class CloudflareD1AdminClient {
     }
 
     @NotNull
-    CloudflareD1Database createDatabase(@NotNull String name, @NotNull CloudflareD1ConnectionAdapter.CreateOptions options)
-            throws SQLException {
-        if (name.isBlank()) {
-            throw new SQLException("Cloudflare D1 database name must not be blank", "42000");
-        }
-        JsonObject body = new JsonObject();
-        body.addProperty("name", name);
-        addNonBlank(body, "jurisdiction", options.jurisdiction());
-        addNonBlank(body, "primary_location_hint", options.primaryLocationHint());
-        return databaseResult(request("POST", databasesEndpoint(), body), "database creation");
-    }
-
-    void deleteDatabase(@NotNull String databaseId) throws SQLException {
-        request("DELETE", databaseEndpoint(databaseId), null);
-    }
-
-    @NotNull
-    CloudflareD1Database setReadReplication(@NotNull String databaseId, @NotNull CloudflareD1ConnectionAdapter.ReplicationMode mode)
-            throws SQLException {
-        JsonObject replication = new JsonObject();
-        replication.addProperty("mode", mode.name().toLowerCase(Locale.ROOT));
-        JsonObject body = new JsonObject();
-        body.add("read_replication", replication);
-        return databaseResult(request("PUT", databaseEndpoint(databaseId), body), "read-replication update");
-    }
-
-    @NotNull
     protected JsonObject request(@NotNull String method, @NotNull String endpoint, @Nullable JsonObject body) throws SQLException {
         HttpRequest.Builder builder = HttpRequest.newBuilder(URI.create(endpoint))
             .header("Accept", "application/json")
@@ -163,7 +136,7 @@ public class CloudflareD1AdminClient {
     }
 
     @NotNull
-    private String databasesEndpoint() {
+    protected String databasesEndpoint() {
         return apiUrl + "/accounts/" + accountId + "/d1/database";
     }
 
@@ -173,7 +146,7 @@ public class CloudflareD1AdminClient {
     }
 
     @NotNull
-    private static CloudflareD1Database databaseResult(@NotNull JsonObject response, @NotNull String operation) throws SQLException {
+    protected static CloudflareD1Database databaseResult(@NotNull JsonObject response, @NotNull String operation) throws SQLException {
         return database(requiredResult(response, operation));
     }
 
@@ -268,12 +241,6 @@ public class CloudflareD1AdminClient {
             return value == null || value.isJsonNull() ? null : value.getAsInt();
         } catch (RuntimeException e) {
             return null;
-        }
-    }
-
-    private static void addNonBlank(@NotNull JsonObject object, @NotNull String name, @Nullable String value) {
-        if (value != null && !value.isBlank()) {
-            object.addProperty(name, value);
         }
     }
 

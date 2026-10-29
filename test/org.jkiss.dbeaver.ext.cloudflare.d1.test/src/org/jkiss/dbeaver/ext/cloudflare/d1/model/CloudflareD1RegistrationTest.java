@@ -22,9 +22,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cloudflare.d1.CloudflareD1ConnectionSettings;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.ObjectManagerRegistry;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -32,6 +35,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.w3c.dom.Element;
 
 import java.util.Arrays;
+import java.util.Set;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 public class CloudflareD1RegistrationTest {
@@ -101,9 +105,23 @@ public class CloudflareD1RegistrationTest {
         var dependencies = bundle.getHeaders().get("Require-Bundle");
         Assertions.assertFalse(dependencies.contains("com.dbeaver.db."));
         Assertions.assertFalse(dependencies.contains("com.dbeaver.jdbc.driver.d1"));
-        for (var type : new Class<?>[] {CloudflareD1ConnectionAdapter.class, CloudflareD1AdminClient.class}) {
+        for (var type : new Class<?>[] {CloudflareD1ConnectionAdapter.class, CloudflareD1Client.class}) {
             Assertions.assertTrue(Arrays.stream(type.getDeclaredMethods()).noneMatch(method ->
                 method.getName().equals("restore") || method.getName().toLowerCase().contains("bookmark")));
+        }
+    }
+
+    @Test
+    void communityCatalogsCannotBeCreatedDeletedOrEdited() throws Exception {
+        Assertions.assertFalse(DBPSaveableObject.class.isAssignableFrom(CloudflareD1Catalog.class));
+        Assertions.assertNull(ObjectManagerRegistry.getInstance().getObjectManager(CloudflareD1Catalog.class));
+        var property = CloudflareD1Catalog.class.getMethod("getReadReplicationMode", DBRProgressMonitor.class)
+            .getAnnotation(Property.class);
+        Assertions.assertFalse(property.editable());
+        Assertions.assertFalse(property.updatable());
+        var mutations = Set.of("create", "createDatabase", "delete", "deleteDatabase", "setReplication", "setReadReplication");
+        for (var type : new Class<?>[] {CloudflareD1Client.class, CloudflareD1ConnectionAdapter.class}) {
+            Assertions.assertTrue(Arrays.stream(type.getDeclaredMethods()).noneMatch(method -> mutations.contains(method.getName())));
         }
     }
 

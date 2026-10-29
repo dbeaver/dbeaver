@@ -32,27 +32,6 @@ public class CloudflareD1UIMessages extends NLS {
     public static String connection_load_task;
     public static String connection_empty;
     public static String connection_loaded;
-    public static String delete_title;
-    public static String delete_confirm;
-    public static String delete_uuid_required;
-    public static String create_title;
-    public static String create_name;
-    public static String create_jurisdiction;
-    public static String create_jurisdiction_help;
-    public static String create_location;
-    public static String create_location_help;
-    public static String create_none;
-    public static String create_automatic;
-    public static String create_action;
-    public static String create_append_scope;
-    public static String create_eu;
-    public static String create_fedramp;
-    public static String create_wnam;
-    public static String create_enam;
-    public static String create_weur;
-    public static String create_eeur;
-    public static String create_apac;
-    public static String create_oc;
 
     static {
         initializeMessages(CloudflareD1UIMessages.class.getName(), CloudflareD1UIMessages.class);
