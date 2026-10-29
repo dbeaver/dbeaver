@@ -1117,7 +1117,7 @@ public abstract class SQLQueryCompletionContext {
                     LinkedList<SQLQueryCompletionItem> tableRefs = new LinkedList<>();
                     if (request.getContext().getDataSource().getSQLDialect().supportsQualifiedColumnNames()) {
                         for (SourceResolutionResult rr : context.getKnownSources().getResolutionResults().values()) {
-                            if (rr.aliasOrNull != null && !rr.isCteSubquery) {
+                            if (rr.aliasOrNull != null && !rr.isNamedRowsSource) {
                                 SQLQueryWordEntry sourceAlias = makeFilterInfo(filterOrNull, rr.aliasOrNull.getName());
                                 int score = sourceAlias.matches(filterOrNull, this.searchInsideWords);
                                 if (score > 0) {
@@ -1201,11 +1201,24 @@ public abstract class SQLQueryCompletionContext {
                 @Nullable SQLQueryWordEntry filterOrNull
             ) {
                 LinkedList<SQLQueryCompletionItem> variableItems = new LinkedList<>();
-                for (SQLQueryVariableInfo variable : context.getVariablesList()) {
-                    SQLQueryWordEntry filterWord = makeFilterInfo(filterOrNull, variable.rawName());
+                List<SQLQueryLocalVariableInfo> localVariables = context.getLocalVariables();
+                for (SQLQueryLocalVariableInfo binding : localVariables) {
+                    SQLQueryWordEntry filterWord = makeFilterInfo(filterOrNull, binding.declaration().getRawName());
                     int score = filterWord.matches(filterOrNull, this.searchInsideWords);
                     if (score > 0) {
-                        variableItems.add(SQLQueryCompletionItem.forScriptVariable(score, filterWord, variable));
+                        variableItems.add(SQLQueryCompletionItem.forLocalVariable(score, filterWord, binding));
+                    }
+                }
+                Set<String> locallyShadowedNames = localVariables.stream()
+                    .map(binding -> binding.declaration().getName())
+                    .collect(Collectors.toSet());
+                for (SQLQueryVariableInfo variable : context.getVariablesList()) {
+                    if (!locallyShadowedNames.contains(variable.canonicalName())) {
+                        SQLQueryWordEntry filterWord = makeFilterInfo(filterOrNull, variable.rawName());
+                        int score = filterWord.matches(filterOrNull, this.searchInsideWords);
+                        if (score > 0) {
+                            variableItems.add(SQLQueryCompletionItem.forScriptVariable(score, filterWord, variable));
+                        }
                     }
                 }
                 return variableItems;
@@ -1301,7 +1314,7 @@ public abstract class SQLQueryCompletionContext {
 
                 AssociationsResolutionContext associations = this.getAssociationsContext(monitor, this.deepestContext, filterOrNull);
                 for (SourceResolutionResult rr : knownSources.getResolutionResults().values()) {
-                    if (rr.aliasOrNull != null && rr.isCteSubquery) {
+                    if (rr.aliasOrNull != null && rr.isNamedRowsSource) {
                         SQLQueryWordEntry aliasName = makeFilterInfo(filterOrNull, rr.aliasOrNull.getName());
                         int score = aliasName.matches(filterOrNull, this.searchInsideWords);
                         if (score > 0) {
@@ -1671,8 +1684,11 @@ public abstract class SQLQueryCompletionContext {
         @NotNull
         Collection<SQLQueryVariableInfo> getVariablesList();
 
+        @NotNull
+        List<SQLQueryLocalVariableInfo> getLocalVariables();
+
         @Nullable
-        SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> s);
+        SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> s);
 
         boolean isJoin();
 
@@ -1685,14 +1701,17 @@ public abstract class SQLQueryCompletionContext {
         @Nullable
         SQLQueryDataContextInfo getRelatedContext();
 
+        @NotNull
         static SQLQueryDataContextInfo empty() {
             return EMPTY_DATA_CONTEXT_INFO;
         }
 
+        @NotNull
         static SQLQueryDataContextInfo makeFor(@NotNull SQLQueryRowsSourceContext rowsSourceContext) {
             return new SQLQueryRowsSourceContextInfo(rowsSourceContext);
         }
 
+        @NotNull
         static SQLQueryDataContextInfo makeFor(@NotNull SQLQueryRowsDataContext rowsDataContext) {
             return new SQLQueryRowsDataContextInfo(rowsDataContext);
         }
@@ -1735,9 +1754,15 @@ public abstract class SQLQueryCompletionContext {
             return this.rowsSourceContext.getVariablesSubset().getVariables();
         }
 
+        @NotNull
+        @Override
+        public List<SQLQueryLocalVariableInfo> getLocalVariables() {
+            return this.rowsSourceContext.getLocalVariables().getVisibleValueVariables();
+        }
+
         @Nullable
         @Override
-        public SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> tableName) {
+        public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
             List<DBSEntity> tables = rowsSourceContext.getConnectionInfo().findRealTables(monitor, tableName);
             return this.subquerySources.getResolutionResults().values()
                 .stream().filter(r -> tables.contains(r.tableOrNull)).findFirst().orElse(null);
@@ -1862,9 +1887,15 @@ public abstract class SQLQueryCompletionContext {
             return Collections.emptyList();
         }
 
+        @NotNull
+        @Override
+        public List<SQLQueryLocalVariableInfo> getLocalVariables() {
+            return Collections.emptyList();
+        }
+
         @Nullable
         @Override
-        public SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> s) {
+        public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> s) {
             return null;
         }
 

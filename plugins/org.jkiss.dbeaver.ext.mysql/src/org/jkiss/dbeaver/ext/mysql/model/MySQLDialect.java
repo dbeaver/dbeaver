@@ -44,6 +44,16 @@ import java.util.regex.Pattern;
  */
 public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaController, SQLDialectDDLExtension {
 
+    /** A local variable belongs to its BEGIN/END block and may be shadowed in a nested block.
+     *
+     * @see <a href="https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/declare-local-variable.html">Local variable DECLARE</a>
+     */
+    @NotNull
+    @Override
+    public LocalVariableVisibility getLocalVariableVisibility(@NotNull LocalVariableKind kind) {
+        return LocalVariableVisibility.LEXICAL;
+    }
+
     @NotNull
     @Override
     public SQLScriptVariableScope getScriptVariableScope() {

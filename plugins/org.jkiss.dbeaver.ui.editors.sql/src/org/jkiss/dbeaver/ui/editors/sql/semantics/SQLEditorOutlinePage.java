@@ -837,29 +837,29 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         
         @Nullable
         @Override
-        public Object visitValueColumnRefExpr(
-            @NotNull SQLQueryValueColumnReferenceExpression columnRefExpr,
+        public Object visitValueTargetRefExpr(
+            @NotNull SQLQueryValueTargetReferenceExpression targetRefExpr,
             @NotNull OutlineQueryNode node
         ) {
-            SQLQuerySymbol columnName = columnRefExpr.getColumnNameIfTrivialExpression();
+            SQLQuerySymbol targetName = targetRefExpr.getColumnNameIfTrivialExpression();
             String text;
             String extraText;
             DBPImage icon;
-            if (columnName != null) {
-                SQLQuerySymbolDefinition def = columnName.getDefinition();
+            if (targetName != null) {
+                SQLQuerySymbolDefinition def = targetName.getDefinition();
                 while (def instanceof SQLQuerySymbolEntry s && s != s.getDefinition()) {
                     def = s.getDefinition();
                 }
 
-                text = columnRefExpr.getColumnName() != null ? columnRefExpr.getColumnName().getRawName() : SQLConstants.QUESTION;
-                extraText = this.obtainExprTypeNameString(columnRefExpr);
-                icon = this.obtainExprTypeIcon(columnRefExpr);
+                text = targetRefExpr.getColumnName() != null ? targetRefExpr.getColumnName().getRawName() : SQLConstants.QUESTION;
+                extraText = this.obtainExprTypeNameString(targetRefExpr);
+                icon = this.obtainExprTypeIcon(targetRefExpr);
             } else {
                 text = SQLConstants.QUESTION;
                 extraText = null;
                 icon = DBIcon.TYPE_UNKNOWN;
             }
-            this.makeNode(node, columnRefExpr, text, extraText, icon);
+            this.makeNode(node, targetRefExpr, text, extraText, icon);
             return null;
         }
 

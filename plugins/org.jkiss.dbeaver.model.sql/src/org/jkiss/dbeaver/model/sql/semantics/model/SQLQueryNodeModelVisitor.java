@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.model.sql.semantics.model.ddl.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.*;
+import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.*;
+import org.jkiss.dbeaver.model.sql.semantics.model.statements.*;
 
 /**
  * Query model visitor. Each new model class of a top-level of the query abstraction should have the corresponding method here.
@@ -53,10 +55,10 @@ public interface SQLQueryNodeModelVisitor<T, R> {
     R visitValueVariableExpr(@NotNull SQLQueryValueVariableExpression varExpr, T arg);
 
     /**
-     * Visit column reference
+     * Visit an UPDATE SET target reference
      */
     @Nullable
-    R visitValueColumnRefExpr(SQLQueryValueColumnReferenceExpression columnRefExpr, T arg);
+    R visitValueTargetRefExpr(SQLQueryValueTargetReferenceExpression targetRefExpr, T arg);
 
     /**
      * Visit reference to the tuple of columns of the table
@@ -226,6 +228,111 @@ public interface SQLQueryNodeModelVisitor<T, R> {
     R visitAlterTable(SQLQueryTableAlterModel alterTable, T arg);
 
     R visitAlterTableAction(SQLQueryTableAlterActionSpec actionSpec, T arg);
+
+    @Nullable
+    default R visitLocalTable(@NotNull SQLQueryRowsLocalTableModel localTable, T arg) {
+        return null;
+    }
+
+    @Nullable
+    default R visitProgrammaticalStatement(@NotNull SQLQueryProgrammaticalStatementModel statement, T arg) {
+        return null;
+    }
+
+    @Nullable
+    default R visitStatement(@NotNull SQLQueryStatementModel statement, T arg) {
+        return null;
+    }
+
+    @Nullable
+    default R visitRoutineStatement(@NotNull SQLQueryRoutineStatementModel statement, T arg) {
+        return visitProgrammaticalStatement(statement, arg);
+    }
+
+    @Nullable
+    default R visitRoutineCreate(@NotNull SQLQueryRoutineCreateModel statement, T arg) {
+        return visitRoutineStatement(statement, arg);
+    }
+
+    @Nullable
+    default R visitRoutineAlter(@NotNull SQLQueryRoutineAlterModel statement, T arg) {
+        return visitRoutineStatement(statement, arg);
+    }
+
+    @Nullable
+    default R visitTriggerStatement(@NotNull SQLQueryTriggerStatementModel statement, T arg) {
+        return visitProgrammaticalStatement(statement, arg);
+    }
+
+    @Nullable
+    default R visitTriggerCreate(@NotNull SQLQueryTriggerCreateModel statement, T arg) {
+        return visitTriggerStatement(statement, arg);
+    }
+
+    @Nullable
+    default R visitTriggerAlter(@NotNull SQLQueryTriggerAlterModel statement, T arg) {
+        return visitTriggerStatement(statement, arg);
+    }
+
+    @Nullable
+    default R visitAnonymousBlock(@NotNull SQLQueryAnonymousBlockModel statement, T arg) {
+        return visitProgrammaticalStatement(statement, arg);
+    }
+
+    @Nullable
+    default R visitRoutineDrop(@NotNull SQLQueryRoutineDropModel statement, T arg) {
+        return visitProgrammaticalStatement(statement, arg);
+    }
+
+    @Nullable
+    default R visitTriggerDrop(@NotNull SQLQueryTriggerDropModel statement, T arg) {
+        return visitProgrammaticalStatement(statement, arg);
+    }
+
+    @Nullable
+    default R visitStatementBlock(@NotNull SQLQueryStatementBlock statement, T arg) {
+        return visitStatement(statement, arg);
+    }
+
+    @Nullable
+    default R visitStatementSequence(@NotNull SQLQueryStatementSequence statement, T arg) {
+        return visitStatement(statement, arg);
+    }
+
+    @Nullable
+    default R visitConditionalStatement(@NotNull SQLQueryConditionalStatement statement, T arg) {
+        return visitStatement(statement, arg);
+    }
+
+    @Nullable
+    default R visitVariableDeclarationStatement(@NotNull SQLQueryVariableDeclarationStatement statement, T arg) {
+        return visitStatement(statement, arg);
+    }
+
+    @Nullable
+    default R visitRelationDeclarationStatement(@NotNull SQLQueryRelationDeclarationStatement statement, T arg) {
+        return visitStatement(statement, arg);
+    }
+
+    @Nullable
+    default R visitCursorOperationStatement(@NotNull SQLQueryCursorOperationStatement statement, T arg) {
+        return visitStatement(statement, arg);
+    }
+
+    @Nullable
+    default R visitAssignmentStatement(@NotNull SQLQueryAssignmentStatement statement, T arg) {
+        return visitStatement(statement, arg);
+    }
+
+    @Nullable
+    default R visitEmbeddedStatement(@NotNull SQLQueryEmbeddedStatement statement, T arg) {
+        return visitStatement(statement, arg);
+    }
+
+    @Nullable
+    default R visitUnknownStatement(@NotNull SQLQueryUnknownStatement statement, T arg) {
+        return visitStatement(statement, arg);
+    }
 
     R visitRowsProjectionInto(SQLQuerySelectIntoModel selectIntoStatement, T arg);
 

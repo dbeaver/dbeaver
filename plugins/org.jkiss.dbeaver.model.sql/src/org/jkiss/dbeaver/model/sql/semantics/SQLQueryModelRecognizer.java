@@ -38,12 +38,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryTupleRefEntry;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryVariableStatementModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDropModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableAlterModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableCreateModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableDropModel;
@@ -54,6 +49,8 @@ import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.SQLQueryProgrammaticalStatementModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.statements.SQLQueryStatementModel;
 import org.jkiss.dbeaver.model.stm.*;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 
@@ -199,12 +196,20 @@ public class SQLQueryModelRecognizer {
                     case SQLStandardParser.RULE_createViewStatement -> null;
                     case SQLStandardParser.RULE_dropTableStatement -> SQLQueryTableDropModel.recognize(this, stmtBodyNode, false);
                     case SQLStandardParser.RULE_dropViewStatement -> SQLQueryTableDropModel.recognize(this, stmtBodyNode, true);
-                    case SQLStandardParser.RULE_dropProcedureStatement ->
-                        SQLQueryObjectDropModel.recognize(this, stmtBodyNode, RelationalObjectType.TYPE_PROCEDURE, Collections.emptySet());
+                    case SQLStandardParser.RULE_dropProcedureStatement, SQLStandardParser.RULE_dropTriggerStatement,
+                        SQLStandardParser.RULE_dropNamedObjectStatement ->
+                        SQLQueryProgrammaticalStatementModel.recognize(this, stmtBodyNode);
                     case SQLStandardParser.RULE_alterTableStatement -> SQLQueryTableAlterModel.recognize(this, stmtBodyNode);
+                    case SQLStandardParser.RULE_createTriggerStatement, SQLStandardParser.RULE_alterTriggerStatement,
+                        SQLStandardParser.RULE_createNamedObjectStatement, SQLStandardParser.RULE_alterNamedObjectStatement ->
+                        SQLQueryProgrammaticalStatementModel.recognize(this, stmtBodyNode);
                     default -> null;
                 };
             }
+            case SQLStandardParser.RULE_anonymousBlockStatement ->
+                SQLQueryProgrammaticalStatementModel.recognize(this, queryNode);
+            case SQLStandardParser.RULE_localRelationDeclaration, SQLStandardParser.RULE_cursorDeclaration,
+                SQLStandardParser.RULE_cursorOperation -> SQLQueryStatementModel.recognize(this, queryNode);
             case SQLStandardParser.RULE_selectStatementSingleRow -> this.collectQueryExpression(queryBodyNode);
             case SQLStandardParser.RULE_callStatement -> SQLQueryCallModel.recognize(this, queryNode, RelationalObjectType.TYPE_PROCEDURE);
             default -> null;
@@ -342,8 +347,8 @@ public class SQLQueryModelRecognizer {
                     SQLQueryValueExpression expr = this.collectColumnReferenceExpression(ref, false);
                     if (expr instanceof SQLQueryValueTupleReferenceExpression tupleRef) {
                         entityAction.accept(tupleRef.getTableName());
-                    } else if (expr instanceof SQLQueryValueColumnReferenceExpression columnRef) {
-                        columnAction.accept(columnRef.getColumnName());
+                    } else if (expr instanceof SQLQueryValueTargetReferenceExpression targetRef) {
+                        columnAction.accept(targetRef.getColumnName());
                     } else if (expr instanceof SQLQueryValueReferenceExpression valueRef && valueRef.getName() != null) {
                         for (SQLQuerySymbolEntry c : valueRef.getName().parts) {
                             if (c != null) {
@@ -560,6 +565,17 @@ public class SQLQueryModelRecognizer {
         this.symbolEntries.add(entry);
         this.registerScopeItem(entry);
         return entry;
+    }
+
+    @NotNull
+    public SQLQuerySymbolEntry collectUnstructuredName(@NotNull STMTreeNode syntaxNode) {
+        String rawName = syntaxNode.getTextContent();
+        return this.registerSymbolEntry(
+            syntaxNode,
+            SQLUtils.identifierToCanonicalForm(this.dialect, rawName, false, false),
+            rawName,
+            null
+        );
     }
 
     private static final Set<String> tableNameContainers = Set.of(

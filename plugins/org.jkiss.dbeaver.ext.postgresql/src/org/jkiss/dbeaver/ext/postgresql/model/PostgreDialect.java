@@ -52,6 +52,16 @@ import java.util.*;
  */
 public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQLDataTypeConverter,
     SQLDialectDDLExtension, SQLDialectSchemaController {
+    /** PL/pgSQL nested blocks can shadow declarations in an enclosing block.
+     *
+     * @see <a href="https://www.postgresql.org/docs/current/plpgsql-structure.html">PL/pgSQL structure</a>
+     */
+    @NotNull
+    @Override
+    public LocalVariableShadowing getLocalVariableShadowing(@NotNull LocalVariableKind kind) {
+        return LocalVariableShadowing.ALLOW_OUTER;
+    }
+
     public static final String[] POSTGRE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
         new String[]{

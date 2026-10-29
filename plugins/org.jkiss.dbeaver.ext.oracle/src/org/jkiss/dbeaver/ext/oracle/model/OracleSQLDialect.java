@@ -55,6 +55,16 @@ import java.util.Locale;
  */
 public class OracleSQLDialect extends JDBCSQLDialect
     implements SQLDataTypeConverter, SQLDialectDDLExtension, SQLDialectSchemaController {
+    /** A nested PL/SQL unit can redeclare an identifier from an enclosing unit.
+     *
+     * @see <a href="https://docs.oracle.com/en/database/oracle/oracle-database/19/lnpls/scope-and-visibility-identifiers.html">Identifier scope</a>
+     */
+    @NotNull
+    @Override
+    public LocalVariableShadowing getLocalVariableShadowing(@NotNull LocalVariableKind kind) {
+        return LocalVariableShadowing.ALLOW_OUTER;
+    }
+
 
     private static final Log log = Log.getLog(OracleSQLDialect.class);
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryVariableInfo;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultPseudoColumn;
-import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
+import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -139,6 +136,15 @@ public abstract class SQLQueryCompletionItem {
         @NotNull SQLQueryVariableInfo variableDefinition
     ) {
         return new SQLScriptVariableCompletionItem(score, filterKey, variableDefinition);
+    }
+
+    @NotNull
+    public static SQLQueryCompletionItem forLocalVariable(
+        int score,
+        @NotNull SQLQueryWordEntry filterKey,
+        @NotNull SQLQueryLocalVariableInfo binding
+    ) {
+        return new SQLLocalVariableCompletionItem(score, filterKey, binding);
     }
 
     @NotNull
@@ -352,6 +358,31 @@ public abstract class SQLQueryCompletionItem {
         @Override
         protected <R> R applyImpl(SQLQueryCompletionItemVisitor<R> visitor) {
             return visitor.visitScriptVariable(this);
+        }
+    }
+
+    public static class SQLLocalVariableCompletionItem extends SQLQueryCompletionItem {
+        @NotNull
+        public final SQLQueryLocalVariableInfo binding;
+
+        SQLLocalVariableCompletionItem(
+            int score,
+            @NotNull SQLQueryWordEntry filterKey,
+            @NotNull SQLQueryLocalVariableInfo binding
+        ) {
+            super(score, filterKey);
+            this.binding = binding;
+        }
+
+        @NotNull
+        @Override
+        public SQLQueryCompletionItemKind getKind() {
+            return SQLQueryCompletionItemKind.LOCAL_VARIABLE;
+        }
+
+        @Override
+        protected <R> R applyImpl(SQLQueryCompletionItemVisitor<R> visitor) {
+            return visitor.visitLocalVariable(this);
         }
     }
 

@@ -57,6 +57,16 @@ public class BQSQLDialect extends GenericSQLDialect {
         return SQLScriptVariableScope.SCRIPT;
     }
 
+    /** BigQuery forbids redeclaring a variable in the current or a containing block.
+     *
+     * @see <a href="https://cloud.google.com/bigquery/docs/reference/standard-sql/procedural-language#declare">DECLARE</a>
+     */
+    @NotNull
+    @Override
+    public LocalVariableShadowing getLocalVariableShadowing(@NotNull LocalVariableKind kind) {
+        return kind.canBeValue ? LocalVariableShadowing.REJECT_VISIBLE : LocalVariableShadowing.ALLOW_OUTER;
+    }
+
     @NotNull
     @Override
     public MultiValueInsertMode getDefaultMultiValueInsertMode() {

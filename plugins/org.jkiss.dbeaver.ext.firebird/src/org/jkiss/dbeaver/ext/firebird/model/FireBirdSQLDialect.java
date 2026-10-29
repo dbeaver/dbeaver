@@ -253,6 +253,22 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
 
     @NotNull
     @Override
+    public ProceduralSyntaxFamily getProceduralSyntaxFamily() {
+        return ProceduralSyntaxFamily.FIREBIRD_PSQL;
+    }
+
+    /** PSQL declarations precede the BEGIN block and belong to the surrounding module.
+     *
+     * @see <a href="https://firebirdsql.org/file/documentation/chunk/en/refdocs/fblangref40/fblangref40-psql.html">PSQL module body</a>
+     */
+    @NotNull
+    @Override
+    public LocalVariableVisibility getLocalVariableVisibility(@NotNull LocalVariableKind kind) {
+        return LocalVariableVisibility.PROGRAM;
+    }
+
+    @NotNull
+    @Override
     public String[] getDDLKeywords() {
         return DDL_KEYWORDS;
     }

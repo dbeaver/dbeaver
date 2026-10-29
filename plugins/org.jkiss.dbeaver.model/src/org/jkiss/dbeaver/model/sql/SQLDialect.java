@@ -39,6 +39,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * SQL dialect
@@ -66,6 +67,77 @@ public interface SQLDialect {
         GROUP_BY,
         ORDER_BY
     }
+
+    enum ProceduralVariableConflictPolicy {
+        UNRESOLVED,
+        PREFER_VARIABLE,
+        PREFER_COLUMN
+    }
+
+    enum ProceduralSyntaxFamily {
+        GENERIC,
+        TSQL,
+        FIREBIRD_PSQL
+    }
+
+    enum LocalVariableCapability { VALUE, FIELDS, ROWS, CURSOR }
+
+    /** Capabilities of an entity introduced into a procedural scope, independent of its declaration syntax. */
+    enum LocalVariableKind {
+        VALUE(true, false, false, false),
+        ROW_VALUE(true, true, false, false),
+        ROW_REFERENCE(false, true, false, false),
+        ROWSET(false, false, true, false),
+        CURSOR(false, false, false, true),
+        CURSOR_VALUE(true, false, false, true);
+
+        public final boolean canBeValue;
+        public final boolean canAccessFields;
+        public final boolean canBeRowsSource;
+        public final boolean canBeCursor;
+        private final Set<LocalVariableCapability> capabilities;
+
+        LocalVariableKind(boolean canBeValue, boolean canAccessFields, boolean canBeRowsSource, boolean canBeCursor) {
+            this.canBeValue = canBeValue;
+            this.canAccessFields = canAccessFields;
+            this.canBeRowsSource = canBeRowsSource;
+            this.canBeCursor = canBeCursor;
+            EnumSet<LocalVariableCapability> result = EnumSet.noneOf(LocalVariableCapability.class);
+            if (canBeValue) {
+                result.add(LocalVariableCapability.VALUE);
+            }
+            if (canAccessFields) {
+                result.add(LocalVariableCapability.FIELDS);
+            }
+            if (canBeRowsSource) {
+                result.add(LocalVariableCapability.ROWS);
+            }
+            if (canBeCursor) {
+                result.add(LocalVariableCapability.CURSOR);
+            }
+            this.capabilities = Set.copyOf(result);
+        }
+
+        @NotNull
+        public Set<LocalVariableCapability> capabilities() {
+            return this.capabilities;
+        }
+    }
+
+    /** One conflict namespace and lookup index for the indicated operation capabilities. */
+    record LocalVariableNamespace(Set<LocalVariableCapability> capabilities) {
+        public LocalVariableNamespace {
+            if (capabilities.isEmpty()) {
+                throw new IllegalArgumentException("Invalid local binding capabilities");
+            }
+            capabilities = Set.copyOf(capabilities);
+        }
+    }
+
+    /** Local declarations never have the script tracker's BATCH or SESSION lifetime. */
+    enum LocalVariableVisibility { LEXICAL, PROGRAM }
+
+    enum LocalVariableShadowing { ALLOW_OUTER, REJECT_VISIBLE }
 
     record GlobalVariableInfo(String name, String description, DBPDataKind type) {
         public static GlobalVariableInfo[] EMPTY_ARRAY = new GlobalVariableInfo[0];
@@ -583,6 +655,32 @@ public interface SQLDialect {
             ProjectionAliasVisibilityScope.ORDER_BY
         );
     }
+
+    default ProceduralVariableConflictPolicy getProceduralVariableConflictPolicy() {
+        return ProceduralVariableConflictPolicy.UNRESOLVED;
+    }
+
+    @NotNull
+    default ProceduralSyntaxFamily getProceduralSyntaxFamily() {
+        return ProceduralSyntaxFamily.GENERIC;
+    }
+
+    /** A capability must belong to exactly one namespace; a multi-capability binding can be indexed in several. */
+    @NotNull
+    default List<LocalVariableNamespace> getLocalVariableNamespaces() {
+        return List.of(new LocalVariableNamespace(EnumSet.allOf(LocalVariableCapability.class)));
+    }
+
+    @NotNull
+    default LocalVariableVisibility getLocalVariableVisibility(@NotNull LocalVariableKind kind) {
+        return LocalVariableVisibility.LEXICAL;
+    }
+
+    @NotNull
+    default LocalVariableShadowing getLocalVariableShadowing(@NotNull LocalVariableKind kind) {
+        return LocalVariableShadowing.ALLOW_OUTER;
+    }
+
 
     default void afterDataSourceInitialization(@NotNull DBPDataSource dataSource) {
     }

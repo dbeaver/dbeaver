@@ -40,6 +40,16 @@ import java.util.Arrays;
 
 public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProvider {
 
+    /** Snowflake Scripting resolves declarations from the current block outward.
+     *
+     * @see <a href="https://docs.snowflake.com/en/developer-guide/snowflake-scripting/variables">Variables and scope</a>
+     */
+    @NotNull
+    @Override
+    public LocalVariableShadowing getLocalVariableShadowing(@NotNull LocalVariableKind kind) {
+        return LocalVariableShadowing.ALLOW_OUTER;
+    }
+
     private static final String[][] SNOWFLAKE_BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
         {"IF", SQLConstants.BLOCK_END}

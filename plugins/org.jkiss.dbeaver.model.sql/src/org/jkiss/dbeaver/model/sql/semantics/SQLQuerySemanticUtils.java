@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPUniqueObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
@@ -33,11 +31,16 @@ import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceMode
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.utils.Pair;
 
-import java.lang.reflect.AccessFlag;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,6 +50,45 @@ public class SQLQuerySemanticUtils {
 
     private SQLQuerySemanticUtils() {
 
+    }
+
+    /**
+     * Look up a declared or cast-to data type using the same database object search as other semantic
+     * references. Preserve the explicit spelling if metadata is unavailable or the name is ambiguous.
+     */
+    @NotNull
+    public static SQLQueryExprType resolveTypeReference(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull STMTreeNode syntaxNode,
+        @NotNull String typeRefString
+    ) {
+        SQLQueryExprType fallback = SQLQueryExprType.forExplicitTypeRef(typeRefString);
+        if (!statistics.useRealMetadata() || context.getConnectionInfo().isDummy()) {
+            return fallback;
+        }
+        SQLDialect dialect = context.getDialect();
+        List<String> nameParts = Arrays.stream(SQLUtils.splitFullIdentifier(
+                typeRefString, String.valueOf(dialect.getStructSeparator()), dialect.getIdentifierQuoteStrings(), true))
+            .map(part -> SQLUtils.identifierToCanonicalForm(dialect, part, false, true))
+            .toList();
+        if (nameParts.isEmpty()) {
+            return fallback;
+        }
+        List<? extends DBSObject> candidates = context.getConnectionInfo().findRealObjects(
+            statistics.getMonitor(), RelationalObjectType.TYPE_DATA_TYPE, nameParts);
+        if (candidates.size() != 1) {
+            return fallback;
+        }
+        DBSObject typeObject = SQLQueryConnectionContext.expandAliases(statistics.getMonitor(), candidates.getFirst());
+        if (typeObject instanceof DBSDataType dataType) {
+            try {
+                return SQLQueryExprType.forTypedObject(statistics.getMonitor(), dataType, SQLQuerySymbolClass.OBJECT);
+            } catch (DBException e) {
+                statistics.appendError(syntaxNode, "Failed to obtain type information for " + typeRefString, e);
+            }
+        }
+        return fallback;
     }
 
     /**
