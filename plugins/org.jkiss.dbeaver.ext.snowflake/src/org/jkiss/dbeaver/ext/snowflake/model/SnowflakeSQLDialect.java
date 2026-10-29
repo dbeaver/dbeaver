@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,16 @@ import org.jkiss.utils.CommonUtils;
 import java.util.Arrays;
 
 public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProvider {
+
+    /** Snowflake Scripting resolves declarations from the current block outward.
+     *
+     * @see <a href="https://docs.snowflake.com/en/developer-guide/snowflake-scripting/variables">Variables and scope</a>
+     */
+    @NotNull
+    @Override
+    public LocalVariableShadowing getLocalVariableShadowing(@NotNull LocalVariableKind kind) {
+        return LocalVariableShadowing.ALLOW_OUTER;
+    }
 
     private static final String[][] SNOWFLAKE_BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},

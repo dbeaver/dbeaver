@@ -195,7 +195,8 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
             !text.endsWith(" ") && this.proposalContext.isInsertSpaceAfterProposal() && (
                 (inspectionResult.expectingTableReference() && item.getKind().isTableName) ||
                     ((inspectionResult.expectingColumnReference() || inspectionResult.expectingColumnName()) && item.getKind().isColumnName) ||
-                    item.getKind() == SQLQueryCompletionItemKind.SCRIPT_VARIABLE
+                    item.getKind() == SQLQueryCompletionItemKind.SCRIPT_VARIABLE ||
+                    item.getKind() == SQLQueryCompletionItemKind.LOCAL_VARIABLE
             )
         );
         return whitespaceNeeded ? text + " " : text;
@@ -222,7 +223,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
                 yield object == null ? DBIcon.TREE_TABLE : DBValueFormatting.getObjectImage(object);
             }
             case TABLE_COLUMN_NAME -> DBIcon.TREE_COLUMN;
-            case GLOBAL_PSEUDO_COLUMN, SCRIPT_VARIABLE -> DBIcon.TREE_ATTRIBUTE;
+            case GLOBAL_PSEUDO_COLUMN, SCRIPT_VARIABLE, LOCAL_VARIABLE -> DBIcon.TREE_ATTRIBUTE;
             case COMPOSITE_FIELD_NAME -> DBIcon.TREE_DATA_TYPE;
             case JOIN_CONDITION -> DBIcon.TREE_CONSTRAINT;
             case PROCEDURE -> item.getObject() == null ? DBIcon.TREE_FUNCTION : DBValueFormatting.getObjectImage(item.getObject());

@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryLocalVariableInfo;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
@@ -104,21 +106,33 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
         @NotNull SQLQueryRowsDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        SQLQueryVariableInfo definition = this.kind == VariableExpressionKind.BATCH_VARIABLE && this.name != null
-            ? context.getRowsSources().resolveScriptVariable(this.name)
+        SQLQueryRowsSourceContext rowsSources = context.getRowsSources();
+        boolean isBatchVariable = this.kind == VariableExpressionKind.BATCH_VARIABLE && this.name != null;
+        SQLQueryLocalVariableInfo localVariable = isBatchVariable
+            ? rowsSources.getLocalVariables().findLocalVariable(this.name, SQLDialect.LocalVariableCapability.VALUE)
             : null;
 
-        if (this.name != null && this.name.isNotClassified()) {
-            if (definition == null) {
-                this.name.getSymbol().setSymbolClass(this.kind.symbolClass);
-            } else {
-                this.name.setDefinition(definition);
+        SQLQueryExprType resultType;
+        if (localVariable != null) {
+            if (this.name.isNotClassified()) {
+                this.name.setDefinition(localVariable.declaration());
             }
-            if (this.kind == VariableExpressionKind.BATCH_VARIABLE) {
-                this.name.setOrigin(new SQLQuerySymbolOrigin.ScriptVariableRef(context.getRowsSources()));
+            resultType = localVariable.type();
+        } else {
+            SQLQueryVariableInfo scriptVariable = isBatchVariable ? rowsSources.resolveScriptVariable(this.name) : null;
+            if (this.name != null && this.name.isNotClassified()) {
+                if (scriptVariable == null) {
+                    this.name.getSymbol().setSymbolClass(this.kind.symbolClass);
+                } else {
+                    this.name.setDefinition(scriptVariable);
+                }
             }
+            resultType = scriptVariable == null ? SQLQueryExprType.UNKNOWN : scriptVariable.type();
         }
-        return definition == null ? SQLQueryExprType.UNKNOWN : definition.type();
+        if (isBatchVariable && this.name.getOrigin() == null) {
+            this.name.setOrigin(new SQLQuerySymbolOrigin.ScriptVariableRef(rowsSources));
+        }
+        return resultType;
     }
 
     @Nullable

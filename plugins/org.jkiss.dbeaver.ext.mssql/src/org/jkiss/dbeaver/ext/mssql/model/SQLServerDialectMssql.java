@@ -16,10 +16,28 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
+import org.jkiss.code.NotNull;
+
 public class SQLServerDialectMssql extends SQLServerDialectBase {
 
     public SQLServerDialectMssql() {
         super("SQLServer", "sqlserver");
+    }
+
+    @NotNull
+    @Override
+    public ProceduralSyntaxFamily getProceduralSyntaxFamily() {
+        return ProceduralSyntaxFamily.TSQL;
+    }
+
+    /** T-SQL variables declared inside a procedure remain visible across nested BEGIN/END blocks.
+     *
+     * @see <a href="https://learn.microsoft.com/en-us/sql/t-sql/language-elements/declare-local-variable-transact-sql">DECLARE</a>
+     */
+    @NotNull
+    @Override
+    public LocalVariableVisibility getLocalVariableVisibility(@NotNull LocalVariableKind kind) {
+        return LocalVariableVisibility.PROGRAM;
     }
 
 }

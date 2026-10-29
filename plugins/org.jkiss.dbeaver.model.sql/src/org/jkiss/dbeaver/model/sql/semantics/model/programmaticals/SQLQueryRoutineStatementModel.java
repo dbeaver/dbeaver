@@ -1,0 +1,153 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.model.sql.semantics.model.programmaticals;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryComplexName;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDataModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.statements.SQLQueryStatementModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.statements.SQLQueryVariableDeclarationStatement;
+import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
+import org.jkiss.dbeaver.model.stm.STMTreeNode;
+
+import java.util.*;
+
+/** CREATE or ALTER FUNCTION/PROCEDURE. Parameters are declared before resolving the body. */
+public abstract class SQLQueryRoutineStatementModel extends SQLQueryProgrammaticalBodyStatementModel {
+    @Nullable
+    private final SQLQueryComplexName name;
+    @Nullable
+    private final SQLQueryObjectDataModel existingObject;
+    @NotNull
+    private final List<SQLQueryVariableDeclarationStatement> arguments;
+
+    protected SQLQueryRoutineStatementModel(
+        @NotNull STMTreeNode node, @Nullable SQLQueryComplexName name,
+        @Nullable SQLQueryObjectDataModel existingObject,
+        @NotNull List<SQLQueryVariableDeclarationStatement> arguments, @Nullable SQLQueryStatementModel body
+    ) {
+        super(node, body, existingObject);
+        arguments.forEach(this::registerSubnode);
+        this.name = name;
+        this.existingObject = existingObject;
+        this.arguments = List.copyOf(arguments);
+    }
+
+    @Nullable
+    public static SQLQueryRoutineStatementModel recognize(@NotNull SQLQueryModelRecognizer recognizer, @NotNull STMTreeNode node) {
+        boolean alter = node.getNodeKindId() == SQLStandardParser.RULE_alterNamedObjectStatement;
+        STMTreeNode kind = node.findFirstChildOfName(SQLStandardParser.ruleNames[
+            alter ? SQLStandardParser.RULE_alterObjectKind : SQLStandardParser.RULE_createObjectKind]);
+        String kindName = kind == null ? "" : kind.getTextContent().toUpperCase(Locale.ROOT);
+        if (!kindName.endsWith("FUNCTION") && !kindName.equals("PROCEDURE") && !kindName.equals("PROC")) {
+            return null;
+        }
+        STMTreeNode nameNode = node.findFirstChildOfName(STMKnownRuleNames.qualifiedName);
+        SQLQueryComplexName name = nameNode == null ? null : recognizer.collectQualifiedName(nameNode);
+        if (name != null && !alter) {
+            name.parts.stream().filter(Objects::nonNull).forEach(p -> p.getSymbol().setSymbolClass(SQLQuerySymbolClass.OBJECT));
+        }
+        SQLQueryObjectDataModel existingObject = alter && name != null
+            ? new SQLQueryObjectDataModel(nameNode, name, RelationalObjectType.TYPE_PROCEDURE, Set.of()) : null;
+        STMTreeNode definition = node.findFirstChildOfName(SQLStandardParser.ruleNames[SQLStandardParser.RULE_routineDefinition]);
+        STMTreeNode signature = definition == null ? null : definition.findFirstChildOfName(
+            SQLStandardParser.ruleNames[SQLStandardParser.RULE_routineSignature]);
+        if (signature == null) {
+            signature = node.findFirstChildOfName(SQLStandardParser.ruleNames[SQLStandardParser.RULE_routineSignature]);
+        }
+        List<SQLQueryVariableDeclarationStatement> arguments = new ArrayList<>();
+        if (signature != null) {
+            for (STMTreeNode argument : signature.findChildrenOfName(SQLStandardParser.ruleNames[SQLStandardParser.RULE_routineArgument])) {
+                arguments.add((SQLQueryVariableDeclarationStatement) SQLQueryStatementModel.recognize(recognizer, argument));
+            }
+        }
+        STMTreeNode bodyNode = definition == null ? null : definition.findFirstChildOfName(
+            SQLStandardParser.ruleNames[SQLStandardParser.RULE_routineBody]);
+        SQLQueryStatementModel body = bodyNode == null || bodyNode.findFirstChildOfName(
+            SQLStandardParser.ruleNames[SQLStandardParser.RULE_routineBodyContent]) == null
+            ? null : SQLQueryStatementModel.recognize(recognizer, bodyNode);
+        return alter
+            ? new SQLQueryRoutineAlterModel(node, name, existingObject, arguments, body)
+            : new SQLQueryRoutineCreateModel(node, name, arguments, body);
+    }
+
+    public boolean isAlter() {
+        return this instanceof SQLQueryRoutineAlterModel;
+    }
+
+    @Nullable
+    public SQLQueryComplexName getName() {
+        return this.name;
+    }
+
+    @Nullable
+    public SQLQueryObjectDataModel getExistingObject() {
+        return this.existingObject;
+    }
+
+    @NotNull
+    public List<SQLQueryVariableDeclarationStatement> getArguments() {
+        return this.arguments;
+    }
+
+    @Nullable
+    @Override
+    protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @Nullable T arg) {
+        return visitor.visitRoutineStatement(this, arg);
+    }
+
+    @NotNull
+    @Override
+    protected SQLQueryRowsSourceContext prepareBodyContext(
+        @NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        if (this.existingObject != null) {
+            this.existingObject.resolveRowSources(context, statistics);
+        }
+        for (SQLQueryVariableDeclarationStatement argument : this.arguments) {
+            if (statistics.getMonitor().isCanceled()) {
+                break;
+            }
+            context = argument.resolveStatement(context, statistics);
+        }
+        return context;
+    }
+
+    @Override
+    public boolean tryResolveValueRelations(
+        @NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        if (this.existingObject != null && !this.existingObject.tryResolveValueRelations(context, statistics)) {
+            return false;
+        }
+        for (SQLQueryVariableDeclarationStatement argument : this.arguments) {
+            if (statistics.getMonitor().isCanceled() || !argument.tryResolveValueRelations(context, statistics)) {
+                return false;
+            }
+        }
+        return super.tryResolveValueRelations(context, statistics);
+    }
+}

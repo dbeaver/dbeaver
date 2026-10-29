@@ -71,6 +71,7 @@ public class SyntaxParserTest {
             false,
             '?',
             List.of(Map.entry(1, Set.of(":"))),
+            true,
             true
         );
         var ll = new SQLStandardLexer(input, params);
@@ -141,6 +142,7 @@ public class SyntaxParserTest {
             false,
             '?',
             List.of(Map.entry(1, Set.of(":"))),
+            true,
             true
         );
         var ll = new SQLStandardLexer(input, params);
