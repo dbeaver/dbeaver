@@ -48,8 +48,7 @@ import java.util.regex.Pattern;
 /**
  * FireBirdDataSource
  */
-public class FireBirdMetaModel extends GenericMetaModel
-{
+public class FireBirdMetaModel extends GenericMetaModel {
     // Copied from Jaybird sources
     private static final int OBJECT_NAME_LENGTH = 63;
 
@@ -88,15 +87,41 @@ public class FireBirdMetaModel extends GenericMetaModel
     @NotNull
     @Override
     public GenericProcedure createProcedureImpl(
-        @NotNull GenericStructContainer container,
-        @NotNull String procedureName,
-        String specificName,
-        String remarks,
-        @NotNull
-        DBSProcedureType procedureType,
-        GenericFunctionResultType functionResultType
+            @NotNull GenericStructContainer container,
+            @NotNull String procedureName,
+            String specificName,
+            String remarks,
+            @NotNull
+            DBSProcedureType procedureType,
+            GenericFunctionResultType functionResultType
     ) {
         return new FireBirdProcedure(container, procedureName, specificName, remarks, procedureType, functionResultType);
+    }
+
+    @Override
+    public void loadProcedures(@NotNull DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
+        super.loadProcedures(monitor, container);
+        List<GenericProcedure> procedures = container.getProcedureCache();
+        if (CommonUtils.isEmpty(procedures)) {
+            return;
+        }
+        String sql = "SELECT RDB$PROCEDURE_NAME, RDB$PROCEDURE_TYPE FROM " + FireBirdConstants.TABLE_PROCEDURES;
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load procedure types");
+             JDBCStatement dbStat = session.createStatement();
+             JDBCResultSet dbResult = dbStat.executeQuery(sql)) {
+            while (dbResult.next()) {
+                String name = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$PROCEDURE_NAME");
+                int type = JDBCUtils.safeGetInt(dbResult, "RDB$PROCEDURE_TYPE");
+                for (GenericProcedure procedure : procedures) {
+                    if (procedure instanceof FireBirdProcedure fireBirdProcedure && procedure.getName().equals(name)) {
+                        fireBirdProcedure.setFireBirdProcedureType(FireBirdProcedureType.getByType(type));
+                        break;
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBDatabaseException(e, container.getDataSource());
+        }
     }
 
     @Override
@@ -118,14 +143,14 @@ public class FireBirdMetaModel extends GenericMetaModel
         String description = JDBCUtils.safeGetStringTrimmed(dbResult, "RDB$DESCRIPTION");
         boolean isSystem = JDBCUtils.safeGetBoolean(dbResult, "RDB$SYSTEM_FLAG");
         return new FireBirdSequence(
-            container,
-            name,
-            description,
-            null,
-            0,
-            -1,
-            1,
-            isSystem
+                container,
+                name,
+                description,
+                null,
+                0,
+                -1,
+                1,
+                isSystem
         );
     }
 
@@ -196,20 +221,20 @@ public class FireBirdMetaModel extends GenericMetaModel
         }
 
         return new FireBirdDatabaseTrigger(
-                    container,
-                    name,
-                    description,
-                    FireBirdTriggerType.getByType(type),
-                    sequence,
-                    isSystem);
+                container,
+                name,
+                description,
+                FireBirdTriggerType.getByType(type),
+                sequence,
+                isSystem);
     }
 
     @Override
     public List<GenericTrigger> loadTriggers(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTableBase table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM RDB$TRIGGERS\n" +
-                    "WHERE RDB$RELATION_NAME" + (table == null ? " IS NULL" : "=?"))) {
+                    "SELECT * FROM RDB$TRIGGERS\n" +
+                            "WHERE RDB$RELATION_NAME" + (table == null ? " IS NULL" : "=?"))) {
                 if (table != null) {
                     dbStat.setString(1, table.getName());
                 }
@@ -227,12 +252,12 @@ public class FireBirdMetaModel extends GenericMetaModel
                         int systemFlag = JDBCUtils.safeGetInt(dbResult, "RDB$SYSTEM_FLAG");
                         boolean isSystem = systemFlag > 0; // System flag value 0 - if user-defined and 1 or more if system
                         FireBirdTableTrigger trigger = new FireBirdTableTrigger(
-                            table,
-                            name,
-                            description,
-                            FireBirdTriggerType.getByType(type),
-                            sequence,
-                            isSystem);
+                                table,
+                                name,
+                                description,
+                                FireBirdTriggerType.getByType(type),
+                                sequence,
+                                isSystem);
                         result.add(trigger);
                     }
                 }
@@ -246,7 +271,7 @@ public class FireBirdMetaModel extends GenericMetaModel
 
     @Override
     public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
-        return FireBirdUtils.getTriggerSource(monitor, (FireBirdTrigger)trigger);
+        return FireBirdUtils.getTriggerSource(monitor, (FireBirdTrigger) trigger);
     }
 
     @Nullable
@@ -297,17 +322,17 @@ public class FireBirdMetaModel extends GenericMetaModel
     public GenericTableBase createTableOrViewImpl(@NotNull GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         if (tableType != null && isView(tableType)) {
             return new FireBirdView(
+                    container,
+                    tableName,
+                    tableType,
+                    dbResult);
+        }
+
+        return new FireBirdTable(
                 container,
                 tableName,
                 tableType,
                 dbResult);
-        }
-
-        return new FireBirdTable(
-            container,
-            tableName,
-            tableType,
-            dbResult);
     }
 
     @Override
@@ -445,11 +470,11 @@ public class FireBirdMetaModel extends GenericMetaModel
     @Override
     public GenericTableColumn createTableColumnImpl(@NotNull DBRProgressMonitor monitor, JDBCResultSet dbResult, @NotNull GenericTableBase table, String columnName, String typeName, int valueType, int sourceType, int ordinalPos, long columnSize, long charLength, Integer scale, Integer precision, int radix, boolean notNull, String remarks, String defaultValue, boolean autoIncrement, boolean autoGenerated) throws DBException {
         return new FireBirdTableColumn(monitor, dbResult, table,
-            columnName,
-            typeName, valueType, sourceType, ordinalPos,
-            columnSize,
-            charLength, scale, precision, radix, notNull,
-            remarks, defaultValue, autoIncrement, autoGenerated
+                columnName,
+                typeName, valueType, sourceType, ordinalPos,
+                columnSize,
+                charLength, scale, precision, radix, notNull,
+                remarks, defaultValue, autoIncrement, autoGenerated
         );
     }
 
