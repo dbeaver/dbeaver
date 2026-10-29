@@ -91,15 +91,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
     private boolean supportsReltypeColumn = true;
     private PostgrePrivilegeType[] supportedPrivilegeTypes;
     private volatile boolean isConnectionRefreshing = false;
-    private Object sslKeyLock;
     private byte[] convertedSslKeyDigest;
     private Path convertedSslKeyFile;
-
-    @Override
-    protected void initializeLocks() {
-        super.initializeLocks();
-        this.sslKeyLock = new Object();
-    }
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -348,7 +341,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         } catch (NoSuchAlgorithmException e) {
             throw new IOException("SHA-256 is unavailable", e);
         }
-        synchronized (sslKeyLock) {
+        // JDBCDataSource may open a connection before subclass fields are initialized.
+        synchronized (this) {
             if (this.convertedSslKeyFile != null && Files.isRegularFile(this.convertedSslKeyFile)
                 && Arrays.equals(this.convertedSslKeyDigest, digest)) {
                 // Reuse the unchanged key without overwriting a file another handshake may still read.
@@ -379,7 +373,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         try {
             super.shutdown(monitor);
         } finally {
-            synchronized (sslKeyLock) {
+            synchronized (this) {
                 convertedSslKeyDigest = null;
                 convertedSslKeyFile = null;
             }
