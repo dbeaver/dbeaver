@@ -32,14 +32,17 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.datadam.DDPreferences;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.sync.tracking.DDDesktopTrackingService;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
+import org.jkiss.dbeaver.utils.PrefUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -56,6 +59,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private Text userText;
     private Button accountActionButton;
     private Button refreshTokenButton;
+    private Button mcpEnabledCheck;
 
     public DDSyncPreferencePage() {
         noDefaultAndApplyButton();
@@ -100,6 +104,16 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             authenticationGroup, DDTrackingUIMessages.sync_preference_page_refresh_token, null,
             SelectionListener.widgetSelectedAdapter(e -> logIn()));
         refreshTokenButton.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+
+        mcpEnabledCheck = UIUtils.createCheckbox(
+            content, DDTrackingUIMessages.sync_preference_page_mcp_enabled, null,
+            DDPreferences.getStore().getBoolean(DDPreferences.MCP_DESKTOP_ENABLED), 1);
+        mcpEnabledCheck.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+        mcpEnabledCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            DBPPreferenceStore store = DDPreferences.getStore();
+            store.setValue(DDPreferences.MCP_DESKTOP_ENABLED, mcpEnabledCheck.getSelection());
+            PrefUtils.savePreferenceStore(store);
+        }));
 
         refresh();
         return content;
@@ -178,6 +192,9 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             : DDTrackingUIMessages.sync_preference_page_desktop_sign_in);
         refreshTokenButton.setVisible(canRefresh);
         ((GridData) refreshTokenButton.getLayoutData()).exclude = !canRefresh;
+        mcpEnabledCheck.setVisible(signedIn);
+        ((GridData) mcpEnabledCheck.getLayoutData()).exclude = !signedIn;
+        mcpEnabledCheck.setSelection(DDPreferences.getStore().getBoolean(DDPreferences.MCP_DESKTOP_ENABLED));
         content.layout(true, true);
         if (signedIn) {
             loadLoggedUserView();

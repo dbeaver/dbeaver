@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.datadam.DDPreferences;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionSettings;
@@ -41,7 +42,8 @@ public class DDMcpConnectionSettingsSection implements AIConnectionSettingsSecti
 
     @Override
     public boolean appliesTo(@NotNull DBPDataSourceContainer connection) {
-        if (!DDProductConfig.isIntegrationEnabled()) {
+        if (!DDProductConfig.isIntegrationEnabled()
+            || !DDPreferences.getStore().getBoolean(DDPreferences.MCP_DESKTOP_ENABLED)) {
             return false;
         }
         DDDesktopAccessService access = DDDesktopAccessService.getInstance();
