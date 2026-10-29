@@ -20,9 +20,18 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 public class MySQLDialectTest extends DBeaverUnitTest {
 
     private final MySQLDialect dialect = new MySQLDialect();
+
+    @Test
+    public void recognizesColumnTypeModifiers() {
+        Assertions.assertTrue(dialect.getColumnTypeModifierKeywords().containsAll(
+            List.of("SIGNED", "UNSIGNED", "ZEROFILL")
+        ));
+    }
 
     @Test
     public void quoteStringTest() {

@@ -30,7 +30,8 @@ public record LSMAnalyzerParameters (
         boolean isAnonymousSqlParametersEnabled,
         char anonymousParameterMark,
         @NotNull List<Map.Entry<Integer, Set<String>>> namedParameterPrefixes,
-        boolean variablesEnabled
+        boolean variablesEnabled,
+        @NotNull Set<String> columnTypeModifierKeywords
 ) {
 
     public static LSMAnalyzerParameters forDialect(SQLDialect dialect, SQLSyntaxManager syntaxManager) {
@@ -49,7 +50,10 @@ public record LSMAnalyzerParameters (
             syntaxManager.isAnonymousParametersEnabled(),
             syntaxManager.getAnonymousParameterMark(),
             namedParameterPrefixes,
-            syntaxManager.isVariablesEnabled()
+            syntaxManager.isVariablesEnabled(),
+            dialect.getColumnTypeModifierKeywords().stream()
+                .map(word -> word.toUpperCase(Locale.ROOT))
+                .collect(Collectors.toUnmodifiableSet())
         );
     }
 }

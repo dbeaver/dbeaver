@@ -62,17 +62,25 @@ options {
 
     private boolean isAnonymousParametersEnabled;
     private boolean isNamedParametersEnabled;
+    private Set<String> columnTypeModifierKeywords = Collections.emptySet();
 
     public SQLStandardParser(TokenStream input, LSMAnalyzerParameters parameters) {
         this(input);
         this.isAnonymousParametersEnabled = parameters.isAnonymousSqlParametersEnabled();
         this.isNamedParametersEnabled = parameters.isSqlParametersEnabled();
+        this.columnTypeModifierKeywords = parameters.columnTypeModifierKeywords();
     }
 
     private boolean validCorrelationNameFollows() {
         int nextToken = this.getInputStream().LA(1);
         return nextToken == SQLStandardLexer.AS || !this.nonCorrelationNameTokens.contains(nextToken);
     };
+
+    private boolean isColumnTypeModifierAhead() {
+        Token next = this.getInputStream().LT(1);
+        return next.getType() == SQLStandardLexer.Identifier &&
+            this.columnTypeModifierKeywords.contains(next.getText().toUpperCase(Locale.ROOT));
+    }
 }
 
 // root rule for script
@@ -127,11 +135,11 @@ intervalFractionalSecondsPrecision: UnsignedInteger;
 singleDatetimeField: (nonSecondDatetimeField (LeftParen intervalLeadingFieldPrecision RightParen)?|SECOND (LeftParen intervalLeadingFieldPrecision (Comma intervalFractionalSecondsPrecision)? RightParen)?);
 
 // column definition
-columnDefinition: columnName dataType defaultClause? columnConstraintDefinition* anyWordWithAnyValue?; // why anyWordWithAnyValue?
+columnDefinition: columnName dataType columnTypeModifier* defaultClause? columnConstraintDefinition* anyWordWithAnyValue?; // why anyWordWithAnyValue?
 columnName: identifier;
 
 // default
-defaultClause: DEFAULT? valueExpression;
+defaultClause: DEFAULT valueExpression;
 
 // column constraints
 columnConstraintDefinition: (constraintNameDefinition)? columnConstraint (constraintAttributes)?;
@@ -508,3 +516,6 @@ nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
     VIEW | WORK | WRITE | ARRAY | DECLARE | REPLACE | TOP | PERCENT | TIES | IN | VAR | VARIABLE |
     INDEX | MATERIALIZED | ROLE | SEQUENCE | SYNONYM
 ;
+
+// Keep new rules after existing ones so generated rule IDs remain stable.
+columnTypeModifier: {isColumnTypeModifierAhead()}? Identifier;

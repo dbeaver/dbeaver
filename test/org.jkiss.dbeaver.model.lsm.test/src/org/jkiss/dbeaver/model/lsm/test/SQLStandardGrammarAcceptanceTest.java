@@ -21,17 +21,22 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.tree.Trees;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
@@ -154,6 +159,48 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
             testCase.name(),
             () -> assertAccepted(testCase.sql())
         ));
+    }
+
+    @Test
+    void recognizesOnlyDialectColumnTypeModifiers() {
+        LSMAnalyzerParameters mysql = new LSMAnalyzerParameters(
+            Map.of(), false, false, '?', List.of(), false, Set.of("SIGNED", "UNSIGNED", "ZEROFILL")
+        );
+        SQLStandardParser parser = makeParser("""
+            CREATE TABLE test_table (
+                test_table_id INT UNSIGNED NOT NULL,
+                test_name VARCHAR(10) NOT NULL,
+                count_value BIGINT ZEROFILL DEFAULT 5
+            )
+            """, mysql);
+        var tree = parser.sqlQueries();
+        Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors());
+        Assertions.assertEquals(2, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_columnTypeModifier).size());
+        Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_defaultClause).size());
+
+        SQLStandardParser alter = makeParser(
+            "ALTER TABLE test_table ADD COLUMN other_id BIGINT unsigned NOT NULL", mysql
+        );
+        var alterTree = alter.sqlQueries();
+        Assertions.assertEquals(0, alter.getNumberOfSyntaxErrors());
+        Assertions.assertEquals(1, Trees.findAllRuleNodes(alterTree, SQLStandardParser.RULE_columnTypeModifier).size());
+
+        SQLStandardParser generic = makeParser(
+            "CREATE TABLE t (id INT UNSIGNED NOT NULL)",
+            new LSMAnalyzerParameters(Map.of(), false, false, '?', List.of(), false, Set.of())
+        );
+        Assertions.assertTrue(Trees.findAllRuleNodes(
+            generic.sqlQueries(), SQLStandardParser.RULE_columnTypeModifier
+        ).isEmpty());
+    }
+
+    @NotNull
+    private static SQLStandardParser makeParser(@NotNull String sql, @NotNull LSMAnalyzerParameters parameters) {
+        var lexer = new SQLStandardLexer(CharStreams.fromString(sql), parameters);
+        lexer.removeErrorListeners();
+        var parser = new SQLStandardParser(new CommonTokenStream(lexer), parameters);
+        parser.removeErrorListeners();
+        return parser;
     }
 
     private static void assertAccepted(@NotNull String sql) {
