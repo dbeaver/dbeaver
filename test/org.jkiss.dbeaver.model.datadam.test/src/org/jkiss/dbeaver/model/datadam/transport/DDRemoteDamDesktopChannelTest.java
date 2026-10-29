@@ -62,7 +62,7 @@ import java.util.function.Supplier;
 class DDRemoteDamDesktopChannelTest extends DBeaverUnitTest {
     private static final URI ENDPOINT = URI.create("wss://external.example/ws");
     private static final DDRemoteDamHandshakeRequest HELLO = new DDRemoteDamHandshakeRequest(
-        "deployment", "app-instance", "DBeaver", "26.3");
+        "deployment", "app-instance", "workspace", "DBeaver", "26.3");
     private static final DDRemoteDamMessage MESSAGE = message("topic", "value");
 
     @Test
