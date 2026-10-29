@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,21 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package org.jkiss.dbeaver.model.app;
+package org.jkiss.dbeaver.ui.app.standalone.update.install;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-/**
- * DBPApplicationWorkbench
- */
-public interface DBPApplicationWorkbench {
+import java.nio.file.Path;
 
-    @NotNull
-    DBPPlatform getPlatform();
+public sealed interface PlatformInstaller permits WinExeInstaller, MacDmgInstaller, WinZipInstaller {
+    default void prepare(@NotNull Path executable, @NotNull DBRProgressMonitor monitor) throws Exception {
+    }
 
-    @NotNull
-    DBPPlatformUI getPlatformUI();
-
+    void run(@NotNull Path executable, @NotNull Log log) throws Exception;
 }

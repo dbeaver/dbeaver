@@ -963,6 +963,33 @@ public class StringTemplate {
     }
 
     @Nullable
+    public String replaceParameters(@NotNull String text, @NotNull Map<String, String> replacements) {
+        for (String name : replacements.keySet()) {
+            ParameterInfo parameter = this.paramInfoByName.get(name);
+            if (parameter == null || !parameter.isSingleton()) {
+                return null;
+            }
+        }
+        CapturesEnumerator captures = this.extractAllParametersImpl(text, true);
+        if (captures == null) {
+            return null;
+        }
+        Set<String> remaining = new HashSet<>(replacements.keySet());
+        Map<Integer, Map.Entry<Integer, String>> edits = new TreeMap<>(Comparator.reverseOrder());
+        while (captures.nextCapture()) {
+            if (captures.getCaptureKind() == CaptureKind.PARAMETER_VALUE && remaining.remove(captures.getParamName())) {
+                edits.put(captures.currStart, Map.entry(captures.currEnd, replacements.get(captures.getParamName())));
+            }
+        }
+        if (!remaining.isEmpty()) {
+            return null;
+        }
+        StringBuilder result = new StringBuilder(text);
+        edits.forEach((start, edit) -> result.replace(start, edit.getKey(), edit.getValue()));
+        return result.toString();
+    }
+
+    @Nullable
     private CapturesEnumerator extractAllParametersImpl(@NotNull String text) {
         return extractAllParametersImpl(text, false);
     }
@@ -982,6 +1009,8 @@ public class StringTemplate {
                                     this.captureKind = CaptureKind.PARAMETER_VALUE;
                                     this.currParamName = p.paramName();
                                     this.currPayload = text.substring(p.prevPosition(), p.position());
+                                    this.currStart = p.prevPosition();
+                                    this.currEnd = p.position();
                                 }
                                 case TreeMatchStep.EndGroup g when g.groupName != null -> {
                                     this.captureKind = CaptureKind.GROUP_START;
@@ -1028,6 +1057,8 @@ public class StringTemplate {
                                         String value = m.group(p.name + i);
                                         if (value != null) {
                                             this.currPayload = value;
+                                            this.currStart = m.start(p.name + i);
+                                            this.currEnd = m.end(p.name + i);
                                             return true;
                                         }
                                     }
@@ -1035,6 +1066,8 @@ public class StringTemplate {
                                     String value = m.group(p.name);
                                     if (value != null) {
                                         this.currPayload = value;
+                                        this.currStart = m.start(p.name);
+                                        this.currEnd = m.end(p.name);
                                         return true;
                                     }
                                 }
@@ -1060,6 +1093,8 @@ public class StringTemplate {
         protected CaptureKind captureKind = null;
         protected String currParamName = null;
         protected String currPayload = null;
+        protected int currStart;
+        protected int currEnd;
 
         @NotNullWhen("nextCapture()")
         public CaptureKind getCaptureKind() {
