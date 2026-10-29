@@ -21,7 +21,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.swt.dnd.DropTargetAdapter;
@@ -34,7 +33,6 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
-import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.ide.IDEInternalPreferences;
 import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.eclipse.ui.internal.ide.application.IDEWorkbenchWindowAdvisor;
@@ -50,18 +48,12 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DesktopPlatform;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.*;
-import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
-import org.jkiss.dbeaver.model.impl.config.ProductConfigUtils;
-import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.WorkbenchHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.NativeThemeUtils;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
-import org.jkiss.dbeaver.ui.app.config.ProductConfigWizard;
-import org.jkiss.dbeaver.ui.app.config.ProductConfigWizardDialog;
 import org.jkiss.dbeaver.ui.app.standalone.internal.WorkbenchPatcher;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorPreferences;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -146,11 +138,6 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
     @Override
     public void preWindowOpen() {
         log.debug("Configure workbench window");
-        NativeThemeUtils.installThemeListener(Display.getCurrent());
-
-        // Show Product Config, if applicable
-        showProductConfigDialog();
-
         DesktopPlatform platform = DBWorkbench.getPlatform(DesktopPlatform.class);
         platform.postInitialize();
 
@@ -182,43 +169,6 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
 
         // Initialize drivers in the very beginning
         DataSourceProviderRegistry.getInstance();
-    }
-
-    private void showProductConfigDialog() {
-        if (!ProductConfigUtils.isAvailable()
-            || ProductConfigUtils.isProductConfigSuppressed()
-            || !ProductConfigRegistry.getInstance().hasNewFeatures()
-        ) {
-            return;
-        }
-
-        WorkbenchPlugin.unsetSplashShell(Display.getCurrent());
-        Shell workbenchShell = getWindowConfigurer().getWindow().getShell();
-        boolean hideWorkbench = Platform.OS_MACOSX.equals(Platform.getOS()) && workbenchShell != null;
-        boolean restoreVisibility = hideWorkbench && workbenchShell.isVisible();
-        int originalAlpha = hideWorkbench ? workbenchShell.getAlpha() : 255;
-        if (hideWorkbench) {
-            // Cocoa may show the unfinished workbench during the wizard's nested event loop.
-            workbenchShell.setAlpha(0);
-            workbenchShell.setVisible(false);
-        }
-        try {
-            var dialog = new ProductConfigWizardDialog(
-                getWindowConfigurer().getWindow(),
-                ProductConfigWizard.Origin.AUTOMATIC
-            );
-            if (dialog.open() == IDialogConstants.CANCEL_ID) {
-                DBRFeatureRegistry.getInstance().endTracking();
-                System.exit(0);
-            }
-        } finally {
-            if (hideWorkbench && !workbenchShell.isDisposed()) {
-                workbenchShell.setAlpha(originalAlpha);
-                if (restoreVisibility) {
-                    workbenchShell.setVisible(true);
-                }
-            }
-        }
     }
 
     /**

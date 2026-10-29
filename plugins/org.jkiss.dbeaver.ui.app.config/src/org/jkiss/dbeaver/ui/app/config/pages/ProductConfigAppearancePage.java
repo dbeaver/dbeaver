@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.ui.app.config.pages;
 
 import org.eclipse.e4.ui.css.swt.theme.ITheme;
 import org.eclipse.e4.ui.css.swt.theme.IThemeEngine;
+import org.eclipse.e4.ui.css.swt.theme.IThemeManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
@@ -49,7 +51,10 @@ public class ProductConfigAppearancePage extends ProductConfigWizardPage {
     public ProductConfigAppearancePage() {
         super(ProductConfigMessages.appearance_title, ProductConfigMessages.appearance_description);
 
-        themeEngine = PlatformUI.getWorkbench().getService(IThemeEngine.class);
+        themeEngine = PlatformUI.getWorkbench().getService(IThemeManager.class).getEngineForDisplay(Display.getCurrent());
+        if (themeEngine.getActiveTheme() == null) {
+            themeEngine.restore(IThemeEngine.DEFAULT_THEME_ID);
+        }
         currentTheme = UIObservable.of(themeEngine.getActiveTheme(), ITheme.class);
         currentTheme.addChangeListener((ignored, theme) -> {
             themeEngine.setTheme(theme, false);

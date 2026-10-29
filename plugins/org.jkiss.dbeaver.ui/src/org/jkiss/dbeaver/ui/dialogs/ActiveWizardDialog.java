@@ -51,6 +51,18 @@ public class ActiveWizardDialog extends WizardDialog {
     private String finishButtonLabel = IDialogConstants.FINISH_LABEL;
     private String cancelButtonLabel = IDialogConstants.CANCEL_LABEL;
 
+    public ActiveWizardDialog(@NotNull IWizard wizard, @Nullable Shell parentShell) {
+        super(parentShell, wizard);
+        addPageChangingListener(event -> {
+            if (event.getCurrentPage() instanceof ActiveWizardPage) {
+                ((ActiveWizardPage) event.getCurrentPage()).deactivatePage();
+            }
+//                if (event.getTargetPage() instanceof ActiveWizardPage) {
+//                    ((ActiveWizardPage) event.getTargetPage()).activatePage();
+//                }
+        });
+    }
+
     public ActiveWizardDialog(IWorkbenchWindow window, IWizard wizard)
     {
         this(window, wizard, null);
@@ -63,7 +75,7 @@ public class ActiveWizardDialog extends WizardDialog {
 
     public ActiveWizardDialog(IWorkbenchWindow window, IWizard wizard, IStructuredSelection selection, Shell parentShell)
     {
-        super(parentShell, wizard);
+        this(wizard, parentShell);
 
         // Initialize wizard
         if (wizard instanceof IWorkbenchWizard) {
@@ -75,14 +87,6 @@ public class ActiveWizardDialog extends WizardDialog {
             }
             ((IWorkbenchWizard)wizard).init(window.getWorkbench(), selection);
         }
-        addPageChangingListener(event -> {
-            if (event.getCurrentPage() instanceof ActiveWizardPage) {
-                ((ActiveWizardPage) event.getCurrentPage()).deactivatePage();
-            }
-//                if (event.getTargetPage() instanceof ActiveWizardPage) {
-//                    ((ActiveWizardPage) event.getTargetPage()).activatePage();
-//                }
-        });
     }
 
     @Override
