@@ -246,23 +246,17 @@
 }
 
 .message-image {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex: 0 0 64px;
-    width: 64px;
-    height: 64px;
-    padding: 4px;
-    box-sizing: border-box;
-    border: 1px solid var(--border-color);
-    border-radius: 6px;
-    overflow: hidden;
+    display: block;
+    flex: 0 0 auto;
+    max-width: 128px;
+    max-height: 128px;
     position: relative;
     cursor: pointer;
 }
 
-.message-image:hover {
-    border-color: var(--hyperlink-color);
+.message-image:not(.message-image-loaded) {
+    width: 64px;
+    height: 64px;
 }
 
 .message-image:focus {
@@ -272,9 +266,10 @@
 
 .message-image img {
     display: block;
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
+    max-width: 128px;
+    max-height: 128px;
+    width: auto;
+    height: auto;
 }
 
 .message-image-name {
