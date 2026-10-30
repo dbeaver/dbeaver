@@ -68,21 +68,21 @@ public class ClearHistoryHandler extends AbstractHandler {
             return null;
         }
 
-        if (PlatformUI.getWorkbench().restart()) {
-            for (String option : dialog.options) {
-                final HandlerDescriptor descriptor = descriptors.get(option);
+        for (String option : dialog.options) {
+            final HandlerDescriptor descriptor = descriptors.get(option);
 
-                try {
-                    UIUtils.runInProgressDialog(descriptor.getHandler());
-                } catch (Exception e) {
-                    DBWorkbench.getPlatformUI().showError(
-                        CoreApplicationMessages.clear_history_error_title,
-                        NLS.bind(CoreApplicationMessages.clear_history_error_message, descriptor.name),
-                        e instanceof InvocationTargetException ? ((InvocationTargetException) e).getTargetException() : e
-                    );
-                }
+            try {
+                UIUtils.runInProgressDialog(descriptor.getHandler());
+            } catch (Exception e) {
+                DBWorkbench.getPlatformUI().showError(
+                    CoreApplicationMessages.clear_history_error_title,
+                    NLS.bind(CoreApplicationMessages.clear_history_error_message, descriptor.name),
+                    e instanceof InvocationTargetException ? ((InvocationTargetException) e).getTargetException() : e
+                );
             }
         }
+
+        PlatformUI.getWorkbench().restart();
 
         return null;
     }
