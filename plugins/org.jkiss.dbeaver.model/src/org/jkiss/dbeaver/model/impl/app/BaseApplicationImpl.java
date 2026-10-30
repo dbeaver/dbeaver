@@ -16,16 +16,25 @@
  */
 package org.jkiss.dbeaver.model.impl.app;
 
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
+import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.Duration;
+import java.time.Instant;
 
 /**
  * Base application implementation
  */
 public abstract class BaseApplicationImpl extends AbstractApplication {
+    private static final Log log = Log.getLog(BaseApplicationImpl.class);
+
     public static final String DBEAVER_DATA_DIR = "DBeaverData";
+    private static final String INSTALL_DATA_DIR = "install-data";
     public static final String DEFAULT_WORKSPACE_FOLDER = "workspace6";
     public static final String SECURE_DATA_FOLDER = "secure";
 
@@ -43,8 +52,28 @@ public abstract class BaseApplicationImpl extends AbstractApplication {
         @NotNull String defaultAppWorkspaceName
     ) {
         workingDirectory = Path.of(RuntimeUtils.getWorkingDirectory(defaultWorkspaceLocation));
+        cleanInstallCache();
         // Workspace dir
         workspacePath = RuntimeUtils.getWorkspacePath(workingDirectory.toString(), defaultAppWorkspaceName);
+    }
+
+    // Clean old versions of this product only when its configuration lives in DBeaverData/install-data.
+    private void cleanInstallCache() {
+        try {
+            Path cacheRoot = workingDirectory.resolve(INSTALL_DATA_DIR).toAbsolutePath().normalize();
+            Path currentVersion = RuntimeUtils.getLocalPathFromURL(Platform.getConfigurationLocation().getURL())
+                .toAbsolutePath().normalize();
+            Path productDirectory = currentVersion.getParent();
+            if (productDirectory == null || !cacheRoot.equals(productDirectory.getParent()) || !Files.isDirectory(cacheRoot)) {
+                return;
+            }
+            // Use a non-daemon thread so short-lived CLI processes can complete the cleanup as well.
+            Thread.ofPlatform().name("DBeaver install cache cleanup").start(() ->
+                InstallCacheCleaner.clean(cacheRoot, currentVersion, Instant.now().minus(Duration.ofDays(7)), log::warn)
+            );
+        } catch (IOException | IllegalArgumentException e) {
+            log.warn("Unable to locate install cache", e);
+        }
     }
 
     @NotNull
@@ -58,7 +87,7 @@ public abstract class BaseApplicationImpl extends AbstractApplication {
         return workspacePath;
     }
 
-    protected void setWorkspacePath(Path workspacePath) {
+    protected void setWorkspacePath(@NotNull Path workspacePath) {
         this.workspacePath = workspacePath;
     }
 }
