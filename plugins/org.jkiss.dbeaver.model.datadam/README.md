@@ -2,7 +2,7 @@
 
 The Desktop remote DAM session service opens an authenticated WebSocket to Remote DAM at `/ws`.
 It uses the existing Desktop SSO access token and never starts a login, opens a browser, or requests credentials.
-Imported project encryption keys and the tracking session are not prerequisites for the remote DAM session.
+Imported project encryption keys are not prerequisites for the remote DAM session.
 
 ## Remote DAM session lifecycle
 
@@ -21,8 +21,8 @@ Imported project encryption keys and the tracking session are not prerequisites 
 - Release the session and subscriptions when the platform deactivates plugin services.
 
 `DDRemoteDamDesktopSessionPluginService` owns activation and shutdown without Workbench, SWT or UI listeners. Repeated
-activation and deactivation are harmless, and shutdown never creates a new session service. Authorization and
-tracking retain their existing owners; this lifecycle contribution does not load tokens or manage tracking.
+activation and deactivation are harmless, and shutdown never creates a new session service. `DDDesktopInitializer`
+restores saved authorization and initializes project synchronization; the session lifecycle contribution does not load tokens.
 
 Messages use the shared contracts from the `com.dbeaver.datadam.dam.remote.api` bundle. Topic subscriptions survive reconnects,
 but outgoing messages are rejected while disconnected rather than buffered for later delivery.
@@ -91,7 +91,7 @@ handlers must cooperate with interruption to stop work already in progress.
 ## Trusted endpoints
 
 By default, DataDam endpoints use the shared base host in `DDEndpoints`, with `datadam.cloud` as the source default and
-build-time substitution for staging. The default Remote DAM endpoint is `wss://remote-dam.<base-host>/ws`.
+build-time substitution for staging. The default Remote DAM endpoint is `wss://dam.<base-host>/ws`.
 Declaring this URL does not provision the service, DNS, TLS, or ingress.
 
 For local development, add these JVM options to the DBeaver Desktop run configuration:
