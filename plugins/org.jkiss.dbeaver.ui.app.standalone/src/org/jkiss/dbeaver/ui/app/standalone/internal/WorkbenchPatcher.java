@@ -17,8 +17,13 @@
 package org.jkiss.dbeaver.ui.app.standalone.internal;
 
 import org.eclipse.core.runtime.*;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.model.application.MApplicationElement;
+import org.eclipse.e4.ui.model.application.descriptor.basic.MPartDescriptor;
 import org.eclipse.e4.ui.model.application.ui.advanced.MPlaceholder;
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.model.application.ui.menu.MHandledMenuItem;
+import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.SWT;
@@ -33,6 +38,8 @@ import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.app.standalone.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
@@ -62,8 +69,64 @@ import javax.xml.transform.stream.StreamResult;
 
 public final class WorkbenchPatcher {
     private static final Log log = Log.getLog(WorkbenchPatcher.class);
+    private static final String ERROR_LOG_ICON_URI = "platform:/plugin/org.jkiss.dbeaver.model/icons/status/error_small.svg";
+    private static final String SOFTWARE_UPDATE_ICON_URI = "platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/software_update.svg";
+    private static final String SOFTWARE_INSTALL_ICON_URI = "platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/software_install.svg";
 
     private WorkbenchPatcher() {
+    }
+
+    public static void patchErrorLogViewIcon(@NotNull Workbench workbench) {
+        // Eclipse and DBeaver both contribute this view; its descriptor may keep Eclipse's icon.
+        for (MPartDescriptor descriptor : workbench.getApplication().getDescriptors()) {
+            if (IActionConstants.LOG_VIEW_ID.equals(descriptor.getElementId())) {
+                descriptor.setIconURI(ERROR_LOG_ICON_URI);
+            }
+        }
+        EModelService modelService = workbench.getService(EModelService.class);
+        if (modelService != null) {
+            for (MPart part : modelService.findElements(workbench.getApplication(), IActionConstants.LOG_VIEW_ID, MPart.class)) {
+                part.setIconURI(ERROR_LOG_ICON_URI);
+            }
+        }
+    }
+
+    public static void patchSoftwareMenuIcons(@NotNull Workbench workbench) {
+        EModelService modelService = workbench.getService(EModelService.class);
+        if (modelService != null) {
+            for (MHandledMenuItem item : modelService.findElements(workbench.getApplication(), null, MHandledMenuItem.class)) {
+                patchSoftwareMenuIcon(item);
+            }
+        }
+
+        IEventBroker broker = workbench.getService(IEventBroker.class);
+        if (broker != null) {
+            // p2 can recreate its menu items after startup; update each new widget and any later icon changes.
+            broker.subscribe(UIEvents.UIElement.TOPIC_WIDGET, event -> {
+                if (event.getProperty(UIEvents.EventTags.NEW_VALUE) != null &&
+                    event.getProperty(UIEvents.EventTags.ELEMENT) instanceof MHandledMenuItem item) {
+                    patchSoftwareMenuIcon(item);
+                }
+            });
+            broker.subscribe(UIEvents.UILabel.TOPIC_ICONURI, event -> {
+                if (event.getProperty(UIEvents.EventTags.ELEMENT) instanceof MHandledMenuItem item) {
+                    patchSoftwareMenuIcon(item);
+                }
+            });
+        }
+    }
+
+    private static void patchSoftwareMenuIcon(@NotNull MHandledMenuItem item) {
+        String commandId = item.getCommand() == null ? item.getElementId() : item.getCommand().getElementId();
+        String iconURI = null;
+        if (CheckForUpdateAction.P2_UPDATE_COMMAND.equals(commandId)) {
+            iconURI = SOFTWARE_UPDATE_ICON_URI;
+        } else if (CheckForUpdateAction.P2_INSTALL_COMMAND.equals(commandId)) {
+            iconURI = SOFTWARE_INSTALL_ICON_URI;
+        }
+        if (iconURI != null && !iconURI.equals(item.getIconURI())) {
+            item.setIconURI(iconURI);
+        }
     }
 
     public static void hideUnavailableView(@NotNull Workbench workbench, @NotNull String viewId) {
@@ -346,7 +409,8 @@ public final class WorkbenchPatcher {
             .collect(Collectors.toMap(
                 PartDescriptor::id,
                 Function.identity(),
-                (a, b) -> b
+                // Keep DBeaver's Error Log icon when both plugins contribute the same view ID.
+                (a, b) -> IActionConstants.LOG_VIEW_ID.equals(a.id()) && isContributedByDBeaver(a.element.getDeclaringExtension()) ? a : b
             ));
     }
 
