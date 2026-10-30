@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ui.dialogs;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.ShellListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
@@ -36,6 +34,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public abstract class AbstractPopupPanel extends BaseDialog {
 
     private boolean modeless;
+    private boolean closeOnOutsideClickInstalled;
     private static boolean popupOpen;
 
     public static boolean isPopupOpen() {
@@ -114,21 +113,18 @@ public abstract class AbstractPopupPanel extends BaseDialog {
         return !modeless;
     }
 
+    /**
+     * Closes a modeless popup when the user clicks outside of it.
+     * <p>
+     * Keyboard focus is deliberately not used here: with focus-follows-mouse window
+     * managers (e.g. GNOME with {@code focus-mode='sloppy'}) the popup loses focus as
+     * soon as the pointer moves over the parent window, which would close the popup
+     * before the user could reach it.
+     */
     protected void closeOnFocusLost(Control ... controls) {
-        if (modeless) {
-            FocusAdapter focusListener = new FocusAdapter() {
-                @Override
-                public void focusLost(FocusEvent e) {
-                    UIUtils.asyncExec(AbstractPopupPanel.this::handleFocusLost);
-                }
-            };
-            for (Control ctrl : controls) {
-                if (ctrl != null) {
-                    ctrl.addFocusListener(focusListener);
-                }
-            }
+        if (modeless && !closeOnOutsideClickInstalled) {
+            closeOnOutsideClickInstalled = installCloseOnOutsideClick();
         }
-
     }
 
     /**
@@ -138,6 +134,53 @@ public abstract class AbstractPopupPanel extends BaseDialog {
      */
     protected void closeOnFocusLost(@NotNull Shell shell) {
         shell.addShellListener(ShellListener.shellDeactivatedAdapter(e -> UIUtils.asyncExec(this::handleFocusLost)));
+    }
+
+    private boolean installCloseOnOutsideClick() {
+        Shell popupShell = getShell();
+        if (popupShell == null || popupShell.isDisposed()) {
+            return false;
+        }
+        Display display = popupShell.getDisplay();
+        Listener mouseFilter = event -> {
+            if (event.type != SWT.MouseDown) {
+                return;
+            }
+            Shell shell = getShell();
+            if (shell == null || shell.isDisposed()) {
+                return;
+            }
+            if (event.widget instanceof Control clicked) {
+                Shell clickedShell = clicked.getShell();
+                // Ignore clicks inside the popup and its child shells (e.g. a drop-down opened from it)
+                if (isPopupShell(shell, clickedShell)) {
+                    return;
+                }
+                // Ignore clicks in transient shells (context menus, combo drop-downs, tooltips)
+                // which may not be parented to the popup shell
+                if ((clickedShell.getStyle() & SWT.ON_TOP) != 0) {
+                    return;
+                }
+            }
+            UIUtils.asyncExec(() -> {
+                Shell currentShell = getShell();
+                if (currentShell != null && !currentShell.isDisposed()) {
+                    cancelPressed();
+                }
+            });
+        };
+        display.addFilter(SWT.MouseDown, mouseFilter);
+        popupShell.addDisposeListener(e -> display.removeFilter(SWT.MouseDown, mouseFilter));
+        return true;
+    }
+
+    private static boolean isPopupShell(Shell popupShell, Shell shell) {
+        for (Composite parent = shell; parent != null; parent = parent.getParent()) {
+            if (parent == popupShell) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void handleFocusLost() {
