@@ -31,8 +31,6 @@ public class SQLiteUIMessages extends NLS {
     public static String extension_confirmation_connect;
     public static String extension_confirmation_libraries;
     public static String extension_confirmation_queries;
-    public static String extension_settings_enable;
-    public static String extension_settings_warning;
     public static String extension_settings_error;
 
     public static String extension_settings_open;

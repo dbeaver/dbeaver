@@ -28,7 +28,6 @@ import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -54,13 +53,6 @@ public final class ConfirmedActionsStore {
         return changed;
     }
 
-    public synchronized void addAll(@NotNull Collection<String> additions) throws DBException {
-        Set<String> actions = load();
-        if (actions.addAll(additions)) {
-            save(actions);
-        }
-    }
-
     public synchronized void replaceWithPrefix(@NotNull String prefix, @Nullable String action) throws DBException {
         Set<String> actions = load();
         boolean changed = actions.removeIf(value -> value.startsWith(prefix) && !value.equals(action));
@@ -70,14 +62,6 @@ public final class ConfirmedActionsStore {
         if (changed) {
             save(actions);
         }
-    }
-
-    @NotNull
-    public synchronized Path prepareFile() throws DBException {
-        if (!Files.exists(path)) {
-            save(Set.of());
-        }
-        return path;
     }
 
     @NotNull

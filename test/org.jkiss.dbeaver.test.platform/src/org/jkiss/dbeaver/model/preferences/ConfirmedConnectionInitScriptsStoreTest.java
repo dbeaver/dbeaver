@@ -36,7 +36,7 @@ public class ConfirmedConnectionInitScriptsStoreTest {
     private ConfirmedConnectionInitScriptsStore store;
 
     @BeforeEach
-    public void setUp() {
+    public void setUp() throws Exception {
         file = directory.resolve("settings/approvals.json");
         store = new ConfirmedConnectionInitScriptsStore(file);
         Mockito.when(container.getProject().getAbsolutePath()).thenReturn(directory.resolve("project"));
@@ -45,7 +45,7 @@ public class ConfirmedConnectionInitScriptsStoreTest {
     }
 
     @Test
-    public void persistedApprovalPreservesBootstrapBoundariesAndOrder() {
+    public void persistedApprovalPreservesBootstrapBoundariesAndOrder() throws Exception {
         String first = "SELECT 1 /*";
         String second = "CALL FILE_WRITE(STRINGTOUTF8('marker'), '/tmp/marker'); -- */";
         store.add(container, "jdbc:h2:mem:test", List.of(first + ";\n" + second));
@@ -57,7 +57,7 @@ public class ConfirmedConnectionInitScriptsStoreTest {
     }
 
     @Test
-    public void remembersApprovalAfterStoreIsRecreated() {
+    public void remembersApprovalAfterStoreIsRecreated() throws Exception {
         Assertions.assertFalse(store.contains(container, "jdbc:h2:mem:test", "CALL 1"));
         store.add(container, "jdbc:h2:mem:test", "CALL 1");
 
@@ -65,7 +65,7 @@ public class ConfirmedConnectionInitScriptsStoreTest {
     }
 
     @Test
-    public void requiresApprovalWhenUrlOrSqlChanges() {
+    public void requiresApprovalWhenUrlOrSqlChanges() throws Exception {
         store.add(container, "jdbc:h2:mem:test", "CALL 1");
 
         Assertions.assertFalse(store.contains(container, "jdbc:h2:mem:other", "CALL 1"));
@@ -74,7 +74,7 @@ public class ConfirmedConnectionInitScriptsStoreTest {
     }
 
     @Test
-    public void doesNotTransferApprovalToOtherConnectionsProjectsOrDrivers() {
+    public void doesNotTransferApprovalToOtherConnectionsProjectsOrDrivers() throws Exception {
         store.add(container, "jdbc:h2:mem:test", "CALL 1");
         Mockito.when(container.getId()).thenReturn("other-connection");
         Assertions.assertFalse(store.contains(container, "jdbc:h2:mem:test", "CALL 1"));
@@ -87,7 +87,7 @@ public class ConfirmedConnectionInitScriptsStoreTest {
     }
 
     @Test
-    public void preservesApprovalsWrittenByAnotherStore() {
+    public void preservesApprovalsWrittenByAnotherStore() throws Exception {
         store.add(container, "jdbc:h2:mem:test", "CALL 1");
         new ConfirmedConnectionInitScriptsStore(file).add(container, "jdbc:h2:mem:other", "CALL 2");
         store.add(container, null, "CALL 3");

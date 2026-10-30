@@ -17,37 +17,23 @@
 package org.jkiss.dbeaver.ext.sqlite;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.preferences.ConfirmedActionsStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Properties;
 
 public final class SQLiteExtensionPermissionStore {
     private static final String PERMISSIONS_FILE_NAME = "sqlite-extension-permissions.json";
-    private static final String LEGACY_PERMISSIONS_FILE_NAME = "sqlite-extension-permissions.properties";
     private static final int MAX_TEMPORARY_PERMISSIONS = 100;
     private static SQLiteExtensionPermissionStore instance;
 
-    private final Path path;
-    private final Path legacyPath;
     private final ConfirmedActionsStore actions;
-    private boolean legacyChecked;
     private final Map<String, String> temporaryPermissions = new LinkedHashMap<>();
 
     SQLiteExtensionPermissionStore(@NotNull Path path) {
-        this(path, null);
-    }
-
-    SQLiteExtensionPermissionStore(@NotNull Path path, @Nullable Path legacyPath) {
-        this.path = path;
-        this.legacyPath = legacyPath;
         actions = new ConfirmedActionsStore(path);
     }
 
@@ -55,21 +41,18 @@ public final class SQLiteExtensionPermissionStore {
     public static synchronized SQLiteExtensionPermissionStore getInstance() {
         if (instance == null) {
             instance = new SQLiteExtensionPermissionStore(
-                DBWorkbench.getPlatform().getGlobalConfigurationFile(PERMISSIONS_FILE_NAME),
-                DBWorkbench.getPlatform().getGlobalConfigurationFile(LEGACY_PERMISSIONS_FILE_NAME));
+                DBWorkbench.getPlatform().getGlobalConfigurationFile(PERMISSIONS_FILE_NAME));
         }
         return instance;
     }
 
     public synchronized boolean isApproved(@NotNull SQLiteExtensionSettings settings) throws DBException {
-        migrateLegacy();
         return settings.enabled() && ((settings.temporary()
             && settings.fingerprint().equals(temporaryPermissions.get(settings.temporaryKey())))
             || actions.contains(approval(settings)));
     }
 
     public synchronized void approve(@NotNull SQLiteExtensionSettings settings) throws DBException {
-        migrateLegacy();
         if (!settings.enabled()) {
             revoke(settings);
         } else if (settings.temporary()) {
@@ -89,30 +72,11 @@ public final class SQLiteExtensionPermissionStore {
     }
 
     public synchronized void revoke(@NotNull SQLiteExtensionSettings settings) throws DBException {
-        migrateLegacy();
         if (settings.temporary()) {
             temporaryPermissions.remove(settings.temporaryKey());
         } else {
             actions.replaceWithPrefix(settings.connectionKey() + ":", null);
         }
-    }
-
-    private void migrateLegacy() throws DBException {
-        if (legacyChecked) {
-            return;
-        }
-        if (legacyPath != null && !Files.exists(path) && Files.exists(legacyPath)) {
-            Properties permissions = new Properties();
-            try (var reader = Files.newBufferedReader(legacyPath)) {
-                permissions.load(reader);
-            } catch (IOException | IllegalArgumentException exception) {
-                throw new DBException("Cannot migrate SQLite native extension permissions", exception);
-            }
-            actions.addAll(permissions.stringPropertyNames().stream()
-                .map(key -> key + ":" + permissions.getProperty(key)).toList());
-            actions.prepareFile();
-        }
-        legacyChecked = true;
     }
 
     @NotNull

@@ -323,22 +323,6 @@ public class SQLiteExtensionLoadingTest {
     }
 
     @Test
-    public void migratesPreviousLocalApprovalsWithoutExportingThem() throws Exception {
-        SQLiteExtensionSettings settings = enabledSettings();
-        Path legacy = directory.resolve("legacy.properties");
-        Properties values = new Properties();
-        values.setProperty(settings.connectionKey(), settings.fingerprint());
-        try (var writer = Files.newBufferedWriter(legacy)) {
-            values.store(writer, null);
-        }
-        Path file = directory.resolve("permissions.json");
-        SQLiteExtensionPermissionStore permissions = new SQLiteExtensionPermissionStore(file, legacy);
-        Assertions.assertTrue(permissions.isApproved(settings));
-        permissions.revoke(settings);
-        Assertions.assertFalse(new SQLiteExtensionPermissionStore(file, legacy).isApproved(settings));
-    }
-
-    @Test
     public void revokeRemovesSavedPermission() throws Exception {
         SQLiteExtensionSettings settings = enabledSettings();
         SQLiteExtensionPermissionStore permissions = store();

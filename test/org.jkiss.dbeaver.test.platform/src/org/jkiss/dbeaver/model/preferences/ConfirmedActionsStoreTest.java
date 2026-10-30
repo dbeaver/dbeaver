@@ -28,8 +28,8 @@ public class ConfirmedActionsStoreTest {
     Path directory;
 
     @Test
-    public void preservesExistingShellCommandFileFormat() throws Exception {
-        Path file = directory.resolve("confirmed_shell_commands.json");
+    public void preservesStoredApprovals() throws Exception {
+        Path file = directory.resolve("actions.json");
         Files.writeString(file, "[\"echo first\", \"echo second\"]");
         ConfirmedActionsStore store = new ConfirmedActionsStore(file);
         Assertions.assertTrue(store.contains("echo first"));
@@ -41,7 +41,7 @@ public class ConfirmedActionsStoreTest {
     }
 
     @Test
-    public void seesEditsFromTheTrustedCommandsEditor() throws Exception {
+    public void seesExternalChanges() throws Exception {
         Path file = directory.resolve("commands.json");
         ConfirmedActionsStore store = new ConfirmedActionsStore(file);
         store.add("echo first");
@@ -62,13 +62,6 @@ public class ConfirmedActionsStoreTest {
         store.replaceWithPrefix("first:", null);
         Assertions.assertFalse(store.contains("first:new"));
         Assertions.assertTrue(store.contains("second:trusted"));
-    }
-
-    @Test
-    public void createsAnEditableEmptyApprovalList() throws Exception {
-        Path file = directory.resolve("actions.json");
-        Assertions.assertEquals(file, new ConfirmedActionsStore(file).prepareFile());
-        Assertions.assertEquals("[]", Files.readString(file).strip());
     }
 
     @Test

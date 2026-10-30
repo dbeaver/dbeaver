@@ -323,21 +323,6 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
             getContainer().showPage(page);
             return true;
         }
-        for (IWizardPage owner : getPages()) {
-            if (owner instanceof ConnectionPageSettings settings) {
-                IDialogPage[] subPages = settings.getDialogPages(false, true);
-                if (subPages == null) {
-                    continue;
-                }
-                for (IDialogPage subPage : subPages) {
-                    if (subPage.getClass().getSimpleName().equals(pageId)) {
-                        getContainer().showPage(owner);
-                        settings.showSubPage(subPage);
-                        return true;
-                    }
-                }
-            }
-        }
         return false;
     }
 

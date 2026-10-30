@@ -32,7 +32,6 @@ public final class H2InitScriptValidator {
     private static final String INIT_PROPERTY = "INIT";
 
     private final Set<Approval> approvedScripts = new HashSet<>();
-    private final Set<BootstrapApproval> approvedBootstrap = new HashSet<>();
 
     public synchronized void validateScripts(
         @Nullable String url,
@@ -43,12 +42,12 @@ public final class H2InitScriptValidator {
         if (snapshot.isEmpty()) {
             return;
         }
-        BootstrapApproval approval = new BootstrapApproval(url, snapshot);
-        if (!approvedBootstrap.contains(approval)) {
+        Approval approval = new Approval(url, snapshot);
+        if (!approvedScripts.contains(approval)) {
             if (!confirmation.test(snapshot)) {
                 throw new DBCException("H2 initialization SQL execution was not approved. Connection cancelled");
             }
-            approvedBootstrap.add(approval);
+            approvedScripts.add(approval);
         }
     }
 
@@ -70,13 +69,7 @@ public final class H2InitScriptValidator {
         if (script.isBlank()) {
             return;
         }
-        Approval approval = new Approval(url, script);
-        if (!approvedScripts.contains(approval)) {
-            if (!confirmation.test(script)) {
-                throw new DBCException("H2 initialization SQL execution was not approved. Connection cancelled");
-            }
-            approvedScripts.add(approval);
-        }
+        validateScripts(url, List.of(script), scripts -> confirmation.test(script));
     }
 
     @NotNull
@@ -120,9 +113,6 @@ public final class H2InitScriptValidator {
         }
     }
 
-    private record BootstrapApproval(@Nullable String url, @NotNull List<String> scripts) {
-    }
-
-    private record Approval(@Nullable String url, @NotNull String script) {
+    private record Approval(@Nullable String url, @NotNull List<String> scripts) {
     }
 }

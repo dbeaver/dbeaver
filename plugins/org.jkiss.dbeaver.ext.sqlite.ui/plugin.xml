@@ -14,7 +14,7 @@
 
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="org.jkiss.dbeaver.ext.sqlite.SQLiteExtensionLoadingException"
-                 class="org.jkiss.dbeaver.ext.sqlite.ui.SQLiteExtensionsErrorAdapterFactory">
+                 class="org.jkiss.dbeaver.ext.sqlite.ui.SQLiteExtensionsErrorAction">
             <adapter type="org.jkiss.dbeaver.ui.IErrorAction"/>
         </factory>
     </extension>

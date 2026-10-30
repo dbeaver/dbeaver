@@ -20,6 +20,8 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.ConfirmedConnectionInitScriptsStore;
@@ -52,8 +54,13 @@ public class UIServiceConnectionInitImpl implements UIServiceConnectionInit {
         ConfirmedConnectionInitScriptsStore approvals = new ConfirmedConnectionInitScriptsStore(
             DBWorkbench.getPlatform().getGlobalConfigurationFile(ConfirmedConnectionInitScriptsStore.FILE_NAME)
         );
-        if (approvals.contains(container, url, approvedScripts)) {
-            return true;
+        try {
+            if (approvals.contains(container, url, approvedScripts)) {
+                return true;
+            }
+        } catch (DBException exception) {
+            Log.getLog(UIServiceConnectionInitImpl.class).error("Cannot read connection initialization approvals", exception);
+            return false;
         }
         boolean approved = Boolean.TRUE.equals(UIUtils.syncExec(new RunnableWithResult<Boolean>() {
             @NotNull
@@ -86,7 +93,12 @@ public class UIServiceConnectionInitImpl implements UIServiceConnectionInit {
             }
         }));
         if (approved) {
-            approvals.add(container, url, approvedScripts);
+            try {
+                approvals.add(container, url, approvedScripts);
+            } catch (DBException exception) {
+                Log.getLog(UIServiceConnectionInitImpl.class).error("Cannot save connection initialization approval", exception);
+                return false;
+            }
         }
         return approved;
     }
