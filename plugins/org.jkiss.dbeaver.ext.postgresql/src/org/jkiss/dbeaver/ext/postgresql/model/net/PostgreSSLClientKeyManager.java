@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.model.DatabaseURL;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
@@ -29,11 +30,14 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.function.Consumer;
@@ -44,6 +48,9 @@ import java.util.function.Consumer;
  */
 public class PostgreSSLClientKeyManager {
     private static final Log log = Log.getLog(PostgreSSLClientKeyManager.class);
+    private static final String SSL_KEY_PROPERTY = "sslkey";
+    private static final String SSL_FACTORY_PROPERTY = "sslfactory";
+    private static final String SSL_MODE_PROPERTY = "sslmode";
 
     private final Object lock = new Object();
     private final Consumer<Path> trackTempFile;
@@ -56,16 +63,54 @@ public class PostgreSSLClientKeyManager {
 
     public void prepareConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull Properties properties
+        @NotNull Properties properties,
+        @Nullable String jdbcUrl
     ) throws IOException {
-        String keyFile = properties.getProperty("sslkey");
-        if (keyFile != null && CommonUtils.isEmpty(properties.getProperty("sslfactory"))
-            && !"disable".equals(properties.getProperty("sslmode"))) {
+        Properties urlProperties = parseUrlProperties(jdbcUrl);
+        if (urlProperties == null) {
+            // Let pgjdbc report the malformed URL instead of reading a key it may never use.
+            return;
+        }
+        String keyFile = properties.getProperty(SSL_KEY_PROPERTY);
+        String factory = urlProperties.getProperty(SSL_FACTORY_PROPERTY, properties.getProperty(SSL_FACTORY_PROPERTY));
+        String mode = urlProperties.getProperty(SSL_MODE_PROPERTY, properties.getProperty(SSL_MODE_PROPERTY));
+        if (keyFile != null && !urlProperties.containsKey(SSL_KEY_PROPERTY)
+            && CommonUtils.isEmpty(factory) && !"disable".equalsIgnoreCase(mode)) {
             Path convertedKey = this.prepareKeyFileIfNeeded(monitor, Path.of(keyFile));
             if (convertedKey != null) {
-                properties.setProperty("sslkey", convertedKey.toString());
+                properties.setProperty(SSL_KEY_PROPERTY, convertedKey.toString());
             }
         }
+    }
+
+    /** pgjdbc applies URL parameters after connection properties, with the last duplicate URL value winning. */
+    @Nullable
+    private static Properties parseUrlProperties(@Nullable String jdbcUrl) {
+        Properties result = new Properties();
+        if (jdbcUrl == null) {
+            return result;
+        }
+        int queryStart = jdbcUrl.indexOf('?');
+        if (queryStart == -1) {
+            return result;
+        }
+        var entries = DatabaseURL.Generic.getQueryParametersPattern()
+            .tryRecognizeHierarchical(jdbcUrl.substring(queryStart + 1), true);
+        if (entries == null) {
+            return null;
+        }
+        // Captures are in reverse URL order; keep the first captured value so the last URL value wins.
+        for (var parameter : entries.getGroups().getOrDefault(DatabaseURL.Generic.PARAM_GROUP, List.of())) {
+            String name = parameter.getFirstParamValue(DatabaseURL.Generic.PARAM_PROP);
+            String value = parameter.getFirstParamValue(DatabaseURL.Generic.PARAM_VALUE);
+            try {
+                result.putIfAbsent(name, value == null ? "" : URLDecoder.decode(value, StandardCharsets.UTF_8));
+            } catch (IllegalArgumentException e) {
+                // Skip key preparation for malformed percent escapes and let pgjdbc report the invalid URL.
+                return null;
+            }
+        }
+        return result;
     }
 
     @Nullable

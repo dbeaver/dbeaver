@@ -202,16 +202,16 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
         try {
             Files.writeString(source, makePkcs1Key());
             properties.setProperty("sslfactory", "example.CustomFactory");
-            keyManager.prepareConnectionProperties(new VoidProgressMonitor(), properties);
+            keyManager.prepareConnectionProperties(new VoidProgressMonitor(), properties, null);
             Assertions.assertEquals(source.toString(), properties.getProperty("sslkey"));
 
             properties.remove("sslfactory");
             properties.setProperty("sslmode", "disable");
-            keyManager.prepareConnectionProperties(new VoidProgressMonitor(), properties);
+            keyManager.prepareConnectionProperties(new VoidProgressMonitor(), properties, null);
             Assertions.assertEquals(source.toString(), properties.getProperty("sslkey"));
 
             properties.remove("sslmode");
-            keyManager.prepareConnectionProperties(new VoidProgressMonitor(), properties);
+            keyManager.prepareConnectionProperties(new VoidProgressMonitor(), properties, null);
             Assertions.assertNotEquals(source.toString(), properties.getProperty("sslkey"));
             Assertions.assertEquals(List.of(Path.of(properties.getProperty("sslkey"))), trackedFiles);
         } finally {
@@ -223,7 +223,7 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void driverAndConnectionSslOverridesDoNotReadTheHandlerKey() throws Exception {
+    public void sslOverridesFromPropertiesAndUrlDoNotReadTheHandlerKey() throws Exception {
         Path missingKey = Files.createTempFile("dbeaver-test-ssl-", ".key");
         Files.delete(missingKey);
         DBPDataSourceContainer container = mock(DBPDataSourceContainer.class);
@@ -245,7 +245,7 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
             Properties properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
             Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
 
-            when(driver.getConnectionProperties()).thenReturn(Map.of("sslmode", "disable"));
+            when(driver.getConnectionProperties()).thenReturn(Map.of("sslmode", "DISABLE"));
             properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
             Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
 
@@ -258,6 +258,32 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
             config.setProperty("sslmode", "disable");
             properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
             Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
+
+            config.setProperty("sslmode", null);
+            config.setUrl("jdbc:postgresql://localhost/postgres?sslmode=DISABLE");
+            properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+            Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
+
+            config.setUrl("jdbc:postgresql://localhost/postgres?sslfactory=example.CustomFactory");
+            properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+            Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
+
+            config.setUrl("jdbc:postgresql://localhost/postgres?sslkey=another.key");
+            properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+            Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
+
+            config.setUrl("jdbc:postgresql://localhost/postgres?sslmode=require&sslmode=%44ISABLE");
+            properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+            Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
+
+            for (String query : List.of(
+                "sslkey", "&sslkey=&", "option=a=b=c&&sslmode=DISABLE&", "sslfactory=example%2ECustomFactory",
+                "sslmode=require&sslmode=disable", "option=%invalid"
+            )) {
+                config.setUrl("jdbc:postgresql:postgres?" + query);
+                properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+                Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"), query);
+            }
         } finally {
             dataSource.shutdown(new VoidProgressMonitor());
         }
@@ -271,8 +297,9 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
         DBPDataSourceContainer container = mock(DBPDataSourceContainer.class);
         DBPDriver driver = mock(DBPDriver.class);
         when(container.getDriver()).thenReturn(driver);
-        when(driver.getConnectionProperties()).thenReturn(Map.of("sslkey", source.toString()));
+        when(driver.getConnectionProperties()).thenReturn(Map.of("sslkey", source.toString(), "sslmode", "disable"));
         DBPConnectionConfiguration config = new DBPConnectionConfiguration();
+        config.setUrl("jdbc:postgresql:postgres?sslmode=disable&sslmode=require&option=a=b=c&empty=&ssl");
         when(container.getActualConnectionConfiguration()).thenReturn(config);
         PostgreDataSource dataSource = new PostgreDataSource(container, "16", "postgres");
         DBWHandlerDescriptor descriptor = mock(DBWHandlerDescriptor.class);
