@@ -14,20 +14,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.cdata;
+package org.jkiss.dbeaver.model.security;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.runtime.ExperimentalBundles;
-import org.osgi.framework.BundleActivator;
-import org.osgi.framework.BundleContext;
-
-public class CDataLazyBundleActivator implements BundleActivator {
-    @Override
-    public void start(@NotNull BundleContext context) throws Exception {
-        ExperimentalBundles.initialize(context);
-    }
-
-    @Override
-    public void stop(@NotNull BundleContext context) {
-    }
+public enum SMTeamGrantType {
+    MANUAL,
+    AUTH_PROVIDER,
+    DEFAULT
 }
