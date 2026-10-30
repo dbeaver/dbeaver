@@ -42,6 +42,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
     private static final Log log = Log.getLog(DDMcpDesktopFunctionService.class);
@@ -110,7 +111,7 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
     ) throws DDMcpFunctionException {
         DBPDataSourceContainer connection = connections.getAllowedConnection(projectId, datasourceId).connection();
         try {
-            if (!connection.isConnected() && !connection.connect(monitor, true, false)) {
+            if (!connectOrWait(connection, monitor)) {
                 log.debug("Could not connect DataDam MCP datasource " + connection.getId());
                 return null;
             }
@@ -127,6 +128,35 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
         } catch (DBException e) {
             log.debug("Cannot create DataDam MCP database context", e);
             return null;
+        }
+    }
+
+    private boolean connectOrWait(@NotNull DBPDataSourceContainer connection, @NotNull DBRProgressMonitor monitor)
+        throws DBException, DDMcpFunctionException {
+        if (!connection.isConnected() && !connection.isConnecting()) {
+            connection.connect(monitor, true, false);
+        }
+        if (connection.isConnecting()) {
+            waitForConnection(connection);
+        }
+        return connection.isConnected();
+    }
+
+    private void waitForConnection(@NotNull DBPDataSourceContainer connection) throws DDMcpFunctionException {
+        long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(5);
+        while (connection.isConnecting() && System.nanoTime() < deadline) {
+            try {
+                TimeUnit.MILLISECONDS.sleep(100);
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                throw new DDMcpFunctionException(DDMcpFunctionErrorCode.INTERNAL_ERROR,
+                    "Waiting for database connection was interrupted", null);
+            }
+        }
+        if (!connection.isConnected()) {
+            throw new DDMcpFunctionException(DDMcpFunctionErrorCode.INTERNAL_ERROR,
+                connection.isConnecting() ? "Timed out waiting for database connection" : "Database connection is unavailable",
+                null);
         }
     }
 
