@@ -338,7 +338,13 @@ public class NewConnectionWizard extends ConnectionWizard
      */
     @Override
     public boolean performFinish() {
-        return persistDataSource() != PersistResult.ERROR;
+        if (persistDataSource() == PersistResult.ERROR) {
+            return false;
+        }
+        if (dataSourceNew != null) {
+            firePropertyChangeEvent(PROP_CONNECTION_SAVED, null, dataSourceNew);
+        }
+        return true;
     }
 
     @Override

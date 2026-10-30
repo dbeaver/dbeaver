@@ -105,6 +105,9 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource,
         return getDataSource().getContainer().getActualConnectionConfiguration().getBootstrap();
     }
 
+    protected void validateBootstrapQueries(@NotNull List<String> queries) throws DBException {
+    }
+
     /**
      * Context boot procedure.
      * Executes bootstrap queries and other init functions.
@@ -116,13 +119,15 @@ public abstract class AbstractExecutionContext<DATASOURCE extends DBPDataSource,
 
         // Execute bootstrap queries
         DBPConnectionBootstrap bootstrap = getBootstrapSettings();
-        List<String> initQueries = bootstrap.getInitQueries();
+        // validate the exact statements that will execute, even when bootstrap errors are ignored
+        List<String> initQueries = List.copyOf(bootstrap.getInitQueries()).stream()
+            .map(query -> GeneralUtils.replaceVariables(query, getDataSource().getContainer().getVariablesResolver(true)))
+            .toList();
+        validateBootstrapQueries(initQueries);
         if (!CommonUtils.isEmpty(initQueries)) {
             monitor.subTask("Run bootstrap queries");
             try (DBCSession session = openSession(monitor, DBCExecutionPurpose.UTIL, "Run bootstrap queries")) {
                 for (String query : initQueries) {
-                    // Replace variables
-                    query = GeneralUtils.replaceVariables(query, getDataSource().getContainer().getVariablesResolver(true));
                     try {
                         try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.SCRIPT, query, false, false, false)) {
                             dbStat.executeStatement();

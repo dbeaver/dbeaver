@@ -3,6 +3,30 @@
 
 <plugin>
 
+    <extension point="org.jkiss.dbeaver.service">
+        <service name="org.jkiss.dbeaver.ext.sqlite.SQLiteExtensionConfirmation"
+                 class="org.jkiss.dbeaver.ext.sqlite.ui.SQLiteExtensionConfirmationImpl"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceConfigurator">
+        <configurator dataSource="sqlite" class="org.jkiss.dbeaver.ext.sqlite.ui.SQLiteConnectionPage"/>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.ext.sqlite.SQLiteExtensionLoadingException"
+                 class="org.jkiss.dbeaver.ext.sqlite.ui.SQLiteExtensionsErrorAction">
+            <adapter type="org.jkiss.dbeaver.ui.IErrorAction"/>
+        </factory>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.resultset.error">
+        <action class="org.jkiss.dbeaver.ext.sqlite.ui.SQLiteExtensionsErrorAction"
+                label="%extension_settings_error_action"
+                description="%extension_settings_error_description"
+                icon="platform:/plugin/org.jkiss.dbeaver.ext.sqlite/icons/sqlite_icon.png"
+                order="10"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.dataManager">
         <manager class="org.jkiss.dbeaver.ext.sqlite.ui.data.manager.SQLiteValueManager" id="org.jkiss.dbeaver.ext.sqlite.ui.data.manager.SQLiteValueManager">
             <supports dataSource="org.jkiss.dbeaver.ext.sqlite.model.SQLiteDataSource"/>
