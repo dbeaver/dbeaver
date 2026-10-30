@@ -28,6 +28,19 @@
             type="org.jkiss.dbeaver.model.navigator.DBNProject"/>
     </extension>
 
+    <extension point="org.eclipse.ui.decorators">
+        <decorator
+            id="org.jkiss.dbeaver.ui.datadam.project.decorator"
+            label="DataDam project"
+            class="org.jkiss.dbeaver.ui.datadam.project.DDProjectDecorator"
+            lightweight="true"
+            state="true">
+            <enablement>
+                <objectClass name="org.jkiss.dbeaver.model.navigator.DBNProject"/>
+            </enablement>
+        </decorator>
+    </extension>
+
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
             class="org.jkiss.dbeaver.ui.datadam.mcp.DDMcpConnectionSettingsPropertyTester"

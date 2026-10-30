@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.datadam.project;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -69,6 +70,7 @@ public class DDProjectSyncPropertyTester extends PropertyTester {
             ActionUtils.evaluatePropertyState(NAMESPACE + "." + PROP_ENABLED);
             ActionUtils.evaluatePropertyState(NAMESPACE + "." + PROP_CAN_SHARE);
             ActionUtils.evaluatePropertyState(NAMESPACE + "." + PROP_CAN_SYNC);
+            PlatformUI.getWorkbench().getDecoratorManager().update(DDProjectDecorator.DECORATOR_ID);
         });
     }
 }
