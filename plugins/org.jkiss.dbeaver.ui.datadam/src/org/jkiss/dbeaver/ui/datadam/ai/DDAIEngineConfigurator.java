@@ -52,7 +52,7 @@ public class DDAIEngineConfigurator extends AbstractAIEngineConfigurator<AIEngin
 
     private String baseUrl = DDAIEngineProperties.DEFAULT_ENDPOINT;
     private volatile String token = "";
-    private String temperature = "";
+    private String temperature = "0.0";
 
     private Text tokenText;
     private Text baseUrlText;
@@ -100,7 +100,7 @@ public class DDAIEngineConfigurator extends AbstractAIEngineConfigurator<AIEngin
             .withGridData(GridDataFactory.fillDefaults().span(2, 1).create())
             .build();
 
-        temperatureText = UIUtils.createLabelText(composite, DDUIMessages.datadam_configurator_label_temperature, "");
+        temperatureText = UIUtils.createLabelText(composite, DDUIMessages.datadam_configurator_label_temperature, "0.0");
         temperatureText.setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
         temperatureText.setMessage(AIUIMessages.ai_engine_configurator_temperature_default);
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
@@ -115,7 +115,7 @@ public class DDAIEngineConfigurator extends AbstractAIEngineConfigurator<AIEngin
         loadAdvancedSettings(configuration);
         baseUrl = CommonUtils.toString(configuration.getBaseUrl(), DDAIEngineProperties.DEFAULT_ENDPOINT);
         token = CommonUtils.toString(configuration.getToken());
-        temperature = CommonUtils.toString(configuration.getRequestTemperature(), "");
+        temperature = configuration.getRequestTemperature() == null ? "" : String.valueOf(configuration.getTemperature());
 
         baseUrlText.setText(baseUrl);
         tokenText.setText(token);

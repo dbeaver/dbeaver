@@ -63,7 +63,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
 
     protected volatile String accessToken;
     protected String token = "";
-    private String temperature = "";
+    private String temperature = "0.0";
 
     protected final CachedValue<List<AIModel>> modelsCache = new CachedValue<>(this::fetchCopilotModels);
 
@@ -98,7 +98,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         token = CommonUtils.toString(configuration.getToken());
         modelSelectorField.setSelectedModel(configuration.getModel());
         contextWindowSizeField.setValue(configuration.getContextWindowSize());
-        temperature = CommonUtils.toString(configuration.getRequestTemperature(), "");
+        temperature = configuration.getRequestTemperature() == null ? "" : String.valueOf(configuration.getTemperature());
         accessToken = token;
         accessTokenText.setText(accessToken);
         applySettings();
@@ -141,10 +141,10 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
                     .ifPresentOrElse(
                         model -> {
                             contextWindowSizeField.setValue(model.contextWindowSize());
-                            temperatureText.setText("");
+                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
                         }, () -> {
                             contextWindowSizeField.setValue(null);
-                            temperatureText.setText("");
+                            temperatureText.setText("0.0");
                         }
                     );
                 AIModel selectedModel = modelSelectorField.getSelectedModel();
@@ -162,7 +162,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
 
         GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
         gridData.horizontalSpan = 2;
-        temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "");
+        temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
         temperatureText.setLayoutData(gridData);
         temperatureText.setToolTipText(AIUIMessages.openai_configurator_temperature_tip);
         temperatureText.setMessage(AIUIMessages.ai_engine_configurator_temperature_default);

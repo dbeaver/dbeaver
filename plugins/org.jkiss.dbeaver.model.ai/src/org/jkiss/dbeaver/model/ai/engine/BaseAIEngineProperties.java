@@ -69,6 +69,11 @@ public abstract class BaseAIEngineProperties implements AIEngineProperties {
         useServerDefaultTemperature = true;
     }
 
+    protected void resetTemperature() {
+        temperature = AIUtils.DEFAULT_TEMPERATURE;
+        useServerDefaultTemperature = null;
+    }
+
     @Nullable
     @Override
     public Double getRequestTemperature() {

@@ -67,7 +67,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
     protected String baseUrl;
     protected volatile String token = "";
-    private String temperature = "";
+    private String temperature = "0.0";
     private volatile Map<String, String> customHeaders = Map.of();
     private HttpHeadersField headersField;
 
@@ -126,7 +126,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         token = CommonUtils.toString(configuration.getToken());
         apiToken = token;
         modelSelectorField.setSelectedModel(CommonUtils.toString(configuration.getModel()));
-        temperature = CommonUtils.toString(configuration.getRequestTemperature(), "");
+        temperature = configuration.getRequestTemperature() == null ? "" : String.valueOf(configuration.getTemperature());
 
         applySettings();
         loadAdvancedSettings(configuration);
@@ -214,11 +214,11 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                     .ifPresentOrElse(
                         model -> {
                             contextWindowSizeField.setValue(model.contextWindowSize());
-                            temperatureText.setText("");
+                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
                             temperatureText.setEnabled(OpenAIModels.isTemperatureEditable(model));
                         }, () -> {
                             contextWindowSizeField.setValue(null);
-                            temperatureText.setText("");
+                            temperatureText.setText("0.0");
                             temperatureText.setEnabled(true);
                         }
                     );
@@ -235,7 +235,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             .withGridData(GridDataFactory.fillDefaults().span(2, 1).create())
             .build();
 
-        temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "");
+        temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
         temperatureText.setToolTipText(AIUIMessages.openai_configurator_temperature_tip);
