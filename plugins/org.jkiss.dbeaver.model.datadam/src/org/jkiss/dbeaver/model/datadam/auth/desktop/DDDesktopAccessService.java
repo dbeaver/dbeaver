@@ -117,9 +117,6 @@ public class DDDesktopAccessService {
             log.debug("Loading DataDam desktop access");
             notifyAccessListeners(DDDesktopAccessListener::accessChanging);
             tokenManager.load(storageUrl);
-            if (tokenManager.getStatus() == DDDesktopTokenManager.Status.EXPIRED) {
-                tokenManager.getAccessTokenForResource(storageUrl);
-            }
             updateKeyBundle(tokenManager.getStatus() == DDDesktopTokenManager.Status.SIGNED_IN ? DDKeyStore.load() : null);
         } finally {
             finishAccessChange();
@@ -234,12 +231,6 @@ public class DDDesktopAccessService {
             }
             expiryJob = null;
             if (tokenManager.getStatus() == DDDesktopTokenManager.Status.EXPIRED) {
-                try {
-                    tokenManager.getAccessTokenForResource(storageUrl);
-                    scheduleExpiry();
-                } catch (DBException e) {
-                    log.debug("DataDam authorization requires sign-in");
-                }
                 notifyAccessListeners(DDDesktopAccessListener::accessChanged);
             } else {
                 scheduleExpiry();
