@@ -275,7 +275,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
         boolean hasRunningJobs = true;
         while (hasRunningJobs) {
             // wait for jobs to run asynchronously
-            completionJobs.forEach(j -> UIUtils.waitJobCompletion(j.job));
+            completionJobs.forEach(j -> this.waitForJob(j.job));
             hasRunningJobs = false;
             // if any job was cancelled while running in background, break the whole proposals computation logic
             if (completionJobs.stream().anyMatch(j -> j.job.isCanceled())) {
@@ -306,6 +306,10 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
         return completionJobs.stream().flatMap(j -> j.getProposals().stream()).toList();
     }
 
+    protected void waitForJob(@NotNull AbstractJob job) {
+        UIUtils.waitJobCompletion(job);
+    }
+
     private enum ProposalsJobResultStatus {
         VALID,
         PARTIALLY_VALID,
@@ -331,22 +335,24 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
             }
         } else if (jobProposalsOrigin < currentCursorPosition) {
             // There were extra insertions at the moment when the job didn't handle them on the fly.
-//            String unconsideredInput = null;
-//            try {
-//                unconsideredInput = request.getDocument().get(jobProposalsOrigin, currentCursorPosition - jobProposalsOrigin);
-//            } catch (BadLocationException e) {
-//                log.error("Failed to prepare completion proposals", e);
-//                return ProposalsJobResultStatus.ABORT;
-//            }
+            String unconsideredInput;
+            try {
+                unconsideredInput = request.getDocument().get(jobProposalsOrigin, currentCursorPosition - jobProposalsOrigin);
+            } catch (BadLocationException e) {
+                log.debug("Failed to check SQL completion proposal applicability", e);
+                return ProposalsJobResultStatus.ABORT;
+            }
 
-//            if (IDENTIFIER_PART_PATTERN.matcher(unconsideredInput).matches()) {
-                // The inserted text fragment can be considered as part of a certain word or identifier,
-                // so it's enough to do proposals validation to filter them out.
-                return ProposalsJobResultStatus.PARTIALLY_VALID;
-//            } else {
-//                // The word structure was disrupted by non-identifier characters, so lets restart the job.
-//                return ProposalsJobResultStatus.INVALID;
-//            }
+            SQLWordPartDetector detector = request.getWordDetector();
+            for (int i = 0; i < unconsideredInput.length(); i++) {
+                char ch = unconsideredInput.charAt(i);
+                // isWordPart also accepts structure separators and quotes, which change the completion context.
+                if (ch == detector.getStructSeparator() || !detector.isPlainWordPart(ch)) {
+                    return ProposalsJobResultStatus.INVALID;
+                }
+            }
+            // Additional identifier characters can be handled by proposal validation.
+            return ProposalsJobResultStatus.PARTIALLY_VALID;
         } else {
             return ProposalsJobResultStatus.VALID;
         }

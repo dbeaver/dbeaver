@@ -50,6 +50,7 @@ lexer grammar SQLStandardLexer;
 
     private boolean isAnonymousParametersEnabled;
     private boolean isNamedParametersEnabled;
+    private boolean hashLineCommentsEnabled = true;
 
     private boolean useCustomAnonymousParamMark;
     private char customAnonymousParamMark;
@@ -65,6 +66,7 @@ lexer grammar SQLStandardLexer;
 
         this.isAnonymousParametersEnabled = parameters.isAnonymousSqlParametersEnabled();
         this.isNamedParametersEnabled = parameters.isSqlParametersEnabled();
+        this.hashLineCommentsEnabled = parameters.hashLineCommentsEnabled();
 
         this.useCustomAnonymousParamMark = parameters.isAnonymousSqlParametersEnabled() && Character.compare(parameters.anonymousParameterMark(), SQLConstants.DEFAULT_PARAMETER_MARK) != 0;
         this.customAnonymousParamMark = parameters.anonymousParameterMark();
@@ -173,8 +175,46 @@ lexer grammar SQLStandardLexer;
 
     int lastNamedParameterPrefixEnd = -1;
 
+    // PostgreSQL's dollar-quote delimiters take precedence over dollar-prefixed parameters.
+    private boolean isDollarQuoteDelimiter(final CharStream input) {
+        if (input.LA(1) != '$') {
+            return false;
+        }
+        int next = input.LA(2);
+        if (next == '$') {
+            return true;
+        }
+        if (!Character.isLetter(next) && next != '_') {
+            return false;
+        }
+        for (int i = 3; ; i++) {
+            int c = input.LA(i);
+            if (c == '$') {
+                return true;
+            }
+            if (c == EOF || !Character.isLetterOrDigit(c) && c != '_') {
+                return false;
+            }
+        }
+    }
+
+    private boolean closesDollarQuoteDelimiter(final CharStream input) {
+        if (input.LA(1) != '$' || input.index() < 2) {
+            return false;
+        }
+        int i = -1;
+        int c = input.LA(i);
+        if (!Character.isLetterOrDigit(c) && c != '_') {
+            return false;
+        }
+        do {
+            c = input.LA(--i);
+        } while (Character.isLetterOrDigit(c) || c == '_');
+        return c == '$';
+    }
+
     private boolean tryConsumeNamedParameterPrefix(final CharStream input) {
-        if (input.index() < 1) {
+        if (input.index() < 1 || isDollarQuoteDelimiter(input) || closesDollarQuoteDelimiter(input)) {
             lastNamedParameterPrefixEnd = -1;
             return false;
         }
@@ -247,6 +287,7 @@ fragment Z:[zZ];
 // keywords
 ACTION: A C T I O N ;
 ADD: A D D ;
+AFTER: A F T E R ;
 ALL: A L L ;
 ALTER: A L T E R ;
 AND: A N D ;
@@ -254,9 +295,13 @@ ANY: A N Y ;
 ARRAY: A R R A Y;
 AS: A S ;
 ASC: A S C ;
+ATOMIC: A T O M I C ;
 AUTHORIZATION: A U T H O R I Z A T I O N ;
 AUTO_INCREMENT: A U T O '_' I N C R E M E N T ;
+BEFORE: B E F O R E ;
 BETWEEN: B E T W E E N ;
+BEGIN: B E G I N ;
+BLOCK: B L O C K ;
 BY: B Y ;
 CALL: C A L L;
 CASCADE: C A S C A D E ;
@@ -270,27 +315,38 @@ COALESCE: C O A L E S C E ;
 COLUMN: C O L U M N ;
 COMMIT: C O M M I T ;
 COMMITTED: C O M M I T T E D ;
+CATCH: C A T C H ;
+CLOSE: C L O S E ;
 CONCURRENTLY: C O N C U R R E N T L Y ;
 CONSTRAINT: C O N S T R A I N T ;
 CONSTRAINTS: C O N S T R A I N T S ;
 CORRESPONDING: C O R R E S P O N D I N G ;
 COUNT: C O U N T ;
 CREATE: C R E A T E ;
+CURSOR: C U R S O R ;
 CROSS: C R O S S ;
 CURRENT_USER: C U R R E N T '_' U S E R ;
 DATE: D A T E ;
 DATABASE: D A T A B A S E ;
 DAY: D A Y ;
-DEFAULT: D E F A U L T ;
 DECLARE: D E C L A R E ;
+DEALLOCATE: D E A L L O C A T E ;
+DEFAULT: D E F A U L T ;
+DEFINER: D E F I N E R ;
 DEFERRABLE: D E F E R R A B L E ;
 DEFERRED: D E F E R R E D ;
 DELETE: D E L E T E ;
 DESC: D E S C ;
 DISTINCT: D I S T I N C T ;
 DROP: D R O P ;
+DO: D O ;
+EACH: E A C H ;
+FETCH: F E T C H ;
 ELSE: E L S E ;
+ELSEIF: E L S E I F ;
+ELSIF: E L S I F ;
 END: E N D ;
+EXCEPTION: E X C E P T I O N ;
 ESCAPE: E S C A P E ;
 EXCEPT: E X C E P T ;
 EXEC: E X E C;
@@ -298,8 +354,10 @@ EXECUTE: E X E C U T E;
 EXISTS: E X I S T S ;
 EXTRACT: E X T R A C T ;
 FALSE: F A L S E ;
+FIRST: F I R S T ;
 FILTER: F I L T E R ;
 FOREIGN: F O R E I G N ;
+FOR: F O R ;
 FROM: F R O M ;
 FULL: F U L L ;
 FUNCTION: F U N C T I O N ;
@@ -307,11 +365,13 @@ GENERATED: G E N E R A T E D;
 GLOBAL: G L O B A L ;
 GROUP: G R O U P ;
 HAVING: H A V I N G ;
+HANDLER: H A N D L E R ;
 HOUR: H O U R ;
 IF: I F ;
 ILIKE: I L I K E ;
 IMMEDIATE: I M M E D I A T E ;
 IN: I N ;
+INSTEAD: I N S T E A D ;
 INDICATOR: I N D I C A T O R ;
 INITIALLY: I N I T I A L L Y ;
 INNER: I N N E R ;
@@ -327,21 +387,28 @@ KEY: K E Y ;
 LATERAL: L A T E R A L;
 LEFT: L E F T ;
 LEVEL: L E V E L ;
+LANGUAGE: L A N G U A G E ;
+LAST: L A S T ;
 LIKE: L I K E ;
 LIMIT: L I M I T ;
 LOCAL: L O C A L ;
+LOOP: L O O P ;
 MATCH: M A T C H ;
 MATERIALIZED: M A T E R I A L I Z E D ;
 MINUTE: M I N U T E ;
 MONTH: M O N T H ;
 NAMES: N A M E S ;
 NATURAL: N A T U R A L ;
+NEW: N E W ;
+NEXT: N E X T ;
 NO: N O ;
 NOT: N O T ;
 NOTNULL: N O T N U L L;
 NULL: N U L L ;
 NULLIF: N U L L I F ;
 OF: O F;
+OLD: O L D ;
+OPEN: O P E N ;
 OFFSET: O F F S E T;
 ON: O N ;
 ONLY: O N L Y ;
@@ -355,19 +422,28 @@ PARTIAL: P A R T I A L ;
 PARTITION: P A R T I T I O N ;
 PRESERVE: P R E S E R V E ;
 PROCEDURE: P R O C E D U R E ;
+PRIOR: P R I O R ;
+PROC: P R O C ;
 PRIMARY: P R I M A R Y ;
 RANGE: R A N G E ;
+RELATIVE: R E L A T I V E ;
 READ: R E A D ;
+RECREATE: R E C R E A T E ;
 RECURSIVE: R E C U R S I V E;
+REFERENCING: R E F E R E N C I N G ;
 REFERENCES: R E F E R E N C E S ;
 REGEXP: R E G E X P;
 RENAME : R E N A M E;
 REPEATABLE: R E P E A T A B L E ;
+REPEAT: R E P E A T ;
 REPLACE: R E P L A C E ;
+RETURN: R E T U R N ;
+RETURNS: R E T U R N S ;
 RESTRICT: R E S T R I C T ;
 RIGHT: R I G H T ;
 ROLE: R O L E ;
 ROLLBACK: R O L L B A C K ;
+ROW: R O W ;
 ROWS: R O W S ;
 SCHEMA: S C H E M A ;
 SECOND: S E C O N D ;
@@ -378,6 +454,7 @@ SERIALIZABLE: S E R I A L I Z A B L E ;
 SESSION: S E S S I O N ;
 SESSION_USER: S E S S I O N '_'U S E R ;
 SET: S E T ;
+SIGNAL: S I G N A L ;
 SOME: S O M E ;
 STRAIGHT_JOIN: S T R A I G H T '_' J O I N ;
 SYNONYM: S Y N O N Y M ;
@@ -386,6 +463,8 @@ TABLE: T A B L E ;
 TEMP: T E M P ;
 TEMPORARY: T E M P O R A R Y ;
 THEN: T H E N ;
+TRIGGER: T R I G G E R ;
+TRY: T R Y ;
 TIME: T I M E ;
 TIMESTAMP: T I M E S T A M P ;
 TIMEZONE_HOUR: T I M E Z O N E '_'H O U R ;
@@ -398,6 +477,7 @@ UNCOMMITTED: U N C O M M I T T E D ;
 UNION: U N I O N ;
 UNIQUE: U N I Q U E ;
 UNKNOWN: U N K N O W N ;
+UNTIL: U N T I L ;
 UPDATE: U P D A T E ;
 USER: U S E R ;
 USING: U S I N G ;
@@ -408,6 +488,7 @@ VARIABLE: V A R I A B L E ;
 VIEW: V I E W ;
 WHEN: W H E N ;
 WHERE: W H E R E ;
+WHILE: W H I L E ;
 WITH: W I T H ;
 WITHIN: W I T H I N ;
 WORK: W O R K ;
@@ -486,14 +567,15 @@ Separator: (NewLine|Space)+ -> channel(HIDDEN);
 Space: [ \t]+;
 
 
+Comment: (LineComment | MultilineComment) -> channel (HIDDEN);
+LineComment : LineCommentPrefix ~ [\r\n]*;
+fragment LineCommentPrefix: '--' | {hashLineCommentsEnabled}? '#';
+MultilineComment: ('/*' .*? '*/');
+
 Identifier: IdentifierBody;
 fragment IdentifierBody:  IdentifierStart IdentifierPart*;
 fragment IdentifierStart: SimpleLatinLetter|Underscore|Hashtag;
 fragment IdentifierPart:  SimpleLatinLetter|Underscore|Digit;
-
-Comment: (LineComment | MultilineComment) -> channel (HIDDEN);
-LineComment : ('--'|'#') ~ [\r\n]*;
-MultilineComment: ('/*' .*? '*/');
 
 // string literals
 fragment CharacterRepresentation: (NonquoteCharacter|QuoteSymbol);

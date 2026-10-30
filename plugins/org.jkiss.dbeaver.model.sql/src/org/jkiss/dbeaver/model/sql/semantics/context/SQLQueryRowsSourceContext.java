@@ -54,6 +54,12 @@ public class SQLQueryRowsSourceContext {
     @NotNull
     private final UnmodifiableMap<String, SourceResolutionResult> sourcesByLoweredAlias;
 
+    @NotNull
+    private SQLQueryLocalVariablesContext localVariables;
+
+    @NotNull
+    private UnmodifiableMap<String, SQLQueryLocalVariableInfo> temporaryRelations;
+
     @Nullable
     private ListNode<SQLQueryRowsSourceContext> targetRowContexts = null;
 
@@ -91,6 +97,8 @@ public class SQLQueryRowsSourceContext {
         this.rowsSources = UnmodifiableMap.emptyMap();
         this.dynamicTableSources = dynamicTableSources;
         this.sourcesByLoweredAlias = UnmodifiableMap.emptyMap();
+        this.localVariables = new SQLQueryLocalVariablesContext(connectionInfo.dialect);
+        this.temporaryRelations = UnmodifiableMap.emptyMap();
         this.relatedContextProvider = relatedContextProvider;
         this.variablesSubset = variablesSubset;
     }
@@ -110,6 +118,8 @@ public class SQLQueryRowsSourceContext {
         this.rowsSources = rowsSources;
         this.dynamicTableSources = dynamicTableSources;
         this.sourcesByLoweredAlias = sourcesByLoweredAlias;
+        this.localVariables = parent.localVariables;
+        this.temporaryRelations = parent.temporaryRelations;
         this.relatedContextProvider = relatedContextProvider;
         this.variablesSubset = variablesSubset;
     }
@@ -137,9 +147,12 @@ public class SQLQueryRowsSourceContext {
      */
     @NotNull
     public final SQLQueryRowsSourceContext reset() {
-        return new SQLQueryRowsSourceContext(
+        SQLQueryRowsSourceContext result = new SQLQueryRowsSourceContext(
             this.connectionInfo, false, this.dynamicTableSources, this.relatedContextProvider, this.variablesSubset
         );
+        result.localVariables = this.localVariables;
+        result.temporaryRelations = this.temporaryRelations;
+        return result;
     }
 
     /**
@@ -147,9 +160,67 @@ public class SQLQueryRowsSourceContext {
      */
     @NotNull
     public final SQLQueryRowsSourceContext resetAsUnresolved() {
-        return new SQLQueryRowsSourceContext(
+        SQLQueryRowsSourceContext result = new SQLQueryRowsSourceContext(
             this.connectionInfo, true, this.dynamicTableSources, this.relatedContextProvider, this.variablesSubset
         );
+        result.localVariables = this.localVariables;
+        result.temporaryRelations = this.temporaryRelations;
+        return result;
+    }
+
+    @NotNull
+    public SQLQueryLocalVariablesContext getLocalVariables() {
+        return this.localVariables;
+    }
+
+    @NotNull
+    public SQLQueryRowsSourceContext withLocalVariables(@NotNull SQLQueryLocalVariablesContext variables) {
+        SQLQueryRowsSourceContext result = this.setRowsSources(
+            this.rowsSources, this.sourcesByLoweredAlias, this.dynamicTableSources,
+            this.hasUnresolvedSource, this.relatedContextProvider
+        );
+        result.localVariables = variables;
+        return result;
+    }
+
+    @NotNull
+    public SQLQueryRowsSourceContext withTemporaryRelation(@NotNull SQLQueryLocalVariableInfo binding) {
+        SQLQueryRowsSourceContext result = this.withLocalVariables(this.localVariables);
+        result.temporaryRelations = this.temporaryRelations.put(binding.declaration().getName(), binding);
+        return result;
+    }
+
+    @NotNull
+    public SQLQueryRowsSourceContext withProgramVariablesFrom(@NotNull SQLQueryRowsSourceContext other) {
+        return this.withLocalVariables(this.localVariables.withProgramVariablesFrom(other.localVariables));
+    }
+
+    @NotNull
+    public SQLQueryRowsSourceContext withTemporaryRelationsFrom(@NotNull SQLQueryRowsSourceContext other) {
+        SQLQueryRowsSourceContext result = this.withLocalVariables(this.localVariables);
+        // The child inherits the full relation snapshot, so its final map includes creations and omits drops.
+        result.temporaryRelations = other.temporaryRelations;
+        return result;
+    }
+
+    @NotNull
+    public SQLQueryRowsSourceContext withoutTemporaryRelations(@NotNull List<String> names) {
+        List<Map.Entry<String, SQLQueryLocalVariableInfo>> entries = new ArrayList<>(names.size());
+        Set<String> seen = new HashSet<>();
+        for (String name : names) {
+            if (seen.add(name)) {
+                SQLQueryLocalVariableInfo binding = this.temporaryRelations.get(name);
+                if (binding != null) {
+                    entries.add(Map.entry(name, binding));
+                }
+            }
+        }
+        if (entries.isEmpty()) {
+            return this;
+        }
+        SQLQueryRowsSourceContext result = this.withLocalVariables(this.localVariables);
+        result.temporaryRelations = this.temporaryRelations.remove(entries);
+        return result;
     }
 
     @NotNull
@@ -182,7 +253,21 @@ public class SQLQueryRowsSourceContext {
      */
     @Nullable
     public SourceResolutionResult findDynamicRowsSource(@NotNull SQLQuerySymbolEntry name) {
-        return this.dynamicTableSources.get(name.getName().toLowerCase());
+        SourceResolutionResult cte = this.dynamicTableSources.get(name.getName().toLowerCase());
+        if (cte != null) {
+            return cte;
+        }
+        SQLQueryLocalVariableInfo local = this.localVariables.findLocalVariable(name, SQLDialect.LocalVariableCapability.ROWS);
+        if (local == null) {
+            local = this.temporaryRelations.get(name.getName());
+        }
+        if (local != null && local.rows() != null) {
+            SQLQueryComplexName qualifiedName = new SQLQueryComplexName(
+                local.declaration().getSyntaxNode(), List.of(local.declaration()), 0, null
+            );
+            return new SourceResolutionResult(local.rows(), qualifiedName, null, local.declaration().getSymbol());
+        }
+        return null;
     }
 
     /**
@@ -207,6 +292,11 @@ public class SQLQueryRowsSourceContext {
                 }
                 SQLQueryComplexName key = new SQLQueryComplexName(entry.getSyntaxNode(), List.of(entry), 0, endingPeriod);
                 return new SourceResolutionInfo(result, key);
+            }
+            SQLQueryLocalVariableInfo local = this.localVariables.findLocalVariable(entry, SQLDialect.LocalVariableCapability.FIELDS);
+            if (local != null && local.rows() != null) {
+                SQLQueryComplexName key = new SQLQueryComplexName(entry.getSyntaxNode(), List.of(entry), 0, null);
+                return new SourceResolutionInfo(new SourceResolutionResult(local.rows(), key, null, null), key);
             }
         }
 
@@ -455,12 +545,32 @@ public class SQLQueryRowsSourceContext {
      */
     @NotNull
     public SQLQuerySourcesInfoCollection getKnownSources(boolean forQuerySubscope) {
+        Set<SourceResolutionResult>  allSourceResolutions = new HashSet<>();
+
+        // Local relations form a snapshot at this position, not a union of later query contexts.
+        for (SQLQueryLocalVariableInfo binding : this.temporaryRelations.values()) {
+            if (binding.rows() != null) {
+                SQLQueryComplexName name = new SQLQueryComplexName(
+                    binding.declaration().getSyntaxNode(), List.of(binding.declaration()), 0, null
+                );
+                allSourceResolutions.add(new SourceResolutionResult(
+                    binding.rows(), name, null, binding.declaration().getSymbol()
+                ));
+            }
+        }
+
+        for (SQLQueryLocalVariableInfo binding : this.localVariables.getVisibleRowsVariables()) {
+            if (binding.rows() != null) {
+                SQLQueryComplexName name = new SQLQueryComplexName(
+                    binding.declaration().getSyntaxNode(), List.of(binding.declaration()), 0, null);
+                allSourceResolutions.add(new SourceResolutionResult(
+                    binding.rows(), name, null, binding.declaration().getSymbol()));
+            }
+        }
+
         ListNode<SQLQueryRowsSourceContext> queue = ListNode.of(this);
         Set<SQLQueryRowsSourceContext> queued = new HashSet<>();
         queued.add(this);
-
-        Set<SourceResolutionResult>  allSourceResolutions = new HashSet<>();
-
         while (queue != null) {
             SQLQueryRowsSourceContext source = queue.data;
             queue = queue.next;

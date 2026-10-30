@@ -30,8 +30,23 @@ public record LSMAnalyzerParameters (
         boolean isAnonymousSqlParametersEnabled,
         char anonymousParameterMark,
         @NotNull List<Map.Entry<Integer, Set<String>>> namedParameterPrefixes,
-        boolean variablesEnabled
+        boolean variablesEnabled,
+        boolean hashLineCommentsEnabled,
+        @NotNull SQLDialect.ProceduralSyntaxFamily proceduralSyntaxFamily
 ) {
+
+    public LSMAnalyzerParameters(
+        @NotNull Map<String, String> knownIdentifierQuotes,
+        boolean isSqlParametersEnabled,
+        boolean isAnonymousSqlParametersEnabled,
+        char anonymousParameterMark,
+        @NotNull List<Map.Entry<Integer, Set<String>>> namedParameterPrefixes,
+        boolean variablesEnabled,
+        boolean hashLineCommentsEnabled
+    ) {
+        this(knownIdentifierQuotes, isSqlParametersEnabled, isAnonymousSqlParametersEnabled, anonymousParameterMark,
+            namedParameterPrefixes, variablesEnabled, hashLineCommentsEnabled, SQLDialect.ProceduralSyntaxFamily.GENERIC);
+    }
 
     public static LSMAnalyzerParameters forDialect(SQLDialect dialect, SQLSyntaxManager syntaxManager) {
         String[][] identifierQuotes = dialect.getIdentifierQuoteStrings();
@@ -49,7 +64,9 @@ public record LSMAnalyzerParameters (
             syntaxManager.isAnonymousParametersEnabled(),
             syntaxManager.getAnonymousParameterMark(),
             namedParameterPrefixes,
-            syntaxManager.isVariablesEnabled()
+            syntaxManager.isVariablesEnabled(),
+            Arrays.asList(Objects.requireNonNullElseGet(dialect.getSingleLineComments(), () -> new String[0])).contains("#"),
+            dialect.getProceduralSyntaxFamily()
         );
     }
 }

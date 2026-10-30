@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.analyzer;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestResult;
 import org.jkiss.junit.DBeaverUnitTest;
@@ -101,6 +102,52 @@ public class SQLQueryCompletionAnalyzerTest extends DBeaverUnitTest {
         );
 
         Assertions.assertTrue(proposals.contains("@value"));
+    }
+
+    @Test
+    public void testTemporaryTableCompletionAfterNestedBlock() throws DBException {
+        String sql = """
+            CREATE PROCEDURE qa_temps AS BEGIN
+                CREATE TEMP TABLE removed (id INT);
+                CREATE TEMP TABLE replaced (id INT);
+                CREATE TEMP TABLE retained (id INT);
+                BEGIN
+                    DROP TABLE removed, replaced;
+                    CREATE TEMP TABLE replaced (id TEXT);
+                END;
+                SELECT id FROM removed;
+                SELECT id FROM repl|;
+                SELECT id FROM retained;
+            END;
+            """;
+        RequestResult request = RequestBuilder.empty().dialect(BasicSQLDialect.INSTANCE).prepare();
+        Set<String> proposals = request.requestNewStrings(sql);
+        Assertions.assertTrue(proposals.stream().anyMatch(s -> s.equalsIgnoreCase("replaced")), proposals.toString());
+        Set<String> retained = request.requestNewStrings(sql.replace("repl|", "reta|"));
+        Assertions.assertTrue(retained.stream().anyMatch(s -> s.equalsIgnoreCase("retained")), retained.toString());
+        Set<String> removed = request.requestNewStrings(sql.replace("repl|", "rem|"));
+        Assertions.assertTrue(removed.stream().noneMatch(s -> s.equalsIgnoreCase("removed")), removed.toString());
+        Set<String> columns = request.requestNewStrings(sql.replace("SELECT id FROM repl|", "SELECT | FROM replaced"));
+        Assertions.assertTrue(columns.stream().anyMatch(s -> s.equalsIgnoreCase("id")), columns.toString());
+    }
+
+    @Test
+    public void testParenthesizedTableFunctionBodyCompletion() throws DBException {
+        RequestResult request = RequestBuilder.tables(tables -> tables.table("rects3rects", table -> {
+            table.attribute("x");
+            table.attribute("other_column");
+        })).prepare();
+        Set<String> tables = request.requestNewStrings(
+            "CREATE TABLE FUNCTION dataset.qa_table_fn(x INT64) AS (SELECT x FROM rects3r|)"
+        );
+        Assertions.assertTrue(tables.stream().anyMatch(s -> s.replace("\"", "").startsWith("rects3rects")), tables.toString());
+
+        Set<String> columns = request.requestNewStrings(
+            "CREATE TABLE FUNCTION dataset.qa_table_fn(x INT64) AS (SELECT | FROM rects3rects)"
+        );
+        Set<String> standaloneColumns = request.requestNewStrings("SELECT | FROM rects3rects");
+        Assertions.assertTrue(standaloneColumns.stream().anyMatch(s -> s.equalsIgnoreCase("other_column")), standaloneColumns.toString());
+        Assertions.assertTrue(columns.stream().anyMatch(s -> s.equalsIgnoreCase("other_column")), columns.toString());
     }
 
     @Test

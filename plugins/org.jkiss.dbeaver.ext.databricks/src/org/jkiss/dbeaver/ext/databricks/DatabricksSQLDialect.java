@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.util.Arrays;
+import java.util.EnumSet;
+import java.util.List;
 
 public class DatabricksSQLDialect extends GenericSQLDialect {
 
@@ -43,6 +45,21 @@ public class DatabricksSQLDialect extends GenericSQLDialect {
     @Override
     public SQLScriptVariableScope getScriptVariableScope() {
         return SQLScriptVariableScope.SESSION;
+    }
+
+    /** A local cursor has its own cursor name set, separate from session variables.
+     *
+     * @see <a href="https://docs.databricks.com/aws/en/sql/language-manual/control-flow/compound-stmt">Compound statements</a>
+     */
+    @NotNull
+    @Override
+    public List<LocalVariableNamespace> getLocalVariableNamespaces() {
+        return List.of(
+            new LocalVariableNamespace(EnumSet.of(LocalVariableCapability.VALUE)),
+            new LocalVariableNamespace(EnumSet.of(LocalVariableCapability.FIELDS)),
+            new LocalVariableNamespace(EnumSet.of(LocalVariableCapability.ROWS)),
+            new LocalVariableNamespace(EnumSet.of(LocalVariableCapability.CURSOR))
+        );
     }
 
     private static final String[] SPARK_EXTRA_KEYWORDS = {"SHOW"};
