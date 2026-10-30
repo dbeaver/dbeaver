@@ -98,7 +98,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         token = CommonUtils.toString(configuration.getToken());
         modelSelectorField.setSelectedModel(configuration.getModel());
         contextWindowSizeField.setValue(configuration.getContextWindowSize());
-        temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
+        temperature = configuration.getRequestTemperature() == null ? "" : String.valueOf(configuration.getTemperature());
         accessToken = token;
         accessTokenText.setText(accessToken);
         applySettings();
@@ -113,7 +113,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         properties.setToken(accessToken);
         properties.setModel(modelSelectorField.getSelectedModelName());
         properties.setContextWindowSize(contextWindowSizeField.getValue());
-        properties.setTemperature(CommonUtils.toDouble(temperature));
+        saveTemperature(properties, temperature);
         saveAdvancedSettings(properties);
     }
 
@@ -165,6 +165,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
         temperatureText.setLayoutData(gridData);
         temperatureText.setToolTipText(AIUIMessages.openai_configurator_temperature_tip);
+        temperatureText.setMessage(AIUIMessages.ai_engine_configurator_temperature_default);
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }

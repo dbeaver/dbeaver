@@ -96,7 +96,7 @@ public class CopilotProperties extends BaseAIEngineProperties {
     }
 
     private double resolveTemperature(@Nullable String modelName) {
-        if (Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
+        if (Double.isFinite(temperature) && (hasExplicitTemperature() || temperature != AIUtils.DEFAULT_TEMPERATURE)) {
             return temperature;
         }
         return CopilotModels.getModelByName(modelName)

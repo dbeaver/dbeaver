@@ -167,7 +167,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     @Override
     @Property(order = 4)
     public double getTemperature() {
-        if (Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
+        if (Double.isFinite(temperature) && (hasExplicitTemperature() || temperature != AIUtils.DEFAULT_TEMPERATURE)) {
             return temperature;
         }
 

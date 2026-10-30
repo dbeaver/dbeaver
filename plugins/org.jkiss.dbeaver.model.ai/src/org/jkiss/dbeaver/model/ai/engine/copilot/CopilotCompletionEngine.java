@@ -102,7 +102,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         @NotNull AIEngineRequest request
     ) throws DBException {
         Pair<OAIResponsesRequest, CopilotChatRequest> copilotChatRequestOAIResponsesRequestPair = new Pair<>(
-            OpenAiUtils.createOpenAiRequest(request, getModelName(), getProperties().getEffectiveTemperature()),
+            OpenAiUtils.createOpenAiRequest(request, getModelName(), getRequestTemperature()),
             createLegacyChatRequest(request, false)
         );
         Object chatResponse = client.getInstance().chat(
@@ -158,7 +158,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         @NotNull AIEngineResponseConsumer listener
     ) throws DBException {
         Pair<OAIResponsesRequest, CopilotChatRequest> copilotChatRequestOAIResponsesRequestPair = new Pair<>(
-            OpenAiUtils.createOpenAiRequest(request, getModelName(), getProperties().getEffectiveTemperature()),
+            OpenAiUtils.createOpenAiRequest(request, getModelName(), getRequestTemperature()),
             createLegacyChatRequest(request, true)
         );
         client.getInstance().createChatCompletionStream(
@@ -204,6 +204,11 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
         return properties.getEffectiveModel();
     }
 
+    @Nullable
+    private Double getRequestTemperature() {
+        return properties.getRequestTemperature() == null ? null : properties.getEffectiveTemperature();
+    }
+
     @NotNull
     private CopilotChatRequest createLegacyChatRequest(
         @NotNull AIEngineRequest request,
@@ -216,7 +221,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
                 .map(OAITool::fromDescriptor)
                 .map(CopilotFunction::new)
                 .toList())
-            .withTemperature(properties.getEffectiveTemperature())
+            .withOptionalTemperature(getRequestTemperature())
             .withStream(stream)
             .withIntent(false)
             .withTopP(1)
