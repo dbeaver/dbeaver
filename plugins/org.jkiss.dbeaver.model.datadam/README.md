@@ -91,7 +91,7 @@ handlers must cooperate with interruption to stop work already in progress.
 ## Trusted endpoints
 
 By default, DataDam endpoints use the shared base host in `DDEndpoints`, with `datadam.cloud` as the source default and
-build-time substitution for staging. The default Remote DAM endpoint is `wss://remote-dam.<base-host>/ws`.
+build-time substitution for staging. The default Remote DAM endpoint is `wss://dam.<base-host>/ws`.
 Declaring this URL does not provision the service, DNS, TLS, or ingress.
 
 For local development, add these JVM options to the DBeaver Desktop run configuration:
