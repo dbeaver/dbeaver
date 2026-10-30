@@ -23,17 +23,21 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
-import java.util.List;
-
 public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbenchPropertyPage {
+    private static final Log log = Log.getLog(PrefPageDataSourceAI.class);
+
     private IAdaptable element;
-    private List<AIConnectionSettingsSection> sections = List.of();
+    private IObjectPropertyConfigurator<AIContextSettingsDataSource, PrefPageDataSourceAI> aiConfigurator;
 
     @NotNull
     @Override
@@ -41,12 +45,19 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
         Composite content = UIUtils.createComposite(parent, 1);
         DBPDataSourceContainer connection = getConnection();
         if (connection != null) {
-            DBRRunnableContext runnableContext = getContainer() instanceof IWizardContainer wc
-                && wc.getCurrentPage().getWizard() instanceof BaseWizard wizard
-                ? wizard.getRunnableContext() : null;
-            sections = AIConnectionSettingsRegistry.getInstance().getSections(connection);
-            for (AIConnectionSettingsSection section : sections) {
-                section.createControls(content, connection, runnableContext);
+            injectConfigurators(content);
+            UIPropertyConfiguratorDescriptor descriptor = UIPropertyConfiguratorRegistry.getInstance()
+                .getDescriptor(AIContextSettingsDataSource.class.getName());
+            if (descriptor != null) {
+                try {
+                    IObjectPropertyConfigurator<AIContextSettingsDataSource, PrefPageDataSourceAI> configurator =
+                        descriptor.createConfigurator();
+                    configurator.createControl(content, new AIContextSettingsDataSource(connection), () -> {});
+                    configurator.loadSettings(this);
+                    aiConfigurator = configurator;
+                } catch (DBException e) {
+                    log.error("Cannot load AI connection settings", e);
+                }
             }
         }
         return content;
@@ -54,30 +65,44 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
 
     @Override
     public boolean performOk() {
-        saveSettings();
-        return super.performOk();
+        boolean result = super.performOk();
+        if (result) {
+            saveAISettings();
+            persistConnection();
+        }
+        return result;
     }
 
     @Override
     protected void performApply() {
-        saveSettings();
         super.performApply();
+        saveAISettings();
+        persistConnection();
     }
 
-    private void saveSettings() {
+    private void saveAISettings() {
+        if (aiConfigurator != null) {
+            aiConfigurator.saveSettings(this);
+        }
+    }
+
+    @Override
+    protected void performDefaults() {
+        super.performDefaults();
+        if (aiConfigurator != null) {
+            aiConfigurator.resetSettings(this);
+        }
+    }
+
+    private void persistConnection() {
         DBPDataSourceContainer connection = getConnection();
-        if (connection != null) {
-            for (AIConnectionSettingsSection section : sections) {
-                section.save(connection);
-            }
-            if (!(getContainer() instanceof IWizardContainer)) {
-                connection.persistConfiguration();
-            }
+        if (connection != null && !(getContainer() instanceof IWizardContainer)) {
+            connection.persistConfiguration();
         }
     }
 
     @Nullable
-    private DBPDataSourceContainer getConnection() {
+    public DBPDataSourceContainer getConnection() {
         return element == null ? null : element.getAdapter(DBPDataSourceContainer.class);
     }
 

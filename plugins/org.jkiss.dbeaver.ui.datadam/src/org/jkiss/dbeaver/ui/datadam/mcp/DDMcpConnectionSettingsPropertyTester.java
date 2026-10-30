@@ -14,26 +14,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.ai.preferences;
+package org.jkiss.dbeaver.ui.datadam.mcp;
 
-import org.eclipse.swt.widgets.Composite;
+import org.eclipse.core.expressions.PropertyTester;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
-/**
- * Settings contributed to the AI connection preferences page.
- * Sections save to the connection supplied by the page, which may be a wizard validation copy.
- */
-public interface AIConnectionSettingsSection {
-    boolean appliesTo(@NotNull DBPDataSourceContainer connection);
-
-    void createControls(
-        @NotNull Composite parent,
-        @NotNull DBPDataSourceContainer connection,
-        @Nullable DBRRunnableContext runnableContext
-    );
-
-    void save(@NotNull DBPDataSourceContainer connection);
+public class DDMcpConnectionSettingsPropertyTester extends PropertyTester {
+    @Override
+    public boolean test(@Nullable Object receiver, @NotNull String property, @NotNull Object[] args, @Nullable Object expectedValue) {
+        return "enabled".equals(property) && receiver instanceof DBPDataSourceContainer connection
+            && new DDMcpConnectionConfigurator().appliesTo(connection);
+    }
 }

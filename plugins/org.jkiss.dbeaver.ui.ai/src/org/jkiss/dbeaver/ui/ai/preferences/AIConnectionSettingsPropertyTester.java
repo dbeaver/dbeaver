@@ -20,11 +20,13 @@ import org.eclipse.core.expressions.PropertyTester;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 
 public class AIConnectionSettingsPropertyTester extends PropertyTester {
     @Override
     public boolean test(@Nullable Object receiver, @NotNull String property, @NotNull Object[] args, @Nullable Object expectedValue) {
-        return "hasConnectionSettings".equals(property) && receiver instanceof DBPDataSourceContainer connection
-            && !AIConnectionSettingsRegistry.getInstance().getSections(connection).isEmpty();
+        return "hasConnectionSettings".equals(property) && receiver instanceof DBPDataSourceContainer
+            && UIPropertyConfiguratorRegistry.getInstance().getDescriptor(AIContextSettingsDataSource.class.getName()) != null;
     }
 }

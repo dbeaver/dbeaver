@@ -20,7 +20,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -29,17 +28,16 @@ import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionSettings;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
+import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.ai.preferences.AIConnectionSettingsSection;
+import org.jkiss.dbeaver.ui.ai.preferences.PrefPageDataSourceAI;
 import org.jkiss.dbeaver.ui.datadam.internal.DDMcpMessages;
 
-public class DDMcpConnectionSettingsSection implements AIConnectionSettingsSection {
-    private static final Log log = Log.getLog(DDMcpConnectionSettingsSection.class);
+public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<PrefPageDataSourceAI, PrefPageDataSourceAI> {
+    private static final Log log = Log.getLog(DDMcpConnectionConfigurator.class);
 
     private Button enableCheck;
 
-    @Override
     public boolean appliesTo(@NotNull DBPDataSourceContainer connection) {
         if (!DDProductConfig.isIntegrationEnabled()
             || !DDDesktopPreferences.getStore().getBoolean(DDDesktopPreferences.MCP_DESKTOP_ENABLED)) {
@@ -62,24 +60,50 @@ public class DDMcpConnectionSettingsSection implements AIConnectionSettingsSecti
     }
 
     @Override
-    public void createControls(
+    public void createControl(
         @NotNull Composite parent,
-        @NotNull DBPDataSourceContainer connection,
-        @Nullable DBRRunnableContext runnableContext
+        @NotNull PrefPageDataSourceAI page,
+        @NotNull Runnable propertyChangeListener
     ) {
-        Composite group = UIUtils.createTitledComposite(
-            parent, DDMcpMessages.mcp_connection_settings_group, 1, GridData.FILL_HORIZONTAL);
-        enableCheck = UIUtils.createCheckbox(
-            group,
-            DDMcpMessages.mcp_connection_settings_enabled,
-            DDMcpMessages.mcp_connection_settings_enabled_tip,
-            DDMcpConnectionSettings.isEnabled(connection),
-            1
-        );
+        DBPDataSourceContainer connection = page.getConnection();
+        if (connection != null && appliesTo(connection)) {
+            Composite group = UIUtils.createTitledComposite(
+                parent, DDMcpMessages.mcp_connection_settings_group, 1, GridData.FILL_HORIZONTAL);
+            enableCheck = UIUtils.createCheckbox(
+                group,
+                DDMcpMessages.mcp_connection_settings_enabled,
+                DDMcpMessages.mcp_connection_settings_enabled_tip,
+                false,
+                1
+            );
+        }
     }
 
     @Override
-    public void save(@NotNull DBPDataSourceContainer connection) {
-        DDMcpConnectionSettings.setEnabled(connection, enableCheck.getSelection());
+    public void loadSettings(@NotNull PrefPageDataSourceAI page) {
+        DBPDataSourceContainer connection = page.getConnection();
+        if (connection != null && enableCheck != null) {
+            enableCheck.setSelection(DDMcpConnectionSettings.isEnabled(connection));
+        }
+    }
+
+    @Override
+    public void saveSettings(@NotNull PrefPageDataSourceAI page) {
+        DBPDataSourceContainer connection = page.getConnection();
+        if (connection != null && enableCheck != null) {
+            DDMcpConnectionSettings.setEnabled(connection, enableCheck.getSelection());
+        }
+    }
+
+    @Override
+    public void resetSettings(@NotNull PrefPageDataSourceAI page) {
+        if (enableCheck != null) {
+            enableCheck.setSelection(false);
+        }
+    }
+
+    @Override
+    public boolean isComplete() {
+        return true;
     }
 }
