@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -58,5 +58,8 @@ public final class DBeaverPreferences
 
     public static final String LOGS_DEBUG_ENABLED = "logs.debug.enabled";
     public static final String LOGS_DEBUG_LOCATION = "logs.debug.location";
+
+    // Diagnostic info
+    public static final String DIAGNOSTIC_INFO_OUTPUT_FOLDER = "diagnostic.info.output.folder"; //$NON-NLS-1$
 
 }

@@ -83,6 +83,7 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
             DDDesktopAccessService access = DDDesktopAccessService.getInstance();
             DDRemoteDamHandshakeRequest hello = new DDRemoteDamHandshakeRequest(
                 DBWorkbench.getPlatform().getDeploymentId(), APP_INSTANCE_ID,
+                DBWorkbench.getPlatform().getWorkspace().getWorkspaceId(),
                 GeneralUtils.getProductName(), GeneralUtils.getProductVersion().toString());
             DDRemoteDamDesktopChannel channel = new DDRemoteDamDesktopChannel(
                 URI.create(DDEndpoints.getRemoteDamWebSocketUrl()), hello,

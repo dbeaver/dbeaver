@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.BaseWebSocketClient;
 import org.junit.jupiter.api.Assertions;
@@ -62,7 +63,7 @@ import java.util.function.Supplier;
 class DDRemoteDamDesktopChannelTest extends DBeaverUnitTest {
     private static final URI ENDPOINT = URI.create("wss://external.example/ws");
     private static final DDRemoteDamHandshakeRequest HELLO = new DDRemoteDamHandshakeRequest(
-        "deployment", "app-instance", "DBeaver", "26.3");
+        "deployment", "app-instance", "workspace", "DBeaver", GeneralUtils.getProductVersion().toString());
     private static final DDRemoteDamMessage MESSAGE = message("topic", "value");
 
     @Test

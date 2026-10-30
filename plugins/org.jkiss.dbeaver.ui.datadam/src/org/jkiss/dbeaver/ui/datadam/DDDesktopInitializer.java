@@ -18,26 +18,23 @@ package org.jkiss.dbeaver.ui.datadam;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.ui.IWorkbench;
-import org.eclipse.ui.IWorkbenchListener;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.sync.tracking.DDDesktopTrackingService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
+import org.jkiss.dbeaver.ui.datadam.internal.DDUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
+public class DDDesktopInitializer implements IWorkbenchWindowInitializer {
 
-    private static final Log log = Log.getLog(DDTrackingInitializer.class);
+    private static final Log log = Log.getLog(DDDesktopInitializer.class);
     private static final AtomicBoolean INITIALIZED = new AtomicBoolean(false);
 
     @Override
@@ -45,43 +42,21 @@ public class DDTrackingInitializer implements IWorkbenchWindowInitializer {
         if (!DDProductConfig.isIntegrationEnabled() || !INITIALIZED.compareAndSet(false, true)) {
             return;
         }
-        PlatformUI.getWorkbench().addWorkbenchListener(new IWorkbenchListener() {
-            @Override
-            public boolean preShutdown(@NotNull IWorkbench workbench, boolean forced) {
-                try {
-                    DDDesktopTrackingService.getInstance().stop();
-                } catch (DBException e) {
-                    log.debug("DataDam tracking stop failed", e);
-                    DDDesktopTrackingService.getInstance().reset();
-                }
-                return true;
-            }
-
-            @Override
-            public void postShutdown(@NotNull IWorkbench workbench) {
-                //empty
-            }
-        });
-
-        AbstractJob startJob = new AbstractJob("DataDam tracking start") {
+        AbstractJob startupJob = new AbstractJob(DDUIMessages.datadam_desktop_initialize_job) {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     DDDesktopAccessService.getInstance().load();
                     DDProjectUIManager.getInstance();
-                    if (!DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
-                        return Status.CANCEL_STATUS;
-                    }
-                    DDDesktopTrackingService.getInstance().start();
                 } catch (DBException e) {
-                    log.debug("DataDam tracking start failed", e);
+                    log.debug("DataDam Desktop initialization failed", e);
                     return Status.CANCEL_STATUS;
                 }
                 return Status.OK_STATUS;
             }
         };
-        startJob.setSystem(true);
-        startJob.schedule();
+        startupJob.setSystem(true);
+        startupJob.schedule();
     }
 }
