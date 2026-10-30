@@ -7,7 +7,7 @@ Bundle-Release-Date: 20261027
 Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
-Bundle-Localization: plugin
+Bundle-Localization: OSGI-INF/l10n/bundle
 Require-Bundle: org.jkiss.dbeaver.ext.sqlite;visibility:=reexport,
  com.google.gson
 Export-Package: org.jkiss.dbeaver.ext.cloudflare.d1,

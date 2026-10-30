@@ -22,6 +22,7 @@
             label="Cloudflare D1"
             icon="icons/cloudflare-d1.svg"
             dialect="sqlite">
+            <treeInjection path="generic/catalog" changeProperty="d1CatalogList"/>
             <drivers managable="true">
                 <driver
                     id="cloudflare_d1_jdbc"

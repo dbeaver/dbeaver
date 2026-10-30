@@ -84,6 +84,13 @@ public class CloudflareD1DataSource extends SQLiteDataSource {
         return Objects.requireNonNull(this.databases.get(name), "Unknown D1 database: " + name);
     }
 
+    @Nullable
+    public List<CloudflareD1Catalog> getD1CatalogList() {
+        // Navigator creation resolves its object manager from the getter's declared element type.
+        List<GenericCatalog> catalogs = getCatalogs();
+        return catalogs == null ? null : catalogs.stream().map(CloudflareD1Catalog.class::cast).toList();
+    }
+
     @NotNull
     synchronized CloudflareD1Instance getInstance(@NotNull CloudflareD1Database database) {
         return this.instances.computeIfAbsent(database.id(), id -> new CloudflareD1Instance(this, id));

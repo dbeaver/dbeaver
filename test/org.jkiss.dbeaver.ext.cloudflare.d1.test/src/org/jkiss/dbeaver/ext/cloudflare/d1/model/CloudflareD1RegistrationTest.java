@@ -16,10 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.cloudflare.d1.model;
 
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.cloudflare.d1.CloudflareD1ConnectionSettings;
+import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
@@ -35,10 +38,48 @@ import org.osgi.framework.FrameworkUtil;
 import org.w3c.dom.Element;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 public class CloudflareD1RegistrationTest {
+    @Test
+    void metadataLabelsUseTheStandardBundleLocalization() {
+        var bundle = FrameworkUtil.getBundle(CloudflareD1DataSource.class);
+        Assertions.assertNotNull(bundle.getEntry("OSGI-INF/l10n/bundle.properties"));
+        var resources = Platform.getResourceBundle(bundle);
+        Assertions.assertEquals("Database UUID", resources.getString(
+            "meta.org.jkiss.dbeaver.ext.cloudflare.d1.model.CloudflareD1Catalog.databaseId.name"));
+        Assertions.assertEquals("Account ID", resources.getString(
+            "meta.org.jkiss.dbeaver.ext.cloudflare.d1.auth.CloudflareD1AuthCredentials.userName.name"));
+        Assertions.assertEquals("API token", resources.getString(
+            "meta.org.jkiss.dbeaver.ext.cloudflare.d1.auth.CloudflareD1AuthCredentials.userPassword.name"));
+    }
+
+    @Test
+    void navigatorUsesD1CatalogTypeWithoutChangingInheritedTrees() {
+        var registry = DataSourceProviderRegistry.getInstance();
+        var catalog = registry.getDataSourceProvider("cloudflare_d1").getTreeDescriptor().findChildItemByPath("catalog");
+        Assertions.assertNotNull(catalog);
+        Assertions.assertEquals(CloudflareD1Catalog.class, catalog.getPropertyOrCollectionItemType(CloudflareD1DataSource.class));
+        Assertions.assertNotNull(catalog.findChildItemByPath("schema"));
+        for (String provider : List.of("generic", "sqlite")) {
+            var inheritedCatalog = registry.getDataSourceProvider(provider).getTreeDescriptor().findChildItemByPath("catalog");
+            Assertions.assertNotNull(inheritedCatalog);
+            Assertions.assertEquals("catalogList", inheritedCatalog.getPropertyName());
+            Assertions.assertEquals(GenericCatalog.class, inheritedCatalog.getPropertyOrCollectionItemType(GenericDataSource.class));
+        }
+    }
+
+    @Test
+    void typedCatalogListPreservesCatalogInstancesAndUninitializedState() {
+        var source = Mockito.mock(CloudflareD1DataSource.class, Mockito.CALLS_REAL_METHODS);
+        Assertions.assertNull(source.getD1CatalogList());
+        var catalog = Mockito.mock(CloudflareD1Catalog.class);
+        Mockito.doReturn(List.of(catalog)).when(source).getCatalogs();
+        Assertions.assertEquals(List.of(catalog), source.getD1CatalogList());
+    }
+
     @Test
     void initialMetadataConnectionBuildsItsUrlFromTheSavedDatabaseId() throws Exception {
         var configuration = new DBPConnectionConfiguration();
