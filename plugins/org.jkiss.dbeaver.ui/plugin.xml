@@ -94,6 +94,23 @@
     </extension>
 
     <extension point="org.eclipse.ui.themes">
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.icons.label" id="org.jkiss.dbeaver.ui.icons">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.icons.description</description>
+        </themeElementCategory>
+        <colorDefinition
+                id="org.jkiss.dbeaver.ui.icons.blue.light"
+                categoryId="org.jkiss.dbeaver.ui.icons"
+                label="%colorDefinition.org.jkiss.dbeaver.ui.icons.blue.light.label"
+                value="51,135,197">
+            <description>%colorDefinition.org.jkiss.dbeaver.ui.icons.blue.light.description</description>
+        </colorDefinition>
+        <colorDefinition
+                id="org.jkiss.dbeaver.ui.icons.blue.dark"
+                categoryId="org.jkiss.dbeaver.ui.icons"
+                label="%colorDefinition.org.jkiss.dbeaver.ui.icons.blue.dark.label"
+                value="198,40,40">
+            <description>%colorDefinition.org.jkiss.dbeaver.ui.icons.blue.dark.description</description>
+        </colorDefinition>
         <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.dbeaver.ui.fonts.label" id="org.jkiss.dbeaver.ui.fonts">
             <description>%themeElementCategory.org.jkiss.dbeaver.ui.fonts.description</description>
         </themeElementCategory>
