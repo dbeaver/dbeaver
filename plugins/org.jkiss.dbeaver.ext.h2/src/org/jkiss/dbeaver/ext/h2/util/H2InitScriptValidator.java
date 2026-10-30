@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.Set;
@@ -31,6 +32,25 @@ public final class H2InitScriptValidator {
     private static final String INIT_PROPERTY = "INIT";
 
     private final Set<Approval> approvedScripts = new HashSet<>();
+    private final Set<BootstrapApproval> approvedBootstrap = new HashSet<>();
+
+    public synchronized void validateScripts(
+        @Nullable String url,
+        @NotNull List<String> scripts,
+        @NotNull Predicate<List<String>> confirmation
+    ) throws DBCException {
+        List<String> snapshot = List.copyOf(scripts);
+        if (snapshot.isEmpty()) {
+            return;
+        }
+        BootstrapApproval approval = new BootstrapApproval(url, snapshot);
+        if (!approvedBootstrap.contains(approval)) {
+            if (!confirmation.test(snapshot)) {
+                throw new DBCException("H2 initialization SQL execution was not approved. Connection cancelled");
+            }
+            approvedBootstrap.add(approval);
+        }
+    }
 
     public synchronized void validate(
         @Nullable String url,
@@ -98,6 +118,9 @@ public final class H2InitScriptValidator {
         if (!script.isBlank()) {
             scripts.add(script);
         }
+    }
+
+    private record BootstrapApproval(@Nullable String url, @NotNull List<String> scripts) {
     }
 
     private record Approval(@Nullable String url, @NotNull String script) {

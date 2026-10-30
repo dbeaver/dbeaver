@@ -20,7 +20,22 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
+import java.util.List;
+
 /** Approval for driver initialization SQL executed before a JDBC connection is available. */
 public interface UIServiceConnectionInit {
+    default boolean confirmInitScripts(
+        @NotNull DBPDataSourceContainer container,
+        @Nullable String url,
+        @NotNull List<String> scripts
+    ) {
+        for (String script : scripts) {
+            if (!confirmInitScript(container, url, script)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     boolean confirmInitScript(@NotNull DBPDataSourceContainer container, @Nullable String url, @NotNull String script);
 }

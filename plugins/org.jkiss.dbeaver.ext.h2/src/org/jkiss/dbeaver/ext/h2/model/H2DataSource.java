@@ -20,21 +20,23 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericExecutionContext;
 import org.jkiss.dbeaver.ext.h2.util.H2InitScriptValidator;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnectionInit;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.util.List;
 import java.util.Properties;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 /**
  * H2 datasource
@@ -96,11 +98,33 @@ public class H2DataSource extends GenericDataSource {
         };
         H2InitScriptValidator validator = getInitScriptValidator();
         validator.validate(url, connectProps, confirmation);
-        String bootstrap = getContainer().getActualConnectionConfiguration().getBootstrap().getInitQueries().stream()
+        validateBootstrapQueries(url, getContainer().getActualConnectionConfiguration().getBootstrap().getInitQueries().stream()
             .map(query -> GeneralUtils.replaceVariables(query, getContainer().getVariablesResolver(true)))
-            .filter(query -> !query.isBlank())
-            .collect(Collectors.joining(";\n"));
-        validator.validateScript(url, bootstrap, confirmation);
+            .toList());
+    }
+
+    private void validateBootstrapQueries(@Nullable String url, @NotNull List<String> queries) throws DBCException {
+        getInitScriptValidator().validateScripts(url, queries, scripts -> {
+            if (DBWorkbench.getPlatform().getApplication().isMultiuser()) {
+                return false;
+            }
+            UIServiceConnectionInit service = DBWorkbench.getService(UIServiceConnectionInit.class);
+            return service != null && service.confirmInitScripts(getContainer(), url, scripts);
+        });
+    }
+
+    @NotNull
+    @Override
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
+        return new GenericExecutionContext(instance, type) {
+            @Override
+            protected void validateBootstrapQueries(@NotNull List<String> queries) throws DBException {
+                if (!queries.isEmpty()) {
+                    String url = getConnectionURL(getContainer().getActualConnectionConfiguration());
+                    H2DataSource.this.validateBootstrapQueries(url, queries);
+                }
+            }
+        };
     }
 
     @NotNull

@@ -27,6 +27,7 @@ import org.jkiss.utils.SecurityUtils;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 /** Local approvals for connection initialization SQL. */
@@ -43,15 +44,23 @@ public final class ConfirmedConnectionInitScriptsStore {
     }
 
     public boolean contains(@NotNull DBPDataSourceContainer container, @Nullable String url, @NotNull String script) {
+        return contains(container, url, List.of(script));
+    }
+
+    public boolean contains(@NotNull DBPDataSourceContainer container, @Nullable String url, @NotNull List<String> scripts) {
         synchronized (STORE_LOCK) {
-            return loadApprovals().contains(approvalKey(container, url, script));
+            return loadApprovals().contains(approvalKey(container, url, scripts));
         }
     }
 
     public void add(@NotNull DBPDataSourceContainer container, @Nullable String url, @NotNull String script) {
+        add(container, url, List.of(script));
+    }
+
+    public void add(@NotNull DBPDataSourceContainer container, @Nullable String url, @NotNull List<String> scripts) {
         synchronized (STORE_LOCK) {
             Set<String> approvals = loadApprovals();
-            approvals.add(approvalKey(container, url, script));
+            approvals.add(approvalKey(container, url, scripts));
             try {
                 Files.createDirectories(path.toAbsolutePath().getParent());
                 try (var writer = Files.newBufferedWriter(path)) {
@@ -79,13 +88,13 @@ public final class ConfirmedConnectionInitScriptsStore {
     }
 
     @NotNull
-    private String approvalKey(@NotNull DBPDataSourceContainer container, @Nullable String url, @NotNull String script) {
-        return SecurityUtils.sha256Hex(JSONUtils.GSON.toJson(new String[] {
+    private String approvalKey(@NotNull DBPDataSourceContainer container, @Nullable String url, @NotNull List<String> scripts) {
+        return SecurityUtils.sha256Hex(JSONUtils.GSON.toJson(new Object[] {
             container.getProject().getAbsolutePath().toAbsolutePath().normalize().toString(),
             container.getId(),
             container.getDriver().getFullId(),
             url,
-            script
+            scripts
         }));
     }
 }

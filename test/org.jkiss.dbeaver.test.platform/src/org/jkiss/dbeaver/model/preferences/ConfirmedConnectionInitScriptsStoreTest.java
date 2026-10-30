@@ -25,6 +25,7 @@ import org.mockito.Mockito;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 
 public class ConfirmedConnectionInitScriptsStoreTest {
     @TempDir
@@ -41,6 +42,18 @@ public class ConfirmedConnectionInitScriptsStoreTest {
         Mockito.when(container.getProject().getAbsolutePath()).thenReturn(directory.resolve("project"));
         Mockito.when(container.getId()).thenReturn("connection-id");
         Mockito.when(container.getDriver().getFullId()).thenReturn("h2:h2_embedded_v3");
+    }
+
+    @Test
+    public void persistedApprovalPreservesBootstrapBoundariesAndOrder() {
+        String first = "SELECT 1 /*";
+        String second = "CALL FILE_WRITE(STRINGTOUTF8('marker'), '/tmp/marker'); -- */";
+        store.add(container, "jdbc:h2:mem:test", List.of(first + ";\n" + second));
+        ConfirmedConnectionInitScriptsStore reopened = new ConfirmedConnectionInitScriptsStore(file);
+        Assertions.assertTrue(reopened.contains(container, "jdbc:h2:mem:test", List.of(first + ";\n" + second)));
+        Assertions.assertFalse(reopened.contains(container, "jdbc:h2:mem:test", List.of(first, second)));
+        store.add(container, "jdbc:h2:mem:test", List.of(first, second));
+        Assertions.assertFalse(reopened.contains(container, "jdbc:h2:mem:test", List.of(second, first)));
     }
 
     @Test

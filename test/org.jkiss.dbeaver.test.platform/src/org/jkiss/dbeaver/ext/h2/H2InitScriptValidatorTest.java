@@ -30,6 +30,33 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class H2InitScriptValidatorTest {
     @Test
+    public void rechecksChangedBootstrapBoundariesAndOrder() throws DBCException {
+        H2InitScriptValidator validator = new H2InitScriptValidator();
+        String first = "SELECT 1 /*";
+        String second = "CALL FILE_WRITE(STRINGTOUTF8('marker'), '/tmp/marker'); -- */";
+        List<String> single = List.of(first + ";\n" + second);
+        validator.validateScripts("jdbc:h2:mem:test", single, scripts -> true);
+        validator.validateScripts("jdbc:h2:mem:test", single, scripts -> Assertions.fail("Already approved"));
+        Assertions.assertThrows(DBCException.class, () ->
+            validator.validateScripts("jdbc:h2:mem:test", List.of(first, second), scripts -> false));
+        validator.validateScripts("jdbc:h2:mem:test", List.of(first, second), scripts -> true);
+        Assertions.assertThrows(DBCException.class, () ->
+            validator.validateScripts("jdbc:h2:mem:test", List.of(second, first), scripts -> false));
+    }
+
+    @Test
+    public void snapshotsBootstrapApproval() throws DBCException {
+        H2InitScriptValidator validator = new H2InitScriptValidator();
+        List<String> scripts = new ArrayList<>(List.of("CALL 1"));
+        validator.validateScripts(null, scripts, snapshot -> {
+            Assertions.assertThrows(UnsupportedOperationException.class, () -> snapshot.add("CALL 2"));
+            return true;
+        });
+        scripts.add("CALL 2");
+        Assertions.assertThrows(DBCException.class, () -> validator.validateScripts(null, scripts, snapshot -> false));
+    }
+
+    @Test
     public void skipsConnectionsWithoutInit() throws DBCException {
         for (String url : new String[] {null, "jdbc:h2:mem:test", "jdbc:h2:mem:INIT=CALL 1;MODE=PostgreSQL"}) {
             new H2InitScriptValidator().validate(url, new Properties(), script -> {
