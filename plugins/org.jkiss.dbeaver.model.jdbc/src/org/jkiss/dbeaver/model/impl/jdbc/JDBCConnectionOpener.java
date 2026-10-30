@@ -106,11 +106,7 @@ class JDBCConnectionOpener implements DBRRunnableWithProgress, PrivilegedExcepti
                 // Just ignore it
             }
             // Open connection
-            if (driverInstance == null) {
-                return DriverManager.getConnection(url, connectProps);
-            } else {
-                return driverInstance.connect(url, connectProps);
-            }
+            return dataSource.openJdbcConnection(driverInstance, url, connectProps);
         } finally {
             Thread.currentThread().setContextClassLoader(originalClassLoader);
         }
