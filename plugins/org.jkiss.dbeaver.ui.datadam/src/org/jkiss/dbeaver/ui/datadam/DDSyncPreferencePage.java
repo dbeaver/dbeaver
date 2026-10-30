@@ -23,10 +23,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
@@ -79,9 +76,20 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         content = UIUtils.createPlaceholder(parent, 1);
         content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
         ((GridLayout) content.getLayout()).verticalSpacing = 8;
-        DDUIUtils.create(content, DDTrackingUIMessages.sync_preference_page_description,
+        Label description = DDUIUtils.create(
+            content, DDTrackingUIMessages.sync_preference_page_description,
             DDTrackingUIMessages.sync_preference_page_about_link, DDUIConstants.DATADAM_DOCS_URL
         );
+        Composite descriptionRow = description.getParent();
+        descriptionRow.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+        GridLayout descriptionLayout = (GridLayout) descriptionRow.getLayout();
+        descriptionLayout.marginLeft = 0;
+        descriptionLayout.marginTop = 8;
+        descriptionLayout.marginBottom = 0;
+        GridData descriptionData = (GridData) description.getLayoutData();
+        descriptionData.widthHint = 660;
+        descriptionData.horizontalAlignment = SWT.BEGINNING;
+        descriptionData.grabExcessHorizontalSpace = false;
         mcpEnabled.set(DDDesktopPreferences.getStore().getBoolean(DDDesktopPreferences.MCP_DESKTOP_ENABLED));
         Control form = UIPanelBuilder.build(content, pb -> pb
             .margins(0, 0)
