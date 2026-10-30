@@ -67,7 +67,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
     protected String baseUrl;
     protected volatile String token = "";
-    private String temperature = "0.0";
+    private String temperature = "";
     private volatile Map<String, String> customHeaders = Map.of();
     private HttpHeadersField headersField;
 
@@ -126,7 +126,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         token = CommonUtils.toString(configuration.getToken());
         apiToken = token;
         modelSelectorField.setSelectedModel(CommonUtils.toString(configuration.getModel()));
-        temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
+        temperature = CommonUtils.toString(configuration.getRequestTemperature(), "");
 
         applySettings();
         loadAdvancedSettings(configuration);
@@ -160,7 +160,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         }
         configuration.setModel(modelSelectorField.getSelectedModelName());
         configuration.setContextWindowSize(contextWindowSizeField.getValue());
-        configuration.setTemperature(CommonUtils.toDouble(temperature));
+        saveTemperature(configuration, temperature);
         saveAdvancedSettings(configuration);
     }
 
@@ -214,11 +214,11 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                     .ifPresentOrElse(
                         model -> {
                             contextWindowSizeField.setValue(model.contextWindowSize());
-                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
+                            temperatureText.setText("");
                             temperatureText.setEnabled(OpenAIModels.isTemperatureEditable(model));
                         }, () -> {
                             contextWindowSizeField.setValue(null);
-                            temperatureText.setText("0.0");
+                            temperatureText.setText("");
                             temperatureText.setEnabled(true);
                         }
                     );
@@ -235,10 +235,11 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
             .withGridData(GridDataFactory.fillDefaults().span(2, 1).create())
             .build();
 
-        temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
+        temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "");
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
         temperatureText.setToolTipText(AIUIMessages.openai_configurator_temperature_tip);
+        temperatureText.setMessage(AIUIMessages.ai_engine_configurator_temperature_default);
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }
 
@@ -428,7 +429,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         }
         propertiesCopy.setModel(modelSelectorField.getSelectedModelName());
         propertiesCopy.setContextWindowSize(contextWindowSizeField.getValue());
-        propertiesCopy.setTemperature(CommonUtils.toDouble(temperature));
+        saveTemperature(propertiesCopy, temperature);
         saveAdvancedSettings(propertiesCopy);
         return Optional.of(propertiesCopy);
     }

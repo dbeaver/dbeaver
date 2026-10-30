@@ -153,7 +153,7 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     @NotNull
     private OAIResponsesRequest createRequest(@NotNull AIEngineRequest request) throws DBException {
-        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), temperature());
+        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), getRequestTemperature());
         if (properties instanceof OpenAIProperties openAIProperties
             && openAIProperties.isChatGptAccountAuthentication()
         ) {
@@ -188,5 +188,10 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     protected double temperature() throws DBException {
         return properties.getTemperature();
+    }
+
+    @Nullable
+    protected Double getRequestTemperature() throws DBException {
+        return properties.getRequestTemperature() == null ? null : temperature();
     }
 }

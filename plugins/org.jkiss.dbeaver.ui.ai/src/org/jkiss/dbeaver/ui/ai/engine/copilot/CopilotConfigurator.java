@@ -63,7 +63,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
 
     protected volatile String accessToken;
     protected String token = "";
-    private String temperature = "0.0";
+    private String temperature = "";
 
     protected final CachedValue<List<AIModel>> modelsCache = new CachedValue<>(this::fetchCopilotModels);
 
@@ -98,7 +98,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         token = CommonUtils.toString(configuration.getToken());
         modelSelectorField.setSelectedModel(configuration.getModel());
         contextWindowSizeField.setValue(configuration.getContextWindowSize());
-        temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
+        temperature = CommonUtils.toString(configuration.getRequestTemperature(), "");
         accessToken = token;
         accessTokenText.setText(accessToken);
         applySettings();
@@ -113,7 +113,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         properties.setToken(accessToken);
         properties.setModel(modelSelectorField.getSelectedModelName());
         properties.setContextWindowSize(contextWindowSizeField.getValue());
-        properties.setTemperature(CommonUtils.toDouble(temperature));
+        saveTemperature(properties, temperature);
         saveAdvancedSettings(properties);
     }
 
@@ -141,10 +141,10 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
                     .ifPresentOrElse(
                         model -> {
                             contextWindowSizeField.setValue(model.contextWindowSize());
-                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
+                            temperatureText.setText("");
                         }, () -> {
                             contextWindowSizeField.setValue(null);
-                            temperatureText.setText("0.0");
+                            temperatureText.setText("");
                         }
                     );
                 AIModel selectedModel = modelSelectorField.getSelectedModel();
@@ -162,9 +162,10 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
 
         GridData gridData = new GridData(GridData.FILL_HORIZONTAL);
         gridData.horizontalSpan = 2;
-        temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
+        temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "");
         temperatureText.setLayoutData(gridData);
         temperatureText.setToolTipText(AIUIMessages.openai_configurator_temperature_tip);
+        temperatureText.setMessage(AIUIMessages.ai_engine_configurator_temperature_default);
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }

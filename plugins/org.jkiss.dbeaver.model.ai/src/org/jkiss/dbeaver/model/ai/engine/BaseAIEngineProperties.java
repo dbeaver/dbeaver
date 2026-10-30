@@ -35,6 +35,11 @@ public abstract class BaseAIEngineProperties implements AIEngineProperties {
     @SerializedName(value = "gpt.model.temperature", alternate = {"anthropic.temperature", "aws.temperature"})
     protected double temperature;
 
+    // an absent flag preserves temperature fallbacks in existing configurations
+    @Nullable
+    @SerializedName("ai.useServerDefaultTemperature")
+    private Boolean useServerDefaultTemperature;
+
     @Nullable
     @SerializedName(value = "gpt.log.query", alternate = {"anthropic.log.query", "aws.log.query"})
     protected Boolean loggingEnabled;
@@ -56,6 +61,22 @@ public abstract class BaseAIEngineProperties implements AIEngineProperties {
 
     public void setTemperature(double temperature) {
         this.temperature = AIUtils.normalizeTemperature(temperature);
+        useServerDefaultTemperature = false;
+    }
+
+    public void clearTemperature() {
+        temperature = AIUtils.DEFAULT_TEMPERATURE;
+        useServerDefaultTemperature = true;
+    }
+
+    @Nullable
+    @Override
+    public Double getRequestTemperature() {
+        return Boolean.TRUE.equals(useServerDefaultTemperature) ? null : getTemperature();
+    }
+
+    protected boolean hasExplicitTemperature() {
+        return Boolean.FALSE.equals(useServerDefaultTemperature);
     }
 
     @Override

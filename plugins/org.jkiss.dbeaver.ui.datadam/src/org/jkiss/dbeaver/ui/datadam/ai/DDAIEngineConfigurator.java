@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.datadam.ai.DDAIEngine;
 import org.jkiss.dbeaver.model.datadam.ai.DDAIEngineProperties;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.model.CachedValue;
 import org.jkiss.dbeaver.ui.ai.model.ContextWindowSizeField;
 import org.jkiss.dbeaver.ui.ai.model.ModelSelectorField;
@@ -51,7 +52,7 @@ public class DDAIEngineConfigurator extends AbstractAIEngineConfigurator<AIEngin
 
     private String baseUrl = DDAIEngineProperties.DEFAULT_ENDPOINT;
     private volatile String token = "";
-    private String temperature = "0.0";
+    private String temperature = "";
 
     private Text tokenText;
     private Text baseUrlText;
@@ -99,8 +100,9 @@ public class DDAIEngineConfigurator extends AbstractAIEngineConfigurator<AIEngin
             .withGridData(GridDataFactory.fillDefaults().span(2, 1).create())
             .build();
 
-        temperatureText = UIUtils.createLabelText(composite, DDUIMessages.datadam_configurator_label_temperature, "0.0");
+        temperatureText = UIUtils.createLabelText(composite, DDUIMessages.datadam_configurator_label_temperature, "");
         temperatureText.setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
+        temperatureText.setMessage(AIUIMessages.ai_engine_configurator_temperature_default);
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.addModifyListener(e -> temperature = temperatureText.getText());
 
@@ -113,7 +115,7 @@ public class DDAIEngineConfigurator extends AbstractAIEngineConfigurator<AIEngin
         loadAdvancedSettings(configuration);
         baseUrl = CommonUtils.toString(configuration.getBaseUrl(), DDAIEngineProperties.DEFAULT_ENDPOINT);
         token = CommonUtils.toString(configuration.getToken());
-        temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
+        temperature = CommonUtils.toString(configuration.getRequestTemperature(), "");
 
         baseUrlText.setText(baseUrl);
         tokenText.setText(token);
@@ -132,7 +134,7 @@ public class DDAIEngineConfigurator extends AbstractAIEngineConfigurator<AIEngin
         configuration.setToken(token);
         configuration.setModel(modelSelectorField.getSelectedModelName());
         configuration.setContextWindowSize(contextWindowSizeField.getValue());
-        configuration.setTemperature(CommonUtils.toDouble(temperature));
+        saveTemperature(configuration, temperature);
     }
 
     @Override
@@ -165,7 +167,7 @@ public class DDAIEngineConfigurator extends AbstractAIEngineConfigurator<AIEngin
         propertiesCopy.setToken(token);
         propertiesCopy.setModel(modelSelectorField.getSelectedModelName());
         propertiesCopy.setContextWindowSize(contextWindowSizeField.getValue());
-        propertiesCopy.setTemperature(CommonUtils.toDouble(temperature));
+        saveTemperature(propertiesCopy, temperature);
         return Optional.of(propertiesCopy);
     }
 
