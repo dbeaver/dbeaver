@@ -348,8 +348,10 @@ public class SQLiteExtensionLoadingTest {
     }
 
     @NotNull
-    private SQLiteExtensionPermissionStore store() {
-        return new SQLiteExtensionPermissionStore(directory.resolve("permissions.json"));
+    private SQLiteExtensionPermissionStore store() throws ReflectiveOperationException {
+        var constructor = SQLiteExtensionPermissionStore.class.getDeclaredConstructor(Path.class);
+        constructor.setAccessible(true);
+        return constructor.newInstance(directory.resolve("permissions.json"));
     }
 
     @NotNull

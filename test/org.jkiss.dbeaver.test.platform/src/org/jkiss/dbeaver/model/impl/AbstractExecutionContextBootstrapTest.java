@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -24,20 +26,24 @@ import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.qm.QMExecutionHandler;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
+import org.jkiss.junit.StaticFieldOverride;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
+@Isolated
 public class AbstractExecutionContextBootstrapTest {
     @Test
     public void executesExactValidatedSnapshotDespiteConfigurationAndVariableChanges() throws Exception {
-        try (var handlers = Mockito.mockStatic(QMUtils.class)) {
-            handlers.when(QMUtils::getDefaultHandler).thenReturn(Mockito.mock(QMExecutionHandler.class));
-            AbstractExecutionContext<?, ?> context = Mockito.mock(AbstractExecutionContext.class, Mockito.CALLS_REAL_METHODS);
+        try (var handlers = new StaticFieldOverride(QMUtils.class, "defaultHandler", Mockito.mock(QMExecutionHandler.class))) {
+            TestContext context = Mockito.mock(TestContext.class, Mockito.CALLS_REAL_METHODS);
             DBPDataSource dataSource = Mockito.mock(DBPDataSource.class, Mockito.RETURNS_DEEP_STUBS);
             Mockito.doReturn(dataSource).when(context).getDataSource();
             AtomicReference<String> variable = new AtomicReference<>("1");
@@ -67,9 +73,8 @@ public class AbstractExecutionContextBootstrapTest {
 
     @Test
     public void denialCannotBeIgnoredByBootstrapIgnoreErrors() throws Exception {
-        try (var handlers = Mockito.mockStatic(QMUtils.class)) {
-            handlers.when(QMUtils::getDefaultHandler).thenReturn(Mockito.mock(QMExecutionHandler.class));
-            AbstractExecutionContext<?, ?> context = Mockito.mock(AbstractExecutionContext.class, Mockito.CALLS_REAL_METHODS);
+        try (var handlers = new StaticFieldOverride(QMUtils.class, "defaultHandler", Mockito.mock(QMExecutionHandler.class))) {
+            TestContext context = Mockito.mock(TestContext.class, Mockito.CALLS_REAL_METHODS);
             DBPDataSource dataSource = Mockito.mock(DBPDataSource.class, Mockito.RETURNS_DEEP_STUBS);
             Mockito.doReturn(dataSource).when(context).getDataSource();
             DBPConnectionBootstrap bootstrap = new DBPConnectionBootstrap();
@@ -81,6 +86,28 @@ public class AbstractExecutionContextBootstrapTest {
             Assertions.assertThrows(DBCException.class, () -> context.initContextBootstrap(new VoidProgressMonitor(), true));
 
             Mockito.verify(context, Mockito.never()).openSession(Mockito.any(), Mockito.any(), Mockito.anyString());
+        }
+    }
+
+    public abstract static class TestContext extends AbstractExecutionContext<DBPDataSource, DBSInstance> {
+        public TestContext(@NotNull DBSInstance instance, @NotNull String purpose) {
+            super(instance, purpose);
+        }
+
+        @NotNull
+        @Override
+        public DBPConnectionBootstrap getBootstrapSettings() {
+            return super.getBootstrapSettings();
+        }
+
+        @Override
+        public void validateBootstrapQueries(@NotNull List<String> queries) throws DBException {
+            super.validateBootstrapQueries(queries);
+        }
+
+        @Override
+        public boolean initContextBootstrap(@NotNull DBRProgressMonitor monitor, boolean autoCommit) throws DBException {
+            return super.initContextBootstrap(monitor, autoCommit);
         }
     }
 }

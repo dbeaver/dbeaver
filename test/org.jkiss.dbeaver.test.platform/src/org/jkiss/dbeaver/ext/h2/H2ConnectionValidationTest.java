@@ -29,12 +29,12 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ServiceRegistry;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnectionInit;
+import org.jkiss.junit.StaticFieldOverride;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.util.List;
@@ -50,23 +50,20 @@ public class H2ConnectionValidationTest {
     private final TestDataSource dataSource = Mockito.mock(TestDataSource.class, Mockito.CALLS_REAL_METHODS);
     private final VoidProgressMonitor monitor = new VoidProgressMonitor();
     private final DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
-    private MockedStatic<DBWorkbench> workbench;
-    private MockedStatic<ServiceRegistry> registry;
+    private StaticFieldOverride workbench;
+    private StaticFieldOverride registry;
 
     @BeforeEach
-    public void setUp() {
-        workbench = Mockito.mockStatic(DBWorkbench.class);
-        registry = Mockito.mockStatic(ServiceRegistry.class);
-        workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
-        workbench.when(() -> DBWorkbench.getService(UIServiceConnectionInit.class)).thenCallRealMethod();
-        registry.when(ServiceRegistry::getInstance).thenReturn(services);
+    public void setUp() throws ReflectiveOperationException {
+        workbench = new StaticFieldOverride(DBWorkbench.class, "platform", platform);
+        registry = new StaticFieldOverride(ServiceRegistry.class, "instance", services);
         Mockito.doReturn(container).when(dataSource).getContainer();
         Mockito.when(container.getActualConnectionConfiguration()).thenReturn(configuration);
         Mockito.when(services.getService(UIServiceConnectionInit.class)).thenReturn(confirmation);
     }
 
     @AfterEach
-    public void tearDown() {
+    public void tearDown() throws IllegalAccessException {
         registry.close();
         workbench.close();
     }
