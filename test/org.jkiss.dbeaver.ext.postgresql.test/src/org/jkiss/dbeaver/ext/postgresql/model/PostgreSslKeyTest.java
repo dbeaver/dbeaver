@@ -17,18 +17,25 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.net.PostgreSSLClientKeyManager;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPDataSourceProvider;
+import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
+import org.jkiss.dbeaver.model.access.DBAAuthModel;
+import org.jkiss.dbeaver.model.connection.DBPAuthModelDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.net.SSLHandlerTrustStoreImpl;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -45,13 +52,16 @@ import java.util.Base64;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.sql.Driver;
 
 import javax.crypto.Cipher;
 import javax.crypto.EncryptedPrivateKeyInfo;
 import javax.crypto.SecretKeyFactory;
 import javax.crypto.spec.PBEKeySpec;
 
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class PostgreSslKeyTest extends DBeaverUnitTest {
@@ -110,7 +120,7 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
     public void reusesConvertedKeyUntilSourceChangesAndDeletesItOnShutdown() throws Exception {
         DBPDataSourceContainer container = mock(DBPDataSourceContainer.class);
         when(container.getDriver()).thenReturn(mock(DBPDriver.class));
-        PostgreDataSource dataSource = new PostgreDataSource(container, "16", "postgres");
+        TestPostgreDataSource dataSource = new TestPostgreDataSource(container);
         PostgreSSLClientKeyManager keyManager = dataSource.getSSLClientKeyManager();
         VoidProgressMonitor monitor = new VoidProgressMonitor();
         Path source = Files.createTempFile("dbeaver-test-ssl-", ".key");
@@ -231,7 +241,7 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
         when(container.getDriver()).thenReturn(driver);
         DBPConnectionConfiguration config = new DBPConnectionConfiguration();
         when(container.getActualConnectionConfiguration()).thenReturn(config);
-        PostgreDataSource dataSource = new PostgreDataSource(container, "16", "postgres");
+        TestPostgreDataSource dataSource = new TestPostgreDataSource(container);
         DBWHandlerDescriptor descriptor = mock(DBWHandlerDescriptor.class);
         when(descriptor.getId()).thenReturn(PostgreConstants.HANDLER_SSL);
         DBWHandlerConfiguration handler = new DBWHandlerConfiguration(descriptor, container);
@@ -242,38 +252,38 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
 
         try {
             when(driver.getConnectionProperties()).thenReturn(Map.of("sslfactory", "example.CustomFactory"));
-            Properties properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+            Properties properties = assembleAndFixupProperties(dataSource, config);
             Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
 
             when(driver.getConnectionProperties()).thenReturn(Map.of("sslmode", "DISABLE"));
-            properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+            properties = assembleAndFixupProperties(dataSource, config);
             Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
 
             when(driver.getConnectionProperties()).thenReturn(Map.of());
             config.setProperty("sslfactory", "example.CustomFactory");
-            properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+            properties = assembleAndFixupProperties(dataSource, config);
             Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
 
             config.setProperty("sslfactory", null);
             config.setProperty("sslmode", "disable");
-            properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+            properties = assembleAndFixupProperties(dataSource, config);
             Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
 
             config.setProperty("sslmode", null);
             config.setUrl("jdbc:postgresql://localhost/postgres?sslmode=DISABLE");
-            properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+            properties = assembleAndFixupProperties(dataSource, config);
             Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
 
             config.setUrl("jdbc:postgresql://localhost/postgres?sslfactory=example.CustomFactory");
-            properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+            properties = assembleAndFixupProperties(dataSource, config);
             Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
 
             config.setUrl("jdbc:postgresql://localhost/postgres?sslkey=another.key");
-            properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+            properties = assembleAndFixupProperties(dataSource, config);
             Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
 
             config.setUrl("jdbc:postgresql://localhost/postgres?sslmode=require&sslmode=%44ISABLE");
-            properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+            properties = assembleAndFixupProperties(dataSource, config);
             Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"));
 
             for (String query : List.of(
@@ -281,7 +291,7 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
                 "sslmode=require&sslmode=disable", "option=%invalid"
             )) {
                 config.setUrl("jdbc:postgresql:postgres?" + query);
-                properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+                properties = assembleAndFixupProperties(dataSource, config);
                 Assertions.assertEquals(missingKey.toString(), properties.getProperty("sslkey"), query);
             }
         } finally {
@@ -301,7 +311,7 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
         DBPConnectionConfiguration config = new DBPConnectionConfiguration();
         config.setUrl("jdbc:postgresql:postgres?sslmode=disable&sslmode=require&option=a=b=c&empty=&ssl");
         when(container.getActualConnectionConfiguration()).thenReturn(config);
-        PostgreDataSource dataSource = new PostgreDataSource(container, "16", "postgres");
+        TestPostgreDataSource dataSource = new TestPostgreDataSource(container);
         DBWHandlerDescriptor descriptor = mock(DBWHandlerDescriptor.class);
         when(descriptor.getId()).thenReturn(PostgreConstants.HANDLER_SSL);
         DBWHandlerConfiguration handler = new DBWHandlerConfiguration(descriptor, container);
@@ -312,7 +322,7 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
         Path converted;
         try {
             Files.writeString(source, makePkcs1Key());
-            Properties properties = dataSource.getAllConnectionProperties(new VoidProgressMonitor(), null, "test", config);
+            Properties properties = assembleAndFixupProperties(dataSource, config);
             converted = Path.of(properties.getProperty("sslkey"));
             Assertions.assertNotEquals(source, converted);
             Assertions.assertTrue(Files.exists(converted));
@@ -321,6 +331,128 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
             Files.deleteIfExists(source);
         }
         Assertions.assertFalse(Files.exists(converted));
+    }
+
+    @Test
+    public void fixupUsesPropertiesAndUrlReplacedAfterCollection() throws Exception {
+        DBPDataSourceContainer container = mock(DBPDataSourceContainer.class);
+        DBPDriver driver = mock(DBPDriver.class);
+        when(container.getDriver()).thenReturn(driver);
+        when(driver.getConnectionProperties()).thenReturn(Map.of());
+        DBPConnectionConfiguration config = new DBPConnectionConfiguration();
+        when(container.getActualConnectionConfiguration()).thenReturn(config);
+        TestPostgreDataSource dataSource = new TestPostgreDataSource(container);
+        Path source = Files.createTempFile("dbeaver-test-ssl-", ".key");
+        Path missing = source.resolveSibling(source.getFileName() + ".missing");
+        DBWHandlerDescriptor descriptor = mock(DBWHandlerDescriptor.class);
+        when(descriptor.getId()).thenReturn(PostgreConstants.HANDLER_SSL);
+        DBWHandlerConfiguration handler = new DBWHandlerConfiguration(descriptor, container);
+        handler.setEnabled(true);
+        handler.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_METHOD, "CERTIFICATES");
+        handler.setProperty(SSLHandlerTrustStoreImpl.PROP_SSL_CLIENT_KEY, missing.toString());
+        config.updateHandler(handler);
+        try {
+            Files.writeString(source, makePkcs1Key());
+            VoidProgressMonitor monitor = new VoidProgressMonitor();
+            Properties properties = dataSource.collectProperties(monitor, config);
+            Assertions.assertEquals(missing.toString(), properties.getProperty("sslkey"));
+
+            // Substitution and authentication may change the collected properties and the URL before fixup.
+            properties.setProperty("sslkey", source.toString());
+            properties.setProperty("sslmode", "disable");
+            dataSource.fixupConnectionProperties(monitor, config, "jdbc:postgresql:postgres?sslmode=require", properties);
+            Assertions.assertNotEquals(source.toString(), properties.getProperty("sslkey"));
+
+            properties.setProperty("sslkey", missing.toString());
+            properties.setProperty("sslmode", "require");
+            dataSource.fixupConnectionProperties(monitor, config, "jdbc:postgresql:postgres?sslmode=disable", properties);
+            Assertions.assertEquals(missing.toString(), properties.getProperty("sslkey"));
+        } finally {
+            dataSource.shutdown(new VoidProgressMonitor());
+            Files.deleteIfExists(source);
+        }
+    }
+
+    @Test
+    public void fixupFailureEndsAuthenticationWithoutRepeatingIt() throws Exception {
+        DBPDataSourceContainer container = mock(DBPDataSourceContainer.class);
+        DBPDriver driver = mock(DBPDriver.class);
+        when(container.getDriver()).thenReturn(driver);
+        when(container.getPreferenceStore()).thenReturn(mock(DBPPreferenceStore.class));
+        DBPConnectionConfiguration config = new DBPConnectionConfiguration();
+        config.setUrl("jdbc:postgresql:postgres");
+        when(container.getActualConnectionConfiguration()).thenReturn(config);
+        DBPDataSourceProvider<?> provider = mock(DBPDataSourceProvider.class);
+        when(driver.getDataSourceProvider()).thenReturn((DBPDataSourceProvider) provider);
+        DBPAuthModelDescriptor descriptor = mock(DBPAuthModelDescriptor.class);
+        when(provider.detectConnectionAuthModel(driver, config)).thenReturn(descriptor);
+        when(descriptor.isApplicableTo(driver)).thenReturn(true);
+        DBAAuthModel<DBAAuthCredentials> authModel = mock(DBAAuthModel.class);
+        when(descriptor.getInstance()).thenReturn((DBAAuthModel) authModel);
+        DBAAuthCredentials credentials = mock(DBAAuthCredentials.class);
+        when(authModel.loadCredentials(container, config)).thenReturn(credentials);
+        Properties properties = new Properties();
+        FixupFailingDataSource dataSource = new FixupFailingDataSource(container, properties);
+        VoidProgressMonitor monitor = new VoidProgressMonitor();
+        doAnswer(invocation -> {
+            properties.setProperty("sslmode", "disable");
+            config.setHostName("authenticated-host");
+            config.setUrl("jdbc:postgresql://authenticated-host/postgres");
+            return null;
+        }).when(authModel).initAuthentication(monitor, dataSource, credentials, config, properties);
+        try {
+            Assertions.assertThrows(DBCException.class, () -> dataSource.openForTest(monitor, config));
+            Assertions.assertTrue(dataSource.fixupCalled);
+            verify(authModel).loadCredentials(container, config);
+            verify(authModel).initAuthentication(monitor, dataSource, credentials, config, properties);
+            verify(authModel).endAuthentication(container, config, properties);
+        } finally {
+            dataSource.shutdown(new VoidProgressMonitor());
+        }
+    }
+
+    private static final class FixupFailingDataSource extends PostgreDataSource {
+        private final Properties properties;
+        private boolean fixupCalled;
+
+        private FixupFailingDataSource(@NotNull DBPDataSourceContainer container, @NotNull Properties properties) {
+            super(container, "16", "postgres");
+            this.properties = properties;
+        }
+
+        private void openForTest(@NotNull DBRProgressMonitor monitor, @NotNull DBPConnectionConfiguration config) throws DBCException {
+            super.openConnection(monitor, null, config, "test");
+        }
+
+        @NotNull
+        @Override
+        protected Properties getAllConnectionProperties(
+            @NotNull DBRProgressMonitor monitor,
+            @Nullable JDBCExecutionContext context,
+            @NotNull String purpose,
+            @NotNull DBPConnectionConfiguration config
+        ) {
+            return this.properties;
+        }
+
+        @Override
+        @Nullable
+        protected Driver createDriverInstance(@NotNull DBRProgressMonitor monitor, @NotNull DBPDriver driver) {
+            return null;
+        }
+
+        @Override
+        protected void fixupConnectionProperties(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBPConnectionConfiguration config,
+            @NotNull String url,
+            @NotNull Properties properties
+        ) throws DBException {
+            this.fixupCalled = true;
+            Assertions.assertEquals("disable", properties.getProperty("sslmode"));
+            Assertions.assertEquals("jdbc:postgresql://authenticated-host/postgres", url);
+            throw new DBException("Test fixup failure");
+        }
     }
 
     @Test
@@ -346,6 +478,30 @@ public class PostgreSslKeyTest extends DBeaverUnitTest {
             Assertions.assertFalse(SSLHandlerTrustStoreImpl.canRetryWithPkcs8PemKey(handler));
         } finally {
             Files.deleteIfExists(source);
+        }
+    }
+
+    @NotNull
+    private static Properties assembleAndFixupProperties(
+        @NotNull TestPostgreDataSource dataSource,
+        @NotNull DBPConnectionConfiguration config
+    ) throws DBException {
+        VoidProgressMonitor monitor = new VoidProgressMonitor();
+        Properties properties = dataSource.collectProperties(monitor, config);
+        String url = config.getUrl() == null ? "jdbc:postgresql://localhost/postgres" : config.getUrl();
+        dataSource.fixupConnectionProperties(monitor, config, url, properties);
+        return properties;
+    }
+
+    private static final class TestPostgreDataSource extends PostgreDataSource {
+        private TestPostgreDataSource(@NotNull DBPDataSourceContainer container) {
+            super(container, "16", "postgres");
+        }
+
+        @NotNull
+        private Properties collectProperties(@NotNull DBRProgressMonitor monitor, @NotNull DBPConnectionConfiguration config)
+            throws DBCException {
+            return super.getAllConnectionProperties(monitor, null, "test", config);
         }
     }
 

@@ -315,30 +315,22 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return props;
     }
 
-    @NotNull
     @Override
-    protected Properties getAllConnectionProperties(
+    protected void fixupConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable JDBCExecutionContext context,
-        @NotNull String purpose,
-        @NotNull DBPConnectionConfiguration connectionInfo
-    ) throws DBCException {
-        Properties properties = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
+        @NotNull DBPConnectionConfiguration connectionInfo,
+        @NotNull String connectionUrl,
+        @NotNull Properties connectionProperties
+    ) throws DBException {
+        super.fixupConnectionProperties(monitor, connectionInfo, connectionUrl, connectionProperties);
         DBWHandlerConfiguration sslConfig = connectionInfo.getHandler(PostgreConstants.HANDLER_SSL);
         if (sslConfig != null && sslConfig.isEnabled() && !sslConfig.getBooleanProperty(PostgreConstants.PROP_SSL_PROXY)) {
-            final String jdbcUrl;
             try {
-                jdbcUrl = this.getConnectionURL(connectionInfo);
-            } catch (DBException e) {
-                throw new DBCException("Connection URL preparation error", e);
-            }
-            try {
-                this.getSSLClientKeyManager().prepareConnectionProperties(monitor, properties, jdbcUrl);
+                this.getSSLClientKeyManager().prepareConnectionProperties(monitor, connectionProperties, connectionUrl);
             } catch (Exception e) {
                 throw new DBCException("Error configuring SSL certificates", e);
             }
         }
-        return properties;
     }
 
     @NotNull

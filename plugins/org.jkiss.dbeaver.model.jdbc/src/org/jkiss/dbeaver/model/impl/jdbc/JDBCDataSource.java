@@ -264,6 +264,11 @@ public abstract class JDBCDataSource extends AbstractDataSource
 
             boolean openTaskFinished;
             try {
+                try {
+                    this.fixupConnectionProperties(monitor, connectionInfo, url, connectProps);
+                } catch (DBException e) {
+                    throw new DBCException("Error preparing connection properties", e);
+                }
                 if (openTimeout <= 0) {
                     connectTask.run(monitor);
                     openTaskFinished = true;
@@ -317,6 +322,18 @@ public abstract class JDBCDataSource extends AbstractDataSource
         catch (Throwable e) {
             throw new DBCConnectException("Unexpected driver error occurred while connecting to the database", e);
         }
+    }
+
+    /**
+     * Adjusts final runtime properties after driver substitution and authentication initialization, before opening a connection.
+     * The URL is supplied for interpreting overrides; implementations must not modify the saved connection configuration.
+     */
+    protected void fixupConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPConnectionConfiguration connectionInfo,
+        @NotNull String connectionUrl,
+        @NotNull Properties connectionProperties
+    ) throws DBException {
     }
 
     private void initializeDriverContext(@NotNull Driver driverInstance) {
