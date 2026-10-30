@@ -334,6 +334,9 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     }
 
     public void submitPrompt(@NotNull AIMessage promptMessage) {
+        if (chatSession.isBusy() || dataSourceInitializationPending) {
+            return;
+        }
         AIChatConversation submittedConversation = activeConversation;
         AIContextSettings customSettings = submittedConversation.getCustomSettings();
         AIContextSettings settings = customSettings != null ? customSettings : getCompletionSettings();
@@ -534,6 +537,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             return;
         }
         dataSourceInitializationPending = true;
+        chatSession.setBusy(true);
         boolean deferred = false;
         try {
             AIChatConversation conversation = chatSession.getLastConversation(container);
@@ -550,6 +554,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         } finally {
             if (!deferred) {
                 dataSourceInitializationPending = false;
+                chatSession.setBusy(false);
             }
         }
         if (!deferred && requestedDataSource != container) {
@@ -562,19 +567,23 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             return;
         }
         dataSourceInitializationPending = false;
-        if (error == null) {
-            try {
-                setDataSource(requestedDataSource);
-                return;
-            } catch (DBException e) {
-                error = e;
+        try {
+            if (error == null) {
+                try {
+                    setDataSource(requestedDataSource);
+                    return;
+                } catch (DBException e) {
+                    error = e;
+                }
             }
+            DBWorkbench.getPlatformUI().showError(
+                AIChatMessagesUI.ai_chat_initialization_error,
+                AIChatMessagesUI.ai_chat_initialization_error_message,
+                error
+            );
+        } finally {
+            chatSession.setBusy(false);
         }
-        DBWorkbench.getPlatformUI().showError(
-            AIChatMessagesUI.ai_chat_initialization_error,
-            AIChatMessagesUI.ai_chat_initialization_error_message,
-            error
-        );
     }
 
     public boolean hasMessages() {
