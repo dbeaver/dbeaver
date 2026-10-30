@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,8 @@ import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.runtime.IVariableResolver;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -36,7 +38,6 @@ import org.jkiss.utils.CommonUtils;
  */
 public class VariablesHintLabel {
 
-    private final String[][] variables;
     private final Control infoLabel;
     private IVariableResolver resolver;
 
@@ -44,10 +45,14 @@ public class VariablesHintLabel {
         this(parent, hintLabel, hintTitle, vars, true);
     }
 
-    public VariablesHintLabel(Composite parent, String hintLabel, String hintTitle, String[][] vars, boolean stretch) {
-        this.variables = vars;
-
-        String varsText = GeneralUtils.generateVariablesLegend(vars);
+    public VariablesHintLabel(
+        @NotNull Composite parent,
+        @NotNull String hintLabel,
+        @NotNull String hintTitle,
+        @NotNull String[][] vars,
+        boolean stretch
+    ) {
+        final String varsText = GeneralUtils.generateVariablesLegend(vars);
 
         Layout layout = parent.getLayout();
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -55,15 +60,7 @@ public class VariablesHintLabel {
             gd.horizontalSpan = ((GridLayout) layout).numColumns;
         }
         infoLabel = UIUtils.createInfoLabel(parent, hintLabel, () -> {
-            if (resolver != null) {
-                VariableListDialog dialog = new VariableListDialog(parent.getShell(), hintTitle);
-                dialog.open();
-            } else {
-                EditTextDialog dialog = new EditTextDialog(parent.getShell(), hintTitle, varsText, true);
-                dialog.setMonospaceFont(true);
-                dialog.setAutoSize(true);
-                dialog.open();
-            }
+            openDialog(parent.getShell(), hintTitle, vars, resolver);
         });
         infoLabel.setLayoutData(gd);
         infoLabel.setToolTipText(varsText);
@@ -78,10 +75,35 @@ public class VariablesHintLabel {
         this.resolver = resolver;
     }
 
-    class VariableListDialog extends BaseDialog {
+    public static void openDialog(
+        @NotNull Shell shell,
+        @NotNull String title,
+        @NotNull String[][] variables,
+        @Nullable IVariableResolver resolver
+    ) {
+        if (resolver != null) {
+            new VariableListDialog(shell, title, variables, resolver).open();
+        } else {
+            EditTextDialog dialog = new EditTextDialog(shell, title, GeneralUtils.generateVariablesLegend(variables), true);
+            dialog.setMonospaceFont(true);
+            dialog.setAutoSize(true);
+            dialog.open();
+        }
+    }
 
-        VariableListDialog(Shell parentShell, String title) {
+    private static class VariableListDialog extends BaseDialog {
+        private final String[][] variables;
+        private final IVariableResolver resolver;
+
+        VariableListDialog(
+            @NotNull Shell parentShell,
+            @NotNull String title,
+            @NotNull String[][] variables,
+            @NotNull IVariableResolver resolver
+        ) {
             super(parentShell, title, null);
+            this.variables = variables;
+            this.resolver = resolver;
         }
 
         @Override

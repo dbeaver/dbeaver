@@ -98,6 +98,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     private Button showVirtualModelCheck;
 
     private boolean connectionNameChanged = false;
+    private boolean updatingConnectionName;
     private boolean activated = false;
 
     private Button readOnlyConnection;
@@ -156,21 +157,32 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     @Override
     public void activatePage() {
         if (connectionNameText != null) {
-            ConnectionPageSettings settings = wizard.getPageSettings();
+            updatingConnectionName = true;
+            try {
+                String override = wizard.getConnectionNameOverride();
+                if (override != null) {
+                    connectionNameText.setText(override);
+                    connectionNameChanged = true;
+                } else {
+                    ConnectionPageSettings settings = wizard.getPageSettings();
 
-            if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getName())) {
-                connectionNameText.setText(dataSourceDescriptor.getName());
-            } else {
-                if (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged) {
-                    String newName = generateConnectionName(settings,
-                        DBWorkbench.getPlatform()
-                            .getPreferenceStore()
-                            .getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
-                    if (!newName.isEmpty()) {
-                        connectionNameText.setText(newName);
+                    if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getName())) {
+                        connectionNameText.setText(dataSourceDescriptor.getName());
+                    } else {
+                        if (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged) {
+                            String newName = generateConnectionName(settings,
+                                DBWorkbench.getPlatform()
+                                    .getPreferenceStore()
+                                    .getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN));
+                            if (!newName.isEmpty()) {
+                                connectionNameText.setText(newName);
+                            }
+                            connectionNameChanged = false;
+                        }
                     }
-                    connectionNameChanged = false;
                 }
+            } finally {
+                updatingConnectionName = false;
             }
         }
         folderSelector.loadConnectionFolders(getWizard().getSelectedProject());
@@ -277,6 +289,18 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
         return newName;
     }
 
+    void setConnectionName(@NotNull String name) {
+        if (connectionNameText != null && !connectionNameText.isDisposed() && !connectionNameText.getText().equals(name)) {
+            updatingConnectionName = true;
+            try {
+                connectionNameText.setText(name);
+            } finally {
+                updatingConnectionName = false;
+            }
+        }
+        connectionNameChanged = true;
+    }
+
     @NotNull
     private DataSourceDescriptor getActiveDataSource() {
         ConnectionPageSettings pageSettings = getWizard().getPageSettings();
@@ -320,6 +344,9 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 if (dataSourceDescriptor == null || !connectionNameText.getText().equals(connectionName)) {
                     connectionNameChanged = true;
                     getContainer().updateButtons();
+                }
+                if (!updatingConnectionName) {
+                    wizard.setConnectionNameOverride(connectionNameText.getText());
                 }
             });
             ContentAssistUtils.installContentProposal(
