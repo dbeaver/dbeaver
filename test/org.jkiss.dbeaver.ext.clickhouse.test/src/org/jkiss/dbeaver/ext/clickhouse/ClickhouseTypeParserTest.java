@@ -26,7 +26,7 @@ class ClickhouseTypeParserTest extends DBeaverUnitTest {
 
     @Test
     void resolvesBaseTypeName() {
-        Map.of(
+        for (var entry : Map.of(
             "UInt32", "UInt32",
             "Decimal(10, 2)", "Decimal",
             "Nullable(UInt32)", "UInt32",
@@ -35,10 +35,12 @@ class ClickhouseTypeParserTest extends DBeaverUnitTest {
             "Nullable(LowCardinality(String))", "String",
             "Nullable(DateTime64(3, 'UTC'))", "DateTime64",
             "Nullable(Array(String))", "Array"
-        ).forEach((fullTypeName, expectedTypeName) -> Assertions.assertEquals(
-            expectedTypeName,
-            ClickhouseTypeParser.getTypeNameWithoutModifiers(fullTypeName)
-        ));
+        ).entrySet()) {
+            Assertions.assertEquals(
+                entry.getValue(),
+                ClickhouseTypeParser.getTypeNameWithoutModifiers(entry.getKey())
+            );
+        }
     }
 
     @Test
