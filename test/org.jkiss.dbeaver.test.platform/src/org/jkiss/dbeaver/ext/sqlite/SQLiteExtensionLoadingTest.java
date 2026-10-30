@@ -40,6 +40,52 @@ public class SQLiteExtensionLoadingTest {
     Path directory;
 
     @Test
+    public void approvesLoadingOnDemandAndRemembersItForReconnect() throws Exception {
+        DBPDataSourceContainer container = container();
+        container.getConnectionConfiguration().setProviderProperty(SQLiteExtensionLoading.PROP_ENABLED, "false");
+        Assertions.assertTrue(SQLiteExtensionLoading.requestEnable(container, store(), settings -> {
+            Assertions.assertTrue(settings.enabled());
+            Assertions.assertEquals("false", container.getConnectionConfiguration().getProviderProperty(
+                SQLiteExtensionLoading.PROP_ENABLED));
+            return true;
+        }));
+        Assertions.assertEquals("true", container.getConnectionConfiguration().getProviderProperty(SQLiteExtensionLoading.PROP_ENABLED));
+        Mockito.verify(container.getRegistry()).updateDataSource(container);
+        Properties properties = new Properties();
+        new SQLiteExtensionLoading().validate(SQLiteExtensionSettings.capture(container), properties, store(),
+            () -> Assertions.fail("Unexpected repeat confirmation after reconnect"));
+        Assertions.assertEquals("true", properties.getProperty(SQLiteExtensionLoading.ENABLE_LOAD_EXTENSION));
+    }
+
+    @Test
+    public void decliningOnDemandApprovalPreservesDisabledConfiguration() throws Exception {
+        DBPDataSourceContainer container = container();
+        Assertions.assertFalse(SQLiteExtensionLoading.requestEnable(container, store(), settings -> false));
+        Assertions.assertFalse(SQLiteExtensionSettings.capture(container).enabled());
+        Assertions.assertFalse(store().isApproved(SQLiteExtensionSettings.captureForLoading(container)));
+        Mockito.verify(container.getRegistry(), Mockito.never()).updateDataSource(Mockito.any());
+    }
+
+    @Test
+    public void changingConfigurationDuringApprovalDoesNotEnableLoading() throws Exception {
+        DBPDataSourceContainer container = container();
+        Assertions.assertThrows(DBException.class, () -> SQLiteExtensionLoading.requestEnable(container, store(), settings -> {
+            container.getConnectionConfiguration().setUrl("jdbc:sqlite:changed.db");
+            return true;
+        }));
+        Assertions.assertFalse(SQLiteExtensionSettings.capture(container).enabled());
+        Assertions.assertFalse(store().isApproved(SQLiteExtensionSettings.captureForLoading(container)));
+    }
+
+    @Test
+    public void temporaryConnectionCannotPersistOnDemandEnablement() throws Exception {
+        DBPDataSourceContainer container = container();
+        Mockito.when(container.isTemporary()).thenReturn(true);
+        Assertions.assertFalse(SQLiteExtensionLoading.requestEnable(container, store(),
+            settings -> Assertions.fail("Unexpected confirmation for temporary connection")));
+    }
+
+    @Test
     public void defaultConnectionForcesLoadingOffWithoutConfirmation() throws Exception {
         DBPDataSourceContainer container = container();
         Properties properties = new Properties();

@@ -46,8 +46,22 @@ public record SQLiteExtensionSettings(
     @NotNull String temporaryKey
 ) {
     @NotNull
-    public static SQLiteExtensionSettings capture(@NotNull DBPDataSourceContainer container) throws DBException {
+    public static SQLiteExtensionSettings captureForLoading(@NotNull DBPDataSourceContainer container) throws DBException {
         DBPConnectionConfiguration configuration = resolvedConfiguration(container);
+        configuration.setProviderProperty(SQLiteExtensionLoading.PROP_ENABLED, Boolean.TRUE.toString());
+        return capture(container, configuration);
+    }
+
+    @NotNull
+    public static SQLiteExtensionSettings capture(@NotNull DBPDataSourceContainer container) throws DBException {
+        return capture(container, resolvedConfiguration(container));
+    }
+
+    @NotNull
+    private static SQLiteExtensionSettings capture(
+        @NotNull DBPDataSourceContainer container,
+        @NotNull DBPConnectionConfiguration configuration
+    ) throws DBException {
         String url = configuration.getUrl();
         if (url == null || url.isEmpty()) {
             try {

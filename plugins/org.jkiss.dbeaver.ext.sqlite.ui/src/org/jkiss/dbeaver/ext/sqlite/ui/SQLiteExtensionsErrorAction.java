@@ -21,8 +21,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.sqlite.SQLiteExtensionLoading;
 import org.jkiss.dbeaver.ext.sqlite.model.SQLiteDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetErrorAction;
 
@@ -40,9 +38,8 @@ public class SQLiteExtensionsErrorAction implements IResultSetErrorAction {
     @Override
     public void perform(@NotNull IResultSetContainer container, @NotNull IStatus status) {
         DBCExecutionContext context = container.getExecutionContext();
-        UIServiceConnections service = DBWorkbench.getService(UIServiceConnections.class);
-        if (context != null && service != null) {
-            service.openConnectionEditor(context.getDataSource().getContainer(), null);
+        if (context != null) {
+            SQLiteExtensionsApproval.request(context.getDataSource().getContainer());
         }
     }
 }

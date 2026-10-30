@@ -22,8 +22,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.sqlite.SQLiteExtensionLoadingException;
 import org.jkiss.dbeaver.ext.sqlite.ui.internal.SQLiteUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.IErrorAction;
 
 public class SQLiteExtensionsErrorAdapterFactory implements IAdapterFactory {
@@ -34,7 +32,7 @@ public class SQLiteExtensionsErrorAdapterFactory implements IAdapterFactory {
             && error.getExecutionContext() != null) {
             DBPDataSourceContainer container = error.getExecutionContext().getDataSource().getContainer();
             if (!container.isTemporary()) {
-                return adapterType.cast(new ExtensionSettingsAction(container));
+                return adapterType.cast(new ExtensionApprovalAction(container));
             }
         }
         return null;
@@ -46,7 +44,7 @@ public class SQLiteExtensionsErrorAdapterFactory implements IAdapterFactory {
         return new Class<?>[] {IErrorAction.class};
     }
 
-    private record ExtensionSettingsAction(@NotNull DBPDataSourceContainer container) implements IErrorAction {
+    private record ExtensionApprovalAction(@NotNull DBPDataSourceContainer container) implements IErrorAction {
         @NotNull
         @Override
         public String getLabel() {
@@ -61,10 +59,7 @@ public class SQLiteExtensionsErrorAdapterFactory implements IAdapterFactory {
 
         @Override
         public void perform() {
-            UIServiceConnections service = DBWorkbench.getService(UIServiceConnections.class);
-            if (service != null) {
-                service.openConnectionEditor(container, null);
-            }
+            SQLiteExtensionsApproval.request(container);
         }
     }
 }

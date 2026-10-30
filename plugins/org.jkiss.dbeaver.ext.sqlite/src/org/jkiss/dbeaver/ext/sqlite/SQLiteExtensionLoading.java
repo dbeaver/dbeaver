@@ -20,17 +20,40 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.sql.DBSQLException;
 
 import java.util.Locale;
 import java.util.Properties;
 import java.util.function.BooleanSupplier;
+import java.util.function.Predicate;
 
 public final class SQLiteExtensionLoading {
     public static final String ENABLE_LOAD_EXTENSION = "enable_load_extension";
     public static final String PROP_ENABLED = "sqlite-native-extensions";
     public static final String PROP_EXTENSIONS = "sqlite-extensions";
+
+    public static boolean requestEnable(
+        @NotNull DBPDataSourceContainer container,
+        @NotNull SQLiteExtensionPermissionStore permissions,
+        @NotNull Predicate<SQLiteExtensionSettings> confirmation
+    ) throws DBException {
+        if (container.isTemporary()) {
+            return false;
+        }
+        SQLiteExtensionSettings settings = SQLiteExtensionSettings.captureForLoading(container);
+        if (!confirmation.test(settings)) {
+            return false;
+        }
+        if (!settings.equals(SQLiteExtensionSettings.captureForLoading(container))) {
+            throw new DBException("SQLite connection settings changed during approval. Try again");
+        }
+        permissions.approve(settings);
+        container.getConnectionConfiguration().setProviderProperty(PROP_ENABLED, Boolean.TRUE.toString());
+        container.getRegistry().updateDataSource(container);
+        return true;
+    }
 
     public synchronized void validate(
         @NotNull SQLiteExtensionSettings settings,
