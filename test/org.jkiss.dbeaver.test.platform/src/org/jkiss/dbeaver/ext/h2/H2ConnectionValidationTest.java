@@ -21,7 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.h2.model.H2DataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.app.DBPApplicationWorkbench;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -34,46 +34,41 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Isolated
 public class H2ConnectionValidationTest {
-    private final DBPApplicationWorkbench workbench = Mockito.mock(DBPApplicationWorkbench.class, Mockito.RETURNS_DEEP_STUBS);
+    private final DBPPlatform platform = Mockito.mock(DBPPlatform.class, Mockito.RETURNS_DEEP_STUBS);
     private final ServiceRegistry services = Mockito.mock(ServiceRegistry.class);
     private final UIServiceConnectionInit confirmation = Mockito.mock(UIServiceConnectionInit.class);
     private final DBPDataSourceContainer container = Mockito.mock(DBPDataSourceContainer.class);
     private final TestDataSource dataSource = Mockito.mock(TestDataSource.class, Mockito.CALLS_REAL_METHODS);
     private final VoidProgressMonitor monitor = new VoidProgressMonitor();
     private final DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
-    private Field workbenchField;
-    private Field registryField;
-    private Object originalWorkbench;
-    private Object originalRegistry;
+    private MockedStatic<DBWorkbench> workbench;
+    private MockedStatic<ServiceRegistry> registry;
 
     @BeforeEach
-    public void setUp() throws Exception {
-        workbenchField = DBWorkbench.class.getDeclaredField("applicationWorkbench");
-        workbenchField.setAccessible(true);
-        registryField = ServiceRegistry.class.getDeclaredField("instance");
-        registryField.setAccessible(true);
-        originalWorkbench = workbenchField.get(null);
-        originalRegistry = registryField.get(null);
-        workbenchField.set(null, workbench);
-        registryField.set(null, services);
+    public void setUp() {
+        workbench = Mockito.mockStatic(DBWorkbench.class);
+        registry = Mockito.mockStatic(ServiceRegistry.class);
+        workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+        workbench.when(() -> DBWorkbench.getService(UIServiceConnectionInit.class)).thenCallRealMethod();
+        registry.when(ServiceRegistry::getInstance).thenReturn(services);
         Mockito.doReturn(container).when(dataSource).getContainer();
         Mockito.when(container.getActualConnectionConfiguration()).thenReturn(configuration);
         Mockito.when(services.getService(UIServiceConnectionInit.class)).thenReturn(confirmation);
     }
 
     @AfterEach
-    public void tearDown() throws Exception {
-        registryField.set(null, originalRegistry);
-        workbenchField.set(null, originalWorkbench);
+    public void tearDown() {
+        registry.close();
+        workbench.close();
     }
 
     @Test
@@ -101,7 +96,7 @@ public class H2ConnectionValidationTest {
 
     @Test
     public void rejectsInitInMultiuserApplicationEvenWithApprovingService() {
-        Mockito.when(workbench.getPlatform().getApplication().isMultiuser()).thenReturn(true);
+        Mockito.when(platform.getApplication().isMultiuser()).thenReturn(true);
         Mockito.when(confirmation.confirmInitScript(Mockito.any(), Mockito.anyString(), Mockito.anyString())).thenReturn(true);
 
         Assertions.assertThrows(DBCException.class, () ->
@@ -112,7 +107,7 @@ public class H2ConnectionValidationTest {
 
     @Test
     public void acceptsInitFromHeadlessServiceAndAsksAgainWhenScriptChanges() throws DBCException {
-        Mockito.when(workbench.getPlatform().getApplication().isHeadlessMode()).thenReturn(true);
+        Mockito.when(platform.getApplication().isHeadlessMode()).thenReturn(true);
         Mockito.when(confirmation.confirmInitScript(Mockito.any(), Mockito.anyString(), Mockito.anyString())).thenReturn(true);
         Properties properties = new Properties();
         properties.setProperty("INIT", "CALL 1");
@@ -149,7 +144,7 @@ public class H2ConnectionValidationTest {
 
         Mockito.when(services.getService(UIServiceConnectionInit.class)).thenReturn(confirmation);
         Mockito.when(confirmation.confirmInitScript(Mockito.any(), Mockito.anyString(), Mockito.anyString())).thenReturn(true);
-        Mockito.when(workbench.getPlatform().getApplication().isMultiuser()).thenReturn(true);
+        Mockito.when(platform.getApplication().isMultiuser()).thenReturn(true);
         Assertions.assertThrows(DBCException.class, () ->
             dataSource.validateConnectionParameters(monitor, "jdbc:h2:mem:test", new Properties()));
         Mockito.verifyNoInteractions(confirmation);
