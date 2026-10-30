@@ -184,19 +184,32 @@ class OpenAIEnvironmentTest {
     }
 
     @Test
-    void copilotTemperatureSurvivesSettingsSaveAndEnvironmentOptOut() {
+    void copilotExplicitZeroSurvivesSettingsSaveAndEnvironmentOptOut() {
         CopilotProperties properties = withEnvironment(new CopilotProperties(), Map.of(CopilotProperties.ENV_MODEL, "gpt-5"));
         properties.setModel("gpt-4o");
         properties.setTemperature(0.0);
         properties.setUseEnvVariables(true);
         Assertions.assertEquals(0.0, properties.getTemperature());
-        Assertions.assertEquals(1.0, properties.getEffectiveTemperature());
+        Assertions.assertEquals(0.0, properties.getEffectiveTemperature());
+        Assertions.assertEquals(0.0, properties.getRequestTemperature());
         properties.setTemperature(properties.getTemperature());
         CopilotProperties saved = new Gson().fromJson(new Gson().toJson(properties, CopilotProperties.class), CopilotProperties.class);
         saved.setUseEnvVariables(false);
         Assertions.assertEquals(0.0, saved.getTemperature());
         Assertions.assertEquals(0.0, saved.getEffectiveTemperature());
         Assertions.assertEquals("gpt-4o", saved.getModel());
+    }
+
+    @Test
+    void copilotLegacyZeroKeepsTheEnvironmentModelFallback() {
+        CopilotProperties properties = new Gson().fromJson(
+            "{\"gpt.model\":\"gpt-4o\",\"gpt.model.temperature\":0.0,\"ai.useEnvVariables\":true}", CopilotProperties.class);
+        properties = withEnvironment(properties, Map.of(CopilotProperties.ENV_MODEL, "gpt-5"));
+        Assertions.assertEquals(0.0, properties.getTemperature());
+        Assertions.assertEquals(1.0, properties.getEffectiveTemperature());
+        CopilotProperties saved = new Gson().fromJson(new Gson().toJson(properties, CopilotProperties.class), CopilotProperties.class);
+        saved = withEnvironment(saved, Map.of(CopilotProperties.ENV_MODEL, "gpt-5"));
+        Assertions.assertEquals(1.0, saved.getEffectiveTemperature());
     }
 
     @Test
