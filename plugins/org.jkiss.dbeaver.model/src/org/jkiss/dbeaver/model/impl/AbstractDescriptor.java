@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
@@ -409,7 +410,7 @@ public abstract class AbstractDescriptor {
     }
 
     @NotNull
-    protected DBPImage iconToImage(String icon, @NotNull DBPImage defIcon) {
+    protected DBPImage iconToImage(@Nullable String icon, @NotNull DBPImage defIcon) {
         DBPImage result = iconToImage(icon);
         return Objects.requireNonNullElse(result, defIcon);
     }
@@ -423,7 +424,7 @@ public abstract class AbstractDescriptor {
             return DBIcon.getImageById(icon.substring(1));
         } else {
             if (!icon.startsWith("platform:")) {
-                icon = "platform:/plugin/" + pluginId + "/" + icon;
+                icon = RuntimeUtils.makePlatformResourceUrl(pluginId, icon);
             }
             return new DBIcon(icon);
         }

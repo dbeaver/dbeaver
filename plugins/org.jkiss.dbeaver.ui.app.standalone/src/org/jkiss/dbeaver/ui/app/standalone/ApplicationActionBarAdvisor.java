@@ -34,12 +34,14 @@ import org.eclipse.ui.commands.ICommandImageService;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.ide.IDEActionFactory;
+import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.commands.CommandImageManager;
 import org.eclipse.ui.internal.commands.CommandImageService;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -48,6 +50,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.app.standalone.about.AboutBoxAction;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
+import org.jkiss.dbeaver.ui.app.standalone.internal.WorkbenchPatcher;
 import org.jkiss.dbeaver.ui.app.standalone.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.ui.controls.StatusLineContributionItemEx;
 import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
@@ -123,26 +126,26 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         }
     }
 
-    private void patchActionSetIcons(IActionSetDescriptor actionSet) {
+    private void patchActionSetIcons(@NotNull IActionSetDescriptor actionSet) {
         // Directly change icon references in config registry
         // FIXME: This is a very dirty hack but I didn't find any better way to patch action set icons
         for (IConfigurationElement actionItem : actionSet.getConfigurationElement().getChildren()) {
             String saId = actionItem.getAttribute("id");
             if ("org.eclipse.search.OpenSearchDialog".equals(saId) || "org.eclipse.search.OpenSearchDialogPage".equals(saId)) {
-                patchContributionIcon(actionItem, "platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/search.svg");
+                patchContributionIcon(actionItem, UIIcon.SEARCH.getLocation());
             } else if ("org.eclipse.search.OpenFileSearchPage".equals(saId)) {
                 patchContributionIcon(actionItem, UIIcon.FIND_TEXT.getLocation());
             } else if (ITextEditorActionDefinitionIds.GOTO_LAST_EDIT_POSITION.equals(saId)) {
-                patchContributionIcon(actionItem, "platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/edit_location_previous.svg");
+                patchContributionIcon(actionItem, UIIcon.EDIT_LOCATION_PREVIOUS.getLocation());
             } else if (ITextEditorActionDefinitionIds.GOTO_NEXT_EDIT_POSITION.equals(saId)) {
-                patchContributionIcon(actionItem, "platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/edit_location_next.svg");
+                patchContributionIcon(actionItem, UIIcon.EDIT_LOCATION_NEXT.getLocation());
             } else if (ITextEditorActionDefinitionIds.BLOCK_SELECTION_MODE.equals(saId)) {
-                patchContributionIcon(actionItem, "platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/block_selection.svg");
+                patchContributionIcon(actionItem, UIIcon.BLOCK_SELECTION.getLocation());
             }
         }
     }
 
-    private void patchContributionIcon(IConfigurationElement actionItem, String iconPath) {
+    private void patchContributionIcon(@NotNull IConfigurationElement actionItem, @NotNull String iconPath) {
         try {
             Object cfgElement = BeanUtils.invokeObjectDeclaredMethod(actionItem, "getConfigurationElement", new Class[0], new Object[0]);
             if (cfgElement  != null) {
@@ -232,7 +235,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         }
     }
 
-    private void bindImage(CommandImageService cis, String commandId, DBIcon icon) {
+    private void bindImage(@NotNull CommandImageService cis, @NotNull String commandId, @NotNull DBIcon icon) {
         ImageDescriptor id = DBeaverIcons.getImageDescriptor(icon);
         cis.bind(commandId, CommandImageManager.TYPE_DEFAULT, null, id);
         cis.bind(commandId, CommandImageManager.TYPE_HOVER, null, id);
@@ -332,6 +335,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             windowMenu.add(new GroupMarker("primary.views"));
             {
                 MenuManager showViewMenuMgr = new MenuManager(CoreMessages.actions_menu_window_showView, "showView"); //$NON-NLS-1$
+                showViewMenuMgr.addMenuListener(manager ->
+                    WorkbenchPatcher.patchViewIcons(Workbench.getInstance()));
                 IContributionItem showViewMenu = ContributionItemFactory.VIEWS_SHORTLIST.create(PlatformUI.getWorkbench().getActiveWorkbenchWindow());
                 showViewMenuMgr.add(showViewMenu);
                 windowMenu.add(showViewMenuMgr);

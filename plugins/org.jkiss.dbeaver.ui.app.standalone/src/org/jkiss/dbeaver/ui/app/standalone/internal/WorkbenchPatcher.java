@@ -38,7 +38,9 @@ import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.app.standalone.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.xml.XMLException;
@@ -69,24 +71,37 @@ import javax.xml.transform.stream.StreamResult;
 
 public final class WorkbenchPatcher {
     private static final Log log = Log.getLog(WorkbenchPatcher.class);
-    private static final String ERROR_LOG_ICON_URI = "platform:/plugin/org.jkiss.dbeaver.model/icons/status/error_small.svg";
-    private static final String SOFTWARE_UPDATE_ICON_URI = "platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/software_update.svg";
-    private static final String SOFTWARE_INSTALL_ICON_URI = "platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/software_install.svg";
+    private static final String ERROR_LOG_ICON_URI = DBIcon.SMALL_ERROR.getLocation();
+    private static final String DEBUG_VIEW_ICON_URI = RuntimeUtils.makePlatformResourceUrl(
+        IActionConstants.DEBUG_UI_PLUGIN_ID, "icons/debug_config.png");
+    private static final String SOFTWARE_UPDATE_ICON_URI = UIIcon.SOFTWARE_UPDATE.getLocation();
+    private static final String SOFTWARE_INSTALL_ICON_URI = UIIcon.SOFTWARE_INSTALL.getLocation();
 
     private WorkbenchPatcher() {
     }
 
-    public static void patchErrorLogViewIcon(@NotNull Workbench workbench) {
-        // Eclipse and DBeaver both contribute this view; its descriptor may keep Eclipse's icon.
+    public static void patchViewIcons(@NotNull Workbench workbench) {
+        // Eclipse and DBeaver both contribute Error Log; the descriptor may keep Eclipse's icon.
+        patchViewIcon(workbench, IActionConstants.LOG_VIEW_ID, ERROR_LOG_ICON_URI);
+        if (Platform.getBundle(IActionConstants.DEBUG_UI_PLUGIN_ID) != null) {
+            patchViewIcon(workbench, IActionConstants.DEBUG_VIEW_ID, DEBUG_VIEW_ICON_URI);
+        }
+    }
+
+    private static void patchViewIcon(
+        @NotNull Workbench workbench,
+        @NotNull String viewId,
+        @NotNull String iconURI
+    ) {
         for (MPartDescriptor descriptor : workbench.getApplication().getDescriptors()) {
-            if (IActionConstants.LOG_VIEW_ID.equals(descriptor.getElementId())) {
-                descriptor.setIconURI(ERROR_LOG_ICON_URI);
+            if (viewId.equals(descriptor.getElementId())) {
+                descriptor.setIconURI(iconURI);
             }
         }
         EModelService modelService = workbench.getService(EModelService.class);
         if (modelService != null) {
-            for (MPart part : modelService.findElements(workbench.getApplication(), IActionConstants.LOG_VIEW_ID, MPart.class)) {
-                part.setIconURI(ERROR_LOG_ICON_URI);
+            for (MPart part : modelService.findElements(workbench.getApplication(), viewId, MPart.class)) {
+                part.setIconURI(iconURI);
             }
         }
     }
@@ -410,7 +425,8 @@ public final class WorkbenchPatcher {
                 PartDescriptor::id,
                 Function.identity(),
                 // Keep DBeaver's Error Log icon when both plugins contribute the same view ID.
-                (a, b) -> IActionConstants.LOG_VIEW_ID.equals(a.id()) && isContributedByDBeaver(a.element.getDeclaringExtension()) ? a : b
+                (a, b) -> IActionConstants.LOG_VIEW_ID.equals(a.id()) &&
+                    isContributedByDBeaver(a.element.getDeclaringExtension()) ? a : b
             ));
     }
 

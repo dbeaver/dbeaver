@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.model;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.FrameworkUtil;
@@ -190,10 +192,12 @@ public class DBIcon implements DBPImage {
         loadIcons(DBIcon.class);
     }
 
+    @Nullable
     private final String token;
+    @NotNull
     private String path;
 
-    static public void loadIcons(Class<?> aClass) {
+    public static void loadIcons(@NotNull Class<?> aClass) {
         Bundle iconBundle = FrameworkUtil.getBundle(aClass);
         if (iconBundle == null) {
             log.error("Can't find bundle for class '" + aClass.getName() + "'");
@@ -209,7 +213,7 @@ public class DBIcon implements DBPImage {
             try {
                 DBIcon icon = (DBIcon) field.get(null);
                 if (!icon.path.startsWith("platform:")) {
-                    icon.path = "platform:/plugin/" + iconBundle.getSymbolicName() + "/icons/" + icon.path;
+                    icon.path = RuntimeUtils.makePlatformResourceUrl(iconBundle.getSymbolicName(), "icons/" + icon.path);
                 }
                 if (VALIDATE_ICON_FILE) {
                     URL fileURL = FileLocator.toFileURL(new URL(icon.path));
@@ -231,30 +235,28 @@ public class DBIcon implements DBPImage {
         }
     }
 
-    public DBIcon(String path)
-    {
+    public DBIcon(@NotNull String path) {
         this.token = null;
         this.path = path;
     }
 
-    public DBIcon(String token, String path)
-    {
+    public DBIcon(@NotNull String token, @NotNull String path) {
         this.token = token;
         this.path = path;
     }
 
-    public static DBPImage getImageById(String token)
-    {
+    @Nullable
+    public static DBPImage getImageById(@Nullable String token) {
         return iconMap.get(token);
     }
 
 
     /**
      * Token is icon id. It can be used to refer on icons in plugin extensions
-     * @return unique token
+     * @return unique token, or null for icons without one
      */
-    public String getToken()
-    {
+    @Nullable
+    public String getToken() {
         return token;
     }
 
@@ -265,7 +267,7 @@ public class DBIcon implements DBPImage {
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(@Nullable Object obj) {
         if (obj instanceof DBIcon) {
             return CommonUtils.equalObjects(token, ((DBIcon) obj).token) &&
                 CommonUtils.equalObjects(path, ((DBIcon) obj).path);
@@ -274,6 +276,7 @@ public class DBIcon implements DBPImage {
         }
     }
 
+    @NotNull
     @Override
     public String toString() {
         return token + ":" + path;
