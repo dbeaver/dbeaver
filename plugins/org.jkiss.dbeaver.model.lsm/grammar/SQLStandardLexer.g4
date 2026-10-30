@@ -462,6 +462,8 @@ Hashtag: '#';
 fragment SimpleLatinLetter: (SimpleLatinUpperCaseLetter|SimpleLatinLowerCaseLetter);
 fragment SimpleLatinUpperCaseLetter: ('A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'I'|'J'|'K'|'L'|'M'|'N'|'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z');
 fragment SimpleLatinLowerCaseLetter: ('a'|'b'|'c'|'d'|'e'|'f'|'g'|'h'|'i'|'j'|'k'|'l'|'m'|'n'|'o'|'p'|'q'|'r'|'s'|'t'|'u'|'v'|'w'|'x'|'y'|'z');
+fragment UnicodeIdentifierStart: {Character.isUnicodeIdentifierStart(_input.LA(1))}? .;
+fragment UnicodeIdentifierPart: {Character.isUnicodeIdentifierPart(_input.LA(1))}? .;
 
 
 // numeric fragments
@@ -488,8 +490,8 @@ Space: [ \t]+;
 
 Identifier: IdentifierBody;
 fragment IdentifierBody:  IdentifierStart IdentifierPart*;
-fragment IdentifierStart: SimpleLatinLetter|Underscore|Hashtag;
-fragment IdentifierPart:  SimpleLatinLetter|Underscore|Digit;
+fragment IdentifierStart: SimpleLatinLetter|UnicodeIdentifierStart|Underscore|Hashtag;
+fragment IdentifierPart:  SimpleLatinLetter|UnicodeIdentifierPart|Underscore|Digit;
 
 Comment: (LineComment | MultilineComment) -> channel (HIDDEN);
 LineComment : ('--'|'#') ~ [\r\n]*;

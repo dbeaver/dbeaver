@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
 import java.util.ArrayList;
@@ -154,6 +155,15 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
             testCase.name(),
             () -> assertAccepted(testCase.sql())
         ));
+    }
+
+    @Test
+    void acceptsUnicodeIdentifiers() {
+        assertAccepted("""
+            SELECT * FROM DBLÅ.MY_TABLE;
+            SELECT * FROM СХЕМА.ТАБЛИЦА;
+            SELECT * FROM 数据库.表格;
+            """);
     }
 
     private static void assertAccepted(@NotNull String sql) {
