@@ -534,6 +534,10 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         return chatSession.isBusy();
     }
 
+    public boolean isInitializing() {
+        return dataSourceInitializationPending;
+    }
+
     public void setDataSource(@Nullable DBPDataSourceContainer container) throws DBException {
         if (isWaitingForResponse()) {
             return;
