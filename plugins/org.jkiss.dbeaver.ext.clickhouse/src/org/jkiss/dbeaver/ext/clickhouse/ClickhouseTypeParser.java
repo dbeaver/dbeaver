@@ -60,7 +60,9 @@ public class ClickhouseTypeParser {
         return ENABLE_COMPLEX_TYPE_PARSING && (
             typeName.startsWith(ClickhouseConstants.DATA_TYPE_MAP) ||
                 typeName.startsWith(ClickhouseConstants.DATA_TYPE_TUPLE) ||
-                typeName.startsWith(ClickhouseConstants.DATA_TYPE_ARRAY)
+                typeName.startsWith(ClickhouseConstants.DATA_TYPE_ARRAY) ||
+                typeName.startsWith(ClickhouseConstants.DATA_TYPE_NULLABLE) ||
+                typeName.startsWith(ClickhouseConstants.DATA_TYPE_LOW_CARDINALITY)
             );
     }
 
@@ -255,12 +257,25 @@ public class ClickhouseTypeParser {
 
     @NotNull
     public static String getTypeNameWithoutModifiers(@NotNull String fullTypeName) {
-        final int div = fullTypeName.indexOf('(');
-        if (div < 0) {
-            return fullTypeName;
-        } else {
-            return fullTypeName.substring(0, div);
+        String typeName = fullTypeName.trim();
+        while (true) {
+            final int div = typeName.indexOf('(');
+            if (div < 0) {
+                return typeName;
+            }
+
+            final String baseTypeName = typeName.substring(0, div).trim();
+            if (isMarkerType(baseTypeName) && typeName.endsWith(")")) {
+                typeName = typeName.substring(div + 1, typeName.length() - 1).trim();
+            } else {
+                return baseTypeName;
+            }
         }
+    }
+
+    private static boolean isMarkerType(@NotNull String typeName) {
+        return ClickhouseConstants.DATA_TYPE_NULLABLE.equals(typeName) ||
+            ClickhouseConstants.DATA_TYPE_LOW_CARDINALITY.equals(typeName);
     }
 
     private static boolean isEnum(@NotNull String type) {
