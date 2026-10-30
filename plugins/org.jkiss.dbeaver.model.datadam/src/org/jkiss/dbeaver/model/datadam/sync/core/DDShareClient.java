@@ -19,12 +19,13 @@ package org.jkiss.dbeaver.model.datadam.sync.core;
 import com.dbeaver.datadam.share.api.exception.DDShareException;
 import com.dbeaver.datadam.share.api.model.*;
 import com.dbeaver.datadam.share.api.service.DDSharedProjectService;
-import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
 import com.google.gson.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.datadam.DDClient;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
@@ -45,8 +46,9 @@ import java.time.ZoneOffset;
 import java.util.*;
 import javax.crypto.SecretKey;
 
-public class DDShareClient extends AbstractRestClient implements DDSharedProjectService {
+public class DDShareClient extends DDClient implements DDSharedProjectService {
 
+    private static final Log log = Log.getLog(DDShareClient.class);
     private static final int TIMEOUT_MS = 30000;
     private static final String GRAPHQL_ENDPOINT = "/graphql";
     private static final String FIELD_NAME = "name";
@@ -428,6 +430,11 @@ public class DDShareClient extends AbstractRestClient implements DDSharedProject
             throw new DDTransportException(message, e);
         }
         super.handleRequestException(message, e);
+    }
+
+    @Override
+    protected void logDebug(@NotNull String message) {
+        log.debug(message);
     }
 
 }

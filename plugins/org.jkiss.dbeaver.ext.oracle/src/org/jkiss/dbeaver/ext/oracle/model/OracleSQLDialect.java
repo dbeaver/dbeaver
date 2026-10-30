@@ -373,6 +373,10 @@ public class OracleSQLDialect extends JDBCSQLDialect
             addSQLKeyword(kw);
         }
 
+        // Added keywords for Oracle KEEP clause support
+        addSQLKeyword("KEEP");
+        addSQLKeyword("DENSE_RANK");
+
         addKeywords(Arrays.stream(GLOBAL_VARIABLES).map(GlobalVariableInfo::name).toList(), DBPKeywordType.OTHER);
         turnFunctionIntoKeyword("TRUNCATE");
 

@@ -493,10 +493,10 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         }
         this.profile = profile;
         if (accessToken == null) {
-            accessToken = AIUtils.getSecretValueOrDefault(profile, getAccessTokenSecretId(), null);
+            accessToken = AIUtils.getAccountTokenOrDefault(profile, getAccessTokenSecretId(), null);
         }
         if (refreshToken == null) {
-            refreshToken = AIUtils.getSecretValueOrDefault(profile, getRefreshTokenSecretId(), null);
+            refreshToken = AIUtils.getAccountTokenOrDefault(profile, getRefreshTokenSecretId(), null);
         }
         String resolvedAccountId = OpenAIAccountAuthenticator.extractAccountId(null, accessToken);
         if (resolvedAccountId != null) {
@@ -517,16 +517,16 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         AIUtils.setSecretValue(profile, getApiTokenSecretId(), token);
         saveCustomHeaderSecrets(profile);
         this.profile = profile;
-        AIUtils.setSecretValue(profile, getRefreshTokenSecretId(), refreshToken);
-        AIUtils.setSecretValue(profile, getAccessTokenSecretId(), accessToken);
+        AIUtils.setAccountToken(profile, getRefreshTokenSecretId(), refreshToken);
+        AIUtils.setAccountToken(profile, getAccessTokenSecretId(), accessToken);
     }
 
     @Override
     public void deleteSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
         AIUtils.deleteSecretValue(profile, getApiTokenSecretId());
         AIUtils.deleteSecretValue(profile, CUSTOM_HEADERS);
-        AIUtils.deleteSecretValue(profile, getAccessTokenSecretId());
-        AIUtils.deleteSecretValue(profile, getRefreshTokenSecretId());
+        AIUtils.deleteAccountToken(profile, getAccessTokenSecretId());
+        AIUtils.deleteAccountToken(profile, getRefreshTokenSecretId());
     }
 
     public void saveCustomHeaderSecrets(@NotNull AIConfigurationProfile profile) throws DBException {
