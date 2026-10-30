@@ -322,6 +322,12 @@ public class GeneralUtils {
     }
 
     @NotNull
+    public static String getProductUserAgent() {
+        return getProductName() + " (" + System.getProperty(StandardConstants.ENV_OS_NAME) + "; "
+            + Platform.getOS() + "; " + Platform.getOSArch() + ")";
+    }
+
+    @NotNull
     public static Version getProductVersion() {
         ApplicationDescriptor application = ApplicationRegistry.getInstance().getApplication();
         if (application != null) {
