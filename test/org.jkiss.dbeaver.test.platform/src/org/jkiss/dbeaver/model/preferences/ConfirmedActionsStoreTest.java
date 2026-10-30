@@ -51,6 +51,30 @@ public class ConfirmedActionsStoreTest {
     }
 
     @Test
+    public void preservesApprovalsWrittenByAnotherStore() throws Exception {
+        Path file = directory.resolve("actions.json");
+        ConfirmedActionsStore store = new ConfirmedActionsStore(file);
+        store.add("first");
+        new ConfirmedActionsStore(file).add("second");
+        store.add("third");
+
+        Assertions.assertTrue(store.contains("first"));
+        Assertions.assertTrue(store.contains("second"));
+        Assertions.assertTrue(store.contains("third"));
+    }
+
+    @Test
+    public void rejectsApprovalsAfterStoreIsDeletedOrCorrupted() throws Exception {
+        Path file = directory.resolve("actions.json");
+        ConfirmedActionsStore store = new ConfirmedActionsStore(file);
+        store.add("first");
+        Files.delete(file);
+        Assertions.assertFalse(store.contains("first"));
+        Files.writeString(file, "invalid json");
+        Assertions.assertFalse(store.contains("first"));
+    }
+
+    @Test
     public void replacesOnlyTheApprovalForTheChangedConnection() throws Exception {
         ConfirmedActionsStore store = new ConfirmedActionsStore(directory.resolve("actions.json"));
         store.add("first:old");

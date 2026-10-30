@@ -24,18 +24,23 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.preferences.ConfirmedConnectionInitScriptsStore;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.preferences.ConfirmedActionsStore;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnectionInit;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ExecutionConfirmationDialog;
+import org.jkiss.utils.SecurityUtils;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class UIServiceConnectionInitImpl implements UIServiceConnectionInit {
+    private static final String APPROVALS_FILE_NAME = "confirmed_connection_init_scripts.json";
+    private static final Object APPROVALS_LOCK = new Object();
+
     @Override
     public boolean confirmInitScript(@NotNull DBPDataSourceContainer container, @Nullable String url, @NotNull String script) {
         return confirmInitScripts(container, url, List.of(script));
@@ -51,12 +56,15 @@ public class UIServiceConnectionInitImpl implements UIServiceConnectionInit {
         if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
             return false;
         }
-        ConfirmedConnectionInitScriptsStore approvals = new ConfirmedConnectionInitScriptsStore(
-            DBWorkbench.getPlatform().getGlobalConfigurationFile(ConfirmedConnectionInitScriptsStore.FILE_NAME)
+        ConfirmedActionsStore approvals = new ConfirmedActionsStore(
+            DBWorkbench.getPlatform().getGlobalConfigurationFile(APPROVALS_FILE_NAME)
         );
+        String key = approvalKey(container, url, approvedScripts);
         try {
-            if (approvals.contains(container, url, approvedScripts)) {
-                return true;
+            synchronized (APPROVALS_LOCK) {
+                if (approvals.contains(key)) {
+                    return true;
+                }
             }
         } catch (DBException exception) {
             Log.getLog(UIServiceConnectionInitImpl.class).error("Cannot read connection initialization approvals", exception);
@@ -94,12 +102,25 @@ public class UIServiceConnectionInitImpl implements UIServiceConnectionInit {
         }));
         if (approved) {
             try {
-                approvals.add(container, url, approvedScripts);
+                synchronized (APPROVALS_LOCK) {
+                    approvals.add(key);
+                }
             } catch (DBException exception) {
                 Log.getLog(UIServiceConnectionInitImpl.class).error("Cannot save connection initialization approval", exception);
                 return false;
             }
         }
         return approved;
+    }
+
+    @NotNull
+    private static String approvalKey(@NotNull DBPDataSourceContainer container, @Nullable String url, @NotNull List<String> scripts) {
+        return SecurityUtils.sha256Hex(JSONUtils.GSON.toJson(new Object[] {
+            container.getProject().getAbsolutePath().toAbsolutePath().normalize().toString(),
+            container.getId(),
+            container.getDriver().getFullId(),
+            url,
+            scripts
+        }));
     }
 }
