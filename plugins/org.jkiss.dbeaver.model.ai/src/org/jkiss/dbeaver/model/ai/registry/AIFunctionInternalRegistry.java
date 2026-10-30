@@ -149,6 +149,7 @@ public class AIFunctionInternalRegistry {
         @NotNull Map<String, Object> arguments
     ) throws DBException {
         AIFunction function = descriptor.getInstance();
+        context = context.forFunction(descriptor, arguments);
         return function.callFunction(context, arguments);
     }
 }

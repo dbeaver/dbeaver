@@ -73,7 +73,10 @@ public class QMAIChatHistoryMapper {
             conversation.getPromptGenerator().generatorId(),
             dataSource,
             chatMessages,
-            qmaiContext,
+            qmaiContext.withAdditionalDataSources(conversation.getDataSources().stream()
+                .filter(container -> container != chatDataSource && !container.isTemporary())
+                .map(container -> new QMAIDataSource(container.getProject().getId(), container.getId()))
+                .toList()),
             conversation.getProfile() == null ? null : conversation.getProfile().getProfileId(),
             conversation.getProfile() == null ? null : conversation.getProfile().getEngineId(),
             conversation.getNextMessageId(),

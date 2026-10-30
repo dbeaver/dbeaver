@@ -146,6 +146,66 @@ public class AIChatSession {
         return databaseContext;
     }
 
+    @NotNull
+    public AIFunctionContext createFunctionContext(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIChatConversation conversation,
+        @Nullable AIDatabaseContext primaryContext
+    ) {
+        Map<String, AIDatabaseContext> contexts = new HashMap<>();
+        return new AIFunctionContext(monitor, primaryContext, conversation.getPromptGenerator(), conversation, connectionId -> {
+            DBPDataSourceContainer container = conversation.getDataSource(connectionId);
+            if (container == null) {
+                return null;
+            }
+            if (workspace.getProjectById(container.getProject().getId()) != container.getProject() ||
+                !container.isTemporary() && container.getProject().getDataSourceRegistry().getDataSource(container.getId()) != container) {
+                throw new DBException("Connection '" + container.getId() + "' is no longer available");
+            }
+            if (container == conversation.getDataSource()) {
+                if (primaryContext == null || primaryContext.getDataSource().getDataSourceContainer() != container) {
+                    throw new DBException("Primary connection context is not available");
+                }
+                return primaryContext;
+            }
+            AIContextSettingsDataSource settings = new AIContextSettingsDataSource(container);
+            if (!settings.isMetaTransferConfirmed()) {
+                throw new DBException("AI metadata access is not confirmed for connection '" + container.getName() + "'");
+            }
+            AIDatabaseContext existingContext = contexts.get(container.getId());
+            if (existingContext == null) {
+                // primary prompt configuration must not override another connection's context or scope
+                existingContext = createDatabaseContext(monitor, null, settings);
+                if (existingContext != null) {
+                    contexts.put(container.getId(), existingContext);
+                }
+            }
+            return existingContext;
+        });
+    }
+
+    public void addDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIChatConversation conversation,
+        @NotNull DBPDataSourceContainer dataSource
+    ) throws DBException {
+        if (conversation.addDataSource(dataSource)) {
+            saveConversation(monitor, conversation);
+            notifyListeners(AIChatListener::conversationConnectionsChanged, conversation);
+        }
+    }
+
+    public void removeDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIChatConversation conversation,
+        @NotNull String connectionId
+    ) throws DBException {
+        if (conversation.removeDataSource(connectionId)) {
+            saveConversation(monitor, conversation);
+            notifyListeners(AIChatListener::conversationConnectionsChanged, conversation);
+        }
+    }
+
     @Nullable
     public AIContextSettings getConversationSettings(@NotNull AIChatConversation conversation) {
         DBPDataSourceContainer dataSource = conversation.getDataSource();
@@ -179,6 +239,16 @@ public class AIChatSession {
                             history,
                             dataSourceContainer
                         );
+                        for (QMAIDataSource additionalDataSource : history.getContext().getAdditionalDataSources()) {
+                            DBPDataSourceContainer additionalContainer = getContainer(additionalDataSource);
+                            if (additionalContainer != null && dataSourceContainer != null) {
+                                try {
+                                    conversation.addDataSource(additionalContainer);
+                                } catch (DBException exception) {
+                                    log.warn("Cannot restore additional conversation connection", exception);
+                                }
+                            }
+                        }
                         String contextJson = history.getContext().getContextJson();
                         if (contextJson != null) {
                             AIContextSettingsChatConversation convSettings = new AIContextSettingsChatConversation(this, conversation);
@@ -533,7 +603,7 @@ public class AIChatSession {
     @Nullable
     private AIDatabaseContext createDatabaseContext(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull AIPromptGenerator promptGenerator,
+        @Nullable AIPromptGenerator promptGenerator,
         @NotNull AIContextSettings settings
     ) throws DBException {
         DBPDataSourceContainer container = settings.getDataSourceContainer();
@@ -568,7 +638,7 @@ public class AIChatSession {
                 }
             }
         }
-        return promptGenerator.configureDatabaseContext(builder).build();
+        return (promptGenerator == null ? builder : promptGenerator.configureDatabaseContext(builder)).build();
     }
 
     @NotNull

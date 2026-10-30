@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
@@ -26,6 +27,7 @@ import org.jkiss.utils.StringUtils;
 import org.jkiss.utils.UUIDv7;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -63,6 +65,7 @@ public class AIChatConversation {
     private final Object persistenceLock = new Object();
     @Nullable
     private final DBPDataSourceContainer container;
+    private final List<DBPDataSourceContainer> additionalDataSources = new CopyOnWriteArrayList<>();
     @NotNull
     private final LocalDateTime time;
     @Nullable
@@ -260,6 +263,54 @@ public class AIChatConversation {
     @Nullable
     public DBPDataSourceContainer getDataSource() {
         return container;
+    }
+
+    @NotNull
+    public List<DBPDataSourceContainer> getDataSources() {
+        if (container == null) {
+            return List.of();
+        }
+        List<DBPDataSourceContainer> dataSources = new ArrayList<>();
+        dataSources.add(container);
+        dataSources.addAll(additionalDataSources);
+        return List.copyOf(dataSources);
+    }
+
+    public synchronized boolean addDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException {
+        if (isActive()) {
+            throw new DBException("Cannot change connections while the conversation is active");
+        }
+        if (container == null) {
+            throw new DBException("A primary connection is required");
+        }
+        if (!container.getProject().getId().equals(dataSource.getProject().getId())) {
+            throw new DBException("Additional connections must belong to the primary connection's project");
+        }
+        if (getDataSources().stream().anyMatch(current -> current.getId().equals(dataSource.getId()))) {
+            return false;
+        }
+        additionalDataSources.add(dataSource);
+        return true;
+    }
+
+    public synchronized boolean removeDataSource(@NotNull String connectionId) throws DBException {
+        if (isActive()) {
+            throw new DBException("Cannot change connections while the conversation is active");
+        }
+        return additionalDataSources.removeIf(dataSource -> dataSource.getId().equals(connectionId));
+    }
+
+    @Nullable
+    public DBPDataSourceContainer getDataSource(@Nullable String connectionId) throws DBException {
+        if (CommonUtils.isEmptyTrimmed(connectionId)) {
+            return container;
+        }
+        for (DBPDataSourceContainer dataSource : getDataSources()) {
+            if (dataSource.getId().equals(connectionId)) {
+                return dataSource;
+            }
+        }
+        throw new DBException("Connection '" + connectionId + "' is not attached to this conversation. Access restricted.");
     }
 
     public int getNextMessageId() {
