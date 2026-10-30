@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
 import java.sql.ResultSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class PostgreTablePartition extends PostgreTable implements DBSTablePartition {
@@ -88,6 +89,19 @@ public class PostgreTablePartition extends PostgreTable implements DBSTableParti
 
     public PostgreTable getPartitionOf() {
         return partitionOf;
+    }
+
+    void resolveParentTable(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (partitionOf != null) {
+            return;
+        }
+        List<PostgreTableInheritance> inheritance = getSuperInheritance(monitor);
+        if (inheritance != null && !inheritance.isEmpty()) {
+            PostgreTableBase parent = inheritance.getFirst().getAssociatedEntity();
+            if (parent instanceof PostgreTable table) {
+                partitionOf = table;
+            }
+        }
     }
 
     @Override
