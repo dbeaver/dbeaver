@@ -150,6 +150,13 @@ public interface SQLDialect {
     Collection<String> getFunctions();
     @NotNull
     Collection<String> getDataTypes(@Nullable DBPDataSource dataSource);
+
+    /** Single-word modifiers allowed after a column's data type in DDL. */
+    @NotNull
+    default Collection<String> getColumnTypeModifierKeywords() {
+        return Collections.emptyList();
+    }
+
     @Nullable
     DBPKeywordType getKeywordType(@NotNull String word);
     @NotNull

@@ -34,6 +34,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -68,6 +69,8 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
         "MANUAL",
         "STRAIGHT_JOIN"
     };
+
+    private static final List<String> COLUMN_TYPE_MODIFIER_KEYWORDS = List.of("SIGNED", "UNSIGNED", "ZEROFILL");
 
     public static final String[][] MYSQL_QUOTE_STRINGS = {
         {"`", "`"},
@@ -209,6 +212,12 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
     public void afterDataSourceInitialization(@NotNull DBPDataSource dataSource) {
         this.lowerCaseTableNames = ((MySQLDataSource) dataSource).getLowerCaseTableNames();
         this.setSupportsUnquotedMixedCase(lowerCaseTableNames != 2);
+    }
+
+    @NotNull
+    @Override
+    public Collection<String> getColumnTypeModifierKeywords() {
+        return COLUMN_TYPE_MODIFIER_KEYWORDS;
     }
 
     @Nullable

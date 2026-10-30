@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryVariableClause;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryVariableStatementModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableAlterModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryTableCreateModel;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -36,6 +38,7 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -338,6 +341,44 @@ public class SQLQueryModelRecognizerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void columnTypeModifiersAreNotColumnReferencesOrPartOfBaseType() {
+        SQLDialect dialect = new BasicSQLDialect() {
+            @NotNull
+            @Override
+            public Collection<String> getColumnTypeModifierKeywords() {
+                return List.of("UNSIGNED", "ZEROFILL");
+            }
+        };
+        SQLQueryRecognitionContext context = createContext(new VoidProgressMonitor(), dialect);
+        SQLQueryModel model = SQLQueryModelRecognizer.recognizeQuery(
+            context,
+            "CREATE TABLE test_table (test_table_id INT UNSIGNED NOT NULL, " +
+                "test_name VARCHAR(10) NOT NULL, count_value INT DEFAULT 5)"
+        );
+
+        Assertions.assertNotNull(model);
+        SQLQueryTableCreateModel table = Assertions.assertInstanceOf(SQLQueryTableCreateModel.class, model.getQueryModel());
+        Assertions.assertEquals(3, table.getColumns().size());
+        Assertions.assertEquals("INT", table.getColumns().getFirst().getTypeName());
+        Assertions.assertNull(table.getColumns().getFirst().getDefaultValueExpression());
+        Assertions.assertNotNull(table.getColumns().get(2).getDefaultValueExpression());
+        Assertions.assertTrue(model.getAllSymbols().stream()
+            .noneMatch(symbol -> symbol.getRawName().equalsIgnoreCase("UNSIGNED")));
+        Assertions.assertTrue(context.getProblems().stream()
+            .noneMatch(problem -> problem.getMessage().contains("Invalid column reference")), context.getProblems().toString());
+
+        SQLQueryRecognitionContext alterContext = createContext(new VoidProgressMonitor(), dialect);
+        SQLQueryModel alter = SQLQueryModelRecognizer.recognizeQuery(
+            alterContext, "ALTER TABLE test_table ADD COLUMN other_id BIGINT unsigned NOT NULL"
+        );
+        Assertions.assertNotNull(alter);
+        SQLQueryTableAlterModel alterTable = Assertions.assertInstanceOf(SQLQueryTableAlterModel.class, alter.getQueryModel());
+        Assertions.assertEquals("BIGINT", alterTable.getAlterActions().getFirst().getColumnSpec().getTypeName());
+        Assertions.assertTrue(alterContext.getProblems().stream()
+            .noneMatch(problem -> problem.getMessage().contains("Invalid column reference")), alterContext.getProblems().toString());
+    }
+
+    @Test
     public void alterTableCancellationDoesNotReturnPartialModel() {
         assertCancellationAtEveryCheckpoint(STMT_ALTER_TABLE);
     }
@@ -424,7 +465,11 @@ public class SQLQueryModelRecognizerTest extends DBeaverUnitTest {
 
     @NotNull
     private static SQLQueryRecognitionContext createContext(@NotNull VoidProgressMonitor monitor) {
-        SQLDialect dialect = BasicSQLDialect.INSTANCE;
+        return createContext(monitor, BasicSQLDialect.INSTANCE);
+    }
+
+    @NotNull
+    private static SQLQueryRecognitionContext createContext(@NotNull VoidProgressMonitor monitor, @NotNull SQLDialect dialect) {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dialect, DBWorkbench.getPlatform().getPreferenceStore());
         return new SQLQueryRecognitionContext(monitor, null, false, false, syntaxManager, dialect);

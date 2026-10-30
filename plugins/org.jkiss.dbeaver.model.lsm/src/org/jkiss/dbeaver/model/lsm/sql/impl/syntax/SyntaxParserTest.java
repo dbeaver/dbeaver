@@ -71,7 +71,8 @@ public class SyntaxParserTest {
             false,
             '?',
             List.of(Map.entry(1, Set.of(":"))),
-            true
+            true,
+            Set.of()
         );
         var ll = new SQLStandardLexer(input, params);
         var tokens = new CommonTokenStream(ll);
@@ -141,7 +142,8 @@ public class SyntaxParserTest {
             false,
             '?',
             List.of(Map.entry(1, Set.of(":"))),
-            true
+            true,
+            Set.of()
         );
         var ll = new SQLStandardLexer(input, params);
         var tokens = new CommonTokenStream(ll);
