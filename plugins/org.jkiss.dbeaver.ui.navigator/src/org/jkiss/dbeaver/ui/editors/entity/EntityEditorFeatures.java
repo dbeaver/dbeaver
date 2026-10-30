@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,11 +23,9 @@ import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
  */
 public interface EntityEditorFeatures {
 
-    DBRFeature CATEGORY_ENTITY_EDITOR = DBRFeature.createCategory("Entity editor", "Entity editor features");
-
-    DBRFeature ENTITY_EDITOR_OPEN = DBRFeature.createFeature(CATEGORY_ENTITY_EDITOR, "Open entity editor");
-    DBRFeature ENTITY_EDITOR_MODIFY = DBRFeature.createFeature(CATEGORY_ENTITY_EDITOR, "Change object properties");
-    DBRFeature ENTITY_EDITOR_SAVE = DBRFeature.createFeature(CATEGORY_ENTITY_EDITOR, "Save object properties");
-    DBRFeature ENTITY_EDITOR_REJECT = DBRFeature.createFeature(CATEGORY_ENTITY_EDITOR, "Reject object properties changes");
+    DBRFeature ENTITY_EDITOR_OPEN = new DBRFeature("ENTITY_EDITOR_OPEN");
+    DBRFeature ENTITY_EDITOR_MODIFY = new DBRFeature("ENTITY_EDITOR_MODIFY");
+    DBRFeature ENTITY_EDITOR_SAVE = new DBRFeature("ENTITY_EDITOR_SAVE");
+    DBRFeature ENTITY_EDITOR_REJECT = new DBRFeature("ENTITY_EDITOR_REJECT");
 
 }
