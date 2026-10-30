@@ -74,7 +74,10 @@ public class AIAssistantFunctionErrorTest extends DBeaverUnitTest {
             request, List.of(call));
 
         finished.get(5, TimeUnit.SECONDS);
-        Mockito.verify(listener).processFunctionCall(Mockito.argThat(message -> message.getError() == failure));
+        var events = Mockito.inOrder(listener);
+        events.verify(listener).processFunctionCall(Mockito.argThat(message -> message.getError() == failure));
+        events.verify(listener).error(failure);
+        events.verify(listener).complete(Mockito.anyList(), Mockito.eq(true), Mockito.eq(false));
         Mockito.verify(assistant, Mockito.never()).generateTextStream(Mockito.any(), Mockito.any(), Mockito.any(),
             Mockito.any(), Mockito.any());
     }
