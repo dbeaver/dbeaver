@@ -40,7 +40,7 @@ public class DBNDashboard extends DBNResource {
     private DBPImage image;
 
     public DBNDashboard(@NotNull DBNNode parentNode, @NotNull IResource resource, @NotNull DBPResourceHandler handler)
-        throws DBException, CoreException {
+            throws DBException, CoreException {
         super(parentNode, resource, handler);
     }
 

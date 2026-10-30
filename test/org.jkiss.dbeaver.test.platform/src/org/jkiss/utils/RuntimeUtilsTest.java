@@ -36,7 +36,10 @@ public class RuntimeUtilsTest extends DBeaverUnitTest {
 
     @Test
     public void testSplitCommandLine() {
-        Assertions.assertEquals(Arrays.asList("/bin/sh", "-c", "echo hello && echo world"), RuntimeUtils.splitCommandLine("/bin/sh -c 'echo hello && echo world'", true));
+        Assertions.assertEquals(
+            Arrays.asList("/bin/sh", "-c", "echo hello && echo world"),
+            RuntimeUtils.splitCommandLine("/bin/sh -c 'echo hello && echo world'", true)
+        );
     }
 
     @Test

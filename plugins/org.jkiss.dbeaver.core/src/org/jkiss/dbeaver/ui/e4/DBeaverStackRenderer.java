@@ -112,7 +112,7 @@ public class DBeaverStackRenderer extends StackRenderer {
     }
 
     @Override
-    public void showAvailableItems(MElementContainer<?> stack, CTabFolder folder, boolean forceCenter) {
+    public void showAvailableItems(@NotNull MElementContainer<?> stack, @NotNull CTabFolder folder, boolean forceCenter) {
         final IEclipseContext ctx = getContext(stack);
         final DBeaverPartList list = new DBeaverPartList(
             folder.getShell(),

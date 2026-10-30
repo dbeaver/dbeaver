@@ -185,8 +185,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         aboutAction = new AboutBoxAction(window);
         register(showHelpAction = ActionFactory.HELP_CONTENTS.create(window));
         showHelpAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.SMALL_QUESTION));
-//        register(searchHelpAction = ActionFactory.HELP_SEARCH.create(window));
-//        register(dynamicHelpAction = ActionFactory.DYNAMIC_HELP.create(window));
+        //register(searchHelpAction = ActionFactory.HELP_SEARCH.create(window));
+        //register(dynamicHelpAction = ActionFactory.DYNAMIC_HELP.create(window));
         checkUpdatesAction = new CheckForUpdateAction();
 
         newWindowAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
@@ -197,10 +197,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             register(openWorkspaceAction);
         }
 
-//        historyBackAction = ActionFactory.BACKWARD_HISTORY.create(window);
-//        register(historyBackAction);
-//        historyForwardAction = ActionFactory.FORWARD_HISTORY.create(window);
-//        register(historyForwardAction);
+        //historyBackAction = ActionFactory.BACKWARD_HISTORY.create(window);
+        //register(historyBackAction);
+        //historyForwardAction = ActionFactory.FORWARD_HISTORY.create(window);
+        //register(historyForwardAction);
 
         CheckForUpdateAction.deactivateStandardHandler(window);
         ApplicationPolicyService.getInstance().disableStandardProductModification(window.getService(ICommandService.class));
@@ -337,7 +337,8 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
                 MenuManager showViewMenuMgr = new MenuManager(CoreMessages.actions_menu_window_showView, "showView"); //$NON-NLS-1$
                 showViewMenuMgr.addMenuListener(manager ->
                     WorkbenchPatcher.patchViewIcons(Workbench.getInstance()));
-                IContributionItem showViewMenu = ContributionItemFactory.VIEWS_SHORTLIST.create(PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                IContributionItem showViewMenu = ContributionItemFactory.VIEWS_SHORTLIST.create(
+                    PlatformUI.getWorkbench().getActiveWorkbenchWindow());
                 showViewMenuMgr.add(showViewMenu);
                 windowMenu.add(showViewMenuMgr);
             }

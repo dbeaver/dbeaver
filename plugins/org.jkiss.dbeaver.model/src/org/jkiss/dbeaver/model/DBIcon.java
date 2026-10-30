@@ -197,13 +197,13 @@ public class DBIcon implements DBPImage {
     @NotNull
     private String path;
 
-    public static void loadIcons(@NotNull Class<?> aClass) {
-        Bundle iconBundle = FrameworkUtil.getBundle(aClass);
+    public static void loadIcons(@NotNull Class<?> iconClass) {
+        Bundle iconBundle = FrameworkUtil.getBundle(iconClass);
         if (iconBundle == null) {
-            log.error("Can't find bundle for class '" + aClass.getName() + "'");
+            log.error("Can't find bundle for class '" + iconClass.getName() + "'");
             return;
         }
-        for (Field field : aClass.getDeclaredFields()) {
+        for (Field field : iconClass.getDeclaredFields()) {
             if ((field.getModifiers() & Modifier.STATIC) == 0 || field.getType() != DBIcon.class) {
                 continue;
             }
@@ -253,6 +253,7 @@ public class DBIcon implements DBPImage {
 
     /**
      * Token is icon id. It can be used to refer on icons in plugin extensions
+     *
      * @return unique token, or null for icons without one
      */
     @Nullable
