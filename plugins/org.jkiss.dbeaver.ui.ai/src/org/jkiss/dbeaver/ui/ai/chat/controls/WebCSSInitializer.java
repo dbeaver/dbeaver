@@ -207,7 +207,7 @@ public class WebCSSInitializer implements AutoCloseable {
     }
 
     @NotNull
-    private String colorToHex(@Nullable Color color) {
+    static String colorToHex(@Nullable Color color) {
         if (color == null) {
             return "#000000";
         }

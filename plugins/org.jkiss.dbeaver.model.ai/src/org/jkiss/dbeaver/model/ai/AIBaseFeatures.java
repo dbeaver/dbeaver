@@ -30,18 +30,14 @@ import java.util.Map;
  */
 public interface AIBaseFeatures {
 
-    DBRFeature CATEGORY_SQL_AI = DBRFeature.createCategory("SQL AI", "SQL AI features");
-    DBRFeature SQL_AI_COMMAND = DBRFeature.createFeature(CATEGORY_SQL_AI, "Generate AI SQL by @ai command");
+    DBRFeature SQL_AI_COMMAND = new DBRFeature("SQL_AI_COMMAND");
 
     String PARAM_ENGINE = "engine";
     String PARAM_DRIVER = "driver";
     String FUNCTION_NAME = "functionName";
     String PROMPT_TYPE = "promptType";
 
-    DBRFeature CATEGORY_AI_CALLS = DBRFeature.createCategory("AI Calls", "AI Chat features");
-
-
-    DBRFeature AI_CHAT_FUNCTION_CALL = DBRFeature.createFeature(CATEGORY_AI_CALLS, "AI Chat function call");
+    DBRFeature AI_CHAT_FUNCTION_CALL = new DBRFeature("AI_CHAT_FUNCTION_CALL");
 
     @NotNull
     static Map<String, Object> buildFeatureParameters(

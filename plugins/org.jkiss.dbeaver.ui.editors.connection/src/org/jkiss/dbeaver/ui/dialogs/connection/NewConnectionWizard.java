@@ -151,6 +151,8 @@ public class NewConnectionWizard extends ConnectionWizard
     @Override
     public void addPages()
     {
+        DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+        registry.refreshProvidedDrivers();
         /*if (initialDriver == null) */{
             // We need drivers page always as it contains some settings
             pageDataSource = new ConnectionPageDataSource(this);
@@ -163,7 +165,7 @@ public class NewConnectionWizard extends ConnectionWizard
         addPage(pageConnector);
 
         Map<DataSourceConfiguratorDescriptor, ConnectionPageSettings> configuratorPages = new HashMap<>();
-        for (DBPDataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders()) {
+        for (DBPDataSourceProviderDescriptor provider : registry.getEnabledDataSourceProviders()) {
             availableProvides.add(provider);
             for (DBPDriver driver : provider.getEnabledDrivers()) {
                 DataSourceConfiguratorDescriptor configurator = DataSourceConfiguratorRegistry.getInstance()

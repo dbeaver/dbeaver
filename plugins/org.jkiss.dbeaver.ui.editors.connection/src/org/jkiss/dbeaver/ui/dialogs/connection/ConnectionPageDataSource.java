@@ -52,6 +52,7 @@ class ConnectionPageDataSource extends ActiveWizardPage<NewConnectionWizard> imp
     private DataSourceTypeViewer dataSourceTypeViewer;
     private ProjectSelectorPanel projectSelector;
     private Control filterIndentLabel;
+    private Button showCommercialDrivers;
 
     ConnectionPageDataSource(@NotNull NewConnectionWizard wizard) {
         super("newConnectionDrivers");
@@ -112,7 +113,7 @@ class ConnectionPageDataSource extends ActiveWizardPage<NewConnectionWizard> imp
                 setErrorMessage("You need to create a project first");
             }
             if (DataSourceTypeViewer.isCommercialDriversEnabled()) {
-                Button showCommercialDrivers = UIUtils.createCheckbox(bottomPanel,
+                showCommercialDrivers = UIUtils.createCheckbox(bottomPanel,
                     UIConnectionMessages.dialog_connection_show_commercial_drivers, DataSourceTypeViewer.isShowCommercialDrivers());
                 showCommercialDrivers.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
                 showCommercialDrivers.addSelectionListener(SelectionListener.widgetSelectedAdapter(
@@ -123,6 +124,15 @@ class ConnectionPageDataSource extends ActiveWizardPage<NewConnectionWizard> imp
         Dialog.applyDialogFont(placeholder);
         UIUtils.setHelp(placeholder, IHelpContextIds.CTX_CON_WIZARD_DRIVER);
         UIUtils.asyncExec(() -> dataSourceTypeViewer.getControl().setFocus());
+    }
+
+    @Override
+    public void activatePage() {
+        boolean showDrivers = DataSourceTypeViewer.isShowCommercialDrivers();
+        if (showCommercialDrivers != null && showCommercialDrivers.getSelection() != showDrivers) {
+            showCommercialDrivers.setSelection(showDrivers);
+            dataSourceTypeViewer.setShowCommercialDrivers(showDrivers);
+        }
     }
 
     public void createSorterControl(@NotNull Composite controlsGroup) {
