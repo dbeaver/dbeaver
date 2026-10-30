@@ -20,43 +20,19 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.datadam.DDDesktopPreferences;
-import org.jkiss.dbeaver.model.datadam.DDProductConfig;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionSettings;
-import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.preferences.PrefPageDataSourceAI;
 import org.jkiss.dbeaver.ui.datadam.internal.DDMcpMessages;
 
 public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<PrefPageDataSourceAI, PrefPageDataSourceAI> {
-    private static final Log log = Log.getLog(DDMcpConnectionConfigurator.class);
-
     private Button enableCheck;
 
-    public boolean appliesTo(@NotNull DBPDataSourceContainer connection) {
-        if (!DDProductConfig.isIntegrationEnabled()
-            || !DDDesktopPreferences.getStore().getBoolean(DDDesktopPreferences.MCP_DESKTOP_ENABLED)) {
-            return false;
-        }
-        DDDesktopAccessService access = DDDesktopAccessService.getInstance();
-        if (access.getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
-            return false;
-        }
-        var keys = access.getKeyBundle();
-        if (keys == null) {
-            return false;
-        }
-        try {
-            return DDProjectManager.getInstance(keys).isBound(connection.getProject());
-        } catch (DBException e) {
-            log.debug("Cannot check DataDam project binding", e);
-            return false;
-        }
+    public static boolean appliesTo() {
+        return DDDesktopPreferences.getStore().getBoolean(DDDesktopPreferences.MCP_DESKTOP_ENABLED);
     }
 
     @Override
@@ -66,7 +42,7 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
         @NotNull Runnable propertyChangeListener
     ) {
         DBPDataSourceContainer connection = page.getConnection();
-        if (connection != null && appliesTo(connection)) {
+        if (connection != null && appliesTo()) {
             Composite group = UIUtils.createTitledComposite(
                 parent, DDMcpMessages.mcp_connection_settings_group, 1, GridData.FILL_HORIZONTAL);
             enableCheck = UIUtils.createCheckbox(

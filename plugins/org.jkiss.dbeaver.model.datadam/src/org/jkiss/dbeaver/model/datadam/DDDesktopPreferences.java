@@ -27,7 +27,7 @@ public final class DDDesktopPreferences {
 
     public static DBPPreferenceStore getStore() {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        store.setDefault(MCP_DESKTOP_ENABLED, true);
+        store.setDefault(MCP_DESKTOP_ENABLED, false);
         return store;
     }
 }

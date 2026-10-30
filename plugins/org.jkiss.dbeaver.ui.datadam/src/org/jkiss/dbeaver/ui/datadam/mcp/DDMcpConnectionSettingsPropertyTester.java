@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 public class DDMcpConnectionSettingsPropertyTester extends PropertyTester {
     @Override
     public boolean test(@Nullable Object receiver, @NotNull String property, @NotNull Object[] args, @Nullable Object expectedValue) {
-        return "enabled".equals(property) && receiver instanceof DBPDataSourceContainer connection
-            && new DDMcpConnectionConfigurator().appliesTo(connection);
+        return "enabled".equals(property) && receiver instanceof DBPDataSourceContainer
+            && DDMcpConnectionConfigurator.appliesTo();
     }
 }

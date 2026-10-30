@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.List;
@@ -39,12 +38,8 @@ public class DDMcpConnectionCatalog {
 
     private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
     private final DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
-    @Nullable
-    private volatile DDProjectManager projectManager;
 
     private DDMcpConnectionCatalog() {
-        accessService.addKeyBundleListener(this::updateProjectManager);
-        updateProjectManager();
     }
 
     @NotNull
@@ -55,22 +50,12 @@ public class DDMcpConnectionCatalog {
         return instance;
     }
 
-    private void updateProjectManager() {
-        var bundle = accessService.getKeyBundle();
-        projectManager = bundle == null ? null : DDProjectManager.getInstance(bundle);
-    }
-
     @NotNull
     public List<AvailableConnection> getAllowedConnections() throws DDMcpFunctionException {
         if (accessService.getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
             return List.of();
         }
-        DDProjectManager projects = projectManager;
-        if (projects == null) {
-            return List.of();
-        }
         return workspace.getProjects().stream()
-            .filter(project -> isBound(projects, project))
             .flatMap(project -> project.getDataSourceRegistry().getDataSources().stream()
                 .filter(DDMcpConnectionSettings::isEnabled)
                 .map(connection -> new AvailableConnection(project, connection,
@@ -87,15 +72,6 @@ public class DDMcpConnectionCatalog {
         } catch (DBException e) {
             log.error("Cannot check saved DataDam connection credentials", e);
             return true;
-        }
-    }
-
-    private boolean isBound(@NotNull DDProjectManager projects, @NotNull DBPProject project) {
-        try {
-            return projects.isBound(project);
-        } catch (DBException e) {
-            log.error("Cannot check DataDam project binding", e);
-            return false;
         }
     }
 
