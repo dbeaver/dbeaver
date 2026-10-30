@@ -769,6 +769,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             });
         } else if (adapter == DBCQueryPlanner.class) {
             return adapter.cast(new MySQLPlanAnalyser(this));
+        } else if (adapter == JDBCConnectionValidator.class) {
+            return adapter.cast(new MySQLConnectionValidator());
         }
         return super.getAdapter(adapter);
     }
