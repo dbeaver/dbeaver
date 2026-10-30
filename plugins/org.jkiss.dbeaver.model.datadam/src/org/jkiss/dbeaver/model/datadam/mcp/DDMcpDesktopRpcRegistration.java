@@ -25,7 +25,7 @@ import com.google.gson.ToNumberPolicy;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.datadam.DDPreferences;
+import org.jkiss.dbeaver.model.datadam.DDDesktopPreferences;
 import org.jkiss.dbeaver.model.datadam.rpc.DDDesktopRpcRegistration;
 
 public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
@@ -37,8 +37,8 @@ public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
     private MessagingSubscription subscription;
 
     public DDMcpDesktopRpcRegistration() {
-        DDPreferences.getStore().addPropertyChangeListener(event -> {
-            if (DDPreferences.MCP_DESKTOP_ENABLED.equals(event.getProperty())) {
+        DDDesktopPreferences.getStore().addPropertyChangeListener(event -> {
+            if (DDDesktopPreferences.MCP_DESKTOP_ENABLED.equals(event.getProperty())) {
                 updateRegistration();
             }
         });
@@ -58,7 +58,7 @@ public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
         if (current == null || current.isClosed()) {
             return;
         }
-        if (DDPreferences.getStore().getBoolean(DDPreferences.MCP_DESKTOP_ENABLED)) {
+        if (DDDesktopPreferences.getStore().getBoolean(DDDesktopPreferences.MCP_DESKTOP_ENABLED)) {
             if (subscription == null) {
                 registerService(current);
             }

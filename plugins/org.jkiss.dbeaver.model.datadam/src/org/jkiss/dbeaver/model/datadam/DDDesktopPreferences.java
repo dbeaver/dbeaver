@@ -19,10 +19,10 @@ package org.jkiss.dbeaver.model.datadam;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
-public final class DDPreferences {
+public final class DDDesktopPreferences {
     public static final String MCP_DESKTOP_ENABLED = "datadam.mcp.desktop.enabled";
 
-    private DDPreferences() {
+    private DDDesktopPreferences() {
     }
 
     public static DBPPreferenceStore getStore() {
