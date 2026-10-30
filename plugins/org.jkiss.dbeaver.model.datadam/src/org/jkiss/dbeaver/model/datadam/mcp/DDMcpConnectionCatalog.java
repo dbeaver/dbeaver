@@ -56,11 +56,16 @@ public class DDMcpConnectionCatalog {
             return List.of();
         }
         return workspace.getProjects().stream()
+            .filter(this::canReadProjectConnections)
             .flatMap(project -> project.getDataSourceRegistry().getDataSources().stream()
                 .filter(DDMcpConnectionSettings::isEnabled)
                 .map(connection -> new AvailableConnection(project, connection,
                     requiresManualConnection(connection))))
             .toList();
+    }
+
+    private boolean canReadProjectConnections(@NotNull DBPProject project) {
+        return project.isOpen() && (project.isRegistryLoaded() || !project.isPasswordProtected());
     }
 
     private boolean requiresManualConnection(@NotNull DBPDataSourceContainer connection) {
