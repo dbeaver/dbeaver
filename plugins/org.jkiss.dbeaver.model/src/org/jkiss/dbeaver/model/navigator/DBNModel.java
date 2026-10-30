@@ -224,7 +224,7 @@ public class DBNModel {
         if (node != null) {
             return node;
         }
-        DBSObject[] path = DBUtils.getObjectPath(object, true);
+        DBSObject[] path = getNavigatorObjectPath(object, true);
         for (int i = 0; i < path.length - 1; i++) {
             DBSObject item = path[i];
             DBSObject nextItem = path[i + 1];
@@ -240,6 +240,23 @@ public class DBNModel {
             }
         }
         return getNodeByObject(object);
+    }
+
+    @NotNull
+    static DBSObject[] getNavigatorObjectPath(@NotNull DBSObject object, boolean includeSelf) {
+        if (object instanceof DBSTablePartition partition && !partition.needFullPath()) {
+            DBSObject parent = partition.isSubPartition() ? partition.getPartitionParent() : partition.getParentTable();
+            if (parent != null) {
+                DBSObject[] parentPath = DBUtils.getObjectPath(parent, true);
+                if (!includeSelf) {
+                    return parentPath;
+                }
+                DBSObject[] path = Arrays.copyOf(parentPath, parentPath.length + 1);
+                path[parentPath.length] = object;
+                return path;
+            }
+        }
+        return DBUtils.getObjectPath(object, includeSelf);
     }
 
     @NotNull
@@ -427,9 +444,9 @@ public class DBNModel {
                 return null;
             }
         }
-        DBSObject[] path = DBUtils.getObjectPath(object, false);
+        DBSObject[] path = getNavigatorObjectPath(object, false);
         DBSObject parentObject = object.getParentObject();
-        if ((object instanceof DBSTablePartition part) && part.needFullPath()) {
+        if (object instanceof DBSTablePartition part) {
             if (part.isSubPartition()) {
                 parentObject = part.getPartitionParent();
             } else {
