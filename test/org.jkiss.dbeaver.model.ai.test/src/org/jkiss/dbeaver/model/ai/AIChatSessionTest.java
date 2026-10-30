@@ -26,27 +26,55 @@ import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.qm.QMUnavailableException;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import java.time.Duration;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 public class AIChatSessionTest extends DBeaverUnitTest {
     @Test
-    public void limitsInitializationWaitAndPreventsDuplicateLoads() throws Exception {
+    public void initializesHistoryWithCallerMonitor() throws DBException {
+        AIChatStorage storage = Mockito.mock(AIChatStorage.class);
+        VoidProgressMonitor monitor = new VoidProgressMonitor();
+        Thread caller = Thread.currentThread();
+        Mockito.when(storage.findConversationSummaries("session")).thenAnswer(invocation -> {
+            Assertions.assertSame(caller, Thread.currentThread());
+            return List.of();
+        });
+        AIChatSession session = new AIChatSession(
+            Mockito.mock(DBPWorkspace.class), Mockito.mock(AIChatContextProvider.class), storage,
+            actualMonitor -> {
+                Assertions.assertSame(monitor, actualMonitor);
+                return "session";
+            }, Mockito.mock(UserTokenQuotaService.class)
+        );
+
+        session.init(monitor);
+        session.init(monitor);
+        Assertions.assertTrue(session.getAllConversations(null).isEmpty());
+        Mockito.verify(storage).findConversationSummaries("session");
+    }
+
+    @Test
+    public void concurrentRequestsWaitForInitialHistory() throws Exception {
+        DBWorkbench.getPlatform();
         AIChatStorage storage = Mockito.mock(AIChatStorage.class);
         CountDownLatch historyLoadStarted = new CountDownLatch(1);
         CountDownLatch releaseHistory = new CountDownLatch(1);
         Mockito.when(storage.findConversationSummaries("session")).thenAnswer(invocation -> {
             historyLoadStarted.countDown();
-            if (!releaseHistory.await(20, TimeUnit.SECONDS)) {
+            if (!releaseHistory.await(5, TimeUnit.SECONDS)) {
                 throw new DBException("Test history load timed out");
             }
             return List.of();
@@ -56,19 +84,20 @@ public class AIChatSessionTest extends DBeaverUnitTest {
             monitor -> "session", Mockito.mock(UserTokenQuotaService.class)
         );
 
-        try {
-            Assertions.assertTimeoutPreemptively(Duration.ofSeconds(15), () ->
-                Assertions.assertThrows(DBException.class, session::init));
-            Assertions.assertEquals(0, historyLoadStarted.getCount());
-            Assertions.assertTimeoutPreemptively(Duration.ofSeconds(1), () ->
-                Assertions.assertThrows(DBException.class, session::init));
-            Mockito.verify(storage).findConversationSummaries("session");
+        try (ExecutorService executor = Executors.newFixedThreadPool(2)) {
+            Future<List<AIChatConversation>> first = executor.submit(() -> session.getAllConversations(null));
+            Assertions.assertTrue(historyLoadStarted.await(5, TimeUnit.SECONDS));
+            Future<List<AIChatConversation>> second = executor.submit(() -> session.getAllConversations(null));
+            try {
+                Assertions.assertThrows(TimeoutException.class, () -> second.get(200, TimeUnit.MILLISECONDS));
+            } finally {
+                releaseHistory.countDown();
+            }
+            Assertions.assertTrue(first.get(5, TimeUnit.SECONDS).isEmpty());
+            Assertions.assertTrue(second.get(5, TimeUnit.SECONDS).isEmpty());
         } finally {
             releaseHistory.countDown();
         }
-        session.getInitializationCompletion().toCompletableFuture().get(5, TimeUnit.SECONDS);
-        Assertions.assertTrue(session.getAllConversations(null).isEmpty());
-        Mockito.verify(storage).findConversationSummaries("session");
     }
 
     @Test
@@ -81,7 +110,8 @@ public class AIChatSessionTest extends DBeaverUnitTest {
             monitor -> "session", Mockito.mock(UserTokenQuotaService.class)
         );
 
-        Assertions.assertSame(failure, Assertions.assertThrows(DBException.class, () -> session.getAllConversations(null)));
+        Assertions.assertSame(failure, Assertions.assertThrows(DBException.class, () -> session.init(new VoidProgressMonitor())));
+        session.init(new VoidProgressMonitor());
         Assertions.assertTrue(session.getAllConversations(null).isEmpty());
         Assertions.assertTrue(session.getAllConversations(null).isEmpty());
         Mockito.verify(storage, Mockito.times(2)).findConversationSummaries("session");
@@ -98,7 +128,7 @@ public class AIChatSessionTest extends DBeaverUnitTest {
             }, Mockito.mock(UserTokenQuotaService.class)
         );
 
-        Assertions.assertSame(failure, Assertions.assertThrows(DBException.class, session::init));
+        Assertions.assertSame(failure, Assertions.assertThrows(DBException.class, () -> session.init(new VoidProgressMonitor())));
         Mockito.verifyNoInteractions(storage);
     }
 

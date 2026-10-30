@@ -77,7 +77,6 @@ import java.nio.file.Path;
 import java.time.Clock;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
 
 public class AIChatControl extends Composite implements AIChatContextProvider {
     private static final Log log = Log.getLog(AIChatControl.class);
@@ -536,41 +535,42 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         if (dataSourceInitializationPending) {
             return;
         }
+        if (isDataSourceInitialized) {
+            selectDataSource(container);
+            return;
+        }
         dataSourceInitializationPending = true;
         chatSession.setBusy(true);
-        boolean deferred = false;
-        try {
-            AIChatConversation conversation = chatSession.getLastConversation(container);
-            setCompletionSettings(container == null || conversation == null ? null : chatSession.getConversationSettings(conversation));
-            selectConversation(conversation != null ? conversation : createEmptyConversation(container));
-            isDataSourceInitialized = true;
-        } catch (DBException e) {
-            if (!(e instanceof AIChatSession.InitializationInProgressException)) {
-                throw e;
+        new AbstractJob("Initialize AI chat session") {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                try {
+                    chatSession.init(monitor);
+                    UIUtils.asyncExec(() -> completeDataSourceInitialization(null));
+                } catch (Exception e) {
+                    UIUtils.asyncExec(() -> completeDataSourceInitialization(e));
+                }
+                return Status.OK_STATUS;
             }
-            CompletionStage<Void> completion = chatSession.getInitializationCompletion();
-            deferred = true;
-            completion.whenComplete((ignored, error) -> UIUtils.asyncExec(() -> completeDataSourceInitialization(error)));
-        } finally {
-            if (!deferred) {
-                dataSourceInitializationPending = false;
-                chatSession.setBusy(false);
-            }
-        }
-        if (!deferred && requestedDataSource != container) {
-            setDataSource(requestedDataSource);
-        }
+        }.schedule();
+    }
+
+    private void selectDataSource(@Nullable DBPDataSourceContainer container) throws DBException {
+        AIChatConversation conversation = chatSession.getLastConversation(container);
+        setCompletionSettings(container == null || conversation == null ? null : chatSession.getConversationSettings(conversation));
+        selectConversation(conversation != null ? conversation : createEmptyConversation(container));
+        isDataSourceInitialized = true;
     }
 
     private void completeDataSourceInitialization(@Nullable Throwable error) {
         if (isDisposed()) {
             return;
         }
-        dataSourceInitializationPending = false;
         try {
             if (error == null) {
                 try {
-                    setDataSource(requestedDataSource);
+                    selectDataSource(requestedDataSource);
                     return;
                 } catch (DBException e) {
                     error = e;
@@ -582,6 +582,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                 error
             );
         } finally {
+            dataSourceInitializationPending = false;
             chatSession.setBusy(false);
         }
     }
