@@ -77,7 +77,6 @@ public class OSGIFrameworkHandler {
     private String[] args;
     private String[] vmArgs;
     private RunWithApplication.Property[] frameworkProperties;
-    private boolean waitForWorkbench;
     private TestLauncher launcher;
 
     public OSGIFrameworkHandler(
@@ -120,7 +119,6 @@ public class OSGIFrameworkHandler {
             this.vmArgs = annotation.vmArgs();
             this.frameworkProperties = annotation.properties();
             this.forceDependencies = Arrays.stream(annotation.forceDependencies()).collect(Collectors.toSet());
-            this.waitForWorkbench = annotation.waitForWorkbench();
 
         } else {
             throw new IllegalArgumentException("Application not found");
@@ -182,26 +180,7 @@ public class OSGIFrameworkHandler {
             return;
         }
 
-        // headless apps need DBPApplicationWorkbench before startup; CLI apps never register it,
-        // so skipping the wait saves about 10s for em
-        if (waitForWorkbench) {
-            long workbenchWaitDeadline = System.currentTimeMillis() + 10000;
-            while (context.getServiceReference("org.jkiss.dbeaver.model.app.DBPApplicationWorkbench") == null
-                    && System.currentTimeMillis() < workbenchWaitDeadline) {
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException e) {
-                    break;
-                }
-            }
-            if (context.getServiceReference("org.jkiss.dbeaver.model.app.DBPApplicationWorkbench") != null) {
-                log.info("DBPApplicationWorkbench service is registered.");
-            } else {
-                log.debug("DBPApplicationWorkbench service not registered within 10s.");
-            }
-        }
-
-        // start the app only after the workbench wait - else it races Felix SCR services not yet created
+        // Start the app after the framework is ready; it creates its platform directly.
         if (launcher != null) {
             log.info("Starting headless application...");
             Thread appThread = new Thread(() -> launcher.start(appRegistryName, args));
@@ -295,7 +274,7 @@ public class OSGIFrameworkHandler {
             // non-async tests: start the app synchronously now
             launcher.start(appRegistryName, args);
         }
-        // async tests start the app in waitUntilReady(), once DBPApplicationWorkbench is registered
+        // Async tests start the app in waitUntilReady().
     }
 
     @NotNull
