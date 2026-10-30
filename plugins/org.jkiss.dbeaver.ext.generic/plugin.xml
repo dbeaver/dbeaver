@@ -74,6 +74,13 @@
             iconBig="icons/apache_icon_big.png"
             logoImage="icons/apache_logo.png"/>
         <dataSourceType
+            id="apache_arrow_flight_sql"
+            label="Apache Arrow Flight SQL"
+            description="%driver.apache_arrow_flight_sql.description"
+            dataSourceInformation="%driver.apache_arrow_flight_sql.information"
+            icon="icons/apache_icon.png"
+            iconBig="icons/apache_icon_big.png"/>
+        <dataSourceType
             id="apache_calcite_avatica"
             label="Apache Calcite Avatica"
             description="Apache Calcite SQL query engine"
@@ -1353,6 +1360,26 @@
                     <file type="jar" path="maven:/io.crate:crate-jdbc:RELEASE"/>
                 </driver>
 
+                <!-- Apache Arrow Flight SQL -->
+                <driver
+                    id="apache_arrow_flight_sql"
+                    dataSourceType="apache_arrow_flight_sql"
+                    label="Apache Arrow Flight SQL"
+                    class="org.apache.arrow.driver.jdbc.ArrowFlightJdbcDriver"
+                    sampleURL="jdbc:arrow-flight-sql://{host}:{port}/"
+                    description="%driver.apache_arrow_flight_sql.description"
+                    supportedConfigurationTypes="MANUAL,URL"
+                    webURL="https://arrow.apache.org/java/current/flight_sql_jdbc_driver.html"
+                    allowsEmptyPassword="true"
+                    categories="sql,analytic">
+                    <file type="jar" path="maven:/org.apache.arrow:flight-sql-jdbc-driver:19.0.0"/>
+                    <file type="license" path="licenses/external/asl-2.0.txt"/>
+                    <!-- GizmoSQL uses the same driver class but has vendor-specific metadata queries. -->
+                    <parameter name="meta-model" value="apache_arrow_flight_sql"/>
+                    <property name="useEncryption" value="true"/>
+                    <property name="disableCertificateVerification" value="false"/>
+                </driver>
+
                 <!-- GizmoSQL -->
                 <driver
                     id="gizmosql"
@@ -1899,6 +1926,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="apache_arrow_flight_sql" class="org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel"/>
         <meta id="gizmosql" class="org.jkiss.dbeaver.ext.generic.model.meta.gizmosql.GizmoSQLMetaModel" driverClass="org.apache.arrow.driver.jdbc.ArrowFlightJdbcDriver"/>
         <meta id="indexed" class="org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel">
             <object type="catalog">
