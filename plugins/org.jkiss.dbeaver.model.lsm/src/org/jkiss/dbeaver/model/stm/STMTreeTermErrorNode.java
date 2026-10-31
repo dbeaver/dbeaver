@@ -47,13 +47,13 @@ public class STMTreeTermErrorNode extends ErrorNodeImpl implements STMTreeNode {
     
     @NotNull
     public Interval getRealInterval() {
-        return new Interval(this.getSymbol().getStartIndex(), this.getSymbol().getStopIndex());
+        return STMUtils.getRealInterval(this.getSymbol(), this.getSymbol());
     }
 
     @NotNull
     @Override
     public String getTextContent() {
-        Interval textRange = this.getRealInterval();
+        Interval textRange = Interval.of(this.getSymbol().getStartIndex(), this.getSymbol().getStopIndex());
         return this.getSymbol().getInputStream().getText(textRange);
     }
 

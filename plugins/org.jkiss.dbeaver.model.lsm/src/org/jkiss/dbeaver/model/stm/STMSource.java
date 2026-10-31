@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.stm;
 
 import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
 import org.jkiss.code.NotNull;
 
 import java.io.IOException;
@@ -45,6 +44,6 @@ public interface STMSource {
      * Prepare source based on text string
      */
     public static STMSource fromString(String string) {
-        return () -> CharStreams.fromString(string);
+        return new STMSourceImpl(string);
     }
 }

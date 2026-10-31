@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.stm;
 
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.misc.Interval;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.TerminalNode;
@@ -28,6 +30,15 @@ import java.util.*;
 import java.util.function.Function;
 
 public class STMUtils {
+
+    @NotNull
+    public static Interval getRealInterval(@NotNull Token start, @NotNull Token stop) {
+        CharStream input = start.getInputStream();
+        if (input instanceof STMSourceCharStream source) {
+            return source.toUtf16Interval(start.getStartIndex(), stop.getStopIndex());
+        }
+        return Interval.of(start.getStartIndex(), stop.getStopIndex());
+    }
 
     @NotNull
     public static List<STMTreeNode> expandSubtree(
