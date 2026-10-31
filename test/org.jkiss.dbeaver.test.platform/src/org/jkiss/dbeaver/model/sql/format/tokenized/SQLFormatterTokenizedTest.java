@@ -367,6 +367,36 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void shouldKeepWordDelimiterFollowedByLineComment() {
+        //given
+        String inputString = "SELECT 1" + lineBreak + "GO -- note" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(new String[] { ";", "GO" });
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains(";"), formattedString);
+    }
+
+    @Test
+    public void shouldKeepWordDelimiterFollowedByRepeatCount() {
+        //given
+        String inputString = "SELECT 1" + lineBreak + "GO 5" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(new String[] { ";", "GO" });
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains(";"), formattedString);
+    }
+
+    @Test
     public void shouldInsertDelimiterInEmptyLineBetweenQueries() {
         //given
         String expectedString = "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tt1;" + lineBreak + lineBreak +

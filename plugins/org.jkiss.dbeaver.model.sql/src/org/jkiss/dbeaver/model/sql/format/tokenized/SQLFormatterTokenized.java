@@ -272,6 +272,10 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 }
             } else if (isStatementDelimiter(argList, i)) {
                 hasQueryContent = false;
+                if (isWordDelimiter(token.getString())) {
+                    // The repeat count (e.g. GO 5) belongs to the delimiter, it is not a part of a query
+                    i = skipRepeatCount(argList, i);
+                }
             } else if (!isPlainComment(token, executableCommentPrefixes)) {
                 hasQueryContent = true;
                 contentEndIndex = i + 1;
@@ -286,13 +290,13 @@ public class SQLFormatterTokenized implements SQLFormatter {
         int contentEndIndex,
         @NotNull String[] executableCommentPrefixes
     ) {
+        if (!hasQueryContent) {
+            // There is nothing to terminate: the statement is empty or has only comments
+            return -1;
+        }
         int commentIndex = emptyLineIndex - 1;
         if (commentIndex < 0 || !isPlainComment(argList.get(commentIndex), executableCommentPrefixes)) {
             return emptyLineIndex;
-        }
-        if (!hasQueryContent) {
-            // A comment is not a query, there is nothing to terminate
-            return -1;
         }
         if (argList.get(commentIndex).getString().startsWith(SQLConstants.ML_COMMENT_START)) {
             // The delimiter is valid right after a multi-line comment
@@ -309,11 +313,15 @@ public class SQLFormatterTokenized implements SQLFormatter {
         if (!statementDelimiters.contains(text.toUpperCase(Locale.ENGLISH))) {
             return false;
         }
-        if (text.isEmpty() || !Character.isLetter(text.charAt(0))) {
+        if (!isWordDelimiter(text)) {
             return true;
         }
         // A word delimiter is valid only on a line of its own, otherwise it is an identifier (e.g. an alias)
-        return isLineBoundary(argList, index - 1) && isLineBoundary(argList, index + 1);
+        return isLineBoundary(argList, index - 1) && hasBatchDelimiterLineEnding(argList, index);
+    }
+
+    private static boolean isWordDelimiter(@NotNull String text) {
+        return !text.isEmpty() && Character.isLetter(text.charAt(0));
     }
 
     private static boolean isLineBoundary(@NotNull List<FormatterToken> argList, int index) {
@@ -322,6 +330,49 @@ public class SQLFormatterTokenized implements SQLFormatter {
         }
         FormatterToken token = argList.get(index);
         return token.getType() == TokenType.SPACE && token.getString().indexOf('\n') >= 0;
+    }
+
+    /**
+     * Checks the rest of the batch delimiter line the same way as the script parser does:
+     * after the delimiter and its optional repeat count there is nothing but a line end or a single-line comment.
+     */
+    private static boolean hasBatchDelimiterLineEnding(@NotNull List<FormatterToken> argList, int delimiterIndex) {
+        int index = skipInlineSpaces(argList, skipRepeatCount(argList, delimiterIndex) + 1);
+        if (index >= argList.size()) {
+            return true;
+        }
+        FormatterToken token = argList.get(index);
+        if (token.getType() == TokenType.SPACE) {
+            // Inline spaces are skipped already, so this one has a line break
+            return true;
+        }
+        return token.getType() == TokenType.COMMENT && !token.getString().startsWith(SQLConstants.ML_COMMENT_START);
+    }
+
+    /**
+     * Returns the index of the repeat count token which follows the batch delimiter (e.g. GO 5)
+     * or the index of the delimiter itself if there is no count.
+     */
+    private static int skipRepeatCount(@NotNull List<FormatterToken> argList, int delimiterIndex) {
+        int index = skipInlineSpaces(argList, delimiterIndex + 1);
+        if (index < argList.size() && argList.get(index).getType() == TokenType.VALUE) {
+            String value = argList.get(index).getString();
+            if (value.chars().allMatch(Character::isDigit) && value.chars().anyMatch(c -> c != '0')) {
+                return index;
+            }
+        }
+        return delimiterIndex;
+    }
+
+    private static int skipInlineSpaces(@NotNull List<FormatterToken> argList, int fromIndex) {
+        int index = fromIndex;
+        while (index < argList.size()
+            && argList.get(index).getType() == TokenType.SPACE
+            && argList.get(index).getString().indexOf('\n') < 0
+        ) {
+            index++;
+        }
+        return index;
     }
 
     private static boolean isPlainComment(@NotNull FormatterToken token, @NotNull String[] executableCommentPrefixes) {
