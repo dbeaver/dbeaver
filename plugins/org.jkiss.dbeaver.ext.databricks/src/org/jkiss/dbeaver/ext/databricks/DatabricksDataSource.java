@@ -77,7 +77,7 @@ public class DatabricksDataSource extends GenericDataSource implements DBDValueH
     @Override
     protected Properties getAllConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
@@ -111,8 +111,9 @@ public class DatabricksDataSource extends GenericDataSource implements DBDValueH
         }
     }
 
+    @NotNull
     @Override
-    public JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    public JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new DatabricksExecutionContext(instance, type);
     }
 

@@ -234,6 +234,7 @@ public class ResultSetViewer extends Viewer
     private HistoryStateItem curState = null;
     private final List<HistoryStateItem> stateHistory = new ArrayList<>();
     private int historyPosition = -1;
+    private final ResultSetUndoRedoManager undoRedoManager = new ResultSetUndoRedoManager(this);
 
     private final AutoRefreshControl autoRefreshControl;
     private boolean actionsDisabled;
@@ -543,6 +544,8 @@ public class ResultSetViewer extends Viewer
             scheduleThemeUpdate();
         } else if (ResultSetPreferences.RESULT_SET_SHOW_FILTER_PANEL.equals(property)) {
             updateFilterPanelVisibility();
+        } else if (ResultSetPreferences.RS_EDIT_UNDO_LEVEL.equals(property)) {
+            undoRedoManager.updateLimit();
         }
     }
 
@@ -1832,7 +1835,7 @@ public class ResultSetViewer extends Viewer
         @Nullable int[] rowIndexes,
         @Nullable Object value,
         boolean refreshHints) throws DBException {
-        boolean updated = model.updateCellValue(attr, row, rowIndexes, value, true);
+        boolean updated = undoRedoManager.updateCellValue(attr, row, rowIndexes, value);
         if (updated && refreshHints) {
             refreshHintCache(
                 Collections.singletonList(attr),
@@ -1848,11 +1851,29 @@ public class ResultSetViewer extends Viewer
         @NotNull ResultSetRow row,
         @Nullable int[] rowIndexes
     ) {
-        model.resetCellValue(attr, row, rowIndexes);
+        if (!undoRedoManager.resetCellValue(attr, row, rowIndexes)) {
+            return;
+        }
         refreshHintCache(
             Collections.singletonList(attr),
             Collections.singletonList(row),
             rowIndexes);
+    }
+
+    public boolean canUndoCellEdit() {
+        return undoRedoManager.canUndo();
+    }
+
+    public boolean canRedoCellEdit() {
+        return undoRedoManager.canRedo();
+    }
+
+    public void undoCellEdit() {
+        undoRedoManager.undo();
+    }
+
+    public void redoCellEdit() {
+        undoRedoManager.redo();
     }
 
     @Override
@@ -2193,7 +2214,8 @@ public class ResultSetViewer extends Viewer
 
         // overwrite current model's filters because otherwise they will be aggregated on resultset's metadata update while the former one
         // might have been describing different entity reference and is not adequate for the current targetEntity of intereset
-        model.setDataFilter(newFilter);
+        // The model still has source attributes and may add their constraints. Keep the target filter intact for the data pump.
+        model.setDataFilter(new DBDDataFilter(newFilter));
 
         runDataPump(targetEntity, newFilter, 0, getSegmentMaxRows(), -1, true, false, false, null);
     }
@@ -2336,6 +2358,16 @@ public class ResultSetViewer extends Viewer
         boolean newRow = (curRow != null && curRow.getState() == ResultSetRow.STATE_ADDED);
         if (!newRow) {
             String status = DBExecUtils.getAttributeReadOnlyStatus(attr, checkKey);
+            DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
+            DBSObject dataContainer = rowIdentifier == null ? getDataContainer() : rowIdentifier.getEntity();
+            DBSEntityAttribute entityAttribute = attr.getEntityAttribute();
+            if (rowIdentifier == null && entityAttribute != null) {
+                dataContainer = entityAttribute.getParentObject();
+            }
+            if (dataContainer instanceof DBSDataManipulator dataManipulator &&
+                !dataManipulator.isFeatureSupported(DBSDataManipulator.FEATURE_DATA_UPDATE)) {
+                return status;
+            }
             if (status != null && checkKey) {
                 DBCExecutionContext executionContext = getExecutionContext();
                 if (executionContext != null) {
@@ -2723,6 +2755,7 @@ public class ResultSetViewer extends Viewer
      */
     void setMetaData(@NotNull DBCResultSet resultSet, @NotNull DBDAttributeBinding[] attributes)
     {
+        UIUtils.syncExec(undoRedoManager::clear);
         model.setMetaData(resultSet, attributes);
         activePresentation.clearMetaData();
     }
@@ -2732,6 +2765,7 @@ public class ResultSetViewer extends Viewer
         if (viewerPanel.isDisposed()) {
             return;
         }
+        UIUtils.syncExec(undoRedoManager::clear);
         this.curRow = null;
         this.model.setData(monitor, rows);
         this.curRow = (this.model.getRowCount() > 0 ? this.model.getRow(0) : null);
@@ -2771,6 +2805,9 @@ public class ResultSetViewer extends Viewer
     }
 
     void appendData(@NotNull DBRProgressMonitor monitor, List<Object[]> rows, boolean resetOldRows) {
+        if (resetOldRows) {
+            UIUtils.syncExec(undoRedoManager::clear);
+        }
         model.appendData(monitor, rows, resetOldRows);
 
         UIUtils.asyncExec(() -> {
@@ -2889,9 +2926,19 @@ public class ResultSetViewer extends Viewer
      */
     public boolean isInsertable()
     {
+        return isManipulationSupported(DBSDataManipulator.FEATURE_DATA_INSERT);
+    }
+
+    public boolean isDeletable() {
+        return isManipulationSupported(DBSDataManipulator.FEATURE_DATA_DELETE);
+    }
+
+    private boolean isManipulationSupported(@NotNull String feature) {
         return
+            !DATA_EDIT_DISABLED &&
             getReadOnlyStatus() == null &&
-            model.getSingleSource() instanceof DBSDataManipulator &&
+            model.getSingleSource() instanceof DBSDataManipulator manipulator &&
+            manipulator.isFeatureSupported(feature) &&
             model.getVisibleAttributeCount() > 0;
     }
 
@@ -4591,6 +4638,7 @@ public class ResultSetViewer extends Viewer
             }
             dataPumpRunning.set(false);
         }
+        undoRedoManager.updateActions();
     }
 
     void releaseDataReadLock() {
@@ -4600,6 +4648,7 @@ public class ResultSetViewer extends Viewer
             }
             dataPumpRunning.set(false);
         }
+        undoRedoManager.updateActions();
     }
 
     boolean acquireDataReadLock() {
@@ -4609,11 +4658,17 @@ public class ResultSetViewer extends Viewer
             }
             dataPumpRunning.set(true);
         }
+        undoRedoManager.updateActions();
         return true;
+    }
+
+    void clearCellEditHistory() {
+        undoRedoManager.clear();
     }
 
     public void clearData(boolean clearMetaData)
     {
+        undoRedoManager.clear();
         this.model.releaseAllData();
         this.model.clearData();
         this.curRow = null;
@@ -4686,6 +4741,9 @@ public class ResultSetViewer extends Viewer
                         log.error("Error refreshing rows after update", e);
                     }
                 }
+                if (success) {
+                    UIUtils.syncExec(undoRedoManager::clear);
+                }
                 UIUtils.syncExec(() -> autoRefreshControl.scheduleAutoRefresh(!success));
             };
 
@@ -4735,6 +4793,7 @@ public class ResultSetViewer extends Viewer
         fireResultSetSelectionChange(new SelectionChangedEvent(ResultSetViewer.this, getSelection()));
         try {
             createDataPersister(true).rejectChanges();
+            undoRedoManager.clear();
             if (model.getAllRows().isEmpty()) {
                 curRow = null;
                 selectedRecords = new int[0];
@@ -4794,6 +4853,9 @@ public class ResultSetViewer extends Viewer
 
     @NotNull
     public ResultSetRow addNewRow(@NotNull RowPlacement placement, boolean copyCurrent, boolean updatePresentation) {
+        if (!isInsertable()) {
+            throw new IllegalStateException("Result set does not support row insertion");
+        }
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext == null) {
             throw new IllegalStateException("Can't add/copy rows in disconnected results");
@@ -5133,6 +5195,11 @@ public class ResultSetViewer extends Viewer
         if (rowsToDelete.isEmpty()) {
             return;
         }
+        if (!isDeletable() && (!isInsertable() || rowsToDelete.stream().anyMatch(row -> row.getState() != ResultSetRow.STATE_ADDED))) {
+            return;
+        }
+
+        undoRedoManager.clear();
 
         int rowsRemoved = 0;
         int lastRowNum = -1;
@@ -5208,6 +5275,7 @@ public class ResultSetViewer extends Viewer
     }
 
     void fireResultSetChange() {
+        undoRedoManager.updateActions();
         for (IResultSetListener listener : getListenersCopy()) {
             listener.handleResultSetChange();
         }

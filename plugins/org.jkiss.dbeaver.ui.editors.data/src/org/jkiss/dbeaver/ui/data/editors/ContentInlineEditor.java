@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
@@ -30,6 +29,7 @@ import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.data.managers.ContentValueManager;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -40,7 +40,6 @@ import java.nio.ByteBuffer;
 */
 public class ContentInlineEditor extends BaseValueEditor<Text> {
     private static final int MAX_STRING_LENGTH = 0xfffff;
-    private static final Log log = Log.getLog(ContentInlineEditor.class);
 
     private final boolean isText;
 
@@ -89,11 +88,12 @@ public class ContentInlineEditor extends BaseValueEditor<Text> {
     }
 
     @Override
-    public Object extractEditorValue()
+    public Object extractEditorValue() throws DBException
     {
         String newValue = control.getText();
-        final DBDContent content = (DBDContent) valueController.getValue();
-        assert content != null;
+        DBDContent original = (DBDContent) valueController.getValue();
+        assert original != null;
+        DBDContent content = ContentValueManager.copyContentForEdit(new VoidProgressMonitor(), original);
         try {
             if (isText) {
                 content.updateContents(
@@ -105,7 +105,10 @@ public class ContentInlineEditor extends BaseValueEditor<Text> {
                     new BytesContentStorage(newValue.getBytes(GeneralUtils.getDefaultFileEncoding()), GeneralUtils.getDefaultFileEncoding()));
             }
         } catch (Exception e) {
-            log.error(e);
+            if (content != original) {
+                content.release();
+            }
+            throw new DBException("Error extracting content", e);
         }
         return content;
     }

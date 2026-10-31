@@ -4,11 +4,20 @@
 
     <extension
         point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="wmi"
+            label="WMI"
+            description="Windows Management Instrumentation data"
+            dataSourceInformation="Windows system management and monitoring data"
+            icon="icons/wmi_icon.png"
+            iconBig="icons/wmi_icon_big.png"
+            logoImage="icons/wmi_icon_big.png"/>
         <datasource
             class="org.jkiss.dbeaver.ext.wmi.WMIDataSourceProvider"
             description="WMI connector"
             icon="icons/wmi_icon.png"
             id="wmi"
+            dataSourceType="wmi"
             label="WMI"
             dialect="wmi">
             <tree
@@ -48,8 +57,6 @@
                 <driver
                     id="wmi"
                     label="WMI"
-                    icon="icons/wmi_icon.png"
-                    iconBig="icons/wmi_icon_big.png"
                     description="WMI Native driver"
                     class="org.jkiss.wmi.service.WMIServiceNative"
                     customDriverLoader="true"

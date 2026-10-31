@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -70,11 +70,18 @@ public class FireBirdView extends GenericView implements FireBirdTableBase, DBSO
         return columns;
     }
 
-    public String getColumnDomainType(DBRProgressMonitor monitor, FireBirdTableColumn column) throws DBException {
+    @Nullable
+    @Override
+    public String getColumnDomainType(@NotNull DBRProgressMonitor monitor, @NotNull FireBirdTableColumn column) throws DBException {
         if (columnDomainTypes == null) {
             columnDomainTypes = FireBirdUtils.readColumnDomainTypes(monitor, this);
         }
         return columnDomainTypes.get(column.getName());
+    }
+
+    @Override
+    public void setColumnDomainTypes(@NotNull Map<String, String> columnDomainTypes) {
+        this.columnDomainTypes = columnDomainTypes;
     }
 
 }

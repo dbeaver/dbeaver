@@ -31,6 +31,11 @@ public interface AIFunctionDescriptor {
     @NotNull
     String getId();
 
+    @Nullable
+    default String getLegacyId() {
+        return null;
+    }
+
     @NotNull
     default String getFullId() {
         return getFullFunctionId(getToolbox().getToolboxId(), getId());

@@ -146,7 +146,7 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
         AIMessageMeta messageMeta = new AIMessageMeta(
             AIMetaTypes.PROMPT,
             engineDescriptor.getId(),
-            engine.getProperties().getModel(),
+            engine.getProperties().getModelDisplayName(),
             usage,
             Duration.between(startTime, Instant.now()),
             systemPromptLength.get()

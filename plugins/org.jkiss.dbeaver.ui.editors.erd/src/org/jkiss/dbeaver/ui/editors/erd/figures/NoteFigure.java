@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import org.eclipse.draw2d.MarginBorder;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.text.FlowPage;
 import org.eclipse.draw2d.text.TextFlow;
+import org.eclipse.swt.graphics.Color;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.erd.ERDNote;
 import org.jkiss.dbeaver.ui.editors.erd.ERDUIConstants;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDThemeSettings;
@@ -38,8 +40,10 @@ import org.jkiss.dbeaver.ui.editors.erd.editor.ERDThemeSettings;
 public class NoteFigure extends FlowPage {
 
     private final TextFlow textFlow;
+    private Color themeBackground;
+    private Color themeForeground;
 
-    public NoteFigure(ERDNote note) {
+    public NoteFigure(@NotNull ERDNote note) {
         //super(note.getObject());
         textFlow = new TextFlow(note.getObject());
         add(textFlow);
@@ -51,8 +55,25 @@ public class NoteFigure extends FlowPage {
             new LineBorder(ERDThemeSettings.instance.linesForeground, ERDUIConstants.DEFAULT_NOTE_BORDER_WIDTH),
             new MarginBorder(5)
         ));
+        themeBackground = getBackgroundColor();
+        themeForeground = getForegroundColor();
     }
 
+    public void refreshTheme() {
+        if (getBackgroundColor() == themeBackground) {
+            setBackgroundColor(ERDThemeSettings.instance.noteBackground);
+        }
+        if (getForegroundColor() == themeForeground) {
+            setForegroundColor(ERDThemeSettings.instance.noteForeground);
+        }
+        themeBackground = ERDThemeSettings.instance.noteBackground;
+        themeForeground = ERDThemeSettings.instance.noteForeground;
+        if (getBorder() instanceof CompoundBorder border && border.getOuterBorder() instanceof LineBorder lineBorder) {
+            lineBorder.setColor(ERDThemeSettings.instance.linesForeground);
+        }
+    }
+
+    @NotNull
     public TextFlow getTextFlow() {
         return textFlow;
     }

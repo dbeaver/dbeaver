@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,17 +34,50 @@ public class DatabaseURL {
 
     public static class Generic {
 
-        public static final String TEMPLATE = "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}]";
+        private static final String TEMPLATE = "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}]";
 
-        public static final String TEMPLATE_WITH_PARAMS =
+        private static final String TEMPLATE_WITH_PARAMS =
             "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}][?{prop}={value}[&{prop}={value}...]]";
 
-        public static final String TEMPLATE_WITH_PARAM_GROUPS =
+        private static final String TEMPLATE_WITH_PARAM_GROUPS =
             "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}][?{param:{prop}={value}}[&{param:{prop}={value}}...]]";
 
         public static final String PARAM_GROUP = "param";
         public static final String PARAM_PROP = "prop";
         public static final String PARAM_VALUE = "value";
+
+        private static final Pattern URL_PATTERN = createPattern(TEMPLATE);
+        private static final Pattern URL_PATTERN_WITH_PARAMS = createPattern(TEMPLATE_WITH_PARAMS);
+        private static final Pattern URL_PATTERN_WITH_PARAM_GROUPS = createPattern(TEMPLATE_WITH_PARAM_GROUPS);
+
+        @NotNull
+        private static Pattern createPattern(@NotNull String template) {
+            try {
+                return DatabaseURL.getUrlPattern(template, param -> switch (param.name()) {
+                    case PARAM_PROP -> "[^&=]+";
+                    case PARAM_VALUE -> "[^&]*";
+                    case DBConstants.PROP_DATABASE -> "(?:[\\w\\-_.~]|%[0-9a-fA-F]{2})+";
+                    default -> getPropertyRegex(param.name());
+                });
+            } catch (StringTemplate.StringTemplateFormatException exception) {
+                throw new ExceptionInInitializerError(exception);
+            }
+        }
+
+        @NotNull
+        public static Pattern getUrlPattern() {
+            return URL_PATTERN;
+        }
+
+        @NotNull
+        public static Pattern getUrlPatternWithParams() {
+            return URL_PATTERN_WITH_PARAMS;
+        }
+
+        @NotNull
+        public static Pattern getUrlPatternWithParamGroups() {
+            return URL_PATTERN_WITH_PARAM_GROUPS;
+        }
 
         @NotNull
         public static Map<String, String> extractExtraParams(@NotNull StringTemplate.ParamEntries root) {
@@ -64,6 +97,7 @@ public class DatabaseURL {
     }
 
     private static final Log log = Log.getLog(DatabaseURL.class);
+    private static final String URL_SUFFIX_PARAMETER = "dbeaverUrlSuffix";
 
     @NotNull
     private static final Object lock = new Object();
@@ -153,15 +187,56 @@ public class DatabaseURL {
         }
     }
 
+    @NotNull
+    public static String replaceHostAndPort(
+        @NotNull DBPDriver driver,
+        @NotNull String url,
+        @NotNull String hostName,
+        int hostPort
+    ) throws DBException {
+        if (CommonUtils.isEmpty(hostName) || hostPort < 1 || hostPort > 65535) {
+            throw new DBException("Invalid tunnel endpoint");
+        }
+        String sampleUrl = CommonUtils.isNotEmpty(driver.getSampleURL()) ? driver.getSampleURL() : Generic.TEMPLATE;
+        StringTemplate template = StringTemplate.parseTemplate(
+            sampleUrl + "{" + URL_SUFFIX_PARAMETER + "}", parameter -> switch (parameter.name()) {
+                case DBConstants.PROP_HOST -> "(?:\\[[\\w:.%-]+\\]|[\\p{L}\\p{N}_\\-.~]+)";
+                case DBConstants.PROP_PORT -> "[0-9]+";
+                case DBConstants.PROP_DATABASE, DBConstants.PROP_USER, DBConstants.PROP_PASSWORD ->
+                    "(?:[\\p{L}\\p{N}_\\-.~]|%[0-9a-fA-F]{2})+";
+                case URL_SUFFIX_PARAMETER -> ".*";
+                default -> getPropertyRegex(parameter.name());
+            }
+        );
+        Map<String, String> parameters = template.extractSingletonParametersMap(url);
+        String suffix = parameters == null ? null : parameters.get(URL_SUFFIX_PARAMETER);
+        int queryStart = url.indexOf('?');
+        boolean validSuffix = suffix != null && (suffix.isEmpty() || "?;#".indexOf(suffix.charAt(0)) >= 0
+            || queryStart >= 0 && queryStart < url.length() - suffix.length());
+        String localHost = hostName.indexOf(':') >= 0 && !hostName.startsWith("[") ? "[" + hostName + "]" : hostName;
+        String updated = validSuffix ? template.replaceParameters(url, Map.of(
+            DBConstants.PROP_HOST, localHost,
+            DBConstants.PROP_PORT, Integer.toString(hostPort)
+        )) : null;
+        if (updated != null) {
+            return updated;
+        }
+        throw new DBException("Cannot redirect database URL to a single tunnel endpoint using the driver URL template");
+    }
+
     @Nullable
     public static DBPConnectionConfiguration extractConfigurationFromUrl(@NotNull String sampleUrl, @NotNull String targetUrl) {
-        Map<String, String> params;
         try {
-            params = getUrlTemplate(sampleUrl).extractSingletonParametersMap(targetUrl);
+            return extractConfigurationFromUrl(getUrlPattern(sampleUrl), targetUrl);
         } catch (DBException e) {
             log.debug("Failed to extract configuration from the url", e);
             return null;
         }
+    }
+
+    @Nullable
+    public static DBPConnectionConfiguration extractConfigurationFromUrl(@NotNull Pattern pattern, @NotNull String targetUrl) {
+        Map<String, String> params = pattern.tryRecognize(targetUrl);
         if (params == null || params.isEmpty()) {
             return null;
         }
@@ -212,6 +287,14 @@ public class DatabaseURL {
         return new Pattern(getUrlTemplate(sampleURL));
     }
 
+    @NotNull
+    public static Pattern getUrlPattern(
+        @NotNull String sampleURL,
+        @NotNull StringTemplate.IParameterPatternSupplier parameterPatternSupplier
+    ) throws StringTemplate.StringTemplateFormatException {
+        return new Pattern(StringTemplate.parseTemplate(sampleURL, parameterPatternSupplier));
+    }
+
     public static class Pattern {
         @NotNull
         private final StringTemplate template;
@@ -250,6 +333,11 @@ public class DatabaseURL {
         @Nullable
         public StringTemplate.ParamEntries tryRecognizeHierarchical(@NotNull String urlString) {
             return this.template.extractAllParametersTree(urlString);
+        }
+
+        @Nullable
+        public StringTemplate.ParamEntries tryRecognizeHierarchical(@NotNull String urlString, boolean matchEntireString) {
+            return this.template.extractAllParametersTree(urlString, matchEntireString);
         }
     }
 }

@@ -2,10 +2,19 @@
 <?eclipse version="3.2"?>
 <plugin>
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="greptimedb"
+            label="GreptimeDB"
+            description="GreptimeDB time-series database"
+            dataSourceInformation="Time-series database for operational data"
+            icon="icons/greptime_icon.svg"
+            iconBig="icons/greptime_icon_big.svg"
+            logoImage="icons/greptime_logo.svg"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.greptime.GreptimeDataSourceProvider"
                 description="GreptimeDB"
                 id="greptime"
+                dataSourceType="greptimedb"
                 parent="generic"
                 dialect="greptime"
                 label="GreptimeDB"
@@ -14,9 +23,6 @@
                 <driver
                         id="greptime"
                         label="GreptimeDB"
-                        icon="icons/greptime_icon.svg"
-                        iconBig="icons/greptime_icon_big.svg"
-                        logoImage="icons/greptime_logo.svg"
                         class="com.mysql.cj.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         supportedConfigurationTypes="MANUAL,URL"

@@ -39,6 +39,11 @@ import java.util.Set;
  */
 public interface DBPDriver extends DBPNamedObject, DBPDriverLibraryProvider {
 
+    @Nullable
+    default DBPDataSourceType getDataSourceType() {
+        return getProviderDescriptor().getDataSourceType();
+    }
+
     /**
      * Driver contributor
      */

@@ -17,14 +17,21 @@
 package org.jkiss.dbeaver.ext.cdata.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.cdata.CDataLicenseUIService;
+import org.jkiss.dbeaver.ext.cdata.model.CDataConnectionUrl;
 import org.jkiss.dbeaver.ext.cdata.model.CDataIcons;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLicense;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyIcon;
+import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyLogo;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLicense;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -33,22 +40,31 @@ import org.jkiss.dbeaver.registry.driver.DriverLoaderDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriverWithLicense, DBPDriverWithLazyIcon {
-    private static final long ICON_RETRY_NANOS = TimeUnit.MINUTES.toNanos(5);
+public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriverWithLicense, DBPDriverWithLazyIcon, DBPDriverWithLazyLogo {
+    private static final Log log = Log.getLog(CDataDriverDescriptor.class);
+    private static final long IMAGE_RETRY_NANOS = TimeUnit.MINUTES.toNanos(5);
 
-    private final CDataDriverInfo driverInfo;
-    private final Object licenseActivationLock = new Object();
+    private volatile CDataDriverInfo driverInfo;
+    private DBPDataSourceType dataSourceType;
+    private final Set<Runnable> licenseChangeListeners = new CopyOnWriteArraySet<>();
     private final AtomicBoolean activationDialogInProgress = new AtomicBoolean();
     private final AtomicBoolean activationProcessInProgress = new AtomicBoolean();
     private final AtomicBoolean iconLoadStarted = new AtomicBoolean();
     private final Set<Runnable> iconUpdateCallbacks = ConcurrentHashMap.newKeySet();
     private volatile boolean iconLoaded;
     private volatile long iconRetryAfterNanos;
+    private final AtomicBoolean logoLoadStarted = new AtomicBoolean();
+    private final Set<Runnable> logoUpdateCallbacks = ConcurrentHashMap.newKeySet();
+    private volatile DBPImage logoImage;
+    private volatile boolean logoLoaded;
+    private volatile long logoRetryAfterNanos;
     private volatile CDataDriverLicense currentLicense = new CDataDriverLicense(
         CDataLicenseStatus.VALIDATION_UNAVAILABLE,
         "",
@@ -71,9 +87,45 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
         return driverInfo;
     }
 
+    public void setDriverInfo(@NotNull CDataDriverInfo driverInfo) {
+        if (!Objects.equals(this.driverInfo.iconDriver(), driverInfo.iconDriver())) {
+            iconLoaded = false;
+            iconLoadStarted.set(false);
+            iconRetryAfterNanos = 0;
+            logoLoaded = false;
+            logoImage = null;
+            logoLoadStarted.set(false);
+            logoRetryAfterNanos = 0;
+        }
+        this.driverInfo = driverInfo;
+        dataSourceType = null;
+    }
+
+    @NotNull
+    @Override
+    public String getConnectionURL(@NotNull DBPConnectionConfiguration connectionInfo) throws DBException {
+        return CDataConnectionUrl.getConnectionUrl(driverInfo.jdbcName(), connectionInfo);
+    }
+
+    @NotNull
+    @Override
+    public DBPDataSourceType getDataSourceType() {
+        if (dataSourceType == null) {
+            dataSourceType = getProviderDescriptor().getRegistry().resolveDataSourceType(driverInfo.dataTypeId(), this);
+        }
+        return dataSourceType;
+    }
+
     @Override
     public void loadIcon(@NotNull Runnable onUpdate) {
         if (iconLoaded || System.nanoTime() < iconRetryAfterNanos) {
+            return;
+        }
+        DBPDriver imageDriver = getImageDriver();
+        if (imageDriver != null) {
+            updateDriverIcons(imageDriver.getPlainIcon(), imageDriver.getIconBig());
+            iconLoaded = true;
+            onUpdate.run();
             return;
         }
         iconUpdateCallbacks.add(onUpdate);
@@ -88,7 +140,7 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
                     iconUpdateCallbacks.clear();
                 } else {
                     iconUpdateCallbacks.clear();
-                    iconRetryAfterNanos = System.nanoTime() + ICON_RETRY_NANOS;
+                    iconRetryAfterNanos = System.nanoTime() + IMAGE_RETRY_NANOS;
                     iconLoadStarted.set(false);
                 }
             });
@@ -101,6 +153,42 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
         return new CDataDriverLoaderDescriptor(loaderId, this);
     }
 
+    @Nullable
+    @Override
+    public DBPImage getLogoImage() {
+        return logoImage;
+    }
+
+    @Override
+    public void loadLogo(@NotNull Runnable onUpdate) {
+        if (logoLoaded || logoImage != null || System.nanoTime() < logoRetryAfterNanos) {
+            return;
+        }
+        DBPDriver imageDriver = getImageDriver();
+        if (imageDriver != null) {
+            logoImage = imageDriver.getLogoImage();
+            logoLoaded = true;
+            onUpdate.run();
+            return;
+        }
+        logoUpdateCallbacks.add(onUpdate);
+        if (logoLoadStarted.compareAndSet(false, true)) {
+            CDataDriverIconLoader.loadLogo(driverInfo.dataSource(), logo -> {
+                if (logo != null) {
+                    logoImage = logo;
+                    for (Runnable callback : logoUpdateCallbacks) {
+                        callback.run();
+                    }
+                    logoUpdateCallbacks.clear();
+                } else {
+                    logoUpdateCallbacks.clear();
+                    logoRetryAfterNanos = System.nanoTime() + IMAGE_RETRY_NANOS;
+                    logoLoadStarted.set(false);
+                }
+            });
+        }
+    }
+
     @NotNull
     public CDataResolvedDriver resolveDriver(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getCDataDriverLoader().resolveDriver(monitor);
@@ -109,6 +197,14 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
     @NotNull
     public CDataDriverLicense validateCurrentLicense(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getCDataDriverLoader().validateLicense(monitor, true);
+    }
+
+    @Nullable
+    public CDataDriverLicense validateInstalledLicense(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (monitor.isCanceled() || !getDefaultDriverLoader().isDriverInstalled()) {
+            return null;
+        }
+        return validateCurrentLicense(monitor);
     }
 
     @NotNull
@@ -139,11 +235,6 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
         activationProcessInProgress.set(false);
     }
 
-    @NotNull
-    Object getLicenseActivationLock() {
-        return licenseActivationLock;
-    }
-
     public void invalidateLicenseCaches() {
         for (var loader : getAllDriverLoaders()) {
             ((CDataDriverLoaderDescriptor) loader).invalidateLicenseCache();
@@ -168,9 +259,21 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
         return driverInfo.purchaseUrl();
     }
 
+    @Nullable
+    @Override
+    public String getPropertiesWebURL() {
+        return driverInfo.documentationUrl();
+    }
+
+    @Nullable
+    @Override
+    public String getDatabaseDocumentationSuffixURL() {
+        return driverInfo.documentationUrl();
+    }
+
     @NotNull
     @Override
-    public DBPDriverLicense getCurrentLicense() throws DBException {
+    public CDataDriverLicense getCurrentLicense() {
         return currentLicense;
     }
 
@@ -179,8 +282,30 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
         return currentLicense.getStatus();
     }
 
+    @Override
+    public void addLicenseChangeListener(@NotNull Runnable listener) {
+        licenseChangeListeners.add(listener);
+    }
+
+    @Override
+    public void removeLicenseChangeListener(@NotNull Runnable listener) {
+        licenseChangeListeners.remove(listener);
+    }
+
     void setCurrentLicense(@NotNull CDataDriverLicense currentLicense) {
         this.currentLicense = currentLicense;
+        for (Runnable listener : licenseChangeListeners) {
+            try {
+                listener.run();
+            } catch (RuntimeException e) {
+                log.debug("Unable to notify CData license change listener", e);
+            }
+        }
+    }
+
+    @Override
+    public boolean isLicenseInvalid() {
+        return !getLicenseStatus().allowsDriverUsage();
     }
 
     @Override
@@ -190,7 +315,11 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
 
     public boolean reportLicenseError(@NotNull Throwable error) {
         CDataLicenseStatus status = CDataLicenseParser.parseExpiredLicenseError(error);
-        return status != null && getCDataDriverLoader().reportExpiredLicense(status);
+        if (status == null) {
+            return false;
+        }
+        getCDataDriverLoader().reportExpiredLicense(status);
+        return true;
     }
 
     @NotNull
@@ -208,6 +337,15 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
             throw new DBException("CData trial license activation was canceled");
         }
         return license;
+    }
+
+    @Nullable
+    private DBPDriver getImageDriver() {
+        if (driverInfo.iconDriver() == null) {
+            return null;
+        }
+        DBPDriver driver = getProviderDescriptor().getRegistry().findDriver(driverInfo.iconDriver());
+        return driver instanceof CDataDriverDescriptor ? null : driver;
     }
 
     @NotNull

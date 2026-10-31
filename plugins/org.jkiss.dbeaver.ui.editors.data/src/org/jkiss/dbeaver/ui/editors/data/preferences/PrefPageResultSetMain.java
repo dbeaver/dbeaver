@@ -21,6 +21,7 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -66,6 +67,7 @@ public class PrefPageResultSetMain extends TargetPrefPage {
     private Button keepStatementOpenCheck;
     private Button alwaysUseAllColumns;
     private Button disableEditingOnMissingKey;
+    private Text undoHistorySize;
     private Button newRowsAfter;
     private Button refreshAfterUpdate;
     private Button useNavigatorFilters;
@@ -99,6 +101,7 @@ public class PrefPageResultSetMain extends TargetPrefPage {
             store.contains(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT) ||
             store.contains(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS) ||
             store.contains(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING) ||
+            store.contains(ResultSetPreferences.RS_EDIT_UNDO_LEVEL) ||
             store.contains(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER) ||
             store.contains(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE) ||
             store.contains(ResultSetPreferences.KEEP_STATEMENT_OPEN) ||
@@ -189,6 +192,26 @@ public class PrefPageResultSetMain extends TargetPrefPage {
             );
 
             alwaysUseAllColumns.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateOptionsEnablement()));
+        }
+        {
+            Composite group = UIUtils.createTitledComposite(
+                leftPane,
+                ResultSetMessages.pref_page_content_editor_group_history,
+                2,
+                GridData.VERTICAL_ALIGN_BEGINNING);
+            undoHistorySize = UIUtils.createLabelText(
+                group,
+                ResultSetMessages.pref_page_content_editor_label_undo_history_size,
+                String.valueOf(ResultSetPreferences.DEFAULT_EDIT_UNDO_LEVEL));
+            undoHistorySize.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
+            undoHistorySize.addFocusListener(FocusListener.focusLostAdapter(e -> {
+                int value = Math.clamp(
+                    CommonUtils.toInt(undoHistorySize.getText()), 0,
+                    ResultSetPreferences.MAX_EDIT_UNDO_LEVEL
+                );
+                undoHistorySize.setText(String.valueOf(value));
+            }));
+            ((GridData) undoHistorySize.getLayoutData()).widthHint = UIUtils.getFontHeight(undoHistorySize) * 5;
         }
 
         {
@@ -286,6 +309,7 @@ public class PrefPageResultSetMain extends TargetPrefPage {
             keepStatementOpenCheck.setSelection(store.getBoolean(ResultSetPreferences.KEEP_STATEMENT_OPEN));
             alwaysUseAllColumns.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS));
             disableEditingOnMissingKey.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING));
+            undoHistorySize.setText(String.valueOf(store.getInt(ResultSetPreferences.RS_EDIT_UNDO_LEVEL)));
             newRowsAfter.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER));
             refreshAfterUpdate.setSelection(store.getBoolean(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE));
             useNavigatorFilters.setSelection(store.getBoolean(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS));
@@ -329,6 +353,11 @@ public class PrefPageResultSetMain extends TargetPrefPage {
             store.setValue(ResultSetPreferences.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
             store.setValue(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS, alwaysUseAllColumns.getSelection());
             store.setValue(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING, disableEditingOnMissingKey.getSelection());
+            store.setValue(
+                ResultSetPreferences.RS_EDIT_UNDO_LEVEL,
+                Math.max(0, Math.min(
+                    ResultSetPreferences.MAX_EDIT_UNDO_LEVEL,
+                    CommonUtils.toInt(undoHistorySize.getText()))));
             store.setValue(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER, newRowsAfter.getSelection());
             store.setValue(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE, refreshAfterUpdate.getSelection());
             store.setValue(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS, useNavigatorFilters.getSelection());
@@ -364,6 +393,7 @@ public class PrefPageResultSetMain extends TargetPrefPage {
         store.setToDefault(ResultSetPreferences.KEEP_STATEMENT_OPEN);
         store.setToDefault(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS);
         store.setToDefault(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING);
+        store.setToDefault(ResultSetPreferences.RS_EDIT_UNDO_LEVEL);
         store.setToDefault(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER);
         store.setToDefault(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE);
         store.setToDefault(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS);
@@ -392,6 +422,7 @@ public class PrefPageResultSetMain extends TargetPrefPage {
         keepStatementOpenCheck.setSelection(store.getDefaultBoolean(ResultSetPreferences.KEEP_STATEMENT_OPEN));
         alwaysUseAllColumns.setSelection(store.getDefaultBoolean(ResultSetPreferences.RS_EDIT_USE_ALL_COLUMNS));
         disableEditingOnMissingKey.setSelection(store.getDefaultBoolean(ResultSetPreferences.RS_EDIT_DISABLE_IF_KEY_MISSING));
+        undoHistorySize.setText(String.valueOf(store.getDefaultInt(ResultSetPreferences.RS_EDIT_UNDO_LEVEL)));
         newRowsAfter.setSelection(store.getDefaultBoolean(ResultSetPreferences.RS_EDIT_NEW_ROWS_AFTER));
         refreshAfterUpdate.setSelection(store.getDefaultBoolean(ResultSetPreferences.RS_EDIT_REFRESH_AFTER_UPDATE));
         useNavigatorFilters.setSelection(store.getDefaultBoolean(ResultSetPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS));

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,8 @@ public record LSMAnalyzerParameters (
 ) {
 
     public static LSMAnalyzerParameters forDialect(SQLDialect dialect, SQLSyntaxManager syntaxManager) {
-        Map<String, String> identifierQuotPairs = Stream.of(Objects.requireNonNull(dialect.getIdentifierQuoteStrings()))
+        String[][] identifierQuotes = dialect.getIdentifierQuoteStrings();
+        Map<String, String> identifierQuotPairs = Stream.of(identifierQuotes == null ? new String[0][] : identifierQuotes)
             .collect(Collectors.toUnmodifiableMap(q -> q[0], q -> q[1]));
 
         List<Map.Entry<Integer, Set<String>>> namedParameterPrefixes = Stream.of(Objects.requireNonNull(syntaxManager.getNamedParameterPrefixes()))

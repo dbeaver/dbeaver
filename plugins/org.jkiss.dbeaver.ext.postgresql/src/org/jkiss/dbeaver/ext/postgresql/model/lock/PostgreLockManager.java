@@ -1,7 +1,8 @@
 /*
  * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
- * 				 2017 Dmitriy.Gurov (dvgurov@gmail.com) 
+ *                  2017 Dmitriy.Gurov (dvgurov@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -149,7 +150,8 @@ public class PostgreLockManager extends LockGraphManager implements DBAServerLoc
 
             Map<Object, PostgreLock> locks = new HashMap<>(10);
 
-            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(LOCK_QUERY)) {
+            JDBCSession jdbcSession = (JDBCSession) session;
+            try (JDBCPreparedStatement dbStat = jdbcSession.prepareStatement(dataSource.getServerType().getLocksQuery(jdbcSession))) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
 
                     while (dbResult.next()) {
@@ -194,7 +196,7 @@ public class PostgreLockManager extends LockGraphManager implements DBAServerLoc
 
             List<PostgreLockItem> locks = new ArrayList<>();
 
-            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(LOCK_ITEM_QUERY)) {
+            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(dataSource.getServerType().getLockItemsQuery())) {
 
                 String otype = (String) options.get(LockGraphManager.keyType);
 

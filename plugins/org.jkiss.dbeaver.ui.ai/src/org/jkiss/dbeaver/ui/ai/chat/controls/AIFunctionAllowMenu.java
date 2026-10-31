@@ -53,6 +53,7 @@ public final class AIFunctionAllowMenu {
     private final Consumer<List<PendingApproval>> approvalCallback;
     private final Set<String> sessionAllowedFunctions = new LinkedHashSet<>();
     private final Set<String> sessionAllowedToolboxes = new LinkedHashSet<>();
+    private boolean functionRegistered;
 
     public AIFunctionAllowMenu(
         @NotNull Browser browser,
@@ -60,10 +61,30 @@ public final class AIFunctionAllowMenu {
         @Nullable Function<Integer, PendingConfirmationState> pendingConfirmationProvider,
         @Nullable Consumer<List<PendingApproval>> approvalCallback
     ) {
+        this(browser, toolboxManager, pendingConfirmationProvider, approvalCallback, false);
+    }
+
+    AIFunctionAllowMenu(
+        @NotNull Browser browser,
+        @NotNull AIToolboxManager toolboxManager,
+        @Nullable Function<Integer, PendingConfirmationState> pendingConfirmationProvider,
+        @Nullable Consumer<List<PendingApproval>> approvalCallback,
+        boolean deferRegistration
+    ) {
         this.browser = browser;
         this.toolboxManager = toolboxManager;
         this.pendingConfirmationProvider = pendingConfirmationProvider;
         this.approvalCallback = approvalCallback;
+        if (!deferRegistration) {
+            registerBrowserFunction();
+        }
+    }
+
+    void registerBrowserFunction() {
+        if (functionRegistered) {
+            return;
+        }
+        functionRegistered = true;
         new BrowserFunction(AIFunctionAllowMenu.this.browser, "showAIFunctionAllowMenu") {
             @Override
             public Object function(Object[] arguments) {

@@ -143,6 +143,9 @@ public sealed interface UIControlBuilder<B extends UIControlBuilder<B>>
      */
     sealed interface TextBuilder<T> extends UIControlBuilder<TextBuilder<T>> permits UIControlBuilderImpl.TextBuilderImpl {
         @NotNull
+        TextBuilder<T> message(@NotNull UIObservable<String> value);
+
+        @NotNull
         TextBuilder<T> toModel(
             @NotNull Function<? super String, IStatus> afterGetValidator,
             @NotNull Function<? super String, ? extends T> targetToModelConverter

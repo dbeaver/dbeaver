@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai.impl;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.junit.jupiter.api.Assertions;
@@ -67,19 +68,19 @@ public class ChatTruncatorTest {
     }
 
     @Test
-    public void emptyInput() {
+    public void emptyInput() throws DBException {
         Assertions.assertNull(truncator.tryTruncate(List.of()), "Expecting null for empty input");
     }
 
 
     @Test
-    public void filtersBlank() {
+    public void filtersBlank() throws DBException {
         Assertions.assertNull(truncator.tryTruncate(List.of(msg(AIMessageType.USER, "   "))));
         Assertions.assertNull(truncator.tryTruncate(List.of(msg(AIMessageType.USER, words(3)), msg(AIMessageType.USER, "   "))));
     }
 
     @Test
-    public void systemMerge() {
+    public void systemMerge() throws DBException {
         AIMessage sys1 = msg(AIMessageType.SYSTEM, words(2));
         AIMessage sys2 = msg(AIMessageType.SYSTEM, words(3));
         AIMessage userOld = msg(AIMessageType.USER, words(1));
@@ -94,7 +95,7 @@ public class ChatTruncatorTest {
     }
 
     @Test
-    public void greedySelection() {
+    public void greedySelection() throws DBException {
         AIMessage m1 = msg(AIMessageType.USER, words(10));
         AIMessage m2 = msg(AIMessageType.ASSISTANT, words(20));
         AIMessage m3 = msg(AIMessageType.USER, words(30));
@@ -110,7 +111,7 @@ public class ChatTruncatorTest {
     }
 
     @Test
-    public void oversizedSystemTrim() {
+    public void oversizedSystemTrim() throws DBException {
         AIMessage bigSystem = msg(AIMessageType.SYSTEM, words(40));
         AIMessage user = msg(AIMessageType.USER, words(30));
 
@@ -129,7 +130,7 @@ public class ChatTruncatorTest {
     }
 
     @Test
-    public void noTruncationReturnsNull() {
+    public void noTruncationReturnsNull() throws DBException {
         List<AIMessage> out = truncator.tryTruncate(List.of(
             msg(AIMessageType.SYSTEM, words(5)),
             msg(AIMessageType.USER, words(10)),
@@ -140,7 +141,7 @@ public class ChatTruncatorTest {
     }
 
     @Test
-    public void pinnedUserTruncatedWhenTooLarge() {
+    public void pinnedUserTruncatedWhenTooLarge() throws DBException {
         AIMessage bigUser = msg(AIMessageType.USER, words(50));
 
         List<AIMessage> out = truncator.tryTruncate(List.of(bigUser));
@@ -152,7 +153,7 @@ public class ChatTruncatorTest {
     }
 
     @Test
-    public void chronologicalOrderPreserved() {
+    public void chronologicalOrderPreserved() throws DBException {
         AIMessage m1 = msg(AIMessageType.USER, words(21));
         AIMessage m2 = msg(AIMessageType.ASSISTANT, words(15));
         AIMessage m3 = msg(AIMessageType.USER, words(10));
@@ -167,7 +168,7 @@ public class ChatTruncatorTest {
     }
 
     @Test
-    public void lastAssistantIsPinnedWhenNoUser() {
+    public void lastAssistantIsPinnedWhenNoUser() throws DBException {
         AIMessage m1 = msg(AIMessageType.ASSISTANT, words(30));
         AIMessage m2 = msg(AIMessageType.ASSISTANT, words(20));
 

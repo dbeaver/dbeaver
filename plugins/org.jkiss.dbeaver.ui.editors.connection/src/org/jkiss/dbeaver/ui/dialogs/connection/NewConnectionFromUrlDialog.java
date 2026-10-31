@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,7 +51,6 @@ import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 
 public class NewConnectionFromUrlDialog extends BaseDialog {
@@ -161,7 +160,7 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
 
     @Nullable
     public DBPConnectionConfiguration extractConnectionConfiguration() {
-        return DatabaseURL.extractConfigurationFromUrl(driver.matchedUrl, url);
+        return DatabaseURL.extractConfigurationFromUrl(driver.matchedPattern, url);
     }
 
     @NotNull
@@ -178,8 +177,9 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
                 }
 
                 try {
-                    if (DatabaseURL.getUrlPattern(driver.getSampleURL()).tryRecognize(url) != null) {
-                        drivers.add(new DriverInfo(driver, driver.getSampleURL(), true));
+                    DatabaseURL.Pattern pattern = DatabaseURL.getUrlPattern(driver.getSampleURL());
+                    if (pattern.tryRecognize(url) != null) {
+                        drivers.add(new DriverInfo(driver, pattern, true));
                         scores.put(provider, scores.computeIfAbsent(provider, x -> 0) + 1);
                         continue;
                     }
@@ -187,15 +187,12 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
                     log.debug(e);
                 }
 
-                try {
-                    final Map<String, String> params = DatabaseURL.getUrlPattern(DatabaseURL.Generic.TEMPLATE).tryRecognize(url);
+                DatabaseURL.Pattern genericPattern = DatabaseURL.Generic.getUrlPattern();
+                final Map<String, String> params = genericPattern.tryRecognize(url);
 
-                    if (params != null && driver.getId().contains(params.get("driver"))) {
-                        drivers.add(new DriverInfo(driver, DatabaseURL.Generic.TEMPLATE, false));
-                        scores.put(provider, scores.computeIfAbsent(provider, x -> 0) + 1);
-                    }
-                } catch (DBException ex) {
-                    log.debug(ex);
+                if (params != null && driver.getId().contains(params.get("driver"))) {
+                    drivers.add(new DriverInfo(driver, genericPattern, false));
+                    scores.put(provider, scores.computeIfAbsent(provider, x -> 0) + 1);
                 }
             }
 
@@ -283,12 +280,12 @@ public class NewConnectionFromUrlDialog extends BaseDialog {
 
     private static class DriverInfo {
         private final DBPDriver driver;
-        private final String matchedUrl;
+        private final DatabaseURL.Pattern matchedPattern;
         private final boolean genuineUrl;
 
-        public DriverInfo(@NotNull DBPDriver driver, @NotNull String matchedUrl, boolean genuineUrl) {
+        public DriverInfo(@NotNull DBPDriver driver, @NotNull DatabaseURL.Pattern matchedPattern, boolean genuineUrl) {
             this.driver = driver;
-            this.matchedUrl = matchedUrl;
+            this.matchedPattern = matchedPattern;
             this.genuineUrl = genuineUrl;
         }
     }

@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageTransactions;
 import org.jkiss.dbeaver.ui.workbench.WorkbenchUtils;
 
 public class DBeaverCoreWorkbenchInitializer implements IWorkbenchWindowInitializer {
-
     @Override
     public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
         if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {

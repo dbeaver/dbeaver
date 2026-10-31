@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -53,8 +53,12 @@ import java.util.stream.Collectors;
  * PostgreProcedure
  */
 public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema>
-        implements PostgreObject, PostgreScriptObject, PostgrePrivilegeOwner, DBPUniqueObject, DBPOverloadedObject, DBPNamedObject2, DBPRefreshableObject, DBPScriptObjectExt2 {
+    implements PostgreObject, PostgreScriptObject, PostgrePrivilegeOwner, DBPUniqueObject,
+        DBPOverloadedObject, DBPNamedObject2, DBPRefreshableObject, DBPScriptObjectExt2 {
     private static final Log log = Log.getLog(PostgreProcedure.class);
+    private static final String MISSING_AGGREGATE_FUNCTION = "-";
+    private static final String PARALLEL_SAFE_CODE = "s";
+    private static final String PARALLEL_RESTRICTED_CODE = "r";
 
     protected static final String CAT_FLAGS = "Flags";
     protected static final String CAT_PROPS = "Properties";
@@ -233,7 +237,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 int paramsAssigned = 0;
                 for (int i = params.size() - 1; i >= 0; i--) {
                     DBSProcedureParameterKind parameterKind = params.get(i).getParameterKind();
-                    if (parameterKind == DBSProcedureParameterKind.OUT || parameterKind == DBSProcedureParameterKind.TABLE || parameterKind == DBSProcedureParameterKind.RETURN) {
+                    if (parameterKind == DBSProcedureParameterKind.OUT
+                        || parameterKind == DBSProcedureParameterKind.TABLE
+                        || parameterKind == DBSProcedureParameterKind.RETURN) {
                         continue;
                     }
                     String defaultValue = argDefaults[argDefaults.length - 1 - paramsAssigned];
@@ -489,8 +495,10 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 (getDataSource().isServerVersionAtLeast(9, 4) ? "aggmtransfn, aggminvtransfn,\n" +
                 "aggfinalextra, aggmfinalextra, aggserialfn, aggdeserialfn, aggmfinalfn,\n" +
                 "format_type(aggmtranstype, NULL) as aggmtranstype\n" : "") +
+                (getDataSource().isServerVersionAtLeast(9, 6) ? ",aggcombinefn, pg_proc.proparallel\n" : "") +
                 (getDataSource().isServerVersionAtLeast(11, 0) ? ",aggfinalmodify, aggmfinalmodify " : "") +
                 "FROM pg_aggregate\n" +
+                "LEFT JOIN pg_proc ON pg_proc.oid = pg_aggregate.aggfnoid\n" +
                 "LEFT JOIN pg_operator ON pg_operator.oid = aggsortop\n" +
                 "WHERE aggfnoid = ?::regproc";
             try (JDBCPreparedStatement dbStat = session.prepareStatement(query)) {
@@ -515,9 +523,13 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                         // Inverse transition function for moving-aggregate mode
                         String minvtransfn = JDBCUtils.safeGetString(dbResult, "aggminvtransfn");
 
-                        String serialfn = JDBCUtils.safeGetString(dbResult, "aggserialfn");
-                        String deserialfn = JDBCUtils.safeGetString(dbResult, "aggdeserialfn");
-                        String mfinalfn = JDBCUtils.safeGetString(dbResult, "aggmfinalfn");
+                        final String serialfn = JDBCUtils.safeGetString(dbResult, "aggserialfn");
+                        final String deserialfn = JDBCUtils.safeGetString(dbResult, "aggdeserialfn");
+                        final String mfinalfn = JDBCUtils.safeGetString(dbResult, "aggmfinalfn");
+                        final String combinefn = getDataSource().isServerVersionAtLeast(9, 6)
+                            ? JDBCUtils.safeGetString(dbResult, "aggcombinefn") : null;
+                        final String parallel = getDataSource().isServerVersionAtLeast(9, 6)
+                            ? JDBCUtils.safeGetString(dbResult, "proparallel") : null;
 
                         TransitionModifies finalmodify = null;
                         TransitionModifies mfinalmodify = null;
@@ -536,7 +548,6 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
                         StringBuilder aggregateBody = new StringBuilder("CREATE OR REPLACE AGGREGATE ");
                         final String delim = ",\n\t";
-                        final String notResult = "-";
                         aggregateBody.append(fullName).append(" (\n")
                             .append("\tSFUNC = ").append(aggtransfn).append(delim)
                             .append("STYPE = ").append(aggtranstype);
@@ -549,10 +560,11 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                                 aggregateBody.append(delim).append("FINALFUNC_MODIFY = ").append(finalmodify.keyword);
                             }
                         }
-                        if (CommonUtils.isNotEmpty(serialfn) && !notResult.equals(serialfn)) {
+                        appendAggregateExecutionOptions(aggregateBody, combinefn, parallel);
+                        if (CommonUtils.isNotEmpty(serialfn) && !MISSING_AGGREGATE_FUNCTION.equals(serialfn)) {
                             aggregateBody.append(delim).append("SERIALFUNC = ").append(serialfn);
                         }
-                        if (CommonUtils.isNotEmpty(deserialfn) && !notResult.equals(deserialfn)) {
+                        if (CommonUtils.isNotEmpty(deserialfn) && !MISSING_AGGREGATE_FUNCTION.equals(deserialfn)) {
                             aggregateBody.append(delim).append("DESERIALFUNC = ").append(deserialfn);
                         }
                         if (CommonUtils.isNotEmpty(initval)) {
@@ -562,16 +574,16 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                             }
                             aggregateBody.append(delim).append("INITCOND = ").append(initval);
                         }
-                        if (CommonUtils.isNotEmpty(mtransfn) && !notResult.equals(mtransfn)) {
+                        if (CommonUtils.isNotEmpty(mtransfn) && !MISSING_AGGREGATE_FUNCTION.equals(mtransfn)) {
                             aggregateBody.append(delim).append("MSFUNC = ").append(mtransfn);
-                            if (CommonUtils.isNotEmpty(mtranstype) && !notResult.equals(mtranstype)) {
+                            if (CommonUtils.isNotEmpty(mtranstype) && !MISSING_AGGREGATE_FUNCTION.equals(mtranstype)) {
                                 aggregateBody.append(delim).append("MSTYPE = ").append(mtranstype);
                             }
                         }
-                        if (CommonUtils.isNotEmpty(minvtransfn) && !notResult.equals(minvtransfn)) {
+                        if (CommonUtils.isNotEmpty(minvtransfn) && !MISSING_AGGREGATE_FUNCTION.equals(minvtransfn)) {
                             aggregateBody.append(delim).append("MINVFUNC = ").append(minvtransfn);
                         }
-                        if (CommonUtils.isNotEmpty(mfinalfn) && !notResult.equals(mfinalfn)) {
+                        if (CommonUtils.isNotEmpty(mfinalfn) && !MISSING_AGGREGATE_FUNCTION.equals(mfinalfn)) {
                             aggregateBody.append(delim).append("MFINALFUNC = ").append(mfinalfn);
                             if (mfinalextra) {
                                 aggregateBody.append(delim).append("MFINALFUNC_EXTRA");
@@ -594,7 +606,24 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         }
     }
 
-    protected String generateFunctionDeclaration(PostgreLanguage language, String returnTypeName, String functionBody) {
+    static void appendAggregateExecutionOptions(@NotNull StringBuilder ddl, @Nullable String combineFunction, @Nullable String parallel) {
+        if (CommonUtils.isNotEmpty(combineFunction) && !MISSING_AGGREGATE_FUNCTION.equals(combineFunction)) {
+            ddl.append(",\n\tCOMBINEFUNC = ").append(combineFunction);
+        }
+        // UNSAFE is PostgreSQL's default; emit only the non-default parallel modes.
+        if (PARALLEL_SAFE_CODE.equals(parallel)) {
+            ddl.append(",\n\tPARALLEL = SAFE");
+        } else if (PARALLEL_RESTRICTED_CODE.equals(parallel)) {
+            ddl.append(",\n\tPARALLEL = RESTRICTED");
+        }
+    }
+
+    @NotNull
+    protected String generateFunctionDeclaration(
+        @Nullable PostgreLanguage language,
+        @Nullable String returnTypeName,
+        @Nullable String functionBody
+    ) {
         String lineSeparator = GeneralUtils.getDefaultLineSeparator();
 
         StringBuilder decl = new StringBuilder();
@@ -657,7 +686,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                     } catch (NumberFormatException e) {
                         isNumeric = false;
                     }
-                    decl.append("\tSET ").append(paramName).append(" = ").append(isNumeric ? paramValue : "'" + paramValue + "'").append(lineSeparator);
+                    decl.append("\tSET ").append(paramName).append(" = ")
+                        .append(isNumeric ? paramValue : "'" + paramValue + "'")
+                        .append(lineSeparator);
                 } else {
                     log.debug("Wrong function configuration parameter [" + configLine + "]");
                 }
@@ -848,7 +879,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     @Override
-    public Collection<PostgrePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+    public Collection<PostgrePrivilege> getPrivileges(
+        @NotNull DBRProgressMonitor monitor, boolean includeNestedObjects
+    ) throws DBException {
         return PostgreUtils.extractPermissionsFromACL(monitor, this, acl, false);
     }
 

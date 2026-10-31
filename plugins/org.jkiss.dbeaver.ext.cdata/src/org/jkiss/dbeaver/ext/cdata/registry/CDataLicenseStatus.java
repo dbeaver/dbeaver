@@ -43,7 +43,7 @@ public enum CDataLicenseStatus {
     }
 
     public boolean allowsTrialActivation() {
-        return !isExpired() && this != PURCHASED_ACTIVE && this != PURCHASED_EXPIRING;
+        return !isTrial() && !isExpired() && this != PURCHASED_ACTIVE && this != PURCHASED_EXPIRING;
     }
 
     public boolean isUnknown() {

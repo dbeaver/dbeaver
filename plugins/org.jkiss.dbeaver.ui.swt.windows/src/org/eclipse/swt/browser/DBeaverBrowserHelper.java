@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.eclipse.swt.internal.ole.win32.ICoreWebView2Cookie;
 import org.eclipse.swt.internal.ole.win32.ICoreWebView2CookieList;
 import org.eclipse.swt.internal.ole.win32.ICoreWebView2CookieManager;
 import org.eclipse.swt.internal.win32.OS;
+import org.jkiss.code.NotNull;
 
 import java.util.Objects;
 
@@ -29,7 +30,7 @@ public class DBeaverBrowserHelper {
     private DBeaverBrowserHelper() {
     }
 
-    public static void clearCookies(Browser browser) {
+    public static void clearCookies(@NotNull Browser browser) {
         Objects.requireNonNull(browser, "browser cannot be null");
         if (browser.webBrowser instanceof Edge) {
             clearCookiesEdgeImpl();

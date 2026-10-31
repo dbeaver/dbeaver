@@ -38,6 +38,7 @@ public final class QMAIConversationHistory {
     private String engineId;
     private final int nextMessageId;
     private final boolean deleted;
+    private boolean imagesLoaded = true;
 
     public QMAIConversationHistory(
         @NotNull String id,
@@ -129,6 +130,14 @@ public final class QMAIConversationHistory {
 
     public int getNextMessageId() {
         return nextMessageId;
+    }
+
+    public boolean areImagesLoaded() {
+        return imagesLoaded;
+    }
+
+    public void setImagesLoaded(boolean imagesLoaded) {
+        this.imagesLoaded = imagesLoaded;
     }
 
     public boolean isDeleted() {

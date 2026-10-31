@@ -32,6 +32,10 @@ import java.util.Properties;
  */
 public interface DBAAuthModel<CREDENTIALS extends DBAAuthCredentials> {
 
+    default boolean isCredentialsPromptRequired() {
+        return true;
+    }
+
     @NotNull
     CREDENTIALS createCredentials();
 

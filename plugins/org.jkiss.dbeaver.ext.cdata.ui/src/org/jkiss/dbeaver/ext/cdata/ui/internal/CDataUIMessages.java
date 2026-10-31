@@ -34,6 +34,7 @@ public final class CDataUIMessages extends NLS {
     public static String activation_eula_consent;
     public static String activation_eula_consent_accessible_name;
     public static String activation_buy_button;
+    public static String activation_buy_button_with_price;
     public static String activation_support_link;
     public static String activation_required_fields;
     public static String activation_invalid_email;
@@ -43,6 +44,15 @@ public final class CDataUIMessages extends NLS {
     public static String auth_native_url_builder_job;
     public static String auth_native_url_builder_error;
     public static String auth_native_url_builder_exit_code;
+    public static String connection_editor_loading;
+    public static String connection_credentials_unavailable;
+    public static String connection_editor_fallback;
+    public static String connection_editor_invalid_number;
+    public static String connection_editor_required_property;
+    public static String connection_editor_auth_model;
+    public static String connection_editor_properties;
+    public static String connection_editor_retry;
+    public static String connection_editor_invalid_url;
     public static String license_group_title;
     public static String license_status;
     public static String license_manage;
@@ -77,6 +87,40 @@ public final class CDataUIMessages extends NLS {
     public static String preference_refresh;
     public static String preference_service_unavailable;
     public static String preference_load_job;
+
+    public static String activation_trial_title;
+    public static String activation_trial_heading;
+    public static String activation_purchased_heading;
+    public static String activation_purchased_description;
+    public static String activation_trial_description;
+    public static String activation_start_trial;
+    public static String activation_activate;
+    public static String activation_try_again;
+    public static String activation_name_required;
+    public static String activation_email_required;
+    public static String activation_key_required;
+    public static String activation_consent_required;
+    public static String activation_trial_consent_required;
+    public static String activation_invalid_product_key;
+    public static String activation_trial_progress;
+    public static String activation_purchased_progress;
+    public static String activation_trial_failed;
+    public static String license_start_trial;
+    public static String license_purchase_hint;
+    public static String license_activation_hint;
+    public static String license_trial_remaining;
+    public static String license_trial_expiring;
+    public static String license_valid_until;
+    public static String license_purchased_expiring;
+    public static String license_required_description;
+    public static String license_trial_expired_description;
+    public static String license_expired_description;
+    public static String license_unverified_description;
+    public static String license_driver_missing;
+    public static String license_driver_missing_description;
+    public static String license_invalid_description;
+    public static String license_retry;
+    public static String license_check_job;
 
     static {
         NLS.initializeMessages(BUNDLE_NAME, CDataUIMessages.class);

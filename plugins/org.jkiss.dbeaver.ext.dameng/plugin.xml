@@ -2,10 +2,18 @@
 <?eclipse version="3.2"?>
 <plugin>
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="dameng"
+            label="Dameng"
+            description="Dameng database"
+            dataSourceInformation="Relational database management system"
+            icon="icons/dm_icon.png"
+            iconBig="icons/dm_icon_big.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.dameng.DamengDataSourceProvider"
                 description="Dameng connector"
                 id="dameng"
+                dataSourceType="dameng"
                 parent="generic"
                 label="Dameng"
                 icon="icons/dm_icon.png"
@@ -223,8 +231,6 @@
                 <driver
                         id="dameng"
                         label="Dameng"
-                        icon="icons/dm_icon.png"
-                        iconBig="icons/dm_icon_big.png"
                         class="dm.jdbc.driver.DmDriver"
                         sampleURL="jdbc:dm://{host}[:{port}]"
                         useURL="false"

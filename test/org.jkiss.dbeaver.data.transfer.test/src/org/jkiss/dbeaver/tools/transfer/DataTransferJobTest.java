@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
+import org.eclipse.core.runtime.IStatus;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
@@ -28,6 +30,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
 import org.mockito.Mockito;
+
+import java.sql.SQLException;
+import java.util.List;
 
 class DataTransferJobTest {
 
@@ -54,6 +59,69 @@ class DataTransferJobTest {
         Mockito.when(consumer.getObjectFullName(ArgumentMatchers.any())).thenReturn("test-consumer");
 
         job = new DataTransferJob(settings, task, log, null, null, 0);
+    }
+
+    @Test
+    void returnsCanceledStatusBeforeAcquiringPipe() {
+        DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
+        Mockito.when(monitor.isCanceled()).thenReturn(true);
+
+        Assertions.assertEquals(IStatus.CANCEL, job.run(monitor).getSeverity());
+
+        Mockito.verify(settings, Mockito.never()).acquireDataPipe(Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    void returnsCanceledStatusWhenCancellationOccursWhileAcquiringPipe() {
+        DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
+        Mockito.when(monitor.isCanceled()).thenReturn(false, true);
+
+        Assertions.assertEquals(IStatus.CANCEL, job.run(monitor).getSeverity());
+    }
+
+    @Test
+    void returnsCanceledStatusWhenDriverThrowsAfterWorkerCancellation() throws Exception {
+        prepareDataPipe();
+        DBException error = new DBException("Query canceled", new SQLException("canceling statement due to user request", "57014"));
+        Mockito.doAnswer(invocation -> {
+            job.canceling();
+            throw error;
+        }).when(producer).transferData(
+            Mockito.any(), Mockito.eq(consumer), Mockito.any(), Mockito.any(), Mockito.eq(task), Mockito.anyLong());
+
+        IStatus result = job.run(Mockito.mock(DBRProgressMonitor.class));
+
+        Assertions.assertTrue(job.isCanceled());
+        Assertions.assertEquals(IStatus.CANCEL, result.getSeverity());
+        Mockito.verify(producer).close();
+    }
+
+    @Test
+    void returnsCanceledStatusWhenDriverThrowsAfterMonitorCancellation() throws Exception {
+        prepareDataPipe();
+        DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
+        Mockito.doAnswer(invocation -> {
+            Mockito.when(monitor.isCanceled()).thenReturn(true);
+            throw new DBException("Query canceled");
+        }).when(producer).transferData(
+            Mockito.any(), Mockito.eq(consumer), Mockito.any(), Mockito.any(), Mockito.eq(task), Mockito.anyLong());
+
+        Assertions.assertEquals(IStatus.CANCEL, job.run(monitor).getSeverity());
+        Mockito.verify(producer).close();
+    }
+
+    @Test
+    void preservesDriverErrorWhenTransferIsNotCanceled() throws Exception {
+        prepareDataPipe();
+        DBException error = new DBException("Query failed");
+        Mockito.doThrow(error).when(producer).transferData(
+            Mockito.any(), Mockito.eq(consumer), Mockito.any(), Mockito.any(), Mockito.eq(task), Mockito.anyLong());
+
+        IStatus result = job.run(Mockito.mock(DBRProgressMonitor.class));
+
+        Assertions.assertEquals(IStatus.OK, result.getSeverity());
+        Assertions.assertSame(error, result.getException());
+        Mockito.verify(producer).close();
     }
 
     @Test
@@ -134,5 +202,11 @@ class DataTransferJobTest {
             ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.any(),
             ArgumentMatchers.any(), ArgumentMatchers.any(), ArgumentMatchers.anyLong());
         Mockito.verify(producer, Mockito.times(1)).close();
+    }
+
+    private void prepareDataPipe() {
+        DataTransferPipe pipe = new DataTransferPipe(producer, consumer);
+        Mockito.when(settings.getDataPipes()).thenReturn(List.of(pipe));
+        Mockito.when(settings.acquireDataPipe(Mockito.any(), Mockito.eq(task))).thenReturn(pipe, (DataTransferPipe) null);
     }
 }

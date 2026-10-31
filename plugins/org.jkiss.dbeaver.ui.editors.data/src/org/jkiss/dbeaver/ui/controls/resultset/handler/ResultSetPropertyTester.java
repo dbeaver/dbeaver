@@ -31,6 +31,8 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
+
 /**
  * DatabaseEditorPropertyTester
  */
@@ -52,6 +54,8 @@ public class ResultSetPropertyTester extends PropertyTester
     public static final String PROP_CAN_NAVIGATE_LINK = "canNavigateLink";
     public static final String PROP_SUPPORTS_COUNT = "supportsCount";
     public static final String PROP_CAN_NAVIGATE_HISTORY = "canNavigateHistory";
+    public static final String PROP_CAN_UNDO = "canUndo";
+    public static final String PROP_CAN_REDO = "canRedo";
     public static final String PROP_EDITABLE = "editable";
     private static final String PROP_CHANGED = "changed";
     private static final String PROP_CAN_PERSIST_DATA = "canPersistData";
@@ -132,9 +136,25 @@ public class ResultSetPropertyTester extends PropertyTester
                     }
                 } else if ("add".equals(expectedValue)) {
                     return rsv.isInsertable();
-                } else if ("copy".equals(expectedValue) || "delete".equals(expectedValue)) {
+                } else if ("copy".equals(expectedValue)) {
                     ResultSetRow currentRow = rsv.getCurrentRow();
                     return currentRow != null && rsv.isInsertable();
+                } else if ("delete".equals(expectedValue)) {
+                    ResultSetRow currentRow = rsv.getCurrentRow();
+                    if (currentRow == null) {
+                        return false;
+                    }
+                    if (rsv.isDeletable()) {
+                        return true;
+                    }
+                    if (!rsv.isInsertable()) {
+                        return false;
+                    }
+                    if (rsv.isRecordMode()) {
+                        return currentRow.getState() == ResultSetRow.STATE_ADDED;
+                    }
+                    List<ResultSetRow> selectedRows = rsv.getSelection().getSelectedRows();
+                    return !selectedRows.isEmpty() && selectedRows.stream().allMatch(row -> row.getState() == ResultSetRow.STATE_ADDED);
                 } else {
                     return false;
                 }
@@ -173,6 +193,10 @@ public class ResultSetPropertyTester extends PropertyTester
                     }
                 }
                 return false;
+            case PROP_CAN_UNDO:
+                return !actionsDisabled && rsv.canUndoCellEdit();
+            case PROP_CAN_REDO:
+                return !actionsDisabled && rsv.canRedoCellEdit();
             case PROP_CAN_PERSIST_DATA: {
                 if (rsv.getModel().isUpdateInProgress()) {
                     return false;

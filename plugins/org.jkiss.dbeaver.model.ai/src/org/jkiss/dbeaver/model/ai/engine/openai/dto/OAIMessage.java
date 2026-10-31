@@ -20,6 +20,7 @@ import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 public class OAIMessage {
@@ -47,6 +48,6 @@ public class OAIMessage {
         if (content == null) {
             return "";
         }
-        return content.stream().map(c -> c.text).collect(Collectors.joining());
+        return content.stream().map(c -> c.text).filter(Objects::nonNull).collect(Collectors.joining());
     }
 }

@@ -56,14 +56,20 @@ public class DataSourceParser {
         String topNodeId = profile != null ? "profile:" + profile.getProfileId() : dataSource.getId();
         if (subNode == null) subNode = NODE_CONNECTION;
 
-        Map<String, Map<String, String>> nodeMap = contextParameters.secureProperties().computeIfAbsent(topNodeId, s -> new LinkedHashMap<>());
-        Map<String, String> propMap = nodeMap.computeIfAbsent(subNode, s -> new LinkedHashMap<>());
+        Map<String, String> propMap = new LinkedHashMap<>();
         saveCredentialsToMap(propMap, credentials);
         if (propMap.isEmpty()) {
-            nodeMap.remove(subNode);
-        }
-        if (nodeMap.isEmpty()) {
-            contextParameters.secureProperties().remove(topNodeId);
+            Map<String, Map<String, String>> nodeMap = contextParameters.secureProperties().get(topNodeId);
+            if (nodeMap != null) {
+                nodeMap.remove(subNode);
+                if (nodeMap.isEmpty()) {
+                    contextParameters.secureProperties().remove(topNodeId);
+                }
+            }
+        } else {
+            contextParameters.secureProperties()
+                .computeIfAbsent(topNodeId, s -> new LinkedHashMap<>())
+                .put(subNode, propMap);
         }
     }
 

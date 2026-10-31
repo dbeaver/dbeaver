@@ -58,6 +58,18 @@ public class DBWNetworkProfileManagerTest {
     }
 
     @Test
+    public void removesProfileAfterProfilesAreReloaded() {
+        TestNetworkProfileManager manager = new TestNetworkProfileManager(createProfile("Profile"));
+        DBWNetworkProfile profileBeforeReload = manager.getProfiles().getFirst();
+        manager.setLoadedProfiles(createProfile("Profile"));
+        manager.reloadProfiles();
+
+        manager.removeProfile(profileBeforeReload);
+
+        Assertions.assertNull(manager.getProfile(null, "Profile"));
+    }
+
+    @Test
     public void allProfilesKeepParentBeforeLocalGroups() {
         TestNetworkProfileManager parentManager = new TestNetworkProfileManager(
             createProfile("Global 10"),
@@ -89,7 +101,7 @@ public class DBWNetworkProfileManagerTest {
 
     private static class TestNetworkProfileManager extends DBWNetworkProfileManager {
         @NotNull
-        private final List<DBWNetworkProfile> profiles;
+        private List<DBWNetworkProfile> profiles;
         @Nullable
         private final DBWNetworkProfileManager parentManager;
 
@@ -103,6 +115,10 @@ public class DBWNetworkProfileManagerTest {
         ) {
             this.profiles = new ArrayList<>(List.of(profiles));
             this.parentManager = parentManager;
+        }
+
+        private void setLoadedProfiles(@NotNull DBWNetworkProfile... profiles) {
+            this.profiles = new ArrayList<>(List.of(profiles));
         }
 
         @NotNull

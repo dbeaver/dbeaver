@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.utils.function.ThrowableFunction;
 
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
@@ -29,6 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URI;
+import java.net.URLConnection;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -37,6 +39,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
@@ -44,6 +47,9 @@ import javax.imageio.stream.ImageInputStream;
 final class CDataDriverIconLoader {
     private static final Log log = Log.getLog(CDataDriverIconLoader.class);
     private static final String ICON_URL_PREFIX = "https://www.cdata.com/ui/img/drivers/icon-";
+    private static final String LOGO_URL_PREFIX = "https://www.cdata.com/ui/img/logo-";
+    private static final int MAX_LOGO_WIDTH = 200;
+    private static final int MAX_LOGO_HEIGHT = 80;
     private static final int MAX_ICON_BYTES = 512 * 1024;
     private static final int CONNECT_TIMEOUT_MS = 3_000;
     private static final int READ_TIMEOUT_MS = 5_000;
@@ -93,10 +99,52 @@ final class CDataDriverIconLoader {
 
     @NotNull
     static URI getIconUri(@NotNull String dataSource) {
+        validateDataSource(dataSource);
+        return URI.create(ICON_URL_PREFIX + dataSource + ".png");
+    }
+
+    static void loadLogo(@NotNull String dataSource, @NotNull Consumer<DBIcon> consumer) {
+        EXECUTOR.execute(() -> {
+            DBIcon logo = null;
+            try {
+                logo = loadLogo(dataSource, CDataDriverLoaderDescriptor.getStoragePath().resolve("icons"),
+                    uri -> uri.toURL().openConnection());
+            } catch (Exception e) {
+                log.debug("Unable to load the CData driver logo for '" + dataSource + "'", e);
+            }
+            consumer.accept(logo);
+        });
+    }
+
+    @NotNull
+    static DBIcon loadLogo(
+        @NotNull String dataSource,
+        @NotNull Path iconDirectory,
+        @NotNull ThrowableFunction<URI, URLConnection, IOException> connectionFactory
+    ) throws IOException {
+        URI logoUri = getLogoUri(dataSource);
+        Path logo = iconDirectory.resolve(dataSource + "_logo.png");
+        BufferedImage source = readCachedImage(logo, 512, 512);
+        if (source == null) {
+            source = downloadImage(logoUri, connectionFactory);
+            Files.createDirectories(iconDirectory);
+            writeLogo(source, logo);
+        } else if (source.getWidth() > MAX_LOGO_WIDTH || source.getHeight() > MAX_LOGO_HEIGHT) {
+            writeLogo(source, logo);
+        }
+        return new DBIcon(logo.toUri().toString());
+    }
+
+    @NotNull
+    static URI getLogoUri(@NotNull String dataSource) {
+        validateDataSource(dataSource);
+        return URI.create(LOGO_URL_PREFIX + dataSource + ".png");
+    }
+
+    private static void validateDataSource(@NotNull String dataSource) {
         if (!dataSource.matches("[a-z0-9]+")) {
             throw new IllegalArgumentException("Invalid CData data source name");
         }
-        return URI.create(ICON_URL_PREFIX + dataSource + ".png");
     }
 
     private static void downloadIcons(
@@ -107,7 +155,20 @@ final class CDataDriverIconLoader {
         @NotNull Path iconBig,
         @NotNull Path iconBig2x
     ) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) getIconUri(dataSource).toURL().openConnection();
+        BufferedImage source = downloadImage(getIconUri(dataSource), uri -> uri.toURL().openConnection());
+        Files.createDirectories(iconDirectory);
+        writeIcon(source, icon, 16);
+        writeIcon(source, icon2x, 32);
+        writeIcon(source, iconBig, 64);
+        writeIcon(source, iconBig2x, 128);
+    }
+
+    @NotNull
+    private static BufferedImage downloadImage(
+        @NotNull URI uri,
+        @NotNull ThrowableFunction<URI, URLConnection, IOException> connectionFactory
+    ) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) connectionFactory.apply(uri);
         connection.setConnectTimeout(CONNECT_TIMEOUT_MS);
         connection.setReadTimeout(READ_TIMEOUT_MS);
         connection.setRequestProperty("User-Agent", "DBeaver");
@@ -124,28 +185,28 @@ final class CDataDriverIconLoader {
             if (content.length > MAX_ICON_BYTES) {
                 throw new IOException("CData driver icon is too large");
             }
-            BufferedImage source = readImage(content, 512, 512);
-            Files.createDirectories(iconDirectory);
-            writeIcon(source, icon, 16);
-            writeIcon(source, icon2x, 32);
-            writeIcon(source, iconBig, 64);
-            writeIcon(source, iconBig2x, 128);
+            return readImage(content, 512, 512);
         } finally {
             connection.disconnect();
         }
     }
 
     private static boolean isValidCachedIcon(@NotNull Path icon, int expectedSize) {
+        BufferedImage image = readCachedImage(icon, expectedSize, expectedSize);
+        return image != null && image.getWidth() == expectedSize && image.getHeight() == expectedSize;
+    }
+
+    @Nullable
+    private static BufferedImage readCachedImage(@NotNull Path icon, int maxWidth, int maxHeight) {
         try {
             if (!Files.isRegularFile(icon) || Files.isSymbolicLink(icon) || Files.size(icon) > MAX_ICON_BYTES) {
-                return false;
+                return null;
             }
             try (InputStream input = Files.newInputStream(icon)) {
-                BufferedImage image = readImage(input.readNBytes(MAX_ICON_BYTES + 1), expectedSize, expectedSize);
-                return image.getWidth() == expectedSize && image.getHeight() == expectedSize;
+                return readImage(input.readNBytes(MAX_ICON_BYTES + 1), maxWidth, maxHeight);
             }
         } catch (IOException e) {
-            return false;
+            return null;
         }
     }
 
@@ -182,19 +243,38 @@ final class CDataDriverIconLoader {
     }
 
     private static void writeIcon(@NotNull BufferedImage source, @NotNull Path target, int size) throws IOException {
-        BufferedImage scaled = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB);
+        writeScaledImage(source, target, size, size);
+    }
+
+    private static void writeLogo(@NotNull BufferedImage source, @NotNull Path target) throws IOException {
+        double scale = Math.min(1, Math.min((double) MAX_LOGO_WIDTH / source.getWidth(), (double) MAX_LOGO_HEIGHT / source.getHeight()));
+        if (scale == 1) {
+            writeImage(source, target);
+        } else {
+            int width = Math.max(1, (int) Math.round(source.getWidth() * scale));
+            int height = Math.max(1, (int) Math.round(source.getHeight() * scale));
+            writeScaledImage(source, target, width, height);
+        }
+    }
+
+    private static void writeScaledImage(@NotNull BufferedImage source, @NotNull Path target, int width, int height) throws IOException {
+        BufferedImage scaled = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
         Graphics2D graphics = scaled.createGraphics();
         try {
             graphics.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BICUBIC);
             graphics.setRenderingHint(RenderingHints.KEY_RENDERING, RenderingHints.VALUE_RENDER_QUALITY);
-            graphics.drawImage(source, 0, 0, size, size, null);
+            graphics.drawImage(source, 0, 0, width, height, null);
         } finally {
             graphics.dispose();
         }
 
+        writeImage(scaled, target);
+    }
+
+    private static void writeImage(@NotNull BufferedImage image, @NotNull Path target) throws IOException {
         Path temporary = Files.createTempFile(target.getParent(), target.getFileName().toString(), ".tmp");
         try {
-            if (!ImageIO.write(scaled, "png", temporary.toFile())) {
+            if (!ImageIO.write(image, "png", temporary.toFile())) {
                 throw new IOException("PNG image writer is unavailable");
             }
             try {

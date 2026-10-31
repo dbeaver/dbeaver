@@ -17,11 +17,18 @@
 
 package org.jkiss.dbeaver.test.platform;
 
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+
+import java.nio.file.Files;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class PlatformTest extends DBeaverUnitTest {
     @BeforeEach
@@ -40,5 +47,20 @@ public class PlatformTest extends DBeaverUnitTest {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void testNamedTempFoldersShareSessionRoot() throws Exception {
+        var platform = DBWorkbench.getPlatform();
+        var monitor = new VoidProgressMonitor();
+        var first = platform.getTempFolder(monitor, "platform-test-first");
+        var second = platform.getTempFolder(monitor, "platform-test-second");
+
+        assertTrue(Files.isDirectory(first));
+        assertTrue(Files.isDirectory(second));
+        assertNotEquals(first, second);
+        assertEquals(first.getParent(), second.getParent());
+        assertEquals(first, platform.getTempFolder(monitor, "platform-test-first"));
+        assertEquals(".dbeaver-temp", first.getParent().getParent().getFileName().toString());
     }
 }

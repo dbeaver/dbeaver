@@ -17,7 +17,9 @@
 package org.jkiss.dbeaver.model.sql.parser;
 
 import org.eclipse.jface.text.Document;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -367,6 +369,27 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void parseAnonymousParametersOnlyWhenEnabled() throws DBException {
+        String query = "SELECT '?', ? -- ?";
+        SQLParserContext disabled = createParameterParserContext(query, false);
+        Assertions.assertNull(SQLScriptParser.parseParametersAndVariables(disabled, 0, query.length()));
+
+        SQLParserContext enabled = createParameterParserContext(query, true);
+        List<SQLQueryParameter> parameters = SQLScriptParser.parseParametersAndVariables(enabled, 0, query.length());
+        Assertions.assertNotNull(parameters);
+        Assertions.assertEquals(1, parameters.size());
+        Assertions.assertEquals(query.indexOf(", ?") + 2, parameters.get(0).getTokenOffset());
+        Assertions.assertFalse(parameters.get(0).isNativeBinding());
+    }
+
+    @Test
+    public void skipParametersInDDL() throws DBException {
+        String query = "CREATE TABLE t (id INT DEFAULT :value, other_id INT DEFAULT ?)";
+        SQLParserContext context = createParameterParserContext(query, true);
+        Assertions.assertNull(SQLScriptParser.parseParametersAndVariables(context, 0, query.length()));
+    }
+
+    @Test
     public void parseVariables() throws DBException {
         List<String> inputParamNames = List.of("aBc", "PrE#%&@T", "a@c=");
         StringJoiner joiner = new StringJoiner(", ", "select ", " from dual");
@@ -545,6 +568,18 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
         Assertions.assertEquals(2, elements.size(), statement);
         Assertions.assertEquals(statement, elements.get(0).getText().replaceFirst(";$", ""), statement);
         Assertions.assertEquals(sentinel, elements.get(1).getText(), statement);
+    }
+
+    @NotNull
+    private SQLParserContext createParameterParserContext(@NotNull String query, boolean anonymousEnabled) throws DBException {
+        DBPPreferenceStore preferences = Mockito.mock(DBPPreferenceStore.class);
+        Mockito.when(preferences.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED)).thenReturn(true);
+        Mockito.when(preferences.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED)).thenReturn(anonymousEnabled);
+        Mockito.when(preferences.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX)).thenReturn(":");
+        Mockito.when(dataSourceContainer.getPreferenceStore()).thenReturn(preferences);
+        SQLParserContext context = createParserContext(setDialect("snowflake"), query);
+        context.setPreferenceStore(preferences);
+        return context;
     }
 
     private SQLParserContext createParserContext(SQLDialect dialect, String query) {

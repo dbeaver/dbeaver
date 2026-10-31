@@ -2,6 +2,14 @@
 <?eclipse version="3.4"?>
 <plugin>
 
+    <extension point="org.jkiss.dbeaver.app.config">
+        <feature
+            id="commercial-drivers"
+            label="%feature.commercial_drivers.label"
+            description="%feature.commercial_drivers.description"
+            enabledByDefault="true"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.generic.meta">
         <meta id="cdata" class="org.jkiss.dbeaver.ext.cdata.model.CDataMetaModel" driverClass="cdata.jdbc.*"/>
     </extension>

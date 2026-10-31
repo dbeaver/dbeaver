@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
@@ -70,13 +71,23 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     private ObjectType implType;
     private final String name;
     private final String description;
+    private final String dataSourceTypeId;
     private final boolean temporary;
     private DBPImage icon;
     private DBPDataSourceProvider<?> instance;
+    @Nullable
     private DBXTreeDescriptor treeDescriptor;
+    @Nullable
+    private final IConfigurationElement treeConfig;
+    @NotNull
+    private final List<IConfigurationElement> treeInjections = new ArrayList<>();
+    private boolean treeInitialized;
+    private boolean extraConfigLoaded;
     private final Map<String, DBXTreeNode> treeNodeMap = new HashMap<>();
     private boolean driversManageable;
     private boolean supportsDriverMigration;
+    @Nullable
+    private final String migrationCompletedProperty;
     private final List<DBPPropertyDescriptor> driverProperties = new ArrayList<>();
     private final List<DBPDriver> drivers = new ArrayList<>();
     private final List<NativeClientDescriptor> nativeClients = new ArrayList<>();
@@ -100,6 +111,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.dataSourceTypeId = config.getAttribute(RegistryConstants.ATTR_DATA_SOURCE_TYPE);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         if (this.icon == null) {
             this.icon = DBIcon.DATABASE_DEFAULT;
@@ -116,12 +128,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             this.scriptDialect = dialectRegistry.getDialect(BasicSQLDialect.ID);
         }
 
-        // Load tree structure
+        // Keep tree configuration until a navigator actually requests this provider's tree.
         IConfigurationElement[] trees = config.getChildren(RegistryConstants.TAG_TREE);
-        if (!ArrayUtils.isEmpty(trees)) {
-            this.treeDescriptor = this.loadTreeInfo(trees[0]);
-        }
+        this.treeConfig = ArrayUtils.isEmpty(trees) ? null : trees[0];
         this.supportsDriverMigration = CommonUtils.toBoolean(config.getAttribute("supports-migration"));
+        this.migrationCompletedProperty = config.getAttribute("migration-completed-property");
         this.inheritAuthModels = CommonUtils.getBoolean(config.getAttribute("inheritAuthModels"), true);
         this.driverProvider = CommonUtils.getBoolean(config.getAttribute("driverProvider"));
     }
@@ -147,21 +158,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     }
 
     void loadExtraConfig(@NotNull IConfigurationElement config) {
-        {
-            // Load tree structure
-            if (treeDescriptor == null && parentProvider != null && parentProvider.getTreeDescriptor() != null) {
-                // Use parent's tree
-                this.treeDescriptor = new DBXTreeDescriptor(this, parentProvider.getTreeDescriptor());
-            }
-
-            // Load tree injections
-            IConfigurationElement[] injections = config.getChildren(RegistryConstants.TAG_TREE_INJECTION);
-            if (!ArrayUtils.isEmpty(injections)) {
-                for (IConfigurationElement treeInject : injections) {
-                    this.injectTreeNodes(treeInject);
-                }
-            }
-        }
+        addTreeInjections(config);
 
         // Load driver properties
         {
@@ -239,6 +236,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
                 }
             }
         }
+        extraConfigLoaded = true;
     }
 
     DataSourceProviderDescriptor(@NotNull DataSourceProviderRegistry registry, String id) {
@@ -247,18 +245,26 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         this.id = id;
         this.name = id;
         this.description = "Missing datasource provider " + id;
+        this.dataSourceTypeId = null;
         this.implType = new ObjectType(MissingDataSourceProvider.class.getName());
         this.temporary = true;
+        this.treeConfig = null;
+        this.migrationCompletedProperty = null;
         this.treeDescriptor = new DBXTreeDescriptor(this, null, null, id, id, false, true, false, false, true, null, null);
+        this.treeInitialized = true;
         this.scriptDialect = DBWorkbench.getPlatform().getSQLDialectRegistry().getDialect(BasicSQLDialect.ID);
     }
 
     void patchConfigurationFrom(@NotNull IConfigurationElement config) {
-        // Load tree injections
-        IConfigurationElement[] injections = config.getChildren(RegistryConstants.TAG_TREE_INJECTION);
-        if (!ArrayUtils.isEmpty(injections)) {
-            for (IConfigurationElement treeInject : injections) {
-                this.injectTreeNodes(treeInject);
+        addTreeInjections(config);
+    }
+
+    private synchronized void addTreeInjections(@NotNull IConfigurationElement config) {
+        for (IConfigurationElement injection : config.getChildren(RegistryConstants.TAG_TREE_INJECTION)) {
+            if (!treeInitialized) {
+                treeInjections.add(injection);
+            } else if (treeDescriptor != null) {
+                injectTreeNodes(injection);
             }
         }
     }
@@ -312,6 +318,16 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         return icon;
     }
 
+    @Override
+    public @Nullable DBPDataSourceType getDataSourceType() {
+        return CommonUtils.isEmpty(dataSourceTypeId) ? null : registry.getDataSourceType(dataSourceTypeId);
+    }
+
+    @Nullable
+    public String getDataSourceTypeId() {
+        return dataSourceTypeId;
+    }
+
     @NotNull
     public DBPDataSourceProvider<?> getInstance() {
         if (instance == null) {
@@ -336,9 +352,29 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
 
     @Nullable
     @Override
-    public DBXTreeDescriptor getTreeDescriptor() {
-        return treeDescriptor == null ? (parentProvider == null ? null : parentProvider.getTreeDescriptor())
-            : treeDescriptor;
+    public synchronized DBXTreeDescriptor getTreeDescriptor() {
+        if (treeConfig == null && !extraConfigLoaded && !treeInitialized) {
+            // Until parent linking and inherited injections are complete, expose the parent's tree as before.
+            return parentProvider == null ? null : parentProvider.getTreeDescriptor();
+        }
+        if (!treeInitialized) {
+            if (treeConfig != null) {
+                treeDescriptor = loadTreeInfo(treeConfig);
+            } else if (parentProvider != null) {
+                DBXTreeDescriptor parentTree = parentProvider.getTreeDescriptor();
+                if (parentTree != null) {
+                    treeDescriptor = new DBXTreeDescriptor(this, parentTree);
+                }
+            }
+            if (treeDescriptor != null) {
+                for (IConfigurationElement treeInject : treeInjections) {
+                    injectTreeNodes(treeInject);
+                }
+            }
+            treeInjections.clear();
+            treeInitialized = true;
+        }
+        return treeDescriptor;
     }
 
     @NotNull
@@ -365,6 +401,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
         return supportsDriverMigration;
     }
 
+    @Nullable
+    public String getMigrationCompletedProperty() {
+        return migrationCompletedProperty;
+    }
+
     @NotNull
     public List<DBPPropertyDescriptor> getDriverProperties() {
         return driverProperties;
@@ -383,7 +424,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     @NotNull
     public synchronized List<DBPDriver> getDrivers() {
         if (driverProvider && !driversLoaded) {
-            // Load provided drivers
             if (getInstance() instanceof DriverProvider dp) {
                 this.drivers.addAll(dp.getProvidedDrivers(this));
             } else {
@@ -392,11 +432,29 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             driversLoaded = true;
         }
 
-        return drivers;
+        return List.copyOf(drivers);
+    }
+
+    synchronized void refreshProvidedDrivers() {
+        if (driverProvider) {
+            getDrivers();
+            if (getInstance() instanceof DriverProvider dp) {
+                for (DBPDriver driver : dp.refreshProvidedDrivers(this, drivers)) {
+                    registry.removeDriver(driver);
+                    driver.getDataSourceType();
+                }
+            }
+        }
     }
 
     public synchronized void removeCustomAndDisabledDrivers() {
-        drivers.removeIf(driver -> driver.isCustom() || driver.isDisabled());
+        drivers.removeIf(driver -> {
+            if (driver.isCustom() || driver.isDisabled()) {
+                registry.removeDriver(driver);
+                return true;
+            }
+            return false;
+        });
     }
 
     @NotNull

@@ -40,7 +40,7 @@ public class SQLEditorMessages extends NLS {
 
     public static String editor_query_log_viewer_draw_text_type_qury_part;
     public static String editor_query_log_viewer_reexecute_query_button_text;
-    
+
     public static String editor_sql_preference;
     public static String editors_sql_data_grid;
     public static String editors_sql_description;
@@ -65,12 +65,18 @@ public class SQLEditorMessages extends NLS {
     public static String editors_sql_statistics;
     public static String editors_sql_job_execute_query;
     public static String editors_sql_job_execute_script;
+    public static String execute_script_file_error_title;
+    public static String execute_script_file_project_not_found;
+    public static String execute_script_file_task_type_not_available;
+    public static String execute_script_file_no_configuration_ui;
+    public static String execute_script_file_task_name;
+    public static String execute_script_file_open_error;
     public static String editors_sql_status_cant_obtain_document;
     public static String editors_sql_status_empty_query_string;
     public static String editors_sql_staus_connected_to;
     public static String editors_sql_actions_copy_as_source_code;
     public static String editors_sql_actions_copy_as_source_code_tip;
-    
+
     public static String editors_sql_actions_search_selected_text_online;
     public static String editors_sql_actions_search_selected_text_online_tip;
 
@@ -213,8 +219,11 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_label_activate_on_typing_tip;
     public static String pref_page_sql_completion_label_auto_insert_proposal;
     public static String pref_page_sql_completion_label_auto_insert_proposal_tip;
-    public static String pref_page_sql_completion_label_autocomplete_by_tab;
-    public static String pref_page_sql_completion_label_autocomplete_by_tab_tip;
+    public static String pref_page_sql_completion_label_activation_key;
+    public static String pref_page_sql_completion_label_activation_key_enter;
+    public static String pref_page_sql_completion_label_activation_key_tab;
+    public static String pref_page_sql_completion_label_activation_key_both;
+    public static String pref_page_sql_completion_label_activation_key_none;
     public static String pref_page_sql_completion_label_insert_case;
     public static String pref_page_sql_completion_label_replace_word_after;
     public static String pref_page_sql_completion_label_replace_word_after_tip;
@@ -245,6 +254,8 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_completion_label_mark_occurrences_for_selections_tip;
     public static String pref_page_code_editor_label_advanced_highlighting_enabled;
     public static String pref_page_code_editor_label_advanced_highlighting_enabled_tip;
+    public static String pref_page_code_editor_label_track_script_variables_enabled;
+    public static String pref_page_code_editor_label_track_script_variables_enabled_tip;
     public static String pref_page_code_editor_label_validate_functions_enabled;
     public static String pref_page_code_editor_label_validate_functions_enabled_tip;
     public static String pref_page_code_editor_label_read_metadata_enabled;
@@ -312,6 +323,13 @@ public class SQLEditorMessages extends NLS {
     public static String pref_page_sql_editor_label_sound_on_query_end;
     public static String pref_page_sql_editor_label_refresh_defaults_after_execute;
     public static String pref_page_sql_editor_label_refresh_defaults_after_execute_tip;
+    public static String pref_page_sql_editor_label_show_metadata_refresh_notification;
+    public static String pref_page_sql_editor_label_show_metadata_refresh_notification_tip;
+    public static String pref_page_sql_editor_label_reload_metadata_on_ddl;
+    public static String pref_page_sql_editor_label_reload_metadata_on_ddl_tip;
+    public static String pref_page_sql_editor_reload_metadata_ask;
+    public static String pref_page_sql_editor_reload_metadata_always;
+    public static String pref_page_sql_editor_reload_metadata_never;
     public static String pref_page_sql_editor_label_clear_output_before_execute;
     public static String pref_page_sql_editor_label_clear_output_before_execute_tip;
 
@@ -375,7 +393,7 @@ public class SQLEditorMessages extends NLS {
     public static String source_viewer_show_partitions_ddl_tip;
 
     public static String sql_editor_action_clear;
-    
+
     public static String sql_editor_title_tooltip_path;
     public static String sql_editor_data_receiver_result_name_tooltip_connection;
     public static String sql_editor_data_receiver_result_name_tooltip_time;
@@ -385,6 +403,15 @@ public class SQLEditorMessages extends NLS {
     public static String sql_editor_title_tooltip_url;
     public static String sql_editor_title_tooltip_database;
     public static String sql_editor_title_tooltip_schema;
+    public static String sql_editor_metadata_refresh_notification_title;
+    public static String sql_editor_metadata_refresh_information_title;
+    public static String sql_editor_metadata_refresh_notification;
+    public static String sql_editor_metadata_refresh_pending_notification;
+    public static String sql_editor_metadata_refresh_committed_notification;
+    public static String sql_editor_metadata_refresh_rolled_back_notification;
+    public static String sql_editor_metadata_refresh_ignored_notification;
+    public static String sql_editor_metadata_refresh_error_title;
+    public static String sql_editor_metadata_refresh_error_message;
 
     public static String sql_generator_title_text;
     public static String sql_generator_no_obj_container_text;
@@ -425,7 +452,7 @@ public class SQLEditorMessages extends NLS {
 
     public static String sql_editor_status_bar_rollback_label;
     public static String sql_editor_status_bar_disconnect_label;
-    
+
     public static String sql_editor_outline_no_elements_label;
     public static String sql_editor_outline_query_analysis_disabled_label;
     public static String update_conflict_message;

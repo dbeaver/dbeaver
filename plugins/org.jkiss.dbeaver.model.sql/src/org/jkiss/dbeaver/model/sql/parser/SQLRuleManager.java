@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -40,12 +40,13 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 /**
  * SQLRuleManager.
- *
+ * <p>
  * Contains information about some concrete datasource underlying database syntax.
  * Support runtime change of datasource (reloads syntax information)
  */
@@ -120,9 +121,16 @@ public class SQLRuleManager {
         final SQLBlockEndToken blockEndToken = new SQLBlockEndToken();
 
         List<TPRule> rules = new ArrayList<>();
+        List<SQLBatchDelimiterRule> providedBatchDelimiterRules = new ArrayList<>();
 
         if (ruleProvider != null) {
-            Collections.addAll(rules, ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.INITIAL));
+            for (TPRule rule : ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.INITIAL)) {
+                if (rule instanceof SQLBatchDelimiterRule batchDelimiterRule) {
+                    providedBatchDelimiterRules.add(batchDelimiterRule);
+                } else {
+                    rules.add(rule);
+                }
+            }
         }
 
         if (ruleProvider != null) {
@@ -145,10 +153,10 @@ public class SQLRuleManager {
                 log.error(e);
             }
         }
-        
+
         if (!minimalRules) {
             // Keep variable rule before parameter rule (see #18354)
-            
+
             if (syntaxManager.isVariablesEnabled()) {
                 // Variable rule
                 rules.add(new ScriptVariableRule(parameterToken));
@@ -185,21 +193,29 @@ public class SQLRuleManager {
                 }
             }
             if (!hasDoubleQuoteRule) {
-                rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, escapeChar, breaksOnEOF));
+                rules.add(new MultiLineRule(
+                    SQLConstants.STR_QUOTE_DOUBLE,
+                    SQLConstants.STR_QUOTE_DOUBLE,
+                    quotedToken,
+                    escapeChar,
+                    breaksOnEOF
+                ));
             }
         }
         if (ruleProvider != null) {
             Collections.addAll(rules, ruleProvider.extendRules(dataSourceContainer, TPRuleProvider.RulePosition.QUOTES));
         }
-        
-        // Add rule for single-line comments.
+
+        // Add rules for single-line comments.
+        List<TPRule> lineCommentRules = new ArrayList<>();
         for (String lineComment : dialect.getSingleLineComments()) {
             if (lineComment.startsWith("^")) {
-                rules.add(new LineCommentRule(lineComment, commentToken, (char) 0, false, true));
+                lineCommentRules.add(new LineCommentRule(lineComment, commentToken, (char) 0, false, true));
             } else {
-                rules.add(new EndOfLineRule(lineComment, commentToken, (char) 0, false, true));
+                lineCommentRules.add(new EndOfLineRule(lineComment, commentToken, (char) 0, false, true));
             }
         }
+        rules.addAll(lineCommentRules);
 
         // Add rules for multi-line comments
         Pair<String, String> multiLineComments = dialect.getMultiLineComments();
@@ -218,13 +234,33 @@ public class SQLRuleManager {
             rules.add(new NumberRule(numberToken));
         }
 
-        SQLDelimiterRule delimRule = new SQLDelimiterRule(syntaxManager.getStatementDelimiters(), delimiterToken);
+        String[] batchDelimiters = syntaxManager.getBatchDelimiters();
+        if (batchDelimiters.length > 0) {
+            List<SQLBatchDelimiterRule> activeBatchDelimiterRules = new ArrayList<>(providedBatchDelimiterRules.stream()
+                .filter(rule -> rule.matchesAny(batchDelimiters))
+                .toList());
+            String[] fallbackBatchDelimiters = Arrays.stream(batchDelimiters)
+                .filter(delimiter -> activeBatchDelimiterRules.stream().noneMatch(rule -> rule.matches(delimiter)))
+                .toArray(String[]::new);
+            if (fallbackBatchDelimiters.length > 0) {
+                activeBatchDelimiterRules.add(new SQLBatchDelimiterRule(fallbackBatchDelimiters));
+            }
+            for (SQLBatchDelimiterRule batchDelimiterRule : activeBatchDelimiterRules) {
+                batchDelimiterRule.setLineCommentRules(lineCommentRules);
+                rules.add(batchDelimiterRule);
+            }
+        }
+
+        String[] statementDelimiters = Arrays.stream(syntaxManager.getStatementDelimiters())
+            .filter(delimiter -> !containsIgnoreCase(batchDelimiters, delimiter))
+            .toArray(String[]::new);
+        SQLDelimiterRule delimRule = new SQLDelimiterRule(statementDelimiters, delimiterToken);
         rules.add(delimRule);
 
         {
             // Delimiter redefine
             String delimRedefine = dialect.getScriptDelimiterRedefiner();
-            if(ArrayUtils.contains(syntaxManager.getStatementDelimiters(), delimRedefine)) {
+            if (ArrayUtils.contains(syntaxManager.getStatementDelimiters(), delimRedefine)) {
                 delimRedefine = null;
             }
             if (!CommonUtils.isEmpty(delimRedefine)) {
@@ -283,6 +319,15 @@ public class SQLRuleManager {
         }
 
         allRules = rules.toArray(new TPRule[0]);
+    }
+
+    private static boolean containsIgnoreCase(@NotNull String[] values, @NotNull String value) {
+        for (String candidate : values) {
+            if (candidate.equalsIgnoreCase(value)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

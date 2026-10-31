@@ -22,6 +22,9 @@ public class CoreMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.core.CoreResources"; //$NON-NLS-1$
 
 
+    public static String driver_license_required_title;
+    public static String driver_license_required_message;
+
     public static String core_eula_dialog_accept;
     public static String core_eula_dialog_title;
 
@@ -196,6 +199,7 @@ public class CoreMessages extends NLS {
     public static String pref_page_general_group_product_configuration;
     public static String pref_page_general_workbench;
     public static String pref_page_ui_general_group_browser;
+    public static String pref_page_ui_general_group_theme;
     public static String pref_page_ui_general_combo_browser;
     public static String pref_page_ui_general_combo_browser_tip;
     public static String pref_page_ui_general_check_browser_auth;
@@ -222,6 +226,8 @@ public class CoreMessages extends NLS {
     public static String pref_page_ui_status_bar_show_breadcrumbs_editors_label;
     public static String pref_page_ui_status_bar_show_status_line_check_label;
     public static String pref_page_ui_status_bar_show_status_line_check_tip;
+    public static String pref_page_ui_theme_restart_title;
+    public static String pref_page_ui_theme_restart_message;
     public static String pref_page_ui_general_check_zoom_restart_prompt_label;
     public static String pref_page_ui_general_check_zoom_restart_prompt_tip;
     public static String pref_page_ui_general_group_display;

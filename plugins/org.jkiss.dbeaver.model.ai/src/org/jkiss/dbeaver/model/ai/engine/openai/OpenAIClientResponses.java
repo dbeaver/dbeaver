@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
+import org.jkiss.dbeaver.model.ai.utils.AIHttpRequestFilter;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -30,6 +31,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -47,14 +49,14 @@ public class OpenAIClientResponses extends OpenAiClientBase {
 
     public OpenAIClientResponses(
         @NotNull String baseUrl,
-        @NotNull List<HttpRequestFilter> requestFilters
+        @NotNull List<AIHttpRequestFilter> requestFilters
     ) {
         this(baseUrl, requestFilters, true);
     }
 
     public OpenAIClientResponses(
         @NotNull String baseUrl,
-        @NotNull List<HttpRequestFilter> requestFilters,
+        @NotNull List<AIHttpRequestFilter> requestFilters,
         boolean legacyFallback
     ) {
         super(baseUrl, requestFilters);
@@ -75,11 +77,17 @@ public class OpenAIClientResponses extends OpenAiClientBase {
     }
 
     @NotNull
-    public static OpenAIClientResponses createClient(@NotNull String baseUrl, @NotNull String token) {
-        return new OpenAIClientResponses(
-            baseUrl,
-            List.of(new OpenAIRequestFilter(token))
-        );
+    public static OpenAIClientResponses createClient(@NotNull String baseUrl, @Nullable String token) {
+        return createClient(baseUrl, token, Map.of());
+    }
+
+    @NotNull
+    public static OpenAIClientResponses createClient(
+        @NotNull String baseUrl,
+        @Nullable String token,
+        @NotNull Map<String, String> customHeaders
+    ) {
+        return new OpenAIClientResponses(baseUrl, List.of(new OpenAIRequestFilter(token, customHeaders)));
     }
 
     @NotNull

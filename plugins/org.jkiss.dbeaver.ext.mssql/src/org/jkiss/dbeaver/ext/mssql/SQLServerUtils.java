@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -302,6 +304,29 @@ public class SQLServerUtils {
             : "SELECT definition FROM " + systemSchema + ".sql_modules WHERE object_id = %d".formatted(objectId);
     }
 
+    /**
+     * Name of the stored procedure that applies a comment change: an emptied comment is dropped
+     * rather than stored as an empty extended property.
+     */
+    @NotNull
+    public static String getCommentProcedureName(@Nullable String description, boolean commentSet) {
+        if (CommonUtils.isEmpty(description)) {
+            return "sp_dropextendedproperty";
+        }
+        return commentSet ? "sp_updateextendedproperty" : "sp_addextendedproperty";
+    }
+
+    /**
+     * Value argument of a comment change, empty for a comment that is being dropped.
+     */
+    @NotNull
+    public static String getCommentValueArgument(@NotNull DBPDataSource dataSource, @Nullable String description) {
+        if (CommonUtils.isEmpty(description)) {
+            return "";
+        }
+        return ", " + SQLUtils.quoteString(dataSource, description);
+    }
+
     public static boolean isCommentSet(DBRProgressMonitor monitor, SQLServerDatabase database, SQLServerObjectClass objectClass, long majorId, long minorId) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, database, "Check extended property")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -320,6 +345,34 @@ public class SQLServerUtils {
         } catch (Throwable e) {
             log.debug("Error checking extended property in dictionary", e);
             return false;
+        }
+    }
+
+    /**
+     * Checks through the given context, so an unqualified extended properties table resolves in the same database
+     * the change is written to, and reports a failed check instead of treating it as an absent property.
+     */
+    public static boolean isCommentSet(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull SQLServerDatabase database,
+        @NotNull SQLServerObjectClass objectClass,
+        long majorId,
+        long minorId
+    ) throws DBCException {
+        try (JDBCSession session = (JDBCSession) executionContext.openSession(monitor, DBCExecutionPurpose.META, "Check extended property");
+             JDBCPreparedStatement dbStat = session.prepareStatement(
+                 "SELECT 1 FROM " + SQLServerUtils.getExtendedPropsTableName(database) +
+                     " WHERE [class] = ? AND [major_id] = ? AND [minor_id] = ? AND [name] = N'MS_Description'"))
+        {
+            dbStat.setInt(1, objectClass.getClassId());
+            dbStat.setLong(2, majorId);
+            dbStat.setLong(3, minorId);
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                return dbResult.next();
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e, executionContext);
         }
     }
 

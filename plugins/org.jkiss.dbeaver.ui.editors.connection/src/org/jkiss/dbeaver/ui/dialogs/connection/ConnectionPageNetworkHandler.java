@@ -126,7 +126,11 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
         if (handlerConfiguration == null) {
             return;
         }
-        configuration.setConfigProfile(getActiveProfile());
+        DBWNetworkProfile activeProfile = getActiveProfile();
+        configuration.setConfigProfile(activeProfile);
+        if (activeProfile != null && DBWorkbench.isDistributed()) {
+            return;
+        }
         if (handlerConfiguration.isEnabled()) {
             configurator.saveSettings(handlerConfiguration);
             configuration.updateHandler(handlerConfiguration);

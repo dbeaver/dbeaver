@@ -1,0 +1,45 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ext.cdata.registry;
+
+import org.jkiss.code.NotNull;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
+
+public final class CDataLicenseCheckProcess {
+    private CDataLicenseCheckProcess() {
+    }
+
+    public static void main(@NotNull String[] args) throws IOException {
+        if (args.length != 1 || !"--check-license".equals(args[0])) {
+            System.exit(2);
+            return;
+        }
+        Files.copy(Path.of("license-check.json"), System.out);
+        if (Files.exists(Path.of("fail-check"))) {
+            System.exit(2);
+        }
+    }
+
+    @NotNull
+    public static Map<String, String> getInformation(@NotNull String connectionString) throws IOException {
+        Files.createFile(Path.of("legacy-check"));
+        return Map.of("License", Files.readString(Path.of("license-information.txt")), "NodeId", "test-node");
+    }
+}

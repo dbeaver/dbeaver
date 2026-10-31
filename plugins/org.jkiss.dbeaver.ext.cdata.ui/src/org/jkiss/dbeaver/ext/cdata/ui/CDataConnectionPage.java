@@ -17,92 +17,468 @@ package org.jkiss.dbeaver.ext.cdata.ui;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.preference.PreferenceDialog;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.cdata.CDataAuthModel;
 import org.jkiss.dbeaver.ext.cdata.CDataLicenseUIService;
+import org.jkiss.dbeaver.ext.cdata.model.CDataConnectionHierarchy;
+import org.jkiss.dbeaver.ext.cdata.model.CDataConnectionHierarchy.Property;
+import org.jkiss.dbeaver.ext.cdata.model.CDataConnectionHierarchyReader;
+import org.jkiss.dbeaver.ext.cdata.model.CDataConnectionUrl;
 import org.jkiss.dbeaver.ext.cdata.registry.CDataDriverDescriptor;
+import org.jkiss.dbeaver.ext.cdata.registry.CDataDriverLicense;
+import org.jkiss.dbeaver.ext.cdata.registry.CDataLicenseStatus;
 import org.jkiss.dbeaver.ext.cdata.registry.CDataLicenseType;
 import org.jkiss.dbeaver.ext.cdata.ui.internal.CDataUIMessages;
-import org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
+import java.text.NumberFormat;
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
 
-public class CDataConnectionPage extends GenericConnectionPage {
-    private static final String SUPPORT_URL = "https://portal.cdata.com/?a=support";
+public class CDataConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
+    private static final Log log = Log.getLog(CDataConnectionPage.class);
     private static final String PREFERENCE_PAGE_ID = "org.jkiss.dbeaver.ext.cdata.preferences";
     private Label statusLabel;
+    private Label statusIcon;
+    private Label licenseDetails;
+    private Button buyButton;
+    private Button trialButton;
+    private Button retryLicenseButton;
+    private final Set<CDataDriverDescriptor> checkingDrivers = new HashSet<>();
+    private CDataDriverDescriptor licensedDriver;
     private Button activateButton;
     private Button runButton;
     private boolean builderRunning;
+    private final Runnable licenseChangeListener = () -> UIUtils.asyncExec(() -> {
+        if (statusLabel != null && !statusLabel.isDisposed()) {
+            refreshStatus();
+        }
+    });
+    private Text urlText;
+    private Composite authenticationGroup;
+    private Composite nativeAuthentication;
+    private Label hierarchyStatus;
+    private Link retryLink;
+    private CDataConnectionEditor editor;
+    private CDataConnectionHierarchy hierarchy;
+    private boolean loadingSettings;
+    private final Set<String> editedUrlProperties = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+    private final Set<String> pendingUrlProperties = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+    private boolean updatingUrl;
 
     @Override
-    protected void createUrlControls(@NotNull Composite parent) {
-        Composite configuratorGroup = UIUtils.createPlaceholder(parent, 1);
-        configuratorGroup.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false, 4, 1));
-        runButton = UIUtils.createDialogButton(
-            configuratorGroup,
-            CDataUIMessages.auth_native_url_builder_run,
-            SelectionListener.widgetSelectedAdapter(event -> runNativeUrlBuilder())
-        );
-        runButton.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
-        runButton.setToolTipText(CDataUIMessages.auth_native_url_builder_description);
-        UIUtils.createInfoLabel(configuratorGroup, CDataUIMessages.auth_native_url_builder_description);
+    public void createControl(@NotNull Composite parent) {
+        hierarchy = readConnectionHierarchy();
+        ScrolledComposite scroll = UIUtils.createScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
+        scroll.setShowFocusedControl(true);
+        Composite page = new Composite(scroll, SWT.NONE);
+        page.setLayout(new GridLayout(1, false));
+        page.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite general = UIUtils.createTitledComposite(
+            page, UIConnectionMessages.dialog_connection_server_label, 4, GridData.FILL_HORIZONTAL);
+        createConnectionModeSwitcher(general, SelectionListener.widgetSelectedAdapter(event -> changeConnectionMode()));
+        typeManualRadio.setText(CDataUIMessages.connection_editor_properties);
+        UIUtils.createControlLabel(general, UIConnectionMessages.dialog_connection_url_label);
+        urlText = new Text(general, SWT.BORDER);
+        GridData urlData = new GridData(SWT.FILL, SWT.CENTER, true, false, 3, 1);
+        urlData.widthHint = 355;
+        urlText.setLayoutData(urlData);
+        urlText.addModifyListener(event -> {
+            if (!loadingSettings && !updatingUrl) {
+                propertiesChanged(null);
+            }
+        });
+        Composite generalFields = UIUtils.createFormPlaceholder(general, 4, 4);
+        generalFields.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false, 4, 1));
+        addControlToGroup(GROUP_CONNECTION, generalFields);
+        hierarchyStatus = new Label(general, SWT.WRAP);
+        GridData statusData = new GridData(SWT.FILL, SWT.CENTER, true, false, 4, 1);
+        statusData.widthHint = 355;
+        hierarchyStatus.setLayoutData(statusData);
+        retryLink = new Link(general, SWT.NONE);
+        retryLink.setText(CDataUIMessages.connection_editor_retry);
+        retryLink.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 4, 1));
+        retryLink.addListener(SWT.Selection, event -> reloadConnectionHierarchy());
+        runButton = UIUtils.createDialogButton(general, CDataUIMessages.auth_native_url_builder_run,
+            SelectionListener.widgetSelectedAdapter(event -> runNativeUrlBuilder()));
+        runButton.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false, 4, 1));
+
+        nativeAuthentication = UIUtils.createPlaceholder(page, 1);
+        nativeAuthentication.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        createAuthPanel(nativeAuthentication, 1);
+        authenticationGroup = new Composite(page, SWT.NONE);
+        authenticationGroup.setLayout(new GridLayout(1, false));
+        authenticationGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Composite authenticationContent = UIUtils.createTitledComposite(
+            authenticationGroup, UIConnectionMessages.dialog_connection_auth_group, 1, GridData.FILL_HORIZONTAL);
+        Composite authenticationFields = UIUtils.createFormPlaceholder(authenticationContent, 2, 1);
+        authenticationFields.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        savePasswordCheck = UIUtils.createCheckbox(authenticationContent,
+            UIConnectionMessages.dialog_connection_wizard_final_checkbox_save_password, true);
+        savePasswordCheck.addListener(SWT.Selection, event -> {
+            editor.setPasswordEnabled(savePasswordCheck.getSelection());
+            site.updateButtons();
+        });
+        editor = new CDataConnectionEditor(generalFields, authenticationFields, this::propertiesChanged);
+        editor.setPasswordOptionsControl(savePasswordCheck);
+        createLicenseGroup(page);
+        createDriverPanel(page);
+        setControl(scroll);
+        UIUtils.configureScrolledComposite(scroll, page);
+        page.addDisposeListener(event -> {
+            if (licensedDriver != null) {
+                licensedDriver.removeLicenseChangeListener(licenseChangeListener);
+                licensedDriver = null;
+            }
+        });
+        loadSettings();
     }
 
     @Override
     public void loadSettings() {
-        super.loadSettings();
-        refreshStatus();
-        setRunButtonEnabled(!builderRunning);
+        loadingSettings = true;
+        CDataDriverDescriptor driver = getDriver();
+        boolean driverChanged = licensedDriver != driver;
+        try {
+            if (driverChanged) {
+                if (licensedDriver != null) {
+                    licensedDriver.removeLicenseChangeListener(licenseChangeListener);
+                    hierarchy = readConnectionHierarchy();
+                    editor.setHierarchy(null);
+                }
+                licensedDriver = driver;
+                driver.addLicenseChangeListener(licenseChangeListener);
+            }
+            final DBPDataSourceContainer loadedDataSource = site.getActiveDataSource();
+            editedUrlProperties.clear();
+            pendingUrlProperties.clear();
+            super.loadSettings();
+            var configuration = loadedDataSource.getConnectionConfiguration();
+            urlText.setText(configuration.getUrl() == null ? getDriver().getSampleURL() : configuration.getUrl());
+            boolean canSavePassword = !ApplicationPolicyProvider.getInstance()
+                .isPolicyEnabled(ApplicationPolicyProvider.POLICY_CREDENTIALS_EDIT);
+            savePasswordCheck.setEnabled(canSavePassword);
+            savePasswordCheck.setSelection(canSavePassword && loadedDataSource.isSavePassword());
+            editor.setPasswordEnabled(savePasswordCheck.getSelection());
+            if (hierarchy != null) {
+                hierarchy.loadConfiguration(getDriver().getDriverInfo().jdbcName(), configuration);
+                editor.setHierarchy(hierarchy);
+            }
+            showHierarchyStatus(hierarchy == null ? CDataUIMessages.connection_editor_fallback : "", hierarchy == null);
+            selectUrlMode(hierarchy == null || configuration.getConfigurationType() == DBPDriverConfigurationType.URL);
+            refreshStatus();
+        } catch (DBException e) {
+            hierarchy = null;
+            editor.setHierarchy(null);
+            super.loadSettings();
+            showHierarchyStatus(CDataUIMessages.connection_editor_invalid_url, true);
+            selectUrlMode(true);
+        } finally {
+            loadingSettings = false;
+        }
+        propertiesChanged(null);
+        UIUtils.updateDialogSize(statusLabel);
+        if (driverChanged) {
+            checkLicense();
+        }
     }
 
     @Override
-    public void createAdvancedSettingsGroup(@NotNull Composite composite) {
+    protected boolean isAuthEnabled() {
+        return hierarchy == null || site.getActiveDataSource().isSharedCredentials();
+    }
+
+    @Override
+    protected void saveConnectionURL(@NotNull DBPConnectionConfiguration configuration) {
+        configuration.setUrl(urlText.getText().trim());
+    }
+
+    @Override
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
+        super.saveSettings(dataSource);
+        var configuration = dataSource.getConnectionConfiguration();
+        configuration.setConfigurationType(isCustomURL() ? DBPDriverConfigurationType.URL : DBPDriverConfigurationType.MANUAL);
+        if (hierarchy != null) {
+            String userName = configuration.getUserName();
+            String password = configuration.getUserPassword();
+            if (isCustomURL()) {
+                configuration.getProperties().keySet().removeIf(editedUrlProperties::contains);
+                try {
+                    hierarchy.saveUrlConfiguration(getDriver().getDriverInfo().jdbcName(), configuration);
+                } catch (DBException e) {
+                    setErrorMessage(CDataUIMessages.connection_editor_invalid_url);
+                }
+            } else {
+                hierarchy.saveConfiguration(getDriver().getDriverInfo().jdbcName(), configuration);
+            }
+            if (dataSource.isSharedCredentials()) {
+                configuration.setUserName(userName);
+                configuration.setUserPassword(password);
+            }
+            configuration.setAuthModelId(CDataAuthModel.ID);
+            if (!dataSource.isSavePassword()) {
+                configuration.setUserPassword(null);
+                CDataAuthModel.clearSecrets(configuration);
+            }
+        }
+        Map<String, String> defaults = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
+        if (hierarchy != null) {
+            hierarchy.getGeneralProperties().forEach(property -> defaults.put(property.name(), property.defaultValue()));
+        }
+        try {
+            CDataConnectionUrl.updateEndpoint(getDriver().getDriverInfo().jdbcName(), configuration, defaults);
+        } catch (DBException e) {
+            configuration.setHostName(null);
+            configuration.setHostPort(null);
+        }
+    }
+
+    @Override
+    public boolean isComplete() {
+        return urlText != null && !urlText.getText().isBlank() && pendingUrlProperties.isEmpty() && getErrorMessage() == null
+            && (isCustomURL() || editor.getValidationError() == null);
+    }
+
+    private void propertiesChanged(@Nullable Property property) {
+        if (loadingSettings || updatingUrl) {
+            site.updateButtons();
+            return;
+        }
+        if (hierarchy == null) {
+            try {
+                CDataConnectionUrl.parse(urlText.getText(), getDriver().getDriverInfo().jdbcName());
+                setErrorMessage(null);
+            } catch (DBException e) {
+                setErrorMessage(CDataUIMessages.connection_editor_invalid_url);
+            }
+            site.updateButtons();
+            return;
+        }
+        updatingUrl = true;
+        try {
+            if (isCustomURL()) {
+                if (property != null) {
+                    var names = CDataConnectionHierarchy.getPropertyNames(property);
+                    editedUrlProperties.addAll(names);
+                    pendingUrlProperties.addAll(names);
+                }
+                if (!pendingUrlProperties.isEmpty()) {
+                    urlText.setText(hierarchy.updateUrl(
+                        getDriver().getDriverInfo().jdbcName(), urlText.getText(), pendingUrlProperties));
+                    pendingUrlProperties.clear();
+                }
+                CDataConnectionUrl.parse(urlText.getText(), getDriver().getDriverInfo().jdbcName());
+                setErrorMessage(null);
+            } else {
+                pendingUrlProperties.clear();
+                var configuration = new DBPConnectionConfiguration();
+                hierarchy.saveConfiguration(getDriver().getDriverInfo().jdbcName(), configuration);
+                urlText.setText(configuration.getUrl());
+                setErrorMessage(editor.getValidationError());
+            }
+        } catch (DBException e) {
+            setErrorMessage(CDataUIMessages.connection_editor_invalid_url);
+        } finally {
+            updatingUrl = false;
+        }
+        ((Composite) getControl()).layout(true, true);
+        site.updateButtons();
+    }
+
+    private void changeConnectionMode() {
+        if (!isCustomURL() && hierarchy != null) {
+            try {
+                hierarchy.loadUrl(getDriver().getDriverInfo().jdbcName(), urlText.getText());
+                editor.setHierarchy(hierarchy);
+            } catch (DBException e) {
+                selectUrlMode(true);
+                setErrorMessage(CDataUIMessages.connection_editor_invalid_url);
+                site.updateButtons();
+                return;
+            }
+        }
+        updateConnectionMode();
+        propertiesChanged(null);
+    }
+
+    private void selectUrlMode(boolean useUrl) {
+        typeURLRadio.setSelection(useUrl);
+        typeManualRadio.setSelection(!useUrl);
+        updateConnectionMode();
+    }
+
+    private void updateConnectionMode() {
+        setupConnectionModeSelection(urlText, isCustomURL(), GROUP_CONNECTION_ARR);
+        typeManualRadio.setEnabled(hierarchy != null);
+        boolean useAuthenticationFields = hierarchy != null && !site.getActiveDataSource().isSharedCredentials();
+        UIUtils.setControlVisible(authenticationGroup, useAuthenticationFields);
+        UIUtils.setControlVisible(nativeAuthentication, !useAuthenticationFields);
+        if (getControl() instanceof Composite page) {
+            page.layout(true, true);
+        }
+    }
+
+    private void showHierarchyStatus(@NotNull String message, boolean retry) {
+        hierarchyStatus.setText(message);
+        UIUtils.setControlVisible(hierarchyStatus, !message.isEmpty());
+        UIUtils.setControlVisible(retryLink, retry);
+        UIUtils.setControlVisible(runButton, retry);
+        hierarchyStatus.getParent().layout(true, true);
+    }
+
+    @Nullable
+    private CDataConnectionHierarchy readConnectionHierarchy() {
+        CDataDriverDescriptor driver = getDriver();
+        AtomicReference<CDataConnectionHierarchy> loaded = new AtomicReference<>();
+        try {
+            UIUtils.runInProgressService(monitor -> {
+                monitor.beginTask(CDataUIMessages.connection_editor_loading, 1);
+                try {
+                    CDataConnectionHierarchy result = CDataConnectionHierarchyReader.read(monitor, driver);
+                    if (monitor.isCanceled()) {
+                        throw new InterruptedException();
+                    }
+                    loaded.set(result);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                } finally {
+                    monitor.done();
+                }
+            });
+        } catch (InvocationTargetException e) {
+            log.debug("Unable to load CData connection hierarchy", e.getTargetException());
+        } catch (InterruptedException expected) {
+            return null;
+        }
+        return loaded.get();
+    }
+
+    private void reloadConnectionHierarchy() {
+        saveSettings(site.getActiveDataSource());
+        CDataConnectionHierarchy loaded = readConnectionHierarchy();
+        if (urlText.isDisposed()) {
+            return;
+        }
+        hierarchy = loaded;
+        editor.setHierarchy(null);
+        loadSettings();
+        checkLicense();
+    }
+
+    @NotNull
+    @Override
+    public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
+        return new IDialogPage[] {new CDataDriverPropertiesDialogPage(this, () -> hierarchy)};
+    }
+
+    private void createLicenseGroup(@NotNull Composite composite) {
         Composite licenseGroup = UIUtils.createTitledComposite(
-            composite,
-            CDataUIMessages.license_group_title,
-            5,
-            GridData.FILL_HORIZONTAL
-        );
-        statusLabel = new Label(licenseGroup, SWT.NONE);
+            composite, CDataUIMessages.license_group_title, 2, GridData.FILL_HORIZONTAL);
+        Composite status = UIUtils.createPlaceholder(licenseGroup, 2, 4);
+        status.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        statusIcon = new Label(status, SWT.NONE);
+        statusIcon.setLayoutData(new GridData(SWT.LEFT, SWT.CENTER, false, false));
+        statusLabel = new Label(status, SWT.WRAP);
+        statusLabel.setFont(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
         statusLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        Button manageButton = new Button(licenseGroup, SWT.PUSH);
-        manageButton.setText(CDataUIMessages.license_manage);
-        manageButton.addListener(SWT.Selection, event -> manageLicenses());
-
-        activateButton = new Button(licenseGroup, SWT.PUSH);
-        activateButton.setLayoutData(new GridData());
-        activateButton.setText(CDataUIMessages.license_activate);
-        activateButton.addListener(SWT.Selection, event -> activatePurchasedLicense());
-
-        Button buyButton = new Button(licenseGroup, SWT.PUSH);
-        buyButton.setText(CDataUIMessages.activation_buy_button);
-        buyButton.addListener(SWT.Selection, event -> UIUtils.openWebBrowser(getDriver().getDriverPurchaseURL()));
-
-        Link supportLink = new Link(licenseGroup, SWT.NONE);
-        supportLink.setText(CDataUIMessages.activation_support_link);
-        supportLink.addListener(SWT.Selection, event -> UIUtils.openWebBrowser(SUPPORT_URL));
+        Link support = new Link(licenseGroup, SWT.NONE);
+        support.setText(CDataUIMessages.activation_support_link);
+        support.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
+        support.addListener(SWT.Selection, event -> UIUtils.openWebBrowser(CDataLicenseUIUtils.SUPPORT_URL));
+        licenseDetails = new Label(licenseGroup, SWT.WRAP);
+        GridData detailsData = new GridData(SWT.FILL, SWT.TOP, true, false, 2, 1);
+        detailsData.widthHint = 355;
+        licenseDetails.setLayoutData(detailsData);
+        Composite actions = UIUtils.createPlaceholder(licenseGroup, 4, 0);
+        actions.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        buyButton = UIUtils.createDialogButton(actions, CDataUIMessages.activation_buy_button,
+            SelectionListener.widgetSelectedAdapter(event -> UIUtils.openWebBrowser(getDriver().getDriverPurchaseURL())));
+        buyButton.setToolTipText(CDataUIMessages.license_purchase_hint);
+        trialButton = UIUtils.createDialogButton(actions, CDataUIMessages.license_start_trial,
+            SelectionListener.widgetSelectedAdapter(event -> activateLicense(CDataLicenseType.TRIAL)));
+        activateButton = UIUtils.createDialogButton(actions, CDataUIMessages.license_activate,
+            SelectionListener.widgetSelectedAdapter(event -> activateLicense(CDataLicenseType.PURCHASED)));
+        activateButton.setToolTipText(CDataUIMessages.license_activation_hint);
+        retryLicenseButton = UIUtils.createDialogButton(actions, CDataUIMessages.license_retry,
+            SelectionListener.widgetSelectedAdapter(event -> {
+                if (getDriver().getDefaultDriverLoader().isDriverInstalled()) {
+                    checkLicense();
+                } else {
+                    reloadConnectionHierarchy();
+                }
+            }));
+        Button manage = UIUtils.createDialogButton(licenseGroup, CDataUIMessages.license_manage,
+            SelectionListener.widgetSelectedAdapter(event -> manageLicenses()));
+        manage.setLayoutData(new GridData(SWT.RIGHT, SWT.CENTER, false, false));
         refreshStatus();
+    }
+
+    private void checkLicense() {
+        CDataDriverDescriptor driver = getDriver();
+        if (!driver.getDefaultDriverLoader().isDriverInstalled() || !checkingDrivers.add(driver)) {
+            return;
+        }
+        retryLicenseButton.setEnabled(false);
+        new AbstractJob(CDataUIMessages.license_check_job) {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                try {
+                    driver.validateInstalledLicense(monitor);
+                } catch (DBException e) {
+                    log.debug("Unable to verify CData driver license", e);
+                } finally {
+                    UIUtils.asyncExec(() -> {
+                        checkingDrivers.remove(driver);
+                        if (!retryLicenseButton.isDisposed() && getDriver() == driver) {
+                            retryLicenseButton.setEnabled(true);
+                            refreshStatus();
+                        }
+                    });
+                }
+                return Status.OK_STATUS;
+            }
+        }.schedule();
     }
 
     private void manageLicenses() {
@@ -186,9 +562,9 @@ public class CDataConnectionPage extends GenericConnectionPage {
         }
     }
 
-    private void activatePurchasedLicense() {
+    private void activateLicense(@NotNull CDataLicenseType type) {
         CDataLicenseUIService uiService = DBWorkbench.getService(CDataLicenseUIService.class);
-        if (uiService != null && uiService.activateLicense(getDriver(), CDataLicenseType.PURCHASED) != null) {
+        if (uiService != null && uiService.activateLicense(getDriver(), type) != null) {
             refreshStatus();
         }
     }
@@ -197,12 +573,32 @@ public class CDataConnectionPage extends GenericConnectionPage {
         if (!(site.getDriver() instanceof CDataDriverDescriptor driver)) {
             return;
         }
-        statusLabel.setText(NLS.bind(
-            CDataUIMessages.license_status,
-            CDataLicenseUIUtils.getStatusText(driver.getLicenseStatus())
-        ));
-        UIUtils.setControlVisible(activateButton, driver.getLicenseStatus().isTrial());
-        statusLabel.getParent().layout(true, true);
+        CDataDriverLicense license = driver.getCurrentLicense();
+        boolean driverMissing = !driver.getDefaultDriverLoader().isDriverInstalled();
+        var price = driver.getDriverInfo().annualPriceUsd();
+        buyButton.setText(price == null ? CDataUIMessages.activation_buy_button
+            : NLS.bind(CDataUIMessages.activation_buy_button_with_price, NumberFormat.getCurrencyInstance(Locale.US).format(price)));
+        ((GridData) buyButton.getLayoutData()).widthHint = UIUtils.getDialogButtonWidth(buyButton);
+        statusLabel.setText(driverMissing ? CDataUIMessages.license_driver_missing : CDataLicenseUIUtils.getLicenseTitle(license));
+        var icon = CDataLicenseUIUtils.getStatusIcon(driverMissing ? CDataLicenseStatus.VALIDATION_UNAVAILABLE : license.getStatus());
+        statusIcon.setImage(icon == null ? null : DBeaverIcons.getImage(icon));
+        UIUtils.setControlVisible(statusIcon, icon != null);
+        licenseDetails.setText(driverMissing ? CDataUIMessages.license_driver_missing_description
+            : CDataLicenseUIUtils.getLicenseDetails(license));
+        UIUtils.setControlVisible(licenseDetails, !licenseDetails.getText().isBlank());
+        boolean unverified = driverMissing || license.getStatus().isUnknown();
+        retryLicenseButton.setText(driverMissing
+            ? UIConnectionMessages.dialog_driver_download_auto_page_download_driver_files : CDataUIMessages.license_retry);
+        ((GridData) retryLicenseButton.getLayoutData()).widthHint = UIUtils.getDialogButtonWidth(retryLicenseButton);
+        UIUtils.setControlVisible(retryLicenseButton, unverified);
+        retryLicenseButton.setEnabled(!checkingDrivers.contains(driver));
+        UIUtils.setControlVisible(trialButton, !unverified && driver.supportsTrialLicense());
+        UIUtils.setControlVisible(buyButton, !unverified && (!license.getStatus().isValid() || license.isTrialLicense()));
+        UIUtils.setControlVisible(activateButton, !unverified && (!license.getStatus().isValid() || license.isTrialLicense()));
+        licenseDetails.getParent().layout(true, true);
+        if (getControl() != null) {
+            UIUtils.updateDialogSize(statusLabel);
+        }
     }
 
     @NotNull

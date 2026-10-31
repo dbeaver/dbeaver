@@ -30,6 +30,8 @@ public abstract class AbstractTopLevelCommand extends CLIAbstractCommand impleme
     private final Log log = Log.getLog(getClass());
 
     public static final String HELP_OPTION = "--help";
+    public static final String SHORT_HELP_OPTION = "-h";
+    public static final String LEGACY_HELP_OPTION = "-help";
     public static final String NOSPASH_OPTION = "-nosplash";
     public static final String DEBUG_LOGS_OPTION = "--debug-logs";
     public static final String TRACE_LOGS_OPTION = "--trace-logs";
@@ -41,7 +43,7 @@ public abstract class AbstractTopLevelCommand extends CLIAbstractCommand impleme
 
 
     @CommandLine.Option(
-        names = {"-h", "-help", HELP_OPTION},
+        names = {SHORT_HELP_OPTION, LEGACY_HELP_OPTION, HELP_OPTION},
         description = "Show this help message and exit",
         usageHelp = true,
         scope = CommandLine.ScopeType.INHERIT

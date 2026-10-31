@@ -289,6 +289,12 @@ public class QMUtils {
         }
     }
 
+    public static void flushPendingEvents() {
+        if (qmRegistry != null) {
+            qmRegistry.flushPendingEvents();
+        }
+    }
+
     public static class ListCursorImpl implements QMEventCursor {
 
         private final List<QMMetaEvent> events;

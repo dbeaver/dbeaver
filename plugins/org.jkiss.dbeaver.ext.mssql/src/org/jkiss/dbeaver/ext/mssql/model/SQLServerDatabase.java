@@ -23,6 +23,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -39,6 +41,7 @@ import org.jkiss.dbeaver.model.sql.DBSQLException;
 import org.jkiss.dbeaver.model.struct.DBSCollationProvider;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -65,6 +68,8 @@ public class SQLServerDatabase
         DBPSystemObject,
         DBPNamedObject2,
         DBPObjectStatistics,
+        DBPObjectWithLazyDescription,
+        DBPStatefulObject,
         DBSCollationProvider {
 
     private static final Log log = Log.getLog(SQLServerDatabase.class);
@@ -90,6 +95,8 @@ public class SQLServerDatabase
     private boolean persisted;
     private String name;
     private String description;
+    private String stateDesc;
+    private DBSObjectState objectState = DBSObjectState.NORMAL;
     private String collationName;
     private volatile NavigableSet<String> supportedCollations;
     private DataTypeCache typesCache = new DataTypeCache();
@@ -110,6 +117,7 @@ public class SQLServerDatabase
         this.isTempDatabase = name.equalsIgnoreCase(SQLServerConstants.TEMPDB_DATABASE);
         this.collationName = JDBCUtils.safeGetString(resultSet, "collation_name");
         //this.description = JDBCUtils.safeGetString(resultSet, "description");
+        setStateDesc(JDBCUtils.safeGetString(resultSet, "state_desc"));
 
         this.persisted = true;
 
@@ -150,14 +158,98 @@ public class SQLServerDatabase
         name = newName;
     }
 
+    @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
     public String getDescription() {
         return description;
     }
 
+    @Nullable
+    @Override
+    @Property(viewable = true, editable = true, updatable = true, length = PropertyLength.MULTILINE, order = 100)
+    public String getDescription(@NotNull DBRProgressMonitor monitor) {
+        if (description != null) {
+            return description;
+        }
+        // Database-level extended properties live in the database itself, so they cannot be read
+        // together with the database list and are not readable at all while the database is not online
+        if (!isExtendedPropertyAddressable(DBUtils.getDefaultContext(this, false))) {
+            // Left uncached - the property becomes readable once the connection switches to this database
+            return "";
+        }
+        try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Read database description")) {
+            description = JDBCUtils.queryString(
+                session,
+                "SELECT CAST([value] AS nvarchar(max)) FROM " + SQLServerUtils.getExtendedPropsTableName(this) +
+                    " WHERE [class] = ? AND [major_id] = 0 AND [minor_id] = 0 AND [name] = ?",
+                SQLServerObjectClass.DATABASE.getClassId(),
+                SQLServerConstants.PROP_MS_DESCRIPTION);
+        } catch (Exception e) {
+            log.debug("Error reading description of database " + getName(), e);
+        }
+        if (description == null) {
+            description = "";
+        }
+        return description;
+    }
+
+    /**
+     * Without cross-database queries the extended properties table cannot be qualified with a catalog name,
+     * so it resolves inside the database the connection currently uses - addressing it for any other database
+     * would read or write that one's properties instead.
+     */
+    public boolean isExtendedPropertyAddressable(@Nullable DBCExecutionContext executionContext) {
+        if (SQLServerUtils.supportsCrossDatabaseQueries(dataSource)) {
+            return true;
+        }
+        return executionContext instanceof SQLServerExecutionContext context && this == context.getDefaultCatalog();
+    }
+
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    @Nullable
+    @Property(viewable = true, order = 5)
+    public String getState() {
+        return stateDesc;
+    }
+
+    @NotNull
+    @Override
+    public DBSObjectState getObjectState() {
+        return objectState;
+    }
+
+    @Override
+    public void refreshObjectState(@NotNull DBRProgressMonitor monitor) throws DBCException {
+        // Queried on the data source context, because an offline database cannot host the query itself,
+        // and read the same way the database list reads it, so a server that does not expose the column
+        // leaves the database unmarked here as well instead of failing the refresh
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read database state")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT db.* FROM sys.databases db WHERE db.database_id = ?"))
+            {
+                dbStat.setLong(1, databaseId);
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        setStateDesc(JDBCUtils.safeGetString(dbResult, "state_desc"));
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException("Error reading database state", e);
+        }
+    }
+
+    private void setStateDesc(@Nullable String stateDesc) {
+        this.stateDesc = stateDesc;
+        if (stateDesc == null || SQLServerConstants.DATABASE_STATE_ONLINE.equalsIgnoreCase(stateDesc)) {
+            // A server that does not report a state leaves the database unmarked
+            this.objectState = DBSObjectState.NORMAL;
+        } else {
+            this.objectState = new DBSObjectState(stateDesc, DBIcon.OVER_ERROR);
+        }
     }
 
     public long getDatabaseId() {
@@ -196,7 +288,13 @@ public class SQLServerDatabase
         schemaCache.clearCache();
         triggerCache.clearCache();
         databaseTotalSize = null;
+        description = null;
         supportedCollations = null;
+        try {
+            refreshObjectState(monitor);
+        } catch (DBCException e) {
+            log.debug("Error refreshing database state", e);
+        }
         return this;
     }
 
