@@ -30,7 +30,8 @@
             description="%category.cdata.description"
             icon="#folder_database"
             rank="101"
-            promoted="true"/>
+            promoted="true"
+            commercial="true"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.mavenRepository">
