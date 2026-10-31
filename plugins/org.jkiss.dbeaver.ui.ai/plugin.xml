@@ -4,6 +4,31 @@
 <plugin>
     <extension-point id="chatView" name="AI Chat View" schema="schema/org.jkiss.dbeaver.ui.ai.chatView.exsd"/>
 
+    <extension point="org.jkiss.dbeaver.connectionPageConfigurator">
+        <page
+            id="com.dbeaver.preferences.datasource.ai"
+            after="org.jkiss.dbeaver.preferences.main.meta"
+            class="org.jkiss.dbeaver.ui.ai.preferences.PrefPageDataSourceAI"
+            title="%pref.page.ai.connection.name"
+            description="%pref.page.ai.connection.description">
+            <enabledWhen>
+                <or>
+                    <test property="org.jkiss.dbeaver.ui.ai.hasConnectionSettings" forcePluginActivation="true"/>
+                    <test property="org.jkiss.dbeaver.ui.datadam.mcp.enabled" forcePluginActivation="true"/>
+                </or>
+            </enabledWhen>
+        </page>
+    </extension>
+
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.ai.preferences.AIConnectionSettingsPropertyTester"
+            id="org.jkiss.dbeaver.ui.ai.preferences.AIConnectionSettingsPropertyTester"
+            namespace="org.jkiss.dbeaver.ui.ai"
+            properties="hasConnectionSettings"
+            type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+    </extension>
+
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine" uiClass="org.jkiss.dbeaver.ui.ai.engine.openai.OpenAiConfigurator"/>
         <propertyConfigurator class="org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine" uiClass="org.jkiss.dbeaver.ui.ai.engine.copilot.CopilotConfigurator"/>

@@ -14,13 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam;
+package org.jkiss.dbeaver.model.datadam.rpc;
 
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamHandshakeRequest;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannel;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
@@ -30,8 +33,10 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import java.net.URI;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
+    private static final Log log = Log.getLog(DDRemoteDamDesktopSessionService.class);
 
     private static final String APP_INSTANCE_ID = UUID.randomUUID().toString();
 
@@ -42,6 +47,7 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
     private final DDRemoteDamDesktopRpcService rpc;
     private final AtomicBoolean started = new AtomicBoolean();
     private final AtomicBoolean closed = new AtomicBoolean();
+    private final AtomicReference<DDRemoteDamSubscription> readyObservation = new AtomicReference<>();
 
     private final DDDesktopAccessListener accessListener = new DDDesktopAccessListener() {
 
@@ -58,9 +64,17 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
     };
 
     public DDRemoteDamDesktopSessionService(@NotNull DDDesktopAccessService access, @NotNull DDRemoteDamDesktopChannel channel) {
+        this(access, channel, DDDesktopRpcRegistrationRegistry.getInstance());
+    }
+
+    public DDRemoteDamDesktopSessionService(
+        @NotNull DDDesktopAccessService access,
+        @NotNull DDRemoteDamDesktopChannel channel,
+        @NotNull DDDesktopRpcRegistrationRegistry registrations
+    ) {
         this.access = access;
         this.channel = channel;
-        this.rpc = new DDRemoteDamDesktopRpcService(channel);
+        this.rpc = new DDRemoteDamDesktopRpcService(channel, registrations);
     }
 
     @NotNull
@@ -76,6 +90,7 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
                 resource -> access.getStatus() == DDDesktopAccessService.Status.SIGNED_IN
                     ? access.getAccessTokenForResource(resource) : null);
             instance = new DDRemoteDamDesktopSessionService(access, channel);
+            log.debug("Created DataDam desktop session service");
         }
         return instance;
     }
@@ -90,6 +105,24 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
             return;
         }
         updateAccess(true);
+        if (!closed.get()) {
+            DDRemoteDamSubscription observation = channel.observeState(status -> {
+                if (status.isReady() && !closed.get()) {
+                    try {
+                        rpc.getRpc();
+                    } catch (DBException e) {
+                        log.warn("Cannot register desktop DataDam RPC services", e);
+                    }
+                }
+            });
+            readyObservation.set(observation);
+            if (closed.get()) {
+                DDRemoteDamSubscription stopped = readyObservation.getAndSet(null);
+                if (stopped != null) {
+                    stopped.close();
+                }
+            }
+        }
     }
 
     @NotNull
@@ -106,6 +139,10 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
     public void close() {
         if (closed.compareAndSet(false, true)) {
             access.removeAccessListener(accessListener);
+            DDRemoteDamSubscription observation = readyObservation.getAndSet(null);
+            if (observation != null) {
+                observation.close();
+            }
             try {
                 rpc.close();
             } finally {

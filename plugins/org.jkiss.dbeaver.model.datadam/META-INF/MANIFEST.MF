@@ -11,6 +11,8 @@ Export-Package: org.jkiss.dbeaver.model.datadam,
  org.jkiss.dbeaver.model.datadam.ai,
  org.jkiss.dbeaver.model.datadam.auth,
  org.jkiss.dbeaver.model.datadam.auth.desktop,
+ org.jkiss.dbeaver.model.datadam.mcp,
+ org.jkiss.dbeaver.model.datadam.rpc,
  org.jkiss.dbeaver.model.datadam.sync,
  org.jkiss.dbeaver.model.datadam.sync.core,
  org.jkiss.dbeaver.model.datadam.sync.project,
@@ -20,6 +22,7 @@ Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.model.ai,
  com.dbeaver.rest.client;visibility:=reexport,
  com.dbeaver.datadam.share.api;visibility:=reexport,
- com.dbeaver.datadam.sso.api,
- com.dbeaver.datadam.dam.remote.api;visibility:=reexport
+  com.dbeaver.datadam.sso.api,
+  com.dbeaver.datadam.mcp.api,
+  com.dbeaver.datadam.dam.remote.api;visibility:=reexport
 Automatic-Module-Name: org.jkiss.dbeaver.model.datadam
