@@ -26,8 +26,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
+import org.jkiss.dbeaver.model.data.storage.BytesContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -36,7 +38,10 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.IAppendableDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings.LobEncoding;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferUtils;
 import org.jkiss.dbeaver.tools.transfer.stream.exporter.StreamExporterAbstract;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -45,7 +50,10 @@ import org.jkiss.utils.CommonUtils;
 import java.awt.*;
 import java.awt.Color;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.StringWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.text.SimpleDateFormat;
@@ -66,8 +74,6 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     private static final String PROP_ROWNUMBER = "rownumber";
     private static final String PROP_BORDER = "border";
     private static final String PROP_HEADER_FONT = "headerfont";
-
-    private static final String BINARY_FIXED = "[BINARY]";
 
     private static final String PROP_TRUESTRING = "trueString";
     private static final String PROP_FALSESTRING = "falseString";
@@ -99,6 +105,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
 
     private String nullString;
     private String dateFormatString;
+    private LobEncoding lobEncoding = LobEncoding.BINARY;
 
     private DBDAttributeBinding[] columns;
     private DBDAttributeDecorator decorator;
@@ -152,6 +159,11 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
     @Override
     public void init(IStreamDataExporterSite site) throws DBException {
         Map<String, Object> properties = site.getProperties();
+        lobEncoding = CommonUtils.valueOf(
+            LobEncoding.class,
+            CommonUtils.toString(properties.get(StreamConsumerSettings.PROP_LOB_ENCODING)),
+            LobEncoding.BINARY
+        );
         Object nullStringProp = properties.get(PROP_NULL_STRING);
         nullString = nullStringProp == null ? null : nullStringProp.toString();
         headerFormat = HeaderFormat.of(CommonUtils.toString(properties.get(PROP_HEADER)));
@@ -481,7 +493,7 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
                     } else if (ContentUtils.isTextContent(content)) {
                         writeCellValue(cell, cs.getContentReader());
                     } else {
-                        cell.setCellValue(BINARY_FIXED);
+                        writeBinaryCellValue(session.getProgressMonitor(), cell, cs, session.getDataSource());
                     }
                 } finally {
                     content.release();
@@ -516,6 +528,97 @@ public class DataExporterXLSX extends StreamExporterAbstract implements IAppenda
         }
         wsh.incRow();
         rowCount++;
+    }
+
+    private void writeBinaryCellValue(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Cell cell,
+        @NotNull DBDContentStorage contentStorage,
+        @NotNull DBPDataSource dataSource
+    ) throws IOException {
+        if (monitor.isCanceled()) {
+            return;
+        }
+        String value;
+        // Read one extra character to distinguish a full cell from a truncated value.
+        int limit = EXCEL_MAX_CELL_CHARACTERS + 1;
+        if (lobEncoding == LobEncoding.BINARY) {
+            // XLSX cells need decoded text without the JSON escaping used by stream exporters.
+            try (InputStream stream = contentStorage.getContentStream();
+                 Reader reader = new InputStreamReader(stream, contentStorage.getCharset())) {
+                char[] buffer = new char[limit];
+                int length = 0;
+                while (length < buffer.length && !monitor.isCanceled()) {
+                    int count = reader.read(buffer, length, buffer.length - length);
+                    if (count < 0) {
+                        break;
+                    }
+                    length += count;
+                }
+                value = new String(buffer, 0, length);
+            }
+        } else {
+            // This prefix is sufficient for hex, Base64 and native hex literals, including their prefixes/suffixes.
+            // Bound the input before encoding: NATIVE buffers and formats all supplied bytes.
+            byte[] buffer = new byte[limit];
+            int length = 0;
+            try (InputStream stream = contentStorage.getContentStream()) {
+                while (length < buffer.length && !monitor.isCanceled()) {
+                    int count = stream.read(buffer, length, buffer.length - length);
+                    if (count < 0) {
+                        break;
+                    }
+                    length += count;
+                }
+            }
+            if (monitor.isCanceled()) {
+                return;
+            }
+            value = encodeBinaryData(buffer, length, contentStorage.getCharset(), dataSource);
+            if (value.length() > EXCEL_MAX_CELL_CHARACTERS) {
+                if (monitor.isCanceled()) {
+                    return;
+                }
+                // Search whole-byte prefixes rather than cutting encoding groups or native formatter wrappers.
+                int low = 0;
+                int high = length - 1;
+                value = encodeBinaryData(buffer, 0, contentStorage.getCharset(), dataSource);
+                if (value.length() > EXCEL_MAX_CELL_CHARACTERS) {
+                    throw new IOException("Binary format exceeds the maximum XLSX cell length");
+                }
+                while (low < high) {
+                    if (monitor.isCanceled()) {
+                        return;
+                    }
+                    int count = low + (high - low + 1) / 2;
+                    String candidate = encodeBinaryData(buffer, count, contentStorage.getCharset(), dataSource);
+                    if (candidate.length() <= EXCEL_MAX_CELL_CHARACTERS) {
+                        low = count;
+                        value = candidate;
+                    } else {
+                        high = count - 1;
+                    }
+                }
+                log.warn("The binary value of the row " + (rowCount + 1) + " exceeded the maximum cell length, so it was cropped.");
+            }
+        }
+        if (!monitor.isCanceled()) {
+            cell.setCellValue(getPreparedString(value));
+        }
+    }
+
+    @NotNull
+    private String encodeBinaryData(
+        @NotNull byte[] buffer,
+        int length,
+        @NotNull String charset,
+        @NotNull DBPDataSource dataSource
+    ) throws IOException {
+        StringWriter writer = new StringWriter();
+        StreamTransferUtils.writeBinaryData(
+            new BytesContentStorage(Arrays.copyOf(buffer, length), charset), lobEncoding, dataSource, writer
+        );
+        return writer.toString();
     }
 
     private CellType getCellType(DBDAttributeBinding column) {
