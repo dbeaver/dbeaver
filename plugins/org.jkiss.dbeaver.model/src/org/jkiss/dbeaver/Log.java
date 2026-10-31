@@ -22,10 +22,10 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.FrameworkUtil;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
@@ -75,9 +75,8 @@ public class Log {
     private static Listener[] listeners = new Listener[0];
 
     static {
-        ModelActivator instance = ModelActivator.getInstance();
         try {
-            eclipseLog = instance == null ? null : instance.getLog();
+            eclipseLog = Platform.getLog(FrameworkUtil.getBundle(Log.class));
         } catch (Throwable e) {
             eclipseLog = null;
         }

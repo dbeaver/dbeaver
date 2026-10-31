@@ -124,11 +124,11 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
-        <propertyConfigurator class="org.jkiss.dbeaver.model.datadam.DDAIEngine" uiClass="org.jkiss.dbeaver.ui.datadam.DDConfigurator"/>
+        <propertyConfigurator class="org.jkiss.dbeaver.model.datadam.ai.DDAIEngine" uiClass="org.jkiss.dbeaver.ui.datadam.ai.DDAIEngineConfigurator"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.workbenchHandler">
-        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.datadam.DDTrackingInitializer" order="100"/>
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.datadam.DDDesktopInitializer" order="100"/>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
