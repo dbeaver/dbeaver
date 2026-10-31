@@ -369,7 +369,20 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         if (!CommonUtils.isEmpty(factoryProp)) {
             props.put("sslfactory", factoryProp);
         }
+        initSSLNegotiation(props, sslConfig);
         props.put("sslpasswordcallback", DefaultCallbackHandler.class.getName());
+    }
+
+    /**
+     * Direct SSL negotiation (PostgreSQL 17+) starts the TLS handshake immediately, with ALPN "postgresql"
+     * and SNI set to the host name. This lets standard TLS proxies (e.g. Caddy) route by SNI.
+     * Empty value keeps the driver default ("postgres").
+     */
+    static void initSSLNegotiation(@NotNull Map<String, String> props, @NotNull DBWHandlerConfiguration sslConfig) {
+        final String negotiationProp = sslConfig.getStringProperty(PostgreConstants.PROP_SSL_NEGOTIATION);
+        if (!CommonUtils.isEmpty(negotiationProp)) {
+            props.put(PostgreConstants.DRIVER_PROP_SSL_NEGOTIATION, negotiationProp);
+        }
     }
 
     private boolean isMultiUserOrDistributed() {

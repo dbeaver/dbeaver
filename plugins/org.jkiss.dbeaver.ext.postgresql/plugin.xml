@@ -819,6 +819,7 @@
             </propertyGroup>
             <propertyGroup label="Advanced SSL Settings">
                 <property id="sslMode" label="SSL Mode" type="string" description="SSL Mode" validValues="disable,allow,prefer,require,verify-ca,verify-full" defaultValue=""/>
+                <property id="sslNegotiation" label="SSL Negotiation" type="string" description="SSL negotiation: postgres (default) or direct (PostgreSQL 17+)" validValues="postgres,direct" defaultValue=""/>
                 <property id="sslFactory" label="SSL Factory" type="file" description="SSL Factory"/>
             </propertyGroup>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider"/>
