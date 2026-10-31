@@ -1004,6 +1004,9 @@ public class SQLQueryModelRecognizer {
     ) {
         // TODO handle callNode.hasErrorChildren()
         STMTreeNode nameNode = callNode.findFirstChildOfName(STMKnownRuleNames.functionCallTargetName);
+        if (nameNode == null) {
+            nameNode = callNode.findFirstChildOfName(STMKnownRuleNames.trimFunctionName);
+        }
         SQLQueryComplexName name;
         if (nameNode != null) {
             STMTreeNode actualNameNode = nameNode.findFirstChildOfName(STMKnownRuleNames.qualifiedName);
