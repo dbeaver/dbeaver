@@ -21,10 +21,13 @@ import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.misc.Interval;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
+import org.jkiss.dbeaver.model.stm.STMSource;
+import org.jkiss.dbeaver.model.stm.STMTreeTermNode;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicTest;
@@ -164,6 +167,31 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
             SELECT * FROM СХЕМА.ТАБЛИЦА;
             SELECT * FROM 数据库.表格;
             """);
+    }
+
+    @Test
+    void reportsUtf16IntervalsForSupplementaryIdentifiers() {
+        var lexer = new SQLStandardLexer(STMSource.fromString("SELECT 𐐀foo FROM bar").getStream());
+        var tokens = new CommonTokenStream(lexer);
+        tokens.fill();
+
+        var identifier = tokens.getTokens().stream()
+            .filter(token -> "𐐀foo".equals(token.getText()))
+            .findFirst()
+            .orElseThrow();
+        var followingKeyword = tokens.getTokens().stream()
+            .filter(token -> "FROM".equals(token.getText()))
+            .findFirst()
+            .orElseThrow();
+
+        var identifierNode = new STMTreeTermNode(identifier);
+        var followingKeywordNode = new STMTreeTermNode(followingKeyword);
+        Assertions.assertAll(
+            () -> Assertions.assertEquals(Interval.of(7, 11), identifierNode.getRealInterval()),
+            () -> Assertions.assertEquals("𐐀foo", identifierNode.getTextContent()),
+            () -> Assertions.assertEquals(Interval.of(13, 16), followingKeywordNode.getRealInterval()),
+            () -> Assertions.assertEquals("FROM", followingKeywordNode.getTextContent())
+        );
     }
 
     private static void assertAccepted(@NotNull String sql) {
