@@ -411,6 +411,9 @@ public final class WorkbenchPatcher {
         var views = getExtensions(PlatformUI.PLUGIN_ID, IWorkbenchRegistryConstants.PL_VIEWS)
             .map(IExtension::getConfigurationElements).flatMap(Stream::of)
             .filter(e -> e.getName().equals("view") && e.getAttribute("icon") != null)
+            // These views are patched in the workbench model; compatibility views may restore their original icons on save.
+            .filter(e -> !IActionConstants.LOG_VIEW_ID.equals(e.getAttribute("id")) &&
+                !IActionConstants.DEBUG_VIEW_ID.equals(e.getAttribute("id")))
             .map(PartDescriptor::of)
             .toList();
 
@@ -424,9 +427,7 @@ public final class WorkbenchPatcher {
             .collect(Collectors.toMap(
                 PartDescriptor::id,
                 Function.identity(),
-                // Keep DBeaver's Error Log icon when both plugins contribute the same view ID.
-                (a, b) -> IActionConstants.LOG_VIEW_ID.equals(a.id()) &&
-                    isContributedByDBeaver(a.element.getDeclaringExtension()) ? a : b
+                (a, b) -> b
             ));
     }
 
