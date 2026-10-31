@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.mysql.ui.editors;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ActionContributionItem;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
@@ -25,12 +28,18 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLGrant;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLUser;
 import org.jkiss.dbeaver.ext.mysql.ui.internal.MySQLUIMessages;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -66,11 +75,46 @@ public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEdit
         }
     }
 
-    protected abstract UserPageControl getPageControl();
-    protected abstract void processGrants(List<MySQLGrant> grants);
+    protected abstract @Nullable UserPageControl getPageControl();
+
+    protected abstract void processGrants(@Nullable List<MySQLGrant> grants);
+
+    /**
+     * Reads the user grants from the server (SHOW GRANTS) and shows them as an SQL script.
+     */
+    private void showGrantsScript() {
+        final MySQLUser user = getDatabaseObject();
+        final StringBuilder script = new StringBuilder();
+        try {
+            UIUtils.runInProgressService(monitor -> {
+                try {
+                    for (String grant : user.getGrantScript(monitor)) {
+                        script.append(grant).append(";\n"); //$NON-NLS-1$
+                    }
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError(
+                MySQLUIMessages.editors_user_editor_abstract_dialog_grants_script_title,
+                NLS.bind(MySQLUIMessages.editors_user_editor_abstract_grants_script_error, user.getName()),
+                e.getTargetException());
+            return;
+        } catch (InterruptedException e) {
+            return;
+        }
+        ViewSQLDialog dialog = new ViewSQLDialog(
+            getSite(),
+            () -> DBUtils.getDefaultContext(user, true),
+            MySQLUIMessages.editors_user_editor_abstract_dialog_grants_script_title + " - " + user.getName(), //$NON-NLS-1$
+            UIIcon.SQL_SCRIPT,
+            script.toString());
+        dialog.open();
+    }
 
     protected class UserPageControl extends ObjectEditorPageControl {
-        public UserPageControl(Composite parent) {
+        public UserPageControl(@NotNull Composite parent) {
             super(parent, SWT.NONE, MySQLUserEditorAbstract.this);
         }
 
@@ -87,6 +131,19 @@ public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEdit
         @Override
         public void fillCustomActions(@NotNull IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
+            Action scriptAction = new Action(
+                MySQLUIMessages.editors_user_editor_abstract_action_grants_script,
+                DBeaverIcons.getImageDescriptor(UIIcon.SQL_SCRIPT)
+            ) {
+                @Override
+                public void run() {
+                    showGrantsScript();
+                }
+            };
+            scriptAction.setToolTipText(MySQLUIMessages.editors_user_editor_abstract_dialog_grants_script_title);
+            ActionContributionItem scriptItem = new ActionContributionItem(scriptAction);
+            scriptItem.setMode(ActionContributionItem.MODE_FORCE_TEXT);
+            contributionManager.add(scriptItem);
             DatabaseEditorUtils.contributeStandardEditorActions(getSite(), contributionManager);
         }
     }
