@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.model.sql.format.tokenized;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -38,6 +39,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
     public static final String FORMATTER_ID = "DEFAULT";
 
     private static final String[] DML_KEYWORD = { "SELECT", "UPDATE", "INSERT", "DELETE" };
+
 
 
     private SQLFormatterConfiguration formatterCfg;
@@ -242,8 +244,12 @@ public class SQLFormatterTokenized implements SQLFormatter {
         }
     }
 
-    private void convertEmptyLinesIntoDelimiters(List<FormatterToken> argList) {
-        for (int i= 0; i < argList.size(); i++) {
+    private void convertEmptyLinesIntoDelimiters(@NotNull List<FormatterToken> argList) {
+        String[] executableCommentPrefixes = formatterCfg.getSyntaxManager().getDialect().getExecutableCommentPrefixes();
+        boolean hasQueryContent = false;
+        // Position right after the last token of the current statement which is not a comment
+        int contentEndIndex = 0;
+        for (int i = 0; i < argList.size(); i++) {
             FormatterToken token = argList.get(i);
             if (token.getType() == TokenType.SPACE) {
                 int lfCount = 0;
@@ -253,18 +259,135 @@ public class SQLFormatterTokenized implements SQLFormatter {
                     }
                 }
                 if (lfCount > 1) {
-                    if (i > 0 && statementDelimiters.contains(argList.get(i - 1).getString())) {
+                    if (i > 0 && isStatementDelimiter(argList, i - 1)) {
                         // Do nothing - there is a delimiter already
                     } else {
-                        argList.add(i, new FormatterToken(TokenType.SYMBOL, statementDelimiters.get(0)));
-                        i++;
+                        int delimiterIndex = findDelimiterIndex(argList, i, hasQueryContent, contentEndIndex, executableCommentPrefixes);
+                        if (delimiterIndex >= 0) {
+                            argList.add(delimiterIndex, new FormatterToken(TokenType.SYMBOL, statementDelimiters.get(0)));
+                            hasQueryContent = false;
+                            i++;
+                        }
                     }
                 }
+            } else if (isStatementDelimiter(argList, i)) {
+                hasQueryContent = false;
+                if (isWordDelimiter(token.getString())) {
+                    // The repeat count (e.g. GO 5) belongs to the delimiter, it is not a part of a query
+                    i = skipRepeatCount(argList, i);
+                }
+            } else if (!isPlainComment(token, executableCommentPrefixes)) {
+                hasQueryContent = true;
+                contentEndIndex = i + 1;
             }
         }
     }
 
-    private void concatenateDoublewordedKeywords(List<FormatterToken> argList) {
+    private int findDelimiterIndex(
+        @NotNull List<FormatterToken> argList,
+        int emptyLineIndex,
+        boolean hasQueryContent,
+        int contentEndIndex,
+        @NotNull String[] executableCommentPrefixes
+    ) {
+        if (!hasQueryContent) {
+            // There is nothing to terminate: the statement is empty or has only comments
+            return -1;
+        }
+        int commentIndex = emptyLineIndex - 1;
+        if (commentIndex < 0 || !isPlainComment(argList.get(commentIndex), executableCommentPrefixes)) {
+            return emptyLineIndex;
+        }
+        if (argList.get(commentIndex).getString().startsWith(SQLConstants.ML_COMMENT_START)) {
+            // The delimiter is valid right after a multi-line comment
+            return emptyLineIndex;
+        }
+        // A delimiter after a single-line comment would end up inside of it,
+        // so it goes right after the query, before all the trailing comments
+        return contentEndIndex;
+    }
+
+    private boolean isStatementDelimiter(@NotNull List<FormatterToken> argList, int index) {
+        String text = argList.get(index).getString();
+        // Delimiters are stored in upper case, but a word delimiter (e.g. GO) may be written in any case
+        if (!statementDelimiters.contains(text.toUpperCase(Locale.ENGLISH))) {
+            return false;
+        }
+        if (!isWordDelimiter(text)) {
+            return true;
+        }
+        // A word delimiter is valid only on a line of its own, otherwise it is an identifier (e.g. an alias)
+        return isLineBoundary(argList, index - 1) && hasBatchDelimiterLineEnding(argList, index);
+    }
+
+    private static boolean isWordDelimiter(@NotNull String text) {
+        return !text.isEmpty() && Character.isLetter(text.charAt(0));
+    }
+
+    private static boolean isLineBoundary(@NotNull List<FormatterToken> argList, int index) {
+        if (index < 0 || index >= argList.size()) {
+            return true;
+        }
+        FormatterToken token = argList.get(index);
+        return token.getType() == TokenType.SPACE && token.getString().indexOf('\n') >= 0;
+    }
+
+    /**
+     * Checks the rest of the batch delimiter line the same way as the script parser does:
+     * after the delimiter and its optional repeat count there is nothing but a line end or a single-line comment.
+     */
+    private static boolean hasBatchDelimiterLineEnding(@NotNull List<FormatterToken> argList, int delimiterIndex) {
+        int index = skipInlineSpaces(argList, skipRepeatCount(argList, delimiterIndex) + 1);
+        if (index >= argList.size()) {
+            return true;
+        }
+        FormatterToken token = argList.get(index);
+        if (token.getType() == TokenType.SPACE) {
+            // Inline spaces are skipped already, so this one has a line break
+            return true;
+        }
+        return token.getType() == TokenType.COMMENT && !token.getString().startsWith(SQLConstants.ML_COMMENT_START);
+    }
+
+    /**
+     * Returns the index of the repeat count token which follows the batch delimiter (e.g. GO 5)
+     * or the index of the delimiter itself if there is no count.
+     */
+    private static int skipRepeatCount(@NotNull List<FormatterToken> argList, int delimiterIndex) {
+        int index = skipInlineSpaces(argList, delimiterIndex + 1);
+        if (index < argList.size() && argList.get(index).getType() == TokenType.VALUE) {
+            String value = argList.get(index).getString();
+            if (value.chars().allMatch(Character::isDigit) && value.chars().anyMatch(c -> c != '0')) {
+                return index;
+            }
+        }
+        return delimiterIndex;
+    }
+
+    private static int skipInlineSpaces(@NotNull List<FormatterToken> argList, int fromIndex) {
+        int index = fromIndex;
+        while (index < argList.size()
+            && argList.get(index).getType() == TokenType.SPACE
+            && argList.get(index).getString().indexOf('\n') < 0
+        ) {
+            index++;
+        }
+        return index;
+    }
+
+    private static boolean isPlainComment(@NotNull FormatterToken token, @NotNull String[] executableCommentPrefixes) {
+        if (token.getType() != TokenType.COMMENT) {
+            return false;
+        }
+        for (String prefix : executableCommentPrefixes) {
+            if (token.getString().startsWith(prefix)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void concatenateDoublewordedKeywords(@NotNull List<FormatterToken> argList) {
         for (int index = 0; index < argList.size() - 2; index++) {
             FormatterToken t0 = argList.get(index);
             FormatterToken t1 = argList.get(index + 1);
