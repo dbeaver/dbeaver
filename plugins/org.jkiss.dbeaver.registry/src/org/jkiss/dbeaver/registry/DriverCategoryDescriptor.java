@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,6 +32,7 @@ public class DriverCategoryDescriptor extends AbstractDescriptor
     private String description;
     private DBPImage icon;
     private boolean promoted;
+    private boolean commercial;
     private int rank;
 
     public DriverCategoryDescriptor(IConfigurationElement config)
@@ -42,6 +43,7 @@ public class DriverCategoryDescriptor extends AbstractDescriptor
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.promoted = CommonUtils.toBoolean(config.getAttribute(RegistryConstants.ATTR_PROMOTED));
+        this.commercial = CommonUtils.toBoolean(config.getAttribute("commercial"));
         this.rank = CommonUtils.toInt(config.getAttribute("rank"));
     }
 
@@ -64,6 +66,10 @@ public class DriverCategoryDescriptor extends AbstractDescriptor
 
     public boolean isPromoted() {
         return promoted;
+    }
+
+    public boolean isCommercial() {
+        return commercial;
     }
 
     public int getRank() {

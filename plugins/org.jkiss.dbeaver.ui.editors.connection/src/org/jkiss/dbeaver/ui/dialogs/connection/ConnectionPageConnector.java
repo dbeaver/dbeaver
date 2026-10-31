@@ -124,7 +124,7 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
             return;
         }
         List<DBPDriver> drivers = new ArrayList<>(dataSourceType.getEnabledDrivers());
-        drivers.removeIf(driver -> !DataSourceTypeViewer.isDriverVisible(driver));
+        drivers.removeIf(driver -> !getWizard().getPageDataSource().isDriverVisible(driver));
         drivers.sort(Comparator.comparing((DBPDriver driver) -> driver instanceof DBPDriverWithLicense)
             .thenComparing(new DriverUtils.DriverScoreComparator(DataSourceRegistry.getAllDataSources())));
         DBPDriver driverToSelect = drivers.contains(selectedDriver) ? selectedDriver : drivers.isEmpty() ? null : drivers.getFirst();
