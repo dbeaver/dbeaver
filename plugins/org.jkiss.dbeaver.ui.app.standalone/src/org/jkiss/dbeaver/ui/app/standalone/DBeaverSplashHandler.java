@@ -23,15 +23,36 @@ import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.util.Util;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.*;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.branding.IProductConstants;
 import org.eclipse.ui.splash.BasicSplashHandler;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 public final class DBeaverSplashHandler extends BasicSplashHandler {
     private Font normalFont;
     private Font boldFont;
+    private Label messageLabel;
+    private final Log.Listener debugListener = (message, exception, isDebug) -> {
+        Shell splash = getSplash();
+        if (isDebug && message != null && splash != null && !splash.isDisposed()) {
+            String text = message.toString();
+            if (Thread.currentThread() == splash.getDisplay().getThread()) {
+                showMessage(text);
+            } else {
+                splash.getDisplay().asyncExec(() -> showMessage(text));
+            }
+        }
+    };
+
+    private void showMessage(String text) {
+        if (messageLabel != null && !messageLabel.isDisposed()) {
+            messageLabel.setText(text.replace("&", "&&"));
+            messageLabel.update();
+        }
+    }
 
     @Override
     public void init(Shell splash) {
@@ -39,6 +60,7 @@ public final class DBeaverSplashHandler extends BasicSplashHandler {
 
         try {
             initVisualization();
+            Log.addListener(debugListener);
         } catch (Exception e) {
             e.printStackTrace(System.err);
         }
@@ -62,8 +84,12 @@ public final class DBeaverSplashHandler extends BasicSplashHandler {
         }
 
         setProgressRect(StringConverter.asRectangle(progressRectString, new Rectangle(275, 300, 280, 10)));
-        setMessageRect(StringConverter.asRectangle(messageRectString, new Rectangle(275, 275, 280, 25)));
         setForeground(StringConverter.asRGB(foregroundColorString, new RGB(255, 255, 255)));
+        // The progress monitor throttles label updates, which can leave startup debug messages invisible.
+        // Keep its progress indicator and render messages directly on the monitor's content instead.
+        messageLabel = new Label(getContent(), SWT.NONE);
+        messageLabel.setBounds(StringConverter.asRectangle(messageRectString, new Rectangle(275, 275, 280, 25)));
+        messageLabel.setForeground(getForeground());
 
         final Point versionCoord = StringConverter.asPoint(versionCoordString, new Point(485, 215));
         final int versionInfoSize = StringConverter.asInt(versionInfoSizeString, 22);
@@ -97,6 +123,8 @@ public final class DBeaverSplashHandler extends BasicSplashHandler {
 
     @Override
     public void dispose() {
+        Log.removeListener(debugListener);
+        messageLabel = null;
         Shell splash = getSplash();
         if (splash != null && !splash.isDisposed()) {
             super.dispose();

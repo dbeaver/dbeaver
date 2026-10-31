@@ -249,13 +249,16 @@ public class Log {
         if (handler != null) {
             handler.debug(name, message, t);
             if (getLogWriter() == null) {
+                synchronized (Log.class) {
+                    notifyListeners(message, t, true);
+                }
                 return;
             }
         }
-        debugMessage(message, t);
+        debugMessage(message, t, true);
     }
 
-    private void debugMessage(Object message, Throwable t) {
+    private void debugMessage(Object message, Throwable t, boolean isDebug) {
         PrintStream logStream = logWriter.get();
         synchronized (Log.class) {
             PrintStream debugWriter = logStream != null ? logStream : (quietMode ? null : defaultDebugStream);
@@ -282,9 +285,7 @@ public class Log {
                 debugWriter.println();
             }
             debugWriter.flush();
-            for (Listener listener : listeners) {
-                listener.loggedMessage(message, t);
-            }
+            notifyListeners(message, t, isDebug);
         }
         if (t != null) {
             // Log nested exceptions
@@ -313,7 +314,7 @@ public class Log {
                 return;
             }
         }
-        debugMessage(message, null);
+        debugMessage(message, null, false);
         int severity = Status.INFO;
         writeEclipseLog(createStatus(severity, message));
     }
@@ -339,7 +340,7 @@ public class Log {
                 return;
             }
         }
-        debugMessage(message, null);
+        debugMessage(message, null, false);
         int severity = Status.WARNING;
         writeEclipseLog(createStatus(severity, message));
     }
@@ -368,7 +369,7 @@ public class Log {
                 return;
             }
         }
-        debugMessage(message, null);
+        debugMessage(message, null, false);
         int severity = Status.ERROR;
         writeEclipseLog(createStatus(severity, message));
     }
@@ -417,7 +418,7 @@ public class Log {
             }
         }
         if (!logWritten) {
-            debugMessage(message, t);
+            debugMessage(message, t, false);
         }
     }
 
@@ -450,8 +451,14 @@ public class Log {
         }
     }
 
+    private static void notifyListeners(Object message, Throwable t, boolean isDebug) {
+        for (Listener listener : listeners) {
+            listener.loggedMessage(message, t, isDebug);
+        }
+    }
+
     public interface Listener {
-        void loggedMessage(Object message, Throwable t);
+        void loggedMessage(Object message, Throwable t, boolean isDebug);
     }
 
 }
