@@ -163,8 +163,9 @@ public class TabbedFolderList extends ConComposite {
          * @param e the paint event.
          */
         private void paint(PaintEvent e) {
-            Color bgColor = selected && UIUtils.isInDialog(this) && !UIStyles.isDarkTheme()
-                ? UIStyles.getDefaultTextBackground()
+            boolean lightDialog = UIUtils.isInDialog(this) && !UIStyles.isDarkTheme();
+            Color bgColor = selected && lightDialog
+                ? getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND)
                 : getWidgetBackground(true);
             /*
 			 * draw the top two lines of the tab, same for selected, hover and
@@ -232,7 +233,9 @@ public class TabbedFolderList extends ConComposite {
             }
 
 			/* draw the text */
-            e.gc.setForeground(widgetForeground);
+            e.gc.setForeground(selected && lightDialog
+                ? getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND)
+                : widgetForeground);
             if (selected) {
 				/* selected tab is bold font */
                 e.gc.setFont(BaseThemeSettings.instance.partTitleBoldFont);
@@ -779,7 +782,9 @@ public class TabbedFolderList extends ConComposite {
         } else {
             widgetBackground = getBackground();
         }
-        widgetForeground = UIStyles.getDefaultTextForeground();
+        widgetForeground = UIUtils.isInDialog(this) && !UIStyles.isDarkTheme()
+            ? display.getSystemColor(SWT.COLOR_WIDGET_FOREGROUND)
+            : UIStyles.getDefaultTextForeground();
         widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
         widgetNormalShadow = display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 
