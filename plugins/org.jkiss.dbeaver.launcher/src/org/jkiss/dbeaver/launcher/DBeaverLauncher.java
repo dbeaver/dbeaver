@@ -28,7 +28,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
-import java.nio.file.FileSystem;
 import java.security.CodeSource;
 import java.security.KeyStore;
 import java.security.ProtectionDomain;
@@ -117,7 +116,7 @@ public class DBeaverLauncher {
 
     private String vm = null;
     private String[] vmargs = null;
-    private String[] commands = null;
+    private String[] commands = new String[0];
     String[] extensionPaths = null;
 
     JNIBridge bridge = null;
@@ -215,7 +214,6 @@ public class DBeaverLauncher {
     private static final String PROP_FRAMEWORK_SYSPATH = "osgi.syspath"; //$NON-NLS-1$
     private static final String PROP_FRAMEWORK_SHAPE = "osgi.framework.shape"; //$NON-NLS-1$
     private static final String PROP_LOGFILE = "osgi.logfile"; //$NON-NLS-1$
-    private static final String PROP_REQUIRED_JAVA_VERSION = "osgi.requiredJavaVersion"; //$NON-NLS-1$
     private static final String PROP_PARENT_CLASSLOADER = "osgi.parentClassloader"; //$NON-NLS-1$
     private static final String PROP_FRAMEWORK_PARENT_CLASSLOADER = "osgi.frameworkParentClassloader"; //$NON-NLS-1$
     private static final String PROP_NL = "osgi.nl"; //$NON-NLS-1$
@@ -257,7 +255,6 @@ public class DBeaverLauncher {
     // types of parent classloaders the framework can have
     private static final String PARENT_CLASSLOADER_APP = "app"; //$NON-NLS-1$
     private static final String PARENT_CLASSLOADER_EXT = "ext"; //$NON-NLS-1$
-    private static final String PARENT_CLASSLOADER_BOOT = "boot"; //$NON-NLS-1$
     private static final String PARENT_CLASSLOADER_CURRENT = "current"; //$NON-NLS-1$
 
     // log file handling
@@ -301,65 +298,6 @@ public class DBeaverLauncher {
         "Windows 8",
         "Windows Server 2012"
     );
-
-    /**
-     * A structured form for a version identifier.
-     *
-     * @see "http://www.oracle.com/technetwork/java/javase/versioning-naming-139433.html for information on valid version strings"
-     * @see "http://openjdk.java.net/jeps/223 for information on the JavaSE-9 version JEP 223"
-     */
-    static class Identifier {
-        private static final String DELIM = ". _-"; //$NON-NLS-1$
-        private int major, minor, service;
-
-        /**
-         * @throws NumberFormatException if cannot parse the major and minor version components
-         */
-        Identifier(String versionString) {
-            super();
-            StringTokenizer tokenizer = new StringTokenizer(versionString, DELIM);
-
-            // major
-            if (tokenizer.hasMoreTokens())
-                major = Integer.parseInt(tokenizer.nextToken());
-
-            try {
-                // minor
-                if (tokenizer.hasMoreTokens())
-                    minor = Integer.parseInt(tokenizer.nextToken());
-
-                // service
-                if (tokenizer.hasMoreTokens())
-                    service = Integer.parseInt(tokenizer.nextToken());
-            } catch (NumberFormatException nfe) {
-                // ignore the minor and service qualifiers in that case and default to 0
-                // this will allow us to tolerate other non-conventional version numbers
-            }
-        }
-
-        /**
-         * Returns true if this id is considered to be greater than or equal to the given baseline.
-         * e.g.
-         * 1.2.9 >= 1.3.1 -> false
-         * 1.3.0 >= 1.3.1 -> false
-         * 1.3.1 >= 1.3.1 -> true
-         * 1.3.2 >= 1.3.1 -> true
-         * 2.0.0 >= 1.3.1 -> true
-         */
-        boolean isGreaterEqualTo(Identifier minimum) {
-            if (major < minimum.major)
-                return false;
-            if (major > minimum.major)
-                return true;
-            // major numbers are equivalent so check minor
-            if (minor < minimum.minor)
-                return false;
-            if (minor > minimum.minor)
-                return true;
-            // minor numbers are equivalent so check service
-            return service >= minimum.service;
-        }
-    }
 
     /**
      * Searches for the product ID in the provided array of command-line arguments.
@@ -608,41 +546,7 @@ public class DBeaverLauncher {
             fragment = fragment.substring(5);
 
         File frag = new File(fragment);
-        if (!frag.exists())
-            return null;
-
-        if (frag.isDirectory())
-            return searchFor("eclipse", fragment); //$NON-NLS-1$;
-
-        String libName = null;
-        try (
-            var fragmentJar = FileSystems.newFileSystem(frag.toPath());
-            var entries = Files.newDirectoryStream(fragmentJar.getPath("/"), "eclipse_*") //$NON-NLS-1$ //$NON-NLS-2$
-        ) {
-            for (Path entry : entries) {
-                if (!Files.isRegularFile(entry)) {
-                    continue;
-                }
-                libName = entry.getFileName().toString();
-                break;
-            }
-        } catch (IOException e) {
-            log("Exception opening JAR file: " + fragment); //$NON-NLS-1$
-            log(e);
-            return null;
-        }
-        if (libName == null) {
-            return null;
-        }
-        String lib = extractFromJAR(fragment, libName);
-        if (!getOS().equals("win32")) { //$NON-NLS-1$
-            try {
-                Runtime.getRuntime().exec(new String[]{"chmod", "755", lib}).waitFor(); //$NON-NLS-1$ //$NON-NLS-2$
-            } catch (Throwable e) {
-                //ignore
-            }
-        }
-        return lib;
+        return frag.isDirectory() ? searchFor("eclipse", fragment) : null; //$NON-NLS-1$
     }
 
     /**
@@ -706,11 +610,6 @@ public class DBeaverLauncher {
         //Set up the JNI bridge.  We need to know the install location to find the shared library
         setupJNI(bootPath);
 
-        //ensure minimum Java version, do this after JNI is set up so that we can write an error message
-        //with exitdata if we fail.
-        if (!checkVersion(System.getProperty("java.version"), System.getProperty(PROP_REQUIRED_JAVA_VERSION))) //$NON-NLS-1$
-            return;
-
         // verify configuration location is writable
         // FIXME: disable this check for products which run in read-only environment, e.g. cloud based
         //if (!checkConfigurationLocation(configurationLocation))
@@ -721,9 +620,8 @@ public class DBeaverLauncher {
             System.out.println("Has application parameters: " + hasAppParams);
         }
         if (!hasAppParams) {
-            // splash handling is done here, because the default case needs to know
-            // the location of the boot plugin we are going to use
-            handleSplash(bootPath);
+            // Resolve the splash image before invoking the framework.
+            handleSplash();
         } else {
             boolean addNoSplash = true;
             for (String arg : passThruArgs) {
@@ -1084,22 +982,7 @@ public class DBeaverLauncher {
     }
 
     private void invokeFramework(String[] passThruArgs, URL[] bootPath) throws Error, Exception {
-        String type = PARENT_CLASSLOADER_BOOT;
-        try {
-            String javaVersion = System.getProperty("java.version"); //$NON-NLS-1$
-            if (javaVersion != null && new Identifier(javaVersion).isGreaterEqualTo(new Identifier("1.9"))) { //$NON-NLS-1$
-                // Workaround for bug 466683. Some org.w3c.dom.* packages that used to be available from
-                // JavaSE's boot classpath are only available from the extension path in Java 9 b62.
-                // Workaround for bug 489958. javax.annotation.* types are only available from
-                // JavaSE-9's extension path in Java 9-ea+108. The identifier "1.9" could be changed to "9", but "1.9" works just as well.
-                type = PARENT_CLASSLOADER_EXT;
-            }
-        } catch (SecurityException | NumberFormatException e) {
-            // If the security manager won't allow us to get the system property, continue for
-            // now and let things fail later on their own if necessary.
-            // If the version string was in a format that we don't understand, continue and
-            // let things fail later on their own if necessary.
-        }
+        String type = PARENT_CLASSLOADER_EXT;
         type = System.getProperty(PROP_PARENT_CLASSLOADER, type);
         type = System.getProperty(PROP_FRAMEWORK_PARENT_CLASSLOADER, type);
         ClassLoader parent = null;
@@ -1125,35 +1008,6 @@ public class DBeaverLauncher {
             else
                 //could be a subclass of Throwable!
                 throw e;
-        }
-    }
-
-    /**
-     * Checks whether the given available version is greater or equal to the
-     * given required version.
-     * <p>Will set PROP_EXITCODE/PROP_EXITDATA accordingly if check fails.</p>
-     *
-     * @return a boolean indicating whether the checking passed
-     */
-    private boolean checkVersion(String availableVersion, String requiredVersion) {
-        if (requiredVersion == null || availableVersion == null)
-            return true;
-        try {
-            Identifier required = new Identifier(requiredVersion);
-            Identifier available = new Identifier(availableVersion);
-            boolean compatible = available.isGreaterEqualTo(required);
-            if (!compatible) {
-                // any non-zero value should do it - 14 used to be used for version incompatibility in Eclipse 2.1
-                System.setProperty(PROP_EXITCODE, "14"); //$NON-NLS-1$
-                System.setProperty(PROP_EXITDATA, "<title>Incompatible JVM</title>Version " + availableVersion + " of the JVM is not suitable for this product. Version: " + requiredVersion + " or greater is required."); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
-            }
-            return compatible;
-        } catch (SecurityException | NumberFormatException e) {
-            // If the security manager won't allow us to get the system property, continue for
-            // now and let things fail later on their own if necessary.
-            // If the version string was in a format that we don't understand, continue and
-            // let things fail later on their own if necessary.
-            return true;
         }
     }
 
@@ -2796,9 +2650,8 @@ public class DBeaverLauncher {
      *
      * The -endsplash argument is longer used and has the same result as -nosplash
      *
-     * @param defaultPath search path for the boot plugin
      */
-    private void handleSplash(URL[] defaultPath) {
+    private void handleSplash() {
         // run without splash if we are initializing or nosplash
         // was specified (splashdown = true)
         if (initialize || splashDown || bridge == null) {
@@ -2827,7 +2680,7 @@ public class DBeaverLauncher {
             return;
 
         // determine the splash location
-        splashLocation = getSplashLocation(defaultPath);
+        splashLocation = getSplashLocation();
         if (debug)
             System.out.println("Splash location:\n    " + splashLocation); //$NON-NLS-1$
         if (splashLocation == null)
@@ -2862,7 +2715,7 @@ public class DBeaverLauncher {
      * If that does not work, look for a default splash.  Currently the splash must be in the file system
      * so the return value here is the file system path.
      */
-    private String getSplashLocation(URL[] bootPath) {
+    private String getSplashLocation() {
         //check the path passed in from -showsplash first.  The old launcher passed a timeout value
         //as the argument, so only use it if it isn't a number and the file exists.
         if (splashLocation != null && !Character.isDigit(splashLocation.charAt(0)) && new File(splashLocation).exists()) {
@@ -2898,32 +2751,26 @@ public class DBeaverLauncher {
     }
 
     /*
-     * Do a locale-sensitive lookup of splash image
+     * Look for a splash image in the root of each plug-in.
      */
     private String searchForSplash(String[] searchPath) {
         if (searchPath == null)
             return null;
 
-        // Get the splash screen for the specified locale
-        String locale = System.getProperty(PROP_NL);
-        if (locale == null)
-            locale = Locale.getDefault().toString();
-        String[] nlVariants = buildNLVariants(locale);
-
-        for (String nlVariant : nlVariants) {
+        for (String image : SPLASH_IMAGES) {
             for (String path : searchPath) {
                 if (path.startsWith(FILE_SCHEME))
                     path = path.substring(5);
                 // do we have a JAR?
                 if (isJAR(path)) {
-                    String result = extractFromJAR(path, nlVariant);
+                    String result = extractFromJAR(path, image);
                     if (result != null)
                         return result;
                 } else {
                     // we have a file or a directory
                     if (!path.endsWith(File.separator))
                         path += File.separator;
-                    path += nlVariant;
+                    path += image;
                     File result = new File(path);
                     if (result.exists())
                         return result.getAbsolutePath(); // return the first match found [20063]
@@ -2939,7 +2786,7 @@ public class DBeaverLauncher {
      * Look for the specified spash file in the given JAR and extract it to the config
      * area for caching purposes.
      */
-    private String extractFromJAR(String jarPath, String jarEntry) {
+    String extractFromJAR(String jarPath, String jarEntry) {
         String configLocation = System.getProperty(PROP_CONFIG_AREA);
         if (configLocation == null) {
             log("Configuration area not set yet. Unable to extract " + jarEntry + " from JAR'd plug-in: " + jarPath); //$NON-NLS-1$ //$NON-NLS-2$
@@ -2956,43 +2803,58 @@ public class DBeaverLauncher {
         if (cache.endsWith(".jar")) //$NON-NLS-1$
             cache = cache.substring(0, cache.length() - 4);
         Path cacheDir = cacheRoot.resolve(cache).normalize();
-        if (!cacheDir.startsWith(cacheRoot)) {
+        if (!cacheDir.startsWith(cacheRoot) || cacheDir.equals(cacheRoot)) {
             log("JAR cache directory resolves outside the launcher cache: " + jarPath); //$NON-NLS-1$
             return null;
         }
 
-        try (FileSystem jarFileSystem = FileSystems.newFileSystem(jarFile.toPath())) {
-            Path sourceRoot = jarFileSystem.getPath("/"); //$NON-NLS-1$
-            Path sourceEntry = sourceRoot.resolve(jarEntry.replace(File.separatorChar, '/'));
-            if (!Files.exists(sourceEntry))
+        try {
+            Path splash = cacheDir.resolve(jarEntry).toAbsolutePath().normalize();
+            if (!splash.startsWith(cacheDir)) {
                 return null;
-
-            CopyingFileVisitor visitor = new CopyingFileVisitor(sourceRoot, cacheDir);
-            File splash = visitor.resolveTargetPath(sourceEntry).toFile();
+            }
+            Files.createDirectories(cacheRoot);
+            if (Files.isSymbolicLink(cacheRoot)) {
+                return null;
+            }
+            Path parent = cacheRoot;
+            for (Path part : cacheRoot.relativize(splash.getParent())) {
+                parent = parent.resolve(part);
+                if (Files.isSymbolicLink(parent)) {
+                    return null;
+                }
+                if (!Files.exists(parent)) {
+                    Files.createDirectory(parent);
+                }
+            }
             // if we have already extracted this file before, then return
-            if (splash.exists()) {
+            if (Files.exists(splash, LinkOption.NOFOLLOW_LINKS)) {
                 // if we are running with -clean then delete the cached splash file
                 boolean clean = false;
                 for (String command : commands) {
                     if (CLEAN.equalsIgnoreCase(command)) {
                         clean = true;
-                        splash.delete();
+                        Files.delete(splash);
                         break;
                     }
                 }
-                if (!clean)
-                    return splash.getAbsolutePath();
+                if (!clean && Files.isRegularFile(splash, LinkOption.NOFOLLOW_LINKS))
+                    return splash.toString();
             }
 
-            try {
-                Files.walkFileTree(sourceEntry, visitor);
-            } catch (IOException e) {
-                log("Exception opening splash: " + jarEntry + " in JAR file: " + jarPath); //$NON-NLS-1$ //$NON-NLS-2$
-                log(e);
+            if (!splash.getParent().toRealPath().startsWith(cacheRoot.toRealPath()) ||
+                Files.isSymbolicLink(splash) || Files.isDirectory(splash, LinkOption.NOFOLLOW_LINKS)) {
                 return null;
             }
+            try (FileSystem jarFileSystem = FileSystems.newFileSystem(jarFile.toPath())) {
+                Path sourceEntry = jarFileSystem.getPath("/").resolve(jarEntry.replace(File.separatorChar, '/')); //$NON-NLS-1$
+                if (!Files.isRegularFile(sourceEntry, LinkOption.NOFOLLOW_LINKS)) {
+                    return null;
+                }
+                Files.copy(sourceEntry, splash, StandardCopyOption.REPLACE_EXISTING);
+            }
 
-            return splash.exists() ? splash.getAbsolutePath() : null;
+            return splash.toString();
         } catch (IOException | InvalidPathException e) {
             log("Exception looking for " + jarEntry + " in JAR file: " + jarPath); //$NON-NLS-1$ //$NON-NLS-2$
             log(e);
@@ -3006,32 +2868,6 @@ public class DBeaverLauncher {
      */
     private boolean isJAR(String path) {
         return new File(path).isFile();
-    }
-
-    /*
-     * Build an array of path suffixes based on the given NL which is suitable
-     * for splash path searching.  The returned array contains paths in order
-     * from most specific to most generic. So, in the FR_fr locale, it will return
-     * candidates in "nl/fr/FR/", then "nl/fr/", and finally in the root.
-     * Candidate names are defined in SPLASH_IMAGES and include splash.png, splash.jpg, etc.
-     */
-    private static String[] buildNLVariants(String locale) {
-        //build list of suffixes for loading resource bundles
-        String nl = locale;
-        ArrayList<String> result = new ArrayList<>(4);
-        int lastSeparator;
-        while (true) {
-            for (String name : SPLASH_IMAGES) {
-                result.add("nl" + File.separatorChar + nl.replace('_', File.separatorChar) + File.separatorChar + name); //$NON-NLS-1$
-            }
-            lastSeparator = nl.lastIndexOf('_');
-            if (lastSeparator == -1)
-                break;
-            nl = nl.substring(0, lastSeparator);
-        }
-        //add the empty suffix last (most general)
-        Collections.addAll(result, SPLASH_IMAGES);
-        return result.toArray(new String[0]);
     }
 
     /*
