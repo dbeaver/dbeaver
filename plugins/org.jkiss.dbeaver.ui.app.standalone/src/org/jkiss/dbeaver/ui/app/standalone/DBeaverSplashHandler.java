@@ -35,14 +35,22 @@ public final class DBeaverSplashHandler extends BasicSplashHandler {
     private Font normalFont;
     private Font boldFont;
     private Label messageLabel;
-    private final Log.Listener debugListener = (message, exception, isDebug) -> {
-        Shell splash = getSplash();
-        if (isDebug && message != null && splash != null && !splash.isDisposed()) {
-            String text = message.toString();
-            if (Thread.currentThread() == splash.getDisplay().getThread()) {
-                showMessage(text);
-            } else {
-                splash.getDisplay().asyncExec(() -> showMessage(text));
+    private final Log.Listener debugListener = new Log.Listener() {
+        @Override
+        public void loggedMessage(Object message, Throwable exception) {
+            loggedMessage(message, exception, true);
+        }
+
+        @Override
+        public void loggedMessage(Object message, Throwable exception, boolean notifyUI) {
+            Shell splash = getSplash();
+            if (notifyUI && message != null && splash != null && !splash.isDisposed()) {
+                String text = message.toString();
+                if (Thread.currentThread() == splash.getDisplay().getThread()) {
+                    showMessage(text);
+                } else {
+                    splash.getDisplay().asyncExec(() -> showMessage(text));
+                }
             }
         }
     };

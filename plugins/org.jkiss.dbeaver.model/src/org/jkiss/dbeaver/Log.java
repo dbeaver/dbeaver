@@ -255,10 +255,14 @@ public class Log {
                 return;
             }
         }
+        debugMessage(message, t);
+    }
+
+    private void debugMessage(Object message, Throwable t) {
         debugMessage(message, t, true);
     }
 
-    private void debugMessage(Object message, Throwable t, boolean isDebug) {
+    private void debugMessage(Object message, Throwable t, boolean notifyUI) {
         PrintStream logStream = logWriter.get();
         synchronized (Log.class) {
             PrintStream debugWriter = logStream != null ? logStream : (quietMode ? null : defaultDebugStream);
@@ -285,7 +289,7 @@ public class Log {
                 debugWriter.println();
             }
             debugWriter.flush();
-            notifyListeners(message, t, isDebug);
+            notifyListeners(message, t, notifyUI);
         }
         if (t != null) {
             // Log nested exceptions
@@ -451,14 +455,18 @@ public class Log {
         }
     }
 
-    private static void notifyListeners(Object message, Throwable t, boolean isDebug) {
+    private static void notifyListeners(Object message, Throwable t, boolean notifyUI) {
         for (Listener listener : listeners) {
-            listener.loggedMessage(message, t, isDebug);
+            listener.loggedMessage(message, t, notifyUI);
         }
     }
 
     public interface Listener {
-        void loggedMessage(Object message, Throwable t, boolean isDebug);
+        void loggedMessage(Object message, Throwable t);
+
+        default void loggedMessage(Object message, Throwable t, boolean notifyUI) {
+            loggedMessage(message, t);
+        }
     }
 
 }

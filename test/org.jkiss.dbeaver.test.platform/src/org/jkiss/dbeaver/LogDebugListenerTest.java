@@ -26,13 +26,21 @@ import java.util.List;
 public class LogDebugListenerTest extends DBeaverUnitTest {
 
     @Test
-    public void identifiesDebugMessagesUntilRemoved() {
+    public void identifiesMessagesForUIUntilRemoved() {
         Log log = Log.getLog(LogDebugListenerTest.class);
         List<Object> messages = new ArrayList<>();
-        List<Boolean> debugFlags = new ArrayList<>();
-        Log.Listener listener = (message, exception, isDebug) -> {
-            messages.add(message);
-            debugFlags.add(isDebug);
+        List<Boolean> notifyUIFlags = new ArrayList<>();
+        Log.Listener listener = new Log.Listener() {
+            @Override
+            public void loggedMessage(Object message, Throwable exception) {
+                loggedMessage(message, exception, true);
+            }
+
+            @Override
+            public void loggedMessage(Object message, Throwable exception, boolean notifyUI) {
+                messages.add(message);
+                notifyUIFlags.add(notifyUI);
+            }
         };
 
         Log.addListener(listener);
@@ -40,12 +48,28 @@ public class LogDebugListenerTest extends DBeaverUnitTest {
             log.debug("Starting");
             log.info("Informational message");
             Assertions.assertEquals(List.of("Starting", "Informational message"), messages);
-            Assertions.assertEquals(List.of(true, false), debugFlags);
+            Assertions.assertEquals(List.of(true, false), notifyUIFlags);
         } finally {
             Log.removeListener(listener);
         }
 
         log.debug("Finished");
         Assertions.assertEquals(List.of("Starting", "Informational message"), messages);
+    }
+
+    @Test
+    public void legacyListenerReceivesMessages() {
+        Log log = Log.getLog(LogDebugListenerTest.class);
+        List<Object> messages = new ArrayList<>();
+        Log.Listener listener = (message, exception) -> messages.add(message);
+
+        Log.addListener(listener);
+        try {
+            log.debug("Starting");
+            log.info("Informational message");
+            Assertions.assertEquals(List.of("Starting", "Informational message"), messages);
+        } finally {
+            Log.removeListener(listener);
+        }
     }
 }
