@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.security;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.internal.security.storage.PasswordProviderSelector;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.condition.EnabledOnOs;
 import org.junit.jupiter.api.condition.OS;
@@ -26,9 +27,13 @@ import org.junit.jupiter.api.condition.OS;
 import java.util.Locale;
 
 class NativeOSProviderTest {
+    private static final String WINDOWS_FRAGMENT = "org.eclipse.equinox.security.win32";
+    private static final String LINUX_FRAGMENT = "org.eclipse.equinox.security.linux";
+
     @Test
     @EnabledOnOs(OS.WINDOWS)
     void windowsProviderIsAvailable() throws Exception {
+        Assumptions.assumeTrue(Platform.getBundle(WINDOWS_FRAGMENT) != null);
         String providerId = DBSecurityProviders.WINDOWS_INTEGRATION.toLowerCase(Locale.ROOT);
         Assertions.assertEquals(providerId, DBSecurityUtils.findNativeOSProvider());
         Assertions.assertEquals(providerId, PasswordProviderSelector.getInstance()
@@ -39,6 +44,7 @@ class NativeOSProviderTest {
     @EnabledOnOs(OS.LINUX)
     void linuxProviderUsesRegisteredExtensionId() {
         // A Linux provider can be registered but unavailable when the desktop keyring is missing.
+        Assumptions.assumeTrue(Platform.getBundle(LINUX_FRAGMENT) != null);
         Assertions.assertNotNull(Platform.getExtensionRegistry().getExtension(DBSecurityProviders.LINUX_INTEGRATION));
     }
 }
