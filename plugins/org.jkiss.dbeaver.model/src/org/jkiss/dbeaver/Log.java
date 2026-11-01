@@ -44,25 +44,29 @@ public class Log {
         private final String contextName;
         private final Map<String, Object> contextParameters = new LinkedHashMap<>();
 
-        private Context(String contextName) {
+        private Context(@NotNull String contextName) {
             this.contextName = contextName;
         }
 
-        public Context withParameter(String name, Object value) {
+        @NotNull
+        public Context withParameter(@NotNull String name, @Nullable Object value) {
             this.contextParameters.put(name, value);
             return this;
         }
 
+        @NotNull
         public String getContextName() {
             return contextName;
         }
 
+        @NotNull
         public Map<String, Object> getContextParameters() {
             return contextParameters;
         }
     }
 
-    public static Context buildContext(String name) {
+    @NotNull
+    public static Context buildContext(@NotNull String name) {
         return new Context(name);
     }
 
@@ -71,6 +75,7 @@ public class Log {
 
     private static final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); //$NON-NLS-1$
 
+    @Nullable
     private static ILog eclipseLog;
     private static Listener[] listeners = new Listener[0];
 
@@ -111,19 +116,22 @@ public class Log {
         Log.defaultDebugStream = defaultDebugStream;
     }
 
-    public static void setContext(Context context) {
+    public static void setContext(@Nullable Context context) {
         activeContext.set(context);
     }
 
-    public static Log getLog(Class<?> forClass) {
+    @NotNull
+    public static Log getLog(@NotNull Class<?> forClass) {
         return new Log(forClass.getName(), true);
     }
 
-    public static Log getLog(String name) {
+    @NotNull
+    public static Log getLog(@NotNull String name) {
         return new Log(name, true);
     }
 
-    public static Log getLog(String name, boolean doEclipseLog) {
+    @NotNull
+    public static Log getLog(@NotNull String name, boolean doEclipseLog) {
         return new Log(name, doEclipseLog);
     }
 
@@ -131,11 +139,12 @@ public class Log {
         return quietMode;
     }
 
+    @Nullable
     public static PrintStream getLogWriter() {
         return logWriter.get();
     }
 
-    public static void setLogWriter(OutputStream logWriter) {
+    public static void setLogWriter(@Nullable OutputStream logWriter) {
         if (logWriter == null) {
             Log.logWriter.remove();
         } else {
@@ -147,7 +156,7 @@ public class Log {
         }
     }
 
-    public void log(IStatus status) {
+    public void log(@Nullable IStatus status) {
         if (status == null) {
             // nothing to log
             return;
@@ -176,7 +185,7 @@ public class Log {
         }
     }
 
-    private Log(String name, boolean doEclipseLog) {
+    private Log(@NotNull String name, boolean doEclipseLog) {
         this.name = name;
         this.doEclipseLog = doEclipseLog;
     }
@@ -188,6 +197,7 @@ public class Log {
         }
     }
 
+    @NotNull
     public String getName() {
         return name;
     }
@@ -217,7 +227,7 @@ public class Log {
     }
 
 
-    public void trace(Object message) {
+    public void trace(@Nullable Object message) {
         if (message instanceof Throwable) {
             trace(message.toString(), (Throwable) message);
         } else {
@@ -225,7 +235,7 @@ public class Log {
         }
     }
 
-    public void trace(Object message, Throwable t) {
+    public void trace(@Nullable Object message, @Nullable Throwable t) {
         if (handler != null) {
             handler.trace(name, message, t);
             if (getLogWriter() == null) {
@@ -237,7 +247,7 @@ public class Log {
         }
     }
 
-    public void debug(Object message) {
+    public void debug(@Nullable Object message) {
         if (message instanceof Throwable) {
             debug(message.toString(), (Throwable) message);
         } else {
@@ -245,7 +255,7 @@ public class Log {
         }
     }
 
-    public void debug(Object message, Throwable t) {
+    public void debug(@Nullable Object message, @Nullable Throwable t) {
         if (handler != null) {
             handler.debug(name, message, t);
             if (getLogWriter() == null) {
@@ -258,11 +268,11 @@ public class Log {
         debugMessage(message, t);
     }
 
-    private void debugMessage(Object message, Throwable t) {
+    private void debugMessage(@Nullable Object message, @Nullable Throwable t) {
         debugMessage(message, t, true);
     }
 
-    private void debugMessage(Object message, Throwable t, boolean notifyUI) {
+    private void debugMessage(@Nullable Object message, @Nullable Throwable t, boolean notifyUI) {
         PrintStream logStream = logWriter.get();
         synchronized (Log.class) {
             PrintStream debugWriter = logStream != null ? logStream : (quietMode ? null : defaultDebugStream);
@@ -307,7 +317,7 @@ public class Log {
         }
     }
 
-    public void info(Object message) {
+    public void info(@Nullable Object message) {
         if (message instanceof Throwable) {
             info(message.toString(), (Throwable) message);
             return;
@@ -323,7 +333,7 @@ public class Log {
         writeEclipseLog(createStatus(severity, message));
     }
 
-    public void info(Object message, Throwable t) {
+    public void info(@Nullable Object message, @Nullable Throwable t) {
         if (handler != null) {
             handler.info(name, message, t);
             if (getLogWriter() == null) {
@@ -333,7 +343,7 @@ public class Log {
         writeExceptionStatus(Status.INFO, message, t);
     }
 
-    public void warn(Object message) {
+    public void warn(@Nullable Object message) {
         if (message instanceof Throwable) {
             warn(message.toString(), (Throwable) message);
             return;
@@ -349,7 +359,7 @@ public class Log {
         writeEclipseLog(createStatus(severity, message));
     }
 
-    public void warn(Object message, Throwable t) {
+    public void warn(@Nullable Object message, @Nullable Throwable t) {
         if (handler != null) {
             handler.warn(name, message, t);
             if (getLogWriter() == null) {
@@ -359,7 +369,7 @@ public class Log {
         writeExceptionStatus(Status.WARNING, message, t);
     }
 
-    public void error(Object message) {
+    public void error(@Nullable Object message) {
         if (message == null) {
             return;
         }
@@ -378,7 +388,7 @@ public class Log {
         writeEclipseLog(createStatus(severity, message));
     }
 
-    public void error(Object message, Throwable t) {
+    public void error(@Nullable Object message, @Nullable Throwable t) {
         if (handler != null) {
             handler.error(name, message, t);
             if (getLogWriter() == null) {
@@ -388,7 +398,7 @@ public class Log {
         writeExceptionStatus(Status.ERROR, message, t);
     }
 
-    public void fatal(Object message) {
+    public void fatal(@Nullable Object message) {
         if (handler != null) {
             handler.fatal(name, message);
             if (getLogWriter() == null) {
@@ -398,7 +408,7 @@ public class Log {
         error(message);
     }
 
-    public void fatal(Object message, Throwable t) {
+    public void fatal(@Nullable Object message, @Nullable Throwable t) {
         if (handler != null) {
             handler.fatal(name, message, t);
             if (getLogWriter() == null) {
@@ -408,7 +418,7 @@ public class Log {
         error(message, t);
     }
 
-    private void writeExceptionStatus(int severity, Object message, Throwable t) {
+    private void writeExceptionStatus(int severity, @Nullable Object message, @Nullable Throwable t) {
         boolean logWritten = false;
         if (logWriter.get() == null) {
             if (t == null) {
@@ -426,7 +436,7 @@ public class Log {
         }
     }
 
-    private boolean writeEclipseLog(IStatus status) {
+    private boolean writeEclipseLog(@NotNull IStatus status) {
         if (doEclipseLog && logWriter.get() == null && eclipseLog != null) {
             eclipseLog.log(status);
             return true;
@@ -435,7 +445,8 @@ public class Log {
         }
     }
 
-    private static Status createStatus(int severity, Object message) {
+    @NotNull
+    private static Status createStatus(int severity, @Nullable Object message) {
         //we never include Exception to the status for some reason
         return new Status(
             severity,
@@ -443,28 +454,28 @@ public class Log {
             message == null ? null : message.toString());
     }
 
-    public static void addListener(Listener listener) {
+    public static void addListener(@NotNull Listener listener) {
         synchronized (Log.class) {
             listeners = ArrayUtils.add(Listener.class, listeners, listener);
         }
     }
 
-    public static void removeListener(Listener listener) {
+    public static void removeListener(@NotNull Listener listener) {
         synchronized (Log.class) {
             listeners = ArrayUtils.remove(Listener.class, listeners, listener);
         }
     }
 
-    private static void notifyListeners(Object message, Throwable t, boolean notifyUI) {
+    private static void notifyListeners(@Nullable Object message, @Nullable Throwable t, boolean notifyUI) {
         for (Listener listener : listeners) {
             listener.loggedMessage(message, t, notifyUI);
         }
     }
 
     public interface Listener {
-        void loggedMessage(Object message, Throwable t);
+        void loggedMessage(@Nullable Object message, @Nullable Throwable t);
 
-        default void loggedMessage(Object message, Throwable t, boolean notifyUI) {
+        default void loggedMessage(@Nullable Object message, @Nullable Throwable t, boolean notifyUI) {
             loggedMessage(message, t);
         }
     }
