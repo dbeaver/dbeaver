@@ -65,6 +65,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     private Button showNodeActionsCheck;
     private Button colorAllNodesCheck;
     private Button showChildCountCheck;
+    private Button showFilterNodeCheck;
 
     private Button showObjectTipsCheck;
     private Button showToolTipsCheck;
@@ -144,6 +145,13 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
                 navigatorGroup,
                 UINavigatorMessages.pref_page_database_general_label_show_child_count,
                 UINavigatorMessages.pref_page_database_general_label_show_child_count_tip,
+                false,
+                2
+            );
+            showFilterNodeCheck = UIUtils.createCheckbox(
+                navigatorGroup,
+                UINavigatorMessages.pref_page_database_general_label_show_filter_node,
+                UINavigatorMessages.pref_page_database_general_label_show_filter_node_tip,
                 false,
                 2
             );
@@ -321,6 +329,11 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
                 ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CHILD_COUNT)
                 : store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_CHILD_COUNT)
         );
+        showFilterNodeCheck.setSelection(
+            useDefaultValues
+                ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_SHOW_FILTER_NODE)
+                : store.getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_FILTER_NODE)
+        );
         groupByDriverCheck.setSelection(
             useDefaultValues
                 ? store.getDefaultBoolean(NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER)
@@ -436,6 +449,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         store.setValue(ModelPreferences.NAVIGATOR_SORT_IGNORE_CASE, sortCaseInsensitiveCheck.getSelection());
         store.setValue(ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, sortFoldersFirstCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_CHILD_COUNT, showChildCountCheck.getSelection());
+        store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_FILTER_NODE, showFilterNodeCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_CONNECTION_HOST_NAME, showConnectionHostCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_OBJECTS_DESCRIPTION, showObjectsDescriptionCheck.getSelection());
         store.setValue(NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO, showStatisticsCheck.getSelection());
