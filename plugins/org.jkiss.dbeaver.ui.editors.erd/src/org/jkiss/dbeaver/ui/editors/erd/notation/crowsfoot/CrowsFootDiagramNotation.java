@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -74,10 +74,10 @@ public class CrowsFootDiagramNotation extends ERDNotationBase implements ERDNota
                     if (DBUtils.isUniqueIndexForAttributes(monitor, attributes, entity)) {
                         createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_ONLY, LABEL_1);
                     } else {
-                        createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_OR_MANY, LABEL_1_TO_N);
+                        createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ZERO_OR_MANY, LABEL_0_TO_N);
                     }
                 } else {
-                    createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ONE_OR_MANY, LABEL_1_TO_N);
+                    createSourceDecorator(conn, bckColor, frgColor, ERDAssociationType.ZERO_OR_MANY, LABEL_0_TO_N);
                 }
                 if (ERDUtils.isOptionalAssociation(association)) {
                     // target - 0..1
