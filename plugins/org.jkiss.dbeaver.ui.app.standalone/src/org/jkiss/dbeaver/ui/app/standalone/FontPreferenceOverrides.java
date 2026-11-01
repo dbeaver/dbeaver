@@ -39,6 +39,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.DBIconBinary;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIFontPreferenceManager;
+import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConstants;
 
@@ -502,6 +503,11 @@ public class FontPreferenceOverrides {
     public static void overrideFontPrefValues(@NotNull Map<String, List<String>> fontOverrides) {
         WorkbenchThemeManager.getInstance().addPropertyChangeListener(event -> {
             String fontPropertyId = event.getProperty();
+            if (UIFonts.Eclipse.TEXT_FONT.equals(fontPropertyId)) {
+                FontRegistry fonts = UIUtils.getCurrentTheme().getFontRegistry();
+                fonts.put(UIFonts.Eclipse.TEXT_EDITOR_BLOCK_SELECTION_FONT, fonts.getFontData(fontPropertyId));
+                return;
+            }
             List<String> fontIdsToOverride = fontOverrides.get(fontPropertyId);
             if (fontIdsToOverride != null) {
                 FontRegistry fonts = UIUtils.getCurrentTheme().getFontRegistry();
