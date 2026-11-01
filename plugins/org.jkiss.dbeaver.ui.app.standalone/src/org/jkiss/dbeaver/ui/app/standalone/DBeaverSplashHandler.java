@@ -27,6 +27,8 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.branding.IProductConstants;
 import org.eclipse.ui.splash.BasicSplashHandler;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -37,12 +39,12 @@ public final class DBeaverSplashHandler extends BasicSplashHandler {
     private Label messageLabel;
     private final Log.Listener debugListener = new Log.Listener() {
         @Override
-        public void loggedMessage(Object message, Throwable exception) {
+        public void loggedMessage(@Nullable Object message, @Nullable Throwable exception) {
             loggedMessage(message, exception, true);
         }
 
         @Override
-        public void loggedMessage(Object message, Throwable exception, boolean notifyUI) {
+        public void loggedMessage(@Nullable Object message, @Nullable Throwable exception, boolean notifyUI) {
             Shell splash = getSplash();
             if (notifyUI && message != null && splash != null && !splash.isDisposed()) {
                 String text = message.toString();
@@ -55,7 +57,7 @@ public final class DBeaverSplashHandler extends BasicSplashHandler {
         }
     };
 
-    private void showMessage(String text) {
+    private void showMessage(@NotNull String text) {
         if (messageLabel != null && !messageLabel.isDisposed()) {
             messageLabel.setText(text.replace("&", "&&"));
             messageLabel.update();
@@ -63,7 +65,7 @@ public final class DBeaverSplashHandler extends BasicSplashHandler {
     }
 
     @Override
-    public void init(Shell splash) {
+    public void init(@NotNull Shell splash) {
         super.init(splash);
 
         try {

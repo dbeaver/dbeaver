@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -32,12 +33,12 @@ public class LogDebugListenerTest extends DBeaverUnitTest {
         List<Boolean> notifyUIFlags = new ArrayList<>();
         Log.Listener listener = new Log.Listener() {
             @Override
-            public void loggedMessage(Object message, Throwable exception) {
+            public void loggedMessage(@Nullable Object message, @Nullable Throwable exception) {
                 loggedMessage(message, exception, true);
             }
 
             @Override
-            public void loggedMessage(Object message, Throwable exception, boolean notifyUI) {
+            public void loggedMessage(@Nullable Object message, @Nullable Throwable exception, boolean notifyUI) {
                 messages.add(message);
                 notifyUIFlags.add(notifyUI);
             }

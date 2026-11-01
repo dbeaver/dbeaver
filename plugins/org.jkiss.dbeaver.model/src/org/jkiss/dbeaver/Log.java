@@ -472,6 +472,7 @@ public class Log {
         }
     }
 
+    /** Receives log messages, optionally indicating whether they should update the UI. */
     public interface Listener {
         void loggedMessage(@Nullable Object message, @Nullable Throwable t);
 
