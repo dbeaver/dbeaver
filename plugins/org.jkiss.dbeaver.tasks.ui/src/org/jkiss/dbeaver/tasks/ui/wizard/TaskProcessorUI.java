@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskEvent;
 import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
+import org.jkiss.dbeaver.model.task.DBTTaskRun;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
@@ -85,7 +86,11 @@ public class TaskProcessorUI implements DBRRunnableContext, DBTTaskExecutionList
     }
 
     protected void executeTaskWithHistory(@NotNull DBRRunnable operation) throws DBException {
-        executionHistory = new QMTaskExecution(getTask());
+        executeTaskWithHistory(null, operation);
+    }
+
+    protected void executeTaskWithHistory(@Nullable DBTTaskRun run, @NotNull DBRRunnable operation) throws DBException {
+        executionHistory = new QMTaskExecution(getTask(), run);
         try {
             operation.run();
         } catch (Throwable e) {

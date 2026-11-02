@@ -14,18 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam;
+package org.jkiss.dbeaver.model.datadam.rpc;
 
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamMessage;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
 import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamGsonRpcCodec;
 import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamRpcTransport;
-import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannel;
-import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
-import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
-import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamMessageListener;
-import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSessionListener;
-import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
+import com.dbeaver.datadam.dam.remote.api.transport.*;
 import com.dbeaver.messaging.rpc.MessagingRpcCodec;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import com.dbeaver.messaging.rpc.MessagingRpcException;
@@ -42,7 +37,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
-import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -56,23 +50,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.CyclicBarrier;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
 @Timeout(15)
-class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
+class DDRemoteDamDesktopRpcServiceTest {
     private static final String TOPIC = "desktop/echo";
     private static final String OTHER_TOPIC = "desktop/storage";
 
@@ -85,7 +69,7 @@ class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
         backend.ready("backend");
         try (var rpc = service(desktop)) {
             Assertions.assertTrue(desktop.subscriptions.isEmpty());
-            Assertions.assertTrue(desktop.observers.isEmpty());
+            Assertions.assertEquals(1, desktop.observers.size());
             Assertions.assertThrows(DBException.class, rpc::getRpc);
 
             desktop.ready("desktop");
@@ -93,7 +77,7 @@ class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
             MessagingRpcEndpoint endpoint = rpc.getRpc();
             Assertions.assertSame(endpoint, rpc.getRpc());
             Assertions.assertTrue(desktop.subscriptions.isEmpty());
-            Assertions.assertTrue(desktop.observers.isEmpty());
+            Assertions.assertEquals(1, desktop.observers.size());
             try (var remote = remote(backend)) {
                 Assertions.assertTrue(backend.subscriptions.isEmpty());
                 endpoint.register(TOPIC, Echo.class, value -> "desktop-echo:" + value, codec());
@@ -107,7 +91,7 @@ class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
                 Assertions.assertEquals("desktop-storage:s", call(() -> remote.proxy(OTHER_TOPIC, Echo.class, codec()).echo("s")));
                 Assertions.assertEquals(TOPIC, desktop.sentMessages.getFirst().topic());
                 Assertions.assertEquals(4, desktop.subscriptions.size());
-                Assertions.assertEquals(2, desktop.observers.size());
+                Assertions.assertEquals(3, desktop.observers.size());
                 Assertions.assertEquals(1L, desktop.subscribedTopics.stream().filter(TOPIC::equals).count());
                 Assertions.assertEquals(1L, desktop.subscribedTopics.stream().filter(OTHER_TOPIC::equals).count());
             }
@@ -282,7 +266,7 @@ class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
                 }
                 Assertions.assertTrue(endpoint.isCloseComplete());
                 Assertions.assertTrue(desktop.subscriptions.isEmpty());
-                Assertions.assertTrue(desktop.observers.isEmpty());
+                Assertions.assertEquals(close ? 0 : 1, desktop.observers.size());
                 Assertions.assertThrows(DBException.class, rpc::getRpc);
                 backend.disconnected();
                 Assertions.assertEquals(MessagingRpcException.Reason.DISCONNECTED, failure(pending).reason());
@@ -343,7 +327,7 @@ class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
 
                 Assertions.assertSame(endpoint, rpc.getRpc());
                 Assertions.assertEquals(2, desktop.subscriptions.size());
-                Assertions.assertEquals(1, desktop.observers.size());
+                Assertions.assertEquals(2, desktop.observers.size());
                 Assertions.assertEquals("retained:new", call(() -> remote.proxy(TOPIC, Echo.class, codec()).echo("new")));
             } finally {
                 release.countDown();
@@ -370,7 +354,7 @@ class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
             rpc.suspend();
             Assertions.assertTrue(old.isCloseComplete());
             Assertions.assertTrue(desktop.subscriptions.isEmpty());
-            Assertions.assertTrue(desktop.observers.isEmpty());
+            Assertions.assertEquals(1, desktop.observers.size());
             Assertions.assertEquals(MessagingRpcException.Reason.CLOSED,
                 Assertions.assertThrows(MessagingRpcException.class, () -> oldProxy.echo("old")).reason());
             Assertions.assertThrows(DBException.class, rpc::getRpc);
@@ -404,7 +388,7 @@ class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
             Assertions.assertNotSame(old, replacement);
             Assertions.assertFalse(replacement.isClosed());
             Assertions.assertTrue(channel.subscriptions.isEmpty());
-            Assertions.assertTrue(channel.observers.isEmpty());
+            Assertions.assertEquals(1, channel.observers.size());
             channel.disconnected();
             replacement.close();
             Assertions.assertThrows(DBException.class, rpc::getRpc);
@@ -468,14 +452,14 @@ class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
             for (int attempt = 0; attempt < 40; attempt++) {
                 Assertions.assertThrows(MessagingRpcException.class, () -> endpoint.proxy(TOPIC, Echo.class, codec()));
                 Assertions.assertTrue(channel.subscriptions.isEmpty());
-                Assertions.assertTrue(channel.observers.isEmpty());
+                Assertions.assertEquals(1, channel.observers.size());
                 Assertions.assertSame(endpoint, rpc.getRpc());
             }
             channel.failTopic = null;
             endpoint.proxy(TOPIC, Echo.class, codec());
             Assertions.assertFalse(endpoint.isClosed());
             Assertions.assertEquals(2, channel.subscriptions.size());
-            Assertions.assertEquals(1, channel.observers.size());
+            Assertions.assertEquals(2, channel.observers.size());
         }
     }
 
@@ -498,7 +482,7 @@ class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
                 Assertions.assertSame(endpoint, result.get(3, TimeUnit.SECONDS));
             }
             Assertions.assertTrue(channel.subscriptions.isEmpty());
-            Assertions.assertTrue(channel.observers.isEmpty());
+            Assertions.assertEquals(1, channel.observers.size());
             List<Future<Echo>> proxies = new ArrayList<>();
             for (int index = 0; index < 8; index++) {
                 proxies.add(executor.submit(() -> {
@@ -510,7 +494,7 @@ class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
                 Assertions.assertNotNull(proxy.get(3, TimeUnit.SECONDS));
             }
             Assertions.assertEquals(2, channel.subscriptions.size());
-            Assertions.assertEquals(1, channel.observers.size());
+            Assertions.assertEquals(2, channel.observers.size());
         }
     }
 
@@ -568,13 +552,13 @@ class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
                 Assertions.assertInstanceOf(MessagingRpcException.class, failure.getCause());
                 Assertions.assertTrue(old.isCloseComplete());
                 Assertions.assertTrue(channel.subscriptions.isEmpty());
-                Assertions.assertTrue(channel.observers.isEmpty());
+                Assertions.assertEquals(1, channel.observers.size());
                 MessagingRpcEndpoint current = rpc.getRpc();
                 Assertions.assertNotSame(old, current);
                 Assertions.assertSame(current, rpc.getRpc());
                 current.proxy(TOPIC, Echo.class, codec());
                 Assertions.assertEquals(2, channel.subscriptions.size());
-                Assertions.assertEquals(1, channel.observers.size());
+                Assertions.assertEquals(2, channel.observers.size());
             } finally {
                 release.countDown();
             }
@@ -618,12 +602,14 @@ class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
         channel.ready("first");
         CountDownLatch entered = new CountDownLatch(1);
         CountDownLatch release = new CountDownLatch(1);
-        channel.onObserve = () -> {
-            entered.countDown();
-            await(release);
-        };
-        try (var rpc = service(channel);
-             var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+        try (
+            var rpc = service(channel);
+            var executor = Executors.newVirtualThreadPerTaskExecutor()
+        ) {
+            channel.onObserve = () -> {
+                entered.countDown();
+                await(release);
+            };
             MessagingRpcEndpoint endpoint = rpc.getRpc();
             Future<?> opening = executor.submit(() -> endpoint.proxy(TOPIC, Echo.class, codec()));
             try {
@@ -744,7 +730,7 @@ class DDRemoteDamDesktopRpcServiceTest extends DBeaverUnitTest {
                 messages.close();
                 return null;
             }).when(channel).close();
-            session = new DDRemoteDamDesktopSessionService(access, channel);
+            session = new DDRemoteDamDesktopSessionService(access, channel, Mockito.mock(DDDesktopRpcRegistrationRegistry.class));
         }
 
         private void start() {
