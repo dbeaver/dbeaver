@@ -65,41 +65,23 @@ class DDRemoteDamDesktopSessionServiceTest extends DBeaverUnitTest {
     }
 
     @Test
-    void formatsStableClientDamIdentity() throws DBException {
-        byte[] macAddress = {0, 1, 0x23, 0x45, 0x67, (byte) 0xab};
-
-        String clientDamId = DDRemoteDamDesktopSessionService.formatClientDamId("workspace", macAddress);
-
-        Assertions.assertEquals("d29ya3NwYWNlOjAwMDEyMzQ1NjdhYg", clientDamId);
-        Assertions.assertEquals(clientDamId, DDRemoteDamDesktopSessionService.formatClientDamId("workspace", macAddress.clone()));
+    void formatsClientDamIdentity() {
+        Assertions.assertEquals("d29ya3NwYWNlOkhPU1QxMjM",
+            DDRemoteDamDesktopSessionService.formatClientDamId("workspace", "HOST123"));
     }
 
     @Test
-    void clientDamIdentityChangesWithWorkspaceOrMacAddress() throws DBException {
-        byte[] macAddress = {0, 1, 0x23, 0x45, 0x67, (byte) 0xab};
-        byte[] otherMacAddress = {0, 1, 0x23, 0x45, 0x67, (byte) 0xac};
-        String clientDamId = DDRemoteDamDesktopSessionService.formatClientDamId("workspace", macAddress);
+    void clientDamIdentityChangesWithWorkspaceOrLocalHostId() {
+        String clientDamId = DDRemoteDamDesktopSessionService.formatClientDamId("workspace", "HOST123");
 
-        Assertions.assertNotEquals(clientDamId, DDRemoteDamDesktopSessionService.formatClientDamId("other-workspace", macAddress));
-        Assertions.assertNotEquals(clientDamId, DDRemoteDamDesktopSessionService.formatClientDamId("workspace", otherMacAddress));
+        Assertions.assertNotEquals(clientDamId, DDRemoteDamDesktopSessionService.formatClientDamId("other-workspace", "HOST123"));
+        Assertions.assertNotEquals(clientDamId, DDRemoteDamDesktopSessionService.formatClientDamId("workspace", "HOST456"));
     }
 
     @Test
-    void clientDamIdentityUsesUtf8AndUnpaddedUrlSafeBase64() throws DBException {
-        byte[] macAddress = {0, 1, 0x23, 0x45, 0x67, (byte) 0xab};
-
-        Assertions.assertEquals("5bel5L2c5Yy68J-ZgjowMDAxMjM0NTY3YWI",
-            DDRemoteDamDesktopSessionService.formatClientDamId("工作区🙂", macAddress));
-    }
-
-    @Test
-    void rejectsMissingAndAllZeroMacAddresses() {
-        for (byte[] macAddress : new byte[][] {null, {}, {0, 0, 0, 0, 0, 0}}) {
-            DBException error = Assertions.assertThrows(DBException.class,
-                () -> DDRemoteDamDesktopSessionService.formatClientDamId("workspace", macAddress));
-
-            Assertions.assertTrue(error.getMessage().contains("MAC address"));
-        }
+    void clientDamIdentityUsesUtf8AndUnpaddedUrlSafeBase64() {
+        Assertions.assertEquals("5bel5L2c5Yy68J-ZgjpIT1NUMTIz",
+            DDRemoteDamDesktopSessionService.formatClientDamId("工作区🙂", "HOST123"));
     }
 
     @Test

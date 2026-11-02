@@ -20,20 +20,17 @@ import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamHandshakeRequest;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannel;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
+import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.HexFormat;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -74,12 +71,7 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
         if (instance == null) {
             DDDesktopAccessService access = DDDesktopAccessService.getInstance();
             String workspaceId = DBWorkbench.getPlatform().getWorkspace().getWorkspaceId();
-            String clientDamId;
-            try {
-                clientDamId = formatClientDamId(workspaceId, RuntimeUtils.getLocalMacAddress());
-            } catch (IOException e) {
-                throw new DBException("Cannot generate DataDam client identity: failed to read the local MAC address", e);
-            }
+            String clientDamId = formatClientDamId(workspaceId, BaseWorkspaceImpl.getLocalHostId());
             DDRemoteDamHandshakeRequest hello = new DDRemoteDamHandshakeRequest(
                 DBWorkbench.getPlatform().getDeploymentId(), APP_INSTANCE_ID,
                 workspaceId, clientDamId,
@@ -94,12 +86,9 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
     }
 
     @NotNull
-    static String formatClientDamId(@NotNull String workspaceId, @Nullable byte[] macAddress) throws DBException {
-        String mac = macAddress == null ? "" : HexFormat.of().formatHex(macAddress);
-        if (mac.isEmpty() || mac.chars().allMatch(character -> character == '0')) {
-            throw new DBException("Cannot generate DataDam client identity: local MAC address is missing or all zero");
-        }
-        return Base64.getUrlEncoder().withoutPadding().encodeToString((workspaceId + ':' + mac).getBytes(StandardCharsets.UTF_8));
+    static String formatClientDamId(@NotNull String workspaceId, @NotNull String localHostId) {
+        return Base64.getUrlEncoder().withoutPadding()
+            .encodeToString((workspaceId + ':' + localHostId).getBytes(StandardCharsets.UTF_8));
     }
 
     public void start() {
