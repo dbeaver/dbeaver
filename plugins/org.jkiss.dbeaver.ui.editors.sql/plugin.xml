@@ -1698,7 +1698,8 @@
                 id="sqlworkbenchj"
                 class="org.jkiss.dbeaver.ui.editors.sql.format.sqlworkbenchj.SQLWorkbenchJFormatter"
                 label="SQL Workbench/J formatter"
-                description="Formatter from SQL Workbench/J"/>
+                description="Formatter from SQL Workbench/J"
+                supportsMultiuserMode="false"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">
