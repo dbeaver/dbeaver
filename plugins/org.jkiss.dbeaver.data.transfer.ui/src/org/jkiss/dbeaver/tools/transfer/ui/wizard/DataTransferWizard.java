@@ -34,10 +34,12 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRRunnable;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.sql.SQLQueryContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.task.DBTTask;
+import org.jkiss.dbeaver.registry.task.TaskExecutionLog;
 import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizard;
@@ -45,6 +47,7 @@ import org.jkiss.dbeaver.tasks.ui.wizard.TaskConfigurationWizardDialog;
 import org.jkiss.dbeaver.tasks.ui.wizard.TaskProcessorUI;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
@@ -664,14 +667,20 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
         @Override
         protected void runTask() throws DBException {
             DTTaskHandlerTransfer handlerTransfer = new DTTaskHandlerTransfer();
-            executeTaskWithHistory(() -> handlerTransfer.executeWithSettings(
-                this,
-                getCurrentTask(),
-                Locale.getDefault(),
-                log,
-                null,
-                this,
-                settings));
+            boolean captureLogs = DTActivator.getDefault().getPreferences().getBoolean(DTConstants.PREF_CAPTURE_UNSAVED_TASK_LOGS);
+            try (TaskExecutionLog executionLog = captureLogs ? TaskExecutionLog.open(getTask(), this) : null) {
+                DBRRunnable operation = () -> handlerTransfer.executeWithSettings(
+                    executionLog == null ? this : executionLog,
+                    getCurrentTask(),
+                    Locale.getDefault(),
+                    log,
+                    executionLog == null ? null : executionLog.getLogStream(),
+                    this,
+                    settings);
+                executeTaskWithHistory(
+                    executionLog == null ? null : executionLog.getRun(),
+                    executionLog == null ? operation : () -> executionLog.execute(operation));
+            }
         }
 
     }
