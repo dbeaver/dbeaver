@@ -1,5 +1,4 @@
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_8213_10189)">
 <path d="M15 1H13V2H15V1Z" fill="#3387C5"/>
 <path d="M3 1H1V2H3V1Z" fill="#3387C5"/>
 <path d="M6 1H4V2H6V1Z" fill="#3387C5"/>
@@ -24,10 +23,4 @@
 <path d="M6.5 3.5L3.5 3.5L3.5 6.5" stroke="#3387C5" stroke-miterlimit="10"/>
 <path d="M12.5 12.5L9 9" stroke="#3387C5" stroke-miterlimit="10"/>
 <path d="M3.5 3.5L7 7" stroke="#3387C5" stroke-miterlimit="10"/>
-</g>
-<defs>
-<clipPath id="clip0_8213_10189">
-<rect width="16" height="16" fill="white"/>
-</clipPath>
-</defs>
 </svg>
