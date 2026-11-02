@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam;
+package org.jkiss.dbeaver.model.datadam.rpc;
 
 import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamGsonRpcCodec;
 import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamRpcTransport;
@@ -32,6 +32,7 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
 
     private final Object lock = new Object();
     private final DDRemoteDamChannel channel;
+    private final DDDesktopRpcRegistrationRegistry registrations;
     @Nullable
     private MessagingRpcEndpoint endpoint;
     private boolean invalidated;
@@ -40,7 +41,15 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
     private boolean closed;
 
     DDRemoteDamDesktopRpcService(@NotNull DDRemoteDamChannel channel) {
+        this(channel, DDDesktopRpcRegistrationRegistry.getInstance());
+    }
+
+    DDRemoteDamDesktopRpcService(
+        @NotNull DDRemoteDamChannel channel,
+        @NotNull DDDesktopRpcRegistrationRegistry registrations
+    ) {
         this.channel = channel;
+        this.registrations = registrations;
     }
 
     boolean resume(boolean initial) {
@@ -86,15 +95,26 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
                 throw new DBException("DataDam RPC requires a ready message channel");
             }
             try {
-                endpoint = MessagingRpcEndpoint.open(
+                MessagingRpcEndpoint opened = MessagingRpcEndpoint.open(
                     topic -> DDRemoteDamRpcTransport.forChannel(channel, topic, DDRemoteDamDesktopRpcService::executeRequest),
                     new DDRemoteDamGsonRpcCodec(new Gson()));
+                try {
+                    registerDesktopServices(opened);
+                } catch (RuntimeException e) {
+                    closeEndpoint(opened);
+                    throw e;
+                }
+                endpoint = opened;
                 invalidated = false;
                 return endpoint;
             } catch (RuntimeException e) {
                 throw new DBException("Cannot open DataDam RPC endpoint", e);
             }
         }
+    }
+
+    private void registerDesktopServices(@NotNull MessagingRpcEndpoint endpoint) {
+        registrations.registerAll(endpoint);
     }
 
     private static void executeRequest(@NotNull Runnable request) {

@@ -27,8 +27,19 @@ import java.util.Collections;
 public class RuntimeUtilsTest extends DBeaverUnitTest {
 
     @Test
+    public void testMakePlatformResourceUrl() {
+        Assertions.assertEquals(
+            "platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/search.svg",
+            RuntimeUtils.makePlatformResourceUrl("org.jkiss.dbeaver.ui", "icons/misc/search.svg")
+        );
+    }
+
+    @Test
     public void testSplitCommandLine() {
-        Assertions.assertEquals(Arrays.asList("/bin/sh", "-c", "echo hello && echo world"), RuntimeUtils.splitCommandLine("/bin/sh -c 'echo hello && echo world'", true));
+        Assertions.assertEquals(
+            Arrays.asList("/bin/sh", "-c", "echo hello && echo world"),
+            RuntimeUtils.splitCommandLine("/bin/sh -c 'echo hello && echo world'", true)
+        );
     }
 
     @Test
