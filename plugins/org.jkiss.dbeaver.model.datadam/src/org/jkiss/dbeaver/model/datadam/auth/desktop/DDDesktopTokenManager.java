@@ -199,38 +199,41 @@ class DDDesktopTokenManager {
         DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, true);
     }
 
-    void signOut() throws DBException {
+    synchronized void signOut() throws DBException {
         log.debug("Signing out of DataDam desktop access");
-        DDDesktopUserToken previous = clearToken();
-        revoke(previous);
-    }
-
-    @Nullable
-    private synchronized DDDesktopUserToken clearToken() throws DBException {
-        DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, false);
         DDDesktopUserToken previous = token;
-        token = null;
-        store.clear();
-        log.debug("Cleared DataDam desktop token");
-        return previous;
+        try {
+            DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, false);
+            token = null;
+            store.clear();
+            log.debug("Cleared DataDam desktop token");
+        } finally {
+            revoke(previous);
+        }
     }
 
     private void revoke(@Nullable DDDesktopUserToken previous) {
-        if (previous == null) {
-            return;
-        }
-        String refreshToken = previous.refreshToken();
-        if (refreshToken == null) {
-            return;
-        }
-        String issuer = previous.issuer();
-        Job.createSystem("Revoke DataDam desktop token", monitor -> {
-            try (DDDesktopSsoClient client = new DDDesktopSsoClient(URI.create(issuer))) {
-                client.revoke(refreshToken);
-            } catch (Exception e) {
-                log.warn("DataDam credentials cleared locally, but server revocation could not be confirmed", e);
+        try {
+            if (previous == null) {
+                return;
             }
-        }).schedule();
+            String refreshToken = previous.refreshToken();
+            if (refreshToken == null) {
+                return;
+            }
+            String issuer = previous.issuer();
+            Job.createSystem(
+                "Revoke DataDam desktop token", monitor -> {
+                    try (DDDesktopSsoClient client = new DDDesktopSsoClient(URI.create(issuer))) {
+                        client.revoke(refreshToken);
+                    } catch (Exception e) {
+                        log.warn("DataDam credentials cleared locally, but server revocation could not be confirmed", e);
+                    }
+                }
+            ).schedule();
+        } catch (Exception e) {
+            log.warn("Could not revoke DataDam desktop token", e);
+        }
     }
 
     @NotNull
