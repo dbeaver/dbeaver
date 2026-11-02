@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam;
+package org.jkiss.dbeaver.model.datadam.rpc;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-class DDRemoteDamDesktopSessionPluginServiceTest extends DBeaverUnitTest {
+class DDRemoteDamDesktopSessionPluginServiceTest {
     @Test
     void activatesAndClosesTheRetainedServiceOnlyOnce() throws Exception {
         var lifecycle = new DDRemoteDamDesktopSessionPluginService();
