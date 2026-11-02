@@ -19,9 +19,8 @@ package org.jkiss.dbeaver.ui.app.config;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 
 public final class ProductConfigFeatures {
-    public static final DBRFeature CATEGORY = DBRFeature.createCategory("Product Config", "Product config features");
-    public static final DBRFeature WIZARD_SHOWN = DBRFeature.createFeature(CATEGORY, "Product config wizard was shown");
-    public static final DBRFeature WIZARD_CLOSED = DBRFeature.createFeature(CATEGORY, "Product config wizard was closed");
+    public static final DBRFeature WIZARD_SHOWN = new DBRFeature("WIZARD_SHOWN");
+    public static final DBRFeature WIZARD_CLOSED = new DBRFeature("WIZARD_CLOSED");
 
     private ProductConfigFeatures() {
     }

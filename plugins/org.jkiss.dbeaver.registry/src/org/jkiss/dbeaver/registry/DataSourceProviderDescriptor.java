@@ -424,7 +424,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     @NotNull
     public synchronized List<DBPDriver> getDrivers() {
         if (driverProvider && !driversLoaded) {
-            // Load provided drivers
             if (getInstance() instanceof DriverProvider dp) {
                 this.drivers.addAll(dp.getProvidedDrivers(this));
             } else {
@@ -433,7 +432,19 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             driversLoaded = true;
         }
 
-        return drivers;
+        return List.copyOf(drivers);
+    }
+
+    synchronized void refreshProvidedDrivers() {
+        if (driverProvider) {
+            getDrivers();
+            if (getInstance() instanceof DriverProvider dp) {
+                for (DBPDriver driver : dp.refreshProvidedDrivers(this, drivers)) {
+                    registry.removeDriver(driver);
+                    driver.getDataSourceType();
+                }
+            }
+        }
     }
 
     public synchronized void removeCustomAndDisabledDrivers() {

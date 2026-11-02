@@ -140,6 +140,28 @@ public class CDataDriverDescriptorTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void reuseNativeDriverImagesWithoutDownloading() {
+        var registry = DataSourceProviderRegistry.getInstance();
+        var nativeDriver = registry.findDriver("postgresql:postgres-jdbc");
+        Assertions.assertNotNull(nativeDriver);
+        var driver = new CDataDriverDescriptor(registry.getDataSourceProvider("generic"), "test-cdata-native-images",
+            new CDataDriverInfo("postgresql", "postgresql", "PostgreSQL JDBC Driver", 2026,
+                CDataDriverTier.PROFESSIONAL, "https://www.cdata.com/", "postgresql", null, null,
+                "postgresql:postgres-jdbc"));
+        var updates = new AtomicInteger();
+        driver.loadIcon(updates::incrementAndGet);
+        driver.loadLogo(updates::incrementAndGet);
+        driver.loadIcon(updates::incrementAndGet);
+        driver.loadLogo(updates::incrementAndGet);
+
+        Assertions.assertSame(nativeDriver.getPlainIcon(), ((DBIconComposite) driver.getPlainIcon()).getMain());
+        Assertions.assertSame(nativeDriver.getIconBig(), ((DBIconComposite) driver.getIconBig()).getMain());
+        Assertions.assertSame(CDataIcons.CDATA_OVERLAY, ((DBIconComposite) driver.getPlainIcon()).getBottomRight());
+        Assertions.assertSame(nativeDriver.getLogoImage(), driver.getLogoImage());
+        Assertions.assertEquals(2, updates.get());
+    }
+
+    @Test
     public void dynamicDataSourceTypeTracksLoadedDriverIcons() {
         var registry = DataSourceProviderRegistry.getInstance();
         var driver = new CDataDriverDescriptor(registry.getDataSourceProvider("generic"), "test-cdata-new-source",

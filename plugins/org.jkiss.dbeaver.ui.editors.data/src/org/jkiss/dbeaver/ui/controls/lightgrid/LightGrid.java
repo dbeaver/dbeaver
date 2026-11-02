@@ -198,7 +198,7 @@ public abstract class LightGrid extends Canvas {
     private boolean cellRowSelectedOnLastMouseDown;
     private boolean cellColumnSelectedOnLastMouseDown;
 
-    private boolean headerColumnDragStarted, rowHeaderDragStarted;
+    private boolean headerColumnDragStarted, rowHeaderDragStarted, cellSelectionDragStarted;
 
     private GridColumn shiftSelectionAnchorColumn;
 
@@ -3081,18 +3081,35 @@ public abstract class LightGrid extends Canvas {
                     if (dragDetect(e)) {
                         // Drag and drop started
                         headerColumnDragStarted = true;
+                        rowHeaderDragStarted = false;
+                        cellSelectionDragStarted = false;
                         return;
                     }
                 }
             } else if (hoveringOnRowHeader && hoveringRow != null) {
                 if (e.button == 1 && selectedRows.containsKey(hoveringRow) && dragDetect(e)) {
                     rowHeaderDragStarted = true;
+                    headerColumnDragStarted = false;
+                    cellSelectionDragStarted = false;
+                    return;
+                }
+            } else if (row >= 0 && e.button == 1) {
+                GridColumn cellColumn = getColumn(point);
+                if (cellColumn != null
+                    && !getContentProvider().isVoidCell(cellColumn, gridRows[row])
+                    && selectedCells.contains(new GridPos(cellColumn.getIndex(), row))
+                    && dragDetect(e)
+                ) {
+                    cellSelectionDragStarted = true;
+                    headerColumnDragStarted = false;
+                    rowHeaderDragStarted = false;
                     return;
                 }
             }
         }
         headerColumnDragStarted = false;
         rowHeaderDragStarted = false;
+        cellSelectionDragStarted = false;
 
         GridColumn col = null;
         if (row >= 0) {
@@ -4731,7 +4748,8 @@ public abstract class LightGrid extends Canvas {
                 if (lastDragEndTime > 0 && System.currentTimeMillis() - lastDragEndTime < 100) {
                     event.doit = false;
                 } else {
-                    Rectangle columnBounds;
+                    Rectangle columnBounds = null;
+                    // Cell drags populate TextTransfer only (payload built in dragSetData).
                     if (headerColumnDragStarted && hoveringColumn != null) {
                         draggingColumn = hoveringColumn;
                         columnBounds = hoveringColumn.getBounds();
@@ -4739,6 +4757,16 @@ public abstract class LightGrid extends Canvas {
                         draggingRow = hoveringRow;
                         int rowFromTop = hoveringRow - getTopIndex();
                         columnBounds = new Rectangle(0, rowFromTop * getItemHeight(), getRowHeaderWidth(), getItemHeight());
+                    } else if (cellSelectionDragStarted) {
+                        List<GridCell> selected = getCellSelection();
+                        if (selected.isEmpty() || !getContentProvider().canStartCellSelectionDrag(selected)) {
+                            event.doit = false;
+                            cellSelectionDragStarted = false;
+                            return;
+                        }
+                        // No drag image: a single-cell snapshot is misleading for multi-cell selections
+                        event.image = null;
+                        return;
                     } else {
                         event.doit = false;
                         return;
@@ -4748,11 +4776,15 @@ public abstract class LightGrid extends Canvas {
                         dragImage = null;
                     }
                     GC gc = new GC(LightGrid.this);
-                    dragImage = new Image(Display.getCurrent(), columnBounds.width, columnBounds.height);
-                    gc.copyArea(
+                    int imageWidth = Math.max(columnBounds.width, 1);
+                    int imageHeight = Math.max(columnBounds.height, 1);
+                    dragImage = new Image(Display.getCurrent(), imageWidth, imageHeight);
+                    if (columnBounds.width > 0 && columnBounds.height > 0) {
+                        gc.copyArea(
                             dragImage,
                             columnBounds.x,
                             columnBounds.y);
+                    }
                     event.image = dragImage;
                     gc.dispose();
                 }
@@ -4819,6 +4851,17 @@ public abstract class LightGrid extends Canvas {
                         }
                         event.data = text.toString();
                     }
+                } else if (cellSelectionDragStarted) {
+                    if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
+                        String text = getContentProvider().getCellSelectionDragText(getCellSelection());
+                        if (CommonUtils.isEmpty(text)) {
+                            event.doit = false;
+                        } else {
+                            event.data = text;
+                        }
+                    } else {
+                        event.doit = false;
+                    }
                 }
             }
             
@@ -4826,6 +4869,9 @@ public abstract class LightGrid extends Canvas {
             public void dragFinished(DragSourceEvent event) {
                 draggingColumn = null;
                 draggingRow = null;
+                headerColumnDragStarted = false;
+                rowHeaderDragStarted = false;
+                cellSelectionDragStarted = false;
                 if (dragImage != null) {
                     UIUtils.dispose(dragImage);
                     dragImage = null;

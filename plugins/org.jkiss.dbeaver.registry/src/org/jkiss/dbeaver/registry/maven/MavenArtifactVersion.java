@@ -239,7 +239,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     private String getPackagingFileExtension() {
         final String packaging = CommonUtils.notEmpty(this.packaging);
         return switch (packaging) { // empty packaging
-            case "", MavenArtifact.PACKAGING_BUNDLE, MavenArtifact.PACKAGING_MAVEN_PLUGIN, MavenArtifact.FILE_POM ->
+            case "", MavenArtifact.PACKAGING_BUNDLE, MavenArtifact.PACKAGING_MAVEN_PLUGIN ->
                 MavenArtifact.FILE_JAR;
             default -> packaging;
         };

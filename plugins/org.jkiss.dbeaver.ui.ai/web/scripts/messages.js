@@ -22,6 +22,7 @@ function createContent(args) {
             link.tabIndex = -1;
             if (image.src) {
                 link.appendChild(createImagePreview(image.src));
+                link.classList.add('message-image-loaded');
             }
             const name = document.createElement('span');
             name.className = 'message-image-name';
@@ -66,6 +67,7 @@ function setMessageImage(args) {
     if (link) {
         link.querySelector('img')?.remove();
         link.prepend(createImagePreview(args.src));
+        link.classList.add('message-image-loaded');
     }
 }
 

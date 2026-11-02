@@ -55,6 +55,7 @@ import java.util.stream.Stream;
 final class WebViewMessageRenderer {
 
     private static final Log log = Log.getLog(WebViewMessageRenderer.class);
+    private static final int MESSAGE_IMAGE_SIZE = 128;
 
     private final Browser browser;
     private final AIImageThumbnailBrowser thumbnailBrowser;
@@ -193,7 +194,7 @@ final class WebViewMessageRenderer {
                     int imageIndex = index;
                     try {
                         AIImageAttachment image = images.get(index);
-                        int size = AIImageAttachmentTile.PREVIEW_SIZE * 2;
+                        int size = MESSAGE_IMAGE_SIZE * 2;
                         boolean webp = "image/webp".equals(image.mediaType());
                         String source = webp ? null : AIImageThumbnail.toDataUrl(image.getBytes(), size);
                         if (monitor.isCanceled()) {

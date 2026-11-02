@@ -2,8 +2,8 @@
 <?eclipse version="3.2"?>
 
 <plugin>
-    <extension-point id="org.jkiss.dbeaver.dataSourceConfigurator" name="%extension-point.org.jkiss.dbeaver.dataSourceConfigurator.name" schema="schema/org.jkiss.dbeaver.dataSourceConfigurator.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.connectionPageConfigurator" name="%extension-point.org.jkiss.dbeaver.connectionPageConfigurator.name" schema="schema/org.jkiss.dbeaver.connectionPageConfigurator.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataSourceConfigurator" name="Data source configurators" schema="schema/org.jkiss.dbeaver.dataSourceConfigurator.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.connectionPageConfigurator" name="Connection page configurators" schema="schema/org.jkiss.dbeaver.connectionPageConfigurator.exsd"/>
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
         <propertyConfigurator class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative" uiClass="org.jkiss.dbeaver.ui.dialogs.connection.DatabaseNativeAuthModelConfigurator"/>
