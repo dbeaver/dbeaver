@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNStreamData;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnable;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -88,7 +89,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     private volatile boolean isDataSourceInitialized = false;
     private boolean dataSourceInitializationPending;
     private DBPDataSourceContainer requestedDataSource;
-    private PendingPrompt pendingPrompt;
+    private DBRRunnable pendingCommand;
 
     private AIContextSettings activeCompletionSettings;
     private AIChatConversation activeConversation;
@@ -334,15 +335,10 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     }
 
     public void submitPrompt(@NotNull AIMessage promptMessage) {
-        if (dataSourceInitializationPending) {
-            if (pendingPrompt == null) {
-                pendingPrompt = new PendingPrompt(activeConversation, promptMessage, getCompletionSettings());
-            }
-            return;
-        }
-        if (chatSession.isBusy()) {
-            return;
-        }
+        executeCommand(() -> submitPromptNow(promptMessage));
+    }
+
+    private void submitPromptNow(@NotNull AIMessage promptMessage) {
         AIChatConversation submittedConversation = activeConversation;
         AIContextSettings customSettings = submittedConversation.getCustomSettings();
         AIContextSettings settings = customSettings != null ? customSettings : getCompletionSettings();
@@ -538,6 +534,30 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         return dataSourceInitializationPending;
     }
 
+    public void executeCommand(@NotNull DBRRunnable command) {
+        if (isDisposed() || isWaitingForResponse() || (isBusy() && !isInitializing())) {
+            return;
+        }
+        if (!isDataSourceInitialized) {
+            if (pendingCommand == null) {
+                pendingCommand = command;
+            }
+            if (!dataSourceInitializationPending) {
+                initializeDataSource();
+            }
+            return;
+        }
+        try {
+            command.run();
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(
+                AIChatMessagesUI.ai_chat_initialization_error,
+                AIChatMessagesUI.ai_chat_command_error_message,
+                e
+            );
+        }
+    }
+
     public void setDataSource(@Nullable DBPDataSourceContainer container) throws DBException {
         if (isWaitingForResponse()) {
             return;
@@ -553,6 +573,10 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             selectDataSource(container);
             return;
         }
+        initializeDataSource();
+    }
+
+    private void initializeDataSource() {
         dataSourceInitializationPending = true;
         chatSession.setBusy(true);
         new AbstractJob("Initialize AI chat session") {
@@ -581,15 +605,13 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         if (isDisposed()) {
             return;
         }
-        PendingPrompt prompt = pendingPrompt;
-        pendingPrompt = null;
+        DBRRunnable command = pendingCommand;
+        pendingCommand = null;
         try {
             if (error == null) {
-                if (prompt == null) {
+                if (command == null) {
                     selectDataSource(requestedDataSource);
                 } else {
-                    selectConversation(prompt.conversation());
-                    setCompletionSettings(prompt.settings());
                     isDataSourceInitialized = true;
                 }
             }
@@ -605,8 +627,8 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                 AIChatMessagesUI.ai_chat_initialization_error_message,
                 error
             );
-        } else if (prompt != null) {
-            submitPrompt(prompt.message());
+        } else if (command != null) {
+            executeCommand(command);
         }
     }
 
@@ -960,12 +982,5 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         composite.setBackgroundMode(SWT.INHERIT_DEFAULT);
         composite.setLayoutData(new GridData(SWT.FILL, SWT.END, true, false));
         return composite;
-    }
-
-    private record PendingPrompt(
-        @NotNull AIChatConversation conversation,
-        @NotNull AIMessage message,
-        @Nullable AIContextSettings settings
-    ) {
     }
 }
