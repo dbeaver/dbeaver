@@ -241,7 +241,15 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
     private void reconcile(int damagedRegionOffset, int damagedRegionLength, boolean restoreCollapsedAnnotations) {
         if (!editor.isFoldingEnabled()) {
-            cache.clear(); // underlying annotation model being cleared, so reset the cache too
+            // Folding may be disabled at runtime after the document has grown beyond the big-document
+            // threshold, so the annotation model is not necessarily cleared by the preference handler.
+            if (!cache.isEmpty()) {
+                ProjectionAnnotationModel model = editor.getProjectionAnnotationModel();
+                if (model != null) {
+                    model.removeAllAnnotations();
+                }
+                cache.clear();
+            }
             return;
         }
         ProjectionAnnotationModel model = editor.getProjectionAnnotationModel();

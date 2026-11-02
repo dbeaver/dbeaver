@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -76,6 +76,11 @@ class SQLOccurrencesHighlighter {
     private void updateOccurrenceAnnotations(ITextSelection selection) {
         if (this.occurrencesFinderJob != null) {
             this.occurrencesFinderJob.cancel();
+        }
+
+        if (editor.isBigDocument()) {
+            this.removeOccurrenceAnnotations();
+            return;
         }
 
         if (this.markOccurrencesUnderCursor || this.markOccurrencesForSelection) {
@@ -220,7 +225,7 @@ class SQLOccurrencesHighlighter {
     }
 
     void updateInput(IEditorInput input) {
-        if (!SQLEditorUtils.isSQLSyntaxParserApplied(input)) {
+        if (editor.isBigDocument() || !SQLEditorUtils.isSQLSyntaxParserApplied(input)) {
             uninstallOccurrencesFinder();
         } else {
             final DBPPreferenceStore prefStore = editor.getActivePreferenceStore();
