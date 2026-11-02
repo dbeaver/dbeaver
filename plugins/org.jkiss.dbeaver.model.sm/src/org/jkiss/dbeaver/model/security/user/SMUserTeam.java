@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,20 +18,46 @@ package org.jkiss.dbeaver.model.security.user;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.security.SMTeamGrantType;
 
 public class SMUserTeam extends SMTeam {
     @Nullable
     private final String teamRole;
+    @NotNull
+    private final SMTeamGrantType grantType;
+    @NotNull
+    private final String grantedBy;
 
     public SMUserTeam(
         @NotNull SMTeam smTeam, @Nullable String teamRole
     ) {
+        this(smTeam, teamRole, SMTeamGrantType.MANUAL, "");
+    }
+
+    public SMUserTeam(
+        @NotNull SMTeam smTeam,
+        @Nullable String teamRole,
+        @NotNull SMTeamGrantType grantType,
+        @NotNull String grantedBy
+    ) {
         super(smTeam.getTeamId(), smTeam.getTeamName(), smTeam.getDescription(), smTeam.isSecretStorage());
         this.teamRole = teamRole;
+        this.grantType = grantType;
+        this.grantedBy = grantedBy;
     }
 
     @Nullable
     public String getTeamRole() {
         return teamRole;
+    }
+
+    @NotNull
+    public SMTeamGrantType getGrantType() {
+        return grantType;
+    }
+
+    @NotNull
+    public String getGrantedBy() {
+        return grantedBy;
     }
 }

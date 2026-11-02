@@ -138,7 +138,7 @@ public class DataSourceTypeDescriptor extends AbstractDescriptor implements DBPD
 
     @Override
     public @NotNull List<? extends DBPDriver> getEnabledDrivers() {
-        return drivers.stream()
+        return getDrivers().stream()
             .filter(driver -> driver.getProviderDescriptor().getDrivers().contains(driver))
             .filter(driver -> !driver.isDisabled() && driver.getReplacedBy() == null && driver.isSupportedByLocalSystem())
             .toList();

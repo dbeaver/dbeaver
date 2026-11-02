@@ -45,6 +45,11 @@ import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
+import org.jkiss.dbeaver.ui.app.standalone.update.install.MacDmgInstaller;
+import org.jkiss.dbeaver.ui.app.standalone.update.install.PlatformInstaller;
+import org.jkiss.dbeaver.ui.app.standalone.update.install.WinExeInstaller;
+import org.jkiss.dbeaver.ui.app.standalone.update.install.WinZipInstaller;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -301,14 +306,22 @@ public class VersionUpdateDialog extends Dialog {
                 Path file;
 
                 try {
-                    var url = downloadUrl.toString();
-                    var filename = url.substring(url.lastIndexOf('/') + 1);
                     Path globalTempFolder = DBWorkbench.getPlatform().getTempFolder(monitor, UPDATES_FOLDER).getParent();
                     if (globalTempFolder == null) {
                         throw new IOException("Could not resolve the parent directory of the DBeaver temporary folder");
                     }
-                    folder = globalTempFolder.resolveSibling(UPDATES_FOLDER);
-                    Files.createDirectories(folder);
+
+                    var updatesFolder = globalTempFolder.resolveSibling(UPDATES_FOLDER);
+                    Files.createDirectories(updatesFolder);
+                    if (installer instanceof WinZipInstaller) {
+                        // Concurrent downloads must not overwrite the archive that another helper is preparing.
+                        folder = Files.createTempDirectory(updatesFolder, "zip-");
+                    } else {
+                        folder = updatesFolder;
+                    }
+
+                    var url = downloadUrl.toString();
+                    var filename = url.substring(url.lastIndexOf('/') + 1);
                     file = folder.resolve(filename);
 
                     log.debug("Downloading installation file to " + file);
@@ -331,6 +344,14 @@ public class VersionUpdateDialog extends Dialog {
                     CoreMessages.dialog_version_update_downloader_title,
                     NLS.bind(CoreMessages.dialog_version_update_downloader_confirm_install, GeneralUtils.getProductName())
                 )) {
+                    try {
+                        monitor.subTask(CoreApplicationMessages.version_update_prepare);
+                        installer.prepare(file, monitor);
+                    } catch (InterruptedException e) {
+                        return Status.CANCEL_STATUS;
+                    } catch (Exception e) {
+                        return GeneralUtils.makeErrorStatus(CoreApplicationMessages.version_update_error_prepare, e);
+                    }
                     var workbench = PlatformUI.getWorkbench();
                     var workbenchWindow = UIUtils.getActiveWorkbenchWindow();
 
@@ -384,9 +405,13 @@ public class VersionUpdateDialog extends Dialog {
 
     @Nullable
     private static PlatformInstaller getPlatformInstaller() {
+        var dist = System.getProperty(DBeaverApplication.PROP_DISTRIBUTION_TYPE);
         return switch (Platform.getOS()) {
-            case Platform.OS_WIN32 -> new WindowsInstaller();
-            case Platform.OS_MACOSX -> new MacintoshInstaller();
+            case Platform.OS_WIN32 -> switch (dist) {
+                case "zip" -> new WinZipInstaller();
+                case null, default -> new WinExeInstaller();
+            };
+            case Platform.OS_MACOSX -> new MacDmgInstaller();
             default -> null;
         };
     }
@@ -415,31 +440,5 @@ public class VersionUpdateDialog extends Dialog {
             "&os=" + os +
             "&arch=" + Platform.getOSArch() +
             (dist == null ? "" : "&dist=" + dist);
-    }
-
-    private sealed interface PlatformInstaller {
-        void run(@NotNull Path executable, @NotNull Log log) throws Exception;
-    }
-
-    private static final class WindowsInstaller implements PlatformInstaller {
-        @Override
-        public void run(@NotNull Path executable, @NotNull Log log) throws Exception {
-            final String path = executable.toString();
-            Runtime.getRuntime().exec(new String[]{
-                "cmd.exe", "/C",
-                "start", "/W", path, "&&", "del", path,
-            });
-        }
-    }
-
-    private static final class MacintoshInstaller implements PlatformInstaller {
-        @Override
-        public void run(@NotNull Path executable, @NotNull Log log) throws Exception {
-            final String path = CommonUtils.escapeBourneShellString(executable.toString());
-            Runtime.getRuntime().exec(new String[]{
-                "/bin/sh", "-c",
-                "open -F -W " + path + " && rm " + path
-            });
-        }
     }
 }

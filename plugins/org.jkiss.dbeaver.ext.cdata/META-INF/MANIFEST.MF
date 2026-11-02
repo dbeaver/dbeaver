@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver CData Model
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.cdata;singleton:=true
-Bundle-Version: 1.0.12.qualifier
-Bundle-Release-Date: 20261102
+Bundle-Version: 1.0.13.qualifier
+Bundle-Release-Date: 20261116
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.jdbc,
  org.jkiss.dbeaver.registry,
@@ -11,7 +11,6 @@ Require-Bundle: org.jkiss.dbeaver.model,
 Bundle-Vendor: DBeaver Corp
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
-DBeaver-Experimental: true
 Bundle-Activator: org.jkiss.dbeaver.ext.cdata.internal.CDataActivator
 Export-Package: org.jkiss.dbeaver.ext.cdata,
  org.jkiss.dbeaver.ext.cdata.model,

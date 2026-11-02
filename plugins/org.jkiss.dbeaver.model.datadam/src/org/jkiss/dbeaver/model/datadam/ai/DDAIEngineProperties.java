@@ -1,0 +1,104 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.model.datadam.ai;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIClientResponses;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
+
+public class DDAIEngineProperties extends OpenAIProperties {
+    public static final String ENV_API_KEY = "DBEAVER_AI_DATADAM_API_KEY";
+    public static final String ENV_BASE_URL = "DBEAVER_AI_DATADAM_BASE_URL";
+    public static final String ENV_MODEL = "DBEAVER_AI_DATADAM_MODEL";
+
+    public static final String DEFAULT_ENDPOINT = "https://ai.datadam.cloud/v1/";
+    public static final String DEFAULT_MODEL = "datadam-fast";
+
+    private static final String DATADAM_API_TOKEN = "datadam.token";
+    private static final int DEFAULT_CONTEXT_WINDOW_SIZE = 128_000;
+
+    @Override
+    public boolean supportsDeviceAuthorization() {
+        return false;
+    }
+
+    @NotNull
+    @Override
+    public String getBaseUrl() {
+        String baseUrl = super.getBaseUrl();
+        if (OpenAIClientResponses.OPENAI_ENDPOINT.equals(baseUrl)) {
+            return DEFAULT_ENDPOINT;
+        }
+        return baseUrl;
+    }
+
+    @Nullable
+    @Override
+    public String getModel() {
+        String model = super.getModel();
+        if (CommonUtils.isEmpty(model)) {
+            return DEFAULT_MODEL;
+        }
+        return model;
+    }
+
+    @Nullable
+    @Override
+    public Integer getContextWindowSize() {
+        Integer contextWindowSize = super.getContextWindowSize();
+        return contextWindowSize != null ? contextWindowSize : DEFAULT_CONTEXT_WINDOW_SIZE;
+    }
+
+    @Override
+    public boolean isTokenRequired() {
+        return true;
+    }
+
+    @NotNull
+    @Override
+    protected String getApiTokenSecretId() {
+        return DATADAM_API_TOKEN;
+    }
+
+    @NotNull
+    @Override
+    public List<String> getEnvironmentVariables() {
+        return List.of(ENV_API_KEY, ENV_BASE_URL, ENV_MODEL);
+    }
+
+    @Nullable
+    @Override
+    protected String getEnvironmentModel() {
+        return getEnvironmentValue(ENV_MODEL);
+    }
+
+    @Nullable
+    @Override
+    public String getEffectiveToken() {
+        return resolveEnvironmentValue(getToken(), ENV_API_KEY);
+    }
+
+    @NotNull
+    @Override
+    public String getEffectiveBaseUrl() {
+        return resolveEnvironmentValue(getBaseUrl(), ENV_BASE_URL);
+    }
+}

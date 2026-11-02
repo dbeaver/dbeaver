@@ -3,7 +3,7 @@
 <schema targetNamespace="org.jkiss.dbeaver.model" xmlns="http://www.w3.org/2001/XMLSchema">
 <annotation>
       <appInfo>
-         <meta.schema plugin="org.jkiss.dbeaver.model" id="org.jkiss.dbeaver.app.config" name="%extension-point.org.jkiss.dbeaver.app.config.name"/>
+         <meta.schema plugin="org.jkiss.dbeaver.model" id="org.jkiss.dbeaver.app.config" name="Application configuration"/>
       </appInfo>
    </annotation>
 
