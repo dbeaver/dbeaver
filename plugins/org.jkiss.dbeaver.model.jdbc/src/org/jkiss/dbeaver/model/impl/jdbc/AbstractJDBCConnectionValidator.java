@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
-import java.util.Locale;
 import java.util.Properties;
+import java.util.regex.Pattern;
 
 /**
  * Rejects restricted parameter names without invoking a driver or interpreting its URL grammar.
@@ -82,9 +82,9 @@ public abstract class AbstractJDBCConnectionValidator implements JDBCConnectionV
     }
 
     private static void checkRestrictedNames(@NotNull String text, @NotNull List<String> restrictedProperties) throws DBCException {
-        String lowerText = text.toLowerCase(Locale.ROOT);
         for (String name : restrictedProperties) {
-            if (lowerText.contains(name.toLowerCase(Locale.ROOT))) {
+            var pattern = Pattern.compile("\\b" + Pattern.quote(name) + "\\b", Pattern.CASE_INSENSITIVE);
+            if (pattern.matcher(text).find()) {
                 throw new DBCException(
                     "JDBC driver parameter '" + name + "' is not allowed while driver parameter sanitization is enabled");
             }

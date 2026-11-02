@@ -41,7 +41,7 @@ public class AbstractJDBCConnectionValidatorTest extends DBeaverUnitTest {
     @ParameterizedTest
     @ValueSource(strings = {
         "loadExtension", "remoteScript", "%6coadExtension", "remote%53cript",
-        "loadExtension%", "%ggremoteScript", "loadExtension%2"
+        "loadExtension%", "%gg-remoteScript", "loadExtension%2"
     })
     public void rejectsConfiguredNamesInUrlsKeysAndValues(@NotNull String name) {
         String text = "prefix-" + name.toUpperCase(Locale.ROOT) + "-suffix";
@@ -62,7 +62,7 @@ public class AbstractJDBCConnectionValidatorTest extends DBeaverUnitTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"example%password", "%", "%2", "%gg"})
+    @ValueSource(strings = {"example%password", "%", "%2", "%gg", "%ggremoteScript"})
     public void ignoresMalformedPercentEscapesWithoutMutation(@NotNull String value) throws DBCException {
         Properties properties = new Properties();
         properties.setProperty("password", value);
