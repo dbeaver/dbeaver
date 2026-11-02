@@ -94,11 +94,25 @@ public class DDDesktopAccessService {
 
     @NotNull
     public String getAccessTokenForResource(@NotNull URI resource) throws DBException {
-        operationLock.readLock().lock();
         try {
-            return tokenManager.getAccessTokenForResource(resource);
-        } finally {
-            operationLock.readLock().unlock();
+            operationLock.readLock().lock();
+            try {
+                return tokenManager.getAccessTokenForResource(resource);
+            } finally {
+                operationLock.readLock().unlock();
+            }
+        } catch (DBException e) {
+            if (tokenManager.getStatus() == DDDesktopTokenManager.Status.INVALID_TOKEN) {
+                operationLock.writeLock().lock();
+                try {
+                    if (tokenManager.getStatus() == DDDesktopTokenManager.Status.INVALID_TOKEN) {
+                        setKeyBundle(null);
+                    }
+                } finally {
+                    operationLock.writeLock().unlock();
+                }
+            }
+            throw e;
         }
     }
 
