@@ -687,6 +687,7 @@
          <attribute name="remove" type="boolean"/>
          <attribute name="changeFolderType" type="string"/>
          <attribute name="changeFolderLabel" type="string"/>
+         <attribute name="changeProperty" type="string"/>
       </complexType>
    </element>
 

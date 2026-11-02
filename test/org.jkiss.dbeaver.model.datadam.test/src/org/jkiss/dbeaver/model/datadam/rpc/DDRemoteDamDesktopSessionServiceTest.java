@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam;
+package org.jkiss.dbeaver.model.datadam.rpc;
 
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
@@ -41,7 +41,8 @@ import java.util.concurrent.atomic.AtomicReference;
 class DDRemoteDamDesktopSessionServiceTest {
     private final DDDesktopAccessService access = Mockito.mock(DDDesktopAccessService.class);
     private final DDRemoteDamDesktopChannel channel = Mockito.mock(DDRemoteDamDesktopChannel.class);
-    private final DDRemoteDamDesktopSessionService service = new DDRemoteDamDesktopSessionService(access, channel);
+    private final DDRemoteDamDesktopSessionService service = new DDRemoteDamDesktopSessionService(
+        access, channel, Mockito.mock(DDDesktopRpcRegistrationRegistry.class));
     private final AtomicReference<DDRemoteDamChannelStatus> status = new AtomicReference<>(
         new DDRemoteDamChannelStatus(DDRemoteDamChannelState.DISCONNECTED, null));
 
@@ -127,7 +128,7 @@ class DDRemoteDamDesktopSessionServiceTest {
         Mockito.verify(channel).close();
         Mockito.verify(channel).start();
         Mockito.verify(access).removeAccessListener(listener);
-        Mockito.verify(channel, Mockito.never()).observeState(Mockito.any());
+        Mockito.verify(channel).observeState(Mockito.any());
     }
 
     @Test
@@ -142,7 +143,7 @@ class DDRemoteDamDesktopSessionServiceTest {
         MessagingRpcEndpoint endpoint = service.getRpc();
         Assertions.assertSame(endpoint, service.getRpc());
         Mockito.verify(channel, Mockito.never()).subscribe(Mockito.anyString(), Mockito.any());
-        Mockito.verify(channel, Mockito.never()).observeState(Mockito.any());
+        Mockito.verify(channel).observeState(Mockito.any());
         Mockito.verify(access, Mockito.never()).getAccessTokenForResource(Mockito.any());
     }
 

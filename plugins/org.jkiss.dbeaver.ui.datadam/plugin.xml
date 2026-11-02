@@ -28,6 +28,21 @@
             type="org.jkiss.dbeaver.model.navigator.DBNProject"/>
     </extension>
 
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.datadam.mcp.DDMcpConnectionSettingsPropertyTester"
+            id="org.jkiss.dbeaver.ui.datadam.mcp.DDMcpConnectionSettingsPropertyTester"
+            namespace="org.jkiss.dbeaver.ui.datadam.mcp"
+            properties="enabled"
+            type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator
+            class="org.jkiss.dbeaver.ui.ai.preferences.PrefPageDataSourceAI"
+            uiClass="org.jkiss.dbeaver.ui.datadam.mcp.DDMcpConnectionConfigurator"/>
+    </extension>
+
     <extension point="org.eclipse.core.expressions.definitions">
         <definition id="org.jkiss.dbeaver.ui.datadam.projectSync.canShareProject">
             <with variable="selection">
