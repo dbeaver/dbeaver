@@ -147,6 +147,7 @@ public class DDDesktopAccessService {
         try {
             notifyAccessListeners(DDDesktopAccessListener::accessChanging);
             tokenManager.signIn(accountUrl, storageUrl, monitor);
+            loaded = true;
             setKeyBundle(null);
             updateKeyBundle(DDKeyStore.load());
             log.debug("Signed in to DataDam desktop access");
@@ -187,6 +188,7 @@ public class DDDesktopAccessService {
         try {
             notifyAccessListeners(DDDesktopAccessListener::accessChanging);
             tokenManager.signOut();
+            loaded = true;
             setKeyBundle(null);
             DDKeyStore.clear();
             log.debug("Signed out of DataDam desktop access");
