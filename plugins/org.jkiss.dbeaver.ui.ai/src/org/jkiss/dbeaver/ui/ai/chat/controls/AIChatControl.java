@@ -619,7 +619,6 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         }
         DBRRunnable command = pendingCommand;
         pendingCommand = null;
-        Throwable error = result.getException();
         try {
             if (result.isOK()) {
                 if (command == null) {
@@ -629,7 +628,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                 }
             }
         } catch (DBException e) {
-            error = e;
+            result = GeneralUtils.makeExceptionStatus(e);
         } finally {
             dataSourceInitializationPending = false;
             chatSession.setBusy(false);
@@ -637,13 +636,13 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         if (result.matches(IStatus.CANCEL)) {
             return;
         }
-        if (error != null) {
+        if (!result.isOK()) {
             DBWorkbench.getPlatformUI().showError(
                 AIChatMessagesUI.ai_chat_initialization_error,
                 AIChatMessagesUI.ai_chat_initialization_error_message,
-                error
+                result
             );
-        } else if (result.isOK() && command != null) {
+        } else if (command != null) {
             executeCommand(command);
         }
     }
