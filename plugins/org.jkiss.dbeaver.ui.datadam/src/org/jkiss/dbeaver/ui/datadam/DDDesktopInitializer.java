@@ -23,7 +23,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
-import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
@@ -47,13 +46,13 @@ public class DDDesktopInitializer implements IWorkbenchWindowInitializer {
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
-                    DDDesktopAccessService.getInstance().load();
+                    boolean tokenReady = DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor);
                     DDProjectUIManager.getInstance();
+                    return tokenReady ? Status.OK_STATUS : Status.CANCEL_STATUS;
                 } catch (DBException e) {
                     log.debug("DataDam Desktop initialization failed", e);
                     return Status.CANCEL_STATUS;
                 }
-                return Status.OK_STATUS;
             }
         };
         startupJob.setSystem(true);
