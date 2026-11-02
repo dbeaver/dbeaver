@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterRegistry;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +71,11 @@ public class SQLFormatterConfigurationRegistry implements SQLFormatterRegistry
     }
 
     public List<SQLFormatterDescriptor> getFormatters() {
-        return new ArrayList<>(formatters);
+        List<SQLFormatterDescriptor> availableFormatters = new ArrayList<>(formatters);
+        if (DBWorkbench.isMultiuserOrDistributed()) {
+            availableFormatters.removeIf(formatter -> !formatter.supportsMultiuserMode());
+        }
+        return availableFormatters;
     }
 
     public SQLFormatterDescriptor getFormatter(String id) {
