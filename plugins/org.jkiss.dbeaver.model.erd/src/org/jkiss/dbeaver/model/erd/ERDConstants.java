@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
  * ERD constants
  */
 public class ERDConstants {
-
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.model.erd";
 
     public static final String PREF_ATTR_VISIBILITY = "erd.attr.visibility";
     public static final String PREF_ATTR_STYLES = "erd.attr.styles";

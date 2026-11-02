@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam;
+package org.jkiss.dbeaver.model.datadam.rpc;
 
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
@@ -25,12 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
-import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
@@ -43,10 +38,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Timeout(15)
-class DDRemoteDamDesktopSessionServiceTest extends DBeaverUnitTest {
+class DDRemoteDamDesktopSessionServiceTest {
     private final DDDesktopAccessService access = Mockito.mock(DDDesktopAccessService.class);
     private final DDRemoteDamDesktopChannel channel = Mockito.mock(DDRemoteDamDesktopChannel.class);
-    private final DDRemoteDamDesktopSessionService service = new DDRemoteDamDesktopSessionService(access, channel);
+    private final DDRemoteDamDesktopSessionService service = new DDRemoteDamDesktopSessionService(
+        access, channel, Mockito.mock(DDDesktopRpcRegistrationRegistry.class));
     private final AtomicReference<DDRemoteDamChannelStatus> status = new AtomicReference<>(
         new DDRemoteDamChannelStatus(DDRemoteDamChannelState.DISCONNECTED, null));
 
@@ -132,7 +128,7 @@ class DDRemoteDamDesktopSessionServiceTest extends DBeaverUnitTest {
         Mockito.verify(channel).close();
         Mockito.verify(channel).start();
         Mockito.verify(access).removeAccessListener(listener);
-        Mockito.verify(channel, Mockito.never()).observeState(Mockito.any());
+        Mockito.verify(channel).observeState(Mockito.any());
     }
 
     @Test
@@ -147,7 +143,7 @@ class DDRemoteDamDesktopSessionServiceTest extends DBeaverUnitTest {
         MessagingRpcEndpoint endpoint = service.getRpc();
         Assertions.assertSame(endpoint, service.getRpc());
         Mockito.verify(channel, Mockito.never()).subscribe(Mockito.anyString(), Mockito.any());
-        Mockito.verify(channel, Mockito.never()).observeState(Mockito.any());
+        Mockito.verify(channel).observeState(Mockito.any());
         Mockito.verify(access, Mockito.never()).getAccessTokenForResource(Mockito.any());
     }
 
