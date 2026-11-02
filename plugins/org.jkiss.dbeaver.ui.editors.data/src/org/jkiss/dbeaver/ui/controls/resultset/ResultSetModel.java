@@ -513,8 +513,7 @@ public class ResultSetModel implements DBDResultSetModel {
         Object valueToEdit = currentValue;
 
         // Check for changes
-        if (!attr.getDataKind().isComplex() && !(value instanceof DBDValue) && isSameTextValue(currentValue, value)
-        ) {
+        if (!attr.getDataKind().isComplex() && !(value instanceof DBDValue) && isSameTextValue(currentValue, value)) {
             return false;
         }
 
@@ -573,12 +572,13 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     private boolean isOriginalValueRestored(
-            @NotNull DBDAttributeBinding attr,
-            @NotNull DBDAttributeBinding topAttribute,
-            @NotNull ResultSetRow row,
-            @Nullable Object value) {
+        @NotNull DBDAttributeBinding attr,
+        @NotNull DBDAttributeBinding topAttribute,
+        @NotNull ResultSetRow row,
+        @Nullable Object value
+    ) {
         if (attr != topAttribute || attr.getDataKind().isComplex() || value instanceof DBDValue
-                || !row.isChanged(topAttribute)) {
+            || !row.isChanged(topAttribute)) {
             return false;
         }
         Object originalValue = row.getChange(topAttribute);
