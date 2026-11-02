@@ -213,15 +213,18 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
 
             var control = builder.build(context, parent, row);
 
-            if (builder.widthHint != SWT.DEFAULT && builder.heightHint != SWT.DEFAULT) {
-                data.widthHint = builder.widthHint;
-                data.heightHint = builder.heightHint;
-            } else {
+            if (builder.widthHint == SWT.DEFAULT || builder.heightHint == SWT.DEFAULT) {
                 var size = builder.preferredSize(control);
                 if (size != null) {
                     data.widthHint = size.x;
                     data.heightHint = size.y;
                 }
+            }
+            if (builder.widthHint != SWT.DEFAULT) {
+                data.widthHint = builder.widthHint;
+            }
+            if (builder.heightHint != SWT.DEFAULT) {
+                data.heightHint = builder.heightHint;
             }
 
             // Indent the first control if needed

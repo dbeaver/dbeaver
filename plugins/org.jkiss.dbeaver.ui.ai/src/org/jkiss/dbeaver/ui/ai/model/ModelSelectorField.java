@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -66,6 +67,8 @@ public class ModelSelectorField {
     private boolean disableModifyListener = false;
     private List<AIModel> loadedModels;
     private boolean fieldEnabled = true;
+    @Nullable
+    private String environmentModel;
     private boolean refreshEnabled = true;
     @Nullable
     private String refreshDisabledMessage;
@@ -78,7 +81,7 @@ public class ModelSelectorField {
         this.combo.setLayoutData(builder.gridData);
         this.combo.addModifyListener(e -> {
             String newText = combo.getText();
-            if (disableModifyListener || newText.equals(selectedModelName)) {
+            if (disableModifyListener || environmentModel != null || newText.equals(selectedModelName)) {
                 return;
             }
             selectedModelName = newText;
@@ -130,10 +133,24 @@ public class ModelSelectorField {
     }
 
     public void setSelectedModel(@Nullable String model) {
-        if (model == null || model.isBlank()) {
+        if (environmentModel != null) {
+            selectedModelName = model;
+            selectedModel = model == null ? null : getModel(model);
             return;
         }
-        combo.setText(model);
+        combo.setText(model == null ? "" : model);
+    }
+
+    public void setEnvironmentModel(@Nullable String model) {
+        environmentModel = model;
+        disableModifyListener = true;
+        try {
+            // display overrides without changing the model saved in the profile
+            combo.setText(model == null ? CommonUtils.notEmpty(selectedModelName) : model);
+        } finally {
+            disableModifyListener = false;
+        }
+        setEnabled(model == null);
     }
 
     public void refreshModelListSilently(boolean refresh) {

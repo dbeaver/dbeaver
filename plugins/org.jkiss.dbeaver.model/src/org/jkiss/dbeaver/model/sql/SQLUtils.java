@@ -526,6 +526,11 @@ public final class SQLUtils {
     }
 
     @NotNull
+    public static String quoteString(@NotNull DBPObject object, @NotNull String string) {
+        return getDialectFromObject(object).getQuotedString(string);
+    }
+
+    @NotNull
     public static String quoteString(@NotNull DBSObject object, @NotNull String string) {
         return quoteString(object.getDataSource(), string);
     }

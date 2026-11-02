@@ -94,7 +94,7 @@ final class CDataLicenseParser {
             } else {
                 status = trial ? CDataLicenseStatus.TRIAL_ACTIVE : CDataLicenseStatus.PURCHASED_ACTIVE;
             }
-            return new CDataDriverLicense(status, "", null, status.isExpired() ? null : remainingDays);
+            return new CDataDriverLicense(status, "", null, status.isExpired() ? null : remainingDays, today);
         } catch (JsonParseException | DateTimeException | ArithmeticException e) {
             return new CDataDriverLicense(fallback, "", null);
         }

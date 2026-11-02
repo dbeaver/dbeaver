@@ -49,6 +49,10 @@ public abstract class ProductConfigWizardPage extends WizardPage {
         return true;
     }
 
+    public boolean isApplicableToFeatureUpdate() {
+        return false;
+    }
+
     public void loadSettings() {
         // do nothing by default
     }

@@ -66,4 +66,10 @@ public interface SQLQueryCompletionItemVisitor<R> {
      */
     @Nullable
     R visitSpecialText(@NotNull SQLSpecialTextCompletionItem specialText);
+
+    /**
+     * Visit method for script variables expansion
+     */
+    @Nullable
+    R visitScriptVariable(@NotNull SQLScriptVariableCompletionItem scriptVariable);
 }

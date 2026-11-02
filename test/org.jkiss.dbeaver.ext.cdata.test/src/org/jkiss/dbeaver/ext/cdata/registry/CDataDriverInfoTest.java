@@ -21,9 +21,28 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 public class CDataDriverInfoTest extends DBeaverUnitTest {
+    @Test
+    public void annualPriceUsesCatalogValue() {
+        var driver = JSONUtils.GSON.fromJson("""
+            {"annual_price_usd": "249.50"}
+            """, CDataDriverInfo.class);
+
+        Assertions.assertEquals(new BigDecimal("249.50"), driver.annualPriceUsd());
+    }
+
+    @Test
+    public void annualPriceIsAbsentInOlderCatalogs() {
+        for (String json : List.of("{}", "{\"annual_price_usd\": null}")) {
+            var driver = JSONUtils.GSON.fromJson(json, CDataDriverInfo.class);
+
+            Assertions.assertNull(driver.annualPriceUsd());
+        }
+    }
+
     @Test
     public void documentationLinkUsesSourceAndVersionFromOrderSku() {
         var salesforce = JSONUtils.GSON.fromJson("""

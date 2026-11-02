@@ -362,6 +362,26 @@ public class FireBirdMetaModel extends GenericMetaModel
         return JDBCUtils.safeGetBytes(dbResult, "RDB$VIEW_BLR") == null ? 0 : 1;
     }
 
+    @Override
+    @NotNull
+    public JDBCStatement prepareTableColumnLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {
+        if (forTable instanceof FireBirdTableBase table) {
+            // Read domains before opening the column result set so the column constructors don't open another metadata session.
+            table.setColumnDomainTypes(FireBirdUtils.readColumnDomainTypes(session, forTable));
+        } else if (forTable == null) {
+            // Bulk column loading constructs columns for many tables from one result set.
+            // Populate their domain caches first to avoid a metadata session per table.
+            Map<String, Map<String, String>> domainsByTable = FireBirdUtils.readAllColumnDomainTypes(session);
+            for (Map.Entry<String, Map<String, String>> entry : domainsByTable.entrySet()) {
+                GenericTableBase cachedTable = owner.getTableCache().getCachedObject(entry.getKey());
+                if (cachedTable instanceof FireBirdTableBase table) {
+                    table.setColumnDomainTypes(entry.getValue());
+                }
+            }
+        }
+        return super.prepareTableColumnLoadStatement(session, owner, forTable);
+    }
+
 /*
     @Override
     public JDBCStatement prepareTableColumnLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTableBase forTable) throws SQLException {

@@ -16,71 +16,58 @@
  */
 package org.jkiss.dbeaver.ui.datadam.project.handler;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncService;
-import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncSnapshot;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.SyncResult;
+import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncUIManager;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictDialog.Choice;
+import org.jkiss.dbeaver.ui.datadam.project.job.DDProjectSynchronizationJob;
 
-public class DDProjectUpdateHandler extends AbstractHandler {
-    @Nullable
+public class DDProjectUpdateHandler extends DDProjectHandler<DDProjectSynchronizationJob> {
+    @NotNull
     @Override
-    public Object execute(@NotNull ExecutionEvent event) {
-        DBPProject project = NavigatorUtils.getSelectedProject(
-            HandlerUtil.getCurrentSelection(event), HandlerUtil.getActivePart(event));
-        if (project == null) {
-            return null;
+    protected DDProjectSynchronizationJob createJob(@NotNull ExecutionEvent event, @NotNull DBPProject project) {
+        return new DDProjectSynchronizationJob(project);
+    }
+
+    @Override
+    protected void onSuccess(@NotNull DDProjectSynchronizationJob job) {
+        var status = job.getOperationResult();
+        if (status == null) {
+            return;
         }
-        DDProjectSyncUIManager ddUIManager = DDProjectSyncUIManager.getInstance();
-        if (!ddUIManager.isDDEnabled()) {
-            return null;
+        switch (status.status()) {
+            case UP_TO_DATE -> showMessage(DDTrackingUIMessages.project_sync_update_success);
+            case CONFLICT -> resolveConflict(status.project());
+            default ->
+                showError(DDTrackingUIMessages.project_sync_update_failed,
+                    new DBException("Project synchronization ended with status: " + status.status()));
         }
-        DDProjectSyncService service = ddUIManager.getService();
-        new AbstractJob(DDTrackingUIMessages.project_sync_update_job) {
-            @NotNull
-            @Override
-            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-                try {
-                    DDProjectSyncSnapshot snapshot = service.getProjectSyncSnapshot(project);
-                    switch (snapshot.change()) {
-                        case UNCHANGED -> ddUIManager.showMessage(
-                            DDTrackingUIMessages.project_sync_update_unchanged, false);
-                        case LOCAL -> {
-                            try {
-                                service.pushFiles(project, snapshot.binding(), snapshot.preparedFiles());
-                                ddUIManager.showMessage(DDTrackingUIMessages.project_sync_push_success, false);
-                            } catch (DBException e) {
-                                ddUIManager.showError(DDTrackingUIMessages.project_sync_push_failed, e);
-                            }
-                        }
-                        case SERVER -> {
-                            try {
-                                service.pullFiles(project, snapshot.binding(), snapshot.serverRevision());
-                                ddUIManager.showMessage(DDTrackingUIMessages.project_sync_pull_success, false);
-                            } catch (DBException e) {
-                                ddUIManager.showError(DDTrackingUIMessages.project_sync_pull_failed, e);
-                            }
-                        }
-                        case CONFLICT -> throw new DBException(DDTrackingUIMessages.project_sync_update_conflict);
-                        default -> throw new DBException("Unsupported project synchronization state: " + snapshot.change());
-                    }
-                } catch (DBException e) {
-                    ddUIManager.showError(DDTrackingUIMessages.project_sync_update_failed, e);
-                }
-                return Status.OK_STATUS;
+    }
+
+    private void resolveConflict(@NotNull DBPProject project) {
+        try {
+            Choice choice = uiManager.openConflictDialog(UIUtils.getActiveWorkbenchShell(), project);
+            if (choice == null) {
+                return;
             }
-        }.schedule();
-        return null;
+            var result = uiManager.applyConflictChoice(project, choice);
+            if (!result.failures().isEmpty()) {
+                var error = result.failures().get(0).error();
+                showError(error.getMessage(), new DBException(error.getMessage(), error.getException()));
+            } else if (choice == Choice.UNBIND && !result.canceled()) {
+                showMessage(DDTrackingUIMessages.project_sync_unbind_success);
+            } else if (result.results().stream().anyMatch(value ->
+                value instanceof SyncResult sync
+                    && sync.status() == ProjectStatus.UP_TO_DATE)) {
+                showMessage(DDTrackingUIMessages.project_sync_update_success);
+            }
+        } catch (DBException e) {
+            showError(DDTrackingUIMessages.project_sync_revisions_failed, e);
+        }
     }
 }

@@ -34,11 +34,11 @@
         <keyword id="org.jkiss.dbeaver.ext.cdata.ui.keyword.pref.licenses" label="%keyword.org.jkiss.dbeaver.ext.cdata.ui.keyword.pref.licenses.label"/>
     </extension>
     <extension point="org.eclipse.ui.activities">
-        <activity id="dbeaver.activity.cdata" name="%cdata.activity.name">
+        <activity id="dbeaver.activity.commercialDrivers" name="%commercial_drivers.activity.name">
             <enabledWhen>
-                <test property="org.jkiss.dbeaver.app.config.isFeatureEnabled" value="cdata"/>
+                <test property="org.jkiss.dbeaver.app.config.isFeatureEnabled" value="commercial-drivers"/>
             </enabledWhen>
         </activity>
-        <activityPatternBinding activityId="dbeaver.activity.cdata" pattern="org\.jkiss\.dbeaver\.ext\.cdata.*"/>
+        <activityPatternBinding activityId="dbeaver.activity.commercialDrivers" pattern="org\.jkiss\.dbeaver\.ext\.cdata.*"/>
     </extension>
 </plugin>

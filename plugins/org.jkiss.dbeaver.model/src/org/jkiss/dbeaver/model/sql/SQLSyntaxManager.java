@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
 import java.util.LinkedHashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.StringTokenizer;
 
@@ -58,6 +59,8 @@ public class SQLSyntaxManager {
     private String catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
     @NotNull
     private String[] statementDelimiters = new String[0];
+    @NotNull
+    private String[] batchDelimiters = new String[0];
 
     private char escapeChar;
     private SQLScriptStatementDelimiterMode statementDelimiterMode;
@@ -91,6 +94,11 @@ public class SQLSyntaxManager {
     public String[] getStatementDelimiters()
     {
         return statementDelimiters;
+    }
+
+    @NotNull
+    public String[] getBatchDelimiters() {
+        return batchDelimiters;
     }
 
     public SQLScriptStatementDelimiterMode getStatementDelimiterMode() {
@@ -142,6 +150,7 @@ public class SQLSyntaxManager {
     public void init(@NotNull SQLDialect dialect, @NotNull DBPPreferenceStore preferenceStore)
     {
         this.statementDelimiters = new String[0];
+        this.batchDelimiters = new String[0];
         this.sqlDialect = dialect;
         this.preferenceStore = preferenceStore;
         this.identifierQuoteStrings = sqlDialect.getIdentifierQuoteStrings();
@@ -153,8 +162,18 @@ public class SQLSyntaxManager {
             String[] scriptDelimiters = sqlDialect.getScriptDelimiters();
             this.statementDelimiters = new String[scriptDelimiters.length];
             for (int i = 0; i < scriptDelimiters.length; i++) {
-                this.statementDelimiters[i] = scriptDelimiters[i].toLowerCase();
+                this.statementDelimiters[i] = scriptDelimiters[i].toLowerCase(Locale.ENGLISH);
             }
+            Set<String> normalizedBatchDelimiters = new LinkedHashSet<>();
+            for (String delimiter : sqlDialect.getBatchDelimiters()) {
+                if (!CommonUtils.isEmpty(delimiter)) {
+                    String normalizedDelimiter = delimiter.toLowerCase(Locale.ENGLISH);
+                    if (ArrayUtils.contains(this.statementDelimiters, normalizedDelimiter)) {
+                        normalizedBatchDelimiters.add(normalizedDelimiter);
+                    }
+                }
+            }
+            this.batchDelimiters = normalizedBatchDelimiters.toArray(String[]::new);
         }
 
         String extraDelimiters = CommonUtils.toString(preferenceStore.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER), SQLConstants.DEFAULT_STATEMENT_DELIMITER);

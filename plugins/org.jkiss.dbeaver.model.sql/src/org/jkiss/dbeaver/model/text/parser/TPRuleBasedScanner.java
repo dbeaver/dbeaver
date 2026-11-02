@@ -179,6 +179,18 @@ public class TPRuleBasedScanner implements TPCharacterScanner, TPTokenScanner, T
         return fOffset;
     }
 
+    public boolean isRangeEndAtLineEnd() {
+        if (fRangeEnd >= fDocument.getLength()) {
+            return true;
+        }
+        try {
+            char ch = fDocument.getChar(fRangeEnd);
+            return ch == '\r' || ch == '\n';
+        } catch (BadLocationException e) {
+            return false;
+        }
+    }
+
     @Override
     public char[][] getLegalLineDelimiters() {
         return fDelimiters;

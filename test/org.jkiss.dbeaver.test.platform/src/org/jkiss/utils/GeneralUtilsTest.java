@@ -21,6 +21,8 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -57,6 +59,61 @@ public class GeneralUtilsTest extends DBeaverUnitTest {
         }
     }
     
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "user@example.com",
+        "first.last+tag@example.co.uk",
+        "user_name@example-domain.com",
+        "USER@EXAMPLE.COM",
+        "user@sub.example.com",
+        "user@xn--bcher-kva.de",
+        "o'connor@example.com",
+        "!#$%&'*+/=?^_`{|}~-@example.com"
+    })
+    public void acceptsValidEmail(@NotNull String email) {
+        Assertions.assertTrue(GeneralUtils.isValidEmail(email));
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "",
+        "user",
+        "@example.com",
+        "user@",
+        "user@localhost",
+        "user@@example.com",
+        ".user@example.com",
+        "user.@example.com",
+        "first..last@example.com",
+        "user@.example.com",
+        "user@example..com",
+        "user@example.com.",
+        "user@-example.com",
+        "user@example-.com",
+        "user@exa_mple.com",
+        "first last@example.com",
+        "user@exa mple.com",
+        "user@example.com\nother@example.com",
+        "user@example.com\u0000",
+        " user@example.com",
+        "user@example.com ",
+        "name[1]@example.com",
+        "../../../@../../../../qqqqqwwwwwwwwwwwwwwwwwqqqqqqqqqq"
+    })
+    public void rejectsInvalidEmail(@NotNull String email) {
+        Assertions.assertFalse(GeneralUtils.isValidEmail(email));
+    }
+
+    @Test
+    public void enforcesEmailLengthLimits() {
+        String longestEmail = "a".repeat(64) + "@" + "b".repeat(63) + "." + "c".repeat(63) + "." + "d".repeat(61);
+        Assertions.assertEquals(254, longestEmail.length());
+        Assertions.assertTrue(GeneralUtils.isValidEmail(longestEmail));
+        Assertions.assertFalse(GeneralUtils.isValidEmail(longestEmail + "d"));
+        Assertions.assertFalse(GeneralUtils.isValidEmail("a".repeat(65) + "@example.com"));
+        Assertions.assertFalse(GeneralUtils.isValidEmail("user@" + "a".repeat(64) + ".com"));
+    }
+
     @NotNull
     private static String getVariableValue(@NotNull String name, @NotNull Date ts) {
         switch (name) {

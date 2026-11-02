@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.edit.DBEObjectMaker;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.edit.TestCommandContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
@@ -70,6 +71,14 @@ public class GenericBaseTableDDLTest extends DBeaverUnitTest {
 
     private DBEObjectMaker getManagerForClass(Class<?> objectClass) {
         return DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(objectClass, DBEObjectMaker.class);
+    }
+
+    @Test
+    public void uninitializedDataSourceHasNoDefaultInstance() {
+        Assertions.assertFalse(dataSource.hasDefaultInstance());
+        Assertions.assertThrows(IllegalStateException.class, dataSource::getDefaultInstance);
+        Assertions.assertTrue(dataSource.getAvailableInstances().isEmpty());
+        Assertions.assertNull(dataSource.getAdapter(DBCTransactionManager.class));
     }
 
     @Test

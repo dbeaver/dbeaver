@@ -43,7 +43,7 @@ public record AISchemaGenerationOptions(
             .withSendForeignKeys(sendForeignKeys)
             .withSendIndexes(sendIndexes)
             .withSendFullDDL(sendFullDDL)
-            .withSendFullDDL(sendReferences)
+            .withSendReferences(sendReferences)
             .withUseFQN(useFQN);
     }
 

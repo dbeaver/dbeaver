@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -62,6 +62,7 @@ import java.lang.reflect.Array;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
+import java.sql.Types;
 import java.util.*;
 import java.util.function.Function;
 import java.util.function.IntFunction;
@@ -398,6 +399,7 @@ public class PostgreUtils {
             return attr.getDataType();
         } else {
             DBRProgressMonitor monitor = session.getProgressMonitor();
+            PostgreDatabase lookedUpDatabase = null;
             if (type instanceof JDBCColumnMetaData cmd) {
                 try {
                     DBCEntityMetaData entityMetaData = cmd.getEntityMetaData();
@@ -417,10 +419,13 @@ public class PostgreUtils {
                         String databaseName = cmd.getCatalogName();
                         PostgreDatabase database = dataSource.getDatabase(databaseName);
                         if (database != null) {
+                            lookedUpDatabase = database;
                             String typeName = type.getTypeName();
                             if (PostgreUtils.isCompositeTypeName(typeName)) {
-                                // Type name in JDBCColumnMetaData can be fully qualified and quoted. Let's fix it for the better search in the getDataType() method
-                                String[] identifiers = SQLUtils.splitFullIdentifier(typeName, ".", dataSource.getSQLDialect().getIdentifierQuoteStrings(), false);
+                                // Type name in JDBCColumnMetaData can be fully qualified and quoted.
+                                // Normalize it for the lookup in getDataType().
+                                String[] identifiers = SQLUtils.splitFullIdentifier(
+                                    typeName, ".", dataSource.getSQLDialect().getIdentifierQuoteStrings(), false);
                                 if (!ArrayUtils.isEmpty(identifiers)) {
                                     typeName = identifiers[identifiers.length - 1];
                                     if (identifiers.length == 2) {
@@ -438,7 +443,8 @@ public class PostgreUtils {
                                     }
                                 }
                             }
-                            PostgreDataType dataType = database.getDataType(monitor, typeName);
+                            // JDBC can report a temporary row type that the metadata connection cannot resolve.
+                            PostgreDataType dataType = database.getDataType(monitor, typeName, type.getTypeID() != Types.STRUCT);
                             if (dataType != null) {
                                 return dataType;
                             }
@@ -451,8 +457,9 @@ public class PostgreUtils {
 
             String typeName = type.getTypeName();
             DBSInstance ownerInstance = session.getExecutionContext().getOwnerInstance();
-            if (ownerInstance instanceof PostgreDatabase pdb) {
-                PostgreDataType localDataType = pdb.getDataType(monitor, typeName);
+            if (ownerInstance instanceof PostgreDatabase pdb && pdb != lookedUpDatabase) {
+                PostgreDataType localDataType = pdb.getDataType(
+                    monitor, typeName, !(type instanceof JDBCColumnMetaData) || type.getTypeID() != Types.STRUCT);
                 if (localDataType != null) {
                     return localDataType;
                 }
@@ -888,8 +895,9 @@ public class PostgreUtils {
     }
 
     @NotNull
-    public static String getRealSchemaName(@NotNull PostgreDatabase database, @NotNull String name) {
-        return name.replace(PostgreConstants.USER_VARIABLE, database.getMetaContext().getActiveUser());
+    public static String getRealSchemaName(@NotNull PostgreExecutionContext executionContext, @NotNull String name) {
+        String activeUser = executionContext.getActiveUser();
+        return activeUser == null ? name : name.replace(PostgreConstants.USER_VARIABLE, activeUser);
     }
 
     /**

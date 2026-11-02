@@ -64,7 +64,6 @@ import java.util.concurrent.CompletableFuture;
 
 public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES extends OpenAIProperties>
     extends AbstractAIEngineConfigurator<ENGINE, PROPERTIES> {
-
     private static final String API_KEY_URL = "https://platform.openai.com/account/api-keys";
     protected String baseUrl;
     protected volatile String token = "";
@@ -172,6 +171,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
 
     protected void createAdditionalSettings(@NotNull Composite parent) {
         Composite advancedSettings = createAdvancedSettings(parent);
+        createEnvironmentSettings(propertyChangeListener);
         if (baseUrlText != null) {
             headersField = new HttpHeadersField(advancedSettings, () -> {
                 customHeaders = headersField.getHeaders();
@@ -259,13 +259,14 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                 .toList();
         }
         OpenAIProperties properties = new OpenAIProperties();
+        saveAdvancedSettings(properties);
         properties.setToken(currentToken);
         properties.setBaseUrl(currentBaseUrl);
         properties.setCustomHeaders(customHeaders);
         if (currentProperties != null) {
             properties.setTimeout(currentProperties.getTimeout());
         }
-        if (properties.isTokenRequired() && CommonUtils.isEmptyTrimmed(currentToken)) {
+        if (properties.isTokenRequired() && CommonUtils.isEmptyTrimmed(properties.getEffectiveToken())) {
             return Collections.emptyList();
         }
         try (OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)) {
@@ -328,6 +329,9 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         gd.widthHint = 150;
         tokenText.setLayoutData(gd);
         tokenText.addModifyListener(e -> {
+            if (isUpdatingEnvironmentControls()) {
+                return;
+            }
             token = tokenText.getText();
             settingsGeneration++;
             updateModelRefreshState();
@@ -353,6 +357,9 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         baseUrlText = new Text(parent, SWT.BORDER);
         baseUrlText.setData("label", baseUrlLabel);
         baseUrlText.addModifyListener(e -> {
+            if (isUpdatingEnvironmentControls()) {
+                return;
+            }
             baseUrl = baseUrlText.getText();
             settingsGeneration++;
             updateModelRefreshState();
@@ -434,7 +441,8 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         boolean account = isAccountAuthentication();
         String accountTokenPlaceholder = getAccountProviderName() + " account";
         if (account && !accountTokenPlaceholder.equals(tokenText.getText())) {
-            apiToken = tokenText.getText();
+            apiToken = token;
+            updateEnvironmentText(tokenText, token, null);
             tokenText.setText(accountTokenPlaceholder);
         } else if (!account) {
             tokenText.setText(CommonUtils.notEmpty(apiToken));
@@ -460,6 +468,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         if (baseUrlText != null) {
             setVisible(baseUrlText, !account);
         }
+        updateEnvironmentControls();
         accountText.getParent().layout(true, true);
     }
 
@@ -476,8 +485,9 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
     }
 
     protected boolean hasApiCredentials() {
-        return !CommonUtils.isEmptyTrimmed(token)
-            || baseUrlText != null && !OpenAIBaseProperties.isDefaultBaseUrl(baseUrl);
+        OpenAIProperties currentProperties = createConnectionProperties();
+        return !CommonUtils.isEmptyTrimmed(currentProperties.getEffectiveToken())
+            || baseUrlText != null && !currentProperties.isTokenRequired();
     }
 
     protected void updateModelRefreshState() {
@@ -686,4 +696,42 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         return authenticator.completeDeviceAuthorization(authorization, popupCompletion);
     }
 
+    @NotNull
+    protected OpenAIProperties createConnectionProperties() {
+        OpenAIProperties currentProperties = new OpenAIProperties();
+        currentProperties.setUseEnvVariables(useEnvVariables);
+        currentProperties.setToken(token);
+        currentProperties.setBaseUrl(baseUrl);
+        return currentProperties;
+    }
+
+    @Nullable
+    protected String getEnvironmentToken() {
+        return getEnvironmentValue(OpenAIProperties.ENV_API_KEY);
+    }
+
+    @Override
+    protected void updateEnvironmentControls() {
+        if (!isAccountAuthentication()) {
+            updateEnvironmentText(tokenText, token, getEnvironmentToken());
+        }
+        updateEnvironmentText(baseUrlText, baseUrl, isAccountAuthentication() ? null : getEnvironmentValue(OpenAIProperties.ENV_BASE_URL));
+        OpenAIProperties currentProperties = createConnectionProperties();
+        String environmentModel = currentProperties.isModelSelectionSupported() ? null : currentProperties.getEffectiveModel();
+        modelSelectorField.setEnvironmentModel(environmentModel);
+        String effectiveModel = environmentModel == null ? modelSelectorField.getSelectedModelName() : environmentModel;
+        temperatureText.setEnabled(OpenAIModels.getModelByName(effectiveModel)
+            .map(OpenAIModels::isTemperatureEditable)
+            .orElse(true));
+    }
+
+    @Override
+    protected void environmentSettingsChanged() {
+        super.environmentSettingsChanged();
+        settingsGeneration++;
+        updateModelRefreshState();
+        if (modelSelectorField != null) {
+            modelSelectorField.refreshModelListSilently(true);
+        }
+    }
 }

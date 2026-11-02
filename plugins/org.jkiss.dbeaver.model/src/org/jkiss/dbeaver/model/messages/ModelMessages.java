@@ -35,6 +35,11 @@ public class ModelMessages extends NLS {
     public static String model_connection_events_event_before_connect;
     public static String model_connection_events_event_before_disconnect;
 
+    public static String model_ddl_transaction_behavior_auto;
+    public static String model_ddl_transaction_behavior_immediate;
+    public static String model_ddl_transaction_behavior_transactional;
+    public static String model_ddl_transaction_behavior_ignored;
+
     public static String model_edit_execute_;
     public static String model_jdbc_read_database_meta_data;
 

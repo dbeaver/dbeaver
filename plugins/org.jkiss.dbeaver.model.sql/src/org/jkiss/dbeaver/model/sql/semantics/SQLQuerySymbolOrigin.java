@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,8 @@ public abstract class SQLQuerySymbolOrigin {
         void visitColumnNameFromRowsData(ColumnNameFromRowsData origin);
 
         void visitSyntaxBasedFromRowsData(SyntaxBasedFromRowsData origin);
+
+        void visitScriptVariableRef(ScriptVariableRef origin);
     }
 
     public abstract boolean isChained();
@@ -373,6 +375,34 @@ public abstract class SQLQuerySymbolOrigin {
         @Override
         public void apply(Visitor visitor) {
             visitor.visitSyntaxBasedFromRowsData(this);
+        }
+    }
+
+    /**
+     * Context is a scope for strictly variable name
+     */
+    public static class ScriptVariableRef extends SQLQuerySymbolOrigin {
+
+        @NotNull
+        private final SQLQueryRowsSourceContext rowsSourceContext;
+
+        public ScriptVariableRef(@NotNull SQLQueryRowsSourceContext rowsSourceContext) {
+            this.rowsSourceContext = rowsSourceContext;
+        }
+
+        @NotNull
+        public SQLQueryRowsSourceContext getRowsSourceContext() {
+            return this.rowsSourceContext;
+        }
+
+        @Override
+        public boolean isChained() {
+            return false;
+        }
+
+        @Override
+        public void apply(Visitor visitor) {
+            visitor.visitScriptVariableRef(this);
         }
     }
 }

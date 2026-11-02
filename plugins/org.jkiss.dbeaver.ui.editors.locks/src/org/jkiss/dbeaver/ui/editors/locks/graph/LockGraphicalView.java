@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,8 @@ import org.eclipse.gef.ui.parts.ScrollingGraphicalViewer;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraph;
 import org.jkiss.dbeaver.model.impl.admin.locks.LockGraphManager;
@@ -32,79 +34,69 @@ import org.jkiss.dbeaver.ui.editors.locks.manage.LockManagerViewer;
 
 public class LockGraphicalView extends ViewPart {
 
-	private static final LockGraph EMPTY_GRAPH = new LockGraph(null);
-	
-	private DefaultEditDomain editDomain;
+    private static final LockGraph EMPTY_GRAPH = new LockGraph(null);
 
-	private GraphicalViewer graphicalViewer;
+    private DefaultEditDomain editDomain;
 
-	
-	private final LockGraphManager graphManager;
-	private final LockManagerViewer viewer;
-	
-	public LockGraphicalView(LockManagerViewer viewer) {
-		super();
+    private GraphicalViewer graphicalViewer;
+
+
+    private final LockGraphManager graphManager;
+    private final LockManagerViewer viewer;
+
+    public LockGraphicalView(@NotNull LockManagerViewer viewer) {
+        super();
         this.viewer = viewer;
         this.graphManager = viewer.getGraphManager();
-	}
+    }
 
-	@Override
-	public void createPartControl(Composite parent) {
-		setEditDomain(new DefaultEditDomain(null));
-		setGraphicalViewer(new ScrollingGraphicalViewer());
-		getGraphicalViewer().createControl(parent);
-		getGraphicalViewer().setRootEditPart(new FreeformGraphicalRootEditPart());
-		getGraphicalViewer().setEditPartFactory(new LockGraphEditPartFactory());
-		getGraphicalViewer().setContextMenu(new ContextMenuProvider(graphicalViewer){
+    @Override
+    public void createPartControl(@NotNull Composite parent) {
+        setEditDomain(new DefaultEditDomain(null));
+        setGraphicalViewer(new ScrollingGraphicalViewer());
+        getGraphicalViewer().createControl(parent);
+        getGraphicalViewer().setRootEditPart(new FreeformGraphicalRootEditPart());
+        getGraphicalViewer().setEditPartFactory(new LockGraphEditPartFactory());
+        getGraphicalViewer().setContextMenu(new ContextMenuProvider(graphicalViewer) {
 
-			@Override
-			public void buildContextMenu(IMenuManager menu) {
-			    
-				menu.add(viewer.getKillAction());
-				
-			}
-			
-		});
-	}		
+            @Override
+            public void buildContextMenu(@NotNull IMenuManager menu) {
 
-	public void drawGraf(DBAServerLock selection)
-	{
-		if (selection == null) return;
-		
-		LockGraph g = selection == null ? EMPTY_GRAPH : graphManager.getGraph(selection);
-		
-		if (g == null) return;
-		
-/*
-		if (g != EMPTY_GRAPH) {
-			g.setLockManagerViewer(viewer);
-		}
-*/
+                menu.add(viewer.getKillAction());
 
-		getGraphicalViewer().setContents(g);
-		getGraphicalViewer().getControl().setBackground(ColorConstants.listBackground);
-	}
-	
-	protected DefaultEditDomain getEditDomain() {
-		return this.editDomain;
-	}
+            }
 
-	protected GraphicalViewer getGraphicalViewer() {
-		return this.graphicalViewer;
-	}
+        });
+    }
 
-	protected void setEditDomain(DefaultEditDomain anEditDomain) {
-		this.editDomain = anEditDomain;
-	}
+    public void drawGraf(@Nullable DBAServerLock selection) {
+        LockGraph graph = selection == null ? EMPTY_GRAPH : graphManager.getGraph(selection);
+        getGraphicalViewer().setContents(graph == null ? EMPTY_GRAPH : graph);
+        getGraphicalViewer().getControl().setBackground(ColorConstants.listBackground);
+    }
 
-	@Override
-	public void setFocus() {
-		getGraphicalViewer().getControl().setFocus();
-	}
+    @NotNull
+    protected DefaultEditDomain getEditDomain() {
+        return this.editDomain;
+    }
 
-	protected void setGraphicalViewer(GraphicalViewer viewer) {
-		getEditDomain().addViewer(viewer);
-		this.graphicalViewer = viewer;
-	}
+    @NotNull
+    protected GraphicalViewer getGraphicalViewer() {
+        return this.graphicalViewer;
+    }
+
+    protected void setEditDomain(@NotNull DefaultEditDomain anEditDomain) {
+        this.editDomain = anEditDomain;
+    }
+
+    @Override
+    public void setFocus() {
+        getGraphicalViewer().getControl().setFocus();
+    }
+
+    protected void setGraphicalViewer(@NotNull GraphicalViewer viewer) {
+        getEditDomain().addViewer(viewer);
+        this.graphicalViewer = viewer;
+    }
 
 }

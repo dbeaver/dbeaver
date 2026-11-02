@@ -139,8 +139,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private Set<String> supportedPageFields = new HashSet<>(Set.of(DBConstants.PROP_HOST, DBConstants.PROP_PORT, DBConstants.PROP_DATABASE));
     private final List<DBPNativeClientLocation> nativeClientHomes = new ArrayList<>();
     private final List<DriverFileSource> fileSources = new ArrayList<>();
+    @NotNull
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
+    @NotNull
     private final List<DBPDriverLibrary> origLibraries = new ArrayList<>();
+    @Nullable
+    private volatile IConfigurationElement[] pendingLibraryConfigs;
     private final List<ProviderPropertyDescriptor> mainPropertyDescriptors = new ArrayList<>();
     private final Set<ProviderPropertyDescriptor> providerPropertyDescriptors = new LinkedHashSet<>();
     private final List<OSDescriptor> supportedSystems = new ArrayList<>();
@@ -265,11 +269,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         for (DriverFileSource fs : copyFrom.fileSources) {
             this.fileSources.add(new DriverFileSource(fs));
         }
-        for (DBPDriverLibrary library : copyFrom.libraries) {
+        for (DBPDriverLibrary library : copyFrom.getDriverLibraries()) {
             if (library instanceof DriverLibraryAbstract dla) {
-                this.libraries.add(dla.copyLibrary(this));
+                getDriverLibraries().add(dla.copyLibrary(this));
             } else {
-                this.libraries.add(library);
+                getDriverLibraries().add(library);
             }
         }
         this.mainPropertyDescriptors.addAll(copyFrom.mainPropertyDescriptors);
@@ -347,13 +351,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DISTRIBUTED_MODE), true);
         this.custom = false;
 
-        for (IConfigurationElement lib : config.getChildren(RegistryConstants.TAG_FILE)) {
-            DriverLibraryAbstract library = DriverLibraryAbstract.createFromConfig(this, lib);
-            if (library != null) {
-                this.libraries.add(library);
-            }
-        }
-        this.origLibraries.addAll(this.libraries);
+        this.pendingLibraryConfigs = config.getChildren(RegistryConstants.TAG_FILE);
 
         String[] supportedConfigurationTypes = CommonUtils.split(
             config.getAttribute(RegistryConstants.ATTR_SUPPORTED_CONFIGURATION_TYPES), ",");
@@ -1025,15 +1023,39 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
     }
 
+    private void ensureLibrariesInitialized() {
+        if (pendingLibraryConfigs == null) {
+            return;
+        }
+        synchronized (this) {
+            IConfigurationElement[] configs = pendingLibraryConfigs;
+            if (configs == null) {
+                return;
+            }
+            List<DBPDriverLibrary> initialLibraries = new ArrayList<>(configs.length);
+            for (IConfigurationElement config : configs) {
+                DriverLibraryAbstract library = DriverLibraryAbstract.createFromConfig(this, config);
+                if (library != null) {
+                    initialLibraries.add(library);
+                }
+            }
+            libraries.addAll(initialLibraries);
+            origLibraries.addAll(initialLibraries);
+            pendingLibraryConfigs = null;
+        }
+    }
+
     @NotNull
     @Override
-    public List<? extends DBPDriverLibrary> getDriverLibraries() {
+    public List<DBPDriverLibrary> getDriverLibraries() {
+        ensureLibrariesInitialized();
         return libraries;
     }
 
-    public void setDriverLibraries(List<? extends DBPDriverLibrary> libs) {
+    public void setDriverLibraries(@NotNull List<? extends DBPDriverLibrary> libs) {
+        List<DBPDriverLibrary> driverLibraries = getDriverLibraries();
         List<DBPDriverLibrary> deletedLibs = new ArrayList<>();
-        for (DBPDriverLibrary lib : this.libraries) {
+        for (DBPDriverLibrary lib : driverLibraries) {
             if (!lib.isCustom() && !libs.contains(lib)) {
                 lib.setDisabled(true);
                 deletedLibs.add(lib);
@@ -1043,9 +1065,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             lib.setDisabled(false);
         }
 
-        this.libraries.clear();
-        this.libraries.addAll(deletedLibs);
-        this.libraries.addAll(libs);
+        driverLibraries.clear();
+        driverLibraries.addAll(deletedLibs);
+        driverLibraries.addAll(libs);
     }
 
     public void resetToDefaults() {
@@ -1078,14 +1100,16 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.customConnectionProperties.putAll(this.originalConnectionProperties);
         this.nativeClientHomes.clear();
 
-        for (DBPDriverLibrary library : this.origLibraries) {
+        List<DBPDriverLibrary> originalLibraries = getOrigLibraries();
+        for (DBPDriverLibrary library : originalLibraries) {
             library.setDisabled(false);
             if (library instanceof DriverLibraryMavenArtifact mavenArtifact) {
                 mavenArtifact.resetToDefaults();
             }
         }
-        this.libraries.clear();
-        this.libraries.addAll(this.origLibraries);
+        List<DBPDriverLibrary> driverLibraries = getDriverLibraries();
+        driverLibraries.clear();
+        driverLibraries.addAll(originalLibraries);
 
         resetDriverInstance();
         setModified(false);
@@ -1094,7 +1118,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @NotNull
     public List<DBPDriverLibrary> getEnabledDriverLibraries() {
         List<DBPDriverLibrary> filtered = new ArrayList<>();
-        for (DBPDriverLibrary lib : libraries) {
+        for (DBPDriverLibrary lib : getDriverLibraries()) {
             if (!lib.isDisabled()) {
                 filtered.add(lib);
             }
@@ -1104,7 +1128,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @Nullable
     public DBPDriverLibrary getDriverLibrary(@NotNull String path) {
-        for (DBPDriverLibrary lib : libraries) {
+        for (DBPDriverLibrary lib : getDriverLibraries()) {
             if (lib.getPath().equals(path)) {
                 return lib;
             }
@@ -1114,7 +1138,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @NotNull
     public DBPDriverLibrary addDriverLibrary(@NotNull String path, @NotNull DBPDriverLibrary.FileType fileType) {
-        for (DBPDriverLibrary lib : libraries) {
+        for (DBPDriverLibrary lib : getDriverLibraries()) {
             if (lib.getPath().equals(path)) {
                 return lib;
             }
@@ -1125,19 +1149,20 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     public boolean addDriverLibrary(@NotNull DBPDriverLibrary descriptor, boolean resetCache) {
+        List<DBPDriverLibrary> driverLibraries = getDriverLibraries();
         if (resetCache && descriptor instanceof DriverLibraryMavenArtifact mavenLib) {
             mavenLib.resetVersion();
             resetDriverInstance();
         }
-        if (!libraries.contains(descriptor)) {
-            this.libraries.add(descriptor);
+        if (!driverLibraries.contains(descriptor)) {
+            driverLibraries.add(descriptor);
             return true;
         }
         return false;
     }
 
     public void disabledAllDefaultLibraries() {
-        libraries.stream()
+        getDriverLibraries().stream()
                 .filter(s -> !s.isCustom())
                 .forEach(libr -> libr.setDisabled(true));
     }
@@ -1336,7 +1361,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Nullable
     @Override
     public String getLicense() {
-        for (DBPDriverLibrary file : libraries) {
+        for (DBPDriverLibrary file : getDriverLibraries()) {
             if (file.getType() == DBPDriverLibrary.FileType.license) {
                 final Path licenseFile = file.getLocalFile();
                 if (licenseFile != null && Files.exists(licenseFile)) {
@@ -1374,14 +1399,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Override
     public DBPDriver createOriginalCopy() {
         DriverDescriptor driverCopy = getProviderDescriptor().createDriver(this);
-        for (DBPDriverLibrary lib : this.origLibraries) {
+        for (DBPDriverLibrary lib : getOrigLibraries()) {
             if (lib instanceof DriverLibraryLocal libraryLocal && !lib.isCustom()) {
                 DBPDriverLibrary libCopy = libraryLocal.copyLibrary(this);
                 libCopy.setDisabled(false);
                 if (libCopy instanceof DriverLibraryLocal libraryLocal2) {
                     libraryLocal2.setUseOriginalJar(true);
                 }
-                driverCopy.libraries.add(libCopy);
+                driverCopy.getDriverLibraries().add(libCopy);
             }
         }
 
@@ -1479,6 +1504,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @NotNull
     public List<DBPDriverLibrary> getOrigLibraries() {
+        getDriverLibraries();
         return origLibraries;
     }
 

@@ -207,11 +207,10 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
     // https://gallery.technet.microsoft.com/scriptcenter/SQL-Server-Generate-Index-fa790441
     private String readIndexDefinition(DBRProgressMonitor monitor) throws DBCException {
         String needToInsertUnique = unique ? "    'UNIQUE ' +\n" : "";
-        SQLServerDatabase database = this.getContainer().getDatabase();
-        String databaseNamePrefix = "";
-        if (database != null) {
-            databaseNamePrefix = "'" + database.getName() + ".' +";
-        }
+        String tableName = SQLUtils.escapeString(
+            getDataSource(),
+            getTable().getFullyQualifiedName(DBPEvaluationContext.DDL)
+        );
         String indexName = DBUtils.getQuotedIdentifier(this);
 
         String sql =
@@ -219,7 +218,7 @@ public class SQLServerTableIndex extends JDBCTableIndex<SQLServerSchema, SQLServ
                 needToInsertUnique +
                 "    I.type_desc COLLATE DATABASE_DEFAULT +' INDEX ' +   \n" +
                 "    '" + indexName + "' + ' ON '  +  \n" +
-                "   " + databaseNamePrefix + "Schema_name(T.Schema_id)+'.'+T.name + ' ( ' + \n" +
+                "    N'" + tableName + "' + ' ( ' + \n" +
                 "    KeyColumns + ' )  ' + \n" +
                 "    ISNULL('\n\t INCLUDE ('+IncludedColumns+' ) ','') + \n" +
                 "    ISNULL('\n\t WHERE  '+I.Filter_definition,'') + '\n\t WITH ( ' + \n" +

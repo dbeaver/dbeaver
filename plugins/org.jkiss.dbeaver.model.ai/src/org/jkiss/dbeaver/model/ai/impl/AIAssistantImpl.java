@@ -118,7 +118,7 @@ public class AIAssistantImpl implements AIAssistant {
                 AIMessageMeta requestMeta = new AIMessageMeta(
                     AIMetaTypes.PROMPT,
                     engineDescriptor.getId(),
-                    engine.getProperties().getModel(),
+                    engine.getProperties().getModelDisplayName(),
                     usage,
                     Duration.between(now, Instant.now()),
                     systemPromptLength
@@ -351,12 +351,17 @@ public class AIAssistantImpl implements AIAssistant {
                     AIMessage fcMessage = AIMessage.functionCall(fc, result);
                     // Visualize result in chat
                     chatListener.processFunctionCall(fcMessage);
-                    if (function.getType() == AIFunctionType.INFORMATION || result.getException() != null) {
+                    if (result.getException() != null) {
+                        chatListener.error(result.getException());
+                        chatListener.complete(List.of(), true, false);
+                        return;
+                    }
+                    if (function.getType() == AIFunctionType.INFORMATION) {
                         newMessages.add(fcMessage);
                     }
                 } catch (Exception e) {
                     chatListener.error(e);
-                    conversation.promptProcessed(true);
+                    chatListener.complete(List.of(), true, false);
                     return;
                 }
             }
@@ -368,6 +373,7 @@ public class AIAssistantImpl implements AIAssistant {
                     generateTextStream(monitor, chatSession, conversation, new AIChatRequest(context, newMessages, null), chatListener);
                 } catch (Exception e) {
                     chatListener.error(e);
+                    chatListener.complete(List.of(), true, false);
                 }
             } else {
                 // No more messages for AI
@@ -530,7 +536,7 @@ public class AIAssistantImpl implements AIAssistant {
     protected static String getEngineInfo(@NotNull AIConfigurationProfile profile, @NotNull AIEngine<?> engine) {
         return "profile: " + profile.getProfileName()
             + ", engine: " + profile.getEngineId()
-            + ", model: " + engine.getProperties().getModel();
+            + ", model: " + engine.getProperties().getModelDisplayName();
     }
 
     protected boolean isLoggingEnabled() {

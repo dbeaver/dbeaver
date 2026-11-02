@@ -59,6 +59,8 @@ public class AIChatConversation {
     private final AIPromptGenerator promptGenerator;
     @NotNull
     private final List<AIChatMessage> messages;
+    @NotNull
+    private final Object persistenceLock = new Object();
     @Nullable
     private final DBPDataSourceContainer container;
     @NotNull
@@ -142,6 +144,11 @@ public class AIChatConversation {
     @NotNull
     public List<AIChatMessage> getMessages() {
         return messages.stream().filter(message -> !message.pending()).toList();
+    }
+
+    @NotNull
+    Object getPersistenceLock() {
+        return persistenceLock;
     }
 
     public boolean areImagesLoaded() {

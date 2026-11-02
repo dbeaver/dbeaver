@@ -100,8 +100,12 @@ public class ClickhouseDataSource extends GenericDataSource {
 
     @NotNull
     @Override
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext   context, @NotNull
-    String purpose, @NotNull DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Properties getAllConnectionProperties(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable JDBCExecutionContext context,
+        @NotNull String purpose,
+        @NotNull DBPConnectionConfiguration connectionInfo
+    ) throws DBCException {
         Properties properties = super.getAllConnectionProperties(monitor, context, purpose, connectionInfo);
         if (!CommonUtils.toBoolean(properties.getProperty(ClickhouseConstants.PROP_USE_SERVER_TIME_ZONE)) &&
             !CommonUtils.toBoolean(properties.getProperty(ClickhouseConstants.PROP_USE_TIME_ZONE))
@@ -185,7 +189,7 @@ public class ClickhouseDataSource extends GenericDataSource {
 
     // Canceling
     @Override
-    public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
+    public void cancelStatementExecute(@NotNull DBRProgressMonitor monitor, @NotNull JDBCStatement statement) throws DBException {
         try {
 
             super.cancelStatementExecute(monitor, statement);
@@ -273,8 +277,9 @@ public class ClickhouseDataSource extends GenericDataSource {
         }
     }
 
+    @NotNull
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
         return new ClickhouseDataSourceInfo(metaData);
     }
 

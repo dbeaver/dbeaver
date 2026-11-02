@@ -47,8 +47,8 @@ public class ObjectManagerRegistry implements DBERegistry {
     }
 
     private final List<ObjectManagerDescriptor> entityManagers = new ArrayList<>();
-    private final Map<String, ObjectManagerDescriptor> entityManagerMap = new HashMap<>();
-    private final Map<String, Boolean> nullEntityManagerMap = new HashMap<>();
+    private final Map<Class<?>, ObjectManagerDescriptor> entityManagerMap = new HashMap<>();
+    private final Map<Class<?>, Boolean> nullEntityManagerMap = new HashMap<>();
 
     public ObjectManagerRegistry(@NotNull IExtensionRegistry registry) {
         // Load datasource providers from external plugins
@@ -58,9 +58,6 @@ public class ObjectManagerRegistry implements DBERegistry {
                 ObjectManagerDescriptor descriptor = new ObjectManagerDescriptor(ext);
                 entityManagers.add(descriptor);
             }
-        }
-        for (ObjectManagerDescriptor em : entityManagers) {
-            entityManagerMap.put(em.getObjectType().getImplName(), em);
         }
     }
 
@@ -74,25 +71,32 @@ public class ObjectManagerRegistry implements DBERegistry {
     }
 
     private ObjectManagerDescriptor getEntityManager(Class<?> objectType) {
-        String targetTypeName = objectType.getName();
-
-        // 1. Try exact match
-        ObjectManagerDescriptor manager = entityManagerMap.get(targetTypeName);
+        ObjectManagerDescriptor manager = entityManagerMap.get(objectType);
         if (manager != null) {
             return manager;
         }
-        if (nullEntityManagerMap.containsKey(targetTypeName)) {
+        if (nullEntityManagerMap.containsKey(objectType)) {
             return null;
         }
-        // 2. Find first applicable
+        // Match the class itself before looking at its parents. Different bundles may
+        // define classes with the same name (e.g. the current and legacy MongoDB models).
         for (ObjectManagerDescriptor descriptor : entityManagers) {
-            if (descriptor.appliesToType(objectType)) {
-                entityManagerMap.put(targetTypeName, descriptor);
+            if (objectType.getName().equals(descriptor.getObjectType().getImplName())
+                && descriptor.getObjectType().getObjectClass() == objectType) {
+                entityManagerMap.put(objectType, descriptor);
+                return descriptor;
+            }
+        }
+        // Find a manager registered for a superclass or interface.
+        for (ObjectManagerDescriptor descriptor : entityManagers) {
+            if (!objectType.getName().equals(descriptor.getObjectType().getImplName())
+                && descriptor.appliesToType(objectType)) {
+                entityManagerMap.put(objectType, descriptor);
                 return descriptor;
             }
         }
         // TODO: need to re-validate. Maybe cache will break some lazy loaded bundles?
-        nullEntityManagerMap.put(targetTypeName, Boolean.TRUE);
+        nullEntityManagerMap.put(objectType, Boolean.TRUE);
         return null;
     }
 

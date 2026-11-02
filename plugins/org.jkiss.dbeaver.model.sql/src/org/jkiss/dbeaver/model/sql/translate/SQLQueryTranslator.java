@@ -196,7 +196,7 @@ public class SQLQueryTranslator implements SQLTranslator {
                     sqlTranslateContext.getSyntaxManager(),
                     statement.toString());
 
-            query.setText(newQueryText);
+            query.setText(newQueryText, true);
 
             extraQueries.add(query);
             extraQueries.addAll(postExtraQueries);

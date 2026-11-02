@@ -32,6 +32,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.util.List;
+import java.util.UUID;
 
 public class AIChatSessionTest extends DBeaverUnitTest {
     @Test
@@ -54,9 +55,9 @@ public class AIChatSessionTest extends DBeaverUnitTest {
         AIPromptGenerator promptGenerator = Mockito.mock(AIPromptGenerator.class);
         Mockito.when(promptGenerator.configureDatabaseContext(Mockito.any(AIDatabaseContext.Builder.class)))
             .thenAnswer(invocation -> invocation.getArgument(0));
-        AIChatConversation conversation = Mockito.mock(AIChatConversation.class);
-        Mockito.when(conversation.getProfile()).thenReturn(profile);
-        Mockito.when(conversation.getPromptGenerator()).thenReturn(promptGenerator);
+        AIChatConversation conversation = new AIChatConversation(
+            UUID.randomUUID(), "Chat", promptGenerator, List.of(), container, 0, profile
+        );
         AIChatResponseConsumer consumer = Mockito.mock(AIChatResponseConsumer.class);
 
         Assertions.assertSame(

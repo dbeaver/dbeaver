@@ -370,7 +370,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor>
         final TextViewer textViewer = editor.getTextViewer();
         IEditorInput editorInput = editor.getEditorInput();
         boolean inMemory = !(valueController.getValue() instanceof DBDContent);
-        if (editorInput instanceof ContentEditorInput contentEditorInput && contentEditorInput.isInMemory() == inMemory) {
+        if (inMemory && editorInput instanceof ContentEditorInput contentEditorInput && contentEditorInput.isInMemory()) {
             try {
                 contentEditorInput.refreshContent(monitor, valueController, encoding);
                 editor.getDocumentProvider().resetDocument(contentEditorInput);

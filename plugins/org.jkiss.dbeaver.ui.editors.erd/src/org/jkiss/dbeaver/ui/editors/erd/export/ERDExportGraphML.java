@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,9 +17,13 @@
 package org.jkiss.dbeaver.ui.editors.erd.export;
 
 import org.eclipse.draw2d.Bendpoint;
+import org.eclipse.draw2d.Connection;
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.PointList;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.swt.graphics.Color;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.erd.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -46,13 +50,17 @@ import java.util.stream.Stream;
 /**
  * GraphML exporter
  */
-public class ERDExportGraphML implements ERDExportFormatHandler
-{
+public class ERDExportGraphML implements ERDExportFormatHandler {
     private static final Log log = Log.getLog(ERDExportGraphML.class);
     private static final int fontSize = 12;
 
     @Override
-    public void exportDiagram(EntityDiagram diagram, IFigure figure, DiagramPart diagramPart, File targetFile) {
+    public void exportDiagram(
+        @NotNull EntityDiagram diagram,
+        @NotNull IFigure figure,
+        @NotNull DiagramPart diagramPart,
+        @NotNull File targetFile
+    ) {
         try {
             try (final OutputStreamWriter osw = new OutputStreamWriter(new FileOutputStream(targetFile), GeneralUtils.UTF8_CHARSET)) {
                 XMLBuilder xml = new XMLBuilder(osw, GeneralUtils.UTF8_ENCODING);
@@ -94,14 +102,16 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                     .collect(Collectors.toList());
 
                 final Map<ERDElement<?>, String> associations = new HashMap<>();
+                final Map<ERDElement<?>, NodeCenter> nodeCenters = new HashMap<>();
 
                 // Export elements and collect their associations
                 for (int index = 0; index < elements.size(); index++) {
                     final ERDElement<?> element = elements.get(index);
                     if (element instanceof ERDEntity) {
-                        exportEntity(index, (ERDEntity) element, diagramPart.getEntityPart((ERDEntity) element), diagram, associations, xml);
+                        exportEntity(index, (ERDEntity) element, diagramPart.getEntityPart((ERDEntity) element),
+                            diagram, associations, nodeCenters, xml);
                     } else if (element instanceof ERDNote) {
-                        exportNote(index, (ERDNote) element, diagramPart.getNotePart((ERDNote) element), associations, xml);
+                        exportNote(index, (ERDNote) element, diagramPart.getNotePart((ERDNote) element), associations, nodeCenters, xml);
                     } else {
                         log.debug("Unsupported ERD element: " + element);
                     }
@@ -111,9 +121,9 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                 for (int index = 0; index < elements.size(); index++) {
                     final ERDElement<?> element = elements.get(index);
                     if (element instanceof ERDEntity) {
-                        exportEdge(index, element, diagramPart.getEntityPart((ERDEntity) element), associations, xml);
+                        exportEdge(index, element, diagramPart.getEntityPart((ERDEntity) element), associations, nodeCenters, xml);
                     } else if (element instanceof ERDNote) {
-                        exportEdge(index, element, diagramPart.getNotePart((ERDNote) element), associations, xml);
+                        exportEdge(index, element, diagramPart.getNotePart((ERDNote) element), associations, nodeCenters, xml);
                     } else {
                         log.debug("Unsupported ERD element: " + element);
                     }
@@ -131,12 +141,22 @@ public class ERDExportGraphML implements ERDExportFormatHandler
         }
     }
 
-    private static void exportEntity(int index, ERDEntity entity, EntityPart entityPart, EntityDiagram diagram, Map<ERDElement<?>, String> associations, XMLBuilder xml) throws IOException {
+    private static void exportEntity(
+        int index,
+        @NotNull ERDEntity entity,
+        @NotNull EntityPart entityPart,
+        @NotNull EntityDiagram diagram,
+        @NotNull Map<ERDElement<?>, String> associations,
+        @NotNull Map<ERDElement<?>, NodeCenter> nodeCenters,
+        @NotNull XMLBuilder xml
+    ) throws IOException {
         final String entityId = "entity" + index;
         final EntityFigure entityFigure = entityPart.getFigure();
         final Rectangle partBounds = entityPart.getBounds();
+        final double width = partBounds.width + getExtraTableLength(diagram, entity);
 
         associations.put(entity, entityId);
+        nodeCenters.put(entity, new NodeCenter(partBounds.x + width / 2, partBounds.y + partBounds.height / 2.0));
 
         // node
         xml.startElement("node");
@@ -154,7 +174,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                 // Geometry
                 xml.startElement("y:Geometry");
                 xml.addAttribute("height", partBounds.height);
-                xml.addAttribute("width", partBounds.width + getExtraTableLength(diagram, entity));
+                xml.addAttribute("width", width);
                 xml.addAttribute("x", partBounds.x());
                 xml.addAttribute("y", partBounds.y());
                 xml.endElement();
@@ -260,12 +280,20 @@ public class ERDExportGraphML implements ERDExportFormatHandler
         xml.endElement();
     }
 
-    private static void exportNote(int index, ERDNote note, NotePart notePart, Map<ERDElement<?>, String> associations, XMLBuilder xml) throws IOException {
+    private static void exportNote(
+        int index,
+        @NotNull ERDNote note,
+        @NotNull NotePart notePart,
+        @NotNull Map<ERDElement<?>, String> associations,
+        @NotNull Map<ERDElement<?>, NodeCenter> nodeCenters,
+        @NotNull XMLBuilder xml
+    ) throws IOException {
         final String noteId = "note" + index;
         final IFigure noteFigure = notePart.getFigure();
         final Rectangle noteBounds = notePart.getBounds();
 
         associations.put(note, noteId);
+        nodeCenters.put(note, new NodeCenter(noteBounds.x + noteBounds.width / 2.0, noteBounds.y + noteBounds.height / 2.0));
 
         xml.startElement("node");
         {
@@ -330,10 +358,21 @@ public class ERDExportGraphML implements ERDExportFormatHandler
         xml.endElement();
     }
 
-    private static void exportEdge(int index, ERDElement<?> node, NodePart nodePart, Map<ERDElement<?>, String> associations, XMLBuilder xml) throws IOException {
+    private static void exportEdge(
+        int index,
+        @NotNull ERDElement<?> node,
+        @NotNull NodePart nodePart,
+        @NotNull Map<ERDElement<?>, String> associations,
+        @NotNull Map<ERDElement<?>, NodeCenter> nodeCenters,
+        @NotNull XMLBuilder xml
+    ) throws IOException {
         int associationIndex = 0;
         for (ERDAssociation association : node.getAssociations()) {
             AssociationPart associationPart = nodePart.getConnectionPart(association, true);
+            if (associationPart == null &&
+                nodePart.getDiagramPart().getViewer().getEditPartRegistry().get(association) instanceof AssociationPart p) {
+                associationPart = p;
+            }
             if (associationPart == null) {
                 log.debug("Association part not found");
                 continue;
@@ -347,18 +386,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
             xml.startElement("data");
             xml.addAttribute("key", "edgegraph");
             xml.startElement("y:PolyLineEdge");
-            xml.startElement("y:Path"); // sx="0.0" sy="0.0" tx="0.0" ty="0.0"/>
-            xml.addAttribute("sx", 0.0);
-            xml.addAttribute("sy", 0.0);
-            xml.addAttribute("tx", 0.0);
-            xml.addAttribute("ty", 0.0);
-            for (Bendpoint bp : associationPart.getBendpoints()) {
-                xml.startElement("y:Point");
-                xml.addAttribute("x", bp.getLocation().x);
-                xml.addAttribute("y", bp.getLocation().y);
-                xml.endElement();
-            }
-            xml.endElement();
+            exportPath(association, associationPart, nodeCenters, nodePart.getDiagramPart().getFigure(), xml);
 
             boolean identifying = ERDUtils.isIdentifyingAssociation(association);
             xml.startElement("y:LineStyle");
@@ -382,7 +410,62 @@ public class ERDExportGraphML implements ERDExportFormatHandler
         }
     }
 
-    private static double getExtraTableLength(EntityDiagram diagram, ERDEntity entity) {
+    private static void exportPath(
+        @NotNull ERDAssociation association,
+        @NotNull AssociationPart associationPart,
+        @NotNull Map<ERDElement<?>, NodeCenter> nodeCenters,
+        @NotNull IFigure diagramFigure,
+        @NotNull XMLBuilder xml
+    ) throws IOException {
+        Connection connection = associationPart.getConnectionFigure();
+        PointList points = connection.getPoints().getCopy();
+        NodeCenter source = nodeCenters.get(association.getSourceEntity());
+        NodeCenter target = nodeCenters.get(association.getTargetEntity());
+
+        // Use the last rendered route; validating the figure here could reroute user-adjusted connections.
+        if (connection.getParent() != null && connection.getSourceAnchor() != null && connection.getTargetAnchor() != null
+            && points.size() >= 2 && source != null && target != null) {
+            for (int i = 0; i < points.size(); i++) {
+                Point point = points.getPoint(i);
+                connection.translateToAbsolute(point);
+                diagramFigure.translateToRelative(point);
+                points.setPoint(point, i);
+            }
+
+            Point start = points.getFirstPoint();
+            Point end = points.getLastPoint();
+            xml.startElement("y:Path");
+            xml.addAttribute("sx", start.x - source.x());
+            xml.addAttribute("sy", start.y - source.y());
+            xml.addAttribute("tx", end.x - target.x());
+            xml.addAttribute("ty", end.y - target.y());
+            for (int i = 1; i < points.size() - 1; i++) {
+                Point point = points.getPoint(i);
+                xml.startElement("y:Point");
+                xml.addAttribute("x", point.x);
+                xml.addAttribute("y", point.y);
+                xml.endElement();
+            }
+        } else {
+            xml.startElement("y:Path");
+            xml.addAttribute("sx", 0.0);
+            xml.addAttribute("sy", 0.0);
+            xml.addAttribute("tx", 0.0);
+            xml.addAttribute("ty", 0.0);
+            for (Bendpoint bp : associationPart.getBendpoints()) {
+                xml.startElement("y:Point");
+                xml.addAttribute("x", bp.getLocation().x);
+                xml.addAttribute("y", bp.getLocation().y);
+                xml.endElement();
+            }
+        }
+        xml.endElement();
+    }
+
+    private record NodeCenter(double x, double y) {
+    }
+
+    private static double getExtraTableLength(@NotNull EntityDiagram diagram, @NotNull ERDEntity entity) {
         int maxLength = 0;
         for (ERDEntityAttribute attr : entity.getAttributes()) {
             int attributeLength = (ERDUIUtils.getFullAttributeLabel(diagram, attr, true)).length();
@@ -399,14 +482,14 @@ public class ERDExportGraphML implements ERDExportFormatHandler
         return (maxLength * (fontSize * 0.12));
     }
 
-    private static String getHtmlColor(Color color) {
+    @NotNull
+    private static String getHtmlColor(@NotNull Color color) {
         return "#" + getHexColor(color.getRed()) + getHexColor(color.getGreen()) + getHexColor(color.getBlue());
     }
 
+    @NotNull
     private static String getHexColor(int value) {
         String hex = Integer.toHexString(value).toUpperCase();
         return hex.length() < 2 ? "0" + hex : hex;
     }
-
-
 }

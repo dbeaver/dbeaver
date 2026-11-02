@@ -55,8 +55,10 @@ import java.util.stream.Stream;
 final class WebViewMessageRenderer {
 
     private static final Log log = Log.getLog(WebViewMessageRenderer.class);
+    private static final int MESSAGE_IMAGE_SIZE = 128;
 
     private final Browser browser;
+    private final AIImageThumbnailBrowser thumbnailBrowser;
     private final Supplier<DBPDataSource> dataSourceSupplier;
     private final WebCSSInitializer cssInitializer;
     private final Map<Integer, AbstractJob> thumbnailJobs = new HashMap<>();
@@ -65,10 +67,12 @@ final class WebViewMessageRenderer {
 
     WebViewMessageRenderer(
         @NotNull Browser browser,
+        @NotNull AIImageThumbnailBrowser thumbnailBrowser,
         @NotNull Supplier<DBPDataSource> dataSourceSupplier,
         @NotNull WebCSSInitializer cssInitializer
     ) {
         this.browser = browser;
+        this.thumbnailBrowser = thumbnailBrowser;
         this.dataSourceSupplier = dataSourceSupplier;
         this.cssInitializer = cssInitializer;
         browser.addDisposeListener(event -> cancelImageJobs());
@@ -172,6 +176,14 @@ final class WebViewMessageRenderer {
             previous.cancel();
         }
         AbstractJob job = new AbstractJob(AIChatMessagesUI.ai_chat_image_loading) {
+            private int remainingImages = images.size();
+
+            private void imageLoaded() {
+                if (--remainingImages == 0) {
+                    thumbnailJobs.remove(message.id(), this);
+                }
+            }
+
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
@@ -181,20 +193,44 @@ final class WebViewMessageRenderer {
                     }
                     int imageIndex = index;
                     try {
-                        String source = AIImageThumbnail.toDataUrl(images.get(index).getBytes(), AIImageAttachmentTile.PREVIEW_SIZE * 2);
+                        AIImageAttachment image = images.get(index);
+                        int size = MESSAGE_IMAGE_SIZE * 2;
+                        boolean webp = "image/webp".equals(image.mediaType());
+                        String source = webp ? null : AIImageThumbnail.toDataUrl(image.getBytes(), size);
                         if (monitor.isCanceled()) {
                             return Status.CANCEL_STATUS;
                         }
                         UIUtils.asyncExec(() -> {
-                            if (!browser.isDisposed() && thumbnailJobs.get(message.id()) == this) {
-                                execute("setMessageImage", Map.of("id", message.id(), "index", imageIndex, "src", source));
+                            if (browser.isDisposed() || monitor.isCanceled() || thumbnailJobs.get(message.id()) != this) {
+                                imageLoaded();
+                                return;
+                            }
+                            if (webp) {
+                                thumbnailBrowser.load(image, size,
+                                    () -> monitor.isCanceled() || thumbnailJobs.get(message.id()) != this)
+                                    .whenComplete((thumbnail, exception) -> {
+                                        try {
+                                            if (thumbnail != null && !browser.isDisposed() && thumbnailJobs.get(message.id()) == this) {
+                                                execute("setMessageImage", Map.of("id", message.id(), "index", imageIndex,
+                                                    "src", thumbnail.dataUrl()));
+                                            }
+                                        } finally {
+                                            imageLoaded();
+                                        }
+                                    });
+                            } else {
+                                try {
+                                    execute("setMessageImage", Map.of("id", message.id(), "index", imageIndex, "src", source));
+                                } finally {
+                                    imageLoaded();
+                                }
                             }
                         });
                     } catch (IOException | SWTException | IllegalArgumentException exception) {
                         log.debug("Cannot create message image thumbnail", exception);
+                        UIUtils.asyncExec(this::imageLoaded);
                     }
                 }
-                UIUtils.asyncExec(() -> thumbnailJobs.remove(message.id(), this));
                 return Status.OK_STATUS;
             }
         };

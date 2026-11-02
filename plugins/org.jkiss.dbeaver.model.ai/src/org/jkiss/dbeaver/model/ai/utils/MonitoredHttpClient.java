@@ -63,6 +63,7 @@ public class MonitoredHttpClient implements AutoCloseable {
     private final HttpClient client;
     private final ErrorMapper errorMapper;
     private final ErrorProcessor errorProcessor;
+    private final ThreadLocal<Stream<String>> responseStream = new ThreadLocal<>();
 
     public MonitoredHttpClient(@NotNull HttpClient client, @NotNull ErrorMapper errorMapper, @NotNull ErrorProcessor processor) {
         this.client = client;
@@ -144,18 +145,28 @@ public class MonitoredHttpClient implements AutoCloseable {
         AtomicBoolean suppressCompletion = new AtomicBoolean(false);
         return client.sendAsync(request, HttpResponse.BodyHandlers.ofLines())
             .thenAccept(response -> {
-                DBException redirectError = getRedirectError(response);
-                if (redirectError != null) {
-                    response.body().close();
-                    errorHandler.accept(redirectError);
-                    return;
-                }
-                int statusCode = response.statusCode();
-                if (errorProcessor.process(errorMapper, errorHandler, response, suppressCompletion, backupOption, statusCode)) {
-                    return;
-                }
+                Stream<String> previousStream = responseStream.get();
+                try (Stream<String> body = response.body()) {
+                    responseStream.set(body);
+                    DBException redirectError = getRedirectError(response);
+                    if (redirectError != null) {
+                        body.close();
+                        errorHandler.accept(redirectError);
+                        return;
+                    }
+                    int statusCode = response.statusCode();
+                    if (errorProcessor.process(errorMapper, errorHandler, response, suppressCompletion, backupOption, statusCode)) {
+                        return;
+                    }
 
-                response.body().forEach(eventHandler);
+                    body.forEach(eventHandler);
+                } finally {
+                    if (previousStream == null) {
+                        responseStream.remove();
+                    } else {
+                        responseStream.set(previousStream);
+                    }
+                }
             })
             .whenComplete((v, e) -> {
                 if (e != null) {
@@ -208,6 +219,11 @@ public class MonitoredHttpClient implements AutoCloseable {
 
     @Override
     public void close() {
+        Stream<String> body = responseStream.get();
+        if (body != null) {
+            // release this response before waiting for the client from its callback
+            body.close();
+        }
         client.close();
     }
 }

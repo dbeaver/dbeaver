@@ -132,4 +132,10 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
     public String  visitSpecialText(@NotNull SQLSpecialTextCompletionItem specialText) {
         return " - Special substitution";
     }
+
+    @Nullable
+    public String visitScriptVariable(@NotNull SQLScriptVariableCompletionItem scriptVariable) {
+        String typeName = prepareTypeNameString(scriptVariable.variableDefinition.type());
+        return typeName == null ? " - SQL Script variable" : (" : " + typeName);
+    }
 }

@@ -57,4 +57,43 @@ public class AIHttpUtilsTest extends DBeaverUnitTest {
 
         Assertions.assertEquals(URI.create("http://localhost:11434/chat/completions"), uri);
     }
+
+    @Test
+    public void extractsSubscriptionErrorDetail() {
+        String message = "The 'gpt-4' model is not supported when using Codex with a ChatGPT account.";
+
+        Assertions.assertEquals(message, AIHttpUtils.parseOpenAIStyleErrorMessage(400, """
+            {"detail":"The 'gpt-4' model is not supported when using Codex with a ChatGPT account."}
+            """));
+    }
+
+    @Test
+    public void preservesApiErrorMessage() {
+        Assertions.assertEquals("Invalid model", AIHttpUtils.parseOpenAIStyleErrorMessage(400, """
+            {"error":{"code":"invalid_request","message":"Invalid model"},"detail":"Other detail"}
+            """));
+    }
+
+    @Test
+    public void preservesRootErrorMessage() {
+        Assertions.assertEquals("Invalid model", AIHttpUtils.parseOpenAIStyleErrorMessage(400, """
+            {"message":"Invalid model","detail":"Other detail"}
+            """));
+    }
+
+    @Test
+    public void ignoresNonStringErrorDetails() {
+        for (String detail : new String[] {"null", "42", "true", "{}", "[]"}) {
+            String body = "{\"detail\":" + detail + "}";
+
+            Assertions.assertEquals("HTTP 400 (" + body + ")", AIHttpUtils.parseOpenAIStyleErrorMessage(400, body));
+        }
+    }
+
+    @Test
+    public void preservesNonJsonErrorDescription() {
+        Assertions.assertEquals("HTTP 502 (Bad Gateway)", AIHttpUtils.parseOpenAIStyleErrorMessage(502, """
+            <html><head><title>Bad Gateway</title></head><body>Proxy error</body></html>
+            """));
+    }
 }

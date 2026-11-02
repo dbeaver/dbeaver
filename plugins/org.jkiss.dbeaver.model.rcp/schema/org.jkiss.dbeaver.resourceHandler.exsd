@@ -35,6 +35,8 @@
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="lazyFolder" type="boolean"/>
+         <attribute name="folderTypeName" type="string"/>
       </complexType>
    </element>
 

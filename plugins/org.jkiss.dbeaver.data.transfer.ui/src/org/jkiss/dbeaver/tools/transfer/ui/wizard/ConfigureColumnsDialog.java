@@ -52,6 +52,7 @@ class ConfigureColumnsDialog extends BaseDialog {
 
     private CheckboxTreeViewer viewer;
     private CLabel errorLabel;
+    private boolean packingColumns;
 
     public ConfigureColumnsDialog(
         @NotNull Shell shell,
@@ -164,8 +165,15 @@ class ConfigureColumnsDialog extends BaseDialog {
     }
 
     private void packColumns() {
-        if (!viewer.getTree().isDisposed()) {
+        if (packingColumns || viewer.getTree().isDisposed()) {
+            return;
+        }
+        // Changing tree column widths can synchronously fire another resize event on Windows.
+        packingColumns = true;
+        try {
             UIUtils.packColumns(viewer.getTree(), true, new float[] {0.65f, 0.25f});
+        } finally {
+            packingColumns = false;
         }
     }
 

@@ -16,9 +16,7 @@
  */
 package org.jkiss.dbeaver.model.data.json;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
+import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonWriter;
 import org.jkiss.code.NotNull;
@@ -30,6 +28,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.lang.reflect.Type;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
@@ -54,6 +53,28 @@ public class JSONUtils {
 
     public static final Gson GSON = new GsonBuilder().create();
     public static final Gson PRETTY_GSON = new GsonBuilder().setPrettyPrinting().create();
+
+    /**
+     * Decodes JWT claims without verifying the signature or expiration. Returns null for malformed tokens.
+     */
+    @Nullable
+    public static JsonObject parseJwtClaims(@NotNull String token) {
+        if (token.length() > 16_384) {
+            return null;
+        }
+        String[] parts = token.split("\\.", -1);
+        if (parts.length != 3 || parts[0].isEmpty() || parts[1].isEmpty() || parts[2].isEmpty()) {
+            return null;
+        }
+        try {
+            var decoder = Base64.getUrlDecoder();
+            JsonParser.parseString(new String(decoder.decode(parts[0]), StandardCharsets.UTF_8)).getAsJsonObject();
+            decoder.decode(parts[2]);
+            return JsonParser.parseString(new String(decoder.decode(parts[1]), StandardCharsets.UTF_8)).getAsJsonObject();
+        } catch (RuntimeException e) {
+            return null;
+        }
+    }
 
     public static String formatDate(Date date) {
         try {

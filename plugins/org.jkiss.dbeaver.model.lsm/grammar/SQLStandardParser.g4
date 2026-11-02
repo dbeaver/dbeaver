@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ options {
 @header {
     /*
      * DBeaver - Universal Database Manager
-     * Copyright (C) 2010-2024 DBeaver Corp and others
+     * Copyright (C) 2010-2026 DBeaver Corp and others
      *
      * Licensed under the Apache License, Version 2.0 (the "License");
      * you may not use this file except in compliance with the License.
@@ -77,7 +77,15 @@ options {
 
 // root rule for script
 sqlQueries: sqlQuery (Semicolon sqlQuery)* Semicolon? EOF; // EOF - don't stop early. must match all input
-sqlQuery: (directSqlDataStatement|callStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|selectStatementSingleRow) anyWord??;
+sqlQuery: (variableStatement+ sqlQueryBody?|sqlQueryBody) anyWord??;
+sqlQueryBody: directSqlDataStatement|callStatement|sqlSchemaStatement|sqlTransactionStatement|sqlSessionStatement|selectStatementSingleRow;
+variableStatement: variableDeclarationStatement|variableAssignmentStatement;
+variableDeclarationStatement: DECLARE (OR REPLACE)? VARIABLE? variableDeclaration (Comma variableDeclaration)*;
+variableDeclaration: variableName dataType? variableInitializer?;
+variableAssignmentStatement: SET (VAR|VARIABLE)? variableAssignment (Comma variableAssignment)*;
+variableAssignment: variableName EqualsOperator valueExpression;
+variableName: variableExpression|identifier;
+variableInitializer: (EqualsOperator|DEFAULT) valueExpression;
 
 directSqlDataStatement: withClause? (deleteStatement|selectStatement|insertStatement|updateStatement);
 selectStatement: queryExpression;
@@ -342,10 +350,12 @@ orderingSpecification: (ASC|DESC);
 
 // schema definition
 sqlSchemaStatement: schemaDefinition|
-    createTableStatement|createViewStatement|alterTableStatement|
-    dropSchemaStatement|dropTableStatement|dropViewStatement|dropProcedureStatement|dropCharacterSetStatement;
-schemaDefinition: CREATE SCHEMA (IF NOT EXISTS)? schemaNameClause schemaCharacterSetSpecification? schemaElement*;
-schemaNameClause: schemaName|AUTHORIZATION schemaAuthorizationIdentifier|schemaName AUTHORIZATION schemaAuthorizationIdentifier;
+    createCatalogDatabaseStatement|alterContainerStatement|dropCatalogDatabaseStatement|
+    createTableStatement|createViewStatement|createIndexStatement|alterTableStatement|
+    dropSchemaStatement|dropTableStatement|dropViewStatement|dropProcedureStatement|dropIndexStatement|dropCharacterSetStatement|
+    createNamedObjectStatement|alterNamedObjectStatement|dropNamedObjectStatement|renameNamedObjectStatement;
+schemaDefinition: CREATE (OR REPLACE)? SCHEMA (IF NOT EXISTS)? schemaNameClause schemaCharacterSetSpecification? schemaElement*;
+schemaNameClause: AUTHORIZATION schemaAuthorizationIdentifier|schemaName AUTHORIZATION schemaAuthorizationIdentifier|schemaName;
 schemaAuthorizationIdentifier: authorizationIdentifier;
 authorizationIdentifier: identifier;
 schemaCharacterSetSpecification: DEFAULT CHARACTER SET characterSetSpecification;
@@ -356,7 +366,7 @@ createTableHead: CREATE (OR REPLACE)? (GLOBAL|LOCAL)? (TEMPORARY|TEMP)? TABLE (I
 createTableExtraHead: (OF identifier)?;
 tableElementList: LeftParen tableElement (Comma tableElement)* RightParen;
 tableElement: (columnDefinition|tableConstraintDefinition) anyUnexpected??;
-createTableTail: anyUnexpected??;
+createTableTail: ddlStatementTail?;
 //                 createTableTailForValues? createTableTailOther*
 //                 createTableTailPartition? createTableTailOther*
 //                 createTableTailOnCommit? createTableTailOther*;
@@ -372,15 +382,37 @@ createTableTail: anyUnexpected??;
 //        PARTITION|ON|FOR
 //    ))|(LeftParen anyUnexpected* RightParen))+;
 
-createViewStatement: CREATE VIEW tableName (LeftParen viewColumnList RightParen)? AS queryExpression (WITH (levelsClause)? CHECK OPTION)?;
+createViewStatement: CREATE (OR REPLACE)? MATERIALIZED? VIEW tableName (LeftParen viewColumnList RightParen)? AS queryExpression (WITH (levelsClause)? CHECK OPTION)?;
 viewColumnList: columnNameList;
 levelsClause: (CASCADED|LOCAL);
 
 // schema ddl
-dropSchemaStatement: DROP SCHEMA schemaName dropBehaviour;
+createIndexStatement: CREATE (OR REPLACE)? UNIQUE? INDEX (IF NOT EXISTS)? qualifiedName ON tableName ddlStatementTail?;
+createNamedObjectStatement: CREATE (OR REPLACE)? createObjectKind (IF NOT EXISTS)? qualifiedName ddlStatementTail?;
+createObjectKind: FUNCTION|PROCEDURE|SEQUENCE|SYNONYM|ROLE;
+alterNamedObjectStatement: ALTER alterObjectKind ifExistsSpec? qualifiedName routineSignature? setTableSchemaAction? ddlStatementTail?;
+alterObjectKind: VIEW|MATERIALIZED VIEW|INDEX|FUNCTION|PROCEDURE|SEQUENCE|SYNONYM;
+dropIndexStatement: DROP INDEX CONCURRENTLY? ifExistsSpec? qualifiedName (ON tableName)? ddlStatementTail?;
+dropNamedObjectStatement: DROP dropObjectKind ifExistsSpec? qualifiedName routineSignature? (Comma qualifiedName routineSignature?)* ddlStatementTail?;
+dropObjectKind: FUNCTION|SEQUENCE|SYNONYM|ROLE|MATERIALIZED VIEW|identifier;
+renameNamedObjectStatement: RENAME renameObjectKind qualifiedName TO qualifiedName (Comma qualifiedName TO qualifiedName)* ddlStatementTail?;
+renameObjectKind: TABLE|VIEW|INDEX|SCHEMA|DATABASE|CATALOG|FUNCTION|PROCEDURE|SEQUENCE|SYNONYM|identifier;
+routineSignature: LeftParen (routineSignature|~(LeftParen|RightParen|Semicolon))* RightParen;
+ddlStatementTail: (~Semicolon)+;
+createCatalogDatabaseStatement: CREATE (OR REPLACE)? containerKind (IF NOT EXISTS)? qualifiedName containerStatementTail?;
+alterContainerStatement: ALTER alterContainerKind ifExistsSpec? qualifiedName alterContainerAction;
+alterContainerAction: renameContainerAction|nonRenameContainerTail;
+renameContainerAction: RENAME TO qualifiedName containerStatementTail?;
+nonRenameContainerTail: ~(RENAME|Semicolon) (~Semicolon)*;
+dropCatalogDatabaseStatement: DROP containerKind ifExistsSpec? qualifiedName containerStatementTail?;
+containerKind: DATABASE|CATALOG;
+alterContainerKind: SCHEMA|DATABASE|CATALOG;
+containerStatementTail: (~Semicolon)+;
+dropSchemaStatement: DROP SCHEMA ifExistsSpec? schemaName dropBehaviour?;
 dropBehaviour: (CASCADE|RESTRICT);
-alterTableStatement: ALTER anyWord* TABLE (IF EXISTS)? (tableName (alterTableAction (Comma alterTableAction)*)?)?;
-alterTableAction: addColumnDefinition|alterColumnDefinition|renameColumnDefinition|dropColumnDefinition|addTableConstraintDefinition|dropTableConstraintDefinition|anyWordsWithProperty;
+alterTableStatement: ALTER anyWord* TABLE (IF EXISTS)? ONLY? (tableName (alterTableAction (Comma alterTableAction)*)?)?;
+alterTableAction: addColumnDefinition|alterColumnDefinition|renameColumnDefinition|dropColumnDefinition|addTableConstraintDefinition|dropTableConstraintDefinition|setTableSchemaAction|anyWordsWithProperty;
+setTableSchemaAction: SET SCHEMA schemaName;
 addColumnDefinition: ADD (COLUMN)? columnDefinition;
 renameColumnDefinition: RENAME (COLUMN)? columnName TO identifier;
 alterColumnDefinition: ALTER (COLUMN)? columnName alterColumnAction;
@@ -392,7 +424,7 @@ addTableConstraintDefinition: ADD tableConstraintDefinition;
 dropTableConstraintDefinition: DROP CONSTRAINT constraintName dropBehaviour;
 dropTableStatement: DROP TABLE ifExistsSpec? (tableName (Comma tableName)*)? dropBehaviour?;
 dropViewStatement: DROP VIEW ifExistsSpec?  (tableName (Comma tableName)*)? dropBehaviour?;
-dropProcedureStatement: DROP PROCEDURE ifExistsSpec? qualifiedName dropBehaviour?;
+dropProcedureStatement: DROP PROCEDURE ifExistsSpec? qualifiedName ddlStatementTail?;
 dropCharacterSetStatement: DROP CHARACTER SET characterSetName;
 ifExistsSpec: IF EXISTS ;
 
@@ -450,8 +482,9 @@ functionCallExpression: functionCallTargetName LeftParen (functionCallOperand ((
 functionCallTargetName: qualifiedName|IF;
 functionCallOperand: anyValue;
 
-aggregateExpression: actualIdentifier LeftParen aggregateExprParam+ orderByClause? RightParen (WITHIN GROUP LeftParen orderByClause RightParen)? (FILTER LeftParen WHERE searchCondition RightParen)?;
+aggregateExpression: actualIdentifier LeftParen aggregateExprParam+ orderByClause? separatorClause? RightParen (WITHIN GROUP LeftParen orderByClause RightParen)? (FILTER LeftParen WHERE searchCondition RightParen)?;
 aggregateExprParam: DISTINCT|ALL|LIMIT|SEPARATOR|OFFSET|Comma|rowValueConstructor;
+separatorClause: SEPARATOR valueExpression;
 
 /*
 All the logical boundary terms between query construct levels should be explicitly mentioned here for the anyUnexpected to NOT cross them
@@ -466,11 +499,12 @@ tableHintKeywords: WITH | UPDATE | IN | KEY | JOIN | ORDER BY | GROUP BY;
 
 nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
     CURRENT_USER | SESSION_USER | SYSTEM_USER | USER | VALUE | RIGHT | LEFT |
-    DATE | YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | ZONE |
-    ACTION | ADD | AUTHORIZATION | BY | CASCADE | CASCADED | CATALOG | COALESCE | COMMIT |
+    DATE | DATABASE | YEAR | MONTH | DAY | HOUR | MINUTE | SECOND | ZONE |
+    ACTION | ADD | AUTHORIZATION | BY | CASCADE | CASCADED | CATALOG | COALESCE | COMMIT | CONCURRENTLY |
     CONSTRAINTS | CORRESPONDING | COUNT | DEFERRABLE | DEFERRED | IMMEDIATE |
     EXTRACT | FULL | GLOBAL | LOCAL | INDICATOR | INITIALLY | INTERVAL | ISOLATION | KEY | LEVEL |
     NAMES | NO | NULLIF| ONLY | OVERLAPS| PARTIAL | PRESERVE | READ | RESTRICT | ROLLBACK | SCHEMA |
     SESSION | TEMPORARY | TIME | TIMESTAMP | TIMEZONE_HOUR | TIMEZONE_MINUTE | TRANSACTION |
-    VIEW | WORK | WRITE | ARRAY | REPLACE | TOP | PERCENT | TIES | IN
+    VIEW | WORK | WRITE | ARRAY | DECLARE | REPLACE | TOP | PERCENT | TIES | IN | VAR | VARIABLE |
+    INDEX | MATERIALIZED | ROLE | SEQUENCE | SYNONYM
 ;
