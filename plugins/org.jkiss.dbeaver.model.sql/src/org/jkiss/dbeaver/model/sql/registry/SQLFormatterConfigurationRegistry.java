@@ -96,6 +96,9 @@ public class SQLFormatterConfigurationRegistry implements SQLFormatterRegistry
             log.error("Formatter '" + formatterId + "' not found");
             return null;
         }
+        if (DBWorkbench.isMultiuserOrDistributed() && !formatterDesc.supportsMultiuserMode()) {
+            return null;
+        }
         try {
             return formatterDesc.createFormatter();
         } catch (DBException e) {
