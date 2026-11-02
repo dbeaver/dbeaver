@@ -20,6 +20,7 @@ import com.dbeaver.datadam.sso.api.DDSsoConstants;
 import com.dbeaver.datadam.sso.api.DDSsoScopes;
 import com.dbeaver.datadam.sso.api.model.DDSsoConfigResponse;
 import com.google.gson.JsonObject;
+import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -35,10 +36,11 @@ import java.time.Instant;
 import java.util.Set;
 
 /**
- * Owns the desktop access token. Reading status never starts a browser flow.
+ * Internal owner of desktop tokens. Valid-token reads are not synchronized; expired-token refreshes are.
+ * Reading status never starts a browser flow.
  */
 class DDDesktopTokenManager {
-    public enum Status { SIGNED_OUT, UNLOADED, SIGNED_IN, EXPIRED }
+    public enum Status { SIGNED_OUT, SIGNED_IN, INVALID_TOKEN }
 
     private static final Log log = Log.getLog(DDDesktopTokenManager.class);
     private static final String PREF_LOGGED_IN = "datadam.desktop.sso.logged-in";
@@ -61,20 +63,18 @@ class DDDesktopTokenManager {
     }
 
     @NotNull
-    public static DDDesktopTokenManager getInstance() {
+    static DDDesktopTokenManager getInstance() {
         return INSTANCE;
     }
 
     @NotNull
-    public Status getStatus() {
+    Status getStatus() {
         if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_LOGGED_IN)) {
             return Status.SIGNED_OUT;
         }
         var current = token;
-        if (current == null) {
-            return Status.UNLOADED;
-        }
-        return validator.isExpired(current) ? Status.EXPIRED : Status.SIGNED_IN;
+        return current == null || (validator.isExpired(current) && current.refreshToken() == null)
+            ? Status.INVALID_TOKEN : Status.SIGNED_IN;
     }
 
     @Nullable
@@ -90,42 +90,85 @@ class DDDesktopTokenManager {
         return current == null ? null : JSONUtils.parseJwtClaims(current.accessToken());
     }
 
-    public void load(@NotNull URI resource) throws DBException {
-        if (getStatus() != Status.UNLOADED) {
+    synchronized void load(@NotNull URI resource) throws DBException {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_LOGGED_IN)) {
             return;
         }
+        log.debug("Loading DataDam desktop token");
         DDDesktopUserToken saved = store.load();
         if (saved != null && !validator.matchesResource(saved, resource)) {
             log.debug("Saved DataDam desktop token does not match the requested endpoint");
             saved = null;
         }
-        synchronized (this) {
-            if (getStatus() != Status.UNLOADED) {
-                return;
-            }
-            if (saved == null) {
-                signOut();
-                return;
-            }
-            token = saved;
+        if (saved == null) {
+            signOut();
+            return;
         }
+        token = saved;
         log.debug("Loaded DataDam desktop token");
+        refreshIfExpired();
     }
 
     @NotNull
-    public String getAccessTokenForResource(@NotNull URI resource) throws DBException {
-        var current = token;
-        if (current == null || validator.isExpired(current)
-            || !DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_LOGGED_IN)) {
-            throw new DBException("Sign in to DataDam first");
-        }
+    String getAccessTokenForResource(@NotNull URI resource) throws DBException {
+        DDDesktopUserToken current = requireSignedInToken();
         if (!validator.matchesResource(current, resource)) {
             throw new DBException("DataDam token is not valid for this endpoint. Relogin to DataDam");
+        }
+        if (validator.isExpired(current)) {
+            current = refreshIfExpired();
         }
         return current.accessToken();
     }
 
-    public void signIn(@NotNull URI accountUrl, @NotNull URI storageUrl, @NotNull DBRProgressMonitor monitor)
+    @NotNull
+    private synchronized DDDesktopUserToken refreshIfExpired() throws DBException {
+        DDDesktopUserToken current = requireSignedInToken();
+        return validator.isExpired(current) ? refresh(current) : current;
+    }
+
+    @NotNull
+    private DDDesktopUserToken requireSignedInToken() throws DBException {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_LOGGED_IN)) {
+            throw new DBException("Sign in to DataDam first");
+        }
+        DDDesktopUserToken current = token;
+        if (current == null) {
+            throw new DBException("DataDam authorization is invalid. Sign in again");
+        }
+        return current;
+    }
+
+    @NotNull
+    private DDDesktopUserToken refresh(@NotNull DDDesktopUserToken current) throws DBException {
+        String refreshToken = current.refreshToken();
+        if (refreshToken == null) {
+            throw new DBException("DataDam authorization cannot be refreshed. Sign in again");
+        }
+        log.debug("Refreshing DataDam desktop token");
+        try (DDDesktopSsoClient client = new DDDesktopSsoClient(URI.create(current.issuer()))) {
+            var response = client.refresh(refreshToken, DDSsoScopes.format(current.scopes()));
+            DDDesktopUserToken rotated = new DDDesktopUserToken(
+                response.accessToken(), current.issuer(), current.endpoints(), current.scopes(), response.refreshToken());
+            if (validator.isExpired(rotated)) {
+                throw new DBException("Refreshed DataDam token has expired");
+            }
+            saveToken(rotated);
+            return rotated;
+        } catch (Exception e) {
+            DDDesktopUserToken spent = new DDDesktopUserToken(
+                current.accessToken(), current.issuer(), current.endpoints(), current.scopes());
+            try {
+                saveToken(spent);
+            } catch (DBException saveError) {
+                token = null;
+                log.warn("Could not save DataDam refresh failure");
+            }
+            throw new DBException("DataDam token refresh failed. Sign in again");
+        }
+    }
+
+    void signIn(@NotNull URI accountUrl, @NotNull URI storageUrl, @NotNull DBRProgressMonitor monitor)
     throws DBException, InterruptedException {
         signIn(accountUrl, storageUrl, monitor, DDDesktopSsoLogin::openBrowser);
     }
@@ -134,30 +177,60 @@ class DDDesktopTokenManager {
         @NotNull URI accountUrl, @NotNull URI storageUrl, @NotNull DBRProgressMonitor monitor,
         @NotNull DDDesktopSsoLogin.BrowserOpener browser
     ) throws DBException, InterruptedException {
+        log.debug("Signing in to DataDam desktop access");
         var config = discover(accountUrl);
         var result = login.login(URI.create(config.issuer()), null,
             Set.of(DDSsoConstants.SCOPE_ACCOUNT_FULL_ACCESS, DDSsoConstants.SCOPE_DBEAVER_STORAGE_FULL_ACCESS,
                 DDSsoConstants.SCOPE_MCP_CONNECT), monitor, browser);
         DDDesktopUserToken saved = new DDDesktopUserToken(
-            result.accessToken(), config.issuer(), Set.of(accountUrl.toString(), storageUrl.toString()), DDSsoScopes.parse(result.scope()));
+            result.accessToken(), config.issuer(), Set.of(accountUrl.toString(), storageUrl.toString()),
+            DDSsoScopes.parse(result.scope()), result.refreshToken()
+        );
         if (validator.isExpired(saved)) {
             throw new DBException("DataDam desktop token has expired");
         }
-        synchronized (this) {
-            store.save(saved);
-            token = saved;
-            DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, true);
-        }
-        log.debug("Stored DataDam desktop token");
+        saveToken(saved);
     }
 
-    public void signOut() throws DBException {
-        synchronized (this) {
-            token = null;
-            store.clear();
-            DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, false);
-        }
+    private synchronized void saveToken(@NotNull DDDesktopUserToken saved) throws DBException {
+        store.save(saved);
+        token = saved;
+        log.debug("Stored DataDam desktop token");
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, true);
+    }
+
+    void signOut() throws DBException {
+        log.debug("Signing out of DataDam desktop access");
+        DDDesktopUserToken previous = clearToken();
+        revoke(previous);
+    }
+
+    @Nullable
+    private synchronized DDDesktopUserToken clearToken() throws DBException {
+        DBWorkbench.getPlatform().getPreferenceStore().setValue(PREF_LOGGED_IN, false);
+        DDDesktopUserToken previous = token;
+        token = null;
+        store.clear();
         log.debug("Cleared DataDam desktop token");
+        return previous;
+    }
+
+    private void revoke(@Nullable DDDesktopUserToken previous) {
+        if (previous == null) {
+            return;
+        }
+        String refreshToken = previous.refreshToken();
+        if (refreshToken == null) {
+            return;
+        }
+        String issuer = previous.issuer();
+        Job.createSystem("Revoke DataDam desktop token", monitor -> {
+            try (DDDesktopSsoClient client = new DDDesktopSsoClient(URI.create(issuer))) {
+                client.revoke(refreshToken);
+            } catch (Exception e) {
+                log.warn("DataDam credentials cleared locally, but server revocation could not be confirmed", e);
+            }
+        }).schedule();
     }
 
     @NotNull

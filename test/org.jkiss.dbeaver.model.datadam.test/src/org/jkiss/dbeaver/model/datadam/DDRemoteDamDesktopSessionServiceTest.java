@@ -25,12 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
-import org.jkiss.junit.DBeaverUnitTest;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 import org.mockito.ArgumentCaptor;
@@ -43,7 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Timeout(15)
-class DDRemoteDamDesktopSessionServiceTest extends DBeaverUnitTest {
+class DDRemoteDamDesktopSessionServiceTest {
     private final DDDesktopAccessService access = Mockito.mock(DDDesktopAccessService.class);
     private final DDRemoteDamDesktopChannel channel = Mockito.mock(DDRemoteDamDesktopChannel.class);
     private final DDRemoteDamDesktopSessionService service = new DDRemoteDamDesktopSessionService(access, channel);
@@ -77,7 +72,7 @@ class DDRemoteDamDesktopSessionServiceTest extends DBeaverUnitTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = DDDesktopAccessService.Status.class, names = {"SIGNED_OUT", "EXPIRED", "UNLOADED"})
+    @EnumSource(value = DDDesktopAccessService.Status.class, names = {"SIGNED_OUT", "INVALID_TOKEN"})
     void doesNotStartLoginOrTransportWhenAuthorizationIsUnavailable(@NotNull DDDesktopAccessService.Status status) {
         Mockito.when(access.getStatus()).thenReturn(status);
 

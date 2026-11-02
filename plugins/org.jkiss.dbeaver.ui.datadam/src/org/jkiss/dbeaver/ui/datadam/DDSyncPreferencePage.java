@@ -84,7 +84,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             authenticationGroup, DDTrackingUIMessages.sync_preference_page_desktop_sign_in, null,
             SelectionListener.widgetSelectedAdapter(e -> {
                 DDDesktopAccessService.Status status = accessService.getStatus();
-                if (status == DDDesktopAccessService.Status.SIGNED_IN || status == DDDesktopAccessService.Status.EXPIRED) {
+                if (status == DDDesktopAccessService.Status.SIGNED_IN) {
                     logOut();
                 } else {
                     logIn();
@@ -142,7 +142,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         boolean signedIn = status == DDDesktopAccessService.Status.SIGNED_IN;
         userText.setText(signedIn ? DDTrackingUIMessages.sync_preference_page_account_signed_in
             : DDTrackingUIMessages.sync_preference_page_account_not_signed_in);
-        boolean canRefresh = signedIn || status == DDDesktopAccessService.Status.EXPIRED;
+        boolean canRefresh = signedIn;
         accountActionButton.setText(canRefresh
             ? DDTrackingUIMessages.sync_preference_page_desktop_sign_out
             : DDTrackingUIMessages.sync_preference_page_desktop_sign_in);

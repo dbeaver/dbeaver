@@ -38,7 +38,7 @@ import java.util.function.Consumer;
 
 /** Coordinates the desktop login and the locally imported project keys. */
 public class DDDesktopAccessService {
-    public enum Status { SIGNED_IN, SIGNED_OUT, EXPIRED, UNLOADED }
+    public enum Status { SIGNED_IN, SIGNED_OUT, INVALID_TOKEN, UNLOADED }
 
     private static final Log log = Log.getLog(DDDesktopAccessService.class);
     private static final DDDesktopAccessService INSTANCE = new DDDesktopAccessService(DDDesktopTokenManager.getInstance());
@@ -51,6 +51,7 @@ public class DDDesktopAccessService {
     private final URI storageUrl = URI.create(DDEndpoints.getStorageBaseUrl());
     private final DDAccountClient accountClient = new DDAccountClient(accountUrl);
     private final DDDesktopUserService userService;
+    private volatile boolean loaded;
     @Nullable
     private volatile DDKeyBundle keyBundle;
     @Nullable
@@ -69,11 +70,13 @@ public class DDDesktopAccessService {
 
     @NotNull
     public Status getStatus() {
+        if (!loaded) {
+            return Status.UNLOADED;
+        }
         return switch (tokenManager.getStatus()) {
             case SIGNED_IN -> Status.SIGNED_IN;
             case SIGNED_OUT -> Status.SIGNED_OUT;
-            case EXPIRED -> Status.EXPIRED;
-            case UNLOADED -> Status.UNLOADED;
+            case INVALID_TOKEN -> Status.INVALID_TOKEN;
         };
     }
 
@@ -91,9 +94,7 @@ public class DDDesktopAccessService {
 
     @NotNull
     public String getAccessTokenForResource(@NotNull URI resource) throws DBException {
-        if (!operationLock.readLock().tryLock()) {
-            throw new DBException("DataDam access operation is in progress");
-        }
+        operationLock.readLock().lock();
         try {
             return tokenManager.getAccessTokenForResource(resource);
         } finally {
@@ -108,17 +109,21 @@ public class DDDesktopAccessService {
         return userService.getLoggedUserView(bundle == null ? null : bundle.accountId());
     }
 
+
+    //can call some UI functionality. so must be kept separately from instance creation
     public void load() throws DBException {
         operationLock.writeLock().lock();
+        if (loaded) {
+            operationLock.writeLock().unlock();
+            return;
+        }
         try {
-            if (tokenManager.getStatus() != DDDesktopTokenManager.Status.UNLOADED) {
-                return;
-            }
             log.debug("Loading DataDam desktop access");
             notifyAccessListeners(DDDesktopAccessListener::accessChanging);
             tokenManager.load(storageUrl);
             updateKeyBundle(tokenManager.getStatus() == DDDesktopTokenManager.Status.SIGNED_IN ? DDKeyStore.load() : null);
         } finally {
+            loaded = true;
             finishAccessChange();
         }
     }
@@ -216,24 +221,41 @@ public class DDDesktopAccessService {
         Instant expiresAt = tokenManager.getExpiresAt();
         if (expiresAt != null) {
             Job job = Job.createSystem("Expire DataDam desktop access", monitor -> {
-                expireAccess(version);
+                expireAccess(version, expiresAt);
             });
             expiryJob = job;
             job.schedule(Math.max(1, Duration.between(Instant.now(), expiresAt).toMillis()));
         }
     }
 
-    private void expireAccess(long version) {
+    private void expireAccess(long version, @NotNull Instant expiresAt) {
         operationLock.writeLock().lock();
         try {
             if (version != expiryVersion) {
                 return;
             }
             expiryJob = null;
-            if (tokenManager.getStatus() == DDDesktopTokenManager.Status.EXPIRED) {
+        } finally {
+            operationLock.writeLock().unlock();
+        }
+        try {
+            getAccessTokenForResource(storageUrl);
+        } catch (DBException e) {
+            log.debug("DataDam authorization requires sign-in");
+        }
+        operationLock.writeLock().lock();
+        try {
+            if (version != expiryVersion) {
+                return;
+            }
+            // An early wake keeps the deadline; a rotated token needs a new WebSocket handshake.
+            boolean refreshed = !Objects.equals(expiresAt, tokenManager.getExpiresAt());
+            if (refreshed) {
+                notifyAccessListeners(DDDesktopAccessListener::accessChanging);
+            }
+            scheduleExpiry();
+            if (refreshed || tokenManager.getStatus() != DDDesktopTokenManager.Status.SIGNED_IN) {
                 notifyAccessListeners(DDDesktopAccessListener::accessChanged);
-            } else {
-                scheduleExpiry();
             }
         } finally {
             operationLock.writeLock().unlock();
