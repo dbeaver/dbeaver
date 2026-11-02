@@ -93,7 +93,7 @@ class DDRemoteDamDesktopSessionServiceTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = DDDesktopAccessService.Status.class, names = {"SIGNED_OUT", "EXPIRED", "UNLOADED"})
+    @EnumSource(value = DDDesktopAccessService.Status.class, names = {"SIGNED_OUT", "INVALID_TOKEN"})
     void doesNotStartLoginOrTransportWhenAuthorizationIsUnavailable(@NotNull DDDesktopAccessService.Status status) {
         Mockito.when(access.getStatus()).thenReturn(status);
 
