@@ -18,15 +18,16 @@ package org.jkiss.dbeaver.model.ai.engine;
 
 import com.google.gson.Gson;
 import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.ai.internal.AIActivator;
 import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.function.ThrowableFunction;
+import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 
 import java.io.IOException;
 import java.net.URI;
@@ -278,9 +279,9 @@ public final class AIModelCatalog {
     private static AIModelCatalog createInstance() {
         Path cacheFile = null;
         try {
-            AIActivator activator = AIActivator.getInstance();
-            if (activator != null) {
-                cacheFile = RuntimeUtils.getPluginStateLocation(activator).resolve("ai-model-catalog-" + CATALOG_HOST + ".json");
+            Bundle bundle = FrameworkUtil.getBundle(AIModelCatalog.class);
+            if (bundle != null) {
+                cacheFile = Platform.getStateLocation(bundle).toPath().resolve("ai-model-catalog-" + CATALOG_HOST + ".json");
             }
         } catch (Exception e) {
             log.debug("Unable to locate AI model catalog cache directory", e);
