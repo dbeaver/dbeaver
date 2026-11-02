@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.ai.chat.controls;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.e4.ui.css.swt.dom.WidgetElement;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
@@ -579,19 +581,29 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     private void initializeDataSource() {
         dataSourceInitializationPending = true;
         chatSession.setBusy(true);
-        new AbstractJob("Initialize AI chat session") {
+        AbstractJob initializationJob = new AbstractJob("Initialize AI chat session") {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
+                    if (monitor.isCanceled()) {
+                        return Status.CANCEL_STATUS;
+                    }
                     chatSession.init(monitor);
-                    UIUtils.asyncExec(() -> completeDataSourceInitialization(null));
+                    return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
                 } catch (Exception e) {
-                    UIUtils.asyncExec(() -> completeDataSourceInitialization(e));
+                    return monitor.isCanceled() ? Status.CANCEL_STATUS : GeneralUtils.makeExceptionStatus(e);
                 }
-                return Status.OK_STATUS;
             }
-        }.schedule();
+        };
+        initializationJob.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(@NotNull IJobChangeEvent event) {
+                IStatus result = event.getResult();
+                UIUtils.asyncExec(() -> completeDataSourceInitialization(result));
+            }
+        });
+        initializationJob.schedule();
     }
 
     private void selectDataSource(@Nullable DBPDataSourceContainer container) throws DBException {
@@ -601,14 +613,15 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         isDataSourceInitialized = true;
     }
 
-    private void completeDataSourceInitialization(@Nullable Throwable error) {
+    private void completeDataSourceInitialization(@NotNull IStatus result) {
         if (isDisposed()) {
             return;
         }
         DBRRunnable command = pendingCommand;
         pendingCommand = null;
+        Throwable error = result.getException();
         try {
-            if (error == null) {
+            if (result.isOK()) {
                 if (command == null) {
                     selectDataSource(requestedDataSource);
                 } else {
@@ -621,13 +634,16 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             dataSourceInitializationPending = false;
             chatSession.setBusy(false);
         }
+        if (result.matches(IStatus.CANCEL)) {
+            return;
+        }
         if (error != null) {
             DBWorkbench.getPlatformUI().showError(
                 AIChatMessagesUI.ai_chat_initialization_error,
                 AIChatMessagesUI.ai_chat_initialization_error_message,
                 error
             );
-        } else if (command != null) {
+        } else if (result.isOK() && command != null) {
             executeCommand(command);
         }
     }
