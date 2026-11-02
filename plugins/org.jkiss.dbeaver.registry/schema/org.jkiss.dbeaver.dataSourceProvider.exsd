@@ -456,22 +456,20 @@
          <attribute name="defaultValue" type="string"/>
          <attribute name="validValues" type="string"/>
          <attribute name="allowCustomValues" type="boolean"/>
-         <attribute name="features" type="string">
-            <annotation>
-               <documentation>
-                  Comma-separated property feature flags. For provider properties, &quot;main&quot; requests display
-                  on the main connection settings page in clients that support it. This affects presentation only:
-                  the value remains a provider property. Properties without this feature retain the client's default
-                  placement. Required values must be declared with the separate required attribute.
-               </documentation>
-            </annotation>
-         </attribute>
+         <attribute name="features" type="string"/>
          <attribute name="length" type="string"/>
          <attribute name="desktop" type="boolean"/>
          <attribute name="hidden" type="boolean"/>
          <attribute name="hideExpr" type="string"/>
          <attribute name="readOnlyExpr" type="string"/>
-         <attribute name="supportedConfigurationTypes" type="string"/>
+         <attribute name="supportedConfigurationTypes" type="string">
+            <annotation>
+               <documentation>
+                  Comma-separated configuration types (MANUAL,URL) supported by a main or provider property.
+                  When omitted, both configuration types are supported.
+               </documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
