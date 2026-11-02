@@ -337,18 +337,6 @@ public abstract class JDBCDataSource extends AbstractDataSource
         }
     }
 
-    /**
-     * Validates with the actual driver selected for this connection, including driver substitutions.
-     * A null driver indicates DriverManager-based connection opening.
-     */
-    protected void validateConnectionProperties(
-        @Nullable Driver driver,
-        @Nullable String url,
-        @NotNull Properties connectProps
-    ) throws DBCException {
-        validateConnectionProperties(url, connectProps);
-    }
-
     private void initializeDriverContext(@NotNull Driver driverInstance) {
         if (driverInstance instanceof ObjectWithContextParameters owcp) {
             DBPProject project = getContainer().getProject();
