@@ -28,9 +28,11 @@ import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.function.ThrowableSupplier;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URLConnection;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -105,13 +107,27 @@ record CDataDriverSettings(
 
     @NotNull
     static Map<String, CDataDriverSettings> load(@NotNull Path file) {
-        if (!Files.isRegularFile(file)) {
-            return Map.of();
+        if (Files.isRegularFile(file)) {
+            try (Reader reader = Files.newBufferedReader(file)) {
+                return read(reader);
+            } catch (IOException | IllegalArgumentException | IllegalStateException e) {
+                log.warn("Error reading CData driver settings", e);
+            }
         }
-        try (Reader reader = Files.newBufferedReader(file)) {
-            return read(reader);
+        return loadBundled();
+    }
+
+    @NotNull
+    private static Map<String, CDataDriverSettings> loadBundled() {
+        try (var input = CDataDriverSettings.class.getResourceAsStream(FILE_NAME)) {
+            if (input == null) {
+                throw new IOException("Bundled CData driver settings are missing");
+            }
+            try (Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
+                return read(reader);
+            }
         } catch (IOException | IllegalArgumentException | IllegalStateException e) {
-            log.warn("Error reading CData driver settings", e);
+            log.error("Error reading bundled CData driver settings", e);
             return Map.of();
         }
     }

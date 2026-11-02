@@ -21,11 +21,13 @@ import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeDescriptor;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
+import java.util.List;
 
 public class DataSourceProviderRegistryTest {
     @Test
@@ -127,5 +129,28 @@ public class DataSourceProviderRegistryTest {
         Assertions.assertNotNull(h2Tree);
         Assertions.assertNotSame(genericTree, h2Tree);
         Assertions.assertEquals(genericTree.getPath(), h2Tree.getPath());
+    }
+
+    @Test
+    public void testTreePropertyChangeInvalidatesCachedGetterAndPreservesChildren() {
+        var provider = DataSourceProviderRegistry.getInstance().getDataSourceProvider("generic");
+        var item = new DBXTreeItem(provider, null, null, "item", "original", false, true, false, false, false, null, null);
+        var child = new DBXTreeItem(provider, item, null, "child", "original", false, true, false, false, false, null, null);
+        Assertions.assertEquals(String.class, item.getPropertyOrCollectionItemType(PropertyContainer.class));
+        item.setPropertyName("replacement");
+
+        Assertions.assertEquals("replacement", item.getPropertyName());
+        Assertions.assertEquals(Integer.class, item.getPropertyOrCollectionItemType(PropertyContainer.class));
+        Assertions.assertSame(child, item.findChildItemByPath("child"));
+    }
+
+    public static class PropertyContainer {
+        public List<String> getOriginal() {
+            return List.of();
+        }
+
+        public List<Integer> getReplacement() {
+            return List.of();
+        }
     }
 }

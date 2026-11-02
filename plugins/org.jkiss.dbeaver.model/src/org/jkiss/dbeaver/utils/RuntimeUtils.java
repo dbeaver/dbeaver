@@ -212,6 +212,14 @@ public final class RuntimeUtils {
         return DurationFormatter.format(Duration.ofMillis(ms), DurationFormat.MEDIUM);
     }
 
+    /**
+     * Returns a platform URL for a path relative to the root of a plug-in bundle.
+     */
+    @NotNull
+    public static String makePlatformResourceUrl(@NotNull String pluginId, @NotNull String resourcePath) {
+        return "platform:/plugin/" + pluginId + "/" + resourcePath;
+    }
+
     @NotNull
     public static Path getPlatformFile(@NotNull String platformURL) throws IOException {
         URL url = new URL(platformURL);

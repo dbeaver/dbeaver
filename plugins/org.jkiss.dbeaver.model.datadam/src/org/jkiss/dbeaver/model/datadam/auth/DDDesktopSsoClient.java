@@ -20,12 +20,12 @@ import com.dbeaver.datadam.sso.api.DDSsoConstants;
 import com.dbeaver.datadam.sso.api.DDSsoScopes;
 import com.dbeaver.datadam.sso.api.model.DDSsoConfigResponse;
 import com.dbeaver.datadam.sso.api.model.DDSsoTokenResponse;
-import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
 import com.google.gson.JsonParseException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.datadam.DDClient;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.oauth.OAuthConstants;
@@ -37,7 +37,7 @@ import java.util.List;
 import java.util.Map;
 
 /** HTTP operations for a public desktop client. Credentials are never attached to a browser URL. */
-public class DDDesktopSsoClient extends AbstractRestClient implements AutoCloseable {
+public class DDDesktopSsoClient extends DDClient implements AutoCloseable {
     public DDDesktopSsoClient(@NotNull URI issuer) throws DBException {
         super(CommonUtils.removeTrailingSlash(issuer.toString()), DEFAULT_CONNECT_TIMEOUT, 10_000, List.of(), HttpClient.Redirect.NEVER);
         requireSecureServer(issuer);

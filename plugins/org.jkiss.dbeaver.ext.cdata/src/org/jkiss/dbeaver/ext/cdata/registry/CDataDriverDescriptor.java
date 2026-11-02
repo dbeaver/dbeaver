@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.registry.driver.DriverLoaderDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArraySet;
@@ -50,7 +51,7 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
     private static final Log log = Log.getLog(CDataDriverDescriptor.class);
     private static final long IMAGE_RETRY_NANOS = TimeUnit.MINUTES.toNanos(5);
 
-    private final CDataDriverInfo driverInfo;
+    private volatile CDataDriverInfo driverInfo;
     private DBPDataSourceType dataSourceType;
     private final Set<Runnable> licenseChangeListeners = new CopyOnWriteArraySet<>();
     private final AtomicBoolean activationDialogInProgress = new AtomicBoolean();
@@ -84,6 +85,20 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
     @NotNull
     public CDataDriverInfo getDriverInfo() {
         return driverInfo;
+    }
+
+    public void setDriverInfo(@NotNull CDataDriverInfo driverInfo) {
+        if (!Objects.equals(this.driverInfo.iconDriver(), driverInfo.iconDriver())) {
+            iconLoaded = false;
+            iconLoadStarted.set(false);
+            iconRetryAfterNanos = 0;
+            logoLoaded = false;
+            logoImage = null;
+            logoLoadStarted.set(false);
+            logoRetryAfterNanos = 0;
+        }
+        this.driverInfo = driverInfo;
+        dataSourceType = null;
     }
 
     @NotNull

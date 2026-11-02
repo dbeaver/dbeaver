@@ -28,6 +28,21 @@
             type="org.jkiss.dbeaver.model.navigator.DBNProject"/>
     </extension>
 
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.datadam.mcp.DDMcpConnectionSettingsPropertyTester"
+            id="org.jkiss.dbeaver.ui.datadam.mcp.DDMcpConnectionSettingsPropertyTester"
+            namespace="org.jkiss.dbeaver.ui.datadam.mcp"
+            properties="enabled"
+            type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator
+            class="org.jkiss.dbeaver.ui.ai.preferences.PrefPageDataSourceAI"
+            uiClass="org.jkiss.dbeaver.ui.datadam.mcp.DDMcpConnectionConfigurator"/>
+    </extension>
+
     <extension point="org.eclipse.core.expressions.definitions">
         <definition id="org.jkiss.dbeaver.ui.datadam.projectSync.canShareProject">
             <with variable="selection">
@@ -124,11 +139,11 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
-        <propertyConfigurator class="org.jkiss.dbeaver.model.datadam.DDAIEngine" uiClass="org.jkiss.dbeaver.ui.datadam.DDConfigurator"/>
+        <propertyConfigurator class="org.jkiss.dbeaver.model.datadam.ai.DDAIEngine" uiClass="org.jkiss.dbeaver.ui.datadam.ai.DDAIEngineConfigurator"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.workbenchHandler">
-        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.datadam.DDTrackingInitializer" order="100"/>
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.datadam.DDDesktopInitializer" order="100"/>
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">

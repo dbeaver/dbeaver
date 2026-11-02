@@ -60,9 +60,9 @@ public @interface RunWithApplication {
     String[] vmArgs() default {};
 
     /**
-     * Wait for the {@code DBPApplicationWorkbench} service before starting the app.
-     * Set {@code false} for headless CLI apps (DBVR, etc.) that never register it - avoids delay.
+     * No longer used; retained for compatibility with existing test annotations.
      */
+    @Deprecated
     boolean waitForWorkbench() default true;
 
 }

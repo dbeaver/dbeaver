@@ -56,6 +56,7 @@ import java.util.stream.Collectors;
 public class DataSourceProviderDescriptor extends AbstractDescriptor implements DBPDataSourceProviderDescriptor {
     private static final String ATTRIBUTE_CHANGE_FOLDER_LABEL = "changeFolderLabel"; //$NON-NLS-1$
     private static final String ATTRIBUTE_CHANGE_FOLDER_TYPE = "changeFolderType"; //$NON-NLS-1$
+    private static final String ATTRIBUTE_CHANGE_PROPERTY = "changeProperty"; //$NON-NLS-1$
     private static final String ATTRIBUTE_REMOVE = "remove"; //$NON-NLS-1$
     private static final String ATTRIBUTE_REPLACE_CHILDREN = "replaceChildren"; //$NON-NLS-1$
 
@@ -424,7 +425,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
     @NotNull
     public synchronized List<DBPDriver> getDrivers() {
         if (driverProvider && !driversLoaded) {
-            // Load provided drivers
             if (getInstance() instanceof DriverProvider dp) {
                 this.drivers.addAll(dp.getProvidedDrivers(this));
             } else {
@@ -433,7 +433,19 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             driversLoaded = true;
         }
 
-        return drivers;
+        return List.copyOf(drivers);
+    }
+
+    synchronized void refreshProvidedDrivers() {
+        if (driverProvider) {
+            getDrivers();
+            if (getInstance() instanceof DriverProvider dp) {
+                for (DBPDriver driver : dp.refreshProvidedDrivers(this, drivers)) {
+                    registry.removeDriver(driver);
+                    driver.getDataSourceType();
+                }
+            }
+        }
     }
 
     public synchronized void removeCustomAndDisabledDrivers() {
@@ -593,6 +605,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor implements 
             }
         }
         DBXTreeNode parentNode = baseItem;
+
+        String changeProperty = config.getAttribute(ATTRIBUTE_CHANGE_PROPERTY);
+        if (CommonUtils.isNotEmpty(changeProperty)) {
+            baseItem.setPropertyName(changeProperty);
+        }
 
         if (CommonUtils.getBoolean(config.getAttribute(ATTRIBUTE_REPLACE_CHILDREN))) {
             baseItem.clearChildren();
