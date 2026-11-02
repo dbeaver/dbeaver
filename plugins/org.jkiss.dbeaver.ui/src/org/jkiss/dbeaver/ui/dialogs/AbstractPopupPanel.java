@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -150,15 +150,24 @@ public abstract class AbstractPopupPanel extends BaseDialog {
             if (shell == null || shell.isDisposed()) {
                 return;
             }
-            if (event.widget instanceof Control clicked) {
-                Shell clickedShell = clicked.getShell();
-                // Ignore clicks inside the popup and its child shells (e.g. a drop-down opened from it)
-                if (isPopupShell(shell, clickedShell)) {
-                    return;
-                }
-                // Ignore clicks in transient shells (context menus, combo drop-downs, tooltips)
-                // which may not be parented to the popup shell
-                if ((clickedShell.getStyle() & SWT.ON_TOP) != 0) {
+            if (!(event.widget instanceof Control clicked)) {
+                // Menu items and other non-control widgets belong to transient UI
+                return;
+            }
+            Shell clickedShell = clicked.getShell();
+            // Ignore clicks inside the popup and its child shells (e.g. a drop-down opened from it)
+            if (isPopupShell(shell, clickedShell)) {
+                return;
+            }
+            // Keep the popup open while a blocking dialog opened from it is being handled
+            if (isBlockingDialog(clickedShell)) {
+                return;
+            }
+            // Ignore clicks in transient shells (combo drop-downs, tooltips) opened from the popup.
+            // They do not take focus, so keyboard focus remains inside the popup shell.
+            if ((clickedShell.getStyle() & SWT.ON_TOP) != 0) {
+                Control focusControl = display.getFocusControl();
+                if (focusControl != null && UIUtils.isParent(shell, focusControl)) {
                     return;
                 }
             }
@@ -174,7 +183,7 @@ public abstract class AbstractPopupPanel extends BaseDialog {
         return true;
     }
 
-    private static boolean isPopupShell(Shell popupShell, Shell shell) {
+    private static boolean isPopupShell(@NotNull Shell popupShell, @NotNull Shell shell) {
         for (Composite parent = shell; parent != null; parent = parent.getParent()) {
             if (parent == popupShell) {
                 return true;
@@ -183,17 +192,20 @@ public abstract class AbstractPopupPanel extends BaseDialog {
         return false;
     }
 
+    private static boolean isBlockingDialog(@NotNull Shell shell) {
+        Object dialogData = shell.getData();
+        return dialogData instanceof MessageBox
+            || dialogData instanceof MessageBoxModern
+            || dialogData instanceof BlockingPopupDialog
+            || dialogData instanceof ErrorDialog;
+    }
+
     private void handleFocusLost() {
         Shell shell = getShell();
         if (shell != null && !shell.isDisposed()) {
             Control focusControl = shell.getDisplay().getFocusControl();
             if (focusControl != null && !UIUtils.isParent(shell, focusControl)) {
-                Object dialogData = focusControl.getShell().getData();
-                if (dialogData instanceof MessageBox ||
-                    dialogData instanceof MessageBoxModern ||
-                    dialogData instanceof BlockingPopupDialog ||
-                    dialogData instanceof ErrorDialog
-                ) {
+                if (isBlockingDialog(focusControl.getShell())) {
                     return;
                 }
                 cancelPressed();
