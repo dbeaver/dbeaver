@@ -87,13 +87,71 @@ class DriverLibraryPlatformTest {
         return (List<Path>) method.invoke(null, archives, cache);
     }
 
+    @Test
+    void rejectsEntryPathsOutsideArchiveCache() throws Exception {
+        Path cache = directory.resolve("drivers/zip-cache");
+        Path outside = directory.resolve("outside.jar");
+        for (String entry : List.of("../outside.jar", "..\\outside.jar", outside.toString(), "C:/outside.jar")) {
+            Path archive = createArchive("driver.zip", entry);
+            Assertions.assertEquals(List.of(archive), extractZipArchives(List.of(archive), cache));
+        }
+        Assertions.assertFalse(Files.exists(outside));
+        Assertions.assertFalse(Files.exists(cache.resolve("outside.jar")));
+    }
+
+    @Test
+    void extractsNestedLibrariesAndReusesRegularCachedFiles() throws Exception {
+        Path archive = createArchive("driver.zip", "lib/driver.jar", "lib/nested.zip", "ignored.txt");
+        Path cache = directory.resolve("drivers/zip-cache");
+        Path jar = cache.resolve("driver/lib/driver.jar");
+        Path zip = cache.resolve("driver/lib/nested.zip");
+        Assertions.assertEquals(List.of(archive, jar, zip), extractZipArchives(List.of(archive), cache));
+        Assertions.assertArrayEquals(new byte[]{1}, Files.readAllBytes(jar));
+        Assertions.assertArrayEquals(new byte[]{1}, Files.readAllBytes(zip));
+        Assertions.assertFalse(Files.exists(cache.resolve("driver/ignored.txt")));
+        Files.write(jar, new byte[]{2});
+        Assertions.assertEquals(List.of(archive, jar, zip), extractZipArchives(List.of(archive), cache));
+        Assertions.assertArrayEquals(new byte[]{2}, Files.readAllBytes(jar));
+    }
+
+    @Test
+    void stopsAtClassFiles() throws Exception {
+        Path archive = createArchive("driver.zip", "Driver.class", "lib/driver.jar");
+        Path cache = directory.resolve("drivers/zip-cache");
+        Assertions.assertEquals(List.of(archive), extractZipArchives(List.of(archive), cache));
+        Assertions.assertFalse(Files.exists(cache));
+    }
+
+    @Test
+    void rejectsSymlinkedCacheDirectoriesAndFiles() throws Exception {
+        Path outside = Files.createDirectory(directory.resolve("outside"));
+        Path existing = Files.write(outside.resolve("outside-file.jar"), new byte[]{2});
+        Path archive = createArchive("driver.zip");
+        Path cache = Files.createDirectories(directory.resolve("drivers/zip-cache"));
+        Path archiveCache = cache.resolve("driver");
+        Files.createSymbolicLink(archiveCache, outside);
+        Assertions.assertEquals(List.of(archive), extractZipArchives(List.of(archive), cache));
+        Files.delete(archiveCache);
+        Files.createDirectory(archiveCache);
+        Files.createSymbolicLink(archiveCache.resolve("outside-file.jar"), existing);
+        Assertions.assertEquals(List.of(archive), extractZipArchives(List.of(archive), cache));
+        Assertions.assertArrayEquals(new byte[]{2}, Files.readAllBytes(existing));
+    }
+
     @NotNull
     private Path createArchive(@NotNull String name) throws IOException {
+        return createArchive(name, "outside-file.jar");
+    }
+
+    @NotNull
+    private Path createArchive(@NotNull String name, @NotNull String... entries) throws IOException {
         Path archive = directory.resolve(name);
         try (ZipOutputStream output = new ZipOutputStream(Files.newOutputStream(archive))) {
-            output.putNextEntry(new ZipEntry("outside-file.jar"));
-            output.write(1);
-            output.closeEntry();
+            for (String entry : entries) {
+                output.putNextEntry(new ZipEntry(entry));
+                output.write(1);
+                output.closeEntry();
+            }
         }
         return archive;
     }

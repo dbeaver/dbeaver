@@ -33,19 +33,20 @@ import org.jkiss.dbeaver.registry.ProductBundleRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.io.CopyingFileVisitor;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 import java.util.zip.CRC32;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 /**
  * DriverUtils
@@ -92,8 +93,7 @@ public class DriverUtils {
                 continue;
             }
             // Seems to be a zip. Let's try it.
-            try (FileSystem zipFileSystem = FileSystems.newFileSystem(inputFile)) {
-                Path sourceRoot = zipFileSystem.getPath("/");
+            try (ZipInputStream zip = new ZipInputStream(Files.newInputStream(inputFile))) {
                 String sourceName = inputFile.getFileName().toString();
                 if (sourceName.endsWith(DBPDriverLibrary.FILE_EXT_ZIP)) {
                     sourceName = sourceName.substring(0, sourceName.length() - 4);
@@ -103,29 +103,20 @@ public class DriverUtils {
                 if (!localCacheDir.startsWith(cacheRoot) || localCacheDir.equals(cacheRoot)) {
                     throw new IOException("Archive cache directory resolves outside the ZIP cache: " + inputFile);
                 }
-                Files.walkFileTree(sourceRoot, new CopyingFileVisitor(sourceRoot, localCacheDir) {
-                    @NotNull
-                    @Override
-                    public FileVisitResult visitFile(
-                        @NotNull Path file,
-                        @NotNull BasicFileAttributes attrs
-                    ) throws IOException {
-                        String fileName = file.getFileName().toString();
-                        if (fileName.endsWith(DBPDriverLibrary.FILE_EXT_CLASS)) {
-                            // This is a jar with classes. Stop processing.
-                            return FileVisitResult.TERMINATE;
-                        }
-                        if (fileName.endsWith(DBPDriverLibrary.FILE_EXT_JAR) ||
-                            fileName.endsWith(DBPDriverLibrary.FILE_EXT_ZIP)) {
-                            Path localFile = resolveTargetPath(file);
-                            jarFiles.add(localFile);
-                            if (!Files.exists(localFile)) {
-                                return super.visitFile(file, attrs);
-                            }
-                        }
-                        return FileVisitResult.CONTINUE;
+                for (ZipEntry entry; (entry = zip.getNextEntry()) != null; zip.closeEntry()) {
+                    if (entry.isDirectory()) {
+                        continue;
                     }
-                });
+                    String name = entry.getName();
+                    if (name.endsWith(DBPDriverLibrary.FILE_EXT_CLASS)) {
+                        // This is a jar with classes. Stop processing.
+                        break;
+                    }
+                    if (name.endsWith(DBPDriverLibrary.FILE_EXT_JAR) || name.endsWith(DBPDriverLibrary.FILE_EXT_ZIP)) {
+                        Path localFile = extractZipEntry(zip, name, cacheRoot, localCacheDir);
+                        jarFiles.add(localFile);
+                    }
+                }
             } catch (Exception e) {
                 // Not a zip or corrupted zip. Just skip it
                 log.debug("Error processing zip archive '" + inputFile.getFileName() + "': " + e.getMessage());
@@ -133,6 +124,48 @@ public class DriverUtils {
         }
 
         return jarFiles;
+    }
+
+    @NotNull
+    private static Path extractZipEntry(
+        @NotNull InputStream zip,
+        @NotNull String name,
+        @NotNull Path cacheRoot,
+        @NotNull Path localCacheDir
+    ) throws IOException {
+        // Treat both separator styles as paths, regardless of the host operating system.
+        String entryName = name.replace('\\', '/');
+        Path entryPath = Path.of(entryName);
+        Path localFile = localCacheDir.resolve(entryPath).normalize();
+        if (entryPath.isAbsolute() || entryName.matches("^[A-Za-z]:.*") ||
+            !localFile.startsWith(localCacheDir) || localFile.equals(localCacheDir)) {
+            throw new IOException("Zip entry is outside of the target directory: " + name);
+        }
+        if (Files.isSymbolicLink(cacheRoot)) {
+            throw new IOException("ZIP cache is a symbolic link: " + cacheRoot);
+        }
+        Files.createDirectories(cacheRoot);
+        Path parent = cacheRoot;
+        for (Path part : cacheRoot.relativize(localFile.getParent())) {
+            parent = parent.resolve(part);
+            if (Files.isSymbolicLink(parent)) {
+                throw new IOException("ZIP cache directory is a symbolic link: " + parent);
+            }
+            if (!Files.exists(parent, LinkOption.NOFOLLOW_LINKS)) {
+                Files.createDirectory(parent);
+            }
+        }
+        if (Files.exists(localFile, LinkOption.NOFOLLOW_LINKS)) {
+            if (!Files.isRegularFile(localFile, LinkOption.NOFOLLOW_LINKS)) {
+                throw new IOException("Cached ZIP entry is not a regular file: " + localFile);
+            }
+        } else {
+            // Never follow or overwrite a link created at the destination between checking and opening it.
+            try (OutputStream output = Files.newOutputStream(localFile, StandardOpenOption.CREATE_NEW, StandardOpenOption.WRITE)) {
+                zip.transferTo(output);
+            }
+        }
+        return localFile;
     }
 
     @NotNull

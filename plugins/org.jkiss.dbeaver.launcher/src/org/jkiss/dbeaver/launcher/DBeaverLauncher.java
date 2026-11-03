@@ -39,6 +39,8 @@ import java.util.concurrent.Executors;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManagerFactory;
 import javax.swing.*;
@@ -2846,12 +2848,15 @@ public class DBeaverLauncher {
                 Files.isSymbolicLink(splash) || Files.isDirectory(splash, LinkOption.NOFOLLOW_LINKS)) {
                 return null;
             }
-            try (FileSystem jarFileSystem = FileSystems.newFileSystem(jarFile.toPath())) {
-                Path sourceEntry = jarFileSystem.getPath("/").resolve(jarEntry.replace(File.separatorChar, '/')); //$NON-NLS-1$
-                if (!Files.isRegularFile(sourceEntry, LinkOption.NOFOLLOW_LINKS)) {
+            // Older bundled runtimes do not include the jdk.zipfs filesystem provider.
+            try (ZipFile archive = new ZipFile(jarFile)) {
+                ZipEntry sourceEntry = archive.getEntry(jarEntry.replace(File.separatorChar, '/'));
+                if (sourceEntry == null || sourceEntry.isDirectory()) {
                     return null;
                 }
-                Files.copy(sourceEntry, splash, StandardCopyOption.REPLACE_EXISTING);
+                try (InputStream input = archive.getInputStream(sourceEntry)) {
+                    Files.copy(input, splash, StandardCopyOption.REPLACE_EXISTING);
+                }
             }
 
             return splash.toString();
