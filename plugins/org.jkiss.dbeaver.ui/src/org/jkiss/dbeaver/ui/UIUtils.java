@@ -901,7 +901,6 @@ public class UIUtils {
         createControlLabel(parent, label);
 
         Text text = new Text(parent, style);
-        fixReadonlyTextBackground(text);
         if (value != null) {
             text.setText(value);
         }
@@ -921,7 +920,6 @@ public class UIUtils {
 
         Text text = new Text(panel, style);
         text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        fixReadonlyTextBackground(text);
         if (value != null) {
             text.setText(value);
         }
@@ -2410,21 +2408,6 @@ public class UIUtils {
             }
         }
         display.update();
-    }
-
-    public static void fixReadonlyTextBackground(Text textField) {
-        // There is still no good workaround: https://bugs.eclipse.org/bugs/show_bug.cgi?id=340889
-        if (false) {
-            if (RuntimeUtils.isWindows()) {
-                // On Windows everything is fine
-                return;
-            }
-            if ((textField.getStyle() & SWT.READ_ONLY) == SWT.READ_ONLY) {
-                textField.setBackground(textField.getDisplay().getSystemColor(SWT.COLOR_WIDGET_HIGHLIGHT_SHADOW));
-            } else {
-                textField.setBackground(null);
-            }
-        }
     }
 
     @NotNull
