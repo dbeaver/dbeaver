@@ -98,6 +98,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private DDKeyBundle displayedBundle;
     private TableViewer viewer;
     private Button showRemote;
+    private Button refreshButton;
     private Composite actionButtons;
     private Button editButton;
     private Button syncButton;
@@ -164,7 +165,10 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         GridData projectsLayout = new GridData(SWT.FILL, SWT.FILL, true, true);
         projectsLayout.verticalIndent = 3;
         projectsSection.setLayoutData(projectsLayout);
-        showRemote = new Button(projectsSection, SWT.CHECK);
+        Composite controlsRow = UIUtils.createComposite(projectsSection, 2);
+        controlsRow.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        showRemote = new Button(controlsRow, SWT.CHECK);
+        showRemote.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, true, false));
         showRemote.setText(DDTrackingUIMessages.projects_show_remote);
         showRemote.setSelection(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_SHOW_REMOTE_PROJECTS));
         showRemote.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
@@ -172,6 +176,8 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             updateTableHeight();
             updateSelectionActions();
         }));
+        refreshButton = iconButton(controlsRow, UIIcon.REFRESH, DDTrackingUIMessages.projects_refresh, this::loadProjects);
+        refreshButton.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
 
         Composite tableRow = new Composite(projectsSection, SWT.NONE);
         GridLayout tableRowLayout = new GridLayout(2, false);
@@ -327,6 +333,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         SelectionSyncAction syncAction = selectionSyncAction(selection);
         boolean download = syncAction == SelectionSyncAction.DOWNLOAD;
         boolean available = !operationRunning && displayedBundle != null && uiManager.isDDReady();
+        refreshButton.setEnabled(available);
         editButton.setEnabled(available && selection.size() == 1 && selection.get(0).remoteProject() != null);
         syncButton.setEnabled(available && syncAction != SelectionSyncAction.NONE);
         syncButton.setImage(DBeaverIcons.getImage(download ? DDTrackingUIIcons.IMPORT_PROJECT : DDTrackingUIIcons.PROJECT_SYNC));
