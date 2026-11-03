@@ -240,28 +240,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 throw new DBCException("Authentication error: " + e.getMessage(), e);
             }
 
-            Driver driverInstance = createDriverInstance(monitor, driver);
-            if (driverInstance != null) {
-                try {
-                    if (!driverInstance.acceptsURL(url)) {
-                        // Just set the mark. Some drivers are poorly coded and always returns false here.
-                        isInvalidURL = true;
-                    }
-                } catch (Throwable e) {
-                    log.debug("Error in " + driverInstance.getClass().getName() + ".acceptsURL() - " + url, e);
-                }
-                initializeDriverContext(driverInstance);
-            }
-
-            JDBCConnectionOpener connectTask = new JDBCConnectionOpener(
-                this,
-                driver,
-                driverInstance,
-                url,
-                connectProps,
-                authResult
-            );
-
+            JDBCConnectionOpener connectTask = null;
             boolean openTaskFinished;
             try {
                 try {
@@ -269,6 +248,30 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 } catch (DBException e) {
                     throw new DBCException("Error preparing connection properties", e);
                 }
+                // Authentication and driver substitution may have changed both the URL and properties.
+                // Validate before creating the driver or invoking any of its URL-processing APIs.
+                validateConnectionProperties(url, connectProps);
+                Driver driverInstance = createDriverInstance(monitor, driver);
+                if (driverInstance != null) {
+                    try {
+                        if (!driverInstance.acceptsURL(url)) {
+                            // Just set the mark. Some drivers are poorly coded and always returns false here.
+                            isInvalidURL = true;
+                        }
+                    } catch (Throwable e) {
+                        log.debug("Error in " + driverInstance.getClass().getName() + ".acceptsURL() - " + url, e);
+                    }
+                    initializeDriverContext(driverInstance);
+                }
+
+                connectTask = new JDBCConnectionOpener(
+                    this,
+                    driver,
+                    driverInstance,
+                    url,
+                    connectProps,
+                    authResult
+                );
                 if (openTimeout <= 0) {
                     connectTask.run(monitor);
                     openTaskFinished = true;
@@ -278,7 +281,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
             } finally {
                 authModel.endAuthentication(container, connectionInfo, connectProps);
 
-                if (connectionConfigurer != null) {
+                if (connectionConfigurer != null && connectTask != null) {
                     try {
                         connectionConfigurer.afterConnection(
                             monitor,
@@ -334,6 +337,20 @@ public abstract class JDBCDataSource extends AbstractDataSource
         @NotNull String connectionUrl,
         @NotNull Properties connectionProperties
     ) throws DBException {
+    }
+
+    /**
+     * Enforces connection policy on the final connection inputs, before any driver URL parsing.
+     * Implementations may sanitize the transient properties or reject the connection with a DBCException.
+     */
+    protected void validateConnectionProperties(@Nullable String url, @NotNull Properties connectProps) throws DBCException {
+        if (DBWorkbench.getPlatform().getApplication().isMultiuser()
+            || DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES)) {
+            JDBCConnectionValidator validator = GeneralUtils.adapt(this, JDBCConnectionValidator.class);
+            if (validator != null) {
+                validator.validateConnectionProperties(url, connectProps);
+            }
+        }
     }
 
     private void initializeDriverContext(@NotNull Driver driverInstance) {

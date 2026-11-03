@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.impl.app.LocalSecretController;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskRun;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -49,6 +50,7 @@ import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
@@ -58,6 +60,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -233,9 +236,9 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
                 CoreApplicationMessages.collect_diagnostic_info_pick_path_title
             );
             textWithOpen.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            String userHome = System.getProperty(StandardConstants.ENV_USER_HOME);
-            if (userHome != null) {
-                textWithOpen.setText(userHome);
+            String initialOutputFolderPath = getInitialOutputFolderPath();
+            if (initialOutputFolderPath != null) {
+                textWithOpen.setText(initialOutputFolderPath);
             } else {
                 enableOk(false);
             }
@@ -269,14 +272,43 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
                 String outputFolderPathString = textWithOpen.getText();
                 if (!CommonUtils.isEmpty(outputFolderPathString)) {
                     outputFolder = new File(outputFolderPathString);
+                    storeOutputFolderPath(outputFolderPathString);
                 }
             }
             super.okPressed();
         }
 
+        private void storeOutputFolderPath(@NotNull String outputFolderPathString) {
+            DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+            store.setValue(DBeaverPreferences.DIAGNOSTIC_INFO_OUTPUT_FOLDER, outputFolderPathString);
+            PrefUtils.savePreferenceStore(store);
+        }
+
+        @Nullable
+        private String getInitialOutputFolderPath() {
+            DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+            String outputFolderPath = store.getString(DBeaverPreferences.DIAGNOSTIC_INFO_OUTPUT_FOLDER);
+            if (!isOutputFolderPathValid(outputFolderPath)) {
+                return System.getProperty(StandardConstants.ENV_USER_HOME);
+            }
+            return outputFolderPath;
+        }
+
         @Nullable
         private File getOutputFolder() {
             return outputFolder;
+        }
+
+        private static boolean isOutputFolderPathValid(@Nullable String outputFolderPathString) {
+            if (CommonUtils.isEmpty(outputFolderPathString)) {
+                return false;
+            }
+            try {
+                return Files.isDirectory(Path.of(outputFolderPathString));
+            } catch (InvalidPathException e) {
+                log.debug("Invalid path '%s'".formatted(outputFolderPathString), e);
+                return false;
+            }
         }
     }
 }
