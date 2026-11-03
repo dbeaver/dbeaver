@@ -84,6 +84,16 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
         return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
+    @Override
+    public int open() {
+        int result = super.open();
+        // populate wrapped text after the modeless shell has its final client size
+        if (!this.tipText.isDisposed()) {
+            showTip();
+        }
+        return result;
+    }
+
     @NotNull
     @Override
     protected Composite createDialogArea(@NotNull Composite parent) {
@@ -120,8 +130,6 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
             LinkRange link = this.getLinkAt(new Point(e.x, e.y));
             this.tipText.setCursor(link == null ? null : this.tipText.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
         });
-        showTip();
-
         if (this.displayShowOnStartup) {
             Button showTipButton = UIUtils.createCheckbox(
                 dialogArea,
