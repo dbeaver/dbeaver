@@ -2,16 +2,5 @@
 <?eclipse version="3.2"?>
 
 <plugin>
-    <extension point="org.jkiss.dbeaver.databaseEditor">
-        <editor id="access.principal.roles" class="org.jkiss.dbeaver.ui.editors.acl.PrincipalRolesEditor"
-                label="%editor.roles.name" description="%editor.roles.description" icon="#user_group"
-                position="additions_end" type="folder" embeddable="false">
-            <objectType name="org.jkiss.dbeaver.model.access.DBAAccessSubject"/>
-        </editor>
-        <editor id="access.principal.permissions" class="org.jkiss.dbeaver.ui.editors.acl.PrincipalPermissionsEditor"
-                label="%editor.permissions.name" description="%editor.permissions.description" icon="#permissions"
-                position="additions_end" type="folder" embeddable="false">
-            <objectType name="org.jkiss.dbeaver.model.access.DBAAccessSubject"/>
-        </editor>
-    </extension>
+
 </plugin>

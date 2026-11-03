@@ -52,26 +52,13 @@ public class SQLServerLoginManager extends SQLObjectEditor<SQLServerLogin, SQLSe
     }
 
     @Override
-    protected void addObjectCreateActions(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull List<DBEPersistAction> actions,
-        @NotNull ObjectCreateCommand command,
-        @NotNull Map<String, Object> options
-    ) throws DBException {
+    protected void addObjectCreateActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actions, @NotNull ObjectCreateCommand command, @NotNull Map<String, Object> options) throws DBException {
         SQLServerLogin login = command.getObject();
         command.setDisableSessionLogging(true); // Hide password from Query Manager
         StringBuilder script = new StringBuilder(64);
         script.append("CREATE LOGIN ").append(DBUtils.getQuotedIdentifier(login.getDataSource(), login.getName()));
-        if (login.getLoginType() == SQLServerLogin.LoginType.U || login.getLoginType() == SQLServerLogin.LoginType.G) {
-            script.append(" FROM WINDOWS");
-        } else if (login.getLoginType() == SQLServerLogin.LoginType.S) {
-            if (CommonUtils.isEmpty(login.getPassword())) {
-                throw new DBException("Password is required for a SQL Server login");
-            }
+        if (CommonUtils.isNotEmpty(login.getPassword())) {
             script.append(" WITH PASSWORD =").append(SQLUtils.quoteString(login.getDataSource(), login.getPassword()));
-        } else {
-            throw new DBException("Unsupported login type: " + login.getLoginType());
         }
         actions.add(
                 new SQLDatabasePersistAction("Create login", script.toString()) //$NON-NLS-2$
@@ -79,33 +66,13 @@ public class SQLServerLoginManager extends SQLObjectEditor<SQLServerLogin, SQLSe
     }
 
     @Override
-    protected void addObjectModifyActions(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull List<DBEPersistAction> actionList,
-        @NotNull ObjectChangeCommand command,
-        @NotNull Map<String, Object> options
-    ) throws DBException {
+    protected void addObjectModifyActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull List<DBEPersistAction> actionList, @NotNull ObjectChangeCommand command, @NotNull Map<String, Object> options) throws DBException {
         SQLServerLogin login = command.getObject();
         if (command.hasProperty("disabled")) {
             actionList.add(new SQLDatabasePersistAction(
                     "Alter login",
                     "ALTER LOGIN " + DBUtils.getQuotedIdentifier(login.getDataSource(), login.getName()) + (login.isDisabled() ? " DISABLE" : " ENABLE") //$NON-NLS-2$
             ));
-        }
-        if (command.hasProperty("defaultDatabase")) {
-            if (login.getDefaultDatabase() == null) {
-                throw new DBException("Default database cannot be empty");
-            }
-            actionList.add(new SQLDatabasePersistAction("Set default database", "ALTER LOGIN " + DBUtils.getQuotedIdentifier(login)
-                + " WITH DEFAULT_DATABASE = " + DBUtils.getQuotedIdentifier(login.getDefaultDatabase())));
-        }
-        if (command.hasProperty("defaultLanguageName")) {
-            if (CommonUtils.isEmpty(login.getDefaultLanguageName())) {
-                throw new DBException("Default language cannot be empty");
-            }
-            actionList.add(new SQLDatabasePersistAction("Set default language", "ALTER LOGIN " + DBUtils.getQuotedIdentifier(login)
-                + " WITH DEFAULT_LANGUAGE = " + DBUtils.getQuotedIdentifier(login.getDataSource(), login.getDefaultLanguageName())));
         }
     }
 

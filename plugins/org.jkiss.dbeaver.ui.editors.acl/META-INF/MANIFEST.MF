@@ -7,7 +7,6 @@ Bundle-Version: 1.0.186.qualifier
 Bundle-Release-Date: 20261102
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
-Bundle-Localization: plugin
 Require-Bundle: org.jkiss.dbeaver.ui.navigator,
  org.jkiss.dbeaver.ui.editors.base
 Automatic-Module-Name: org.jkiss.dbeaver.ui.editors.acl

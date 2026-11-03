@@ -19,51 +19,32 @@ package org.jkiss.dbeaver.ext.mssql.ui.config;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerLogin;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerWindowsAccount;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.ext.mssql.ui.SQLServerUIMessages;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectConfigurator;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.EditUserDialog;
 
-import java.util.List;
 import java.util.Map;
 
 public class SQLServerLoginConfigurator implements DBEObjectConfigurator<SQLServerLogin> {
-    private static final Log log = Log.getLog(SQLServerLoginConfigurator.class);
 
-    @Nullable
+    @NotNull
     @Override
-    public SQLServerLogin configureObject(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBECommandContext commandContext,
-        @Nullable Object container,
-        @NotNull SQLServerLogin login,
-        @NotNull Map<String, Object> options
-    ) {
-        DBPDriver driver = login.getDataSource().getContainer().getDriver();
-        boolean windowsSupported = !SQLServerUtils.isDriverAzure(driver) && !SQLServerUtils.isDriverFabric(driver)
-            && !SQLServerUtils.isDriverBabelfish(driver);
-        List<String> knownDomains = List.of();
-        if (windowsSupported) {
-            try {
-                knownDomains = SQLServerWindowsAccount.readKnownDomains(monitor, login.getDataSource());
-            } catch (DBException e) {
-                log.debug("Cannot suggest Windows login domains", e);
-            }
-        }
-        List<String> domains = knownDomains;
+    public SQLServerLogin configureObject(@NotNull DBRProgressMonitor monitor, @Nullable DBECommandContext commandContext, @Nullable Object container, @NotNull SQLServerLogin login, @NotNull Map<String, Object> options) {
         return new UITask<SQLServerLogin>() {
             @Override
-            @Nullable
             protected SQLServerLogin runTask() {
-                SQLServerLoginDialog dialog = new SQLServerLoginDialog(UIUtils.getActiveWorkbenchShell(), login, windowsSupported, domains);
-                return dialog.open() == IDialogConstants.OK_ID ? login : null;
+                EditUserDialog dialog = new EditUserDialog(UIUtils.getActiveWorkbenchShell(), SQLServerUIMessages.dialog_create_login_shell_title);
+                if (dialog.open() != IDialogConstants.OK_ID) {
+                    return null;
+                }
+                login.setLoginName(dialog.getName());
+                login.setPassword(dialog.getPassword());
+                return login;
             }
         }.execute();
     }
