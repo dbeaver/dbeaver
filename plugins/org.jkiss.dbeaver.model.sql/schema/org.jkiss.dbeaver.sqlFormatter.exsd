@@ -56,6 +56,11 @@
                </appInfo>
             </annotation>
          </attribute>
+         <attribute name="supportsMultiuserMode" type="boolean">
+            <annotation>
+               <documentation>Whether this formatter is available in multiuser or distributed applications. Defaults to true.</documentation>
+            </annotation>
+         </attribute>
       </complexType>
    </element>
 
