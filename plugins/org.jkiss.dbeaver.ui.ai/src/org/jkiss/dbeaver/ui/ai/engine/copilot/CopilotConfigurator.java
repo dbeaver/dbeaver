@@ -97,8 +97,9 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
     public void loadSettings(@NotNull PROPERTIES configuration) {
         token = CommonUtils.toString(configuration.getToken());
         modelSelectorField.setSelectedModel(configuration.getModel());
-        contextWindowSizeField.setValue(configuration.getContextWindowSize());
-        temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
+        contextWindowSizeField.setValue(configuration.getConfiguredContextWindowSize());
+        contextWindowSizeField.setDefaultValue(configuration.getContextWindowSize());
+        temperature = configuration.getRequestTemperature() == null ? "" : String.valueOf(configuration.getTemperature());
         accessToken = token;
         accessTokenText.setText(accessToken);
         applySettings();
@@ -113,7 +114,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         properties.setToken(accessToken);
         properties.setModel(modelSelectorField.getSelectedModelName());
         properties.setContextWindowSize(contextWindowSizeField.getValue());
-        properties.setTemperature(CommonUtils.toDouble(temperature));
+        saveTemperature(properties, temperature);
         saveAdvancedSettings(properties);
     }
 
@@ -136,21 +137,12 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         modelSelectorField = ModelSelectorField.builder()
             .withParent(parent)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
-            .withModifyListener(() -> {
-                CopilotModels.getModelByName(modelSelectorField.getSelectedModelName())
-                    .ifPresentOrElse(
-                        model -> {
-                            contextWindowSizeField.setValue(model.contextWindowSize());
-                            temperatureText.setText(String.valueOf(model.defaultTemperature()));
-                        }, () -> {
-                            contextWindowSizeField.setValue(null);
-                            temperatureText.setText("0.0");
-                        }
-                    );
+            .withModelChangeListener(modelChanged -> {
                 AIModel selectedModel = modelSelectorField.getSelectedModel();
-                if (selectedModel != null) {
-                    contextWindowSizeField.setValue(selectedModel.contextWindowSize());
+                if (selectedModel == null) {
+                    selectedModel = CopilotModels.getModelByName(modelSelectorField.getSelectedModelName()).orElse(null);
                 }
+                updateModelParameters(selectedModel, temperatureText, contextWindowSizeField, modelChanged);
             })
             .withModelListSupplier(modelListProvider)
             .build();
@@ -165,6 +157,7 @@ public class CopilotConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES e
         temperatureText = UIUtils.createLabelText(parent, AIUIMessages.gpt_preference_page_text_temperature, "0.0");
         temperatureText.setLayoutData(gridData);
         temperatureText.setToolTipText(AIUIMessages.openai_configurator_temperature_tip);
+        temperatureText.setMessage(AIUIMessages.ai_engine_configurator_temperature_default);
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }

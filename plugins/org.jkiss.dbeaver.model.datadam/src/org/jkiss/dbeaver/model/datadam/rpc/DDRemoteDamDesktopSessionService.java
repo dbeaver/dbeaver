@@ -27,10 +27,13 @@ import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
+import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -81,9 +84,11 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
     public static synchronized DDRemoteDamDesktopSessionService getInstance() throws DBException {
         if (instance == null) {
             DDDesktopAccessService access = DDDesktopAccessService.getInstance();
+            String workspaceId = DBWorkbench.getPlatform().getWorkspace().getWorkspaceId();
+            String clientDamId = formatClientDamId(workspaceId, BaseWorkspaceImpl.getLocalHostId());
             DDRemoteDamHandshakeRequest hello = new DDRemoteDamHandshakeRequest(
                 DBWorkbench.getPlatform().getDeploymentId(), APP_INSTANCE_ID,
-                DBWorkbench.getPlatform().getWorkspace().getWorkspaceId(),
+                workspaceId, clientDamId,
                 GeneralUtils.getProductName(), GeneralUtils.getProductVersion().toString());
             DDRemoteDamDesktopChannel channel = new DDRemoteDamDesktopChannel(
                 URI.create(DDEndpoints.getRemoteDamWebSocketUrl()), hello,
@@ -93,6 +98,12 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
             log.debug("Created DataDam desktop session service");
         }
         return instance;
+    }
+
+    @NotNull
+    static String formatClientDamId(@NotNull String workspaceId, @NotNull String localHostId) {
+        return Base64.getUrlEncoder().withoutPadding()
+            .encodeToString((workspaceId + ':' + localHostId).getBytes(StandardCharsets.UTF_8));
     }
 
     public void start() {

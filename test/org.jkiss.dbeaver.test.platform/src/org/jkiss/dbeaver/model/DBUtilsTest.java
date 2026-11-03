@@ -28,9 +28,11 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectWithStructuralParent;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.Pair;
 import org.junit.jupiter.api.Assertions;
@@ -143,6 +145,46 @@ public class DBUtilsTest extends DBeaverUnitTest {
         Mockito.lenient().<Class<?>>when(mockSchema.getPrimaryChildType(monitor)).thenReturn(DBSTable.class);
         Mockito.lenient().when(mockSchema.getChild(monitor, "table_test")).thenReturn(mockEntity);
         Mockito.lenient().when(mockSchemaDBO.getChild(monitor, "table_test")).thenReturn(mockEntityDBO);
+    }
+
+    @Test
+    public void testObjectPathUsesStructuralParent() {
+        DBSObject root = Mockito.mock(DBSObject.class, Mockito.CALLS_REAL_METHODS);
+        DBSObject owner = Mockito.mock(DBSObject.class, Mockito.CALLS_REAL_METHODS);
+        DBSObject object = Mockito.mock(DBSObject.class, Mockito.CALLS_REAL_METHODS);
+        Mockito.when(owner.getParentObject()).thenReturn(root);
+        Mockito.when(object.getParentObject()).thenReturn(owner);
+
+        Assertions.assertArrayEquals(new DBSObject[] {root, owner, object}, DBUtils.getObjectPath(object, true));
+        DBSObjectWithStructuralParent structuralObject = Mockito.mock(DBSObjectWithStructuralParent.class);
+        Mockito.when(structuralObject.getStructuralParent()).thenReturn(root);
+        Assertions.assertArrayEquals(new DBSObject[] {root, structuralObject}, DBUtils.getObjectPath(structuralObject, true));
+        Assertions.assertArrayEquals(new DBSObject[] {root}, DBUtils.getObjectPath(structuralObject, false));
+        Assertions.assertArrayEquals(new DBSObject[0], DBUtils.getObjectPath(root, false));
+    }
+
+    @Test
+    public void testPartitionObjectPath() {
+        DBSObject schema = Mockito.mock(DBSObject.class, Mockito.CALLS_REAL_METHODS);
+        DBSTable table = Mockito.mock(DBSTable.class, Mockito.CALLS_REAL_METHODS);
+        DBSTablePartition partition = Mockito.mock(DBSTablePartition.class, Mockito.CALLS_REAL_METHODS);
+        DBSTablePartition subPartition = Mockito.mock(DBSTablePartition.class, Mockito.CALLS_REAL_METHODS);
+        Mockito.when(table.getParentObject()).thenReturn(schema);
+        Mockito.when(partition.getParentObject()).thenReturn(schema);
+        Mockito.when(partition.getParentTable()).thenReturn(table);
+        Mockito.when(subPartition.isSubPartition()).thenReturn(true);
+        Mockito.when(subPartition.getPartitionParent()).thenReturn(partition);
+
+        Assertions.assertArrayEquals(new DBSObject[] {schema, table, partition}, DBUtils.getObjectPath(partition, true));
+        Assertions.assertArrayEquals(new DBSObject[] {schema, table}, DBUtils.getObjectPath(partition, false));
+        Assertions.assertArrayEquals(
+            new DBSObject[] {schema, table, partition, subPartition}, DBUtils.getObjectPath(subPartition, true));
+        Assertions.assertArrayEquals(
+            new DBSObject[] {schema, table, partition}, DBUtils.getObjectPath(subPartition, false));
+
+        Mockito.when(partition.needFullPath()).thenReturn(false);
+        Assertions.assertArrayEquals(new DBSObject[] {schema, partition}, DBUtils.getObjectPath(partition, true));
+        Assertions.assertArrayEquals(new DBSObject[] {schema}, DBUtils.getObjectPath(partition, false));
     }
 
     @Test
