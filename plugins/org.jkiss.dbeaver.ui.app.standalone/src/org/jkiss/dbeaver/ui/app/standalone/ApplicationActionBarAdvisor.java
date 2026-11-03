@@ -34,12 +34,14 @@ import org.eclipse.ui.commands.ICommandImageService;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.ide.IDEActionFactory;
+import org.eclipse.ui.internal.Workbench;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.commands.CommandImageManager;
 import org.eclipse.ui.internal.commands.CommandImageService;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -48,6 +50,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.app.standalone.about.AboutBoxAction;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
+import org.jkiss.dbeaver.ui.app.standalone.internal.WorkbenchPatcher;
 import org.jkiss.dbeaver.ui.app.standalone.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.ui.controls.StatusLineContributionItemEx;
 import org.jkiss.dbeaver.ui.navigator.actions.ToggleViewAction;
@@ -109,8 +112,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         IActionSetDescriptor[] actionSets = asr.getActionSets();
 
         for (IActionSetDescriptor actionSet : actionSets) {
-            if ("org.eclipse.search.searchActionSet".equals(actionSet.getId())) {
-                patchSearchIcons(actionSet);
+            if ("org.eclipse.search.searchActionSet".equals(actionSet.getId()) ||
+                "org.eclipse.ui.edit.text.actionSet.navigation".equals(actionSet.getId()) ||
+                "org.eclipse.ui.edit.text.actionSet.presentation".equals(actionSet.getId())) {
+                patchActionSetIcons(actionSet);
             } else {
                 if (ArrayUtils.contains(REDUNTANT_ACTIONS_SETS, actionSet.getId())) {
                     log.trace("Disable Eclipse action set '" + actionSet.getId() + "'");
@@ -121,22 +126,28 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         }
     }
 
-    private void patchSearchIcons(IActionSetDescriptor actionSet) {
-        // Patch search icons. Directly change icon reference in config registry
-        // FIXME: This is a very dirty hack but I didn't find any better way to patch search action icons
-        for (IConfigurationElement searchActionItem : actionSet.getConfigurationElement().getChildren()) {
-            String saId = searchActionItem.getAttribute("id");
+    private void patchActionSetIcons(@NotNull IActionSetDescriptor actionSet) {
+        // Directly change icon references in config registry
+        // FIXME: This is a very dirty hack but I didn't find any better way to patch action set icons
+        for (IConfigurationElement actionItem : actionSet.getConfigurationElement().getChildren()) {
+            String saId = actionItem.getAttribute("id");
             if ("org.eclipse.search.OpenSearchDialog".equals(saId) || "org.eclipse.search.OpenSearchDialogPage".equals(saId)) {
-                patchActionSetIcon(searchActionItem, "platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/search.svg");
+                patchContributionIcon(actionItem, UIIcon.SEARCH.getLocation());
             } else if ("org.eclipse.search.OpenFileSearchPage".equals(saId)) {
-                patchActionSetIcon(searchActionItem, UIIcon.FIND_TEXT.getLocation());
+                patchContributionIcon(actionItem, UIIcon.FIND_TEXT.getLocation());
+            } else if (ITextEditorActionDefinitionIds.GOTO_LAST_EDIT_POSITION.equals(saId)) {
+                patchContributionIcon(actionItem, UIIcon.EDIT_LOCATION_PREVIOUS.getLocation());
+            } else if (ITextEditorActionDefinitionIds.GOTO_NEXT_EDIT_POSITION.equals(saId)) {
+                patchContributionIcon(actionItem, UIIcon.EDIT_LOCATION_NEXT.getLocation());
+            } else if (ITextEditorActionDefinitionIds.BLOCK_SELECTION_MODE.equals(saId)) {
+                patchContributionIcon(actionItem, UIIcon.BLOCK_SELECTION.getLocation());
             }
         }
     }
 
-    private void patchActionSetIcon(IConfigurationElement searchActionItem, String iconPath) {
+    private void patchContributionIcon(@NotNull IConfigurationElement actionItem, @NotNull String iconPath) {
         try {
-            Object cfgElement = BeanUtils.invokeObjectDeclaredMethod(searchActionItem, "getConfigurationElement", new Class[0], new Object[0]);
+            Object cfgElement = BeanUtils.invokeObjectDeclaredMethod(actionItem, "getConfigurationElement", new Class[0], new Object[0]);
             if (cfgElement  != null) {
                 Field pavField = cfgElement.getClass().getDeclaredField("propertiesAndValue");
                 pavField.setAccessible(true);
@@ -149,7 +160,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             }
         } catch (Throwable e) {
             // ignore
-            log.debug("Failed to patch search actions", e);
+            log.debug("Failed to patch action set icons", e);
         }
     }
 
@@ -173,8 +184,9 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         //register(aboutAction);
         aboutAction = new AboutBoxAction(window);
         register(showHelpAction = ActionFactory.HELP_CONTENTS.create(window));
-//        register(searchHelpAction = ActionFactory.HELP_SEARCH.create(window));
-//        register(dynamicHelpAction = ActionFactory.DYNAMIC_HELP.create(window));
+        showHelpAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.SMALL_QUESTION));
+        //register(searchHelpAction = ActionFactory.HELP_SEARCH.create(window));
+        //register(dynamicHelpAction = ActionFactory.DYNAMIC_HELP.create(window));
         checkUpdatesAction = new CheckForUpdateAction();
 
         newWindowAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
@@ -185,10 +197,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             register(openWorkspaceAction);
         }
 
-//        historyBackAction = ActionFactory.BACKWARD_HISTORY.create(window);
-//        register(historyBackAction);
-//        historyForwardAction = ActionFactory.FORWARD_HISTORY.create(window);
-//        register(historyForwardAction);
+        //historyBackAction = ActionFactory.BACKWARD_HISTORY.create(window);
+        //register(historyBackAction);
+        //historyForwardAction = ActionFactory.FORWARD_HISTORY.create(window);
+        //register(historyForwardAction);
 
         CheckForUpdateAction.deactivateStandardHandler(window);
         ApplicationPolicyService.getInstance().disableStandardProductModification(window.getService(ICommandService.class));
@@ -208,18 +220,22 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
                 bindImage(cis, IWorkbenchCommandConstants.FILE_SAVE, UIIcon.SAVE);
                 bindImage(cis, IWorkbenchCommandConstants.FILE_SAVE_AS, UIIcon.SAVE_AS);
                 bindImage(cis, IWorkbenchCommandConstants.FILE_SAVE_ALL, UIIcon.SAVE_ALL);
+                bindImage(cis, IWorkbenchCommandConstants.FILE_PRINT, UIIcon.PRINT);
 
                 bindImage(cis, IWorkbenchCommandConstants.FILE_IMPORT, UIIcon.IMPORT);
                 bindImage(cis, IWorkbenchCommandConstants.FILE_EXPORT, UIIcon.EXPORT);
                 bindImage(cis, IWorkbenchCommandConstants.FILE_REFRESH, UIIcon.REFRESH);
 
-                bindImage(cis, ITextEditorActionDefinitionIds.GOTO_LAST_EDIT_POSITION, UIIcon.RS_BACK);
-                bindImage(cis, ITextEditorActionDefinitionIds.GOTO_NEXT_EDIT_POSITION, UIIcon.RS_FORWARD);
+                bindImage(cis, ITextEditorActionDefinitionIds.GOTO_LAST_EDIT_POSITION, UIIcon.EDIT_LOCATION_PREVIOUS);
+                bindImage(cis, ITextEditorActionDefinitionIds.GOTO_NEXT_EDIT_POSITION, UIIcon.EDIT_LOCATION_NEXT);
+                bindImage(cis, ITextEditorActionDefinitionIds.BLOCK_SELECTION_MODE, UIIcon.BLOCK_SELECTION);
+                bindImage(cis, CheckForUpdateAction.P2_UPDATE_COMMAND, UIIcon.SOFTWARE_UPDATE);
+                bindImage(cis, CheckForUpdateAction.P2_INSTALL_COMMAND, UIIcon.SOFTWARE_INSTALL);
             }
         }
     }
 
-    private void bindImage(CommandImageService cis, String commandId, DBIcon icon) {
+    private void bindImage(@NotNull CommandImageService cis, @NotNull String commandId, @NotNull DBIcon icon) {
         ImageDescriptor id = DBeaverIcons.getImageDescriptor(icon);
         cis.bind(commandId, CommandImageManager.TYPE_DEFAULT, null, id);
         cis.bind(commandId, CommandImageManager.TYPE_HOVER, null, id);
@@ -319,7 +335,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             windowMenu.add(new GroupMarker("primary.views"));
             {
                 MenuManager showViewMenuMgr = new MenuManager(CoreMessages.actions_menu_window_showView, "showView"); //$NON-NLS-1$
-                IContributionItem showViewMenu = ContributionItemFactory.VIEWS_SHORTLIST.create(PlatformUI.getWorkbench().getActiveWorkbenchWindow());
+                showViewMenuMgr.addMenuListener(manager ->
+                    WorkbenchPatcher.patchViewIcons(Workbench.getInstance()));
+                IContributionItem showViewMenu = ContributionItemFactory.VIEWS_SHORTLIST.create(
+                    PlatformUI.getWorkbench().getActiveWorkbenchWindow());
                 showViewMenuMgr.add(showViewMenu);
                 windowMenu.add(showViewMenuMgr);
             }

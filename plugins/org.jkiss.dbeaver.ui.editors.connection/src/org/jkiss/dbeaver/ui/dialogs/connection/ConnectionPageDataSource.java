@@ -31,6 +31,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
@@ -159,6 +160,10 @@ class ConnectionPageDataSource extends ActiveWizardPage<NewConnectionWizard> imp
     @Nullable
     public DBPDataSourceType getSelectedDataSourceType() {
         return selectedDataSourceType;
+    }
+
+    public boolean isDriverVisible(@NotNull DBPDriver driver) {
+        return dataSourceTypeViewer.isDriverVisibleInActiveFolder(driver);
     }
 
     public void setSelectedDataSourceType(@NotNull DBPDataSourceType selectedDataSourceType) {
