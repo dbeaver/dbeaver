@@ -11,10 +11,18 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="timeplus"
+            label="Timeplus"
+            description="Timeplus database"
+            dataSourceInformation="High-performance analytical database platform"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon.png"
+            iconBig="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon_big.png"/>
         <datasource
                 class="org.jkiss.dbeaver.ext.timeplus.TimeplusDataSourceProvider"
                 description="Timeplus"
                 id="timeplus"
+                dataSourceType="timeplus"
                 parent="generic"
                 label="Timeplus"
                 icon="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon.png"
@@ -25,8 +33,7 @@
                 <driver
                     id="timeplus_native"
                     label="Timeplus"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon.png"
-                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon_big.png"
+                    threadSafe="false"
                     class="com.timeplus.jdbc.TimeplusDriver"
                     sampleURL="jdbc:timeplus://{host}:{port}[/{database}]"
                     defaultPort="8463"
@@ -49,8 +56,6 @@
                 <driver
                     id="timeplus_proton"
                     label="Timeplus Proton"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon.png"
-                    iconBig="platform:/plugin/org.jkiss.dbeaver.ext.timeplus/icons/timeplus_icon_big.png"
                     class="com.timeplus.proton.jdbc.ProtonDriver"
                     sampleURL="jdbc:proton://{host}:{port}/{database}"
                     defaultPort="8123"

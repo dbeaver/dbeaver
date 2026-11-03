@@ -26,12 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
-import org.jkiss.dbeaver.model.data.resultset.DBDDataStatementInfo;
-import org.jkiss.dbeaver.model.data.resultset.DBDDataUpdateListener;
-import org.jkiss.dbeaver.model.data.resultset.DBDResultSetDataUpdater;
-import org.jkiss.dbeaver.model.data.resultset.DataUpdaterJob;
-import org.jkiss.dbeaver.model.data.resultset.DBCSmartTransactionManager;
-import org.jkiss.dbeaver.model.data.resultset.ResultSetSaveSettings;
+import org.jkiss.dbeaver.model.data.resultset.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -44,6 +39,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -105,6 +101,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
             @NotNull DBRProgressMonitor monitor,
             @NotNull Map<String, Object> options
         ) {
+            hasZeroRowChanges = false;
             model.setUpdateInProgress(this);
             UIUtils.asyncExec(viewer::fireResultSetChange);
             try {
@@ -131,6 +128,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
     private final ResultSetViewer viewer;
     @NotNull
     private final DBDAttributeBinding[] columns;
+    private boolean hasZeroRowChanges;
 
     ResultSetPersister(@NotNull ResultSetViewer viewer) {
         super(viewer.getModel(), viewer.getExecutionContext());
@@ -417,6 +415,13 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
     // Reflect data changes in viewer
     // Changes affects only rows which statements executed successfully
     private boolean reflectChanges() {
+        // Auto-commit may advance the baseline even when a later statement fails.
+        if (updateStatements.stream().anyMatch(DBDDataStatementInfo::isExecuted)
+            || insertStatements.stream().anyMatch(DBDDataStatementInfo::isExecuted)
+            || deleteStatements.stream().anyMatch(DBDDataStatementInfo::isExecuted)
+        ) {
+            viewer.clearCellEditHistory();
+        }
         boolean rowsChanged = false;
         for (ResultSetRow row : changedRows) {
             for (DataStatementInfo stat : updateStatements) {
@@ -472,6 +477,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
 
     @Override
     protected void notifyContainer(@NotNull DBCStatistics statistics) {
+        hasZeroRowChanges |= statistics.getRowsUpdated() == 0;
         if (viewer.getContainer() instanceof IResultSetContainerExt rsc) {
             rsc.handleExecuteResult(statistics);
         }
@@ -567,7 +573,9 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
                 //releaseStatements();
                 viewer.redrawData(false, rowsChanged);
                 viewer.updateEditControls();
-                if (error == null) {
+                if (error == null && hasZeroRowChanges) {
+                    viewer.setStatus(ResultSetMessages.controls_resultset_viewer_status_save_zero_rows, DBPMessageType.WARNING);
+                } else if (error == null) {
                     viewer.setStatus(
                         NLS.bind(
                             ResultSetMessages.controls_resultset_viewer_status_inserted_,
@@ -579,6 +587,14 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
                     DBWorkbench.getPlatformUI().showError(
                         "Data error", "Error synchronizing data with database", error);
                     viewer.setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
+                }
+                if (hasZeroRowChanges && error == null && !viewer.getControl().isDisposed()) {
+                    // Execution succeeded and may have caused side effects even when no rows were affected.
+                    ConfirmationDialog.confirmAction(
+                        viewer.getControl().getShell(),
+                        ResultSetPreferences.CONFIRM_RS_SAVE_ZERO_ROWS,
+                        ConfirmationDialog.WARNING
+                    );
                 }
             }
             viewer.fireResultSetChange();

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,20 @@ public class AttributePart extends NodePart {
 
     private ERDHighlightingHandle associatedRelationsHighlighing = null;
     protected AccessibleGraphicalEditPart accPart;
+
+    @Override
+    public void refreshTheme() {
+        AttributeItemFigure figure = getFigure();
+        figure.setForegroundColor(ERDThemeSettings.instance.attrForeground);
+        figure.setBackgroundColor(ERDThemeSettings.instance.attrBackground);
+        figure.getLabel().setFont(getAttribute().isInPrimaryKey()
+            ? getDiagramPart().getBoldFont() : getDiagramPart().getNormalFont());
+        figure.getLabel().setForegroundColor(ERDThemeSettings.instance.attrForeground);
+        if (figure.getRightPanel() != null) {
+            figure.getRightPanel().setForegroundColor(ERDThemeSettings.instance.attrForeground);
+            figure.getRightPanel().setFont(figure.getLabel().getFont());
+        }
+    }
 
     public AttributePart() {
 

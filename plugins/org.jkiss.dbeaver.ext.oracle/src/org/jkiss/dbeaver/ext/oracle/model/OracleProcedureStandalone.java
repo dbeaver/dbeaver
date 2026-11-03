@@ -43,7 +43,7 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
 {
 
     private boolean valid;
-    private String sourceDeclaration;
+    protected String sourceDeclaration;
 
     public OracleProcedureStandalone(
         OracleSchema schema,
@@ -149,6 +149,6 @@ public class OracleProcedureStandalone extends OracleProcedureBase<OracleSchema>
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return getSchema().proceduresCache.refreshObject(monitor, getSchema(), this);
+        return getSchema().getProceduresCache().refreshObject(monitor, getSchema(), this);
     }
 }

@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.ui.forms;
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.UpdateValueStrategy;
 import org.eclipse.core.databinding.conversion.IConverter;
+import org.eclipse.core.databinding.observable.list.IListChangeListener;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
+import org.eclipse.core.databinding.observable.value.IValueChangeListener;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
 import org.eclipse.jface.databinding.swt.typed.WidgetProperties;
@@ -155,6 +157,11 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     @NotNull
     protected abstract C create(@NotNull DataBindingContext context, @NotNull Composite parent);
 
+    boolean isInitiallyVisible(@Nullable UIRowBuilderImpl row) {
+        return (row == null || row.visible == null || row.visible.get())
+            && (visible == null || visible.get());
+    }
+
     @Nullable
     protected Point preferredSize(@NotNull C control) {
         return null;
@@ -162,17 +169,18 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
 
     protected void bind(@NotNull DataBindingContext context, @NotNull C control, @Nullable UIRowBuilderImpl row) {
         if (row != null && row.visible != null || visible != null) {
-            // FIXME: Initially non-visible controls occupy space
             var binding = UIObservables.and(row != null ? row.visible : null, visible);
             var delegate = delegate(binding);
-            delegate.addValueChangeListener(event -> {
+            var listener = (IValueChangeListener<Boolean>) event -> {
                 var data = (GridData) control.getLayoutData();
                 var value = (boolean) binding.get();
                 if (data.exclude == value) {
                     data.exclude = !value;
                     control.requestLayout();
                 }
-            });
+            };
+            delegate.addValueChangeListener(listener);
+            control.addDisposeListener(event -> delegate.removeValueChangeListener(listener));
             context.bindValue(WidgetProperties.visible().observe(control), delegate);
         }
         if (row != null && row.enabled != null || enabled != null) {
@@ -277,6 +285,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     static final class TextBuilderImpl<T> extends UIControlBuilderImpl<TextBuilder<T>, Text> implements TextBuilder<T> {
         private final int style;
         private final UIObservable<T> text;
+        private UIObservable<String> message;
         private Function<? super String, IStatus> toModelValidator;
         private Function<? super String, ? extends T> toModelConverter;
         private Function<? super T, String> fromModelConverter;
@@ -284,6 +293,13 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         TextBuilderImpl(int style, @NotNull UIObservable<T> text) {
             this.style = style;
             this.text = text;
+        }
+
+        @NotNull
+        @Override
+        public TextBuilder<T> message(@NotNull UIObservable<String> value) {
+            message = value;
+            return this;
         }
 
         @NotNull
@@ -320,6 +336,9 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         @SuppressWarnings("unchecked")
         protected void bind(@NotNull DataBindingContext context, @NotNull Text control, @Nullable UIRowBuilderImpl row) {
             super.bind(context, control, row);
+            if (message != null) {
+                context.bindValue(WidgetProperties.message().observe(control), delegate(message));
+            }
 
             UpdateValueStrategy<String, ? extends T> toModelStrategy = null;
             UpdateValueStrategy<? super T, String> fromModelStrategy = null;
@@ -431,15 +450,6 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
             for (T item : items) {
                 combo.add(converter.apply(item));
             }
-            UIControlBuilderImpl.delegate(items).addListChangeListener(event -> {
-                // NOTE: Could possibly be optimized to reflect just the changed elements
-                var selection = combo.getText();
-                combo.removeAll();
-                for (T item : items) {
-                    combo.add(converter.apply(item));
-                }
-                combo.setText(selection);
-            });
             return combo;
         }
 
@@ -447,12 +457,23 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         protected void bind(@NotNull DataBindingContext context, @NotNull Combo control, @Nullable UIRowBuilderImpl row) {
             super.bind(context, control, row);
 
-            context.bindValue(
+            var selectionBinding = context.bindValue(
                 WidgetProperties.singleSelectionIndex().observe(control),
                 delegate(binding),
-                UpdateValueStrategy.create(IConverter.create(items::get)),
+                UpdateValueStrategy.create(IConverter.create(i -> i != null && i >= 0 && i < items.size() ? items.get(i) : null)),
                 UpdateValueStrategy.create(IConverter.create(items::indexOf))
             );
+            var listener = (IListChangeListener<T>) event -> {
+                control.removeAll();
+                for (T item : items) {
+                    control.add(converter.apply(item));
+                }
+                // Refresh the observable index as well, without clearing the model for a temporarily empty list
+                selectionBinding.updateModelToTarget();
+            };
+            var observableItems = UIControlBuilderImpl.delegate(items);
+            observableItems.addListChangeListener(listener);
+            control.addDisposeListener(event -> observableItems.removeListChangeListener(listener));
         }
     }
 

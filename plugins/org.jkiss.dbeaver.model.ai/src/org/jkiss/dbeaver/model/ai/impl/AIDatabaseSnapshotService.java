@@ -189,6 +189,9 @@ public class AIDatabaseSnapshotService {
         if (AIUtils.isExcludableObject(monitor, obj)) {          // ignore system or hidden objects
             return true;
         }
+        if (!AIUtils.isObjectInScope(databaseContext, databaseContext.getExecutionContext(), obj)) {
+            return true;
+        }
 
         if (obj instanceof DBSEntity entity) {
             try {

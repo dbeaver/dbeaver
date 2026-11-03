@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.ui.config.sample.SampleDatabaseUtil;
 public final class ProductConfigCreateSampleDatabaseAction implements ProductConfigAction.OfCheckbox {
     @Override
     public boolean loadState() {
-        return false; // the default value
+        return true; // the default value
     }
 
     @Override

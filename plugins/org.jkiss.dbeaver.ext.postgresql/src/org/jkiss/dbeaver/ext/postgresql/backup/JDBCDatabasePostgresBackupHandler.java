@@ -77,16 +77,14 @@ public class JDBCDatabasePostgresBackupHandler implements JDBCDatabaseBackupHand
                         log.info("Postgres backup successful");
                     } else {
                         Files.deleteIfExists(backupFile);
-                        log.error("Postgres backup failed with output: " + processOutput.toString());
-                        throw new DBException("Postgres backup failed");
+                        throw new DBException("Postgres backup failed with output: " + processOutput);
                     }
                 } catch (IOException e) {
                     log.error("Error reading process output", e);
                 }
             }
         } catch (Exception e) {
-            log.error("Create backup is failed: " + e.getMessage());
-            throw new DBException("Create backup is failed: " + e.getMessage());
+            throw new DBException("Create backup is failed", e);
         }
     }
 

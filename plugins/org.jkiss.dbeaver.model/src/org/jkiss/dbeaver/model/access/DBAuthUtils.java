@@ -34,6 +34,7 @@ import java.util.Objects;
 
 public class DBAuthUtils {
     private static final Log log = Log.getLog(DBAuthUtils.class);
+    private static final String RUNTIME_ATTR_PASSWORD_CHANGE_INFO = "dbeaver.password-change.info";
     private static final String externalAuthSuccessHtml;
 
     static {
@@ -64,17 +65,9 @@ public class DBAuthUtils {
             return false;
         }
         DBPConnectionConfiguration connectionInfo = dataSourceContainer.getConnectionConfiguration();
-        String oldPassword = connectionInfo.getUserPassword();
         DBPConnectionConfiguration actualConnectionConfiguration = dataSourceContainer.getActualConnectionConfiguration();
-        String userName = actualConnectionConfiguration.getUserName();
-        if (CommonUtils.isEmpty(userName)) {
-            // Look at the actual configuration first, then on connection info
-            userName = connectionInfo.getUserName();
-        }
-        if (CommonUtils.isEmpty(oldPassword)) {
-            // Credentials not saved in the connection settings, use actual configuration
-            oldPassword = actualConnectionConfiguration.getUserPassword();
-        }
+        String userName = getCurrentUserName(dataSourceContainer);
+        String oldPassword = getCurrentUserPassword(dataSourceContainer);
         DBAPasswordChangeInfo userPassword = DBWorkbench.getPlatformUI().promptUserPasswordChange(
             ModelMessages.dialog_user_password_change_label,
             userName,
@@ -103,6 +96,56 @@ public class DBAuthUtils {
             }
         }
         return false;
+    }
+
+    public static void changePasswordForCurrentUser(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPDataSourceContainer dataSourceContainer,
+        @NotNull DBAUserPasswordManager passwordChangeManager,
+        @NotNull DBAPasswordChangeInfo passwordInfo
+    ) throws DBException {
+        passwordChangeManager.changeUserPassword(
+            monitor,
+            passwordInfo.getUserName(),
+            passwordInfo.getNewPassword(),
+            passwordInfo.getOldPassword()
+        );
+        dataSourceContainer.getActualConnectionConfiguration().setUserPassword(passwordInfo.getNewPassword());
+        dataSourceContainer.getConnectionConfiguration().setUserPassword(passwordInfo.getNewPassword());
+        clearPendingPasswordChange(dataSourceContainer.getActualConnectionConfiguration());
+    }
+
+    @Nullable
+    public static String getCurrentUserName(@NotNull DBPDataSourceContainer dataSourceContainer) {
+        String userName = dataSourceContainer.getActualConnectionConfiguration().getUserName();
+        return CommonUtils.isEmpty(userName)
+            ? dataSourceContainer.getConnectionConfiguration().getUserName()
+            : userName;
+    }
+
+    @Nullable
+    public static String getCurrentUserPassword(@NotNull DBPDataSourceContainer dataSourceContainer) {
+        String password = dataSourceContainer.getActualConnectionConfiguration().getUserPassword();
+        return CommonUtils.isEmpty(password)
+            ? dataSourceContainer.getConnectionConfiguration().getUserPassword()
+            : password;
+    }
+
+    public static void setPendingPasswordChange(
+        @NotNull DBPConnectionConfiguration configuration,
+        @NotNull DBAPasswordChangeInfo passwordChangeInfo
+    ) {
+        configuration.setRuntimeAttribute(RUNTIME_ATTR_PASSWORD_CHANGE_INFO, passwordChangeInfo);
+    }
+
+    public static void clearPendingPasswordChange(@NotNull DBPConnectionConfiguration configuration) {
+        configuration.removeRuntimeAttribute(RUNTIME_ATTR_PASSWORD_CHANGE_INFO);
+    }
+
+    @Nullable
+    public static DBAPasswordChangeInfo getPendingPasswordChange(@NotNull DBPConnectionConfiguration configuration) {
+        Object value = configuration.getRuntimeAttribute(RUNTIME_ATTR_PASSWORD_CHANGE_INFO);
+        return value instanceof DBAPasswordChangeInfo passwordChangeInfo ? passwordChangeInfo : null;
     }
 
     @NotNull

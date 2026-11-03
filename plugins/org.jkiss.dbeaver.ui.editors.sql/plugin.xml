@@ -3,12 +3,30 @@
 
 <plugin>
 
-    <extension-point id="org.jkiss.dbeaver.sql.covert" name="%extension-point.org.jkiss.dbeaver.sql.covertname" schema="schema/org.jkiss.dbeaver.sql.convert.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.sql.executors" name="%org.jkiss.dbeaver.sql.executors.name" schema="schema/org.jkiss.dbeaver.sql.executors.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.sqlPresentation" name="%extension-point.org.jkiss.dbeaver.sqlPresentation.name" schema="schema/org.jkiss.dbeaver.sqlPresentation.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.sql.plan.view" name="%extension-point.org.jkiss.dbeaver.sqlPlanView.name" schema="schema/org.jkiss.dbeaver.sqlPlanView.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.sql.editorAddIns" name="%extension-point.org.jkiss.dbeaver.sql.editorAddIns.name" schema="schema/org.jkiss.dbeaver.sql.editorAddIns.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.sql.quickFixProcessors" name="%extension-point.org.jkiss.dbeaver.sql.quickFixProcessors.name" />
+    <extension point="org.jkiss.dbeaver.commandFeature">
+        <feature id="SQL_SCRIPT_RECENT" commandId="org.jkiss.dbeaver.core.sql.editor.recent"/>
+        <feature id="SQL_SCRIPT_NEW" commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
+        <feature id="SQL_EDITOR_EXECUTE_QUERY" commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
+        <feature id="SQL_EDITOR_EXECUTE_QUERY_NEW" commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"/>
+        <feature id="SQL_EDITOR_EXECUTE_SCRIPT" commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
+        <feature id="SQL_EDITOR_EXECUTE_SCRIPT_NEW" commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"/>
+        <feature id="SQL_EDITOR_EXPLAIN_PLAN" commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/>
+        <feature id="SQL_EDITOR_LOAD_PLAN" commandId="org.jkiss.dbeaver.ui.editors.sql.load.plan"/>
+        <feature id="SQL_EDITOR_SHOW_OUTPUT" commandId="org.jkiss.dbeaver.ui.editors.sql.show.output"/>
+        <feature id="SQL_EDITOR_SHOW_LOG" commandId="org.jkiss.dbeaver.ui.editors.sql.show.log"/>
+        <feature id="SQL_EDITOR_SHOW_VARIABLES" commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables"/>
+        <feature id="SQL_EDITOR_SELECT_ROW_COUNT" commandId="org.jkiss.dbeaver.ui.editors.sql.run.count"/>
+        <feature id="SQL_EDITOR_SELECT_ALL_ROWS" commandId="org.jkiss.dbeaver.ui.editors.sql.run.all.rows"/>
+        <feature id="SQL_EDITOR_EXECUTE_EXPRESSION" commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression"/>
+        <feature id="SQL_EDITOR_FORMAT_SQL" commandId="org.jkiss.dbeaver.ui.editors.text.content.format"/>
+    </extension>
+
+    <extension-point id="org.jkiss.dbeaver.sql.covert" name="SQL text conversions" schema="schema/org.jkiss.dbeaver.sql.convert.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sql.executors" name="SQL Script executors" schema="schema/org.jkiss.dbeaver.sql.executors.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sqlPresentation" name="SQL editor presentations" schema="schema/org.jkiss.dbeaver.sqlPresentation.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sql.plan.view" name="SQL Plan View" schema="schema/org.jkiss.dbeaver.sqlPlanView.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sql.editorAddIns" name="SQL Editor add-ins" schema="schema/org.jkiss.dbeaver.sql.editorAddIns.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.sql.quickFixProcessors" name="SQL Editor Quick Fix processors" />
 
     <extension point="org.eclipse.core.filebuffers.annotationModelCreation">
         <factory contentTypeId="org.jkiss.dbeaver.sql" class="org.jkiss.dbeaver.ui.editors.sql.semantics.SQLEditorSemanticAnnotationModelFactory">
@@ -17,6 +35,10 @@
 
     <extension point="org.eclipse.core.runtime.preferences">
         <initializer class="org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorPreferencesInitializer"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.notifications">
+        <notification id="sql.metadata.refresh" name="%notification.sql_metadata_refresh.name" soundEnabled="false"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceHandler">
@@ -232,6 +254,7 @@
             <commandParameter id="command" name="SQL editor open command" optional="false"/>
         </command>
         <command id="org.jkiss.dbeaver.core.procedure.execute" name="%command.org.jkiss.dbeaver.core.procedure.execute.name" description="%command.org.jkiss.dbeaver.core.procedure.execute.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.core.sql.script.execute" name="%command.org.jkiss.dbeaver.core.sql.script.execute.name" description="%command.org.jkiss.dbeaver.core.sql.script.execute.description" categoryId="org.jkiss.dbeaver.core.sql"/>
 
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.statement" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.statement.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.statement.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" name="%command.org.jkiss.dbeaver.ui.editors.sql.run.statementNew.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.run.statementNew.description" categoryId="org.jkiss.dbeaver.core.sql"/>
@@ -306,6 +329,7 @@
         <image commandId="org.jkiss.dbeaver.core.sql.editor.console" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_console.svg"/>
         <image commandId="org.jkiss.dbeaver.core.sql.editor.showScripts" icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script_folder.svg"/>
         <image commandId="org.jkiss.dbeaver.core.sql.editor.forSelection" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_console.svg"/>
+        <image commandId="org.jkiss.dbeaver.core.sql.script.execute" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_exec.svg"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec.svg"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_exec_new.svg"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_exec.svg"/>
@@ -397,6 +421,22 @@
                     <count value="+"/>
                     <iterate operator="and">
                         <adapt type="org.jkiss.dbeaver.model.struct.rdb.DBSProcedure"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.sql.script.execute" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerExecuteScriptFile">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.navigator.part"/></activeWhen>
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <and>
+                            <instanceof value="org.jkiss.dbeaver.model.navigator.DBNResource"/>
+                            <adapt type="org.eclipse.core.resources.IResource">
+                                <test property="org.jkiss.dbeaver.core.resource.type" value="script"/>
+                            </adapt>
+                        </and>
                     </iterate>
                 </with>
             </enabledWhen>
@@ -1658,7 +1698,8 @@
                 id="sqlworkbenchj"
                 class="org.jkiss.dbeaver.ui.editors.sql.format.sqlworkbenchj.SQLWorkbenchJFormatter"
                 label="SQL Workbench/J formatter"
-                description="Formatter from SQL Workbench/J"/>
+                description="Formatter from SQL Workbench/J"
+                supportsMultiuserMode="false"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">
@@ -1668,4 +1709,3 @@
     </extension>
 
 </plugin>
-

@@ -269,11 +269,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return new PostgreDatabase(monitor, this, name, owner, templateName, tablespace, encoding);
     }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
@@ -380,13 +381,17 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         //initServerSSL(props, sslConfig);
     }
 
+    @NotNull
     @Override
-    protected PostgreExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected PostgreExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new PostgreExecutionContext((PostgreDatabase) instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context,
-                                          @Nullable JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
         PostgreExecutionContext postgreContext = (PostgreExecutionContext) context;
         PostgreSchema activeSchema = null;
         if (initFrom != null) {
@@ -519,7 +524,22 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @Override
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @Nullable JDBCExecutionContext context, @NotNull String purpose) throws DBCException {
-        final DBPConnectionConfiguration conConfig = getContainer().getActualConnectionConfiguration();
+        return openConnection(monitor, context, new DBPConnectionConfiguration(getContainer().getActualConnectionConfiguration()), purpose);
+    }
+
+    @Override
+    protected boolean isUserPasswordAuthentication(@NotNull DBPConnectionConfiguration connectionInfo) {
+        return super.isUserPasswordAuthentication(connectionInfo)
+            || AuthModelPgPass.ID.equals(connectionInfo.getAuthModelId());
+    }
+
+    @Override
+    protected Connection openConnection(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable JDBCExecutionContext context,
+        @NotNull DBPConnectionConfiguration conConfig,
+        @NotNull String purpose
+    ) throws DBCException {
 
         JDBCRemoteInstance instance = context == null ? null : context.getOwnerInstance();
         Connection pgConnection;
@@ -573,7 +593,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                 }
                 pgConnection = super.openConnection(monitor, context, newConfig, purpose);
             } else {
-                pgConnection = super.openConnection(monitor, context, purpose);
+                pgConnection = super.openConnection(monitor, context, conConfig, purpose);
             }
         } catch (DBCException e) {
             final DBWHandlerConfiguration handler = conConfig.getHandler(PostgreConstants.HANDLER_SSL);
@@ -585,7 +605,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
                         // The chain is built asynchronously by the driver, and we don't know at which moment in time it will happen.
                         // It will still be deleted during shutdown.
 
-                        return this.openConnection(monitor, context, purpose);
+                        return this.openConnection(monitor, context, conConfig, purpose);
                     }
                 } catch (IOException ex) {
                     log.error("Error converting SSL key", ex);
@@ -686,8 +706,19 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
 
     @NotNull
     @Override
+    public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
+        return PostgreConstants.TYPE_RECORD.equals(typeName) ? DBPDataKind.STRUCT : super.resolveDataKind(typeName, valueType);
+    }
+
+    @NotNull
+    @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         return getDefaultInstance().getDefaultDataTypeName(dataKind);
+    }
+
+    @Override
+    public boolean hasDefaultInstance() {
+        return databaseCache != null && !databaseCache.getCachedObjects().isEmpty();
     }
 
     @NotNull
@@ -935,9 +966,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return super.discoverErrorType(error);
     }
 
+    @NotNull
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData)
-    {
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
         return new PostgreDataSourceInfo(this, metaData);
     }
 

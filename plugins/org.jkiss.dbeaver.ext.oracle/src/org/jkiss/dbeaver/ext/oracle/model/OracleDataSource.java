@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.access.DBAUserPasswordManager;
+import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -93,10 +94,10 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     final ProfileCache profileCache = new ProfileCache();
     final RoleCache roleCache = new RoleCache();
 
-    private OracleOutputReader outputReader;
-    private OracleSchema publicSchema;
-    private boolean isAdmin;
-    private boolean isAdminVisible;
+    protected OracleOutputReader outputReader;
+    protected OracleSchema publicSchema;
+    protected boolean isAdmin;
+    protected boolean isAdminVisible;
     private String planTableName;
     private boolean useRuleHint;
     private boolean resolveGeometryAsStruct = true;
@@ -221,7 +222,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             }
             return connection;
         } catch (DBCException e) {
-            if (SQLState.getCodeFromException(e) == OracleConstants.EC_PASSWORD_EXPIRED) {
+            if (JDBCUtils.matchesSQLException(e, exception -> exception.getErrorCode() == OracleConstants.EC_PASSWORD_EXPIRED)) {
                 // Here we could try to ask for expired password change
                 // This is supported  for thin driver since Oracle 12.2
                 if (changeExpiredPassword(monitor, context, purpose)) {
@@ -233,8 +234,14 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
     }
 
+    static boolean isPasswordWillExpireWarning(@NotNull SQLWarning warning) {
+        int errorCode = warning.getErrorCode();
+        return errorCode == OracleConstants.EC_PASSWORD_WILL_EXPIRE
+            || errorCode == OracleConstants.EC_PASSWORD_GRACE_PERIOD;
+    }
+
     private boolean checkForPasswordWillExpireWarning(@NotNull SQLWarning warning) {
-        if (warning != null && warning.getErrorCode() == OracleConstants.EC_PASSWORD_WILL_EXPIRE) {
+        if (isPasswordWillExpireWarning(warning)) {
             DBWorkbench.getPlatformUI().showWarningMessageBox(
                 OracleMessages.oracle_password_will_expire_warn_name,
                 NLS.bind(OracleMessages.oracle_password_will_expire_warn_description, warning.getMessage())
@@ -244,11 +251,28 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return false;
     }
 
-    private boolean changeExpiredPassword(DBRProgressMonitor monitor, JDBCExecutionContext context, String purpose) {
+    private boolean changeExpiredPassword(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable JDBCExecutionContext context,
+        @NotNull String purpose
+    ) throws DBCException {
         // Ref: https://stackoverflow.com/questions/21733300/oracle-password-expiry-and-grace-period-handling-using-java-oracle-jdbc
 
         DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
-        DBAPasswordChangeInfo passwordInfo = DBWorkbench.getPlatformUI().promptUserPasswordChange("Password has expired. Set new password.", connectionInfo.getUserName(), connectionInfo.getUserPassword(), true, true);
+        DBAPasswordChangeInfo passwordInfo = DBAuthUtils.getPendingPasswordChange(connectionInfo);
+        boolean interactive = passwordInfo == null;
+        if (interactive) {
+            if (DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+                return false;
+            }
+            passwordInfo = DBWorkbench.getPlatformUI().promptUserPasswordChange(
+                "Password has expired. Set new password.",
+                connectionInfo.getUserName(),
+                connectionInfo.getUserPassword(),
+                true,
+                true
+            );
+        }
         if (passwordInfo == null) {
             return false;
         }
@@ -274,21 +298,31 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
             connectionInfo.setUserPassword(passwordInfo.getNewPassword());
             getContainer().getConnectionConfiguration().setUserPassword(passwordInfo.getNewPassword());
-            getContainer().persistConfiguration();
+            DBAuthUtils.clearPendingPasswordChange(connectionInfo);
+            if (interactive) {
+                getContainer().persistConfiguration();
+            }
             return true;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
+            if (!interactive) {
+                throw new DBCException("Error changing expired password", e);
+            }
             DBWorkbench.getPlatformUI().showError("Error changing password", "Error changing expired password", e);
             return false;
         }
     }
 
+    @NotNull
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new OracleExecutionContext(instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
         if (outputReader == null) {
             outputReader = new OracleOutputReader();
         }
@@ -386,33 +420,37 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return (OracleSchema) DBUtils.getDefaultContext(this, true).getContextDefaults().getDefaultSchema();
     }
 
+    @NotNull
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
         return new OracleDataSourceInfo(metaData);
     }
 
     @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
-        Throwable rootCause = CommonUtils.getRootCause(error);
-        if (rootCause instanceof SQLException sqlException) {
-            switch (sqlException.getErrorCode()) {
-                case OracleConstants.EC_NO_RESULTSET_AVAILABLE:
-                    return ErrorType.RESULT_SET_MISSING;
-                case OracleConstants.EC_FEATURE_NOT_SUPPORTED:
-                    return ErrorType.FEATURE_UNSUPPORTED;
-                case OracleConstants.EC_INVALID_USERNAME_PASSWORD:
-                    return ErrorType.AUTHENTICATION_FAILED;
-            }
+        if (JDBCUtils.matchesSQLException(error, exception -> exception.getErrorCode() == OracleConstants.EC_PASSWORD_EXPIRED)) {
+            return ErrorType.PASSWORD_EXPIRED;
+        }
+        if (JDBCUtils.matchesSQLException(error, exception -> exception.getErrorCode() == OracleConstants.EC_INVALID_USERNAME_PASSWORD
+            || exception.getErrorCode() == OracleConstants.EC_INVALID_OLD_PASSWORD)) {
+            return ErrorType.AUTHENTICATION_FAILED;
+        }
+        if (JDBCUtils.matchesSQLException(error, exception -> exception.getErrorCode() == OracleConstants.EC_NO_RESULTSET_AVAILABLE)) {
+            return ErrorType.RESULT_SET_MISSING;
+        }
+        if (JDBCUtils.matchesSQLException(error, exception -> exception.getErrorCode() == OracleConstants.EC_FEATURE_NOT_SUPPORTED)) {
+            return ErrorType.FEATURE_UNSUPPORTED;
         }
         return super.discoverErrorType(error);
     }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
@@ -464,7 +502,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
     @Association
     public Collection<OracleTablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException {
-        return tablespaceCache.getAllObjects(monitor, this);
+        return getTablespaceCache().getAllObjects(monitor, this);
     }
 
     public TablespaceCache getTablespaceCache() {
@@ -481,8 +519,14 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         return userCache.getObject(monitor, this, name);
     }
 
+    @NotNull
+    public JDBCStructCache<OracleDataSource, OracleUserProfile, OracleUserProfile.ProfileResource> getProfileCache() {
+        return profileCache;
+    }
+
+    @NotNull
     @Association
-    public Collection<OracleUserProfile> getProfiles(DBRProgressMonitor monitor) throws DBException {
+    public Collection<OracleUserProfile> getProfiles(@NotNull DBRProgressMonitor monitor) throws DBException {
         return profileCache.getAllObjects(monitor, this);
     }
 
@@ -565,7 +609,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
             }
         }
         // Cache data types
-        dataTypeCache.setCaseSensitive(false);
+        getDataTypeCache().setCaseSensitive(false);
         {
             List<OracleDataType> dtList = new ArrayList<>();
             for (Map.Entry<String, OracleDataType.TypeDesc> predefinedType : OracleDataType.PREDEFINED_TYPES.entrySet()) {
@@ -575,7 +619,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                     dtList.add(dataType);
                 }
             }
-            this.dataTypeCache.setCache(dtList);
+            getDataTypeCache().setCache(dtList);
         }
     }
 
@@ -586,7 +630,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
 
         this.schemaCache.clearCache();
         //this.dataTypeCache.clearCache();
-        this.tablespaceCache.clearCache();
+        this.getTablespaceCache().clearCache();
         this.userCache.clearCache();
         this.profileCache.clearCache();
         this.roleCache.clearCache();
@@ -643,7 +687,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     }
 
     @Override
-    public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
+    public void cancelStatementExecute(@NotNull DBRProgressMonitor monitor, @NotNull JDBCStatement statement) throws DBException {
         if (driverSupportsQueryCancel()) {
             super.cancelStatementExecute(monitor, statement);
         } else {
@@ -691,13 +735,13 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
     @NotNull
     @Override
     public Collection<? extends DBSDataType> getLocalDataTypes() {
-        return dataTypeCache.getCachedObjects();
+        return getDataTypeCache().getCachedObjects();
     }
 
     @Nullable
     @Override
     public OracleDataType getLocalDataType(String typeName) {
-        return dataTypeCache.getCachedObject(typeName);
+        return getDataTypeCache().getCachedObject(typeName);
     }
 
     public DataTypeCache getDataTypeCache() {
@@ -910,7 +954,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
                     "\tF.TABLESPACE_NAME(+) = TS.TABLESPACE_NAME AND S.TABLESPACE_NAME(+) = TS.TABLESPACE_NAME")) {
                     while (dbResult.next()) {
                         String tsName = dbResult.getString(1);
-                        OracleTablespace tablespace = tablespaceCache.getObject(monitor, OracleDataSource.this, tsName);
+                        OracleTablespace tablespace = getTablespaceCache().getObject(monitor, OracleDataSource.this, tsName);
                         if (tablespace != null) {
                             tablespace.fetchSizes(dbResult);
                         }
@@ -924,7 +968,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
     }
 
-    private class OracleOutputReader implements DBCServerOutputReader {
+    public class OracleOutputReader implements DBCServerOutputReader {
         @Override
         public boolean isServerOutputEnabled() {
             return getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_DBMS_OUTPUT);
@@ -973,8 +1017,8 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
     }
 
-    static class SchemaCache extends JDBCObjectCache<OracleDataSource, OracleSchema> {
-        SchemaCache() {
+    public static class SchemaCache extends JDBCObjectCache<OracleDataSource, OracleSchema> {
+        protected SchemaCache() {
             setListOrderComparator(DBUtils.<OracleSchema>nameComparator());
         }
 
@@ -1041,7 +1085,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
     }
 
-    static class DataTypeCache extends JDBCObjectCache<OracleDataSource, OracleDataType> {
+    public static class DataTypeCache extends JDBCObjectCache<OracleDataSource, OracleDataType> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException {
@@ -1056,7 +1100,7 @@ public class OracleDataSource extends JDBCDataSource implements DBPObjectStatist
         }
     }
 
-    static class TablespaceCache extends JDBCObjectCache<OracleDataSource, OracleTablespace> {
+    public static class TablespaceCache extends JDBCObjectCache<OracleDataSource, OracleTablespace> {
         @NotNull
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException {

@@ -40,6 +40,16 @@ public interface DBPDriverWithLicense {
     @Nullable
     DBPDriverLicense getCurrentLicense() throws DBException;
 
+    default boolean isLicenseInvalid() {
+        return false;
+    }
+
+    default void addLicenseChangeListener(@NotNull Runnable listener) {
+    }
+
+    default void removeLicenseChangeListener(@NotNull Runnable listener) {
+    }
+
     boolean supportsTrialLicense();
 
     @NotNull

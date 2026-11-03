@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.WorkbenchHandlerRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.NativeThemeUtils;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
@@ -145,6 +146,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
     @Override
     public void preWindowOpen() {
         log.debug("Configure workbench window");
+        NativeThemeUtils.installThemeListener(Display.getCurrent());
 
         // Show Product Config, if applicable
         showProductConfigDialog();
@@ -183,19 +185,39 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
     }
 
     private void showProductConfigDialog() {
-        if (!ProductConfigUtils.isAvailable() || !ProductConfigRegistry.getInstance().hasNewFeatures() || ProductConfigUtils.isProductConfigSuppressed()) {
-            // Only show when the persisted configuration lacks any features defined in the registry, e.g. fresh start
+        if (!ProductConfigUtils.isAvailable()
+            || ProductConfigUtils.isProductConfigSuppressed()
+            || !ProductConfigRegistry.getInstance().hasNewFeatures()
+        ) {
             return;
         }
 
         WorkbenchPlugin.unsetSplashShell(Display.getCurrent());
-        var dialog = new ProductConfigWizardDialog(
-            getWindowConfigurer().getWindow(),
-            ProductConfigWizard.Origin.AUTOMATIC
-        );
-        if (dialog.open() == IDialogConstants.CANCEL_ID) {
-            DBRFeatureRegistry.getInstance().endTracking();
-            System.exit(0);
+        Shell workbenchShell = getWindowConfigurer().getWindow().getShell();
+        boolean hideWorkbench = Platform.OS_MACOSX.equals(Platform.getOS()) && workbenchShell != null;
+        boolean restoreVisibility = hideWorkbench && workbenchShell.isVisible();
+        int originalAlpha = hideWorkbench ? workbenchShell.getAlpha() : 255;
+        if (hideWorkbench) {
+            // Cocoa may show the unfinished workbench during the wizard's nested event loop.
+            workbenchShell.setAlpha(0);
+            workbenchShell.setVisible(false);
+        }
+        try {
+            var dialog = new ProductConfigWizardDialog(
+                getWindowConfigurer().getWindow(),
+                ProductConfigWizard.Origin.AUTOMATIC
+            );
+            if (dialog.open() == IDialogConstants.CANCEL_ID) {
+                DBRFeatureRegistry.getInstance().endTracking();
+                System.exit(0);
+            }
+        } finally {
+            if (hideWorkbench && !workbenchShell.isDisposed()) {
+                workbenchShell.setAlpha(originalAlpha);
+                if (restoreVisibility) {
+                    workbenchShell.setVisible(true);
+                }
+            }
         }
     }
 

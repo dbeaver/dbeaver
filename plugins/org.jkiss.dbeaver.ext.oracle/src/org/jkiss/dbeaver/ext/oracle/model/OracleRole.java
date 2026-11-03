@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -39,18 +40,19 @@ import java.util.Collection;
 /**
  * OracleRole
  */
-public class OracleRole extends OracleGrantee implements DBARole
-{
+public class OracleRole extends OracleGrantee implements DBARole {
     private static final Log log = Log.getLog(OracleRole.class);
 
     private String name;
     private String authentication;
+    private String authenticationType;
     private final UserCache userCache = new UserCache();
 
-    public OracleRole(OracleDataSource dataSource, ResultSet resultSet) {
+    public OracleRole(@NotNull OracleDataSource dataSource, @Nullable ResultSet resultSet) {
         super(dataSource);
         this.name = JDBCUtils.safeGetString(resultSet, "ROLE");
         this.authentication = JDBCUtils.safeGetStringTrimmed(resultSet, "PASSWORD_REQUIRED");
+        this.authenticationType = JDBCUtils.safeGetStringTrimmed(resultSet, "AUTHENTICATION_TYPE");
     }
 
     @NotNull
@@ -60,15 +62,19 @@ public class OracleRole extends OracleGrantee implements DBARole
         return name;
     }
 
+    @Nullable
     @Property(viewable = true, order = 3)
-    public String getAuthentication()
-    {
+    public String getAuthentication() {
         return authentication;
     }
 
+    public boolean isDefaultRoleAllowed() {
+        return CommonUtils.isEmpty(authenticationType) ? "NO".equals(authentication) : "NONE".equals(authenticationType);
+    }
+
+    @NotNull
     @Association
-    public Collection<OraclePrivUser> getUserPrivs(DBRProgressMonitor monitor) throws DBException
-    {
+    public Collection<OraclePrivUser> getUserPrivs(@NotNull DBRProgressMonitor monitor) throws DBException {
         return userCache.getAllObjects(monitor, this);
     }
 
@@ -82,17 +88,18 @@ public class OracleRole extends OracleGrantee implements DBARole
     static class UserCache extends JDBCObjectCache<OracleRole, OraclePrivUser> {
         @NotNull
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleRole owner) throws SQLException
-        {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleRole owner) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT * FROM DBA_ROLE_PRIVS WHERE GRANTED_ROLE=? ORDER BY GRANTEE");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }
 
+        @NotNull
         @Override
-        protected OraclePrivUser fetchObject(@NotNull JDBCSession session, @NotNull OracleRole owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
-        {
+        protected OraclePrivUser fetchObject(
+            @NotNull JDBCSession session, @NotNull OracleRole owner, @NotNull JDBCResultSet resultSet
+        ) throws SQLException, DBException {
             return new OraclePrivUser(owner, resultSet);
         }
     }

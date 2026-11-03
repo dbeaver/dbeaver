@@ -24,8 +24,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.exec.DBCDriverLicenseException;
 import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
 import org.jkiss.dbeaver.model.impl.app.ApplicationRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -34,6 +34,7 @@ import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.Version;
 
 import java.io.*;
@@ -101,6 +102,14 @@ public class GeneralUtils {
 
     private static final Pattern VAR_PATTERN = Pattern.compile(
         "(\\$\\{([\\w\\.\\-]+)(\\:[^\\$\\{\\}]+)?\\})", Pattern.CASE_INSENSITIVE);
+
+    private static final int MAX_EMAIL_LENGTH = 254;
+    private static final int MAX_EMAIL_LOCAL_PART_LENGTH = 64;
+    private static final String EMAIL_LOCAL_PART = "[a-zA-Z0-9!#$%&'*+/=?^_`{|}~-]+";
+    private static final String EMAIL_DOMAIN_LABEL = "[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?";
+    private static final Pattern EMAIL_PATTERN = Pattern.compile(
+        EMAIL_LOCAL_PART + "(?:\\." + EMAIL_LOCAL_PART + ")*@" + EMAIL_DOMAIN_LABEL + "(?:\\." + EMAIL_DOMAIN_LABEL + ")+"
+    );
 
     /**
      * Default encoding (UTF-8)
@@ -313,6 +322,12 @@ public class GeneralUtils {
     }
 
     @NotNull
+    public static String getProductUserAgent() {
+        return getProductName() + " (" + System.getProperty(StandardConstants.ENV_OS_NAME) + "; "
+            + Platform.getOS() + "; " + Platform.getOSArch() + ")";
+    }
+
+    @NotNull
     public static Version getProductVersion() {
         ApplicationDescriptor application = ApplicationRegistry.getInstance().getApplication();
         if (application != null) {
@@ -320,7 +335,7 @@ public class GeneralUtils {
         }
         final IProduct product = Platform.getProduct();
         if (product == null) {
-            return ModelActivator.getInstance().getBundle().getVersion();
+            return FrameworkUtil.getBundle(GeneralUtils.class).getVersion();
         }
         return product.getDefiningBundle().getVersion();
     }
@@ -448,6 +463,12 @@ public class GeneralUtils {
 
     public static boolean isWhitespaceExt(char c) {
         return c <= ' ' || c == 0x160;
+    }
+
+    public static boolean isValidEmail(@NotNull String email) {
+        return email.length() <= MAX_EMAIL_LENGTH
+            && email.indexOf('@') <= MAX_EMAIL_LOCAL_PART_LENGTH
+            && EMAIL_PATTERN.matcher(email).matches();
     }
 
     @NotNull
@@ -709,14 +730,13 @@ public class GeneralUtils {
                     getExceptionMessage(ex),
                     ex);
             } else {
-                // Pass null exception to avoid dups in error message.
-                // Real exception stacktrace will be passed in the root cause
+                // keep license errors available to the UI; other wrappers would duplicate the cause details
                 return new MultiStatus(
                     ModelPreferences.PLUGIN_ID,
                     0,
                     new IStatus[]{makeExceptionStatus(severity, cause, true)},
                     getExceptionMessage(ex),
-                    !nested ? null : ex);
+                    nested || ex instanceof DBCDriverLicenseException ? ex : null);
             }
         }
     }

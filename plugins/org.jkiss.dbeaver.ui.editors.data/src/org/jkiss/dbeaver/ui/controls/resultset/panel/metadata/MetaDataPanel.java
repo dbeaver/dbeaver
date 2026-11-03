@@ -133,7 +133,7 @@ public class MetaDataPanel extends ResultSetPanelBase {
                 ((ISelectionProvider) presentation).removeSelectionChangedListener(listener));
         }
 
-        ResultSetPanelRefresher.installOn(this, presentation);
+        ResultSetPanelRefresher.installOn(this, panelContents, presentation);
 
         DataEditorFeatures.RESULT_SET_PANEL_METADATA.use();
 

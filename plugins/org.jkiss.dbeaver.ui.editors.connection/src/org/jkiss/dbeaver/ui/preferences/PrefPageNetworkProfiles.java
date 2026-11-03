@@ -385,7 +385,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
         for (HandlerBlock handlerBlock : configurations.values()) {
             DBWHandlerConfiguration configuration = handlerBlock.loadedConfigs.get(profile);
             if (configuration != null) {
-                profile.updateConfiguration(configuration);
+                profile.updateConfiguration(new DBWHandlerConfiguration(configuration));
             }
         }
     }
@@ -396,6 +396,9 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
         super.performDefaults();
 
         profilesTable.removeAll();
+        for (HandlerBlock handlerBlock : configurations.values()) {
+            handlerBlock.loadedConfigs.clear();
+        }
         {
             DBSSecretController secretController;
             try {
@@ -421,7 +424,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
                     HandlerBlock handlerBlock = configurations.get(nhd);
                     DBWHandlerConfiguration configuration = profile.getConfiguration(nhd);
                     if (configuration != null) {
-                        handlerBlock.loadedConfigs.put(profile, configuration);
+                        handlerBlock.loadedConfigs.put(profile, new DBWHandlerConfiguration(configuration));
                     }
                 }
             }
@@ -434,6 +437,8 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
                 profilesTable.select(profileIndex);
             }
 
+            // Do not save stale controls into the reloaded profile when notifying the selection listener.
+            selectedProfile = null;
             profilesTable.notifyListeners(SWT.Selection, new Event());
         }
     }
@@ -442,15 +447,22 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
     public boolean performOk() {
         saveHandlerSettings();
 
-        List<DBWNetworkProfile> allProfiles = new ArrayList<>();
-        for (TableItem item : profilesTable.getItems()) {
-            DBWNetworkProfile profile = (DBWNetworkProfile) item.getData();
+        List<DBWNetworkProfile> allProfiles = getCurrentProfiles();
+        for (DBWNetworkProfile profile : allProfiles) {
             saveSettings(profile);
-            allProfiles.add(profile);
         }
         updateNetworkProfiles(allProfiles);
 
         return super.performOk();
+    }
+
+    @NotNull
+    protected List<DBWNetworkProfile> getCurrentProfiles() {
+        List<DBWNetworkProfile> profiles = new ArrayList<>();
+        for (TableItem item : profilesTable.getItems()) {
+            profiles.add((DBWNetworkProfile) item.getData());
+        }
+        return profiles;
     }
 
     @Override

@@ -30,7 +30,9 @@ import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.HTMLTransfer;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.KeyListener;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
@@ -59,8 +61,10 @@ import org.jkiss.dbeaver.model.impl.data.ResultSetHintContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVEntityConstraint;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.*;
@@ -108,6 +112,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
         DBDValueHint.HintType.STRING, DBDValueHint.HintType.ACTION, DBDValueHint.HintType.IMAGE);
 
     private static final Log log = Log.getLog(SpreadsheetPresentation.class);
+    private static final int MAX_FULL_ARRAY_PREVIEW_ITEMS = 100;
+    private static final int MAX_FULL_ARRAY_PREVIEW_TEXT_LENGTH = 1000;
 
     private Spreadsheet spreadsheet;
 
@@ -2440,6 +2446,18 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
             info.value = cellValue;
             info.text = formatValue(colElement, rowElement, info.value);
+            if (attr != null && cellValue instanceof DBDCollection collection &&
+                !collection.isNull() && !collection.isEmpty() && !spreadsheet.isCellExpanded(rowElement, colElement)
+            ) {
+                info.fullTextProvider = () -> {
+                    try {
+                        return formatArrayPreview(attr, collection);
+                    } catch (Exception e) {
+                        // The compact preview is still available if the full value cannot be formatted.
+                        return null;
+                    }
+                };
+            }
             info.state = STATE_NONE;
 
             if (attr != null && cellValue != DBDVoid.INSTANCE) {
@@ -2624,7 +2642,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
                 return attr.getValueRenderer().getValueDisplayString(
                     attr.getAttribute(),
                     value,
-                    getValueRenderFormat(attr, value));
+                    getValueRenderFormat(value));
             } catch (Exception e) {
                 return new DBDValueError(e);
             }
@@ -2939,9 +2957,8 @@ public class SpreadsheetPresentation extends AbstractPresentation
             if (row == null) {
                 return null;
             }
-            CellInformation cellInfo = getCellInfo(colElement, rowElement, false);
             int hintOptions = options;
-            if ((IGridContentProvider.STATE_EXPANDED & cellInfo.state) != 0) {
+            if (spreadsheet.isCellExpanded(rowElement, colElement)) {
                 hintOptions |= DBDValueHintProvider.OPTION_ROW_EXPANDED;
             }
             if (controller.isRecordMode()) {
@@ -3018,6 +3035,118 @@ public class SpreadsheetPresentation extends AbstractPresentation
             backgroundDefault = null;
             foregroundDefault = null;
         }
+
+        @Nullable
+        @Override
+        public String getCellSelectionDragText(@NotNull List<GridCell> selectedCells) {
+            if (!canStartCellSelectionDrag(selectedCells) || selectedCells.isEmpty()) {
+                return null;
+            }
+
+            if (isSingleColumnSelection(selectedCells)) {
+                return formatCellSelectionAsSqlLiterals(selectedCells);
+            }
+            // Match existing row-header TextTransfer capacity and format.
+            return formatCellSelectionAsDisplayJoin(selectedCells);
+        }
+
+        @Override
+        public boolean canStartCellSelectionDrag(@NotNull List<GridCell> selectedCells) {
+            if (controller.isRecordMode()
+                || ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_COPY)
+                || selectedCells.isEmpty()
+            ) {
+                return false;
+            }
+            // Expanded collection/struct child rows keep the parent binding while values are
+            // scalars or DBDVoid — not safe for SQL literals or a coherent display join.
+            if (selectionContainsNestedRows(selectedCells)) {
+                return false;
+            }
+            if (!isSingleColumnSelection(selectedCells)) {
+                return true;
+            }
+            // Single-column path emits SQL literals — refuse LOB/content and unresolved attributes.
+            return isSingleColumnSqlLiteralDragAllowed(selectedCells);
+        }
+
+        private static boolean isSingleColumnSelection(@NotNull List<GridCell> selectedCells) {
+            IGridColumn firstColumn = selectedCells.getFirst().col;
+            for (GridCell cell : selectedCells) {
+                if (!Objects.equals(cell.col, firstColumn)) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static boolean selectionContainsNestedRows(@NotNull List<GridCell> selectedCells) {
+            for (GridCell cell : selectedCells) {
+                if (cell.row.getParent() != null) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /**
+         * Fail closed: need a live data source for dialect-aware literals; every cell must
+         * resolve to an attribute and must not be {@link DBDContent} or {@link DBDVoid}.
+         */
+        private boolean isSingleColumnSqlLiteralDragAllowed(@NotNull List<GridCell> selectedCells) {
+            DBSDataContainer dataContainer = controller.getDataContainer();
+            if (dataContainer == null || dataContainer.getDataSource() == null) {
+                // After disconnect, display text is not a safe SQL-literal substitute.
+                return false;
+            }
+            for (GridCell cell : selectedCells) {
+                if (getAttributeFromGrid(cell.col, cell.row) == null) {
+                    return false;
+                }
+                Object value = getCellValue(cell.col, cell.row, false);
+                if (value instanceof DBDContent || value == DBDVoid.INSTANCE) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Nullable
+        private String formatCellSelectionAsSqlLiterals(@NotNull List<GridCell> selectedCells) {
+            if (!isSingleColumnSqlLiteralDragAllowed(selectedCells)) {
+                return null;
+            }
+            List<String> literals = new ArrayList<>(selectedCells.size());
+            // Gate above ensures container, data source, and attributes are present.
+            DBSDataContainer dataContainer = Objects.requireNonNull(controller.getDataContainer());
+            DBPDataSource dataSource = Objects.requireNonNull(dataContainer.getDataSource());
+            for (GridCell cell : selectedCells) {
+                DBDAttributeBinding attribute = Objects.requireNonNull(getAttributeFromGrid(cell.col, cell.row));
+                Object value = getCellValue(cell.col, cell.row, false);
+                literals.add(SQLUtils.convertValueToSQL(dataSource, attribute, value));
+            }
+            return ResultSetCellDragUtils.joinSqlLiterals(literals);
+        }
+
+        /**
+         * Same separators and display values as LightGrid row-header TextTransfer.
+         */
+        @NotNull
+        private String formatCellSelectionAsDisplayJoin(@NotNull List<GridCell> selectedCells) {
+            List<List<String>> rows = new ArrayList<>();
+            IGridRow currentRow = null;
+            List<String> currentValues = null;
+            for (GridCell cell : selectedCells) {
+                if (currentValues == null || !Objects.equals(cell.row, currentRow)) {
+                    currentValues = new ArrayList<>();
+                    rows.add(currentValues);
+                    currentRow = cell.row;
+                }
+                // String.valueOf matches StringBuilder.append(Object) used by row-header drag.
+                currentValues.add(String.valueOf(getCellValue(cell.col, cell.row, true)));
+            }
+            return ResultSetCellDragUtils.joinDisplayRows(rows);
+        }
     }
 
     // Simple attribute is attribute which is not a part of FK or PK
@@ -3039,6 +3168,48 @@ public class SpreadsheetPresentation extends AbstractPresentation
         ResultSetRow currentRow = getController().getCurrentRow();
         IGridRow focusRow = spreadsheet.getFocusRow();
         return currentAttribute == null || currentRow == null ? null : makeResultSetCellLocation(currentAttribute, currentRow, focusRow);
+    }
+
+    @Override
+    public void setCurrentCellLocation(@NotNull ResultSetCellLocation cellLocation) {
+        boolean recordMode = getController().isRecordMode();
+        IGridColumn column = spreadsheet.getColumnByElement(recordMode ? cellLocation.getRow() : cellLocation.getAttribute());
+        if (column == null) {
+            super.setCurrentCellLocation(cellLocation);
+            return;
+        }
+
+        // Fast-path: locate the row directly by element (common case: no nested row/value path)
+        int fromIndex = recordMode ? 0 : cellLocation.getRow().getVisualNumber();
+        Object rowElement = recordMode ? cellLocation.getAttribute() : cellLocation.getRow();
+        IGridRow row = spreadsheet.getRowByElement(fromIndex, rowElement);
+        if (row != null && trySetCursor(cellLocation, column, row)) {
+            return;
+        }
+
+        // Locate the row by iterating through all rows (needed for nested rows/value paths)
+        for (int rowIndex = 0; rowIndex < spreadsheet.getItemCount(); rowIndex++) {
+            IGridRow row1 = spreadsheet.getRow(rowIndex);
+            if (row1 != null && trySetCursor(cellLocation, column, row1)) {
+                return;
+            }
+        }
+
+        super.setCurrentCellLocation(cellLocation);
+    }
+
+    private boolean trySetCursor(@NotNull ResultSetCellLocation location, @NotNull IGridColumn column, @NotNull IGridRow row) {
+        var cell = new GridCell(column, row);
+        var candidate = getCellLocation(cell);
+        if (candidate.getRow() == location.getRow()
+            && candidate.getAttribute() == location.getAttribute()
+            && Arrays.equals(candidate.getRowIndexes(), location.getRowIndexes())
+            && Objects.equals(candidate.getValuePath(), location.getValuePath())
+        ) {
+            spreadsheet.setCursor(cell, false, true, true);
+            return true;
+        }
+        return false;
     }
 
     @NotNull
@@ -3146,7 +3317,7 @@ public class SpreadsheetPresentation extends AbstractPresentation
     }
 
     @NotNull
-    private DBDDisplayFormat getValueRenderFormat(@NotNull DBDAttributeBinding attr, @Nullable Object value) {
+    private DBDDisplayFormat getValueRenderFormat(@Nullable Object value) {
         if (value instanceof Number && useNativeNumbersFormat) {
             return DBDDisplayFormat.NATIVE;
         }
@@ -3173,6 +3344,69 @@ public class SpreadsheetPresentation extends AbstractPresentation
         return value instanceof DBDCollection collection
             && !collection.isNull()
             && (collection.isEmpty() || spreadsheet.isCellExpanded(row, column));
+    }
+
+    /**
+     * Produces a complete preview using the database-specific renderer when the collection is small enough to display.
+     */
+    @Nullable
+    private String formatArrayPreview(
+        @NotNull DBDAttributeBinding attribute,
+        @NotNull DBDCollection collection
+    ) {
+        int[] remainingItems = {MAX_FULL_ARRAY_PREVIEW_ITEMS};
+        int[] remainingTextLength = {MAX_FULL_ARRAY_PREVIEW_TEXT_LENGTH};
+        boolean[] hasNumbers = {false};
+        Set<DBDCollection> visited = Collections.newSetFromMap(new IdentityHashMap<>());
+        if (!isArrayPreviewBounded(collection, remainingItems, remainingTextLength, hasNumbers, visited)) {
+            return null;
+        }
+
+        String preview = attribute.getValueRenderer().getValueDisplayString(
+            attribute.getAttribute(),
+            collection,
+            hasNumbers[0] && useNativeNumbersFormat ? DBDDisplayFormat.NATIVE : gridValueFormat);
+        return preview.length() <= MAX_FULL_ARRAY_PREVIEW_TEXT_LENGTH ? preview : null;
+    }
+
+    /**
+     * Checks nested collection limits and cycles without invoking value handlers before the complete value is rendered.
+     */
+    private static boolean isArrayPreviewBounded(
+        @NotNull DBDCollection collection,
+        @NotNull int[] remainingItems,
+        @NotNull int[] remainingTextLength,
+        @NotNull boolean[] hasNumbers,
+        @NotNull Set<DBDCollection> visited
+    ) {
+        if (!visited.add(collection)) {
+            return false;
+        }
+        try {
+            for (int i = 0; i < collection.getItemCount(); i++) {
+                if (--remainingItems[0] < 0) {
+                    return false;
+                }
+                Object item = collection.getItem(i);
+                if (item instanceof DBDCollection nested) {
+                    if (!isArrayPreviewBounded(nested, remainingItems, remainingTextLength, hasNumbers, visited)) {
+                        return false;
+                    }
+                } else {
+                    if (item instanceof Number) {
+                        hasNumbers[0] = true;
+                    }
+                    if (item instanceof CharSequence text &&
+                        (remainingTextLength[0] -= text.length()) < 0
+                    ) {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        } finally {
+            visited.remove(collection);
+        }
     }
 
     private boolean isComplexValuesExpansionEnabled() {

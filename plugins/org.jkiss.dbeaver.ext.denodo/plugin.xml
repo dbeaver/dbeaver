@@ -8,12 +8,20 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+        <dataSourceType
+            id="denodo"
+            label="Denodo"
+            description="Denodo data virtualization platform"
+            dataSourceInformation="Enterprise platform for virtualized data access"
+            icon="icons/denodo_icon.png"
+            iconBig="icons/denodo_icon_big.png"/>
 
         <!-- Denodo Platform -->
         <datasource
                 class="org.jkiss.dbeaver.ext.denodo.DenodoDataSourceProvider"
                 description="Denodo data source"
                 id="denodo"
+                dataSourceType="denodo"
                 parent="generic"
                 label="Denodo"
                 icon="icons/denodo_icon.png"
@@ -23,8 +31,6 @@
                         id="denodo8_jdbc"
                         label="Denodo"
                         class="com.denodo.vdp.jdbc.Driver"
-                        icon="icons/denodo_icon.png"
-                        iconBig="icons/denodo_icon_big.png"
                         sampleURL="jdbc:denodo://{host}:{port}/{database}"
                         defaultPort="9999"
                         defaultDatabase="admin"

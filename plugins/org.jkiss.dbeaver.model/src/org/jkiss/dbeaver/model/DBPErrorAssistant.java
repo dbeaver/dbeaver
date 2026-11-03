@@ -37,7 +37,8 @@ public interface DBPErrorAssistant
         FEATURE_UNSUPPORTED,
         TRANSACTION_ABORTED,    // Txn aborted, PG-specific
         RESULT_SET_MISSING,      // No resultset, Oracle-specific (#8026)
-        UNIQUE_KEY_VIOLATION     // During insert operation
+        UNIQUE_KEY_VIOLATION,    // During insert operation
+        PASSWORD_EXPIRED
     }
 
     class ErrorPosition

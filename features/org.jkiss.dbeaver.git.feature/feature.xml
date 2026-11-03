@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.git.feature"
       label="DBeaver Git support"
-      version="1.0.176.qualifier"
+      version="1.0.179.qualifier"
       provider-name="DBeaver Corp">
 
    <copyright>DBeaver Corp and others</copyright>
@@ -16,6 +16,21 @@
    <includes id="org.eclipse.jgit.http.apache" version="0.0.0"/>
    <includes id="org.eclipse.jgit.ssh.apache" version="0.0.0"/>
    <includes id="org.eclipse.egit" version="0.0.0"/>
+
+   <!-- JGit dependency -->
+   <plugin id="com.googlecode.javaewah.JavaEWAH" version="0.0.0"/>
+
+   <!-- Archive dependencies (Commons IO and Lang3 are optional OSGi imports of Commons Compress) -->
+   <plugin id="org.apache.commons.commons-compress" version="0.0.0"/>
+   <plugin id="org.apache.commons.commons-io" version="0.0.0"/>
+   <plugin id="org.apache.commons.lang3" version="0.0.0"/>
+
+   <!-- Apache HTTP transport dependencies -->
+   <plugin id="org.apache.httpcomponents.httpclient" version="0.0.0"/>
+   <plugin id="org.apache.httpcomponents.httpcore" version="0.0.0"/>
+
+   <!-- HttpClient 4 requires the Commons Logging API below 1.3 -->
+   <plugin id="jcl.over.slf4j" version="0.0.0"/>
 
    <!-- SSH Agent provider -->
    <plugin id="org.apache.sshd.osgi" version="0.0.0"/>

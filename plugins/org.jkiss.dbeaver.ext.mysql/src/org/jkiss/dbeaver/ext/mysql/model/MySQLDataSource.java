@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
@@ -77,18 +78,6 @@ import java.util.regex.Pattern;
 public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisticsCollector {
     private static final Log log = Log.getLog(MySQLDataSource.class);
     private static final Pattern VERSION_PATTERN = Pattern.compile("([0-9]+\\.[0-9]+\\.[0-9]+).+");
-
-    private static final Map<String, String> PROHIBITED_DRIVER_PROPERTIES = new HashMap<>();
-
-    static {
-        PROHIBITED_DRIVER_PROPERTIES.putAll(Map.of(
-            "autoDeserialize", "false",
-            "allowLocalInfile", "false",
-            "allowLoadLocalInfile", "false",
-            "allowUrlInLocalInfile", "false"
-        ));
-        PROHIBITED_DRIVER_PROPERTIES.put("allowLoadLocalInfileInPath", null);
-    }
 
     private final JDBCBasicDataTypeCache<MySQLDataSource, JDBCDataType> dataTypeCache;
     private List<MySQLEngine> engines;
@@ -145,11 +134,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return lowerCaseTableNames;
     }
 
+    @NotNull
     @Override
     protected Map<String, String> getInternalConnectionProperties(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDriver driver,
-        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext context,
         @NotNull String purpose,
         @NotNull DBPConnectionConfiguration connectionInfo
     ) throws DBCException {
@@ -196,8 +186,9 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return props;
     }
 
+    @NotNull
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull DBRProgressMonitor monitor, @NotNull JDBCDatabaseMetaData metaData) {
         return new MySQLDataSourceInfo(metaData);
     }
 
@@ -253,19 +244,24 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         }
     }
 
+    @NotNull
     @Override
-    protected JDBCExecutionContext createExecutionContext(JDBCRemoteInstance instance, String type) {
+    protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new MySQLExecutionContext(instance, type);
     }
 
-    protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, JDBCExecutionContext initFrom) throws DBException {
+    protected void initializeContextState(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull JDBCExecutionContext context,
+        @Nullable JDBCExecutionContext initFrom
+    ) throws DBException {
         if (initFrom != null && !context.getDataSource().getContainer().isConnectionReadOnly()) {
-            MySQLCatalog object = ((MySQLExecutionContext)initFrom).getDefaultCatalog();
+            MySQLCatalog object = ((MySQLExecutionContext) initFrom).getDefaultCatalog();
             if (object != null) {
-                ((MySQLExecutionContext)context).setCurrentDatabase(monitor, object);
+                ((MySQLExecutionContext) context).setCurrentDatabase(monitor, object);
             }
         } else {
-            ((MySQLExecutionContext)context).refreshDefaults(monitor, true);
+            ((MySQLExecutionContext) context).refreshDefaults(monitor, true);
         }
     }
 
@@ -551,10 +547,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
                     inServerTimezoneHandle = false;
                     throw e2;
                 }
-            } else if (
-                isPasswordExpired(e) &&
-                DBAuthUtils.promptAndChangePasswordForCurrentUser(monitor, container, this::changeUserPassword)
-            ) {
+            } else if (isPasswordExpired(e) && changeExpiredPassword(monitor)) {
                 return openConnection(monitor, context, purpose);
             } else {
                 throw e;
@@ -931,6 +924,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
             });
         } else if (adapter == DBCQueryPlanner.class) {
             return adapter.cast(new MySQLPlanAnalyser(this));
+        } else if (adapter == JDBCConnectionValidator.class) {
+            return adapter.cast(new MySQLConnectionValidator());
         }
         return super.getAdapter(adapter);
     }
@@ -1102,6 +1097,12 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
     @NotNull
     @Override
     public ErrorType discoverErrorType(@NotNull Throwable error) {
+        if (isPasswordExpired(error)) {
+            return ErrorType.PASSWORD_EXPIRED;
+        }
+        if (JDBCUtils.matchesSQLException(error, exception -> exception.getErrorCode() == MySQLConstants.ER_ACCESS_DENIED_ERROR)) {
+            return ErrorType.AUTHENTICATION_FAILED;
+        }
         if (isMariaDB()) {
             // MariaDB-specific. They have bad SQLState support
             if ("08".equals(SQLState.getStateFromException(error))) {
@@ -1312,35 +1313,29 @@ public class MySQLDataSource extends JDBCDataSource implements DBPObjectStatisti
         return readeAllCaches;
     }
 
-    @Override
-    protected void fillConnectionProperties(@NotNull DBPConnectionConfiguration connectionInfo, @NotNull Properties connectProps) {
-        super.fillConnectionProperties(connectionInfo, connectProps);
-
-        if (!DBWorkbench.getPlatform().getApplication().isMultiuser()) {
-            return;
-        }
-
-        for (String prohibitedDriverProperty : PROHIBITED_DRIVER_PROPERTIES.keySet()) {
-            if (connectProps.containsKey(prohibitedDriverProperty)) {
-                log.warn("The driver settings contain a prohibited property, this property will be forcibly removed: "
-                    + prohibitedDriverProperty);
-            }
-            String propertyValue = PROHIBITED_DRIVER_PROPERTIES.get(prohibitedDriverProperty);
-            if (propertyValue == null) {
-                connectProps.remove(prohibitedDriverProperty);
-            } else {
-                log.trace("Set " + prohibitedDriverProperty + ":" + propertyValue);
-                connectProps.put(prohibitedDriverProperty, propertyValue);
-            }
-        }
+    private boolean isPasswordExpired(@NotNull Throwable error) {
+        int errorCode = isMariaDB()
+            ? MySQLConstants.MARIA_ER_MUST_CHANGE_PASSWORD_LOGIN
+            : MySQLConstants.ER_MUST_CHANGE_PASSWORD_LOGIN;
+        return JDBCUtils.matchesSQLException(error, exception -> exception.getErrorCode() == errorCode);
     }
 
-    private boolean isPasswordExpired(@NotNull DBCException e) {
-        int code = SQLState.getCodeFromException(e);
-        if (isMariaDB()) {
-            return code == MySQLConstants.MARIA_ER_MUST_CHANGE_PASSWORD_LOGIN;
-        } else {
-            return code == MySQLConstants.ER_MUST_CHANGE_PASSWORD_LOGIN;
+    private boolean changeExpiredPassword(@NotNull DBRProgressMonitor monitor) throws DBCException {
+        DBAPasswordChangeInfo passwordChangeInfo = DBAuthUtils.getPendingPasswordChange(
+            container.getActualConnectionConfiguration());
+        if (passwordChangeInfo == null) {
+            return DBAuthUtils.promptAndChangePasswordForCurrentUser(monitor, container, this::changeUserPassword);
+        }
+        try {
+            DBAuthUtils.changePasswordForCurrentUser(
+                monitor,
+                container,
+                this::changeUserPassword,
+                passwordChangeInfo
+            );
+            return true;
+        } catch (DBException e) {
+            throw new DBCException("Error changing expired password", e);
         }
     }
 

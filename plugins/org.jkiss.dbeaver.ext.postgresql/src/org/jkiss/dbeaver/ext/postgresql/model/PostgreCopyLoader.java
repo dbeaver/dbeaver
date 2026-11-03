@@ -175,9 +175,11 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
         }
     }
 
-    private String convertStringValueToCell(String strValue) {
+    @NotNull
+    static String convertStringValueToCell(@NotNull String strValue) {
+        // COPY uses backslash as ESCAPE: escape existing backslashes before adding escaped quotes.
         return '"' +
-            strValue.replace("\"", "\\\"") +
+            strValue.replace("\\", "\\\\").replace("\"", "\\\"") +
             '"';
     }
 

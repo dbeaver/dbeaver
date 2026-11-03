@@ -22,18 +22,23 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.text.source.SourceViewer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCompletionProcessor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public class SQLEditorHandlerAssistTemplates extends AbstractHandler {
 
     public SQLEditorHandlerAssistTemplates() {
     }
 
+    @Nullable
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
         IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
-        if (activeEditor instanceof SQLEditorBase editor) {
+        SQLEditorBase editor = GeneralUtils.adapt(activeEditor, SQLEditorBase.class);
+        if (editor != null) {
             boolean oldValue = SQLCompletionProcessor.isLookupTemplates();
             SQLCompletionProcessor.setLookupTemplates(true);
             try {

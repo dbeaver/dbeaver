@@ -19,6 +19,9 @@ package org.jkiss.dbeaver.ui.ai.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class AIUIMessages extends NLS {
+    public static String ai_engine_configurator_use_env;
+    public static String ai_engine_configurator_use_env_tip;
+    public static String ai_engine_configurator_use_env_variables_tip;
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.ai.internal.AIUIMessages"; //$NON-NLS-1$
 
     public static String gpt_preference_page_checkbox_enable_ai_label;
@@ -78,10 +81,19 @@ public class AIUIMessages extends NLS {
     public static String scope_selector_customize;
     public static String scope_selector_not_available;
     public static String scope_selector_custom_objects;
+    public static String scope_selector_loading;
+    public static String scope_selector_load_error;
+    public static String scope_selector_empty;
     public static String openai_configurator_log_query_label;
     public static String openai_configurator_log_query_tip;
     public static String openai_configurator_temperature_tip;
     public static String openai_configurator_token_placeholder;
+    public static String openai_configurator_custom_headers;
+    public static String openai_configurator_header_name;
+    public static String openai_configurator_header_value;
+    public static String openai_configurator_header_add;
+    public static String openai_configurator_header_remove;
+    public static String openai_configurator_header_invalid;
     public static String openai_configurator_login_method_label;
     public static String openai_configurator_authentication_api_token;
     public static String openai_configurator_authentication_chatgpt_account;

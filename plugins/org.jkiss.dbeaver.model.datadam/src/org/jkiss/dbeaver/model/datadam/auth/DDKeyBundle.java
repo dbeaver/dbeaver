@@ -18,8 +18,10 @@ package org.jkiss.dbeaver.model.datadam.auth;
 
 import org.jkiss.code.NotNull;
 
+import java.util.UUID;
+
 public record DDKeyBundle(
-    @NotNull String accountId,
+    @NotNull UUID accountId,
     @NotNull String signingKey,
     @NotNull String dataKey,
     long generation

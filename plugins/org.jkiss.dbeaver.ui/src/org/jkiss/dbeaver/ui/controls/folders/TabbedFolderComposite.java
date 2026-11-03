@@ -34,9 +34,11 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 
 
@@ -344,6 +346,34 @@ public class TabbedFolderComposite extends ConComposite implements ITabbedFolder
         return folderState;
     }
 
+    public void setFolderFilter(@NotNull Predicate<TabbedFolderInfo> filter) {
+        for (FolderPane pane : folderPanes) {
+            TabbedFolderInfo[] visibleFolders = Arrays.stream(pane.folders).filter(filter).toArray(TabbedFolderInfo[]::new);
+            pane.folderList.setFolders(visibleFolders);
+            if (visibleFolders.length == 0) {
+                if (pane.curFolder != null) {
+                    pane.curFolder.aboutToBeHidden();
+                    pane.curFolder = null;
+                }
+                if (pane.curContent != null) {
+                    pane.curContent.setVisible(false);
+                    ((GridData) pane.curContent.getLayoutData()).exclude = true;
+                    pane.curContent = null;
+                }
+            } else {
+                int selectionIndex = 0;
+                for (int index = 0; index < visibleFolders.length; index++) {
+                    if (visibleFolders[index].getContents() == pane.curFolder) {
+                        selectionIndex = index;
+                        break;
+                    }
+                }
+                pane.folderList.select(selectionIndex, false);
+            }
+        }
+        reLayout();
+    }
+
     @Nullable
     public TabbedFolderInfo[] getFolders() {
         return folders;
@@ -381,6 +411,9 @@ public class TabbedFolderComposite extends ConComposite implements ITabbedFolder
 
     private ITabbedFolder getActiveFolder(FolderPane folderPane, boolean activate) {
         TabbedFolderList folderList = folderPane.folderList;
+        if (folderList.getNumberOfElements() == 0) {
+            return null;
+        }
         int selectionIndex = folderList.getSelectionIndex();
         if (selectionIndex < 0) {
             if (!activate) {

@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilterObject
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -66,6 +65,7 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
     private DatabaseNavigatorTree navigatorTree;
 
     private static boolean showConnected;
+    private DatabaseNavigatorTreeFilterObjectType filterObjectType = DatabaseNavigatorTreeFilterObjectType.connection;
 
     protected ObjectBrowserDialogBase(
         @NotNull Shell parentShell,
@@ -83,6 +83,10 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
 
     public static boolean isShowConnected() {
         return showConnected;
+    }
+
+    public void setFilterObjectType(@NotNull DatabaseNavigatorTreeFilterObjectType filterObjectType) {
+        this.filterObjectType = filterObjectType;
     }
 
     @Override
@@ -107,7 +111,7 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
         gd.heightHint = 500;
         navigatorTree.setLayoutData(gd);
 
-        navigatorTree.setFilterObjectType(DatabaseNavigatorTreeFilterObjectType.connection);
+        navigatorTree.setFilterObjectType(filterObjectType);
 
         final TreeViewer treeViewer = navigatorTree.getViewer();
         ViewerFilter viewerFilter = createViewerFilter();
@@ -116,7 +120,14 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
         }
         if (selectedNodes.length > 0) {
             treeViewer.setSelection(new StructuredSelection(selectedNodes));
-            Collections.addAll(selectedObjects, selectedNodes);
+            for (DBNNode node : selectedNodes) {
+                if (matchesResultNode(node)) {
+                    selectedObjects.add(node);
+                } else {
+                    selectedObjects.clear();
+                    break;
+                }
+            }
 
             for (DBNNode node : selectedNodes) {
                 if (!(node instanceof DBNDataSource dataSource) || dataSource.getDataSourceContainer().isConnected()) {
@@ -134,6 +145,7 @@ public abstract class ObjectBrowserDialogBase extends Dialog {
                         selectedObjects.add((DBNNode) node);
                     } else {
                         selectedObjects.clear();
+                        break;
                     }
                 } else if (node instanceof TreeNodeSpecial) {
                     specialNode = (TreeNodeSpecial) node;

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,17 @@ public class ComplexTypeAttributeTransformer implements DBDAttributeTransformer 
         }
         if (dataType instanceof DBSEntity) {
             createNestedTypeBindings(session, attribute, rows, dataType);
+        }
+        if (!attribute.hasNestedBindings() && attribute.getParentObject() == null) {
+            // Anonymous records have no attributes in type metadata, but their fetched values do.
+            int position = attribute.getOrdinalPosition();
+            for (Object[] row : rows) {
+                if (position >= 0 && position < row.length && row[position] instanceof DBDComposite composite
+                    && composite.getAttributes().length > 0 && composite.getDataType() instanceof DBSEntity) {
+                    createNestedTypeBindings(session, attribute, rows, composite.getDataType());
+                    break;
+                }
+            }
         }
     }
 

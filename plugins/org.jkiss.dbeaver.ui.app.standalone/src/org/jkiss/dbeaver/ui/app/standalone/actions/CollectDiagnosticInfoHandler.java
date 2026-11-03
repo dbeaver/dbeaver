@@ -31,9 +31,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.LogOutputStream;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.impl.app.LocalSecretController;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskRun;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -47,6 +50,7 @@ import org.jkiss.dbeaver.ui.dialogs.MessageBoxBuilder;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
@@ -56,12 +60,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.function.Predicate;
-import java.util.regex.Pattern;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -93,7 +96,9 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
             try {
                 out.putNextEntry(new ZipEntry("configuration.txt"));
                 try {
-                    out.write(ConfigurationInfo.getSystemSummary().getBytes(StandardCharsets.UTF_8));
+                    String summary = LocalSecretController.getDiagnosticSecretPreferencePattern()
+                        .matcher(ConfigurationInfo.getSystemSummary()).replaceAll("");
+                    out.write(summary.getBytes(StandardCharsets.UTF_8));
                 } catch (IOException e) {
                     log.warn("Cannot write configuration info into archive '%s': caught exception".formatted(archive), e);
                 } finally {
@@ -165,21 +170,10 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
         Path logFileLocation = debugLog.getParent();
         if (logFileLocation != null && Files.isDirectory(logFileLocation)) {
             String fileName = debugLog.getFileName().toString();
-            String logFileName;
-            String logFileNameExtension;
-            int fnameExtStart = fileName.lastIndexOf('.');
-            if (fnameExtStart >= 0) {
-                logFileName = fileName.substring(0, fnameExtStart);
-                logFileNameExtension = fileName.substring(fnameExtStart);
-            } else {
-                logFileName = fileName;
-                logFileNameExtension = "";
-            }
-            String logFileNameRegexStr = "^" + Pattern.quote(logFileName) + "\\-[0-9]+" + Pattern.quote(logFileNameExtension) + "$";
-            Predicate<String> logFileNamePattern = Pattern.compile(logFileNameRegexStr).asMatchPredicate();
+            var logFileNamePredicate = LogOutputStream.getArchivedLogFileNamePredicate(fileName);
             try (var stream = Files.list(logFileLocation)) {
                 Collection<DiagnosticsEntry> tmp = stream
-                    .filter(path -> logFileNamePattern.test(path.getFileName().toString()))
+                    .filter(path -> logFileNamePredicate.test(path.getFileName().toString()))
                     .map(path -> new DiagnosticsEntry(path, path.getFileName().toString()))
                     .toList();
                 diagnosticsEntries.addAll(tmp);
@@ -242,9 +236,9 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
                 CoreApplicationMessages.collect_diagnostic_info_pick_path_title
             );
             textWithOpen.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            String userHome = System.getProperty(StandardConstants.ENV_USER_HOME);
-            if (userHome != null) {
-                textWithOpen.setText(userHome);
+            String initialOutputFolderPath = getInitialOutputFolderPath();
+            if (initialOutputFolderPath != null) {
+                textWithOpen.setText(initialOutputFolderPath);
             } else {
                 enableOk(false);
             }
@@ -278,14 +272,43 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
                 String outputFolderPathString = textWithOpen.getText();
                 if (!CommonUtils.isEmpty(outputFolderPathString)) {
                     outputFolder = new File(outputFolderPathString);
+                    storeOutputFolderPath(outputFolderPathString);
                 }
             }
             super.okPressed();
         }
 
+        private void storeOutputFolderPath(@NotNull String outputFolderPathString) {
+            DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+            store.setValue(DBeaverPreferences.DIAGNOSTIC_INFO_OUTPUT_FOLDER, outputFolderPathString);
+            PrefUtils.savePreferenceStore(store);
+        }
+
+        @Nullable
+        private String getInitialOutputFolderPath() {
+            DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+            String outputFolderPath = store.getString(DBeaverPreferences.DIAGNOSTIC_INFO_OUTPUT_FOLDER);
+            if (!isOutputFolderPathValid(outputFolderPath)) {
+                return System.getProperty(StandardConstants.ENV_USER_HOME);
+            }
+            return outputFolderPath;
+        }
+
         @Nullable
         private File getOutputFolder() {
             return outputFolder;
+        }
+
+        private static boolean isOutputFolderPathValid(@Nullable String outputFolderPathString) {
+            if (CommonUtils.isEmpty(outputFolderPathString)) {
+                return false;
+            }
+            try {
+                return Files.isDirectory(Path.of(outputFolderPathString));
+            } catch (InvalidPathException e) {
+                log.debug("Invalid path '%s'".formatted(outputFolderPathString), e);
+                return false;
+            }
         }
     }
 }

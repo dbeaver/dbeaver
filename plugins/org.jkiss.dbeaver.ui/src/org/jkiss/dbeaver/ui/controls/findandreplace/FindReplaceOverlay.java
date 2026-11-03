@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.FrameworkUtil;
 
@@ -791,6 +792,8 @@ public class FindReplaceOverlay {
         private ContentAssistCommandAdapter createContentAssistField(@NotNull HistoryTextWrapper control, boolean isFind) {
             TextContentAdapter contentAdapter = new TextContentAdapter();
             FindReplaceDocumentAdapterContentProposalProvider findProposer = new FindReplaceDocumentAdapterContentProposalProvider(isFind);
+            ContentAssistCommandAdapter[] commandAdapterReference = new ContentAssistCommandAdapter[1];
+            ContentAssistUtils.installProposalActivationKeyHandler(control.getTextBar(), () -> commandAdapterReference[0]);
             ContentAssistCommandAdapter commandAdapter;
             if (isFind) {
                 IContentProposalProvider historyProposer = (f, pos) -> StreamSupport.stream(this.searchHistory.get().spliterator(), false)
@@ -810,6 +813,7 @@ public class FindReplaceOverlay {
                     ITextEditorActionDefinitionIds.CONTENT_ASSIST_PROPOSALS, new char[0], true
                 );
             }
+            commandAdapterReference[0] = commandAdapter;
             commandAdapter.setEnabled(true);
             return commandAdapter;
         }

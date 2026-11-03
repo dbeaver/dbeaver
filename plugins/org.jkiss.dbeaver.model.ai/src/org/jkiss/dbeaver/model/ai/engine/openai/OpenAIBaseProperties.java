@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Map;
 
 public interface OpenAIBaseProperties extends AIEngineProperties {
 
@@ -28,6 +31,34 @@ public interface OpenAIBaseProperties extends AIEngineProperties {
     @Nullable
     String getToken();
 
+    @Nullable
+    default String getEffectiveToken() {
+        return getToken();
+    }
+
+    @Nullable
+    default String getEffectiveBaseUrl() {
+        return getBaseUrl();
+    }
+
+    @NotNull
+    default Map<String, String> getCustomHeaders() {
+        return Map.of();
+    }
+
+    default boolean isTokenRequired() {
+        return isDefaultBaseUrl(getEffectiveBaseUrl());
+    }
+
+    static boolean isDefaultBaseUrl(@Nullable String baseUrl) {
+        if (baseUrl == null || baseUrl.isBlank()) {
+            return true;
+        }
+        String normalizedUrl = baseUrl.trim();
+        return OpenAIClientResponses.OPENAI_ENDPOINT.equalsIgnoreCase(
+            normalizedUrl.endsWith("/") ? normalizedUrl : normalizedUrl + "/"
+        );
+    }
 
     default boolean isStreamingEnabled() {
         return true;
@@ -35,7 +66,8 @@ public interface OpenAIBaseProperties extends AIEngineProperties {
 
     @Override
     default boolean isValidConfiguration() {
-        return !CommonUtils.isEmpty(getToken());
+        return (!isTokenRequired() || !CommonUtils.isEmptyTrimmed(getEffectiveToken()))
+            && OpenAIRequestFilter.findInvalidHeader(getCustomHeaders()) == null;
     }
 
 }

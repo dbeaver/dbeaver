@@ -69,14 +69,22 @@ public final class ProductConfigRegistry {
         return features;
     }
 
+    @NotNull
+    public List<ProductConfigFeatureDescriptor> getAvailableFeatures() {
+        return features.stream().filter(this::isFeatureAvailable).toList();
+    }
+
+    public boolean hasConfiguredFeatures() {
+        return !currentState().features().isEmpty();
+    }
+
+    public boolean isFeatureNew(@NotNull ProductConfigFeatureDescriptor descriptor) {
+        return !currentState().features().containsKey(descriptor.getId());
+    }
+
     public boolean hasNewFeatures() {
-        var state = currentState();
-        for (ProductConfigFeatureDescriptor feature : features) {
-            if (!state.features().containsKey(feature.getId())) {
-                return true;
-            }
-        }
-        return false;
+        boolean configured = hasConfiguredFeatures();
+        return features.stream().anyMatch(feature -> isFeatureNew(feature) && (!configured || isFeatureAvailable(feature)));
     }
 
     public boolean isFeatureEnabled(@NotNull ProductConfigFeatureDescriptor descriptor) {
@@ -111,6 +119,16 @@ public final class ProductConfigRegistry {
             state = currentState()
                 .withFeature(descriptor.getId(), new State.Feature(enabled));
             saveState(state);
+        }
+    }
+
+    private boolean isFeatureAvailable(@NotNull ProductConfigFeatureDescriptor descriptor) {
+        try {
+            var tester = descriptor.getAvailabilityTester();
+            return tester == null || tester.isFeatureAvailable();
+        } catch (DBException e) {
+            log.error("Error checking availability of product configuration feature '" + descriptor.getId() + "'", e);
+            return true;
         }
     }
 

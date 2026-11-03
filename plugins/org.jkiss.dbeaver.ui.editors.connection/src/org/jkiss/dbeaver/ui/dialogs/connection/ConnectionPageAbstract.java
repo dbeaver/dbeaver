@@ -283,7 +283,10 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             site.getDriver().getFullName() + " ",
             () -> {
                 String databaseDocumentationSuffixURL = site.getDriver().getDatabaseDocumentationSuffixURL();
-                ShellUtils.launchProgram(HelpUtils.getHelpExternalReference(databaseDocumentationSuffixURL));
+                ShellUtils.launchProgram(databaseDocumentationSuffixURL.startsWith("https://")
+                    || databaseDocumentationSuffixURL.startsWith("http://")
+                    ? databaseDocumentationSuffixURL
+                    : HelpUtils.getHelpExternalReference(databaseDocumentationSuffixURL));
             });
         databaseDocumentationInfoLabel.setToolTipText(
             UIConnectionMessages.dialog_connection_database_documentation);
@@ -443,6 +446,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         addControlToGroup(GROUP_URL, urlText);
         setupConnectionModeSelection(useUrl, Collections.singleton(GROUP_URL), nonUrlPropGroups);
         urlText.setEnabled(true);
+        urlText.setEditable(useUrl);
         CSSUtils.setCSSClass(urlText, useUrl ? null : CSS_CLASS_READ_ONLY_CONNECTION_URL);
         CSSUtils.applyStyles(urlText);
     }

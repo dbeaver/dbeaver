@@ -17,12 +17,54 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceType;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeDescriptor;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collection;
+import java.util.List;
 
 public class DataSourceProviderRegistryTest {
+    @Test
+    public void testEveryDriverHasDataSourceType() {
+        DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+
+        for (DBPDataSourceProviderDescriptor provider : registry.getDataSourceProviders()) {
+            for (DBPDriver driver : provider.getDrivers()) {
+                DBPDataSourceType type = driver.getDataSourceType();
+                Assertions.assertNotNull(type, provider.getId() + ":" + driver.getId());
+                Assertions.assertFalse(type.getDataSourceInformation().isBlank(), type.getId());
+            }
+        }
+    }
+
+    @Test
+    public void testCustomDriverUsesCustomDataSourceType() {
+        DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+        DriverDescriptor driver = new DriverDescriptor(registry.getDataSourceProvider("generic"), "test-custom-driver");
+
+        Assertions.assertSame(registry.getDataSourceType(DBPDataSourceType.CUSTOM_ID), driver.getDataSourceType());
+    }
+
+    @Test
+    public void testBigQueryDriversShareDataSourceType() {
+        DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+        DBPDataSourceType type = registry.getDataSourceType("bigquery");
+        DBPDriver simbaDriver = registry.getDataSourceProvider("bigquery").getDriver("google_bigquery_jdbc_simba");
+        DBPDriver standardDriver = registry.getDataSourceProvider("bigquery").getDriver("google_bigquery_jdbc");
+
+        Assertions.assertNotNull(type);
+        Assertions.assertEquals(type, standardDriver.getDataSourceType());
+        Assertions.assertEquals(type, simbaDriver.getDataSourceType());
+        Assertions.assertSame(type.getIcon(), standardDriver.getPlainIcon());
+        Assertions.assertSame(type.getIconBig(), standardDriver.getIconBig());
+    }
+
     @Test
     public void testConnectionTypesCollectionIsStableDuringRegistryUpdate() {
         DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
@@ -51,6 +93,64 @@ public class DataSourceProviderRegistryTest {
             Assertions.assertFalse(connectionTypesSnapshot.contains(customType));
         } finally {
             registry.removeConnectionType(customType);
+        }
+    }
+
+    @Test
+    public void testBuiltInDriverReplacement() {
+        DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+        DBPDriver original = registry.getDataSourceProvider("generic").getOriginalDriver("h2_embedded_v2");
+        DBPDriver replacement = registry.getDataSourceProvider("h2").getOriginalDriver("h2_embedded_v2");
+
+        Assertions.assertNotNull(original);
+        Assertions.assertNotNull(replacement);
+        Assertions.assertSame(replacement, original.getReplacedBy());
+    }
+
+    @Test
+    public void testBuiltInDriverLibrariesAreAvailable() {
+        DBPDriver driver = DataSourceProviderRegistry.getInstance()
+            .getDataSourceProvider("h2")
+            .getOriginalDriver("h2_embedded_v2");
+
+        Assertions.assertNotNull(driver);
+        Assertions.assertFalse(driver.getDriverLibraries().isEmpty());
+    }
+
+    @Test
+    public void testInheritedTreeRemainsProviderSpecific() {
+        DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+        DataSourceProviderDescriptor generic = registry.getDataSourceProvider("generic");
+        DataSourceProviderDescriptor h2 = registry.getDataSourceProvider("h2");
+
+        DBXTreeDescriptor genericTree = generic.getTreeDescriptor();
+        DBXTreeDescriptor h2Tree = h2.getTreeDescriptor();
+        Assertions.assertNotNull(genericTree);
+        Assertions.assertNotNull(h2Tree);
+        Assertions.assertNotSame(genericTree, h2Tree);
+        Assertions.assertEquals(genericTree.getPath(), h2Tree.getPath());
+    }
+
+    @Test
+    public void testTreePropertyChangeInvalidatesCachedGetterAndPreservesChildren() {
+        var provider = DataSourceProviderRegistry.getInstance().getDataSourceProvider("generic");
+        var item = new DBXTreeItem(provider, null, null, "item", "original", false, true, false, false, false, null, null);
+        var child = new DBXTreeItem(provider, item, null, "child", "original", false, true, false, false, false, null, null);
+        Assertions.assertEquals(String.class, item.getPropertyOrCollectionItemType(PropertyContainer.class));
+        item.setPropertyName("replacement");
+
+        Assertions.assertEquals("replacement", item.getPropertyName());
+        Assertions.assertEquals(Integer.class, item.getPropertyOrCollectionItemType(PropertyContainer.class));
+        Assertions.assertSame(child, item.findChildItemByPath("child"));
+    }
+
+    public static class PropertyContainer {
+        public List<String> getOriginal() {
+            return List.of();
+        }
+
+        public List<Integer> getReplacement() {
+            return List.of();
         }
     }
 }

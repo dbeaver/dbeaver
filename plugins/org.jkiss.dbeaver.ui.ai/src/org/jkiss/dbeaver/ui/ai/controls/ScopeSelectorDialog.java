@@ -16,11 +16,16 @@
  */
 package org.jkiss.dbeaver.ui.ai.controls;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -29,16 +34,23 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIActivator;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
 
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Set;
 
 public class ScopeSelectorDialog extends BaseDialog {
 
@@ -67,6 +79,14 @@ public class ScopeSelectorDialog extends BaseDialog {
     @Override
     protected IDialogSettings getDialogBoundsSettings() {
         return UIUtils.getSettingsSection(AIUIActivator.getInstance().getDialogSettings(), DIALOG_ID);
+    }
+
+    @NotNull
+    @Override
+    protected Point getInitialSize() {
+        Point size = super.getInitialSize();
+        size.x = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT).x;
+        return size;
     }
 
     @NotNull
@@ -111,13 +131,7 @@ public class ScopeSelectorDialog extends BaseDialog {
 
             @Override
             protected boolean isDatabaseFolderVisible(DBNDatabaseFolder folder) {
-                Class<? extends DBSObject> childrenClass = folder.getChildrenClass();
-                if (childrenClass == null) {
-                    return false;
-                }
-                return DBSEntity.class.isAssignableFrom(childrenClass) ||
-                    DBSEntityContainer.class.isAssignableFrom(childrenClass) ||
-                    DBSStructContainer.class.isAssignableFrom(childrenClass);
+                return isSupportedNode(folder);
             }
 
             @Override
@@ -126,10 +140,12 @@ public class ScopeSelectorDialog extends BaseDialog {
             }
 
         };
-        selectorPanel.getCheckboxTreeManager().setAutoCheckNested(false);
+        selectorPanel.getCheckboxTreeManager().enableLazyCheck(ScopeSelectorDialog::isSupportedNode);
         selectorPanel.getNavigatorTree().getViewer().expandToLevel(2);
         selectorPanel.checkNodes(selectedNodes, true);
         selectorPanel.setSelection(selectedNodes);
+        selectorPanel.getNavigatorTree().getCheckboxViewer().addCheckStateListener(event -> updateOkButton());
+        selectorPanel.getNavigatorTree().getViewer().addDoubleClickListener(event -> updateOkButton());
 
         UIUtils.createInfoLabel(dialogArea, "Customize database metadata accessible to AI.");
 
@@ -137,23 +153,93 @@ public class ScopeSelectorDialog extends BaseDialog {
     }
 
     @Override
-    protected void okPressed() {
-        selectedNodes = selectorPanel.getCheckedNodes();
-        selectedNodes.removeIf(n -> {
-                if (n instanceof DBNDatabaseNode dbn) {
-                    DBSObject object = dbn.getObject();
-                    if (object instanceof DBSEntity ||
-                        object instanceof DBSEntityContainer ||
-                        object instanceof DBSStructContainer
-                    ) {
-                        return false;
-                    }
-                }
-                return true;
-            });
-        selectedNodes.removeIf(n -> selectedNodes.contains(n.getParentNode()));
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
+        super.createButtonsForButtonBar(parent);
+        updateOkButton();
+    }
 
+    private void updateOkButton() {
+        Button okButton = getButton(IDialogConstants.OK_ID);
+        if (okButton != null) {
+            okButton.setEnabled(selectorPanel.getCheckedNodes().stream().anyMatch(ScopeSelectorDialog::isSupportedNode));
+        }
+    }
+
+    private static boolean isSupportedNode(@NotNull DBNNode node) {
+        if (node instanceof DBNDatabaseFolder folder) {
+            Class<? extends DBSObject> childrenClass = folder.getChildrenClass();
+            return childrenClass != null && (
+                DBSEntity.class.isAssignableFrom(childrenClass) ||
+                DBSEntityContainer.class.isAssignableFrom(childrenClass) ||
+                DBSStructContainer.class.isAssignableFrom(childrenClass)
+            );
+        }
+        if (node instanceof DBNDatabaseNode databaseNode) {
+            DBSObject object = databaseNode.getObject();
+            return object instanceof DBSEntity || object instanceof DBSEntityContainer || object instanceof DBSStructContainer;
+        }
+        return false;
+    }
+
+    @Override
+    protected void okPressed() {
+        List<DBNNode> checkedNodes = selectorPanel.getCheckedNodes();
+        Set<DBNNode> resolvedNodes = new LinkedHashSet<>();
+        try {
+            runnableContext.run(true, true, monitor -> {
+                monitor.beginTask(AIUIMessages.scope_selector_loading, checkedNodes.size());
+                try {
+                    for (DBNNode node : checkedNodes) {
+                        collectSelectedNodes(monitor, node, resolvedNodes);
+                        monitor.worked(1);
+                    }
+                    if (monitor.isCanceled()) {
+                        throw new InterruptedException();
+                    }
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                } finally {
+                    monitor.done();
+                }
+            });
+        } catch (InvocationTargetException e) {
+            DBWorkbench.getPlatformUI().showError(AIUIMessages.scope_selector_load_error, null, e.getTargetException());
+            return;
+        } catch (InterruptedException e) {
+            return;
+        }
+        if (resolvedNodes.isEmpty()) {
+            MessageDialog.openInformation(getShell(), AIUIMessages.scope_selector_customize, AIUIMessages.scope_selector_empty);
+            return;
+        }
+        selectedNodes = new ArrayList<>(resolvedNodes);
         super.okPressed();
+    }
+
+    private static void collectSelectedNodes(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBNNode node,
+        @NotNull Set<DBNNode> result
+    ) throws DBException, InterruptedException {
+        if (monitor.isCanceled()) {
+            throw new InterruptedException();
+        }
+        if (!isSupportedNode(node)) {
+            return;
+        }
+        if (node instanceof DBNDatabaseFolder folder) {
+            DBNNode[] children = folder.getChildren(monitor);
+            if (monitor.isCanceled()) {
+                throw new InterruptedException();
+            }
+            if (children != null) {
+                for (DBNNode child : children) {
+                    collectSelectedNodes(monitor, child, result);
+                }
+            }
+        } else {
+            result.add(node);
+        }
     }
 
     public List<? extends DBNNode> getSelectedNodes() {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils.ProposalActivationKey;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLContentAssistant;
 
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -89,12 +91,13 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
     protected StyledText createTextWidget(Composite parent, int styles) {
         StyledText textWidget = super.createTextWidget(parent, styles);
         textWidget.addListener(ST.VerifyKey, event -> {
-            // It is a hack to allow auto-complete with TAB key (#2316)
-            // TODO: perhaps we should test ContentAssistant.isProposalPopupActive() here?
+            // Accept visible completion proposals with Tab (#2316), preserving linked template field navigation otherwise.
             switch (event.type) {
                 case ST.VerifyKey: {
                     if (event.character == '\t'
-                        && currentPrefStoreSupplier.get().getBoolean(SQLPreferenceConstants.TAB_AUTOCOMPLETION)
+                        && fContentAssistant instanceof SQLContentAssistant assistant
+                        && assistant.isProposalPopupActive()
+                        && ProposalActivationKey.fromPreferences(currentPrefStoreSupplier.get()).acceptsTab()
                     ) {
                         VerifyEvent verifyEvent = new VerifyEvent(event);
                         verifyEvent.character = '\n';
@@ -105,6 +108,8 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
                     }
                     break;
                 }
+                default:
+                    break;
             }
         });
         

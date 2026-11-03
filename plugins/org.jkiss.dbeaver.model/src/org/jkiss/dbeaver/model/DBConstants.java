@@ -175,5 +175,6 @@ public class DBConstants {
 
     public static final String CERTIFICATE_STORAGE_FOLDER = "security";
 
+    public static final String PROP_RESOURCE_DEFAULT_PROJECT_ID = "default-projectId"; //$NON-NLS-1$
     public static final String PROP_RESOURCE_DEFAULT_DATASOURCE = "default-datasource"; //$NON-NLS-1$
 }

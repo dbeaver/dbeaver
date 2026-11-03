@@ -37,11 +37,15 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
     public static final String EVENT_TYPE_TEXT_DELTA = "response.output_text.delta";
     protected static final Gson GSON = JSONUtils.GSON;
     private static final Log log = Log.getLog(OpenAiAPIStreamConsumer.class);
-    public static final String DATA_EVENT = "data: ";
+    // Per the SSE spec (https://html.spec.whatwg.org/multipage/server-sent-events.html#event-stream-interpretation),
+    // the single space after the colon is optional ("data:{json}" is as valid as "data: {json}").
+    // The trailing .trim() calls below already strip it when present, so the prefixes themselves
+    // must not require it.
+    public static final String DATA_EVENT = "data:";
     public static final String EVENT_TYPE_RESPONSE_COMPLETED = "response.completed";
     public static final String EVENT_TYPE_ITEM_DONE = "response.output_item.done";
     private static final String DONE_EVENT = "[DONE]";
-    private static final String EVENT_EVENT = "event: ";
+    private static final String EVENT_EVENT = "event:";
     private static final String EVENT_TYPE_ARGUMENTS_DELTA = "response.function_call_arguments.delta";
     private final AIEngineResponseConsumer listener;
     private boolean functionCall;

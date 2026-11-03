@@ -21,9 +21,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentMatchers;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.nio.charset.StandardCharsets;
@@ -32,15 +31,25 @@ import java.security.SecureRandom;
 import java.util.Arrays;
 import java.util.Base64;
 import java.util.HexFormat;
+import java.util.UUID;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 
 class DDKeyStoreTest {
     private static final String ACCOUNT_ID = "8decb064-2709-4914-b6b6-68eaef98cac3";
+    private static final UUID ACCOUNT_UUID = UUID.fromString(ACCOUNT_ID);
     // canonical BIP-39 test vector (all-zero entropy) - valid checksum, used across the test suite
     private static final String RECOVERY_PHRASE =
         "abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon abandon about";
     private static final int KDF_ITERATIONS = 1000;
+    private DBSSecretController secretStorage;
+    private DDKeyStore store;
+
+    @BeforeEach
+    void setUp() {
+        secretStorage = Mockito.mock(DBSSecretController.class);
+        store = new DDKeyStore(secretStorage);
+    }
 
     @Test
     void deriveKekMatchesWebCryptoVector() throws Exception {
@@ -66,7 +75,7 @@ class DDKeyStoreTest {
 
         DDKeyBundle bundle = DDKeyStore.unpack(fixture.state(), RECOVERY_PHRASE);
 
-        Assertions.assertEquals(ACCOUNT_ID, bundle.accountId());
+        Assertions.assertEquals(ACCOUNT_UUID, bundle.accountId());
         Assertions.assertEquals(fixture.signingKey(), bundle.signingKey());
         Assertions.assertEquals(fixture.dataKey(), bundle.dataKey());
         Assertions.assertEquals(7, bundle.generation());
@@ -89,7 +98,7 @@ class DDKeyStoreTest {
         byte[] encrypted = Base64.getDecoder().decode(fixture.state().encryptedBundle());
         String truncated = Base64.getEncoder().encodeToString(Arrays.copyOf(encrypted, 12));
         DDCryptoState state = new DDCryptoState(
-            ACCOUNT_ID, true, truncated, 1L, fixture.state().salt(), KDF_ITERATIONS);
+            ACCOUNT_UUID, true, truncated, 1L, fixture.state().salt(), KDF_ITERATIONS);
 
         Assertions.assertThrows(DBException.class, () -> DDKeyStore.unpack(state, RECOVERY_PHRASE));
     }
@@ -100,7 +109,7 @@ class DDKeyStoreTest {
         SecretKey kek = DDCrypto.deriveKek(RECOVERY_PHRASE, salt, KDF_ITERATIONS);
         byte[] encrypted = DDCrypto.encrypt(kek, "incomplete".getBytes(StandardCharsets.UTF_8));
         DDCryptoState state = new DDCryptoState(
-            ACCOUNT_ID,
+            ACCOUNT_UUID,
             true,
             Base64.getEncoder().encodeToString(encrypted),
             1L,
@@ -112,39 +121,65 @@ class DDKeyStoreTest {
     }
 
     @Test
-    void saveRejectsBundleFromDifferentAccount() throws Exception {
-        DDKeyBundle stored = new DDKeyBundle(ACCOUNT_ID, "signing-key", "data-key", 2);
-        DDKeyBundle replacement = new DDKeyBundle("another-account", "new-signing-key", "new-data-key", 3);
+    void loadRejectsMalformedBundle() throws Exception {
+        Mockito.when(secretStorage.getPrivateSecretValue("datadam.key-bundle")).thenReturn("not-json");
 
-        DBException exception = assertRejectedSave(stored, replacement);
+        Assertions.assertThrows(DBException.class, store::loadBundle);
+        Mockito.verify(secretStorage, Mockito.never()).setPrivateSecretValue(Mockito.anyString(), Mockito.any());
+    }
 
-        Assertions.assertEquals("The keys belong to another account", exception.getMessage());
+    @Test
+    void saveReplacesUnreadableBundle() throws Exception {
+        DDKeyBundle replacement = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 1);
+        Mockito.when(secretStorage.getPrivateSecretValue("datadam.key-bundle"))
+            .thenThrow(new DBException("Cannot read stored keys"));
+
+        Assertions.assertThrows(DBException.class, store::loadBundle);
+        store.saveBundle(replacement);
+
+        Mockito.verify(secretStorage).setPrivateSecretValue("datadam.key-bundle", JSONUtils.GSON.toJson(replacement));
+        Mockito.verify(secretStorage).flushChanges();
+    }
+
+    @Test
+    void savePropagatesFlushFailure() throws Exception {
+        DDKeyBundle replacement = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 1);
+        DBException writeError = new DBException("Cannot flush keys");
+        Mockito.doThrow(writeError).when(secretStorage).flushChanges();
+
+        Assertions.assertSame(writeError, Assertions.assertThrows(DBException.class, () -> store.saveBundle(replacement)));
+    }
+
+    @Test
+    void saveReplacesBundleFromDifferentAccount() throws Exception {
+        DDKeyBundle stored = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 2);
+        DDKeyBundle replacement = new DDKeyBundle(
+            UUID.fromString("8decb064-2709-4914-b6b6-68eaef98cac4"), "new-signing-key", "new-data-key", 1);
+
+        Mockito.when(secretStorage.getPrivateSecretValue("datadam.key-bundle"))
+            .thenReturn(JSONUtils.GSON.toJson(stored));
+
+        store.saveBundle(replacement);
+
+        Mockito.verify(secretStorage).setPrivateSecretValue("datadam.key-bundle", JSONUtils.GSON.toJson(replacement));
+        Mockito.verify(secretStorage).flushChanges();
     }
 
     @Test
     void saveRejectsGenerationRollback() throws Exception {
-        DDKeyBundle stored = new DDKeyBundle(ACCOUNT_ID, "signing-key", "data-key", 3);
-        DDKeyBundle replacement = new DDKeyBundle(ACCOUNT_ID, "old-signing-key", "old-data-key", 2);
+        DDKeyBundle stored = new DDKeyBundle(ACCOUNT_UUID, "signing-key", "data-key", 3);
+        DDKeyBundle replacement = new DDKeyBundle(ACCOUNT_UUID, "old-signing-key", "old-data-key", 2);
 
-        DBException exception = assertRejectedSave(stored, replacement);
-
-        Assertions.assertEquals("The keys are older than the stored ones", exception.getMessage());
+        assertRejectedSave(stored, replacement);
     }
 
-    @NotNull
-    private static DBException assertRejectedSave(@NotNull DDKeyBundle stored, @NotNull DDKeyBundle replacement) throws Exception {
-        DBSSecretController controller = Mockito.mock(DBSSecretController.class);
-        Mockito.when(controller.getPrivateSecretValue(ArgumentMatchers.anyString()))
+    private void assertRejectedSave(@NotNull DDKeyBundle stored, @NotNull DDKeyBundle replacement) throws Exception {
+        Mockito.when(secretStorage.getPrivateSecretValue("datadam.key-bundle"))
             .thenReturn(JSONUtils.GSON.toJson(stored));
-        try (MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(DBSSecretController.class)) {
-            controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
 
-            DBException exception = Assertions.assertThrows(DBException.class, () -> DDKeyStore.save(replacement));
+        Assertions.assertThrows(DBException.class, () -> store.saveBundle(replacement));
 
-            Mockito.verify(controller, Mockito.never())
-                .setPrivateSecretValue(ArgumentMatchers.anyString(), ArgumentMatchers.any());
-            return exception;
-        }
+        Mockito.verify(secretStorage, Mockito.never()).setPrivateSecretValue(Mockito.anyString(), Mockito.any());
     }
 
     @NotNull
@@ -161,7 +196,7 @@ class DDKeyStoreTest {
         );
         return new BundleFixture(
             new DDCryptoState(
-                ACCOUNT_ID,
+                ACCOUNT_UUID,
                 true,
                 Base64.getEncoder().encodeToString(encrypted),
                 generation,

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -53,7 +54,11 @@ public class OAIMessageFactory {
             case SYSTEM, USER -> true;
             default -> false;
         };
-        message.content = List.of(new OAIMessageContent(input, msg.getContent()));
+        message.content = new ArrayList<>();
+        if (!msg.getContent().isEmpty() || msg.getImages().isEmpty()) {
+            message.content.add(new OAIMessageContent(input, msg.getContent()));
+        }
+        msg.getImages().stream().map(OAIMessageContent::image).forEach(message.content::add);
         return message;
     }
 

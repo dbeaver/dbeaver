@@ -38,6 +38,8 @@ public interface AIChatController extends DBPContextProvider {
     String CMD_DELETE_CONVERSATION = "com.dbeaver.ai.chat.deleteConversation";
     String CMD_OPEN_SETTINGS = "com.dbeaver.ai.chat.openSettings";
     String CMD_OPEN_FILTERS = "com.dbeaver.ai.chat.openFilters";
+    String CMD_DESCRIBE_OBJECT = "com.dbeaver.ai.describeObject";
+    String CONTEXT_CHAT_CONTROL = "org.jkiss.dbeaver.ui.ai.chat.control";
 
     int FEATURE_CONTEXT_VIEW            = 1 << 1;
     int FEATURE_PROMPT_VIEW             = 1 << 2;

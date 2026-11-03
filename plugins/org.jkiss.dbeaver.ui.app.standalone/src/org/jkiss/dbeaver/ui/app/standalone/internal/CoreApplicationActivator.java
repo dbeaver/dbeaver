@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
-import org.jkiss.dbeaver.utils.OsgiUtils;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
@@ -35,6 +34,8 @@ import java.util.Objects;
 import java.util.Set;
 
 public class CoreApplicationActivator extends AbstractUIPlugin {
+
+    private static final Log log = Log.getLog(CoreApplicationActivator.class);
 
     // The shared instance
     private static CoreApplicationActivator plugin;
@@ -88,8 +89,8 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
                 Bundle bundle = event.getBundle();
                 if (event.getType() == BundleEvent.STARTED) {
                     if (bundle.getState() == Bundle.ACTIVE) {
-                        message = "> Start " + OsgiUtils.getBundleName(bundle) +
-                            " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
+                        message = "Start [" + bundle.getSymbolicName() + "]";
+                        /* + " " + bundle.getVersion() + " " + OsgiUtils.getBundleName(bundle)*/
                         activatedBundles.add(bundle.getSymbolicName());
                     }
                 } else if (event.getType() == BundleEvent.STOPPING) {
@@ -98,7 +99,7 @@ public class CoreApplicationActivator extends AbstractUIPlugin {
                     // " [" + bundle.getSymbolicName() + " " + bundle.getVersion() + "]";
                 }
                 if (message != null) {
-                    System.err.println(message);
+                    log.debug(message);
                 }
             }, null);
         }

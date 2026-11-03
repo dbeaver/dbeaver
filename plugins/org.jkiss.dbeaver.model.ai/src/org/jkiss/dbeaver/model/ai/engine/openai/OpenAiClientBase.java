@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModel;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModelList;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
+import org.jkiss.dbeaver.model.ai.utils.AIHttpRequestFilter;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -40,11 +41,11 @@ public abstract class OpenAiClientBase extends AbstractHttpAIClient {
     protected static final Gson GSON = JSONUtils.GSON;
     private static final Log log = Log.getLog(OpenAiClientBase.class);
     protected final String baseUrl;
-    protected final List<OpenAIClientResponses.HttpRequestFilter> requestFilters;
+    protected final List<AIHttpRequestFilter> requestFilters;
 
     public OpenAiClientBase(
         @NotNull String baseUrl,
-        @NotNull List<OpenAIClientResponses.HttpRequestFilter> requestFilters
+        @NotNull List<AIHttpRequestFilter> requestFilters
     ) {
         if (!baseUrl.endsWith("/")) {
             baseUrl += "/";
@@ -94,7 +95,7 @@ public abstract class OpenAiClientBase extends AbstractHttpAIClient {
 
     @NotNull
     public HttpRequest applyFilters(@NotNull HttpRequest request, boolean setContentType) throws DBException {
-        for (HttpRequestFilter filter : requestFilters) {
+        for (AIHttpRequestFilter filter : requestFilters) {
             request = filter.filter(request, setContentType);
         }
         return request;
@@ -117,12 +118,4 @@ public abstract class OpenAiClientBase extends AbstractHttpAIClient {
             .build();
     }
 
-    /**
-     * Interface for filtering and modifying HTTP requests before they are sent.
-     * Implementations can be used to add authentication headers, modify the request body, etc.
-     */
-    public interface HttpRequestFilter {
-        @NotNull
-        HttpRequest filter(@NotNull HttpRequest request, boolean setContentType) throws DBException;
-    }
 }

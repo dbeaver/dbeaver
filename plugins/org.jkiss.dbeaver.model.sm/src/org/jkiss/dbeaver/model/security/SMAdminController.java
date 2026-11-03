@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.auth.SMObjectType;
 import org.jkiss.dbeaver.model.security.user.*;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -42,7 +43,19 @@ public interface SMAdminController extends SMController {
      * @throws DBException the db exception
      */
     @NotNull
-    SMUserTeam[] getUserTeams(String userId) throws DBException;
+    SMUserTeam[] getUserTeams(@NotNull String userId) throws DBException;
+
+    /**
+     * Returns team grants for each requested user.
+     */
+    @NotNull
+    default Map<String, SMUserTeam[]> getUsersTeams(@NotNull Set<String> userIds) throws DBException {
+        Map<String, SMUserTeam[]> result = new LinkedHashMap<>();
+        for (String userId : userIds) {
+            result.put(userId, getUserTeams(userId));
+        }
+        return result;
+    }
 
     /**
      * Create user.
@@ -68,6 +81,15 @@ public interface SMAdminController extends SMController {
     void invalidateAllTokens() throws DBException;
 
     void setUserTeams(String userId, String[] teamIds, String grantorId) throws DBException;
+
+    default void setUserTeams(
+        @NotNull String userId,
+        @NotNull String[] teamIds,
+        @NotNull String grantorId,
+        @NotNull SMTeamGrantType grantType
+    ) throws DBException {
+        setUserTeams(userId, teamIds, grantorId);
+    }
 
     void addUserTeams(@NotNull String userId, @NotNull String[] teamIds, @NotNull String grantorId) throws DBException;
 

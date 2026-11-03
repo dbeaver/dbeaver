@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -62,7 +63,7 @@ public class NewConnectionDialog extends ActiveWizardDialog {
         parent.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
         testButton = createButton(parent, TEST_BUTTON_ID, UIConnectionMessages.dialog_connection_button_test, false);
-        testButton.setEnabled(false);
+        testButton.setVisible(false);
         testButton.moveAbove(getButton(IDialogConstants.BACK_ID));
 
         Label spacer = new Label(parent, SWT.NONE);
@@ -86,7 +87,10 @@ public class NewConnectionDialog extends ActiveWizardDialog {
     public void updateButtons() {
         ConnectionWizard wizard = (ConnectionWizard) getWizard();
         ConnectionPageSettings settings = wizard.getPageSettings();
-        testButton.setEnabled(settings != null && settings.isPageComplete());
+        IWizardPage currentPage = getCurrentPage();
+        boolean showTestButton = currentPage instanceof ConnectionPageSettings;
+        testButton.setVisible(showTestButton);
+        testButton.setEnabled(showTestButton && settings != null && settings.isPageComplete());
         super.updateButtons();
     }
 

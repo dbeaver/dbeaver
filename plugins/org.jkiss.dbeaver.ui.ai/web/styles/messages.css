@@ -236,3 +236,49 @@
 .message table:not(.code-table) td {
     color: var(--text-color);
 }
+
+
+.message-images {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-top: 6px;
+}
+
+.message-image {
+    display: block;
+    flex: 0 0 auto;
+    max-width: 128px;
+    max-height: 128px;
+    position: relative;
+    cursor: pointer;
+}
+
+.message-image:not(.message-image-loaded) {
+    width: 64px;
+    height: 64px;
+}
+
+.message-image:focus {
+    outline: 2px solid var(--hyperlink-color);
+    outline-offset: 2px;
+}
+
+.message-image img {
+    display: block;
+    max-width: 128px;
+    max-height: 128px;
+    width: auto;
+    height: auto;
+}
+
+.message-image-name {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+}

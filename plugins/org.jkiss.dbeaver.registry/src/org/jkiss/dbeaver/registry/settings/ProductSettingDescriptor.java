@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry.settings;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.LocalizedPropertyDescriptor;
 import org.jkiss.utils.CommonUtils;
 
@@ -26,10 +27,15 @@ import java.util.Arrays;
 import java.util.List;
 
 public class ProductSettingDescriptor extends LocalizedPropertyDescriptor {
+    private static final String ATTR_DOCUMENTATION_PATH = "documentationPath";
+
     private final List<String> scopes = new ArrayList<>();
+    @Nullable
+    private final String documentationPath;
 
     public ProductSettingDescriptor(String category, IConfigurationElement cfg) {
         super(category, cfg);
+        this.documentationPath = cfg.getAttribute(ATTR_DOCUMENTATION_PATH);
         String excludeAttr = cfg.getAttribute("scopes");
         if (CommonUtils.isNotEmpty(excludeAttr)) {
             scopes.addAll(Arrays.stream(excludeAttr.split(",")).toList());
@@ -38,6 +44,11 @@ public class ProductSettingDescriptor extends LocalizedPropertyDescriptor {
     @NotNull
     public List<String> getScopes() {
         return scopes;
+    }
+
+    @Nullable
+    public String getDocumentationPath() {
+        return documentationPath;
     }
 
 }

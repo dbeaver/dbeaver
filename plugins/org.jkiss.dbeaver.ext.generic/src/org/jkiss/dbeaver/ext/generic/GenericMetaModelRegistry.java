@@ -91,7 +91,7 @@ public class GenericMetaModelRegistry {
         if (metaModelId != null && !GenericConstants.META_MODEL_STANDARD.equals(metaModelId)) {
             metaModel = metaModels.get(metaModelId.toString());
             if (metaModel == null) {
-                log.warn("Meta model '" + metaModelId + "' not recognized. Default one will be used");
+                log.warn("Driver meta model '" + metaModelId + "' not recognized. Default one will be used");
             }
         }
         if (metaModel == null) {

@@ -26,6 +26,7 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -40,7 +41,6 @@ import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionNameResolver;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageGeneral;
 import org.jkiss.dbeaver.ui.dialogs.connection.NavigatorSettingsStorage;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -67,7 +68,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
     private static final String HELP_CONNECTIONS_LINK = "Create-Connection";
     
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
-    private Combo navigatorSettingsCombo;
+    private CSmartCombo<DataSourceNavigatorSettings.Preset> navigatorSettingsCombo;
     private Text connectionDefaultNamePatternText;
 
     private String connectionNamePattern;
@@ -78,6 +79,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
     private Button useWinTrustStoreCheck;
     private Button closeConnectionOnOsSleepCheck;
     private Button enableShellAuthModelCheck;
+    private Button sanitizeDriverPropertiesCheck;
 
     public PrefPageConnectionsGeneral() {
         super();
@@ -163,6 +165,12 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
                 CoreMessages.pref_page_connection_label_enable_shell_auth_model_tip,
                 preferences.getBoolean(ModelPreferences.CONNECTION_SHELL_AUTH_MODEL_ENABLED),
                 1);
+            sanitizeDriverPropertiesCheck = UIUtils.createCheckbox(
+                groupBehavior,
+                CoreMessages.pref_page_connection_label_sanitize_driver_properties,
+                CoreMessages.pref_page_connection_label_sanitize_driver_properties_tip,
+                preferences.getBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES),
+                1);
         }
 
         if (DBWorkbench.getPlatform().getApplication().hasProductFeature(DBConnectionConstants.PRODUCT_FEATURE_SIMPLE_TRUSTSTORE)) {
@@ -197,7 +205,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
         return composite;
     }
 
-    private void createWinstoreSettings(Composite composite) {
+    private void createWinstoreSettings(@NotNull Composite composite) {
         if (RuntimeUtils.isWindows()) {
             Composite settings = UIUtils.createTitledComposite(
                 composite,
@@ -229,11 +237,11 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
     }
 
     @Override
-    public void init(IWorkbench iWorkbench) {
+    public void init(@NotNull IWorkbench workbench) {
 
     }
 
-    private ConnectionNameResolver generateSampleDatasourceResolver() {
+    private @NotNull ConnectionNameResolver generateSampleDatasourceResolver() {
         DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
         assert activeProject != null;
 
@@ -256,16 +264,16 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
     }
 
     @Override
-    public IAdaptable getElement() {
+    public @Nullable IAdaptable getElement() {
         return null;
     }
 
     @Override
-    public void setElement(IAdaptable iAdaptable) {
+    public void setElement(@Nullable IAdaptable adaptable) {
 
     }
 
-    private void addLinkToSettings(Composite composite, String pageID) {
+    private void addLinkToSettings(@NotNull Composite composite, @NotNull String pageID) {
         if (getContainer() instanceof IWorkbenchPreferenceContainer wpc) {
             UIUtils.createPreferenceLink(
                 composite,
@@ -278,7 +286,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
     }
 
     @Override
-    public DBNBrowseSettings getNavigatorSettings() {
+    public @NotNull DBNBrowseSettings getNavigatorSettings() {
         return defaultNavigatorSettings;
     }
 
@@ -296,6 +304,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
 
         closeConnectionOnOsSleepCheck.setSelection(preferences.getDefaultBoolean(ModelPreferences.CONNECTION_CLOSE_ON_SLEEP));
         enableShellAuthModelCheck.setSelection(preferences.getDefaultBoolean(ModelPreferences.CONNECTION_SHELL_AUTH_MODEL_ENABLED));
+        sanitizeDriverPropertiesCheck.setSelection(preferences.getDefaultBoolean(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES));
 
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
             useWinTrustStoreCheck.setSelection(
@@ -329,6 +338,7 @@ public class PrefPageConnectionsGeneral extends AbstractPrefPage
         store.setValue(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN, connectionDefaultNamePatternText.getText());
         store.setValue(ModelPreferences.CONNECTION_CLOSE_ON_SLEEP, closeConnectionOnOsSleepCheck.getSelection());
         store.setValue(ModelPreferences.CONNECTION_SHELL_AUTH_MODEL_ENABLED, enableShellAuthModelCheck.getSelection());
+        store.setValue(ModelPreferences.CONNECTION_SANITIZE_DRIVER_PROPERTIES, sanitizeDriverPropertiesCheck.getSelection());
         if (RuntimeUtils.isWindows() && useWinTrustStoreCheck != null) {
             store.setValue(ModelPreferences.PROP_USE_WIN_TRUST_STORE_TYPE, useWinTrustStoreCheck.getSelection());
         }

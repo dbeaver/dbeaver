@@ -91,6 +91,23 @@ public final class TitledComposite extends Composite {
         title.setText(string);
     }
 
+    @Nullable
+    @Override
+    public String getToolTipText() {
+        return title.getToolTipText();
+    }
+
+    /**
+     * Sets the tooltip on the header label, showing a help cursor when a tooltip is available.
+     *
+     * @param string the tooltip text, or {@code null} to clear it and restore the default cursor
+     */
+    @Override
+    public void setToolTipText(@Nullable String string) {
+        title.setToolTipText(string);
+        title.setCursor(string == null || string.isEmpty() ? null : getDisplay().getSystemCursor(SWT.CURSOR_HELP));
+    }
+
     /**
      * Gets the client control.
      *
