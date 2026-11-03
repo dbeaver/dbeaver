@@ -513,7 +513,10 @@ public class ResultSetModel implements DBDResultSetModel {
         Object valueToEdit = currentValue;
 
         // Check for changes
-        if (!attr.getDataKind().isComplex() && !(value instanceof DBDValue) && isSameTextValue(currentValue, value)) {
+        if (!attr.getDataKind().isComplex() && !(value instanceof DBDValue) && Objects.equals(
+            CommonUtils.toString(currentValue, null),
+            CommonUtils.toString(value, null))
+        ) {
             return false;
         }
 
@@ -582,11 +585,7 @@ public class ResultSetModel implements DBDResultSetModel {
             return false;
         }
         Object originalValue = row.getChange(topAttribute);
-        return !(originalValue instanceof DBDValue) && isSameTextValue(value, originalValue);
-    }
-
-    private static boolean isSameTextValue(@Nullable Object value1, @Nullable Object value2) {
-        return Objects.equals(CommonUtils.toString(value1, null), CommonUtils.toString(value2, null));
+        return !(originalValue instanceof DBDValue) && DBUtils.compareDataValues(value, originalValue) == 0;
     }
 
     void resetCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable int[] rowIndexes) {
