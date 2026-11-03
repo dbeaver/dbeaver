@@ -328,7 +328,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         boolean available = !operationRunning && displayedBundle != null && uiManager.isDDReady();
         editButton.setEnabled(available && selection.size() == 1 && selection.get(0).remoteProject() != null);
         syncButton.setEnabled(available && syncAction != SelectionSyncAction.NONE);
-        syncButton.setImage(DBeaverIcons.getImage(download ? UIIcon.DOWNLOAD : DDTrackingUIIcons.PROJECT_SYNC));
+        syncButton.setImage(DBeaverIcons.getImage(download ? DDTrackingUIIcons.IMPORT_PROJECT : DDTrackingUIIcons.PROJECT_SYNC));
         syncButton.setToolTipText(download ? DDTrackingUIMessages.projects_download : DDTrackingUIMessages.projects_sync);
         boolean selected = !selection.isEmpty();
         unbindButton.setEnabled(available && selected && selection.stream().allMatch(this::canUnbind));
