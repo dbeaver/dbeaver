@@ -287,6 +287,16 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
         return false;
     }
 
+    /**
+     * The column name as stored in this grant for the privilege (its case may differ from the metadata name),
+     * or {@code null} if the privilege isn't granted on the column. A column REVOKE must use the stored name.
+     */
+    @Nullable
+    public String getStoredColumnName(@NotNull MySQLPrivilege privilege, @NotNull String columnName) {
+        Set<String> columns = columnPrivileges.get(privilege);
+        return columns == null ? null : findColumn(columns, columnName);
+    }
+
     /** Case-insensitive lookup that returns the stored column name (with its original case). */
     @Nullable
     private static String findColumn(@NotNull Set<String> columns, @NotNull String columnName) {
@@ -301,14 +311,16 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
     /**
      * Returns true if the given catalog exists and it is comparable to this grant catalog
      * or the given catalog is empty, but the grant applies to all catalogs.
-     * The grant catalog is a LIKE pattern unless partial_revokes is enabled, then it is a literal name.
+     * The grant catalog is a LIKE pattern only in a schema-level grant ({@code db.*}) with partial_revokes
+     * disabled; as the qualifier of a table, column or routine grant MySQL takes it literally.
      */
     public boolean matches(@Nullable MySQLCatalog catalog) {
         if (catalog == null || CommonUtils.isEmpty(catalogName) || isAllCatalogs()) {
             return catalog == null && isAllCatalogs();
         }
         boolean caseSensitive = isCaseSensitiveNames();
-        if (isPartialRevokes()) {
+        boolean schemaLevel = objectType == ObjectType.TABLE && isAllTables();
+        if (!schemaLevel || isPartialRevokes()) {
             return caseSensitive ? catalog.getName().equals(catalogName) : catalog.getName().equalsIgnoreCase(catalogName);
         }
         return caseSensitive
@@ -514,7 +526,8 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
             } else if (c == ',' && !quoted) {
                 addColumn(columns, current);
                 current.setLength(0);
-            } else {
+            } else if (quoted || !Character.isWhitespace(c)) {
+                // Whitespace around names is a separator; inside back-ticks it belongs to the name
                 current.append(c);
             }
         }
@@ -523,9 +536,8 @@ public class MySQLGrant implements DBSObject, DBAPrivilegeGrant {
     }
 
     private static void addColumn(@NotNull List<String> columns, @NotNull StringBuilder value) {
-        String column = value.toString().trim();
-        if (!column.isEmpty()) {
-            columns.add(column);
+        if (!value.isEmpty()) {
+            columns.add(value.toString());
         }
     }
 

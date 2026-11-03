@@ -408,4 +408,29 @@ public class MySQLGrantTest extends DBeaverUnitTest {
         MySQLGrant plain = tableGrant(MySQLGrant.getSchemaGrantName(catalog("mydb")), "*", List.of(), false);
         Assertions.assertNull(plain.getWildcardSchemaPattern(catalog("mydb")));
     }
+
+    @Test
+    public void objectGrantSchemaIsLiteral() {
+        // Only db.* treats _ and % as wildcards: as a table/routine qualifier the schema name is literal
+        MySQLGrant table = tableGrant("tenant_1", "t", List.of(object("SELECT")), false);
+        Assertions.assertTrue(table.matches(catalog("tenant_1")));
+        Assertions.assertFalse(table.matches(catalog("tenantX1")));
+        MySQLGrant routine = procedureGrant("tenant_1", "p", MySQLGrant.ObjectType.PROCEDURE);
+        Assertions.assertTrue(routine.matches(catalog("TENANT_1")));
+        Assertions.assertFalse(routine.matches(catalog("tenantX1")));
+        Assertions.assertFalse(procedureGrant("tenant%", "p", MySQLGrant.ObjectType.FUNCTION).matches(catalog("tenant_1")));
+        // The schema-level grant keeps its wildcard semantics
+        Assertions.assertTrue(tableGrant("tenant_1", "*", List.of(), false).matches(catalog("tenantX1")));
+    }
+
+    @Test
+    public void storedColumnNameKeepsGrantSpelling() {
+        MySQLPrivilege select = object("SELECT");
+        MySQLGrant grant = tableGrant("mydb", "t", List.of(), false);
+        grant.addColumnPrivilege(select, "mycolumn");
+        // Metadata spells the column MyColumn: a REVOKE must use the stored mycolumn
+        Assertions.assertEquals("mycolumn", grant.getStoredColumnName(select, "MyColumn"));
+        Assertions.assertNull(grant.getStoredColumnName(select, "other"));
+        Assertions.assertNull(grant.getStoredColumnName(object("INSERT"), "MyColumn"));
+    }
 }

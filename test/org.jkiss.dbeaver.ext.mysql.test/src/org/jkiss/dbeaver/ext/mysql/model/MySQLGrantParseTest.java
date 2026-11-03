@@ -228,5 +228,7 @@ public class MySQLGrantParseTest extends DBeaverUnitTest {
         Assertions.assertEquals(List.of("a,b"), MySQLGrant.parseColumnList("`a,b`"));
         Assertions.assertEquals(List.of("a`b"), MySQLGrant.parseColumnList("`a``b`"));
         Assertions.assertEquals(List.of("plain"), MySQLGrant.parseColumnList("  plain  "));
+        // Whitespace inside back-ticks belongs to the name
+        Assertions.assertEquals(List.of(" col", "b c"), MySQLGrant.parseColumnList("` col`, `b c`"));
     }
 }

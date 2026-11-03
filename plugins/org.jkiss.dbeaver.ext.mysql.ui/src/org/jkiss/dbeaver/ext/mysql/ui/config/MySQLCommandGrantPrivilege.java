@@ -35,10 +35,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringJoiner;
 
 /**
@@ -58,6 +62,11 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
     private String schemaPattern;
     // Commands on the same object merge into one GRANT/REVOKE statement with several privileges
     private final List<MySQLPrivilege> privileges = new ArrayList<>();
+    // A column REVOKE must name the column as the server stored it in the grant (it may differ in case
+    // from the metadata name): stored spellings per privilege, absent - the metadata name
+    private final Map<MySQLPrivilege, Map<MySQLTableColumn, String>> storedColumnNames = new HashMap<>();
+    // Key in the merge user params: commands that must not merge with an earlier command (see merge())
+    private static final Object MERGE_BLOCKED_KEY = new Object();
 
     public MySQLCommandGrantPrivilege(
         @NotNull MySQLUser user,
@@ -150,7 +159,7 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
             if (!CommonUtils.isEmpty(columns) && !privilege.isGrantOption()) {
                 StringJoiner columnList = new StringJoiner(", ", " (", ")"); //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
                 for (MySQLTableColumn column : columns) {
-                    columnList.add(DBUtils.getQuotedIdentifier(column));
+                    columnList.add(DBUtils.getQuotedIdentifier(column.getDataSource(), getColumnName(privilege, column)));
                 }
                 privName += columnList.toString();
             }
@@ -177,19 +186,38 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
         // Consolidation of pending commands happens in the Privileges page at toggle time
         // (see MySQLUserEditorPrivileges); here only exact duplicates are merged, and an opposite
         // command on the same privileges cancels out - the General page relies on that, it adds
-        // a command per click. The merge must stay free of side effects: the queue may be rebuilt many times.
-        if (prevCommand instanceof MySQLCommandGrantPrivilege prevGrant
+        // a command per click. The merge must stay free of side effects on commands: the queue may be rebuilt many times.
+        // The context offers each earlier command from the newest back. Once a newer one changes any of these
+        // privileges on the same target (or revokes grants wholesale), an older duplicate or opposite must not
+        // absorb this command: the statements' order decides the result (GRANT S; REVOKE S, I; GRANT S).
+        Set<DBECommand<?>> blocked = getMergeBlocked(userParams);
+        if (prevCommand instanceof MySQLCommandRevokeObjectGrants) {
+            blocked.add(this);
+        } else if (prevCommand instanceof MySQLCommandGrantPrivilege prevGrant
             && prevGrant.hasSameTarget(schema, schemaPattern, table, procedure, columns)
-            && new HashSet<>(prevGrant.privileges).equals(new HashSet<>(privileges))
         ) {
-            if (prevGrant.grant != grant) {
-                return null;
+            if (!blocked.contains(this) && new HashSet<>(prevGrant.privileges).equals(new HashSet<>(privileges))) {
+                if (prevGrant.grant != grant) {
+                    return null;
+                }
+                if (prevGrant.withGrantOption == withGrantOption) {
+                    return prevCommand;
+                }
             }
-            if (prevGrant.withGrantOption == withGrantOption) {
-                return prevCommand;
+            if (!Collections.disjoint(prevGrant.privileges, privileges)) {
+                blocked.add(this);
             }
         }
         return super.merge(prevCommand, userParams);
+    }
+
+    @NotNull
+    @SuppressWarnings("unchecked")
+    private static Set<DBECommand<?>> getMergeBlocked(@NotNull Map<Object, Object> userParams) {
+        if (!(userParams.get(MERGE_BLOCKED_KEY) instanceof Set<?>)) {
+            userParams.put(MERGE_BLOCKED_KEY, Collections.newSetFromMap(new IdentityHashMap<>()));
+        }
+        return (Set<DBECommand<?>>) userParams.get(MERGE_BLOCKED_KEY);
     }
 
     public boolean isGrant() {
@@ -243,11 +271,31 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
      */
     public boolean removePrivilege(@NotNull MySQLPrivilege privilege) {
         boolean removed = privileges.remove(privilege);
+        storedColumnNames.remove(privilege);
         if (grant && privilege.isGrantOption() && withGrantOption) {
             withGrantOption = false;
             removed = true;
         }
         return removed;
+    }
+
+    /**
+     * Sets the column names a column REVOKE of the privilege uses: the spelling stored in the grant row.
+     */
+    public void setStoredColumnNames(@NotNull MySQLPrivilege privilege, @NotNull Map<MySQLTableColumn, String> names) {
+        if (!names.isEmpty()) {
+            storedColumnNames.computeIfAbsent(privilege, p -> new HashMap<>()).putAll(names);
+        }
+    }
+
+    /**
+     * The column name this statement uses for the privilege: the stored spelling of a revoked column
+     * privilege, otherwise the metadata name.
+     */
+    @NotNull
+    public String getColumnName(@NotNull MySQLPrivilege privilege, @NotNull MySQLTableColumn column) {
+        String stored = storedColumnNames.getOrDefault(privilege, Collections.emptyMap()).get(column);
+        return stored != null ? stored : column.getName();
     }
 
     @NotNull

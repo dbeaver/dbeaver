@@ -845,7 +845,12 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 }
             }
             String schemaPattern = null;
+            Map<MySQLTableColumn, String> storedNames = Collections.emptyMap();
             if (columns != null) {
+                // A REVOKE names each column as the grant stores it: taken before the local update drops it
+                if (!isGrant) {
+                    storedNames = getStoredColumnNames(user, table, columns, privilege);
+                }
                 for (MySQLTableColumn c : columns) {
                     updateLocalGrant(user, privilege, isGrant, withGrantOption, table, procedure, c, null);
                 }
@@ -872,8 +877,31 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 // Statements address the grant row the local model updated - a wildcard schema row by its pattern
                 schemaPattern = row.getWildcardSchemaPattern(catalog);
             }
-            applyUserPrivilegeChange(user, privilege, isGrant, withGrantOption, table, procedure, columns, schemaPattern);
+            MySQLCommandGrantPrivilege command =
+                applyUserPrivilegeChange(user, privilege, isGrant, withGrantOption, table, procedure, columns, schemaPattern);
+            if (command != null) {
+                command.setStoredColumnNames(privilege, storedNames);
+            }
         });
+    }
+
+    @NotNull
+    private Map<MySQLTableColumn, String> getStoredColumnNames(
+        @NotNull MySQLUser user, @Nullable MySQLTableBase table,
+        @NotNull List<MySQLTableColumn> columns, @NotNull MySQLPrivilege privilege
+    ) {
+        Map<MySQLTableColumn, String> result = new HashMap<>();
+        for (MySQLTableColumn column : columns) {
+            for (MySQLGrant grant : userGrants.getOrDefault(user, Collections.emptyList())) {
+                String stored = grant.matches(catalog) && grant.matches(table)
+                    ? grant.getStoredColumnName(privilege, column.getName()) : null;
+                if (stored != null) {
+                    result.put(column, stored);
+                    break;
+                }
+            }
+        }
+        return result;
     }
 
     private static boolean holdsPrivilege(@NotNull MySQLGrant grant, @NotNull MySQLPrivilege privilege) {
@@ -913,8 +941,11 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
      * Folds one privilege toggle into a GRANT/REVOKE command of the current action per (user, object,
      * direction), so e.g. "Check All" collapses into one statement. A later action gets its own command
      * and stays one Undo step; an exact opposite of an earlier command is cancelled by the command merge.
+     *
+     * @return the queued command holding the change, or {@code null} if it cancelled a pending command out
      */
-    private void applyUserPrivilegeChange(
+    @Nullable
+    private MySQLCommandGrantPrivilege applyUserPrivilegeChange(
         @NotNull MySQLUser user, @NotNull MySQLPrivilege privilege, boolean isGrant, boolean withGrantOption,
         @Nullable MySQLTableBase table, @Nullable MySQLProcedure procedure, @Nullable List<MySQLTableColumn> columns,
         @Nullable String schemaPattern
@@ -931,18 +962,19 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 } else {
                     ctx.updateCommand(opposite, null);
                 }
-                return;
+                return null;
             }
         }
         MySQLCommandGrantPrivilege pending = findPendingUserCommand(user, isGrant, schemaPattern, table, procedure, columns);
         if (pending != null) {
             pending.addPrivilege(privilege);
             ctx.updateCommand(pending, null);
-            return;
+            return pending;
         }
         MySQLCommandGrantPrivilege command = createCommand(user, isGrant, withGrantOption, table, procedure, columns, privilege);
         command.setSchemaPattern(schemaPattern);
         addUserCommand(command);
+        return command;
     }
 
     @Nullable
@@ -1019,7 +1051,8 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                         ? findSchemaRow(user, command.getSchemaPattern()) : null);
             } else {
                 for (MySQLTableColumn column : columns) {
-                    updateLocalGrant(user, privilege, granted, granted, command.getTable(), null, column, null);
+                    String columnName = command.getColumnName(privilege, column);
+                    updateLocalGrant(user, privilege, granted, granted, command.getTable(), null, column, columnName, null);
                 }
             }
         }
@@ -1086,6 +1119,21 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         @Nullable MySQLTableBase table, @Nullable MySQLProcedure procedure, @Nullable MySQLTableColumn column,
         @Nullable MySQLGrant row
     ) {
+        return updateLocalGrant(
+            user, privilege, isGrant, withGrantOption, table, procedure, column, column == null ? null : column.getName(), row);
+    }
+
+    /**
+     * Same as above with an explicit column name: Undo of a REVOKE restores the spelling the grant stored.
+     *
+     * @param columnName the name a column privilege is stored under
+     */
+    @NotNull
+    private MySQLGrant updateLocalGrant(
+        @NotNull MySQLUser user, @NotNull MySQLPrivilege privilege, boolean isGrant, boolean withGrantOption,
+        @Nullable MySQLTableBase table, @Nullable MySQLProcedure procedure, @Nullable MySQLTableColumn column,
+        @Nullable String columnName, @Nullable MySQLGrant row
+    ) {
         List<MySQLGrant> grants = userGrants.computeIfAbsent(user, u -> new ArrayList<>());
         // Prefer the grant that actually holds the toggled privilege/column, so a revoke updates
         // the right row even when the server returned separate table-level and column-level rows
@@ -1129,11 +1177,11 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
         if (privilege.isGrantOption()) {
             // Only the grant-option pseudo-privilege changes the WITH GRANT OPTION flag
             target.setGrantOption(withGrantOption);
-        } else if (column != null) {
+        } else if (column != null && columnName != null) {
             if (isGrant) {
-                target.addColumnPrivilege(privilege, column.getName());
+                target.addColumnPrivilege(privilege, columnName);
             } else {
-                target.removeColumnPrivilege(privilege, column.getName());
+                target.removeColumnPrivilege(privilege, columnName);
             }
         } else if (isGrant) {
             target.addPrivilege(privilege);
@@ -1442,11 +1490,15 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                 }
                 List<String> privNames = new ArrayList<>();
                 List<MySQLPrivilege> affected = new ArrayList<>();
+                // The REVOKE (and Undo) use the column name as the grant stores it, not the metadata spelling
+                Map<MySQLPrivilege, String> storedNames = new HashMap<>();
                 for (MySQLPrivilege priv : new ArrayList<>(grant.getColumnPrivileges().keySet())) {
-                    if (grant.hasColumnPrivilege(priv, column.getName())) {
+                    String stored = grant.getStoredColumnName(priv, column.getName());
+                    if (stored != null) {
                         affected.add(priv);
+                        storedNames.put(priv, stored);
                         privNames.add(priv.getFixedPrivilegeName().toUpperCase(Locale.ROOT)
-                            + " (" + DBUtils.getQuotedIdentifier(column) + ")"); //$NON-NLS-1$ //$NON-NLS-2$
+                            + " (" + DBUtils.getQuotedIdentifier(column.getDataSource(), stored) + ")"); //$NON-NLS-1$ //$NON-NLS-2$
                     }
                 }
                 if (affected.isEmpty()) {
@@ -1472,7 +1524,7 @@ public class MySQLObjectPrivilegesEditor extends AbstractDatabaseObjectEditor<DB
                         @Override
                         public void undoCommand(@NotNull MySQLCommandRevokeObjectGrants command) {
                             for (MySQLPrivilege priv : affected) {
-                                curGrant.addColumnPrivilege(priv, columnName);
+                                curGrant.addColumnPrivilege(priv, storedNames.get(priv));
                             }
                             refreshAfterUndoRedo();
                         }
