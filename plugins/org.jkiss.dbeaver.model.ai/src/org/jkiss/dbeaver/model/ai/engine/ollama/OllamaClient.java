@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai.engine.ollama;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParseException;
 import com.google.gson.Strictness;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -29,6 +30,8 @@ import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.AbstractHttpAIClient;
 import org.jkiss.dbeaver.model.ai.engine.ollama.dto.*;
 import org.jkiss.dbeaver.model.ai.utils.AIHttpUtils;
+import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
+import org.jkiss.dbeaver.model.meta.ForTest;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.GsonUtils;
@@ -37,6 +40,7 @@ import org.jkiss.utils.HttpConstants;
 import java.net.http.HttpRequest;
 import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 public class OllamaClient extends AbstractHttpAIClient {
     private static final Log log = Log.getLog(OllamaClient.class);
@@ -51,10 +55,22 @@ public class OllamaClient extends AbstractHttpAIClient {
     private final String token;
 
     public OllamaClient(@NotNull String baseUrl) {
-        this(baseUrl, null);
+        this(baseUrl, (String) null);
     }
 
     public OllamaClient(@NotNull String baseUrl, @Nullable String token) {
+        this.baseUrl = baseUrl;
+        this.token = token;
+    }
+
+    @ForTest
+    public OllamaClient(@NotNull String baseUrl, @NotNull MonitoredHttpClient client) {
+        this(baseUrl, null, client);
+    }
+
+    @ForTest
+    public OllamaClient(@NotNull String baseUrl, @Nullable String token, @NotNull MonitoredHttpClient client) {
+        super(client);
         this.baseUrl = baseUrl;
         this.token = token;
     }
@@ -69,6 +85,25 @@ public class OllamaClient extends AbstractHttpAIClient {
             .build();
 
         return GSON.fromJson(client.send(monitor, request), OllamaModels.class).models();
+    }
+
+    @NotNull
+    public OllamaModelInfo getModelInformation(@NotNull DBRProgressMonitor monitor, @NotNull String model) throws DBException {
+        HttpRequest request = newRequestBuilder()
+            .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
+            .uri(AIHttpUtils.resolve(baseUrl, "/api/show"))
+            .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(Map.of("model", model))))
+            .timeout(timeout)
+            .build();
+        try {
+            OllamaModelInfo information = GSON.fromJson(client.send(monitor, request), OllamaModelInfo.class);
+            if (information == null) {
+                throw new DBException("Empty Ollama model metadata: " + model);
+            }
+            return information;
+        } catch (JsonParseException e) {
+            throw new DBException("Invalid Ollama model metadata: " + model, e);
+        }
     }
 
     @NotNull
