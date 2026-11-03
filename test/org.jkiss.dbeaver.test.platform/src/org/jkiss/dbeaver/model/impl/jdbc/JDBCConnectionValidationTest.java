@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.jdbc;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthCredentials;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
@@ -66,9 +67,22 @@ public class JDBCConnectionValidationTest {
         }).when(authModel).initAuthentication(Mockito.eq(monitor), Mockito.eq(dataSource), Mockito.any(),
             Mockito.eq(configuration), Mockito.any());
         Mockito.doAnswer(invocation -> {
+            Properties properties = invocation.getArgument(3);
+            Assertions.assertEquals("CALL 2", properties.getProperty("INIT"));
+            properties.setProperty("INIT", "CALL 3");
+            return null;
+        }).when(dataSource).fixupConnectionProperties(Mockito.eq(monitor), Mockito.eq(configuration),
+            Mockito.eq("jdbc:h2:mem:changed"), Mockito.any());
+        Mockito.doAnswer(invocation -> {
+            Properties properties = invocation.getArgument(1);
+            Assertions.assertEquals("CALL 3", properties.getProperty("INIT"));
+            properties.setProperty("INIT", "CALL 4");
+            return null;
+        }).when(dataSource).validateConnectionProperties(Mockito.eq("jdbc:h2:mem:changed"), Mockito.any());
+        Mockito.doAnswer(invocation -> {
             Assertions.assertEquals("jdbc:h2:mem:changed", invocation.getArgument(1));
             Properties properties = invocation.getArgument(2);
-            Assertions.assertEquals("CALL 2", properties.getProperty("INIT"));
+            Assertions.assertEquals("CALL 4", properties.getProperty("INIT"));
             throw new DBCException("Not approved");
         }).when(dataSource).validateConnectionParameters(Mockito.eq(monitor), Mockito.anyString(), Mockito.any());
 
@@ -76,6 +90,7 @@ public class JDBCConnectionValidationTest {
             () -> dataSource.openConnection(monitor, null, configuration, "test"));
 
         Assertions.assertEquals("Not approved", exception.getMessage());
+        Mockito.verify(dataSource, Mockito.never()).createDriverInstance(Mockito.any(), Mockito.any());
         Mockito.verify(jdbcDriver, Mockito.never()).connect(Mockito.anyString(), Mockito.any());
         Mockito.verify(authModel).endAuthentication(Mockito.eq(container), Mockito.eq(configuration), Mockito.any());
     }
@@ -89,6 +104,21 @@ public class JDBCConnectionValidationTest {
         @Override
         public Driver createDriverInstance(@NotNull DBRProgressMonitor monitor, @NotNull DBPDriver driver) throws DBCException {
             return super.createDriverInstance(monitor, driver);
+        }
+
+        @Override
+        public void fixupConnectionProperties(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBPConnectionConfiguration connectionInfo,
+            @NotNull String connectionUrl,
+            @NotNull Properties connectionProperties
+        ) throws DBException {
+            super.fixupConnectionProperties(monitor, connectionInfo, connectionUrl, connectionProperties);
+        }
+
+        @Override
+        public void validateConnectionProperties(@Nullable String url, @NotNull Properties connectProps) throws DBCException {
+            super.validateConnectionProperties(url, connectProps);
         }
 
         @Override

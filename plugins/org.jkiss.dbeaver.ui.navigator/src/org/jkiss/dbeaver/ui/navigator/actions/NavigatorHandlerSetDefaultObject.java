@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -43,8 +45,9 @@ import java.util.Map;
 
 public class NavigatorHandlerSetDefaultObject extends NavigatorHandlerObjectBase implements IElementUpdater {
 
+    @Nullable
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException {
+    public Object execute(@NotNull ExecutionEvent event) throws ExecutionException {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         final IEditorPart activeEditor = HandlerUtil.getActiveEditor(event);
 
@@ -59,7 +62,7 @@ public class NavigatorHandlerSetDefaultObject extends NavigatorHandlerObjectBase
     }
 
     @SuppressWarnings("unchecked")
-    private void markObjectAsActive(final DBNDatabaseNode databaseNode, IEditorPart activeEditor) {
+    private void markObjectAsActive(@NotNull final DBNDatabaseNode databaseNode, @Nullable IEditorPart activeEditor) {
         DBNNode parentNode = databaseNode.getParentNode();
 
         if (parentNode instanceof DBNDatabaseItem) {
@@ -80,12 +83,7 @@ public class NavigatorHandlerSetDefaultObject extends NavigatorHandlerObjectBase
                 DBExecUtils.tryExecuteRecover(monitor, dataSource, param -> {
                     DBCExecutionContext defaultContext = dataSource.getDefaultInstance().getDefaultContext(monitor, false);
 
-                    DBCExecutionContext[] contextsToChange;
-                    if (editorContext != null && editorContext != defaultContext && editorContext.getDataSource() == defaultContext.getDataSource()) {
-                        contextsToChange = new DBCExecutionContext[] { defaultContext, editorContext };
-                    } else {
-                        contextsToChange = new DBCExecutionContext[] { defaultContext };
-                    }
+                    DBCExecutionContext[] contextsToChange = getContextsToChange(defaultContext, editorContext);
 
                     for (DBCExecutionContext executionContext : contextsToChange) {
                         DBCExecutionContextDefaults contextDefaults = executionContext.getContextDefaults();
@@ -107,9 +105,22 @@ public class NavigatorHandlerSetDefaultObject extends NavigatorHandlerObjectBase
 
     }
 
+    @NotNull
+    static DBCExecutionContext[] getContextsToChange(
+        @NotNull DBCExecutionContext defaultContext,
+        @Nullable DBCExecutionContext editorContext
+    ) {
+        // Editors bound to another database instance must keep their own catalog.
+        if (editorContext != null && editorContext != defaultContext
+            && editorContext.getDataSource() == defaultContext.getDataSource()
+            && editorContext.getOwnerInstance() == defaultContext.getOwnerInstance()) {
+            return new DBCExecutionContext[] {defaultContext, editorContext};
+        }
+        return new DBCExecutionContext[] {defaultContext};
+    }
+
     @Override
-    public void updateElement(UIElement element, Map parameters)
-    {
+    public void updateElement(@NotNull UIElement element, @NotNull Map parameters) {
         if (!updateUI) {
             return;
         }

@@ -16,21 +16,24 @@
  */
 package org.jkiss.dbeaver.model.ai.engine;
 
+import com.google.gson.Gson;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIEngine;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-class AIModelSelectionTest {
+class AIModelSelectionTest extends DBeaverUnitTest {
     @ParameterizedTest
     @MethodSource("largeContextProperties")
     void switchingToSmallerModelReducesContextBudget(@NotNull AIEngineProperties properties) throws Exception {
@@ -74,18 +77,23 @@ class AIModelSelectionTest {
         properties.setContextWindowSize(1_048_576);
         properties.selectModel(new AIModel("llama3", null, Set.of()));
 
-        try (OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)) {
+        try (
+            AutoCloseable ignored = AIModelCatalog.useForTests(Map.of());
+            OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)
+        ) {
             Assertions.assertEquals(AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE, engine.getContextWindowSize(new VoidProgressMonitor()));
         }
     }
 
     @Test
-    void missingMetadataUsesKnownModelContextWindow() {
+    void missingMetadataUsesCachedModelContextWindow() throws Exception {
         OpenAIProperties properties = new OpenAIProperties();
         properties.setContextWindowSize(1_048_576);
-        properties.selectModel(new AIModel("gpt-4o", null, Set.of(AIModelFeature.CHAT)));
-
-        Assertions.assertEquals(128_000, properties.getContextWindowSize());
+        AIModelCatalogEntry entry = new Gson().fromJson("{\"limit\":{\"context\":128000}}", AIModelCatalogEntry.class);
+        try (AutoCloseable ignored = AIModelCatalog.useForTests(Map.of("openai", Map.of("gpt-4o", entry)))) {
+            properties.selectModel(new AIModel("gpt-4o", null, Set.of(AIModelFeature.CHAT)));
+            Assertions.assertEquals(128_000, properties.getContextWindowSize());
+        }
     }
 
     @NotNull
