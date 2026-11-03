@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.aggregate.IAggregateFunction;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.SimpleTypedObject;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
@@ -316,10 +315,10 @@ public class AggregateColumnsPanel extends ResultSetPanelBase {
 
     @NotNull
     private DBDDataFormatter createNumberFormatter() {
-        DBCExecutionContext context = presentation.getController().getExecutionContext();
-        DBDDataFormatterProfile profile = context == null ?
-            DataFormatterRegistry.getInstance().getGlobalProfile() :
-            context.getDataSource().getContainer().getDataFormatterProfile();
+        DBDDataFormatterProfile profile = presentation.getController().getModel().getDataFormatterProfile();
+        if (profile == null) {
+            profile = DataFormatterRegistry.getInstance().getGlobalProfile();
+        }
         try {
             // The max fraction digits setting is applied only when the type is not null.
             // The type has no scale because the selection may span several columns.
