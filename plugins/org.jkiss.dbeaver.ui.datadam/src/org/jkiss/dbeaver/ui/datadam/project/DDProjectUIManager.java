@@ -22,8 +22,6 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobGroup;
-import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -33,7 +31,6 @@ import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.sync.project.ConflictResolution;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.LocalProjectInfo;
-import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.ProjectRevisions;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.SyncResult;
 import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -42,11 +39,9 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictDialog.Choice;
 import org.jkiss.dbeaver.ui.datadam.project.job.*;
 
 import java.lang.reflect.InvocationTargetException;
-import java.time.LocalDateTime;
 import java.util.*;
 
 public class DDProjectUIManager {
@@ -90,10 +85,13 @@ public class DDProjectUIManager {
         DDProjectSyncPropertyTester.firePropertyChange();
     }
 
-    @NotNull
+    @Nullable
     public List<DDProjectView> loadProjectViews(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (monitor.isCanceled()) {
             return List.of();
+        }
+        if (!DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
+            return null;
         }
         DDProjectManager manager = getProjectManager();
         Map<UUID, DDSharedProject> remoteProjects = new LinkedHashMap<>();
@@ -193,11 +191,8 @@ public class DDProjectUIManager {
     }
 
     @NotNull
-    public List<DBPProject> getNotDatadamLocalProjects() throws DBException {
-        return getProjectManager().getLocalProjects().stream()
-            .filter(info -> info.remoteProjectId() == null)
-            .map(LocalProjectInfo::project)
-            .toList();
+    public List<LocalProjectInfo> getLocalProjects() throws DBException {
+        return getProjectManager().getLocalProjects();
     }
 
     @NotNull
@@ -220,65 +215,6 @@ public class DDProjectUIManager {
     ) {
         DDProjectConflictResolutionJob job = new DDProjectConflictResolutionJob(project, resolution);
         return runJobs(DDTrackingUIMessages.project_sync_resolve_job, List.of(job), List.of(project.getName()), 0);
-    }
-
-    @Nullable
-    public Choice openConflictDialog(@NotNull Shell shell, @NotNull DBPProject project) throws DBException {
-        DBRRunnableWithResult<ConflictDetails> loader = new DBRRunnableWithResult<>() {
-            @Override
-            public void run(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
-                monitor.beginTask(DDTrackingUIMessages.project_sync_revisions_job, 1);
-                try {
-                    if (!DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
-                        return;
-                    }
-                    DDProjectManager manager = getProjectManager();
-                    LocalDateTime startTime = manager.getLocalProject(project).lastSyncedRevision();
-                    ProjectRevisions revisions = manager.getProjectRevisions(project, startTime, null);
-                    if (!monitor.isCanceled()) {
-                        result = new ConflictDetails(project, revisions);
-                    }
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                } finally {
-                    monitor.done();
-                }
-            }
-        };
-        try {
-            UIUtils.runInProgressDialog(loader);
-        } catch (InvocationTargetException e) {
-            throw new DBException(DDTrackingUIMessages.project_sync_revisions_failed, e.getTargetException());
-        }
-        ConflictDetails details = loader.getResult();
-        if (details == null) {
-            return null;
-        }
-        int buttonId = new DDProjectConflictDialog(shell, details).open();
-        Choice choice = switch (buttonId) {
-            case DDProjectConflictDialog.USE_LOCAL_ID -> Choice.USE_LOCAL;
-            case DDProjectConflictDialog.USE_SERVER_ID -> Choice.USE_SERVER;
-            case DDProjectConflictDialog.STOP_SYNC_ID -> Choice.UNBIND;
-            default -> null;
-        };
-        if (choice == Choice.UNBIND && !UIUtils.confirmAction(
-            shell, DDTrackingUIMessages.project_sync_unbind_confirm_title,
-            NLS.bind(DDTrackingUIMessages.project_sync_unbind_confirm_message, project.getName()))) {
-            return null;
-        }
-        return choice;
-    }
-
-    @NotNull
-    public ProjectJobBatchResult<?> applyConflictChoice(@NotNull DBPProject project, @NotNull Choice choice) {
-        return switch (choice) {
-            case USE_LOCAL -> resolveConflict(project, ConflictResolution.USE_LOCAL_VERSION);
-            case USE_SERVER -> resolveConflict(project, ConflictResolution.USE_SERVER_VERSION);
-            case UNBIND -> unbindProjects(List.of(project));
-        };
-    }
-
-    public record ConflictDetails(@NotNull DBPProject project, @NotNull ProjectRevisions revisions) {
     }
 
     @NotNull

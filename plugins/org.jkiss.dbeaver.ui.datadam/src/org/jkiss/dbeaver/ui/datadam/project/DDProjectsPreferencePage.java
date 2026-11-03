@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.LocalProjectInfo;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.SyncResult;
 import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -52,13 +53,12 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.DDImportKeyDialog;
 import org.jkiss.dbeaver.ui.datadam.DDUIConstants;
 import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIIcons;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictDialog.Choice;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictResolver.Choice;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager.ProjectJobBatchResult;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
@@ -82,6 +82,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private static final int MAX_VISIBLE_ROWS = 12;
 
     private final DDProjectUIManager uiManager = DDProjectUIManager.getInstance();
+    private final DDProjectConflictResolver conflictResolver = new DDProjectConflictResolver(uiManager);
     private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -467,11 +468,8 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             public void run(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
                 monitor.beginTask(DDTrackingUIMessages.project_sync_import_list_job, IProgressMonitor.UNKNOWN);
                 try {
-                    if (!DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
-                        return;
-                    }
                     List<DDProjectView> views = uiManager.loadProjectViews(monitor);
-                    if (!monitor.isCanceled()) {
+                    if (views != null && !monitor.isCanceled()) {
                         result = views;
                     }
                 } catch (DBException e) {
@@ -556,7 +554,10 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         dialog.setTitle(DDTrackingUIMessages.projects_connect);
         dialog.setMessage(DDTrackingUIMessages.projects_choose_local);
         try {
-            dialog.setElements(uiManager.getNotDatadamLocalProjects().toArray());
+            dialog.setElements(uiManager.getLocalProjects().stream()
+                .filter(info -> info.remoteProjectId() == null)
+                .map(LocalProjectInfo::project)
+                .toArray());
         } catch (DBException e) {
             showError(DDTrackingUIMessages.projects_connect_failed, e);
             return;
@@ -614,9 +615,9 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
 
     private void resolveProjectConflict(@NotNull DBPProject project) {
         try {
-            Choice choice = uiManager.openConflictDialog(getShell(), project);
+            Choice choice = conflictResolver.openConflictDialog(getShell(), project);
             if (choice != null) {
-                ProjectJobBatchResult<?> result = runOperation(() -> uiManager.applyConflictChoice(project, choice));
+                ProjectJobBatchResult<?> result = runOperation(() -> conflictResolver.applyConflictChoice(project, choice));
                 if (result != null) {
                     showConflictWarning(result);
                 }

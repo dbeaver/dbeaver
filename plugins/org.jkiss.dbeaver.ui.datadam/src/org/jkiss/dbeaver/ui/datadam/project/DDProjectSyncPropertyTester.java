@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.datadam.project;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -42,10 +43,17 @@ public class DDProjectSyncPropertyTester extends PropertyTester {
         @NotNull Object[] args,
         @Nullable Object expectedValue
     ) {
-        if (!(receiver instanceof DBNProject projectNode) || !DDProductConfig.isIntegrationEnabled()) {
+        if (!DDProductConfig.isIntegrationEnabled()) {
             return false;
         }
         DDProjectUIManager manager = DDProjectUIManager.getInstance();
+
+        if (receiver instanceof IWorkbenchWindow) {
+            return PROP_ENABLED.equals(property) && manager.isDDReady();
+        }
+        if (!(receiver instanceof DBNProject projectNode)) {
+            return false;
+        }
         if (!manager.isDDReady()) {
             return false;
         }

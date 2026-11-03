@@ -113,7 +113,7 @@ public class DDProjectManager {
         for (DBPProject project : workspace.getProjects()) {
             result.add(getLocalProject(project));
         }
-        return List.copyOf(result);
+        return result;
     }
 
     @NotNull

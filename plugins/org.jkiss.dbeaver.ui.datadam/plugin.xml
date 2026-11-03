@@ -26,6 +26,12 @@
             namespace="org.jkiss.dbeaver.ui.datadam.projectSync"
             properties="enabled,canShare,canSync"
             type="org.jkiss.dbeaver.model.navigator.DBNProject"/>
+        <propertyTester
+            class="org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester"
+            id="org.jkiss.dbeaver.ui.datadam.project.DDProjectToolbarPropertyTester"
+            namespace="org.jkiss.dbeaver.ui.datadam.projectSync"
+            properties="enabled"
+            type="org.eclipse.ui.IWorkbenchWindow"/>
     </extension>
 
     <extension point="org.eclipse.ui.decorators">
@@ -57,6 +63,11 @@
     </extension>
 
     <extension point="org.eclipse.core.expressions.definitions">
+        <definition id="org.jkiss.dbeaver.ui.datadam.projectSync.hasKeys">
+            <with variable="activeWorkbenchWindow">
+                <test forcePluginActivation="true" property="org.jkiss.dbeaver.ui.datadam.projectSync.enabled"/>
+            </with>
+        </definition>
         <definition id="org.jkiss.dbeaver.ui.datadam.projectSync.canShareProject">
             <with variable="selection">
                 <count value="1"/>
@@ -148,18 +159,25 @@
             </enabledWhen>
         </handler>
         <handler
-            class="org.jkiss.dbeaver.ui.datadam.project.handler.DDProjectToolbarMockHandler"
+            class="org.jkiss.dbeaver.ui.datadam.project.handler.DDProjectImportHandler"
             commandId="org.jkiss.dbeaver.datadam.commands.project.import"/>
         <handler
-            class="org.jkiss.dbeaver.ui.datadam.project.handler.DDProjectToolbarMockHandler"
+            class="org.jkiss.dbeaver.ui.datadam.project.handler.DDProjectSyncAllHandler"
             commandId="org.jkiss.dbeaver.datadam.commands.project.syncAll"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectNavigator?before=additions_end">
-            <separator name="datadam-projects" visible="true"/>
-            <command commandId="org.jkiss.dbeaver.datadam.commands.project.import"/>
-            <command commandId="org.jkiss.dbeaver.datadam.commands.project.syncAll"/>
+            <command commandId="org.jkiss.dbeaver.datadam.commands.project.import">
+                <visibleWhen>
+                    <reference definitionId="org.jkiss.dbeaver.ui.datadam.projectSync.hasKeys"/>
+                </visibleWhen>
+            </command>
+            <command commandId="org.jkiss.dbeaver.datadam.commands.project.syncAll">
+                <visibleWhen>
+                    <reference definitionId="org.jkiss.dbeaver.ui.datadam.projectSync.hasKeys"/>
+                </visibleWhen>
+            </command>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
             <menu id="org.jkiss.dbeaver.datadam.project.menu" label="%menu.datadam.label">

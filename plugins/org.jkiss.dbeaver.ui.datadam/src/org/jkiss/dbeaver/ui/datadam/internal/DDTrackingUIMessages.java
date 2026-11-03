@@ -106,7 +106,15 @@ public class DDTrackingUIMessages extends NLS {
     public static String projects_unbind_selected_confirm_message;
     public static String projects_connect;
     public static String projects_sync_all;
+    public static String projects_sync_all_load_failed;
     public static String projects_import_all;
+    public static String projects_import_dialog_title;
+    public static String projects_import_prompt;
+    public static String projects_import_filter;
+    public static String projects_import_select_all;
+    public static String projects_import_project;
+    public static String projects_import_last_sync;
+    public static String projects_import_action;
     public static String projects_not_sync;
     public static String projects_choose_local;
     public static String projects_connect_failed;

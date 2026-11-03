@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager.ConflictDetails;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictResolver.ConflictDetails;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 import java.time.LocalDateTime;
@@ -115,11 +115,5 @@ public class DDProjectConflictDialog extends BaseDialog {
     protected void buttonPressed(int buttonId) {
         setReturnCode(buttonId);
         close();
-    }
-
-    public enum Choice {
-        USE_LOCAL,
-        USE_SERVER,
-        UNBIND
     }
 }
