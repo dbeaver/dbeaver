@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai.engine.ollama;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import com.google.gson.Strictness;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -79,12 +80,22 @@ public class OllamaClient extends AbstractHttpAIClient {
         HttpRequest request = newRequestBuilder()
             .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .uri(AIHttpUtils.resolve(baseUrl, "/api/chat"))
-            .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(chatRequest)))
+            .POST(HttpRequest.BodyPublishers.ofString(serializeChatRequest(chatRequest)))
             .timeout(timeout)
             .build();
 
         String responseJson = client.send(monitor, request);
         return GSON.fromJson(responseJson, OllamaChatResponse.class);
+    }
+
+    @NotNull
+    private String serializeChatRequest(@NotNull OllamaChatRequest request) {
+        JsonObject json = GSON.toJsonTree(request).getAsJsonObject();
+        json.remove("useServerDefaultTemperature");
+        if (request.useServerDefaultTemperature()) {
+            json.getAsJsonObject("options").remove("temperature");
+        }
+        return GSON.toJson(json);
     }
 
     @NotNull
@@ -102,7 +113,7 @@ public class OllamaClient extends AbstractHttpAIClient {
         HttpRequest request = newRequestBuilder()
             .header(HttpConstants.HEADER_CONTENT_TYPE, HttpConstants.CONTENT_TYPE_JSON)
             .uri(AIHttpUtils.resolve(baseUrl, "/api/chat")) //$NON-NLS-1$
-            .POST(HttpRequest.BodyPublishers.ofString(GSON.toJson(completionRequest)))
+            .POST(HttpRequest.BodyPublishers.ofString(serializeChatRequest(completionRequest)))
             .timeout(timeout)
             .build();
 
