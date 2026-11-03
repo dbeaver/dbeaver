@@ -56,6 +56,10 @@ public interface DBSObjectCache<OWNER extends DBSObject, OBJECT extends DBSObjec
      */
     void cacheObject(@NotNull OBJECT object);
 
+    default void cacheObject(@NotNull OBJECT object, int index) {
+        cacheObject(object);
+    }
+
     /**
      * Sets new cache contents. setCache(getCachedObjects()) will reset named cache.
      * Set fullyCache flag to true.
