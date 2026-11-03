@@ -24,7 +24,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCDriverLicenseException;
 import org.jkiss.dbeaver.model.impl.app.ApplicationDescriptor;
@@ -35,6 +34,7 @@ import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
+import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.Version;
 
 import java.io.*;
@@ -322,6 +322,12 @@ public class GeneralUtils {
     }
 
     @NotNull
+    public static String getProductUserAgent() {
+        return getProductName() + " (" + System.getProperty(StandardConstants.ENV_OS_NAME) + "; "
+            + Platform.getOS() + "; " + Platform.getOSArch() + ")";
+    }
+
+    @NotNull
     public static Version getProductVersion() {
         ApplicationDescriptor application = ApplicationRegistry.getInstance().getApplication();
         if (application != null) {
@@ -329,7 +335,7 @@ public class GeneralUtils {
         }
         final IProduct product = Platform.getProduct();
         if (product == null) {
-            return ModelActivator.getInstance().getBundle().getVersion();
+            return FrameworkUtil.getBundle(GeneralUtils.class).getVersion();
         }
         return product.getDefiningBundle().getVersion();
     }

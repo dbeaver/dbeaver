@@ -532,8 +532,9 @@
                         description="%driver.cockroach.description"
                         supportedConfigurationTypes="MANUAL,URL"
                         categories="sql">
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.2]"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.7.13]" bundle="!drivers.postgresql"/>
                     <file type="license" path="licenses/external/pg.txt"/>
+                    <file type="jar" path="drivers/postgresql" bundle="drivers.postgresql"/>
                     <parameter name="serverType" value="cockroach"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
@@ -585,6 +586,7 @@
 
                     <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE[2.2.6]" load-optional-dependencies="true"
                           bundle="!drivers.redshift"/>
+                    <file type="jar" path="maven:/software.amazon.awssdk:ssooidc:RELEASE[2.31.2]" bundle="!drivers.redshift"/>
                     <file type="jar" path="maven:/com.fasterxml.jackson.core:jackson-core:RELEASE[2.16.0]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
                     <file type="jar" path="maven:/com.fasterxml.jackson.core:jackson-databind:RELEASE[2.16.0]" load-optional-dependencies="true" bundle="!drivers.redshift"/>
 

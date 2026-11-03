@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,43 +17,19 @@
 package org.jkiss.dbeaver.model.ai.internal;
 
 import org.eclipse.core.runtime.Plugin;
-import org.jkiss.dbeaver.model.ai.AIBaseFeatures;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
-import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.osgi.framework.BundleContext;
 
 public class AIActivator extends Plugin {
     
-    private static AIActivator instance;
-    
-    private BundlePreferenceStore preferences;
-
     public AIActivator() {
     }
 
     @Override
-    public void start(BundleContext context) throws Exception {
+    public void start(@NotNull BundleContext context) throws Exception {
         super.start(context);
         
-        instance = this;
-        preferences = new BundlePreferenceStore(getBundle());
-        
-        DBRFeatureRegistry.getInstance().registerFeatures(AIBaseFeatures.class);
-    }
-
-    @Override
-    public void stop(BundleContext context) throws Exception {
-        super.stop(context);
-        
-        instance = null;
-        preferences = null;
-    }
-
-    public static AIActivator getInstance() {
-        return instance;
-    }
-
-    public BundlePreferenceStore getPreferences() {
-        return preferences;
+        new BundlePreferenceStore(getBundle());
     }
 }

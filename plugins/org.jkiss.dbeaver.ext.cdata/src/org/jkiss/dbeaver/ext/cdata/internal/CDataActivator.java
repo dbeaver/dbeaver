@@ -18,17 +18,13 @@ package org.jkiss.dbeaver.ext.cdata.internal;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.cdata.registry.CDataDriverCatalog;
-import org.jkiss.dbeaver.runtime.ExperimentalBundles;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
 public class CDataActivator implements BundleActivator {
     @Override
     public void start(@NotNull BundleContext context) {
-        // cached wiring may remain usable until the asynchronous refresh finishes
-        if (Boolean.parseBoolean(context.getProperty(ExperimentalBundles.ENABLE_PROPERTY))) {
-            CDataDriverCatalog.start();
-        }
+        CDataDriverCatalog.start();
     }
 
     @Override

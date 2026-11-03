@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ConnectionFeatures;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.driver.DataSourceTypeViewer;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 
 import java.util.*;
@@ -116,7 +115,7 @@ public class NewConnectionWizard extends ConnectionWizard
         }
         DBPDataSourceType type = getPageDataSource().getSelectedDataSourceType();
         DBPDriver selectedDriver = pageConnector.getDataSourceType() == type ? pageConnector.getSelectedDriver() : null;
-        if (selectedDriver != null && DataSourceTypeViewer.isDriverVisible(selectedDriver)) {
+        if (selectedDriver != null && pageDataSource.isDriverVisible(selectedDriver)) {
             return selectedDriver;
         }
         List<? extends DBPDriver> drivers = getAvailableDrivers(type);
@@ -151,6 +150,8 @@ public class NewConnectionWizard extends ConnectionWizard
     @Override
     public void addPages()
     {
+        DataSourceProviderRegistry registry = DataSourceProviderRegistry.getInstance();
+        registry.refreshProvidedDrivers();
         /*if (initialDriver == null) */{
             // We need drivers page always as it contains some settings
             pageDataSource = new ConnectionPageDataSource(this);
@@ -163,7 +164,7 @@ public class NewConnectionWizard extends ConnectionWizard
         addPage(pageConnector);
 
         Map<DataSourceConfiguratorDescriptor, ConnectionPageSettings> configuratorPages = new HashMap<>();
-        for (DBPDataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders()) {
+        for (DBPDataSourceProviderDescriptor provider : registry.getEnabledDataSourceProviders()) {
             availableProvides.add(provider);
             for (DBPDriver driver : provider.getEnabledDrivers()) {
                 DataSourceConfiguratorDescriptor configurator = DataSourceConfiguratorRegistry.getInstance()
@@ -275,12 +276,12 @@ public class NewConnectionWizard extends ConnectionWizard
     }
 
     @NotNull
-    private static List<? extends DBPDriver> getAvailableDrivers(@Nullable DBPDataSourceType type) {
+    private List<? extends DBPDriver> getAvailableDrivers(@Nullable DBPDataSourceType type) {
         if (type == null) {
             return List.of();
         }
         return type.getEnabledDrivers().stream()
-            .filter(DataSourceTypeViewer::isDriverVisible)
+            .filter(pageDataSource::isDriverVisible)
             .toList();
     }
 

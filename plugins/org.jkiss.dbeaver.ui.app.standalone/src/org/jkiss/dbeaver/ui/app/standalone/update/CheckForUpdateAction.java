@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ public class CheckForUpdateAction extends Action {
 
     public static final String P2_PLUGIN_ID = "org.eclipse.equinox.p2.ui.sdk";
     public static final String P2_UPDATE_COMMAND = "org.eclipse.equinox.p2.ui.sdk.update";
+    public static final String P2_INSTALL_COMMAND = "org.eclipse.equinox.p2.ui.sdk.install";
 
     private static IHandlerActivation p2UpdateHandlerActivation;
 

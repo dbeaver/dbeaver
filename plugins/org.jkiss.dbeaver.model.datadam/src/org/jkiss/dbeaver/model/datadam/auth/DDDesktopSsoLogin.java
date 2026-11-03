@@ -22,6 +22,7 @@ import com.dbeaver.datadam.sso.api.model.DDSsoTokenResponse;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.access.DBAuthUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.oauth.OAuthConstants;
@@ -43,9 +44,6 @@ public class DDDesktopSsoLogin {
     private static final Duration TIMEOUT = Duration.ofMinutes(3);
     private static final String CALLBACK_HOST = "127.0.0.1";
     private static final String CALLBACK_PATH = URI.create(DDSsoConstants.DESKTOP_CALLBACK_TEMPLATE).getPath();
-    private static final String DONE_PAGE = """
-        <html><body><h3>You are logged in</h3><p>Return to DBeaver.</p></body></html>
-        """;
 
     @NotNull
     public DDSsoTokenResponse login(
@@ -67,7 +65,8 @@ public class DDDesktopSsoLogin {
                 @Override
                 protected IOAuthCodeResponseHandler createCodeResponseHandler() {
                     return new OAuthCodeResponseHandler(
-                        new InetSocketAddress(CALLBACK_HOST, 0), CALLBACK_PATH, Objects.requireNonNull(state), DONE_PAGE
+                        new InetSocketAddress(CALLBACK_HOST, 0), CALLBACK_PATH, Objects.requireNonNull(state),
+                        DBAuthUtils.getExternalBrowserSuccessResponse("DataDam")
                     ) {
                         @Override
                         protected boolean isValidCallbackParameters(@NotNull Map<String, String> parameters) {

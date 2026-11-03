@@ -2,18 +2,18 @@
 <?eclipse version="3.2"?>
 <plugin>
 
-    <extension-point id="org.jkiss.dbeaver.service" name="%extension-point.org.jkiss.dbeaver.service.name" schema="schema/org.jkiss.dbeaver.service.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.application" name="%extension-point.org.jkiss.dbeaver.application.name" schema="schema/org.jkiss.dbeaver.application.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.app.config" name="%extension-point.org.jkiss.dbeaver.app.config.name" schema="schema/org.jkiss.dbeaver.app.config.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.expressions" name="%extension-point.org.jkiss.dbeaver.expressions.name" schema="schema/org.jkiss.dbeaver.expressions.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.service" name="Service" schema="schema/org.jkiss.dbeaver.service.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.application" name="DBeaver applications" schema="schema/org.jkiss.dbeaver.application.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.app.config" name="Application configuration" schema="schema/org.jkiss.dbeaver.app.config.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.expressions" name="Expression functions and namespaces" schema="schema/org.jkiss.dbeaver.expressions.exsd"/>
     <extension-point id="org.jkiss.dbeaver.dataHintProvider" name="Data editor hint provider" schema="schema/org.jkiss.dbeaver.dataHintProvider.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.dataFormatter" name="%extension-point.org.jkiss.dbeaver.dataFormatter.name" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="%extension-point.org.jkiss.dbeaver.dataTypeProvider.name" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.serialize" name="%extension-point.org.jkiss.dbeaver.serialize.name" schema="schema/org.jkiss.dbeaver.serialize.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.navigator" name="%extension-point.org.jkiss.dbeaver.navigator.name" schema="schema/org.jkiss.dbeaver.navigator.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataFormatter" name="Data value formatters" schema="schema/org.jkiss.dbeaver.dataFormatter.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.dataTypeProvider" name="DataType provider" schema="schema/org.jkiss.dbeaver.dataTypeProvider.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.serialize" name="Object serializers" schema="schema/org.jkiss.dbeaver.serialize.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.navigator" name="Object navigator extensions" schema="schema/org.jkiss.dbeaver.navigator.exsd"/>
     <extension-point id="org.jkiss.dbeaver.settings" name="DBeaver Settings" schema="schema/org.jkiss.dbeaver.settings.exsd"/>
     <extension-point id="org.jkiss.dbeaver.syncUnit" name="Synchronization unit" schema="schema/org.jkiss.dbeaver.syncUnit.exsd"/>
-    <extension-point id="org.jkiss.dbeaver.fileSystem" name="%extension-point.org.jkiss.dbeaver.fileSystem.name" schema="schema/org.jkiss.dbeaver.fileSystem.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.fileSystem" name="Virtual file systems" schema="schema/org.jkiss.dbeaver.fileSystem.exsd"/>
     <extension-point id="org.jkiss.dbeaver.fileTypeHandler" name="File type handlers" schema="schema/org.jkiss.dbeaver.fileTypeHandlers.exsd"/>
 
 
