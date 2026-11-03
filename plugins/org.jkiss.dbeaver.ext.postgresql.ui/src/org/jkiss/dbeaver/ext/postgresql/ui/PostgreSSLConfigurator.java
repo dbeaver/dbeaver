@@ -49,7 +49,11 @@ public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
     private static final boolean ENABLE_PROXY = false;
 
     public static final String[] SSL_MODES = {"","disable","allow","prefer","require","verify-ca","verify-full"};
-    public static final String[] SSL_NEGOTIATIONS = {"", PostgreConstants.SSL_NEGOTIATION_POSTGRES, PostgreConstants.SSL_NEGOTIATION_DIRECT};
+    public static final String[] SSL_NEGOTIATIONS = {
+        "",
+        PostgreConstants.SSL_NEGOTIATION_POSTGRES,
+        PostgreConstants.SSL_NEGOTIATION_DIRECT
+    };
 
     private Combo sslModeCombo;
     private Combo sslNegotiationCombo;
@@ -80,7 +84,11 @@ public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
             for (String mode : SSL_MODES) {
                 sslModeCombo.add(mode);
             }
-            sslNegotiationCombo = UIUtils.createLabelCombo(advGroup, PostgreMessages.dialog_connection_network_postgres_ssl_advanced_ssl_negotiation, SWT.READ_ONLY | SWT.DROP_DOWN);
+            sslNegotiationCombo = UIUtils.createLabelCombo(
+                advGroup,
+                PostgreMessages.dialog_connection_network_postgres_ssl_advanced_ssl_negotiation,
+                SWT.READ_ONLY | SWT.DROP_DOWN
+            );
             sslNegotiationCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             sslNegotiationCombo.setToolTipText(PostgreMessages.dialog_connection_network_postgres_ssl_advanced_ssl_negotiation_tip);
             for (String negotiation : SSL_NEGOTIATIONS) {
@@ -121,7 +129,10 @@ public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
 
         if (this.getEditIntention() != DBPConnectionEditIntention.CREDENTIALS_ONLY) {
             UIUtils.setComboSelection(sslModeCombo, CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_MODE)));
-            UIUtils.setComboSelection(sslNegotiationCombo, CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_NEGOTIATION)));
+            UIUtils.setComboSelection(
+                sslNegotiationCombo,
+                CommonUtils.notEmpty(configuration.getStringProperty(PostgreConstants.PROP_SSL_NEGOTIATION))
+            );
             if (ENABLE_PROXY) {
                 useProxyService.setSelection(configuration.getBooleanProperty(PostgreConstants.PROP_SSL_PROXY));
             }
