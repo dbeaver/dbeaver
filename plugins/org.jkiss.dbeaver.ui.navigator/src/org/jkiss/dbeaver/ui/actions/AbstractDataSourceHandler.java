@@ -112,10 +112,6 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
         if (selection == null) {
             return null;
         }
-        DBNNode selectedNode = NavigatorUtils.getSelectedNode(selection);
-        if (selectedNode instanceof DBNDatabaseNode databaseNode) {
-            return databaseNode.getDataSourceContainer();
-        }
         DBSObject selectedObject = NavigatorUtils.getSelectedObject(selection);
         if (selectedObject instanceof DBPDataSourceContainer selectedContainer) {
             return selectedContainer;
