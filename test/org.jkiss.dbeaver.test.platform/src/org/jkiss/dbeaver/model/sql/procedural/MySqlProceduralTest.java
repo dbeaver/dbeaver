@@ -34,6 +34,12 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 public class MySqlProceduralTest extends ProceduralDialectTestBase {
+    @Test
+    void localVariablesTakePrecedenceOverColumns() {
+        Assertions.assertEquals(SQLDialect.ProceduralVariableConflictPolicy.PREFER_VARIABLE,
+            dialect().getProceduralVariableConflictPolicy());
+    }
+
     @NotNull
     @Override
     protected SQLDialect dialect() {

@@ -141,6 +141,9 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
                 resultLocalVariable = context.getRowsSources().getLocalVariables().findLocalVariable(
                     columnRefEntry, SQLDialect.LocalVariableCapability.VALUE);
                 if (resultLocalVariable != null) {
+                    // FIXME: Selecting a local value by the first name part can preclude the qualified row-source
+                    // lookup below when names overlap. Revisit precedence for a reported, reproducible conflict;
+                    // qualified sources and composite members are otherwise handled by the existing resolution.
                     // Dummy metadata can supply synthetic columns; they must not make a local variable ambiguous.
                     boolean hasColumn = !context.getConnection().isDummy() &&
                         (resultColumn != null || resultPseudoColumn != null);

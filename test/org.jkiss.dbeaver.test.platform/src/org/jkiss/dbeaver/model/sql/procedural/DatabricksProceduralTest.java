@@ -28,6 +28,12 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class DatabricksProceduralTest extends ProceduralDialectTestBase {
+    @Test
+    void columnNamesTakePrecedenceOverLocalVariables() {
+        Assertions.assertEquals(SQLDialect.ProceduralVariableConflictPolicy.PREFER_COLUMN,
+            dialect().getProceduralVariableConflictPolicy());
+    }
+
     @NotNull
     @Override
     protected SQLDialect dialect() {

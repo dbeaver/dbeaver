@@ -56,6 +56,16 @@ import java.util.Set;
  */
 public class OracleSQLDialect extends JDBCSQLDialect
     implements SQLDataTypeConverter, SQLDialectDDLExtension, SQLDialectSchemaController {
+    /** Oracle resolves a column before a same-named PL/SQL variable or parameter in static SQL.
+     *
+     * @see <a href="https://docs.oracle.com/en/database/oracle/oracle-database/19/lnpls/column-name-precedence.html">Column name precedence</a>
+     */
+    @NotNull
+    @Override
+    public ProceduralVariableConflictPolicy getProceduralVariableConflictPolicy() {
+        return ProceduralVariableConflictPolicy.PREFER_COLUMN;
+    }
+
     @NotNull
     @Override
     public Set<String> getSignatureModifierKeywords() {

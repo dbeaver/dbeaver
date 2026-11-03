@@ -37,6 +37,12 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 public class OracleProceduralTest extends ProceduralDialectTestBase {
+    @Test
+    void columnNamesTakePrecedenceOverLocalVariables() {
+        Assertions.assertEquals(SQLDialect.ProceduralVariableConflictPolicy.PREFER_COLUMN,
+            dialect().getProceduralVariableConflictPolicy());
+    }
+
     @NotNull
     @Override
     protected SQLDialect dialect() {

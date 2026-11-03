@@ -46,6 +46,16 @@ import java.util.regex.Pattern;
  */
 public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaController, SQLDialectDDLExtension {
 
+    /** MySQL resolves an unqualified stored-program variable before a same-named table column.
+     *
+     * @see <a href="https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/local-variable-scope.html">Local variable resolution</a>
+     */
+    @NotNull
+    @Override
+    public ProceduralVariableConflictPolicy getProceduralVariableConflictPolicy() {
+        return ProceduralVariableConflictPolicy.PREFER_VARIABLE;
+    }
+
     @NotNull
     @Override
     public TrailingSelectIntoSupport getTrailingSelectIntoSupport() {

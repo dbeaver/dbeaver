@@ -36,6 +36,16 @@ import java.util.Set;
 
 public class DatabricksSQLDialect extends GenericSQLDialect {
 
+    /** Databricks resolves columns before compound-statement variables and routine parameters.
+     *
+     * @see <a href="https://docs.databricks.com/aws/en/sql/language-manual/sql-ref-name-resolution#column-field-parameter-and-variable-resolution">Name resolution</a>
+     */
+    @NotNull
+    @Override
+    public ProceduralVariableConflictPolicy getProceduralVariableConflictPolicy() {
+        return ProceduralVariableConflictPolicy.PREFER_COLUMN;
+    }
+
     @NotNull
     @Override
     public Set<String> getSignatureModifierKeywords() {

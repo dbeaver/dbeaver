@@ -36,6 +36,16 @@ import java.util.Set;
  */
 public class BQSQLDialect extends GenericSQLDialect {
 
+    /** BigQuery resolves a same-named column before a user-created variable in SQL.
+     *
+     * @see <a href="https://cloud.google.com/bigquery/docs/multi-statement-queries#reference_a_user-created_variable">Variable references</a>
+     */
+    @NotNull
+    @Override
+    public ProceduralVariableConflictPolicy getProceduralVariableConflictPolicy() {
+        return ProceduralVariableConflictPolicy.PREFER_COLUMN;
+    }
+
     @NotNull
     @Override
     public Set<String> getSignatureModifierKeywords() {

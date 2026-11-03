@@ -70,6 +70,10 @@ public final class SQLQueryRelationDeclarationStatement extends SQLQueryStatemen
             ? isTemporaryCreate(node)
             : tableName != null || hasTemporaryModifier(node);
         SQLQuerySymbolEntry name;
+        // TODO: Retain the full qualified relation name (e.g. SESSION.items), not just its final symbol.
+        // Qualification and temporary-table visibility are dialect-specific: supported qualified
+        // FROM/DROP references must match the declaration without conflating same-leaf names.
+        // Temporary-relation storage and removal must follow the same dialect-aware naming rules.
         if (create) {
             SQLQueryComplexName qualified = temporary ? recognizer.collectTableName(node) : null;
             name = qualified == null || qualified.parts.isEmpty() ? null : qualified.parts.getLast();
