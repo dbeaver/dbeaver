@@ -20,16 +20,20 @@ import com.sun.net.httpserver.HttpServer;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.net.InetSocketAddress;
 import java.net.URI;
+import java.net.http.HttpRequest;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
@@ -79,6 +83,22 @@ class OllamaEnvironmentClientTest {
         } finally {
             server.stop(0);
         }
+    }
+
+    @Test
+    void cloudModelMetadataIncludesBearerToken() throws Exception {
+        MonitoredHttpClient http = Mockito.mock(MonitoredHttpClient.class);
+        Mockito.when(http.send(Mockito.any(VoidProgressMonitor.class), Mockito.any(HttpRequest.class)))
+            .thenReturn("{\"capabilities\":[\"completion\"]}");
+
+        try (OllamaClient client = new OllamaClient("https://ollama.com", "cloud-key", http)) {
+            client.getModelInformation(new VoidProgressMonitor(), "test-model");
+        }
+
+        ArgumentCaptor<HttpRequest> request = ArgumentCaptor.forClass(HttpRequest.class);
+        Mockito.verify(http).send(Mockito.any(VoidProgressMonitor.class), request.capture());
+        Assertions.assertEquals(URI.create("https://ollama.com/api/show"), request.getValue().uri());
+        Assertions.assertEquals("Bearer cloud-key", request.getValue().headers().firstValue("Authorization").orElseThrow());
     }
 
     @Test

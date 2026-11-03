@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai.engine.ollama;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
@@ -29,10 +30,12 @@ import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 public class OllamaCompletionEngine extends BaseCompletionEngine<OllamaProperties> {
+    private static final Log log = Log.getLog(OllamaCompletionEngine.class);
 
     public OllamaCompletionEngine(@NotNull OllamaProperties properties) {
         super(properties);
@@ -42,11 +45,7 @@ public class OllamaCompletionEngine extends BaseCompletionEngine<OllamaPropertie
         @NotNull
         @Override
         protected OllamaClient initialize() throws DBException {
-            String hostname = properties.getEffectiveHostname();
-            if (CommonUtils.isEmptyTrimmed(hostname)) {
-                throw new DBException("Ollama host is not configured");
-            }
-            OllamaClient newClient = new OllamaClient(hostname, properties.getEffectiveToken());
+            OllamaClient newClient = createClient();
             newClient.setTimeout(properties.getTimeout());
             return newClient;
         }
@@ -58,11 +57,34 @@ public class OllamaCompletionEngine extends BaseCompletionEngine<OllamaPropertie
     };
 
     @NotNull
+    protected OllamaClient createClient() throws DBException {
+        String hostname = properties.getEffectiveHostname();
+        if (CommonUtils.isEmptyTrimmed(hostname)) {
+            throw new DBException("Ollama host is not configured");
+        }
+        return new OllamaClient(hostname, properties.getEffectiveToken());
+    }
+
+    @NotNull
     @Override
     public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return client.getInstance().loadModels(monitor).stream()
-            .map(model -> new AIModel(model.name(), null, Set.of(AIModelFeature.CHAT)))
-            .toList();
+        OllamaClient ollamaClient = client.getInstance();
+        List<AIModel> models = new ArrayList<>();
+        for (var model : ollamaClient.loadModels(monitor)) {
+            if (monitor.isCanceled()) {
+                throw new DBException("Model metadata loading was canceled");
+            }
+            try {
+                models.add(ollamaClient.getModelInformation(monitor, model.name()).toAIModel(model.name()));
+            } catch (DBException e) {
+                if (monitor.isCanceled()) {
+                    throw e;
+                }
+                log.debug("Error reading Ollama model metadata: " + model.name(), e);
+                models.add(new AIModel(model.name(), null, Set.of(AIModelFeature.CHAT)));
+            }
+        }
+        return models;
     }
 
     @NotNull

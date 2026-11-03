@@ -25,6 +25,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
+import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.engine.ollama.OllamaCompletionEngine;
 import org.jkiss.dbeaver.model.ai.engine.ollama.OllamaProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
@@ -84,7 +85,10 @@ public class OllamaConfigurator extends AbstractAIEngineConfigurator<AIEngineDes
             .withModelLabel(AIUIMessages.ollama_preference_page_model)
             .withGridData(new GridData(GridData.FILL_HORIZONTAL))
             .withRequiredSetting(hostnameText, AIUIMessages.ollama_preference_page_hostname)
-            .withModelListSupplier(modelsCache::get)
+            .withModelListSupplier((monitor, refresh) -> modelsCache.get(monitor, refresh).stream()
+                .filter(model -> model.features().contains(AIModelFeature.CHAT)).toList())
+            .withModelChangeListener(modelChanged -> updateModelParameters(
+                modelSelectorField.getSelectedModel(), temperatureText, null, modelChanged))
             .build();
 
         contextSizeText = UIUtils.createLabelText(
@@ -123,8 +127,8 @@ public class OllamaConfigurator extends AbstractAIEngineConfigurator<AIEngineDes
     public void loadSettings(@NotNull OllamaProperties configuration) {
         hostname = CommonUtils.toString(configuration.getHostname(), "");
         contextSize = CommonUtils.toString(configuration.getContextWindowSize(), "");
-        temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
         modelSelectorField.setSelectedModel(CommonUtils.toString(configuration.getModel(), ""));
+        temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
         applySettings();
         loadAdvancedSettings(configuration);
 
