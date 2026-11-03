@@ -26,16 +26,17 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.SecurityUtils;
 import org.jkiss.utils.function.ThrowableFunction;
 
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.Reader;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URLConnection;
-import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.AtomicMoveNotSupportedException;
 import java.nio.file.Files;
@@ -49,13 +50,13 @@ import java.util.Set;
 public final class CDataDriverCatalog {
     private static final Log log = Log.getLog(CDataDriverCatalog.class);
     private static final String CATALOG_FILE_NAME = "cdata-drivers.json";
-    private static final String CATALOG_URL = "https://www.cdata.com/order/dbeavercatalog.rsb?@json";
+    private static final String CATALOG_AUTH_TOKEN = "99514d3f1ab861c1de1a71c44d14567ccb0a99599121f578";
+    private static final String CATALOG_URL = "https://www.cdata.com/order/dbeavercatalog.rsb?@json&@authtoken=" + CATALOG_AUTH_TOKEN;
     private static final String CATALOG_URL_PROPERTY = "cdataDriversURL";
-    private static final String CATALOG_AUTH_TOKEN_PROPERTY = "cdataDriversAuthToken";
     private static final int CONNECTION_TIMEOUT = 10_000;
     private static final int LEGACY_SCHEMA_VERSION = 2;
     private static final String ARTIFACT_SUFFIX = "-jdbc";
-    private static volatile List<CDataDriverInfo> drivers = List.of();
+    private static volatile List<CDataDriverInfo> drivers;
     private static final AbstractJob UPDATE_JOB = new AbstractJob("Load CData driver catalog") {
         @NotNull
         @Override
@@ -67,17 +68,12 @@ public final class CDataDriverCatalog {
             }
             if (catalogUrl == null || catalogUrl.isBlank()) {
                 catalogUrl = CATALOG_URL;
-                String authToken = System.getProperty(CATALOG_AUTH_TOKEN_PROPERTY);
-                if (authToken == null || authToken.isBlank()) {
-                    authToken = product == null ? null : product.getProperty(CATALOG_AUTH_TOKEN_PROPERTY);
-                }
-                if (authToken != null && !authToken.isBlank()) {
-                    catalogUrl += "&@authtoken=" + URLEncoder.encode(authToken, StandardCharsets.UTF_8);
-                }
             }
             try {
-                drivers = load(monitor, catalogUrl, CDataDriverSettings.URL,
-                    CDataDriverLoaderDescriptor.getStoragePath().resolve(CATALOG_FILE_NAME));
+                List<CDataDriverInfo> updated = load(monitor, catalogUrl, CDataDriverSettings.URL, getCacheFile());
+                synchronized (CDataDriverCatalog.class) {
+                    drivers = updated;
+                }
                 return Status.OK_STATUS;
             } catch (InterruptedException e) {
                 return Status.CANCEL_STATUS;
@@ -91,7 +87,7 @@ public final class CDataDriverCatalog {
     private CDataDriverCatalog() {
     }
 
-    public static void start() {
+    public static synchronized void start() {
         UPDATE_JOB.setSystem(true);
         UPDATE_JOB.schedule();
     }
@@ -101,14 +97,53 @@ public final class CDataDriverCatalog {
     }
 
     @NotNull
-    public static List<CDataDriverInfo> load() {
-        try {
-            UPDATE_JOB.join();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IllegalStateException("Interrupted while loading CData driver catalog", e);
+    public static synchronized List<CDataDriverInfo> load() {
+        if (drivers == null) {
+            drivers = loadCached(getCacheFile());
         }
         return drivers;
+    }
+
+    @NotNull
+    private static Path getCacheFile() {
+        return DBWorkbench.getPlatform().getWorkspace().getMetadataFolder().resolve("cdata").resolve(CATALOG_FILE_NAME);
+    }
+
+    @NotNull
+    static List<CDataDriverInfo> loadCached(@NotNull Path cacheFile) {
+        var settings = CDataDriverSettings.load(cacheFile.resolveSibling(CDataDriverSettings.FILE_NAME));
+        List<CDataDriverInfo> cached = readCached(cacheFile, settings);
+        return cached.isEmpty() ? readBundled(settings) : cached;
+    }
+
+    @NotNull
+    private static List<CDataDriverInfo> readCached(
+        @NotNull Path cacheFile,
+        @NotNull Map<String, CDataDriverSettings> settings
+    ) {
+        if (Files.isRegularFile(cacheFile)) {
+            try {
+                return read(cacheFile, true, settings);
+            } catch (IOException | IllegalStateException | IllegalArgumentException e) {
+                log.warn("Error reading cached CData driver catalog", e);
+            }
+        }
+        return List.of();
+    }
+
+    @NotNull
+    private static List<CDataDriverInfo> readBundled(@NotNull Map<String, CDataDriverSettings> settings) {
+        try (var input = CDataDriverCatalog.class.getResourceAsStream(CATALOG_FILE_NAME)) {
+            if (input == null) {
+                throw new IOException("Bundled CData driver catalog is missing");
+            }
+            try (Reader reader = new InputStreamReader(input, StandardCharsets.UTF_8)) {
+                return read(reader, false, settings);
+            }
+        } catch (IOException | IllegalStateException | IllegalArgumentException e) {
+            log.error("Error reading bundled CData driver catalog", e);
+            return List.of();
+        }
     }
 
     @NotNull
@@ -153,13 +188,10 @@ public final class CDataDriverCatalog {
         @NotNull Map<String, CDataDriverSettings> settings
     ) throws InterruptedException {
         String catalogHash = SecurityUtils.sha256Hex(catalogUrl);
-        List<CDataDriverInfo> cachedDrivers = List.of();
-        if (Files.isRegularFile(cacheFile)) {
-            try {
-                cachedDrivers = read(cacheFile, true, settings);
-            } catch (IOException | IllegalStateException | IllegalArgumentException e) {
-                log.warn("Error reading cached CData driver catalog", e);
-            }
+        List<CDataDriverInfo> cachedDrivers = readCached(cacheFile, settings);
+        boolean hasCachedCatalog = !cachedDrivers.isEmpty();
+        if (!hasCachedCatalog) {
+            cachedDrivers = readBundled(settings);
         }
         try {
             checkCanceled(monitor);
@@ -170,7 +202,7 @@ public final class CDataDriverCatalog {
                     CatalogETag saved = JSONUtils.GSON.fromJson(Files.readString(etagFile), CatalogETag.class);
                     if (saved == null || saved.urlHash() == null) {
                         Files.deleteIfExists(etagFile);
-                    } else if (!cachedDrivers.isEmpty() && catalogHash.equals(saved.urlHash())) {
+                    } else if (hasCachedCatalog && catalogHash.equals(saved.urlHash())) {
                         etag = saved.etag();
                     }
                 } catch (IOException | JsonParseException e) {
@@ -247,6 +279,17 @@ public final class CDataDriverCatalog {
         @NotNull Map<String, CDataDriverSettings> settings
     ) throws IOException {
         try (Reader reader = Files.newBufferedReader(file)) {
+            return read(reader, allowLegacyCache, settings);
+        }
+    }
+
+    @NotNull
+    private static List<CDataDriverInfo> read(
+        @NotNull Reader reader,
+        boolean allowLegacyCache,
+        @NotNull Map<String, CDataDriverSettings> settings
+    ) {
+        try {
             CatalogFile catalog = JSONUtils.GSON.fromJson(reader, CatalogFile.class);
             if (allowLegacyCache && catalog != null && catalog.items == null && catalog.schemaVersion == LEGACY_SCHEMA_VERSION
                 && catalog.drivers != null) {

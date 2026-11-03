@@ -20,12 +20,17 @@ import com.google.gson.Gson;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
+import org.jkiss.dbeaver.model.ai.engine.AIModelCatalog;
+import org.jkiss.dbeaver.model.ai.engine.AIModelCatalogEntry;
 import org.jkiss.dbeaver.model.ai.engine.BaseAIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotCompletionEngine;
+import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotModels;
 import org.jkiss.dbeaver.model.ai.engine.copilot.CopilotProperties;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -35,6 +40,22 @@ import java.net.http.HttpRequest;
 import java.util.Map;
 
 class OpenAIEnvironmentTest {
+    private AutoCloseable catalogFixture;
+
+    @BeforeEach
+    void setUpCatalog() {
+        AIModelCatalogEntry entry = new Gson().fromJson("{\"limit\":{\"context\":128000}}", AIModelCatalogEntry.class);
+        catalogFixture = AIModelCatalog.useForTests(Map.of(
+            OpenAIModels.CATALOG_PROVIDER_ID, Map.of("gpt-4o", entry),
+            CopilotModels.CATALOG_PROVIDER_ID, Map.of("gpt-4o", entry)
+        ));
+    }
+
+    @AfterEach
+    void tearDownCatalog() throws Exception {
+        catalogFixture.close();
+    }
+
     @Test
     void environmentIsOptInAndDoesNotReplaceStoredValues() {
         OpenAIProperties properties = withEnvironment(new OpenAIProperties(), Map.of(
@@ -184,19 +205,32 @@ class OpenAIEnvironmentTest {
     }
 
     @Test
-    void copilotTemperatureSurvivesSettingsSaveAndEnvironmentOptOut() {
+    void copilotExplicitZeroSurvivesSettingsSaveAndEnvironmentOptOut() {
         CopilotProperties properties = withEnvironment(new CopilotProperties(), Map.of(CopilotProperties.ENV_MODEL, "gpt-5"));
         properties.setModel("gpt-4o");
         properties.setTemperature(0.0);
         properties.setUseEnvVariables(true);
         Assertions.assertEquals(0.0, properties.getTemperature());
-        Assertions.assertEquals(1.0, properties.getEffectiveTemperature());
+        Assertions.assertEquals(0.0, properties.getEffectiveTemperature());
+        Assertions.assertEquals(0.0, properties.getRequestTemperature());
         properties.setTemperature(properties.getTemperature());
         CopilotProperties saved = new Gson().fromJson(new Gson().toJson(properties, CopilotProperties.class), CopilotProperties.class);
         saved.setUseEnvVariables(false);
         Assertions.assertEquals(0.0, saved.getTemperature());
         Assertions.assertEquals(0.0, saved.getEffectiveTemperature());
         Assertions.assertEquals("gpt-4o", saved.getModel());
+    }
+
+    @Test
+    void copilotLegacyZeroKeepsTheEnvironmentModelFallback() {
+        CopilotProperties properties = new Gson().fromJson(
+            "{\"gpt.model\":\"gpt-4o\",\"gpt.model.temperature\":0.0,\"ai.useEnvVariables\":true}", CopilotProperties.class);
+        properties = withEnvironment(properties, Map.of(CopilotProperties.ENV_MODEL, "gpt-5"));
+        Assertions.assertEquals(0.0, properties.getTemperature());
+        Assertions.assertEquals(0.0, properties.getEffectiveTemperature());
+        CopilotProperties saved = new Gson().fromJson(new Gson().toJson(properties, CopilotProperties.class), CopilotProperties.class);
+        saved = withEnvironment(saved, Map.of(CopilotProperties.ENV_MODEL, "gpt-5"));
+        Assertions.assertEquals(0.0, saved.getEffectiveTemperature());
     }
 
     @Test
@@ -219,6 +253,20 @@ class OpenAIEnvironmentTest {
         copilotProperties.setUseEnvVariables(true);
         copilotProperties.setContextWindowSize(4096);
         Assertions.assertEquals(4096, copilotProperties.getEffectiveContextWindowSize());
+    }
+
+    @Test
+    void environmentGatewayDoesNotBorrowFirstPartyCatalogLimits() throws DBException {
+        OpenAIProperties properties = withEnvironment(new OpenAIProperties(), Map.of(
+            OpenAIProperties.ENV_MODEL, "gpt-4o",
+            OpenAIProperties.ENV_BASE_URL, "https://gateway.example/v1/"
+        ));
+        properties.setUseEnvVariables(true);
+        properties.setContextWindowSize(4096);
+
+        try (OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)) {
+            Assertions.assertEquals(4096, engine.getContextWindowSize(new VoidProgressMonitor()));
+        }
     }
 
     @NotNull

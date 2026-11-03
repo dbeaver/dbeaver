@@ -2,7 +2,7 @@
 
 The Desktop remote DAM session service opens an authenticated WebSocket to Remote DAM at `/ws`.
 It uses the existing Desktop SSO access token and never starts a login, opens a browser, or requests credentials.
-Imported project encryption keys and the tracking session are not prerequisites for the remote DAM session.
+Imported project encryption keys are not prerequisites for the remote DAM session.
 
 ## Remote DAM session lifecycle
 
@@ -11,7 +11,7 @@ Imported project encryption keys and the tracking session are not prerequisites 
   Initialization while signed out only registers observers; it does not open a socket or restore credentials.
 - Request the current access token before every socket attempt.
 - Send `hello` and wait for `ready` before accepting application messages or reporting a session.
-- Keep `appDeploymentId` and `appInstanceId` across reconnects; use the new server-assigned `damSessionId` for each socket.
+- Keep `clientDamId`, `appDeploymentId`, and `appInstanceId` across reconnects; use the new server-assigned `damSessionId` for each socket.
 - Retry transport failures with bounded backoff. Pause when authorization is unavailable or the upgrade is rejected with HTTP 401/403.
 - Close cached RPC endpoints and pause the current channel before changing the Desktop identity or signing out.
   Resume only if authorization remains available.
@@ -21,14 +21,25 @@ Imported project encryption keys and the tracking session are not prerequisites 
 - Release the session and subscriptions when the platform deactivates plugin services.
 
 `DDRemoteDamDesktopSessionPluginService` owns activation and shutdown without Workbench, SWT or UI listeners. Repeated
-activation and deactivation are harmless, and shutdown never creates a new session service. Authorization and
-tracking retain their existing owners; this lifecycle contribution does not load tokens or manage tracking.
+activation and deactivation are harmless, and shutdown never creates a new session service. `DDDesktopInitializer`
+restores saved authorization and initializes project synchronization; the session lifecycle contribution does not load tokens.
 
 Messages use the shared contracts from the `com.dbeaver.datadam.dam.remote.api` bundle. Topic subscriptions survive reconnects,
 but outgoing messages are rejected while disconnected rather than buffered for later delivery.
 Service consumers obtain the channel from `DDRemoteDamDesktopSessionService` and release their subscriptions when no longer needed.
 The shared WebSocket client's 90-second idle timeout detects missing server traffic; Remote DAM must send its
 heartbeat more frequently than this timeout (the server default is 30 seconds). Desktop does not add another heartbeat protocol.
+
+## DAM identity
+
+The `hello` message includes `clientDamId`: unpadded URL-safe Base64 of the UTF-8 string `workspaceId + ':' + localHostId`.
+The workspace ID comes from the active workspace. The local host ID comes from `BaseWorkspaceImpl.getLocalHostId()`,
+reusing the existing MAC-derived host identity and its fallback values rather than selecting a network interface separately.
+The raw MAC address is not sent.
+
+`clientDamId` stays the same across reconnects and Desktop restarts while the workspace ID and local host ID remain unchanged.
+`appInstanceId` identifies the current Desktop process, and the server assigns a new `damSessionId` to each WebSocket connection.
+Neither replaces the stable DAM identity.
 
 ## Channel state
 
@@ -91,7 +102,7 @@ handlers must cooperate with interruption to stop work already in progress.
 ## Trusted endpoints
 
 By default, DataDam endpoints use the shared base host in `DDEndpoints`, with `datadam.cloud` as the source default and
-build-time substitution for staging. The default Remote DAM endpoint is `wss://remote-dam.<base-host>/ws`.
+build-time substitution for staging. The default Remote DAM endpoint is `wss://dam.<base-host>/ws`.
 Declaring this URL does not provision the service, DNS, TLS, or ingress.
 
 For local development, add these JVM options to the DBeaver Desktop run configuration:

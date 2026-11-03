@@ -115,6 +115,7 @@
         <image commandId="org.eclipse.ui.file.save" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/save.svg"/>
         <image commandId="org.eclipse.ui.file.saveAs" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/save_as.svg"/>
         <image commandId="org.eclipse.ui.file.saveAll" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/saveall.svg"/>
+        <image commandId="org.eclipse.ui.file.print" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/print.svg"/>
         <image commandId="org.eclipse.ui.file.refresh" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/refresh.svg"/>
         <image commandId="org.eclipse.ui.file.revert" icon="icons/eclipse/revert.png" disabledIcon="icons/eclipse/revert_d.png"/>
         <image commandId="org.eclipse.ui.file.import" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/import.svg"/>
@@ -131,8 +132,11 @@
         <image commandId="org.eclipse.ui.newWizard" icon="icons/eclipse/new_object.png" disabledIcon="icons/eclipse/new_object_d.png"/>
         <image commandId="org.eclipse.ui.edit.text.zoomIn" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_in.svg"/>
         <image commandId="org.eclipse.ui.edit.text.zoomOut" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/zoom_out.svg"/>
-        <image commandId="org.eclipse.ui.edit.text.gotoLastEditPosition" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/back.svg"/>
-        <image commandId="org.eclipse.ui.edit.text.gotoNextEditPosition" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/forward.svg"/>
+        <image commandId="org.eclipse.ui.edit.text.gotoLastEditPosition" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/edit_location_previous.svg"/>
+        <image commandId="org.eclipse.ui.edit.text.gotoNextEditPosition" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/edit_location_next.svg"/>
+        <image commandId="org.eclipse.ui.edit.text.toggleBlockSelectionMode" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/block_selection.svg"/>
+        <image commandId="org.eclipse.equinox.p2.ui.sdk.update" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/software_update.svg"/>
+        <image commandId="org.eclipse.equinox.p2.ui.sdk.install" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/software_install.svg"/>
         <image commandId="org.eclipse.search.ui.openSearchDialog" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/search.svg"/>
 
         <image commandId="org.eclipse.ui.navigate.collapseAll" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/collapse_all.svg"/>

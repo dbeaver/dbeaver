@@ -83,6 +83,11 @@ public interface DBPProject extends DBFFileSystemContainer, SMAuthSpace, DBAPerm
 
     boolean isRegistryLoaded();
 
+    /** Whether loading the project's connections may require a project password. */
+    default boolean isPasswordProtected() {
+        return false;
+    }
+
     /**
      * Encrypted project configuration files are stored in encrypted form
      */

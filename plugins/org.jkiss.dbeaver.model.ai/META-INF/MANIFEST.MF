@@ -10,6 +10,8 @@ Export-Package: org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.model.ai.engine,
  org.jkiss.dbeaver.model.ai.engine.copilot,
  org.jkiss.dbeaver.model.ai.engine.copilot.dto,
+ org.jkiss.dbeaver.model.ai.engine.ollama,
+ org.jkiss.dbeaver.model.ai.engine.ollama.dto,
  org.jkiss.dbeaver.model.ai.engine.openai,
  org.jkiss.dbeaver.model.ai.engine.openai.dto,
  org.jkiss.dbeaver.model.ai.functions,
@@ -25,6 +27,7 @@ Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: org.jkiss.dbeaver.model.ai
 Require-Bundle: org.jkiss.dbeaver.model.jdbc,
+ org.jkiss.dbeaver.model.security,
  org.jkiss.dbeaver.model.sql,
  org.jkiss.dbeaver.registry;visibility:=reexport
 

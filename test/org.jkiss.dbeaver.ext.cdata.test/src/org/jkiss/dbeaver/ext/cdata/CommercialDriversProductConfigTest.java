@@ -20,11 +20,19 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
 import org.jkiss.dbeaver.model.config.ProductConfigFeatureTester;
 import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
+import org.jkiss.dbeaver.registry.DriverManagerRegistry;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class CommercialDriversProductConfigTest extends DBeaverUnitTest {
+    @Test
+    public void commercialCategoryIsConfigured() {
+        var categories = DriverManagerRegistry.getInstance();
+        Assertions.assertTrue(categories.getCategory("cdata").isCommercial());
+        Assertions.assertFalse(categories.getCategory("sql").isCommercial());
+    }
+
     @Test
     public void enabledByDefault() throws Exception {
         var feature = getFeature();
