@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.tools.transfer.task;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.jobs.JobGroup;
@@ -50,10 +53,27 @@ import java.util.Map;
 /**
  * DTTaskHandlerTransfer
  */
-public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollector {
+public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollector, DBTTaskImportTransformer {
     private static final Log log = Log.getLog(DTTaskHandlerTransfer.class);
 
     private final DBCStatistics totalStatistics = new DBCStatistics();
+
+    @Override
+    public boolean transformTaskState(@NotNull JsonObject state, @NotNull Map<String, String> projectNames) {
+        boolean changed = false;
+        JsonElement producers = state.get("producers");
+        if (producers != null && producers.isJsonArray()) {
+            for (JsonElement producer : producers.getAsJsonArray()) {
+                if (producer.isJsonObject()) {
+                    JsonObject node = producer.getAsJsonObject();
+                    if (new JsonPrimitive("databaseTransferProducer").equals(node.get("type"))) {
+                        changed |= DBTTaskImportTransformer.remapProjectReference(node.get("location"), projectNames);
+                    }
+                }
+            }
+        }
+        return changed;
+    }
 
     @Override
     @NotNull

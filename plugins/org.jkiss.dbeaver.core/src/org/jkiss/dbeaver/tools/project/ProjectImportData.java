@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.project;
 
 import org.eclipse.jface.dialogs.IMessageProvider;
 import org.eclipse.jface.wizard.WizardPage;
+import org.jkiss.code.NotNull;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Document;
@@ -116,6 +117,11 @@ class ProjectImportData {
     public String getTargetProjectName(String projectName)
     {
         return projectNameMap.get(projectName);
+    }
+
+    @NotNull
+    public Map<String, String> getProjectNameMap() {
+        return Map.copyOf(projectNameMap);
     }
 
     public void clearProjectNameMap()

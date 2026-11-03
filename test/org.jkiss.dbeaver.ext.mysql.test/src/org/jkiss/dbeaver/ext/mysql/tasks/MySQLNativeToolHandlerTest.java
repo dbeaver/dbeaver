@@ -16,15 +16,61 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.task.DBTTaskImportTransformer;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Map;
 
-class MySQLNativeToolHandlerTest extends DBeaverUnitTest {
+public class MySQLNativeToolHandlerTest extends DBeaverUnitTest {
+
+    @Test
+    void remapsOnlyRootProjectThroughInheritedHandler() throws DBException {
+        DBTTaskImportTransformer handler = new MySQLScriptExecuteHandler();
+        JsonObject state = JsonParser.parseString("""
+            {
+              "project": "Source", "dataSource": "connection",
+              "databaseObjects": ["Source/connection/database"],
+              "inputFile": "Source/backup.sql", "outputFolder": "Source/backups",
+              "scriptFiles": ["Source/Scripts/query.sql"], "query": "select 'Source' as project",
+              "options": {"project": "Source"}, "dataSources": [{"project": "Source"}]
+            }
+            """).getAsJsonObject();
+        JsonObject expected = state.deepCopy();
+        expected.addProperty("project", "Target");
+
+        Assertions.assertTrue(handler.transformTaskState(state, Map.of("Source", "Target")));
+        Assertions.assertEquals(expected, state);
+        Assertions.assertFalse(handler.transformTaskState(state, Map.of("Source", "Target")));
+        Assertions.assertEquals(expected, state);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "{}", "{\"project\": null}", "{\"project\": 42}", "{\"project\": false}",
+        "{\"project\": [\"Source\"]}", "{\"project\": {\"project\": \"Source\"}}",
+        "{\"project\": \"Same\"}", "{\"project\": \"External\"}", "{\"project\": \"source\"}"
+    })
+    void preservesSameExternalAndNonStringProjects(@NotNull String json) throws DBException {
+        DBTTaskImportTransformer handler = new MySQLScriptExecuteHandler();
+        JsonObject state = JsonParser.parseString(json).getAsJsonObject();
+        JsonObject expected = state.deepCopy();
+
+        Assertions.assertFalse(handler.transformTaskState(state, Map.of()));
+        Assertions.assertFalse(handler.transformTaskState(state, Map.of(
+            "Source", "Target", "Same", "Same", "42", "Target", "false", "Target")));
+        Assertions.assertEquals(expected, state);
+    }
 
     @Test
     void createCredentialsFileEscapesPasswordForMySQLOptionFile() throws IOException {

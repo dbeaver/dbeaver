@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.tools.sql.task;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -55,13 +57,26 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * SQLScriptExecuteHandler
  */
-public class SQLScriptExecuteHandler implements DBTTaskHandler {
+public class SQLScriptExecuteHandler implements DBTTaskHandler, DBTTaskImportTransformer {
 
     private final DBCStatistics totalStatistics = new DBCStatistics();
+
+    @Override
+    public boolean transformTaskState(@NotNull JsonObject state, @NotNull Map<String, String> projectNames) {
+        boolean changed = DBTTaskImportTransformer.remapProjectReference(state, projectNames);
+        JsonElement dataSources = state.get("dataSources");
+        if (dataSources != null && dataSources.isJsonArray()) {
+            for (JsonElement dataSource : dataSources.getAsJsonArray()) {
+                changed |= DBTTaskImportTransformer.remapProjectReference(dataSource, projectNames);
+            }
+        }
+        return changed;
+    }
 
     @Override
     @NotNull

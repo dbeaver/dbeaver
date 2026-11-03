@@ -18,7 +18,12 @@
     <extension-point id="org.jkiss.dbeaver.product.bundles" name="Product bundles" schema="schema/org.jkiss.dbeaver.product.bundles.exsd"/>
     <extension-point id="org.jkiss.dbeaver.language" name="Languages" schema="schema/org.jkiss.dbeaver.language.exsd"/>
     <extension-point id="org.jkiss.dbeaver.task" name="Tasks and task types" schema="schema/org.jkiss.dbeaver.task.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.projectImport" name="Project import transformers" schema="schema/org.jkiss.dbeaver.projectImport.exsd"/>
     <extension-point id="org.jkiss.dbeaver.productFeature" name="Product feature" schema="schema/org.jkiss.dbeaver.productFeature.exsd"/>
+
+    <extension point="org.jkiss.dbeaver.projectImport">
+        <transformer path=".dbeaver/tasks.json" class="org.jkiss.dbeaver.registry.task.TaskProjectImportTransformer"/>
+    </extension>
 
     <!-- Language names should be written in their respective languages. Do not localize them -->
     <extension point="org.jkiss.dbeaver.language">

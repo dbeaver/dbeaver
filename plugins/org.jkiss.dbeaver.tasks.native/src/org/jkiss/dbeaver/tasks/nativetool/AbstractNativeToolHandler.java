@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tasks.nativetool;
 
+import com.google.gson.JsonObject;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
@@ -36,10 +37,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.task.DBTTask;
-import org.jkiss.dbeaver.model.task.DBTTaskExecutionListener;
-import org.jkiss.dbeaver.model.task.DBTTaskHandler;
-import org.jkiss.dbeaver.model.task.DBTTaskRunStatus;
+import org.jkiss.dbeaver.model.task.*;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ProgressStreamReader;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSystemAgent;
@@ -55,9 +53,14 @@ import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.*;
 
-public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG> implements DBTTaskHandler {
+public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeToolSettings<BASE_OBJECT>, BASE_OBJECT extends DBSObject, PROCESS_ARG> implements DBTTaskHandler, DBTTaskImportTransformer {
 
     private String taskErrorMessage;
+
+    @Override
+    public boolean transformTaskState(@NotNull JsonObject state, @NotNull Map<String, String> projectNames) {
+        return DBTTaskImportTransformer.remapProjectReference(state, projectNames);
+    }
 
     @Override
     @NotNull
