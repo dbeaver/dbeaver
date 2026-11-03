@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorInput;
@@ -77,6 +78,7 @@ public class NavigatorObjectsDeleter {
     private final boolean selectedFromNavigator;
     private final boolean supportsShowViewScript;
     private final boolean supportsDeleteContents;
+    private final Set<IProject> projectsRequiringContentDeletion;
     private boolean deleteContent;
 
     private final Set<Option> supportedOptions;
@@ -84,24 +86,37 @@ public class NavigatorObjectsDeleter {
     private boolean deleteWarningShowed;
 
     private NavigatorObjectsDeleter(IWorkbenchWindow window, List<?> selection, boolean selectedFromNavigator, boolean supportsShowViewScript,
-                                    boolean supportsDeleteContents, Set<Option> supportedOptions) {
+                                    boolean supportsDeleteContents,
+                                    Set<IProject> projectsRequiringContentDeletion,
+                                    Set<Option> supportedOptions
+    ) {
         this.window = window;
         this.selection = selection;
         this.selectedFromNavigator = selectedFromNavigator;
         this.supportsShowViewScript = supportsShowViewScript;
         this.supportsDeleteContents = supportsDeleteContents;
+        this.projectsRequiringContentDeletion = projectsRequiringContentDeletion;
         this.supportedOptions = supportedOptions;
     }
 
-    static NavigatorObjectsDeleter of(List<?> selection, IWorkbenchWindow window) {
+    static NavigatorObjectsDeleter of(List<?> selection, IWorkbenchWindow window) throws DBException {
         boolean supportsShowViewScript = false;
         boolean supportsDeleteContents = false;
         boolean selectedFromNavigator = window.getPartService().getActivePart() instanceof NavigatorViewBase;
         Set<Option> supportedOptions = new HashSet<>();
+        Set<IProject> projectsRequiringContentDeletion = new HashSet<>();
 
         for (Object obj: selection) {
-            if (obj instanceof DBNProject) {
-                supportsDeleteContents = true;
+            if (obj instanceof DBNProject projectNode) {
+                ProjectDeleteContentsPolicy policy = (ProjectDeleteContentsPolicy) Platform.getAdapterManager().loadAdapter(
+                    projectNode, ProjectDeleteContentsPolicy.class.getName());
+                boolean required = policy != null && policy.requiresDeleteContents(projectNode.getProject());
+                if (required && projectNode.getProject() instanceof RCPProject rcpProject
+                    && rcpProject.getEclipseProject() != null) {
+                    projectsRequiringContentDeletion.add(rcpProject.getEclipseProject());
+                } else {
+                    supportsDeleteContents = true;
+                }
                 continue;
             }
             if (!(obj instanceof DBNDatabaseNode)) {
@@ -147,6 +162,7 @@ public class NavigatorObjectsDeleter {
             selectedFromNavigator,
             supportsShowViewScript,
             supportsDeleteContents,
+            projectsRequiringContentDeletion,
             supportedOptions
         );
     }
@@ -158,7 +174,10 @@ public class NavigatorObjectsDeleter {
     public IProject getProjectToDelete() {
         for (Object obj: selection) {
             if (obj instanceof DBNProject project && project.getProject() instanceof RCPProject rcpProject) {
-                return rcpProject.getEclipseProject();
+                IProject eclipseProject = rcpProject.getEclipseProject();
+                if (eclipseProject != null && !projectsRequiringContentDeletion.contains(eclipseProject)) {
+                    return eclipseProject;
+                }
             }
         }
         return null;
@@ -228,7 +247,7 @@ public class NavigatorObjectsDeleter {
             if (project == null) {
                 throw new DBException("Project '" + resource.getName() + "' is not recognized as database project");
             }
-            workspace.deleteProject(project, deleteContent);
+            workspace.deleteProject(project, deleteContent || projectsRequiringContentDeletion.contains(resource));
         } else {
             dbrMonitor.subTask("Delete file");
             resource.delete(IResource.FORCE | IResource.KEEP_HISTORY, monitor);
@@ -426,6 +445,10 @@ public class NavigatorObjectsDeleter {
 
     public boolean supportsDeleteContents() {
         return supportsDeleteContents;
+    }
+
+    public boolean hasRequiredContentDeletion() {
+        return !projectsRequiringContentDeletion.isEmpty();
     }
 
     public void setDeleteContents(boolean deleteContents) {

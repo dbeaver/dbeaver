@@ -34,6 +34,14 @@
             type="org.eclipse.ui.IWorkbenchWindow"/>
     </extension>
 
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory
+            adaptableType="org.jkiss.dbeaver.model.navigator.DBNProject"
+            class="org.jkiss.dbeaver.ui.datadam.project.DDProjectDeleteContentsAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.ui.navigator.actions.ProjectDeleteContentsPolicy"/>
+        </factory>
+    </extension>
+
     <extension point="org.eclipse.ui.decorators">
         <decorator
             id="org.jkiss.dbeaver.ui.datadam.project.decorator"
