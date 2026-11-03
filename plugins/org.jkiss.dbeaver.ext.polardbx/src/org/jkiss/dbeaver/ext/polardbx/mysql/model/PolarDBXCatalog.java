@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -352,7 +353,9 @@ public class PolarDBXCatalog extends MySQLCatalog {
                     "ORDER BY ORDINAL_POSITION";
 
                 JDBCPreparedStatement stmt = session.prepareStatement(sql);
-                stmt.setString(1, procedure.getName());
+                // PolarDB-X stores SPECIFIC_NAME as "mysql.<function>" even though SPECIFIC_SCHEMA is already "mysql".
+                // Unlike SHOW CREATE FUNCTION, this metadata lookup requires the prefix; an unqualified name returns no rows.
+                stmt.setString(1, "mysql." + procedure.getName());
 
                 // Parsed parameter information is cached for fetchChild(), which supplies missing lengths.
                 return stmt;
@@ -444,7 +447,7 @@ public class PolarDBXCatalog extends MySQLCatalog {
                 enhancedLength,  // use the actual parsed length
                 scale,
                 null,
-                true,
+                JDBCUtils.safeGetInt(dbResult, "NULLABLE") == DatabaseMetaData.functionNoNulls,
                 parameterKind
             );
 

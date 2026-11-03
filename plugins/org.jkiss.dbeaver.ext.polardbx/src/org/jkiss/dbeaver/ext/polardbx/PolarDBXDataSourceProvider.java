@@ -41,8 +41,7 @@ public class PolarDBXDataSourceProvider extends MySQLDataSourceProvider {
         if (connectionInfo.getConfigurationType() == DBPDriverConfigurationType.URL) {
             return connectionInfo.getUrl();
         }
-        String polardbxUrlTemplate = "jdbc:polardbx://{host}[:{port}][/{database}]";
-        return DatabaseURL.generateUrlByTemplate(polardbxUrlTemplate, connectionInfo);
+        return DatabaseURL.generateUrlByTemplate(driver, connectionInfo);
     }
 
     @NotNull

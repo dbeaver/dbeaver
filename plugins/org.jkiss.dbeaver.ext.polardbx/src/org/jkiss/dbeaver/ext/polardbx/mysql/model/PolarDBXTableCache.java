@@ -123,6 +123,7 @@ public class PolarDBXTableCache extends MySQLCatalog.TableCache {
                         col.setDefaultValue(defaultValue);
                     }
 
+                    col.setPersisted(true);
                     columns.add(col);
                 }
 

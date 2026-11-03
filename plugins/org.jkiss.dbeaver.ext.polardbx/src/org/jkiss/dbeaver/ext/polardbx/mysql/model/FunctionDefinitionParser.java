@@ -401,6 +401,14 @@ public class FunctionDefinitionParser {
                     columnSize = 65;
                     decimalDigits = 0;
                 }
+            } else if (typeInfo.indexOf("(") != -1 && typeInfo.indexOf(")") > typeInfo.indexOf("(")) {
+                String precisionStr = typeInfo.substring(typeInfo.indexOf("(") + 1, typeInfo.indexOf(")")).trim();
+                try {
+                    columnSize = Integer.parseInt(precisionStr);
+                } catch (NumberFormatException e) {
+                    columnSize = 65;
+                }
+                decimalDigits = 0;
             } else {
                 columnSize = 65;
                 decimalDigits = 0;
