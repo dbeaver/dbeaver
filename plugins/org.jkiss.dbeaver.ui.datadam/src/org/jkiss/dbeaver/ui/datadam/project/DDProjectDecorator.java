@@ -16,9 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.datadam.project;
 
-import org.eclipse.jface.viewers.IDecoration;
-import org.eclipse.jface.viewers.ILightweightLabelDecorator;
+import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.swt.graphics.Image;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
@@ -27,26 +28,34 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIIcons;
 
 /** Replaces the icon of projects connected to the current DataDam account in the Project Navigator. */
-public class DDProjectDecorator extends LabelProvider implements ILightweightLabelDecorator {
+public class DDProjectDecorator extends LabelProvider implements ILabelDecorator {
     public static final String DECORATOR_ID = "org.jkiss.dbeaver.ui.datadam.project.decorator";
 
     private static final Log log = Log.getLog(DDProjectDecorator.class);
 
+    @Nullable
     @Override
-    public void decorate(Object element, IDecoration decoration) {
+    public Image decorateImage(@Nullable Image image, @Nullable Object element) {
         if (!(element instanceof DBNProject projectNode) || !DDProductConfig.isIntegrationEnabled()) {
-            return;
+            return null;
         }
         DDProjectUIManager manager = DDProjectUIManager.getInstance();
         if (!manager.isDDReady()) {
-            return;
+            return null;
         }
         try {
             if (manager.getProjectManager().isBound(projectNode.getProject())) {
-                decoration.addOverlay(DBeaverIcons.getImageDescriptor(DDTrackingUIIcons.PROJECT_DATADAM), IDecoration.REPLACE);
+                return DBeaverIcons.getImage(DDTrackingUIIcons.PROJECT_DATADAM);
             }
         } catch (DBException e) {
             log.debug("Error checking DataDam project binding", e);
         }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public String decorateText(@Nullable String text, @Nullable Object element) {
+        return null;
     }
 }

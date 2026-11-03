@@ -57,12 +57,10 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
     private boolean themeRefreshPending;
     protected Color lockedForeground;
     private ILabelDecorator labelDecorator;
-    private final DecorationContext projectDecorationContext = new DecorationContext();
 
     public DatabaseNavigatorLabelProvider(@NotNull DatabaseNavigatorTree tree) {
         this.tree = tree;
         this.lockedForeground = Display.getDefault().getSystemColor(SWT.COLOR_DARK_GRAY);
-        projectDecorationContext.putProperty(IDecoration.ENABLE_REPLACE, Boolean.TRUE);
 
         BaseThemeSettings.instance.addPropertyListener(
             UIFonts.Eclipse.TREE_AND_TABLE_FONT_FOR_VIEWS,
@@ -147,11 +145,7 @@ public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implemen
         }
 
         if (labelDecorator != null && (obj instanceof DBNResource || obj instanceof DBNProject)) {
-            if (obj instanceof DBNProject && labelDecorator instanceof LabelDecorator contextualDecorator) {
-                image = contextualDecorator.decorateImage(image, obj, projectDecorationContext);
-            } else {
-                image = labelDecorator.decorateImage(image, obj);
-            }
+            image = labelDecorator.decorateImage(image, obj);
         }
         return image;
     }

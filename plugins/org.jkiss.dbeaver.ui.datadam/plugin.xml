@@ -31,9 +31,9 @@
     <extension point="org.eclipse.ui.decorators">
         <decorator
             id="org.jkiss.dbeaver.ui.datadam.project.decorator"
-            label="DataDam project"
+            label="%decorator.datadam.project.label"
             class="org.jkiss.dbeaver.ui.datadam.project.DDProjectDecorator"
-            lightweight="true"
+            lightweight="false"
             state="true">
             <enablement>
                 <objectClass name="org.jkiss.dbeaver.model.navigator.DBNProject"/>

@@ -30,9 +30,9 @@ public abstract class DecoratedProjectView extends NavigatorViewBase {
     DecoratedProjectView() {
         labelDecorator = PlatformUI.getWorkbench().getDecoratorManager().getLabelDecorator();
         labelDecorator.addListener(event -> {
-            if (getNavigatorTree() == null || getNavigatorTree().isDisposed()) {
-                return;
-            }
+                if (getNavigatorTree() == null || getNavigatorTree().isDisposed()) {
+                    return;
+                }
                 Object[] elements = event.getElements();
                 if (elements != null) {
                     getNavigatorViewer().update(elements, null);

@@ -205,6 +205,9 @@ public class DDProjectManager {
             return project;
         } catch (Exception e) {
             rollbackImport(project, e);
+            if (e instanceof DBException dbException) {
+                throw dbException;
+            }
             throw new DBException("Error importing DataDam project '" + remote.name() + "'", e);
         }
     }
