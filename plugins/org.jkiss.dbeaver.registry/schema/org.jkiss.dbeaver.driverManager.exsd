@@ -31,6 +31,11 @@
          <attribute name="description" type="string"/>
          <attribute name="icon" type="string"/>
          <attribute name="promoted" type="boolean"/>
+         <attribute name="commercial" type="boolean">
+            <annotation>
+               <documentation>Show this category as a dedicated driver list regardless of the commercial drivers visibility preference.</documentation>
+            </annotation>
+         </attribute>
          <attribute name="rank" type="integer"/>
       </complexType>
    </element>
