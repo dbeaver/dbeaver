@@ -32,8 +32,19 @@ public record OllamaChatRequest(
     @NotNull List<OllamaChatMessage> messages,
     @Nullable List<OllamaTool> tools,
     boolean stream,
-    @NotNull OllamaChatOptions options
+    @NotNull OllamaChatOptions options,
+    boolean useServerDefaultTemperature
 ) {
+
+    public OllamaChatRequest(
+        @NotNull String model,
+        @NotNull List<OllamaChatMessage> messages,
+        @Nullable List<OllamaTool> tools,
+        boolean stream,
+        @NotNull OllamaChatOptions options
+    ) {
+        this(model, messages, tools, stream, options, false);
+    }
 
     @NotNull
     public static Builder builder() {
@@ -46,6 +57,7 @@ public record OllamaChatRequest(
         private List<OllamaTool> tools;
         private boolean stream = false;
         private OllamaChatOptions options;
+        private boolean useServerDefaultTemperature;
 
         @NotNull
         public Builder model(@NotNull String model) {
@@ -103,7 +115,13 @@ public record OllamaChatRequest(
 
         @NotNull
         public Builder options(double temperature, int contextSize) {
-            this.options = new OllamaChatOptions(temperature, contextSize);
+            return optionsWithTemperature(Double.valueOf(temperature), contextSize);
+        }
+
+        @NotNull
+        public Builder optionsWithTemperature(@Nullable Double temperature, int contextSize) {
+            this.options = new OllamaChatOptions(temperature == null ? 0.0 : temperature, contextSize);
+            this.useServerDefaultTemperature = temperature == null;
             return this;
         }
 
@@ -112,7 +130,7 @@ public record OllamaChatRequest(
             if (model == null || options == null) {
                 throw new IllegalStateException("Model and Options must be provided");
             }
-            return new OllamaChatRequest(model, messages, tools, stream, options);
+            return new OllamaChatRequest(model, messages, tools, stream, options, useServerDefaultTemperature);
         }
     }
 
