@@ -163,7 +163,10 @@ public class TabbedFolderList extends ConComposite {
          * @param e the paint event.
          */
         private void paint(PaintEvent e) {
-            Color bgColor = getWidgetBackground(true);
+            boolean lightDialog = UIUtils.isInDialog(this) && !UIStyles.isDarkTheme();
+            Color bgColor = selected && lightDialog
+                ? getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND)
+                : getWidgetBackground(true);
             /*
 			 * draw the top two lines of the tab, same for selected, hover and
 			 * default
@@ -230,7 +233,9 @@ public class TabbedFolderList extends ConComposite {
             }
 
 			/* draw the text */
-            e.gc.setForeground(widgetForeground);
+            e.gc.setForeground(selected && lightDialog
+                ? getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND)
+                : widgetForeground);
             if (selected) {
 				/* selected tab is bold font */
                 e.gc.setFont(BaseThemeSettings.instance.partTitleBoldFont);
@@ -437,8 +442,8 @@ public class TabbedFolderList extends ConComposite {
     }
 
     private Color getWidgetBackground(boolean adapt) {
-        if (UIUtils.isInDialog(this) && UIStyles.isDarkTheme()) {
-            return getParent().getBackground();
+        if (UIUtils.isInDialog(this)) {
+            return UIStyles.isDarkTheme() ? getParent().getBackground() : getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
         } else {
             Color listBackground = UIStyles.getDefaultTextBackground();
 
@@ -764,18 +769,22 @@ public class TabbedFolderList extends ConComposite {
         ISharedTextColors sharedColors = UIUtils.getSharedTextColors();
 
         Color widgetBackground;
-        if (UIStyles.isDarkTheme()) {
-            // By some reason E4 sets white background in dark theme.
-            widgetBackground = UIStyles.isDarkHighContrastTheme()
-                ? UIStyles.getDefaultWidgetBackground()
-                : UIStyles.getDefaultTextBackground();
+        if (UIStyles.isDarkTheme() || UIUtils.isInDialog(this)) {
+            // E4 may set a white background in dark theme; dialogs use the SWT widget background in light theme.
+            widgetBackground = UIStyles.isDarkTheme() && !UIStyles.isDarkHighContrastTheme()
+                ? UIStyles.getDefaultTextBackground()
+                : UIStyles.isDarkTheme()
+                    ? UIStyles.getDefaultWidgetBackground()
+                    : display.getSystemColor(SWT.COLOR_WIDGET_BACKGROUND);
             super.setBackground(widgetBackground);
             topNavigationElement.setBackground(widgetBackground);
             bottomNavigationElement.setBackground(widgetBackground);
         } else {
             widgetBackground = getBackground();
         }
-        widgetForeground = UIStyles.getDefaultTextForeground();
+        widgetForeground = UIUtils.isInDialog(this) && !UIStyles.isDarkTheme()
+            ? display.getSystemColor(SWT.COLOR_WIDGET_FOREGROUND)
+            : UIStyles.getDefaultTextForeground();
         widgetDarkShadow = display.getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
         widgetNormalShadow = display.getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
 

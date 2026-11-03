@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.Set;
 
@@ -25,8 +26,15 @@ public record DDDesktopUserToken(
     @NotNull String accessToken,
     @NotNull String issuer,
     @NotNull Set<String> endpoints,
-    @NotNull Set<String> scopes
+    @NotNull Set<String> scopes,
+    @Nullable String refreshToken
 ) {
+    public DDDesktopUserToken(
+        @NotNull String accessToken, @NotNull String issuer, @NotNull Set<String> endpoints, @NotNull Set<String> scopes
+    ) {
+        this(accessToken, issuer, endpoints, scopes, null);
+    }
+
     public DDDesktopUserToken {
         endpoints = Set.copyOf(endpoints);
         scopes = Set.copyOf(scopes);
