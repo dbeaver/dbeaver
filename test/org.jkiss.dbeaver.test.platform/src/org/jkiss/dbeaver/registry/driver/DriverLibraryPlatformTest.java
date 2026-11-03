@@ -21,9 +21,20 @@ import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
+
 class DriverLibraryPlatformTest {
+    @TempDir
+    Path directory;
+
     @Test
     void excludesOnlyMatchingPlatform() {
         IConfigurationElement config = Mockito.mock(IConfigurationElement.class);
@@ -38,6 +49,41 @@ class DriverLibraryPlatformTest {
         Assertions.assertFalse(library.matches(new OSDescriptor("win32", "aarch64")));
         Assertions.assertTrue(library.matches(new OSDescriptor("win32", "x86_64")));
         Assertions.assertTrue(library.matches(new OSDescriptor("linux", "aarch64")));
+    }
+
+    @Test
+    void keepsExtractedLibrariesInDedicatedCacheDirectory() throws IOException {
+        Path archive = createArchive("driver.zip");
+        Path cache = directory.resolve("drivers/zip-cache");
+
+        List<Path> libraries = DriverUtils.extractZipArchives(List.of(archive), cache);
+
+        Path extracted = cache.resolve("driver/outside-file.jar");
+        Assertions.assertEquals(List.of(archive, extracted), libraries);
+        Assertions.assertTrue(Files.exists(extracted));
+        Assertions.assertFalse(Files.exists(directory.resolve("drivers/outside-file.jar")));
+    }
+
+    @Test
+    void rejectsArchiveNamesResolvingToCacheRootOrParent() throws IOException {
+        Path cache = directory.resolve("drivers/zip-cache");
+        for (String name : List.of("...zip", ".zip")) {
+            Path archive = createArchive(name);
+
+            Assertions.assertEquals(List.of(archive), DriverUtils.extractZipArchives(List.of(archive), cache));
+        }
+        Assertions.assertFalse(Files.exists(cache.resolve("outside-file.jar")));
+        Assertions.assertFalse(Files.exists(directory.resolve("drivers/outside-file.jar")));
+    }
+
+    private Path createArchive(String name) throws IOException {
+        Path archive = directory.resolve(name);
+        try (ZipOutputStream output = new ZipOutputStream(Files.newOutputStream(archive))) {
+            output.putNextEntry(new ZipEntry("outside-file.jar"));
+            output.write(1);
+            output.closeEntry();
+        }
+        return archive;
     }
 
     private static class TestDriverLibrary extends DriverLibraryLocal {

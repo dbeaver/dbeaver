@@ -80,6 +80,11 @@ public class DriverUtils {
         if (files.isEmpty()) {
             return files;
         }
+        return extractZipArchives(files, DriverDescriptor.getCustomDriversHome().resolve(ZIP_EXTRACT_DIR));
+    }
+
+    @NotNull
+    static List<Path> extractZipArchives(@NotNull List<Path> files, @NotNull Path cacheDirectory) {
         List<Path> jarFiles = new ArrayList<>();
         for (Path inputFile : files) {
             jarFiles.add(inputFile);
@@ -93,9 +98,9 @@ public class DriverUtils {
                 if (sourceName.endsWith(DBPDriverLibrary.FILE_EXT_ZIP)) {
                     sourceName = sourceName.substring(0, sourceName.length() - 4);
                 }
-                Path cacheRoot = DriverDescriptor.getCustomDriversHome().resolve(ZIP_EXTRACT_DIR).toAbsolutePath().normalize();
+                Path cacheRoot = cacheDirectory.toAbsolutePath().normalize();
                 Path localCacheDir = cacheRoot.resolve(sourceName).normalize();
-                if (!localCacheDir.startsWith(cacheRoot)) {
+                if (!localCacheDir.startsWith(cacheRoot) || localCacheDir.equals(cacheRoot)) {
                     throw new IOException("Archive cache directory resolves outside the ZIP cache: " + inputFile);
                 }
                 Files.walkFileTree(sourceRoot, new CopyingFileVisitor(sourceRoot, localCacheDir) {
