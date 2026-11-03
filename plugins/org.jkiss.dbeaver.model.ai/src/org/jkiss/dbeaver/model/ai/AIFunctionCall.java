@@ -162,9 +162,10 @@ public class AIFunctionCall {
                     if (transformer != null) {
                         try {
                             Object paramValue = arg.getValue();
+                            AIFunctionContext parameterContext = functionContext.forParameter(function, arguments, paramName);
                             Object transformedValue = transformer.transformParameter(
-                                context,
-                                functionContext,
+                                parameterContext == functionContext ? context : parameterContext.getContext(),
+                                parameterContext,
                                 function,
                                 parameter,
                                 paramValue

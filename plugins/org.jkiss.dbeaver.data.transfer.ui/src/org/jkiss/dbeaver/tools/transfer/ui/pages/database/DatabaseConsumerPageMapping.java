@@ -1302,6 +1302,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         // container's tables
         DBSObjectContainer container = settings.getContainer();
         String unQuotedNameForSearch = DBUtils.getUnQuotedIdentifier(container.getDataSource(), name);
+        boolean quotedName = DBUtils.isQuotedIdentifier(container.getDataSource(), name);
 
         DBSDataManipulator targetDataContainer = null;
 
@@ -1311,7 +1312,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             DBSNamespace ns = namespaceContainer.getNamespaceForObjectType(RelationalObjectType.TYPE_TABLE);
             if (ns != null) {
                 DBSObject existingObject = ns.getObjectByName(monitor, unQuotedNameForSearch);
-                if (existingObject != null) {
+                if (existingObject != null && (!quotedName || unQuotedNameForSearch.equals(existingObject.getName()))) {
                     if (existingObject instanceof DBSDataManipulator) {
                         targetDataContainer = (DBSDataManipulator) existingObject;
                     } else {
@@ -1334,7 +1335,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         if (targetDataContainer == null) {
             // Search for existing data manipulator (writable table)
             for (DBSObject child : CommonUtils.safeCollection(container.getChildren(monitor))) {
-                if (child instanceof DBSDataManipulator && unQuotedNameForSearch.equalsIgnoreCase(child.getName())) {
+                if (child instanceof DBSDataManipulator && (quotedName
+                    ? unQuotedNameForSearch.equals(child.getName()) : unQuotedNameForSearch.equalsIgnoreCase(child.getName()))) {
                     targetDataContainer = (DBSDataManipulator) child;
                     break;
                 }
@@ -1395,7 +1397,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             //loadAndUpdateColumnsModel();
             for (Object element : elementList) {
                 if (element instanceof DatabaseMappingContainer container) {
-                    setMappingTarget(monitor, container, container.getTargetName(), true, false);
+                    String targetName = container.getTarget() == null ? container.getTargetName()
+                        : DBUtils.getQuotedIdentifier(container.getTarget());
+                    setMappingTarget(monitor, container, targetName, true, false);
                 }
             }
         });
@@ -1716,12 +1720,21 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         newMapping = new DatabaseMappingContainer(getDatabaseConsumerSettings(), sourceDataContainer);
                     }
 
+                    if (pipeConsumer instanceof DatabaseTransferConsumer databaseConsumer &&
+                        databaseConsumer.getTargetTableName() != null && newMapping.getTarget() == null) {
+                        newMapping.setTargetName(databaseConsumer.getTargetTableName());
+                    }
+                    boolean explicitTarget = firstInit && pipeConsumer instanceof DatabaseTransferConsumer databaseConsumer &&
+                        (databaseConsumer.getTargetObject() != null || databaseConsumer.getTargetTableName() != null);
+                    if (explicitTarget) {
+                        mapping = null;
+                    }
                     newMapping.getAttributeMappings(monitor);
 
                     // Update current mapping if it differs from new one
                     if (mapping == null || !mapping.isSameMapping(newMapping)) {
                         mapping = newMapping;
-                        settings.addDataMappings(getWizard().getRunnableContext(), sourceDataContainer, mapping);
+                        settings.addDataMappings(getWizard().getRunnableContext(), sourceDataContainer, mapping, !explicitTarget);
                     }
                     model.add(mapping);
                 }

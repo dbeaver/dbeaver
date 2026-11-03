@@ -467,6 +467,15 @@ public class DatabaseConsumerSettings implements IDataTransferConsumerSettings {
 
     @Nullable
     public static DBPDataSourceContainer getDataSourceContainer(@NotNull DataTransferSettings dataTransferSettings) {
+        // page activation needs the explicit target before node settings have been loaded
+        for (DataTransferPipe pipe : dataTransferSettings.getDataPipes()) {
+            if (pipe.getConsumer() instanceof DatabaseTransferConsumer consumer && consumer.getDatabaseObject() != null) {
+                return consumer.getDataSourceContainer();
+            }
+        }
+        if (dataTransferSettings.getConsumer() == null) {
+            return null;
+        }
         final Map<String, Object> settings = dataTransferSettings.getNodeSettingsMap(dataTransferSettings.getConsumer());
 
         if (settings != null) {
@@ -553,9 +562,18 @@ public class DatabaseConsumerSettings implements IDataTransferConsumerSettings {
     }
 
     public void addDataMappings(DBRRunnableContext context, DBSDataContainer dataContainer, DatabaseMappingContainer mappingContainer) {
+        addDataMappings(context, dataContainer, mappingContainer, true);
+    }
+
+    public void addDataMappings(
+        @NotNull DBRRunnableContext context,
+        @NotNull DBSDataContainer dataContainer,
+        @NotNull DatabaseMappingContainer mappingContainer,
+        boolean loadSavedMappings
+    ) {
         dataMappings.put(dataContainer, mappingContainer);
 
-        if (mappingContainer.getTarget() == null && dialogSettings != null) {
+        if (loadSavedMappings && mappingContainer.getTarget() == null && dialogSettings != null) {
             // Load settings
             Map<String, Object> mappings = (Map<String, Object>) dialogSettings.get("mappings");
             if (mappings != null) {

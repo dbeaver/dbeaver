@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai.impl;
 
+import com.google.gson.Gson;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -75,6 +76,21 @@ public class AIEngineRequestFactory {
         AIPromptGenerator promptGenerator = functionContext.getPrompt();
         AIDatabaseContext databaseContext = functionContext.getContext();
         String systemPrompt = promptGenerator.build(assistant, databaseContext);
+        AIChatConversation conversation = functionContext.getConversation();
+        if (conversation != null && conversation.getDataSources().size() > 1) {
+            StringBuilder connections = new StringBuilder("\nAvailable conversation connections (JSON):\n");
+            for (var container : conversation.getDataSources()) {
+                connections.append(new Gson().toJson(Map.of(
+                    "connectionId", container.getId(),
+                    "name", container.getName(),
+                    "primary", container == conversation.getDataSource()
+                ))).append('\n');
+            }
+            connections.append("Use connectionId to select a connection for database tools. " +
+                "An omitted or empty connectionId selects the primary connection. " +
+                "Only these connections are available. Each connection has its own scope and access restrictions.");
+            systemPrompt += connections;
+        }
 
         RequestFunctions requestFunctions = determineRequestTools(
             assistant,

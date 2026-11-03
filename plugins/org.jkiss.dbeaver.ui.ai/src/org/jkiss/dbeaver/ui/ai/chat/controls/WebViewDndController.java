@@ -127,7 +127,11 @@ final class WebViewDndController {
                 hideDndOverlay();
 
                 if (event.data instanceof Collection<?> nodes) {
-                    chat.describeDroppedObjects(nodes);
+                    if (chat.canAttachDroppedConnections(nodes)) {
+                        chat.attachDroppedConnections(nodes);
+                    } else {
+                        chat.describeDroppedObjects(nodes);
+                    }
                 } else if (event.data instanceof ImageData image) {
                     chat.attachImage(image);
                 } else if (event.data instanceof String[] files) {
@@ -189,7 +193,8 @@ final class WebViewDndController {
     private boolean isDropSupported(@NotNull Object[] arguments) {
         Collection<DBNNode> draggedNodes = TreeNodeTransfer.getInstance().getDraggedNodes();
         if (draggedNodes != null) {
-            return chat.canDescribeDroppedObjects(draggedNodes) || chat.canAttachDroppedFiles(draggedNodes);
+            return chat.canAttachDroppedConnections(draggedNodes) || chat.canDescribeDroppedObjects(draggedNodes)
+                || chat.canAttachDroppedFiles(draggedNodes);
         }
         return arguments.length > 0 && arguments[0] instanceof Object[] types
             && (Arrays.asList(types).contains(BROWSER_FILE_TRANSFER_TYPE)
@@ -229,6 +234,9 @@ final class WebViewDndController {
 
     @NotNull
     private String getDropMessage() {
+        if (chat.canAttachDroppedConnections(TreeNodeTransfer.getInstance().getDraggedNodes())) {
+            return AIChatMessagesUI.ai_chat_drag_n_drop_connections_message;
+        }
         return chat.canDescribeDroppedObjects(TreeNodeTransfer.getInstance().getDraggedNodes())
             ? AIChatMessagesUI.ai_chat_drag_n_drop_objects_message
             : AIChatMessagesUI.ai_chat_drag_n_drop_message;
