@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.registry.driver;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.junit.jupiter.api.Assertions;
@@ -25,6 +26,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mockito;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
@@ -52,11 +54,11 @@ class DriverLibraryPlatformTest {
     }
 
     @Test
-    void keepsExtractedLibrariesInDedicatedCacheDirectory() throws IOException {
+    void keepsExtractedLibrariesInDedicatedCacheDirectory() throws Exception {
         Path archive = createArchive("driver.zip");
         Path cache = directory.resolve("drivers/zip-cache");
 
-        List<Path> libraries = DriverUtils.extractZipArchives(List.of(archive), cache);
+        List<Path> libraries = extractZipArchives(List.of(archive), cache);
 
         Path extracted = cache.resolve("driver/outside-file.jar");
         Assertions.assertEquals(List.of(archive, extracted), libraries);
@@ -65,18 +67,28 @@ class DriverLibraryPlatformTest {
     }
 
     @Test
-    void rejectsArchiveNamesResolvingToCacheRootOrParent() throws IOException {
+    void rejectsArchiveNamesResolvingToCacheRootOrParent() throws Exception {
         Path cache = directory.resolve("drivers/zip-cache");
         for (String name : List.of("...zip", ".zip")) {
             Path archive = createArchive(name);
 
-            Assertions.assertEquals(List.of(archive), DriverUtils.extractZipArchives(List.of(archive), cache));
+            Assertions.assertEquals(List.of(archive), extractZipArchives(List.of(archive), cache));
         }
         Assertions.assertFalse(Files.exists(cache.resolve("outside-file.jar")));
         Assertions.assertFalse(Files.exists(directory.resolve("drivers/outside-file.jar")));
     }
 
-    private Path createArchive(String name) throws IOException {
+    @NotNull
+    @SuppressWarnings("unchecked")
+    private static List<Path> extractZipArchives(@NotNull List<Path> archives, @NotNull Path cache) throws Exception {
+        // The test bundle has a separate class loader, so package-private access requires reflection.
+        Method method = DriverUtils.class.getDeclaredMethod("extractZipArchives", List.class, Path.class);
+        method.setAccessible(true);
+        return (List<Path>) method.invoke(null, archives, cache);
+    }
+
+    @NotNull
+    private Path createArchive(@NotNull String name) throws IOException {
         Path archive = directory.resolve(name);
         try (ZipOutputStream output = new ZipOutputStream(Files.newOutputStream(archive))) {
             output.putNextEntry(new ZipEntry("outside-file.jar"));
@@ -87,7 +99,7 @@ class DriverLibraryPlatformTest {
     }
 
     private static class TestDriverLibrary extends DriverLibraryLocal {
-        private TestDriverLibrary(IConfigurationElement config) {
+        private TestDriverLibrary(@NotNull IConfigurationElement config) {
             super(null, config);
         }
 
