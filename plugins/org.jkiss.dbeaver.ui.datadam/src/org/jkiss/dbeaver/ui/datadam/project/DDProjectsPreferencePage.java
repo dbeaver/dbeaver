@@ -539,7 +539,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         return switch (row.status()) {
             case NOT_SYNC -> DBIcon.PROJECT;
             case NOT_ON_DEVICE -> DDTrackingUIIcons.STATUS_NOT_ON_DEVICE;
-            case MISSING_ON_SERVER -> DBIcon.STATUS_WARNING;
+            case MISSING_ON_SERVER -> DBIcon.SMALL_WARNING;
             case UP_TO_DATE -> UIIcon.OK_MARK;
             case LOCAL_CHANGES -> DDTrackingUIIcons.STATUS_LOCAL_CHANGES;
             case SERVER_CHANGES -> DDTrackingUIIcons.STATUS_SERVER_CHANGES;
