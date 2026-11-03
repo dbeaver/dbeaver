@@ -59,6 +59,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -71,6 +72,12 @@ public class SQLQuery implements SQLScriptElement {
     private static final Log log = Log.getLog(SQLQuery.class);
 
     private static final Pattern QUERY_TITLE_PATTERN = Pattern.compile("^\\s*(?:--|//|/\\*)\\s*(?:name|title)\\s*:\\s*(.+)$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+
+    private static final Set<String> NON_DDL_KEYWORDS = Set.of(
+        "SELECT", "INSERT", "UPDATE", "DELETE", "MERGE", "CALL", "EXEC", "EXECUTE",
+        "SET", "SHOW", "DESCRIBE", "DESC", "EXPLAIN", "USE", "COMMIT", "ROLLBACK"
+    );
+    private static final Set<String> UPDATE_DELETE_DANGER_KEYWORDS = Set.of("UPDATE", "DELETE", "WITH");
 
     @Nullable
     private final DBPDataSource dataSource;
@@ -85,6 +92,8 @@ public class SQLQuery implements SQLScriptElement {
     private int offset;
     private int length;
     private boolean hasVariableKeyword;
+    @Nullable
+    private String firstKeyword;
     private Object data;
     private int resultsOffset = -1;
     private int resultsMaxRows = -1;
@@ -625,6 +634,7 @@ public class SQLQuery implements SQLScriptElement {
     public void setText(@NotNull String text, boolean representsOneStatement) {
         this.text = text;
         this.representsOneStatement = representsOneStatement;
+        this.firstKeyword = null;
         this.queryTitle = extractQueryTitle(text);
         resetParsedState();
     }
@@ -670,6 +680,15 @@ public class SQLQuery implements SQLScriptElement {
 
     public void setHasVariableKeyword(boolean hasVariableKeyword) {
         this.hasVariableKeyword = hasVariableKeyword;
+    }
+
+    @Nullable
+    public String getFirstKeyword() {
+        return firstKeyword;
+    }
+
+    public void setFirstKeyword(@Nullable String firstKeyword) {
+        this.firstKeyword = firstKeyword == null ? null : firstKeyword.toUpperCase(java.util.Locale.ENGLISH);
     }
 
     /**
@@ -745,6 +764,7 @@ public class SQLQuery implements SQLScriptElement {
     public void reset() {
         this.text = this.originalText;
         this.representsOneStatement = this.originalRepresentsOneStatement;
+        this.firstKeyword = null;
         this.queryTitle = extractQueryTitle(originalText);
         resetParsedState();
         if (this.parameters != null) {
@@ -785,7 +805,14 @@ public class SQLQuery implements SQLScriptElement {
         return resultsMaxRows;
     }
 
+    public boolean mayBeDDLStatement() {
+        return firstKeyword == null || !NON_DDL_KEYWORDS.contains(firstKeyword);
+    }
+
     public boolean isDeleteUpdateDangerous() {
+        if (firstKeyword != null && !UPDATE_DELETE_DANGER_KEYWORDS.contains(firstKeyword)) {
+            return false;
+        }
         parseQuery();
         if (statement == null) {
             return false;
@@ -799,6 +826,9 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     public boolean isDropDangerous() {
+        if (!mayBeDDLStatement()) {
+            return false;
+        }
         parseQuery();
         return objectOperation != null && objectOperation.operation() == SQLObjectOperation.Operation.DROP || statement != null &&
             statement instanceof Drop dropStatement &&

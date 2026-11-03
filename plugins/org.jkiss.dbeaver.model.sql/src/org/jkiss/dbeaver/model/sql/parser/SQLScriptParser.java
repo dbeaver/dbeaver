@@ -465,6 +465,7 @@ public class SQLScriptParser {
                         );
                         query.setEndsWithDelimiter(tokenType == SQLTokenType.T_DELIMITER);
                         query.setHasVariableKeyword(hasVariableKeyword);
+                        query.setFirstKeyword(firstKeyword);
                         return query;
                     }
                 }
@@ -472,8 +473,8 @@ public class SQLScriptParser {
                     statementStart = tokenEnd;
                     hasVariableKeyword = false;
                     hasNonCommentToken = false;
+                    firstKeyword = null;
                     if (isPredicateEvaluationEnabled) {
-                        firstKeyword = null;
                         predicateEvaluator.reset();
                         isControl = false;
                         hasBlocks = false;
