@@ -11,7 +11,7 @@ Imported project encryption keys are not prerequisites for the remote DAM sessio
   Initialization while signed out only registers observers; it does not open a socket or restore credentials.
 - Request the current access token before every socket attempt.
 - Send `hello` and wait for `ready` before accepting application messages or reporting a session.
-- Keep `appDeploymentId` and `appInstanceId` across reconnects; use the new server-assigned `damSessionId` for each socket.
+- Keep `clientDamId`, `appDeploymentId`, and `appInstanceId` across reconnects; use the new server-assigned `damSessionId` for each socket.
 - Retry transport failures with bounded backoff. Pause when authorization is unavailable or the upgrade is rejected with HTTP 401/403.
 - Close cached RPC endpoints and pause the current channel before changing the Desktop identity or signing out.
   Resume only if authorization remains available.
@@ -29,6 +29,17 @@ but outgoing messages are rejected while disconnected rather than buffered for l
 Service consumers obtain the channel from `DDRemoteDamDesktopSessionService` and release their subscriptions when no longer needed.
 The shared WebSocket client's 90-second idle timeout detects missing server traffic; Remote DAM must send its
 heartbeat more frequently than this timeout (the server default is 30 seconds). Desktop does not add another heartbeat protocol.
+
+## DAM identity
+
+The `hello` message includes `clientDamId`: unpadded URL-safe Base64 of the UTF-8 string `workspaceId + ':' + localHostId`.
+The workspace ID comes from the active workspace. The local host ID comes from `BaseWorkspaceImpl.getLocalHostId()`,
+reusing the existing MAC-derived host identity and its fallback values rather than selecting a network interface separately.
+The raw MAC address is not sent.
+
+`clientDamId` stays the same across reconnects and Desktop restarts while the workspace ID and local host ID remain unchanged.
+`appInstanceId` identifies the current Desktop process, and the server assigns a new `damSessionId` to each WebSocket connection.
+Neither replaces the stable DAM identity.
 
 ## Channel state
 
