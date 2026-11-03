@@ -660,16 +660,21 @@ nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
 routineArgument: {namedRoutineArgumentAhead()}? signatureModifier* identifier signatureModifier* dataType typeModifier* signatureModifier* routineParameterDefault?
     | signatureModifier* dataType typeModifier*;
 // Routine options can precede or follow the body; return declarations belong only to the preamble.
-routineCreateModifier: DEFINER EqualsOperator qualifiedName|TEMP|TEMPORARY|anyWord;
+routineCreateModifier: DEFINER EqualsOperator qualifiedName|TEMP|TEMPORARY|
+    {this.getInputStream().LA(1) != SQLStandardLexer.PROCEDURE &&
+     this.getInputStream().LA(1) != SQLStandardLexer.PROC &&
+     this.getInputStream().LA(1) != SQLStandardLexer.FUNCTION &&
+     this.getInputStream().LA(1) != SQLStandardLexer.TRIGGER}? anyWord;
 routineDefinition: routineSignature routinePreamble? routineTrailing?
     | routinePreamble routineTrailing?
     | routineTrailing;
 routineDefinitionExtension: LANGUAGE (anyWord|StringLiteralContent)?|routineHeaderWord;
-routineHeaderWord: {!returnClauseAhead()}? anyWord|StringLiteralContent;
+routineHeaderWord: {!returnClauseAhead() && this.getInputStream().LA(1) != SQLStandardLexer.LANGUAGE}? anyWord|StringLiteralContent;
 routineBody: (AS|IS) routineBodyContent? | routineBodyContent;
 routineBodyContent: dollarQuotedBody|characterStringLiteral|routineDeclarationsAndBlock|firebirdBlock|proceduralTryCatch|proceduralBlock
     |LeftParen directSqlDataStatement RightParen?|RETURN routineBodyTokens?|routineBodyTokens;
-routineDeclarationsAndBlock: (proceduralStatement Semicolon)+ proceduralBlock;
+routineDeclarationsAndBlock: {this.getInputStream().LA(1) != SQLStandardLexer.DECLARE &&
+    this.getInputStream().LA(1) != SQLStandardLexer.BEGIN}? (proceduralDeclaration Semicolon)+ proceduralBlock;
 routineBodyTokens: (~(Semicolon|LANGUAGE|BEGIN|DECLARE|DoubleDollar|Dollar))+;
 
 createTriggerStatement: (CREATE (OR (REPLACE|ALTER))?|RECREATE) routineCreateModifier* TRIGGER (IF NOT EXISTS)? qualifiedName
@@ -697,28 +702,33 @@ dollarBodyElement: proceduralTryCatch|proceduralBlock|proceduralIf|proceduralCas
     |createTableStatement|directSqlDataStatement
     | ~(BEGIN|DECLARE|IF|CASE|WHILE|LOOP|FOR|REPEAT|UNTIL|ELSE|ELSEIF|ELSIF|END);
 
+// EOF retains incomplete editor input without allowing an inner block to end before arbitrary body tokens.
 proceduralBlock: (DECLARE proceduralDeclarations)? BEGIN (NOT? ATOMIC)? proceduralStatements proceduralExceptionSection?
-    (END identifier?)?;
-proceduralDeclarations: (proceduralStatement Semicolon?)*;
+    (END identifier? | EOF);
+proceduralDeclarations: (proceduralDeclaration Semicolon)*;
 proceduralStatements: (proceduralStatement Semicolon?)*;
 proceduralStatement: proceduralTryCatch|proceduralBlock|proceduralIf|proceduralCase|proceduralLoop|proceduralRepeat|localRoutineDeclaration
-    |cursorDeclaration|cursorOperation|localRelationDeclaration|localVariableDeclaration
+    |cursorDeclaration|cursorOperation|localRelationDeclaration|{this.getInputStream().LA(1) == SQLStandardLexer.DECLARE}? localVariableDeclaration
     |createTableStatement|dropTableStatement|selectStatementSingleRow|directSqlDataStatement
     |callStatement|variableAssignmentStatement|proceduralStatementTokens;
 localRoutineDeclaration: (FUNCTION|PROCEDURE|PROC) qualifiedName routineDefinition;
 proceduralIf: {isGenericProceduralSyntax()}? IF proceduralCondition? (THEN proceduralStatements ((ELSIF|ELSEIF) proceduralCondition THEN proceduralStatements)*
-    (ELSE proceduralStatements)? (END IF)?)?
+    (ELSE proceduralStatements)? (END IF | EOF) | EOF)
     | {isTsqlProceduralSyntax()}? IF nativeProceduralCondition proceduralStatement Semicolon? (ELSE proceduralStatement)?
     | {isFirebirdProceduralSyntax()}? IF nativeProceduralCondition THEN proceduralStatement Semicolon? (ELSE proceduralStatement)?;
 proceduralCase: CASE proceduralCaseCondition? (WHEN proceduralCondition THEN proceduralStatements)+
     (ELSE proceduralStatements)? END CASE?;
 proceduralCaseCondition: (~(WHEN|THEN|Semicolon))+;
-proceduralLoop: {isGenericProceduralSyntax()}? (LOOP|WHILE|FOR) proceduralCondition? (DO|LOOP)? proceduralStatements END (LOOP|WHILE|FOR)
+proceduralLoop: {isGenericProceduralSyntax()}? LOOP proceduralStatements END LOOP
+    | {isGenericProceduralSyntax()}? (WHILE|FOR) proceduralCondition? (DO|LOOP) proceduralStatements END (LOOP|WHILE|FOR)
     | {isTsqlProceduralSyntax()}? WHILE nativeProceduralCondition proceduralStatement
     | {isFirebirdProceduralSyntax()}? WHILE nativeProceduralCondition DO proceduralStatement;
 proceduralExceptionSection: EXCEPTION (WHEN proceduralCondition THEN proceduralStatements)+;
-proceduralCondition: (~(THEN|DO|LOOP|Semicolon))+;
-proceduralStatementTokens: (~(Semicolon|BEGIN|END|ELSE|ELSEIF|ELSIF|THEN|WHEN|IF|CASE|LOOP|WHILE|FOR|REPEAT|UNTIL|EXCEPTION))+;
+proceduralCondition: (~(THEN|DO|LOOP|Semicolon|BEGIN|DECLARE|END|ELSE|ELSEIF|ELSIF|EXCEPTION))+;
+// Structured statement starts must not also enter the unknown-statement fallback.
+proceduralStatementTokens: ~(Semicolon|BEGIN|DECLARE|END|ELSE|ELSEIF|ELSIF|THEN|WHEN|IF|CASE|LOOP|WHILE|FOR|REPEAT|UNTIL|EXCEPTION|
+    SELECT|WITH|INSERT|UPDATE|DELETE|CALL|EXEC|EXECUTE|OPEN|FETCH|CLOSE|DEALLOCATE|FUNCTION|PROCEDURE|PROC)
+    (~(Semicolon|BEGIN|END|ELSE|ELSEIF|ELSIF|THEN|WHEN|IF|CASE|LOOP|WHILE|FOR|REPEAT|UNTIL|EXCEPTION))*;
 
 // The cursor's query and any declared table shape remain visible as distinct syntax nodes.
 cursorDeclaration: DECLARE? cursorName (anyWord* CURSOR|CURSOR) routineSignature? (FOR|IS) directSqlDataStatement?
@@ -734,14 +744,14 @@ localRelationDeclaration: DECLARE cursorName TABLE tableElementList?
 localVariableDeclaration: DECLARE? VARIABLE? (
     localTypedVariable (Comma localTypedVariable)*
     | identifier (Comma identifier)+ localVariableType? (DEFAULT valueExpression)?
-    | identifier localVariableType? (DEFAULT valueExpression)?
+    | identifier (DEFAULT valueExpression)?
 );
 // Native conditions have no permissive anyUnexpected tail: otherwise BEGIN/SELECT can become part of the condition.
 nativeProceduralCondition: booleanTerm (OR booleanTerm)*;
 firebirdBlock: {isFirebirdProceduralSyntax()}?
     ({this.getInputStream().LA(1) == SQLStandardLexer.DECLARE}? localVariableDeclaration Semicolon)* proceduralBlock;
 // Occupy the former Firebird declaration slot to preserve the ids of subsequent generated rules.
-localTypedVariable: identifier localVariableType (EqualsOperator valueExpression)?;
+localTypedVariable: identifier localVariableType ((EqualsOperator|DEFAULT) valueExpression)?;
 // UNTIL ends the body, rather than being consumed by a permissive unknown statement.
 proceduralRepeat: {isGenericProceduralSyntax()}? REPEAT proceduralStatements UNTIL proceduralRepeatCondition? (END REPEAT)?;
 proceduralRepeatCondition: (~(END|Semicolon))+;
@@ -760,3 +770,5 @@ routineReturnClause: (RETURNS|RETURN) (TABLE routineResultList|routineResultList
 routineResultList: LeftParen (routineResultField (Comma routineResultField?)* )? RightParen?;
 routineResultField: {namedRoutineArgumentAhead()}? identifier dataType typeModifier* | dataType typeModifier*;
 routineTrailing: routineBody routineDefinitionExtension*;
+// A declaration section cannot consume the BEGIN block it is supposed to precede.
+proceduralDeclaration: localVariableDeclaration|cursorDeclaration|localRelationDeclaration|localRoutineDeclaration;

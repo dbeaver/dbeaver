@@ -41,6 +41,40 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class PostgreSqlProceduralTest extends ProceduralDialectTestBase {
+    @Test
+    void nestedDeclarationSectionsKeepDefaultsAndLexicalBindings() throws DBException {
+        String sql = "CREATE PROCEDURE p() LANGUAGE plpgsql AS $body$ " +
+            "DECLARE outer_value numeric DEFAULT 1; BEGIN " +
+            "DECLARE inner_value numeric DEFAULT outer_value; BEGIN " +
+            "SELECT outer_value + inner_value; END; SELECT outer_value; END; $body$";
+        SQLQueryModel model = recognize(sql);
+        assertEmbeddedSqlCount(root(model, SQLQueryRoutineCreateModel.class), 2);
+        assertBound(model, "outer_value", 0, 1);
+        assertBound(model, "outer_value", 0, 2);
+        assertBound(model, "outer_value", 0, 3);
+        assertBound(model, "inner_value", 0, 1);
+        assertProposes("CREATE PROCEDURE p() LANGUAGE plpgsql AS $body$ " +
+            "DECLARE outer_value numeric DEFAULT 1; BEGIN IF TRUE THEN SELECT outer_|", "outer_value");
+    }
+
+    @Test
+    void typedDeclarationsBeforeBeginAreRecognizedAndResolved() {
+        SQLQueryModel model = recognize("CREATE PROCEDURE p() AS first_value numeric DEFAULT 1; " +
+            "second_value numeric DEFAULT first_value; BEGIN SELECT first_value + second_value; END");
+        assertEmbeddedSqlCount(root(model, SQLQueryRoutineCreateModel.class), 1);
+        assertBound(model, "first_value", 0, 1);
+        assertBound(model, "first_value", 0, 2);
+        assertBound(model, "second_value", 0, 1);
+    }
+
+    @Test
+    void untypedDeclarationKeepsDefaultExpressionAndFollowingSql() {
+        SQLQueryModel model = recognize("CREATE PROCEDURE p AS BEGIN DECLARE untyped_value DEFAULT 1; " +
+            "SELECT untyped_value; END");
+        assertEmbeddedSqlCount(root(model, SQLQueryRoutineCreateModel.class), 1);
+        assertBound(model, "untyped_value", 0, 1);
+    }
+
     @NotNull
     @Override
     protected SQLDialect dialect() {

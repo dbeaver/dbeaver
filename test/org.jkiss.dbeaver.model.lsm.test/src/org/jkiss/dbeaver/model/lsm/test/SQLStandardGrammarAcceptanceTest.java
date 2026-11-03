@@ -39,6 +39,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -306,6 +307,102 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
         Assertions.assertFalse(Trees.findAllRuleNodes(trigger, SQLStandardParser.RULE_directSqlDataStatement).isEmpty());
         Assertions.assertEquals(0, routineParser.getNumberOfSyntaxErrors());
         Assertions.assertEquals(0, triggerParser.getNumberOfSyntaxErrors());
+    }
+
+    @Test
+    void parsesNestedPostgresProcedure() {
+        String sql = """
+            CREATE OR REPLACE PROCEDURE demo_completion_pg()
+            LANGUAGE plpgsql
+            AS $yyyy$
+            DECLARE
+                base_amount numeric DEFAULT 1;
+            BEGIN
+                CREATE TEMP TABLE demo_scope_items (id integer, amount numeric) ON COMMIT DROP;
+                CREATE TEMP TABLE demo_scope_log (id integer, amount numeric, stage text) ON COMMIT DROP;
+                INSERT INTO demo_scope_items (id, amount) VALUES (1, 12.50), (2, 25.00);
+
+                -- The FOR query supplies a block-local record without an explicit assignment.
+                FOR item IN SELECT s.id, s.amount FROM demo_scope_items AS s LOOP
+                    IF item.id = 1 THEN
+                        DECLARE
+                            branch_bonus numeric DEFAULT 5;
+                        BEGIN
+                            INSERT INTO demo_scope_log (id, amount, stage)
+                            SELECT s.id, s.amount + base_amount + branch_bonus, 'branch'
+                              FROM demo_scope_items AS s WHERE s.id = item.id;
+
+                            LOOP
+                                DECLARE
+                                    loop_bonus numeric DEFAULT 2;
+                                BEGIN
+                                    INSERT INTO demo_scope_log (id, amount, stage)
+                                    SELECT s.id, s.amount + branch_bonus + loop_bonus, 'inner loop'
+                                      FROM demo_scope_items AS s WHERE s.id = item.id;
+                                    EXIT; -- One inner iteration is sufficient for the demo.
+                                END;
+                            END LOOP;
+                        END;
+                    ELSE
+                        -- branch_bonus and loop_bonus are not visible in this sibling arm.
+                        INSERT INTO demo_scope_log (id, amount, stage)
+                        SELECT s.id, s.amount + base_amount, 'other branch'
+                          FROM demo_scope_items AS s WHERE s.id = item.id;
+                    END IF;
+
+                    -- Sequenced after the IF: only outer locals and the FOR record remain.
+                    INSERT INTO demo_scope_log (id, amount, stage)
+                    SELECT s.id, s.amount + base_amount, 'after if'
+                      FROM demo_scope_items AS s WHERE s.id = item.id;
+                END LOOP;
+
+                -- Another nested declaration is visible only in this final block.
+                DECLARE
+                    final_bonus numeric DEFAULT 3;
+                BEGIN
+                    INSERT INTO demo_scope_log (id, amount, stage)
+                    SELECT s.id, s.amount + base_amount + final_bonus, 'final block'
+                      FROM demo_scope_items AS s;
+                END;
+
+                RAISE NOTICE 'demo complete; temporary tables disappear at commit';
+            END;
+            $yyyy$;
+            """;
+        SQLStandardParser parser = makeParser(sql);
+        parser.setProfile(true);
+        var tree = parser.sqlQueries();
+        Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors(), tree.toStringTree(parser));
+        Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_routineDefinition).size());
+        Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_proceduralIf).size());
+        Assertions.assertEquals(2, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_proceduralLoop).size());
+        Assertions.assertEquals(4, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_proceduralBlock).size());
+        Assertions.assertEquals(4, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_proceduralDeclaration).size());
+        Assertions.assertEquals(2, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_createTableStatement).size());
+        Assertions.assertEquals(6, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_insertStatement).size());
+        // Assert prediction work, not wall-clock time: this used to look through nearly the entire 533-token input.
+        long maximumLookahead = Arrays.stream(parser.getParseInfo().getDecisionInfo())
+            .filter(info -> {
+                int rule = parser.getATN().decisionToState.get(info.decision).ruleIndex;
+                return rule == SQLStandardParser.RULE_proceduralStatements ||
+                    rule == SQLStandardParser.RULE_proceduralStatement || rule == SQLStandardParser.RULE_proceduralCondition;
+            })
+            .mapToLong(info -> info.LL_MaxLook).max().orElse(0);
+        Assertions.assertTrue(maximumLookahead < 64, () -> "Procedural lookahead: " + maximumLookahead);
+    }
+
+    @Test
+    void keepsTypedAndUntypedDeclarationInitializersInTheirOwnNodes() {
+        SQLStandardParser parser = makeParser("CREATE PROCEDURE p AS BEGIN " +
+            "DECLARE typed_value numeric DEFAULT 1; DECLARE untyped_value DEFAULT 2; " +
+            "SELECT typed_value + untyped_value; END");
+        var tree = parser.sqlQueries();
+        Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors(), tree.toStringTree(parser));
+        Assertions.assertEquals(2, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_localVariableDeclaration).size());
+        Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_localTypedVariable).size());
+        Assertions.assertEquals(2, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_valueExpression).stream()
+            .filter(value -> value.getParent() instanceof SQLStandardParser.LocalTypedVariableContext ||
+                value.getParent() instanceof SQLStandardParser.LocalVariableDeclarationContext).count());
     }
 
     @Test

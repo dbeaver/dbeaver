@@ -66,7 +66,8 @@ public abstract class SQLQueryStatementModel extends SQLQueryModelContent {
                 SQLStandardParser.RULE_routineDeclarationsAndBlock, SQLStandardParser.RULE_firebirdBlock,
                 SQLStandardParser.RULE_dollarBodyContents,
                 SQLStandardParser.RULE_routineSignature -> SQLQueryStatementSequence.recognize(recognizer, node);
-            case SQLStandardParser.RULE_proceduralStatement, SQLStandardParser.RULE_variableStatement,
+            case SQLStandardParser.RULE_proceduralStatement, SQLStandardParser.RULE_proceduralDeclaration,
+                SQLStandardParser.RULE_variableStatement,
                 SQLStandardParser.RULE_sqlQueryBody,
                 SQLStandardParser.RULE_sqlSchemaStatement, SQLStandardParser.RULE_routineDefinition,
                 SQLStandardParser.RULE_routineBody, SQLStandardParser.RULE_routineBodyContent,
@@ -101,6 +102,7 @@ public abstract class SQLQueryStatementModel extends SQLQueryModelContent {
     private static boolean isSyntaxWrapper(int kind) {
         return switch (kind) {
             case SQLStandardParser.RULE_proceduralStatement, SQLStandardParser.RULE_routineDefinition,
+                SQLStandardParser.RULE_proceduralDeclaration,
                 SQLStandardParser.RULE_routineTrailing,
                 SQLStandardParser.RULE_routineBody, SQLStandardParser.RULE_routineBodyContent,
                 SQLStandardParser.RULE_triggerBody, SQLStandardParser.RULE_dollarQuotedBody,
