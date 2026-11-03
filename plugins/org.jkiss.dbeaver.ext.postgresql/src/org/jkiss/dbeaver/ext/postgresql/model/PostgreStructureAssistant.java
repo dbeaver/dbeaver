@@ -340,6 +340,9 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
                             if (table == null) {
                                 throw new DBException("Table '" + tableName + "' not found in schema '" + tableSchema.getName() + "'");
                             }
+                            if (table instanceof PostgreTablePartition partition) {
+                                partition.resolveParentTable(monitor);
+                            }
                             return table;
                         }
                     });
