@@ -58,7 +58,7 @@ public class ResultSetModel implements DBDResultSetModel {
     private DBSEntity singleSourceEntity;
     private DBCExecutionSource executionSource;
     @Nullable
-    private DBDDataFormatterProfile dataFormatterProfile;
+    private DBDFormatSettings formatSettings;
 
     private final ResultSetHintContext hintContext;
 
@@ -396,12 +396,12 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     /**
-     * Returns the data format profile of the session which produced the current result set.
-     * It stays the same if the editor is switched to another connection later.
+     * Returns the format settings of the session which produced the current result set.
+     * They stay the same if the editor is switched to another connection later.
      */
     @Nullable
-    public DBDDataFormatterProfile getDataFormatterProfile() {
-        return dataFormatterProfile;
+    public DBDFormatSettings getFormatSettings() {
+        return formatSettings;
     }
 
     @Nullable
@@ -633,7 +633,7 @@ public class ResultSetModel implements DBDResultSetModel {
         } else {
             this.trace = null;
         }
-        this.dataFormatterProfile = resultSet.getSession().getDataFormatterProfile();
+        this.formatSettings = resultSet.getSession();
 
         this.clearData();
         this.updateMetaData(newAttributes);

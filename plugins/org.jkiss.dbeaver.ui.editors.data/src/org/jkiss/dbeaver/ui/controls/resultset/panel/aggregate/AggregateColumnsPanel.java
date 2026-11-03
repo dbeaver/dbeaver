@@ -27,6 +27,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.aggregate.IAggregateFunction;
 import org.jkiss.dbeaver.model.impl.SimpleTypedObject;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
@@ -291,7 +293,9 @@ public class AggregateColumnsPanel extends ResultSetPanelBase {
                 }
             }
         }
-        DBDDataFormatter numberFormatter = createNumberFormatter();
+        DBDFormatSettings formatSettings = presentation.getController().getModel().getFormatSettings();
+        boolean useNativeFormatter = formatSettings != null && formatSettings.isUseNativeNumericFormat();
+        DBDDataFormatter numberFormatter = createNumberFormatter(formatSettings);
         for (int i = 0; i < funcs.length; i++) {
             if (funcCount[i] <= 0) {
                 continue;
@@ -302,7 +306,9 @@ public class AggregateColumnsPanel extends ResultSetPanelBase {
                 TreeItem treeItem = funcMap.get(func);
                 String strValue;
                 if (result instanceof Number) {
-                    strValue = numberFormatter.formatValue(result);
+                    strValue = useNativeFormatter ?
+                        DBValueFormatting.convertNumberToNativeString((Number) result, formatSettings.isUseScientificNumericFormat()) :
+                        numberFormatter.formatValue(result);
                 } else {
                     strValue = result.toString();
                 }
@@ -314,11 +320,10 @@ public class AggregateColumnsPanel extends ResultSetPanelBase {
     }
 
     @NotNull
-    private DBDDataFormatter createNumberFormatter() {
-        DBDDataFormatterProfile profile = presentation.getController().getModel().getDataFormatterProfile();
-        if (profile == null) {
-            profile = DataFormatterRegistry.getInstance().getGlobalProfile();
-        }
+    private DBDDataFormatter createNumberFormatter(@Nullable DBDFormatSettings formatSettings) {
+        DBDDataFormatterProfile profile = formatSettings == null ?
+            DataFormatterRegistry.getInstance().getGlobalProfile() :
+            formatSettings.getDataFormatterProfile();
         try {
             // The max fraction digits setting is applied only when the type is not null.
             // The type has no scale because the selection may span several columns.
