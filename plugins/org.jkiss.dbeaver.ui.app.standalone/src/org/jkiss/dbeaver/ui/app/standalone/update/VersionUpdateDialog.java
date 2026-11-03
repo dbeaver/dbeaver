@@ -37,12 +37,10 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
+import org.jkiss.dbeaver.registry.updater.VersionDescriptor.PatchSeverity;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.WebUtils;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.BaseThemeSettings;
-import org.jkiss.dbeaver.ui.ShellUtils;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
@@ -77,16 +75,18 @@ public class VersionUpdateDialog extends Dialog {
     private static final int CHECK_EA_ID = 1002;
 
     private final Version currentVersion;
+    private final int currentPatch;
     private final VersionDescriptor newVersion;
 
     private final boolean showConfig;
     private Button dontShowAgainCheck;
     private final String earlyAccessURL;
 
-    public VersionUpdateDialog(Shell parentShell, @NotNull Version currentVersion, @NotNull VersionDescriptor newVersion, boolean showConfig)
+    public VersionUpdateDialog(@Nullable Shell parentShell, @NotNull Version currentVersion, @NotNull VersionDescriptor newVersion, boolean showConfig)
     {
         super(parentShell);
         this.currentVersion = currentVersion;
+        this.currentPatch = DBeaverVersionChecker.getProductPatchNumber();
         this.newVersion = newVersion;
         this.showConfig = showConfig;
 
@@ -102,17 +102,22 @@ public class VersionUpdateDialog extends Dialog {
         return showConfig;
     }
 
+    protected boolean isPatchUpdate() {
+        return newVersion.isPatchUpdate(currentVersion, currentPatch);
+    }
+
     @Override
     protected boolean isResizable() {
         return true;
     }
 
     private boolean isNewVersionAvailable() {
-        return newVersion.getProgramVersion().compareTo(currentVersion) > 0;
+        return newVersion.isNewerThan(currentVersion, currentPatch);
     }
 
+    @NotNull
     @Override
-    protected Control createDialogArea(Composite parent)
+    protected Control createDialogArea(@NotNull Composite parent)
     {
         getShell().setText(CoreMessages.dialog_version_update_title);
 
@@ -138,26 +143,29 @@ public class VersionUpdateDialog extends Dialog {
 
         UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_current_version);
         new Label(propGroup, SWT.NONE)
-            .setText(currentVersion.toString());
+            .setText(currentVersion + (currentPatch > 0
+                ? " (" + NLS.bind(CoreMessages.dialog_about_label_patch, currentPatch) + ")" : ""));
 
         UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_new_version);
         new Label(propGroup, SWT.NONE)
-            .setText(newVersion.getProgramVersion().toString() + "    (" + newVersion.getUpdateTime() + ")"); //$NON-NLS-2$ //$NON-NLS-3$
+            .setText((newVersion.getPatchNumber() > 0 ? newVersion.getUpdateVersion() : newVersion.getProgramVersion().toString())
+                + "    (" + CommonUtils.notEmpty(newVersion.getPatchUpdateTime()) + ")");
 
         if (isNewVersionAvailable()) {
+            PatchSeverity severity = newVersion.getMaxSeverity(currentVersion, currentPatch);
+            if (severity != PatchSeverity.NONE) {
+                Label severityLabel = new Label(propGroup, SWT.NONE);
+                severityLabel.setText(NLS.bind(
+                    CoreMessages.dialog_version_update_severity, VersionUpdatePresentation.getSeverityLabel(severity)));
+                severityLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
+            }
             final Label notesLabel = UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_notes);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             notesLabel.setLayoutData(gd);
 
             final Text notesText = new Text(propGroup, SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
-            String releaseNotes = CommonUtils.notEmpty(newVersion.getReleaseNotes());
-            if (releaseNotes.isEmpty()) {
-                releaseNotes = CoreMessages.dialog_version_update_no_notes;
-            }
-            releaseNotes = formatReleaseNotes(releaseNotes);
-
-            notesText.setText(releaseNotes);
+            notesText.setText(VersionUpdatePresentation.getReleaseNotes(newVersion, currentVersion, currentPatch));
             gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalSpan = 2;
             gd.heightHint = CommonUtils.clamp(notesText.getLineCount(), 5, 20) * notesText.getLineHeight();
@@ -167,7 +175,7 @@ public class VersionUpdateDialog extends Dialog {
             hintLabel.setText(NLS.bind(
                 CoreMessages.dialog_version_update_press_more_info,
                 CoreMessages.dialog_version_update_button_more_info,
-                newVersion.getPlainVersion()));
+                newVersion.getUpdateVersion()));
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             hintLabel.setLayoutData(gd);
@@ -179,30 +187,6 @@ public class VersionUpdateDialog extends Dialog {
         return parent;
     }
 
-    private static String formatReleaseNotes(String releaseNotes) {
-        while (releaseNotes.startsWith("\n")) {
-            releaseNotes = releaseNotes.substring(1);
-        }
-        String[] rnLines = releaseNotes.split("\n");
-        int leadSpacesNum = 0;
-        for (int i = 0; i < rnLines[0].length(); i++) {
-            if (rnLines[0].charAt(i) == ' ') {
-                leadSpacesNum++;
-            } else {
-                break;
-            }
-        }
-        StringBuilder result = new StringBuilder();
-        for (String rnLine : rnLines) {
-            if (rnLine.length() > leadSpacesNum) {
-                if (!result.isEmpty()) result.append("\n");
-                result.append(rnLine.substring(leadSpacesNum));
-            }
-        }
-
-        return result.toString();
-    }
-
     protected void createTopArea(Composite composite) {
 
     }
@@ -212,18 +196,31 @@ public class VersionUpdateDialog extends Dialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent) {
+    protected void createButtonsForButtonBar(@NotNull Composite parent) {
         if (showConfig && isNewVersionAvailable()) {
             ((GridLayout) parent.getLayout()).numColumns++;
-            dontShowAgainCheck = UIUtils.createCheckbox(parent, NLS.bind(CoreMessages.dialog_version_update_ignore_version, newVersion.getPlainVersion()), false);
+            dontShowAgainCheck = UIUtils.createCheckbox(parent,
+                NLS.bind(CoreMessages.dialog_version_update_ignore_version, newVersion.getUpdateVersion()), false);
         }
 
         if (isNewVersionAvailable()) {
-            createButton(
+            Button upgradeButton = createButton(
                 parent,
                 UPGRADE_ID,
                 CoreMessages.dialog_version_update_button_upgrade,
                 true);
+            PatchSeverity severity = newVersion.getMaxSeverity(currentVersion, currentPatch);
+            if (severity != PatchSeverity.NONE) {
+                // Native buttons may ignore custom colors; the icon and text also communicate severity.
+                upgradeButton.setImage(DBeaverIcons.getImage(VersionUpdatePresentation.getSeverityIcon(severity)));
+                upgradeButton.setToolTipText(NLS.bind(
+                    CoreMessages.dialog_version_update_severity, VersionUpdatePresentation.getSeverityLabel(severity)));
+                upgradeButton.setForeground(switch (severity) {
+                    case CRITICAL -> BaseThemeSettings.instance.colorErrorForeground;
+                    case HIGH -> BaseThemeSettings.instance.colorWarningForeground;
+                    default -> BaseThemeSettings.instance.colorAccent;
+                });
+            }
         } else {
             if (!CommonUtils.isEmpty(earlyAccessURL)) {
                 createButton(
@@ -250,7 +247,7 @@ public class VersionUpdateDialog extends Dialog {
     protected void buttonPressed(int buttonId)
     {
         if (dontShowAgainCheck != null && dontShowAgainCheck.getSelection()) {
-            CoreApplicationActivator.getDefault().getPreferenceStore().setValue("suppressUpdateCheck." + newVersion.getPlainVersion(), true);
+            CoreApplicationActivator.getDefault().getPreferenceStore().setValue(DBeaverVersionChecker.getSuppressionKey(newVersion), true);
         }
         if (buttonId == INFO_ID) {
             ShellUtils.launchProgram(newVersion.getBaseURL());
