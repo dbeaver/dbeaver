@@ -28,6 +28,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -54,11 +55,16 @@ public class DBRProcessDescriptor {
         if (command.getCommandParams() != null) {
             commandParams = command.getCommandParams();
         } else {
-            String commandLine = variablesResolver == null ?
-                command.getCommand() :
-                GeneralUtils.replaceVariables(command.getCommand(), variablesResolver);
-            commandLine = CommonUtils.notEmpty(commandLine);
-            commandParams = RuntimeUtils.splitCommandLine(commandLine, !RuntimeUtils.isWindows());
+            String commandLine = CommonUtils.notEmpty(command.getCommand());
+            List<String> rawParams = RuntimeUtils.splitCommandLine(commandLine, !RuntimeUtils.isWindows());
+            if (variablesResolver != null) {
+                commandParams = new ArrayList<>();
+                for (String param : rawParams) {
+                    commandParams.add(GeneralUtils.replaceVariables(param, variablesResolver));
+                }
+            } else {
+                commandParams = rawParams;
+            }
         }
 
         processBuilder = new ProcessBuilder(commandParams);
