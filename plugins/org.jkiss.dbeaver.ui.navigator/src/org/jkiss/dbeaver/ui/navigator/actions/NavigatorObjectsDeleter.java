@@ -85,10 +85,14 @@ public class NavigatorObjectsDeleter {
     private final Set<Option> enabledOptions = new HashSet<>();
     private boolean deleteWarningShowed;
 
-    private NavigatorObjectsDeleter(IWorkbenchWindow window, List<?> selection, boolean selectedFromNavigator, boolean supportsShowViewScript,
-                                    boolean supportsDeleteContents,
-                                    Set<IProject> projectsRequiringContentDeletion,
-                                    Set<Option> supportedOptions
+    private NavigatorObjectsDeleter(
+        @NotNull IWorkbenchWindow window,
+        @NotNull List<?> selection,
+        boolean selectedFromNavigator,
+        boolean supportsShowViewScript,
+        boolean supportsDeleteContents,
+        @NotNull Set<IProject> projectsRequiringContentDeletion,
+        @NotNull Set<Option> supportedOptions
     ) {
         this.window = window;
         this.selection = selection;
@@ -99,14 +103,15 @@ public class NavigatorObjectsDeleter {
         this.supportedOptions = supportedOptions;
     }
 
-    static NavigatorObjectsDeleter of(List<?> selection, IWorkbenchWindow window) throws DBException {
+    @NotNull
+    static NavigatorObjectsDeleter of(@NotNull List<?> selection, @NotNull IWorkbenchWindow window) throws DBException {
         boolean supportsShowViewScript = false;
         boolean supportsDeleteContents = false;
         boolean selectedFromNavigator = window.getPartService().getActivePart() instanceof NavigatorViewBase;
         Set<Option> supportedOptions = new HashSet<>();
         Set<IProject> projectsRequiringContentDeletion = new HashSet<>();
 
-        for (Object obj: selection) {
+        for (Object obj : selection) {
             if (obj instanceof DBNProject projectNode) {
                 ProjectDeleteContentsPolicy policy = (ProjectDeleteContentsPolicy) Platform.getAdapterManager().loadAdapter(
                     projectNode, ProjectDeleteContentsPolicy.class.getName());
@@ -171,8 +176,9 @@ public class NavigatorObjectsDeleter {
         return (objectMaker.getMakerOptions(dataSource) & feature) != 0;
     }
 
+    @Nullable
     public IProject getProjectToDelete() {
-        for (Object obj: selection) {
+        for (Object obj : selection) {
             if (obj instanceof DBNProject project && project.getProject() instanceof RCPProject rcpProject) {
                 IProject eclipseProject = rcpProject.getEclipseProject();
                 if (eclipseProject != null && !projectsRequiringContentDeletion.contains(eclipseProject)) {

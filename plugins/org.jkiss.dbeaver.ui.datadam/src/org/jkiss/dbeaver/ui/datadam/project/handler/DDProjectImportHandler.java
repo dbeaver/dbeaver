@@ -159,7 +159,7 @@ public class DDProjectImportHandler extends AbstractHandler {
             viewer.setContentProvider(ArrayContentProvider.getInstance());
             viewer.addFilter(new ViewerFilter() {
                 @Override
-                public boolean select(Viewer viewer, Object parentElement, Object element) {
+                public boolean select(@NotNull Viewer viewer, @Nullable Object parentElement, @NotNull Object element) {
                     DDSharedProject row = (DDSharedProject) element;
                     String filter = filterText.getText().trim().toLowerCase(Locale.ROOT);
                     return row.name().toLowerCase(Locale.ROOT).contains(filter)
@@ -204,7 +204,8 @@ public class DDProjectImportHandler extends AbstractHandler {
             column.getColumn().setWidth(width);
             column.setLabelProvider(new ColumnLabelProvider() {
                 @Override
-                public String getText(Object element) {
+                @NotNull
+                public String getText(@NotNull Object element) {
                     String value = text.apply((DDSharedProject) element);
                     return value == null ? "" : value;
                 }

@@ -331,11 +331,11 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private void updateSelectionActions() {
         List<DDProjectView> selection = selectedRows();
         SelectionSyncAction syncAction = selectionSyncAction(selection);
-        boolean download = syncAction == SelectionSyncAction.DOWNLOAD;
         boolean available = !operationRunning && displayedBundle != null && uiManager.isDDReady();
         refreshButton.setEnabled(available);
         editButton.setEnabled(available && selection.size() == 1 && selection.get(0).remoteProject() != null);
         syncButton.setEnabled(available && syncAction != SelectionSyncAction.NONE);
+        boolean download = syncAction == SelectionSyncAction.DOWNLOAD;
         syncButton.setImage(DBeaverIcons.getImage(download ? DDTrackingUIIcons.IMPORT_PROJECT : DDTrackingUIIcons.PROJECT_SYNC));
         syncButton.setToolTipText(download ? DDTrackingUIMessages.projects_download : DDTrackingUIMessages.projects_sync);
         boolean selected = !selection.isEmpty();

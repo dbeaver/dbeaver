@@ -203,11 +203,11 @@ public class DDProjectManager {
         try {
             getOrCreate(project).importProject(project, remote);
             return project;
+        } catch (DBException e) {
+            rollbackImport(project, e);
+            throw e;
         } catch (Exception e) {
             rollbackImport(project, e);
-            if (e instanceof DBException dbException) {
-                throw dbException;
-            }
             throw new DBException("Error importing DataDam project '" + remote.name() + "'", e);
         }
     }

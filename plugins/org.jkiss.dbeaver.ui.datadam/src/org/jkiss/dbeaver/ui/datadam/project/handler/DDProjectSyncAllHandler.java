@@ -51,7 +51,7 @@ public class DDProjectSyncAllHandler extends AbstractHandler {
     @Override
     public Object execute(@NotNull ExecutionEvent event) {
         Shell shell = HandlerUtil.getActiveShell(event);
-        List<DBPProject> projects = loadBoundProjects(shell);
+        List<DBPProject> projects = loadBoundProjects();
         if (projects == null || projects.isEmpty()) {
             return null;
         }
@@ -82,7 +82,7 @@ public class DDProjectSyncAllHandler extends AbstractHandler {
     }
 
     @Nullable
-    private List<DBPProject> loadBoundProjects(@NotNull Shell shell) {
+    private List<DBPProject> loadBoundProjects() {
         DBRRunnableWithResult<List<DBPProject>> loader = new DBRRunnableWithResult<>() {
             @Override
             public void run(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {

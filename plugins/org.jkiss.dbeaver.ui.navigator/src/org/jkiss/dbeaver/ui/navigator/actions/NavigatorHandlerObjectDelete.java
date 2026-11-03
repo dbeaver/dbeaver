@@ -194,7 +194,8 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(
                     UINavigatorMessages.search_dependencies_error_title, UINavigatorMessages.search_dependencies_error_message, e.getTargetException());
-        } catch (InterruptedException ignored) {
+        } catch (InterruptedException expected) {
+            // Ignore interruption during dependency lookup.
         }
         if (!CommonUtils.isEmpty(dependentObjectsListNodes)) {
             NavigatorObjectsDeleter dependentObjectsDeleter = createDeleter(window, dependentObjectsListNodes);
