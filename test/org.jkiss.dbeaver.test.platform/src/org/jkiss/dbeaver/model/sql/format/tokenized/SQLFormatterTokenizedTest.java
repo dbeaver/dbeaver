@@ -62,6 +62,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         Mockito.when(configuration.getSyntaxManager()).thenReturn(syntaxManager);
         String[] delimiters = new String[]{";"};
         Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(delimiters);
+        Mockito.when(syntaxManager.getBatchDelimiters()).thenReturn(new String[0]);
         Mockito.when(syntaxManager.getDialect()).thenReturn(dialect);
         Mockito.when(syntaxManager.getCatalogSeparator()).thenReturn(".");
         Mockito.when(configuration.getKeywordCase()).thenReturn(DBPIdentifierCase.UPPER);
@@ -341,6 +342,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String inputString = "SELECT 1" + lineBreak + "go" + lineBreak + "-- note" + lineBreak + lineBreak + "SELECT 2";
 
         Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(new String[] { "GO" });
+        Mockito.when(syntaxManager.getBatchDelimiters()).thenReturn(new String[] { "go" });
         Mockito.when(configuration.getKeywordCase()).thenReturn(DBPIdentifierCase.LOWER);
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
 
@@ -357,6 +359,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String inputString = "SELECT 1 AS GO /* note */" + lineBreak + lineBreak + "SELECT 2";
 
         Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(new String[] { ";", "GO" });
+        Mockito.when(syntaxManager.getBatchDelimiters()).thenReturn(new String[] { "go" });
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
 
         //when
@@ -372,6 +375,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String inputString = "SELECT 1" + lineBreak + "GO -- note" + lineBreak + lineBreak + "SELECT 2";
 
         Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(new String[] { ";", "GO" });
+        Mockito.when(syntaxManager.getBatchDelimiters()).thenReturn(new String[] { "go" });
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
 
         //when
@@ -387,6 +391,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String inputString = "SELECT 1" + lineBreak + "GO 5" + lineBreak + lineBreak + "SELECT 2";
 
         Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(new String[] { ";", "GO" });
+        Mockito.when(syntaxManager.getBatchDelimiters()).thenReturn(new String[] { "go" });
         Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
 
         //when
@@ -394,6 +399,21 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
 
         //then
         Assertions.assertFalse(formattedString.contains(";"), formattedString);
+    }
+
+    @Test
+    public void shouldKeepInlineWordDelimiterWhichIsNotBatchDelimiter() {
+        //given
+        String inputString = "SELECT 1 TERM" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(new String[] { "TERM" });
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertEquals(1, formattedString.split("TERM", -1).length - 1, formattedString);
     }
 
     @Test

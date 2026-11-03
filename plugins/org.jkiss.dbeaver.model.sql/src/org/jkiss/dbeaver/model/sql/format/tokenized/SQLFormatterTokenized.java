@@ -28,8 +28,10 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * SQL formatter
@@ -45,6 +47,8 @@ public class SQLFormatterTokenized implements SQLFormatter {
     private SQLFormatterConfiguration formatterCfg;
 
     private List<String> statementDelimiters = new ArrayList<>(2);
+    // Delimiters which are valid only on a line of their own (e.g. GO)
+    private final Set<String> batchDelimiters = new HashSet<>(2);
 
     private boolean isCompact;
 
@@ -57,6 +61,10 @@ public class SQLFormatterTokenized implements SQLFormatter {
             if (!CommonUtils.isEmptyTrimmed(delim)) {
                 statementDelimiters.add(delim.toUpperCase(Locale.ENGLISH));
             }
+        }
+        batchDelimiters.clear();
+        for (String delim : formatterCfg.getSyntaxManager().getBatchDelimiters()) {
+            batchDelimiters.add(delim.toUpperCase(Locale.ENGLISH));
         }
 
         SQLTokensParser fParser = new SQLTokensParser(formatterCfg);
@@ -272,7 +280,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 }
             } else if (isStatementDelimiter(argList, i)) {
                 hasQueryContent = false;
-                if (isWordDelimiter(token.getString())) {
+                if (isBatchDelimiter(token.getString())) {
                     // The repeat count (e.g. GO 5) belongs to the delimiter, it is not a part of a query
                     i = skipRepeatCount(argList, i);
                 }
@@ -313,15 +321,15 @@ public class SQLFormatterTokenized implements SQLFormatter {
         if (!statementDelimiters.contains(text.toUpperCase(Locale.ENGLISH))) {
             return false;
         }
-        if (!isWordDelimiter(text)) {
+        if (!isBatchDelimiter(text)) {
             return true;
         }
-        // A word delimiter is valid only on a line of its own, otherwise it is an identifier (e.g. an alias)
+        // A batch delimiter is valid only on a line of its own, otherwise it is an identifier (e.g. an alias)
         return isLineBoundary(argList, index - 1) && hasBatchDelimiterLineEnding(argList, index);
     }
 
-    private static boolean isWordDelimiter(@NotNull String text) {
-        return !text.isEmpty() && Character.isLetter(text.charAt(0));
+    private boolean isBatchDelimiter(@NotNull String text) {
+        return batchDelimiters.contains(text.toUpperCase(Locale.ENGLISH));
     }
 
     private static boolean isLineBoundary(@NotNull List<FormatterToken> argList, int index) {
