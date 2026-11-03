@@ -1,0 +1,7 @@
+FROM ubuntu:24.04
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    samba-ad-dc samba-ad-provision samba-common-bin krb5-user dnsutils smbclient winbind \
+    && rm -rf /var/lib/apt/lists/*
+COPY dc-entrypoint.sh /usr/local/bin/dc-entrypoint
+ENTRYPOINT ["/usr/local/bin/dc-entrypoint"]

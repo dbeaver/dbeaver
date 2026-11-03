@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,12 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPStatefulObject;
+import org.jkiss.dbeaver.model.access.DBAAccessManager;
+import org.jkiss.dbeaver.model.access.DBAAccessSubject;
 import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -30,7 +33,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Date;
 
-public class SQLServerLogin implements DBAUser, DBPStatefulObject {
+public class SQLServerLogin implements DBAUser, DBAAccessSubject, DBPStatefulObject {
 
     public enum LoginType {
         S("SQL Server login"),
@@ -89,9 +92,10 @@ public class SQLServerLogin implements DBAUser, DBPStatefulObject {
     }
 
     // Auxiliary constructor for creating via UI-configurator
-    public SQLServerLogin(SQLServerDataSource dataSource, @NotNull String loginName) {
+    public SQLServerLogin(@NotNull SQLServerDataSource dataSource, @NotNull String loginName) {
         this.dataSource = dataSource;
         this.loginName = loginName;
+        this.loginType = LoginType.S;
     }
 
     @Nullable
@@ -133,9 +137,19 @@ public class SQLServerLogin implements DBAUser, DBPStatefulObject {
         return loginId;
     }
 
+    @Nullable
     @Property(viewable = true, order = 3)
     public String getLoginTypeName() {
         return loginType == null ? null : loginType.getLoginType();
+    }
+
+    @Nullable
+    public LoginType getLoginType() {
+        return loginType;
+    }
+
+    public void setLoginType(@NotNull LoginType loginType) {
+        this.loginType = loginType;
     }
 
     @Property(viewable = true, order = 4)
@@ -149,15 +163,29 @@ public class SQLServerLogin implements DBAUser, DBPStatefulObject {
     }
 
     @Nullable
-    @Property(viewable = true, order = 6)
+    @Property(viewable = true, updatable = true, order = 6, listProvider = DatabaseListProvider.class)
     public SQLServerDatabase getDefaultDatabase() {
         return defaultDatabase;
     }
 
+    public void setDefaultDatabase(@Nullable SQLServerDatabase defaultDatabase) {
+        this.defaultDatabase = defaultDatabase;
+    }
+
     @Nullable
-    @Property(viewable = true, order = 7)
+    @Property(viewable = true, updatable = true, order = 7)
     public String getDefaultLanguageName() {
         return defaultLanguageName;
+    }
+
+    public void setDefaultLanguageName(@Nullable String defaultLanguageName) {
+        this.defaultLanguageName = defaultLanguageName;
+    }
+
+    @NotNull
+    @Override
+    public DBAAccessManager getAccessManager() {
+        return new SQLServerAccessManager(this);
     }
 
     @Property(viewable = true, updatable = true, order = 8)
@@ -174,11 +202,12 @@ public class SQLServerLogin implements DBAUser, DBPStatefulObject {
         return isFixedRole;
     }
 
+    @Nullable
     public String getPassword() {
         return password;
     }
 
-    public void setPassword(String password) {
+    public void setPassword(@Nullable String password) {
         this.password = password;
     }
 
@@ -193,5 +222,18 @@ public class SQLServerLogin implements DBAUser, DBPStatefulObject {
 
     @Override
     public void refreshObjectState(@NotNull DBRProgressMonitor monitor) {
+    }
+
+    public static class DatabaseListProvider implements IPropertyValueListProvider<SQLServerLogin> {
+        @Override
+        public boolean allowCustomValue() {
+            return false;
+        }
+
+        @NotNull
+        @Override
+        public Object[] getPossibleValues(@Nullable SQLServerLogin object) {
+            return object == null ? new Object[0] : object.getDataSource().getDatabaseCache().getCachedObjects().toArray();
+        }
     }
 }

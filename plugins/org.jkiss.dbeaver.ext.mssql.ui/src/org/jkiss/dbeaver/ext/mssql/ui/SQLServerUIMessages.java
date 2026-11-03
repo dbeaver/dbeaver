@@ -42,7 +42,24 @@ public class SQLServerUIMessages extends NLS {
     public static String dialog_create_db_label_db_name;
     public static String dialog_create_db_title;
 
+    public static String dialog_create_login_authentication;
+    public static String dialog_create_login_domain;
+    public static String dialog_create_login_domain_hint;
+    public static String dialog_create_login_account;
+    public static String dialog_create_login_account_placeholder;
+    public static String dialog_create_login_full_name;
+    public static String dialog_create_login_windows_hint;
+    public static String dialog_create_login_sql_hint;
+    public static String dialog_create_login_enter_account;
+    public static String dialog_create_login_invalid_account;
+    public static String dialog_create_login_enter_credentials;
+    public static String dialog_create_login_password_mismatch;
+    public static String dialog_create_login_exists;
+    public static String dialog_create_login_not_found;
+    public static String dialog_create_login_check_failed;
     public static String dialog_create_login_shell_title;
+    public static String dialog_create_login_sql_authentication;
+    public static String dialog_create_login_windows_authentication;
 
     public static String dialog_create_check_constraint_title;
 

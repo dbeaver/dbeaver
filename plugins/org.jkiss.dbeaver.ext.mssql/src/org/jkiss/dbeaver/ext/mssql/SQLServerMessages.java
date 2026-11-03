@@ -38,6 +38,17 @@ public class SQLServerMessages extends NLS {
 
     public static String password_expired_prompt;
     public static String password_change_error_message;
+    public static String security_target_login;
+    public static String security_target_role;
+    public static String security_target_endpoint;
+    public static String security_target_schema;
+    public static String security_target_application_role;
+    public static String security_target_user;
+    public static String security_target_object;
+    public static String security_target_column;
+    public static String security_scope_server;
+    public static String security_action_change_access;
+    public static String security_scope_database;
 
     public static String index_type_Heap;
     public static String index_type_NonClustered;
