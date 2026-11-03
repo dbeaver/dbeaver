@@ -124,10 +124,10 @@ public class SQLQueryModel extends SQLQueryNodeModel {
         ListNode<SQLQueryNodeModel> stack = ListNode.of(this);
         { // walk down through the model till the deepest node describing given position
             SQLQueryNodeModel node = this;
-            SQLQueryNodeModel nested = node.findChildNodeContaining(textOffset);
+            SQLQueryNodeModel nested = node.findChildNodeForLexicalContext(textOffset);
             while (nested != null) {
                 stack = ListNode.push(stack, nested);
-                nested = nested.findChildNodeContaining(textOffset);
+                nested = nested.findChildNodeForLexicalContext(textOffset);
             }
         }
 

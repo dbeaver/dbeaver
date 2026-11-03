@@ -20,9 +20,12 @@ import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
+import org.jkiss.dbeaver.model.ai.engine.AIModelCatalog;
+import org.jkiss.dbeaver.model.ai.engine.AIModelCatalogEntry;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotSessionToken;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
@@ -36,20 +39,23 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.util.Map;
 import java.util.stream.Stream;
 
 class CopilotTemperatureTest extends DBeaverUnitTest {
     @NotNull
     static Stream<Arguments> requestSettings() {
         return Stream.of("", "0.0", "0.7").flatMap(value -> Stream.of(false, true)
-            .map(streaming -> Arguments.of(value, streaming)));
+            .flatMap(streaming -> Stream.of(null, Boolean.FALSE, Boolean.TRUE)
+                .map(supported -> Arguments.of(value, streaming, supported))));
     }
 
     @ParameterizedTest
     @MethodSource("requestSettings")
     void preservesSavedTemperatureInBothRequestFormats(
-        @NotNull String value, boolean streaming
+        @NotNull String value, boolean streaming, @Nullable Boolean supported
     ) throws Exception {
+        AIModelCatalogEntry entry = new AIModelCatalogEntry(null, supported, null, null, null, null);
         CopilotProperties properties = new CopilotProperties();
         properties.setModel("test-model");
         if (value.isEmpty()) {
@@ -65,6 +71,7 @@ class CopilotTemperatureTest extends DBeaverUnitTest {
             OAIResponsesResponse.class
         ));
         try (
+            AutoCloseable ignored = AIModelCatalog.useForTests(Map.of("github-copilot", Map.of("test-model", entry)));
             CopilotCompletionEngine<CopilotProperties> engine = new CopilotCompletionEngine<>(properties) {
                 @NotNull
                 @Override
@@ -96,7 +103,7 @@ class CopilotTemperatureTest extends DBeaverUnitTest {
                     ? JsonParser.parseString(CopilotUtils.serializeChatRequest(chat)).getAsJsonObject()
                     : CopilotUtils.GSON.toJsonTree(payload).getAsJsonObject();
                 Assertions.assertFalse(json.has("useServerDefaultTemperature"));
-                if (value.isEmpty()) {
+                if (value.isEmpty() || Boolean.FALSE.equals(supported)) {
                     Assertions.assertFalse(json.has("temperature"));
                 } else {
                     Assertions.assertEquals(Double.parseDouble(value), json.get("temperature").getAsDouble());
