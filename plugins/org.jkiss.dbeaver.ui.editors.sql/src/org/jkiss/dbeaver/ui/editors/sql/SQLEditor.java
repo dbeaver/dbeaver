@@ -1168,7 +1168,7 @@ public class SQLEditor extends SQLEditorBase implements
         resultsSash = UIUtils.createPartDivider(
             this,
             parent,
-            UIUtils.checkSashStyle(resultSetOrientation.getSashOrientation() | SWT.SMOOTH)
+            resultSetOrientation.getSashOrientation() | SWT.SMOOTH
         );
         resultsSash.setShowBorders(true);
         CSSUtils.markConnectionTypeColor(resultsSash);
