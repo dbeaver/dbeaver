@@ -33,7 +33,13 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.aggregate.IAggregateFunction;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.SimpleTypedObject;
+import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
+import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.functions.AggregateFunctionDescriptor;
 import org.jkiss.dbeaver.registry.functions.FunctionsRegistry;
 import org.jkiss.dbeaver.ui.*;
@@ -43,8 +49,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ResultSetPanelBase;
 import org.jkiss.dbeaver.ui.internal.UIMessages;
 
-import java.math.BigDecimal;
-import java.text.DecimalFormat;
 import java.util.List;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -61,9 +65,6 @@ public class AggregateColumnsPanel extends ResultSetPanelBase {
     public static final String SETTINGS_SECTION_AGGREGATE = "panel-" + PANEL_ID;
     public static final String PARAM_GROUP_BY_COLUMNS = "groupByColumns";
     public static final String PARAM_GROUP_AS_STRINGS = "groupAsStrings";
-
-    private static final DecimalFormat DOUBLE_FORMAT = new DecimalFormat("###,###,###,###,###,##0.###");
-    private static final DecimalFormat INTEGER_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
 
     private IResultSetPresentation presentation;
     private Tree aggregateTable;
@@ -291,6 +292,7 @@ public class AggregateColumnsPanel extends ResultSetPanelBase {
                 }
             }
         }
+        DBDDataFormatter numberFormatter = createNumberFormatter();
         for (int i = 0; i < funcs.length; i++) {
             if (funcCount[i] <= 0) {
                 continue;
@@ -300,10 +302,8 @@ public class AggregateColumnsPanel extends ResultSetPanelBase {
             if (result != null) {
                 TreeItem treeItem = funcMap.get(func);
                 String strValue;
-                if (result instanceof Double || result instanceof Float || result instanceof BigDecimal) {
-                    strValue = DOUBLE_FORMAT.format(result);
-                } else if (result instanceof Integer || result instanceof Long || result instanceof Short) {
-                    strValue = INTEGER_FORMAT.format(result);
+                if (result instanceof Number) {
+                    strValue = numberFormatter.formatValue(result);
                 } else {
                     strValue = result.toString();
                 }
@@ -311,6 +311,22 @@ public class AggregateColumnsPanel extends ResultSetPanelBase {
                     treeItem.setText(1, strValue);
                 }
             }
+        }
+    }
+
+    @NotNull
+    private DBDDataFormatter createNumberFormatter() {
+        DBCExecutionContext context = presentation.getController().getExecutionContext();
+        DBDDataFormatterProfile profile = context == null ?
+            DataFormatterRegistry.getInstance().getGlobalProfile() :
+            context.getDataSource().getContainer().getDataFormatterProfile();
+        try {
+            // The max fraction digits setting is applied only when the type is not null.
+            // The type has no scale because the selection may span several columns.
+            return profile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, SimpleTypedObject.DEFAULT_TYPE);
+        } catch (Exception e) {
+            log.error("Can't create number formatter", e);
+            return DefaultDataFormatter.INSTANCE;
         }
     }
 
