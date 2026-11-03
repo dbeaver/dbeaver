@@ -41,7 +41,6 @@ public class DDTrackingUIMessages extends NLS {
     public static String sync_preference_page_forget_keys_confirm_title;
     public static String sync_preference_page_forget_keys_confirm_message;
     public static String sync_preference_page_import_keys_failed;
-    public static String sync_preference_page_encryption_not_configured;
     public static String sync_preference_page_login_failed;
     public static String sync_preference_page_logout_failed;
     public static String sync_preference_page_cannot_forget_keys;
@@ -54,9 +53,7 @@ public class DDTrackingUIMessages extends NLS {
     public static String project_sync_share_success;
     public static String project_sync_share_failed;
     public static String project_sync_update_job;
-    public static String project_sync_update_unchanged;
     public static String project_sync_update_success;
-    public static String project_sync_update_conflict;
     public static String project_sync_update_failed;
     public static String project_sync_resolve_job;
     public static String project_sync_resolve_failed;
@@ -74,10 +71,6 @@ public class DDTrackingUIMessages extends NLS {
     public static String project_sync_conflict_use_local;
     public static String project_sync_conflict_use_server;
     public static String project_sync_conflict_stop;
-    public static String project_sync_push_success;
-    public static String project_sync_push_failed;
-    public static String project_sync_pull_success;
-    public static String project_sync_pull_failed;
     public static String project_sync_unbind_confirm_title;
     public static String project_sync_unbind_confirm_message;
     public static String project_sync_unbind_job;
