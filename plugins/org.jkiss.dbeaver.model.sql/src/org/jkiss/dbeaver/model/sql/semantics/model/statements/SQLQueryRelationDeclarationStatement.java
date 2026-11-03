@@ -65,7 +65,7 @@ public final class SQLQueryRelationDeclarationStatement extends SQLQueryStatemen
         boolean cursor = kind == SQLStandardParser.RULE_cursorDeclaration;
         boolean create = kind == SQLStandardParser.RULE_createTableStatement;
         STMTreeNode tableName = node.findFirstChildOfName(STMKnownRuleNames.tableName);
-        STMTreeNode cursorName = node.findFirstChildOfName(SQLStandardParser.ruleNames[SQLStandardParser.RULE_cursorName]);
+        STMTreeNode cursorName = node.findFirstChildOfName(STMKnownRuleNames.cursorName);
         boolean temporary = create
             ? isTemporaryCreate(node)
             : tableName != null || hasTemporaryModifier(node);
@@ -81,7 +81,7 @@ public final class SQLQueryRelationDeclarationStatement extends SQLQueryStatemen
         }
         SQLQueryModelContent sql = null;
         if (cursor) {
-            STMTreeNode query = node.findFirstChildOfName(SQLStandardParser.ruleNames[SQLStandardParser.RULE_directSqlDataStatement]);
+            STMTreeNode query = node.findFirstChildOfName(STMKnownRuleNames.directSqlDataStatement);
             if (query != null) {
                 sql = SQLQueryEmbeddedStatement.recognizeSql(recognizer, query);
             }
@@ -108,7 +108,7 @@ public final class SQLQueryRelationDeclarationStatement extends SQLQueryStatemen
     }
 
     static boolean isTemporaryCreate(@NotNull STMTreeNode node) {
-        STMTreeNode head = node.findFirstChildOfName(SQLStandardParser.ruleNames[SQLStandardParser.RULE_createTableHead]);
+        STMTreeNode head = node.findFirstChildOfName(STMKnownRuleNames.createTableHead);
         STMTreeNode table = node.findFirstChildOfName(STMKnownRuleNames.tableName);
         return head != null && (hasTemporaryModifier(head) ||
             table != null && table.getTextContent().startsWith("#"));

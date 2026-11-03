@@ -525,6 +525,8 @@ public abstract class SQLQueryCompletionContext {
                 SQLQueryCompletionItem item;
                 if (child instanceof DBSProcedure p) {
                     item = SQLQueryCompletionItem.forProcedureObject(score, childName, contextObjext, p);
+                } else if (child instanceof DBSDataType type) {
+                    item = SQLQueryCompletionItem.forDbDataType(score, childName, contextObjext, type);
                 } else if (child instanceof DBSCatalog p) {
                     item = SQLQueryCompletionItem.forDbCatalogObject(score, childName, contextObjext, child);
                 } else if (child instanceof DBSSchema p) {
@@ -847,11 +849,12 @@ public abstract class SQLQueryCompletionContext {
                                     prepareProceduresCompletions(monitor, request, contextInfo.getKnownSources(), List.of(c), filterOrNull);
                                 }
                             }
-                            case OBJECT, TABLE -> {
+                            case OBJECT, TABLE, TYPE -> {
                                 if (origin.getObject() instanceof DBSObjectContainer objectContainer) {
                                     List<DBSObjectContainer> contexts = List.of(objectContainer);
                                     DBSObjectType objectTypesToPropose = switch (origin.getFilterMode()) {
                                         case TABLE -> RelationalObjectType.TYPE_TABLE;
+                                        case TYPE -> RelationalObjectType.TYPE_DATA_TYPE;
                                         default -> RelationalObjectType.TYPE_UNKNOWN;
                                     };
                                     prepareObjectCompletions(
@@ -1355,15 +1358,19 @@ public abstract class SQLQueryCompletionContext {
                 LinkedList<SQLQueryCompletionItem> completions = new LinkedList<>();
                 Set<DBSObject> objs = new HashSet<>();
                 try {
-                    this.collectImmediateChildren(
-                        monitor,
-                        knownSources,
-                        contexts,
-                        o -> objectTypes.stream().anyMatch(t -> t.getTypeClass().isAssignableFrom(o.getClass())) && objs.add(o),
-                        contextObjext,
-                        filterOrNull,
-                        completions
-                    );
+                    if (objectTypes.equals(Set.of(RelationalObjectType.TYPE_DATA_TYPE))) {
+                        this.collectTypes(monitor, request, contexts, contextObjext, filterOrNull, completions);
+                    } else {
+                        this.collectImmediateChildren(
+                            monitor,
+                            knownSources,
+                            contexts,
+                            o -> objectTypes.stream().anyMatch(t -> t.getTypeClass().isAssignableFrom(o.getClass())) && objs.add(o),
+                            contextObjext,
+                            filterOrNull,
+                            completions
+                        );
+                    }
                     if (request.getContext().isSearchProcedures()
                         && objectTypes.stream().anyMatch(t -> DBSProcedure.class.isAssignableFrom(t.getTypeClass()))
                     ) {
@@ -1373,6 +1380,46 @@ public abstract class SQLQueryCompletionContext {
                     log.error(e);
                 }
                 this.makeFilteredCompletionSet(filterOrNull, completions, results);
+            }
+
+            private void collectTypes(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull SQLCompletionRequest request,
+                @NotNull Collection<DBSObjectContainer> containers,
+                @Nullable SQLQueryCompletionItem.ContextObjectInfo contextObject,
+                @Nullable SQLQueryWordEntry filterOrNull,
+                @NotNull LinkedList<SQLQueryCompletionItem> accumulator
+            ) throws DBException {
+                Set<DBSObject> seen = new HashSet<>();
+                for (DBSObjectContainer container : containers) {
+                    DBSNamespace namespace = container instanceof DBSNamespaceContainer namespaces
+                        ? namespaces.getNamespaceForObjectType(RelationalObjectType.TYPE_DATA_TYPE) : null;
+                    // Some containers expose types only through their namespace, not through getChildren().
+                    Collection<? extends DBSObject> children = namespace == null
+                        ? container.getChildren(monitor)
+                        : namespace.getObjectsByType(monitor, RelationalObjectType.TYPE_DATA_TYPE);
+                    for (DBSObject child : children) {
+                        if (child instanceof DBSDataType type && !DBUtils.isHiddenObject(type) && seen.add(type)) {
+                            SQLQueryWordEntry childName = makeFilterInfo(filterOrNull, type.getName());
+                            int score = childName.matches(filterOrNull, this.searchInsideWords);
+                            if (score > 0) {
+                                accumulator.addLast(SQLQueryCompletionItem.forDbDataType(score, childName, contextObject, type));
+                            }
+                        }
+                    }
+                }
+                if (contextObject == null) {
+                    DBPDataSource dataSource = request.getContext().getDataSource();
+                    for (String name : dataSource.getSQLDialect().getDataTypes(dataSource)) {
+                        if (name != null && !name.isBlank()) {
+                            SQLQueryWordEntry typeName = makeFilterInfo(filterOrNull, name);
+                            int score = typeName.matches(filterOrNull, this.searchInsideWords);
+                            if (score > 0) {
+                                accumulator.addLast(SQLQueryCompletionItem.forTypeName(score, typeName, name));
+                            }
+                        }
+                    }
+                }
             }
 
             @Nullable

@@ -25,10 +25,13 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.Trees;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DynamicTest;
@@ -36,8 +39,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
 
 public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
@@ -304,6 +309,33 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
     }
 
     @Test
+    void separatesRoutineParametersResultsAndPostBodyExtensions() {
+        SQLStandardParser parser = makeParser(
+            "CREATE FUNCTION f(x int) RETURNS TABLE (result int, text) AS $body$ SELECT x; $body$ LANGUAGE sql");
+        var tree = parser.sqlQuery();
+        Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors(), tree.toStringTree(parser));
+        var definition = (SQLStandardParser.RoutineDefinitionContext) Trees.findAllRuleNodes(
+            tree, SQLStandardParser.RULE_routineDefinition).iterator().next();
+        Assertions.assertEquals(1, definition.routineSignature().routineArgument().size());
+        Assertions.assertNotNull(definition.routinePreamble().routineReturnClause());
+        Assertions.assertEquals(2, definition.routinePreamble().routineReturnClause()
+            .routineResultList().routineResultField().size());
+        Assertions.assertNotNull(definition.routineTrailing().routineBody());
+        Assertions.assertEquals(1, definition.routineTrailing().routineDefinitionExtension().size());
+
+        SQLStandardParser firebird = makeParser(
+            "CREATE PROCEDURE p(x int) RETURNS (result int) AS BEGIN SELECT result; END",
+            SQLDialect.ProceduralSyntaxFamily.FIREBIRD_PSQL);
+        var firebirdTree = firebird.sqlQuery();
+        Assertions.assertEquals(0, firebird.getNumberOfSyntaxErrors(), firebirdTree.toStringTree(firebird));
+        var returnClauses = Trees.findAllRuleNodes(firebirdTree, SQLStandardParser.RULE_routineReturnClause);
+        Assertions.assertEquals(1, returnClauses.size());
+        var output = (SQLStandardParser.RoutineReturnClauseContext) returnClauses.iterator().next();
+        Assertions.assertEquals("result", output.routineResultList().routineResultField(0).identifier().getText());
+        Assertions.assertEquals(1, Trees.findAllRuleNodes(firebirdTree, SQLStandardParser.RULE_routineSignature).size());
+    }
+
+    @Test
     void doesNotConfuseTableFunctionsWithCreateTable() {
         SQLStandardParser parser = makeParser("CREATE TABLE FUNCTION dataset.f(x INT64) AS (SELECT x)");
         var tree = parser.sqlQuery();
@@ -391,6 +423,27 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
     }
 
     @Test
+    void parsesIndividuallyTypedLocalVariablesAndSharedTypeDeclarations() {
+        SQLStandardParser tsql = makeParser(
+            "CREATE OR ALTER PROC p AS BEGIN DECLARE @first int = 1, @second varchar(20) = @first; " +
+                "SELECT @second; END", SQLDialect.ProceduralSyntaxFamily.TSQL);
+        var tsqlTree = tsql.sqlQuery();
+        Assertions.assertEquals(0, tsql.getNumberOfSyntaxErrors(), tsqlTree.toStringTree(tsql));
+        Assertions.assertEquals(Token.EOF, tsql.getInputStream().LA(1));
+        Assertions.assertEquals(2, Trees.findAllRuleNodes(tsqlTree, SQLStandardParser.RULE_localTypedVariable).size());
+        Assertions.assertEquals(1, Trees.findAllRuleNodes(tsqlTree, SQLStandardParser.RULE_directSqlDataStatement).size());
+        Assertions.assertTrue(Trees.findAllRuleNodes(tsqlTree, SQLStandardParser.RULE_proceduralStatementTokens).isEmpty());
+
+        SQLStandardParser shared = makeParser("CREATE PROCEDURE p() BEGIN " +
+            "DECLARE first_value, second_value int DEFAULT 0; SELECT second_value; END");
+        var sharedTree = shared.sqlQuery();
+        Assertions.assertEquals(0, shared.getNumberOfSyntaxErrors(), sharedTree.toStringTree(shared));
+        Assertions.assertEquals(Token.EOF, shared.getInputStream().LA(1));
+        Assertions.assertEquals(1, Trees.findAllRuleNodes(sharedTree, SQLStandardParser.RULE_localVariableDeclaration).size());
+        Assertions.assertTrue(Trees.findAllRuleNodes(sharedTree, SQLStandardParser.RULE_localTypedVariable).isEmpty());
+    }
+
+    @Test
     void parsesNativeFirebirdControlFlowAndDeclarations() {
         String sql = "EXECUTE BLOCK AS DECLARE VARIABLE n INTEGER = 0; BEGIN " +
             "WHILE (n < 2) DO BEGIN IF (n = 0) THEN BEGIN SELECT id FROM tab INTO :n; END " +
@@ -399,11 +452,39 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
         SQLStandardParser parser = makeParser(sql, SQLDialect.ProceduralSyntaxFamily.FIREBIRD_PSQL);
         var tree = parser.sqlQuery();
         Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors(), tree.toStringTree(parser));
-        Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_firebirdVariableDeclaration).size());
+        Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_firebirdBlock).size());
+        Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_localVariableDeclaration).size());
         Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_proceduralIf).size());
         Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_proceduralLoop).size());
         Assertions.assertEquals(4, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_directSqlDataStatement).size());
-        Assertions.assertEquals(4, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_firebirdSelectIntoStatement).size());
+        Assertions.assertEquals(4, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_selectStatement).size(),
+            tree.toStringTree(parser));
+    }
+
+    @Test
+    void parsesFirebirdSelectIntoTarget() {
+        SQLStandardParser parser = makeParser("EXECUTE BLOCK AS BEGIN SELECT id FROM tab INTO :n; END",
+            SQLDialect.ProceduralSyntaxFamily.FIREBIRD_PSQL);
+        var tree = parser.sqlQuery();
+        Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors(), tree.toStringTree(parser));
+        Assertions.assertEquals(Token.EOF, parser.getInputStream().LA(1), tree.toStringTree(parser));
+        Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_selectStatement).size());
+    }
+
+    @Test
+    void trailingIntoIsNotASelectClauseOutsideEnabledDialects() {
+        for (SQLDialect.ProceduralSyntaxFamily family : List.of(
+            SQLDialect.ProceduralSyntaxFamily.GENERIC, SQLDialect.ProceduralSyntaxFamily.TSQL)) {
+            SQLStandardParser parser = makeParser("SELECT id FROM tab INTO target", family);
+            var tree = parser.sqlQuery();
+            Assertions.assertTrue(Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_selectIntoClause).isEmpty(),
+                tree.toStringTree(parser));
+        }
+        SQLStandardParser firebird = makeParser("SELECT id FROM tab INTO :n",
+            SQLDialect.ProceduralSyntaxFamily.FIREBIRD_PSQL);
+        var firebirdTree = firebird.sqlQuery();
+        Assertions.assertTrue(Trees.findAllRuleNodes(firebirdTree, SQLStandardParser.RULE_selectIntoClause).isEmpty(),
+            firebirdTree.toStringTree(firebird));
     }
 
     @Test
@@ -425,12 +506,185 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
         Assertions.assertEquals(0, firebird.getNumberOfSyntaxErrors(), firebirdTree.toStringTree(firebird));
         Assertions.assertEquals(2, Trees.findAllRuleNodes(firebirdTree, SQLStandardParser.RULE_directSqlDataStatement).size(),
             firebirdTree.toStringTree(firebird));
-        Assertions.assertEquals(2, Trees.findAllRuleNodes(firebirdTree, SQLStandardParser.RULE_firebirdSelectIntoStatement).size());
+        Assertions.assertEquals(2, Trees.findAllRuleNodes(firebirdTree, SQLStandardParser.RULE_selectStatement).size());
 
         assertPartialNativeControlFlow("CREATE OR ALTER PROC p AS BEGIN IF @n = 1 BEGIN SELECT",
             SQLDialect.ProceduralSyntaxFamily.TSQL, SQLStandardParser.RULE_proceduralIf);
         assertPartialNativeControlFlow("EXECUTE BLOCK AS BEGIN WHILE (1 = 1) DO BEGIN SELECT",
             SQLDialect.ProceduralSyntaxFamily.FIREBIRD_PSQL, SQLStandardParser.RULE_proceduralLoop);
+    }
+
+    @Test
+    void retainsPartialNumericTypeArgumentsWhileTyping() {
+        for (String type : List.of("numeric(", "numeric(10,")) {
+            SQLStandardParser parser = makeParser("CREATE FUNCTION f(amount " + type);
+            var tree = parser.sqlQuery();
+            Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors(), tree.toStringTree(parser));
+            Assertions.assertEquals(Token.EOF, parser.getInputStream().LA(1));
+            Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_routineArgument).size());
+            var types = Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_dataType);
+            Assertions.assertEquals(1, types.size(), tree.toStringTree(parser));
+            Assertions.assertEquals(type, types.iterator().next().getText());
+            Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_typeArguments).size());
+        }
+    }
+
+    @TestFactory
+    @NotNull
+    Stream<DynamicTest> keepsTwoRoutineParametersSeparateFromTypeArgumentsAndModifiers() {
+        return Stream.concat(
+            Stream.of("numeric(10,2)", "app.amount_type", "double precision", "character varying(20)",
+                "LARGE OBJECT", "int(10) UNSIGNED")
+                .flatMap(type -> Stream.of("IN first_value " + type + ", OUT second_value int", type + ", int")
+                    .map(parameters -> Map.entry(type, parameters))),
+            Stream.of(
+                Map.entry("double precision", "IN double precision, int"),
+                Map.entry("LONG RAW", "LONG RAW, int"),
+                Map.entry("timestamp without time zone", "value timestamp without time zone, int")
+            )
+        ).map(testCase -> {
+            String type = testCase.getKey();
+            String parameters = testCase.getValue();
+            return DynamicTest.dynamicTest(parameters, () -> {
+                SQLStandardParser parser = type.endsWith("UNSIGNED")
+                    ? makeParserWithTypes("(" + parameters + ")", Set.of("UNSIGNED"), List.of("INT"))
+                    : makeParserWithTypes("(" + parameters + ")", Set.of(),
+                        List.of("DOUBLE PRECISION", "LONG RAW", "LARGE OBJECT", "DOUBLE", "LONG", "LARGE"));
+                var signature = parser.routineSignature();
+                Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors(), signature.toStringTree(parser));
+                Assertions.assertEquals(Token.EOF, parser.getInputStream().LA(1), parameters);
+                Assertions.assertEquals(2, signature.routineArgument().size(), signature.toStringTree(parser));
+                Assertions.assertEquals(type.replace(" ", "").replace("UNSIGNED", ""),
+                    signature.routineArgument(0).dataType().getText(), parameters);
+                Assertions.assertEquals("int", signature.routineArgument(1).dataType().getText(), parameters);
+                Assertions.assertEquals(type.endsWith("UNSIGNED") ? 1 : 0,
+                    signature.routineArgument(0).typeModifier().size(), parameters);
+            });
+        });
+    }
+
+    @Test
+    void distinguishesKnownMultiwordTypesFromNamedArguments() {
+        for (String parameters : List.of("(double precision, result text)", "(LONG RAW, amount RAW)")) {
+            SQLStandardParser parser = makeParserWithTypes(parameters, Set.of(),
+                List.of("DOUBLE PRECISION", "DOUBLE", "LONG RAW", "LONG", "RAW", "TEXT"));
+            var signature = parser.routineSignature();
+            Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors(), signature.toStringTree(parser));
+            Assertions.assertEquals(Token.EOF, parser.getInputStream().LA(1));
+            Assertions.assertEquals(2, signature.routineArgument().size(), signature.toStringTree(parser));
+            Assertions.assertNull(signature.routineArgument(0).identifier(), parameters);
+            Assertions.assertNotNull(signature.routineArgument(1).identifier(), parameters);
+            Assertions.assertEquals(1, Trees.findAllRuleNodes(signature.routineArgument(0).dataType(),
+                SQLStandardParser.RULE_typeModifier).size(), parameters);
+        }
+    }
+
+    @Test
+    void acceptsModesAfterOracleParameterNamesWithoutConfusingTypeOnlyArguments() {
+        SQLStandardParser parser = makeParserWithModifiers(
+            "CREATE PROCEDURE p(p_value IN OUT NOCOPY NUMBER, p_other OUT VARCHAR2, IN double precision)",
+            Set.of(), Set.of("IN", "OUT", "NOCOPY"),
+            List.of("NUMBER", "VARCHAR2", "DOUBLE", "DOUBLE PRECISION"));
+        var tree = parser.sqlQueries();
+        Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors(), tree.toStringTree(parser));
+        Assertions.assertEquals(Token.EOF, parser.getInputStream().LA(1));
+        Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_createNamedObjectStatement).size());
+        var arguments = Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_routineArgument).stream()
+            .map(node -> (SQLStandardParser.RoutineArgumentContext) node).toList();
+        Assertions.assertEquals(3, arguments.size(), tree.toStringTree(parser));
+        Assertions.assertEquals("p_value", arguments.get(0).identifier().getText());
+        Assertions.assertEquals("INOUTNOCOPY", arguments.get(0).signatureModifier().stream()
+            .map(node -> node.getText()).collect(java.util.stream.Collectors.joining()));
+        Assertions.assertEquals("NUMBER", arguments.get(0).dataType().getText());
+        Assertions.assertEquals("p_other", arguments.get(1).identifier().getText());
+        Assertions.assertEquals("OUT", arguments.get(1).signatureModifier(0).getText());
+        Assertions.assertEquals("VARCHAR2", arguments.get(1).dataType().getText());
+        Assertions.assertNull(arguments.get(2).identifier());
+        Assertions.assertEquals("IN", arguments.get(2).signatureModifier(0).getText());
+        Assertions.assertEquals("doubleprecision", arguments.get(2).dataType().getText());
+
+        SQLStandardParser incomplete = makeParserWithModifiers("p_value OUT)", Set.of(),
+            Set.of("IN", "OUT", "NOCOPY"), List.of("NUMBER"));
+        var unfinished = incomplete.routineArgument();
+        Assertions.assertNull(unfinished.identifier(), unfinished.toStringTree(incomplete));
+        Assertions.assertEquals("OUT", incomplete.getInputStream().LT(1).getText());
+    }
+
+    @Test
+    void acceptsSnowflakeModesAfterParameterNames() {
+        SQLStandardParser parser = makeParserWithModifiers("(arg INPUT NUMBER, result OUTPUT VARCHAR2)",
+            Set.of(), Set.of("INPUT", "OUTPUT"), List.of("NUMBER", "VARCHAR2"));
+        var signature = parser.routineSignature();
+        Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors(), signature.toStringTree(parser));
+        Assertions.assertEquals(Token.EOF, parser.getInputStream().LA(1));
+        Assertions.assertEquals(2, signature.routineArgument().size());
+        Assertions.assertEquals("arg", signature.routineArgument(0).identifier().getText());
+        Assertions.assertEquals("INPUT", signature.routineArgument(0).signatureModifier(0).getText());
+        Assertions.assertEquals("NUMBER", signature.routineArgument(0).dataType().getText());
+        Assertions.assertEquals("result", signature.routineArgument(1).identifier().getText());
+        Assertions.assertEquals("OUTPUT", signature.routineArgument(1).signatureModifier(0).getText());
+    }
+
+    @Test
+    void preservesQualifiedAndQuotedArgumentNamesAndModifierOrder() {
+        SQLStandardParser parser = makeParserWithTypes(
+            "(\"result\" app.amount_type, amount CHARACTER VARYING(20), value INT(10) UNSIGNED)",
+            Set.of("UNSIGNED"), List.of("INT", "CHARACTER VARYING", "CHARACTER"));
+        var signature = parser.routineSignature();
+        Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors(), signature.toStringTree(parser));
+        Assertions.assertEquals(Token.EOF, parser.getInputStream().LA(1));
+        Assertions.assertEquals(3, signature.routineArgument().size());
+        Assertions.assertEquals("\"result\"", signature.routineArgument(0).identifier().getText());
+        Assertions.assertEquals("app.amount_type", signature.routineArgument(0).dataType().getText());
+        Assertions.assertEquals("CHARACTERVARYING(20)", signature.routineArgument(1).dataType().getText());
+        Assertions.assertEquals("INT(10)", signature.routineArgument(2).dataType().getText());
+        Assertions.assertEquals("UNSIGNED", signature.routineArgument(2).typeModifier(0).getText());
+
+        SQLStandardParser inline = makeParserWithTypes("(INT UNSIGNED, result TEXT)",
+            Set.of("UNSIGNED"), List.of("INT", "TEXT"));
+        var inlineSignature = inline.routineSignature();
+        Assertions.assertEquals(0, inline.getNumberOfSyntaxErrors(), inlineSignature.toStringTree(inline));
+        Assertions.assertEquals(Token.EOF, inline.getInputStream().LA(1));
+        Assertions.assertEquals(2, inlineSignature.routineArgument().size());
+        Assertions.assertNull(inlineSignature.routineArgument(0).identifier());
+        Assertions.assertEquals("INTUNSIGNED", inlineSignature.routineArgument(0).dataType().getText());
+        Assertions.assertEquals(1, Trees.findAllRuleNodes(inlineSignature.routineArgument(0).dataType(),
+            SQLStandardParser.RULE_typeModifier).size());
+    }
+
+    @TestFactory
+    @NotNull
+    Stream<DynamicTest> keepsNamedTupleFieldsInsideTheFirstParameterType() {
+        return Stream.of(
+            "Tuple(id Int32, label String)",
+            "Tuple(payload Tuple(x Int32, y String), amount Decimal(10,2))",
+            "app.Tuple(id Int32, label String)",
+            "\"Tuple\"(\"id\" Int32, \"label\" String)"
+        ).map(type -> DynamicTest.dynamicTest(type, () -> {
+            String parameters = "(item " + type + ", next_value int)";
+            SQLStandardParser parser = makeParser(parameters);
+            var signature = parser.routineSignature();
+            Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors(), signature.toStringTree(parser));
+            Assertions.assertEquals(Token.EOF, parser.getInputStream().LA(1), parameters);
+            Assertions.assertEquals(parameters.replace(" ", ""), signature.getText(), signature.toStringTree(parser));
+            Assertions.assertEquals(2, signature.routineArgument().size(), signature.toStringTree(parser));
+            Assertions.assertEquals(type.replace(" ", ""), signature.routineArgument(0).dataType().getText(), parameters);
+            Assertions.assertEquals("int", signature.routineArgument(1).dataType().getText(), parameters);
+            Assertions.assertFalse(Trees.findAllRuleNodes(signature.routineArgument(0).dataType(),
+                SQLStandardParser.RULE_typeArguments).isEmpty(), parameters);
+        }));
+    }
+
+    @Test
+    void retainsUnfinishedNamedTupleAsATypeWhileTyping() {
+        SQLStandardParser parser = makeParser("CREATE FUNCTION f(item Tuple(id Int32,");
+        var tree = parser.sqlQuery();
+        Assertions.assertEquals(Token.EOF, parser.getInputStream().LA(1));
+        Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_routineArgument).size());
+        var types = Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_dataType);
+        Assertions.assertFalse(types.isEmpty(), tree.toStringTree(parser));
+        Assertions.assertTrue(types.iterator().next().getText().startsWith("Tuple("), tree.toStringTree(parser));
+        Assertions.assertEquals(1, Trees.findAllRuleNodes(types.iterator().next(), SQLStandardParser.RULE_typeArguments).size());
     }
 
     private static void assertPartialNativeControlFlow(
@@ -443,14 +697,14 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
     @Test
     void distinguishesPrefixedTemporaryTableFromHashCommentByDialect() {
         String sql = "CREATE PROCEDURE p AS BEGIN CREATE TABLE #scratch (id int); SELECT id FROM #scratch; END";
-        LSMAnalyzerParameters parameters = new LSMAnalyzerParameters(Map.of(), false, false, '?', List.of(), false, false);
+        LSMAnalyzerParameters parameters = createParameters(SQLDialect.ProceduralSyntaxFamily.GENERIC, false);
         SQLStandardLexer lexer = new SQLStandardLexer(CharStreams.fromString(sql), parameters);
         var parser = new SQLStandardParser(new CommonTokenStream(lexer), parameters);
         var tree = parser.sqlQuery();
         Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_createTableStatement).size());
         Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors());
 
-        LSMAnalyzerParameters hashComments = new LSMAnalyzerParameters(Map.of(), false, false, '?', List.of(), false, true);
+        LSMAnalyzerParameters hashComments = createParameters(SQLDialect.ProceduralSyntaxFamily.GENERIC, true);
         var comment = new SQLStandardLexer(CharStreams.fromString("#scratch"), hashComments).nextToken();
         Assertions.assertEquals(Token.HIDDEN_CHANNEL, comment.getChannel());
     }
@@ -463,16 +717,48 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
 
     @NotNull
     private static SQLStandardParser makeParser(@NotNull String sql) {
-        var lexer = new SQLStandardLexer(CharStreams.fromString(sql));
-        lexer.removeErrorListeners();
-        var parser = new SQLStandardParser(new CommonTokenStream(lexer));
-        parser.removeErrorListeners();
-        return parser;
+        return makeParser(sql, SQLDialect.ProceduralSyntaxFamily.GENERIC);
+    }
+
+    @NotNull
+    private static SQLStandardParser makeParserWithTypes(
+        @NotNull String sql, @NotNull Set<String> extraModifiers, @NotNull Collection<String> knownTypes
+    ) {
+        return makeParserWithModifiers(sql, extraModifiers, Set.of("IN", "OUT"), knownTypes);
+    }
+
+    @NotNull
+    private static SQLStandardParser makeParserWithModifiers(
+        @NotNull String sql, @NotNull Set<String> extraTypeModifiers,
+        @NotNull Set<String> signatureModifiers, @NotNull Collection<String> knownTypes
+    ) {
+        var dialect = new BasicSQLDialect() {
+            @Override
+            public Collection<String> getDataTypes(@Nullable org.jkiss.dbeaver.model.DBPDataSource dataSource) {
+                return knownTypes;
+            }
+
+            @Override
+            public Set<String> getTypeModifierKeywords() {
+                var modifiers = new java.util.HashSet<>(super.getTypeModifierKeywords());
+                modifiers.addAll(extraTypeModifiers);
+                return Set.copyOf(modifiers);
+            }
+
+            @Override
+            public Set<String> getSignatureModifierKeywords() {
+                return signatureModifiers;
+            }
+        };
+        return makeParser(sql, createParameters(dialect));
     }
 
     @NotNull
     private static SQLStandardParser makeParser(@NotNull String sql, @NotNull SQLDialect.ProceduralSyntaxFamily family) {
-        LSMAnalyzerParameters parameters = new LSMAnalyzerParameters(Map.of(), false, false, '?', List.of(), false, false, family);
+        return makeParser(sql, createParameters(family, false));
+    }
+
+    private static SQLStandardParser makeParser(@NotNull String sql, @NotNull LSMAnalyzerParameters parameters) {
         var lexer = new SQLStandardLexer(CharStreams.fromString(sql), parameters);
         lexer.removeErrorListeners();
         var parser = new SQLStandardParser(new CommonTokenStream(lexer), parameters);
@@ -480,9 +766,55 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
         return parser;
     }
 
+    @NotNull
+    private static LSMAnalyzerParameters createParameters(
+        @NotNull SQLDialect.ProceduralSyntaxFamily family, boolean hashComments
+    ) {
+        var dialect = new BasicSQLDialect() {
+            @NotNull
+            @Override
+            public String[][] getIdentifierQuoteStrings() {
+                return new String[0][];
+            }
+
+            @NotNull
+            @Override
+            public String[] getSingleLineComments() {
+                return hashComments ? new String[]{"#"} : new String[0];
+            }
+
+            @NotNull
+            @Override
+            public ProceduralSyntaxFamily getProceduralSyntaxFamily() {
+                return family;
+            }
+
+            @NotNull
+            @Override
+            public TrailingSelectIntoSupport getTrailingSelectIntoSupport() {
+                return family == ProceduralSyntaxFamily.FIREBIRD_PSQL
+                    ? TrailingSelectIntoSupport.PROCEDURAL : TrailingSelectIntoSupport.NONE;
+            }
+        };
+        return createParameters(dialect);
+    }
+
+    private static LSMAnalyzerParameters createParameters(@NotNull SQLDialect dialect) {
+        var preferences = new SimplePreferenceStore() {
+            @Override
+            public void save() {
+                // In-memory test preferences.
+            }
+        };
+        var syntaxManager = new SQLSyntaxManager(preferences);
+        syntaxManager.init(dialect, preferences);
+        return LSMAnalyzerParameters.forDialect(dialect, syntaxManager);
+    }
+
     private static void assertAccepted(@NotNull String sql) {
         var lexerErrors = new SyntaxErrorCollector();
-        var lexer = new SQLStandardLexer(CharStreams.fromString(sql));
+        LSMAnalyzerParameters parameters = createParameters(SQLDialect.ProceduralSyntaxFamily.GENERIC, false);
+        var lexer = new SQLStandardLexer(CharStreams.fromString(sql), parameters);
         lexer.removeErrorListeners();
         lexer.addErrorListener(lexerErrors);
 
@@ -490,7 +822,7 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
         tokens.fill();
 
         var parserErrors = new SyntaxErrorCollector();
-        var parser = new SQLStandardParser(tokens);
+        var parser = new SQLStandardParser(tokens, parameters);
         parser.removeErrorListeners();
         parser.addErrorListener(parserErrors);
         var tree = parser.sqlQueries();

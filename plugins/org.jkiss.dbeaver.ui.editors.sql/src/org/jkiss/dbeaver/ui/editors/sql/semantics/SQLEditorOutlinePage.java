@@ -71,6 +71,7 @@ public class SQLEditorOutlinePage extends ContentOutlinePage implements IContent
         put(SQLQuerySymbolClass.TABLE_ALIAS, ThemeConstants.SQL_EDITOR_COLOR_TABLE_ALIAS);
         put(SQLQuerySymbolClass.COLUMN_DERIVED, ThemeConstants.SQL_EDITOR_COLOR_COLUMN_DERIVED);
         put(SQLQuerySymbolClass.TABLE, ThemeConstants.SQL_EDITOR_COLOR_TABLE);
+        put(SQLQuerySymbolClass.TYPE, ThemeConstants.SQL_EDITOR_COLOR_DATATYPE);
         put(SQLQuerySymbolClass.COLUMN, ThemeConstants.SQL_EDITOR_COLOR_COLUMN);
         put(SQLQuerySymbolClass.FUNCTION, ThemeConstants.SQL_EDITOR_COLOR_FUNCTION);
         put(SQLQuerySymbolClass.COMPOSITE_FIELD, ThemeConstants.SQL_EDITOR_COLOR_COMPOSITE_FIELD);

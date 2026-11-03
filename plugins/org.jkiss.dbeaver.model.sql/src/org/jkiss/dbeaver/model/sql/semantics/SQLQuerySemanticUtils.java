@@ -38,7 +38,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -63,32 +62,115 @@ public class SQLQuerySemanticUtils {
         @NotNull STMTreeNode syntaxNode,
         @NotNull String typeRefString
     ) {
-        SQLQueryExprType fallback = SQLQueryExprType.forExplicitTypeRef(typeRefString);
+        return resolveTypeReference(context, statistics, syntaxNode, typeRefString, List.of());
+    }
+
+    @NotNull
+    public static SQLQueryExprType resolveTypeReference(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull STMTreeNode syntaxNode,
+        @NotNull String typeRefString,
+        @NotNull List<String> modifiers
+    ) {
+        // String-only callers have no trustworthy AST name parts. Preserve arbitrary signatures as explicit types.
+        return resolveTypeReference(context, statistics,
+            new SQLQueryModelRecognizer.TypeReference(typeRefString, typeRefString, List.of(), modifiers, syntaxNode, null));
+    }
+
+    @NotNull
+    public static SQLQueryExprType resolveTypeReference(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull SQLQueryModelRecognizer.TypeReference reference
+    ) {
+        SQLQueryExprType base = resolveBaseTypeReference(context, statistics, reference);
+        boolean hasInnerModifiers = reference.modifiers().stream()
+            .anyMatch(modifier -> reference.spelling().toUpperCase(java.util.Locale.ROOT).contains(modifier.toUpperCase(java.util.Locale.ROOT)));
+        return hasInnerModifiers || !reference.modifiers().isEmpty() && reference.spelling().contains("(")
+            ? SQLQueryExprType.withModifiers(base, reference.modifiers(), reference.fullSpelling())
+            : SQLQueryExprType.withModifiers(base, reference.modifiers());
+    }
+
+    @NotNull
+    private static SQLQueryExprType resolveBaseTypeReference(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull SQLQueryModelRecognizer.TypeReference reference
+    ) {
         if (!statistics.useRealMetadata() || context.getConnectionInfo().isDummy()) {
-            return fallback;
+            return SQLQueryExprType.forExplicitTypeRef(reference.spelling());
         }
-        SQLDialect dialect = context.getDialect();
-        List<String> nameParts = Arrays.stream(SQLUtils.splitFullIdentifier(
-                typeRefString, String.valueOf(dialect.getStructSeparator()), dialect.getIdentifierQuoteStrings(), true))
-            .map(part -> SQLUtils.identifierToCanonicalForm(dialect, part, false, true))
-            .toList();
-        if (nameParts.isEmpty()) {
-            return fallback;
-        }
-        List<? extends DBSObject> candidates = context.getConnectionInfo().findRealObjects(
-            statistics.getMonitor(), RelationalObjectType.TYPE_DATA_TYPE, nameParts);
-        if (candidates.size() != 1) {
-            return fallback;
-        }
-        DBSObject typeObject = SQLQueryConnectionContext.expandAliases(statistics.getMonitor(), candidates.getFirst());
-        if (typeObject instanceof DBSDataType dataType) {
-            try {
-                return SQLQueryExprType.forTypedObject(statistics.getMonitor(), dataType, SQLQuerySymbolClass.OBJECT);
-            } catch (DBException e) {
-                statistics.appendError(syntaxNode, "Failed to obtain type information for " + typeRefString, e);
+        DBSDataType resolved;
+        String fullName = reference.fullSpelling();
+        if (!fullName.equals(reference.spelling())) {
+            resolved = tryResolveProvidedType(context, statistics, fullName);
+            if (resolved != null) {
+                return bindTypeReference(context, statistics, reference, resolved);
             }
         }
-        return fallback;
+        resolved = tryResolveProvidedType(context, statistics, reference.spelling());
+        if (resolved != null) {
+            return bindTypeReference(context, statistics, reference, resolved);
+        }
+        if (!reference.baseSpelling().equals(reference.spelling()) && !reference.baseSpelling().equals(fullName)) {
+            resolved = tryResolveProvidedType(context, statistics, reference.baseSpelling());
+            if (resolved != null) {
+                return bindTypeReference(context, statistics, reference, resolved);
+            }
+        }
+        List<? extends DBSObject> candidates = reference.nameParts().isEmpty() ? List.of() : context.getConnectionInfo().findRealObjects(
+            statistics.getMonitor(), RelationalObjectType.TYPE_DATA_TYPE, reference.nameParts());
+        if (candidates.size() == 1) {
+            DBSObject typeObject = SQLQueryConnectionContext.expandAliases(statistics.getMonitor(), candidates.getFirst());
+            if (typeObject instanceof DBSDataType dataType) {
+                return bindTypeReference(context, statistics, reference, dataType);
+            }
+        }
+        SQLQueryComplexName name = reference.qualifiedName();
+        if (name != null && name.isNotClassified() && name.parts.stream().filter(java.util.Objects::nonNull)
+            .allMatch(part -> part.getOrigin() == null)) {
+            performPartialResolution(context, statistics, name,
+                new SQLQuerySymbolOrigin.DbObjectRef(context, Set.of(RelationalObjectType.TYPE_DATA_TYPE), false),
+                SQLQuerySymbolOrigin.DbObjectFilterMode.TYPE, SQLQuerySymbolClass.TYPE);
+        }
+        return SQLQueryExprType.forExplicitTypeRef(reference.spelling());
+    }
+
+    @NotNull
+    private static SQLQueryExprType bindTypeReference(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull SQLQueryModelRecognizer.TypeReference reference,
+        @NotNull DBSDataType dataType
+    ) {
+        SQLQueryComplexName name = reference.qualifiedName();
+        if (name != null && !reference.nameParts().isEmpty() && name.invalidPartsCount == 0 && name.isNotClassified()) {
+            setNamePartsDefinition(context, name, dataType, SQLQuerySymbolClass.TYPE,
+                new SQLQuerySymbolOrigin.DbObjectRef(context, Set.of(RelationalObjectType.TYPE_DATA_TYPE), false),
+                SQLQuerySymbolOrigin.DbObjectFilterMode.TYPE);
+        }
+        try {
+            return SQLQueryExprType.forTypedObject(statistics.getMonitor(), dataType, SQLQuerySymbolClass.TYPE);
+        } catch (DBException e) {
+            statistics.appendError(reference.syntax(), "Failed to obtain type information for " + reference.spelling(), e);
+            return SQLQueryExprType.forExplicitTypeRef(reference.spelling());
+        }
+    }
+
+    @Nullable
+    private static DBSDataType tryResolveProvidedType(
+        @NotNull SQLQueryRowsSourceContext context,
+        @NotNull SQLQueryRecognitionContext statistics,
+        @NotNull String fullName
+    ) {
+        try {
+            return context.getConnectionInfo().resolveDataType(statistics.getMonitor(), fullName);
+        } catch (DBException e) {
+            // A provider may reject a spelling that a later lookup still understands.
+            log.debug("Failed to resolve data type " + fullName, e);
+            return null;
+        }
     }
 
     /**
@@ -206,6 +288,8 @@ public class SQLQuerySemanticUtils {
         SQLQuerySymbolClass objectNameClass;
         if (object instanceof DBSTable || object instanceof DBSView) {
             objectNameClass = SQLQuerySymbolClass.TABLE;
+        } else if (object instanceof DBSDataType) {
+            objectNameClass = SQLQuerySymbolClass.TYPE;
         } else if (object instanceof DBSSchema) {
             objectNameClass = SQLQuerySymbolClass.SCHEMA;
         } else if (object instanceof DBSCatalog) {

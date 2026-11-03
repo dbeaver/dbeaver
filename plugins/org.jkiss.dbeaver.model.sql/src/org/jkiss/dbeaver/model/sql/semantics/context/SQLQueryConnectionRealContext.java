@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.sql.SQLSearchUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryVariablesSubset;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSVisibilityScopeProvider;
@@ -82,6 +83,12 @@ public class SQLQueryConnectionRealContext extends SQLQueryConnectionContext {
     @Override
     public boolean isDummy() {
         return false;
+    }
+
+    @Nullable
+    @Override
+    public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String fullTypeName) throws DBException {
+        return DBUtils.resolveDataType(monitor, this.executionContext.getDataSource(), fullTypeName);
     }
 
     @NotNull

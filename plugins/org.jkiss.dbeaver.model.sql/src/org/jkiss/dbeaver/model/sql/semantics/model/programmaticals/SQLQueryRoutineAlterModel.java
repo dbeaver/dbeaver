@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQueryComplexName;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDataModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.statements.SQLQueryStatementModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.statements.SQLQueryVariableDeclarationStatement;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.List;
@@ -32,9 +31,11 @@ public final class SQLQueryRoutineAlterModel extends SQLQueryRoutineStatementMod
     SQLQueryRoutineAlterModel(
         @NotNull STMTreeNode node, @Nullable SQLQueryComplexName name,
         @Nullable SQLQueryObjectDataModel existingObject,
-        @NotNull List<SQLQueryVariableDeclarationStatement> arguments, @Nullable SQLQueryStatementModel body
+        @NotNull List<SignatureArgument> arguments,
+        @NotNull SQLQueryRoutineReturn returnSpec,
+        @Nullable SQLQueryStatementModel body
     ) {
-        super(node, name, existingObject, arguments, body);
+        super(node, name, existingObject, arguments, returnSpec, body);
     }
 
     @Nullable

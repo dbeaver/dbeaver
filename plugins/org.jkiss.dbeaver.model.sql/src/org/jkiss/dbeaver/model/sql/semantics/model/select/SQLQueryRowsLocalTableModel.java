@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
@@ -69,12 +70,14 @@ public class SQLQueryRowsLocalTableModel extends SQLQueryRowsSourceModel {
     ) {
         List<SQLQueryResultColumn> result = new ArrayList<>(this.columns.size());
         for (SQLQueryColumnSpec spec : this.columns) {
+            SQLQueryExprType type = spec.resolveDeclaredType(this.getRowsSources(), statistics);
             SQLQuerySymbolEntry entry = spec.getColumnName();
             SQLQuerySymbol symbol = entry == null ? new SQLQuerySymbol("?") : entry.getSymbol();
             if (entry != null && entry.isNotClassified()) {
+                symbol.setDefinition(entry);
                 symbol.setSymbolClass(SQLQuerySymbolClass.COLUMN);
             }
-            result.add(new SQLQueryResultColumn(result.size(), symbol, this, null, null, spec.getDeclaredColumnType()));
+            result.add(new SQLQueryResultColumn(result.size(), symbol, this, null, null, type));
         }
         return this.getRowsSources().makeTuple(this, result, List.of());
     }

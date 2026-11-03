@@ -35,7 +35,9 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -43,6 +45,26 @@ import java.util.regex.Pattern;
  * MySQL dialect
  */
 public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaController, SQLDialectDDLExtension {
+
+    @NotNull
+    @Override
+    public TrailingSelectIntoSupport getTrailingSelectIntoSupport() {
+        return TrailingSelectIntoSupport.ANY;
+    }
+
+    @NotNull
+    @Override
+    public Set<String> getTypeModifierKeywords() {
+        Set<String> keywords = new HashSet<>(super.getTypeModifierKeywords());
+        keywords.addAll(Set.of("SIGNED", "UNSIGNED", "ZEROFILL"));
+        return Set.copyOf(keywords);
+    }
+
+    @NotNull
+    @Override
+    public Set<String> getSignatureModifierKeywords() {
+        return Set.of("IN", "OUT", "INOUT");
+    }
 
     /** A local variable belongs to its BEGIN/END block and may be shadowed in a nested block.
      *

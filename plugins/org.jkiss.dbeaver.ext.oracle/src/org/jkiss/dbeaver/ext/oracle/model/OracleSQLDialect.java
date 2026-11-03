@@ -49,12 +49,19 @@ import org.jkiss.utils.SecurityUtils;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * Oracle SQL dialect
  */
 public class OracleSQLDialect extends JDBCSQLDialect
     implements SQLDataTypeConverter, SQLDialectDDLExtension, SQLDialectSchemaController {
+    @NotNull
+    @Override
+    public Set<String> getSignatureModifierKeywords() {
+        return Set.of("IN", "OUT", "NOCOPY");
+    }
+
     /** A nested PL/SQL unit can redeclare an identifier from an enclosing unit.
      *
      * @see <a href="https://docs.oracle.com/en/database/oracle/oracle-database/19/lnpls/scope-and-visibility-identifiers.html">Identifier scope</a>

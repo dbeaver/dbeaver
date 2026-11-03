@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemKind;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryCallModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryDeleteModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryInsertModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateModel;
@@ -40,6 +41,16 @@ public class GenericProceduralTest extends ProceduralDialectTestBase {
     @Override
     protected SQLDialect dialect() {
         return BasicSQLDialect.INSTANCE;
+    }
+
+    @Test
+    void directTriggerProcedureCallIsNotAssumedToBePostgreSqlFunction() {
+        String sql = "CREATE TRIGGER t AFTER INSERT ON source FOR EACH ROW " +
+            "EXECUTE PROCEDURE public.target(1)";
+        SQLQueryModel model = recognize(sql);
+        root(model, SQLQueryTriggerCreateModel.class);
+        SQLQueryCallModel call = statementAt(model, sql, "EXECUTE PROCEDURE", SQLQueryCallModel.class);
+        Assertions.assertNotNull(call.getObject());
     }
 
     /**

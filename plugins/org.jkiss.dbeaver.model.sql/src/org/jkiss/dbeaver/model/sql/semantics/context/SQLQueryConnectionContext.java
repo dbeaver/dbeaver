@@ -118,6 +118,11 @@ public abstract class SQLQueryConnectionContext {
         }
     }
 
+    /** Resolve a complete data type spelling, including arguments, when supported by the connection. */
+    @Nullable
+    public abstract DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String fullTypeName)
+        throws DBException;
+
     public abstract boolean isDummy();
 
     @NotNull

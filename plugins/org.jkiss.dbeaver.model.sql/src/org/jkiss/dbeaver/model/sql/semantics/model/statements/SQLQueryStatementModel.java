@@ -48,8 +48,7 @@ public abstract class SQLQueryStatementModel extends SQLQueryModelContent {
             case SQLStandardParser.RULE_proceduralIf, SQLStandardParser.RULE_proceduralCase,
                 SQLStandardParser.RULE_proceduralLoop, SQLStandardParser.RULE_proceduralRepeat,
                 SQLStandardParser.RULE_proceduralTryCatch -> SQLQueryConditionalStatement.recognize(recognizer, node);
-            case SQLStandardParser.RULE_routineArgument, SQLStandardParser.RULE_localVariableDeclaration,
-                SQLStandardParser.RULE_firebirdVariableDeclaration ->
+            case SQLStandardParser.RULE_routineArgument, SQLStandardParser.RULE_localVariableDeclaration ->
                 SQLQueryVariableDeclarationStatement.recognize(recognizer, node);
             case SQLStandardParser.RULE_cursorDeclaration, SQLStandardParser.RULE_localRelationDeclaration ->
                 SQLQueryRelationDeclarationStatement.recognize(recognizer, node);
@@ -59,8 +58,9 @@ public abstract class SQLQueryStatementModel extends SQLQueryModelContent {
                     : SQLQueryEmbeddedStatement.recognize(recognizer, node);
             case SQLStandardParser.RULE_cursorOperation -> SQLQueryCursorOperationStatement.recognize(recognizer, node);
             case SQLStandardParser.RULE_variableAssignmentStatement -> SQLQueryAssignmentStatement.recognize(recognizer, node);
-            case SQLStandardParser.RULE_directSqlDataStatement, SQLStandardParser.RULE_dropTableStatement,
-                SQLStandardParser.RULE_callStatement, SQLStandardParser.RULE_firebirdSelectIntoStatement ->
+            case SQLStandardParser.RULE_directSqlDataStatement, SQLStandardParser.RULE_selectStatementSingleRow,
+                SQLStandardParser.RULE_dropTableStatement,
+                SQLStandardParser.RULE_callStatement ->
                 SQLQueryEmbeddedStatement.recognize(recognizer, node);
             case SQLStandardParser.RULE_proceduralStatements, SQLStandardParser.RULE_proceduralDeclarations,
                 SQLStandardParser.RULE_routineDeclarationsAndBlock, SQLStandardParser.RULE_firebirdBlock,
@@ -101,6 +101,7 @@ public abstract class SQLQueryStatementModel extends SQLQueryModelContent {
     private static boolean isSyntaxWrapper(int kind) {
         return switch (kind) {
             case SQLStandardParser.RULE_proceduralStatement, SQLStandardParser.RULE_routineDefinition,
+                SQLStandardParser.RULE_routineTrailing,
                 SQLStandardParser.RULE_routineBody, SQLStandardParser.RULE_routineBodyContent,
                 SQLStandardParser.RULE_triggerBody, SQLStandardParser.RULE_dollarQuotedBody,
                 SQLStandardParser.RULE_dollarBodyElement, SQLStandardParser.RULE_sqlQueryBody,

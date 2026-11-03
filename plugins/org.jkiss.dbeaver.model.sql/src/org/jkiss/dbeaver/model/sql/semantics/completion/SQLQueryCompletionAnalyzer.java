@@ -215,6 +215,7 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     protected DBPImage prepareProposalImage(@NotNull SQLQueryCompletionItem item) {
         return switch (item.getKind()) {
             case SCHEMA, CATALOG, UNKNOWN -> DBValueFormatting.getObjectImage(item.getObject());
+            case TYPE -> item.getObject() == null ? DBIcon.TREE_DATA_TYPE : DBValueFormatting.getObjectImage(item.getObject());
             case RESERVED -> DBIcon.SQL_TEXT;
             case SUBQUERY_ALIAS, RELATED_SUBQUERY_ALIAS -> DBIcon.TREE_TABLE_ALIAS;
             case DERIVED_COLUMN_NAME -> DBIcon.TREE_DERIVED_COLUMN;

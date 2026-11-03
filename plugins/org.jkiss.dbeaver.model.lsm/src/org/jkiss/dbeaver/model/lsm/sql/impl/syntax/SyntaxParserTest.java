@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,9 +21,14 @@ import org.antlr.v4.runtime.atn.ATNConfigSet;
 import org.antlr.v4.runtime.dfa.DFA;
 import org.antlr.v4.runtime.tree.Tree;
 import org.antlr.v4.runtime.tree.Trees;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser.SqlQueriesContext;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
 import org.jkiss.dbeaver.model.stm.STMErrorListener;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
@@ -33,9 +38,6 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.util.BitSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class SyntaxParserTest {
 
@@ -65,15 +67,7 @@ public class SyntaxParserTest {
 
 
         var input = CharStreams.fromString(inputText);
-        var params = new LSMAnalyzerParameters(
-            Map.of("\"", "\""),
-            true,
-            false,
-            '?',
-            List.of(Map.entry(1, Set.of(":"))),
-            true,
-            true
-        );
+        var params = createParameters();
         var ll = new SQLStandardLexer(input, params);
         var tokens = new CommonTokenStream(ll);
         tokens.fill();
@@ -136,15 +130,7 @@ public class SyntaxParserTest {
 
     public static String collect(STMTreeNode ctx) {
         var input = CharStreams.fromString("");
-        var params = new LSMAnalyzerParameters(
-            Map.of("\"", "\""),
-            true,
-            false,
-            '?',
-            List.of(Map.entry(1, Set.of(":"))),
-            true,
-            true
-        );
+        var params = createParameters();
         var ll = new SQLStandardLexer(input, params);
         var tokens = new CommonTokenStream(ll);
         var pp = new SQLStandardParser(tokens, params);
@@ -157,6 +143,29 @@ public class SyntaxParserTest {
         }
     }
     
+    @NotNull
+    private static LSMAnalyzerParameters createParameters() {
+        var dialect = new BasicSQLDialect() {
+            @NotNull
+            @Override
+            public String[] getSingleLineComments() {
+                return new String[]{"#"};
+            }
+        };
+        var preferences = new SimplePreferenceStore() {
+            @Override
+            public void save() {
+                // In-memory debug preferences.
+            }
+        };
+        preferences.setValue(ModelPreferences.SQL_PARAMETERS_ENABLED, true);
+        preferences.setValue(ModelPreferences.SQL_VARIABLES_ENABLED, true);
+        preferences.setValue(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX, ":");
+        var syntaxManager = new SQLSyntaxManager(preferences);
+        syntaxManager.init(dialect, preferences);
+        return LSMAnalyzerParameters.forDialect(dialect, syntaxManager);
+    }
+
     private static void collect(STMTreeNode ctx, Parser pp, StringBuilder sb, String indent) {
         sb.append(indent).append(Trees.getNodeText(ctx, pp));
         while (ctx.getChildCount() == 1 && !(ctx.getChild(0).getPayload() instanceof Token)) {

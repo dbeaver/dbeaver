@@ -24,7 +24,21 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public record LSMAnalyzerParameters (
+public final class LSMAnalyzerParameters {
+    private final Map<String, String> knownIdentifierQuotes;
+    private final boolean isSqlParametersEnabled;
+    private final boolean isAnonymousSqlParametersEnabled;
+    private final char anonymousParameterMark;
+    private final List<Map.Entry<Integer, Set<String>>> namedParameterPrefixes;
+    private final boolean variablesEnabled;
+    private final boolean hashLineCommentsEnabled;
+    private final SQLDialect.ProceduralSyntaxFamily proceduralSyntaxFamily;
+    private final SQLDialect.TrailingSelectIntoSupport trailingSelectIntoSupport;
+    private final Set<String> typeModifierKeywords;
+    private final Set<String> signatureModifierKeywords;
+    private final Set<String> knownTypeNames;
+
+    private LSMAnalyzerParameters(
         @NotNull Map<String, String> knownIdentifierQuotes,
         boolean isSqlParametersEnabled,
         boolean isAnonymousSqlParametersEnabled,
@@ -32,23 +46,83 @@ public record LSMAnalyzerParameters (
         @NotNull List<Map.Entry<Integer, Set<String>>> namedParameterPrefixes,
         boolean variablesEnabled,
         boolean hashLineCommentsEnabled,
-        @NotNull SQLDialect.ProceduralSyntaxFamily proceduralSyntaxFamily
-) {
-
-    public LSMAnalyzerParameters(
-        @NotNull Map<String, String> knownIdentifierQuotes,
-        boolean isSqlParametersEnabled,
-        boolean isAnonymousSqlParametersEnabled,
-        char anonymousParameterMark,
-        @NotNull List<Map.Entry<Integer, Set<String>>> namedParameterPrefixes,
-        boolean variablesEnabled,
-        boolean hashLineCommentsEnabled
+        @NotNull SQLDialect.ProceduralSyntaxFamily proceduralSyntaxFamily,
+        @NotNull SQLDialect.TrailingSelectIntoSupport trailingSelectIntoSupport,
+        @NotNull Set<String> typeModifierKeywords,
+        @NotNull Set<String> signatureModifierKeywords,
+        @NotNull Set<String> knownTypeNames
     ) {
-        this(knownIdentifierQuotes, isSqlParametersEnabled, isAnonymousSqlParametersEnabled, anonymousParameterMark,
-            namedParameterPrefixes, variablesEnabled, hashLineCommentsEnabled, SQLDialect.ProceduralSyntaxFamily.GENERIC);
+        this.knownIdentifierQuotes = knownIdentifierQuotes;
+        this.isSqlParametersEnabled = isSqlParametersEnabled;
+        this.isAnonymousSqlParametersEnabled = isAnonymousSqlParametersEnabled;
+        this.anonymousParameterMark = anonymousParameterMark;
+        this.namedParameterPrefixes = namedParameterPrefixes;
+        this.variablesEnabled = variablesEnabled;
+        this.hashLineCommentsEnabled = hashLineCommentsEnabled;
+        this.proceduralSyntaxFamily = proceduralSyntaxFamily;
+        this.trailingSelectIntoSupport = trailingSelectIntoSupport;
+        this.typeModifierKeywords = typeModifierKeywords;
+        this.signatureModifierKeywords = signatureModifierKeywords;
+        this.knownTypeNames = knownTypeNames;
     }
 
-    public static LSMAnalyzerParameters forDialect(SQLDialect dialect, SQLSyntaxManager syntaxManager) {
+    @NotNull
+    public Map<String, String> knownIdentifierQuotes() {
+        return this.knownIdentifierQuotes;
+    }
+
+    public boolean isSqlParametersEnabled() {
+        return this.isSqlParametersEnabled;
+    }
+
+    public boolean isAnonymousSqlParametersEnabled() {
+        return this.isAnonymousSqlParametersEnabled;
+    }
+
+    public char anonymousParameterMark() {
+        return this.anonymousParameterMark;
+    }
+
+    @NotNull
+    public List<Map.Entry<Integer, Set<String>>> namedParameterPrefixes() {
+        return this.namedParameterPrefixes;
+    }
+
+    public boolean variablesEnabled() {
+        return this.variablesEnabled;
+    }
+
+    public boolean hashLineCommentsEnabled() {
+        return this.hashLineCommentsEnabled;
+    }
+
+    @NotNull
+    public SQLDialect.ProceduralSyntaxFamily proceduralSyntaxFamily() {
+        return this.proceduralSyntaxFamily;
+    }
+
+    @NotNull
+    public SQLDialect.TrailingSelectIntoSupport trailingSelectIntoSupport() {
+        return this.trailingSelectIntoSupport;
+    }
+
+    @NotNull
+    public Set<String> typeModifierKeywords() {
+        return this.typeModifierKeywords;
+    }
+
+    @NotNull
+    public Set<String> signatureModifierKeywords() {
+        return this.signatureModifierKeywords;
+    }
+
+    @NotNull
+    public Set<String> knownTypeNames() {
+        return this.knownTypeNames;
+    }
+
+    @NotNull
+    public static LSMAnalyzerParameters forDialect(@NotNull SQLDialect dialect, @NotNull SQLSyntaxManager syntaxManager) {
         String[][] identifierQuotes = dialect.getIdentifierQuoteStrings();
         Map<String, String> identifierQuotPairs = Stream.of(identifierQuotes == null ? new String[0][] : identifierQuotes)
             .collect(Collectors.toUnmodifiableMap(q -> q[0], q -> q[1]));
@@ -58,6 +132,11 @@ public record LSMAnalyzerParameters (
             .sorted(Comparator.comparingInt(Map.Entry::getKey))
             .collect(Collectors.toList());
 
+        Set<String> knownTypeNames = dialect.getDataTypes(null).stream()
+            .map(name -> name.trim().replaceAll("\\s+", " ").toUpperCase(Locale.ROOT))
+            .filter(name -> !name.isEmpty())
+            .collect(Collectors.toUnmodifiableSet());
+
         return new LSMAnalyzerParameters(
             identifierQuotPairs,
             syntaxManager.isParametersEnabled(),
@@ -66,7 +145,11 @@ public record LSMAnalyzerParameters (
             namedParameterPrefixes,
             syntaxManager.isVariablesEnabled(),
             Arrays.asList(Objects.requireNonNullElseGet(dialect.getSingleLineComments(), () -> new String[0])).contains("#"),
-            dialect.getProceduralSyntaxFamily()
+            dialect.getProceduralSyntaxFamily(),
+            dialect.getTrailingSelectIntoSupport(),
+            dialect.getTypeModifierKeywords(),
+            dialect.getSignatureModifierKeywords(),
+            knownTypeNames
         );
     }
 }

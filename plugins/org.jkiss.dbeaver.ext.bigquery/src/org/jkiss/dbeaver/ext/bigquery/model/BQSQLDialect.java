@@ -29,11 +29,18 @@ import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateSet;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicatesCondition;
 
 import java.util.EnumSet;
+import java.util.Set;
 
 /**
  * BigQuery SQL dialect
  */
 public class BQSQLDialect extends GenericSQLDialect {
+
+    @NotNull
+    @Override
+    public Set<String> getSignatureModifierKeywords() {
+        return Set.of("IN", "OUT", "INOUT");
+    }
 
     private static final String[] EXEC_KEYWORDS = {"CALL"};
 

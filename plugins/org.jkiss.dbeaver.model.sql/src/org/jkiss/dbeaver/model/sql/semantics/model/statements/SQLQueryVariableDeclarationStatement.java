@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics.model.statements;
 
-import org.antlr.v4.runtime.Token;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
@@ -30,7 +29,6 @@ import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /** Declares one or more local variables, or a routine parameter with its explicit type. */
 public final class SQLQueryVariableDeclarationStatement extends SQLQueryStatementModel {
@@ -42,11 +40,36 @@ public final class SQLQueryVariableDeclarationStatement extends SQLQueryStatemen
         private final String typeRefString;
         @Nullable
         private SQLQueryExprType type;
+        @Nullable
+        private final SQLQueryValueExpression initializer;
+        @Nullable
+        private SQLQueryRowsSourceContext initializerContext;
+        @Nullable
+        private final SQLQueryModelRecognizer.TypeReference typeReference;
+        @NotNull
+        private final List<String> modifiers;
+
+        @NotNull
+        public List<String> getModifiers() {
+            return this.modifiers;
+        }
 
         public Declaration(@NotNull SQLQuerySymbolEntry name, boolean parameter, @Nullable String typeRefString) {
+            this(name, parameter, typeRefString, null, null, List.of());
+        }
+
+        private Declaration(
+            @NotNull SQLQuerySymbolEntry name, boolean parameter, @Nullable String typeRefString,
+            @Nullable SQLQueryValueExpression initializer,
+            @Nullable SQLQueryModelRecognizer.TypeReference typeReference,
+            @NotNull List<String> modifiers
+        ) {
             this.name = name;
             this.parameter = parameter;
             this.typeRefString = typeRefString;
+            this.initializer = initializer;
+            this.typeReference = typeReference;
+            this.modifiers = List.copyOf(modifiers);
         }
 
         @NotNull
@@ -81,57 +104,72 @@ public final class SQLQueryVariableDeclarationStatement extends SQLQueryStatemen
 
     @NotNull
     private final List<Declaration> declarations;
-    @Nullable
-    private final SQLQueryValueExpression initializer;
+    private final boolean individuallyTyped;
+    private final boolean sharedType;
 
     private SQLQueryVariableDeclarationStatement(
-        @NotNull STMTreeNode node,
-        @NotNull List<Declaration> declarations,
-        @Nullable SQLQueryValueExpression initializer
+        @NotNull STMTreeNode node, @NotNull List<Declaration> declarations, boolean individuallyTyped, boolean sharedType
     ) {
-        super(node, initializer);
+        super(node, declarations.stream().map(d -> d.initializer).filter(i -> i != null).toArray(SQLQueryValueExpression[]::new));
         this.declarations = List.copyOf(declarations);
-        this.initializer = initializer;
+        this.individuallyTyped = individuallyTyped;
+        this.sharedType = sharedType;
     }
 
     @NotNull
     public static SQLQueryVariableDeclarationStatement recognize(@NotNull SQLQueryModelRecognizer recognizer, @NotNull STMTreeNode node) {
         List<Declaration> declarations = new ArrayList<>();
-        SQLQueryValueExpression initializer = null;
+        boolean individuallyTyped = false;
+        boolean sharedType = false;
         if (node.getNodeKindId() == SQLStandardParser.RULE_routineArgument) {
-            List<STMTreeNode> terms = node.findNonErrorChildren();
-            int index = 0;
-            if (!terms.isEmpty()) {
-                String first = terms.getFirst().getTextContent().toUpperCase(Locale.ROOT);
-                if (first.equals("IN") || first.equals("OUT") || first.equals("INOUT")) {
-                    index++;
-                }
-            }
-            if (index + 1 < terms.size() && terms.get(index).getPayload() instanceof Token) {
-                SQLQuerySymbolEntry name = recognizer.collectUnstructuredName(terms.get(index));
+            STMTreeNode identifier = node.findFirstChildOfName(STMKnownRuleNames.identifier);
+            STMTreeNode type = node.findFirstChildOfName(STMKnownRuleNames.dataType);
+            if (identifier != null && type != null) {
+                SQLQuerySymbolEntry name = recognizer.collectLocalVariableName(identifier);
+                STMTreeNode defaults = node.findFirstChildOfName(STMKnownRuleNames.routineParameterDefault);
+                STMTreeNode value = defaults == null ? null : defaults.findFirstChildOfName(STMKnownRuleNames.valueExpression);
                 if (name != null) {
-                    StringBuilder typeName = new StringBuilder(terms.get(index + 1).getTextContent());
-                    for (int partIndex = index + 2; partIndex + 1 < terms.size() &&
-                        ".".equals(terms.get(partIndex).getTextContent()); partIndex += 2) {
-                        typeName.append('.').append(terms.get(partIndex + 1).getTextContent());
-                    }
-                    declarations.add(new Declaration(name, true, typeName.toString()));
+                    SQLQueryModelRecognizer.TypeReference typeReference = recognizer.collectTypeReference(node);
+                    Declaration declaration = new Declaration(name, true, typeReference.spelling(),
+                        value == null ? null : recognizer.collectValueExpression(value, null), typeReference,
+                        recognizer.collectSignatureModifiers(node));
+                    declarations.add(declaration);
                 }
             }
         } else {
-            STMTreeNode type = node.findFirstChildOfName(STMKnownRuleNames.dataType);
-            for (STMTreeNode child : node.findChildrenOfName(SQLStandardParser.ruleNames[SQLStandardParser.RULE_cursorName])) {
-                SQLQuerySymbolEntry name = SQLQueryRelationDeclarationStatement.collectCursorName(recognizer, child);
+            List<STMTreeNode> typed = node.findChildrenOfName(STMKnownRuleNames.localTypedVariable);
+            individuallyTyped = typed.size() > 1;
+            for (STMTreeNode item : typed) {
+                STMTreeNode identifier = item.findFirstChildOfName(STMKnownRuleNames.identifier);
+                SQLQuerySymbolEntry name = identifier == null ? null : recognizer.collectLocalVariableName(identifier);
                 if (name != null) {
-                    declarations.add(new Declaration(name, false, type == null ? null : type.getTextContent()));
+                    STMTreeNode type = item.findFirstChildOfName(STMKnownRuleNames.localVariableType);
+                    STMTreeNode value = item.findFirstChildOfName(STMKnownRuleNames.valueExpression);
+                    SQLQueryModelRecognizer.TypeReference typeReference = type == null ? null : recognizer.collectTypeReference(type);
+                    declarations.add(new Declaration(name, false, typeReference == null ? null : typeReference.spelling(),
+                        value == null ? null : recognizer.collectValueExpression(value, null),
+                        typeReference, List.of()));
                 }
             }
-            STMTreeNode value = node.findFirstChildOfName(STMKnownRuleNames.valueExpression);
-            if (value != null) {
-                initializer = recognizer.collectValueExpression(value, null);
+            if (typed.isEmpty()) {
+                List<STMTreeNode> names = node.findChildrenOfName(STMKnownRuleNames.identifier);
+                sharedType = names.size() > 1;
+                STMTreeNode type = node.findFirstChildOfName(STMKnownRuleNames.localVariableType);
+                STMTreeNode value = node.findFirstChildOfName(STMKnownRuleNames.valueExpression);
+                SQLQueryValueExpression initializer = value == null ? null : recognizer.collectValueExpression(value, null);
+                SQLQueryModelRecognizer.TypeReference typeReference = type == null ? null : recognizer.collectTypeReference(type);
+                for (STMTreeNode child : names) {
+                    SQLQuerySymbolEntry name = recognizer.collectLocalVariableName(child);
+                    if (name != null) {
+                        // A shared DEFAULT expression belongs to the declaration group, not to every name.
+                        declarations.add(new Declaration(name, false, typeReference == null ? null : typeReference.spelling(),
+                            initializer, typeReference, List.of()));
+                        initializer = null;
+                    }
+                }
             }
         }
-        return new SQLQueryVariableDeclarationStatement(node, declarations, initializer);
+        return new SQLQueryVariableDeclarationStatement(node, declarations, individuallyTyped, sharedType);
     }
 
     @NotNull
@@ -144,12 +182,22 @@ public final class SQLQueryVariableDeclarationStatement extends SQLQueryStatemen
     protected SQLQueryRowsSourceContext resolveStatementImpl(
         @NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics
     ) {
-        if (this.initializer != null) {
-            this.initializer.resolveRowSources(context, statistics);
+        SQLDialect.ProceduralSyntaxFamily family = context.getDialect().getProceduralSyntaxFamily();
+        boolean unsupportedTyped = this.individuallyTyped && family == SQLDialect.ProceduralSyntaxFamily.FIREBIRD_PSQL;
+        boolean unsupportedShared = this.sharedType && family != SQLDialect.ProceduralSyntaxFamily.GENERIC;
+        if (unsupportedTyped || unsupportedShared) {
+            statistics.appendError(this.getSyntaxNode(), "Unsupported local variable declaration for this dialect");
+            return context;
         }
         for (Declaration declaration : this.declarations) {
+            if (declaration.initializer != null) {
+                declaration.initializerContext = context;
+                declaration.initializer.resolveRowSources(context, statistics);
+            }
             String typeRefString = declaration.getTypeRefString();
-            SQLQueryExprType type = typeRefString == null
+            SQLQueryExprType type = declaration.typeReference != null
+                ? SQLQuerySemanticUtils.resolveTypeReference(context, statistics, declaration.typeReference)
+                : typeRefString == null
                 ? SQLQueryExprType.UNKNOWN
                 : SQLQuerySemanticUtils.resolveTypeReference(
                     context, statistics, declaration.getName().getSyntaxNode(), typeRefString);
@@ -174,7 +222,13 @@ public final class SQLQueryVariableDeclarationStatement extends SQLQueryStatemen
 
     @Override
     public boolean tryResolveValueRelations(@NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics) {
-        return this.initializer == null || this.initializer.tryResolveValueRelations(this.valueContext(context), statistics);
+        for (Declaration declaration : this.declarations) {
+            if (declaration.initializer != null && declaration.initializerContext != null &&
+                !declaration.initializer.tryResolveValueRelations(declaration.initializerContext.makeEmptyTuple(), statistics)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     @Override

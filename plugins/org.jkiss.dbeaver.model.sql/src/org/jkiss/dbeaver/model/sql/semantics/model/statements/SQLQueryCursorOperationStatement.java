@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.sql.semantics.model.statements;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
@@ -28,6 +27,7 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
+import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.ArrayList;
@@ -51,13 +51,13 @@ public final class SQLQueryCursorOperationStatement extends SQLQueryStatementMod
     @NotNull
     public static SQLQueryCursorOperationStatement recognize(@NotNull SQLQueryModelRecognizer recognizer, @NotNull STMTreeNode node) {
         List<SQLQuerySymbolEntry> names = new ArrayList<>();
-        for (STMTreeNode nameNode : node.findChildrenOfName(SQLStandardParser.ruleNames[SQLStandardParser.RULE_cursorName])) {
+        for (STMTreeNode nameNode : node.findChildrenOfName(STMKnownRuleNames.cursorName)) {
             SQLQuerySymbolEntry name = SQLQueryRelationDeclarationStatement.collectCursorName(recognizer, nameNode);
             if (name != null) {
                 names.add(name);
             }
         }
-        STMTreeNode query = node.findFirstChildOfName(SQLStandardParser.ruleNames[SQLStandardParser.RULE_directSqlDataStatement]);
+        STMTreeNode query = node.findFirstChildOfName(STMKnownRuleNames.directSqlDataStatement);
         return new SQLQueryCursorOperationStatement(node, names,
             query == null ? null : SQLQueryEmbeddedStatement.recognizeSql(recognizer, query));
     }

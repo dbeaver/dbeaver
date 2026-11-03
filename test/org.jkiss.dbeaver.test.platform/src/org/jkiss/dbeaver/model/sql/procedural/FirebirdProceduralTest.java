@@ -18,9 +18,12 @@ package org.jkiss.dbeaver.model.sql.procedural;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.SQLQueryAnonymousBlockModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.SQLQueryRoutineCreateModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.SQLQueryRoutineReturn;
 import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.SQLQueryTriggerCreateModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.statements.SQLQueryConditionalStatement;
 import org.junit.jupiter.api.Assertions;
@@ -31,6 +34,41 @@ public class FirebirdProceduralTest extends ProceduralDialectTestBase {
     @Override
     protected SQLDialect dialect() {
         return dialectById("firebird");
+    }
+
+    @Test
+    void procedureOutputParametersBindInsideBody() {
+        String sql = "CREATE PROCEDURE p(x INTEGER) RETURNS (out_value INTEGER) " +
+            "AS BEGIN SELECT out_value FROM tab INTO :out_value; END";
+        var model = recognize(sql);
+        var routine = root(model, SQLQueryRoutineCreateModel.class);
+        Assertions.assertInstanceOf(SQLQueryRoutineReturn.OutputParameters.class, routine.getReturnSpec());
+        assertBound(model, "out_value", 0, 1);
+        assertBound(model, "out_value", 0, 2);
+    }
+
+    @Test
+    void selectIntoBindsEachOutputTarget() {
+        String sql = "CREATE PROCEDURE p() RETURNS (first_value INTEGER, second_value INTEGER) " +
+            "AS BEGIN SELECT first_value, second_value FROM tab INTO :first_value, :second_value; END";
+        assertStructuredControlFlow(sql, SQLStandardParser.RULE_selectIntoClause);
+        var model = recognize(sql);
+        assertBound(model, "first_value", 0, 2);
+        assertBound(model, "second_value", 0, 2);
+    }
+
+    @Test
+    void trailingIntoAfterCteOrUnionBindsTheCompletedQuery() {
+        for (String query : new String[] {
+            "WITH chosen AS (SELECT id FROM tab) SELECT id FROM chosen INTO :n",
+            "SELECT id FROM tab WHERE id = 1 UNION ALL SELECT id FROM tab WHERE id = 2 INTO :n"
+        }) {
+            String sql = "EXECUTE BLOCK AS DECLARE VARIABLE n INTEGER; BEGIN " + query + "; END";
+            assertStructuredControlFlow(sql, SQLStandardParser.RULE_selectIntoClause);
+            var model = recognize(sql);
+            assertEmbeddedSqlCount(root(model, SQLQueryAnonymousBlockModel.class), 1);
+            assertBound(model, "n", 0, 1);
+        }
     }
 
     /**
@@ -125,6 +163,16 @@ public class FirebirdProceduralTest extends ProceduralDialectTestBase {
     void executeBlockContainsNestedSql() {
         var block = root("EXECUTE BLOCK AS BEGIN SELECT 1; SELECT 2; END", SQLQueryAnonymousBlockModel.class);
         assertEmbeddedSqlCount(block, 2);
+    }
+
+    @Test
+    void declaredVariableBeforeBeginBindsInsideBlock() {
+        String sql = "EXECUTE BLOCK AS DECLARE VARIABLE n INTEGER = 0; " +
+            "BEGIN SELECT n FROM tab INTO :n; END";
+        var model = recognize(sql);
+        assertEmbeddedSqlCount(root(model, SQLQueryAnonymousBlockModel.class), 1);
+        assertBound(model, "n", 0, 1);
+        assertBound(model, "n", 0, 2);
     }
 
     /**

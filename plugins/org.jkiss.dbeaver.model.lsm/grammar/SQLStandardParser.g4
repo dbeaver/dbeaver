@@ -62,6 +62,84 @@ options {
 
     private boolean isAnonymousParametersEnabled;
     private boolean isNamedParametersEnabled;
+    private Set<String> typeModifierKeywords = Collections.emptySet();
+    private Set<String> signatureModifierKeywords = Collections.emptySet();
+    private Set<String> knownTypeNames = Collections.emptySet();
+    private int maxKnownTypeWords = 1;
+    private org.jkiss.dbeaver.model.sql.SQLDialect.TrailingSelectIntoSupport trailingSelectIntoSupport =
+        org.jkiss.dbeaver.model.sql.SQLDialect.TrailingSelectIntoSupport.NONE;
+    private boolean trailingSelectIntoAllowed() {
+        for (RuleContext current = this.getContext(); current != null; current = current.getParent()) {
+            if (current.getRuleIndex() == RULE_proceduralStatement) {
+                return this.trailingSelectIntoSupport != org.jkiss.dbeaver.model.sql.SQLDialect.TrailingSelectIntoSupport.NONE;
+            }
+        }
+        // MySQL also permits session-variable targets outside stored programs.
+        return this.trailingSelectIntoSupport == org.jkiss.dbeaver.model.sql.SQLDialect.TrailingSelectIntoSupport.ANY &&
+            this.getInputStream().LA(2) == SQLStandardLexer.BatchVariableName;
+    }
+    private boolean isUnquotedWord(int offset) {
+        Token token = this.getInputStream().LT(offset);
+        return token.getType() != Token.EOF && token.getType() != SQLStandardLexer.DelimitedIdentifier &&
+            token.getType() != SQLStandardLexer.Quotted && token.getType() != SQLStandardLexer.Period &&
+            token.getType() != SQLStandardLexer.Comma && token.getType() != SQLStandardLexer.LeftParen &&
+            token.getType() != SQLStandardLexer.RightParen && token.getType() != SQLStandardLexer.Semicolon &&
+            token.getType() != SQLStandardLexer.EqualsOperator;
+    }
+    private boolean typeModifierAt(int offset) {
+        return isUnquotedWord(offset) && this.typeModifierKeywords.contains(
+            this.getInputStream().LT(offset).getText().toUpperCase(Locale.ROOT));
+    }
+    private boolean signatureModifierAt(int offset) {
+        return isUnquotedWord(offset) && this.signatureModifierKeywords.contains(
+            this.getInputStream().LT(offset).getText().toUpperCase(Locale.ROOT));
+    }
+    private boolean namedRoutineArgumentAhead() {
+        int offset = 1;
+        while (signatureModifierAt(offset)) {
+            offset++;
+        }
+        TokenStream tokens = this.getInputStream();
+        if (tokens.LA(offset) == Token.EOF || tokens.LA(offset + 1) == Token.EOF ||
+            tokens.LA(offset + 1) == SQLStandardLexer.Comma || tokens.LA(offset + 1) == SQLStandardLexer.RightParen ||
+            tokens.LA(offset + 1) == SQLStandardLexer.LeftParen || tokens.LA(offset + 1) == SQLStandardLexer.Period) {
+            return false;
+        }
+        // A known multiword type takes precedence over interpreting its second word as a parameter type.
+        if (isUnquotedWord(offset)) {
+            StringBuilder phrase = new StringBuilder();
+            for (int i = offset; isUnquotedWord(i) && i < offset + this.maxKnownTypeWords; i++) {
+                if (i > offset) {
+                    phrase.append(' ');
+                }
+                phrase.append(tokens.LT(i).getText().toUpperCase(Locale.ROOT));
+                if (i > offset && this.knownTypeNames.contains(phrase.toString())) {
+                    return false;
+                }
+            }
+            if (this.knownTypeNames.contains(tokens.LT(offset).getText().toUpperCase(Locale.ROOT)) &&
+                typeModifierAt(offset + 1)) {
+                return false;
+            }
+        }
+        if (signatureModifierAt(offset + 1)) {
+            int typeOffset = offset + 1;
+            do {
+                typeOffset++;
+            } while (signatureModifierAt(typeOffset));
+            // A mode after the name is only meaningful when an actual type can follow it.
+            return isUnquotedWord(typeOffset) || tokens.LA(typeOffset) == SQLStandardLexer.DelimitedIdentifier ||
+                tokens.LA(typeOffset) == SQLStandardLexer.Quotted;
+        }
+        return true;
+    }
+    private boolean modifierAhead(boolean signature) {
+        return signature ? signatureModifierAt(1) : typeModifierAt(1);
+    }
+    private boolean returnClauseAhead() {
+        int token = this.getInputStream().LA(1);
+        return token == SQLStandardLexer.RETURN || token == SQLStandardLexer.RETURNS;
+    }
     private org.jkiss.dbeaver.model.sql.SQLDialect.ProceduralSyntaxFamily proceduralSyntaxFamily =
         org.jkiss.dbeaver.model.sql.SQLDialect.ProceduralSyntaxFamily.GENERIC;
 
@@ -70,6 +148,11 @@ options {
         this.isAnonymousParametersEnabled = parameters.isAnonymousSqlParametersEnabled();
         this.isNamedParametersEnabled = parameters.isSqlParametersEnabled();
         this.proceduralSyntaxFamily = parameters.proceduralSyntaxFamily();
+        this.trailingSelectIntoSupport = parameters.trailingSelectIntoSupport();
+        this.typeModifierKeywords = parameters.typeModifierKeywords();
+        this.signatureModifierKeywords = parameters.signatureModifierKeywords();
+        this.knownTypeNames = parameters.knownTypeNames();
+        this.maxKnownTypeWords = this.knownTypeNames.stream().mapToInt(name -> name.split(" ").length).max().orElse(1);
     }
 
     private boolean isGenericProceduralSyntax() {
@@ -145,7 +228,7 @@ variableName: variableExpression|identifier;
 variableInitializer: (EqualsOperator|DEFAULT) valueExpression;
 
 directSqlDataStatement: withClause? (deleteStatement|selectStatement|insertStatement|updateStatement);
-selectStatement: queryExpression;
+selectStatement: queryExpression ({trailingSelectIntoAllowed()}? selectIntoClause)?;
 
 // data type literals
 sign: PlusSign|MinusSign;
@@ -171,9 +254,9 @@ identifier: (Introducer characterSetSpecification)? actualIdentifier;
 actualIdentifier: (Identifier|DelimitedIdentifier|nonReserved|Quotted|BatchVariableName);
 
 // data types
-dataType: (arrayType|datetimeType|intervalType|qualifiedName|anyWordsWithProperty (CHARACTER SET characterSetSpecification)?);
+dataType: (arrayType|datetimeType|intervalType|(qualifiedName|CHARACTER) typeModifier* typeArguments? (CHARACTER SET characterSetSpecification)?);
 arrayType: ARRAY LeftParen dataType RightParen; // TODO parse it conditionally on the database engine?
-datetimeType: DATE|TIME (LeftParen UnsignedInteger RightParen)? (WITH TIME ZONE)?|TIMESTAMP (LeftParen UnsignedInteger RightParen)? (WITH TIME ZONE)?;
+datetimeType: DATE|TIME typeArguments? (timeZoneQualifier TIME ZONE)?|TIMESTAMP typeArguments? (timeZoneQualifier TIME ZONE)?;
 intervalType: INTERVAL intervalQualifier;
 intervalQualifier: (startField TO endField|singleDatetimeField);
 startField: nonSecondDatetimeField (LeftParen intervalLeadingFieldPrecision RightParen)?;
@@ -184,11 +267,11 @@ intervalFractionalSecondsPrecision: UnsignedInteger;
 singleDatetimeField: (nonSecondDatetimeField (LeftParen intervalLeadingFieldPrecision RightParen)?|SECOND (LeftParen intervalLeadingFieldPrecision (Comma intervalFractionalSecondsPrecision)? RightParen)?);
 
 // column definition
-columnDefinition: columnName dataType defaultClause? columnConstraintDefinition* anyWordWithAnyValue?; // why anyWordWithAnyValue?
+columnDefinition: columnName dataType typeModifier* defaultClause? columnConstraintDefinition* anyWordWithAnyValue?;
 columnName: identifier;
 
 // default
-defaultClause: DEFAULT? valueExpression;
+defaultClause: DEFAULT valueExpression;
 
 // column constraints
 columnConstraintDefinition: (constraintNameDefinition)? columnConstraint (constraintAttributes)?;
@@ -311,7 +394,7 @@ joinColumnList: columnNameList;
 
 // conditions
 whereClause: WHERE searchCondition?;
-groupByClause: GROUP BY groupingColumnReferenceList;
+groupByClause: GROUP BY groupingColumnReferenceList?;
 groupingColumnReferenceList: groupingColumnReference (Comma groupingColumnReference)*;
 groupingColumnReference: columnIndex | valueReference | anyWordsWithProperty;
 havingClause: HAVING searchCondition?;
@@ -327,7 +410,7 @@ result: valueExpression|searchCondition;
 elseClause: ELSE result?;
 searchedCase: CASE (searchedWhenClause)* (elseClause)? END;
 searchedWhenClause: WHEN searchCondition? THEN result?;
-castSpecification: CAST LeftParen castOperand AS dataType RightParen;
+castSpecification: CAST LeftParen castOperand AS dataType typeModifier* RightParen;
 castOperand: valueExpression;
 
 overClause: OVER LeftParen (PARTITION BY valueExpression (Comma valueExpression)*)? orderByClause? ((ROWS|RANGE) anyUnexpected)? RightParen;
@@ -355,7 +438,7 @@ intervalOperation2: Asterisk intervalFactor((((Asterisk|Solidus) factor)+ (sign 
 
 valueExpressionPrimary: valueExpressionAtom valueExpressionAttributeSpec? valueExpressionCastSpec?;
 valueExpressionAttributeSpec: Colon Identifier; // https://docs.snowflake.com/en/user-guide/tutorials/json-basics-tutorial
-valueExpressionCastSpec: TypeCast dataType;
+valueExpressionCastSpec: TypeCast dataType typeModifier*;
 valueExpressionAtom: unsignedNumericLiteral|generalLiteral|countAllExpression
     |scalarSubquery|caseExpression|LeftParen valueExpression anyUnexpected?? RightParen|castSpecification
     |nullSpecification|truthValue|variableExpression|generalValueSpecification|functionCallExpression|aggregateExpression|valueReference|anyWordsWithProperty;
@@ -489,7 +572,8 @@ dropCharacterSetStatement: DROP CHARACTER SET characterSetName;
 ifExistsSpec: IF EXISTS ;
 
 // data statements
-selectStatementSingleRow: SELECT (setQuantifier)? (topExpression)? selectList INTO selectTargetList tableExpression;
+selectStatementSingleRow: SELECT (setQuantifier)? (topExpression)? selectList selectIntoClause tableExpression?;
+selectIntoClause: INTO selectTargetList;
 selectTargetList: selectTargetItem (Comma selectTargetItem)* Comma*;
 selectTargetItem: parameterSpecification|tableName|anyUnexpected??;
 deleteStatement: DELETE FROM tableName? ((AS)? correlationName)? whereClause?;
@@ -529,7 +613,7 @@ setSessionAuthorizationIdentifierStatement: SET SESSION AUTHORIZATION valueSpeci
 setLocalTimeZoneStatement: SET TIME ZONE setTimeZoneValue;
 setTimeZoneValue: (intervalValueExpression|LOCAL);
 
-callStatement: (CALL|EXEC|EXECUTE) qualifiedName? callStatementParams?;
+callStatement: (CALL|(EXEC|EXECUTE) (FUNCTION|PROCEDURE)?) qualifiedName? callStatementParams?;
 callStatementParams: LeftParen (anyValue (Comma anyValue)*)? RightParen?;
 
 // unknown keyword, data type or function name
@@ -565,7 +649,7 @@ nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
     EXTRACT | FULL | GLOBAL | LOCAL | INDICATOR | INITIALLY | INTERVAL | ISOLATION | KEY | LEVEL |
     NAMES | NO | NULLIF| ONLY | OVERLAPS| PARTIAL | PRESERVE | READ | RESTRICT | ROLLBACK | SCHEMA |
     SESSION | TEMPORARY | TIME | TIMESTAMP | TIMEZONE_HOUR | TIMEZONE_MINUTE | TRANSACTION |
-    VIEW | WORK | WRITE | ARRAY | DECLARE | REPLACE | TOP | PERCENT | TIES | IN | VAR | VARIABLE |
+    VIEW | WORK | WRITE | WITHOUT | ARRAY | DECLARE | REPLACE | TOP | PERCENT | TIES | IN | VAR | VARIABLE |
     INDEX | MATERIALIZED | ROLE | SEQUENCE | SYNONYM | AFTER | BEFORE | ATOMIC | BLOCK |
     CATCH | CLOSE | CURSOR | DEALLOCATE | DEFINER | EACH | ELSIF | FETCH | FIRST | FOR | HANDLER |
     INSTEAD | LANGUAGE | LAST | NEXT | OPEN | PRIOR | PROC | RECREATE | RELATIVE |
@@ -573,14 +657,15 @@ nonReserved: COMMITTED | REPEATABLE | SERIALIZABLE | TYPE | UNCOMMITTED |
 ;
 
 // Keep new rules below the existing ones so their generated rule ids remain stable.
-routineArgument: (routineSignature|~(LeftParen|RightParen|Comma|Semicolon))+;
-// Routine headers vary widely: options can precede or follow AS, and a broken header retains its DDL kind.
+routineArgument: {namedRoutineArgumentAhead()}? signatureModifier* identifier signatureModifier* dataType typeModifier* signatureModifier* routineParameterDefault?
+    | signatureModifier* dataType typeModifier*;
+// Routine options can precede or follow the body; return declarations belong only to the preamble.
 routineCreateModifier: DEFINER EqualsOperator qualifiedName|TEMP|TEMPORARY|anyWord;
-routineDefinition: routineSignature routineHeaderPart* routineBody? routineHeaderPart*
-    | routineHeaderPart+ routineBody? routineHeaderPart*
-    | routineBody routineHeaderPart*;
-routineHeaderPart: (RETURNS|RETURN) (TABLE routineSignature|dataType)?|LANGUAGE (anyWord|StringLiteralContent)?|routineHeaderWord;
-routineHeaderWord: anyWord|StringLiteralContent|routineSignature;
+routineDefinition: routineSignature routinePreamble? routineTrailing?
+    | routinePreamble routineTrailing?
+    | routineTrailing;
+routineDefinitionExtension: LANGUAGE (anyWord|StringLiteralContent)?|routineHeaderWord;
+routineHeaderWord: {!returnClauseAhead()}? anyWord|StringLiteralContent;
 routineBody: (AS|IS) routineBodyContent? | routineBodyContent;
 routineBodyContent: dollarQuotedBody|characterStringLiteral|routineDeclarationsAndBlock|firebirdBlock|proceduralTryCatch|proceduralBlock
     |LeftParen directSqlDataStatement RightParen?|RETURN routineBodyTokens?|routineBodyTokens;
@@ -596,8 +681,7 @@ triggerHeaderPart: (BEFORE|AFTER|INSTEAD OF) triggerEventList?
 triggerEventList: triggerEvent (OR triggerEvent)*;
 triggerEvent: INSERT|UPDATE (OF columnNameList)?|DELETE|TRIGGER|anyWord;
 triggerTransition: (NEW|OLD) (ROW|TABLE)? AS? identifier;
-triggerBody: (AS|IS)? (dollarQuotedBody|characterStringLiteral|firebirdBlock|proceduralTryCatch|proceduralBlock|routineBodyTokens)
-    | (EXECUTE|EXEC) (FUNCTION|PROCEDURE) qualifiedName routineSignature?;
+triggerBody: (AS|IS)? (dollarQuotedBody|characterStringLiteral|firebirdBlock|proceduralTryCatch|proceduralBlock|callStatement|routineBodyTokens);
 
 anonymousBlockStatement: DO (LANGUAGE anyWord)? (dollarQuotedBody|characterStringLiteral|proceduralBlock)? (LANGUAGE anyWord)?
     | EXECUTE BLOCK routineSignature? (RETURNS routineSignature)? (AS|IS)? (firebirdBlock|proceduralBlock)?
@@ -619,7 +703,7 @@ proceduralDeclarations: (proceduralStatement Semicolon?)*;
 proceduralStatements: (proceduralStatement Semicolon?)*;
 proceduralStatement: proceduralTryCatch|proceduralBlock|proceduralIf|proceduralCase|proceduralLoop|proceduralRepeat|localRoutineDeclaration
     |cursorDeclaration|cursorOperation|localRelationDeclaration|localVariableDeclaration
-    |createTableStatement|dropTableStatement|firebirdSelectIntoStatement|directSqlDataStatement
+    |createTableStatement|dropTableStatement|selectStatementSingleRow|directSqlDataStatement
     |callStatement|variableAssignmentStatement|proceduralStatementTokens;
 localRoutineDeclaration: (FUNCTION|PROCEDURE|PROC) qualifiedName routineDefinition;
 proceduralIf: {isGenericProceduralSyntax()}? IF proceduralCondition? (THEN proceduralStatements ((ELSIF|ELSEIF) proceduralCondition THEN proceduralStatements)*
@@ -647,15 +731,32 @@ cursorName: identifier;
 cursorFetchDirection: NEXT|PRIOR|FIRST|LAST|RELATIVE signedNumericLiteral?;
 localRelationDeclaration: DECLARE cursorName TABLE tableElementList?
     | DECLARE (GLOBAL|LOCAL)? (TEMPORARY|TEMP) TABLE (IF NOT EXISTS)? tableName? tableElementList?;
-localVariableDeclaration: DECLARE? cursorName (Comma cursorName)* dataType? (DEFAULT valueExpression)?;
+localVariableDeclaration: DECLARE? VARIABLE? (
+    localTypedVariable (Comma localTypedVariable)*
+    | identifier (Comma identifier)+ localVariableType? (DEFAULT valueExpression)?
+    | identifier localVariableType? (DEFAULT valueExpression)?
+);
 // Native conditions have no permissive anyUnexpected tail: otherwise BEGIN/SELECT can become part of the condition.
 nativeProceduralCondition: booleanTerm (OR booleanTerm)*;
-firebirdBlock: {isFirebirdProceduralSyntax()}? (firebirdVariableDeclaration Semicolon)* proceduralBlock;
-firebirdVariableDeclaration: DECLARE VARIABLE? cursorName dataType? ((EqualsOperator|DEFAULT) valueExpression)?;
-firebirdSelectIntoStatement: {isFirebirdProceduralSyntax()}? directSqlDataStatement INTO Colon? identifier
-    (Comma Colon? identifier)*;
+firebirdBlock: {isFirebirdProceduralSyntax()}?
+    ({this.getInputStream().LA(1) == SQLStandardLexer.DECLARE}? localVariableDeclaration Semicolon)* proceduralBlock;
+// Occupy the former Firebird declaration slot to preserve the ids of subsequent generated rules.
+localTypedVariable: identifier localVariableType (EqualsOperator valueExpression)?;
 // UNTIL ends the body, rather than being consumed by a permissive unknown statement.
 proceduralRepeat: {isGenericProceduralSyntax()}? REPEAT proceduralStatements UNTIL proceduralRepeatCondition? (END REPEAT)?;
 proceduralRepeatCondition: (~(END|Semicolon))+;
 // T-SQL's END TRY / BEGIN CATCH delimit separate arms, not successive BEGIN/END blocks.
 proceduralTryCatch: {isTsqlProceduralSyntax()}? BEGIN TRY proceduralStatements END TRY BEGIN CATCH proceduralStatements END CATCH;
+localVariableType: dataType typeModifier*;
+typeArguments: LeftParen (anyValue (Comma anyValue?)* )? RightParen?;
+typeModifier: {modifierAhead(false)}? anyWord;
+signatureModifier: {modifierAhead(true)}? anyWord;
+routineParameterDefault: (DEFAULT|EqualsOperator|Colon EqualsOperator) valueExpression?;
+typeContinuation: typeModifier;
+timeZoneQualifier: WITH|WITHOUT;
+routinePreamble: routineDefinitionExtension* routineReturnClause routineDefinitionExtension*
+    | routineDefinitionExtension+;
+routineReturnClause: (RETURNS|RETURN) (TABLE routineResultList|routineResultList|dataType)?;
+routineResultList: LeftParen (routineResultField (Comma routineResultField?)* )? RightParen?;
+routineResultField: {namedRoutineArgumentAhead()}? identifier dataType typeModifier* | dataType typeModifier*;
+routineTrailing: routineBody routineDefinitionExtension*;

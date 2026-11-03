@@ -491,6 +491,7 @@ WHERE: W H E R E ;
 WHILE: W H I L E ;
 WITH: W I T H ;
 WITHIN: W I T H I N ;
+WITHOUT: W I T H O U T ;
 WORK: W O R K ;
 WRITE: W R I T E ;
 YEAR: Y E A R ;

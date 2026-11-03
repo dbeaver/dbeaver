@@ -23,10 +23,12 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolOrigin;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQuerySelectIntoModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTargetReferenceExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.SQLQueryRoutineCreateModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.statements.SQLQueryConditionalStatement;
+import org.jkiss.dbeaver.model.sql.semantics.model.statements.SQLQueryVariableDeclarationStatement;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -38,6 +40,19 @@ public class SqlServerProceduralTest extends ProceduralDialectTestBase {
     @Override
     protected SQLDialect dialect() {
         return dialectById("sqlserver");
+    }
+
+    @Test
+    void selectIntoInsideProcedureStillCreatesTable() {
+        String sql = "CREATE OR ALTER PROC p AS BEGIN SELECT id INTO new_table FROM tab; END";
+        assertStructuredControlFlow(sql, SQLStandardParser.RULE_selectStatementSingleRow);
+        var model = recognize(sql);
+        var routine = root(model, SQLQueryRoutineCreateModel.class);
+        assertEmbeddedSqlCount(routine, 1);
+        statementAt(model, sql, "SELECT id INTO", SQLQuerySelectIntoModel.class);
+        Assertions.assertInstanceOf(SQLQuerySymbolOrigin.RowsSourceRef.class, model.getAllSymbols().stream()
+            .filter(entry -> entry.getRawName().equals("new_table"))
+            .findFirst().orElseThrow().getOrigin());
     }
 
     /**
@@ -155,6 +170,22 @@ public class SqlServerProceduralTest extends ProceduralDialectTestBase {
     @Test
     void prefixedLocalVariableIsProposedInsideProcedure() throws DBException {
         assertProposes("CREATE OR ALTER PROC p AS BEGIN DECLARE @local_value int; SELECT @local_|; END", "@local_value");
+    }
+
+    @Test
+    void localDeclaratorsKeepTheirOwnTypesAndInitializerScopes() throws DBException {
+        String sql = "CREATE OR ALTER PROC p AS BEGIN " +
+            "DECLARE @first int = 1, @second varchar(20) = @first; SELECT @second; END";
+        var model = recognize(sql);
+        var routine = root(model, SQLQueryRoutineCreateModel.class);
+        assertEmbeddedSqlCount(routine, 1);
+        var declaration = statementAt(model, sql, "DECLARE @first", SQLQueryVariableDeclarationStatement.class);
+        Assertions.assertEquals(2, declaration.getDeclarations().size());
+        Assertions.assertEquals("int", declaration.getDeclarations().get(0).getTypeRefString());
+        Assertions.assertEquals("varchar(20)", declaration.getDeclarations().get(1).getTypeRefString());
+        assertBound(model, "@first", 0, 1);
+        assertBound(model, "@second", 0, 1);
+        assertProposes(sql.replace("SELECT @second", "SELECT @sec|"), "@second");
     }
 
     /**

@@ -72,12 +72,12 @@ public abstract class SQLQueryTriggerStatementModel extends SQLQueryProgrammatic
             ? new SQLQueryObjectDataModel(nameNode, name, RelationalObjectType.TYPE_TRIGGER, Set.of()) : null;
         SQLQueryRowsTableDataModel table = null;
         List<SQLQuerySymbolEntry> aliases = new ArrayList<>();
-        for (STMTreeNode part : node.findChildrenOfName(SQLStandardParser.ruleNames[SQLStandardParser.RULE_triggerHeaderPart])) {
+        for (STMTreeNode part : node.findChildrenOfName(STMKnownRuleNames.triggerHeaderPart)) {
             STMTreeNode tableNode = part.findFirstChildOfName(STMKnownRuleNames.tableName);
             if (tableNode != null) {
                 table = recognizer.collectTableReference(tableNode, false);
             }
-            for (STMTreeNode transition : part.findChildrenOfName(SQLStandardParser.ruleNames[SQLStandardParser.RULE_triggerTransition])) {
+            for (STMTreeNode transition : part.findChildrenOfName(STMKnownRuleNames.triggerTransition)) {
                 STMTreeNode alias = transition.findFirstChildOfName(STMKnownRuleNames.identifier);
                 if (alias != null) {
                     SQLQuerySymbolEntry entry = recognizer.collectIdentifier(alias, null);
@@ -87,7 +87,7 @@ public abstract class SQLQueryTriggerStatementModel extends SQLQueryProgrammatic
                 }
             }
         }
-        STMTreeNode bodyNode = node.findFirstChildOfName(SQLStandardParser.ruleNames[SQLStandardParser.RULE_triggerBody]);
+        STMTreeNode bodyNode = node.findFirstChildOfName(STMKnownRuleNames.triggerBody);
         SQLQueryStatementModel body = bodyNode == null ? null : SQLQueryStatementModel.recognize(recognizer, bodyNode);
         return alter
             ? new SQLQueryTriggerAlterModel(node, name, existingObject, table, aliases, body)

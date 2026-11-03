@@ -130,7 +130,8 @@ public class SQLQueryCompletionExtraTextProvider implements SQLQueryCompletionIt
     @Nullable
     @Override
     public String  visitSpecialText(@NotNull SQLSpecialTextCompletionItem specialText) {
-        return " - Special substitution";
+        return specialText.kind == SQLQueryCompletionItemKind.TYPE
+            ? " - " + specialText.description : " - Special substitution";
     }
 
     @Nullable

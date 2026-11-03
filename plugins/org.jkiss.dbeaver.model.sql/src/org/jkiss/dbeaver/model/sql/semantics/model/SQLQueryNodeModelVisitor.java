@@ -336,6 +336,11 @@ public interface SQLQueryNodeModelVisitor<T, R> {
 
     R visitRowsProjectionInto(SQLQuerySelectIntoModel selectIntoStatement, T arg);
 
+    @Nullable
+    default R visitRowsSelectIntoResult(@NotNull SQLQuerySelectIntoResultModel statement, T arg) {
+        return statement.getResultQuery().apply(this, arg);
+    }
+
     R visitRowsProjectionIntoTargetsList(SQLQuerySelectIntoModel.SQLQuerySelectIntoTargetsList targetsList, T arg);
 
     /**

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer.TypeReference;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySemanticUtils;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
@@ -33,21 +34,21 @@ public class SQLQueryValueTypeCastExpression extends SQLQueryValueExpression {
     @NotNull
     private final SQLQueryValueExpression value;
     @NotNull
-    private final String typeRefString;
+    private final TypeReference typeReference;
 
     public SQLQueryValueTypeCastExpression(
         @NotNull STMTreeNode syntaxNode,
         @NotNull SQLQueryValueExpression value,
-        @NotNull String typeRefString
+        @NotNull TypeReference typeReference
     ) {
         super(syntaxNode, value);
         this.value = value;
-        this.typeRefString = typeRefString;
+        this.typeReference = typeReference;
     }
 
     @NotNull
     public String getTypeRefString() {
-        return this.typeRefString;
+        return this.typeReference.spelling();
     }
 
     @NotNull
@@ -66,7 +67,7 @@ public class SQLQueryValueTypeCastExpression extends SQLQueryValueExpression {
         @NotNull SQLQueryRowsDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        return SQLQuerySemanticUtils.resolveTypeReference(context.getRowsSources(), statistics, this.getSyntaxNode(), this.typeRefString);
+        return SQLQuerySemanticUtils.resolveTypeReference(context.getRowsSources(), statistics, this.typeReference);
     }
     
     @Override
@@ -76,6 +77,6 @@ public class SQLQueryValueTypeCastExpression extends SQLQueryValueExpression {
 
     @Override
     public String toString() {
-        return "TypeCast[" + this.value.toString() + ", " + this.typeRefString + "]";
+        return "TypeCast[" + this.value.toString() + ", " + this.typeReference.spelling() + "]";
     }
 }

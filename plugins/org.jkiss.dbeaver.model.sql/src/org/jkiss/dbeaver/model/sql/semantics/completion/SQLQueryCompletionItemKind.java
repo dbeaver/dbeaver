@@ -85,7 +85,8 @@ public enum SQLQueryCompletionItemKind {
      */
     PROCEDURE(false, false, 300),
     CATALOG(false, false, 275),
-    SCHEMA(false, false, 250);
+    SCHEMA(false, false, 250),
+    TYPE(false, false, 250);
 
 
     public final boolean isTableName;

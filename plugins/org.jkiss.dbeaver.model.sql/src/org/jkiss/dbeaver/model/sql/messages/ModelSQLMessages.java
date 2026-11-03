@@ -29,6 +29,7 @@ public class ModelSQLMessages extends NLS {
     public static String model_sql_semantic_symbolClass_SCHEMA;
     public static String model_sql_semantic_symbolClass_TABLE;
     public static String model_sql_semantic_symbolClass_OBJECT;
+    public static String model_sql_semantic_symbolClass_TYPE;
     public static String model_sql_semantic_symbolClass_FUNCTION;
     public static String model_sql_semantic_symbolClass_TABLE_ALIAS;
     public static String model_sql_semantic_symbolClass_COLUMN;

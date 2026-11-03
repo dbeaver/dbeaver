@@ -52,6 +52,25 @@ import java.util.*;
  */
 public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQLDataTypeConverter,
     SQLDialectDDLExtension, SQLDialectSchemaController {
+    @NotNull
+    @Override
+    public TrailingSelectIntoSupport getTrailingSelectIntoSupport() {
+        return TrailingSelectIntoSupport.PROCEDURAL;
+    }
+
+    @Override
+    public boolean areRoutineTableResultColumnsBodyVisible() {
+        return true;
+    }
+
+    @NotNull
+    @Override
+    public Set<String> getSignatureModifierKeywords() {
+        Set<String> keywords = new HashSet<>(super.getSignatureModifierKeywords());
+        keywords.add("VARIADIC");
+        return Set.copyOf(keywords);
+    }
+
     /** PL/pgSQL nested blocks can shadow declarations in an enclosing block.
      *
      * @see <a href="https://www.postgresql.org/docs/current/plpgsql-structure.html">PL/pgSQL structure</a>

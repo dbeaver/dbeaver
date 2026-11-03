@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.sql.semantics.model.statements;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
@@ -51,13 +50,10 @@ public final class SQLQueryEmbeddedStatement extends SQLQueryStatementModel {
     public static SQLQueryEmbeddedStatement recognize(@NotNull SQLQueryModelRecognizer recognizer, @NotNull STMTreeNode node) {
         SQLQueryModelContent sql = switch (node.getNodeKindId()) {
             case SQLStandardParser.RULE_directSqlDataStatement -> recognizeSql(recognizer, node);
-            case SQLStandardParser.RULE_firebirdSelectIntoStatement -> {
-                STMTreeNode query = node.findFirstChildOfName(SQLStandardParser.ruleNames[SQLStandardParser.RULE_directSqlDataStatement]);
-                yield query == null ? null : recognizeSql(recognizer, query);
-            }
+            case SQLStandardParser.RULE_selectStatementSingleRow -> recognizer.collectQueryExpression(node);
             case SQLStandardParser.RULE_dropTableStatement -> SQLQueryTableDropModel.recognize(recognizer, node, false);
             case SQLStandardParser.RULE_createTableStatement -> SQLQueryTableCreateModel.recognize(recognizer, node);
-            case SQLStandardParser.RULE_callStatement -> SQLQueryCallModel.recognize(recognizer, node, RelationalObjectType.TYPE_PROCEDURE);
+            case SQLStandardParser.RULE_callStatement -> SQLQueryCallModel.recognize(recognizer, node);
             default -> null;
         };
         return new SQLQueryEmbeddedStatement(node, sql);

@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryComplexName;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.statements.SQLQueryStatementModel;
-import org.jkiss.dbeaver.model.sql.semantics.model.statements.SQLQueryVariableDeclarationStatement;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 import java.util.List;
@@ -30,9 +29,11 @@ import java.util.List;
 public final class SQLQueryRoutineCreateModel extends SQLQueryRoutineStatementModel {
     SQLQueryRoutineCreateModel(
         @NotNull STMTreeNode node, @Nullable SQLQueryComplexName name,
-        @NotNull List<SQLQueryVariableDeclarationStatement> arguments, @Nullable SQLQueryStatementModel body
+        @NotNull List<SignatureArgument> arguments,
+        @NotNull SQLQueryRoutineReturn returnSpec,
+        @Nullable SQLQueryStatementModel body
     ) {
-        super(node, name, null, arguments, body);
+        super(node, name, null, arguments, returnSpec, body);
     }
 
     @Nullable

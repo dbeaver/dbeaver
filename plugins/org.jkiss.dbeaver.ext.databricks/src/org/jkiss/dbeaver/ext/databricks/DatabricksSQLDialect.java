@@ -32,8 +32,15 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 public class DatabricksSQLDialect extends GenericSQLDialect {
+
+    @NotNull
+    @Override
+    public Set<String> getSignatureModifierKeywords() {
+        return Set.of("IN", "OUT", "INOUT");
+    }
 
     private static final String[][] DEFAULT_QUOTE_STRINGS = {{"`", "`"}};
 

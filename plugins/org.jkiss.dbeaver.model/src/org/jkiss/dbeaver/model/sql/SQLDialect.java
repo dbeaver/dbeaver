@@ -80,6 +80,12 @@ public interface SQLDialect {
         FIREBIRD_PSQL
     }
 
+    enum TrailingSelectIntoSupport {
+        NONE,
+        PROCEDURAL,
+        ANY
+    }
+
     enum LocalVariableCapability { VALUE, FIELDS, ROWS, CURSOR }
 
     /** Capabilities of an entity introduced into a procedural scope, independent of its declaration syntax. */
@@ -193,6 +199,22 @@ public interface SQLDialect {
 
     @NotNull
     String[] getDMLKeywords();
+
+    /**
+     * Keywords that modify a data type declaration, in uppercase.
+     */
+    @NotNull
+    default Set<String> getTypeModifierKeywords() {
+        return Set.of("PRECISION", "VARYING", "LARGE", "OBJECT", "RAW");
+    }
+
+    /**
+     * Keywords that modify a routine parameter signature, including parameter directions, in uppercase.
+     */
+    @NotNull
+    default Set<String> getSignatureModifierKeywords() {
+        return Set.of("IN", "OUT", "INOUT");
+    }
 
     /**
      * Keywords that can start a statement in the SQL editor completion.
@@ -663,6 +685,16 @@ public interface SQLDialect {
     @NotNull
     default ProceduralSyntaxFamily getProceduralSyntaxFamily() {
         return ProceduralSyntaxFamily.GENERIC;
+    }
+
+    @NotNull
+    default TrailingSelectIntoSupport getTrailingSelectIntoSupport() {
+        return TrailingSelectIntoSupport.NONE;
+    }
+
+    /** Whether RETURNS TABLE column names are visible as variables in the routine body. */
+    default boolean areRoutineTableResultColumnsBodyVisible() {
+        return false;
     }
 
     /** A capability must belong to exactly one namespace; a multi-capability binding can be indexed in several. */

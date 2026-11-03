@@ -20,6 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.SQLQueryRoutineCreateModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.SQLQueryRoutineReturn;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 public class SnowflakeProceduralTest extends ProceduralDialectTestBase {
@@ -46,6 +48,18 @@ public class SnowflakeProceduralTest extends ProceduralDialectTestBase {
         var routine = root("CREATE PROCEDURE p() RETURNS VARCHAR LANGUAGE SQL AS $$ BEGIN SELECT 1; SELECT 2; END; $$",
             SQLQueryRoutineCreateModel.class);
         assertEmbeddedSqlCount(routine, 2);
+    }
+
+    @Test
+    void tableResultColumnsDescribeSchemaWithoutDeclaringBodyVariables() {
+        String sql = "CREATE PROCEDURE p() RETURNS TABLE (out_value int) LANGUAGE SQL " +
+            "AS $$ BEGIN SELECT out_value; END; $$";
+        var model = recognize(sql);
+        var routine = root(model, SQLQueryRoutineCreateModel.class);
+        SQLQueryRoutineReturn.TableColumns table = Assertions.assertInstanceOf(
+            SQLQueryRoutineReturn.TableColumns.class, routine.getReturnSpec());
+        Assertions.assertEquals("int", table.fields().getFirst().resolvedType().getDisplayName());
+        Assertions.assertNull(table.fields().getFirst().name().getDefinition());
     }
 
     /**

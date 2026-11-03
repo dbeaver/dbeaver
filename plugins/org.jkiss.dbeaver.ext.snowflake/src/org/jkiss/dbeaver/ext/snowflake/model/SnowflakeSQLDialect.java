@@ -37,8 +37,15 @@ import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
+import java.util.Set;
 
 public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProvider {
+
+    @NotNull
+    @Override
+    public Set<String> getSignatureModifierKeywords() {
+        return Set.of("IN", "INPUT", "OUT", "OUTPUT");
+    }
 
     /** Snowflake Scripting resolves declarations from the current block outward.
      *

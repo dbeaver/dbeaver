@@ -18,7 +18,15 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.code.NotNull;
 
+import java.util.Set;
+
 public class SQLServerDialectMssql extends SQLServerDialectBase {
+
+    @NotNull
+    @Override
+    public Set<String> getSignatureModifierKeywords() {
+        return Set.of("OUT", "OUTPUT", "READONLY");
+    }
 
     public SQLServerDialectMssql() {
         super("SQLServer", "sqlserver");

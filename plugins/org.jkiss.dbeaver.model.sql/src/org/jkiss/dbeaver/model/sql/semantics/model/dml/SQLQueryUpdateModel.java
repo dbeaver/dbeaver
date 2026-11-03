@@ -109,7 +109,11 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
                         : switch (setTargetNode.getNodeKindId()) {
                             case SQLStandardParser.RULE_setTarget -> {
                                 STMTreeNode targetNameNode = setTargetNode.findFirstNonErrorChild();
-                                SQLQuerySymbolEntry targetName = targetNameNode == null ? null : recognizer.collectIdentifier(targetNameNode, null);
+                                STMTreeNode identifier = targetNameNode == null ? null
+                                    : STMKnownRuleNames.identifier.equals(targetNameNode.getNodeName()) ? targetNameNode
+                                    : targetNameNode.findFirstChildOfName(STMKnownRuleNames.identifier);
+                                SQLQuerySymbolEntry targetName = identifier == null
+                                    ? null : recognizer.collectLocalVariableName(identifier);
                                 yield List.of(new SQLQueryValueTargetReferenceExpression(setTargetNode, targetName));
                             }
                             case SQLStandardParser.RULE_setTargetList ->
