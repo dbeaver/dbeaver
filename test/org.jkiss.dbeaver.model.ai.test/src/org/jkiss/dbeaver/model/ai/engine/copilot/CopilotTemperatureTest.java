@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.copilot;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.AIMessage;
@@ -24,6 +26,7 @@ import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.AIModelCatalog;
 import org.jkiss.dbeaver.model.ai.engine.AIModelCatalogEntry;
+import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotSessionToken;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -31,20 +34,37 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.Pair;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.util.Map;
+import java.util.stream.Stream;
 
 class CopilotTemperatureTest extends DBeaverUnitTest {
+    @NotNull
+    static Stream<Arguments> requestSettings() {
+        return Stream.of("", "0.0", "0.7").flatMap(value -> Stream.of(false, true)
+            .flatMap(streaming -> Stream.of(null, Boolean.FALSE, Boolean.TRUE)
+                .map(supported -> Arguments.of(value, streaming, supported))));
+    }
+
     @ParameterizedTest
-    @CsvSource(value = {"false,false", "false,true", "true,false", "true,true", "null,false", "null,true"}, nullValues = "null")
-    void omitsUnsupportedTemperatureFromBothRequestFormats(@Nullable Boolean supported, boolean streaming) throws Exception {
+    @MethodSource("requestSettings")
+    void preservesSavedTemperatureInBothRequestFormats(
+        @NotNull String value, boolean streaming, @Nullable Boolean supported
+    ) throws Exception {
         AIModelCatalogEntry entry = new AIModelCatalogEntry(null, supported, null, null, null, null);
         CopilotProperties properties = new CopilotProperties();
         properties.setModel("test-model");
-        properties.setTemperature(0.7);
+        if (value.isEmpty()) {
+            properties.clearTemperature();
+        } else {
+            properties.setTemperature(Double.parseDouble(value));
+        }
+        Gson gson = new Gson();
+        properties = gson.fromJson(gson.toJson(properties), CopilotProperties.class);
         CopilotClientResponses copilotClient = Mockito.mock(CopilotClientResponses.class);
         Mockito.when(copilotClient.chat(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(CopilotUtils.GSON.fromJson(
             "{\"output\":[{\"type\":\"message\",\"content\":[{\"type\":\"output_text\",\"text\":\"ok\"}]}]}",
@@ -79,11 +99,14 @@ class CopilotTemperatureTest extends DBeaverUnitTest {
                 Mockito.verify(copilotClient).chat(Mockito.same(monitor), Mockito.any(), captured.capture());
             }
             for (Object payload : new Object[]{captured.getValue().getFirst(), captured.getValue().getSecond()}) {
-                JsonObject json = CopilotUtils.GSON.toJsonTree(payload).getAsJsonObject();
-                if (Boolean.FALSE.equals(supported)) {
+                JsonObject json = payload instanceof CopilotChatRequest chat
+                    ? JsonParser.parseString(CopilotUtils.serializeChatRequest(chat)).getAsJsonObject()
+                    : CopilotUtils.GSON.toJsonTree(payload).getAsJsonObject();
+                Assertions.assertFalse(json.has("useServerDefaultTemperature"));
+                if (value.isEmpty() || Boolean.FALSE.equals(supported)) {
                     Assertions.assertFalse(json.has("temperature"));
                 } else {
-                    Assertions.assertEquals(0.7, json.get("temperature").getAsDouble());
+                    Assertions.assertEquals(Double.parseDouble(value), json.get("temperature").getAsDouble());
                 }
             }
         }

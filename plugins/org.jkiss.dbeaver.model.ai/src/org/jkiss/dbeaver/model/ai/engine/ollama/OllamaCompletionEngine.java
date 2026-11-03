@@ -74,7 +74,7 @@ public class OllamaCompletionEngine extends BaseCompletionEngine<OllamaPropertie
         OllamaChatRequest chatRequest = OllamaChatRequest.builder()
             .addMessages(request.getMessages())
             .functions(request.getFunctions())
-            .options(properties.getTemperature(), properties.getContextWindowSize())
+            .optionsWithTemperature(properties.getRequestTemperature(), properties.getContextWindowSize())
             .model(properties.getEffectiveModel())
             .build();
 
@@ -103,7 +103,7 @@ public class OllamaCompletionEngine extends BaseCompletionEngine<OllamaPropertie
         OllamaChatRequest chatRequest = OllamaChatRequest.builder()
             .addMessages(request.getMessages())
             .functions(request.getFunctions())
-            .options(properties.getTemperature(), properties.getContextWindowSize())
+            .optionsWithTemperature(properties.getRequestTemperature(), properties.getContextWindowSize())
             .model(properties.getEffectiveModel())
             .stream(true)
             .build();

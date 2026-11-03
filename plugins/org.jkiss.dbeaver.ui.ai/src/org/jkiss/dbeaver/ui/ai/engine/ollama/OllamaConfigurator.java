@@ -102,6 +102,7 @@ public class OllamaConfigurator extends AbstractAIEngineConfigurator<AIEngineDes
         temperatureText.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).span(2, 1).create());
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.addModifyListener(e -> temperature = temperatureText.getText());
+        temperatureText.setMessage(AIUIMessages.ai_engine_configurator_temperature_default);
         temperatureText.setToolTipText(AIUIMessages.ollama_preference_page_temperature_info);
 
         createAdvancedSettings(composite);
@@ -123,7 +124,7 @@ public class OllamaConfigurator extends AbstractAIEngineConfigurator<AIEngineDes
     public void loadSettings(@NotNull OllamaProperties configuration) {
         hostname = CommonUtils.toString(configuration.getHostname(), "");
         contextSize = CommonUtils.toString(configuration.getContextWindowSize(), "");
-        temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
+        temperature = configuration.getRequestTemperature() == null ? "" : String.valueOf(configuration.getTemperature());
         modelSelectorField.setSelectedModel(CommonUtils.toString(configuration.getModel(), ""));
         applySettings();
         loadAdvancedSettings(configuration);
@@ -139,7 +140,7 @@ public class OllamaConfigurator extends AbstractAIEngineConfigurator<AIEngineDes
         configuration.setHostname(hostname);
         configuration.setModel(CommonUtils.toString(modelSelectorField.getSelectedModelName(), ""));
         configuration.setContextWindowSize(CommonUtils.toInt(contextSize));
-        configuration.setTemperature(CommonUtils.toDouble(temperature, 0.0));
+        saveTemperature(configuration, temperature);
         saveAdvancedSettings(configuration);
     }
 
