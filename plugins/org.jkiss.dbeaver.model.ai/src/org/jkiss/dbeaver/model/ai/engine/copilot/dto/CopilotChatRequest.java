@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
 
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.List;
 
@@ -29,7 +30,7 @@ public record CopilotChatRequest(
     boolean stream,
     @SerializedName("n") int responseCount,
     @SerializedName("top_p") int topP,
-    double temperature
+    @Nullable Double temperature
 ) {
     @NotNull
     public static Builder builder() {
@@ -47,7 +48,7 @@ public record CopilotChatRequest(
         private boolean stream;
         private int responseCount;
         private int topP;
-        private double temperature;
+        private Double temperature;
 
         @NotNull
         public Builder withModel(@NotNull String model) {
@@ -92,7 +93,7 @@ public record CopilotChatRequest(
         }
 
         @NotNull
-        public Builder withTemperature(double temperature) {
+        public Builder withTemperature(@Nullable Double temperature) {
             this.temperature = temperature;
             return this;
         }

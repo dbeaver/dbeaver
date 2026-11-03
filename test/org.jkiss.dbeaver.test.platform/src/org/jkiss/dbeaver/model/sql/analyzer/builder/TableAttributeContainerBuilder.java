@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,6 +26,11 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
@@ -33,6 +38,7 @@ import static org.mockito.Mockito.when;
 
 public class TableAttributeContainerBuilder extends Builder<DBSTable, DBSEntityAttribute> {
     private final DBSTable entity;
+    private final List<DBSTableForeignKey> associations = new ArrayList<>();
 
     public TableAttributeContainerBuilder(@NotNull DBPDataSource dataSource, @NotNull DBSObject parent, @NotNull String name) throws DBException {
         super(dataSource, parent);
@@ -43,6 +49,7 @@ public class TableAttributeContainerBuilder extends Builder<DBSTable, DBSEntityA
         when(entity.getEntityType()).thenReturn(DBSEntityType.TABLE);
         when(entity.getAttributes(any())).then(x -> children);
         when(entity.getAttribute(any(), any())).then(x -> DBUtils.findObject(children, x.getArgument(1, String.class)));
+        when(entity.getAssociations(any())).then(x -> associations);
         when(entity.getFullyQualifiedName(any()))
             .then(x -> DBUtils.getFullyQualifiedName(
                 dataSource,
@@ -63,6 +70,28 @@ public class TableAttributeContainerBuilder extends Builder<DBSTable, DBSEntityA
         when(attribute.getTypeName()).thenReturn("Unknown");
         when(attribute.getDataKind()).thenReturn(DBPDataKind.UNKNOWN);
         children.add(attribute);
+        return this;
+    }
+
+    @NotNull
+    public TableAttributeContainerBuilder foreignKey(
+        @NotNull String attributeName,
+        @NotNull TableAttributeContainerBuilder targetTable,
+        @NotNull String targetAttributeName
+    ) throws DBException {
+        DBSEntityAttribute sourceAttr = DBUtils.findObject(children, attributeName);
+        DBSEntityAttribute targetAttr = DBUtils.findObject(targetTable.children, targetAttributeName);
+        if (sourceAttr == null || targetAttr == null) {
+            throw new IllegalArgumentException("Can't resolve foreign key columns " + attributeName + " -> " + targetAttributeName);
+        }
+
+        DBSTableForeignKeyColumn column = mock(DBSTableForeignKeyColumn.class);
+        when(column.getAttribute()).thenReturn(sourceAttr);
+        when(column.getReferencedColumn()).thenReturn(targetAttr);
+
+        DBSTableForeignKey key = mock(DBSTableForeignKey.class);
+        when(key.getAttributeReferences(any())).then(x -> List.of(column));
+        associations.add(key);
         return this;
     }
 
