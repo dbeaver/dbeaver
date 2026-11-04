@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.stm.STMErrorListener;
 import org.jkiss.dbeaver.model.stm.STMParserOverrides;
+import org.jkiss.dbeaver.model.stm.STMSkippingErrorListener;
 import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
 import org.jkiss.utils.Pair;
@@ -68,7 +69,8 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMP
     @Override
     public STMTreeRuleNode parseSqlQueryTree(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
         try {
-            TParser parser = prepareParser(source, errorListener);
+            // Do not report SLL-only errors to the caller: LL parsing may still succeed on the same input.
+            TParser parser = prepareParser(source, new STMSkippingErrorListener());
             parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
             STMTreeRuleNode result = parseSqlQueryImpl(parser);
             if (parser.getNumberOfSyntaxErrors() == 0) {

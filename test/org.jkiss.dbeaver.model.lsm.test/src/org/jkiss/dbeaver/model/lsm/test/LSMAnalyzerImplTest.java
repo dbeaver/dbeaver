@@ -1,0 +1,91 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.model.lsm.test;
+
+import org.antlr.v4.runtime.BaseErrorListener;
+import org.antlr.v4.runtime.RecognitionException;
+import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.atn.PredictionMode;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
+import org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
+import org.jkiss.dbeaver.model.stm.STMErrorListener;
+import org.jkiss.dbeaver.model.stm.STMSource;
+import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
+import org.jkiss.junit.DBeaverUnitTest;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+public class LSMAnalyzerImplTest extends DBeaverUnitTest {
+    private static final LSMAnalyzerParameters PARAMETERS = new LSMAnalyzerParameters(
+        Map.of("\"", "\""),
+        true,
+        false,
+        '?',
+        List.of(Map.entry(1, Set.of(":"))),
+        true
+    );
+
+    @Test
+    public void doesNotForwardErrorsFromFailedSllAttempt() {
+        CountingErrorListener listener = new CountingErrorListener();
+        SQLStandardAnalyzer analyzer = new ForcedFallbackAnalyzer(PARAMETERS);
+
+        STMTreeRuleNode tree = analyzer.parseSqlQueryTree(STMSource.fromString("SELECT 1"), listener);
+
+        Assertions.assertNotNull(tree);
+        Assertions.assertEquals("SELECT", tree.start.getText());
+        Assertions.assertEquals(0, listener.errorCount);
+    }
+
+    private static final class ForcedFallbackAnalyzer extends SQLStandardAnalyzer {
+        private ForcedFallbackAnalyzer(@NotNull LSMAnalyzerParameters parameters) {
+            super(parameters);
+        }
+
+        @NotNull
+        @Override
+        protected STMTreeRuleNode parseSqlQueryImpl(@NotNull SQLStandardParser parser) {
+            if (parser.getInterpreter().getPredictionMode() == PredictionMode.SLL) {
+                parser.notifyErrorListeners("Forced SLL failure");
+            }
+            return super.parseSqlQueryImpl(parser);
+        }
+    }
+
+    private static final class CountingErrorListener extends BaseErrorListener implements STMErrorListener {
+        private int errorCount;
+
+        @Override
+        public void syntaxError(
+            @NotNull Recognizer<?, ?> recognizer,
+            @Nullable Object offendingSymbol,
+            int line,
+            int charPositionInLine,
+            @NotNull String msg,
+            @Nullable RecognitionException e
+        ) {
+            errorCount++;
+        }
+    }
+}
