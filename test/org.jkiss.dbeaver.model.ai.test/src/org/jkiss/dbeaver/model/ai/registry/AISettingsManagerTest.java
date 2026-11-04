@@ -85,6 +85,24 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
             manager.saveSettings();
             Assertions.assertTrue(preferences.isEmpty());
             Mockito.verify(store, Mockito.never()).save();
+            ArgumentCaptor<String> initialContent = ArgumentCaptor.forClass(String.class);
+            Mockito.verify(platform.getConfigurationController()).saveConfigurationFile(
+                ArgumentMatchers.eq(AISettingsManager.AI_CONFIGURATION_FILE_NAME), initialContent.capture());
+            String sharedConfiguration = initialContent.getValue();
+            manager.setDefaultConfiguration(settings.getConfiguration("shared"));
+            Assertions.assertEquals("shared", preferences.get(AIConstants.AI_DEFAULT_CONFIGURATION));
+            var changedSharedConfiguration = JsonParser.parseString(sharedConfiguration).getAsJsonObject();
+            changedSharedConfiguration.addProperty("defaultConfiguration", "personal");
+            Mockito.when(platform.getConfigurationController().loadConfigurationFile(AISettingsManager.AI_CONFIGURATION_FILE_NAME))
+                .thenReturn(changedSharedConfiguration.toString());
+            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
+            Assertions.assertEquals("shared", manager.getSettings().getDefaultConfiguration().getProfileId());
+
+            Mockito.when(platform.getConfigurationController().loadConfigurationFile(AISettingsManager.AI_CONFIGURATION_FILE_NAME))
+                .thenReturn(sharedConfiguration);
+            preferences.clear();
+            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
+            settings = manager.getSettings();
             Mockito.clearInvocations(store, platform.getConfigurationController());
             Mockito.when(platform.getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)).thenReturn(false);
 
