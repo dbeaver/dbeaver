@@ -735,7 +735,14 @@ public class PostgreSubscription extends PostgreReplicationObject {
         if (!isPersisted() || !enabled) {
             throw new DBException("Save and enable the subscription before refreshing its publications");
         }
+        if (copyData && !isRefreshCopyDataAllowed()) {
+            throw new DBException("Cannot copy existing data while two-phase commit is enabled for the subscription");
+        }
         return "ALTER SUBSCRIPTION " + DBUtils.getQuotedIdentifier(this) + " REFRESH PUBLICATION WITH (copy_data = " + copyData + ")";
+    }
+
+    public boolean isRefreshCopyDataAllowed() {
+        return !"e".equals(twoPhaseState);
     }
 
     public void refreshPublications(@NotNull DBRProgressMonitor monitor, boolean copyData) throws DBException {

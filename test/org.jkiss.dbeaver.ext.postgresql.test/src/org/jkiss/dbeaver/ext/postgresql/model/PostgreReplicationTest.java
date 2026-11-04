@@ -1704,6 +1704,25 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void subscriptionRefreshCopyDataRespectsTwoPhaseState() throws Exception {
+        for (String state : new String[]{"e", "p", "d", null}) {
+            ResultSet result = Mockito.mock(ResultSet.class);
+            Mockito.when(result.getString("subname")).thenReturn("subscription");
+            Mockito.when(result.getBoolean("subenabled")).thenReturn(true);
+            Mockito.when(result.getString("subtwophasestate")).thenReturn(state);
+            PostgreSubscription subscription = new PostgreSubscription(database, result);
+            Assertions.assertTrue(subscription.getRefreshPublicationsStatement(false).endsWith("copy_data = false)"));
+            if ("e".equals(state)) {
+                Assertions.assertFalse(subscription.isRefreshCopyDataAllowed());
+                Assertions.assertThrows(DBException.class, () -> subscription.getRefreshPublicationsStatement(true));
+            } else {
+                Assertions.assertTrue(subscription.isRefreshCopyDataAllowed());
+                Assertions.assertTrue(subscription.getRefreshPublicationsStatement(true).endsWith("copy_data = true)"));
+            }
+        }
+    }
+
+    @Test
     public void subscriptionRefreshRunsInAutocommitOnAnIsolatedConnection() throws Exception {
         ConnectionProbe probe = connectionProbe();
         PostgreSubscription subscription = new PostgreSubscription(probe.subscriber(), "refresh_subscription");

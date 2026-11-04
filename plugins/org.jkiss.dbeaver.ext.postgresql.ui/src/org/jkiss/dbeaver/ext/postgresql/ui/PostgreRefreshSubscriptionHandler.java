@@ -21,6 +21,8 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -52,11 +54,25 @@ public class PostgreRefreshSubscriptionHandler extends AbstractHandler {
         if (subscriptions.isEmpty()) {
             return null;
         }
-        MessageDialogWithToggle dialog = MessageDialogWithToggle.openYesNoQuestion(
-            HandlerUtil.getActiveShell(event), PostgreMessages.dialog_refresh_subscription_title,
-            PostgreMessages.dialog_refresh_subscription_description, PostgreMessages.dialog_refresh_subscription_copy_data,
-            true, null, null);
-        if (dialog.getReturnCode() != IDialogConstants.YES_ID) {
+        boolean copyDataAllowed = subscriptions.stream().allMatch(PostgreSubscription::isRefreshCopyDataAllowed);
+        String description = PostgreMessages.dialog_refresh_subscription_description;
+        if (!copyDataAllowed) {
+            description += "\n\n" + PostgreMessages.dialog_refresh_subscription_two_phase;
+        }
+        MessageDialogWithToggle dialog = new MessageDialogWithToggle(
+            HandlerUtil.getActiveShell(event), PostgreMessages.dialog_refresh_subscription_title, null,
+            description, MessageDialogWithToggle.QUESTION,
+            new String[]{IDialogConstants.YES_LABEL, IDialogConstants.NO_LABEL}, 0,
+            PostgreMessages.dialog_refresh_subscription_copy_data, copyDataAllowed) {
+            @NotNull
+            @Override
+            protected Button createToggleButton(@NotNull Composite parent) {
+                Button toggle = super.createToggleButton(parent);
+                toggle.setEnabled(copyDataAllowed);
+                return toggle;
+            }
+        };
+        if (dialog.open() != IDialogConstants.YES_ID) {
             return null;
         }
         boolean copyData = dialog.getToggleState();

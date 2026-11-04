@@ -334,5 +334,6 @@ public class PostgreMessages extends NLS {
     public static String dialog_refresh_subscription_title;
     public static String dialog_refresh_subscription_description;
     public static String dialog_refresh_subscription_copy_data;
+    public static String dialog_refresh_subscription_two_phase;
 
 }
