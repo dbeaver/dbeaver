@@ -69,6 +69,10 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
             preferences.put(invocation.getArgument(0), invocation.getArgument(1));
             return null;
         }).when(store).setValue(ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
+        Mockito.doAnswer(invocation -> {
+            preferences.remove(invocation.getArgument(0));
+            return null;
+        }).when(store).setToDefault(ArgumentMatchers.anyString());
         Mockito.when(store.getString(ArgumentMatchers.anyString()))
             .thenAnswer(invocation -> preferences.getOrDefault(invocation.getArgument(0), ""));
 
@@ -133,9 +137,29 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
             reloaded.removeConfiguration(reloaded.getConfiguration("personal"));
             Assertions.assertEquals("shared", reloaded.getDefaultConfiguration().getProfileId());
 
-            preferences.clear();
+            manager.saveSettings();
+            Assertions.assertFalse(preferences.containsKey(AIConstants.AI_DEFAULT_CONFIGURATION));
+            Mockito.when(platform.getConfigurationController().loadConfigurationFile(AISettingsManager.AI_CONFIGURATION_FILE_NAME))
+                .thenReturn(sharedConfiguration);
             WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
             Assertions.assertEquals("shared", manager.getSettings().getDefaultConfiguration().getProfileId());
+
+            manager.setDefaultConfiguration(manager.getSettings().getConfiguration("personal"));
+            var withoutPersonal = JsonParser.parseString(sharedConfiguration).getAsJsonObject();
+            withoutPersonal.getAsJsonObject("configurations").remove("personal");
+            Mockito.when(platform.getConfigurationController().loadConfigurationFile(AISettingsManager.AI_CONFIGURATION_FILE_NAME))
+                .thenReturn(withoutPersonal.toString());
+            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
+            Assertions.assertEquals("shared", manager.getSettings().getDefaultConfiguration().getProfileId());
+            Assertions.assertFalse(preferences.containsKey(AIConstants.AI_DEFAULT_CONFIGURATION));
+
+            var replacement = JsonParser.parseString(sharedConfiguration).getAsJsonObject();
+            replacement.getAsJsonObject("configurations").getAsJsonObject("personal").addProperty("name", "Replacement");
+            Mockito.when(platform.getConfigurationController().loadConfigurationFile(AISettingsManager.AI_CONFIGURATION_FILE_NAME))
+                .thenReturn(replacement.toString());
+            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
+            Assertions.assertEquals("shared", manager.getSettings().getDefaultConfiguration().getProfileId());
+            Assertions.assertEquals("Replacement", manager.getSettings().getConfiguration("personal").getProfileName());
         } finally {
             WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
         }

@@ -116,13 +116,9 @@ public class AISettingsManager {
                 settings = READ_PROPS_GSON.fromJson(content, AISettings.class);
 
                 settings.finishSettingsLoading();
+                applyUserDefaultConfiguration(settings);
             } else {
                 settings = new AISettings();
-            }
-            String defaultProfileId = DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_DEFAULT_CONFIGURATION);
-            AIConfigurationProfile defaultProfile = settings.getConfigurationOrNull(defaultProfileId);
-            if (defaultProfile != null) {
-                settings.setUserDefaultConfiguration(defaultProfile);
             }
             return settings;
         } catch (Exception e) {
@@ -148,7 +144,16 @@ public class AISettingsManager {
         raiseChangedEvent(this);
     }
 
-    private void saveDefaultConfiguration(@Nullable AIConfigurationProfile profile) {
+    private static void applyUserDefaultConfiguration(@NotNull AISettings settings) {
+        String profileId = DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_DEFAULT_CONFIGURATION);
+        AIConfigurationProfile profile = settings.getConfigurationOrNull(profileId);
+        settings.setUserDefaultConfiguration(profile);
+        if (profile == null && !CommonUtils.isEmpty(profileId)) {
+            saveDefaultConfiguration(null);
+        }
+    }
+
+    private static void saveDefaultConfiguration(@Nullable AIConfigurationProfile profile) {
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
         if (profile == null) {
             store.setToDefault(AIConstants.AI_DEFAULT_CONFIGURATION);
@@ -192,6 +197,7 @@ public class AISettingsManager {
 
             DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
 
+            applyUserDefaultConfiguration(settings);
             this.getSettingsHolder().setSettings(settings);
         } catch (Exception e) {
             log.error("Error saving AI configuration", e);
