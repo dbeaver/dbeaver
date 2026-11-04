@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQuerySelectIntoModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQuerySelectIntoResultModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueFlattenedExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTupleReferenceExpression;
@@ -77,8 +78,9 @@ public class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSou
     );
 
     @NotNull
-    private static final Map<String, TreeMapperCallback<SQLQueryRowsSourceModel, SQLQueryModelRecognizer>> translations = Map.of(
-        STMKnownRuleNames.directSqlDataStatement, (n, cc, r) -> {
+    private static final Map<String, TreeMapperCallback<SQLQueryRowsSourceModel, SQLQueryModelRecognizer>> translations =
+        Map.<String, TreeMapperCallback<SQLQueryRowsSourceModel, SQLQueryModelRecognizer>>ofEntries(
+        Map.entry(STMKnownRuleNames.directSqlDataStatement, (n, cc, r) -> {
             if (cc.isEmpty()) {
                 return null;
             } else if (cc.size() == 1) {
@@ -135,8 +137,15 @@ public class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSou
                     return new SQLQueryRowsCteModel(n, Collections.emptyList(), resultQuery);
                 }
             }
-        },
-        STMKnownRuleNames.queryExpression, (n, cc, r) -> {
+        }),
+        Map.entry(STMKnownRuleNames.selectStatement, (n, cc, r) -> {
+            if (cc.isEmpty()) {
+                return makeEmptyRowsModel(n);
+            }
+            return n.findFirstChildOfName(STMKnownRuleNames.selectIntoClause) == null
+                ? cc.getFirst() : SQLQuerySelectIntoResultModel.recognize(n, cc.getFirst(), r);
+        }),
+        Map.entry(STMKnownRuleNames.queryExpression, (n, cc, r) -> {
             if (cc.isEmpty()) {
                 return makeEmptyRowsModel(n);
             } else {
@@ -157,8 +166,8 @@ public class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSou
                 }
                 return source;
             }
-        },
-        STMKnownRuleNames.nonJoinQueryTerm, (n, cc, r) -> {
+        }),
+        Map.entry(STMKnownRuleNames.nonJoinQueryTerm, (n, cc, r) -> {
             if (cc.isEmpty()) {
                 return makeEmptyRowsModel(n);
             } else {
@@ -179,8 +188,8 @@ public class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSou
                 }
                 return source;
             }
-        },
-        STMKnownRuleNames.joinedTable, (n, cc, r) -> {
+        }),
+        Map.entry(STMKnownRuleNames.joinedTable, (n, cc, r) -> {
             // joinedTable: (nonjoinedTableReference|(LeftParen joinedTable RightParen)) (naturalJoinTerm|crossJoinTerm)+;
             if (cc.isEmpty()) {
                 return makeEmptyRowsModel(n);
@@ -259,8 +268,8 @@ public class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSou
                 }
                 return source;
             }
-        },
-        STMKnownRuleNames.fromClause, (n, cc, r) -> {
+        }),
+        Map.entry(STMKnownRuleNames.fromClause, (n, cc, r) -> {
             if (cc.isEmpty()) {
                 return makeEmptyRowsModel(n);
             } else {
@@ -285,14 +294,14 @@ public class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSou
                 }
                 return source;
             }
-        },
-        STMKnownRuleNames.querySpecification, (n, cc, r) -> {
+        }),
+        Map.entry(STMKnownRuleNames.querySpecification, (n, cc, r) -> {
             return SQLQueryRowsProjectionModel.recognize(n, cc, r);
-        },
-        STMKnownRuleNames.selectStatementSingleRow, (n, cc, r) -> {
+        }),
+        Map.entry(STMKnownRuleNames.selectStatementSingleRow, (n, cc, r) -> {
             return SQLQuerySelectIntoModel.recognize(n, cc, r);
-        },
-        STMKnownRuleNames.nonjoinedTableReference, (n, cc, r) -> {
+        }),
+        Map.entry(STMKnownRuleNames.nonjoinedTableReference, (n, cc, r) -> {
             // can they both be missing?
             STMTreeNode callNode = n.findFirstChildOfName(STMKnownRuleNames.functionCallExpression);
             STMTreeNode tableNode = n.findFirstChildOfName(STMKnownRuleNames.tableName);
@@ -324,9 +333,9 @@ public class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSou
                 }
             }
             return source;
-        },
-        STMKnownRuleNames.explicitTable, (n, cc, r) -> r.collectTableReference(n, false),
-        STMKnownRuleNames.tableValueConstructor, (n, cc, r) -> {
+        }),
+        Map.entry(STMKnownRuleNames.explicitTable, (n, cc, r) -> r.collectTableReference(n, false)),
+        Map.entry(STMKnownRuleNames.tableValueConstructor, (n, cc, r) -> {
             List<STMTreeNode> rowNodes = n.findChildrenOfName(STMKnownRuleNames.rowValueConstructor);
             boolean hasErrors = false;
             List<List<SQLQueryValueExpression>> rows = new LinkedList<>();
@@ -361,7 +370,7 @@ public class SQLQueryExpressionMapper extends SQLQueryTreeMapper<SQLQueryRowsSou
                 }
             }
             return new SQLQueryRowsTableValueModel(n, rows, hasErrors);
-        }
+        })
     );
 
     private static class SubsourcesMap {

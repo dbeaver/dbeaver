@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -50,10 +51,21 @@ import java.util.Map;
 /**
  * DTTaskHandlerTransfer
  */
-public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollector {
+public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollector, DBTTaskImportTransformer {
     private static final Log log = Log.getLog(DTTaskHandlerTransfer.class);
 
     private final DBCStatistics totalStatistics = new DBCStatistics();
+
+    @Override
+    public boolean transformTaskState(@NotNull Map<String, Object> state, @NotNull Map<String, String> projectNames) {
+        boolean changed = false;
+        for (Object producer : JSONUtils.getObjectList(state, "producers")) {
+            if (producer instanceof Map<?, ?> node && "databaseTransferProducer".equals(node.get("type"))) {
+                changed |= DBTTaskImportTransformer.remapProjectReference(node.get("location"), projectNames);
+            }
+        }
+        return changed;
+    }
 
     @Override
     @NotNull

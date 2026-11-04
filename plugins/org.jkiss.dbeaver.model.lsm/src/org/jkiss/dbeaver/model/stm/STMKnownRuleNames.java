@@ -57,9 +57,16 @@ public class STMKnownRuleNames {
     public static final String qualifiedName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_qualifiedName];
     public static final String identifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_identifier];
     public static final String actualIdentifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_actualIdentifier];
+    public static final String cursorName = SQLStandardParser.ruleNames[SQLStandardParser.RULE_cursorName];
 
     // data types
     public static final String dataType = SQLStandardParser.ruleNames[SQLStandardParser.RULE_dataType];
+    public static final String typeModifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_typeModifier];
+    public static final String signatureModifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_signatureModifier];
+    public static final String routineParameterDefault = SQLStandardParser.ruleNames[SQLStandardParser.RULE_routineParameterDefault];
+    public static final String typeArguments = SQLStandardParser.ruleNames[SQLStandardParser.RULE_typeArguments];
+    public static final String typeContinuation = SQLStandardParser.ruleNames[SQLStandardParser.RULE_typeContinuation];
+    public static final String localVariableType = SQLStandardParser.ruleNames[SQLStandardParser.RULE_localVariableType];
     public static final String datetimeType = SQLStandardParser.ruleNames[SQLStandardParser.RULE_datetimeType];
     public static final String intervalType = SQLStandardParser.ruleNames[SQLStandardParser.RULE_intervalType];
     public static final String intervalQualifier = SQLStandardParser.ruleNames[SQLStandardParser.RULE_intervalQualifier];
@@ -293,6 +300,7 @@ public class STMKnownRuleNames {
 
     // table definition
     public static final String createTableStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_createTableStatement];
+    public static final String createTableHead = SQLStandardParser.ruleNames[SQLStandardParser.RULE_createTableHead];
     public static final String createViewStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_createViewStatement];
     public static final String viewColumnList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_viewColumnList];
     public static final String levelsClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_levelsClause];
@@ -338,6 +346,7 @@ public class STMKnownRuleNames {
 
     // data statements
     public static final String selectStatementSingleRow = SQLStandardParser.ruleNames[SQLStandardParser.RULE_selectStatementSingleRow];
+    public static final String selectIntoClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_selectIntoClause];
     public static final String selectTargetList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_selectTargetList];
     public static final String selectTargetItem = SQLStandardParser.ruleNames[SQLStandardParser.RULE_selectTargetItem];
     public static final String deleteStatement = SQLStandardParser.ruleNames[SQLStandardParser.RULE_deleteStatement];
@@ -390,6 +399,23 @@ public class STMKnownRuleNames {
 
     public static final String nonReserved = SQLStandardParser.ruleNames[SQLStandardParser.RULE_nonReserved];
 
+    // procedural declarations
+    public static final String routineDefinition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_routineDefinition];
+    public static final String routineSignature = SQLStandardParser.ruleNames[SQLStandardParser.RULE_routineSignature];
+    public static final String routineArgument = SQLStandardParser.ruleNames[SQLStandardParser.RULE_routineArgument];
+    public static final String routinePreamble = SQLStandardParser.ruleNames[SQLStandardParser.RULE_routinePreamble];
+    public static final String routineReturnClause = SQLStandardParser.ruleNames[SQLStandardParser.RULE_routineReturnClause];
+    public static final String routineResultList = SQLStandardParser.ruleNames[SQLStandardParser.RULE_routineResultList];
+    public static final String routineResultField = SQLStandardParser.ruleNames[SQLStandardParser.RULE_routineResultField];
+    public static final String routineTrailing = SQLStandardParser.ruleNames[SQLStandardParser.RULE_routineTrailing];
+    public static final String routineBody = SQLStandardParser.ruleNames[SQLStandardParser.RULE_routineBody];
+    public static final String routineBodyContent = SQLStandardParser.ruleNames[SQLStandardParser.RULE_routineBodyContent];
+    public static final String triggerHeaderPart = SQLStandardParser.ruleNames[SQLStandardParser.RULE_triggerHeaderPart];
+    public static final String triggerTransition = SQLStandardParser.ruleNames[SQLStandardParser.RULE_triggerTransition];
+    public static final String triggerBody = SQLStandardParser.ruleNames[SQLStandardParser.RULE_triggerBody];
+    public static final String localVariableDeclaration = SQLStandardParser.ruleNames[SQLStandardParser.RULE_localVariableDeclaration];
+    public static final String localTypedVariable = SQLStandardParser.ruleNames[SQLStandardParser.RULE_localTypedVariable];
+
     public static final String RECURSIVE_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.RECURSIVE);
     public static final String SET_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.SET);
     public static final String SELECT_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.SELECT);
@@ -399,4 +425,9 @@ public class STMKnownRuleNames {
     public static final String LEFT_PAREN_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.LeftParen);
     public static final String RIGHT_PAREN_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.RightParen);
     public static final String LATERAL_TERM = SQLStandardParser.VOCABULARY.getSymbolicName(SQLStandardParser.LATERAL);
+    public static final String FUNCTION_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.FUNCTION);
+    public static final String PROCEDURE_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.PROCEDURE);
+    public static final String PROC_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.PROC);
+    public static final String RETURN_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.RETURN);
+    public static final String RETURNS_TERM = SQLStandardLexer.VOCABULARY.getSymbolicName(SQLStandardLexer.RETURNS);
 }
