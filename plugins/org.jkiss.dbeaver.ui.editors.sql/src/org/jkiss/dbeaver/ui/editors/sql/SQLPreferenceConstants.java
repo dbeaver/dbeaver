@@ -203,6 +203,7 @@ public class SQLPreferenceConstants {
     public static final String AUTO_SAVE_ON_CLOSE                      = "SQLEditor.autoSaveOnClose";
     public static final String AUTO_SAVE_ON_EXECUTE                    = "SQLEditor.autoSaveOnExecute";
     public static final String AUTO_SAVE_ACTIVE_SCHEMA                 = "SQLEditor.autoSaveActiveSchema";
+    public static final String FORMAT_ON_SAVE                          = "SQLEditor.formatOnSave";
 
     // Typing constants
     public static final String SQLEDITOR_CLOSE_SINGLE_QUOTES           = "SQLEditor.closeSingleQuotes";

@@ -60,6 +60,7 @@ public class PrefPageSQLEditor extends TargetPrefPage {
     private Button saveOnQueryExecution;
     private Button autoSaveOnClose;
     private Button autoSaveActiveSchema;
+    private Button formatOnSave;
 
     private Button closeTabOnErrorCheck;
     private Combo resultsOrientationCombo;
@@ -84,6 +85,7 @@ public class PrefPageSQLEditor extends TargetPrefPage {
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE) ||
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE) ||
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA) ||
+            store.contains(SQLPreferenceConstants.FORMAT_ON_SAVE) ||
 
             store.contains(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR);
     }
@@ -139,6 +141,13 @@ public class PrefPageSQLEditor extends TargetPrefPage {
             autoSaveOnClose = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_auto_save_on_close, false);
             saveOnQueryExecution = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_save_on_query_execute, SQLEditorMessages.pref_page_sql_editor_label_save_on_query_execute, false, 1);
             autoSaveActiveSchema = UIUtils.createCheckbox(autoSaveGroup, SQLEditorMessages.pref_page_sql_editor_label_save_active_schema, false);
+            formatOnSave = UIUtils.createCheckbox(
+                autoSaveGroup,
+                SQLEditorMessages.pref_page_sql_editor_label_format_on_save,
+                SQLEditorMessages.pref_page_sql_editor_label_format_on_save_tip,
+                false,
+                1
+            );
         }
 
         {
@@ -242,6 +251,7 @@ public class PrefPageSQLEditor extends TargetPrefPage {
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE, autoSaveOnClose.getSelection());
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE, saveOnQueryExecution.getSelection());
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA, autoSaveActiveSchema.getSelection());
+            store.setValue(SQLPreferenceConstants.FORMAT_ON_SAVE, formatOnSave.getSelection());
 
             store.setValue(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR, closeTabOnErrorCheck.getSelection());
             store.setValue(SQLPreferenceConstants.RESULT_SET_REPLACE_CURRENT_TAB, replaceCurrentTab.getSelection());
@@ -276,6 +286,7 @@ public class PrefPageSQLEditor extends TargetPrefPage {
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE);
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE);
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA);
+        store.setToDefault(SQLPreferenceConstants.FORMAT_ON_SAVE);
 
         store.setToDefault(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR);
         store.setToDefault(SQLPreferenceConstants.RESULT_SET_REPLACE_CURRENT_TAB);
@@ -339,6 +350,11 @@ public class PrefPageSQLEditor extends TargetPrefPage {
                 useDefaults
                     ? store.getDefaultBoolean(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA)
                     : store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ACTIVE_SCHEMA)
+            );
+            formatOnSave.setSelection(
+                useDefaults
+                    ? store.getDefaultBoolean(SQLPreferenceConstants.FORMAT_ON_SAVE)
+                    : store.getBoolean(SQLPreferenceConstants.FORMAT_ON_SAVE)
             );
 
             closeTabOnErrorCheck.setSelection(
