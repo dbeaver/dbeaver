@@ -890,6 +890,7 @@
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
                     <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
                     <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase"/>
                     <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
                 </or>
             </enabledWhen>
@@ -904,7 +905,10 @@
               class="org.jkiss.dbeaver.ui.preferences.PrefPageToolbarCustomization"
               name="%org.jkiss.dbeaver.preferences.main.toolbar.customization.name">
             <enabledWhen>
-                <reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/>
+                <or>
+                    <reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase"/>
+                </or>
             </enabledWhen>
         </page>
     </extension>
