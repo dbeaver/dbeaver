@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>${TITLE}</title>
     <style>
         :root {
             color-scheme: light dark;
@@ -43,17 +45,17 @@
     <div style="padding: 32px 32px 24px; text-align: center">
         <div style="width: 56px; height: 56px; border-radius: 50%; background: var(--icon-background); display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;">
             <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                <path d="M20 6L9 17l-5-5" stroke="var(--accent-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="${ICON_PATH}" stroke="var(--accent-color)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
         </div>
         <h2 style="font-size: 18px; font-weight: 500; color: var(--title-color); margin: 0 0 8px;">
-            Authentication complete
+            ${TITLE}
         </h2>
         <p style="font-size: 14px; color: var(--text-color); line-height: 1.5; margin: 0 0 4px;">
             It was requested by <strong style="color: var(--title-color); font-weight: 500">${PRODUCT_NAME}</strong>
         </p>
-        <p style="font-size: 14px; color: var(--text-color); line-height: 1.5; margin: 0 0 24px;">
-            You have successfully authorized ${AUTH_NAME}.
+        <p id="auth-message" role="status" style="font-size: 14px; color: var(--text-color); line-height: 1.5; margin: 0 0 24px;">
+            ${MESSAGE}
         </p>
         <button style="padding: 9px 24px; font-size: 14px; font-weight: 500; border-radius: 6px; border: none; background: var(--accent-color); color: var(--button-text); cursor: pointer;" onclick="window.close()">
             Close

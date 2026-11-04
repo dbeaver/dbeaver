@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.access;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -150,10 +151,31 @@ public class DBAuthUtils {
 
     @NotNull
     public static String getExternalBrowserSuccessResponse(@Nullable String providerName) {
+        String authName = providerName == null ? "for using database" : "in " + providerName;
+        return formatExternalBrowserResponse(
+            ModelMessages.external_auth_success_title,
+            NLS.bind(ModelMessages.external_auth_success_message, authName),
+            "M20 6L9 17l-5-5"
+        );
+    }
+
+    @NotNull
+    public static String getExternalBrowserResponse(@NotNull String title, @NotNull String message) {
+        return formatExternalBrowserResponse(title, message, "M12 16v-4m0-4h.01");
+    }
+
+    @NotNull
+    private static String formatExternalBrowserResponse(
+        @NotNull String title,
+        @NotNull String message,
+        @NotNull String iconPath
+    ) {
         return GeneralUtils.replaceVariables(externalAuthSuccessHtml, name -> {
             var result = switch (name) {
                 case "PRODUCT_NAME" -> GeneralUtils.getProductTitle();
-                case "AUTH_NAME" -> providerName == null ? "for using database" : "in " + providerName;
+                case "TITLE" -> title;
+                case "MESSAGE" -> message;
+                case "ICON_PATH" -> iconPath;
                 default -> {
                     log.error("Unknown variable: '" + name + "'");
                     yield "";
