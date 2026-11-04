@@ -210,7 +210,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
                 .map(OAITool::fromDescriptor)
                 .map(CopilotFunction::new)
                 .toList())
-            .withTemperature(temperature)
+            .withOptionalTemperature(temperature)
             .withStream(stream)
             .withIntent(false)
             .withTopP(1)

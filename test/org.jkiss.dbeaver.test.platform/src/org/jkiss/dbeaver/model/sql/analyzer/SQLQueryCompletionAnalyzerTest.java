@@ -18,15 +18,28 @@ package org.jkiss.dbeaver.model.sql.analyzer;
 
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.TableAttributeContainerBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestResult;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolOrigin;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItem;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemKind;
+import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryWordEntry;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSNamespace;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
@@ -103,6 +116,133 @@ public class SQLQueryCompletionAnalyzerTest extends DBeaverUnitTest {
         );
 
         Assertions.assertTrue(proposals.contains("@value"));
+    }
+
+    @Test
+    public void testDataTypeCompletionFromNamespace() throws DBException {
+        DBSNamespace namespace = Mockito.mock(DBSNamespace.class);
+        DBSDataType type = Mockito.mock(DBSDataType.class);
+        Mockito.when(type.getName()).thenReturn("custom_type");
+        Mockito.when(type.getDataKind()).thenReturn(DBPDataKind.STRUCT);
+        Mockito.doReturn(List.of(type)).when(namespace)
+            .getObjectsByType(Mockito.any(), Mockito.eq(RelationalObjectType.TYPE_DATA_TYPE));
+        BasicSQLDialect dialect = new BasicSQLDialect() {
+            @NotNull
+            @Override
+            public Collection<String> getDataTypes(@Nullable DBPDataSource dataSource) {
+                return List.of("custom_type");
+            }
+        };
+        RequestBuilder builder = RequestBuilder.empty().typeNamespace(namespace).dialect(dialect);
+        Mockito.when(type.getDataSource()).thenReturn(builder.getDataSource());
+
+        RequestResult request = builder.prepare();
+        var model = request.prepareQuery("CREATE TABLE t (col custom_ty)").model();
+        Assertions.assertNotNull(model.getQueryModel());
+        Assertions.assertTrue(model.getAllSymbols().stream().anyMatch(entry ->
+            entry.getRawName().equals("custom_ty") && entry.getOrigin() != null), model.getAllSymbols().toString());
+        var proposals = request.requestNewProposals("CREATE TABLE t (col custom_ty|)");
+        Assertions.assertTrue(proposals.stream().anyMatch(p ->
+            p.getItemKind() == SQLQueryCompletionItemKind.TYPE
+                && p.getReplacementString().equalsIgnoreCase("custom_type")), proposals.toString());
+        Assertions.assertEquals(1, proposals.stream().filter(p ->
+            p.getItemKind() == SQLQueryCompletionItemKind.TYPE
+                && p.getReplacementString().equalsIgnoreCase("custom_type")).count());
+        Mockito.verify(namespace).getObjectsByType(Mockito.any(), Mockito.eq(RelationalObjectType.TYPE_DATA_TYPE));
+    }
+
+    @Test
+    public void testDialectTypeNameCompletionWithoutDatabaseObject() throws DBException {
+        BasicSQLDialect dialect = new BasicSQLDialect() {
+            @NotNull
+            @Override
+            public Collection<String> getDataTypes(@Nullable DBPDataSource dataSource) {
+                return List.of("builtin_alias");
+            }
+        };
+        var proposals = RequestBuilder.empty().dialect(dialect).prepare()
+            .requestNewProposals("CREATE TABLE t (col builtin_ali|)");
+        var typeProposal = proposals.stream()
+            .filter(p -> p.getItemKind() == SQLQueryCompletionItemKind.TYPE)
+            .findFirst().orElseThrow(() -> new AssertionError(proposals.toString()));
+        Assertions.assertEquals("builtin_alias", typeProposal.getReplacementString());
+        Assertions.assertFalse(typeProposal.getAdditionalProposalInfo().isBlank());
+        Assertions.assertNotNull(typeProposal.getObjectImage());
+
+        SQLQueryCompletionItem special = SQLQueryCompletionItem.forSpecialText(
+            1, new SQLQueryWordEntry(0, "replacement"), "replacement", "Tuple columns expansion"
+        );
+        Assertions.assertEquals(SQLQueryCompletionItemKind.UNKNOWN, special.getKind());
+    }
+
+    @Test
+    public void testQualifiedTypeCompletionDoesNotOfferDialectWideNames() throws DBException {
+        BasicSQLDialect dialect = new BasicSQLDialect() {
+            @NotNull
+            @Override
+            public Collection<String> getDataTypes(@Nullable DBPDataSource dataSource) {
+                return List.of("builtin_alias");
+            }
+        };
+        RequestResult request = RequestBuilder.schemas(schemas -> schemas.schema("APP", empty()))
+            .dialect(dialect).prepare();
+        var model = request.prepareQuery("CREATE TABLE t (col app.builtin_ali)").model();
+        var typeName = model.getAllSymbols().stream()
+            .filter(entry -> entry.getRawName().equals("builtin_ali"))
+            .findFirst().orElseThrow();
+        var origin = Assertions.assertInstanceOf(SQLQuerySymbolOrigin.DbObjectFromDbObject.class, typeName.getOrigin(),
+            () -> model.getAllSymbols().stream().map(entry -> entry.getRawName() + ": " + entry.getOrigin()).toList().toString());
+        Assertions.assertEquals(SQLQuerySymbolOrigin.DbObjectFilterMode.TYPE, origin.getFilterMode());
+
+        var proposals = request.requestNewProposals("CREATE TABLE t (col app.builtin_ali|)");
+        Assertions.assertTrue(proposals.stream().noneMatch(p -> p.getItemKind() == SQLQueryCompletionItemKind.TYPE
+            && p.getReplacementString().contains("builtin_alias")), proposals.toString());
+    }
+
+    @Test
+    public void testTemporaryTableCompletionAfterNestedBlock() throws DBException {
+        String sql = """
+            CREATE PROCEDURE qa_temps AS BEGIN
+                CREATE TEMP TABLE removed (id INT);
+                CREATE TEMP TABLE replaced (id INT);
+                CREATE TEMP TABLE retained (id INT);
+                BEGIN
+                    DROP TABLE removed, replaced;
+                    CREATE TEMP TABLE replaced (id TEXT);
+                END;
+                SELECT id FROM removed;
+                SELECT id FROM repl|;
+                SELECT id FROM retained;
+            END;
+            """;
+        RequestResult request = RequestBuilder.empty().dialect(BasicSQLDialect.INSTANCE).prepare();
+        Set<String> proposals = request.requestNewStrings(sql);
+        Assertions.assertTrue(proposals.stream().anyMatch(s -> s.equalsIgnoreCase("replaced")), proposals.toString());
+        Set<String> retained = request.requestNewStrings(sql.replace("repl|", "reta|"));
+        Assertions.assertTrue(retained.stream().anyMatch(s -> s.equalsIgnoreCase("retained")), retained.toString());
+        Set<String> removed = request.requestNewStrings(sql.replace("repl|", "rem|"));
+        Assertions.assertTrue(removed.stream().noneMatch(s -> s.equalsIgnoreCase("removed")), removed.toString());
+        Set<String> columns = request.requestNewStrings(sql.replace("SELECT id FROM repl|", "SELECT | FROM replaced"));
+        Assertions.assertTrue(columns.stream().anyMatch(s -> s.equalsIgnoreCase("id")), columns.toString());
+    }
+
+    @Test
+    public void testParenthesizedTableFunctionBodyCompletion() throws DBException {
+        RequestResult request = RequestBuilder.tables(tables -> tables.table("rects3rects", table -> {
+            table.attribute("x");
+            table.attribute("other_column");
+        })).prepare();
+        Set<String> tables = request.requestNewStrings(
+            "CREATE TABLE FUNCTION dataset.qa_table_fn(x INT64) AS (SELECT x FROM rects3r|)"
+        );
+        Assertions.assertTrue(tables.stream().anyMatch(s -> s.replace("\"", "").startsWith("rects3rects")), tables.toString());
+
+        Set<String> columns = request.requestNewStrings(
+            "CREATE TABLE FUNCTION dataset.qa_table_fn(x INT64) AS (SELECT | FROM rects3rects)"
+        );
+        Set<String> standaloneColumns = request.requestNewStrings("SELECT | FROM rects3rects");
+        Assertions.assertTrue(standaloneColumns.stream().anyMatch(s -> s.equalsIgnoreCase("other_column")), standaloneColumns.toString());
+        Assertions.assertTrue(columns.stream().anyMatch(s -> s.equalsIgnoreCase("other_column")), columns.toString());
     }
 
     @Test

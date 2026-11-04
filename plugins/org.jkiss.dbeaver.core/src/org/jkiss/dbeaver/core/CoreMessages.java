@@ -62,6 +62,7 @@ public class CoreMessages extends NLS {
     public static String model_navigator__connections;
     public static String model_navigator_Connection;
     public static String dialog_about_label_version;
+    public static String dialog_about_label_patch;
     public static String dialog_about_title;
 
     public static String dialog_project_export_wizard_main_page;
@@ -159,6 +160,11 @@ public class CoreMessages extends NLS {
     public static String dialog_version_update_new_version;
     public static String dialog_version_update_no_new_version;
     public static String dialog_version_update_notes;
+    public static String dialog_version_update_patch_notes;
+    public static String dialog_version_update_severity;
+    public static String dialog_version_update_severity_medium;
+    public static String dialog_version_update_severity_high;
+    public static String dialog_version_update_severity_critical;
     public static String dialog_version_update_no_notes;
     public static String dialog_version_update_press_more_info;
     public static String dialog_version_update_title;

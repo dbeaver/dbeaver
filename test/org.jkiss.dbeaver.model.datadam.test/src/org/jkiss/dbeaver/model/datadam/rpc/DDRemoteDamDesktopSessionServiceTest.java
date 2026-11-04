@@ -61,6 +61,26 @@ class DDRemoteDamDesktopSessionServiceTest {
     }
 
     @Test
+    void formatsClientDamIdentity() {
+        Assertions.assertEquals("d29ya3NwYWNlOkhPU1QxMjM",
+            DDRemoteDamDesktopSessionService.formatClientDamId("workspace", "HOST123"));
+    }
+
+    @Test
+    void clientDamIdentityChangesWithWorkspaceOrLocalHostId() {
+        String clientDamId = DDRemoteDamDesktopSessionService.formatClientDamId("workspace", "HOST123");
+
+        Assertions.assertNotEquals(clientDamId, DDRemoteDamDesktopSessionService.formatClientDamId("other-workspace", "HOST123"));
+        Assertions.assertNotEquals(clientDamId, DDRemoteDamDesktopSessionService.formatClientDamId("workspace", "HOST456"));
+    }
+
+    @Test
+    void clientDamIdentityUsesUtf8AndUnpaddedUrlSafeBase64() {
+        Assertions.assertEquals("5bel5L2c5Yy68J-ZgjpIT1NUMTIz",
+            DDRemoteDamDesktopSessionService.formatClientDamId("工作区🙂", "HOST123"));
+    }
+
+    @Test
     void startsTheChannelWithoutRequiringImportedKeys() {
         Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
 

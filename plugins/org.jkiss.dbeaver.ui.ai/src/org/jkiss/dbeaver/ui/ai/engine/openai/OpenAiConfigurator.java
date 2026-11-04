@@ -126,7 +126,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         token = CommonUtils.toString(configuration.getToken());
         apiToken = token;
         modelSelectorField.setSelectedModel(CommonUtils.toString(configuration.getModel()));
-        temperature = CommonUtils.toString(configuration.getTemperature(), "0.0");
+        temperature = configuration.getRequestTemperature() == null ? "" : String.valueOf(configuration.getTemperature());
 
         applySettings();
         loadAdvancedSettings(configuration);
@@ -161,7 +161,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         }
         configuration.setModel(modelSelectorField.getSelectedModelName());
         configuration.setContextWindowSize(contextWindowSizeField.getValue());
-        configuration.setTemperature(CommonUtils.toDouble(temperature));
+        saveTemperature(configuration, temperature);
         saveAdvancedSettings(configuration);
     }
 
@@ -230,6 +230,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         temperatureText.addVerifyListener(UIUtils.getNumberVerifyListener(Locale.getDefault()));
         temperatureText.setLayoutData(GridDataFactory.fillDefaults().span(2, 1).create());
         temperatureText.setToolTipText(AIUIMessages.openai_configurator_temperature_tip);
+        temperatureText.setMessage(AIUIMessages.ai_engine_configurator_temperature_default);
         temperatureText.addModifyListener((e) -> temperature = temperatureText.getText());
     }
 
@@ -414,7 +415,7 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         }
         propertiesCopy.setModel(modelSelectorField.getSelectedModelName());
         propertiesCopy.setContextWindowSize(contextWindowSizeField.getValue());
-        propertiesCopy.setTemperature(CommonUtils.toDouble(temperature));
+        saveTemperature(propertiesCopy, temperature);
         saveAdvancedSettings(propertiesCopy);
         return Optional.of(propertiesCopy);
     }

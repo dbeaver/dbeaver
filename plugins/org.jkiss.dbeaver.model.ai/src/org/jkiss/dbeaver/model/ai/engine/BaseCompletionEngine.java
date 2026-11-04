@@ -102,6 +102,9 @@ public abstract class BaseCompletionEngine<PROPS extends AIEngineProperties> imp
 
     @Nullable
     protected Double getRequestTemperature() throws DBException {
+        if (properties.getRequestTemperature() == null) {
+            return null;
+        }
         AIModelCatalogEntry entry = getCachedCatalogEntry();
         return entry != null && Boolean.FALSE.equals(entry.temperature()) ? null : temperature();
     }
