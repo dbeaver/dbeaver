@@ -483,8 +483,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     public void selectConversationProfile(@NotNull AIConfigurationProfile profile) {
         AISettings settings = AISettingsManager.getStaticSettings();
         if (settings.getDefaultConfigurationOrNull() != profile) {
-            settings.setDefaultConfiguration(profile);
-            AISettingsManager.getInstance().saveSettings();
+            AISettingsManager.getInstance().setDefaultConfiguration(profile);
         }
         setConversationProfile(getActiveConversation(), profile);
     }

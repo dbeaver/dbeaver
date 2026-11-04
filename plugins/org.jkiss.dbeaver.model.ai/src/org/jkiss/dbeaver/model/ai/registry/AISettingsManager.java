@@ -25,12 +25,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
+import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.engine.AICredentialsProvider;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PropertySerializationUtils;
@@ -117,6 +119,11 @@ public class AISettingsManager {
             } else {
                 settings = new AISettings();
             }
+            String defaultProfileId = DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_DEFAULT_CONFIGURATION);
+            AIConfigurationProfile defaultProfile = settings.getConfigurationOrNull(defaultProfileId);
+            if (defaultProfile != null) {
+                settings.setDefaultConfiguration(defaultProfile);
+            }
             return settings;
         } catch (Exception e) {
             log.error("Error loading AI settings, falling back to defaults.", e);
@@ -133,6 +140,27 @@ public class AISettingsManager {
         AISettings settings = this.getSettings();
         consumer.accept(settings);
         this.saveSettings(settings);
+    }
+
+    public void setDefaultConfiguration(@NotNull AIConfigurationProfile profile) {
+        getSettings().setDefaultConfiguration(profile);
+        saveDefaultConfiguration(profile);
+        raiseChangedEvent(this);
+    }
+
+    private void saveDefaultConfiguration(@Nullable AIConfigurationProfile profile) {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        if (profile == null) {
+            store.setToDefault(AIConstants.AI_DEFAULT_CONFIGURATION);
+        } else {
+            store.setValue(AIConstants.AI_DEFAULT_CONFIGURATION, profile.getProfileId());
+        }
+        try {
+            store.save();
+        } catch (IOException e) {
+            log.error("Error saving default AI configuration", e);
+            DBWorkbench.getPlatformUI().showError(AIMessages.ai_settings_save_error_title, null, e);
+        }
     }
 
     public void saveSettings() {
@@ -165,6 +193,7 @@ public class AISettingsManager {
             DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
 
             this.getSettingsHolder().setSettings(settings);
+            saveDefaultConfiguration(settings.getDefaultConfigurationOrNull());
         } catch (Exception e) {
             log.error("Error saving AI configuration", e);
             // the settings were entered by the user, so a failed save must not stay in the log only

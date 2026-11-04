@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.ai.registry;
 import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
+import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AISettings;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIModels;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -36,6 +38,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.ArgumentMatchers;
+import org.mockito.MockedConstruction;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -45,6 +48,45 @@ import java.util.Map;
 import java.util.Set;
 
 public class AISettingsManagerTest extends DBeaverUnitTest {
+
+    @Test
+    public void savesUserDefaultWithoutConfigurationManagerPermission() throws Exception {
+        DBPPlatform platform = Mockito.mock(DBPPlatform.class, Mockito.RETURNS_DEEP_STUBS);
+        AIConfigurationProfile profile = Mockito.mock(AIConfigurationProfile.class);
+        Mockito.when(profile.getProfileId()).thenReturn("user-profile");
+        DBPPreferenceStore store = platform.getPreferenceStore();
+        Map<String, String> preferences = new HashMap<>();
+        Mockito.doAnswer(invocation -> {
+            preferences.put(invocation.getArgument(0), invocation.getArgument(1));
+            return null;
+        }).when(store).setValue(ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
+        Mockito.when(platform.getPreferenceStore().getString(ArgumentMatchers.anyString()))
+            .thenAnswer(invocation -> preferences.getOrDefault(invocation.getArgument(0), ""));
+
+        try (MockedStatic<DBWorkbench> workbench = Mockito.mockStatic(
+            DBWorkbench.class, Mockito.withSettings().mockMaker("mock-maker-inline"));
+            MockedConstruction<AISettings> settings = Mockito.mockConstruction(AISettings.class, (mock, context) -> {
+                Mockito.when(mock.getConfigurationOrNull("user-profile")).thenReturn(profile);
+            })) {
+            workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+            AISettingsManager manager = AISettingsManager.getInstance();
+            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
+            manager.setDefaultConfiguration(profile);
+
+            Assertions.assertFalse(platform.getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER));
+            Assertions.assertEquals("user-profile", preferences.get(AIConstants.AI_DEFAULT_CONFIGURATION));
+            Mockito.verify(platform.getPreferenceStore()).save();
+            Mockito.verify(platform.getConfigurationController(), Mockito.never())
+                .saveConfigurationFile(ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
+
+            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
+            AISettings reloaded = manager.getSettings();
+            Assertions.assertEquals(2, settings.constructed().size());
+            Mockito.verify(reloaded).setDefaultConfiguration(profile);
+        } finally {
+            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
+        }
+    }
 
     @Test
     public void headerSecretsShouldBeSavedForAllProfiles() throws Exception {
