@@ -58,4 +58,62 @@ class DiagnosticInfoSanitizerTest {
         assertFalse(result.contains("2001:db8::1"));
         assertFalse(result.contains("Alice Smith"));
     }
+
+    @Test
+    void removesQuotedCredentialsIncludingSpacesAndEscapes() {
+        var sanitizer = new DiagnosticInfoSanitizer(Map.of());
+        assertEquals("{\"password\":\"[REDACTED]\",'token':'[REDACTED]'}",
+            sanitizer.sanitize("{\"password\":\"my secret\",'token':'a\\'b c'}"));
+        assertEquals("password=\"[REDACTED]\" user='[REDACTED]' status=failed",
+            sanitizer.sanitize("password=\"my secret\" user='Jane Doe' status=failed"));
+    }
+
+    @Test
+    void removesHostnamesWithUnlistedSuffixes() {
+        var sanitizer = new DiagnosticInfoSanitizer(Map.of());
+        assertEquals("From [REDACTED] and [REDACTED] to [REDACTED]",
+            sanitizer.sanitize("From db.customer.de and db.example.co.uk to DB.EXAMPLE.DE"));
+    }
+
+    @Test
+    void preservesTimestampAndPluginNameInLogHeader() {
+        var sanitizer = new DiagnosticInfoSanitizer(Map.of());
+        String lines = "2026-11-04 12:56:04.687 - Start [org.eclipse.osgi]\n"
+            + "2026-11-04 12:56:04.696 - Start [org.jkiss.dbeaver.core]\n"
+            + "2026-11-04 12:56:04.701 - Start [org.jkiss.dbeaver.ui.app.standalone]";
+        assertEquals(lines, sanitizer.sanitize(lines));
+        assertEquals("Found [[REDACTED]]", sanitizer.sanitize("Found [db.customer.de]"));
+    }
+
+    @Test
+    void preservesProductVersionAndJavaStackFrames() {
+        var sanitizer = new DiagnosticInfoSanitizer(Map.of());
+        String lines = "2026-11-04 14:18:33.184 - DBeaver Ultimate 25.3.0.100 is starting\n"
+            + "\tat java.base/sun.nio.fs.UnixException.translateToIOException(UnixException.java:94)\n"
+            + "\tat java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:108)\n"
+            + "\tat java.base/sun.nio.fs.UnixException.rethrowAsIOException(UnixException.java:114)";
+        assertEquals(lines, sanitizer.sanitize(lines));
+        assertEquals("\tat [REDACTED]", sanitizer.sanitize("\tat /Users/alice/private.log"));
+    }
+
+    @Test
+    void preservesSupportVersionsDespiteNumericEnvironmentValues() {
+        var sanitizer = new DiagnosticInfoSanitizer(Map.of(
+            "SHLVL", "0", "CPU_BITS", "64", "JAVA_VERSION", "25.0.4", "CLANG_BUILD", "1700", "PIN_TOKEN", "1234"
+        ));
+        String lines = "2026-11-04 14:24:47.084 - DBeaver Ultimate 25.3.0.100 is starting\n"
+            + "2026-11-04 14:24:47.084 - Java version: 25.0.4 by JetBrains s.r.o. (64bit)\n"
+            + "PostgreSQL 15.13 (Homebrew) on aarch64-apple-darwin24.4.0.100, compiled by Apple clang version 17.0.0.100 "
+            + "(clang-1700.0.13.3), 64-bit', driverName='PostgreSQL JDBC Driver', driverVersion='42.7.13'.";
+        assertEquals(lines, sanitizer.sanitize(lines));
+        assertEquals("token=[REDACTED] ip=[REDACTED]",
+            sanitizer.sanitize("token=1234 ip=192.168.0.1"));
+        assertEquals("2026-11-04 14:30:46.756 - DBeaver Ultimate 26.2.5.qualifier is starting",
+            sanitizer.sanitize("2026-11-04 14:30:46.756 - DBeaver Ultimate 26.2.5.qualifier is starting"));
+        assertEquals("2026-11-04 14:30:46.756 - DBeaver Ultimate 26.2.5.123123123 is starting",
+            sanitizer.sanitize("2026-11-04 14:30:46.756 - DBeaver Ultimate 26.2.5.123123123 is starting"));
+        var versionEnvironment = new DiagnosticInfoSanitizer(Map.of("DBEAVER_PRODUCT_VERSION", "26.2.5.qualifier"));
+        assertEquals("2026-11-04 14:30:46.756 - DBeaver Ultimate 26.2.5.qualifier is starting",
+            versionEnvironment.sanitize("2026-11-04 14:30:46.756 - DBeaver Ultimate 26.2.5.qualifier is starting"));
+    }
 }
