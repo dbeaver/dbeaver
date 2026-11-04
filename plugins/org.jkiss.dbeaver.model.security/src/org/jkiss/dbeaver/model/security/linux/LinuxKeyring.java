@@ -38,8 +38,12 @@ final class LinuxKeyring {
 
     static boolean isAvailable() {
         try {
-            withCollection(false, collection -> null);
-            return true;
+            return withCollection(false, collection -> {
+                // An unlocked keyring works without a display. A locked one may require
+                // an interactive Secret Service prompt, so use the fallback in headless sessions.
+                boolean locked = Native.COLLECTION_LOCKED.invokeInt(new Object[] { collection }) != 0;
+                return !locked || System.getenv("DISPLAY") != null || System.getenv("WAYLAND_DISPLAY") != null;
+            });
         } catch (RuntimeException | LinkageError e) {
             return false;
         }
