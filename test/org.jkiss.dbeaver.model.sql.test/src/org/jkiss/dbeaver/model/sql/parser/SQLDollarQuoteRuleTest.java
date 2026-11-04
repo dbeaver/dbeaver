@@ -49,6 +49,13 @@ public class SQLDollarQuoteRuleTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void ignoresDigitLeadingTag() {
+        Result result = evaluate("$1$body$1$");
+        Assertions.assertTrue(result.token().isUndefined());
+        Assertions.assertEquals(0, result.offset());
+    }
+
+    @Test
     public void ignoresUnclosedNamedDollarQuote() {
         Result result = evaluate("$tag$body");
         Assertions.assertTrue(result.token().isUndefined());
