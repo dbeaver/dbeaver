@@ -41,11 +41,12 @@ public class DDProjectVisibilityAdapterFactory implements IAdapterFactory, Proje
 
     @Override
     public boolean isVisible(@NotNull DBPProject project) throws DBException {
-        if (project.getWorkspace().getProjectById(project.getId()) == null) {
+        try {
+            DDProjectManager.BindingStatus status = DDProjectManager.getInstance().getBindingStatus(project);
+            return status == DDProjectManager.BindingStatus.UNBOUND
+                || status == DDProjectManager.BindingStatus.CURRENT_ACCOUNT;
+        } catch (IllegalStateException e) {
             return false;
         }
-        DDProjectManager.BindingStatus status = DDProjectManager.getInstance().getBindingStatus(project);
-        return status == DDProjectManager.BindingStatus.UNBOUND
-            || status == DDProjectManager.BindingStatus.CURRENT_ACCOUNT;
     }
 }

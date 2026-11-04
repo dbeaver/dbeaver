@@ -44,7 +44,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class DDProjectManager {
-    public enum BindingStatus { UNBOUND, CURRENT_ACCOUNT, OTHER_ACCOUNT, ACCOUNT_UNKNOWN }
+    public enum BindingStatus { UNBOUND, CURRENT_ACCOUNT, OTHER_ACCOUNT, ACCOUNT_UNKNOWN, PROJECT_REMOVED }
 
     @Nullable
     private static DDProjectManager instance;
@@ -130,7 +130,18 @@ public class DDProjectManager {
 
     @NotNull
     public BindingStatus getBindingStatus(@NotNull DBPProject project) throws DBException {
-        DDProjectSyncLocalBinding binding = getOrCreate(project).getBinding(project);
+        if (project.getWorkspace().getProject(project.getName()) != project) {
+            return BindingStatus.PROJECT_REMOVED;
+        }
+        DDProjectSyncLocalBinding binding;
+        try {
+            binding = getOrCreate(project).getBinding(project);
+        } catch (IllegalStateException e) {
+            if (project.getWorkspace().getProject(project.getName()) != project) {
+                return BindingStatus.PROJECT_REMOVED;
+            }
+            throw e;
+        }
         if (binding == null) {
             return BindingStatus.UNBOUND;
         }

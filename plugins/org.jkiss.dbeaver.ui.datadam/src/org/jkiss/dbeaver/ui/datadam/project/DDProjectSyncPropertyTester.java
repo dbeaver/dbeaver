@@ -68,7 +68,7 @@ public class DDProjectSyncPropertyTester extends PropertyTester {
                 case PROP_CAN_SYNC -> status == BindingStatus.CURRENT_ACCOUNT;
                 default -> false;
             };
-        } catch (DBException e) {
+        } catch (DBException | IllegalStateException e) {
             log.debug("Error checking DataDam project state", e);
             return false;
         }

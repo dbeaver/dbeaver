@@ -45,10 +45,10 @@ public class DDProjectDecorator extends LabelProvider implements ILabelDecorator
             return null;
         }
         try {
-            if (manager.getProjectManager().getBindingStatus(projectNode.getProject()) != BindingStatus.UNBOUND) {
+            if (manager.getProjectManager().getBindingStatus(projectNode.getProject()) == BindingStatus.CURRENT_ACCOUNT) {
                 return DBeaverIcons.getImage(DDTrackingUIIcons.PROJECT_DATADAM);
             }
-        } catch (DBException e) {
+        } catch (DBException | IllegalStateException e) {
             log.debug("Error checking DataDam project binding", e);
         }
         return null;
