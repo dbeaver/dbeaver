@@ -21,13 +21,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBPApplicationWorkbench;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.impl.app.AbstractApplication;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithParam;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
-import org.jkiss.dbeaver.utils.BundleServiceRef;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,24 +36,15 @@ public class DBWorkbench {
 
     private static final Log log = Log.getLog(DBWorkbench.class);
 
-    private static DBPApplicationWorkbench applicationWorkbench;
+    private static DBPPlatform platform;
     private static final List<DBRRunnableWithParam<DBPPlatform>> initHooks = new ArrayList<>();
 
     @NotNull
-    private static DBPApplicationWorkbench getApplicationWorkbench() {
-        if (applicationWorkbench == null) {
-            try {
-                AbstractApplication.getInstance();
-            } catch (Exception e) {
-                log.debug("Error checking application instance", e);
-            }
-            BundleServiceRef<DBPApplicationWorkbench> workbenchRef = RuntimeUtils.getBundleService(DBPApplicationWorkbench.class, true);
-            applicationWorkbench = workbenchRef.service();
-            if (applicationWorkbench == null) {
-                throw new IllegalStateException("Internal error: application workbench is not instantiated");
-            }
-            workbenchRef.initializeService();
-            DBPPlatform platform = applicationWorkbench.getPlatform();
+    private static DBPPlatform getInitializedPlatform() {
+        if (platform == null) {
+            AbstractApplication application = (AbstractApplication) AbstractApplication.getInstance();
+            platform = application.getPlatformInstance();
+            application.initializePlatform();
 
             // Run init hooks
             for (DBRRunnableWithParam<DBPPlatform> hook : initHooks) {
@@ -68,12 +56,12 @@ public class DBWorkbench {
             }
             initHooks.clear();
         }
-        return applicationWorkbench;
+        return platform;
     }
 
     @NotNull
     public static DBPPlatform getPlatform() {
-        return getApplicationWorkbench().getPlatform();
+        return getInitializedPlatform();
     }
 
     @NotNull
@@ -82,15 +70,13 @@ public class DBWorkbench {
     }
 
     public static boolean isPlatformStarted() {
-        if (applicationWorkbench != null) {
-            return applicationWorkbench.getPlatform() != null;
-        }
-        return false;
+        return platform != null;
     }
 
     @NotNull
     public static DBPPlatformUI getPlatformUI() {
-        return getApplicationWorkbench().getPlatformUI();
+        getInitializedPlatform();
+        return ((AbstractApplication) AbstractApplication.getInstance()).getPlatformUIInstance();
     }
 
     /**

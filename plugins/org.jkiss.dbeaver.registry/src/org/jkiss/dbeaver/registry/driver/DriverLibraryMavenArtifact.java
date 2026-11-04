@@ -278,7 +278,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
     }
 
     private Path detectLocalFile() {
-        if (localVersion != null) {
+        if (localVersion != null && !localVersion.isInvalidVersion()) {
             return localVersion.getCacheFile();
         }
         return null;

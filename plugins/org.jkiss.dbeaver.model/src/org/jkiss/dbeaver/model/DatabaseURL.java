@@ -42,23 +42,28 @@ public class DatabaseURL {
         private static final String TEMPLATE_WITH_PARAM_GROUPS =
             "[jdbc:]{driver}://[{user}:{password}@]{host}[:{port}][/{database}][?{param:{prop}={value}}[&{param:{prop}={value}}...]]";
 
+        private static final String QUERY_PARAMS_TEMPLATE = "[{param:{prop}[={value}]}[&{param:{prop}[={value}]}...]]";
+
         public static final String PARAM_GROUP = "param";
         public static final String PARAM_PROP = "prop";
         public static final String PARAM_VALUE = "value";
 
+        private static final StringTemplate.IParameterPatternSupplier PARAMETER_PATTERN_SUPPLIER = param -> switch (param.name()) {
+            case PARAM_PROP -> "[^&=]+";
+            case PARAM_VALUE -> "[^&]*";
+            case DBConstants.PROP_DATABASE -> "(?:[\\w\\-_.~]|%[0-9a-fA-F]{2})+";
+            default -> getPropertyRegex(param.name());
+        };
+
         private static final Pattern URL_PATTERN = createPattern(TEMPLATE);
         private static final Pattern URL_PATTERN_WITH_PARAMS = createPattern(TEMPLATE_WITH_PARAMS);
         private static final Pattern URL_PATTERN_WITH_PARAM_GROUPS = createPattern(TEMPLATE_WITH_PARAM_GROUPS);
+        private static final Pattern QUERY_PARAMETERS_PATTERN = createPattern(QUERY_PARAMS_TEMPLATE);
 
         @NotNull
         private static Pattern createPattern(@NotNull String template) {
             try {
-                return DatabaseURL.getUrlPattern(template, param -> switch (param.name()) {
-                    case PARAM_PROP -> "[^&=]+";
-                    case PARAM_VALUE -> "[^&]*";
-                    case DBConstants.PROP_DATABASE -> "(?:[\\w\\-_.~]|%[0-9a-fA-F]{2})+";
-                    default -> getPropertyRegex(param.name());
-                });
+                return DatabaseURL.getUrlPattern(template, PARAMETER_PATTERN_SUPPLIER);
             } catch (StringTemplate.StringTemplateFormatException exception) {
                 throw new ExceptionInInitializerError(exception);
             }
@@ -79,6 +84,12 @@ public class DatabaseURL {
             return URL_PATTERN_WITH_PARAM_GROUPS;
         }
 
+        /** Recognizes query text after '?', including valueless parameters and explicit empty values. */
+        @NotNull
+        public static Pattern getQueryParametersPattern() {
+            return QUERY_PARAMETERS_PATTERN;
+        }
+
         @NotNull
         public static Map<String, String> extractExtraParams(@NotNull StringTemplate.ParamEntries root) {
             List<StringTemplate.ParamEntries> extraParamGroups = root.getGroups().get(PARAM_GROUP);
@@ -97,6 +108,7 @@ public class DatabaseURL {
     }
 
     private static final Log log = Log.getLog(DatabaseURL.class);
+    private static final String URL_SUFFIX_PARAMETER = "dbeaverUrlSuffix";
 
     @NotNull
     private static final Object lock = new Object();
@@ -184,6 +196,43 @@ public class DatabaseURL {
         } catch (StringTemplate.StringTemplateException ex) {
             throw new DBException("Failed to generate database URL by template " + ex.getTemplateString(), ex);
         }
+    }
+
+    @NotNull
+    public static String replaceHostAndPort(
+        @NotNull DBPDriver driver,
+        @NotNull String url,
+        @NotNull String hostName,
+        int hostPort
+    ) throws DBException {
+        if (CommonUtils.isEmpty(hostName) || hostPort < 1 || hostPort > 65535) {
+            throw new DBException("Invalid tunnel endpoint");
+        }
+        String sampleUrl = CommonUtils.isNotEmpty(driver.getSampleURL()) ? driver.getSampleURL() : Generic.TEMPLATE;
+        StringTemplate template = StringTemplate.parseTemplate(
+            sampleUrl + "{" + URL_SUFFIX_PARAMETER + "}", parameter -> switch (parameter.name()) {
+                case DBConstants.PROP_HOST -> "(?:\\[[\\w:.%-]+\\]|[\\p{L}\\p{N}_\\-.~]+)";
+                case DBConstants.PROP_PORT -> "[0-9]+";
+                case DBConstants.PROP_DATABASE, DBConstants.PROP_USER, DBConstants.PROP_PASSWORD ->
+                    "(?:[\\p{L}\\p{N}_\\-.~]|%[0-9a-fA-F]{2})+";
+                case URL_SUFFIX_PARAMETER -> ".*";
+                default -> getPropertyRegex(parameter.name());
+            }
+        );
+        Map<String, String> parameters = template.extractSingletonParametersMap(url);
+        String suffix = parameters == null ? null : parameters.get(URL_SUFFIX_PARAMETER);
+        int queryStart = url.indexOf('?');
+        boolean validSuffix = suffix != null && (suffix.isEmpty() || "?;#".indexOf(suffix.charAt(0)) >= 0
+            || queryStart >= 0 && queryStart < url.length() - suffix.length());
+        String localHost = hostName.indexOf(':') >= 0 && !hostName.startsWith("[") ? "[" + hostName + "]" : hostName;
+        String updated = validSuffix ? template.replaceParameters(url, Map.of(
+            DBConstants.PROP_HOST, localHost,
+            DBConstants.PROP_PORT, Integer.toString(hostPort)
+        )) : null;
+        if (updated != null) {
+            return updated;
+        }
+        throw new DBException("Cannot redirect database URL to a single tunnel endpoint using the driver URL template");
     }
 
     @Nullable

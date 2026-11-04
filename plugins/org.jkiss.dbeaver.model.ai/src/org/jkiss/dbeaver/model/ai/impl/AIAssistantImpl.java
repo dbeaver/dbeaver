@@ -351,12 +351,17 @@ public class AIAssistantImpl implements AIAssistant {
                     AIMessage fcMessage = AIMessage.functionCall(fc, result);
                     // Visualize result in chat
                     chatListener.processFunctionCall(fcMessage);
-                    if (function.getType() == AIFunctionType.INFORMATION || result.getException() != null) {
+                    if (result.getException() != null) {
+                        chatListener.error(result.getException());
+                        chatListener.complete(List.of(), true, false);
+                        return;
+                    }
+                    if (function.getType() == AIFunctionType.INFORMATION) {
                         newMessages.add(fcMessage);
                     }
                 } catch (Exception e) {
                     chatListener.error(e);
-                    conversation.promptProcessed(true);
+                    chatListener.complete(List.of(), true, false);
                     return;
                 }
             }
@@ -368,6 +373,7 @@ public class AIAssistantImpl implements AIAssistant {
                     generateTextStream(monitor, chatSession, conversation, new AIChatRequest(context, newMessages, null), chatListener);
                 } catch (Exception e) {
                     chatListener.error(e);
+                    chatListener.complete(List.of(), true, false);
                 }
             } else {
                 // No more messages for AI

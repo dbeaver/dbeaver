@@ -27,6 +27,13 @@
             promoted="true"
             supportsFunctions="false"
             fallbacks="copilot-pro"/>
+        <completionEngine
+            id="ollama"
+            label="Ollama"
+            icon="icons/engine_ollama.svg"
+            class="org.jkiss.dbeaver.model.ai.engine.ollama.OllamaCompletionEngine"
+            properties="org.jkiss.dbeaver.model.ai.engine.ollama.OllamaProperties"
+            supportsFunctions="true"/>
     </extension>
 
     <extension point="com.dbeaver.ai.assistant">

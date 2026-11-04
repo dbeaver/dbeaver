@@ -85,6 +85,31 @@ public interface SMController extends DBPObjectController, DBInternalDatabaseInf
      */
     void setCurrentUserParameters(@NotNull Map<String, Object> parameters) throws DBException;
 
+    /**
+     * Gets the complete web UI settings JSON object of the current authenticated user.
+     *
+     * @return the settings, or an empty object if no settings are stored
+     * @throws DBException if the user is not authenticated or the settings cannot be read
+     */
+    @NotNull
+    default Map<String, Object> getCurrentUserUISettings() throws DBException {
+        return Map.of();
+    }
+
+    /**
+     * Replaces the complete web UI settings JSON object of the current authenticated user.
+     * An empty object clears the settings. Null-valued fields are preserved, including in nested objects.
+     * Fields omitted from the replacement are removed.
+     *
+     * @param settings the complete replacement settings object
+     * @return the resulting settings object
+     * @throws DBException if the user is not authenticated, the settings cannot be saved, or the operation is unsupported
+     */
+    @NotNull
+    default Map<String, Object> updateCurrentUserUISettings(@NotNull Map<String, Object> settings) throws DBException {
+        throw new DBException("Web UI settings are not supported by this security controller");
+    }
+
     ///////////////////////////////////////////
     // Credentials
 
