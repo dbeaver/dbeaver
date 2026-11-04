@@ -170,7 +170,10 @@ class ProfileModelComposite extends Composite {
         String profileTip = AIChatMessagesUI.ai_chat_profile_label + ": " + profileText;
         modelText = AIChatMessagesUI.ai_chat_model_not_configured;
         boolean modelSelectionSupported = false;
-        if (profile != null) {
+        if (profile != null && !profile.isAvailable()) {
+            profileTip += "\n" + AIUIMessages.ai_engines_page_provider_unavailable;
+            modelText = AIChatMessagesUI.ai_chat_model_unavailable;
+        } else if (profile != null) {
             try {
                 profileTip += "\n" + profile.getEngineDescriptor().getLabel();
                 AIEngineProperties configuration = profile.getConfiguration();
@@ -227,10 +230,17 @@ class ProfileModelComposite extends Composite {
         Arrays.sort(profiles, Comparator.comparing(AIConfigurationProfile::getProfileName, String.CASE_INSENSITIVE_ORDER));
         for (AIConfigurationProfile profile : profiles) {
             MenuItem item = new MenuItem(profileMenu, SWT.RADIO);
-            item.setText(profile.getProfileName().replace("&", "&&"));
+            String label = profile.getProfileName();
+            if (!profile.isAvailable()) {
+                label += " - " + AIUIMessages.ai_engines_page_provider_unavailable;
+            }
+            item.setText(label.replace("&", "&&"));
+            item.setEnabled(profile.isAvailable());
             item.setSelection(profile == getProfile());
             try {
-                item.setImage(DBeaverIcons.getImage(profile.getEngineDescriptor().getIcon()));
+                if (profile.isAvailable()) {
+                    item.setImage(DBeaverIcons.getImage(profile.getEngineDescriptor().getIcon()));
+                }
             } catch (DBException e) {
                 log.debug(e);
             }

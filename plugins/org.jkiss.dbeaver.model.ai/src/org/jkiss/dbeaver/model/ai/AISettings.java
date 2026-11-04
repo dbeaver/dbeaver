@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import com.google.gson.JsonObject;
 import com.google.gson.annotations.JsonAdapter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -26,7 +27,6 @@ import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
-import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -50,7 +50,7 @@ public class AISettings implements DBPAdaptable {
     // Deprecated. Use AIConfigurationProfile instead
     @Deprecated(forRemoval = true)
     @JsonAdapter(AISettingsManager.EngineConfigAdapter.class)
-    private final Map<String, AIEngineProperties> engineConfigurations = new LinkedHashMap<>();
+    private final Map<String, JsonObject> engineConfigurations = new LinkedHashMap<>();
     private final Map<String, Object> properties = new LinkedHashMap<>();
     private final Map<String, String> customInstructions = new LinkedHashMap<>();
 
@@ -74,6 +74,7 @@ public class AISettings implements DBPAdaptable {
         if (profile == null) {
             throw new DBException("AI engine is not configured");
         }
+        profile.getEngineDescriptor();
         return profile;
     }
 
@@ -208,6 +209,9 @@ public class AISettings implements DBPAdaptable {
         }
         // Remove in legacy config too
         engineConfigurations.remove(profile.getEngineId());
+        if (!profile.isAvailable()) {
+            return;
+        }
         try {
             profile.getConfiguration().deleteSecrets(profile);
         } catch (DBException e) {
@@ -277,29 +281,31 @@ public class AISettings implements DBPAdaptable {
         boolean migrateLegacyConfigurations = configurations.isEmpty() && !engineConfigurations.isEmpty();
         if (migrateLegacyConfigurations) {
             // Profiles from engine settings
-            for (Map.Entry<String, AIEngineProperties> ep : engineConfigurations.entrySet()) {
-                String engineId = ep.getKey();
-                AIEngineDescriptor engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
-                if (engineDescriptor != null) {
-                    AIEngineProperties engineProperties = ep.getValue();
-                    // An empty OpenAI model resolved to gpt-4o before profiles were introduced
-                    if (engineProperties instanceof OpenAIProperties openAIProperties &&
-                        CommonUtils.isEmpty(openAIProperties.getModel())) {
-                        openAIProperties.setModel(OpenAIConstants.LEGACY_DEFAULT_MODEL);
+            for (Map.Entry<String, JsonObject> entry : engineConfigurations.entrySet()) {
+                String engineId = entry.getKey();
+                JsonObject json = new JsonObject();
+                json.addProperty("name", engineId);
+                json.addProperty("engine", engineId);
+                json.addProperty("migrated", true);
+                json.add("configuration", entry.getValue().get("properties"));
+                AIConfigurationProfile profile = AISettingsManager.READ_PROPS_GSON.fromJson(json, AIConfigurationProfile.class);
+                profile.setProfileId(engineId);
+                if (profile.isAvailable()) {
+                    try {
+                        if (profile.getConfiguration() instanceof OpenAIProperties properties
+                            && CommonUtils.isEmpty(properties.getModel())) {
+                            properties.setModel(OpenAIConstants.LEGACY_DEFAULT_MODEL);
+                        }
+                    } catch (DBException e) {
+                        log.error(e);
                     }
-                    AIConfigurationProfile cp = new AIConfigurationProfile();
-                    cp.setMigrated(true);
-                    cp.setProfileId(engineId);
-                    cp.setProfileName(engineDescriptor.getId());
-                    cp.setEngineId(engineId);
-                    cp.setConfiguration(engineProperties);
-                    configurations.put(ep.getKey(), cp);
                 }
+                configurations.put(engineId, profile);
             }
         }
 
-        // Validate the legacy active engine only after its profile has been created
-        if (activeEngine == null || getConfigurationOrNull(activeEngine) == null) {
+        // keep the saved engine even when this product does not provide it
+        if (activeEngine == null) {
             activeEngine = OpenAIConstants.OPENAI_ENGINE;
         }
 
@@ -310,22 +316,25 @@ public class AISettings implements DBPAdaptable {
             for (Map.Entry<String, AIConfigurationProfile> ep : configurations.entrySet()) {
                 ep.getValue().setProfileId(ep.getKey());
             }
+        }
+    }
 
-            if (engineConfigurations.isEmpty()) {
-                // Copy to engine configs for backward compatibility
-                for (Map.Entry<String, AIConfigurationProfile> ep : configurations.entrySet()) {
-                    try {
-                        engineConfigurations.put(ep.getValue().getEngineId(), ep.getValue().getConfiguration());
-                    } catch (DBException e) {
-                        log.error(e);
-                    }
-                }
+    public void prepareSettingsSaving() throws DBException {
+        for (AIConfigurationProfile profile : configurations.values()) {
+            if (!profile.isAvailable()) {
+                continue;
             }
+            AIEngineProperties properties = profile.getConfiguration();
+            JsonObject legacy = engineConfigurations.computeIfAbsent(profile.getEngineId(), key -> new JsonObject());
+            legacy.add("properties", AISettingsManager.SAVE_PROPS_GSON.toJsonTree(properties, properties.getClass()));
         }
     }
 
     public void resolveSecrets() {
         for (AIConfigurationProfile profile : this.getConfigurations()) {
+            if (!profile.isAvailable()) {
+                continue;
+            }
             try {
                 profile.getConfiguration().resolveSecrets(profile);
             } catch (DBException e) {
