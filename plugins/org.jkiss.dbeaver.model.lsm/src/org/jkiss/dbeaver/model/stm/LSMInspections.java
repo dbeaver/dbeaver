@@ -38,8 +38,10 @@ import java.util.stream.StreamSupport;
 
 public class LSMInspections {
 
-    private static final Pattern anyWordPattern = Pattern.compile("^\\w+$");
-    private static final Pattern anyWordHeadPattern = Pattern.compile("^\\w+");
+    private static final Pattern anyWordPattern = Pattern.compile("^[@\\w]+$");
+    private static final Pattern anyWordHeadPattern = Pattern.compile("^[@\\w]+");
+
+    private static final String VARIABLE_NAME_PREFIX = "@";
 
     public static boolean matchesAnyWord(String str) {
         return anyWordPattern.matcher(str).matches();
@@ -474,7 +476,7 @@ public class LSMInspections {
                 }
                 for (int i = index; i >= 0; i--) {
                     TermItem item = allTerms.get(i);
-                    if (item.kind == TermNodeKind.IDENTIFIER) {
+                    if (item.kind == TermNodeKind.IDENTIFIER || item.term().getTextContent().startsWith(VARIABLE_NAME_PREFIX)) {
                         nameNodes.addFirst(item.term);
                         i--;
                         if (i < 0 || allTerms.get(i).kind != TermNodeKind.PERIOD) {

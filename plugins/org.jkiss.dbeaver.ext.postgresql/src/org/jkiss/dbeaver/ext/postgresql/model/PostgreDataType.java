@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -153,6 +153,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema>
         if (typeType == PostgreTypeType.e) {
             // Enums are strings
             this.dataKind = DBPDataKind.STRING;
+        } else if (PostgreConstants.TYPE_RECORD.equals(name)) {
+            // Anonymous record values have members even though pg_type has no fixed attributes for them.
+            this.dataKind = DBPDataKind.STRUCT;
         } else {
             this.dataKind = JDBCDataSource.getDataKind(getName(), valueType);
             if (this.dataKind == DBPDataKind.OBJECT) {

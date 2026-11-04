@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel;
 
+import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetListener;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPanel;
@@ -29,10 +30,14 @@ public final class ResultSetPanelRefresher extends ResultSetListenerAdapter {
         this.resultSetPanel = resultSetPanel;
     }
 
-    public static void installOn(@NotNull IResultSetPanel resultSetPanel, @NotNull IResultSetPresentation presentation) {
+    public static void installOn(
+        @NotNull IResultSetPanel resultSetPanel,
+        @NotNull Composite panelContents,
+        @NotNull IResultSetPresentation presentation
+    ) {
         IResultSetListener listener = new ResultSetPanelRefresher(resultSetPanel);
         presentation.getController().addListener(listener);
-        presentation.getControl().addDisposeListener(e -> presentation.getController().removeListener(listener));
+        panelContents.addDisposeListener(e -> presentation.getController().removeListener(listener));
     }
 
     @Override

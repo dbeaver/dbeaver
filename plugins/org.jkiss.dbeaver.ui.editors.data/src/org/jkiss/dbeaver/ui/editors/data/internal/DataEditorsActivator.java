@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.editors.data.internal;
 
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
-import org.jkiss.dbeaver.ui.DataEditorFeatures;
 import org.osgi.framework.BundleContext;
 
 public class DataEditorsActivator extends AbstractUIPlugin {
@@ -30,35 +29,34 @@ public class DataEditorsActivator extends AbstractUIPlugin {
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.ui.editors.data";
 
     // The shared instance
+    @Nullable
     private static DataEditorsActivator plugin;
+    @Nullable
     private DBPPreferenceStore preferences;
 
     public DataEditorsActivator() {
     }
 
     @Override
-    public void start(BundleContext context) throws Exception {
+    public void start(@NotNull BundleContext context) throws Exception {
         super.start(context);
         plugin = this;
         preferences = new BundlePreferenceStore(getBundle());
 
-        DBRFeatureRegistry.getInstance().registerFeatures(DataEditorFeatures.class);
     }
 
     @Override
-    public void stop(BundleContext context) throws Exception {
+    public void stop(@NotNull BundleContext context) throws Exception {
         plugin = null;
         super.stop(context);
     }
 
+    @Nullable
     public static DataEditorsActivator getDefault() {
         return plugin;
     }
 
-    public static ImageDescriptor getImageDescriptor(String path) {
-        return imageDescriptorFromPlugin(PLUGIN_ID, path);
-    }
-
+    @Nullable
     public DBPPreferenceStore getPreferences() {
         return preferences;
     }

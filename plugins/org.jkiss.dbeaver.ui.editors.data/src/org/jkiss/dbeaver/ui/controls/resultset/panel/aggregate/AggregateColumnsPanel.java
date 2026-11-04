@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.aggregate;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
@@ -92,12 +93,14 @@ public class AggregateColumnsPanel extends ResultSetPanelBase {
         new TreeColumn(this.aggregateTable, SWT.LEFT).setText(ResultSetMessages.aggregate_columns_function_text);
         new TreeColumn(this.aggregateTable, SWT.LEFT).setText(ResultSetMessages.aggregate_columns_value_text);
 
-        if (this.presentation instanceof ISelectionProvider) {
-            ((ISelectionProvider) this.presentation).addSelectionChangedListener(event -> {
+        if (this.presentation instanceof ISelectionProvider selectionProvider) {
+            ISelectionChangedListener listener = event -> {
                 if (presentation.getController().getVisiblePanel() == AggregateColumnsPanel.this) {
                     refresh(false);
                 }
-            });
+            };
+            selectionProvider.addSelectionChangedListener(listener);
+            aggregateTable.addDisposeListener(e -> selectionProvider.removeSelectionChangedListener(listener));
         }
 
         MenuManager menuMgr = new MenuManager();

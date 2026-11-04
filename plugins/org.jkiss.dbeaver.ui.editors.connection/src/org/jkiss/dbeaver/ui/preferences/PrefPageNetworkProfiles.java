@@ -385,7 +385,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
         for (HandlerBlock handlerBlock : configurations.values()) {
             DBWHandlerConfiguration configuration = handlerBlock.loadedConfigs.get(profile);
             if (configuration != null) {
-                profile.updateConfiguration(configuration);
+                profile.updateConfiguration(new DBWHandlerConfiguration(configuration));
             }
         }
     }
@@ -447,15 +447,22 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
     public boolean performOk() {
         saveHandlerSettings();
 
-        List<DBWNetworkProfile> allProfiles = new ArrayList<>();
-        for (TableItem item : profilesTable.getItems()) {
-            DBWNetworkProfile profile = (DBWNetworkProfile) item.getData();
+        List<DBWNetworkProfile> allProfiles = getCurrentProfiles();
+        for (DBWNetworkProfile profile : allProfiles) {
             saveSettings(profile);
-            allProfiles.add(profile);
         }
         updateNetworkProfiles(allProfiles);
 
         return super.performOk();
+    }
+
+    @NotNull
+    protected List<DBWNetworkProfile> getCurrentProfiles() {
+        List<DBWNetworkProfile> profiles = new ArrayList<>();
+        for (TableItem item : profilesTable.getItems()) {
+            profiles.add((DBWNetworkProfile) item.getData());
+        }
+        return profiles;
     }
 
     @Override

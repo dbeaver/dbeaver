@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -29,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNUtils;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLMetadataRefreshTargetResolver.RefreshTarget;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -66,61 +69,7 @@ final class SQLMetadataRefreshCoordinator {
         try {
             UIUtils.runInProgressDialog(monitor -> {
                 try {
-                    Map<DBNDatabaseNode, Set<RefreshTarget>> nodeTargets = new LinkedHashMap<>();
-                    Set<RefreshTarget> directlyRefreshedTargets = new LinkedHashSet<>();
-                    boolean directlyRefreshed = false;
-                    for (RefreshTarget target : refreshTargets) {
-                        DBSObject refreshTarget = resolveTarget(monitor, executionContext, target);
-                        if (refreshTarget == null) {
-                            continue;
-                        }
-                        DBNDatabaseNode node = DBNUtils.getNodeByObject(monitor, refreshTarget, true);
-                        if (node == null || node.isDisposed()) {
-                            if (refreshTarget instanceof DBPRefreshableObject refreshableObject) {
-                                refreshableObject.refreshObject(monitor);
-                                directlyRefreshed = true;
-                                directlyRefreshedTargets.add(target);
-                            }
-                        } else {
-                            nodeTargets.computeIfAbsent(node, key -> new LinkedHashSet<>()).add(target);
-                        }
-                    }
-                    notifyRefreshed(completionHandler, directlyRefreshedTargets);
-                    List<DBNDatabaseNode> nodes = nodeTargets.keySet().stream()
-                        .map(node -> Map.entry(node, getNodeDepth(node)))
-                        .sorted(Map.Entry.comparingByValue())
-                        .map(Map.Entry::getKey)
-                        .toList();
-                    if (!nodes.isEmpty()) {
-                        NavigatorHandlerRefresh.refreshNavigator(nodes, (refreshMonitor, refreshedNodes) -> {
-                            Set<RefreshTarget> successfullyRefreshedTargets = new LinkedHashSet<>();
-                            for (Map.Entry<DBNDatabaseNode, Set<RefreshTarget>> entry : nodeTargets.entrySet()) {
-                                for (DBNNode refreshedNode : refreshedNodes) {
-                                    if (entry.getKey() == refreshedNode || entry.getKey().isChildOf(refreshedNode)) {
-                                        successfullyRefreshedTargets.addAll(entry.getValue());
-                                        break;
-                                    }
-                                }
-                            }
-                            notifyRefreshed(completionHandler, successfullyRefreshedTargets);
-                            if (!executionContext.isConnected() || !dataSourceContainer.isConnected()) {
-                                return;
-                            }
-                            try {
-                                refreshContextDefaults(refreshMonitor, executionContext);
-                            } catch (DBException e) {
-                                log.debug("Error updating execution context after metadata refresh", e);
-                            }
-                        });
-                    }
-                    if (directlyRefreshed) {
-                        refreshContextDefaults(monitor, executionContext);
-                        dataSourceContainer.fireEvent(new DBPEvent(
-                            DBPEvent.Action.OBJECT_UPDATE,
-                            dataSourceContainer,
-                            DBPEvent.METADATA_REFRESH
-                        ));
-                    }
+                    refresh(monitor, executionContext, refreshTargets, completionHandler, true);
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
                 }
@@ -131,6 +80,95 @@ final class SQLMetadataRefreshCoordinator {
                 SQLEditorMessages.sql_editor_metadata_refresh_error_message,
                 e.getTargetException()
             );
+        }
+    }
+
+    static void refreshAutomatically(
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull Set<RefreshTarget> refreshTargets,
+        @Nullable Consumer<Set<RefreshTarget>> completionHandler
+    ) {
+        AbstractJob refreshJob = new AbstractJob("Reload metadata after DDL") {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                try {
+                    refresh(monitor, executionContext, refreshTargets, completionHandler, false);
+                } catch (DBException e) {
+                    log.error("Error reloading metadata after DDL", e);
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        refreshJob.setSystem(true);
+        refreshJob.schedule();
+    }
+
+    private static void refresh(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull Set<RefreshTarget> refreshTargets,
+        @Nullable Consumer<Set<RefreshTarget>> completionHandler,
+        boolean userInitiated
+    ) throws DBException {
+        DBPDataSourceContainer dataSourceContainer = executionContext.getDataSource().getContainer();
+        if (!executionContext.isConnected() || !dataSourceContainer.isConnected()) {
+            return;
+        }
+        Map<DBNDatabaseNode, Set<RefreshTarget>> nodeTargets = new LinkedHashMap<>();
+        Set<RefreshTarget> directlyRefreshedTargets = new LinkedHashSet<>();
+        boolean directlyRefreshed = false;
+        for (RefreshTarget target : refreshTargets) {
+            DBSObject refreshTarget = resolveTarget(monitor, executionContext, target);
+            if (refreshTarget == null) {
+                continue;
+            }
+            DBNDatabaseNode node = DBNUtils.getNodeByObject(monitor, refreshTarget, true);
+            if (node == null || node.isDisposed()) {
+                if (refreshTarget instanceof DBPRefreshableObject refreshableObject) {
+                    refreshableObject.refreshObject(monitor);
+                    directlyRefreshed = true;
+                    directlyRefreshedTargets.add(target);
+                }
+            } else {
+                nodeTargets.computeIfAbsent(node, key -> new LinkedHashSet<>()).add(target);
+            }
+        }
+        notifyRefreshed(completionHandler, directlyRefreshedTargets);
+        List<DBNDatabaseNode> nodes = nodeTargets.keySet().stream()
+            .map(node -> Map.entry(node, getNodeDepth(node)))
+            .sorted(Map.Entry.comparingByValue())
+            .map(Map.Entry::getKey)
+            .toList();
+        if (!nodes.isEmpty()) {
+            NavigatorHandlerRefresh.refreshNavigator(nodes, (refreshMonitor, refreshedNodes) -> {
+                Set<RefreshTarget> successfullyRefreshedTargets = new LinkedHashSet<>();
+                for (Map.Entry<DBNDatabaseNode, Set<RefreshTarget>> entry : nodeTargets.entrySet()) {
+                    for (DBNNode refreshedNode : refreshedNodes) {
+                        if (entry.getKey() == refreshedNode || entry.getKey().isChildOf(refreshedNode)) {
+                            successfullyRefreshedTargets.addAll(entry.getValue());
+                            break;
+                        }
+                    }
+                }
+                notifyRefreshed(completionHandler, successfullyRefreshedTargets);
+                if (!executionContext.isConnected() || !dataSourceContainer.isConnected()) {
+                    return;
+                }
+                try {
+                    refreshContextDefaults(refreshMonitor, executionContext);
+                } catch (DBException e) {
+                    log.debug("Error updating execution context after metadata refresh", e);
+                }
+            }, userInitiated);
+        }
+        if (directlyRefreshed) {
+            refreshContextDefaults(monitor, executionContext);
+            dataSourceContainer.fireEvent(new DBPEvent(
+                DBPEvent.Action.OBJECT_UPDATE,
+                dataSourceContainer,
+                DBPEvent.METADATA_REFRESH
+            ));
         }
     }
 

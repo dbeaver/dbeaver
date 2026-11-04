@@ -55,6 +55,7 @@ public class CoreMessages extends NLS {
     public static String model_navigator__connections;
     public static String model_navigator_Connection;
     public static String dialog_about_label_version;
+    public static String dialog_about_label_patch;
     public static String dialog_about_title;
 
     public static String dialog_project_export_wizard_main_page;
@@ -152,6 +153,11 @@ public class CoreMessages extends NLS {
     public static String dialog_version_update_new_version;
     public static String dialog_version_update_no_new_version;
     public static String dialog_version_update_notes;
+    public static String dialog_version_update_patch_notes;
+    public static String dialog_version_update_severity;
+    public static String dialog_version_update_severity_medium;
+    public static String dialog_version_update_severity_high;
+    public static String dialog_version_update_severity_critical;
     public static String dialog_version_update_no_notes;
     public static String dialog_version_update_press_more_info;
     public static String dialog_version_update_title;
@@ -289,6 +295,8 @@ public class CoreMessages extends NLS {
     public static String pref_page_connection_label_close_connection_on_sleep_tip;
     public static String pref_page_connection_label_enable_shell_auth_model;
     public static String pref_page_connection_label_enable_shell_auth_model_tip;
+    public static String pref_page_connection_label_sanitize_driver_properties;
+    public static String pref_page_connection_label_sanitize_driver_properties_tip;
 
     public static String pref_page_network_expert_label;
     public static String pref_page_network_expert_preferred_ip_stack_label;

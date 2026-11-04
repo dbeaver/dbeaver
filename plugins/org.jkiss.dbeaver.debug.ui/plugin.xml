@@ -116,7 +116,12 @@
                 <and>
                     <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="database-developer"/>
                     <with variable="activePart">
-                        <adapt type="org.jkiss.dbeaver.debug.DBGDebugObject"/>
+                        <and>
+                            <instanceof value="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"/>
+                            <test property="org.jkiss.dbeaver.ui.editors.entity.objectType"
+                                  value="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
+                            <adapt type="org.jkiss.dbeaver.debug.DBGDebugObject"/>
+                        </and>
                     </with>
                 </and>
             </enabledWhen>

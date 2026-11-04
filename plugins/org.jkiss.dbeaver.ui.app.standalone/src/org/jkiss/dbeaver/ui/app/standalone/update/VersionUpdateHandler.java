@@ -20,12 +20,15 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
+import org.jkiss.dbeaver.registry.updater.VersionDescriptor.PatchSeverity;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -43,6 +46,7 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
     public static final String PROPERTY_AVAILABLE = "org.jkiss.dbeaver.ui.versionUpdate.available";
 
     private static Version currentVersion;
+    private static int currentPatch;
     private static VersionDescriptor newVersion;
     private static boolean updateStarted;
     private static boolean downloading;
@@ -50,6 +54,7 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
 
     static void showNotification(@NotNull Version current, @NotNull VersionDescriptor available) {
         currentVersion = current;
+        currentPatch = DBeaverVersionChecker.getProductPatchNumber();
         newVersion = available;
         ActionUtils.evaluatePropertyState(PROPERTY_AVAILABLE);
         ActionUtils.fireCommandRefresh(COMMAND_UPDATE);
@@ -63,6 +68,7 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
         UIUtils.runInUIThread(() -> {
             if (!updateStarted) {
                 currentVersion = current;
+                currentPatch = DBeaverVersionChecker.getProductPatchNumber();
                 newVersion = available;
                 ActionUtils.runCommand(COMMAND_UPDATE, PlatformUI.getWorkbench());
             }
@@ -107,8 +113,19 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
 
     @Override
     public void updateElement(@NotNull UIElement element, @NotNull Map parameters) {
-        var icon = downloading ? UIIcon.LOADING.get(animationFrame % UIIcon.LOADING.size()) : UIIcon.DOWNLOAD;
+        var severity = currentVersion == null || newVersion == null
+            ? PatchSeverity.NONE
+            : newVersion.getMaxSeverity(currentVersion, currentPatch);
+        var icon = downloading
+            ? UIIcon.LOADING.get(animationFrame % UIIcon.LOADING.size())
+            : VersionUpdatePresentation.getSeverityIcon(severity);
         element.setIcon(DBeaverIcons.getImageDescriptor(icon));
+        if (severity != PatchSeverity.NONE) {
+            // Command contributions do not expose native toolbar button colors.
+            element.setTooltip(NLS.bind(CoreMessages.dialog_version_update_severity, VersionUpdatePresentation.getSeverityLabel(severity)));
+        } else {
+            element.setTooltip(CoreMessages.dialog_version_update_title);
+        }
     }
 
     private void downloadFinished(@NotNull IStatus status) {

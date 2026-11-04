@@ -180,7 +180,7 @@ public abstract class TaskConfigurationWizard<SETTINGS extends DBTTaskSettings> 
     }
 
     public boolean isTaskSaveEnabled() {
-        return !getContainer().isSelectorMode();
+        return !getContainer().isSelectorMode() && PlatformUI.getWorkbench().getViewRegistry().find(TASKS_VIEW_ID) != null;
     }
 
     public boolean isNewTaskEditor() {

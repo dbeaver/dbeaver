@@ -54,6 +54,8 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_create_folder_folder_name;
     public static String actions_navigator_create_new;
     public static String actions_navigator_delete;
+    public static String actions_navigator_delete_multiple;
+    public static String actions_navigator_delete_objects;
     public static String actions_navigator_delete_script;
     public static String actions_navigator_edit;
     public static String actions_navigator_persist_delete_in_the_editor_title;
@@ -187,6 +189,9 @@ public class UINavigatorMessages extends NLS {
     public static String editors_entity_read_expensive_props_action;
     public static String editors_entity_dialog_persist_title;
     public static String editors_entity_dialog_preview_title;
+    public static String editors_entity_hyperlink_error_title;
+    public static String editors_entity_hyperlink_error_message;
+    public static String editors_entity_hyperlink_unavailable_message;
     public static String editors_entity_properties_text;
     public static String editors_entity_properties_name_tooltip;
     public static String editors_entity_properties_tooltip_suffix;

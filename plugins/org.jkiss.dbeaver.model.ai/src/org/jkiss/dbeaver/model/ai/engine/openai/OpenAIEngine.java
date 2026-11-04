@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModel;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
@@ -65,22 +67,19 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     @Override
     public List<AIModel> getModels(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (properties instanceof OpenAIProperties openAIProperties && openAIProperties.isChatGptAccountAuthentication()) {
-            return new OpenAIAccountAuthenticator(openAIProperties.getTimeout()).listModels(openAIProperties).stream()
-                .map(model -> OpenAIModels.KNOWN_MODELS.getOrDefault(
-                    model,
-                    new AIModel(model, OpenAIProperties.DEFAULT_ACCOUNT_CONTEXT_WINDOW_SIZE, OpenAIModels.detectModelFeatures(model))
-                ))
-                .toList();
+            if (!OpenAIAccountAuthenticator.isSupported()) {
+                throw new DBException("ChatGPT account authentication is available only in standalone desktop applications");
+            }
+            return new OpenAIAccountAuthenticator(openAIProperties.getTimeout()).listModelDetails(monitor, openAIProperties);
         }
-        String baseUrl = properties.getEffectiveBaseUrl();
-        boolean defaultEndpoint = OpenAIBaseProperties.isDefaultBaseUrl(baseUrl);
-        return openAiService.getInstance().getModels(monitor)
-            .stream()
-            .map(model -> defaultEndpoint ? OpenAIModels.KNOWN_MODELS.getOrDefault(
-                model.id(),
-                new AIModel(model.id(), null, OpenAIModels.detectModelFeatures(model.id()))
-            ) : new AIModel(model.id(), null, Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING)))
-            .toList();
+        return mapModels(monitor, openAiService.getInstance().getModels(monitor), OAIModel::id,
+            (model, entry) -> OpenAIModels.fromApiModel(model, entry, getModelFeatures(model.id())));
+    }
+
+    @NotNull
+    protected Set<AIModelFeature> getModelFeatures(@NotNull String modelName) {
+        return OpenAIModels.isOpenAIEndpoint(properties.getEffectiveBaseUrl()) ? OpenAIModels.detectModelFeatures(modelName)
+            : Set.of(AIModelFeature.CHAT, AIModelFeature.STREAMING);
     }
 
     @NotNull
@@ -127,16 +126,6 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     }
 
     @Override
-    public int getContextWindowSize(@NotNull DBRProgressMonitor monitor) throws DBException {
-        Integer contextWindowSize = properties.getEffectiveContextWindowSize();
-        if (contextWindowSize != null) {
-            return contextWindowSize;
-        }
-
-        throw new DBException("Context window size is not set for the model: " + model());
-    }
-
-    @Override
     public void close() throws DBException {
         openAiService.dispose();
     }
@@ -153,13 +142,32 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     @NotNull
     private OAIResponsesRequest createRequest(@NotNull AIEngineRequest request) throws DBException {
-        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), temperature());
+        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), getRequestTemperature());
         if (properties instanceof OpenAIProperties openAIProperties
             && openAIProperties.isChatGptAccountAuthentication()
         ) {
             OpenAiUtils.prepareChatGptAccountRequest(oaiRequest);
         }
         return oaiRequest;
+    }
+
+    @Nullable
+    @Override
+    protected String getCatalogProviderId() {
+        boolean accountAuthentication = properties instanceof OpenAIProperties openAIProperties
+            && openAIProperties.isChatGptAccountAuthentication();
+        return accountAuthentication || OpenAIModels.isOpenAIEndpoint(properties.getEffectiveBaseUrl())
+            ? OpenAIModels.CATALOG_PROVIDER_ID : null;
+    }
+
+    @Nullable
+    @Override
+    protected AIModelCatalogEntry findCatalogEntry(
+        @NotNull Map<String, AIModelCatalogEntry> catalog,
+        @Nullable String modelName
+    ) {
+        return OpenAIModels.CATALOG_PROVIDER_ID.equals(getCatalogProviderId())
+            ? OpenAIModels.findCatalogEntry(catalog, modelName) : super.findCatalogEntry(catalog, modelName);
     }
 
     @NotNull
@@ -181,12 +189,4 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         return OpenAIClientResponses.createClient(baseUrl, token, properties.getCustomHeaders());
     }
 
-    @Nullable
-    protected String model() throws DBException {
-        return properties.getEffectiveModel();
-    }
-
-    protected double temperature() throws DBException {
-        return properties.getTemperature();
-    }
 }

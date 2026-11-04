@@ -562,10 +562,30 @@ public class ResultSetModel implements DBDResultSetModel {
         row.values[rootIndex] = valueToEdit;
 
         if (updateChanges && row.getState() == ResultSetRow.STATE_NORMAL) {
-            changesCount++;
+            if (isOriginalValueRestored(attr, topAttribute, row, valueToEdit)) {
+                // The value is back to the original one, so there is nothing left to save
+                row.clearChange(topAttribute);
+                refreshChangeCount();
+            } else {
+                changesCount++;
+            }
         }
 
         return true;
+    }
+
+    private boolean isOriginalValueRestored(
+        @NotNull DBDAttributeBinding attr,
+        @NotNull DBDAttributeBinding topAttribute,
+        @NotNull ResultSetRow row,
+        @Nullable Object value
+    ) {
+        if (attr != topAttribute || attr.getDataKind().isComplex() || value instanceof DBDValue
+            || !row.isChanged(topAttribute)) {
+            return false;
+        }
+        Object originalValue = row.getChange(topAttribute);
+        return !(originalValue instanceof DBDValue) && DBUtils.compareDataValues(value, originalValue) == 0;
     }
 
     void resetCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable int[] rowIndexes) {

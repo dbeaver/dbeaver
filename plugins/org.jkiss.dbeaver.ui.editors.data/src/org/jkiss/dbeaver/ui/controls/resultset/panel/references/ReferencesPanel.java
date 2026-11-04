@@ -68,7 +68,7 @@ public class ReferencesPanel extends ResultSetPanelBase {
         this.referencesPlaceholder = new Composite(parent, SWT.NONE);
         this.referencesPlaceholder.setLayout(new FillLayout());
 
-        ResultSetPanelRefresher.installOn(this, presentation);
+        ResultSetPanelRefresher.installOn(this, referencesPlaceholder, presentation);
 
         if (presentation instanceof ISelectionProvider sp) {
             ISelectionChangedListener selectionListener = new ISelectionChangedListener() {
@@ -82,6 +82,9 @@ public class ReferencesPanel extends ResultSetPanelBase {
                         return;
                     }
                     UIExecutionQueue.queueExec(() -> {
+                        if (referencesPlaceholder.isDisposed() || presentation.getController().getVisiblePanel() != ReferencesPanel.this) {
+                            return;
+                        }
                         List<ResultSetRow> selectedItems = rss.getSelectedRows();
                         if (CommonUtils.equalObjects(prevSelection, selectedItems)) {
                             return;
@@ -92,7 +95,7 @@ public class ReferencesPanel extends ResultSetPanelBase {
                 }
             };
             sp.addSelectionChangedListener(selectionListener);
-            presentation.getControl().addDisposeListener(e -> sp.removeSelectionChangedListener(selectionListener));
+            referencesPlaceholder.addDisposeListener(e -> sp.removeSelectionChangedListener(selectionListener));
         }
 
         DataEditorFeatures.RESULT_SET_PANEL_REFS.use();

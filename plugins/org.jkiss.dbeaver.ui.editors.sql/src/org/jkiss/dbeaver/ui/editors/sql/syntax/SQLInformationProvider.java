@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionHelper;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.sql.semantics.*;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultPseudoColumn;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDataModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
@@ -184,12 +185,15 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
                 switch (symbolEntry.getDefinition()) {
                     case SQLQueryObjectDataModel byObjDataRefDef -> {
                         dbObject = byObjDataRefDef.getObject();
+                        message = null;
                     }
                     case SQLQuerySymbolByDbObjectDefinition byObjDef -> {
                         dbObject = byObjDef.getDbObject();
+                        message = null;
                     }
                     case SQLQueryRowsTableDataModel byTableRefDef -> {
                         dbObject = byTableRefDef.getImmediateTargetObject();
+                        message = null;
                     }
                     case SQLQueryResultPseudoColumn pseudoColumn -> {
                         dbObject = null;
@@ -205,9 +209,18 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
                     }
                     case SQLQuerySymbolEntry defSymbolEntry -> {
                         dbObject = null;
+                        message = null;
+                    }
+                    case SQLQueryVariableInfo variable -> {
+                        dbObject = null;
+                        message = "Script variable " + variable.rawName();
+                        if (variable.type() != SQLQueryExprType.UNKNOWN) {
+                            message += " of type " +  variable.type().getDisplayName();
+                        }
                     }
                     case null -> {
                         dbObject = null;
+                        message = null;
                     }
                     default -> throw new IllegalStateException("Not implemented");
                 };
@@ -218,16 +231,17 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
                     if (navModel != null) {
                         navModel.getNodeByObject(new VoidProgressMonitor(), dbObject, true);
                     }
-                    message = null;
                 } else {
                     info = null;
-                    message = SQLCompletionHelper.readAdditionalProposalInfo(
-                        null,
-                        editor.getCompletionContext(),
-                        dbObject,
-                        contextInformer.getKeywords(),
-                        contextInformer.getKeywordType()
-                    );
+                    if (message == null) {
+                        message = SQLCompletionHelper.readAdditionalProposalInfo(
+                            null,
+                            editor.getCompletionContext(),
+                            dbObject,
+                            contextInformer.getKeywords(),
+                            contextInformer.getKeywordType()
+                        );
+                    }
                 }
                 if (message == null  || message.equals(symbolEntry.getRawName())
                     || (contextInformer.getKeywords().length > 0 && message.equals(contextInformer.getKeywords()[0]))) {

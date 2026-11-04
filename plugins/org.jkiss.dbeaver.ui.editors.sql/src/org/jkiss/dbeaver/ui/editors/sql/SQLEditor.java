@@ -4437,9 +4437,10 @@ public class SQLEditor extends SQLEditorBase implements
             try {
                 SQLEditor owner = getOwner();
                 try {
-                    if (!result.hasError() && owner.getActivePreferenceStore().getBoolean(
-                        SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION
-                    )) {
+                    SQLPreferenceConstants.MetadataRefreshBehavior refreshBehavior = SQLPreferenceConstants.MetadataRefreshBehavior.parse(
+                        owner.getActivePreferenceStore().getString(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION)
+                    );
+                    if (!result.hasError() && refreshBehavior != SQLPreferenceConstants.MetadataRefreshBehavior.NEVER) {
                         SQLQuery query = result.getStatement();
                         List<SQLObjectOperation> objectOperations = owner.recognizeObjectOperations(query);
                         if (query.getType() == SQLQueryType.DDL || !objectOperations.isEmpty()) {

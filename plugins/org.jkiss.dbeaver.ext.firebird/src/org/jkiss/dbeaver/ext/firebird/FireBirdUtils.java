@@ -306,15 +306,22 @@ public class FireBirdUtils {
         return sql.toString();
     }
 
-    public static String getTriggerSourceWithHeader(DBRProgressMonitor monitor, FireBirdTrigger trigger, String source) throws DBException {
+    @NotNull
+    public static String getTriggerSourceWithHeader(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull FireBirdTrigger trigger,
+        @NotNull String source
+    ) throws DBException {
         StringBuilder sql = new StringBuilder();
-        sql.append("CREATE TRIGGER ").append(trigger.getName()).append(" ");
+        sql.append("CREATE TRIGGER ").append(trigger.getName());
         FireBirdTriggerType type = trigger.getType();
-        if (type.isDbEvent()) {
-            sql.append(type.getDisplayName());
-        } else if (trigger.getTable() != null) {
-            sql.append("FOR ").append(DBUtils.getQuotedIdentifier(trigger.getTable()));
+        if (type != null && type.isDbEvent()) {
             sql.append(" ").append(type.getDisplayName());
+        } else if (trigger.getTable() != null) {
+            sql.append(" FOR ").append(DBUtils.getQuotedIdentifier(trigger.getTable()));
+            if (type != null) {
+                sql.append(" ").append(type.getDisplayName());
+            }
         }
         sql.append("\n").append(source);
 
@@ -367,6 +374,25 @@ public class FireBirdUtils {
                     }
                 }
                 return dtMap;
+            }
+        }
+    }
+
+    @NotNull
+    public static Map<String, Map<String, String>> readAllColumnDomainTypes(@NotNull JDBCSession session) throws SQLException {
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT RF.RDB$RELATION_NAME,RF.RDB$FIELD_NAME,RF.RDB$FIELD_SOURCE FROM RDB$RELATION_FIELDS RF")) {
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                Map<String, Map<String, String>> domainsByTable = new HashMap<>();
+                while (dbResult.next()) {
+                    String tableName = JDBCUtils.safeGetStringTrimmed(dbResult, 1);
+                    String columnName = JDBCUtils.safeGetStringTrimmed(dbResult, 2);
+                    String domainTypeName = JDBCUtils.safeGetStringTrimmed(dbResult, 3);
+                    if (!CommonUtils.isEmpty(tableName) && !CommonUtils.isEmpty(columnName) && !CommonUtils.isEmpty(domainTypeName)) {
+                        domainsByTable.computeIfAbsent(tableName, key -> new HashMap<>()).put(columnName, domainTypeName);
+                    }
+                }
+                return domainsByTable;
             }
         }
     }

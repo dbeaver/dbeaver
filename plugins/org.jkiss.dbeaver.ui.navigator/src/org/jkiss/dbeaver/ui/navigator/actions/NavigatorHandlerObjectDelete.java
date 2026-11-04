@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,23 @@
  */
 package org.jkiss.dbeaver.ui.navigator.actions;
 
+import org.eclipse.core.commands.Command;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExecutableExtension;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -41,9 +47,11 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.Reply;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
+import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.dialogs.NavigatorNodesDeletionConfirmations;
 import org.jkiss.utils.CommonUtils;
@@ -54,10 +62,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase implements IElementUpdater {
+public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase implements IElementUpdater, IExecutableExtension {
     private static final Log log = Log.getLog(NavigatorHandlerObjectDelete.class);
 
+    private String commandId = NavigatorCommands.CMD_OBJECT_DELETE;
+
     public NavigatorHandlerObjectDelete() {
+    }
+
+    @Override
+    public void setInitializationData(@NotNull IConfigurationElement config, @Nullable String propertyName, @Nullable Object data) {
+        commandId = config.getAttribute("commandId");
     }
 
     @Override
@@ -222,26 +237,39 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
     }
 
     @Override
-    public void updateElement(UIElement element, Map parameters) {
+    public void updateElement(@NotNull UIElement element, @NotNull Map parameters) {
         if (!updateUI) {
             return;
         }
-        if (!UPDATE_GLOBAL_ACTION_LABELS) {
-            // We cannot update labels/icons for context-dependent global actions
-            // Because main menu is not updated on every menu show. And only the first text is saved
+        ICommandService commandService = element.getServiceLocator().getService(ICommandService.class);
+        IMenuService menuService = element.getServiceLocator().getService(IMenuService.class);
+        if (commandService == null || menuService == null) {
             return;
         }
-
-        final ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
-        if (selectionProvider != null) {
-            ISelection selection = selectionProvider.getSelection();
-
-            if (selection instanceof IStructuredSelection structuredSelection && structuredSelection.size() == 1) {
-                DBNNode node = NavigatorUtils.getSelectedNode(structuredSelection);
-                if (node != null) {
-                    element.setText(NLS.bind(UINavigatorMessages.actions_navigator_delete, node.getNodeTypeLabel()));
-                }
-            }
+        element.setText(ActionUtils.findCommandName(commandId));
+        Command command = commandService.getCommand(commandId);
+        command.setEnabled(menuService.getCurrentState());
+        if (!command.isEnabled()) {
+            return;
+        }
+        ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
+        if (selectionProvider == null
+            || !(selectionProvider.getSelection() instanceof IStructuredSelection selection)
+            || selection.isEmpty()
+        ) {
+            return;
+        }
+        List<DBNNode> nodes = NavigatorUtils.getSelectedNodes(selection);
+        if (nodes.size() != selection.size()) {
+            return;
+        }
+        String nodeType = nodes.getFirst().getNodeTypeLabel();
+        if (!CommonUtils.isEmpty(nodeType) && nodes.stream().allMatch(node -> nodeType.equals(node.getNodeTypeLabel()))) {
+            element.setText(selection.size() == 1
+                ? NLS.bind(UINavigatorMessages.actions_navigator_delete, nodeType)
+                : NLS.bind(UINavigatorMessages.actions_navigator_delete_multiple, nodeType, selection.size()));
+        } else if (selection.size() > 1) {
+            element.setText(NLS.bind(UINavigatorMessages.actions_navigator_delete_objects, selection.size()));
         }
     }
 }

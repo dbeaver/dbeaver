@@ -18,16 +18,18 @@ package org.jkiss.dbeaver.ui.ai.chat.controls;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.SWTException;
 import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.browser.BrowserFunction;
+import org.eclipse.swt.browser.ProgressListener;
+import org.eclipse.swt.events.ShellListener;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -35,8 +37,11 @@ import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
+import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -49,27 +54,50 @@ final class AIImageAttachmentViewer {
     }
 
     static void open(@NotNull Shell shell, @NotNull AIImageAttachment image) {
-        new Dialog(shell) {
+        new AbstractPopupPanel(shell, image.name()) {
             @Nullable
             private AbstractJob imageJob;
             private boolean imageErrorShown;
 
             {
-                setShellStyle(getShellStyle() | SWT.RESIZE | SWT.MAX);
+                setModeless(true);
+                // Windows paints a non-client strip above resizable, titleless shells.
+                setShellStyle(RuntimeUtils.isWindows() ? SWT.NO_TRIM : SWT.BORDER | SWT.RESIZE);
             }
 
             @Override
-            protected void configureShell(@NotNull Shell newShell) {
-                super.configureShell(newShell);
-                newShell.setText(image.name());
+            protected boolean isShowTitle() {
+                return false;
             }
 
             @NotNull
             @Override
-            protected Control createDialogArea(@NotNull Composite parent) {
-                Composite area = (Composite) super.createDialogArea(parent);
+            protected Composite createDialogArea(@NotNull Composite parent) {
+                Composite area = UIUtils.createPlaceholder(parent, 1);
+                area.setLayoutData(new org.eclipse.swt.layout.GridData(SWT.FILL, SWT.FILL, true, true));
                 Browser browser = new Browser(area, SWT.NONE);
                 browser.setLayoutData(new org.eclipse.swt.layout.GridData(SWT.FILL, SWT.FILL, true, true));
+                closeOnFocusLost(browser);
+                Shell popup = getShell();
+                popup.setBackground(UIStyles.getDefaultTextBackground());
+                popup.setBackgroundMode(SWT.INHERIT_DEFAULT);
+                popup.addShellListener(ShellListener.shellDeactivatedAdapter(event -> UIUtils.asyncExec(() -> {
+                    if (!popup.isDisposed() && popup.getDisplay().getActiveShell() != popup) {
+                        close();
+                    }
+                })));
+                Listener outsideClick = event -> {
+                    if (event.widget instanceof Control control && control.getShell() != popup && !popup.isDisposed()) {
+                        close();
+                    }
+                };
+                popup.getDisplay().addFilter(SWT.MouseDown, outsideClick);
+                popup.addDisposeListener(event -> popup.getDisplay().removeFilter(SWT.MouseDown, outsideClick));
+                browser.addProgressListener(ProgressListener.completedAdapter(event -> {
+                    if (!browser.isDisposed() && browser.getShell() == browser.getDisplay().getActiveShell()) {
+                        browser.setFocus();
+                    }
+                }));
                 new BrowserFunction(browser, ERROR_FUNCTION) {
                     @Nullable
                     @Override
@@ -78,8 +106,7 @@ final class AIImageAttachmentViewer {
                         return null;
                     }
                 };
-                browser.setText("<html><body style='background:#222;color:#ddd'>"
-                    + CommonUtils.escapeHtml(AIChatMessagesUI.ai_chat_image_loading) + "</body></html>");
+                browser.setText(createStatusHtml(AIChatMessagesUI.ai_chat_image_loading));
                 imageJob = new AbstractJob(AIChatMessagesUI.ai_chat_image_loading) {
                     @NotNull
                     @Override
@@ -117,38 +144,79 @@ final class AIImageAttachmentViewer {
                 return area;
             }
 
+            @NotNull
+            @Override
+            protected Control createButtonBar(@NotNull Composite parent) {
+                return parent;
+            }
+
             private void showImageError(@NotNull Browser browser, @NotNull Exception exception) {
                 if (browser.isDisposed() || imageErrorShown) {
                     return;
                 }
                 imageErrorShown = true;
-                browser.setText("<html><body style='background:#222;color:#ddd'>"
-                    + CommonUtils.escapeHtml(CommonUtils.notEmpty(exception.getMessage())) + "</body></html>");
+                browser.setText(createStatusHtml(CommonUtils.notEmpty(exception.getMessage())));
                 DBWorkbench.getPlatformUI().showError(AIChatMessagesUI.ai_chat_image_error,
                     NLS.bind(AIChatMessagesUI.ai_chat_image_view_error, image.name()), exception);
-            }
-
-            @Override
-            protected void createButtonsForButtonBar(@NotNull Composite parent) {
-                createButton(parent, IDialogConstants.OK_ID, IDialogConstants.CLOSE_LABEL, true);
             }
 
             @NotNull
             @Override
             protected Point getInitialSize() {
-                return new Point(900, 650);
+                return new Point(600, 450);
+            }
+
+            @NotNull
+            @Override
+            protected Point getInitialLocation(@NotNull Point initialSize) {
+                Point cursor = shell.getDisplay().getCursorLocation();
+                Rectangle bounds = shell.getMonitor().getClientArea();
+                for (var monitor : shell.getDisplay().getMonitors()) {
+                    if (monitor.getClientArea().contains(cursor)) {
+                        bounds = monitor.getClientArea();
+                        break;
+                    }
+                }
+                int x = Math.max(bounds.x, Math.min(cursor.x - initialSize.x / 2, bounds.x + bounds.width - initialSize.x));
+                int y = cursor.y - initialSize.y - 8;
+                if (y < bounds.y) {
+                    y = cursor.y + 8;
+                }
+                y = Math.max(bounds.y, Math.min(y, bounds.y + bounds.height - initialSize.y));
+                return new Point(x, y);
             }
         }.open();
+    }
+
+    @NotNull
+    private static String createStatusHtml(@NotNull String message) {
+        return "<html><body style='margin:0;background:%s;color:%s'>%s</body></html>".formatted(
+            WebCSSInitializer.colorToHex(UIStyles.getDefaultTextBackground()),
+            WebCSSInitializer.colorToHex(UIStyles.getDefaultTextForeground()),
+            CommonUtils.escapeHtml(message));
     }
 
     @NotNull
     static String createImageHtml(@NotNull String source) {
         return """
             <html><head><script>
+            let zoom = 1;
+            let imageWidth = 0;
+            let imageHeight = 0;
+            function setZoom(value) {
+                zoom = Math.max(0.1, Math.min(8, value));
+                const image = document.getElementById('preview');
+                image.style.width = Math.max(1, Math.round(imageWidth * zoom)) + 'px';
+                image.style.height = Math.max(1, Math.round(imageHeight * zoom)) + 'px';
+            }
             function resizeImage(image) {
                 const size = %d;
                 const scale = Math.min(1, size / Math.max(image.naturalWidth, image.naturalHeight));
                 if (scale === 1) {
+                    imageWidth = image.naturalWidth;
+                    imageHeight = image.naturalHeight;
+                    setZoom(Math.min(1, innerWidth / imageWidth, innerHeight / imageHeight));
+                    document.body.focus();
                     return;
                 }
                 try {
@@ -161,9 +229,31 @@ final class AIImageAttachmentViewer {
                     %s();
                 }
             }
-            </script></head><body style='margin:0;background:#222;display:flex;align-items:center;justify-content:center;height:100vh'>
-            <img style='max-width:100%%;max-height:100%%' onload='resizeImage(this)' onerror='%s()' src='%s'>
+            document.addEventListener('wheel', event => {
+                if (event.ctrlKey || event.metaKey) {
+                    event.preventDefault();
+                    setZoom(zoom * (event.deltaY < 0 ? 1.2 : 1 / 1.2));
+                }
+            }, {passive: false});
+            document.addEventListener('keydown', event => {
+                if (!event.ctrlKey && !event.metaKey) {
+                    return;
+                }
+                if (event.key === '+' || event.key === '=' || event.code === 'NumpadAdd') {
+                    setZoom(zoom * 1.2);
+                } else if (event.key === '-' || event.key === '_' || event.code === 'NumpadSubtract') {
+                    setZoom(zoom / 1.2);
+                } else if (event.key === '0' || event.code === 'Numpad0') {
+                    setZoom(1);
+                } else {
+                    return;
+                }
+                event.preventDefault();
+            });
+            </script></head><body tabindex='-1' style='margin:0;background:%s;display:flex;align-items:center;justify-content:center;min-width:100vw;min-height:100vh;width:max-content;outline:none'>
+            <img id='preview' style='display:block;flex-shrink:0' onload='resizeImage(this)' onerror='%s()' src='%s'>
             </body></html>
-            """.formatted(MAX_DISPLAY_SIZE, ERROR_FUNCTION, ERROR_FUNCTION, source);
+            """.formatted(MAX_DISPLAY_SIZE, ERROR_FUNCTION,
+            WebCSSInitializer.colorToHex(UIStyles.getDefaultTextBackground()), ERROR_FUNCTION, source);
     }
 }

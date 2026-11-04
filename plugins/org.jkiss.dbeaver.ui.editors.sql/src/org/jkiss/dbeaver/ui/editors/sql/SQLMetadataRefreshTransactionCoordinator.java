@@ -23,8 +23,10 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLMetadataRefreshTargetResolver.RefreshTarget;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants.MetadataRefreshBehavior;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 
 import java.util.LinkedHashMap;
@@ -46,9 +48,10 @@ final class SQLMetadataRefreshTransactionCoordinator {
         @NotNull DBCExecutionContext context,
         @NotNull DBCSession session
     ) {
+        DBPPreferenceStore preferences = editor.getActivePreferenceStore();
         DBCTransactionManager transactionManager = DBUtils.getTransactionManager(context);
         if (transactionManager == null || isAutoCommit(transactionManager)) {
-            return new Handling(context, DBCDDLTransactionBehavior.IMMEDIATE, null, false);
+            return new Handling(context, DBCDDLTransactionBehavior.IMMEDIATE, null, false, preferences);
         }
 
         DBCDDLTransactionBehavior behavior = DBCDDLTransactionBehavior.parse(
@@ -64,12 +67,12 @@ final class SQLMetadataRefreshTransactionCoordinator {
             behavior = DBCDDLTransactionBehavior.IMMEDIATE;
         }
         if (behavior != DBCDDLTransactionBehavior.TRANSACTIONAL) {
-            return new Handling(context, behavior, null, false);
+            return new Handling(context, behavior, null, false, preferences);
         }
 
         boolean sameNavigatorContext = context.getOwnerInstance().getDefaultContext(session.getProgressMonitor(), true) == context;
-        State state = getOrCreateState(context, transactionManager, sameNavigatorContext);
-        return new Handling(context, behavior, state, sameNavigatorContext);
+        State state = getOrCreateState(context, transactionManager, sameNavigatorContext, preferences);
+        return new Handling(context, behavior, state, sameNavigatorContext, preferences);
     }
 
     private static boolean isAutoCommit(@NotNull DBCTransactionManager transactionManager) {
@@ -84,14 +87,16 @@ final class SQLMetadataRefreshTransactionCoordinator {
     private static State getOrCreateState(
         @NotNull DBCExecutionContext context,
         @NotNull DBCTransactionManager transactionManager,
-        boolean sameNavigatorContext
+        boolean sameNavigatorContext,
+        @NotNull DBPPreferenceStore preferences
     ) {
         synchronized (context) {
             Object attribute = context.getContextAttribute(STATE_ATTRIBUTE);
             if (attribute instanceof State state) {
+                state.preferences = preferences;
                 return state;
             }
-            State state = new State(context, transactionManager, sameNavigatorContext);
+            State state = new State(context, transactionManager, sameNavigatorContext, preferences);
             context.setContextAttribute(STATE_ATTRIBUTE, state);
             transactionManager.addTransactionListener(state);
             return state;
@@ -103,6 +108,7 @@ final class SQLMetadataRefreshTransactionCoordinator {
         private final DBCDDLTransactionBehavior behavior;
         private final State state;
         private final boolean sameNavigatorContext;
+        private final DBPPreferenceStore preferences;
         private final Set<RefreshTarget> targets = new LinkedHashSet<>();
         private final Set<RefreshTarget> lateTargets = new LinkedHashSet<>();
 
@@ -110,12 +116,14 @@ final class SQLMetadataRefreshTransactionCoordinator {
             @NotNull DBCExecutionContext context,
             @NotNull DBCDDLTransactionBehavior behavior,
             @Nullable State state,
-            boolean sameNavigatorContext
+            boolean sameNavigatorContext,
+            @NotNull DBPPreferenceStore preferences
         ) {
             this.context = context;
             this.behavior = behavior;
             this.state = state;
             this.sameNavigatorContext = sameNavigatorContext;
+            this.preferences = preferences;
         }
 
         void add(@NotNull RefreshTarget target) {
@@ -133,12 +141,14 @@ final class SQLMetadataRefreshTransactionCoordinator {
             if (targets.isEmpty()) {
                 return;
             }
+            MetadataRefreshBehavior refreshBehavior = getRefreshBehavior(preferences);
             if (!lateTargets.isEmpty()) {
                 showRefreshNotification(
                     context,
                     SQLEditorMessages.sql_editor_metadata_refresh_notification,
                     lateTargets,
-                    () -> UNTRACKED_REFRESH
+                    () -> UNTRACKED_REFRESH,
+                    refreshBehavior
                 );
             }
             switch (behavior) {
@@ -147,12 +157,14 @@ final class SQLMetadataRefreshTransactionCoordinator {
                     context,
                     SQLEditorMessages.sql_editor_metadata_refresh_notification,
                     targets,
-                    () -> UNTRACKED_REFRESH
+                    () -> UNTRACKED_REFRESH,
+                    refreshBehavior
                 );
-                case IGNORED -> showInformation(
-                    context,
-                    SQLEditorMessages.sql_editor_metadata_refresh_ignored_notification
-                );
+                case IGNORED -> {
+                    if (refreshBehavior == MetadataRefreshBehavior.ASK) {
+                        showInformation(context, SQLEditorMessages.sql_editor_metadata_refresh_ignored_notification);
+                    }
+                }
                 case TRANSACTIONAL -> {
                     if (state == null || !state.isActive()) {
                         return;
@@ -162,9 +174,10 @@ final class SQLMetadataRefreshTransactionCoordinator {
                             context,
                             SQLEditorMessages.sql_editor_metadata_refresh_pending_notification,
                             targets,
-                            () -> state.claimPreCommitRefresh(targets)
+                            () -> state.claimPreCommitRefresh(targets),
+                            refreshBehavior
                         );
-                    } else {
+                    } else if (refreshBehavior == MetadataRefreshBehavior.ASK) {
                         showInformation(
                             context,
                             SQLEditorMessages.sql_editor_metadata_refresh_pending_notification
@@ -179,21 +192,25 @@ final class SQLMetadataRefreshTransactionCoordinator {
         private final DBCExecutionContext context;
         private final DBCTransactionManager transactionManager;
         private final boolean sameNavigatorContext;
+        private volatile DBPPreferenceStore preferences;
         private final Set<RefreshTarget> targets = new LinkedHashSet<>();
         private final Set<RefreshTarget> refreshedTargets = new LinkedHashSet<>();
         private final Set<RefreshTarget> rollbackRefreshTargets = new LinkedHashSet<>();
         private final Map<RefreshTarget, Long> targetGenerations = new LinkedHashMap<>();
         private long generation;
+        private long savepointRollbackEpoch;
         private Outcome outcome = Outcome.ACTIVE;
 
         private State(
             @NotNull DBCExecutionContext context,
             @NotNull DBCTransactionManager transactionManager,
-            boolean sameNavigatorContext
+            boolean sameNavigatorContext,
+            @NotNull DBPPreferenceStore preferences
         ) {
             this.context = context;
             this.transactionManager = transactionManager;
             this.sameNavigatorContext = sameNavigatorContext;
+            this.preferences = preferences;
         }
 
         private synchronized boolean add(@NotNull RefreshTarget target) {
@@ -227,14 +244,16 @@ final class SQLMetadataRefreshTransactionCoordinator {
             for (RefreshTarget target : newTargets) {
                 claimedGenerations.put(target, targetGenerations.get(target));
             }
+            long claimedEpoch = savepointRollbackEpoch;
             return new RefreshRequest(
-                successfulTargets -> recordPreCommitRefresh(successfulTargets, claimedGenerations)
+                successfulTargets -> recordPreCommitRefresh(successfulTargets, claimedGenerations, claimedEpoch)
             );
         }
 
         private void recordPreCommitRefresh(
             @NotNull Set<RefreshTarget> successfulTargets,
-            @NotNull Map<RefreshTarget, Long> claimedGenerations
+            @NotNull Map<RefreshTarget, Long> claimedGenerations,
+            long claimedEpoch
         ) {
             Set<RefreshTarget> compensationTargets = Set.of();
             synchronized (this) {
@@ -242,10 +261,15 @@ final class SQLMetadataRefreshTransactionCoordinator {
                 trackedTargets.retainAll(targets);
                 if (outcome == Outcome.ACTIVE) {
                     rollbackRefreshTargets.addAll(trackedTargets);
-                    for (RefreshTarget target : trackedTargets) {
-                        Long claimedGeneration = claimedGenerations.get(target);
-                        if (claimedGeneration != null && claimedGeneration.equals(targetGenerations.get(target))) {
-                            refreshedTargets.add(target);
+                    if (claimedEpoch != savepointRollbackEpoch) {
+                        // This refresh may have observed DDL that was rolled back while it was running.
+                        compensationTargets = trackedTargets;
+                    } else {
+                        for (RefreshTarget target : trackedTargets) {
+                            Long claimedGeneration = claimedGenerations.get(target);
+                            if (claimedGeneration != null && claimedGeneration.equals(targetGenerations.get(target))) {
+                                refreshedTargets.add(target);
+                            }
                         }
                     }
                 } else if (outcome == Outcome.ROLLED_BACK) {
@@ -258,7 +282,8 @@ final class SQLMetadataRefreshTransactionCoordinator {
                     context,
                     SQLEditorMessages.sql_editor_metadata_refresh_rolled_back_notification,
                     refreshTargets,
-                    () -> claimCompensation(refreshTargets)
+                    () -> claimCompensation(refreshTargets),
+                    getCompensationBehavior()
                 );
             }
         }
@@ -269,6 +294,13 @@ final class SQLMetadataRefreshTransactionCoordinator {
                 return null;
             }
             return requestedTargets.isEmpty() ? null : UNTRACKED_REFRESH;
+        }
+
+        @NotNull
+        private MetadataRefreshBehavior getCompensationBehavior() {
+            MetadataRefreshBehavior behavior = getRefreshBehavior(preferences);
+            // Previously refreshed uncommitted metadata must be repaired after rollback even if Never is now selected.
+            return behavior == MetadataRefreshBehavior.NEVER ? MetadataRefreshBehavior.ALWAYS : behavior;
         }
 
         @Override
@@ -319,7 +351,8 @@ final class SQLMetadataRefreshTransactionCoordinator {
                     context,
                     SQLEditorMessages.sql_editor_metadata_refresh_committed_notification,
                     refreshTargets,
-                    () -> claimPreCommitRefresh(refreshTargets)
+                    () -> claimPreCommitRefresh(refreshTargets),
+                    getRefreshBehavior(preferences)
                 );
             }
         }
@@ -339,7 +372,8 @@ final class SQLMetadataRefreshTransactionCoordinator {
                     context,
                     SQLEditorMessages.sql_editor_metadata_refresh_rolled_back_notification,
                     refreshTargets,
-                    () -> claimCompensation(refreshTargets)
+                    () -> claimCompensation(refreshTargets),
+                    getCompensationBehavior()
                 );
             }
         }
@@ -350,14 +384,17 @@ final class SQLMetadataRefreshTransactionCoordinator {
                 if (outcome != Outcome.ACTIVE || !sameNavigatorContext) {
                     return;
                 }
+                savepointRollbackEpoch++;
                 refreshTargets = Set.copyOf(rollbackRefreshTargets);
+                refreshedTargets.removeAll(refreshTargets);
             }
             if (!refreshTargets.isEmpty()) {
                 showRefreshNotification(
                     context,
                     SQLEditorMessages.sql_editor_metadata_refresh_rolled_back_notification,
                     refreshTargets,
-                    () -> claimCompensation(refreshTargets)
+                    () -> claimCompensation(refreshTargets),
+                    getCompensationBehavior()
                 );
             }
         }
@@ -385,13 +422,35 @@ final class SQLMetadataRefreshTransactionCoordinator {
         );
     }
 
+    @NotNull
+    private static MetadataRefreshBehavior getRefreshBehavior(@NotNull DBPPreferenceStore preferences) {
+        return MetadataRefreshBehavior.parse(preferences.getString(SQLPreferenceConstants.SHOW_METADATA_REFRESH_NOTIFICATION));
+    }
+
     private static void showRefreshNotification(
         @NotNull DBCExecutionContext context,
         @NotNull String message,
         @NotNull Set<RefreshTarget> targets,
-        @NotNull RefreshClaim claim
+        @NotNull RefreshClaim claim,
+        @NotNull MetadataRefreshBehavior refreshBehavior
     ) {
         Set<RefreshTarget> refreshTargets = Set.copyOf(targets);
+        Runnable refresh = () -> {
+            RefreshRequest request = claim.claim();
+            if (request != null) {
+                SQLMetadataRefreshCoordinator.refresh(context, refreshTargets, request.completionHandler());
+            }
+        };
+        if (refreshBehavior == MetadataRefreshBehavior.ALWAYS) {
+            RefreshRequest request = claim.claim();
+            if (request != null) {
+                SQLMetadataRefreshCoordinator.refreshAutomatically(context, refreshTargets, request.completionHandler());
+            }
+            return;
+        }
+        if (refreshBehavior == MetadataRefreshBehavior.NEVER) {
+            return;
+        }
         DBeaverNotifications.showNotification(
             SQLEditor.NOTIFICATION_SQL_METADATA_REFRESH,
             NLS.bind(
@@ -400,12 +459,7 @@ final class SQLMetadataRefreshTransactionCoordinator {
             ),
             message,
             DBPMessageType.WARNING,
-            () -> {
-                RefreshRequest request = claim.claim();
-                if (request != null) {
-                    SQLMetadataRefreshCoordinator.refresh(context, refreshTargets, request.completionHandler());
-                }
-            }
+            refresh
         );
     }
 

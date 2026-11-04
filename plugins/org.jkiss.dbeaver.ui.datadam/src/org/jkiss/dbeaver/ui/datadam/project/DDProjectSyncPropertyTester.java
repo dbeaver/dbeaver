@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -40,18 +41,18 @@ public class DDProjectSyncPropertyTester extends PropertyTester {
         @NotNull Object[] args,
         @Nullable Object expectedValue
     ) {
-        if (!(receiver instanceof DBNProject projectNode)) {
+        if (!(receiver instanceof DBNProject projectNode) || !DDProductConfig.isIntegrationEnabled()) {
             return false;
         }
-        DDProjectSyncUIManager manager = DDProjectSyncUIManager.getInstance();
-        if (!manager.isDDEnabled()) {
+        DDProjectUIManager manager = DDProjectUIManager.getInstance();
+        if (!manager.isDDReady()) {
             return false;
         }
         if (PROP_ENABLED.equals(property)) {
             return true;
         }
         try {
-            boolean shared = manager.getService().isShared(projectNode.getProject());
+            boolean shared = manager.getProjectManager().isBound(projectNode.getProject());
             return switch (property) {
                 case PROP_CAN_SHARE -> !shared;
                 case PROP_CAN_SYNC -> shared;

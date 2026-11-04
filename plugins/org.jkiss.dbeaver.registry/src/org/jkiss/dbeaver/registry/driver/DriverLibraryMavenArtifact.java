@@ -278,7 +278,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
     }
 
     private Path detectLocalFile() {
-        if (localVersion != null) {
+        if (localVersion != null && !localVersion.isInvalidVersion()) {
             return localVersion.getCacheFile();
         }
         return null;
@@ -302,6 +302,10 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
                     }
 
                     MavenArtifactVersion depArtifact = MavenRegistry.getInstance().findArtifact(monitor, localVersion, dependency);
+                    if (depArtifact != null && MavenArtifact.FILE_POM.equals(depArtifact.getPackaging())) {
+                        // POM-only artifacts describe dependencies but have no driver library to download.
+                        continue;
+                    }
                     if (depArtifact != null) {
                         dependencies.add(
                             new DriverLibraryMavenDependency(

@@ -612,26 +612,23 @@ public final class DBUtils {
     @NotNull
     public static DBSObject[] getObjectPath(@NotNull DBSObject object, boolean includeSelf) {
         int depth = 0;
-        final DBSObject root = includeSelf ? object :
-            ((object instanceof DBSTablePartition part) && part.needFullPath() && part.isSubPartition()) ? part.getPartitionParent() :
-            object.getParentObject();
-        for (DBSObject obj = root; obj != null; obj = obj.getParentObject()) {
+        final DBSObject root = includeSelf ? object : getStructuralParent(object);
+        for (DBSObject obj = root; obj != null; obj = getStructuralParent(obj)) {
             obj = getPublicObjectContainer(obj);
-            depth++;
-        }
-        if ((object instanceof DBSTablePartition part) && part.needFullPath()) {
-            // For a parent table
             depth++;
         }
         DBSObject[] path = new DBSObject[depth];
-        for (DBSObject obj = root; obj != null; obj = obj.getParentObject()) {
+        for (DBSObject obj = root; obj != null; obj = getStructuralParent(obj)) {
             obj = getPublicObjectContainer(obj);
             path[depth-- - 1] = obj;
-            if ((obj instanceof DBSTablePartition part) && part.needFullPath()) {
-                path[depth-- - 1] = part.getParentTable();
-            }
         }
         return path;
+    }
+
+    @Nullable
+    public static DBSObject getStructuralParent(@NotNull DBSObject object) {
+        return object instanceof DBSObjectWithStructuralParent structuralObject
+            ? structuralObject.getStructuralParent() : object.getParentObject();
     }
 
     public static String getObjectFullId(@NotNull DBSObject object) {
@@ -973,7 +970,9 @@ public final class DBUtils {
             }
         }
         if (currentIndex < nestedIndexes.length) {
-            log.debug("Not all of nested indexes were used, we might have missed the desired value.");
+            // An index belonging to a deeper row must not resolve to this attribute's ancestor value.
+            log.debug("Not all of nested indexes were used to resolve the value.");
+            return null;
         }
         return value;
     }

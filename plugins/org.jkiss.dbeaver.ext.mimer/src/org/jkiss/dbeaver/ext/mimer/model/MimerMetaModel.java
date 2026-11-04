@@ -38,6 +38,8 @@ import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.ext.generic.model.GenericUniqueKey;
 import org.jkiss.dbeaver.ext.generic.model.GenericView;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModelForeignKeyFetcher;
+import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.ext.mimer.MimerConstants;
 import org.jkiss.dbeaver.ext.mimer.model.plan.MimerQueryPlanner;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -53,6 +55,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDeferability;
+import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
@@ -85,7 +89,7 @@ import java.util.Set;
  *
  * @author Mimer Information Technology
  */
-public class MimerMetaModel extends GenericMetaModel {
+public class MimerMetaModel extends GenericMetaModel implements GenericMetaModelForeignKeyFetcher {
 
     public MimerMetaModel() {
         super();
@@ -442,6 +446,89 @@ public class MimerMetaModel extends GenericMetaModel {
     ) {
         String checkClause = dbResult == null ? null : JDBCUtils.safeGetString(dbResult, "CHECK_EXPRESSION");
         return new MimerTableConstraint(table, constraintName, null, constraintType, persisted, checkClause);
+    }
+
+    ///////////////////////////////////////////////
+    // Foreign keys
+
+    /**
+     * Reads foreign keys from {@code INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS}/{@code
+     * KEY_COLUMN_USAGE} instead of {@code DatabaseMetaData#getImportedKeys()} - the {@code
+     * mimjdbc} driver only resolves that method correctly for a single, specific table name; the
+     * wildcard/{@code null} form a whole-schema load needs (e.g. opening an ER diagram) returns
+     * no rows instead of every foreign key in the schema.
+     */
+    @NotNull
+    @Override
+    public JDBCStatement prepareForeignKeysLoadStatement(
+        @NotNull JDBCSession session,
+        @NotNull GenericStructContainer owner,
+        @Nullable GenericTableBase forParent
+    ) throws SQLException {
+        JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT\n" +
+            "    fk_kcu.TABLE_SCHEMA  AS FKTABLE_SCHEM,\n" +
+            "    fk_kcu.TABLE_NAME    AS FKTABLE_NAME,\n" +
+            "    fk_kcu.COLUMN_NAME   AS FKCOLUMN_NAME,\n" +
+            "    pk_kcu.TABLE_SCHEMA  AS PKTABLE_SCHEM,\n" +
+            "    pk_kcu.TABLE_NAME    AS PKTABLE_NAME,\n" +
+            "    pk_kcu.COLUMN_NAME   AS PKCOLUMN_NAME,\n" +
+            "    fk_kcu.ORDINAL_POSITION AS KEY_SEQ,\n" +
+            "    rc.CONSTRAINT_NAME   AS FK_NAME,\n" +
+            "    rc.UNIQUE_CONSTRAINT_NAME AS PK_NAME,\n" +
+            "    rc.UPDATE_RULE,\n" +
+            "    rc.DELETE_RULE\n" +
+            "FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS rc\n" +
+            "JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE fk_kcu\n" +
+            "    ON fk_kcu.CONSTRAINT_SCHEMA = rc.CONSTRAINT_SCHEMA\n" +
+            "   AND fk_kcu.CONSTRAINT_NAME  = rc.CONSTRAINT_NAME\n" +
+            // Joined via UNIQUE_CONSTRAINT_SCHEMA, not rc.CONSTRAINT_SCHEMA - correct whether
+            // the referenced table is in this schema or a different one.
+            "JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE pk_kcu\n" +
+            "    ON pk_kcu.CONSTRAINT_SCHEMA = rc.UNIQUE_CONSTRAINT_SCHEMA\n" +
+            "   AND pk_kcu.CONSTRAINT_NAME  = rc.UNIQUE_CONSTRAINT_NAME\n" +
+            "   AND pk_kcu.ORDINAL_POSITION = fk_kcu.ORDINAL_POSITION\n" +
+            "WHERE fk_kcu.TABLE_SCHEMA = ?\n" +
+            (forParent != null ? "  AND fk_kcu.TABLE_NAME = ?\n" : "") +
+            "ORDER BY fk_kcu.TABLE_NAME, rc.CONSTRAINT_NAME, fk_kcu.ORDINAL_POSITION");
+        dbStat.setString(1, owner.getName());
+        if (forParent != null) {
+            dbStat.setString(2, forParent.getName());
+        }
+        return dbStat;
+    }
+
+    @NotNull
+    @Override
+    public DBSForeignKeyModifyRule fetchUpdateRule(@NotNull GenericMetaObject foreignKeyObject, @NotNull JDBCResultSet dbResult) {
+        return mapModifyRule(JDBCUtils.safeGetStringTrimmed(dbResult, "UPDATE_RULE"));
+    }
+
+    @NotNull
+    @Override
+    public DBSForeignKeyModifyRule fetchDeleteRule(@NotNull GenericMetaObject foreignKeyObject, @NotNull JDBCResultSet dbResult) {
+        return mapModifyRule(JDBCUtils.safeGetStringTrimmed(dbResult, "DELETE_RULE"));
+    }
+
+    @NotNull
+    @Override
+    public DBSForeignKeyDeferability fetchDeferability(@NotNull GenericMetaObject foreignKeyObject, @NotNull JDBCResultSet dbResult) {
+        // Mimer SQL has no deferred-constraint concept.
+        return DBSForeignKeyDeferability.NOT_DEFERRABLE;
+    }
+
+    @NotNull
+    private static DBSForeignKeyModifyRule mapModifyRule(@Nullable String rule) {
+        if (rule == null) {
+            return DBSForeignKeyModifyRule.NO_ACTION;
+        }
+        return switch (rule.toUpperCase(Locale.ENGLISH)) {
+            case "CASCADE" -> DBSForeignKeyModifyRule.CASCADE;
+            case "SET NULL" -> DBSForeignKeyModifyRule.SET_NULL;
+            case "SET DEFAULT" -> DBSForeignKeyModifyRule.SET_DEFAULT;
+            case "RESTRICT" -> DBSForeignKeyModifyRule.RESTRICT;
+            default -> DBSForeignKeyModifyRule.NO_ACTION;
+        };
     }
 
     ///////////////////////////////////////////////

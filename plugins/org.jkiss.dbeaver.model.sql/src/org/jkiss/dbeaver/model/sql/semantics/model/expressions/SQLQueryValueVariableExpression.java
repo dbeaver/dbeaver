@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,9 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.stm.STMTreeNode;
 
 /**
@@ -34,7 +34,7 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
      */
     public enum VariableExpressionKind {
         /**
-         * The variable of kind @var
+         * The variable of kind @var (dialect-specific) // FIXME support other prefixes
          */
         BATCH_VARIABLE(SQLQuerySymbolClass.SQL_BATCH_VARIABLE),
         /**
@@ -45,7 +45,7 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
          * The variable of kind :var
          */
         CLIENT_PARAMETER(SQLQuerySymbolClass.DBEAVER_PARAMETER);
-        
+
         public final SQLQuerySymbolClass symbolClass;
 
         VariableExpressionKind(@NotNull SQLQuerySymbolClass symbolClass) {
@@ -59,7 +59,7 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
     private final VariableExpressionKind kind;
     @NotNull
     private final String rawName;
-    
+
     public SQLQueryValueVariableExpression(
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQuerySymbolEntry name,
@@ -104,14 +104,21 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
         @NotNull SQLQueryRowsDataContext context,
         @NotNull SQLQueryRecognitionContext statistics
     ) {
-        this.resolveVariableImpl();
-        return SQLQueryExprType.UNKNOWN;
-    }
+        SQLQueryVariableInfo definition = this.kind == VariableExpressionKind.BATCH_VARIABLE && this.name != null
+            ? context.getRowsSources().resolveScriptVariable(this.name)
+            : null;
 
-    private void resolveVariableImpl() {
         if (this.name != null && this.name.isNotClassified()) {
-            this.name.getSymbol().setSymbolClass(this.kind.symbolClass);
+            if (definition == null) {
+                this.name.getSymbol().setSymbolClass(this.kind.symbolClass);
+            } else {
+                this.name.setDefinition(definition);
+            }
+            if (this.kind == VariableExpressionKind.BATCH_VARIABLE) {
+                this.name.setOrigin(new SQLQuerySymbolOrigin.ScriptVariableRef(context.getRowsSources()));
+            }
         }
+        return definition == null ? SQLQueryExprType.UNKNOWN : definition.type();
     }
 
     @Nullable

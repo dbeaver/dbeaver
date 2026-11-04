@@ -16,59 +16,32 @@
  */
 package org.jkiss.dbeaver.ui.datadam.project.handler;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.window.Window;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncService;
-import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectSyncSnapshot;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncUIManager;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectEditDialog;
+import org.jkiss.dbeaver.ui.datadam.project.job.DDProjectSharingJob;
 
-public class DDProjectShareHandler extends AbstractHandler {
-    private final DDDesktopTokenUIManager accessUIManager = DDDesktopTokenUIManager.getInstance();
+public class DDProjectShareHandler extends DDProjectHandler<DDProjectSharingJob> {
     @Nullable
     @Override
-    public Object execute(@NotNull ExecutionEvent event) {
-        DBPProject project = NavigatorUtils.getSelectedProject(
-            HandlerUtil.getCurrentSelection(event), HandlerUtil.getActivePart(event));
-        if (project == null) {
+    protected DDProjectSharingJob createJob(@NotNull ExecutionEvent event, @NotNull DBPProject project) {
+        DDProjectEditDialog<DBPProject> dialog = new DDProjectEditDialog<>(
+            HandlerUtil.getActiveShell(event), DDTrackingUIMessages.projects_connect,
+            project, project.getName(), project.getDescription());
+        if (dialog.open() != Window.OK) {
             return null;
         }
-        DDProjectSyncUIManager ddManager = DDProjectSyncUIManager.getInstance();
-        if (!ddManager.isDDEnabled()) {
-            return null;
-        }
-        new AbstractJob(DDTrackingUIMessages.project_sync_share_job) {
-            @NotNull
-            @Override
-            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-                try {
-                    if (!accessUIManager.ensureTokenReady(monitor)) {
-                        return Status.CANCEL_STATUS;
-                    }
-                    DDProjectSyncService service = ddManager.getService();
-                    service.shareProject(project, null);
-                    DDProjectSyncPropertyTester.firePropertyChange();
-                    DDProjectSyncSnapshot snapshot = service.getProjectSyncSnapshot(project);
-                    service.pushFiles(project, snapshot.binding(), snapshot.preparedFiles());
-                    ddManager.showMessage(DDTrackingUIMessages.project_sync_share_success, false);
-                } catch (DBException e) {
-                    ddManager.showError(DDTrackingUIMessages.project_sync_share_failed, e);
-                }
-                return Status.OK_STATUS;
-            }
-        }.schedule();
-        return null;
+        var details = dialog.getDetails();
+        return new DDProjectSharingJob(details.project(), details.name(), details.description());
+    }
+
+    @Override
+    protected void onSuccess(@NotNull DDProjectSharingJob job) {
+        showMessage(DDTrackingUIMessages.project_sync_share_success);
     }
 }

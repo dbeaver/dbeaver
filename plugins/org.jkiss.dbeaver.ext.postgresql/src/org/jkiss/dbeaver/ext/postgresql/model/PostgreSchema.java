@@ -843,6 +843,38 @@ public class PostgreSchema implements
         }
 
         @NotNull
+        public List<PostgreTableColumn> readTemporaryTableColumns(@NotNull JDBCSession session, @NotNull String tableName)
+                throws SQLException, DBException {
+            // A temporary relation may be absent from the navigator cache. Load it through the query
+            // session rather than opening a separate metadata connection in getChildren().
+            try (JDBCStatement lookup = prepareLookupStatement(session, PostgreSchema.this, null, tableName)) {
+                lookup.executeStatement();
+                try (JDBCResultSet tables = lookup.getResultSet()) {
+                    if (tables == null || !tables.next()) {
+                        return List.of();
+                    }
+                    PostgreTableBase table = fetchObject(session, PostgreSchema.this, tables);
+                    if (table == null) {
+                        return List.of();
+                    }
+                    try (JDBCStatement columnsStatement = prepareChildrenStatement(session, PostgreSchema.this, table)) {
+                        columnsStatement.executeStatement();
+                        try (JDBCResultSet columns = columnsStatement.getResultSet()) {
+                            List<PostgreTableColumn> attributes = new ArrayList<>();
+                            while (columns != null && columns.next()) {
+                                PostgreTableColumn attribute = fetchChild(session, PostgreSchema.this, table, columns);
+                                if (attribute != null && attribute.getOrdinalPosition() > 0) {
+                                    attributes.add(attribute);
+                                }
+                            }
+                            return attributes;
+                        }
+                    }
+                }
+            }
+        }
+
+        @NotNull
         @Override
         public JDBCStatement prepareLookupStatement(
             @NotNull JDBCSession session,
@@ -1116,6 +1148,20 @@ public class PostgreSchema implements
     class IndexCache extends JDBCCompositeCache<PostgreTableContainer, PostgreTableBase, PostgreIndex, PostgreIndexColumn> {
         protected IndexCache() {
             super(getTableCache(), PostgreTableBase.class, "tabrelname", "relname");
+        }
+
+        @Override
+        protected void loadObjects(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull PostgreTableContainer container,
+            @Nullable PostgreTableBase forParent
+        ) throws DBException {
+            if (forParent == null && !isFullyCached() && !monitor.isForceCacheUsage()) {
+                // Each unique index looks up its owner constraint (see PostgreIndex). Read the constraints of the
+                // whole schema at once, otherwise every table with a unique index runs its own constraint query.
+                constraintCache.getAllObjects(monitor, container);
+            }
+            super.loadObjects(monitor, container, forParent);
         }
 
         @NotNull

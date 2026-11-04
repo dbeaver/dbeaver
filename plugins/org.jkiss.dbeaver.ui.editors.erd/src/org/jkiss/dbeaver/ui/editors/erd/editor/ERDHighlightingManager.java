@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,10 +43,26 @@ public class ERDHighlightingManager {
     // we are removing entry somewhere in the middle of the highlighting stack, so reference identity is required,
     // which Color class does not follow, as it supports by-value equivalence
     private static final class HighlightingEntry {
-        public final Color color;
+        @NotNull
+        private final Color color;
+        private final boolean fkHighlight;
+        private final boolean searchHighlight;
 
         public HighlightingEntry(@NotNull Color color) {
             this.color = color;
+            this.fkHighlight = color == ERDThemeSettings.instance.fkHighlightColor;
+            this.searchHighlight = color == ERDThemeSettings.instance.searchHighlightColor;
+        }
+
+        @NotNull
+        private Color getColor() {
+            if (fkHighlight) {
+                return ERDThemeSettings.instance.fkHighlightColor;
+            }
+            if (searchHighlight) {
+                return ERDThemeSettings.instance.searchHighlightColor;
+            }
+            return color;
         }
     }
 
@@ -54,7 +70,7 @@ public class ERDHighlightingManager {
         @NotNull
         private final IFigure part;
         @NotNull
-        private final Color originalColor;
+        private Color originalColor;
         private final boolean originalOpaque;
         @NotNull
         private final LinkedList<HighlightingEntry> highlightings = new LinkedList<>();
@@ -78,9 +94,9 @@ public class ERDHighlightingManager {
                 } else {
                     if (part instanceof ERDConnection connection) {
                         connection.setSelected(true);
-                        part.setForegroundColor(highlightings.getLast().color);
+                        part.setForegroundColor(highlightings.getLast().getColor());
                     } else {
-                        part.setBackgroundColor(highlightings.getLast().color);
+                        part.setBackgroundColor(highlightings.getLast().getColor());
                     }
                     part.setOpaque(true);
                 }
@@ -91,6 +107,20 @@ public class ERDHighlightingManager {
                 // due to the underlying mechanics, which are out of the scope of the highlighting logic
                 log.warn("Inconsistent highlighting management detected during figure props refresh.", ex);
             }
+        }
+
+        private void restoreOriginalColor() {
+            if (part instanceof Connection) {
+                part.setForegroundColor(originalColor);
+            } else {
+                part.setBackgroundColor(originalColor);
+            }
+            part.setOpaque(originalOpaque);
+        }
+
+        private void rebaseThemeColor() {
+            originalColor = part instanceof Connection ? part.getForegroundColor() : part.getBackgroundColor();
+            refresh();
         }
 
         @NotNull
@@ -113,6 +143,14 @@ public class ERDHighlightingManager {
     @NotNull
     public ERDHighlightingHandle highlight(@NotNull IFigure part, @NotNull Color color) {
         return highlightedParts.computeIfAbsent(part, PartHighlighter::new).highlight(color);
+    }
+
+    public void restoreOriginalColors() {
+        highlightedParts.values().forEach(PartHighlighter::restoreOriginalColor);
+    }
+
+    public void reapplyHighlights() {
+        highlightedParts.values().forEach(PartHighlighter::rebaseThemeColor);
     }
 
     @Nullable

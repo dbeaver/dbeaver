@@ -19,12 +19,15 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.model.lock.PostgreLockManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
@@ -89,6 +92,16 @@ public interface PostgreServerExtension {
 
     boolean supportsLocks();
 
+    @NotNull
+    default String getLocksQuery(@NotNull JDBCSession session) throws SQLException {
+        return PostgreLockManager.LOCK_QUERY;
+    }
+
+    @NotNull
+    default String getLockItemsQuery() {
+        return PostgreLockManager.LOCK_ITEM_QUERY;
+    }
+
     boolean supportsForeignServers();
 
     boolean supportsAggregates();
@@ -98,6 +111,11 @@ public interface PostgreServerExtension {
     boolean supportsClientInfo();
 
     boolean supportsStandardSearchPath();
+
+    @NotNull
+    default String getSearchPathQuery() {
+        return "SELECT reset_val FROM pg_settings WHERE name = 'search_path'";
+    }
 
     boolean supportsRelationSizeCalc();
 

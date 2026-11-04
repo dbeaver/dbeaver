@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<schema targetNamespace="org.jkiss.dbeaver.core" xmlns="http://www.w3.org/2001/XMLSchema">
+    <annotation>
+        <appInfo>
+            <meta.schema plugin="org.jkiss.dbeaver.core" id="org.jkiss.dbeaver.commandFeature" name="Command features"/>
+        </appInfo>
+        <documentation>Features tracked when an Eclipse command is executed.</documentation>
+    </annotation>
+    <element name="extension">
+        <annotation><appInfo><meta.element/></appInfo></annotation>
+        <complexType>
+            <sequence>
+                <element ref="feature" minOccurs="0" maxOccurs="unbounded"/>
+            </sequence>
+            <attribute name="point" type="string" use="required"/>
+        </complexType>
+    </element>
+    <element name="feature">
+        <complexType>
+            <attribute name="id" type="string" use="required"/>
+            <attribute name="commandId" type="string" use="required"/>
+        </complexType>
+    </element>
+</schema>

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -50,6 +50,7 @@ public abstract class AbstractValueBindingDescriptor<TYPE, CONTEXT> extends Abst
     private final String description;
     protected ObjectType implType;
     protected final List<SupportInfo> supportInfos = new ArrayList<>();
+    @Nullable
     private TYPE instance;
 
     protected class SupportInfo {
@@ -137,7 +138,14 @@ public abstract class AbstractValueBindingDescriptor<TYPE, CONTEXT> extends Abst
         return instance;
     }
 
+    @Nullable
+    public TYPE getExistingInstance() {
+        return instance;
+    }
+
     /**
+     * Checks whether this binding is enabled in the given context.
+     *
      * @param typedObject        optional attribute. If null then verify potential enablement
      * @param checkConfigDisable if true then also verify that this binding wasn't disabled by user configuration
      */
@@ -256,6 +264,7 @@ public abstract class AbstractValueBindingDescriptor<TYPE, CONTEXT> extends Abst
     }
 
     @Override
+    @NotNull
     public String toString() {
         return id;
     }

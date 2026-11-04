@@ -307,6 +307,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                     try {
                         group.join(0, new ProxyProgressMonitor(monitor));
                     } catch (InterruptedException | OperationCanceledException e) {
+                        monitor.getNestedMonitor().setCanceled(true);
                         group.cancel();
                         canceled = true;
                         interrupted = e instanceof InterruptedException;
@@ -334,6 +335,7 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
                             }
                         }
                         if (canceled || monitor.isCanceled()) {
+                            monitor.getNestedMonitor().setCanceled(true);
                             canceled = true;
                             break;
                         }

@@ -30,10 +30,8 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
@@ -46,7 +44,6 @@ import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
@@ -213,7 +210,7 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
         this.tipText.setStyleRanges(styles.toArray(StyleRange[]::new));
         parsedLinks.sort(Comparator.comparingInt(LinkRange::start)); // links are already sorted implicitly, so just ensure - its fast
         this.links = parsedLinks;
-        this.tipText.setTopIndex(0);
+        this.tipText.setTopPixel(0);
     }
 
     @Nullable

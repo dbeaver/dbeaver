@@ -17,8 +17,13 @@
 package org.jkiss.dbeaver.ui.app.standalone.internal;
 
 import org.eclipse.core.runtime.*;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.model.application.MApplicationElement;
+import org.eclipse.e4.ui.model.application.descriptor.basic.MPartDescriptor;
 import org.eclipse.e4.ui.model.application.ui.advanced.MPlaceholder;
+import org.eclipse.e4.ui.model.application.ui.basic.MPart;
+import org.eclipse.e4.ui.model.application.ui.menu.MHandledMenuItem;
+import org.eclipse.e4.ui.workbench.UIEvents;
 import org.eclipse.e4.ui.workbench.modeling.EModelService;
 import org.eclipse.osgi.service.datalocation.Location;
 import org.eclipse.swt.SWT;
@@ -33,6 +38,10 @@ import org.eclipse.ui.internal.registry.IWorkbenchRegistryConstants;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.IActionConstants;
+import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.app.standalone.update.CheckForUpdateAction;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
@@ -40,6 +49,9 @@ import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -59,8 +71,90 @@ import javax.xml.transform.stream.StreamResult;
 
 public final class WorkbenchPatcher {
     private static final Log log = Log.getLog(WorkbenchPatcher.class);
+    private static final String ERROR_LOG_ICON_URI = DBIcon.SMALL_ERROR.getLocation();
+    private static final String DEBUG_VIEW_ICON_URI = RuntimeUtils.makePlatformResourceUrl(
+        IActionConstants.DEBUG_UI_PLUGIN_ID, "icons/debug_config.png");
+    private static final String SOFTWARE_UPDATE_ICON_URI = UIIcon.SOFTWARE_UPDATE.getLocation();
+    private static final String SOFTWARE_INSTALL_ICON_URI = UIIcon.SOFTWARE_INSTALL.getLocation();
 
     private WorkbenchPatcher() {
+    }
+
+    public static void patchViewIcons(@NotNull Workbench workbench) {
+        // Eclipse and DBeaver both contribute Error Log; the descriptor may keep Eclipse's icon.
+        patchViewIcon(workbench, IActionConstants.LOG_VIEW_ID, ERROR_LOG_ICON_URI);
+        if (Platform.getBundle(IActionConstants.DEBUG_UI_PLUGIN_ID) != null) {
+            patchViewIcon(workbench, IActionConstants.DEBUG_VIEW_ID, DEBUG_VIEW_ICON_URI);
+        }
+    }
+
+    private static void patchViewIcon(
+        @NotNull Workbench workbench,
+        @NotNull String viewId,
+        @NotNull String iconURI
+    ) {
+        for (MPartDescriptor descriptor : workbench.getApplication().getDescriptors()) {
+            if (viewId.equals(descriptor.getElementId())) {
+                descriptor.setIconURI(iconURI);
+            }
+        }
+        EModelService modelService = workbench.getService(EModelService.class);
+        if (modelService != null) {
+            for (MPart part : modelService.findElements(workbench.getApplication(), viewId, MPart.class)) {
+                part.setIconURI(iconURI);
+            }
+        }
+    }
+
+    public static void patchSoftwareMenuIcons(@NotNull Workbench workbench) {
+        EModelService modelService = workbench.getService(EModelService.class);
+        if (modelService != null) {
+            for (MHandledMenuItem item : modelService.findElements(workbench.getApplication(), null, MHandledMenuItem.class)) {
+                patchSoftwareMenuIcon(item);
+            }
+        }
+
+        IEventBroker broker = workbench.getService(IEventBroker.class);
+        if (broker != null) {
+            // p2 can recreate its menu items after startup; update each new widget and any later icon changes.
+            broker.subscribe(UIEvents.UIElement.TOPIC_WIDGET, event -> {
+                if (event.getProperty(UIEvents.EventTags.NEW_VALUE) != null &&
+                    event.getProperty(UIEvents.EventTags.ELEMENT) instanceof MHandledMenuItem item) {
+                    patchSoftwareMenuIcon(item);
+                }
+            });
+            broker.subscribe(UIEvents.UILabel.TOPIC_ICONURI, event -> {
+                if (event.getProperty(UIEvents.EventTags.ELEMENT) instanceof MHandledMenuItem item) {
+                    patchSoftwareMenuIcon(item);
+                }
+            });
+        }
+    }
+
+    private static void patchSoftwareMenuIcon(@NotNull MHandledMenuItem item) {
+        String commandId = item.getCommand() == null ? item.getElementId() : item.getCommand().getElementId();
+        String iconURI = null;
+        if (CheckForUpdateAction.P2_UPDATE_COMMAND.equals(commandId)) {
+            iconURI = SOFTWARE_UPDATE_ICON_URI;
+        } else if (CheckForUpdateAction.P2_INSTALL_COMMAND.equals(commandId)) {
+            iconURI = SOFTWARE_INSTALL_ICON_URI;
+        }
+        if (iconURI != null && !iconURI.equals(item.getIconURI())) {
+            item.setIconURI(iconURI);
+        }
+    }
+
+    public static void hideUnavailableView(@NotNull Workbench workbench, @NotNull String viewId) {
+        if (workbench.getViewRegistry().find(viewId) != null) {
+            return;
+        }
+        EModelService modelService = workbench.getService(EModelService.class);
+        if (modelService != null) {
+            // restored views bypass the initial perspective layout
+            for (MPlaceholder placeholder : modelService.findElements(workbench.getApplication(), viewId, MPlaceholder.class)) {
+                placeholder.setToBeRendered(false);
+            }
+        }
     }
 
     /**
@@ -156,10 +250,19 @@ public final class WorkbenchPatcher {
     }
 
     private static void patchWorkbenchXmi(@NotNull Path workbenchXmi) throws Exception {
-        var document = XMLUtils.parseDocument(workbenchXmi);
-        var transformed = patchPartIconsRecursively(document, collectContributedParts());
+        var parts = collectContributedParts();
+        var checker = new PartIconChecker(parts);
+        try (var input = Files.newInputStream(workbenchXmi)) {
+            XMLUtils.newSecureSAXParserFactory().newSAXParser().parse(input, checker);
+            return;
+        } catch (SAXException e) {
+            if (e != PartIconChecker.PATCH_REQUIRED) {
+                throw e;
+            }
+        }
 
-        if (transformed) {
+        var document = XMLUtils.parseDocument(workbenchXmi);
+        if (patchPartIconsRecursively(document, parts)) {
             var transformerFactory = XMLUtils.newSecureTransformerFactory();
             var transformer = transformerFactory.newTransformer();
             transformer.setOutputProperty(OutputKeys.INDENT, "yes");
@@ -177,6 +280,63 @@ public final class WorkbenchPatcher {
 
             // Then replace the original file with the patched one
             Files.move(workbenchXmiPatch, workbenchXmi, StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+        }
+    }
+
+    private static final class PartIconChecker extends DefaultHandler {
+        // The first outdated icon ends the scan; the DOM pass will locate and update all outdated icons.
+        private static final SAXException PATCH_REQUIRED = new SAXException("Workbench icon patch required");
+
+        private final Map<String, PartDescriptor> parts;
+        private int depth;
+        private int editorDepth = -1;
+        private String editorIcon;
+        private boolean editorStateSeen;
+
+        private PartIconChecker(Map<String, PartDescriptor> parts) {
+            this.parts = parts;
+        }
+
+        @Override
+        public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+            depth++;
+            if (depth == editorDepth + 1 && "persistedState".equals(qName) && !editorStateSeen) {
+                editorStateSeen = true;
+                if ("memento".equals(attributes.getValue("key"))) {
+                    String value = attributes.getValue("value");
+                    if (value != null) {
+                        checkIcon(editorIcon, extractCompatibilityEditorId(value));
+                    }
+                }
+            }
+
+            String elementId = attributes.getValue("elementId");
+            String icon = attributes.getValue("iconURI");
+            if (elementId == null || icon == null) {
+                return;
+            }
+            if (elementId.equals(CompatibilityEditor.MODEL_ELEMENT_ID)) {
+                editorDepth = depth;
+                editorIcon = icon;
+                editorStateSeen = false;
+            } else {
+                checkIcon(icon, elementId);
+            }
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) {
+            if (depth == editorDepth) {
+                editorDepth = -1;
+            }
+            depth--;
+        }
+
+        private void checkIcon(String oldIcon, String elementId) throws SAXException {
+            PartDescriptor part = parts.get(elementId);
+            if (part != null && !oldIcon.equals(part.icon())) {
+                throw PATCH_REQUIRED;
+            }
         }
     }
 
@@ -228,6 +388,11 @@ public final class WorkbenchPatcher {
             return null;
         }
 
+        return extractCompatibilityEditorId(value);
+    }
+
+    @Nullable
+    private static String extractCompatibilityEditorId(@NotNull String value) {
         try {
             var memento = XMLUtils.parseDocument(new StringReader(value));
             var editor = memento.getDocumentElement();
@@ -246,6 +411,9 @@ public final class WorkbenchPatcher {
         var views = getExtensions(PlatformUI.PLUGIN_ID, IWorkbenchRegistryConstants.PL_VIEWS)
             .map(IExtension::getConfigurationElements).flatMap(Stream::of)
             .filter(e -> e.getName().equals("view") && e.getAttribute("icon") != null)
+            // These views are patched in the workbench model; compatibility views may restore their original icons on save.
+            .filter(e -> !IActionConstants.LOG_VIEW_ID.equals(e.getAttribute("id")) &&
+                !IActionConstants.DEBUG_VIEW_ID.equals(e.getAttribute("id")))
             .map(PartDescriptor::of)
             .toList();
 
@@ -286,12 +454,33 @@ public final class WorkbenchPatcher {
         return contributor.startsWith("org.jkiss.dbeaver") || contributor.startsWith("com.dbeaver");
     }
 
-    private record PartDescriptor(@NotNull IConfigurationElement element, @NotNull String id, @NotNull String icon) {
+    private static final class PartDescriptor {
+        private final IConfigurationElement element;
+        private final String id;
+        private String icon;
+
+        private PartDescriptor(@NotNull IConfigurationElement element) {
+            this.element = element;
+            this.id = element.getAttribute("id");
+        }
+
         @NotNull
         static PartDescriptor of(@NotNull IConfigurationElement element) {
-            String id = element.getAttribute("id");
-            String icon = MenuHelper.getIconURI(element, IWorkbenchRegistryConstants.ATT_ICON);
-            return new PartDescriptor(element, id, icon);
+            return new PartDescriptor(element);
+        }
+
+        @NotNull
+        String id() {
+            return id;
+        }
+
+        @NotNull
+        String icon() {
+            // Resolving an icon may search bundle resources; do it only for parts found in the workbench state.
+            if (icon == null) {
+                icon = MenuHelper.getIconURI(element, IWorkbenchRegistryConstants.ATT_ICON);
+            }
+            return icon;
         }
     }
 }

@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.ai.engine;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIImageAttachment;
@@ -75,10 +76,14 @@ public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseabl
         return AIImageAttachment.DEFAULT_TOKEN_ESTIMATE;
     }
 
+    default boolean matchesModel(@NotNull AIModel model, @Nullable String modelName) {
+        return model.name().equals(modelName);
+    }
+
     default boolean supportsImageInput(@NotNull DBRProgressMonitor monitor) throws DBException {
         try {
             return getModels(monitor).stream()
-                .filter(model -> model.name().equals(getProperties().getEffectiveModel()))
+                .filter(model -> matchesModel(model, getProperties().getEffectiveModel()))
                 .findFirst()
                 .map(AIModel::imageInputSupported)
                 .orElse(true);

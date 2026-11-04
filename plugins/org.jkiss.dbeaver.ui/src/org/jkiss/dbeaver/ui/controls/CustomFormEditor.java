@@ -17,8 +17,10 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.core.runtime.Adapters;
 import org.eclipse.jface.fieldassist.ComboContentAdapter;
 import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
@@ -316,7 +318,8 @@ public class CustomFormEditor {
 
         }
 
-        if (DBSObject.class.isAssignableFrom(propType) || isLinkProperty(property)) {
+        if (DBSObject.class.isAssignableFrom(propType) || isLinkProperty(property)
+            || value != null && Adapters.adapt(value, IHyperlink.class) != null) {
             Label label = UIUtils.createControlLabel(
                 parent,
                 propertyDisplayName
@@ -325,7 +328,15 @@ public class CustomFormEditor {
             Link link = new Link(parent, SWT.NONE);
             link.setText(getLinkTitle(value));
             link.setData(value);
-            link.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> openObjectLink(link.getData())));
+            link.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+                Object linkData = link.getData();
+                IHyperlink hyperlink = linkData == null ? null : Adapters.adapt(linkData, IHyperlink.class);
+                if (hyperlink != null) {
+                    hyperlink.open();
+                } else {
+                    openObjectLink(linkData);
+                }
+            }));
             link.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             return link;
         } else if (isTextPropertyType(propType)) {

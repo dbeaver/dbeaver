@@ -40,8 +40,10 @@ import java.sql.Types;
 import java.text.FieldPosition;
 import java.text.Format;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.OffsetDateTime;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.stream.Stream;
 
 import static org.mockito.Mockito.*;
@@ -152,6 +154,34 @@ public class JDBCDateTimeValueHandlerTest extends DBeaverUnitTest {
         Assertions.assertEquals(
             "'2007-05-08 12:35:29.123'",
             handler.getValueDisplayString(column, Timestamp.valueOf("2007-05-08 12:35:29.123"), DBDDisplayFormat.NATIVE)
+        );
+    }
+
+    @Test
+    public void preservesTimestampTimezoneInNativeSQLExport() {
+        when(column.getTypeID()).thenReturn(Types.TIMESTAMP_WITH_TIMEZONE);
+        SimpleDateFormat nativeFormat = JDBCDateTimeValueHandler.DEFAULT_DATETIME_TZ_FORMAT.get();
+        TimeZone originalZone = nativeFormat.getTimeZone();
+        try {
+            nativeFormat.setTimeZone(TimeZone.getTimeZone("GMT+02:00"));
+            Timestamp value = Timestamp.from(Instant.parse("2026-10-14T11:12:34.841Z"));
+
+            Assertions.assertEquals(
+                "'2026-10-14 13:12:34.841 +0200'",
+                handler.getValueDisplayString(column, value, DBDDisplayFormat.NATIVE)
+            );
+        } finally {
+            nativeFormat.setTimeZone(originalZone);
+        }
+    }
+
+    @Test
+    public void preservesOffsetDateTimeFallbackWithTimezoneColumn() {
+        when(column.getTypeID()).thenReturn(Types.TIMESTAMP_WITH_TIMEZONE);
+
+        Assertions.assertEquals(
+            "'" + DISPLAY_VALUE + "'",
+            handler.getValueDisplayString(column, OFFSET_VALUE, DBDDisplayFormat.NATIVE)
         );
     }
 

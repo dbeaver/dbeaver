@@ -181,6 +181,10 @@
                     <file type="license" path="licenses/external/lgpl-2.0.txt"/>
                     <file type="jar" path="drivers/mysql/mysql5" bundle="drivers.mysql"/>
 
+                    <property name="autoDeserialize" value="false"/>
+                    <property name="allowLocalInfile" value="false"/>
+                    <property name="allowLoadLocalInfile" value="false"/>
+                    <property name="allowUrlInLocalInfile" value="false"/>
                     <property name="connectTimeout" value="20000"/>
                     <property name="rewriteBatchedStatements" value="true"/>
                     <property name="enabledTLSProtocols" value="TLSv1,TLSv1.1,TLSv1.2,TLSv1.3"/>
@@ -209,6 +213,10 @@
                     <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>
                     <file type="license" path="licenses/external/gnu3.txt"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
+                    <property name="autoDeserialize" value="false"/>
+                    <property name="allowLocalInfile" value="false"/>
+                    <property name="allowLoadLocalInfile" value="false"/>
+                    <property name="allowUrlInLocalInfile" value="false"/>
                     <property name="connectTimeout" value="20000"/>
                     <property name="rewriteBatchedStatements" value="true"/>
                     <!-- https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-using-ssl.html -->
@@ -234,6 +242,10 @@
                     <file type="jar" path="maven:/com.mysql:mysql-connector-j:RELEASE[8.2.0]" bundle="!drivers.mysql"/>
                     <file type="license" path="licenses/external/gnu3.txt"/>
                     <file type="jar" path="drivers/mysql/mysql8" bundle="drivers.mysql"/>
+                    <property name="autoDeserialize" value="false"/>
+                    <property name="allowLocalInfile" value="false"/>
+                    <property name="allowLoadLocalInfile" value="false"/>
+                    <property name="allowUrlInLocalInfile" value="false"/>
                     <property name="connectTimeout" value="20000"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>
@@ -258,6 +270,10 @@
                     <file type="license" path="licenses/external/lgpl-2.1.txt"/>
                     <file type="jar" path="drivers/mariadb" bundle="drivers.mariadb"/>
 
+                    <property name="autoDeserialize" value="false"/>
+                    <property name="allowLocalInfile" value="false"/>
+                    <property name="allowLoadLocalInfile" value="false"/>
+                    <property name="allowUrlInLocalInfile" value="false"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                     <!--<property name="@dbeaver-default-resultset.format.datetime.native" value="true"/>-->
                     <parameter name="krb5.enabled" value="true"/>

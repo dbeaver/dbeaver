@@ -19,8 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.ui;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 
 public interface DataTransferFeatures {
-    DBRFeature CATEGORY_DATA_TRANSFER = DBRFeature.createCategory("DATA_TRANSFER", "Data Transfer features");
-    DBRFeature DATA_TRANSFER = DBRFeature.createFeature(CATEGORY_DATA_TRANSFER, "DATA_TRANSFER_START");
+    DBRFeature DATA_TRANSFER = new DBRFeature("DATA_TRANSFER");
 
     String PARAM_TRANSFER_DATA_TYPE = "dataType";
     String PARAM_TRANSFER_TYPE = "transferType";

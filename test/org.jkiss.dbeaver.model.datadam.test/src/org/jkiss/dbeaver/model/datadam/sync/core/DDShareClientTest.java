@@ -22,7 +22,6 @@ import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpServer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.datadam.DDTrackingClient;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.junit.jupiter.api.Assertions;
@@ -93,7 +92,7 @@ class DDShareClientTest {
     }
 
     @Test
-    void storageAndTrackingRequestsDoNotFollowRedirects() throws Exception {
+    void storageRequestsDoNotFollowRedirects() throws Exception {
         var redirected = new AtomicInteger();
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         String base = "http://127.0.0.1:" + server.getAddress().getPort();
@@ -115,7 +114,6 @@ class DDShareClientTest {
             Mockito.when(manager.getAccessTokenForResource(Mockito.any())).thenReturn("test-token");
             DDSyncCredentials credentials = Mockito.mock(DDSyncCredentials.class);
             Assertions.assertThrows(DDShareException.class, () -> new DDShareClient(base, credentials).listProjects());
-            Assertions.assertNull(new DDTrackingClient(base).stop("tracking-id"));
             Assertions.assertEquals(0, redirected.get());
         } finally {
             server.stop(0);

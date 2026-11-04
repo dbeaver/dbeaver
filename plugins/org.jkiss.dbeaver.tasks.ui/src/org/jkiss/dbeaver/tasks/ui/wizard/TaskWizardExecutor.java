@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,10 @@ public class TaskWizardExecutor extends TaskProcessorUI {
         if (DBTaskUtils.confirmTask(getTask(), log, logWriter)) {
             TaskFeatures.TASKS_EXECUTE.use(Map.of("type", getTask().getType().getId()));
 
-            DBTTaskHandler handlerTransfer = getTask().getType().createHandler();
-            handlerTransfer.executeTask(this, getTask(), Locale.getDefault(), log, logWriter, this);
+            executeTaskWithHistory(() -> {
+                DBTTaskHandler handlerTransfer = getTask().getType().createHandler();
+                handlerTransfer.executeTask(this, getTask(), Locale.getDefault(), log, logWriter, this);
+            });
         }
     }
 
