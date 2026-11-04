@@ -35,9 +35,14 @@ public class PostgreEscapeStringRule implements TPPredicateRule {
 
     @Override
     public TPToken evaluate(TPCharacterScanner scanner, boolean resume) {
-        int ch;
-        int chRead = 2;
+        int ch = scanner.read();
+        if (ch != 'e' && ch != 'E') {
+            scanner.unread();
+            return TPTokenAbstract.UNDEFINED;
+        }
+        scanner.unread();
 
+        int chRead = 2;
         if (scanner.getColumn() > 0) {
             scanner.unread();
             if (Character.isLetterOrDigit(ch = scanner.read()) || ch == '_') {
