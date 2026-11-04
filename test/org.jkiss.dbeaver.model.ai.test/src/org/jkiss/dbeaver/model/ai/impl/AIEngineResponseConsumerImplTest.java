@@ -58,7 +58,8 @@ public class AIEngineResponseConsumerImplTest {
         );
         consumer.usage(usage);
         consumer.nextChunk(new AIEngineResponseChunk(List.of("text")));
-        ArgumentCaptor<List<AIMessageMeta>> meta = ArgumentCaptor.captor();
+        @SuppressWarnings("unchecked")
+        ArgumentCaptor<List<AIMessageMeta>> meta = ArgumentCaptor.forClass(List.class);
         Mockito.verify(listener).complete(meta.capture(), Mockito.eq(true), Mockito.eq(true));
         Mockito.verify(listener, Mockito.never()).nextMessageChunk(Mockito.anyString());
         return meta.getValue().getFirst();
