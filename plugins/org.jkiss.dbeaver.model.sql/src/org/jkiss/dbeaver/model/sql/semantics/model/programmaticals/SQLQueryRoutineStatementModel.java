@@ -22,7 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryComplexName;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
@@ -238,7 +238,7 @@ public abstract class SQLQueryRoutineStatementModel extends SQLQueryProgrammatic
             List<SQLQueryRoutineReturn.ResultField> fields = table
                 ? ((SQLQueryRoutineReturn.TableColumns) this.returnSpec).fields()
                 : ((SQLQueryRoutineReturn.OutputParameters) this.returnSpec).fields();
-            boolean bindNames = !table || context.getDialect().areRoutineTableResultColumnsBodyVisible();
+            boolean bindNames = !table || context.getDialect().getDialectFeatures().areRoutineTableResultColumnsBodyVisible();
             List<SQLQueryRoutineReturn.ResultField> resolved = new ArrayList<>(fields.size());
             for (SQLQueryRoutineReturn.ResultField field : fields) {
                 if (statistics.getMonitor().isCanceled()) {
@@ -265,7 +265,7 @@ public abstract class SQLQueryRoutineStatementModel extends SQLQueryProgrammatic
             return context;
         }
         SQLQueryLocalVariableInfo binding = new SQLQueryLocalVariableInfo(
-            name, SQLDialect.LocalVariableKind.VALUE, type, null, true);
+            name, SQLDialectFeatures.LocalVariableKind.VALUE, type, null, true);
         SQLQueryLocalVariablesContext next = context.getLocalVariables().withLocalVariable(binding);
         if (next == context.getLocalVariables()) {
             statistics.appendError(name.getSyntaxNode(), "Local variable is already declared in this scope");

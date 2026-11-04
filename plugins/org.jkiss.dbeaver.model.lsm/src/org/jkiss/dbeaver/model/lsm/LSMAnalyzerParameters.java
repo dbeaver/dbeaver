@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.lsm;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 
 import java.util.*;
@@ -32,8 +33,8 @@ public final class LSMAnalyzerParameters {
     private final List<Map.Entry<Integer, Set<String>>> namedParameterPrefixes;
     private final boolean variablesEnabled;
     private final boolean hashLineCommentsEnabled;
-    private final SQLDialect.ProceduralSyntaxFamily proceduralSyntaxFamily;
-    private final SQLDialect.TrailingSelectIntoSupport trailingSelectIntoSupport;
+    private final SQLDialectFeatures.ProceduralSyntaxFamily proceduralSyntaxFamily;
+    private final SQLDialectFeatures.TrailingSelectIntoSupport trailingSelectIntoSupport;
     private final Set<String> typeModifierKeywords;
     private final Set<String> signatureModifierKeywords;
     private final Set<String> knownTypeNames;
@@ -46,8 +47,8 @@ public final class LSMAnalyzerParameters {
         @NotNull List<Map.Entry<Integer, Set<String>>> namedParameterPrefixes,
         boolean variablesEnabled,
         boolean hashLineCommentsEnabled,
-        @NotNull SQLDialect.ProceduralSyntaxFamily proceduralSyntaxFamily,
-        @NotNull SQLDialect.TrailingSelectIntoSupport trailingSelectIntoSupport,
+        @NotNull SQLDialectFeatures.ProceduralSyntaxFamily proceduralSyntaxFamily,
+        @NotNull SQLDialectFeatures.TrailingSelectIntoSupport trailingSelectIntoSupport,
         @NotNull Set<String> typeModifierKeywords,
         @NotNull Set<String> signatureModifierKeywords,
         @NotNull Set<String> knownTypeNames
@@ -97,12 +98,12 @@ public final class LSMAnalyzerParameters {
     }
 
     @NotNull
-    public SQLDialect.ProceduralSyntaxFamily proceduralSyntaxFamily() {
+    public SQLDialectFeatures.ProceduralSyntaxFamily proceduralSyntaxFamily() {
         return this.proceduralSyntaxFamily;
     }
 
     @NotNull
-    public SQLDialect.TrailingSelectIntoSupport trailingSelectIntoSupport() {
+    public SQLDialectFeatures.TrailingSelectIntoSupport trailingSelectIntoSupport() {
         return this.trailingSelectIntoSupport;
     }
 
@@ -137,6 +138,7 @@ public final class LSMAnalyzerParameters {
             .filter(name -> !name.isEmpty())
             .collect(Collectors.toUnmodifiableSet());
 
+        SQLDialectFeatures features = dialect.getDialectFeatures();
         return new LSMAnalyzerParameters(
             identifierQuotPairs,
             syntaxManager.isParametersEnabled(),
@@ -145,10 +147,10 @@ public final class LSMAnalyzerParameters {
             namedParameterPrefixes,
             syntaxManager.isVariablesEnabled(),
             Arrays.asList(Objects.requireNonNullElseGet(dialect.getSingleLineComments(), () -> new String[0])).contains("#"),
-            dialect.getProceduralSyntaxFamily(),
-            dialect.getTrailingSelectIntoSupport(),
-            dialect.getTypeModifierKeywords(),
-            dialect.getSignatureModifierKeywords(),
+            features.getProceduralSyntaxFamily(),
+            features.getTrailingSelectIntoSupport(),
+            features.getTypeModifierKeywords(),
+            features.getSignatureModifierKeywords(),
             knownTypeNames
         );
     }

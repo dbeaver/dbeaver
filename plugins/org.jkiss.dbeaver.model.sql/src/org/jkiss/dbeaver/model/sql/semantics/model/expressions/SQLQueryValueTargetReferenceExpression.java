@@ -21,7 +21,7 @@ import org.antlr.v4.runtime.Token;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
@@ -98,14 +98,14 @@ public class SQLQueryValueTargetReferenceExpression extends SQLQueryValueExpress
         SQLQueryVariableInfo resultScriptVariable;
 
         if (this.columnName != null) {
-            boolean isVariableTarget = context.getConnection().dialect.getProceduralSyntaxFamily() ==
-                SQLDialect.ProceduralSyntaxFamily.TSQL &&
+            boolean isVariableTarget = context.getConnection().dialect.getDialectFeatures().getProceduralSyntaxFamily() ==
+                SQLDialectFeatures.ProceduralSyntaxFamily.TSQL &&
                 this.columnName.getSyntaxNode().getPayload() instanceof Token token &&
                 token.getType() == SQLStandardLexer.BatchVariableName;
             if (isVariableTarget) {
                 SQLQueryRowsSourceContext rowsSources = context.getRowsSources();
                 resultLocalVariable = rowsSources.getLocalVariables().findLocalVariable(
-                    this.columnName, SQLDialect.LocalVariableCapability.VALUE);
+                    this.columnName, SQLDialectFeatures.LocalVariableCapability.VALUE);
                 resultScriptVariable = resultLocalVariable == null ? rowsSources.resolveScriptVariable(this.columnName) : null;
                 if (resultLocalVariable != null) {
                     this.columnName.setDefinition(resultLocalVariable.declaration());

@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLMultiWordRule;
@@ -41,20 +42,30 @@ import java.util.Set;
 
 public class SnowflakeSQLDialect extends GenericSQLDialect implements TPRuleProvider {
 
-    @NotNull
-    @Override
-    public Set<String> getSignatureModifierKeywords() {
-        return Set.of("IN", "INPUT", "OUT", "OUTPUT");
+    private static class DialectFeatures extends SQLDialectFeatures {
+        private static final DialectFeatures INSTANCE = new DialectFeatures();
+
+        @Override
+        @NotNull
+        public Set<String> getSignatureModifierKeywords() {
+            return Set.of("IN", "INPUT", "OUT", "OUTPUT");
+        }
+
+        /** Snowflake Scripting resolves declarations from the current block outward.
+         *
+         * @see <a href="https://docs.snowflake.com/en/developer-guide/snowflake-scripting/variables">Variables and scope</a>
+         */
+        @Override
+        @NotNull
+        public LocalVariableShadowing getLocalVariableShadowing(@NotNull LocalVariableKind kind) {
+            return LocalVariableShadowing.ALLOW_OUTER;
+        }
     }
 
-    /** Snowflake Scripting resolves declarations from the current block outward.
-     *
-     * @see <a href="https://docs.snowflake.com/en/developer-guide/snowflake-scripting/variables">Variables and scope</a>
-     */
-    @NotNull
     @Override
-    public LocalVariableShadowing getLocalVariableShadowing(@NotNull LocalVariableKind kind) {
-        return LocalVariableShadowing.ALLOW_OUTER;
+    @NotNull
+    public SQLDialectFeatures getDialectFeatures() {
+        return DialectFeatures.INSTANCE;
     }
 
     private static final String[][] SNOWFLAKE_BEGIN_END_BLOCK = new String[][]{

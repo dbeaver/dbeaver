@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLDollarQuoteRule;
 import org.jkiss.dbeaver.model.struct.*;
@@ -54,31 +55,68 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     SQLDialectDDLExtension, SQLDialectSchemaController {
     @NotNull
     @Override
-    public TrailingSelectIntoSupport getTrailingSelectIntoSupport() {
-        return TrailingSelectIntoSupport.PROCEDURAL;
+    public SQLDialectFeatures getDialectFeatures() {
+        return DialectFeatures.INSTANCE;
     }
 
-    @Override
-    public boolean areRoutineTableResultColumnsBodyVisible() {
-        return true;
-    }
+    private static class DialectFeatures extends SQLDialectFeatures {
+        static final DialectFeatures INSTANCE = new DialectFeatures();
 
-    @NotNull
-    @Override
-    public Set<String> getSignatureModifierKeywords() {
-        Set<String> keywords = new HashSet<>(super.getSignatureModifierKeywords());
-        keywords.add("VARIADIC");
-        return Set.copyOf(keywords);
-    }
+        @NotNull
+        @Override
+        public TrailingSelectIntoSupport getTrailingSelectIntoSupport() {
+            return TrailingSelectIntoSupport.PROCEDURAL;
+        }
 
-    /** PL/pgSQL nested blocks can shadow declarations in an enclosing block.
-     *
-     * @see <a href="https://www.postgresql.org/docs/current/plpgsql-structure.html">PL/pgSQL structure</a>
-     */
-    @NotNull
-    @Override
-    public LocalVariableShadowing getLocalVariableShadowing(@NotNull LocalVariableKind kind) {
-        return LocalVariableShadowing.ALLOW_OUTER;
+        @Override
+        public boolean areRoutineTableResultColumnsBodyVisible() {
+            return true;
+        }
+
+        @NotNull
+        @Override
+        public Set<String> getSignatureModifierKeywords() {
+            Set<String> keywords = new HashSet<>(super.getSignatureModifierKeywords());
+            keywords.add("VARIADIC");
+            return Set.copyOf(keywords);
+        }
+
+        /** PL/pgSQL nested blocks can shadow declarations in an enclosing block.
+         *
+         * @see <a href="https://www.postgresql.org/docs/current/plpgsql-structure.html">PL/pgSQL structure</a>
+         */
+        @NotNull
+        @Override
+        public LocalVariableShadowing getLocalVariableShadowing(@NotNull LocalVariableKind kind) {
+            return LocalVariableShadowing.ALLOW_OUTER;
+        }
+
+        @Override
+        public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+            return EnumSet.of(
+                ProjectionAliasVisibilityScope.GROUP_BY,
+                ProjectionAliasVisibilityScope.ORDER_BY
+            );
+        }
+
+        @NotNull
+        @Override
+        public GlobalVariableInfo[] getGlobalVariables() {
+            return new GlobalVariableInfo[]{
+                new GlobalVariableInfo("current_date", PostgreSQLMessages.global_variable_current_date_description, DBPDataKind.DATETIME),
+                new GlobalVariableInfo("current_time", PostgreSQLMessages.global_variable_current_time_description, DBPDataKind.DATETIME),
+                new GlobalVariableInfo("current_timestamp", PostgreSQLMessages.global_variable_current_timestamp_description, DBPDataKind.DATETIME),
+                new GlobalVariableInfo("localtime", PostgreSQLMessages.global_variable_localtime_description, DBPDataKind.DATETIME),
+                new GlobalVariableInfo("localtimestamp", PostgreSQLMessages.global_variable_localtimestamp_description, DBPDataKind.DATETIME),
+                new GlobalVariableInfo("current_role", PostgreSQLMessages.global_variable_user_description, DBPDataKind.STRING),
+                new GlobalVariableInfo("current_user", PostgreSQLMessages.global_variable_user_description, DBPDataKind.STRING),
+                new GlobalVariableInfo("current_catalog ", PostgreSQLMessages.global_variable_current_catalog_description, DBPDataKind.STRING),
+                new GlobalVariableInfo("current_schema", PostgreSQLMessages.global_variable_current_schema_description, DBPDataKind.STRING),
+                new GlobalVariableInfo("session_user", PostgreSQLMessages.global_variable_session_user_description, DBPDataKind.STRING),
+                new GlobalVariableInfo("system_user", PostgreSQLMessages.global_variable_system_user_description, DBPDataKind.STRING),
+                new GlobalVariableInfo("user", PostgreSQLMessages.global_variable_user_description, DBPDataKind.STRING)
+            };
+        }
     }
 
     public static final String[] POSTGRE_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
@@ -100,22 +138,6 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
 
     private static final String[] EXEC_KEYWORDS = {
         "CALL"
-    };
-
-    //Function without arguments/parameters #8710
-    private static final GlobalVariableInfo[] GLOBAL_VARIABLES = {
-        new GlobalVariableInfo("current_date", PostgreSQLMessages.global_variable_current_date_description, DBPDataKind.DATETIME),
-        new GlobalVariableInfo("current_time", PostgreSQLMessages.global_variable_current_time_description, DBPDataKind.DATETIME),
-        new GlobalVariableInfo("current_timestamp", PostgreSQLMessages.global_variable_current_timestamp_description, DBPDataKind.DATETIME),
-        new GlobalVariableInfo("localtime", PostgreSQLMessages.global_variable_localtime_description, DBPDataKind.DATETIME),
-        new GlobalVariableInfo("localtimestamp", PostgreSQLMessages.global_variable_localtimestamp_description, DBPDataKind.DATETIME),
-        new GlobalVariableInfo("current_role", PostgreSQLMessages.global_variable_user_description, DBPDataKind.STRING),
-        new GlobalVariableInfo("current_user", PostgreSQLMessages.global_variable_user_description, DBPDataKind.STRING),
-        new GlobalVariableInfo("current_catalog ", PostgreSQLMessages.global_variable_current_catalog_description, DBPDataKind.STRING),
-        new GlobalVariableInfo("current_schema", PostgreSQLMessages.global_variable_current_schema_description, DBPDataKind.STRING),
-        new GlobalVariableInfo("session_user", PostgreSQLMessages.global_variable_session_user_description, DBPDataKind.STRING),
-        new GlobalVariableInfo("system_user", PostgreSQLMessages.global_variable_system_user_description, DBPDataKind.STRING),
-        new GlobalVariableInfo("user", PostgreSQLMessages.global_variable_user_description, DBPDataKind.STRING)
     };
 
     public static final String AUTO_INCREMENT_KEYWORD = "AUTO_INCREMENT";
@@ -960,12 +982,6 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
         return EXEC_KEYWORDS;
     }
 
-    @NotNull
-    @Override
-    public GlobalVariableInfo[] getGlobalVariables() {
-        return GLOBAL_VARIABLES;
-    }
-
     @Override
     public char getStringEscapeCharacter() {
         if (serverExtension != null && serverExtension.supportsBackslashStringEscape()) {
@@ -1306,14 +1322,6 @@ public class PostgreDialect extends JDBCSQLDialect implements TPRuleProvider, SQ
     @Override
     public String getCreateSchemaQuery(@NotNull String schemaName) {
         return "CREATE SCHEMA " + schemaName;
-    }
-
-    @Override
-    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
-        return EnumSet.of(
-            ProjectionAliasVisibilityScope.GROUP_BY,
-            ProjectionAliasVisibilityScope.ORDER_BY
-        );
     }
 
     @Override

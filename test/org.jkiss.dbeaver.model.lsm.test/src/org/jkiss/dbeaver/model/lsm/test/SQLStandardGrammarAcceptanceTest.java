@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
@@ -422,7 +423,7 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
 
         SQLStandardParser firebird = makeParser(
             "CREATE PROCEDURE p(x int) RETURNS (result int) AS BEGIN SELECT result; END",
-            SQLDialect.ProceduralSyntaxFamily.FIREBIRD_PSQL);
+            SQLDialectFeatures.ProceduralSyntaxFamily.FIREBIRD_PSQL);
         var firebirdTree = firebird.sqlQuery();
         Assertions.assertEquals(0, firebird.getNumberOfSyntaxErrors(), firebirdTree.toStringTree(firebird));
         var returnClauses = Trees.findAllRuleNodes(firebirdTree, SQLStandardParser.RULE_routineReturnClause);
@@ -511,7 +512,7 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
         String sql = "CREATE OR ALTER PROC p AS BEGIN DECLARE @n int; " +
             "WHILE @n < 2 BEGIN IF @n = 0 BEGIN SELECT id FROM tab; END " +
             "ELSE BEGIN SELECT id FROM tab; END; SET @n = 1; END; SELECT id FROM tab; END";
-        SQLStandardParser parser = makeParser(sql, SQLDialect.ProceduralSyntaxFamily.TSQL);
+        SQLStandardParser parser = makeParser(sql, SQLDialectFeatures.ProceduralSyntaxFamily.TSQL);
         var tree = parser.sqlQuery();
         Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors(), tree.toStringTree(parser));
         Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_proceduralIf).size());
@@ -523,7 +524,7 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
     void parsesIndividuallyTypedLocalVariablesAndSharedTypeDeclarations() {
         SQLStandardParser tsql = makeParser(
             "CREATE OR ALTER PROC p AS BEGIN DECLARE @first int = 1, @second varchar(20) = @first; " +
-                "SELECT @second; END", SQLDialect.ProceduralSyntaxFamily.TSQL);
+                "SELECT @second; END", SQLDialectFeatures.ProceduralSyntaxFamily.TSQL);
         var tsqlTree = tsql.sqlQuery();
         Assertions.assertEquals(0, tsql.getNumberOfSyntaxErrors(), tsqlTree.toStringTree(tsql));
         Assertions.assertEquals(Token.EOF, tsql.getInputStream().LA(1));
@@ -546,7 +547,7 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
             "WHILE (n < 2) DO BEGIN IF (n = 0) THEN BEGIN SELECT id FROM tab INTO :n; END " +
             "ELSE BEGIN SELECT id FROM tab INTO :n; END; SELECT id FROM tab INTO :n; END; " +
             "SELECT id FROM tab INTO :n; END";
-        SQLStandardParser parser = makeParser(sql, SQLDialect.ProceduralSyntaxFamily.FIREBIRD_PSQL);
+        SQLStandardParser parser = makeParser(sql, SQLDialectFeatures.ProceduralSyntaxFamily.FIREBIRD_PSQL);
         var tree = parser.sqlQuery();
         Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors(), tree.toStringTree(parser));
         Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_firebirdBlock).size());
@@ -561,7 +562,7 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
     @Test
     void parsesFirebirdSelectIntoTarget() {
         SQLStandardParser parser = makeParser("EXECUTE BLOCK AS BEGIN SELECT id FROM tab INTO :n; END",
-            SQLDialect.ProceduralSyntaxFamily.FIREBIRD_PSQL);
+            SQLDialectFeatures.ProceduralSyntaxFamily.FIREBIRD_PSQL);
         var tree = parser.sqlQuery();
         Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors(), tree.toStringTree(parser));
         Assertions.assertEquals(Token.EOF, parser.getInputStream().LA(1), tree.toStringTree(parser));
@@ -570,15 +571,15 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
 
     @Test
     void trailingIntoIsNotASelectClauseOutsideEnabledDialects() {
-        for (SQLDialect.ProceduralSyntaxFamily family : List.of(
-            SQLDialect.ProceduralSyntaxFamily.GENERIC, SQLDialect.ProceduralSyntaxFamily.TSQL)) {
+        for (SQLDialectFeatures.ProceduralSyntaxFamily family : List.of(
+            SQLDialectFeatures.ProceduralSyntaxFamily.GENERIC, SQLDialectFeatures.ProceduralSyntaxFamily.TSQL)) {
             SQLStandardParser parser = makeParser("SELECT id FROM tab INTO target", family);
             var tree = parser.sqlQuery();
             Assertions.assertTrue(Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_selectIntoClause).isEmpty(),
                 tree.toStringTree(parser));
         }
         SQLStandardParser firebird = makeParser("SELECT id FROM tab INTO :n",
-            SQLDialect.ProceduralSyntaxFamily.FIREBIRD_PSQL);
+            SQLDialectFeatures.ProceduralSyntaxFamily.FIREBIRD_PSQL);
         var firebirdTree = firebird.sqlQuery();
         Assertions.assertTrue(Trees.findAllRuleNodes(firebirdTree, SQLStandardParser.RULE_selectIntoClause).isEmpty(),
             firebirdTree.toStringTree(firebird));
@@ -588,7 +589,7 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
     void parsesNativeSingleStatementArmsAndIncompleteBlocks() {
         SQLStandardParser tsql = makeParser(
             "CREATE OR ALTER PROC p AS BEGIN IF 1 = 1 SELECT 1; ELSE SELECT 2; WHILE 1 < 2 SELECT 3; END",
-            SQLDialect.ProceduralSyntaxFamily.TSQL
+            SQLDialectFeatures.ProceduralSyntaxFamily.TSQL
         );
         var tsqlTree = tsql.sqlQuery();
         Assertions.assertEquals(0, tsql.getNumberOfSyntaxErrors(), tsqlTree.toStringTree(tsql));
@@ -597,7 +598,7 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
         SQLStandardParser firebird = makeParser(
             "EXECUTE BLOCK AS DECLARE VARIABLE n INTEGER; BEGIN " +
                 "IF (1 = 1) THEN SELECT id FROM tab INTO :n; ELSE SELECT id FROM tab INTO :n; END",
-            SQLDialect.ProceduralSyntaxFamily.FIREBIRD_PSQL
+            SQLDialectFeatures.ProceduralSyntaxFamily.FIREBIRD_PSQL
         );
         var firebirdTree = firebird.sqlQuery();
         Assertions.assertEquals(0, firebird.getNumberOfSyntaxErrors(), firebirdTree.toStringTree(firebird));
@@ -606,9 +607,9 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
         Assertions.assertEquals(2, Trees.findAllRuleNodes(firebirdTree, SQLStandardParser.RULE_selectStatement).size());
 
         assertPartialNativeControlFlow("CREATE OR ALTER PROC p AS BEGIN IF @n = 1 BEGIN SELECT",
-            SQLDialect.ProceduralSyntaxFamily.TSQL, SQLStandardParser.RULE_proceduralIf);
+            SQLDialectFeatures.ProceduralSyntaxFamily.TSQL, SQLStandardParser.RULE_proceduralIf);
         assertPartialNativeControlFlow("EXECUTE BLOCK AS BEGIN WHILE (1 = 1) DO BEGIN SELECT",
-            SQLDialect.ProceduralSyntaxFamily.FIREBIRD_PSQL, SQLStandardParser.RULE_proceduralLoop);
+            SQLDialectFeatures.ProceduralSyntaxFamily.FIREBIRD_PSQL, SQLStandardParser.RULE_proceduralLoop);
     }
 
     @Test
@@ -785,7 +786,7 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
     }
 
     private static void assertPartialNativeControlFlow(
-        @NotNull String sql, @NotNull SQLDialect.ProceduralSyntaxFamily family, int rule
+        @NotNull String sql, @NotNull SQLDialectFeatures.ProceduralSyntaxFamily family, int rule
     ) {
         SQLStandardParser parser = makeParser(sql, family);
         Assertions.assertEquals(1, Trees.findAllRuleNodes(parser.sqlQuery(), rule).size(), sql);
@@ -794,14 +795,14 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
     @Test
     void distinguishesPrefixedTemporaryTableFromHashCommentByDialect() {
         String sql = "CREATE PROCEDURE p AS BEGIN CREATE TABLE #scratch (id int); SELECT id FROM #scratch; END";
-        LSMAnalyzerParameters parameters = createParameters(SQLDialect.ProceduralSyntaxFamily.GENERIC, false);
+        LSMAnalyzerParameters parameters = createParameters(SQLDialectFeatures.ProceduralSyntaxFamily.GENERIC, false);
         SQLStandardLexer lexer = new SQLStandardLexer(CharStreams.fromString(sql), parameters);
         var parser = new SQLStandardParser(new CommonTokenStream(lexer), parameters);
         var tree = parser.sqlQuery();
         Assertions.assertEquals(1, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_createTableStatement).size());
         Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors());
 
-        LSMAnalyzerParameters hashComments = createParameters(SQLDialect.ProceduralSyntaxFamily.GENERIC, true);
+        LSMAnalyzerParameters hashComments = createParameters(SQLDialectFeatures.ProceduralSyntaxFamily.GENERIC, true);
         var comment = new SQLStandardLexer(CharStreams.fromString("#scratch"), hashComments).nextToken();
         Assertions.assertEquals(Token.HIDDEN_CHANNEL, comment.getChannel());
     }
@@ -814,7 +815,7 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
 
     @NotNull
     private static SQLStandardParser makeParser(@NotNull String sql) {
-        return makeParser(sql, SQLDialect.ProceduralSyntaxFamily.GENERIC);
+        return makeParser(sql, SQLDialectFeatures.ProceduralSyntaxFamily.GENERIC);
     }
 
     @NotNull
@@ -836,22 +837,27 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
             }
 
             @Override
-            public Set<String> getTypeModifierKeywords() {
-                var modifiers = new java.util.HashSet<>(super.getTypeModifierKeywords());
-                modifiers.addAll(extraTypeModifiers);
-                return Set.copyOf(modifiers);
-            }
+            public SQLDialectFeatures getDialectFeatures() {
+                return new SQLDialectFeatures() {
+                    @Override
+                    public Set<String> getTypeModifierKeywords() {
+                        var modifiers = new java.util.HashSet<>(SQLDialectFeatures.Default.getInstance().getTypeModifierKeywords());
+                        modifiers.addAll(extraTypeModifiers);
+                        return Set.copyOf(modifiers);
+                    }
 
-            @Override
-            public Set<String> getSignatureModifierKeywords() {
-                return signatureModifiers;
+                    @Override
+                    public Set<String> getSignatureModifierKeywords() {
+                        return signatureModifiers;
+                    }
+                };
             }
         };
         return makeParser(sql, createParameters(dialect));
     }
 
     @NotNull
-    private static SQLStandardParser makeParser(@NotNull String sql, @NotNull SQLDialect.ProceduralSyntaxFamily family) {
+    private static SQLStandardParser makeParser(@NotNull String sql, @NotNull SQLDialectFeatures.ProceduralSyntaxFamily family) {
         return makeParser(sql, createParameters(family, false));
     }
 
@@ -865,7 +871,7 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
 
     @NotNull
     private static LSMAnalyzerParameters createParameters(
-        @NotNull SQLDialect.ProceduralSyntaxFamily family, boolean hashComments
+        @NotNull SQLDialectFeatures.ProceduralSyntaxFamily family, boolean hashComments
     ) {
         var dialect = new BasicSQLDialect() {
             @NotNull
@@ -882,15 +888,21 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
 
             @NotNull
             @Override
-            public ProceduralSyntaxFamily getProceduralSyntaxFamily() {
-                return family;
-            }
+            public SQLDialectFeatures getDialectFeatures() {
+                return new SQLDialectFeatures() {
+                    @NotNull
+                    @Override
+                    public SQLDialectFeatures.ProceduralSyntaxFamily getProceduralSyntaxFamily() {
+                        return family;
+                    }
 
-            @NotNull
-            @Override
-            public TrailingSelectIntoSupport getTrailingSelectIntoSupport() {
-                return family == ProceduralSyntaxFamily.FIREBIRD_PSQL
-                    ? TrailingSelectIntoSupport.PROCEDURAL : TrailingSelectIntoSupport.NONE;
+                    @NotNull
+                    @Override
+                    public SQLDialectFeatures.TrailingSelectIntoSupport getTrailingSelectIntoSupport() {
+                        return family == SQLDialectFeatures.ProceduralSyntaxFamily.FIREBIRD_PSQL
+                            ? SQLDialectFeatures.TrailingSelectIntoSupport.PROCEDURAL : SQLDialectFeatures.TrailingSelectIntoSupport.NONE;
+                    }
+                };
             }
         };
         return createParameters(dialect);
@@ -910,7 +922,7 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
 
     private static void assertAccepted(@NotNull String sql) {
         var lexerErrors = new SyntaxErrorCollector();
-        LSMAnalyzerParameters parameters = createParameters(SQLDialect.ProceduralSyntaxFamily.GENERIC, false);
+        LSMAnalyzerParameters parameters = createParameters(SQLDialectFeatures.ProceduralSyntaxFamily.GENERIC, false);
         var lexer = new SQLStandardLexer(CharStreams.fromString(sql), parameters);
         lexer.removeErrorListeners();
         lexer.addErrorListener(lexerErrors);

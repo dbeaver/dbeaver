@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryMemberAccessEntry;
@@ -257,7 +258,7 @@ public class SQLQueryRowsSourceContext {
         if (cte != null) {
             return cte;
         }
-        SQLQueryLocalVariableInfo local = this.localVariables.findLocalVariable(name, SQLDialect.LocalVariableCapability.ROWS);
+        SQLQueryLocalVariableInfo local = this.localVariables.findLocalVariable(name, SQLDialectFeatures.LocalVariableCapability.ROWS);
         if (local == null) {
             local = this.temporaryRelations.get(name.getName());
         }
@@ -293,7 +294,7 @@ public class SQLQueryRowsSourceContext {
                 SQLQueryComplexName key = new SQLQueryComplexName(entry.getSyntaxNode(), List.of(entry), 0, endingPeriod);
                 return new SourceResolutionInfo(result, key);
             }
-            SQLQueryLocalVariableInfo local = this.localVariables.findLocalVariable(entry, SQLDialect.LocalVariableCapability.FIELDS);
+            SQLQueryLocalVariableInfo local = this.localVariables.findLocalVariable(entry, SQLDialectFeatures.LocalVariableCapability.FIELDS);
             if (local != null && local.rows() != null) {
                 SQLQueryComplexName key = new SQLQueryComplexName(entry.getSyntaxNode(), List.of(entry), 0, null);
                 return new SourceResolutionInfo(new SourceResolutionResult(local.rows(), key, null, null), key);

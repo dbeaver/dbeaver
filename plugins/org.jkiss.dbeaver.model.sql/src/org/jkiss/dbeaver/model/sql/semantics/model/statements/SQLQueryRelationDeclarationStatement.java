@@ -21,7 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
@@ -39,7 +39,7 @@ public final class SQLQueryRelationDeclarationStatement extends SQLQueryStatemen
     @Nullable
     private final SQLQuerySymbolEntry name;
     @Nullable
-    private final SQLDialect.LocalVariableKind kind;
+    private final SQLDialectFeatures.LocalVariableKind kind;
     private final boolean temporary;
     @Nullable
     private final SQLQueryRowsLocalTableModel rows;
@@ -48,7 +48,7 @@ public final class SQLQueryRelationDeclarationStatement extends SQLQueryStatemen
 
     private SQLQueryRelationDeclarationStatement(
         @NotNull STMTreeNode node, @Nullable SQLQuerySymbolEntry name,
-        @Nullable SQLDialect.LocalVariableKind kind, boolean temporary, @Nullable SQLQueryRowsLocalTableModel rows,
+        @Nullable SQLDialectFeatures.LocalVariableKind kind, boolean temporary, @Nullable SQLQueryRowsLocalTableModel rows,
         @Nullable SQLQueryModelContent sql
     ) {
         super(node, sql, rows);
@@ -90,10 +90,10 @@ public final class SQLQueryRelationDeclarationStatement extends SQLQueryStatemen
                 sql = SQLQueryEmbeddedStatement.recognizeSql(recognizer, query);
             }
         }
-        SQLDialect.LocalVariableKind bindingKind = null;
+        SQLDialectFeatures.LocalVariableKind bindingKind = null;
         SQLQueryRowsLocalTableModel rows = null;
         if (name != null) {
-            bindingKind = cursor ? SQLDialect.LocalVariableKind.CURSOR : SQLDialect.LocalVariableKind.ROWSET;
+            bindingKind = cursor ? SQLDialectFeatures.LocalVariableKind.CURSOR : SQLDialectFeatures.LocalVariableKind.ROWSET;
             if (!cursor) {
                 List<SQLQueryColumnSpec> columns = new ArrayList<>();
                 STMTreeNode elements = node.findFirstChildOfName(STMKnownRuleNames.tableElementList);

@@ -37,9 +37,7 @@ import org.jkiss.utils.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * SQL dialect
@@ -59,94 +57,6 @@ public interface SQLDialect {
         GROUP_ROWS,
         PLAIN,
         INSERT_ALL
-    }
-
-    enum ProjectionAliasVisibilityScope {
-        WHERE,
-        HAVING,
-        GROUP_BY,
-        ORDER_BY
-    }
-
-    enum ProceduralVariableConflictPolicy {
-        UNRESOLVED,
-        PREFER_VARIABLE,
-        PREFER_COLUMN
-    }
-
-    enum ProceduralSyntaxFamily {
-        GENERIC,
-        TSQL,
-        FIREBIRD_PSQL
-    }
-
-    enum TrailingSelectIntoSupport {
-        NONE,
-        PROCEDURAL,
-        ANY
-    }
-
-    enum LocalVariableCapability { VALUE, FIELDS, ROWS, CURSOR }
-
-    /** Capabilities of an entity introduced into a procedural scope, independent of its declaration syntax. */
-    enum LocalVariableKind {
-        VALUE(true, false, false, false),
-        ROW_VALUE(true, true, false, false),
-        ROW_REFERENCE(false, true, false, false),
-        ROWSET(false, false, true, false),
-        CURSOR(false, false, false, true),
-        CURSOR_VALUE(true, false, false, true);
-
-        public final boolean canBeValue;
-        public final boolean canAccessFields;
-        public final boolean canBeRowsSource;
-        public final boolean canBeCursor;
-        private final Set<LocalVariableCapability> capabilities;
-
-        LocalVariableKind(boolean canBeValue, boolean canAccessFields, boolean canBeRowsSource, boolean canBeCursor) {
-            this.canBeValue = canBeValue;
-            this.canAccessFields = canAccessFields;
-            this.canBeRowsSource = canBeRowsSource;
-            this.canBeCursor = canBeCursor;
-            EnumSet<LocalVariableCapability> result = EnumSet.noneOf(LocalVariableCapability.class);
-            if (canBeValue) {
-                result.add(LocalVariableCapability.VALUE);
-            }
-            if (canAccessFields) {
-                result.add(LocalVariableCapability.FIELDS);
-            }
-            if (canBeRowsSource) {
-                result.add(LocalVariableCapability.ROWS);
-            }
-            if (canBeCursor) {
-                result.add(LocalVariableCapability.CURSOR);
-            }
-            this.capabilities = Set.copyOf(result);
-        }
-
-        @NotNull
-        public Set<LocalVariableCapability> capabilities() {
-            return this.capabilities;
-        }
-    }
-
-    /** One conflict namespace and lookup index for the indicated operation capabilities. */
-    record LocalVariableNamespace(Set<LocalVariableCapability> capabilities) {
-        public LocalVariableNamespace {
-            if (capabilities.isEmpty()) {
-                throw new IllegalArgumentException("Invalid local binding capabilities");
-            }
-            capabilities = Set.copyOf(capabilities);
-        }
-    }
-
-    /** Local declarations never have the script tracker's BATCH or SESSION lifetime. */
-    enum LocalVariableVisibility { LEXICAL, PROGRAM }
-
-    enum LocalVariableShadowing { ALLOW_OUTER, REJECT_VISIBLE }
-
-    record GlobalVariableInfo(String name, String description, DBPDataKind type) {
-        public static GlobalVariableInfo[] EMPTY_ARRAY = new GlobalVariableInfo[0];
     }
 
     @NotNull
@@ -199,22 +109,6 @@ public interface SQLDialect {
 
     @NotNull
     String[] getDMLKeywords();
-
-    /**
-     * Keywords that modify a data type declaration, in uppercase.
-     */
-    @NotNull
-    default Set<String> getTypeModifierKeywords() {
-        return Set.of("PRECISION", "VARYING", "LARGE", "OBJECT", "RAW");
-    }
-
-    /**
-     * Keywords that modify a routine parameter signature, including parameter directions, in uppercase.
-     */
-    @NotNull
-    default Set<String> getSignatureModifierKeywords() {
-        return Set.of("IN", "OUT", "INOUT");
-    }
 
     /**
      * Keywords that can start a statement in the SQL editor completion.
@@ -645,8 +539,8 @@ public interface SQLDialect {
      * Generates stored procedure call. Parameters (optionally) can be surrounded by cast(:param as paramType).
      */
     void generateStoredProcedureCall(
-        StringBuilder sql, 
-        DBSProcedure proc, 
+        StringBuilder sql,
+        DBSProcedure proc,
         Collection<? extends DBSProcedureParameter> parameters,
         boolean castParams
     );
@@ -669,50 +563,14 @@ public interface SQLDialect {
     @NotNull
     SQLTokenPredicateSet getSkipTokenPredicates();
 
-    default EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
-        return EnumSet.of(
-            ProjectionAliasVisibilityScope.WHERE,
-            ProjectionAliasVisibilityScope.GROUP_BY,
-            ProjectionAliasVisibilityScope.HAVING,
-            ProjectionAliasVisibilityScope.ORDER_BY
-        );
-    }
-
-    default ProceduralVariableConflictPolicy getProceduralVariableConflictPolicy() {
-        return ProceduralVariableConflictPolicy.UNRESOLVED;
-    }
-
+    /**
+     * Returns the dialect features object containing semantic-analyzer-only configuration.
+     * <p>
+     * Dialects that need custom behaviour create a nested subclass of
+     * {@link SQLDialectFeatures} and return it from here.
+     */
     @NotNull
-    default ProceduralSyntaxFamily getProceduralSyntaxFamily() {
-        return ProceduralSyntaxFamily.GENERIC;
-    }
-
-    @NotNull
-    default TrailingSelectIntoSupport getTrailingSelectIntoSupport() {
-        return TrailingSelectIntoSupport.NONE;
-    }
-
-    /** Whether RETURNS TABLE column names are visible as variables in the routine body. */
-    default boolean areRoutineTableResultColumnsBodyVisible() {
-        return false;
-    }
-
-    /** A capability must belong to exactly one namespace; a multi-capability binding can be indexed in several. */
-    @NotNull
-    default List<LocalVariableNamespace> getLocalVariableNamespaces() {
-        return List.of(new LocalVariableNamespace(EnumSet.allOf(LocalVariableCapability.class)));
-    }
-
-    @NotNull
-    default LocalVariableVisibility getLocalVariableVisibility(@NotNull LocalVariableKind kind) {
-        return LocalVariableVisibility.LEXICAL;
-    }
-
-    @NotNull
-    default LocalVariableShadowing getLocalVariableShadowing(@NotNull LocalVariableKind kind) {
-        return LocalVariableShadowing.ALLOW_OUTER;
-    }
-
+    SQLDialectFeatures getDialectFeatures();
 
     default void afterDataSourceInitialization(@NotNull DBPDataSource dataSource) {
     }

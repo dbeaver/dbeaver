@@ -21,7 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryLocalVariableInfo;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
@@ -75,7 +75,7 @@ public final class SQLQueryCursorOperationStatement extends SQLQueryStatementMod
         for (int i = 0; i < this.names.size(); i++) {
             SQLQuerySymbolEntry name = this.names.get(i);
             SQLQueryLocalVariableInfo binding = context.getLocalVariables().findLocalVariable(name,
-                i == 0 ? SQLDialect.LocalVariableCapability.CURSOR : SQLDialect.LocalVariableCapability.VALUE);
+                i == 0 ? SQLDialectFeatures.LocalVariableCapability.CURSOR : SQLDialectFeatures.LocalVariableCapability.VALUE);
             if (binding != null && name.isNotClassified()) {
                 name.setDefinition(binding.declaration());
             }

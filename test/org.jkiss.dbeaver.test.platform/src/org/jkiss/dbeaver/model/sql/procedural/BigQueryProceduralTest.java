@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
@@ -32,8 +33,8 @@ import org.junit.jupiter.api.Test;
 public class BigQueryProceduralTest extends ProceduralDialectTestBase {
     @Test
     void columnNamesTakePrecedenceOverLocalVariables() {
-        Assertions.assertEquals(SQLDialect.ProceduralVariableConflictPolicy.PREFER_COLUMN,
-            dialect().getProceduralVariableConflictPolicy());
+        Assertions.assertEquals(SQLDialectFeatures.ProceduralVariableConflictPolicy.PREFER_COLUMN,
+            dialect().getDialectFeatures().getProceduralVariableConflictPolicy());
     }
 
     @NotNull

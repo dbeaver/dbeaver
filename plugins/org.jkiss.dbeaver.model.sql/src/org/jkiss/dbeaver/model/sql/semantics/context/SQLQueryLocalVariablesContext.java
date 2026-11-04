@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics.context;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 
 import java.util.ArrayList;
@@ -35,28 +36,28 @@ public final class SQLQueryLocalVariablesContext {
     @NotNull
     private final SQLDialect dialect;
     @NotNull
-    private final List<SQLDialect.LocalVariableNamespace> namespaces;
+    private final List<SQLDialectFeatures.LocalVariableNamespace> namespaces;
     @Nullable
     private final SQLQueryLocalVariablesContext parent;
     @NotNull
-    private final Map<Set<SQLDialect.LocalVariableCapability>, Map<String, SQLQueryLocalVariableInfo>> current;
+    private final Map<Set<SQLDialectFeatures.LocalVariableCapability>, Map<String, SQLQueryLocalVariableInfo>> current;
     @NotNull
-    private final Map<Set<SQLDialect.LocalVariableCapability>, Map<String, SQLQueryLocalVariableInfo>> program;
+    private final Map<Set<SQLDialectFeatures.LocalVariableCapability>, Map<String, SQLQueryLocalVariableInfo>> program;
 
     /**
      * Start with no declarations and validate that the dialect assigns every capability to exactly one namespace.
      * A capability must have an unambiguous lookup bucket even when a binding has several capabilities.
      */
     public SQLQueryLocalVariablesContext(@NotNull SQLDialect dialect) {
-        this(dialect, List.copyOf(dialect.getLocalVariableNamespaces()), null, Map.of(), Map.of());
-        EnumSet<SQLDialect.LocalVariableCapability> seen = EnumSet.noneOf(SQLDialect.LocalVariableCapability.class);
-        for (SQLDialect.LocalVariableNamespace namespace : this.namespaces) {
+        this(dialect, List.copyOf(dialect.getDialectFeatures().getLocalVariableNamespaces()), null, Map.of(), Map.of());
+        EnumSet<SQLDialectFeatures.LocalVariableCapability> seen = EnumSet.noneOf(SQLDialectFeatures.LocalVariableCapability.class);
+        for (SQLDialectFeatures.LocalVariableNamespace namespace : this.namespaces) {
             if (!Collections.disjoint(seen, namespace.capabilities())) {
                 throw new IllegalArgumentException("A local binding capability belongs to multiple namespaces");
             }
             seen.addAll(namespace.capabilities());
         }
-        if (!seen.equals(EnumSet.allOf(SQLDialect.LocalVariableCapability.class))) {
+        if (!seen.equals(EnumSet.allOf(SQLDialectFeatures.LocalVariableCapability.class))) {
             throw new IllegalArgumentException("A local binding capability has no namespace");
         }
     }
@@ -64,10 +65,10 @@ public final class SQLQueryLocalVariablesContext {
     /** Share immutable namespace indexes between snapshots; only the maps changed by an operation are replaced. */
     private SQLQueryLocalVariablesContext(
         @NotNull SQLDialect dialect,
-        @NotNull List<SQLDialect.LocalVariableNamespace> namespaces,
+        @NotNull List<SQLDialectFeatures.LocalVariableNamespace> namespaces,
         @Nullable SQLQueryLocalVariablesContext parent,
-        @NotNull Map<Set<SQLDialect.LocalVariableCapability>, Map<String, SQLQueryLocalVariableInfo>> current,
-        @NotNull Map<Set<SQLDialect.LocalVariableCapability>, Map<String, SQLQueryLocalVariableInfo>> program
+        @NotNull Map<Set<SQLDialectFeatures.LocalVariableCapability>, Map<String, SQLQueryLocalVariableInfo>> current,
+        @NotNull Map<Set<SQLDialectFeatures.LocalVariableCapability>, Map<String, SQLQueryLocalVariableInfo>> program
     ) {
         this.dialect = dialect;
         this.namespaces = namespaces;
@@ -97,7 +98,7 @@ public final class SQLQueryLocalVariablesContext {
         if (this.program == nested.program) {
             return this;
         }
-        Map<Set<SQLDialect.LocalVariableCapability>, Map<String, SQLQueryLocalVariableInfo>> merged = new HashMap<>(this.program);
+        Map<Set<SQLDialectFeatures.LocalVariableCapability>, Map<String, SQLQueryLocalVariableInfo>> merged = new HashMap<>(this.program);
         nested.program.forEach((mask, bindings) -> {
             Map<String, SQLQueryLocalVariableInfo> names = new HashMap<>(merged.getOrDefault(mask, Map.of()));
             bindings.forEach(names::putIfAbsent);
@@ -114,15 +115,15 @@ public final class SQLQueryLocalVariablesContext {
     @NotNull
     public SQLQueryLocalVariablesContext withLocalVariable(@NotNull SQLQueryLocalVariableInfo binding) {
         String key = this.key(binding.declaration());
-        boolean programVisible = this.dialect.getLocalVariableVisibility(binding.kind()) == SQLDialect.LocalVariableVisibility.PROGRAM;
-        Map<Set<SQLDialect.LocalVariableCapability>, Map<String, SQLQueryLocalVariableInfo>> target = programVisible ? this.program : this.current;
-        Map<Set<SQLDialect.LocalVariableCapability>, Map<String, SQLQueryLocalVariableInfo>> updated = new HashMap<>(target);
+        boolean programVisible = this.dialect.getDialectFeatures().getLocalVariableVisibility(binding.kind()) == SQLDialectFeatures.LocalVariableVisibility.PROGRAM;
+        Map<Set<SQLDialectFeatures.LocalVariableCapability>, Map<String, SQLQueryLocalVariableInfo>> target = programVisible ? this.program : this.current;
+        Map<Set<SQLDialectFeatures.LocalVariableCapability>, Map<String, SQLQueryLocalVariableInfo>> updated = new HashMap<>(target);
         boolean inserted = false;
-        for (SQLDialect.LocalVariableNamespace namespace : this.namespaces) {
+        for (SQLDialectFeatures.LocalVariableNamespace namespace : this.namespaces) {
             if (!Collections.disjoint(binding.kind().capabilities(), namespace.capabilities())) {
                 Map<String, SQLQueryLocalVariableInfo> existing = target.getOrDefault(namespace.capabilities(), Map.of());
-                if (existing.containsKey(key) || this.dialect.getLocalVariableShadowing(binding.kind()) ==
-                    SQLDialect.LocalVariableShadowing.REJECT_VISIBLE && this.findInNamespace(key, namespace.capabilities()) != null) {
+                if (existing.containsKey(key) || this.dialect.getDialectFeatures().getLocalVariableShadowing(binding.kind()) ==
+                    SQLDialectFeatures.LocalVariableShadowing.REJECT_VISIBLE && this.findInNamespace(key, namespace.capabilities()) != null) {
                     return this;
                 }
                 Map<String, SQLQueryLocalVariableInfo> names = new HashMap<>(existing);
@@ -149,7 +150,7 @@ public final class SQLQueryLocalVariablesContext {
      */
     @Nullable
     private SQLQueryLocalVariableInfo findInNamespace(
-        @NotNull String name, @NotNull Set<SQLDialect.LocalVariableCapability> namespace
+        @NotNull String name, @NotNull Set<SQLDialectFeatures.LocalVariableCapability> namespace
     ) {
         SQLQueryLocalVariableInfo binding = this.current.getOrDefault(namespace, Map.of()).get(name);
         if (binding != null) {
@@ -165,10 +166,10 @@ public final class SQLQueryLocalVariablesContext {
      */
     @Nullable
     public SQLQueryLocalVariableInfo findLocalVariable(
-        @NotNull SQLQuerySymbolEntry name, @NotNull SQLDialect.LocalVariableCapability capability
+        @NotNull SQLQuerySymbolEntry name, @NotNull SQLDialectFeatures.LocalVariableCapability capability
     ) {
         String key = this.key(name);
-        for (SQLDialect.LocalVariableNamespace namespace : this.namespaces) {
+        for (SQLDialectFeatures.LocalVariableNamespace namespace : this.namespaces) {
             if (namespace.capabilities().contains(capability)) {
                 SQLQueryLocalVariableInfo binding = this.findInNamespace(key, namespace.capabilities());
                 return binding != null && binding.kind().capabilities().contains(capability) ? binding : null;
@@ -179,12 +180,12 @@ public final class SQLQueryLocalVariablesContext {
 
     @NotNull
     public List<SQLQueryLocalVariableInfo> getVisibleValueVariables() {
-        return this.getVisibleVariables(SQLDialect.LocalVariableCapability.VALUE);
+        return this.getVisibleVariables(SQLDialectFeatures.LocalVariableCapability.VALUE);
     }
 
     @NotNull
     public List<SQLQueryLocalVariableInfo> getVisibleRowsVariables() {
-        return this.getVisibleVariables(SQLDialect.LocalVariableCapability.ROWS);
+        return this.getVisibleVariables(SQLDialectFeatures.LocalVariableCapability.ROWS);
     }
 
     /**
@@ -193,11 +194,11 @@ public final class SQLQueryLocalVariablesContext {
      * masks an outer candidate; only declarations supporting the operation enter the result list.
      */
     @NotNull
-    private List<SQLQueryLocalVariableInfo> getVisibleVariables(@NotNull SQLDialect.LocalVariableCapability capability) {
+    private List<SQLQueryLocalVariableInfo> getVisibleVariables(@NotNull SQLDialectFeatures.LocalVariableCapability capability) {
         List<SQLQueryLocalVariableInfo> visible = new ArrayList<>();
         Set<String> names = new HashSet<>();
         for (SQLQueryLocalVariablesContext frame = this; frame != null; frame = frame.parent) {
-            for (SQLDialect.LocalVariableNamespace namespace : this.namespaces) {
+            for (SQLDialectFeatures.LocalVariableNamespace namespace : this.namespaces) {
                 if (namespace.capabilities().contains(capability)) {
                     frame.current.getOrDefault(namespace.capabilities(), Map.of()).forEach((name, binding) -> {
                         if (names.add(name) && binding.kind().capabilities().contains(capability)) {
@@ -207,7 +208,7 @@ public final class SQLQueryLocalVariablesContext {
                 }
             }
         }
-        for (SQLDialect.LocalVariableNamespace namespace : this.namespaces) {
+        for (SQLDialectFeatures.LocalVariableNamespace namespace : this.namespaces) {
             if (namespace.capabilities().contains(capability)) {
                 this.program.getOrDefault(namespace.capabilities(), Map.of()).forEach((name, binding) -> {
                     if (names.add(name) && binding.kind().capabilities().contains(capability)) {

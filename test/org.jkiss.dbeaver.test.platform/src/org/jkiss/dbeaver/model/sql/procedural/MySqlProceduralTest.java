@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQuerySelectIntoResultModel;
@@ -36,8 +37,8 @@ import java.util.List;
 public class MySqlProceduralTest extends ProceduralDialectTestBase {
     @Test
     void localVariablesTakePrecedenceOverColumns() {
-        Assertions.assertEquals(SQLDialect.ProceduralVariableConflictPolicy.PREFER_VARIABLE,
-            dialect().getProceduralVariableConflictPolicy());
+        Assertions.assertEquals(SQLDialectFeatures.ProceduralVariableConflictPolicy.PREFER_VARIABLE,
+            dialect().getDialectFeatures().getProceduralVariableConflictPolicy());
     }
 
     @NotNull

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.procedural;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryLocalVariableInfo;
@@ -30,8 +31,8 @@ import org.junit.jupiter.api.Test;
 public class DatabricksProceduralTest extends ProceduralDialectTestBase {
     @Test
     void columnNamesTakePrecedenceOverLocalVariables() {
-        Assertions.assertEquals(SQLDialect.ProceduralVariableConflictPolicy.PREFER_COLUMN,
-            dialect().getProceduralVariableConflictPolicy());
+        Assertions.assertEquals(SQLDialectFeatures.ProceduralVariableConflictPolicy.PREFER_COLUMN,
+            dialect().getDialectFeatures().getProceduralVariableConflictPolicy());
     }
 
     @NotNull
@@ -51,13 +52,13 @@ public class DatabricksProceduralTest extends ProceduralDialectTestBase {
         var node = recognize("SELECT 1").getSyntaxNode();
         SQLQuerySymbolEntry name = new SQLQuerySymbolEntry(node, "slot", "slot", null);
         SQLQueryLocalVariableInfo value = new SQLQueryLocalVariableInfo(
-            name, SQLDialect.LocalVariableKind.VALUE, SQLQueryExprType.UNKNOWN, null, false);
+            name, SQLDialectFeatures.LocalVariableKind.VALUE, SQLQueryExprType.UNKNOWN, null, false);
         SQLQueryLocalVariableInfo cursor = new SQLQueryLocalVariableInfo(
-            name, SQLDialect.LocalVariableKind.CURSOR, SQLQueryExprType.UNKNOWN, null, false);
+            name, SQLDialectFeatures.LocalVariableKind.CURSOR, SQLQueryExprType.UNKNOWN, null, false);
         SQLQueryLocalVariablesContext bindings = new SQLQueryLocalVariablesContext(dialect())
             .withLocalVariable(value).withLocalVariable(cursor);
-        Assertions.assertSame(value, bindings.findLocalVariable(name, SQLDialect.LocalVariableCapability.VALUE));
-        Assertions.assertSame(cursor, bindings.findLocalVariable(name, SQLDialect.LocalVariableCapability.CURSOR));
+        Assertions.assertSame(value, bindings.findLocalVariable(name, SQLDialectFeatures.LocalVariableCapability.VALUE));
+        Assertions.assertSame(cursor, bindings.findLocalVariable(name, SQLDialectFeatures.LocalVariableCapability.CURSOR));
     }
 
     /**

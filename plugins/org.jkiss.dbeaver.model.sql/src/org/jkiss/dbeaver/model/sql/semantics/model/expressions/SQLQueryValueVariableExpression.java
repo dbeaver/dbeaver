@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryLocalVariableInfo;
@@ -109,7 +109,7 @@ public class SQLQueryValueVariableExpression extends SQLQueryValueExpression {
         SQLQueryRowsSourceContext rowsSources = context.getRowsSources();
         boolean isBatchVariable = this.kind == VariableExpressionKind.BATCH_VARIABLE && this.name != null;
         SQLQueryLocalVariableInfo localVariable = isBatchVariable
-            ? rowsSources.getLocalVariables().findLocalVariable(this.name, SQLDialect.LocalVariableCapability.VALUE)
+            ? rowsSources.getLocalVariables().findLocalVariable(this.name, SQLDialectFeatures.LocalVariableCapability.VALUE)
             : null;
 
         SQLQueryExprType resultType;

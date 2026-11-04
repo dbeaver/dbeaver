@@ -66,16 +66,16 @@ options {
     private Set<String> signatureModifierKeywords = Collections.emptySet();
     private Set<String> knownTypeNames = Collections.emptySet();
     private int maxKnownTypeWords = 1;
-    private org.jkiss.dbeaver.model.sql.SQLDialect.TrailingSelectIntoSupport trailingSelectIntoSupport =
-        org.jkiss.dbeaver.model.sql.SQLDialect.TrailingSelectIntoSupport.NONE;
+    private org.jkiss.dbeaver.model.sql.SQLDialectFeatures.TrailingSelectIntoSupport trailingSelectIntoSupport =
+        org.jkiss.dbeaver.model.sql.SQLDialectFeatures.TrailingSelectIntoSupport.NONE;
     private boolean trailingSelectIntoAllowed() {
         for (RuleContext current = this.getContext(); current != null; current = current.getParent()) {
             if (current.getRuleIndex() == RULE_proceduralStatement) {
-                return this.trailingSelectIntoSupport != org.jkiss.dbeaver.model.sql.SQLDialect.TrailingSelectIntoSupport.NONE;
+                return this.trailingSelectIntoSupport != org.jkiss.dbeaver.model.sql.SQLDialectFeatures.TrailingSelectIntoSupport.NONE;
             }
         }
         // MySQL also permits session-variable targets outside stored programs.
-        return this.trailingSelectIntoSupport == org.jkiss.dbeaver.model.sql.SQLDialect.TrailingSelectIntoSupport.ANY &&
+        return this.trailingSelectIntoSupport == org.jkiss.dbeaver.model.sql.SQLDialectFeatures.TrailingSelectIntoSupport.ANY &&
             this.getInputStream().LA(2) == SQLStandardLexer.BatchVariableName;
     }
     private boolean isUnquotedWord(int offset) {
@@ -140,8 +140,8 @@ options {
         int token = this.getInputStream().LA(1);
         return token == SQLStandardLexer.RETURN || token == SQLStandardLexer.RETURNS;
     }
-    private org.jkiss.dbeaver.model.sql.SQLDialect.ProceduralSyntaxFamily proceduralSyntaxFamily =
-        org.jkiss.dbeaver.model.sql.SQLDialect.ProceduralSyntaxFamily.GENERIC;
+    private org.jkiss.dbeaver.model.sql.SQLDialectFeatures.ProceduralSyntaxFamily proceduralSyntaxFamily =
+        org.jkiss.dbeaver.model.sql.SQLDialectFeatures.ProceduralSyntaxFamily.GENERIC;
 
     public SQLStandardParser(TokenStream input, LSMAnalyzerParameters parameters) {
         this(input);
@@ -156,15 +156,15 @@ options {
     }
 
     private boolean isGenericProceduralSyntax() {
-        return this.proceduralSyntaxFamily == org.jkiss.dbeaver.model.sql.SQLDialect.ProceduralSyntaxFamily.GENERIC;
+        return this.proceduralSyntaxFamily == org.jkiss.dbeaver.model.sql.SQLDialectFeatures.ProceduralSyntaxFamily.GENERIC;
     }
 
     private boolean isTsqlProceduralSyntax() {
-        return this.proceduralSyntaxFamily == org.jkiss.dbeaver.model.sql.SQLDialect.ProceduralSyntaxFamily.TSQL;
+        return this.proceduralSyntaxFamily == org.jkiss.dbeaver.model.sql.SQLDialectFeatures.ProceduralSyntaxFamily.TSQL;
     }
 
     private boolean isFirebirdProceduralSyntax() {
-        return this.proceduralSyntaxFamily == org.jkiss.dbeaver.model.sql.SQLDialect.ProceduralSyntaxFamily.FIREBIRD_PSQL;
+        return this.proceduralSyntaxFamily == org.jkiss.dbeaver.model.sql.SQLDialectFeatures.ProceduralSyntaxFamily.FIREBIRD_PSQL;
     }
 
     private boolean validCorrelationNameFollows() {

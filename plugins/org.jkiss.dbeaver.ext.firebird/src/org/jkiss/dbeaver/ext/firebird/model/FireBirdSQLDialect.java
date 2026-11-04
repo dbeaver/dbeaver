@@ -26,17 +26,12 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexString;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 
 import java.util.Arrays;
 import java.util.Set;
 
 public class FireBirdSQLDialect extends GenericSQLDialect {
-
-    @NotNull
-    @Override
-    public Set<String> getSignatureModifierKeywords() {
-        return Set.of();
-    }
 
     private boolean supportsAsBeforeTableAlias = true;
 
@@ -260,24 +255,40 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
 
     @NotNull
     @Override
-    public ProceduralSyntaxFamily getProceduralSyntaxFamily() {
-        return ProceduralSyntaxFamily.FIREBIRD_PSQL;
+    public SQLDialectFeatures getDialectFeatures() {
+        return DialectFeatures.INSTANCE;
     }
 
-    @NotNull
-    @Override
-    public TrailingSelectIntoSupport getTrailingSelectIntoSupport() {
-        return TrailingSelectIntoSupport.PROCEDURAL;
-    }
+    private static class DialectFeatures extends SQLDialectFeatures {
+        static final DialectFeatures INSTANCE = new DialectFeatures();
 
-    /** PSQL declarations precede the BEGIN block and belong to the surrounding module.
-     *
-     * @see <a href="https://firebirdsql.org/file/documentation/chunk/en/refdocs/fblangref40/fblangref40-psql.html">PSQL module body</a>
-     */
-    @NotNull
-    @Override
-    public LocalVariableVisibility getLocalVariableVisibility(@NotNull LocalVariableKind kind) {
-        return LocalVariableVisibility.PROGRAM;
+        @NotNull
+        @Override
+        public Set<String> getSignatureModifierKeywords() {
+            return Set.of();
+        }
+
+        @NotNull
+        @Override
+        public ProceduralSyntaxFamily getProceduralSyntaxFamily() {
+            return ProceduralSyntaxFamily.FIREBIRD_PSQL;
+        }
+
+        @NotNull
+        @Override
+        public TrailingSelectIntoSupport getTrailingSelectIntoSupport() {
+            return TrailingSelectIntoSupport.PROCEDURAL;
+        }
+
+        /** PSQL declarations precede the BEGIN block and belong to the surrounding module.
+         *
+         * @see <a href="https://firebirdsql.org/file/documentation/chunk/en/refdocs/fblangref40/fblangref40-psql.html">PSQL module body</a>
+         */
+        @NotNull
+        @Override
+        public LocalVariableVisibility getLocalVariableVisibility(@NotNull SQLDialectFeatures.LocalVariableKind kind) {
+            return LocalVariableVisibility.PROGRAM;
+        }
     }
 
     @NotNull

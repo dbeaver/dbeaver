@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryComplexName;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryLexicalScope;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
@@ -306,18 +307,18 @@ public class SQLQuerySelectIntoModel extends SQLQueryRowsProjectionModel {
             @NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics
         ) {
             SQLDialect dialect = context.getDialect();
-            SQLDialect.ProceduralSyntaxFamily family = dialect.getProceduralSyntaxFamily();
+            SQLDialectFeatures.ProceduralSyntaxFamily family = dialect.getDialectFeatures().getProceduralSyntaxFamily();
             if (this.kind == IntoTargetKind.PREFIXED_PARAMETER) {
-                this.value = this.proceduralStatement && family == SQLDialect.ProceduralSyntaxFamily.FIREBIRD_PSQL
+                this.value = this.proceduralStatement && family == SQLDialectFeatures.ProceduralSyntaxFamily.FIREBIRD_PSQL
                     ? new SQLQueryValueReferenceExpression(this.getSyntaxNode(), false, this.name)
                     : new SQLQueryValueFlattenedExpression(this.getSyntaxNode(), Collections.emptyList());
             } else if (this.kind == IntoTargetKind.BATCH_VARIABLE &&
-                dialect.getTrailingSelectIntoSupport() == SQLDialect.TrailingSelectIntoSupport.ANY) {
+                dialect.getDialectFeatures().getTrailingSelectIntoSupport() == SQLDialectFeatures.TrailingSelectIntoSupport.ANY) {
                 SQLQuerySymbolEntry entry = this.name == null ? null : this.name.parts.getFirst();
                 this.value = new SQLQueryValueVariableExpression(this.getSyntaxNode(), entry,
                     SQLQueryValueVariableExpression.VariableExpressionKind.BATCH_VARIABLE, this.getSyntaxNode().getTextContent());
-            } else if (this.proceduralStatement && (family == SQLDialect.ProceduralSyntaxFamily.GENERIC ||
-                family == SQLDialect.ProceduralSyntaxFamily.FIREBIRD_PSQL)) {
+            } else if (this.proceduralStatement && (family == SQLDialectFeatures.ProceduralSyntaxFamily.GENERIC ||
+                family == SQLDialectFeatures.ProceduralSyntaxFamily.FIREBIRD_PSQL)) {
                 this.value = new SQLQueryValueReferenceExpression(this.getSyntaxNode(), false, this.name);
             } else {
                 this.table = new SQLQueryRowsTableDataModel(this.getSyntaxNode(), this.name, false);

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTypeCastExpression;
@@ -39,8 +40,8 @@ import java.util.List;
 public class OracleProceduralTest extends ProceduralDialectTestBase {
     @Test
     void columnNamesTakePrecedenceOverLocalVariables() {
-        Assertions.assertEquals(SQLDialect.ProceduralVariableConflictPolicy.PREFER_COLUMN,
-            dialect().getProceduralVariableConflictPolicy());
+        Assertions.assertEquals(SQLDialectFeatures.ProceduralVariableConflictPolicy.PREFER_COLUMN,
+            dialect().getDialectFeatures().getProceduralVariableConflictPolicy());
     }
 
     @NotNull

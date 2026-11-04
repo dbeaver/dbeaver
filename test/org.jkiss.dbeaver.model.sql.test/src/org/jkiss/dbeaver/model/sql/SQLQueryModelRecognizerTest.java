@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.sql.semantics.*;
@@ -369,7 +370,13 @@ public class SQLQueryModelRecognizerTest extends DBeaverUnitTest {
     void providerFullNameWithModifiersDoesNotRepeatSuffix() throws Exception {
         var monitor = new VoidProgressMonitor();
         var dialect = Mockito.spy(BasicSQLDialect.INSTANCE);
-        Mockito.doReturn(Set.of("UNSIGNED", "ZEROFILL")).when(dialect).getTypeModifierKeywords();
+        var features = new SQLDialectFeatures() {
+            @Override
+            public Set<String> getTypeModifierKeywords() {
+                return Set.of("UNSIGNED", "ZEROFILL");
+            }
+        };
+        Mockito.doReturn(features).when(dialect).getDialectFeatures();
         var source = Mockito.mock(DBPDataSource.class, Mockito.withSettings().extraInterfaces(DBPDataTypeProvider.class));
         var provider = (DBPDataTypeProvider) source;
         var execution = Mockito.mock(DBCExecutionContext.class);
@@ -1069,7 +1076,7 @@ public class SQLQueryModelRecognizerTest extends DBeaverUnitTest {
             SQLQuerySymbolEntry declaration = new SQLQuerySymbolEntry(node, name, name, null);
             SQLQueryRowsLocalTableModel rows = new SQLQueryRowsLocalTableModel(node, declaration, List.of());
             current = current.withTemporaryRelation(new SQLQueryLocalVariableInfo(
-                declaration, SQLDialect.LocalVariableKind.ROWSET, SQLQueryExprType.UNKNOWN, rows, false));
+                declaration, SQLDialectFeatures.LocalVariableKind.ROWSET, SQLQueryExprType.UNKNOWN, rows, false));
         }
         SQLQueryRowsSourceContext afterDrop = current.withoutTemporaryRelations(List.of("first", "missing", "first", "second"));
         Assertions.assertSame(afterDrop, afterDrop.withoutTemporaryRelations(List.of("missing", "second")));

@@ -385,7 +385,7 @@ public class SQLQueryModelRecognizer {
             && this.executionContext.getDataSource() instanceof DBSObjectContainer
             && this.executionContext.getDataSource().getSQLDialect() instanceof BasicSQLDialect basicSQLDialect
         ) {
-            Map<String, SQLQueryResultPseudoColumn> globalPseudoColumns = Stream.of(basicSQLDialect.getGlobalVariables())
+            Map<String, SQLQueryResultPseudoColumn> globalPseudoColumns = Stream.of(basicSQLDialect.getDialectFeatures().getGlobalVariables())
                 .map(v -> new SQLQueryResultPseudoColumn(
                     new SQLQuerySymbol(v.name()),
                     null,
@@ -927,7 +927,7 @@ public class SQLQueryModelRecognizer {
     /** Collect dialect-supported type modifiers in source order, preserving duplicates. */
     @NotNull
     public List<String> collectTypeModifiers(@NotNull STMTreeNode node) {
-        Set<String> accepted = this.dialect.getTypeModifierKeywords().stream()
+        Set<String> accepted = this.dialect.getDialectFeatures().getTypeModifierKeywords().stream()
             .map(keyword -> keyword.toUpperCase(Locale.ROOT))
             .collect(Collectors.toSet());
         STMTreeNode type = node.getNodeName().equals(STMKnownRuleNames.dataType)
@@ -950,7 +950,7 @@ public class SQLQueryModelRecognizer {
     public List<String> collectSignatureModifiers(@NotNull STMTreeNode node) {
         return node.findChildrenOfName(STMKnownRuleNames.signatureModifier).stream()
             .map(modifier -> modifier.getTextContent().toUpperCase(Locale.ROOT))
-            .filter(this.dialect.getSignatureModifierKeywords()::contains)
+            .filter(this.dialect.getDialectFeatures().getSignatureModifierKeywords()::contains)
             .toList();
     }
 

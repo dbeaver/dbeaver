@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.model.sql.semantics.model.statements;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
@@ -182,9 +182,9 @@ public final class SQLQueryVariableDeclarationStatement extends SQLQueryStatemen
     protected SQLQueryRowsSourceContext resolveStatementImpl(
         @NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics
     ) {
-        SQLDialect.ProceduralSyntaxFamily family = context.getDialect().getProceduralSyntaxFamily();
-        boolean unsupportedTyped = this.individuallyTyped && family == SQLDialect.ProceduralSyntaxFamily.FIREBIRD_PSQL;
-        boolean unsupportedShared = this.sharedType && family != SQLDialect.ProceduralSyntaxFamily.GENERIC;
+        SQLDialectFeatures.ProceduralSyntaxFamily family = context.getDialect().getDialectFeatures().getProceduralSyntaxFamily();
+        boolean unsupportedTyped = this.individuallyTyped && family == SQLDialectFeatures.ProceduralSyntaxFamily.FIREBIRD_PSQL;
+        boolean unsupportedShared = this.sharedType && family != SQLDialectFeatures.ProceduralSyntaxFamily.GENERIC;
         if (unsupportedTyped || unsupportedShared) {
             statistics.appendError(this.getSyntaxNode(), "Unsupported local variable declaration for this dialect");
             return context;
@@ -202,8 +202,8 @@ public final class SQLQueryVariableDeclarationStatement extends SQLQueryStatemen
                 : SQLQuerySemanticUtils.resolveTypeReference(
                     context, statistics, declaration.getName().getSyntaxNode(), typeRefString);
             declaration.setType(type);
-            SQLDialect.LocalVariableKind kind = "refcursor".equalsIgnoreCase(typeRefString)
-                ? SQLDialect.LocalVariableKind.CURSOR_VALUE : SQLDialect.LocalVariableKind.VALUE;
+            SQLDialectFeatures.LocalVariableKind kind = "refcursor".equalsIgnoreCase(typeRefString)
+                ? SQLDialectFeatures.LocalVariableKind.CURSOR_VALUE : SQLDialectFeatures.LocalVariableKind.VALUE;
             SQLQueryLocalVariableInfo binding = new SQLQueryLocalVariableInfo(
                 declaration.getName(), kind, declaration.getType(), null, declaration.isParameter());
             SQLQueryLocalVariablesContext next = context.getLocalVariables().withLocalVariable(binding);

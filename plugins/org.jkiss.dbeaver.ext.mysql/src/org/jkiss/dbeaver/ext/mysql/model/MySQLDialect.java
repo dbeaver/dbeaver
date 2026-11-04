@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -50,46 +51,66 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
      *
      * @see <a href="https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/local-variable-scope.html">Local variable resolution</a>
      */
-    @NotNull
-    @Override
-    public ProceduralVariableConflictPolicy getProceduralVariableConflictPolicy() {
-        return ProceduralVariableConflictPolicy.PREFER_VARIABLE;
-    }
+    private static class DialectFeatures extends SQLDialectFeatures {
+        private static final DialectFeatures INSTANCE = new DialectFeatures();
 
-    @NotNull
-    @Override
-    public TrailingSelectIntoSupport getTrailingSelectIntoSupport() {
-        return TrailingSelectIntoSupport.ANY;
-    }
+        @Override
+        @NotNull
+        public TrailingSelectIntoSupport getTrailingSelectIntoSupport() {
+            return TrailingSelectIntoSupport.ANY;
+        }
 
-    @NotNull
-    @Override
-    public Set<String> getTypeModifierKeywords() {
-        Set<String> keywords = new HashSet<>(super.getTypeModifierKeywords());
-        keywords.addAll(Set.of("SIGNED", "UNSIGNED", "ZEROFILL"));
-        return Set.copyOf(keywords);
-    }
+        @Override
+        @NotNull
+        public ProceduralVariableConflictPolicy getProceduralVariableConflictPolicy() {
+            return ProceduralVariableConflictPolicy.PREFER_VARIABLE;
+        }
 
-    @NotNull
-    @Override
-    public Set<String> getSignatureModifierKeywords() {
-        return Set.of("IN", "OUT", "INOUT");
-    }
+        @Override
+        @NotNull
+        public Set<String> getTypeModifierKeywords() {
+            Set<String> keywords = new HashSet<>(super.getTypeModifierKeywords());
+            keywords.addAll(Set.of("SIGNED", "UNSIGNED", "ZEROFILL"));
+            return Set.copyOf(keywords);
+        }
 
-    /** A local variable belongs to its BEGIN/END block and may be shadowed in a nested block.
-     *
-     * @see <a href="https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/declare-local-variable.html">Local variable DECLARE</a>
-     */
-    @NotNull
-    @Override
-    public LocalVariableVisibility getLocalVariableVisibility(@NotNull LocalVariableKind kind) {
-        return LocalVariableVisibility.LEXICAL;
+        @Override
+        @NotNull
+        public Set<String> getSignatureModifierKeywords() {
+            return Set.of("IN", "OUT", "INOUT");
+        }
+
+        /** A local variable belongs to its BEGIN/END block and may be shadowed in a nested block.
+         *
+         * @see <a href="https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/declare-local-variable.html">Local variable DECLARE</a>
+         */
+        @Override
+        @NotNull
+        public LocalVariableVisibility getLocalVariableVisibility(@NotNull LocalVariableKind kind) {
+            return LocalVariableVisibility.LEXICAL;
+        }
+
+        @Override
+        @NotNull
+        public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+            return EnumSet.of(
+                ProjectionAliasVisibilityScope.GROUP_BY,
+                ProjectionAliasVisibilityScope.HAVING,
+                ProjectionAliasVisibilityScope.ORDER_BY
+            );
+        }
     }
 
     @NotNull
     @Override
     public SQLScriptVariableScope getScriptVariableScope() {
         return SQLScriptVariableScope.SESSION;
+    }
+
+    @Override
+    @NotNull
+    public SQLDialectFeatures getDialectFeatures() {
+        return DialectFeatures.INSTANCE;
     }
 
     public static final String[] MYSQL_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
@@ -428,15 +449,6 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
     @Override
     public String getCreateSchemaQuery(@NotNull String schemaName) {
         return "CREATE DATABASE " + schemaName;
-    }
-
-    @Override
-    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
-        return EnumSet.of(
-            ProjectionAliasVisibilityScope.GROUP_BY,
-            ProjectionAliasVisibilityScope.HAVING,
-            ProjectionAliasVisibilityScope.ORDER_BY
-        );
     }
 
     @Nullable

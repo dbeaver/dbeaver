@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionItemKind;
@@ -66,8 +67,8 @@ final class ProceduralNestedCompletionScenario {
         @NotNull String whileBodyKeyword,
         @NotNull String databaseTableName
     ) throws DBException {
-        Assertions.assertEquals(SQLDialect.LocalVariableVisibility.LEXICAL,
-            test.dialect().getLocalVariableVisibility(SQLDialect.LocalVariableKind.VALUE),
+        Assertions.assertEquals(SQLDialectFeatures.LocalVariableVisibility.LEXICAL,
+            test.dialect().getDialectFeatures().getLocalVariableVisibility(SQLDialectFeatures.LocalVariableKind.VALUE),
             "This fixture expects block-local declarations; program-visible dialects need their own visibility expectations");
         String sql = program(prefix, temporaryTable, suffix, whileBodyKeyword);
         var builder = RequestBuilder.tables(tables -> tables.table(databaseTableName, table -> {

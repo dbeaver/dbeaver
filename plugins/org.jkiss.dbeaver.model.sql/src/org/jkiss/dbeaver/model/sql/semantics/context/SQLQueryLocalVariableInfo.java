@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.sql.semantics.context;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolDefinition;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
@@ -26,12 +26,12 @@ import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceMode
 
 /**
  * Describes a locally declared variable or any variable-like entity represented by
- * {@link SQLDialect.LocalVariableKind}, including row values, row sources, and cursors.
+ * {@link SQLDialectFeatures.LocalVariableKind}, including row values, row sources, and cursors.
  * Constructed by its semantic model and indexed in local scopes.
  */
 public record SQLQueryLocalVariableInfo(
     @NotNull SQLQuerySymbolEntry declaration,
-    @NotNull SQLDialect.LocalVariableKind kind,
+    @NotNull SQLDialectFeatures.LocalVariableKind kind,
     @NotNull SQLQueryExprType type,
     @Nullable SQLQueryRowsSourceModel rows,
     boolean parameter

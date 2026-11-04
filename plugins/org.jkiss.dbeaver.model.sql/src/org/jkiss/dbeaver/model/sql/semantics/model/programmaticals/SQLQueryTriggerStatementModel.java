@@ -20,7 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
@@ -141,7 +141,7 @@ public abstract class SQLQueryTriggerStatementModel extends SQLQueryProgrammatic
             String canonicalName = SQLUtils.identifierToCanonicalForm(context.getDialect(), rawName, false, false);
             SQLQuerySymbolEntry alias = new SQLQuerySymbolEntry(this.table.getSyntaxNode(), canonicalName, rawName, null);
             SQLQueryLocalVariableInfo binding = new SQLQueryLocalVariableInfo(
-                alias, SQLDialect.LocalVariableKind.ROW_REFERENCE, SQLQueryExprType.UNKNOWN, this.table, false);
+                alias, SQLDialectFeatures.LocalVariableKind.ROW_REFERENCE, SQLQueryExprType.UNKNOWN, this.table, false);
             SQLQueryLocalVariablesContext next = bindings.withLocalVariable(binding);
             if (next != bindings) {
                 alias.setDefinition(binding);
@@ -150,7 +150,7 @@ public abstract class SQLQueryTriggerStatementModel extends SQLQueryProgrammatic
         }
         for (SQLQuerySymbolEntry alias : this.transitionAliases) {
             SQLQueryLocalVariableInfo binding = new SQLQueryLocalVariableInfo(
-                alias, SQLDialect.LocalVariableKind.ROW_REFERENCE, SQLQueryExprType.UNKNOWN, this.table, false);
+                alias, SQLDialectFeatures.LocalVariableKind.ROW_REFERENCE, SQLQueryExprType.UNKNOWN, this.table, false);
             SQLQueryLocalVariablesContext next = bindings.withLocalVariable(binding);
             if (next != bindings) {
                 alias.setDefinition(binding);

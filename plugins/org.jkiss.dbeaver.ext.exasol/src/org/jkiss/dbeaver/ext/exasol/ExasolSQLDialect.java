@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
@@ -208,11 +209,21 @@ public class ExasolSQLDialect extends JDBCSQLDialect {
         return false;
     }
 
+    @NotNull
     @Override
-    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
-        return EnumSet.of(
-            ProjectionAliasVisibilityScope.ORDER_BY
-        );
+    public SQLDialectFeatures getDialectFeatures() {
+        return DialectFeatures.INSTANCE;
+    }
+
+    private static class DialectFeatures extends SQLDialectFeatures {
+        private static final DialectFeatures INSTANCE = new DialectFeatures();
+
+        @Override
+        public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+            return EnumSet.of(
+                ProjectionAliasVisibilityScope.ORDER_BY
+            );
+        }
     }
 
 }

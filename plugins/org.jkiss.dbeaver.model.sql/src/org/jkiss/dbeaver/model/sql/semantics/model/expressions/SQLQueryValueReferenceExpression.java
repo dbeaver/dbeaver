@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
@@ -139,7 +140,7 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
                     resultColumn = null;
                 }
                 resultLocalVariable = context.getRowsSources().getLocalVariables().findLocalVariable(
-                    columnRefEntry, SQLDialect.LocalVariableCapability.VALUE);
+                    columnRefEntry, SQLDialectFeatures.LocalVariableCapability.VALUE);
                 if (resultLocalVariable != null) {
                     // FIXME: Selecting a local value by the first name part can preclude the qualified row-source
                     // lookup below when names overlap. Revisit precedence for a reported, reproducible conflict;
@@ -147,14 +148,14 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
                     // Dummy metadata can supply synthetic columns; they must not make a local variable ambiguous.
                     boolean hasColumn = !context.getConnection().isDummy() &&
                         (resultColumn != null || resultPseudoColumn != null);
-                    SQLDialect.ProceduralVariableConflictPolicy policy = context.getConnection().dialect.getProceduralVariableConflictPolicy();
-                    if (hasColumn && policy == SQLDialect.ProceduralVariableConflictPolicy.UNRESOLVED) {
+                    SQLDialectFeatures.ProceduralVariableConflictPolicy policy = context.getConnection().dialect.getDialectFeatures().getProceduralVariableConflictPolicy();
+                    if (hasColumn && policy == SQLDialectFeatures.ProceduralVariableConflictPolicy.UNRESOLVED) {
                         // Keep the ambiguity through later rowset/object lookup without classifying either candidate.
                         isLocalVariableAmbiguous = true;
                         resultLocalVariable = null;
                         resultColumn = null;
                         resultPseudoColumn = null;
-                    } else if (!hasColumn || policy == SQLDialect.ProceduralVariableConflictPolicy.PREFER_VARIABLE) {
+                    } else if (!hasColumn || policy == SQLDialectFeatures.ProceduralVariableConflictPolicy.PREFER_VARIABLE) {
                         resultColumn = null;
                         resultPseudoColumn = null;
                     } else {
