@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -34,6 +35,7 @@ import org.jkiss.utils.xml.XMLUtils;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.util.regex.Pattern;
 
 /**
  * XML Exporter
@@ -41,6 +43,9 @@ import java.io.Reader;
 public class DataExporterXML extends StreamExporterAbstract {
 
     private static final String PROP_INCLUDE_DOCTYPE_DECLARATION = "includeDoctype";
+
+    // Letters, combining marks and digits of any script may appear in XML names, characters U+0080..U+00BF may not
+    private static final Pattern XML_NAME_INVALID_CHARS = Pattern.compile("(?:[^\\p{L}\\p{M}\\p{Nd}]|[\\u0080-\\u00BF])+");
 
     private DBDAttributeBinding[] columns;
     private String tableName;
@@ -164,10 +169,11 @@ public class DataExporterXML extends StreamExporterAbstract {
         }
     }
 
-    private String escapeXmlElementName(String name) {
-        String escapedName = name.replaceAll("[^\\p{Alpha}\\p{Digit}]+", "_");
-        char firstCharacter = escapedName.charAt(0);
-        if (Character.isAlphabetic(firstCharacter) || firstCharacter == '_') {
+    @NotNull
+    static String escapeXmlElementName(@NotNull String name) {
+        String escapedName = XML_NAME_INVALID_CHARS.matcher(name).replaceAll("_");
+        int firstCharacter = escapedName.codePointAt(0);
+        if (Character.isLetter(firstCharacter) || firstCharacter == '_') {
             return escapedName;
         }
 

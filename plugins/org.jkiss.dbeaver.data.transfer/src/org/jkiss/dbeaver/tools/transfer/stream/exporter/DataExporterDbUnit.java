@@ -108,7 +108,7 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
                 continue;
             }
             DBDAttributeBinding column = columns[i];
-            String columnName = escapeXmlElementName(column.getName());
+            String columnName = DataExporterXML.escapeXmlElementName(column.getName());
             if (columnName != null && upperCaseColumnNames) {
                 columnName = columnName.toUpperCase();
             }
@@ -205,9 +205,5 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
                 }
             }
         }
-    }
-
-    private String escapeXmlElementName(String name) {
-        return name.replaceAll("[^\\p{Alpha}\\p{Digit}]+","_");
     }
 }
