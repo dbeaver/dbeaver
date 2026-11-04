@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,15 @@ public class STMSourceImpl implements STMSource {
     private final CharStream stream;
     
     public STMSourceImpl(@NotNull Reader reader) throws IOException {
-        this.stream = CharStreams.fromReader(reader);
+        this(CharStreams.fromReader(reader));
+    }
+
+    public STMSourceImpl(@NotNull String string) {
+        this(CharStreams.fromString(string));
+    }
+
+    private STMSourceImpl(@NotNull CharStream stream) {
+        this.stream = new STMSourceCharStream(stream);
     }
 
     @NotNull

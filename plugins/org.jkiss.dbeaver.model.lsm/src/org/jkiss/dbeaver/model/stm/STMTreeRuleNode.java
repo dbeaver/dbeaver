@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -69,15 +69,15 @@ public class STMTreeRuleNode extends ParserRuleContext implements STMTreeNode {
         if (this.start == null || this.stop == null) {
             return Interval.INVALID;
         }
-        int start = this.getStart().getStartIndex();
-        int end = this.getStop().getStopIndex();
-        return new Interval(start, Math.max(start, end));
+        Interval interval = STMUtils.getRealInterval(this.getStart(), this.getStop());
+        return new Interval(interval.a, Math.max(interval.a, interval.b));
     }
 
     @NotNull
     @Override
     public String getTextContent() {
-        Interval textRange = this.getRealInterval();
+        int start = this.getStart().getStartIndex();
+        Interval textRange = Interval.of(start, Math.max(start, this.getStop().getStopIndex()));
         return this.getStart().getInputStream().getText(textRange);
     }
 

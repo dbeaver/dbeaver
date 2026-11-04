@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,13 +54,13 @@ public class STMTreeTermNode extends TerminalNodeImpl implements STMTreeNode {
     
     @NotNull
     public Interval getRealInterval() {
-        return new Interval(this.getSymbol().getStartIndex(), this.getSymbol().getStopIndex());
+        return STMUtils.getRealInterval(this.getSymbol(), this.getSymbol());
     }
 
     @NotNull
     @Override
     public String getTextContent() {
-        Interval textRange = this.getRealInterval();
+        Interval textRange = Interval.of(this.getSymbol().getStartIndex(), this.getSymbol().getStopIndex());
         return this.getSymbol().getInputStream().getText(textRange);
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.stm;
 
 import org.antlr.v4.runtime.CharStream;
-import org.antlr.v4.runtime.CharStreams;
 import org.jkiss.code.NotNull;
 
 import java.io.IOException;
@@ -45,6 +44,6 @@ public interface STMSource {
      * Prepare source based on text string
      */
     public static STMSource fromString(String string) {
-        return () -> CharStreams.fromString(string);
+        return new STMSourceImpl(string);
     }
 }
