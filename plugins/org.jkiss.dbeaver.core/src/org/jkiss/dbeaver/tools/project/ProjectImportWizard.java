@@ -55,6 +55,7 @@ import org.w3c.dom.Element;
 
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -450,14 +451,19 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
                     throw new DBException("Unsupported container type '" + resource.getClass().getName() + "'");
                 }
                 if (!file.exists()) {
-                    // Transform before publishing the file so task readers cannot observe stale project references.
+                    String charsetName = childElement.getAttribute(ExportConstants.ATTR_CHARSET);
+                    Charset charset = CommonUtils.isEmpty(charsetName)
+                        ? GeneralUtils.DEFAULT_FILE_CHARSET
+                        : Charset.forName(charsetName);
                     try (InputStream contents = zipFile.getInputStream(resourceEntry);
                          InputStream transformed = importRegistry.transformResource(
                              monitor,
                              Path.of(file.getProjectRelativePath().toPortableString()),
                              contents,
+                             charset,
                              data.getProjectNameMap()
-                         )) {
+                         )
+                    ) {
                         file.create(transformed, true, RuntimeUtils.getNestedMonitor(monitor));
                     }
                 }

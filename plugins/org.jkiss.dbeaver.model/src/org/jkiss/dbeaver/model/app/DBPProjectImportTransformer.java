@@ -23,8 +23,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.util.Map;
 
 /**
- * Transforms an archived resource before it is written to an imported project.
+ * Transforms an archived text resource before it is written to an imported project.
  * Registered for an exact project-relative resource path through org.jkiss.dbeaver.projectImport.
+ * The caller is responsible for decoding and encoding the resource contents.
  */
 public interface DBPProjectImportTransformer {
 
@@ -33,15 +34,15 @@ public interface DBPProjectImportTransformer {
      * Implementations must preserve references to projects not included in the mapping and unrelated resource contents.
      *
      * @param monitor      progress monitor for reporting progress and checking cancellation
-     * @param contents     resource contents to transform
+     * @param contents     text contents to transform
      * @param projectNames mapping from original to destination names of all projects selected for import
      * @return transformed contents, or the original contents when no changes are necessary
      * @throws DBException if the transformation fails or is canceled
      */
     @NotNull
-    byte[] transform(
+    String transform(
         @NotNull DBRProgressMonitor monitor,
-        @NotNull byte[] contents,
+        @NotNull String contents,
         @NotNull Map<String, String> projectNames
     ) throws DBException;
 }

@@ -92,18 +92,17 @@ public class TaskProjectImportTransformerTest extends DBeaverUnitTest {
         dataSources.get(0).getAsJsonObject().addProperty("project", "Target");
         dataSources.get(1).getAsJsonObject().addProperty("project", "OtherTarget");
 
-        byte[] result = transformer.transform(progress, json.getBytes(StandardCharsets.UTF_8), PROJECT_NAMES);
+        String result = transformer.transform(progress, json, PROJECT_NAMES);
 
-        assertEquals(expected, JsonParser.parseString(new String(result, StandardCharsets.UTF_8)));
-        assertTrue(new String(result, StandardCharsets.UTF_8).contains("9007199254740993"));
-        assertTrue(new String(result, StandardCharsets.UTF_8).contains("0.12345678901234567890123456789"));
+        assertEquals(expected, JsonParser.parseString(result));
+        assertTrue(result.contains("9007199254740993"));
+        assertTrue(result.contains("0.12345678901234567890123456789"));
         Mockito.verify(unsupported, Mockito.never()).createHandler();
     }
 
     @Test
-    void preservesOriginalBytesWhenNoReferencesChange() throws DBException {
-        byte[] contents = "{\"task\":{\"task\":\"scriptExecute\",\"state\":{\"project\":\"External\"}}}"
-            .getBytes(StandardCharsets.UTF_8);
+    void preservesOriginalContentsWhenNoReferencesChange() throws DBException {
+        String contents = "{\"task\":{\"task\":\"scriptExecute\",\"state\":{\"project\":\"External\"}}}";
         assertSame(contents, transformer.transform(progress, contents, PROJECT_NAMES));
         assertSame(contents, transformer.transform(progress, contents, Map.of("Source", "Source")));
         assertSame(contents, transformer.transform(progress, contents, Map.of()));
@@ -114,8 +113,7 @@ public class TaskProjectImportTransformerTest extends DBeaverUnitTest {
         // Gson's map adapter also accepts an empty array of key/value entries.
         for (String json : List.of("", "null", "{}", "[]")) {
             assertTrue(JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json)).isEmpty());
-            byte[] contents = json.getBytes(StandardCharsets.UTF_8);
-            assertSame(contents, transformer.transform(progress, contents, PROJECT_NAMES));
+            assertSame(json, transformer.transform(progress, json, PROJECT_NAMES));
         }
     }
 
@@ -142,29 +140,27 @@ public class TaskProjectImportTransformerTest extends DBeaverUnitTest {
         Map<String, Object> expectedState = JSONUtils.getObject(JSONUtils.getObject(expected, "script"), TaskConstants.TAG_STATE);
         JSONUtils.getObjectList(expectedState, "dataSources").getFirst().put("project", "Target");
 
-        byte[] result = transformer.transform(progress, buffer.toString().getBytes(StandardCharsets.UTF_8), PROJECT_NAMES);
+        String result = transformer.transform(progress, buffer.toString(), PROJECT_NAMES);
 
-        Map<String, Object> imported = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(new String(result, StandardCharsets.UTF_8)));
+        Map<String, Object> imported = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(result));
         assertEquals(expected, imported);
     }
 
     @Test
     void mapsNamesOnceRatherThanFollowingMappingChains() throws DBException {
-        byte[] contents = "{\"task\":{\"task\":\"scriptExecute\",\"state\":{\"project\":\"Source\"}}}"
-            .getBytes(StandardCharsets.UTF_8);
-        byte[] result = transformer.transform(progress, contents, Map.of("Source", "Target", "Target", "Third"));
-        assertEquals("Target", JsonParser.parseString(new String(result, StandardCharsets.UTF_8)).getAsJsonObject()
+        String contents = "{\"task\":{\"task\":\"scriptExecute\",\"state\":{\"project\":\"Source\"}}}";
+        String result = transformer.transform(progress, contents, Map.of("Source", "Target", "Target", "Third"));
+        assertEquals("Target", JsonParser.parseString(result).getAsJsonObject()
             .getAsJsonObject("task").getAsJsonObject("state").get("project").getAsString());
     }
 
     @Test
     void reportsMalformedConfigurationAndHandlerFailures() throws DBException {
-        assertThrows(DBException.class, () -> transformer.transform(progress, "{".getBytes(StandardCharsets.UTF_8), PROJECT_NAMES));
-        assertThrows(DBException.class, () -> transformer.transform(progress, "[1]".getBytes(StandardCharsets.UTF_8), PROJECT_NAMES));
-        assertThrows(DBException.class, () -> transformer.transform(progress, "42".getBytes(StandardCharsets.UTF_8), PROJECT_NAMES));
+        assertThrows(DBException.class, () -> transformer.transform(progress, "{", PROJECT_NAMES));
+        assertThrows(DBException.class, () -> transformer.transform(progress, "[1]", PROJECT_NAMES));
+        assertThrows(DBException.class, () -> transformer.transform(progress, "42", PROJECT_NAMES));
         Mockito.when(scriptType.createHandler()).thenThrow(new DBException("Cannot create handler"));
-        byte[] contents = "{\"task\":{\"task\":\"scriptExecute\",\"state\":{\"project\":\"Source\"}}}"
-            .getBytes(StandardCharsets.UTF_8);
+        String contents = "{\"task\":{\"task\":\"scriptExecute\",\"state\":{\"project\":\"Source\"}}}";
         assertThrows(DBException.class, () -> transformer.transform(progress, contents, PROJECT_NAMES));
     }
 
@@ -172,7 +168,7 @@ public class TaskProjectImportTransformerTest extends DBeaverUnitTest {
     void honorsCancellation() {
         DBRProgressMonitor canceled = Mockito.mock(DBRProgressMonitor.class);
         Mockito.when(canceled.isCanceled()).thenReturn(true);
-        byte[] contents = "{\"task\":{}}".getBytes(StandardCharsets.UTF_8);
+        String contents = "{\"task\":{}}";
         assertThrows(DBInterruptedException.class, () -> transformer.transform(canceled, contents, PROJECT_NAMES));
     }
 
@@ -182,12 +178,14 @@ public class TaskProjectImportTransformerTest extends DBeaverUnitTest {
         byte[] contents = "{\"task\":{\"task\":\"scriptExecute\",\"state\":{\"project\":\"Source\"}}}"
             .getBytes(StandardCharsets.UTF_8);
         try (InputStream source = new ByteArrayInputStream(contents);
-             InputStream result = imports.transformResource(progress, Path.of(".dbeaver/tasks.json"), source, PROJECT_NAMES)) {
+             InputStream result = imports.transformResource(
+                 progress, Path.of(".dbeaver/tasks.json"), source, StandardCharsets.UTF_8, PROJECT_NAMES)) {
             assertEquals("Target", JsonParser.parseString(new String(result.readAllBytes(), StandardCharsets.UTF_8))
                 .getAsJsonObject().getAsJsonObject("task").getAsJsonObject("state").get("project").getAsString());
         }
         try (InputStream source = new ByteArrayInputStream(contents)) {
-            assertSame(source, imports.transformResource(progress, Path.of("Scripts/tasks.json"), source, PROJECT_NAMES));
+            assertSame(source, imports.transformResource(
+                progress, Path.of("Scripts/tasks.json"), source, StandardCharsets.UTF_8, PROJECT_NAMES));
             assertArrayEquals(contents, source.readAllBytes());
         }
     }

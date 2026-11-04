@@ -122,7 +122,7 @@ public class SQLToolExecuteHandlerImportTest extends DBeaverUnitTest {
         ProjectImportRegistry imports = new ProjectImportRegistry();
         try (InputStream source = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
              InputStream result = imports.transformResource(
-                 new VoidProgressMonitor(), Path.of(".dbeaver/tasks.json"), source,
+                 new VoidProgressMonitor(), Path.of(".dbeaver/tasks.json"), source, StandardCharsets.UTF_8,
                  Map.of("Source", "Target", "OtherImported", "OtherTarget"))
         ) {
             Assertions.assertEquals(expected, JSONUtils.parseMap(JSONUtils.GSON, new InputStreamReader(result, StandardCharsets.UTF_8)));

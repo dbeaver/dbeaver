@@ -29,6 +29,9 @@ import org.jkiss.dbeaver.runtime.DBInterruptedException;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
+import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
@@ -47,28 +50,46 @@ public class ProjectImportRegistry {
 
     /**
      * Unhandled resources remain streamed. The caller owns both the supplied and returned streams.
+     * Only resources with registered text transformers are decoded; unchanged text retains its original bytes.
+     *
+     * @param charset charset selected by the caller for decoding and encoding the resource
+     * @throws IOException if reading fails or the text cannot be decoded or encoded without losing data
      */
     @NotNull
     public InputStream transformResource(
         @NotNull DBRProgressMonitor monitor,
         @NotNull Path relativePath,
         @NotNull InputStream contents,
+        @NotNull Charset charset,
         @NotNull Map<String, String> projectNames
     ) throws DBException, IOException {
-        byte[] transformed = null;
-        for (TransformerDescriptor descriptor : transformers) {
-            if (descriptor.path.equals(relativePath)) {
-                if (monitor.isCanceled()) {
-                    throw new DBInterruptedException("Project import canceled");
-                }
-                if (transformed == null) {
-                    transformed = contents.readAllBytes();
-                }
-                transformed = descriptor.type.createInstance(DBPProjectImportTransformer.class)
-                    .transform(monitor, transformed, projectNames);
-            }
+        var applicableTransformers = transformers.stream()
+            .filter(descriptor -> descriptor.path.equals(relativePath))
+            .toList();
+        if (applicableTransformers.isEmpty()) {
+            return contents;
         }
-        return transformed == null ? contents : new ByteArrayInputStream(transformed);
+        if (monitor.isCanceled()) {
+            throw new DBInterruptedException("Project import canceled");
+        }
+        var originalBytes = contents.readAllBytes();
+        var originalText = charset.newDecoder().decode(ByteBuffer.wrap(originalBytes)).toString();
+        var transformed = originalText;
+        for (TransformerDescriptor descriptor : applicableTransformers) {
+            if (monitor.isCanceled()) {
+                throw new DBInterruptedException("Project import canceled");
+            }
+            transformed = descriptor.type
+                .createInstance(DBPProjectImportTransformer.class)
+                .transform(monitor, transformed, projectNames);
+        }
+        if (originalText.equals(transformed)) {
+            return new ByteArrayInputStream(originalBytes);
+        }
+        var encoded = charset.newEncoder().encode(CharBuffer.wrap(transformed));
+        var transformedBytes = new byte[encoded.remaining()];
+        encoded.get(transformedBytes);
+        return new ByteArrayInputStream(transformedBytes);
     }
 
     private static class TransformerDescriptor extends AbstractDescriptor {
