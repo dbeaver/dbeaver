@@ -113,7 +113,7 @@ public class DDProjectManager {
         for (DBPProject project : workspace.getProjects()) {
             result.add(getLocalProject(project));
         }
-        return List.copyOf(result);
+        return result;
     }
 
     @NotNull
@@ -203,6 +203,9 @@ public class DDProjectManager {
         try {
             getOrCreate(project).importProject(project, remote);
             return project;
+        } catch (DBException e) {
+            rollbackImport(project, e);
+            throw e;
         } catch (Exception e) {
             rollbackImport(project, e);
             throw new DBException("Error importing DataDam project '" + remote.name() + "'", e);
