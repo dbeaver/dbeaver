@@ -378,17 +378,20 @@ public class GeneralUtils {
      */
     @Nullable
     private static Properties readProductProperties(@NotNull URL installURL) {
-        Properties properties = new Properties();
         try {
-            Path installPath = RuntimeUtils.getLocalPathFromURL(installURL);
-            try (InputStream input = Files.newInputStream(installPath.resolve(".eclipseproduct"))) {
+            var eclipseProduct = RuntimeUtils.getLocalPathFromURL(installURL).resolve(".eclipseproduct");
+            if (!Files.exists(eclipseProduct)) {
+                return null;
+            }
+            var properties = new Properties();
+            try (InputStream input = Files.newInputStream(eclipseProduct)) {
                 properties.load(input);
             }
+            return properties;
         } catch (Exception e) {
             log.debug("Error reading installed product patch number", e);
             return null;
         }
-        return properties;
     }
 
     @NotNull

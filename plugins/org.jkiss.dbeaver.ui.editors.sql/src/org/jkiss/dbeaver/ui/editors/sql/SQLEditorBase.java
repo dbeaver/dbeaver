@@ -50,6 +50,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.internal.dialogs.PropertyDialog;
@@ -830,6 +831,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         setAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL, action);
 
         setAction(ITextEditorActionConstants.CONTEXT_PREFERENCES, new ShowPreferencesAction());
+        IAction propertiesAction = new ShowPreferencesAction();
+        propertiesAction.setActionDefinitionId(IWorkbenchCommandConstants.FILE_PROPERTIES);
+        setAction(ITextEditorActionConstants.PROPERTIES, propertiesAction);
 
         SQLEditorCustomActions.registerCustomActions(this);
     }
@@ -1464,10 +1468,16 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
         public void run() {
             Shell shell = getSourceViewer().getTextWidget().getShell();
-            String[] preferencePages = collectContextMenuPreferencePages();
-            if (preferencePages.length > 0 && (shell == null || !shell.isDisposed())) {
-                PropertyDialog.createDialogOn(shell, null, new StructuredSelection(getEditorInput())).open();
-                //PreferencesUtil.createPreferenceDialogOn(shell, preferencePages[0], preferencePages, getEditorInput()).open();
+            if (shell == null || !shell.isDisposed()) {
+                // Unassociated consoles still have editor properties, but no connection-specific properties.
+                boolean hasDataSource = SQLEditorBase.this instanceof SQLEditor sqlEditor
+                    ? sqlEditor.getDataSourceContainer() != null
+                    : EditorUtils.getInputDataSource(getEditorInput()) != null;
+                Object target = hasDataSource ? getEditorInput() : SQLEditorBase.this;
+                PropertyDialog dialog = PropertyDialog.createDialogOn(shell, null, new StructuredSelection(target));
+                if (dialog != null) {
+                    dialog.open();
+                }
             }
         }
     }
