@@ -16,13 +16,12 @@
  */
 package org.jkiss.dbeaver.model.sql.task;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
@@ -49,13 +48,10 @@ public abstract class SQLToolExecuteHandler<OBJECT_TYPE extends DBSObject, SETTI
     private final DBCStatistics statistics = new DBCStatistics();
 
     @Override
-    public boolean transformTaskState(@NotNull JsonObject state, @NotNull Map<String, String> projectNames) {
+    public boolean transformTaskState(@NotNull Map<String, Object> state, @NotNull Map<String, String> projectNames) {
         boolean changed = false;
-        JsonElement objects = state.get("objects");
-        if (objects != null && objects.isJsonArray()) {
-            for (JsonElement object : objects.getAsJsonArray()) {
-                changed |= DBTTaskImportTransformer.remapProjectReference(object, projectNames);
-            }
+        for (Object object : JSONUtils.getObjectList(state, "objects")) {
+            changed |= DBTTaskImportTransformer.remapProjectReference(object, projectNames);
         }
         return changed;
     }

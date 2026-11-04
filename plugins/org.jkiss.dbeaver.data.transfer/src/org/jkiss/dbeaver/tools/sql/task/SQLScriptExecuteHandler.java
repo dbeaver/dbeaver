@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.sql.task;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -25,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
@@ -67,13 +66,10 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler, DBTTaskImportTra
     private final DBCStatistics totalStatistics = new DBCStatistics();
 
     @Override
-    public boolean transformTaskState(@NotNull JsonObject state, @NotNull Map<String, String> projectNames) {
+    public boolean transformTaskState(@NotNull Map<String, Object> state, @NotNull Map<String, String> projectNames) {
         boolean changed = DBTTaskImportTransformer.remapProjectReference(state, projectNames);
-        JsonElement dataSources = state.get("dataSources");
-        if (dataSources != null && dataSources.isJsonArray()) {
-            for (JsonElement dataSource : dataSources.getAsJsonArray()) {
-                changed |= DBTTaskImportTransformer.remapProjectReference(dataSource, projectNames);
-            }
+        for (Object dataSource : JSONUtils.getObjectList(state, "dataSources")) {
+            changed |= DBTTaskImportTransformer.remapProjectReference(dataSource, projectNames);
         }
         return changed;
     }

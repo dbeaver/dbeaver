@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.task;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.jobs.JobGroup;
@@ -26,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -59,17 +57,11 @@ public class DTTaskHandlerTransfer implements DBTTaskHandler, DBTTaskInfoCollect
     private final DBCStatistics totalStatistics = new DBCStatistics();
 
     @Override
-    public boolean transformTaskState(@NotNull JsonObject state, @NotNull Map<String, String> projectNames) {
+    public boolean transformTaskState(@NotNull Map<String, Object> state, @NotNull Map<String, String> projectNames) {
         boolean changed = false;
-        JsonElement producers = state.get("producers");
-        if (producers != null && producers.isJsonArray()) {
-            for (JsonElement producer : producers.getAsJsonArray()) {
-                if (producer.isJsonObject()) {
-                    JsonObject node = producer.getAsJsonObject();
-                    if (new JsonPrimitive("databaseTransferProducer").equals(node.get("type"))) {
-                        changed |= DBTTaskImportTransformer.remapProjectReference(node.get("location"), projectNames);
-                    }
-                }
+        for (Object producer : JSONUtils.getObjectList(state, "producers")) {
+            if (producer instanceof Map<?, ?> node && "databaseTransferProducer".equals(node.get("type"))) {
+                changed |= DBTTaskImportTransformer.remapProjectReference(node.get("location"), projectNames);
             }
         }
         return changed;

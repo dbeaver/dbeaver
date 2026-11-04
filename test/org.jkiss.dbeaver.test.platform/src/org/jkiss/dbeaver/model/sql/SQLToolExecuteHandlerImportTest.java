@@ -16,10 +16,9 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.tasks.PostgreToolBaseVacuum;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.task.SQLToolExecuteHandler;
 import org.jkiss.dbeaver.registry.project.ProjectImportRegistry;
@@ -31,6 +30,8 @@ import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Map;
@@ -40,7 +41,7 @@ public class SQLToolExecuteHandlerImportTest extends DBeaverUnitTest {
 
     @Test
     void remapsAllObjectProjectsAndPreservesUnrelatedState() {
-        JsonObject state = JsonParser.parseString("""
+        String json = """
             {
               "project": "Source",
               "objects": [
@@ -55,11 +56,12 @@ public class SQLToolExecuteHandlerImportTest extends DBeaverUnitTest {
               "scriptFiles": ["Source/Scripts/query.sql", "resource:/Source/query.sql"],
               "options": {"project": "Source", "objects": [{"project": "OtherImported"}]}
             }
-            """).getAsJsonObject();
-        JsonObject expected = state.deepCopy();
-        expected.getAsJsonArray("objects").get(0).getAsJsonObject().addProperty("project", "Target");
-        expected.getAsJsonArray("objects").get(1).getAsJsonObject().addProperty("project", "OtherTarget");
-        expected.getAsJsonArray("objects").get(10).getAsJsonObject().addProperty("project", "Target");
+            """;
+        Map<String, Object> state = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
+        Map<String, Object> expected = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
+        JSONUtils.getObjectList(expected, "objects").get(0).put("project", "Target");
+        JSONUtils.getObjectList(expected, "objects").get(1).put("project", "OtherTarget");
+        JSONUtils.getObjectList(expected, "objects").get(10).put("project", "Target");
         Map<String, String> projectNames = Map.of("Source", "Target", "OtherImported", "OtherTarget", "Same", "Same");
 
         Assertions.assertTrue(handler.transformTaskState(state, projectNames));
@@ -80,8 +82,8 @@ public class SQLToolExecuteHandlerImportTest extends DBeaverUnitTest {
         "{\"objects\": [{\"project\": \"External\"}, {\"project\": \"Same\"}, {\"project\": \"source\"}]}"
     })
     void preservesUnmappedNamesAndMalformedShapes(@NotNull String json) {
-        JsonObject state = JsonParser.parseString(json).getAsJsonObject();
-        JsonObject expected = state.deepCopy();
+        Map<String, Object> state = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
+        Map<String, Object> expected = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
 
         Assertions.assertFalse(handler.transformTaskState(
             state, Map.of("Source", "Target", "Same", "Same", "42", "Target", "true", "Target")));
@@ -90,8 +92,9 @@ public class SQLToolExecuteHandlerImportTest extends DBeaverUnitTest {
 
     @Test
     void preservesReferencesForEmptyAndIdentityMappings() {
-        JsonObject state = JsonParser.parseString("{\"objects\": [{\"project\": \"Source\"}]}").getAsJsonObject();
-        JsonObject expected = state.deepCopy();
+        String json = "{\"objects\": [{\"project\": \"Source\"}]}";
+        Map<String, Object> state = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
+        Map<String, Object> expected = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
 
         Assertions.assertFalse(handler.transformTaskState(state, Map.of()));
         Assertions.assertFalse(handler.transformTaskState(state, Map.of("Source", "Source")));
@@ -110,11 +113,11 @@ public class SQLToolExecuteHandlerImportTest extends DBeaverUnitTest {
                   "options": {"project": "OtherImported"}}}
             }
             """;
-        JsonObject expected = JsonParser.parseString(json).getAsJsonObject();
-        expected.getAsJsonObject("tableVacuum").getAsJsonObject("state")
-            .getAsJsonArray("objects").get(0).getAsJsonObject().addProperty("project", "Target");
-        expected.getAsJsonObject("databaseVacuum").getAsJsonObject("state")
-            .getAsJsonArray("objects").get(0).getAsJsonObject().addProperty("project", "OtherTarget");
+        Map<String, Object> expected = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
+        JSONUtils.getObjectList(JSONUtils.getObject(JSONUtils.getObject(expected, "tableVacuum"), "state"), "objects")
+            .get(0).put("project", "Target");
+        JSONUtils.getObjectList(JSONUtils.getObject(JSONUtils.getObject(expected, "databaseVacuum"), "state"), "objects")
+            .get(0).put("project", "OtherTarget");
 
         ProjectImportRegistry imports = new ProjectImportRegistry();
         try (InputStream source = new ByteArrayInputStream(json.getBytes(StandardCharsets.UTF_8));
@@ -122,7 +125,7 @@ public class SQLToolExecuteHandlerImportTest extends DBeaverUnitTest {
                  new VoidProgressMonitor(), Path.of(".dbeaver/tasks.json"), source,
                  Map.of("Source", "Target", "OtherImported", "OtherTarget"))
         ) {
-            Assertions.assertEquals(expected, JsonParser.parseString(new String(result.readAllBytes(), StandardCharsets.UTF_8)));
+            Assertions.assertEquals(expected, JSONUtils.parseMap(JSONUtils.GSON, new InputStreamReader(result, StandardCharsets.UTF_8)));
         }
     }
 }

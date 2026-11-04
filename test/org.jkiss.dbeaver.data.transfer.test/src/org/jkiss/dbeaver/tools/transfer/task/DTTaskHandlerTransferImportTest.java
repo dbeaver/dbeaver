@@ -16,10 +16,9 @@
  */
 package org.jkiss.dbeaver.tools.transfer.task;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.task.DBTTaskImportTransformer;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
@@ -27,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.io.StringReader;
 import java.util.Map;
 
 public class DTTaskHandlerTransferImportTest extends DBeaverUnitTest {
@@ -34,7 +34,7 @@ public class DTTaskHandlerTransferImportTest extends DBeaverUnitTest {
 
     @Test
     void remapsOnlyDatabaseProducerLocations() throws DBException {
-        JsonObject state = JsonParser.parseString("""
+        String json = """
             {
               "project": "Source",
               "producers": [
@@ -57,12 +57,11 @@ public class DTTaskHandlerTransferImportTest extends DBeaverUnitTest {
               "consumers": [{"type": "databaseTransferProducer", "location": {"project": "Source"}}],
               "configuration": {"project": "Source", "outputFolder": "Source/output"}
             }
-            """).getAsJsonObject();
-        JsonObject expected = state.deepCopy();
-        expected.getAsJsonArray("producers").get(0).getAsJsonObject()
-            .getAsJsonObject("location").addProperty("project", "Target");
-        expected.getAsJsonArray("producers").get(1).getAsJsonObject()
-            .getAsJsonObject("location").addProperty("project", "OtherTarget");
+            """;
+        Map<String, Object> state = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
+        Map<String, Object> expected = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
+        JSONUtils.getObject(JSONUtils.getObjectList(expected, "producers").get(0), "location").put("project", "Target");
+        JSONUtils.getObject(JSONUtils.getObjectList(expected, "producers").get(1), "location").put("project", "OtherTarget");
         Map<String, String> projectNames = Map.of("Source", "Target", "OtherImported", "OtherTarget", "Same", "Same");
 
         Assertions.assertTrue(handler.transformTaskState(state, projectNames));
@@ -73,14 +72,15 @@ public class DTTaskHandlerTransferImportTest extends DBeaverUnitTest {
 
     @Test
     void leavesSameAndExternalProjectNamesUnchanged() throws DBException {
-        JsonObject state = JsonParser.parseString("""
+        String json = """
             {"producers": [
               {"type": "databaseTransferProducer", "location": {"project": "Source"}},
               {"type": "databaseTransferProducer", "location": {"project": "External"}},
               {"type": "databaseTransferProducer", "location": {"project": "source"}}
             ]}
-            """).getAsJsonObject();
-        JsonObject expected = state.deepCopy();
+            """;
+        Map<String, Object> state = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
+        Map<String, Object> expected = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
 
         Assertions.assertFalse(handler.transformTaskState(state, Map.of()));
         Assertions.assertFalse(handler.transformTaskState(state, Map.of("Source", "Source")));
@@ -102,8 +102,8 @@ public class DTTaskHandlerTransferImportTest extends DBeaverUnitTest {
         """
     })
     void preservesUnexpectedShapes(@NotNull String json) throws DBException {
-        JsonObject state = JsonParser.parseString(json).getAsJsonObject();
-        JsonObject expected = state.deepCopy();
+        Map<String, Object> state = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
+        Map<String, Object> expected = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
 
         Assertions.assertFalse(handler.transformTaskState(state, Map.of("Source", "Target", "42", "Target")));
         Assertions.assertEquals(expected, state);

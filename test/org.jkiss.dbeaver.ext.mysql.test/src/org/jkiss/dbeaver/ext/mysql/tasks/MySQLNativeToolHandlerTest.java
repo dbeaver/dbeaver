@@ -16,10 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.mysql.tasks;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.task.DBTTaskImportTransformer;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
@@ -28,6 +27,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.IOException;
+import java.io.StringReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -37,7 +37,7 @@ public class MySQLNativeToolHandlerTest extends DBeaverUnitTest {
     @Test
     void remapsOnlyRootProjectThroughInheritedHandler() throws DBException {
         DBTTaskImportTransformer handler = new MySQLScriptExecuteHandler();
-        JsonObject state = JsonParser.parseString("""
+        String json = """
             {
               "project": "Source", "dataSource": "connection",
               "databaseObjects": ["Source/connection/database"],
@@ -45,9 +45,10 @@ public class MySQLNativeToolHandlerTest extends DBeaverUnitTest {
               "scriptFiles": ["Source/Scripts/query.sql"], "query": "select 'Source' as project",
               "options": {"project": "Source"}, "dataSources": [{"project": "Source"}]
             }
-            """).getAsJsonObject();
-        JsonObject expected = state.deepCopy();
-        expected.addProperty("project", "Target");
+            """;
+        Map<String, Object> state = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
+        Map<String, Object> expected = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
+        expected.put("project", "Target");
 
         Assertions.assertTrue(handler.transformTaskState(state, Map.of("Source", "Target")));
         Assertions.assertEquals(expected, state);
@@ -63,8 +64,8 @@ public class MySQLNativeToolHandlerTest extends DBeaverUnitTest {
     })
     void preservesSameExternalAndNonStringProjects(@NotNull String json) throws DBException {
         DBTTaskImportTransformer handler = new MySQLScriptExecuteHandler();
-        JsonObject state = JsonParser.parseString(json).getAsJsonObject();
-        JsonObject expected = state.deepCopy();
+        Map<String, Object> state = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
+        Map<String, Object> expected = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
 
         Assertions.assertFalse(handler.transformTaskState(state, Map.of()));
         Assertions.assertFalse(handler.transformTaskState(state, Map.of(

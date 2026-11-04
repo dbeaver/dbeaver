@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.model.task;
 
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -35,33 +33,31 @@ public interface DBTTaskImportTransformer {
      * Updates only references understood by this task type, preserving unknown state.
      * Project names embedded in resource/navigator paths are deliberately not handled yet.
      *
+     * @param state mutable task properties in the same map representation used by task settings
+     * @param projectNames mapping from original project names to destination project names
      * @return whether the state changed
      */
-    boolean transformTaskState(@NotNull JsonObject state, @NotNull Map<String, String> projectNames) throws DBException;
+    boolean transformTaskState(@NotNull Map<String, Object> state, @NotNull Map<String, String> projectNames) throws DBException;
 
     /**
-     * Remaps the direct string-valued {@code project} property of a JSON object in place.
+     * Remaps the direct string-valued {@code project} property of a task-state map in place.
      * Uses a case-sensitive lookup; does not traverse nested objects or rewrite embedded paths.
      *
-     * @param object       JSON object containing the project reference, or {@code null}
+     * @param object       mutable task-state map containing the project reference; null and non-map values are ignored
      * @param projectNames mapping from original project names to destination project names
      * @return {@code true} if the project property changed; {@code false} otherwise
      */
-    static boolean remapProjectReference(@Nullable JsonElement object, @NotNull Map<String, String> projectNames) {
-        if (object == null || !object.isJsonObject()) {
+    @SuppressWarnings("unchecked")
+    static boolean remapProjectReference(@Nullable Object object, @NotNull Map<String, String> projectNames) {
+        if (!(object instanceof Map<?, ?> properties) || !(properties.get(PROJECT_PROPERTY) instanceof String oldName)) {
             return false;
         }
-        JsonObject properties = object.getAsJsonObject();
-        JsonElement project = properties.get(PROJECT_PROPERTY);
-        if (project == null || !project.isJsonPrimitive() || !project.getAsJsonPrimitive().isString()) {
-            return false;
-        }
-        String oldName = project.getAsString();
         String newName = projectNames.get(oldName);
         if (newName == null || newName.equals(oldName)) {
             return false;
         }
-        properties.addProperty(PROJECT_PROPERTY, newName);
+        // Task settings represent JSON objects as mutable maps with string keys and Object values.
+        ((Map<String, Object>) properties).put(PROJECT_PROPERTY, newName);
         return true;
     }
 }

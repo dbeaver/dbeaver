@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.tasks.nativetool;
 
-import com.google.gson.JsonObject;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
@@ -58,7 +57,7 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
     private String taskErrorMessage;
 
     @Override
-    public boolean transformTaskState(@NotNull JsonObject state, @NotNull Map<String, String> projectNames) {
+    public boolean transformTaskState(@NotNull Map<String, Object> state, @NotNull Map<String, String> projectNames) {
         return DBTTaskImportTransformer.remapProjectReference(state, projectNames);
     }
 

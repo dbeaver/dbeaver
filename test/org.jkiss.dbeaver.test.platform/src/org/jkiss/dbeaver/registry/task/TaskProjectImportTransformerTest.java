@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.registry.task;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.stream.JsonWriter;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
@@ -33,8 +35,11 @@ import org.mockito.Mockito;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -69,7 +74,9 @@ public class TaskProjectImportTransformerTest extends DBeaverUnitTest {
                   {"project": "Source", "dataSource": "connection1"},
                   {"project": "Other", "dataSource": "connection2"},
                   {"project": "External", "dataSource": "connection3"}
-                ], "scriptFiles": ["Source/Scripts/test.sql"], "query": "select 'Source'"}
+                ], "scriptFiles": ["Source/Scripts/test.sql"], "query": "select 'Source'",
+                   "limit": 9007199254740993, "fraction": 0.12345678901234567890123456789,
+                   "emptyList": [], "emptyObject": {}, "emptyString": "", "nullableSetting": null}
               },
               "unknown": {"task": "unavailable", "state": {"project": "Source"}},
               "unsupported": {"task": "unsupported", "state": {"project": "Source"}},
@@ -89,6 +96,7 @@ public class TaskProjectImportTransformerTest extends DBeaverUnitTest {
 
         assertEquals(expected, JsonParser.parseString(new String(result, StandardCharsets.UTF_8)));
         assertTrue(new String(result, StandardCharsets.UTF_8).contains("9007199254740993"));
+        assertTrue(new String(result, StandardCharsets.UTF_8).contains("0.12345678901234567890123456789"));
         Mockito.verify(unsupported, Mockito.never()).createHandler();
     }
 
@@ -99,8 +107,45 @@ public class TaskProjectImportTransformerTest extends DBeaverUnitTest {
         assertSame(contents, transformer.transform(progress, contents, PROJECT_NAMES));
         assertSame(contents, transformer.transform(progress, contents, Map.of("Source", "Source")));
         assertSame(contents, transformer.transform(progress, contents, Map.of()));
-        byte[] empty = new byte[0];
-        assertSame(empty, transformer.transform(progress, empty, PROJECT_NAMES));
+    }
+
+    @Test
+    void acceptsEmptyConfigurationsSupportedByTaskLoading() throws DBException {
+        // Gson's map adapter also accepts an empty array of key/value entries.
+        for (String json : List.of("", "null", "{}", "[]")) {
+            assertTrue(JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json)).isEmpty());
+            byte[] contents = json.getBytes(StandardCharsets.UTF_8);
+            assertSame(contents, transformer.transform(progress, contents, PROJECT_NAMES));
+        }
+    }
+
+    @Test
+    void transformsStateWrittenAndReadUsingTaskSettingsSerialization() throws Exception {
+        Map<String, Object> state = Map.of(
+            "dataSources", List.of(
+                Map.of("project", "Source", "dataSource", "connection1"),
+                Map.of("project", "External", "dataSource", "connection2")),
+            "scriptFiles", List.of("Source/Scripts/test.sql"),
+            "ignoreErrors", false,
+            "emptyString", ""
+        );
+        StringWriter buffer = new StringWriter();
+        try (JsonWriter writer = JSONUtils.GSON.newJsonWriter(buffer)) {
+            writer.beginObject();
+            writer.name("script").beginObject();
+            writer.name(TaskConstants.TAG_TASK).value("scriptExecute");
+            JSONUtils.serializeProperties(writer, TaskConstants.TAG_STATE, state, true);
+            writer.endObject();
+            writer.endObject();
+        }
+        Map<String, Object> expected = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(buffer.toString()));
+        Map<String, Object> expectedState = JSONUtils.getObject(JSONUtils.getObject(expected, "script"), TaskConstants.TAG_STATE);
+        JSONUtils.getObjectList(expectedState, "dataSources").getFirst().put("project", "Target");
+
+        byte[] result = transformer.transform(progress, buffer.toString().getBytes(StandardCharsets.UTF_8), PROJECT_NAMES);
+
+        Map<String, Object> imported = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(new String(result, StandardCharsets.UTF_8)));
+        assertEquals(expected, imported);
     }
 
     @Test
@@ -115,7 +160,8 @@ public class TaskProjectImportTransformerTest extends DBeaverUnitTest {
     @Test
     void reportsMalformedConfigurationAndHandlerFailures() throws DBException {
         assertThrows(DBException.class, () -> transformer.transform(progress, "{".getBytes(StandardCharsets.UTF_8), PROJECT_NAMES));
-        assertThrows(DBException.class, () -> transformer.transform(progress, "[]".getBytes(StandardCharsets.UTF_8), PROJECT_NAMES));
+        assertThrows(DBException.class, () -> transformer.transform(progress, "[1]".getBytes(StandardCharsets.UTF_8), PROJECT_NAMES));
+        assertThrows(DBException.class, () -> transformer.transform(progress, "42".getBytes(StandardCharsets.UTF_8), PROJECT_NAMES));
         Mockito.when(scriptType.createHandler()).thenThrow(new DBException("Cannot create handler"));
         byte[] contents = "{\"task\":{\"task\":\"scriptExecute\",\"state\":{\"project\":\"Source\"}}}"
             .getBytes(StandardCharsets.UTF_8);

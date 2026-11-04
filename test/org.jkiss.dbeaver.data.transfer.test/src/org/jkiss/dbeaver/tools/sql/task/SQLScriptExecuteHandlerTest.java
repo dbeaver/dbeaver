@@ -16,10 +16,9 @@
  */
 package org.jkiss.dbeaver.tools.sql.task;
 
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.task.DBTTaskImportTransformer;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
@@ -27,6 +26,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import java.io.StringReader;
 import java.util.Map;
 
 public class SQLScriptExecuteHandlerTest extends DBeaverUnitTest {
@@ -34,12 +34,13 @@ public class SQLScriptExecuteHandlerTest extends DBeaverUnitTest {
 
     @Test
     void remapsLegacyProject() throws DBException {
-        JsonObject state = JsonParser.parseString("""
+        String json = """
             {"project": "Source", "dataSourceContainer": "connection",
              "scriptFiles": ["Source/Scripts/query.sql"], "options": {"project": "Source"}}
-            """).getAsJsonObject();
-        JsonObject expected = state.deepCopy();
-        expected.addProperty("project", "Target");
+            """;
+        Map<String, Object> state = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
+        Map<String, Object> expected = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
+        expected.put("project", "Target");
 
         Assertions.assertTrue(handler.transformTaskState(state, Map.of("Source", "Target")));
         Assertions.assertEquals(expected, state);
@@ -47,7 +48,7 @@ public class SQLScriptExecuteHandlerTest extends DBeaverUnitTest {
 
     @Test
     void remapsAllDataSourcesEvenWhenLegacyProjectChanges() throws DBException {
-        JsonObject state = JsonParser.parseString("""
+        String json = """
             {
               "project": "Source",
               "dataSources": [
@@ -59,11 +60,12 @@ public class SQLScriptExecuteHandlerTest extends DBeaverUnitTest {
               "scriptFiles": ["Source/Scripts/query.sql", "resource:/Source/query.sql"],
               "query": "select 'Source' as project", "options": {"project": "Source"}
             }
-            """).getAsJsonObject();
-        JsonObject expected = state.deepCopy();
-        expected.addProperty("project", "Target");
-        expected.getAsJsonArray("dataSources").get(0).getAsJsonObject().addProperty("project", "Target");
-        expected.getAsJsonArray("dataSources").get(1).getAsJsonObject().addProperty("project", "OtherTarget");
+            """;
+        Map<String, Object> state = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
+        Map<String, Object> expected = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
+        expected.put("project", "Target");
+        JSONUtils.getObjectList(expected, "dataSources").get(0).put("project", "Target");
+        JSONUtils.getObjectList(expected, "dataSources").get(1).put("project", "OtherTarget");
         Map<String, String> projectNames = Map.of(
             "Source", "Target", "OtherImported", "OtherTarget", "Same", "Same", "42", "Target");
 
@@ -81,8 +83,8 @@ public class SQLScriptExecuteHandlerTest extends DBeaverUnitTest {
         "{\"project\": \"Same\", \"dataSources\": [{\"project\": \"External\"}, {\"project\": \"source\"}]}"
     })
     void preservesUnmappedNamesAndUnexpectedShapes(@NotNull String json) throws DBException {
-        JsonObject state = JsonParser.parseString(json).getAsJsonObject();
-        JsonObject expected = state.deepCopy();
+        Map<String, Object> state = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
+        Map<String, Object> expected = JSONUtils.parseMap(JSONUtils.GSON, new StringReader(json));
 
         Assertions.assertFalse(handler.transformTaskState(state, Map.of()));
         Assertions.assertFalse(handler.transformTaskState(state, Map.of("Source", "Target", "Same", "Same", "42", "Target")));

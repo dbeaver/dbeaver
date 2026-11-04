@@ -20,6 +20,7 @@ import com.google.gson.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProjectImportTransformer;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTaskHandler;
 import org.jkiss.dbeaver.model.task.DBTTaskImportTransformer;
@@ -27,12 +28,15 @@ import org.jkiss.dbeaver.model.task.DBTTaskRegistry;
 import org.jkiss.dbeaver.model.task.DBTTaskType;
 import org.jkiss.dbeaver.runtime.DBInterruptedException;
 
+import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 public class TaskProjectImportTransformer implements DBPProjectImportTransformer {
     private static final Gson GSON = new GsonBuilder()
         .setStrictness(Strictness.LENIENT)
+        // Import must not round unrelated numeric settings while remapping project references.
+        .setObjectToNumberStrategy(ToNumberPolicy.LAZILY_PARSED_NUMBER)
         .serializeNulls()
         .setPrettyPrinting()
         .create();
@@ -57,39 +61,37 @@ public class TaskProjectImportTransformer implements DBPProjectImportTransformer
         if (projectNames.entrySet().stream().allMatch(entry -> entry.getKey().equals(entry.getValue()))) {
             return contents;
         }
-        JsonObject configuration;
+        Map<String, Object> configuration;
         try {
-            configuration = GSON.fromJson(new String(contents, StandardCharsets.UTF_8), JsonObject.class);
+            configuration = JSONUtils.parseMap(GSON, new StringReader(new String(contents, StandardCharsets.UTF_8)));
         } catch (JsonParseException e) {
             throw new DBException("Cannot transform imported task configuration", e);
         }
-        if (configuration == null) {
-            return contents;
-        }
         boolean changed = false;
-        // Transform the JSON tree rather than loading tasks: unavailable task types and unknown fields must survive.
-        for (Map.Entry<String, JsonElement> entry : configuration.entrySet()) {
+        // Use the task settings representation without instantiating tasks, so unknown task types survive import.
+        for (Map.Entry<String, Object> entry : configuration.entrySet()) {
             if (monitor.isCanceled()) {
                 throw new DBInterruptedException("Project import canceled");
             }
-            if (entry.getKey().startsWith(TaskConstants.TASKS_FOLDERS_TAG) || !entry.getValue().isJsonObject()) {
+            if (entry.getKey().startsWith(TaskConstants.TASKS_FOLDERS_TAG) || !(entry.getValue() instanceof Map<?, ?>)) {
                 continue;
             }
-            JsonObject task = entry.getValue().getAsJsonObject();
-            JsonElement typeId = task.get(TaskConstants.TAG_TASK);
-            JsonElement state = task.get(TaskConstants.TAG_STATE);
-            if (typeId == null || !typeId.isJsonPrimitive() || !typeId.getAsJsonPrimitive().isString()
-                || state == null || !state.isJsonObject()
+            Map<String, Object> task = JSONUtils.getObject(configuration, entry.getKey());
+            if (!(task.get(TaskConstants.TAG_TASK) instanceof String typeId)
+                || !(task.get(TaskConstants.TAG_STATE) instanceof Map<?, ?>)
             ) {
                 continue;
             }
-            DBTTaskType type = taskRegistry.getTaskType(typeId.getAsString());
+            Map<String, Object> state = JSONUtils.getObject(task, TaskConstants.TAG_STATE);
+            DBTTaskType type = taskRegistry.getTaskType(typeId);
             Class<? extends DBTTaskHandler> handlerClass = type == null ? null : type.getHandlerClass();
             if (handlerClass != null && DBTTaskImportTransformer.class.isAssignableFrom(handlerClass)) {
                 DBTTaskImportTransformer transformer = (DBTTaskImportTransformer) type.createHandler();
-                changed |= transformer.transformTaskState(state.getAsJsonObject(), projectNames);
+                changed |= transformer.transformTaskState(state, projectNames);
             }
         }
+        // As in LocalTaskController, serialize the parsed map directly. Unlike saving live task settings,
+        // importing must also preserve unknown properties, nulls, and empty collections.
         return changed ? GSON.toJson(configuration).getBytes(StandardCharsets.UTF_8) : contents;
     }
 }
