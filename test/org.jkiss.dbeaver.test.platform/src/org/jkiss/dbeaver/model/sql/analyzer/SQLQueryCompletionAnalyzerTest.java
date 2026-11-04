@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.analyzer;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.sql.analyzer.builder.TableAttributeContainerBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestResult;
 import org.jkiss.junit.DBeaverUnitTest;
@@ -26,6 +27,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Set;
 
 import static org.jkiss.dbeaver.model.sql.analyzer.builder.Builder.Consumer.empty;
@@ -773,6 +775,58 @@ public class SQLQueryCompletionAnalyzerTest extends DBeaverUnitTest {
         Set<String> proposals = request.requestNewStrings("select * FROM Artist art join Album al ON |");
         assertContains(proposals, "art.ArtistId", "art.Name", "al.AlbumId", "al.Title", "al.ArtistId");
         assertNotContains(proposals, "Artist a", "Album a");
+    }
+
+    @Test
+    public void testJoinConditionBeforeFollowingClause() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> {
+            TableAttributeContainerBuilder artist = s.tableBuilder("Artist", t -> {
+                t.attribute("ArtistId");
+                t.attribute("Name");
+            });
+            s.tableBuilder("Album", t -> {
+                t.attribute("AlbumId");
+                t.attribute("ArtistId");
+            }).foreignKey("ArtistId", artist, "ArtistId");
+        }).prepare();
+
+        Set<String> tail = request.requestNewStrings("select * from Artist art join Album al on |");
+        assertContains(tail, "art.ArtistId = al.ArtistId");
+
+        for (String clause : List.of("where art.ArtistId = 5", "group by art.ArtistId")) {
+            Set<String> proposals = request.requestNewStrings(
+                "select *\nfrom Artist art\njoin Album al on | \n" + clause + "\n;"
+            );
+            assertContains(proposals, "art.ArtistId = al.ArtistId", "art.ArtistId", "art.Name", "al.AlbumId", "al.ArtistId");
+            assertNotContains(proposals, "Artist a", "Album a");
+        }
+
+        assertContains(request.requestNewStrings("select * from Artist art join |"), "Album a", "Artist a");
+    }
+
+    @Test
+    public void testJoinConditionBeforeAnotherJoin() throws DBException {
+        RequestResult request = RequestBuilder.tables(s -> {
+            TableAttributeContainerBuilder artist = s.tableBuilder("Artist", t -> t.attribute("ArtistId"));
+            TableAttributeContainerBuilder album = s.tableBuilder("Album", t -> {
+                t.attribute("AlbumId");
+                t.attribute("ArtistId");
+            }).foreignKey("ArtistId", artist, "ArtistId");
+            s.tableBuilder("Track", t -> t.attribute("AlbumId"))
+                .foreignKey("AlbumId", album, "AlbumId");
+        }).prepare();
+
+        Set<String> first = request.requestNewStrings(
+            "select * from Artist art join Album al on | \njoin Track tr on tr.AlbumId = al.AlbumId\nwhere art.ArtistId = 5;"
+        );
+        assertContains(first, "art.ArtistId = al.ArtistId");
+        assertNotContains(first, "al.AlbumId = tr.AlbumId", "tr.AlbumId");
+
+        Set<String> second = request.requestNewStrings(
+            "select * from Artist art join Album al on art.ArtistId = al.ArtistId\njoin Track tr on | \nwhere art.ArtistId = 5;"
+        );
+        assertContains(second, "al.AlbumId = tr.AlbumId", "tr.AlbumId");
+        assertNotContains(second, "art.ArtistId = al.ArtistId");
     }
 
     @Test

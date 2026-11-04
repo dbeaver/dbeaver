@@ -31,12 +31,34 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.util.*;
 
 /**
  * Version descriptor
  */
 public class VersionDescriptor {
+
+    public enum PatchSeverity {
+        NONE, MEDIUM, HIGH, CRITICAL;
+
+        @NotNull
+        private static PatchSeverity parse(@NotNull String text) {
+            return switch (text.trim().toLowerCase(Locale.ROOT)) {
+                case "medium" -> MEDIUM;
+                case "high" -> HIGH;
+                case "critical" -> CRITICAL;
+                default -> NONE;
+            };
+        }
+    }
+
+    public record VersionPatch(
+        int number,
+        @NotNull String date,
+        @NotNull PatchSeverity severity,
+        @NotNull String releaseNotes
+    ) {
+    }
 
     private String programName;
     private Version programVersion;
@@ -44,41 +66,111 @@ public class VersionDescriptor {
     private String baseURL;
     private String downloadURL;
     private String releaseNotes;
+    private List<VersionPatch> patches = List.of();
 
-    public VersionDescriptor(DBPPlatform platform, String fileAddr)
-        throws IOException {
+    public VersionDescriptor(@NotNull DBPPlatform platform, @NotNull String fileAddr) throws IOException {
         try (InputStream inputStream = WebUtils.openConnection(fileAddr, platform.getWorkspace().getWorkspaceId()).getInputStream()) {
             parseVersionInfo(inputStream);
-        } catch (XMLException e) {
-            throw new IOException("XML parse error", e);
         }
     }
 
+    public VersionDescriptor(@NotNull InputStream inputStream) throws IOException {
+        parseVersionInfo(inputStream);
+    }
+
+    @Nullable
     public String getProgramName() {
         return programName;
     }
 
+    @NotNull
     public Version getProgramVersion() {
         return programVersion;
     }
 
-    public void setProgramVersion(Version programVersion) {
+    public void setProgramVersion(@NotNull Version programVersion) {
         this.programVersion = programVersion;
     }
 
+    @NotNull
     public String getPlainVersion() {
         return programVersion.getMajor() + "." + programVersion.getMinor() + "." + programVersion.getMicro();
     }
 
+    public int getPatchNumber() {
+        return patches.isEmpty() ? 0 : patches.getLast().number();
+    }
+
+    @NotNull
+    public String getUpdateVersion() {
+        int patchNumber = getPatchNumber();
+        return getPlainVersion() + (patchNumber > 0 ? "." + patchNumber : "");
+    }
+
+    public boolean isPatchUpdate(@NotNull Version installedVersion, int installedPatch) {
+        return hasSameBaseVersion(installedVersion) && getPatchNumber() > installedPatch;
+    }
+
+    public boolean isNewerThan(@NotNull Version installedVersion, int installedPatch) {
+        int patchNumber = getPatchNumber();
+        // Build qualifiers are not patch numbers. Preserve OSGi ordering for ordinary releases.
+        if (hasSameBaseVersion(installedVersion) && (patchNumber > 0 || installedPatch > 0)) {
+            return patchNumber > installedPatch;
+        }
+        return programVersion.compareTo(installedVersion) > 0;
+    }
+
+    @NotNull
+    public List<VersionPatch> getApplicablePatches(@NotNull Version installedVersion, int installedPatch) {
+        if (hasSameBaseVersion(installedVersion)) {
+            return patches.stream().filter(patch -> patch.number() > installedPatch).toList();
+        }
+        return programVersion.compareTo(installedVersion) > 0 ? patches : List.of();
+    }
+
+    @NotNull
+    public PatchSeverity getMaxSeverity(@NotNull Version installedVersion, int installedPatch) {
+        return getApplicablePatches(installedVersion, installedPatch).stream()
+            .map(VersionPatch::severity)
+            .max(PatchSeverity::compareTo)
+            .orElse(PatchSeverity.NONE);
+    }
+
+    private boolean hasSameBaseVersion(@NotNull Version version) {
+        return programVersion.getMajor() == version.getMajor()
+            && programVersion.getMinor() == version.getMinor()
+            && programVersion.getMicro() == version.getMicro();
+    }
+
+    @Nullable
     public String getUpdateTime() {
         return updateTime;
     }
 
-    public void setUpdateTime(String updateTime) {
+    public void setUpdateTime(@Nullable String updateTime) {
         this.updateTime = updateTime;
     }
 
+    /**
+     * The target patch date, falling back to the base release date when no patch date is available.
+     * The base date remains separate because it is also used for license eligibility checks.
+     */
+    @Nullable
+    public String getPatchUpdateTime() {
+        if (!patches.isEmpty()) {
+            String patchDate = patches.getLast().date();
+            if (!patchDate.isBlank()) {
+                return patchDate;
+            }
+        }
+        return updateTime;
+    }
+
+    @NotNull
     public Date getVersionReleaseTimestamp() {
+        if (updateTime == null) {
+            return new Date();
+        }
         try {
             return new SimpleDateFormat("dd.MM.yyyy").parse(updateTime);
         } catch (ParseException e) {
@@ -86,62 +178,97 @@ public class VersionDescriptor {
         }
     }
 
+    @Nullable
     public String getBaseURL() {
         return baseURL;
     }
 
+    @Nullable
     public String getDownloadURL() {
         return downloadURL;
     }
 
+    @Nullable
     public String getReleaseNotes() {
         return releaseNotes;
     }
 
-    private void parseVersionInfo(InputStream inputStream) throws IOException, XMLException {
+    private void parseVersionInfo(@NotNull InputStream inputStream) throws IOException {
         SAXReader parser = new SAXReader(inputStream);
-        SAXListener dsp = new SAXListener() {
-            private String lastTag;
-            private StringBuilder textBuffer = new StringBuilder();
+        Map<Integer, VersionPatch> parsedPatches = new TreeMap<>();
+        SAXListener listener = new SAXListener() {
+            private final StringBuilder textBuffer = new StringBuilder();
+            private int depth;
+            private boolean inPatches;
+            private Map<String, String> patch;
 
             @Override
-            public void saxStartElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName, @NotNull Attributes attributes) throws XMLException {
-                lastTag = localName;
+            public void saxStartElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName, @NotNull Attributes attributes) {
+                depth++;
                 textBuffer.setLength(0);
+                if (depth == 2 && "patches".equals(localName)) {
+                    inPatches = true;
+                } else if (depth == 3 && inPatches && "patch".equals(localName)) {
+                    patch = new HashMap<>();
+                }
             }
 
             @Override
-            public void saxText(@NotNull SAXReader reader, @NotNull String data) throws XMLException {
+            public void saxText(@NotNull SAXReader reader, @NotNull String data) {
                 textBuffer.append(data);
             }
 
             @Override
             public void saxEndElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName) throws XMLException {
-                final String text = textBuffer.toString();
-                switch (lastTag) {
-                    case "name":
-                        programName = text;
-                        break;
-                    case "number":
-                        programVersion = Version.parseVersion(text);
-                        break;
-                    case "date":
-                        updateTime = text;
-                        break;
-                    case "base-url":
-                        baseURL = text;
-                        break;
-                    case "download-url":
-                        downloadURL = text;
-                        break;
-                    case "release-notes":
-                        releaseNotes = text;
-                        break;
+                String text = textBuffer.toString();
+                if (patch != null && depth == 4) {
+                    if (patch.put(localName, text) != null && "number".equals(localName)) {
+                        throw new XMLException("Duplicate patch number field");
+                    }
+                } else if (patch != null && depth == 3) {
+                    VersionPatch descriptor = parsePatch(patch);
+                    if (parsedPatches.putIfAbsent(descriptor.number(), descriptor) != null) {
+                        throw new XMLException("Duplicate patch number: " + descriptor.number());
+                    }
+                    patch = null;
+                } else if (depth == 2) {
+                    switch (localName) {
+                        case "name" -> programName = text;
+                        case "number" -> programVersion = new Version(text.trim());
+                        case "date" -> updateTime = text;
+                        case "base-url" -> baseURL = text;
+                        case "download-url" -> downloadURL = text;
+                        case "release-notes" -> releaseNotes = text;
+                        case "patches" -> inPatches = false;
+                    }
                 }
+                depth--;
                 textBuffer.setLength(0);
             }
         };
-        parser.parse(dsp);
+        try {
+            parser.parse(listener);
+            if (programVersion == null) {
+                throw new XMLException("Missing version number");
+            }
+            patches = List.copyOf(parsedPatches.values());
+        } catch (XMLException | IllegalArgumentException e) {
+            throw new IOException("XML parse error", e);
+        }
     }
 
+    @NotNull
+    private static VersionPatch parsePatch(@NotNull Map<String, String> fields) throws XMLException {
+        String value = fields.getOrDefault("number", "").trim();
+        int number = Integer.parseInt(value);
+        if (number <= 0 || !value.matches("[0-9]+")) {
+            throw new XMLException("Invalid patch number: " + value);
+        }
+        return new VersionPatch(
+            number,
+            fields.getOrDefault("date", ""),
+            PatchSeverity.parse(fields.getOrDefault("severity", "")),
+            fields.getOrDefault("release-notes", "")
+        );
+    }
 }

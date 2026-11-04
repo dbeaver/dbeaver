@@ -129,6 +129,18 @@ public abstract class SQLQueryNodeModel {
     protected abstract <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, T arg);
 
     protected SQLQueryNodeModel findChildNodeContaining(int position) { // TODO check it
+        return this.findChildNodeContaining(position, false);
+    }
+
+    /**
+     * Unlike ordinary node lookup, lexical lookup also follows a child's scope in the gap
+     * between its parsed interval and the next child (e.g. after an empty JOIN ON condition).
+     */
+    protected SQLQueryNodeModel findChildNodeForLexicalContext(int position) {
+        return this.findChildNodeContaining(position, true);
+    }
+
+    private SQLQueryNodeModel findChildNodeContaining(int position, boolean includeTrailingScope) {
         if (this.subnodes != null) {
             if (this.subnodes.size() == 1) {
                 // ...[node:...]...
@@ -177,13 +189,16 @@ public abstract class SQLQueryNodeModel {
                         // So taking existing at indexToInsertAt-1.
                         // ...[...]...[node:...]...[]...[...]...
                         //                   └── position belongs to the actually covered region
-                        // Ignoring tail scopes because we are in the middle of the known text fragment,
-                        // which should be correctly described by the known node intervals.
+                        // Ordinary lookup ignores tail scopes inside a known text fragment;
+                        // lexical lookup can follow a scope extending into the gap instead.
                         for (int i = ~index - 1; i >= 0; i--) {
                             SQLQueryNodeModel node = this.subnodes.get(i);
                             if (node.region.a <= position && node.region.b >= position - 1) { // if it actually contains position, then ok
                                 return node;
-                            } else if (node.region.b < position) { // if not, then its region is actually ends earlier than the position
+                            } else if (node.region.b < position) { // if not, then its region actually ends earlier than the position
+                                if (includeTrailingScope && node.findLexicalScope(position) != null) {
+                                    return node;
+                                }
                                 break;
                             }
                             // otherwise try previous, because the current one may be of zero-length
