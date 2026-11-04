@@ -69,6 +69,22 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMP
     public STMTreeRuleNode parseSqlQueryTree(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
         try {
             TParser parser = prepareParser(source, errorListener);
+            parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
+            STMTreeRuleNode result = parseSqlQueryImpl(parser);
+            if (parser.getNumberOfSyntaxErrors() == 0) {
+                result.fixup(parser);
+                return result;
+            }
+            log.debug("SLL parsing produced syntax errors, falling back to LL");
+        } catch (RecognitionException e) {
+            log.debug("SLL parsing failed, falling back to LL", e);
+        }
+
+        try {
+            // The source stream may be reused by readers, so rewind it before the fallback parse.
+            source.getStream().seek(0);
+            TParser parser = prepareParser(source, errorListener);
+            parser.getInterpreter().setPredictionMode(PredictionMode.LL);
             STMTreeRuleNode result = parseSqlQueryImpl(parser);
             result.fixup(parser);
             return result;
