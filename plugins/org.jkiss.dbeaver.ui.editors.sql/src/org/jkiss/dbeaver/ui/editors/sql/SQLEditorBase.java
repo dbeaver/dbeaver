@@ -502,6 +502,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
                 }
             });
         }
+
+        updateVerticalRulerColors();
     }
 
     protected void loadActivePreferenceSettings() {
@@ -567,7 +569,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         return UIUtils.getSharedTextColors();
     }
 
-    protected void updateVerticalRulerColors() {
+    private void updateVerticalRulerColors() {
         if (!UIStyles.isDarkTheme()) {
             return;
         }
