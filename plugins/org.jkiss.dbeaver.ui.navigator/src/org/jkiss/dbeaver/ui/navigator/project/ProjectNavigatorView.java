@@ -22,6 +22,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
@@ -79,7 +81,7 @@ public class ProjectNavigatorView extends DecoratedProjectView
 
         getNavigatorViewer().addFilter(new ViewerFilter() {
             @Override
-            public boolean select(Viewer viewer, Object parentElement, Object element) {
+            public boolean select(@NotNull Viewer viewer, @Nullable Object parentElement, @NotNull Object element) {
                 return !(element instanceof DBNProject project) || ProjectVisibility.isVisible(project);
             }
         });

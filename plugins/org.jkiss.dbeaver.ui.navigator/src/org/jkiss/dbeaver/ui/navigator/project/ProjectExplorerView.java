@@ -26,6 +26,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
@@ -85,7 +86,7 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
         TreeViewer viewer = getNavigatorViewer();
         viewer.addFilter(new ViewerFilter() {
             @Override
-            public boolean select(Viewer viewer, Object parentElement, Object element) {
+            public boolean select(@NotNull Viewer viewer, @Nullable Object parentElement, @NotNull Object element) {
                 return !(element instanceof DBNProject project) || ProjectVisibility.isVisible(project);
             }
         });
