@@ -30,6 +30,8 @@ public record QMAIMessageMeta(
     int totalInputTokens,
     int cachedTokens,
     int totalOutputTokens,
-    int reasoningTokens
+    int reasoningTokens,
+    boolean usageUnavailable,
+    boolean usageIncomplete
 ) {
 }

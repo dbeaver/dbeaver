@@ -20,6 +20,10 @@ public record AIUsage(
     int totalInputTokens,
     int cachedTokens,
     int totalOutputTokens,
-    int reasoningTokens
+    int reasoningTokens,
+    boolean incomplete
 ) {
+    public AIUsage(int totalInputTokens, int cachedTokens, int totalOutputTokens, int reasoningTokens) {
+        this(totalInputTokens, cachedTokens, totalOutputTokens, reasoningTokens, false);
+    }
 }

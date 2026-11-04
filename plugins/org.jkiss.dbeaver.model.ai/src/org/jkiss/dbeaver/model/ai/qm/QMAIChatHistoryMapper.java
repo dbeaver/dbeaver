@@ -345,23 +345,25 @@ public class QMAIChatHistoryMapper {
             return null;
         }
         return meta.stream()
-            .filter(it -> it.usage() != null)
             .map(QMAIChatHistoryMapper::toQMAIMessageMeta)
             .toList();
     }
 
     @NotNull
     public static QMAIMessageMeta toQMAIMessageMeta(@NotNull AIMessageMeta meta) {
+        AIUsage usage = meta.usage();
         return new QMAIMessageMeta(
             meta.type(),
             meta.engineId(),
             meta.modelId(),
             meta.systemPromptLength(),
             meta.timeSpent(),
-            meta.usage().totalInputTokens(),
-            meta.usage().cachedTokens(),
-            meta.usage().totalOutputTokens(),
-            meta.usage().reasoningTokens()
+            usage == null ? 0 : usage.totalInputTokens(),
+            usage == null ? 0 : usage.cachedTokens(),
+            usage == null ? 0 : usage.totalOutputTokens(),
+            usage == null ? 0 : usage.reasoningTokens(),
+            usage == null,
+            usage != null && usage.incomplete()
         );
     }
 
@@ -382,11 +384,12 @@ public class QMAIChatHistoryMapper {
             meta.type(),
             meta.engineId(),
             meta.modelId(),
-            new AIUsage(
+            meta.usageUnavailable() ? null : new AIUsage(
                 meta.totalInputTokens(),
                 meta.cachedTokens(),
                 meta.totalOutputTokens(),
-                meta.reasoningTokens()
+                meta.reasoningTokens(),
+                meta.usageIncomplete()
             ),
             meta.timeSpent(),
             meta.systemPromptLength()

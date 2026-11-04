@@ -257,14 +257,17 @@ final class WebViewMessageRenderer {
         return Map.of(
             "time", AIChatUtils.formatMessageTime(message.message()),
             "duration", DurationFormatter.format(extendedUsage.totalTime(), DurationFormat.SHORT),
-            "usage", formatUsage(AIExtendedUsage.from(meta))
+            "usage", formatUsage(extendedUsage)
         );
     }
 
     @NotNull
     static String formatUsage(@NotNull AIExtendedUsage usage) {
+        if (!usage.hasUsage()) {
+            return AIChatMessagesUI.ai_chat_message_meta_tokens_unavailable;
+        }
         return NLS.bind(
-            AIChatMessagesUI.ai_chat_message_meta_tokens,
+            usage.incomplete() ? AIChatMessagesUI.ai_chat_message_meta_tokens_partial : AIChatMessagesUI.ai_chat_message_meta_tokens,
             usage.totalInputTokens(),
             usage.totalOutputTokens()
         );

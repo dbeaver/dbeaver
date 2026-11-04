@@ -25,13 +25,17 @@ import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.AIFunctionResult;
 import org.jkiss.dbeaver.model.ai.AIFunctionType;
 import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.AIMessageMeta;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.AIMetaTypes;
+import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.ResourceLock;
 import org.mockito.Mockito;
 
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -64,6 +68,33 @@ public class QMAIChatHistoryMapperTest {
         } finally {
             TimeZone.setDefault(original);
         }
+    }
+
+    @Test
+    public void preservesUnavailableAndPartialUsageInHistory() {
+        for (AIUsage usage : new AIUsage[] {null, new AIUsage(0, 0, 0, 0), new AIUsage(10, 2, 1, 0, true)}) {
+            List<AIMessageMeta> original = List.of(
+                new AIMessageMeta(AIMetaTypes.PROMPT, "test", "model", usage, Duration.ofSeconds(2), 10)
+            );
+            List<QMAIMessageMeta> stored = QMAIChatHistoryMapper.toQMAIMessageMeta(original);
+            Assertions.assertEquals(1, stored.size());
+            String json = JSONUtils.GSON.toJson(stored.getFirst());
+            QMAIMessageMeta restored = JSONUtils.GSON.fromJson(json, QMAIMessageMeta.class);
+            Assertions.assertEquals(original, QMAIChatHistoryMapper.toAIMessageMeta(List.of(restored)));
+        }
+    }
+
+    @Test
+    public void restoresLegacyUsageAsComplete() {
+        QMAIMessageMeta stored = JSONUtils.GSON.fromJson(
+            "{\"totalInputTokens\":10,\"totalOutputTokens\":5}", QMAIMessageMeta.class
+        );
+        AIUsage usage = QMAIChatHistoryMapper.toAIMessageMeta(stored).usage();
+
+        Assertions.assertNotNull(usage);
+        Assertions.assertFalse(usage.incomplete());
+        Assertions.assertEquals(10, usage.totalInputTokens());
+        Assertions.assertEquals(5, usage.totalOutputTokens());
     }
 
     @Test
