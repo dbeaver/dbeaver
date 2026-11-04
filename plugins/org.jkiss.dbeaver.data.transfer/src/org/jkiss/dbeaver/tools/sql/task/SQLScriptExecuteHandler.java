@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.model.task.*;
+import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
 import org.jkiss.dbeaver.tools.sql.SQLScriptExecuteSettings;
 import org.jkiss.dbeaver.tools.transfer.DTUtils;
 import org.jkiss.utils.IOUtils;
@@ -73,6 +74,9 @@ public class SQLScriptExecuteHandler implements DBTTaskHandler {
         @NotNull PrintStream logStream,
         @NotNull DBTTaskExecutionListener listener) throws DBException
     {
+        if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_SQL_EXECUTION)) {
+            throw new DBException("Error: SQL script execution is restricted by policy"); //$NON-NLS-1$
+        }
         SQLScriptExecuteSettings settings = new SQLScriptExecuteSettings();
         settings.loadConfiguration(task);
         executeWithSettings(runnableContext, task, locale, log, logStream, listener, settings);
