@@ -29,8 +29,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.custom.StackLayout;
 import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
@@ -38,7 +36,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.ToolBar;
 import org.eclipse.ui.forms.events.IExpansionListener;
@@ -533,20 +530,7 @@ public class PostgreCreateSubscriptionPage extends BaseObjectEditPage {
             if (content == null) {
                 return;
             }
-            // measure only the active step, including expanded sections
-            GridData data = (GridData) pages.getLayoutData();
-            int width = scroller.getClientArea().width;
-            int preferredHeight = content.computeSize(width > 0 ? width : data.widthHint, SWT.DEFAULT, true).y;
-            int minimumHeight = currentStep == Step.REPLICATION ? 0 : UIUtils.getFontHeight(pages) * DEFAULT_PAGE_HEIGHT_IN_LINES;
-            data.heightHint = Math.max(minimumHeight, preferredHeight);
-            Shell shell = getShell();
-            Rectangle current = shell.getBounds();
-            Point preferred = shell.computeSize(current.width, SWT.DEFAULT, true);
-            Rectangle screen = shell.getMonitor().getClientArea();
-            int height = Math.min(screen.height, preferred.y);
-            int y = Math.max(screen.y, Math.min(current.y, screen.y + screen.height - height));
-            shell.setBounds(current.x, y, current.width, height);
-            shell.layout(true, true);
+            pages.layout(true, true);
             UIUtils.refreshScrolledComposite(scroller);
         });
     }

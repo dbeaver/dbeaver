@@ -128,6 +128,43 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void publicationKeepsSelectedTablesUntilMetadataRefresh() throws Exception {
+        PostgrePublication publication = new PostgrePublication(database, "publication");
+        PostgreTable table = Mockito.mock(PostgreTable.class);
+        publication.setCreationTables(List.of(table));
+        publication.setPersisted(true);
+        Assertions.assertEquals(List.of(table), publication.getTables(monitor));
+    }
+
+    @Test
+    public void publicationLoadsAllTablesFromCatalogAfterSave() throws Exception {
+        PostgreDatabase owner = Mockito.mock(PostgreDatabase.class);
+        Mockito.when(owner.getDataSource()).thenReturn(dataSource);
+        Mockito.when(owner.isInstanceConnected()).thenReturn(true);
+        PostgreExecutionContext context = Mockito.mock(PostgreExecutionContext.class);
+        Mockito.when(owner.getDefaultContext(ArgumentMatchers.any(DBRProgressMonitor.class),
+            ArgumentMatchers.eq(true))).thenReturn(context);
+        JDBCSession session = Mockito.mock(JDBCSession.class);
+        Mockito.when(context.openSession(ArgumentMatchers.eq(monitor), ArgumentMatchers.eq(DBCExecutionPurpose.META),
+            ArgumentMatchers.anyString())).thenReturn(session);
+        JDBCPreparedStatement statement = Mockito.mock(JDBCPreparedStatement.class);
+        Mockito.when(session.prepareStatement(ArgumentMatchers.anyString())).thenReturn(statement);
+        JDBCResultSet result = Mockito.mock(JDBCResultSet.class);
+        Mockito.when(statement.executeQuery()).thenReturn(result);
+        Mockito.when(result.next()).thenReturn(true, false);
+        Mockito.when(result.getLong("relnamespace")).thenReturn(1L);
+        Mockito.when(result.getLong("oid")).thenReturn(2L);
+        PostgreTable table = Mockito.mock(PostgreTable.class);
+        Mockito.when(owner.findTable(monitor, 1L, 2L)).thenReturn(table);
+        PostgrePublication publication = new PostgrePublication(owner, "publication");
+        publication.setAllTables(true);
+        Assertions.assertTrue(publication.getTables(monitor).isEmpty());
+        publication.setPersisted(true);
+        Assertions.assertEquals(List.of(table), publication.getTables(monitor));
+        Mockito.verify(statement).setString(1, "publication");
+    }
+
+    @Test
     public void publicationLoadsMetadataFlags() throws Exception {
         ResultSet result = Mockito.mock(ResultSet.class);
         Mockito.when(result.getString("pubname")).thenReturn("publication");

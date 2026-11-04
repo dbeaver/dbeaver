@@ -259,9 +259,20 @@ public class PostgrePublication extends PostgreReplicationObject {
         }
     }
 
+    @Override
+    public void setPersisted(boolean persisted) {
+        if (persisted && !isPersisted() && allTables) {
+            tables = null;
+        }
+        super.setPersisted(persisted);
+    }
+
     @Nullable
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (isPersisted()) {
+            tables = null;
+        }
         return getDatabase().getPublicationCache().refreshObject(monitor, getDatabase(), this);
     }
 

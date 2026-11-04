@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.ArrayContentProvider;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -45,7 +46,9 @@ import org.jkiss.dbeaver.runtime.properties.ObjectAttributeDescriptor;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.List;
@@ -60,10 +63,18 @@ public class PostgrePublicationTablesEditor extends AbstractDatabaseObjectEditor
     private boolean tablesLoaded;
     private AbstractJob loadJob;
     private DBECommandAdapter listener;
+    private ProgressPageControl pageControl;
 
     @Override
     public void createPartControl(@NotNull Composite parent) {
-        Composite content = UIUtils.createComposite(parent, 1);
+        pageControl = new ProgressPageControl(parent, SWT.SHEET) {
+            @Override
+            public void fillCustomActions(@NotNull IContributionManager contributionManager) {
+                DatabaseEditorUtils.contributeStandardEditorActions(getSite(), contributionManager);
+            }
+        };
+        Composite content = UIUtils.createComposite(pageControl, 1);
+        content.setLayoutData(new GridData(GridData.FILL_BOTH));
         message = new Label(content, SWT.WRAP);
         GridData messageData = new GridData(GridData.FILL_HORIZONTAL);
         messageData.widthHint = 0;
@@ -79,7 +90,10 @@ public class PostgrePublicationTablesEditor extends AbstractDatabaseObjectEditor
         clearSelection = UIUtils.createDialogButton(filter, PostgreMessages.dialog_create_publication_clear_selection, null);
         clearSelection.setEnabled(false);
         viewer = CheckboxTableViewer.newCheckList(content, SWT.BORDER | SWT.V_SCROLL);
-        viewer.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
+        GridData tableData = new GridData(GridData.FILL_BOTH);
+        tableData.widthHint = UIUtils.getFontHeight(content) * 40;
+        tableData.heightHint = UIUtils.getFontHeight(content) * 12;
+        viewer.getTable().setLayoutData(tableData);
         viewer.getTable().setEnabled(false);
         viewer.getTable().setToolTipText(PostgreMessages.dialog_create_publication_tables);
         viewer.setContentProvider(ArrayContentProvider.getInstance());
@@ -111,13 +125,21 @@ public class PostgrePublicationTablesEditor extends AbstractDatabaseObjectEditor
                 source.setPropertyValue(null, publication, tables,
                     PostgrePublication.mergeTableSelection(
                         publication.getCreationTables(), (PostgreTable) event.getElement(), event.getChecked()));
+                refreshSelection();
             }
         });
-        clearSelection.addSelectionListener(SelectionListener.widgetSelectedAdapter(event ->
-            source.setPropertyValue(null, publication, tables, List.of())));
+        clearSelection.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
+            source.setPropertyValue(null, publication, tables, List.of());
+            refreshSelection();
+        }));
         listener = new DBECommandAdapter() {
             @Override
             public void onCommandChange(@NotNull DBECommand<?> command) {
+                refreshSelection();
+            }
+
+            @Override
+            public void onCommandDo(@NotNull DBECommand<?> command) {
                 refreshSelection();
             }
 
@@ -128,7 +150,11 @@ public class PostgrePublicationTablesEditor extends AbstractDatabaseObjectEditor
 
             @Override
             public void onSave() {
-                refreshSelection();
+                UIUtils.asyncExec(() -> {
+                    if (!viewer.getTable().isDisposed()) {
+                        loadTables();
+                    }
+                });
             }
 
             @Override
@@ -137,14 +163,30 @@ public class PostgrePublicationTablesEditor extends AbstractDatabaseObjectEditor
             }
         };
         getEditorInput().getCommandContext().addCommandListener(listener);
+        pageControl.createOrSubstituteProgressPanel(getSite());
+        loadTables();
+    }
+
+    @Override
+    public void activatePart() {
+        pageControl.activate(true);
+        pageControl.refreshActions();
+    }
+
+    private void loadTables() {
+        if (loadJob != null) {
+            loadJob.cancel();
+        }
+        PostgrePublication publication = getDatabaseObject();
         loadJob = new AbstractJob(PostgreMessages.dialog_create_publication_tables) {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
-                    List<PostgreTable> available = publication.getAvailableTables(monitor);
+                    List<PostgreTable> available = publication.isPersisted()
+                        ? publication.getTables(monitor) : publication.getAvailableTables(monitor);
                     UIUtils.asyncExec(() -> {
-                        if (!viewer.getTable().isDisposed()) {
+                        if (!viewer.getTable().isDisposed() && loadJob == this) {
                             viewer.setInput(available);
                             tablesLoaded = true;
                             refreshSelection();
@@ -153,7 +195,7 @@ public class PostgrePublicationTablesEditor extends AbstractDatabaseObjectEditor
                     return Status.OK_STATUS;
                 } catch (Exception e) {
                     UIUtils.asyncExec(() -> {
-                        if (!message.isDisposed()) {
+                        if (!message.isDisposed() && loadJob == this) {
                             message.setText(PostgreMessages.dialog_create_publication_error_title);
                             message.getParent().layout(true, true);
                         }
@@ -178,7 +220,7 @@ public class PostgrePublicationTablesEditor extends AbstractDatabaseObjectEditor
                 selectionCount.setText(NLS.bind(PostgreMessages.dialog_create_publication_selected_tables,
                     publication.getCreationTables().size()));
                 if (tablesLoaded) {
-                    String warning = publication.isAllTables() && !publication.getCreationTables().isEmpty()
+                    String warning = !publication.isPersisted() && publication.isAllTables() && !publication.getCreationTables().isEmpty()
                         ? PostgreMessages.dialog_create_publication_error_all_tables : "";
                     message.setText(warning);
                     UIUtils.setControlVisible(message, !warning.isEmpty());
@@ -191,7 +233,7 @@ public class PostgrePublicationTablesEditor extends AbstractDatabaseObjectEditor
     @NotNull
     @Override
     public RefreshResult refreshPart(@Nullable Object source, boolean force) {
-        refreshSelection();
+        loadTables();
         return RefreshResult.REFRESHED;
     }
 
