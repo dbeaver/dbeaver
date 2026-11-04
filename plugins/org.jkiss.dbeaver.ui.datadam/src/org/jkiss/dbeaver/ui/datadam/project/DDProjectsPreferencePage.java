@@ -328,7 +328,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private void updateSelectionActions() {
         List<DDProjectView> selection = selectedRows();
         SelectionSyncAction syncAction = selectionSyncAction(selection);
-        boolean available = !operationRunning && uiManager.isDDReady();
+        boolean available = !operationRunning && uiManager.isProjectSyncReady();
         refreshButton.setEnabled(available);
         editButton.setEnabled(available && selection.size() == 1 && selection.get(0).remoteProject() != null);
         syncButton.setEnabled(available && syncAction != SelectionSyncAction.NONE);
@@ -371,7 +371,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         forgetKeysButton.setEnabled(present);
         forgetKeysButton.setVisible(present);
         ((GridData) forgetKeysButton.getLayoutData()).exclude = !present;
-        boolean ready = uiManager.isDDReady();
+        boolean ready = uiManager.isProjectSyncReady();
         projectsDescription.setText(ready
             ? DDTrackingUIMessages.projects_page_sync_help : DDTrackingUIMessages.projects_page_description);
         projectsHelp.setVisible(!signedIn);
@@ -461,7 +461,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     }
 
     private void loadProjects() {
-        if (!uiManager.isDDReady()) {
+        if (!uiManager.isProjectSyncReady()) {
             viewer.setInput(List.of());
             updateTableHeight();
             updateSelectionActions();

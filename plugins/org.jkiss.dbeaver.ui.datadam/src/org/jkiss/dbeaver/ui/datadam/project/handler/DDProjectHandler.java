@@ -41,7 +41,7 @@ abstract class DDProjectHandler<J extends Job> extends AbstractHandler {
     @Nullable
     @Override
     public Object execute(@NotNull ExecutionEvent event) {
-        if (!uiManager.isDDReady()) {
+        if (!uiManager.isProjectSyncReady()) {
             return null;
         }
         DBPProject project = NavigatorUtils.getSelectedProject(

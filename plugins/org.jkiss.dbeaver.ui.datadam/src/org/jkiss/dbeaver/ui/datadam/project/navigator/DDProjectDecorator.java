@@ -42,7 +42,7 @@ public class DDProjectDecorator extends LabelProvider implements ILabelDecorator
             return null;
         }
         DDProjectUIManager manager = DDProjectUIManager.getInstance();
-        if (!manager.isDDReady()) {
+        if (!manager.isProjectSyncReady()) {
             return null;
         }
         try {

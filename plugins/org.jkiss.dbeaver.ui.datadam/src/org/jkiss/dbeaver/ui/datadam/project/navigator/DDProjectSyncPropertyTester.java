@@ -51,12 +51,12 @@ public class DDProjectSyncPropertyTester extends PropertyTester {
         DDProjectUIManager manager = DDProjectUIManager.getInstance();
 
         if (receiver instanceof IWorkbenchWindow) {
-            return PROP_ENABLED.equals(property) && manager.isDDReady();
+            return PROP_ENABLED.equals(property) && manager.isProjectSyncReady();
         }
         if (!(receiver instanceof DBNProject projectNode)) {
             return false;
         }
-        if (!manager.isDDReady()) {
+        if (!manager.isProjectSyncReady()) {
             return false;
         }
         if (PROP_ENABLED.equals(property)) {

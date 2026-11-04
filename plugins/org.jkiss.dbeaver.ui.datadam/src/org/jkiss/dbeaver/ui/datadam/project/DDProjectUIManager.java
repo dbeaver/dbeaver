@@ -87,7 +87,7 @@ public class DDProjectUIManager {
         return instance;
     }
 
-    public boolean isDDReady() {
+    public boolean isProjectSyncReady() {
         return accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN
             && accessService.getKeyBundle() != null;
     }

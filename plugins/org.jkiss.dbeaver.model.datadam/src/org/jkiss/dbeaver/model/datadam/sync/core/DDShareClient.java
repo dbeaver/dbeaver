@@ -236,8 +236,11 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
         try {
             DDSharedProjectPullResponse response = pullProjectConfiguration(projectId);
             Map<String, byte[]> files = new LinkedHashMap<>();
-            for (DDSharedProjectFile file : response.files()) {
-                files.put(file.fileName(), decryptBytes(projectId.toString(), file.fileName(), file.encryptedContents()));
+            if (!response.files().isEmpty()) {
+                SecretKey key = getDataKey();
+                for (DDSharedProjectFile file : response.files()) {
+                    files.put(file.fileName(), decryptBytes(key, projectId.toString(), file.fileName(), file.encryptedContents()));
+                }
             }
             return new DDSharedProjectPullResult(files, response.currentRevision());
         } catch (DBException e) {
@@ -291,12 +294,15 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
     ) throws DDShareException {
         try {
             List<DDSharedProjectFile> projectFiles = new ArrayList<>();
-            for (Map.Entry<String, Pair<String, byte[]>> file : preparedFiles.files().entrySet()) {
-                Pair<String, byte[]> preparedFile = file.getValue();
-                projectFiles.add(new DDSharedProjectFile(
-                    file.getKey(),
-                    encryptBytes(projectId.toString(), file.getKey(), preparedFile.getSecond()),
-                    preparedFile.getFirst()));
+            if (!preparedFiles.files().isEmpty()) {
+                SecretKey key = getDataKey();
+                for (Map.Entry<String, Pair<String, byte[]>> file : preparedFiles.files().entrySet()) {
+                    Pair<String, byte[]> preparedFile = file.getValue();
+                    projectFiles.add(new DDSharedProjectFile(
+                        file.getKey(),
+                        encryptBytes(key, projectId.toString(), file.getKey(), preparedFile.getSecond()),
+                        preparedFile.getFirst()));
+                }
             }
             return pushProjectConfiguration(
                 projectId,
@@ -333,13 +339,17 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
     }
 
     @NotNull
-    private String encryptBytes(@NotNull String projectId, @NotNull String field, @NotNull byte[] data) throws DBException {
-        return Base64.getEncoder().encodeToString(DDCrypto.encrypt(getDataKey(), data, aad(projectId, field)));
+    private String encryptBytes(
+        @NotNull SecretKey key, @NotNull String projectId, @NotNull String field, @NotNull byte[] data
+    ) throws DBException {
+        return Base64.getEncoder().encodeToString(DDCrypto.encrypt(key, data, aad(projectId, field)));
     }
 
     @NotNull
-    private byte[] decryptBytes(@NotNull String projectId, @NotNull String field, @NotNull String ciphertext) throws DBException {
-        return DDCrypto.decrypt(getDataKey(), decodeBase64(ciphertext), aad(projectId, field));
+    private byte[] decryptBytes(
+        @NotNull SecretKey key, @NotNull String projectId, @NotNull String field, @NotNull String ciphertext
+    ) throws DBException {
+        return DDCrypto.decrypt(key, decodeBase64(ciphertext), aad(projectId, field));
     }
 
     @NotNull
