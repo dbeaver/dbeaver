@@ -81,6 +81,13 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
             AISettingsManager manager = AISettingsManager.getInstance();
             WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
             AISettings settings = manager.getSettings();
+            Mockito.when(platform.getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)).thenReturn(true);
+            manager.saveSettings();
+            Assertions.assertTrue(preferences.isEmpty());
+            Mockito.verify(store, Mockito.never()).save();
+            Mockito.clearInvocations(store, platform.getConfigurationController());
+            Mockito.when(platform.getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)).thenReturn(false);
+
             AIConfigurationProfile profile = settings.getConfiguration("personal");
             manager.setDefaultConfiguration(profile);
 

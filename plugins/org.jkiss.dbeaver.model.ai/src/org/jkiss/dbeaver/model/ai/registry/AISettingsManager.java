@@ -193,7 +193,6 @@ public class AISettingsManager {
             DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
 
             this.getSettingsHolder().setSettings(settings);
-            saveDefaultConfiguration(settings.getDefaultConfigurationOrNull());
         } catch (Exception e) {
             log.error("Error saving AI configuration", e);
             // the settings were entered by the user, so a failed save must not stay in the log only
