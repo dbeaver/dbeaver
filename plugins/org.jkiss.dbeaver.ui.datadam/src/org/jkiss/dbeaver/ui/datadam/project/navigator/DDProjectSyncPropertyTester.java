@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.datadam.project;
+package org.jkiss.dbeaver.ui.datadam.project.navigator;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.BindingStat
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 
 public class DDProjectSyncPropertyTester extends PropertyTester {
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.datadam.projectSync";

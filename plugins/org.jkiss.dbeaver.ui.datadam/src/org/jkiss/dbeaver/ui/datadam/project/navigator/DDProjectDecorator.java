@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.datadam.project;
+package org.jkiss.dbeaver.ui.datadam.project.navigator;
 
 import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.BindingStat
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIIcons;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 
 /** Replaces the icon of projects connected to the current DataDam account in the Project Navigator. */
 public class DDProjectDecorator extends LabelProvider implements ILabelDecorator {

@@ -14,39 +14,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.datadam.project;
+package org.jkiss.dbeaver.ui.datadam.project.navigator;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.datadam.DDProductConfig;
-import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.BindingStatus;
+import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
-import org.jkiss.dbeaver.ui.navigator.actions.ProjectDeleteContentsPolicy;
+import org.jkiss.dbeaver.ui.navigator.project.ProjectVisibilityPolicy;
 
-public class DDProjectDeleteContentsAdapterFactory implements IAdapterFactory, ProjectDeleteContentsPolicy {
+public class DDProjectVisibilityAdapterFactory implements IAdapterFactory, ProjectVisibilityPolicy {
     @Nullable
     @Override
     public <T> T getAdapter(@NotNull Object adaptableObject, @NotNull Class<T> adapterType) {
-        return adapterType == ProjectDeleteContentsPolicy.class && adaptableObject instanceof DBNProject
+        return adapterType == ProjectVisibilityPolicy.class && adaptableObject instanceof DBNProject
             ? adapterType.cast(this) : null;
     }
 
     @NotNull
     @Override
     public Class<?>[] getAdapterList() {
-        return new Class<?>[]{ProjectDeleteContentsPolicy.class};
+        return new Class<?>[]{ProjectVisibilityPolicy.class};
     }
 
     @Override
-    public boolean requiresDeleteContents(@NotNull DBPProject project) throws DBException {
-        if (!DDProductConfig.isIntegrationEnabled()) {
+    public boolean isVisible(@NotNull DBPProject project) throws DBException {
+        try {
+            DDProjectManager.BindingStatus status = DDProjectManager.getInstance().getBindingStatus(project);
+            return status == DDProjectManager.BindingStatus.UNBOUND
+                || status == DDProjectManager.BindingStatus.CURRENT_ACCOUNT;
+        } catch (IllegalStateException e) {
             return false;
         }
-        return DDProjectUIManager.getInstance()
-            .getProjectManager()
-            .getBindingStatus(project) != BindingStatus.UNBOUND;
     }
 }

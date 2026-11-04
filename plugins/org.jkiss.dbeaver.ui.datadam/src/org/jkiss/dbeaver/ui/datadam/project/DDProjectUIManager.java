@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.job.*;
+import org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
