@@ -28,8 +28,14 @@ import java.util.regex.Pattern;
 final class DiagnosticInfoSanitizer {
     private static final String REDACTED = "[REDACTED]";
     private static final Pattern CONNECTION = Pattern.compile("(?i)\\b(?:jdbc:[^\\s\\\"'<>]+|(?:https?|ssh)://[^\\s\\\"'<>]+)");
+    private static final Pattern URI_WITH_USERINFO = Pattern.compile(
+        "(?i)\\b[a-z][a-z0-9+.-]*://[^\\s\\\"'<>/@]+@[^\\s\\\"'<>]+"
+    );
+    private static final Pattern AUTHORIZATION_HEADER = Pattern.compile(
+        "(?i)(\\b(?:proxy-)?authorization\\s*:\\s*)[^\\r\\n]+"
+    );
     private static final Pattern CREDENTIAL = Pattern.compile(
-        "(?i)((['\"]?)(?:password|passwd|pwd|secret|token|api[_-]?key|user(?:name)?)\\2\\s*[=:]\\s*)"
+        "(?i)((['\"]?)(?:password|passwd|pwd|secret|token|api[_-]?key|user(?:name)?|authorization)\\2\\s*[=:]\\s*)"
             + "(\"(?:\\\\.|[^\"\\\\])*\"|'(?:\\\\.|[^'\\\\])*'|[^\\s,;&}]+)"
     );
     private static final Pattern ADDRESS = Pattern.compile(
@@ -61,6 +67,7 @@ final class DiagnosticInfoSanitizer {
     private static final Pattern VERSION = Pattern.compile(
         "(?i)\\b\\w*version(?:\\s*[:=]\\s*|\\s+)['\"]?\\d+(?:\\.\\d+){3,}"
     );
+    private static final Pattern ECLIPSE_LOG_BUNDLE = Pattern.compile("!(?:ENTRY|SUBENTRY\\s+\\d+)\\s+");
 
     private final List<String> environmentValues;
     private final List<Pattern> shortEnvironmentValues;
@@ -93,6 +100,8 @@ final class DiagnosticInfoSanitizer {
     @NotNull
     String sanitize(@NotNull String text) {
         String result = CONNECTION.matcher(text).replaceAll(REDACTED);
+        result = URI_WITH_USERINFO.matcher(result).replaceAll(REDACTED);
+        result = AUTHORIZATION_HEADER.matcher(result).replaceAll(m -> Matcher.quoteReplacement(m.group(1) + REDACTED));
         result = CREDENTIAL.matcher(result).replaceAll(m -> {
             String value = m.group(3);
             String quote = value.startsWith("\"") || value.startsWith("'") ? value.substring(0, 1) : "";
@@ -113,8 +122,11 @@ final class DiagnosticInfoSanitizer {
             return productVersion || version ? Matcher.quoteReplacement(m.group()) : REDACTED;
         });
         String beforeDomains = result;
-        result = DOMAIN.matcher(result).replaceAll(m ->
-            isStackFrame(beforeDomains, m.start()) ? Matcher.quoteReplacement(m.group()) : REDACTED);
+        result = DOMAIN.matcher(result).replaceAll(m -> {
+            String prefix = beforeDomains.substring(beforeDomains.lastIndexOf('\n', m.start() - 1) + 1, m.start());
+            boolean bundle = ECLIPSE_LOG_BUNDLE.matcher(prefix).matches();
+            return isStackFrame(beforeDomains, m.start()) || bundle ? Matcher.quoteReplacement(m.group()) : REDACTED;
+        });
         for (String value : environmentValues) {
             result = result.replace(value, REDACTED);
         }

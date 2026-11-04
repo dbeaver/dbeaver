@@ -116,4 +116,28 @@ class DiagnosticInfoSanitizerTest {
         assertEquals("2026-11-04 14:30:46.756 - DBeaver Ultimate 26.2.5.qualifier is starting",
             versionEnvironment.sanitize("2026-11-04 14:30:46.756 - DBeaver Ultimate 26.2.5.qualifier is starting"));
     }
+
+    @Test
+    void preservesEclipseLogEntryBundleIdentifiers() {
+        var sanitizer = new DiagnosticInfoSanitizer(Map.of());
+        String lines = "!ENTRY org.jkiss.dbeaver.ui 2 0 2026-11-04 14:05:13.124\n"
+            + "!MESSAGE Cannot connect DataDam desktop channel\n"
+            + "!SUBENTRY 1 org.eclipse.core.runtime 2 0 2026-11-04 14:05:13.125\n"
+            + "!MESSAGE java.net.http.HttpConnectTimeoutException: HTTP connect timed out\n"
+            + "!SUBENTRY 2 org.eclipse.core.runtime 2 0 2026-11-04 14:05:13.126";
+        assertEquals(lines, sanitizer.sanitize(lines));
+        assertEquals("!MESSAGE Connection to [REDACTED] failed",
+            sanitizer.sanitize("!MESSAGE Connection to db.customer.de failed"));
+    }
+
+    @Test
+    void removesAuthorizationHeadersAndUriUserinfo() {
+        var sanitizer = new DiagnosticInfoSanitizer(Map.of());
+        assertEquals("Authorization: [REDACTED]\nProxy-Authorization: [REDACTED]\nstatus=failed",
+            sanitizer.sanitize("Authorization: Bearer ghp_abcDEF123\nProxy-Authorization: Basic YWRtaW46c2VjcmV0\nstatus=failed"));
+        assertEquals("Cannot connect [REDACTED] status=failed",
+            sanitizer.sanitize("Cannot connect redis://admin:s3cret@cache.customer.de:6379 status=failed"));
+        assertEquals("{\"authorization\":\"[REDACTED]\"}",
+            sanitizer.sanitize("{\"authorization\":\"Bearer ghp_abcDEF123\"}"));
+    }
 }
