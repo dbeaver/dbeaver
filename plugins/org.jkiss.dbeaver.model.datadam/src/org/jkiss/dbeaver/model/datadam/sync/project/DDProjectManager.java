@@ -76,7 +76,7 @@ public class DDProjectManager {
         if (instance == null || !instance.keyBundle.equals(keyBundle)) {
             DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
             DDShareClient client = new DDShareClient(DDEndpoints.getStorageBaseUrl(), DDDesktopAccessService.getInstance());
-            DDProjectSyncService syncService = new DDProjectSyncService(client, keyBundle.accountId());
+            DDProjectSyncService syncService = new DDProjectSyncService(client);
             instance = new DDProjectManager(keyBundle, workspace, client, syncService);
             instance.loadProjects();
         }
@@ -215,7 +215,7 @@ public class DDProjectManager {
     @NotNull
     private DDProject getOrCreate(@NotNull DBPProject project) {
         Path bindingFile = DDProjectSyncBindingStore.getBindingFile(project);
-        return projects.computeIfAbsent(bindingFile, path -> new DDProject(path, syncService));
+        return projects.computeIfAbsent(bindingFile, path -> new DDProject(path, keyBundle.accountId(), syncService));
     }
 
     private void rollbackImport(@NotNull DBPProject project, @NotNull Exception cause) {
