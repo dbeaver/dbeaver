@@ -61,5 +61,6 @@ public final class DBeaverPreferences
 
     // Diagnostic info
     public static final String DIAGNOSTIC_INFO_OUTPUT_FOLDER = "diagnostic.info.output.folder"; //$NON-NLS-1$
+    public static final String DIAGNOSTIC_INFO_SANITIZE_LOGS = "diagnostic.info.sanitize.logs"; //$NON-NLS-1$
 
 }
