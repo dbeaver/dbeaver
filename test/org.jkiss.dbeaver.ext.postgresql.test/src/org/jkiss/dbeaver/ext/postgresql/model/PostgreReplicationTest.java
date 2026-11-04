@@ -155,7 +155,9 @@ public class PostgreReplicationTest extends DBeaverUnitTest {
         Mockito.when(result.getLong("relnamespace")).thenReturn(1L);
         Mockito.when(result.getLong("oid")).thenReturn(2L);
         PostgreTable table = Mockito.mock(PostgreTable.class);
-        Mockito.when(owner.findTable(monitor, 1L, 2L)).thenReturn(table);
+        PostgreSchema schema = Mockito.mock(PostgreSchema.class);
+        Mockito.when(owner.getSchema(monitor, 1L)).thenReturn(schema);
+        Mockito.when(schema.getTable(monitor, 2L)).thenReturn(table);
         PostgrePublication publication = new PostgrePublication(owner, "publication");
         publication.setAllTables(true);
         Assertions.assertTrue(publication.getTables(monitor).isEmpty());
