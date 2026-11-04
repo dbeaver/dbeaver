@@ -758,7 +758,7 @@ public class ContextComposite extends Composite {
             if (!isChecked()) {
                 return;
             }
-            chat.setConversationProfile(chat.getActiveConversation(), profile);
+            chat.selectConversationProfile(profile);
         }
     }
 
