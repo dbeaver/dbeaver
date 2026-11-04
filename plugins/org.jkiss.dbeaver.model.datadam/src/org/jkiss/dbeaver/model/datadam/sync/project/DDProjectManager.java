@@ -25,8 +25,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
-import org.jkiss.dbeaver.model.datadam.auth.DDBundleCredentials;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDShareClient;
 import org.jkiss.dbeaver.model.datadam.sync.project.sync.DDProject;
 import org.jkiss.dbeaver.model.datadam.sync.project.sync.DDProjectSyncBindingStore;
@@ -75,7 +75,7 @@ public class DDProjectManager {
         Objects.requireNonNull(keyBundle);
         if (instance == null || !instance.keyBundle.equals(keyBundle)) {
             DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
-            DDShareClient client = new DDShareClient(DDEndpoints.getStorageBaseUrl(), new DDBundleCredentials(keyBundle));
+            DDShareClient client = new DDShareClient(DDEndpoints.getStorageBaseUrl(), DDDesktopAccessService.getInstance());
             DDProjectSyncService syncService = new DDProjectSyncService(client, keyBundle.accountId());
             instance = new DDProjectManager(keyBundle, workspace, client, syncService);
             instance.loadProjects();

@@ -26,7 +26,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.DDClient;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
+import org.jkiss.dbeaver.model.datadam.auth.DDBundleCredentials;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
+import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.GsonUtils;
@@ -60,13 +62,11 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
         createTime
         updateTime""";
 
-    private final DDSyncCredentials credentials;
-    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
-    private SecretKey dataKey;
+    private final DDDesktopAccessService accessService;
 
-    public DDShareClient(@NotNull String url, @NotNull DDSyncCredentials credentials) {
+    public DDShareClient(@NotNull String url, @NotNull DDDesktopAccessService accessService) {
         super(url, DEFAULT_CONNECT_TIMEOUT, TIMEOUT_MS, List.of(), HttpClient.Redirect.NEVER);
-        this.credentials = credentials;
+        this.accessService = accessService;
         this.gson = GsonUtils.gsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeIsoAdapter())
             .create();
@@ -343,6 +343,15 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
     }
 
     @NotNull
+    private SecretKey getDataKey() throws DBException {
+        DDKeyBundle bundle = accessService.getKeyBundle();
+        if (bundle == null) {
+            throw new DBException("Import encryption keys for the current DataDam account before transferring files");
+        }
+        return new DDBundleCredentials(bundle).getDataKey();
+    }
+
+    @NotNull
     private static byte[] decodeBase64(@NotNull String value) throws DBException {
         try {
             return Base64.getDecoder().decode(value);
@@ -358,14 +367,6 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
     @NotNull
     public static byte[] aad(@NotNull String projectId, @NotNull String field) {
         return (projectId + '\u0000' + field).getBytes(StandardCharsets.UTF_8);
-    }
-
-    @NotNull
-    private SecretKey getDataKey() throws DBException {
-        if (dataKey == null) {
-            dataKey = credentials.getDataKey();
-        }
-        return dataKey;
     }
 
     @NotNull
