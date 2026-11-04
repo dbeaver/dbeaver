@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.utils;
 
 import org.eclipse.core.internal.runtime.AdapterManager;
 import org.eclipse.core.runtime.*;
+import org.eclipse.osgi.service.datalocation.Location;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -43,6 +44,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -338,6 +340,55 @@ public class GeneralUtils {
             return FrameworkUtil.getBundle(GeneralUtils.class).getVersion();
         }
         return product.getDefiningBundle().getVersion();
+    }
+
+    /**
+     * Returns the installed product patch number from the packaging marker, or zero if unavailable.
+     */
+    public static int getProductPatchNumber() {
+        Location installLocation = Platform.getInstallLocation();
+        URL installURL = installLocation == null ? null : installLocation.getURL();
+        if (installURL == null) {
+            return 0;
+        }
+        var properties = readProductProperties(installURL);
+        if (properties == null) {
+            return 0;
+        }
+        var packagedVersion = properties.getProperty("version");
+        if (packagedVersion == null) {
+            return 0;
+        }
+        try {
+            var bundleVersion = getProductVersion();
+            var version = new Version(packagedVersion.trim());
+            if (version.getMajor() != bundleVersion.getMajor()
+                || version.getMinor() != bundleVersion.getMinor()
+                || version.getMicro() != bundleVersion.getMicro()) {
+                return 0;
+            }
+            return Math.max(0, Integer.parseInt(version.getQualifier()));
+        } catch (IllegalArgumentException e) {
+            return 0;
+        }
+    }
+
+    /**
+     * Reads the packaging marker at a file install location, accepting Equinox URLs with unescaped spaces.
+     */
+    @Nullable
+    private static Properties readProductProperties(@NotNull URL installURL) {
+        Properties properties = new Properties();
+        try {
+            Path installPath = RuntimeUtils.getLocalPathFromURL(installURL);
+            try (InputStream input = Files.newInputStream(installPath.resolve(".eclipseproduct"))) {
+                properties.load(input);
+            }
+        } catch (Exception e) {
+            log.debug("Error reading installed product patch number", e);
+            return null;
+        }
+        return properties;
     }
 
     @NotNull
