@@ -51,7 +51,7 @@ public class DDProject {
     }
 
     @Nullable
-    public synchronized DDProjectSyncLocalBinding getBinding(@NotNull DBPProject project) throws DBException {
+    public DDProjectSyncLocalBinding getBinding(@NotNull DBPProject project) throws DBException {
         validateProject(project);
         return bindingStore.load();
     }
