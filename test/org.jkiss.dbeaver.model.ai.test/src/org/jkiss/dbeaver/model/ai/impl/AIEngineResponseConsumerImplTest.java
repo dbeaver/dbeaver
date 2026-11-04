@@ -38,8 +38,8 @@ public class AIEngineResponseConsumerImplTest {
     }
 
     @Test
-    public void cancellationPreservesPartialUsage() {
-        AIUsage usage = new AIUsage(10, 2, 1, 0, true);
+    public void cancellationPreservesReportedUsage() {
+        AIUsage usage = new AIUsage(10, 2, 1, 0);
         Assertions.assertEquals(usage, cancelWithUsage(usage).usage());
     }
 

@@ -248,8 +248,11 @@ final class WebViewMessageRenderer {
     @Nullable
     private static Map<String, String> buildMessageMeta(@NotNull AIChatMessage message) {
         var meta = message.message().getMeta();
-        if (meta == null) {
-            return null;
+        if (CommonUtils.isEmpty(meta)) {
+            return message.message().getRole() == AIMessageType.ASSISTANT ? Map.of(
+                "time", AIChatUtils.formatMessageTime(message.message()),
+                "usage", AIChatMessagesUI.ai_chat_message_meta_tokens_unavailable
+            ) : null;
         }
 
         AIExtendedUsage extendedUsage = AIExtendedUsage.from(meta);
@@ -267,7 +270,7 @@ final class WebViewMessageRenderer {
             return AIChatMessagesUI.ai_chat_message_meta_tokens_unavailable;
         }
         return NLS.bind(
-            usage.incomplete() ? AIChatMessagesUI.ai_chat_message_meta_tokens_partial : AIChatMessagesUI.ai_chat_message_meta_tokens,
+            AIChatMessagesUI.ai_chat_message_meta_tokens,
             usage.totalInputTokens(),
             usage.totalOutputTokens()
         );

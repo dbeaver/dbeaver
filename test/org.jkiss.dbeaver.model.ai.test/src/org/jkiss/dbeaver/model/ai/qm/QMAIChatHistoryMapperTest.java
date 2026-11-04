@@ -71,30 +71,25 @@ public class QMAIChatHistoryMapperTest {
     }
 
     @Test
-    public void preservesUnavailableAndPartialUsageInHistory() {
-        for (AIUsage usage : new AIUsage[] {null, new AIUsage(0, 0, 0, 0), new AIUsage(10, 2, 1, 0, true)}) {
-            List<AIMessageMeta> original = List.of(
-                new AIMessageMeta(AIMetaTypes.PROMPT, "test", "model", usage, Duration.ofSeconds(2), 10)
-            );
-            List<QMAIMessageMeta> stored = QMAIChatHistoryMapper.toQMAIMessageMeta(original);
-            Assertions.assertEquals(1, stored.size());
-            String json = JSONUtils.GSON.toJson(stored.getFirst());
-            QMAIMessageMeta restored = JSONUtils.GSON.fromJson(json, QMAIMessageMeta.class);
-            Assertions.assertEquals(original, QMAIChatHistoryMapper.toAIMessageMeta(List.of(restored)));
-        }
+    public void skipsUnavailableUsageInHistory() {
+        List<AIMessageMeta> original = List.of(
+            new AIMessageMeta(AIMetaTypes.PROMPT, "test", "model", null, Duration.ofSeconds(2), 10)
+        );
+
+        Assertions.assertTrue(QMAIChatHistoryMapper.toQMAIMessageMeta(original).isEmpty());
     }
 
     @Test
-    public void restoresLegacyUsageAsComplete() {
-        QMAIMessageMeta stored = JSONUtils.GSON.fromJson(
-            "{\"totalInputTokens\":10,\"totalOutputTokens\":5}", QMAIMessageMeta.class
+    public void preservesReportedZeroUsageInHistory() {
+        List<AIMessageMeta> original = List.of(
+            new AIMessageMeta(AIMetaTypes.PROMPT, "test", "model", new AIUsage(0, 0, 0, 0), Duration.ofSeconds(2), 10)
         );
-        AIUsage usage = QMAIChatHistoryMapper.toAIMessageMeta(stored).usage();
+        List<QMAIMessageMeta> stored = QMAIChatHistoryMapper.toQMAIMessageMeta(original);
 
-        Assertions.assertNotNull(usage);
-        Assertions.assertFalse(usage.incomplete());
-        Assertions.assertEquals(10, usage.totalInputTokens());
-        Assertions.assertEquals(5, usage.totalOutputTokens());
+        Assertions.assertEquals(1, stored.size());
+        String json = JSONUtils.GSON.toJson(stored.getFirst());
+        QMAIMessageMeta restored = JSONUtils.GSON.fromJson(json, QMAIMessageMeta.class);
+        Assertions.assertEquals(original, QMAIChatHistoryMapper.toAIMessageMeta(List.of(restored)));
     }
 
     @Test

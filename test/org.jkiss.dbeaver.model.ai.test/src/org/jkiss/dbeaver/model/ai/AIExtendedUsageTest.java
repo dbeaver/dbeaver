@@ -29,9 +29,7 @@ public class AIExtendedUsageTest {
         AIExtendedUsage zero = AIExtendedUsage.from(List.of(meta(new AIUsage(0, 0, 0, 0))));
 
         Assertions.assertFalse(unknown.hasUsage());
-        Assertions.assertTrue(unknown.incomplete());
         Assertions.assertTrue(zero.hasUsage());
-        Assertions.assertFalse(zero.incomplete());
         Assertions.assertEquals(Duration.ofSeconds(1), unknown.totalTime());
     }
 
@@ -40,19 +38,8 @@ public class AIExtendedUsageTest {
         AIExtendedUsage usage = AIExtendedUsage.from(List.of(meta(new AIUsage(10, 2, 5, 1)), meta(null)));
 
         Assertions.assertTrue(usage.hasUsage());
-        Assertions.assertTrue(usage.incomplete());
         Assertions.assertEquals(10, usage.totalInputTokens());
         Assertions.assertEquals(5, usage.totalOutputTokens());
-    }
-
-    @Test
-    public void propagatesPartialUsage() {
-        AIExtendedUsage usage = AIExtendedUsage.from(List.of(meta(new AIUsage(10, 2, 1, 0, true))));
-
-        Assertions.assertTrue(usage.hasUsage());
-        Assertions.assertTrue(usage.incomplete());
-        Assertions.assertEquals(10, usage.totalInputTokens());
-        Assertions.assertEquals(1, usage.totalOutputTokens());
     }
 
     private static AIMessageMeta meta(AIUsage usage) {
