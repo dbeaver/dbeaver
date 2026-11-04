@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
+import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.BindingStatus;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIIcons;
@@ -44,7 +45,7 @@ public class DDProjectDecorator extends LabelProvider implements ILabelDecorator
             return null;
         }
         try {
-            if (manager.getProjectManager().isBound(projectNode.getProject())) {
+            if (manager.getProjectManager().getBindingStatus(projectNode.getProject()) != BindingStatus.UNBOUND) {
                 return DBeaverIcons.getImage(DDTrackingUIIcons.PROJECT_DATADAM);
             }
         } catch (DBException e) {

@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
+import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.BindingStatus;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.ui.navigator.actions.ProjectDeleteContentsPolicy;
 
@@ -44,7 +45,8 @@ public class DDProjectDeleteContentsAdapterFactory implements IAdapterFactory, P
         if (!DDProductConfig.isIntegrationEnabled()) {
             return false;
         }
-        DDProjectUIManager manager = DDProjectUIManager.getInstance();
-        return manager.isDDReady() && manager.getProjectManager().isBound(project);
+        return DDProjectUIManager.getInstance()
+            .getProjectManager()
+            .getBindingStatus(project) != BindingStatus.UNBOUND;
     }
 }

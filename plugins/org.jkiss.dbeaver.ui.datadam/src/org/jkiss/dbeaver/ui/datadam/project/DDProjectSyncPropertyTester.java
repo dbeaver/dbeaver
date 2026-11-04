@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
+import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.BindingStatus;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -61,10 +62,10 @@ public class DDProjectSyncPropertyTester extends PropertyTester {
             return true;
         }
         try {
-            boolean shared = manager.getProjectManager().isBound(projectNode.getProject());
+            BindingStatus status = manager.getProjectManager().getBindingStatus(projectNode.getProject());
             return switch (property) {
-                case PROP_CAN_SHARE -> !shared;
-                case PROP_CAN_SYNC -> shared;
+                case PROP_CAN_SHARE -> status == BindingStatus.UNBOUND;
+                case PROP_CAN_SYNC -> status == BindingStatus.CURRENT_ACCOUNT;
                 default -> false;
             };
         } catch (DBException e) {

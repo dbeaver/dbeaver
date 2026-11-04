@@ -44,6 +44,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class DDProjectManager {
+    public enum BindingStatus { UNBOUND, CURRENT_ACCOUNT, OTHER_ACCOUNT, ACCOUNT_UNKNOWN }
+
     @Nullable
     private static DDProjectManager instance;
 
@@ -126,8 +128,21 @@ public class DDProjectManager {
         );
     }
 
-    public boolean isBound(@NotNull DBPProject project) throws DBException {
-        return getAccountBinding(project) != null;
+    @NotNull
+    public BindingStatus getBindingStatus(@NotNull DBPProject project) throws DBException {
+        DDProjectSyncLocalBinding binding = getOrCreate(project).getBinding(project);
+        if (binding == null) {
+            return BindingStatus.UNBOUND;
+        }
+        if (accessService.getStatus() != DDDesktopAccessService.Status.SIGNED_IN) {
+            return BindingStatus.ACCOUNT_UNKNOWN;
+        }
+        DDKeyBundle bundle = accessService.getKeyBundle();
+        if (bundle == null) {
+            return BindingStatus.ACCOUNT_UNKNOWN;
+        }
+        return binding.accountId().equals(bundle.accountId())
+            ? BindingStatus.CURRENT_ACCOUNT : BindingStatus.OTHER_ACCOUNT;
     }
 
     /**

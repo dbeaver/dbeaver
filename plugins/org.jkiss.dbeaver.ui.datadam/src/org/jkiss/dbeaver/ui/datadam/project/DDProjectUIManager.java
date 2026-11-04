@@ -26,7 +26,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.sync.project.ConflictResolution;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
@@ -50,12 +49,12 @@ public class DDProjectUIManager {
     private static DDProjectUIManager instance;
 
     private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
-    @Nullable
-    private volatile DDProjectManager projectManager;
+    @NotNull
+    private final DDProjectManager projectManager = DDProjectManager.getInstance();
 
     private DDProjectUIManager() {
-        accessService.addKeyBundleListener(this::updateProjectManager);
-        updateProjectManager();
+        accessService.addKeyBundleListener(DDProjectSyncPropertyTester::firePropertyChange);
+        DDProjectSyncPropertyTester.firePropertyChange();
     }
 
     @NotNull
@@ -67,22 +66,13 @@ public class DDProjectUIManager {
     }
 
     public boolean isDDReady() {
-        return projectManager != null;
+        return accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN
+            && accessService.getKeyBundle() != null;
     }
 
     @NotNull
-    public DDProjectManager getProjectManager() throws DBException {
-        DDProjectManager manager = projectManager;
-        if (manager == null) {
-            throw new DBException("Import encryption keys for the current DataDam account in Preferences > DataDam > Projects");
-        }
-        return manager;
-    }
-
-    private void updateProjectManager() {
-        DDKeyBundle bundle = accessService.getKeyBundle();
-        projectManager = bundle == null ? null : DDProjectManager.getInstance(bundle);
-        DDProjectSyncPropertyTester.firePropertyChange();
+    public DDProjectManager getProjectManager() {
+        return projectManager;
     }
 
     @Nullable
