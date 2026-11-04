@@ -31,9 +31,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
@@ -42,11 +40,8 @@ import org.jkiss.dbeaver.model.sql.semantics.OffsetKeyedTreeMap.NodesIterator;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.tracking.SQLScriptVariablesTracker;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLReconcilingStrategy;
 import org.jkiss.dbeaver.utils.ListNode;
 
@@ -67,6 +62,13 @@ public class SQLBackgroundParsingJob {
         public QueuedRegionInfo(int length) {
             this.length = length;
         }
+    }
+
+    // A null workRegion means the run stopped before discovering its parse range.
+    private record ActiveParse(
+        @NotNull CompletableFuture<Interval> workRegion,
+        @NotNull CompletableFuture<Long> finishStamp
+    ) {
     }
 
     private final class ScriptVariablesTrackingContext {
@@ -289,6 +291,8 @@ public class SQLBackgroundParsingJob {
     @NotNull
     private final SQLEditorBase editor;
     @NotNull
+    private final SQLBackgroundParsingEnvironment environment;
+    @NotNull
     private final SQLDocumentSyntaxContext context = new SQLDocumentSyntaxContext();
     @NotNull
     private final ScriptVariablesTrackingContext variablesTrackingContext = new ScriptVariablesTrackingContext();
@@ -296,25 +300,10 @@ public class SQLBackgroundParsingJob {
     private IDocument document = null;
     private boolean isSetup;
     @NotNull
-    private final AbstractJob job = new AbstractJob("Background parsing job") {
-        @NotNull
-        @Override
-        protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-            this.setSkipErrorOnCanceling(true);
-            try {
-                SQLBackgroundParsingJob.this.doWork(monitor);
-                return Status.OK_STATUS;
-            } catch (BadLocationException e) {
-                log.debug(e);
-                return Status.CANCEL_STATUS;
-            }
-        }
-    };
-    private volatile CompletableFuture<Long> lastParsingFinishStamp = new CompletableFuture<>() {
-        {
-            this.complete(0L);
-        }
-    };
+    private final SQLBackgroundParsingEnvironment.Job job;
+    private CompletableFuture<Long> lastQueuedParseFinishStamp = CompletableFuture.completedFuture(0L);
+    @Nullable
+    private ActiveParse activeParse;
 
     private volatile boolean isRunning = false;
     private volatile int knownRegionStart = 0;
@@ -324,7 +313,29 @@ public class SQLBackgroundParsingJob {
     private final DocumentLifecycleListener documentListener = new DocumentLifecycleListener();
 
     public SQLBackgroundParsingJob(@NotNull SQLEditorBase editor) {
+        this(editor, SQLBackgroundParsingWorkbenchEnv.INSTANCE);
+    }
+
+    public SQLBackgroundParsingJob(@NotNull SQLEditorBase editor, @NotNull SQLBackgroundParsingEnvironment environment) {
         this.editor = editor;
+        this.environment = environment;
+        this.job = environment.createJob(this::runParsingJob);
+    }
+
+    @NotNull
+    private IStatus runParsingJob(@NotNull DBRProgressMonitor monitor) {
+        boolean accomplished = false;
+        try {
+            accomplished = this.doWork(monitor);
+            return Status.OK_STATUS;
+        } catch (BadLocationException e) {
+            log.debug(e);
+            return Status.CANCEL_STATUS;
+        } finally {
+            if (!accomplished) {
+                this.signalAccomplished();
+            }
+        }
     }
 
     @NotNull
@@ -363,6 +374,11 @@ public class SQLBackgroundParsingJob {
     public void dispose() {
         synchronized (this.syncRoot) {
             this.cancel();
+            this.lastQueuedParseFinishStamp.cancel(false);
+            if (this.activeParse != null) {
+                this.activeParse.workRegion().cancel(false);
+                this.activeParse.finishStamp().cancel(false);
+            }
             TextViewer textViewer = this.editor.getTextViewer();
             if (textViewer != null) {
                 textViewer.removeViewportListener(this.documentListener);
@@ -393,63 +409,67 @@ public class SQLBackgroundParsingJob {
      */
     @NotNull
     public SQLQueryCompletionContext obtainCompletionContext(DBRProgressMonitor monitor, @NotNull Position completionRequestPosition) {
-        SQLScriptItemAtOffset scriptItem = null;
+        CompletableFuture<?> lastAwaitedFuture = null;
         do {
-            final long requestStamp = System.currentTimeMillis();
-            CompletableFuture<Long> expectedParsingSessionFinishStamp;
+            CompletableFuture<?> futureToAwait = null;
             synchronized (this.syncRoot) {
-                if (scriptItem == null || this.queuedForReparse.size() == 0) {
-                    int requestOffset = completionRequestPosition.getOffset();
-                    // the offset may be covered by adjacent scriptItem but still queued due to actual scriptItem being temporarily dropped
-                    NodesIterator<QueuedRegionInfo> qit = this.queuedForReparse.nodesIteratorAt(requestOffset);
-                    QueuedRegionInfo region = qit.getCurrValue() != null ? qit.getCurrValue() : (qit.prev() ? qit.getCurrValue() : null);
-                    boolean positionIsQueued = region != null && (qit.getCurrOffset() + region.length >= requestOffset
-                        || region.length == Integer.MAX_VALUE);
-                    if (!positionIsQueued) {
-                        scriptItem = this.context.findScriptItem(requestOffset - 1);
-                        if (scriptItem != null) { // TODO consider statements separation which is ignored for now
-                            if (scriptItem.item.isDirty()) {
-                                // awaiting reparse, so proceed to release lock and wait for the job to finish, then retry
-                                if (DEBUG) {
-                                    log.debug("awaiting reparse");
-                                }
-                            } else {
-                                if (DEBUG) {
-                                    log.debug("obtained model for " + scriptItem.item.getOriginalText());
-                                }
-                                DBCExecutionContext executionContext = this.editor.getExecutionContext();
-                                SQLDialect dialect = this.obtainCurrentSqlDialect(executionContext);
-                                return SQLQueryCompletionContext.prepareCompletionContext(
-                                    scriptItem,
-                                    completionRequestPosition.getOffset(),
-                                    executionContext,
-                                    dialect
-                                );
+                if (completionRequestPosition.isDeleted()) {
+                    break;
+                }
+                int requestOffset = completionRequestPosition.getOffset();
+                if (this.isPositionQueued(requestOffset)) {
+                    futureToAwait = this.lastQueuedParseFinishStamp;
+                } else {
+                    ActiveParse parse = this.activeParse;
+                    if (parse != null) {
+                        if (parse.workRegion().isCompletedExceptionally()) {
+                            return SQLQueryCompletionContext.prepareEmpty(0, requestOffset);
+                        }
+                        if (!parse.workRegion().isDone()) {
+                            futureToAwait = parse.workRegion();
+                        } else {
+                            Interval workRegion = parse.workRegion().getNow(null);
+                            if (workRegion != null && requestOffset >= workRegion.a && requestOffset <= workRegion.b) {
+                                futureToAwait = parse.finishStamp();
                             }
-                        } else if (this.queuedForReparse.size() <= 0) {
-                            // no script items here, so fallback to offquery context
-                            if (DEBUG) {
-                                log.debug("fallback to offquery context");
-                            }
-                            return SQLQueryCompletionContext.prepareOffquery(0, completionRequestPosition.getOffset());
+                        }
+                    }
+                    if (futureToAwait == null) {
+                        SQLScriptItemAtOffset scriptItem = this.context.findScriptItem(requestOffset - 1);
+                        if (scriptItem != null && !scriptItem.item.isDirty()) {
+                            DBCExecutionContext executionContext = this.editor.getExecutionContext();
+                            SQLDialect dialect = this.obtainCurrentSqlDialect(executionContext);
+                            return SQLQueryCompletionContext.prepareCompletionContext(
+                                scriptItem, requestOffset, executionContext, dialect
+                            );
+                        } else if (scriptItem == null) {
+                            return SQLQueryCompletionContext.prepareOffquery(0, requestOffset);
+                        } else {
+                            return SQLQueryCompletionContext.prepareEmpty(0, requestOffset);
                         }
                     }
                 }
-                expectedParsingSessionFinishStamp = this.lastParsingFinishStamp;
+                if (futureToAwait == lastAwaitedFuture && futureToAwait.isDone()) {
+                    return SQLQueryCompletionContext.prepareEmpty(0, requestOffset);
+                }
             }
 
             try {
-                // job.join() cannot be used here because completion request is being submitted at before-change event,
-                // when the job is not scheduled yet (so join returns immediately)
-                // job.schedule() performed only after the series of keypresses at after-change event
-                if (getFutureOrCancel(expectedParsingSessionFinishStamp, monitor.getNestedMonitor()) < requestStamp) {
-                    return SQLQueryCompletionContext.prepareEmpty(0, completionRequestPosition.getOffset());
-                }
-            } catch (InterruptedException | ExecutionException e) {
+                // A before-change request can precede scheduling; job.join() would return prematurely.
+                getFutureOrCancel(futureToAwait, monitor.getNestedMonitor());
+                lastAwaitedFuture = futureToAwait;
+            } catch (InterruptedException | ExecutionException | CancellationException e) {
                 break;
             }
         } while (!completionRequestPosition.isDeleted());
         return SQLQueryCompletionContext.prepareEmpty(0, completionRequestPosition.getOffset());
+    }
+
+    // Caller holds syncRoot.
+    private boolean isPositionQueued(int requestOffset) {
+        NodesIterator<QueuedRegionInfo> qit = this.queuedForReparse.nodesIteratorAt(requestOffset);
+        QueuedRegionInfo region = qit.getCurrValue() != null ? qit.getCurrValue() : (qit.prev() ? qit.getCurrValue() : null);
+        return region != null && (saturatedSum(qit.getCurrOffset(), region.length) >= requestOffset);
     }
 
     @NotNull
@@ -498,6 +518,7 @@ public class SQLBackgroundParsingJob {
                     if (firstAffectedReparseOffset < reparseStart &&
                         firstAffectedReparseOffset + it.getCurrValue().length > reparseStart + insertedLength
                     ) {
+                        this.resetLastQueuedParseFinishStamp();
                         return; // modified region is a subrange of already queued for reparse
                     }
                     keyOffsetsToRemove = ListNode.push(keyOffsetsToRemove, firstAffectedReparseOffset);
@@ -516,7 +537,7 @@ public class SQLBackgroundParsingJob {
                 }
                 this.enqueueToReparse(reparseStart, Integer.MAX_VALUE);
             }
-            this.resetLastParsingFinishTime();
+            this.resetLastQueuedParseFinishStamp();
         }
     }
 
@@ -537,15 +558,18 @@ public class SQLBackgroundParsingJob {
                 if (DEBUG) {
                     log.debug("enqueueToReparse: queuedForReparse count is " + queuedForReparse.size());
                 }
-                this.resetLastParsingFinishTime();
+                this.resetLastQueuedParseFinishStamp();
             }
         }
     }
 
-    private void resetLastParsingFinishTime() {
+    private void resetLastQueuedParseFinishStamp() {
         synchronized (this.syncRoot) {
-            if (this.lastParsingFinishStamp.isDone()) {
-                this.lastParsingFinishStamp = new CompletableFuture<>();
+            // Edits after a run claimed its queue belong to the next run, not the active one.
+            if (this.lastQueuedParseFinishStamp.isDone() ||
+                this.activeParse != null && this.lastQueuedParseFinishStamp == this.activeParse.finishStamp()
+            ) {
+                this.lastQueuedParseFinishStamp = new CompletableFuture<>();
             }
         }
     }
@@ -579,7 +603,7 @@ public class SQLBackgroundParsingJob {
     private void schedule(@Nullable DocumentEvent event) {
         synchronized (this.syncRoot) {
             if (this.editor.getRuleManager() == null || !this.editor.isAdvancedHighlightingEnabled() ||
-                !SQLEditorUtils.isSQLSyntaxParserApplied(this.editor.getEditorInput())
+                !this.environment.isParserApplied(this.editor.getEditorInput())
             ) {
                 return;
             }
@@ -609,7 +633,7 @@ public class SQLBackgroundParsingJob {
                 this.cancel();
             }
 
-            if (newDocument != null && SQLEditorUtils.isSQLSyntaxParserApplied(editor.getEditorInput())) {
+            if (newDocument != null && this.environment.isParserApplied(editor.getEditorInput())) {
                 this.document = newDocument;
                 this.reset();
             }
@@ -630,47 +654,26 @@ public class SQLBackgroundParsingJob {
         }
     }
 
-    private void doWork(DBRProgressMonitor monitor) throws BadLocationException {
+    // True only after this run's parsed range and completion have been published together.
+    private boolean doWork(@NotNull DBRProgressMonitor monitor) throws BadLocationException {
         TextViewer viewer = this.editor.getTextViewer();
         if (viewer == null || this.editor.getRuleManager() == null) {
-            this.signalAccomplished();
-            return;
+            return false;
         }
-        Interval actualFragment = UIUtils.syncExec(new RunnableWithResult<>() {
-            public Interval runWithResult() {
-                if (viewer.getDocument() == null) {
-                    return null;
-                }
-                IDocument doc = viewer.getDocument();
-
-                int stepsToKeep = 2;
-                int startOffset = viewer.getTopIndexStartOffset();
-
-                int firstVisibleLine = 0;
-                try {
-                    firstVisibleLine = doc.getLineOfOffset(startOffset);
-                    int visibleLinesCount = viewer.getTextWidget().getSize().y / viewer.getTextWidget().getLineHeight();
-                    int rangeStart = doc.getLineOffset(Math.max(0, firstVisibleLine - visibleLinesCount * stepsToKeep));
-                    int rangeEnd = doc.getLineOffset(Math.min(
-                        doc.getNumberOfLines(),
-                        firstVisibleLine + visibleLinesCount * (stepsToKeep + 1)
-                    ));
-                    return new Interval(rangeStart, rangeEnd);
-                } catch (BadLocationException e) {
-                    int endOffset = viewer.getBottomIndexEndOffset();
-                    return new Interval(startOffset, endOffset);
-                }
-            }
-        });
+        Interval actualFragment = this.environment.getVisibleFragment(viewer);
 
         if (actualFragment == null) {
-            this.signalAccomplished();
-            return;
+            return false;
         }
         int workOffset;
         int workLength;
+        ActiveParse parse;
         try {
             synchronized (this.syncRoot) {
+                if (monitor.isCanceled()) {
+                    // An edit may have queued a new run while the visible fragment was obtained.
+                    return false;
+                }
                 this.isRunning = true;
 
                 // drop unnecessary items
@@ -724,6 +727,9 @@ public class SQLBackgroundParsingJob {
                     }
                 }
 
+                // Claim the queued future with its work; later edits will receive a different future.
+                parse = new ActiveParse(new CompletableFuture<>(), this.lastQueuedParseFinishStamp);
+                this.activeParse = parse;
                 this.queuedForReparse.clear();
                 if (DEBUG) {
                     log.debug("doWork: queuedForReparse count is " + queuedForReparse.size());
@@ -731,14 +737,13 @@ public class SQLBackgroundParsingJob {
             }
         } catch (Throwable ex) {
             log.error(ex);
-            this.signalAccomplished();
-            return;
+            return false;
         }
 
+        boolean monitorFinished = false;
         try {
             if (workLength == 0) {
-                this.signalAccomplished();
-                return;
+                return false;
             }
 
             final long variablesDocumentGeneration = this.variablesTrackingContext.getDocumentGeneration();
@@ -756,15 +761,18 @@ public class SQLBackgroundParsingJob {
                     workLength -= workOffset;
                 }
             }
-            List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(
+            List<SQLScriptElement> elements = this.environment.extractScriptQueries(
                 parserContext, workOffset, workLength, false, false, false, true
             );
             if (elements.isEmpty()) {
                 if (DEBUG) {
                     log.debug("No script elements to parse in range " + workOffset + "+" + workLength);
                 }
+                parse.workRegion().complete(new Interval(workOffset, saturatedSum(workOffset, workLength)));
+                monitor.done();
+                monitorFinished = true;
                 this.accomplishWork(workOffset, workLength);
-                return;
+                return true;
             } else {
                 SQLScriptElement element = SQLScriptParser.extractQueryAtPos(parserContext, elements.get(0).getOffset(), false);
                 if (elements.get(0) instanceof SQLQuery &&
@@ -794,11 +802,16 @@ public class SQLBackgroundParsingJob {
             {
                 SQLScriptElement lastElement = elements.get(elements.size() - 1);
                 if (lastElement == null) {
+                    parse.workRegion().complete(new Interval(workOffset, saturatedSum(workOffset, workLength)));
+                    monitor.done();
+                    monitorFinished = true;
                     this.accomplishWork(workOffset, workLength);
-                    return;
+                    return true;
                 }
                 workOffset = elements.get(0).getOffset();
                 workLength = lastElement.getOffset() + lastElement.getLength() - workOffset;
+                // Completion must know the region before recognition can block on metadata.
+                parse.workRegion().complete(new Interval(workOffset, saturatedSum(workOffset, workLength)));
                 if (DEBUG) {
                     log.debug("firstElement@" + elements.get(0).getOffset() + ":" + elements.get(0).getText());
                     log.debug(
@@ -853,7 +866,7 @@ public class SQLBackgroundParsingJob {
                             ? SQLQueryVariablesSubset.EMPTY
                             : variablesTracker.getVisibleVariablesAt(recognitionContext, element.getOffset());
                         recognitionContext.reset();
-                        queryModel = SQLQueryModelRecognizer.recognizeQuery(recognitionContext, element.getOriginalText(), varsSubset);
+                        queryModel = this.environment.recognizeQuery(recognitionContext, element.getOriginalText(), varsSubset);
                         if (queryModel != null) {
                             this.variablesTrackingContext.acceptAnalysisResult(element, queryModel, variablesDocumentGeneration);
                         }
@@ -901,23 +914,25 @@ public class SQLBackgroundParsingJob {
         } catch (Throwable ex) {
             log.debug(ex);
         } finally {
-            monitor.done();
+            // Early exits signal the monitor before accomplishWork publishes results to consumers.
+            // Do not signal it again after those consumers have been notified.
+            if (!monitorFinished) {
+                monitor.done();
+            }
         }
 
         int parsedOffset = workOffset;
         int parsedLength = workLength;
 
+        this.environment.invalidatePresentation(viewer, parsedOffset, parsedLength);
         this.accomplishWork(parsedOffset, parsedLength);
-
-        UIUtils.asyncExec(() -> {
-            viewer.invalidateTextPresentation(parsedOffset, parsedLength);
-        });
+        return true;
     }
 
     @NotNull
     private SQLDialect obtainCurrentSqlDialect(@Nullable DBCExecutionContext executionContext) {
         try {
-            DBPDataSourceContainer dsContainer = EditorUtils.getInputDataSource(this.editor.getEditorInput());
+            DBPDataSourceContainer dsContainer = this.environment.getInputDataSource(this.editor.getEditorInput());
             SQLDialect dialect = executionContext != null && executionContext.getDataSource() != null
                 ? executionContext.getDataSource().getSQLDialect()
                 : dsContainer != null ? dsContainer.getScriptDialect().createInstance() : BasicSQLDialect.INSTANCE;
@@ -930,7 +945,15 @@ public class SQLBackgroundParsingJob {
     private void signalAccomplished() {
         synchronized (this.syncRoot) {
             this.isRunning = false;
-            this.lastParsingFinishStamp.complete(System.currentTimeMillis());
+            ActiveParse finishedParse = this.activeParse;
+            this.activeParse = null;
+            if (finishedParse != null) {
+                finishedParse.workRegion().complete(null);
+                finishedParse.finishStamp().complete(System.currentTimeMillis());
+            } else if (this.queuedForReparse.size() == 0) {
+                // Do not finish work queued while a canceled run was starting.
+                this.lastQueuedParseFinishStamp.complete(System.currentTimeMillis());
+            }
         }
     }
 

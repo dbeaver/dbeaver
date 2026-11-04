@@ -135,6 +135,11 @@ public interface PostgreServerExtension {
 
     // Stored procedures support (workarounds for Redshift mostly)
     boolean supportsStoredProcedures();
+
+    default boolean supportsProcedureReturnValue() {
+        return false;
+    }
+
     @NotNull
     String getProceduresSystemTable();
     @NotNull

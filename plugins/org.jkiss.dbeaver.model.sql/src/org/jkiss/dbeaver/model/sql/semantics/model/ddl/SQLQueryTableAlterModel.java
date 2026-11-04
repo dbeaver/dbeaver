@@ -70,6 +70,12 @@ public class SQLQueryTableAlterModel extends SQLQueryModelContent {
 
     @Override
     public void resolveObjectAndRowsReferences(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        for (SQLQueryTableAlterActionSpec action : this.alterActions) {
+            SQLQueryColumnSpec columnSpec = action.getColumnSpec();
+            if (columnSpec != null) {
+                columnSpec.resolveDeclaredType(context, statistics);
+            }
+        }
         if (this.targetTable != null) {
             this.targetTable.resolveObjectAndRowsReferences(context, statistics);
         } else {

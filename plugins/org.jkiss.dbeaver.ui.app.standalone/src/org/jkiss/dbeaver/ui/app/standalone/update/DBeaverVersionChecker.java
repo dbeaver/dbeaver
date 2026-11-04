@@ -37,6 +37,9 @@ import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 
 /**
  * Version checker job
@@ -44,11 +47,18 @@ import java.io.IOException;
 public class DBeaverVersionChecker extends AbstractJob {
 
     private static final Log log = Log.getLog(DBeaverVersionChecker.class);
+    private static final String PROP_OVERRIDE_PRODUCT_VERSION = "dbeaver.debug.override-product-version";
+    private static final String PROP_OVERRIDE_PRODUCT_PATCH = "dbeaver.debug.override-product-patch";
+    private static final String PROP_SKIP_VERSION_CHECK = "dbeaver.debug.skip-version-check";
+    private static final String PROP_VERSION_DESCRIPTOR = "dbeaver.debug.version-descriptor";
+    private static final String PROP_VERSION_UPDATE_URL = "versionUpdateURL";
+    private static final String PREF_SUPPRESS_UPDATE_CHECK_PREFIX = "suppressUpdateCheck.";
+
     private static final boolean SKIP_VERSION_CHECK;
     private static final Version OVERRIDE_PRODUCT_VERSION;
 
     static {
-        String versionProperty = System.getProperty("dbeaver.debug.override-product-version");
+        String versionProperty = System.getProperty(PROP_OVERRIDE_PRODUCT_VERSION);
         Version version = null;
 
         if (CommonUtils.isNotEmpty(versionProperty)) {
@@ -60,7 +70,7 @@ public class DBeaverVersionChecker extends AbstractJob {
         }
 
         OVERRIDE_PRODUCT_VERSION = version;
-        SKIP_VERSION_CHECK = CommonUtils.toBoolean(System.getProperty("dbeaver.debug.skip-version-check"));
+        SKIP_VERSION_CHECK = CommonUtils.toBoolean(System.getProperty(PROP_SKIP_VERSION_CHECK));
     }
 
     private final boolean showAlways;
@@ -95,7 +105,7 @@ public class DBeaverVersionChecker extends AbstractJob {
             log.error("No Eclipse product found. Installation is corrupted");
             return Status.OK_STATUS;
         }
-        final String updateURL = product.getProperty("versionUpdateURL");
+        final String updateURL = product.getProperty(PROP_VERSION_UPDATE_URL);
         if (updateURL == null) {
             return Status.OK_STATUS;
         }
@@ -104,8 +114,15 @@ public class DBeaverVersionChecker extends AbstractJob {
         final VersionDescriptor newVersion;
 
         try {
-            newVersion = new VersionDescriptor(DBWorkbench.getPlatform(), updateURL);
-        } catch (IOException e) {
+            String descriptorFile = System.getProperty(PROP_VERSION_DESCRIPTOR);
+            if (CommonUtils.isNotEmpty(descriptorFile)) {
+                try (var input = Files.newInputStream(Path.of(descriptorFile))) {
+                    newVersion = new VersionDescriptor(input);
+                }
+            } else {
+                newVersion = new VersionDescriptor(DBWorkbench.getPlatform(), updateURL);
+            }
+        } catch (IOException | InvalidPathException e) {
             if (showAlways) {
                 // Show error dialog only if fired by user
                 DBWorkbench.getPlatformUI().showError(CoreMessages.dialog_version_update_title, CoreMessages.dialog_version_update_error_cannot_check_version, e);
@@ -113,7 +130,7 @@ public class DBeaverVersionChecker extends AbstractJob {
             return Status.CANCEL_STATUS;
         }
 
-        boolean newVersionAvailable = newVersion.getProgramVersion().compareTo(currentVersion) > 0;
+        boolean newVersionAvailable = newVersion.isNewerThan(currentVersion, getProductPatchNumber());
         boolean suppressed = isSuppressed(newVersion);
         UIServiceApplicationVersionUpdater updater = DBWorkbench.findService(UIServiceApplicationVersionUpdater.class);
         boolean showToolbarNotification = updater == null && newVersionAvailable && !showAlways;
@@ -138,8 +155,20 @@ public class DBeaverVersionChecker extends AbstractJob {
     }
 
     static boolean isSuppressed(@NotNull VersionDescriptor version) {
-        CoreApplicationActivator activator = CoreApplicationActivator.getDefault();
-        return activator != null && activator.getPreferenceStore().getBoolean("suppressUpdateCheck." + version.getPlainVersion());
+        return CoreApplicationActivator.getDefault().getPreferenceStore().getBoolean(getSuppressionKey(version));
+    }
+
+    @NotNull
+    static String getSuppressionKey(@NotNull VersionDescriptor version) {
+        return PREF_SUPPRESS_UPDATE_CHECK_PREFIX + version.getUpdateVersion();
+    }
+
+    static int getProductPatchNumber() {
+        if (OVERRIDE_PRODUCT_VERSION != null) {
+            // The override is an OSGi version; its qualifier is not a numeric product patch.
+            return Math.max(0, Integer.getInteger(PROP_OVERRIDE_PRODUCT_PATCH, 0));
+        }
+        return GeneralUtils.getProductPatchNumber();
     }
 
     @NotNull

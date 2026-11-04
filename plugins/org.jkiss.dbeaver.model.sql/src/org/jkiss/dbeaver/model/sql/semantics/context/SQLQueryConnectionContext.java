@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -117,6 +117,11 @@ public abstract class SQLQueryConnectionContext {
             return objs.stream().filter(o ->  objectType.getTypeClass().isInstance(o)).toList();
         }
     }
+
+    /** Resolve a complete data type spelling, including arguments, when supported by the connection. */
+    @Nullable
+    public abstract DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String fullTypeName)
+        throws DBException;
 
     public abstract boolean isDummy();
 
