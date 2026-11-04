@@ -53,8 +53,7 @@ public class DDProject {
     @Nullable
     public synchronized DDProjectSyncLocalBinding getBinding(@NotNull DBPProject project) throws DBException {
         validateProject(project);
-        DDProjectSyncLocalBinding binding = bindingStore.load();
-        return belongsToAnotherAccount(binding) ? null : binding;
+        return bindingStore.load();
     }
 
     @NotNull
@@ -110,10 +109,6 @@ public class DDProject {
 
     public synchronized void unbind(@NotNull DBPProject project) throws DBException {
         validateProject(project);
-        DDProjectSyncLocalBinding binding = bindingStore.load();
-        if (belongsToAnotherAccount(binding)) {
-            throw new DBException("Project is bound to another DataDam account: " + project.getName());
-        }
         bindingStore.delete();
     }
 
@@ -148,11 +143,11 @@ public class DDProject {
 
     @Nullable
     private DDProjectSyncSnapshot prepareSnapshot(@NotNull DBPProject project) throws DBException {
-        DDProjectSyncLocalBinding current = getBinding(project);
-        if (current == null) {
+        DDProjectSyncLocalBinding binding = getBinding(project);
+        if (binding == null) {
             return null;
         }
-        return syncService.getProjectSyncSnapshot(project, current);
+        return syncService.getProjectSyncSnapshot(project, binding);
     }
 
     private void requireUnbound(@NotNull DBPProject project) throws DBException {
@@ -166,10 +161,6 @@ public class DDProject {
         if (!bindingFile.equals(DDProjectSyncBindingStore.getBindingFile(project))) {
             throw new DBException("Project binding location does not match this DataDam project: " + project.getName());
         }
-    }
-
-    private boolean belongsToAnotherAccount(@Nullable DDProjectSyncLocalBinding binding) {
-        return binding != null && !binding.accountId().equals(syncService.getAccountId());
     }
 
     @NotNull
