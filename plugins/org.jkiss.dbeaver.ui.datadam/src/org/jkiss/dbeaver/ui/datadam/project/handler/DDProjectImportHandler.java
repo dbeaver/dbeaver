@@ -186,6 +186,11 @@ public class DDProjectImportHandler extends AbstractHandler {
             });
             filterText.addModifyListener(e -> {
                 viewer.refresh();
+                Set<DDSharedProject> visibleProjects = new HashSet<>();
+                for (TableItem item : table.getItems()) {
+                    visibleProjects.add((DDSharedProject) item.getData());
+                }
+                checkedProjects.retainAll(visibleProjects);
                 for (TableItem item : table.getItems()) {
                     DDSharedProject project = (DDSharedProject) item.getData();
                     viewer.setChecked(project, checkedProjects.contains(project));
