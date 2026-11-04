@@ -90,24 +90,20 @@ public class DDProjectUIManager {
         if (monitor.isCanceled()) {
             return List.of();
         }
-        if (!DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
+        List<ProjectListing> listings = loadProjectListings(monitor);
+        if (listings == null) {
             return null;
         }
         DDProjectManager manager = getProjectManager();
-        Map<UUID, DDSharedProject> remoteProjects = new LinkedHashMap<>();
-        for (DDSharedProject remote : manager.getRemoteProjects()) {
-            remoteProjects.put(remote.id(), remote);
-        }
         List<ProjectViewJob> jobs = new ArrayList<>();
-        for (LocalProjectInfo local : manager.getLocalProjects()) {
+        for (ProjectListing listing : listings) {
             if (monitor.isCanceled()) {
                 return List.of();
             }
-            if (local.remoteProjectId() == null) {
-                continue;
+            LocalProjectInfo local = listing.localProject();
+            if (local != null && local.remoteProjectId() != null) {
+                jobs.add(new ProjectViewJob(manager, local, listing.remoteProject()));
             }
-            DDSharedProject remote = remoteProjects.remove(local.remoteProjectId());
-            jobs.add(new ProjectViewJob(manager, local, remote));
         }
         if (monitor.isCanceled()) {
             return List.of();
@@ -138,15 +134,53 @@ public class DDProjectUIManager {
             }
             views.add(job.view);
         }
-        for (DDSharedProject remote : remoteProjects.values()) {
+        for (ProjectListing listing : listings) {
             if (monitor.isCanceled()) {
                 return List.of();
             }
-            views.add(new DDProjectView(
-                remote.name(), remote.description(), null, remote, null, ProjectStatus.NOT_ON_DEVICE
-            ));
+            if (listing.localProject() == null && listing.remoteProject() != null) {
+                DDSharedProject remote = listing.remoteProject();
+                views.add(new DDProjectView(
+                    remote.name(), remote.description(), null, remote, null, ProjectStatus.NOT_ON_DEVICE
+                ));
+            }
         }
         return monitor.isCanceled() ? List.of() : views;
+    }
+
+    @Nullable
+    public List<ProjectListing> loadProjectListings(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (monitor.isCanceled() || !DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
+            return null;
+        }
+        DDProjectManager manager = getProjectManager();
+        Map<UUID, DDSharedProject> remoteProjects = new LinkedHashMap<>();
+        for (DDSharedProject remote : manager.getRemoteProjects()) {
+            remoteProjects.put(remote.id(), remote);
+        }
+        if (monitor.isCanceled()) {
+            return null;
+        }
+        List<ProjectListing> listings = new ArrayList<>();
+        for (LocalProjectInfo local : manager.getLocalProjects()) {
+            if (monitor.isCanceled()) {
+                return null;
+            }
+            listings.add(new ProjectListing(local, remoteProjects.remove(local.remoteProjectId())));
+        }
+        for (DDSharedProject remote : remoteProjects.values()) {
+            if (monitor.isCanceled()) {
+                return null;
+            }
+            listings.add(new ProjectListing(null, remote));
+        }
+        return listings;
+    }
+
+    public record ProjectListing(
+        @Nullable LocalProjectInfo localProject,
+        @Nullable DDSharedProject remoteProject
+    ) {
     }
 
     private class ProjectViewJob extends AbstractJob {

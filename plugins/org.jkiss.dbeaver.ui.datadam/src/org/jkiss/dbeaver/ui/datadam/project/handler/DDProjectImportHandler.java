@@ -34,14 +34,13 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectView;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager.ProjectListing;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
 import java.lang.reflect.InvocationTargetException;
@@ -85,15 +84,15 @@ public class DDProjectImportHandler extends AbstractHandler {
             public void run(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
                 monitor.beginTask(DDTrackingUIMessages.project_sync_import_list_job, IProgressMonitor.UNKNOWN);
                 try {
-                    List<DDProjectView> views = uiManager.loadProjectViews(monitor);
-                    if (views != null) {
+                    List<ProjectListing> listings = uiManager.loadProjectListings(monitor);
+                    if (listings != null && !monitor.isCanceled()) {
                         List<DDSharedProject> available = new ArrayList<>();
-                        for (DDProjectView view : views) {
+                        for (ProjectListing listing : listings) {
                             if (monitor.isCanceled()) {
                                 return;
                             }
-                            if (view.status() == ProjectStatus.NOT_ON_DEVICE && view.remoteProject() != null) {
-                                available.add(view.remoteProject());
+                            if (listing.localProject() == null && listing.remoteProject() != null) {
+                                available.add(listing.remoteProject());
                             }
                         }
                         result = available;
@@ -215,17 +214,21 @@ public class DDProjectImportHandler extends AbstractHandler {
         private void checkAllProjects() {
             boolean checked = selectAllButton.getSelection();
             checkedProjects.clear();
-            if (checked) {
-                checkedProjects.addAll(projects);
-            }
             for (TableItem item : viewer.getTable().getItems()) {
-                viewer.setChecked(item.getData(), checked);
+                DDSharedProject project = (DDSharedProject) item.getData();
+                viewer.setChecked(project, checked);
+                if (checked) {
+                    checkedProjects.add(project);
+                }
             }
             updateSelection();
         }
 
         private void updateSelection() {
-            selectAllButton.setSelection(!projects.isEmpty() && checkedProjects.size() == projects.size());
+            TableItem[] visibleItems = viewer.getTable().getItems();
+            selectAllButton.setEnabled(visibleItems.length > 0);
+            selectAllButton.setSelection(visibleItems.length > 0 && Arrays.stream(visibleItems)
+                .allMatch(item -> checkedProjects.contains(item.getData())));
             Button importButton = getButton(IDialogConstants.OK_ID);
             if (importButton != null) {
                 importButton.setEnabled(!checkedProjects.isEmpty());

@@ -27,7 +27,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.LocalProjectInfo;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.SyncResult;
 import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -38,6 +37,7 @@ import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictResolver;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictResolver.Choice;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager.ProjectListing;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -59,19 +59,21 @@ public class DDProjectSyncAllHandler extends AbstractHandler {
         var syncResult = uiManager.synchronizeProjects(projects);
         List<String> errors = new ArrayList<>();
         syncResult.failures().forEach(failure -> errors.add(failure.projectName() + ": " + failure.error().getMessage()));
-        for (SyncResult result : syncResult.results()) {
-            if (result.status() != ProjectStatus.CONFLICT) {
-                continue;
-            }
-            try {
-                Choice choice = conflictResolver.openConflictDialog(shell, result.project());
-                if (choice != null) {
-                    var resolution = conflictResolver.applyConflictChoice(result.project(), choice);
-                    resolution.failures().forEach(failure ->
-                        errors.add(failure.projectName() + ": " + failure.error().getMessage()));
+        if (!syncResult.canceled()) {
+            for (SyncResult result : syncResult.results()) {
+                if (result.status() != ProjectStatus.CONFLICT) {
+                    continue;
                 }
-            } catch (DBException e) {
-                errors.add(result.project().getName() + ": " + e.getMessage());
+                try {
+                    Choice choice = conflictResolver.openConflictDialog(shell, result.project());
+                    if (choice != null) {
+                        var resolution = conflictResolver.applyConflictChoice(result.project(), choice);
+                        resolution.failures().forEach(failure ->
+                            errors.add(failure.projectName() + ": " + failure.error().getMessage()));
+                    }
+                } catch (DBException e) {
+                    errors.add(result.project().getName() + ": " + e.getMessage());
+                }
             }
         }
         if (!errors.isEmpty()) {
@@ -88,9 +90,13 @@ public class DDProjectSyncAllHandler extends AbstractHandler {
             public void run(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
                 monitor.beginTask(DDTrackingUIMessages.projects_sync_all, IProgressMonitor.UNKNOWN);
                 try {
-                    List<DBPProject> bound = uiManager.getLocalProjects().stream()
-                        .filter(info -> info.remoteProjectId() != null)
-                        .map(LocalProjectInfo::project)
+                    List<ProjectListing> listings = uiManager.loadProjectListings(monitor);
+                    if (listings == null || monitor.isCanceled()) {
+                        return;
+                    }
+                    List<DBPProject> bound = listings.stream()
+                        .filter(listing -> listing.localProject() != null && listing.remoteProject() != null)
+                        .map(listing -> listing.localProject().project())
                         .toList();
                     if (!monitor.isCanceled()) {
                         result = bound;
