@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.sql.semantics.model.programmaticals;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryComplexName;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.statements.SQLQueryStatementModel;
@@ -31,7 +30,7 @@ import java.util.List;
 public final class SQLQueryTriggerCreateModel extends SQLQueryTriggerStatementModel {
     SQLQueryTriggerCreateModel(
         @NotNull STMTreeNode node, @Nullable SQLQueryComplexName name,
-        @Nullable SQLQueryRowsTableDataModel table, @NotNull List<SQLQuerySymbolEntry> aliases,
+        @Nullable SQLQueryRowsTableDataModel table, @NotNull List<TransitionAlias> aliases,
         @Nullable SQLQueryStatementModel body
     ) {
         super(node, name, null, table, aliases, body);

@@ -177,6 +177,24 @@ public class GenericProceduralTest extends ProceduralDialectTestBase {
         assertProposes(body + "SELECT | FROM scratch; END", "id");
     }
 
+    @Test
+    void explicitTransitionTableAliasIsARowSource() throws DBException {
+        String tableSql = "CREATE TRIGGER tr AFTER UPDATE ON tab REFERENCING NEW TABLE AS changed " +
+            "BEGIN SELECT id FROM changed; END";
+        var tableModel = recognize(tableSql);
+        var tableTrigger = root(tableModel, SQLQueryTriggerCreateModel.class);
+        Assertions.assertEquals(1, tableTrigger.getTransitionAliases().size());
+        assertBound(tableModel, "changed", 0, 1);
+        assertProposes("CREATE TRIGGER tr AFTER UPDATE ON tab REFERENCING NEW TABLE AS changed " +
+            "BEGIN SELECT * FROM |; END", "changed");
+        var request = RequestBuilder.tables(tables -> tables.table("tab", table -> table.attribute("id")))
+            .prepare();
+        String tableColumns = "CREATE TRIGGER tr AFTER UPDATE ON tab REFERENCING NEW TABLE AS changed " +
+            "BEGIN SELECT | FROM changed; END";
+        var tableColumnProposals = request.requestNewStrings(tableColumns);
+        Assertions.assertTrue(tableColumnProposals.contains("id"), () -> tableColumns + ": " + tableColumnProposals);
+    }
+
     /**
      * <ul>
      * <li>Routine definitions have their respective root models:

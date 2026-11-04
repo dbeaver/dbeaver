@@ -20,7 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryLocalVariableInfo;
 import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.SQLQueryAnonymousBlockModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.SQLQueryRoutineCreateModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.SQLQueryRoutineReturn;
@@ -184,6 +186,20 @@ public class FirebirdProceduralTest extends ProceduralDialectTestBase {
     void triggerBodyKeepsTransitionRowReferences() {
         root("CREATE TRIGGER tr AFTER UPDATE ON tab REFERENCING NEW AS changed FOR EACH ROW " +
             "BEGIN SELECT changed.id; SELECT changed.id; END", SQLQueryTriggerCreateModel.class);
+    }
+
+    @Test
+    void triggerNewRowResolvesFieldsButNotFromSources() throws DBException {
+        String sql = "CREATE TRIGGER tr FOR tab ACTIVE AFTER UPDATE AS " +
+            "BEGIN SELECT NEW.id FROM tab INTO :value; END";
+        var model = recognize(sql);
+        root(model, SQLQueryTriggerCreateModel.class);
+        var reference = model.getAllSymbols().stream().filter(s -> s.getRawName().equalsIgnoreCase("NEW"))
+            .findFirst().orElseThrow();
+        var binding = Assertions.assertInstanceOf(SQLQueryLocalVariableInfo.class, reference.getDefinition());
+        Assertions.assertEquals(SQLDialectFeatures.LocalVariableKind.ROW_REFERENCE, binding.kind());
+        assertDoesNotPropose("CREATE TRIGGER tr FOR tab ACTIVE AFTER UPDATE AS " +
+            "BEGIN SELECT * FROM |; END", "NEW");
     }
 
     /**

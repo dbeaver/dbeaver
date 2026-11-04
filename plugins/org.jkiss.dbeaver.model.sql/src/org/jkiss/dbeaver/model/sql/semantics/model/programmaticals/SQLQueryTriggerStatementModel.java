@@ -16,9 +16,11 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics.model.programmaticals;
 
+import org.antlr.v4.runtime.Token;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
+import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardLexer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -26,6 +28,7 @@ import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDataModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.statements.SQLQueryStatementModel;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
@@ -45,12 +48,52 @@ public abstract class SQLQueryTriggerStatementModel extends SQLQueryProgrammatic
     @Nullable
     private final SQLQueryRowsTableDataModel table;
     @NotNull
-    private final List<SQLQuerySymbolEntry> transitionAliases;
+    private final List<TransitionAlias> transitionAliases;
+    @NotNull
+    private final List<AffectedSubsetModel> transitionTables = new ArrayList<>();
+
+    record TransitionAlias(@NotNull SQLQuerySymbolEntry name, boolean table) {
+    }
+
+    /** One transition-table name, with the affected table's columns but its own row-source identity. */
+    public static final class AffectedSubsetModel extends SQLQueryRowsSourceModel {
+        @NotNull
+        private final SQLQueryRowsTableDataModel table;
+
+        private AffectedSubsetModel(@NotNull STMTreeNode node, @NotNull SQLQueryRowsTableDataModel table) {
+            super(node);
+            this.table = table;
+        }
+
+        @NotNull
+        @Override
+        protected SQLQueryRowsSourceContext resolveRowSourcesImpl(
+            @NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics
+        ) {
+            return context.reset();
+        }
+
+        @NotNull
+        @Override
+        protected SQLQueryRowsDataContext resolveRowDataImpl(
+            @NotNull SQLQueryRowsDataContext context, @NotNull SQLQueryRecognitionContext statistics
+        ) {
+            List<SQLQueryResultColumn> columns = this.table.getRowsDataContext().getColumnsList().stream()
+                .map(column -> column.withNewSource(this)).toList();
+            return this.getRowsSources().makeTuple(this, columns, List.of());
+        }
+
+        @Nullable
+        @Override
+        protected <R, T> R applyImpl(@NotNull SQLQueryNodeModelVisitor<T, R> visitor, @Nullable T arg) {
+            return visitor.visitAffectedSubset(this, arg);
+        }
+    }
 
     protected SQLQueryTriggerStatementModel(
         @NotNull STMTreeNode node, @Nullable SQLQueryComplexName name,
         @Nullable SQLQueryObjectDataModel existingObject,
-        @Nullable SQLQueryRowsTableDataModel table, @NotNull List<SQLQuerySymbolEntry> transitionAliases,
+        @Nullable SQLQueryRowsTableDataModel table, @NotNull List<TransitionAlias> transitionAliases,
         @Nullable SQLQueryStatementModel body
     ) {
         super(node, body, existingObject, table);
@@ -71,7 +114,7 @@ public abstract class SQLQueryTriggerStatementModel extends SQLQueryProgrammatic
         SQLQueryObjectDataModel existingObject = alter && name != null
             ? new SQLQueryObjectDataModel(nameNode, name, RelationalObjectType.TYPE_TRIGGER, Set.of()) : null;
         SQLQueryRowsTableDataModel table = null;
-        List<SQLQuerySymbolEntry> aliases = new ArrayList<>();
+        List<TransitionAlias> aliases = new ArrayList<>();
         for (STMTreeNode part : node.findChildrenOfName(STMKnownRuleNames.triggerHeaderPart)) {
             STMTreeNode tableNode = part.findFirstChildOfName(STMKnownRuleNames.tableName);
             if (tableNode != null) {
@@ -82,7 +125,9 @@ public abstract class SQLQueryTriggerStatementModel extends SQLQueryProgrammatic
                 if (alias != null) {
                     SQLQuerySymbolEntry entry = recognizer.collectIdentifier(alias, null);
                     if (entry != null) {
-                        aliases.add(entry);
+                        boolean tableAlias = transition.findNonErrorChildren().stream().anyMatch(child ->
+                            child.getPayload() instanceof Token token && token.getType() == SQLStandardLexer.TABLE);
+                        aliases.add(new TransitionAlias(entry, tableAlias));
                     }
                 }
             }
@@ -115,7 +160,7 @@ public abstract class SQLQueryTriggerStatementModel extends SQLQueryProgrammatic
 
     @NotNull
     public List<SQLQuerySymbolEntry> getTransitionAliases() {
-        return this.transitionAliases;
+        return this.transitionAliases.stream().map(TransitionAlias::name).toList();
     }
 
     @Nullable
@@ -136,25 +181,46 @@ public abstract class SQLQueryTriggerStatementModel extends SQLQueryProgrammatic
             return context;
         }
         this.table.resolveRowSources(context, statistics);
+        this.transitionTables.clear();
         SQLQueryLocalVariablesContext bindings = context.getLocalVariables();
-        for (String rawName : List.of("NEW", "OLD", "INSERTED", "DELETED")) {
+        boolean tsql = context.getDialect().getDialectFeatures().getProceduralSyntaxFamily() ==
+            SQLDialectFeatures.ProceduralSyntaxFamily.TSQL;
+        for (String rawName : tsql ? List.of("INSERTED", "DELETED") : List.of("NEW", "OLD")) {
             String canonicalName = SQLUtils.identifierToCanonicalForm(context.getDialect(), rawName, false, false);
             SQLQuerySymbolEntry alias = new SQLQuerySymbolEntry(this.table.getSyntaxNode(), canonicalName, rawName, null);
+            SQLDialectFeatures.LocalVariableKind kind = tsql
+                ? SQLDialectFeatures.LocalVariableKind.ROWSET : SQLDialectFeatures.LocalVariableKind.ROW_REFERENCE;
+            SQLQueryRowsSourceModel rows = this.table;
+            if (tsql) {
+                rows = new AffectedSubsetModel(alias.getSyntaxNode(), this.table);
+            }
             SQLQueryLocalVariableInfo binding = new SQLQueryLocalVariableInfo(
-                alias, SQLDialectFeatures.LocalVariableKind.ROW_REFERENCE, SQLQueryExprType.UNKNOWN, this.table, false);
+                alias, kind, SQLQueryExprType.UNKNOWN, rows, false);
             SQLQueryLocalVariablesContext next = bindings.withLocalVariable(binding);
             if (next != bindings) {
                 alias.setDefinition(binding);
                 bindings = next;
+                if (rows instanceof AffectedSubsetModel transitionTable) {
+                    transitionTable.resolveRowSources(context, statistics);
+                    this.transitionTables.add(transitionTable);
+                }
             }
         }
-        for (SQLQuerySymbolEntry alias : this.transitionAliases) {
+        for (TransitionAlias transition : this.transitionAliases) {
+            SQLQuerySymbolEntry alias = transition.name();
+            SQLQueryRowsSourceModel rows = transition.table()
+                ? new AffectedSubsetModel(alias.getSyntaxNode(), this.table) : this.table;
             SQLQueryLocalVariableInfo binding = new SQLQueryLocalVariableInfo(
-                alias, SQLDialectFeatures.LocalVariableKind.ROW_REFERENCE, SQLQueryExprType.UNKNOWN, this.table, false);
+                alias, transition.table() ? SQLDialectFeatures.LocalVariableKind.ROWSET
+                    : SQLDialectFeatures.LocalVariableKind.ROW_REFERENCE, SQLQueryExprType.UNKNOWN, rows, false);
             SQLQueryLocalVariablesContext next = bindings.withLocalVariable(binding);
             if (next != bindings) {
                 alias.setDefinition(binding);
                 bindings = next;
+                if (rows instanceof AffectedSubsetModel transitionTable) {
+                    transitionTable.resolveRowSources(context, statistics);
+                    this.transitionTables.add(transitionTable);
+                }
             } else if (alias.isNotClassified()) {
                 alias.getSymbol().setSymbolClass(SQLQuerySymbolClass.ERROR);
             }
@@ -168,6 +234,7 @@ public abstract class SQLQueryTriggerStatementModel extends SQLQueryProgrammatic
     ) {
         return (this.existingObject == null || this.existingObject.tryResolveValueRelations(context, statistics)) &&
             (this.table == null || this.table.tryResolveValueRelations(context, statistics)) &&
+            this.transitionTables.stream().allMatch(table -> table.tryResolveValueRelations(context, statistics)) &&
             super.tryResolveValueRelations(context, statistics);
     }
 }

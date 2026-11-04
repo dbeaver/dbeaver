@@ -297,7 +297,8 @@ public class SQLQueryRowsSourceContext {
             SQLQueryLocalVariableInfo local = this.localVariables.findLocalVariable(entry, SQLDialectFeatures.LocalVariableCapability.FIELDS);
             if (local != null && local.rows() != null) {
                 SQLQueryComplexName key = new SQLQueryComplexName(entry.getSyntaxNode(), List.of(entry), 0, null);
-                return new SourceResolutionInfo(new SourceResolutionResult(local.rows(), key, null, null), key);
+                return new SourceResolutionInfo(new SourceResolutionResult(
+                    local.rows(), key, null, local.declaration().getSymbol()), key);
             }
         }
 

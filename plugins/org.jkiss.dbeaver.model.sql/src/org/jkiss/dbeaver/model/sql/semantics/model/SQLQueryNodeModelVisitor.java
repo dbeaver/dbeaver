@@ -235,6 +235,11 @@ public interface SQLQueryNodeModelVisitor<T, R> {
     }
 
     @Nullable
+    default R visitAffectedSubset(@NotNull SQLQueryTriggerStatementModel.AffectedSubsetModel subset, T arg) {
+        return null;
+    }
+
+    @Nullable
     default R visitProgrammaticalStatement(@NotNull SQLQueryProgrammaticalStatementModel statement, T arg) {
         return null;
     }

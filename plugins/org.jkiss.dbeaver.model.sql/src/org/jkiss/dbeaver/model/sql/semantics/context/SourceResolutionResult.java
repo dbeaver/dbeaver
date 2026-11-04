@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryComplexName;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
+import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.SQLQueryTriggerStatementModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsCteSubqueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsLocalTableModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
@@ -49,7 +50,8 @@ public class SourceResolutionResult {
         this.referenceName = referenceName;
         this.tableOrNull = tableOrNull;
         this.aliasOrNull = aliasOrNull;
-        this.isNamedRowsSource = source instanceof SQLQueryRowsCteSubqueryModel || source instanceof SQLQueryRowsLocalTableModel;
+        this.isNamedRowsSource = source instanceof SQLQueryRowsCteSubqueryModel || source instanceof SQLQueryRowsLocalTableModel ||
+            source instanceof SQLQueryTriggerStatementModel.AffectedSubsetModel;
     }
 
 }

@@ -513,7 +513,7 @@ public abstract class SQLServerDialectBase extends JDBCSQLDialect implements TPR
         return DialectFeatures.INSTANCE;
     }
 
-    private static class DialectFeatures extends SQLDialectFeatures {
+    protected static class DialectFeatures extends SQLDialectFeatures {
         private static final DialectFeatures INSTANCE = new DialectFeatures();
 
         @NotNull

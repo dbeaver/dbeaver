@@ -33,7 +33,7 @@ public class SQLServerDialectMssql extends SQLServerDialectBase {
         return DialectFeatures.INSTANCE;
     }
 
-    private static class DialectFeatures extends SQLDialectFeatures {
+    private static class DialectFeatures extends SQLServerDialectBase.DialectFeatures {
         private static final DialectFeatures INSTANCE = new DialectFeatures();
 
         @NotNull

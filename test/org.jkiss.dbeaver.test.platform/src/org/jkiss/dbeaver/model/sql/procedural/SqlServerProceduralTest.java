@@ -18,21 +18,27 @@ package org.jkiss.dbeaver.model.sql.procedural;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerDialectSybase;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures.ProjectionAliasVisibilityScope;
 import org.jkiss.dbeaver.model.sql.analyzer.builder.request.RequestBuilder;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolOrigin;
+import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryLocalVariableInfo;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQuerySelectIntoModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.dml.SQLQueryUpdateModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTargetReferenceExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.SQLQueryRoutineCreateModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.SQLQueryTriggerCreateModel;
+import org.jkiss.dbeaver.model.sql.semantics.model.programmaticals.SQLQueryTriggerStatementModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.statements.SQLQueryConditionalStatement;
 import org.jkiss.dbeaver.model.sql.semantics.model.statements.SQLQueryVariableDeclarationStatement;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.List;
 
 public class SqlServerProceduralTest extends ProceduralDialectTestBase {
@@ -40,6 +46,43 @@ public class SqlServerProceduralTest extends ProceduralDialectTestBase {
     @Override
     protected SQLDialect dialect() {
         return dialectById("sqlserver");
+    }
+
+    @Test
+    void subclassesRetainBaseProjectionAliasVisibility() {
+        var expected = EnumSet.of(ProjectionAliasVisibilityScope.ORDER_BY);
+        Assertions.assertEquals(expected, dialect().getDialectFeatures().getProjectionAliasVisibilityScope());
+        Assertions.assertEquals(expected, new SQLServerDialectSybase().getDialectFeatures().getProjectionAliasVisibilityScope());
+    }
+
+    @Test
+    void triggerTransitionTablesAreDistinctRowsSources() throws DBException {
+        String sql = "CREATE TRIGGER tr ON tab AFTER INSERT AS BEGIN " +
+            "SELECT id FROM INSERTED; SELECT id FROM DELETED; END";
+        var model = recognize(sql);
+        var trigger = root(model, SQLQueryTriggerCreateModel.class);
+        assertEmbeddedSqlCount(trigger, 2);
+        SQLQuerySymbolEntry insertedName = Assertions.assertInstanceOf(SQLQuerySymbolEntry.class,
+            model.getAllSymbols().stream().filter(s -> s.getRawName().equalsIgnoreCase("INSERTED"))
+                .findFirst().orElseThrow().getDefinition());
+        SQLQuerySymbolEntry deletedName = Assertions.assertInstanceOf(SQLQuerySymbolEntry.class,
+            model.getAllSymbols().stream().filter(s -> s.getRawName().equalsIgnoreCase("DELETED"))
+                .findFirst().orElseThrow().getDefinition());
+        SQLQueryLocalVariableInfo inserted = Assertions.assertInstanceOf(SQLQueryLocalVariableInfo.class, insertedName.getDefinition());
+        SQLQueryLocalVariableInfo deleted = Assertions.assertInstanceOf(SQLQueryLocalVariableInfo.class, deletedName.getDefinition());
+        Assertions.assertInstanceOf(SQLQueryTriggerStatementModel.AffectedSubsetModel.class, inserted.rows());
+        Assertions.assertInstanceOf(SQLQueryTriggerStatementModel.AffectedSubsetModel.class, deleted.rows());
+        Assertions.assertNotSame(inserted.rows(), deleted.rows());
+
+        var request = RequestBuilder.tables(tables -> tables.table("tab", table -> table.attribute("id")))
+            .dialect(dialect()).prepare();
+        String from = "CREATE TRIGGER tr ON tab AFTER INSERT AS BEGIN SELECT id FROM |; END";
+        Assertions.assertTrue(request.requestNewStrings(from).contains("INSERTED"), from);
+        Assertions.assertTrue(request.requestNewStrings(from).contains("DELETED"), from);
+        String columns = "CREATE TRIGGER tr ON tab AFTER INSERT AS BEGIN SELECT | FROM INSERTED; END";
+        Assertions.assertTrue(request.requestNewStrings(columns).contains("id"), columns);
+        String deletedColumns = "CREATE TRIGGER tr ON tab AFTER INSERT AS BEGIN SELECT | FROM DELETED; END";
+        Assertions.assertTrue(request.requestNewStrings(deletedColumns).contains("id"), deletedColumns);
     }
 
     @Test

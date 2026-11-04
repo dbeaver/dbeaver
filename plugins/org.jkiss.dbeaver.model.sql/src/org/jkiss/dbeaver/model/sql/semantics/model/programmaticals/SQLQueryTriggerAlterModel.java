@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.sql.semantics.model.programmaticals;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryComplexName;
-import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolEntry;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
 import org.jkiss.dbeaver.model.sql.semantics.model.ddl.SQLQueryObjectDataModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsTableDataModel;
@@ -33,7 +32,7 @@ public final class SQLQueryTriggerAlterModel extends SQLQueryTriggerStatementMod
     SQLQueryTriggerAlterModel(
         @NotNull STMTreeNode node, @Nullable SQLQueryComplexName name,
         @Nullable SQLQueryObjectDataModel existingObject, @Nullable SQLQueryRowsTableDataModel table,
-        @NotNull List<SQLQuerySymbolEntry> aliases, @Nullable SQLQueryStatementModel body
+        @NotNull List<TransitionAlias> aliases, @Nullable SQLQueryStatementModel body
     ) {
         super(node, name, existingObject, table, aliases, body);
     }
