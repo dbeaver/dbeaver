@@ -1470,7 +1470,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             Shell shell = getSourceViewer().getTextWidget().getShell();
             if (shell == null || !shell.isDisposed()) {
                 // Unassociated consoles still have editor properties, but no connection-specific properties.
-                Object target = EditorUtils.getInputDataSource(getEditorInput()) == null ? SQLEditorBase.this : getEditorInput();
+                boolean hasDataSource = SQLEditorBase.this instanceof SQLEditor sqlEditor
+                    ? sqlEditor.getDataSourceContainer() != null
+                    : EditorUtils.getInputDataSource(getEditorInput()) != null;
+                Object target = hasDataSource ? getEditorInput() : SQLEditorBase.this;
                 PropertyDialog dialog = PropertyDialog.createDialogOn(shell, null, new StructuredSelection(target));
                 if (dialog != null) {
                     dialog.open();
