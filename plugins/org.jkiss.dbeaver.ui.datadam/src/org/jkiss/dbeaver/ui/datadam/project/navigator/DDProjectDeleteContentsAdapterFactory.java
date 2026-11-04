@@ -48,6 +48,6 @@ public class DDProjectDeleteContentsAdapterFactory implements IAdapterFactory, P
         }
         return DDProjectUIManager.getInstance()
             .getProjectManager()
-            .getBindingStatus(project) != BindingStatus.UNBOUND;
+            .getBindingStatus(project) == BindingStatus.CURRENT_ACCOUNT;
     }
 }

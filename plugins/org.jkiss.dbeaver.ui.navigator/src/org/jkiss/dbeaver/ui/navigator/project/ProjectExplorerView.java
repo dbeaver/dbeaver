@@ -316,24 +316,31 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
     public void handleActiveProjectChange(@NotNull DBPProject oldValue, @NotNull DBPProject newValue) {
         updateRepresentation();
     }
+
+    public void refreshRepresentation() {
+        updateRepresentationNow();
+    }
     
     private void updateRepresentation() {
-        UIExecutionQueue.queueExec(() -> {
-            if (getNavigatorTree().isDisposed()) {
-                return;
-            }
-            getNavigatorTree().reloadTree(getRootNode());
-            boolean viewable = ObjectPropertyTester.nodeProjectHasPermission(
-                getRootNode(),
-                RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW
-            );
-            getNavigatorTree().setVisible(viewable);
-            treeViewLayoutInfo.exclude = !viewable;
-            lockPlaceholder.setVisible(!viewable);
-            lockPlaceholderLayoutInfo.exclude = viewable;
-            treeContainer.layout(true, true);
-        });
+        UIExecutionQueue.queueExec(this::updateRepresentationNow);
         //columnController.autoSizeColumns();
+    }
+
+    private void updateRepresentationNow() {
+        if (getNavigatorTree().isDisposed()) {
+            return;
+        }
+        DBNNode rootNode = getRootNode();
+        getNavigatorTree().reloadTree(rootNode);
+        boolean viewable = ObjectPropertyTester.nodeProjectHasPermission(
+            rootNode,
+            RMConstants.PERMISSION_PROJECT_RESOURCE_VIEW
+        );
+        getNavigatorTree().setVisible(viewable);
+        treeViewLayoutInfo.exclude = !viewable;
+        lockPlaceholder.setVisible(!viewable);
+        lockPlaceholderLayoutInfo.exclude = viewable;
+        treeContainer.layout(true, true);
     }
 
 }
