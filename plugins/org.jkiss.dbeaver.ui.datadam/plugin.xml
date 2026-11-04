@@ -40,6 +40,11 @@
             class="org.jkiss.dbeaver.ui.datadam.project.DDProjectDeleteContentsAdapterFactory">
             <adapter type="org.jkiss.dbeaver.ui.navigator.actions.ProjectDeleteContentsPolicy"/>
         </factory>
+        <factory
+            adaptableType="org.jkiss.dbeaver.model.navigator.DBNProject"
+            class="org.jkiss.dbeaver.ui.datadam.project.DDProjectVisibilityAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.ui.navigator.project.ProjectVisibilityPolicy"/>
+        </factory>
     </extension>
 
     <extension point="org.eclipse.ui.decorators">

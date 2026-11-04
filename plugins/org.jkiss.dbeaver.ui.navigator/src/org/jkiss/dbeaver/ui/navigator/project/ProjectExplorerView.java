@@ -71,7 +71,8 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
     public DBNNode getRootNode() {
         DBNModel model = getGlobalNavigatorModel();
         DBNProject projectNode = model.getRoot().getProjectNode(DBWorkbench.getPlatform().getWorkspace().getActiveProject());
-        return projectNode != null ? projectNode : model.getRoot();
+        return projectNode == null ? model.getRoot()
+            : ProjectVisibility.isVisible(projectNode) ? projectNode : new DBNEmptyNode();
     }
 
     @Override
@@ -82,6 +83,12 @@ public class ProjectExplorerView extends DecoratedProjectView implements DBPProj
         UIUtils.setHelp(parent, IHelpContextIds.CTX_PROJECT_EXPLORER);
         
         TreeViewer viewer = getNavigatorViewer();
+        viewer.addFilter(new ViewerFilter() {
+            @Override
+            public boolean select(Viewer viewer, Object parentElement, Object element) {
+                return !(element instanceof DBNProject project) || ProjectVisibility.isVisible(project);
+            }
+        });
         viewer.addFilter(new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {

@@ -22,10 +22,14 @@ import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobGroup;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.sync.project.ConflictResolution;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
@@ -39,6 +43,10 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.job.*;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
+import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
+import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
+import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -53,8 +61,18 @@ public class DDProjectUIManager {
     private final DDProjectManager projectManager = DDProjectManager.getInstance();
 
     private DDProjectUIManager() {
-        accessService.addKeyBundleListener(DDProjectSyncPropertyTester::firePropertyChange);
-        DDProjectSyncPropertyTester.firePropertyChange();
+        accessService.addKeyBundleListener(this::refreshProjectVisibility);
+        accessService.addAccessListener(new DDDesktopAccessListener() {
+            @Override
+            public void accessChanging() {
+            }
+
+            @Override
+            public void accessChanged() {
+                refreshProjectVisibility();
+            }
+        });
+        refreshProjectVisibility();
     }
 
     @NotNull
@@ -73,6 +91,26 @@ public class DDProjectUIManager {
     @NotNull
     public DDProjectManager getProjectManager() {
         return projectManager;
+    }
+
+    public void refreshProjectVisibility() {
+        DDProjectSyncPropertyTester.firePropertyChange();
+        UIUtils.asyncExec(() -> {
+            for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+                for (IWorkbenchPage page : window.getPages()) {
+                    refreshNavigator(page, ProjectNavigatorView.VIEW_ID);
+                    refreshNavigator(page, ProjectExplorerView.VIEW_ID);
+                    refreshNavigator(page, DatabaseNavigatorView.VIEW_ID);
+                }
+            }
+        });
+    }
+
+    private void refreshNavigator(@NotNull IWorkbenchPage page, @NotNull String viewId) {
+        if (page.findView(viewId) instanceof NavigatorViewBase view && view.getNavigatorTree() != null
+            && !view.getNavigatorTree().isDisposed()) {
+            view.getNavigatorTree().setInput(view.getRootNode());
+        }
     }
 
     @Nullable
@@ -336,6 +374,7 @@ public class DDProjectUIManager {
                 }
             }
         }
+        refreshProjectVisibility();
         return new ProjectJobBatchResult<>(results, failures, canceled);
     }
 
