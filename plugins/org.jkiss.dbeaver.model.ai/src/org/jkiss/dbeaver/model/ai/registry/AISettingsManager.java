@@ -122,7 +122,7 @@ public class AISettingsManager {
             String defaultProfileId = DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_DEFAULT_CONFIGURATION);
             AIConfigurationProfile defaultProfile = settings.getConfigurationOrNull(defaultProfileId);
             if (defaultProfile != null) {
-                settings.setDefaultConfiguration(defaultProfile);
+                settings.setUserDefaultConfiguration(defaultProfile);
             }
             return settings;
         } catch (Exception e) {
@@ -142,8 +142,8 @@ public class AISettingsManager {
         this.saveSettings(settings);
     }
 
-    public void setDefaultConfiguration(@NotNull AIConfigurationProfile profile) {
-        getSettings().setDefaultConfiguration(profile);
+    public void setDefaultConfiguration(@Nullable AIConfigurationProfile profile) {
+        getSettings().setUserDefaultConfiguration(profile);
         saveDefaultConfiguration(profile);
         raiseChangedEvent(this);
     }

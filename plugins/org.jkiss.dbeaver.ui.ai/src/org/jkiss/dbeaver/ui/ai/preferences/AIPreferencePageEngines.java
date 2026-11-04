@@ -128,7 +128,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             return false;
         }
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
-        this.settings.setDefaultConfiguration(selectedProfile);
+        this.settings.setUserDefaultConfiguration(selectedProfile);
         flushSelectedProfile();
         reloadEngines();
         AISettingsManager.getInstance().saveSettings(this.settings);
