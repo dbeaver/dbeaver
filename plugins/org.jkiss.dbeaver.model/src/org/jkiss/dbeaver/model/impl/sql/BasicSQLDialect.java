@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.SQLDialectRelational;
 import org.jkiss.dbeaver.model.sql.SQLStateType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -120,8 +121,9 @@ public class BasicSQLDialect extends AbstractSQLDialect implements SQLDialectRel
     }
 
     @NotNull
-    public GlobalVariableInfo[] getGlobalVariables() {
-        return GlobalVariableInfo.EMPTY_ARRAY;
+    @Override
+    public SQLDialectFeatures getDialectFeatures() {
+        return SQLDialectFeatures.Default.getInstance();
     }
 
     @NotNull

@@ -251,6 +251,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 // Authentication and driver substitution may have changed both the URL and properties.
                 // Validate before creating the driver or invoking any of its URL-processing APIs.
                 validateConnectionProperties(url, connectProps);
+                validateConnectionParameters(monitor, url, connectProps);
                 Driver driverInstance = createDriverInstance(monitor, driver);
                 if (driverInstance != null) {
                     try {
@@ -325,6 +326,13 @@ public abstract class JDBCDataSource extends AbstractDataSource
         catch (Throwable e) {
             throw new DBCConnectException("Unexpected driver error occurred while connecting to the database", e);
         }
+    }
+
+    protected void validateConnectionParameters(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable String url,
+        @NotNull Properties connectProps
+    ) throws DBCException {
     }
 
     /**

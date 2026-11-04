@@ -47,22 +47,24 @@ public class SQLQueryColumnSpec extends SQLQueryNodeModel {
     @Nullable
     private final SQLQuerySymbolEntry columnName;
     @Nullable
-    private final String typeName;
+    private final SQLQueryModelRecognizer.TypeReference typeReference;
+    @Nullable
+    private SQLQueryExprType declaredType;
     @Nullable
     private final SQLQueryValueExpression defaultValueExpression;
     @NotNull
     private final List<SQLQueryColumnConstraintSpec> constraints;
 
-    public SQLQueryColumnSpec(
+    private SQLQueryColumnSpec(
         @NotNull STMTreeNode syntaxNode,
         @Nullable SQLQuerySymbolEntry columnName,
-        @Nullable String typeName,
+        @Nullable SQLQueryModelRecognizer.TypeReference typeReference,
         @Nullable SQLQueryValueExpression defaultValueExpression,
         @NotNull List<SQLQueryColumnConstraintSpec> constraints
     ) {
         super(syntaxNode.getRealInterval(), syntaxNode, defaultValueExpression);
         this.columnName = columnName;
-        this.typeName = typeName;
+        this.typeReference = typeReference;
         this.defaultValueExpression = defaultValueExpression;
         this.constraints = List.copyOf(constraints);
 
@@ -76,11 +78,39 @@ public class SQLQueryColumnSpec extends SQLQueryNodeModel {
 
     @Nullable
     public String getTypeName() {
-        return this.typeName;
+        return this.typeReference == null ? null : this.typeReference.spelling();
     }
 
+    @NotNull
+    public List<String> getTypeModifiers() {
+        return this.typeReference == null ? List.of() : this.typeReference.modifiers();
+    }
+
+    @NotNull
     public SQLQueryExprType getDeclaredColumnType() {
-        return this.typeName != null ? SQLQueryExprType.forExplicitTypeRef(this.typeName) : SQLQueryExprType.UNKNOWN;
+        if (this.declaredType != null) {
+            return this.declaredType;
+        }
+        if (this.typeReference == null) {
+            return SQLQueryExprType.UNKNOWN;
+        }
+        return SQLQueryExprType.withModifiers(
+            SQLQueryExprType.forExplicitTypeRef(this.typeReference.spelling()),
+            this.typeReference.modifiers()
+        );
+    }
+
+    @NotNull
+    public SQLQueryExprType resolveDeclaredType(
+        @NotNull SQLQueryRowsSourceContext rowsContext,
+        @NotNull SQLQueryRecognitionContext statistics
+    ) {
+        if (this.declaredType == null) {
+            this.declaredType = this.typeReference == null
+                ? SQLQueryExprType.UNKNOWN
+                : SQLQuerySemanticUtils.resolveTypeReference(rowsContext, statistics, this.typeReference);
+        }
+        return this.declaredType;
     }
 
     @Nullable
@@ -124,8 +154,8 @@ public class SQLQueryColumnSpec extends SQLQueryNodeModel {
         SQLQuerySymbolEntry columnName = Optional.ofNullable(node.findFirstChildOfName(STMKnownRuleNames.columnName))
             .map(n -> recognizer.collectIdentifier(n, null))
             .orElse(null);
-        String typeName = Optional.ofNullable(node.findFirstChildOfName(STMKnownRuleNames.dataType))
-            .map(STMTreeNode::getTextContent).orElse(null);
+        SQLQueryModelRecognizer.TypeReference typeReference = node.findFirstChildOfName(STMKnownRuleNames.dataType) == null
+            ? null : recognizer.collectTypeReference(node);
 
         STMTreeNode defaultValueNode = node.findFirstChildOfName(STMKnownRuleNames.defaultClause);
         SQLQueryValueExpression defaultValueExpr = defaultValueNode == null
@@ -165,7 +195,7 @@ public class SQLQueryColumnSpec extends SQLQueryNodeModel {
             constraints.addLast(new SQLQueryColumnConstraintSpec(subnode, constraintName, constraintKind, referencedTable, referencedColumns, checkExpression));
         }
 
-        return new SQLQueryColumnSpec(node, columnName, typeName, defaultValueExpr, constraints);
+        return new SQLQueryColumnSpec(node, columnName, typeReference, defaultValueExpr, constraints);
     }
 
 }
