@@ -274,7 +274,7 @@ class ProfileModelComposite extends Composite {
                 try {
                     profile.resolveSecrets();
                     try (AIEngine<?> engine = profile.getEngineDescriptor().createEngineInstance(profile)) {
-                        models = engine.getModels(monitor);
+                        models = engine.getModels(monitor).stream().filter(engine::isChatModelSelectable).toList();
                     }
                 } catch (Exception e) {
                     error = e;
@@ -320,9 +320,7 @@ class ProfileModelComposite extends Composite {
             }
             String selected = properties.getModel();
             Map<String, AIModel> availableModels = new LinkedHashMap<>();
-            models.stream()
-                .filter(model -> model.features().contains(AIModelFeature.CHAT))
-                .forEach(model -> availableModels.putIfAbsent(model.name(), model));
+            models.forEach(model -> availableModels.putIfAbsent(model.name(), model));
             if (!CommonUtils.isEmpty(selected)) {
                 availableModels.putIfAbsent(
                     selected, new AIModel(selected, properties.getContextWindowSize(), Set.of(AIModelFeature.CHAT)));

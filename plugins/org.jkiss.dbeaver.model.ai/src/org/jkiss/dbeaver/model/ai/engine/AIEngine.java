@@ -80,6 +80,10 @@ public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseabl
         return model.name().equals(modelName);
     }
 
+    default boolean isChatModelSelectable(@NotNull AIModel model) {
+        return model.features().contains(AIModelFeature.CHAT);
+    }
+
     default boolean supportsImageInput(@NotNull DBRProgressMonitor monitor) throws DBException {
         try {
             return getModels(monitor).stream()
