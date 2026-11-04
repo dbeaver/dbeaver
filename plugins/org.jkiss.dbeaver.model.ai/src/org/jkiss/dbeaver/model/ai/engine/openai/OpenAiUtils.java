@@ -36,8 +36,10 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -90,7 +92,19 @@ public class OpenAiUtils {
         return new AIFunctionCall(message.name, arguments, metadata);
     }
 
-
+    @NotNull
+    public static AIFunctionCall createFunctionCall(@NotNull OAIMessage message, @NotNull List<OAIMessage> reasoning) throws DBException {
+        AIFunctionCall call = createFunctionCall(message);
+        if (!reasoning.isEmpty()) {
+            Map<String, String> metadata = new HashMap<>();
+            if (call.getMessageMetadata() != null) {
+                metadata.putAll(call.getMessageMetadata());
+            }
+            metadata.put(OpenAIConstants.TOOL_CALL_REASONING, JSONUtils.GSON.toJson(reasoning));
+            call.setMessageMetadata(metadata);
+        }
+        return call;
+    }
 
     @NotNull
     public static OAIResponsesRequest createOpenAiRequest(
@@ -102,6 +116,7 @@ public class OpenAiUtils {
         List<AIMessage> messages = request.getMessages();
         oaiRequest.input = fromMessages(messages);
         oaiRequest.store = false;
+        oaiRequest.include = new String[] {"reasoning.encrypted_content"};
         oaiRequest.model = modelName;
         if (temperature != null) {
             oaiRequest.temperature = temperature;
@@ -157,19 +172,35 @@ public class OpenAiUtils {
     @NotNull
     private static List<OAIMessage> fromMessages(@NotNull List<AIMessage> messages) {
         List<OAIMessage> result = new ArrayList<>(messages.size());
+        List<OAIMessage> outputs = new ArrayList<>();
+        String previousReasoning = null;
         for (AIMessage message : messages) {
-            if (message.getFunctionCall() != null) {
+            AIFunctionCall call = message.getFunctionCall();
+            if (call != null) {
                 OAIMessage functionCallMessage = OAIMessageFactory.fromAIMessage(message);
                 if (!CommonUtils.isEmpty(functionCallMessage.callId)) {
+                    String reasoning = call.getMessageMetadata() == null ? null
+                        : call.getMessageMetadata().get(OpenAIConstants.TOOL_CALL_REASONING);
+                    // reasoning belongs to the whole parallel call group; replay it once, before calls and their results
+                    if (reasoning == null || !Objects.equals(reasoning, previousReasoning)) {
+                        result.addAll(outputs);
+                        outputs.clear();
+                        if (reasoning != null) {
+                            result.addAll(List.of(JSONUtils.GSON.fromJson(reasoning, OAIMessage[].class)));
+                        }
+                        previousReasoning = reasoning;
+                    }
                     result.add(functionCallMessage);
-                    // OpenAI Responses API requires matching function_call_output for each function_call.
-                    // Keep orphan function calls in history as regular assistant messages.
-                    result.add(OAIMessageFactory.fromAIMessage(message, functionCallMessage.callId));
+                    outputs.add(OAIMessageFactory.fromAIMessage(message, functionCallMessage.callId));
                 }
             } else {
+                result.addAll(outputs);
+                outputs.clear();
+                previousReasoning = null;
                 result.add(OAIMessageFactory.fromAIMessage(message));
             }
         }
+        result.addAll(outputs);
         return result;
     }
 

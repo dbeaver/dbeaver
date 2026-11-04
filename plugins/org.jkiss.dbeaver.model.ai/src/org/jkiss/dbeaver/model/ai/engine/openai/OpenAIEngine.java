@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -90,29 +91,25 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         @NotNull AIEngineRequest request
     ) throws DBException {
         OAIResponsesResponse completionResult = complete(monitor, request);
-        // Filter reasoning messages from the response for OpenAI reasoning models (e.g., gpt-5, gpt-5-mini, gpt-5-nano)
-        List<OAIMessage> messages = completionResult.output.stream()
-            .filter(msg -> !OAIMessage.TYPE_FUNCTION_REASONING.equals(msg.type))
+        List<OAIMessage> reasoning = completionResult.output.stream()
+            .filter(message -> OAIMessage.TYPE_FUNCTION_REASONING.equals(message.type))
             .toList();
+        List<AIFunctionCall> functionCalls = new ArrayList<>();
+        for (OAIMessage message : completionResult.output) {
+            if (OAIMessage.TYPE_FUNCTION_CALL.equals(message.type)) {
+                functionCalls.add(OpenAiUtils.createFunctionCall(message, reasoning));
+            }
+        }
         AIUsage usage = completionResult.getAIUsage();
-        if (messages.isEmpty()) {
-            return new AIEngineResponse(
-                AIMessageType.ASSISTANT,
-                List.of(AIMessages.ai_empty_engine_response),
-                usage
-            );
+        if (!functionCalls.isEmpty()) {
+            return new AIEngineResponse(functionCalls, usage);
         }
-        OAIMessage message = messages.getFirst();
-        if (OAIMessage.TYPE_FUNCTION_CALL.equals(message.type)) {
-            AIFunctionCall fc = OpenAiUtils.createFunctionCall(message);
-            return new AIEngineResponse(fc, usage);
-        } else {
-            List<String> choices = messages.stream()
-                .map(OAIMessage::getFullText)
-                .toList();
-
-            return new AIEngineResponse(AIMessageType.ASSISTANT, choices, usage);
-        }
+        List<OAIMessage> messages = completionResult.output.stream()
+            .filter(message -> OAIMessage.TYPE_MESSAGE.equals(message.type))
+            .toList();
+        return new AIEngineResponse(AIMessageType.ASSISTANT, messages.isEmpty()
+            ? List.of(AIMessages.ai_empty_engine_response)
+            : messages.stream().map(OAIMessage::getFullText).toList(), usage);
     }
 
     @Override

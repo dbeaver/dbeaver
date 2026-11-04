@@ -74,6 +74,13 @@ public class OpenAIAccountClient extends OpenAIClientResponses {
                 OAIError error = GSON.fromJson(data, OAIError.class);
                 throw new DBException(CommonUtils.isEmpty(error.message) ? data : error.message);
             }
+            if ("response.failed".equals(chunk.type) || "response.incomplete".equals(chunk.type)) {
+                if (chunk.response != null) {
+                    chunk.response.status = chunk.type.substring("response.".length());
+                    chunk.response.validateCompletion();
+                }
+                throw new DBException("Response did not complete: " + chunk.type);
+            }
             if (OpenAiAPIStreamConsumer.EVENT_TYPE_ITEM_DONE.equals(chunk.type) && chunk.item != null) {
                 response.output.add(chunk.item);
             } else if (OpenAiAPIStreamConsumer.EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type) && chunk.response != null) {
