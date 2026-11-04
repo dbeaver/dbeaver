@@ -106,16 +106,35 @@ public class SQLDollarQuoteRule implements TPPredicateRule {
 
         if (c == '$') {
             if (this.allowNamedQuotes) {
+                int firstTagChar = scanner.read();
+                totalRead++;
+                if (firstTagChar == '$') {
+                    return "$$";
+                }
+                if (firstTagChar == TPCharacterScanner.EOF
+                    || Character.isDigit(firstTagChar)
+                    || !(Character.isLetter(firstTagChar) || firstTagChar == '_')) {
+                    // Not a dollar quote tag. Avoid scanning the remainder for positional parameters ($1)
+                    // and other invalid tags.
+                    unread(scanner, totalRead);
+                    return null;
+                }
                 StringBuilder qname = new StringBuilder();
-                do {
-                    qname.append((char) c);
+                qname.append('$').append((char) firstTagChar);
+                while (true) {
                     c = scanner.read();
                     totalRead++;
+                    if (c == TPCharacterScanner.EOF) {
+                        break;
+                    }
+                    qname.append((char) c);
                     if (c == '$') {
-                        qname.append((char) c);
                         return qname.toString();
                     }
-                } while (c != TPCharacterScanner.EOF && (Character.isLetterOrDigit(c) || c == '_'));
+                    if (!Character.isLetterOrDigit(c) && c != '_') {
+                        break;
+                    }
+                }
             } else {
                 c = scanner.read();
                 totalRead++;
