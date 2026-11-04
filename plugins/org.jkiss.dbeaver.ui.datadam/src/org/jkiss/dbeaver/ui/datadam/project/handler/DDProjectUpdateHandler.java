@@ -24,10 +24,13 @@ import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.SyncResult;
 import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictDialog.Choice;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictResolver;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictResolver.Choice;
 import org.jkiss.dbeaver.ui.datadam.project.job.DDProjectSynchronizationJob;
 
 public class DDProjectUpdateHandler extends DDProjectHandler<DDProjectSynchronizationJob> {
+    private final DDProjectConflictResolver conflictResolver = new DDProjectConflictResolver(uiManager);
+
     @NotNull
     @Override
     protected DDProjectSynchronizationJob createJob(@NotNull ExecutionEvent event, @NotNull DBPProject project) {
@@ -51,11 +54,11 @@ public class DDProjectUpdateHandler extends DDProjectHandler<DDProjectSynchroniz
 
     private void resolveConflict(@NotNull DBPProject project) {
         try {
-            Choice choice = uiManager.openConflictDialog(UIUtils.getActiveWorkbenchShell(), project);
+            Choice choice = conflictResolver.openConflictDialog(UIUtils.getActiveWorkbenchShell(), project);
             if (choice == null) {
                 return;
             }
-            var result = uiManager.applyConflictChoice(project, choice);
+            var result = conflictResolver.applyConflictChoice(project, choice);
             if (!result.failures().isEmpty()) {
                 var error = result.failures().get(0).error();
                 showError(error.getMessage(), new DBException(error.getMessage(), error.getException()));

@@ -57,6 +57,8 @@ public class ResultSetModel implements DBDResultSetModel {
     private DBDDataFilter dataFilter;
     private DBSEntity singleSourceEntity;
     private DBCExecutionSource executionSource;
+    @Nullable
+    private DBDFormatSettings formatSettings;
 
     private final ResultSetHintContext hintContext;
 
@@ -393,6 +395,15 @@ public class ResultSetModel implements DBDResultSetModel {
         return executionSource == null ? null : executionSource.getDataContainer();
     }
 
+    /**
+     * Returns the format settings of the session which produced the current result set.
+     * They stay the same if the editor is switched to another connection later.
+     */
+    @Nullable
+    public DBDFormatSettings getFormatSettings() {
+        return formatSettings;
+    }
+
     @Nullable
     private DBVEntity resolveVirtualEntity() {
         DBSDataContainer dataContainer = getDataContainer();
@@ -642,6 +653,7 @@ public class ResultSetModel implements DBDResultSetModel {
         } else {
             this.trace = null;
         }
+        this.formatSettings = resultSet.getSession();
 
         this.clearData();
         this.updateMetaData(newAttributes);

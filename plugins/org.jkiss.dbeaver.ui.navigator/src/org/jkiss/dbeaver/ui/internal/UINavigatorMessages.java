@@ -238,6 +238,7 @@ public class UINavigatorMessages extends NLS {
     public static String confirm_deleting_close_existing_connections_checkbox_tooltip;
     public static String confirm_deleting_delete_contents_checkbox;
     public static String confirm_deleting_delete_contents_checkbox_tooltip;
+    public static String confirm_deleting_required_contents_warning;
     public static String confirm_deleting_project_location_label;
     public static String question_no_sql_available;
     public static String error_sql_generation_title;
