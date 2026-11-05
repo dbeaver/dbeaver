@@ -480,6 +480,12 @@ public class SQLQueryConnectionDummyContext extends SQLQueryConnectionContext {
 
     @Nullable
     @Override
+    public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String fullTypeName) {
+        return null;
+    }
+
+    @Nullable
+    @Override
     public SQLQueryResultPseudoColumn resolveGlobalPseudoColumn(@NotNull String name) {
         return null;
     }

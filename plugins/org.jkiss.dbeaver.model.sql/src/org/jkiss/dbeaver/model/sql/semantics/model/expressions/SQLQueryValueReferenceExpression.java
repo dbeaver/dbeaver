@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.*;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
@@ -109,6 +110,8 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
         SQLQueryResultColumn resultColumn;
         SQLQueryResultPseudoColumn resultPseudoColumn;
         SQLQueryVariableInfo resultVariable;
+        SQLQueryLocalVariableInfo resultLocalVariable;
+        boolean isLocalVariableAmbiguous = false;
         SQLQuerySymbolEntry columnRefEntry;
         SQLQueryRowsDataContext columnContext;
         SQLQueryRowsSourceContext.SourceResolutionInfo tableRef;
@@ -123,7 +126,7 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
             }
 
             // 1: match for suitable reference target
-            // 1.1: resolve as prefixless column
+            // 1.1: resolve as a prefixless column, pseudo-column or local variable
             if (restParts.size() > 0) {
                 columnContext = context;
                 columnRefEntry = restParts.getFirst();
@@ -136,7 +139,30 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
                 } else {
                     resultColumn = null;
                 }
-                if (resultPseudoColumn == null && resultColumn == null) {
+                resultLocalVariable = context.getRowsSources().getLocalVariables().findLocalVariable(
+                    columnRefEntry, SQLDialectFeatures.LocalVariableCapability.VALUE);
+                if (resultLocalVariable != null) {
+                    // FIXME: Selecting a local value by the first name part can preclude the qualified row-source
+                    // lookup below when names overlap. Revisit precedence for a reported, reproducible conflict;
+                    // qualified sources and composite members are otherwise handled by the existing resolution.
+                    // Dummy metadata can supply synthetic columns; they must not make a local variable ambiguous.
+                    boolean hasColumn = !context.getConnection().isDummy() &&
+                        (resultColumn != null || resultPseudoColumn != null);
+                    SQLDialectFeatures.ProceduralVariableConflictPolicy policy = context.getConnection().dialect.getDialectFeatures().getProceduralVariableConflictPolicy();
+                    if (hasColumn && policy == SQLDialectFeatures.ProceduralVariableConflictPolicy.UNRESOLVED) {
+                        // Keep the ambiguity through later rowset/object lookup without classifying either candidate.
+                        isLocalVariableAmbiguous = true;
+                        resultLocalVariable = null;
+                        resultColumn = null;
+                        resultPseudoColumn = null;
+                    } else if (!hasColumn || policy == SQLDialectFeatures.ProceduralVariableConflictPolicy.PREFER_VARIABLE) {
+                        resultColumn = null;
+                        resultPseudoColumn = null;
+                    } else {
+                        resultLocalVariable = null;
+                    }
+                }
+                if (resultPseudoColumn == null && resultColumn == null && resultLocalVariable == null && !isLocalVariableAmbiguous) {
                     resultVariable = context.getRowsSources().resolveScriptVariable(columnRefEntry);
                 } else {
                     resultVariable = null;
@@ -145,11 +171,14 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
                 columnContext = null;
                 columnRefEntry = null;
                 resultVariable = null;
+                resultLocalVariable = null;
                 resultPseudoColumn = null;
                 resultColumn = null;
             }
 
-            if ((resultColumn == null && resultPseudoColumn == null && resultVariable == null) || this.name.parts.size() > 1) {
+            if (resultLocalVariable == null && !isLocalVariableAmbiguous && (
+                (resultColumn == null && resultPseudoColumn == null && resultVariable == null) || this.name.parts.size() > 1
+            )) {
                 // 1.2: try to resolve rowset reference prefix and classify it if resolved
                 tableRef = context.getRowsSources().findReferencedSource(this.name);
                 if (tableRef != null) {
@@ -179,7 +208,8 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
             List<? extends DBSObject> dbObjects;
             DBSObject dbObject;
             SQLQuerySymbolClass forcedClass;
-            if (resultColumn == null && resultPseudoColumn == null && tableRef == null && resultVariable == null) {
+            if (resultColumn == null && resultPseudoColumn == null && tableRef == null && resultVariable == null &&
+                resultLocalVariable == null && !isLocalVariableAmbiguous) {
                 // 1.3: no columns and no rowsets, so try for db objects
                 if (context.getConnection().isDummy()) {
                     // no real database - no point to treat any random name as object
@@ -289,8 +319,18 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
             }
 
             if (type == null) {
-                if (columnRefEntry != null) {
-                    if (columnContext.getRowsSources().hasUnresolvedSource() && (
+                if (isLocalVariableAmbiguous) {
+                    type = SQLQueryExprType.UNKNOWN;
+                    resultColumn = null;
+                    columnRefEntry.setOrigin(columnRefOrigin);
+                } else if (columnRefEntry != null) {
+                    if (resultLocalVariable != null) {
+                        type = resultLocalVariable.type();
+                        if (columnRefEntry.isNotClassified()) {
+                            columnRefEntry.setDefinition(resultLocalVariable.declaration());
+                        }
+                        columnRefEntry.setOrigin(columnRefOrigin);
+                    } else if (columnContext.getRowsSources().hasUnresolvedSource() && (
                         resultColumn == null && resultPseudoColumn == null && resultVariable == null
                     )) {
                         // do nothing more and don't generate errors on failed column resolutions while unresolved sources presented
@@ -319,7 +359,8 @@ public class SQLQueryValueReferenceExpression extends SQLQueryValueExpression {
                             type = resultColumn != null ? resultColumn.type : SQLQueryExprType.UNKNOWN;
                         }
                     }
-                    if (tableRef == null && (resultColumn != null || resultPseudoColumn != null || resultVariable != null)) {
+                    if (tableRef == null && (resultColumn != null || resultPseudoColumn != null || resultVariable != null ||
+                        resultLocalVariable != null)) {
                         restParts = restParts.subList(1, restParts.size());
                     }
                 } else {

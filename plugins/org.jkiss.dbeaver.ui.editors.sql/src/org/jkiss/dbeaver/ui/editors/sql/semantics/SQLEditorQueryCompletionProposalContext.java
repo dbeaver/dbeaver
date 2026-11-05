@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -43,6 +43,7 @@ public class SQLEditorQueryCompletionProposalContext extends SQLQueryCompletionP
         put(SQLQueryCompletionItemKind.TABLE_COLUMN_NAME, ThemeConstants.SQL_EDITOR_COLOR_COLUMN);
         put(SQLQueryCompletionItemKind.GLOBAL_PSEUDO_COLUMN, ThemeConstants.SQL_EDITOR_COLOR_SQL_VARIABLE);
         put(SQLQueryCompletionItemKind.PROCEDURE, ThemeConstants.SQL_EDITOR_COLOR_FUNCTION);
+        put(SQLQueryCompletionItemKind.TYPE, ThemeConstants.SQL_EDITOR_COLOR_DATATYPE);
         put(SQLQueryCompletionItemKind.COMPOSITE_FIELD_NAME, ThemeConstants.SQL_EDITOR_COLOR_COMPOSITE_FIELD);
     }};
 
