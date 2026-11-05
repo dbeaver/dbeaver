@@ -393,7 +393,7 @@ class ResultSetPersister extends DBDResultSetDataUpdater<ResultSetPersister.Data
                     if (!Objects.equals(changedValue.getValue(), curValue)) {
                         DBUtils.releaseValue(curValue);
                         try {
-                            model.updateCellValue(changedValue.getKey(), row, null, changedValue.getValue(), false);
+                            model.updateCellValue(changedValue.getKey(), row, null, null, changedValue.getValue(), false);
                         } catch (DBException e) {
                             log.error(e);
                         }

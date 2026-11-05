@@ -285,37 +285,33 @@ public interface IResultSetController extends IDataController, DBPContextProvide
 
     void updateDirtyFlag();
 
+    /**
+     * Updates a cell using the ordered value path when it identifies a nested member.
+     *
+     * @param rowIndexes flat collection indexes used when the path is absent or identifies only the root
+     * @param valuePath ordered record-mode location; null for ordinary grid cells
+     */
     boolean updateCellValue(
-        @NotNull DBDAttributeBinding attr,
-        @NotNull ResultSetRow row,
-        @Nullable int[] rowIndexes,
-        @Nullable Object value,
-        boolean refreshHints) throws DBException;
-
-    default boolean updateCellValue(
         @NotNull DBDAttributeBinding attr,
         @NotNull ResultSetRow row,
         @Nullable int[] rowIndexes,
         @Nullable ResultSetValuePath valuePath,
         @Nullable Object value,
         boolean refreshHints
-    ) throws DBException {
-        return updateCellValue(attr, row, rowIndexes, value, refreshHints);
-    }
+    ) throws DBException;
 
+    /**
+     * Resets a changed cell. A nested edit restores its saved top-level value, not just the selected member.
+     *
+     * @param rowIndexes flat collection indexes for cells without a nested value path
+     * @param valuePath ordered record-mode location; null for ordinary grid cells
+     */
     void resetCellValue(
-        @NotNull DBDAttributeBinding attr,
-        @NotNull ResultSetRow row,
-        @Nullable int[] rowIndexes);
-
-    default void resetCellValue(
         @NotNull DBDAttributeBinding attr,
         @NotNull ResultSetRow row,
         @Nullable int[] rowIndexes,
         @Nullable ResultSetValuePath valuePath
-    ) {
-        resetCellValue(attr, row, rowIndexes);
-    }
+    );
 
     /**
      * @param rowIndexes          applicable only when single row is passed

@@ -912,6 +912,8 @@ public final class DBUtils {
     /**
      * Update a nested value using the same ordered attribute and index steps as {@link #getRowValueByPath}.
      * The first step identifies the root attribute; the supplied root value is its already resolved value.
+     * Traverse the intermediate steps and set the last collection item or composite attribute.
+     * An invalid or missing intermediate step throws instead of silently returning null as a read can.
      */
     public static void updateValueByPath(
         @NotNull DBDValue rootValue,

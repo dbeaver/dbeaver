@@ -1861,16 +1861,6 @@ public class ResultSetViewer extends Viewer
         @NotNull DBDAttributeBinding attr,
         @NotNull ResultSetRow row,
         @Nullable int[] rowIndexes,
-        @Nullable Object value,
-        boolean refreshHints) throws DBException {
-        return updateCellValue(attr, row, rowIndexes, null, value, refreshHints);
-    }
-
-    @Override
-    public boolean updateCellValue(
-        @NotNull DBDAttributeBinding attr,
-        @NotNull ResultSetRow row,
-        @Nullable int[] rowIndexes,
         @Nullable ResultSetValuePath valuePath,
         @Nullable Object value,
         boolean refreshHints
@@ -1883,15 +1873,6 @@ public class ResultSetViewer extends Viewer
                 rowIndexes);
         }
         return updated;
-    }
-
-    @Override
-    public void resetCellValue(
-        @NotNull DBDAttributeBinding attr,
-        @NotNull ResultSetRow row,
-        @Nullable int[] rowIndexes
-    ) {
-        resetCellValue(attr, row, rowIndexes, null);
     }
 
     @Override

@@ -488,21 +488,15 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     /**
-     * Updates cell value. Saves previous value.
+     * Updates a cell, retaining the original top-level value for persistence and reset.
+     * A nested path identifies the root column and each step down to the edited member; otherwise
+     * the attribute binding and flat indexes determine the location. Nested edits change the root
+     * value, while a child binding is recorded only when it belongs to that root.
      *
+     * @param valuePath ordered location for record-mode cells, or null for legacy binding/index traversal
      * @param value new value
-     * @return true on success
+     * @return true if the value was updated
      */
-    boolean updateCellValue(
-        @NotNull DBDAttributeBinding attr,
-        @NotNull ResultSetRow row,
-        @Nullable int[] rowIndexes,
-        @Nullable Object value,
-        boolean updateChanges
-    ) throws DBException {
-        return updateCellValue(attr, row, rowIndexes, null, value, updateChanges);
-    }
-
     boolean updateCellValue(
         @NotNull DBDAttributeBinding attr,
         @NotNull ResultSetRow row,
@@ -668,10 +662,10 @@ public class ResultSetModel implements DBDResultSetModel {
         return !(originalValue instanceof DBDValue) && DBUtils.compareDataValues(value, originalValue) == 0;
     }
 
-    void resetCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable int[] rowIndexes) {
-        resetCellValue(attr, row, rowIndexes, null);
-    }
-
+    /**
+     * Resets a changed cell to its saved top-level value. The path locates the selected member to
+     * reset its contents, but restoring the original value must not traverse that nested path.
+     */
     void resetCellValue(
         @NotNull DBDAttributeBinding attr,
         @NotNull ResultSetRow row,
@@ -700,6 +694,7 @@ public class ResultSetModel implements DBDResultSetModel {
                     attr,
                     row,
                     rowIndexes,
+                    null,
                     origValue,
                     false);
             } catch (DBException e) {
