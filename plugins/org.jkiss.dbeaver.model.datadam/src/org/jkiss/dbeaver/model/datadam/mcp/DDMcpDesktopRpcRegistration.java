@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.model.datadam.mcp;
 
 import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamGsonRpcCodec;
-import com.dbeaver.datadam.mcp.api.service.DDMcpFunctionService;
+import com.dbeaver.datadam.mcp.api.service.desktop.DDMcpFunctionService;
 import com.dbeaver.messaging.requestreply.MessagingSubscription;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import com.google.gson.GsonBuilder;
