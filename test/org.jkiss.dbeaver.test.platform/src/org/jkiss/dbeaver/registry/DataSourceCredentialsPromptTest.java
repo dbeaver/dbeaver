@@ -18,21 +18,17 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.bigquery.auth.BQAuthModel;
-import org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelADIntegrated;
-import org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelADPassword;
-import org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelCustom;
-import org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelDatabase;
-import org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelMFA;
-import org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelMSI;
-import org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelNTLM;
-import org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelWindows;
+import org.jkiss.dbeaver.ext.mssql.auth.*;
 import org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthOS;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mockito;
 
@@ -63,6 +59,48 @@ public class DataSourceCredentialsPromptTest {
     @MethodSource("promptAuthModels")
     public void testOtherAuthenticationStillRequiresCredentialsDialog(@NotNull DBAAuthModel<?> authModel) {
         Assertions.assertTrue(authModel.isCredentialsPromptRequired());
+    }
+
+    @ParameterizedTest
+    @CsvSource({"true, true", "true, false", "false, true", "false, false"})
+    public void testPromptPersistsRememberedCredentialsOnlyForNonTemporaryConnections(
+        boolean temporary,
+        boolean remember
+    ) throws Exception {
+        DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
+        configuration.setAuthProperty("token", "original-token");
+        DBPConnectionConfiguration actualConfiguration = Mockito.spy(new DBPConnectionConfiguration(configuration));
+        Mockito.doReturn(new SQLServerAuthModelADPassword()).when(actualConfiguration).getAuthModel();
+        DataSourceDescriptor dataSource = Mockito.mock(DataSourceDescriptor.class);
+        Mockito.when(dataSource.getActualConnectionConfiguration()).thenReturn(actualConfiguration);
+        Mockito.when(dataSource.getConnectionConfiguration()).thenReturn(configuration);
+        Mockito.when(dataSource.isTemporary()).thenReturn(temporary);
+        DataSourceRegistry<?> registry = Mockito.mock(DataSourceRegistry.class);
+        Mockito.when(dataSource.getRegistry()).thenReturn(registry);
+        DBPPlatformUI platformUI = Mockito.mock(DBPPlatformUI.class);
+        Mockito.when(platformUI.promptAuthModelCredentials(dataSource)).thenAnswer(invocation -> {
+            configuration.setAuthProperty("token", "prompt-token");
+            Mockito.when(dataSource.isSavePassword()).thenReturn(remember);
+            return true;
+        });
+
+        try (var workbench = Mockito.mockStatic(DBWorkbench.class)) {
+            workbench.when(DBWorkbench::getPlatformUI).thenReturn(platformUI);
+            Assertions.assertTrue(DataSourceDescriptor.askForPassword(dataSource, null, DBWTunnel.AuthCredentials.CREDENTIALS));
+        }
+
+        if (remember) {
+            Assertions.assertEquals("prompt-token", configuration.getAuthProperty("token"));
+            Mockito.verify(dataSource, Mockito.never()).setConnectionInfo(Mockito.any());
+        } else {
+            Mockito.verify(dataSource).setConnectionInfo(Mockito.argThat(saved ->
+                "original-token".equals(saved.getAuthProperty("token"))));
+        }
+        if (remember && !temporary) {
+            Mockito.verify(registry).updateDataSource(dataSource);
+        } else {
+            Mockito.verifyNoInteractions(registry);
+        }
     }
 
     @NotNull
