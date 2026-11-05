@@ -8,9 +8,7 @@ Bundle-Release-Date: 20261116
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
 Import-Package: org.jkiss.code
-Require-Bundle: org.eclipse.core.databinding,
- org.eclipse.core.databinding.property,
- org.eclipse.jface.databinding,
- org.jkiss.dbeaver.ui
-Export-Package: org.jkiss.dbeaver.ui.forms
+Require-Bundle: org.jkiss.dbeaver.ui
+Export-Package: org.jkiss.dbeaver.ui.bindings,
+ org.jkiss.dbeaver.ui.forms
 Automatic-Module-Name: org.jkiss.dbeaver.ui.forms
