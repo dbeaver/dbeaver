@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
+import org.jkiss.junit.StaticFieldOverride;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -47,13 +48,12 @@ import org.junit.jupiter.api.Test;
 import org.mockito.AdditionalAnswers;
 import org.mockito.Mockito;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
 public class AISchemaDDLFilterTest extends DBeaverUnitTest {
     private final DBRProgressMonitor monitor = new VoidProgressMonitor();
-    private Field platformField;
+    private StaticFieldOverride workbench;
     private DBPPlatform originalPlatform;
 
     @BeforeEach
@@ -62,15 +62,13 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
         DBPPlatform platform = mockPlatform();
         Mockito.doReturn(Mockito.mock(DBPPreferenceStore.class)).when(platform).getPreferenceStore();
         // Tycho uses the subclass mock maker: replace and restore the platform without static instrumentation.
-        platformField = DBWorkbench.class.getDeclaredField("platform");
-        platformField.setAccessible(true);
-        platformField.set(null, platform);
+        workbench = new StaticFieldOverride(DBWorkbench.class, "platform", platform);
     }
 
     @AfterEach
     void closePlatform() throws IllegalAccessException {
-        if (platformField != null) {
-            platformField.set(null, originalPlatform);
+        if (workbench != null) {
+            workbench.close();
         }
     }
 
@@ -100,11 +98,66 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void explicitFullDDLRetainsNativeDefinitions() throws DBException {
+        for (String nativeDDL : List.of(
+            "CREATE TABLE app.orders (id NUMBER) SEGMENT CREATION IMMEDIATE "
+                + "PCTFREE 10 STORAGE (INITIAL 65536 NEXT 1048576) TABLESPACE app_data;",
+            "CREATE EXTERNAL TABLE app.orders (id INT) WITH (LOCATION = '/orders', DATA_SOURCE = external_source);",
+            "CREATE VIEW app.report AS SELECT id FROM other_schema.orders;",
+            "CREATE MATERIALIZED VIEW app.report TABLESPACE app_data BUILD IMMEDIATE "
+                + "REFRESH FAST ON COMMIT AS SELECT id FROM other_schema.orders;"
+        )) {
+            DBSEntity entity = Mockito.mock(DBSEntity.class, Mockito.withSettings().extraInterfaces(DBPScriptObject.class));
+            Mockito.when(((DBPScriptObject) entity).getObjectDefinitionText(Mockito.eq(monitor), Mockito.anyMap()))
+                .thenReturn(nativeDDL);
+            AISchemaGenerationOptions options = options(true).withObjectFilter((m, object) -> object == entity).build();
+
+            Assertions.assertEquals(nativeDDL, new AISchemaGeneratorImpl().generateSchema(monitor, null, options, entity));
+            Assertions.assertEquals(nativeDDL, DBStructUtils.getTableDDL(monitor, entity, Map.of(), false, options.objectFilter()));
+            Mockito.verify(entity, Mockito.never()).getAttributes(Mockito.any());
+        }
+    }
+
+    @Test
+    public void fullDDLUsesOrdinaryViewEditor() throws Exception {
+        DBSTable view = table("report");
+        TestObjectEditor editor = Mockito.mock(TestObjectEditor.class, Mockito.CALLS_REAL_METHODS);
+        editor.definition = "CREATE VIEW app.report AS SELECT CURRENT_DATE AS report_date";
+        DBERegistry registry = Mockito.mock(DBERegistry.class);
+        Mockito.when(registry.getObjectManager(view.getClass(), SQLObjectEditor.class)).thenReturn(editor);
+        DBPPlatform platform = mockPlatform();
+        Mockito.when(platform.getEditorsRegistry()).thenReturn(registry);
+        AISchemaGenerationOptions options = options(true).withObjectFilter((m, object) -> object == view).build();
+        try (var platformOverride = new StaticFieldOverride(DBWorkbench.class, "platform", platform)) {
+            String ddl = new AISchemaGeneratorImpl().generateSchema(monitor, null, options, view);
+            Assertions.assertTrue(ddl.contains(editor.definition), ddl);
+            Assertions.assertFalse(ddl.contains("Can't generate DDL"), ddl);
+        }
+    }
+
+    @Test
+    public void unsupportedViewEditorFallsBackToColumnDescription() throws Exception {
+        DBSTable view = table("report");
+        Mockito.when(view.isView()).thenReturn(true);
+        Mockito.when(view.getEntityType()).thenReturn(DBSEntityType.VIEW);
+        DBPPlatform platform = mockPlatform();
+        Mockito.doReturn(Mockito.mock(DBERegistry.class)).when(platform).getEditorsRegistry();
+        AISchemaGenerationOptions options = options(true).withObjectFilter((m, object) -> true).build();
+        try (var platformOverride = new StaticFieldOverride(DBWorkbench.class, "platform", platform)) {
+            String ddl = new AISchemaGeneratorImpl().generateSchema(monitor, null, options, view);
+            Assertions.assertTrue(ddl.contains("CREATE VIEW"), ddl);
+            Assertions.assertTrue(ddl.contains("INTEGER"), ddl);
+            Assertions.assertFalse(ddl.contains("Can't generate DDL"), ddl);
+        }
+    }
+
+    @Test
     public void rejectedRootDoesNotReadOrRenderMetadata() throws DBException {
-        DBSTable table = Mockito.mock(DBSTable.class);
+        DBSTable table = Mockito.mock(DBSTable.class, Mockito.withSettings().extraInterfaces(DBPScriptObject.class));
         AISchemaGenerationOptions options = options(true).withObjectFilter((m, object) -> false).build();
         Assertions.assertEquals("", new AISchemaGeneratorImpl().generateSchema(monitor, null, options, table));
         Assertions.assertEquals("", DBStructUtils.generateTableDDL(monitor, table, Map.of(), false, options.objectFilter()));
+        Assertions.assertEquals("", DBStructUtils.getTableDDL(monitor, table, Map.of(), false, options.objectFilter()));
         Mockito.verifyNoInteractions(table);
     }
 
@@ -145,8 +198,7 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
         Mockito.when(platform.getEditorsRegistry()).thenReturn(registry);
         AISchemaGenerationOptions scopedOptions = options(true).withObjectFilter((m, object) -> object != excluded).build();
 
-        {
-            platformField.set(null, platform);
+        try (var platformOverride = new StaticFieldOverride(DBWorkbench.class, "platform", platform)) {
             String ddl = new AISchemaGeneratorImpl().generateSchema(monitor, null, scopedOptions, table);
             Assertions.assertTrue(ddl.contains("CREATE TABLE orders"), ddl);
             Assertions.assertTrue(ddl.contains("allowed_fk"), ddl);
@@ -180,8 +232,7 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
         Mockito.when(platform.getEditorsRegistry()).thenReturn(registry);
         AISchemaGenerationOptions options = options(false).withSendReferences(true)
             .withObjectFilter((m, object) -> object != excluded).build();
-        {
-            platformField.set(null, platform);
+        try (var platformOverride = new StaticFieldOverride(DBWorkbench.class, "platform", platform)) {
             String ddl = new AISchemaGeneratorImpl().generateSchema(monitor, executionContext, options, table);
             Assertions.assertTrue(ddl.contains("ALTER TABLE orders ADD allowed_fk"), ddl);
             Assertions.assertFalse(ddl.contains("payroll"), ddl);
@@ -278,6 +329,8 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
     }
 
     public abstract static class TestObjectEditor extends SQLObjectEditor<DBSTable, DBSObjectContainer> {
+        private String definition;
+
         @Override
         protected void addObjectCreateActions(
             @NotNull DBRProgressMonitor monitor,
@@ -286,7 +339,7 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
             @NotNull ObjectCreateCommand command,
             @NotNull Map<String, Object> options
         ) {
-            actions.add(new SQLDatabasePersistAction("DDL", "CREATE TABLE orders (id INTEGER)"));
+            actions.add(new SQLDatabasePersistAction("DDL", definition == null ? "CREATE TABLE orders (id INTEGER)" : definition));
         }
     }
 }

@@ -110,7 +110,8 @@ public final class DBStructUtils {
         @NotNull Map<String, Object> options,
         boolean addComments
     ) throws DBException {
-        return generateTableDDL(monitor, table, options, addComments, null);
+        Object filter = options.get(DBPScriptObject.OPTION_DDL_OBJECT_FILTER);
+        return generateTableDDL(monitor, table, options, addComments, filter instanceof DBSObjectDDLFilter ddlFilter ? ddlFilter : null);
     }
 
     @NotNull
@@ -176,8 +177,12 @@ public final class DBStructUtils {
         if (filter != null && !filter.includeObject(monitor, table)) {
             return "";
         }
-        // A cached/native definition cannot apply a filter to individual generated children.
-        if (table instanceof DBPScriptObject scriptObject && filter == null) {
+        // Scope controls the object being requested; native definitions retain their database-specific clauses.
+        if (table instanceof DBPScriptObject scriptObject) {
+            if (filter != null) {
+                options = new HashMap<>(options);
+                options.put(DBPScriptObject.OPTION_DDL_OBJECT_FILTER, filter);
+            }
             String definitionText = scriptObject.getObjectDefinitionText(monitor, options);
             if (!CommonUtils.isEmpty(definitionText)) {
                 return definitionText;

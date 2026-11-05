@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -58,14 +59,8 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         }
         StringBuilder ddl = new StringBuilder();
 
-        if (options.sendFullDDL()) {
-            String tableDDL = DBStructUtils.generateTableDDL(
-                monitor,
-                entity,
-                Map.of(DBPScriptObject.OPTION_SKIP_DROPS, true),
-                false,
-                options.objectFilter()
-            );
+        String tableDDL = options.sendFullDDL() ? getFullDDL(monitor, options, entity) : null;
+        if (!CommonUtils.isEmpty(tableDDL)) {
             DBStructUtils.addDDLLine(ddl, tableDDL);
         } else {
             generateCustomDDL(monitor, executionContext, options, entity, ddl);
@@ -80,6 +75,37 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         }
 
         return ddl.toString().trim();
+    }
+
+    @Nullable
+    private String getFullDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AISchemaGenerationOptions options,
+        @NotNull DBSEntity entity
+    ) throws DBException {
+        Map<String, Object> ddlOptions = new HashMap<>();
+        ddlOptions.put(DBPScriptObject.OPTION_SKIP_DROPS, true);
+        if (options.objectFilter() != null) {
+            ddlOptions.put(DBPScriptObject.OPTION_DDL_OBJECT_FILTER, options.objectFilter());
+        }
+        // Explicit full-DDL requests include the allowed object's native definition verbatim.
+        // Its embedded dependency names and vendor-specific clauses are part of that definition.
+        if (entity instanceof DBPScriptObject scriptObject) {
+            String nativeDDL = scriptObject.getObjectDefinitionText(monitor, ddlOptions);
+            if (!CommonUtils.isEmpty(nativeDDL)) {
+                return nativeDDL;
+            }
+        }
+        SQLObjectEditor<?, ?> editor = DBWorkbench.getPlatform().getEditorsRegistry()
+            .getObjectManager(entity.getClass(), SQLObjectEditor.class);
+        if (editor instanceof SQLTableManager<?, ?>) {
+            return DBStructUtils.generateTableDDL(monitor, entity, ddlOptions, false, options.objectFilter());
+        }
+        if (editor != null) {
+            // Views and materialized views may use an ordinary object editor rather than a table manager.
+            return DBStructUtils.generateObjectDDL(monitor, entity, ddlOptions, false);
+        }
+        return null;
     }
 
     private void addReferencesDDL(
