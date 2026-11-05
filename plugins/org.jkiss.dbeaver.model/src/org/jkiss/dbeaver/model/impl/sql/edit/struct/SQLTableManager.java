@@ -251,6 +251,10 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         if (filter != null && !filter.includeObject(monitor, table)) {
             return new DBEPersistAction[0];
         }
+        if (filter != null) {
+            options = new HashMap<>(options);
+            options.put(DBPScriptObject.OPTION_DDL_OBJECT_FILTER, filter);
+        }
 
         List<DBEPersistAction> actions = new ArrayList<>();
 
@@ -278,7 +282,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                             skipObject(foreignKey) || filter != null && !filter.includeObject(monitor, foreignKey)) {
                             continue;
                         }
-                        DBEPersistAction[] cmdActions = fkm.makeCreateCommand((DBSTableForeignKey) foreignKey, options).getPersistActions(monitor, executionContext, options);
+                        DBEPersistAction[] cmdActions = fkm.makeCreateCommand((DBSTableForeignKey) foreignKey, options)
+                            .getPersistActions(monitor, executionContext, options);
                         if (cmdActions != null) {
                             Collections.addAll(actions, cmdActions);
                         }
@@ -336,8 +341,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         }
         if (ccm != null) {
             try {
-                if (table instanceof DBSCheckConstraintContainer) {
-                    for (DBSTableCheckConstraint constraint : CommonUtils.safeCollection(((DBSCheckConstraintContainer)table).getCheckConstraints(monitor))) {
+                if (table instanceof DBSCheckConstraintContainer container) {
+                    for (DBSTableCheckConstraint constraint : CommonUtils.safeCollection(container.getCheckConstraints(monitor))) {
                         if (skipObject(constraint) || filter != null && !filter.includeObject(monitor, constraint)) {
                             continue;
                         }
@@ -365,7 +370,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         }
         if (im != null && table instanceof DBSTable && !CommonUtils.getOption(options, DBPScriptObject.OPTION_SKIP_INDEXES)) {
             try {
-                for (DBSTableIndex index : CommonUtils.safeCollection(((DBSTable)table).getIndexes(monitor))) {
+                for (DBSTableIndex index : CommonUtils.safeCollection(((DBSTable) table).getIndexes(monitor))) {
                     if (!isIncludeIndexInDDL(monitor, index) || filter != null && !filter.includeObject(monitor, index)) {
                         continue;
                     }
@@ -377,9 +382,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
             }
         }
         addExtraDDLCommands(monitor, table, options, command);
-        Collections.addAll(actions, filter == null
-            ? command.getPersistActions(monitor, executionContext, options)
-            : command.getPersistActions(monitor, executionContext, options, filter));
+        Collections.addAll(actions, command.getPersistActions(monitor, executionContext, options));
 
         return actions.toArray(new DBEPersistAction[0]);
     }

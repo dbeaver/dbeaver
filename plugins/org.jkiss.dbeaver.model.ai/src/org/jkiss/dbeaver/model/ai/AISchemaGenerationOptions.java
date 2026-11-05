@@ -55,10 +55,12 @@ public record AISchemaGenerationOptions(
         return objectFilter == null || objectFilter.includeObject(monitor, object);
     }
 
+    @NotNull
     public static Builder builder() {
         return new Builder();
     }
 
+    @NotNull
     public Builder toBuilder() {
         return new Builder()
             .withSendObjectComment(sendObjectComment)

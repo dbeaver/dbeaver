@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -187,17 +188,13 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
         @Nullable
         @Override
-        public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) throws DBException {
-            return getPersistActions(monitor, executionContext, options, null);
-        }
-
-        @NotNull
         public DBEPersistAction[] getPersistActions(
             @NotNull DBRProgressMonitor monitor,
             @NotNull DBCExecutionContext executionContext,
-            @NotNull Map<String, Object> options,
-            @Nullable DBSObjectDDLFilter filter
+            @NotNull Map<String, Object> options
         ) throws DBException {
+            DBSObjectDDLFilter filter = options.get(DBPScriptObject.OPTION_DDL_OBJECT_FILTER) instanceof DBSObjectDDLFilter ddlFilter ?
+                ddlFilter : null;
             if (filter != null && !filter.includeObject(monitor, getObject())) {
                 return new DBEPersistAction[0];
             }

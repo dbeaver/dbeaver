@@ -199,6 +199,7 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
             && !(parent.equals(def.getDefaultCatalog()) || parent.equals(def.getDefaultSchema()));
     }
 
+    @NotNull
     private List<String> describeTableKeys(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AISchemaGenerationOptions options,

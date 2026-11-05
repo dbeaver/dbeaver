@@ -39,31 +39,39 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.MockedStatic;
+import org.mockito.AdditionalAnswers;
 import org.mockito.Mockito;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
-public class AISchemaDDLFilterTest {
+public class AISchemaDDLFilterTest extends DBeaverUnitTest {
     private final DBRProgressMonitor monitor = new VoidProgressMonitor();
-    private MockedStatic<DBWorkbench> workbench;
+    private Field platformField;
+    private DBPPlatform originalPlatform;
 
     @BeforeEach
-    void setupPlatform() {
-        DBPPlatform platform = Mockito.mock(DBPPlatform.class);
-        Mockito.when(platform.getPreferenceStore()).thenReturn(Mockito.mock(DBPPreferenceStore.class));
-        workbench = Mockito.mockStatic(DBWorkbench.class);
-        workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+    void setupPlatform() throws ReflectiveOperationException {
+        originalPlatform = DBWorkbench.getPlatform();
+        DBPPlatform platform = mockPlatform();
+        Mockito.doReturn(Mockito.mock(DBPPreferenceStore.class)).when(platform).getPreferenceStore();
+        // Tycho uses the subclass mock maker: replace and restore the platform without static instrumentation.
+        platformField = DBWorkbench.class.getDeclaredField("platform");
+        platformField.setAccessible(true);
+        platformField.set(null, platform);
     }
 
     @AfterEach
-    void closePlatform() {
-        workbench.close();
+    void closePlatform() throws IllegalAccessException {
+        if (platformField != null) {
+            platformField.set(null, originalPlatform);
+        }
     }
 
     @Test
@@ -101,8 +109,20 @@ public class AISchemaDDLFilterTest {
     }
 
     @Test
+    public void ordinaryCreateCommandsHonorFilterOptions() throws DBException {
+        DBSTable table = table("orders");
+        TestObjectEditor editor = Mockito.mock(TestObjectEditor.class, Mockito.CALLS_REAL_METHODS);
+        SQLObjectEditor<DBSTable, DBSObjectContainer>.ObjectCreateCommand command = editor.makeCreateCommand(table, Map.of());
+        DBCExecutionContext executionContext = Mockito.mock(DBCExecutionContext.class);
+        DBSObjectDDLFilter reject = (m, object) -> false;
+        Assertions.assertEquals(0, command.getPersistActions(monitor, executionContext,
+            Map.of(DBPScriptObject.OPTION_DDL_OBJECT_FILTER, reject)).length);
+        Assertions.assertEquals(1, command.getPersistActions(monitor, executionContext, Map.of()).length);
+    }
+
+    @Test
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public void nativeDDLRetainsAllowedCommandsAndSupportsForeignKeyOnlyMode() throws DBException {
+    public void nativeDDLRetainsAllowedCommandsAndSupportsForeignKeyOnlyMode() throws Exception {
         DBSTable table = table("orders");
         DBSTableForeignKey allowed = foreignKey(table, table("customers"), "allowed_fk");
         DBSTableForeignKey excluded = foreignKey(table, table("payroll"), "excluded_fk");
@@ -121,12 +141,12 @@ public class AISchemaDDLFilterTest {
         manager.extraKey = excluded;
         DBERegistry registry = Mockito.mock(DBERegistry.class);
         Mockito.when(registry.getObjectManager(table.getClass(), SQLObjectEditor.class)).thenReturn(manager);
-        DBPPlatform platform = Mockito.mock(DBPPlatform.class);
+        DBPPlatform platform = mockPlatform();
         Mockito.when(platform.getEditorsRegistry()).thenReturn(registry);
         AISchemaGenerationOptions scopedOptions = options(true).withObjectFilter((m, object) -> object != excluded).build();
 
         {
-            workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+            platformField.set(null, platform);
             String ddl = new AISchemaGeneratorImpl().generateSchema(monitor, null, scopedOptions, table);
             Assertions.assertTrue(ddl.contains("CREATE TABLE orders"), ddl);
             Assertions.assertTrue(ddl.contains("allowed_fk"), ddl);
@@ -145,7 +165,7 @@ public class AISchemaDDLFilterTest {
 
     @Test
     @SuppressWarnings({"rawtypes", "unchecked"})
-    public void incomingReferenceDDLIsFilteredBeforeRendering() throws DBException {
+    public void incomingReferenceDDLIsFilteredBeforeRendering() throws Exception {
         DBSTable table = table("customers");
         DBSTableForeignKey allowed = foreignKey(table("orders"), table, "allowed_fk");
         DBSTableForeignKey excluded = foreignKey(table("payroll"), table, "excluded_fk");
@@ -156,17 +176,23 @@ public class AISchemaDDLFilterTest {
             .thenReturn(new DBEPersistAction[] {new SQLDatabasePersistAction("FK", "ALTER TABLE orders ADD allowed_fk")});
         DBERegistry registry = Mockito.mock(DBERegistry.class);
         Mockito.when(registry.getObjectManager(allowed.getClass(), SQLObjectEditor.class)).thenReturn(manager);
-        DBPPlatform platform = Mockito.mock(DBPPlatform.class);
+        DBPPlatform platform = mockPlatform();
         Mockito.when(platform.getEditorsRegistry()).thenReturn(registry);
         AISchemaGenerationOptions options = options(false).withSendReferences(true)
             .withObjectFilter((m, object) -> object != excluded).build();
         {
-            workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+            platformField.set(null, platform);
             String ddl = new AISchemaGeneratorImpl().generateSchema(monitor, executionContext, options, table);
             Assertions.assertTrue(ddl.contains("ALTER TABLE orders ADD allowed_fk"), ddl);
             Assertions.assertFalse(ddl.contains("payroll"), ddl);
             Mockito.verify(manager, Mockito.never()).makeCreateCommand(Mockito.eq(excluded), Mockito.anyMap());
         }
+    }
+
+    @NotNull
+    private DBPPlatform mockPlatform() {
+        // Preserve platform services used by the headless application while replacing only test collaborators.
+        return Mockito.mock(DBPPlatform.class, AdditionalAnswers.delegatesTo(originalPlatform));
     }
 
     @NotNull
@@ -194,8 +220,11 @@ public class AISchemaDDLFilterTest {
     }
 
     @NotNull
-    private DBSTableForeignKey foreignKey(@NotNull DBSTable owner, @NotNull DBSTable target, @NotNull String name)
-        throws DBException {
+    private DBSTableForeignKey foreignKey(
+        @NotNull DBSTable owner,
+        @NotNull DBSTable target,
+        @NotNull String name
+    ) throws DBException {
         DBSTableForeignKey key = (DBSTableForeignKey) Mockito.mock(AbstractTableConstraint.class,
             Mockito.withSettings().extraInterfaces(DBSTableForeignKey.class));
         Mockito.when(key.getName()).thenReturn(name);
@@ -245,6 +274,19 @@ public class AISchemaDDLFilterTest {
             command.getObjectCommands().keySet().stream().filter(DBSTableForeignKey.class::isInstance)
                 .map(DBSTableForeignKey.class::cast).forEach(key -> ddl.append("; ALTER TABLE orders ADD ").append(key.getName()));
             actions.add(new SQLDatabasePersistAction("DDL", ddl.toString()));
+        }
+    }
+
+    public abstract static class TestObjectEditor extends SQLObjectEditor<DBSTable, DBSObjectContainer> {
+        @Override
+        protected void addObjectCreateActions(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull List<DBEPersistAction> actions,
+            @NotNull ObjectCreateCommand command,
+            @NotNull Map<String, Object> options
+        ) {
+            actions.add(new SQLDatabasePersistAction("DDL", "CREATE TABLE orders (id INTEGER)"));
         }
     }
 }

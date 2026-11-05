@@ -82,7 +82,7 @@ public class AIDatabaseContextTest extends DBeaverUnitTest {
 
     @Test
     public void scopedMetadataOmitsCrossScopeRelationships() throws DBException {
-        AISchemaGenerationOptions options = AISchemaGenerationOptions.builder()
+        final AISchemaGenerationOptions options = AISchemaGenerationOptions.builder()
             .withSendForeignKeys(true)
             .withSendFullDDL(true)
             .withSendReferences(true)
