@@ -601,8 +601,13 @@ public class ResultSetModel implements DBDResultSetModel {
         boolean updateChanges
     ) throws DBException {
         DBDAttributeBinding root = DBUtils.getRootValueBinding(valuePath);
-        if (root == null || root.getParentObject() != null || root.getOrdinalPosition() < 0
-            || root.getOrdinalPosition() >= attributes.length || attributes[root.getOrdinalPosition()] != root) {
+        // The path root must identify a top-level value stored in this row.
+        boolean validRowRoot = root != null && root.getParentObject() == null
+            && root.getOrdinalPosition() >= 0 && root.getOrdinalPosition() < row.values.length;
+        // Flattened documents keep their root outside attributes; other roots must occur there.
+        boolean validModelRoot = validRowRoot && (root == documentAttribute
+            || (root.getOrdinalPosition() < attributes.length && attributes[root.getOrdinalPosition()] == root));
+        if (!validRowRoot || !validModelRoot) {
             throw new DBException("Nested value path does not identify a result-set attribute");
         }
         Object currentRoot = row.values[root.getOrdinalPosition()];
