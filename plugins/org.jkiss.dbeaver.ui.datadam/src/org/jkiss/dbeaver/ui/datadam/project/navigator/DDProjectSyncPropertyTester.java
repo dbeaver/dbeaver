@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.datadam.project;
+package org.jkiss.dbeaver.ui.datadam.project.navigator;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -24,9 +24,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
+import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.BindingStatus;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 
 public class DDProjectSyncPropertyTester extends PropertyTester {
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.datadam.projectSync";
@@ -49,25 +51,25 @@ public class DDProjectSyncPropertyTester extends PropertyTester {
         DDProjectUIManager manager = DDProjectUIManager.getInstance();
 
         if (receiver instanceof IWorkbenchWindow) {
-            return PROP_ENABLED.equals(property) && manager.isDDReady();
+            return PROP_ENABLED.equals(property) && manager.isProjectSyncReady();
         }
         if (!(receiver instanceof DBNProject projectNode)) {
             return false;
         }
-        if (!manager.isDDReady()) {
+        if (!manager.isProjectSyncReady()) {
             return false;
         }
         if (PROP_ENABLED.equals(property)) {
             return true;
         }
         try {
-            boolean shared = manager.getProjectManager().isBound(projectNode.getProject());
+            BindingStatus status = manager.getProjectManager().getBindingStatus(projectNode.getProject());
             return switch (property) {
-                case PROP_CAN_SHARE -> !shared;
-                case PROP_CAN_SYNC -> shared;
+                case PROP_CAN_SHARE -> status == BindingStatus.UNBOUND;
+                case PROP_CAN_SYNC -> status == BindingStatus.CURRENT_ACCOUNT;
                 default -> false;
             };
-        } catch (DBException e) {
+        } catch (DBException | IllegalStateException e) {
             log.debug("Error checking DataDam project state", e);
             return false;
         }
