@@ -935,6 +935,23 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void smartModeExtendedQueryKeepsFirstKeyword() throws DBException {
+        String query = """
+            select *
+
+            from test_table
+            where id = 1
+            """;
+
+        SQLParserContext context = createParserContext(setDialect(POSTGRESQL_DIALECT_NAME), query);
+        context.getSyntaxManager().setStatementDelimiterMode(ModelPreferences.SQLScriptStatementDelimiterMode.SMART);
+        SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
+
+        Assertions.assertInstanceOf(SQLQuery.class, element);
+        Assertions.assertEquals("SELECT", ((SQLQuery) element).getFirstKeyword());
+    }
+
+    @Test
     public void extractSqlServerBatchDelimiterAfterTerminatedStatement() throws DBException {
         String script = "select 1;\n  GO\nselect 2\nGO -- final batch";
         List<SQLQuery> queries = extractWithBatchSeparators(script);

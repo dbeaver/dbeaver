@@ -1281,6 +1281,7 @@ public class SQLScriptParser {
                 SQLQuery query = new SQLQuery(this.context.getDataSource(), text, start, realEnd - start);
                 query.setEndsWithDelimiter(tailElement.isEndsWithDelimiter());
                 query.setHasVariableKeyword(headElement.hasVariableKeyword() || tailElement.hasVariableKeyword());
+                query.setFirstKeyword(headElement.getFirstKeyword());
                 return query;
             } catch (BadLocationException ex) {
                 return headElement;

@@ -139,6 +139,7 @@ public class SQLQuery implements SQLScriptElement {
         this.data = sourceQuery.data;
         this.isEndsWithDelimiter = sourceQuery.isEndsWithDelimiter;
         this.hasVariableKeyword = sourceQuery.hasVariableKeyword;
+        this.firstKeyword = text.equals(sourceQuery.getText()) ? sourceQuery.firstKeyword : null;
     }
 
     public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String text, int offset, int length) {
@@ -810,7 +811,11 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     public boolean isDeleteUpdateDangerous() {
-        if (firstKeyword != null && !UPDATE_DELETE_DANGER_KEYWORDS.contains(firstKeyword)) {
+        // Only skip parsing for known non-DDL starters. UPDATE/DELETE/WITH and unknown keywords must be parsed.
+        if (firstKeyword != null
+            && NON_DDL_KEYWORDS.contains(firstKeyword)
+            && !UPDATE_DELETE_DANGER_KEYWORDS.contains(firstKeyword)
+        ) {
             return false;
         }
         parseQuery();
