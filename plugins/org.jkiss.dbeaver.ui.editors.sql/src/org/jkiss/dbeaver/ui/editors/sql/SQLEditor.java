@@ -1845,6 +1845,12 @@ public class SQLEditor extends SQLEditorBase implements
             && !SQLPreferenceConstants.LOCATION_RESULTS.equals(location)) {
             return;
         }
+        if (resultTabs == null) {
+            // Deferred result-tab creation will use the requested location.
+            getPreferenceStore().setValue(SQLPreferenceConstants.EXTRA_PANEL_LOCATION, location);
+            SQLEditorHandlerPlaceExtraPanels.refreshCommandState(getSite());
+            return;
+        }
         if (isExtraPanelsLocation(location)) {
             // Another editor may have changed the shared default without moving these controls.
             getPreferenceStore().setValue(SQLPreferenceConstants.EXTRA_PANEL_LOCATION, location);
@@ -1910,7 +1916,9 @@ public class SQLEditor extends SQLEditorBase implements
 
     public boolean isExtraPanelsLocation(@NotNull String location) {
         return SQLPreferenceConstants.LOCATION_RESULTS.equals(location)
-            == (getFolderForExtraPanels() == resultTabs);
+            == (resultTabs == null
+                ? SQLPreferenceConstants.LOCATION_RESULTS.equals(getExtraPanelsLocation())
+                : getFolderForExtraPanels() == resultTabs);
     }
 
     private void addExtraPanelsPlacementActions(@NotNull IMenuManager manager) {
