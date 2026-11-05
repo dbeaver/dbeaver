@@ -20,12 +20,7 @@ import com.dbeaver.datadam.dam.remote.api.DDRemoteDamProtocol;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamHandshakeRequest;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamMessage;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
-import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannel;
-import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
-import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
-import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamMessageListener;
-import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSessionListener;
-import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
+import com.dbeaver.datadam.dam.remote.api.transport.*;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
@@ -274,6 +269,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
         try {
             String token = tokens.getAccessToken(endpoint);
             if (token == null || token.isBlank()) {
+                log.debug("DataDam desktop channel has no access token");
                 finish(attempt, false);
                 return;
             }
@@ -298,11 +294,13 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
                 socket.abort();
             }
         } catch (DBException e) {
+            log.warn("Cannot obtain DataDam desktop channel access token", e);
             finish(attempt, true);
         } catch (InterruptedException e) {
             finish(attempt, true);
             Thread.currentThread().interrupt();
         } catch (Exception e) {
+            log.warn("Cannot connect DataDam desktop channel", e);
             finish(attempt, !isAuthorizationFailure(e));
         }
     }
@@ -455,6 +453,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
             }
             attempt.connectDeadline.cancel();
             attempt.readyDeadline.cancel();
+            log.debug("DataDam desktop session established");
             notifyListeners(listeners, listener -> listener.onConnected(ready));
             notifyStateObservers();
         } else {
@@ -496,6 +495,8 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
             }
             detach(attempt, true);
         }
+        log.warn("DataDam desktop channel timed out waiting for "
+            + (waitingForReady ? "session handshake" : "WebSocket connection"));
         cleanup(attempt);
         notifyStateObservers();
     }
@@ -653,11 +654,17 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
 
         @Override
         protected void closed(int statusCode, @NotNull String reason) {
+            if (isCurrent(attempt)) {
+                log.warn("DataDam desktop channel closed by remote server (code " + statusCode + ")");
+            }
             finish(attempt, true);
         }
 
         @Override
         protected void error(@NotNull Throwable cause) {
+            if (isCurrent(attempt)) {
+                log.warn("DataDam desktop channel error", cause);
+            }
             finish(attempt, !isAuthorizationFailure(cause));
         }
 

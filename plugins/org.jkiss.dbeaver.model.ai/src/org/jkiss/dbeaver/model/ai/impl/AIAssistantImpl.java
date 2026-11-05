@@ -352,6 +352,7 @@ public class AIAssistantImpl implements AIAssistant {
                     // Visualize result in chat
                     chatListener.processFunctionCall(fcMessage);
                     if (result.getException() != null) {
+                        chatListener.error(result.getException());
                         chatListener.complete(List.of(), true, false);
                         return;
                     }

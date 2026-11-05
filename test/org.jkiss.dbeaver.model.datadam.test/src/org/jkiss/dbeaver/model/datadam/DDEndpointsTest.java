@@ -27,7 +27,7 @@ import java.util.List;
 class DDEndpointsTest {
     @Test
     void selectsRemoteDamEndpointForTheConfiguredEnvironment() {
-        String remoteDamEndpoint = DDEndpoints.getAccountBaseUrl().replace("https://account.", "wss://remote-dam.")
+        String remoteDamEndpoint = DDEndpoints.getAccountBaseUrl().replace("https://account.", "wss://dam.")
             + DDRemoteDamProtocol.WEBSOCKET_PATH;
 
         Assertions.assertEquals(remoteDamEndpoint, DDEndpoints.getRemoteDamWebSocketUrl());

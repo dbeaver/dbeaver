@@ -24,8 +24,9 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.datadam.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.datadam.auth.DDKeyStore;
+import org.jkiss.dbeaver.model.datadam.rpc.DDDesktopRpcRegistrationRegistry;
+import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.junit.jupiter.api.Assertions;
@@ -90,7 +91,7 @@ class DDDesktopAccessLifecycleTest {
     }
 
     @Test
-    void expiryClosesRpcAndPausesTheChannelWithoutAnotherAccessOperation() throws Exception {
+    void failedRefreshClosesRpcAndPausesTheChannelWithoutAnotherAccessOperation() throws Exception {
         var status = new AtomicReference<>(DDDesktopTokenManager.Status.SIGNED_IN);
         DDDesktopAccessService access = access(status);
         List<String> events = new ArrayList<>();
@@ -99,14 +100,15 @@ class DDDesktopAccessLifecycleTest {
         Mockito.when(channel.getStatus()).thenReturn(new DDRemoteDamChannelStatus(
             DDRemoteDamChannelState.CONNECTED, new DDRemoteDamSessionInfo("deployment", "instance", "session")));
         try (var keys = Mockito.mockStatic(DDKeyStore.class);
-             var session = new DDRemoteDamDesktopSessionService(access, channel);
+             var session = new DDRemoteDamDesktopSessionService(
+                 access, channel, Mockito.mock(DDDesktopRpcRegistrationRegistry.class));
              var jobs = new ExpiryJobs()) {
             access.signIn(Mockito.mock(DBRProgressMonitor.class));
             session.start();
             final var endpoint = session.getRpc();
             Job expiry = jobs.latest();
 
-            status.set(DDDesktopTokenManager.Status.EXPIRED);
+            status.set(DDDesktopTokenManager.Status.INVALID_TOKEN);
             wake(expiry);
 
             Assertions.assertEquals(List.of("changing", "changed", "changed"), events);
@@ -116,6 +118,31 @@ class DDDesktopAccessLifecycleTest {
             Mockito.verify(channel).pause();
             Mockito.verify(channel).start();
             keys.verify(DDKeyStore::clear, Mockito.never());
+        }
+    }
+
+    @Test
+    void rotatedTokenReconnectsTheChannelAndSchedulesItsNewExpiry() throws Exception {
+        var status = new AtomicReference<>(DDDesktopTokenManager.Status.SIGNED_IN);
+        var expiresAt = new AtomicReference<>(Instant.now().plusSeconds(3600));
+        DDDesktopAccessService access = access(status, expiresAt);
+        List<String> events = new ArrayList<>();
+        access.addAccessListener(listener(events));
+        DDRemoteDamDesktopChannel channel = Mockito.mock(DDRemoteDamDesktopChannel.class);
+        try (var keys = Mockito.mockStatic(DDKeyStore.class);
+             var session = new DDRemoteDamDesktopSessionService(access, channel);
+             var jobs = new ExpiryJobs()) {
+            access.signIn(Mockito.mock(DBRProgressMonitor.class));
+            session.start();
+            Job expiry = jobs.latest();
+
+            expiresAt.set(expiresAt.get().plusSeconds(3600));
+            wake(expiry);
+
+            Assertions.assertEquals(List.of("changing", "changed", "changing", "changed"), events);
+            Assertions.assertEquals(2, jobs.count());
+            Mockito.verify(channel).pause();
+            Mockito.verify(channel, Mockito.times(2)).start();
         }
     }
 
@@ -134,14 +161,13 @@ class DDDesktopAccessLifecycleTest {
             Assertions.assertNotSame(previous, current);
             Assertions.assertEquals(Job.NONE, previous.getState());
 
-            status.set(DDDesktopTokenManager.Status.EXPIRED);
             runCancelled(previous);
 
             Assertions.assertNotEquals(Job.NONE, current.getState());
             Assertions.assertEquals(List.of("changing", "changed", "changing", "changed"), events);
             wake(current);
-            Assertions.assertEquals(List.of("changing", "changed", "changing", "changed", "changed"), events);
-            Assertions.assertEquals(3, jobs.count());
+            Assertions.assertEquals(List.of("changing", "changed", "changing", "changed"), events);
+            Assertions.assertEquals(4, jobs.count());
         }
     }
 
@@ -186,16 +212,32 @@ class DDDesktopAccessLifecycleTest {
     }
 
     @NotNull
-    private static DDDesktopAccessService access() {
+    private static DDDesktopAccessService access() throws DBException {
         return access(new AtomicReference<>(DDDesktopTokenManager.Status.SIGNED_OUT));
     }
 
     @NotNull
-    private static DDDesktopAccessService access(@NotNull AtomicReference<DDDesktopTokenManager.Status> status) {
+    private static DDDesktopAccessService access(@NotNull AtomicReference<DDDesktopTokenManager.Status> status) throws DBException {
+        return access(status, new AtomicReference<>(Instant.now().plusSeconds(3600)));
+    }
+
+    @NotNull
+    private static DDDesktopAccessService access(
+        @NotNull AtomicReference<DDDesktopTokenManager.Status> status,
+        @NotNull AtomicReference<Instant> expiresAt
+    ) throws DBException {
         DDDesktopTokenManager manager = Mockito.mock(DDDesktopTokenManager.class);
         Mockito.when(manager.getStatus()).thenAnswer(invocation -> status.get());
-        Mockito.when(manager.getExpiresAt()).thenAnswer(invocation -> Instant.now().plusSeconds(3600));
-        return new DDDesktopAccessService(manager);
+        Mockito.when(manager.getExpiresAt()).thenAnswer(invocation -> expiresAt.get());
+        DDDesktopAccessService access = new DDDesktopAccessService(manager);
+        DDDesktopTokenManager.Status initial = status.get();
+        status.set(DDDesktopTokenManager.Status.SIGNED_OUT);
+        try {
+            access.load();
+        } finally {
+            status.set(initial);
+        }
+        return access;
     }
 
     private static void wake(@NotNull Job job) throws InterruptedException {

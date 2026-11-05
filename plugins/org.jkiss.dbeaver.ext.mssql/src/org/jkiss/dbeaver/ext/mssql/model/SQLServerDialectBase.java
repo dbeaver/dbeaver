@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialectDDLExtension;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.SQLDialectSchemaController;
 import org.jkiss.dbeaver.model.sql.SQLScriptVariableScope;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLMultiWordRule;
@@ -506,10 +507,21 @@ public abstract class SQLServerDialectBase extends JDBCSQLDialect implements TPR
         return "CREATE SCHEMA " + schemaName;
     }
 
+    @NotNull
     @Override
-    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
-        return EnumSet.of(
-            ProjectionAliasVisibilityScope.ORDER_BY
-        );
+    public SQLDialectFeatures getDialectFeatures() {
+        return DialectFeatures.INSTANCE;
+    }
+
+    protected static class DialectFeatures extends SQLDialectFeatures {
+        private static final DialectFeatures INSTANCE = new DialectFeatures();
+
+        @NotNull
+        @Override
+        public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+            return EnumSet.of(
+                ProjectionAliasVisibilityScope.ORDER_BY
+            );
+        }
     }
 }

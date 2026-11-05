@@ -160,14 +160,17 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     @Override
     public void selectModel(@NotNull AIModel model) {
         setModel(model.name());
-        setContextWindowSize(model.contextWindowSize() != null ? model.contextWindowSize() :
-            OpenAIModels.getModelByName(model.name()).map(AIModel::contextWindowSize).orElse(AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE));
+        Integer contextSize = model.contextWindowSize();
+        if (contextSize == null && (isChatGptAccountAuthentication() || OpenAIModels.isOpenAIEndpoint(getEffectiveBaseUrl()))) {
+            contextSize = OpenAIModels.getModelByName(model.name()).map(AIModel::contextWindowSize).orElse(null);
+        }
+        setContextWindowSize(contextSize != null ? contextSize : AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE);
     }
 
     @Override
     @Property(order = 4)
     public double getTemperature() {
-        if (Double.isFinite(temperature) && temperature != AIUtils.DEFAULT_TEMPERATURE) {
+        if (Double.isFinite(temperature) && (hasExplicitTemperature() || temperature != AIUtils.DEFAULT_TEMPERATURE)) {
             return temperature;
         }
 
@@ -195,6 +198,9 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         if (contextWindowSize != null) {
             return contextWindowSize;
         }
+        if (!isChatGptAccountAuthentication() && !OpenAIModels.isOpenAIEndpoint(getEffectiveBaseUrl())) {
+            return null;
+        }
 
         return OpenAIModels.getModelByName(getModel())
             .map(AIModel::contextWindowSize)
@@ -205,13 +211,19 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
     @Override
     public Integer getEffectiveContextWindowSize() {
         String environmentModel = getEnvironmentModel();
-        return environmentModel == null ? getContextWindowSize() : OpenAIModels.getModelByName(environmentModel)
+        return environmentModel == null || !isChatGptAccountAuthentication() && !OpenAIModels.isOpenAIEndpoint(getEffectiveBaseUrl())
+            ? getContextWindowSize() : OpenAIModels.getModelByName(environmentModel)
             .map(AIModel::contextWindowSize)
             .orElseGet(this::getContextWindowSize);
     }
 
     public void setContextWindowSize(@Nullable Integer contextWindowSize) {
         this.contextWindowSize = contextWindowSize;
+    }
+
+    @Nullable
+    public Integer getConfiguredContextWindowSize() {
+        return contextWindowSize;
     }
 
     @NotNull

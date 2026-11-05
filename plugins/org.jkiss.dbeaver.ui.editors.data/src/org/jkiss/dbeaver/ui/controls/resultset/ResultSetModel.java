@@ -57,6 +57,8 @@ public class ResultSetModel implements DBDResultSetModel {
     private DBDDataFilter dataFilter;
     private DBSEntity singleSourceEntity;
     private DBCExecutionSource executionSource;
+    @Nullable
+    private DBDFormatSettings formatSettings;
 
     private final ResultSetHintContext hintContext;
 
@@ -393,6 +395,15 @@ public class ResultSetModel implements DBDResultSetModel {
         return executionSource == null ? null : executionSource.getDataContainer();
     }
 
+    /**
+     * Returns the format settings of the session which produced the current result set.
+     * They stay the same if the editor is switched to another connection later.
+     */
+    @Nullable
+    public DBDFormatSettings getFormatSettings() {
+        return formatSettings;
+    }
+
     @Nullable
     private DBVEntity resolveVirtualEntity() {
         DBSDataContainer dataContainer = getDataContainer();
@@ -562,10 +573,30 @@ public class ResultSetModel implements DBDResultSetModel {
         row.values[rootIndex] = valueToEdit;
 
         if (updateChanges && row.getState() == ResultSetRow.STATE_NORMAL) {
-            changesCount++;
+            if (isOriginalValueRestored(attr, topAttribute, row, valueToEdit)) {
+                // The value is back to the original one, so there is nothing left to save
+                row.clearChange(topAttribute);
+                refreshChangeCount();
+            } else {
+                changesCount++;
+            }
         }
 
         return true;
+    }
+
+    private boolean isOriginalValueRestored(
+        @NotNull DBDAttributeBinding attr,
+        @NotNull DBDAttributeBinding topAttribute,
+        @NotNull ResultSetRow row,
+        @Nullable Object value
+    ) {
+        if (attr != topAttribute || attr.getDataKind().isComplex() || value instanceof DBDValue
+            || !row.isChanged(topAttribute)) {
+            return false;
+        }
+        Object originalValue = row.getChange(topAttribute);
+        return !(originalValue instanceof DBDValue) && DBUtils.compareDataValues(value, originalValue) == 0;
     }
 
     void resetCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable int[] rowIndexes) {
@@ -622,6 +653,7 @@ public class ResultSetModel implements DBDResultSetModel {
         } else {
             this.trace = null;
         }
+        this.formatSettings = resultSet.getSession();
 
         this.clearData();
         this.updateMetaData(newAttributes);

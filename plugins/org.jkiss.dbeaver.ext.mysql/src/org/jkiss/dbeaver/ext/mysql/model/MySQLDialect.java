@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -35,7 +36,9 @@ import org.jkiss.utils.CommonUtils;
 
 import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,10 +47,70 @@ import java.util.regex.Pattern;
  */
 public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaController, SQLDialectDDLExtension {
 
+    /** MySQL resolves an unqualified stored-program variable before a same-named table column.
+     *
+     * @see <a href="https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/local-variable-scope.html">Local variable resolution</a>
+     */
+    private static class DialectFeatures extends SQLDialectFeatures {
+        private static final DialectFeatures INSTANCE = new DialectFeatures();
+
+        @Override
+        @NotNull
+        public TrailingSelectIntoSupport getTrailingSelectIntoSupport() {
+            return TrailingSelectIntoSupport.ANY;
+        }
+
+        @Override
+        @NotNull
+        public ProceduralVariableConflictPolicy getProceduralVariableConflictPolicy() {
+            return ProceduralVariableConflictPolicy.PREFER_VARIABLE;
+        }
+
+        @Override
+        @NotNull
+        public Set<String> getTypeModifierKeywords() {
+            Set<String> keywords = new HashSet<>(super.getTypeModifierKeywords());
+            keywords.addAll(Set.of("SIGNED", "UNSIGNED", "ZEROFILL"));
+            return Set.copyOf(keywords);
+        }
+
+        @Override
+        @NotNull
+        public Set<String> getSignatureModifierKeywords() {
+            return Set.of("IN", "OUT", "INOUT");
+        }
+
+        /** A local variable belongs to its BEGIN/END block and may be shadowed in a nested block.
+         *
+         * @see <a href="https://docs.oracle.com/cd/E17952_01/mysql-8.4-en/declare-local-variable.html">Local variable DECLARE</a>
+         */
+        @Override
+        @NotNull
+        public LocalVariableVisibility getLocalVariableVisibility(@NotNull LocalVariableKind kind) {
+            return LocalVariableVisibility.LEXICAL;
+        }
+
+        @Override
+        @NotNull
+        public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+            return EnumSet.of(
+                ProjectionAliasVisibilityScope.GROUP_BY,
+                ProjectionAliasVisibilityScope.HAVING,
+                ProjectionAliasVisibilityScope.ORDER_BY
+            );
+        }
+    }
+
     @NotNull
     @Override
     public SQLScriptVariableScope getScriptVariableScope() {
         return SQLScriptVariableScope.SESSION;
+    }
+
+    @Override
+    @NotNull
+    public SQLDialectFeatures getDialectFeatures() {
+        return DialectFeatures.INSTANCE;
     }
 
     public static final String[] MYSQL_NON_TRANSACTIONAL_KEYWORDS = ArrayUtils.concatArrays(
@@ -396,15 +459,6 @@ public class MySQLDialect extends JDBCSQLDialect implements SQLDialectSchemaCont
     @Override
     public String getCreateSchemaQuery(@NotNull String schemaName) {
         return "CREATE DATABASE " + schemaName;
-    }
-
-    @Override
-    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
-        return EnumSet.of(
-            ProjectionAliasVisibilityScope.GROUP_BY,
-            ProjectionAliasVisibilityScope.HAVING,
-            ProjectionAliasVisibilityScope.ORDER_BY
-        );
     }
 
     @Nullable

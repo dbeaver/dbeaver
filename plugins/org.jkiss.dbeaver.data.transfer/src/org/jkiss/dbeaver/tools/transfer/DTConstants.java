@@ -33,6 +33,7 @@ public class DTConstants {
     public static final String PREF_FALLBACK_OUTPUT_DIRECTORY = "fallbackOutputDirectory";
     public static final String DEFAULT_FALLBACK_OUTPUT_DIRECTORY = System.getProperty(StandardConstants.ENV_TMP_DIR);
     public static final String PREF_RECONNECT_TO_LAST_DATABASE = "reconnectToLastDatabase";
+    public static final String PREF_CAPTURE_UNSAVED_TASK_LOGS = "captureUnsavedTaskLogs";
 
     public static final String PREF_NAME_CASE_MAPPING = "nameCaseMapping";
     public static final String PREF_REPLACE_MAPPING = "replaceMapping";

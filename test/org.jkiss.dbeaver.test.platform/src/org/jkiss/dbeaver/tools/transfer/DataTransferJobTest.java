@@ -17,20 +17,55 @@
 package org.jkiss.dbeaver.tools.transfer;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
 public class DataTransferJobTest {
+    @Test
+    public void restoresLogWriterAfterWorkerFailure() throws Exception {
+        DataTransferSettings settings = Mockito.mock(DataTransferSettings.class);
+        DataTransferNodeDescriptor consumerNode = Mockito.mock(DataTransferNodeDescriptor.class);
+        Mockito.when(consumerNode.getName()).thenReturn("Database");
+        Mockito.when(settings.getConsumer()).thenReturn(consumerNode);
+        DBTTask task = Mockito.mock(DBTTask.class);
+        IDataTransferProducer<?> producer = Mockito.mock(IDataTransferProducer.class);
+        IDataTransferConsumer<?, ?> consumer = Mockito.mock(IDataTransferConsumer.class);
+        DataTransferPipe pipe = new DataTransferPipe(producer, consumer);
+        Mockito.when(settings.getDataPipes()).thenReturn(List.of(pipe));
+        Mockito.when(settings.acquireDataPipe(Mockito.any(), Mockito.eq(task))).thenReturn(pipe, (DataTransferPipe) null);
+        Mockito.doThrow(new DBException("Transfer failed")).when(producer).transferData(
+            Mockito.any(), Mockito.eq(consumer), Mockito.any(), Mockito.any(), Mockito.eq(task), Mockito.anyLong());
+
+        PrintStream original = Log.getLogWriter();
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        try (PrintStream previous = new PrintStream(new ByteArrayOutputStream());
+             PrintStream captured = new PrintStream(output)) {
+            Log.setLogWriter(previous);
+            // Invoke synchronously so the worker's thread-local state can be checked after failure.
+            var run = DataTransferJob.class.getDeclaredMethod("run", DBRProgressMonitor.class);
+            run.setAccessible(true);
+            run.invoke(new DataTransferJob(settings, task, Log.getLog(getClass()), captured, null, 0), new VoidProgressMonitor());
+            Assertions.assertSame(previous, Log.getLogWriter());
+            Assertions.assertTrue(output.toString().contains("Transfer failed"));
+        } finally {
+            Log.setLogWriter(original);
+        }
+    }
+
     @Test
     public void cancelingSingleWorkerCancelsBlockOnParentMonitor() throws Exception {
         DataTransferSettings settings = Mockito.mock(DataTransferSettings.class);

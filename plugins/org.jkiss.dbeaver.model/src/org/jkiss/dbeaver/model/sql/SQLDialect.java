@@ -37,7 +37,6 @@ import org.jkiss.utils.Pair;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.EnumSet;
 import java.util.List;
 
 /**
@@ -58,17 +57,6 @@ public interface SQLDialect {
         GROUP_ROWS,
         PLAIN,
         INSERT_ALL
-    }
-
-    enum ProjectionAliasVisibilityScope {
-        WHERE,
-        HAVING,
-        GROUP_BY,
-        ORDER_BY
-    }
-
-    record GlobalVariableInfo(String name, String description, DBPDataKind type) {
-        public static GlobalVariableInfo[] EMPTY_ARRAY = new GlobalVariableInfo[0];
     }
 
     @NotNull
@@ -563,8 +551,8 @@ public interface SQLDialect {
      * Generates stored procedure call. Parameters (optionally) can be surrounded by cast(:param as paramType).
      */
     void generateStoredProcedureCall(
-        StringBuilder sql, 
-        DBSProcedure proc, 
+        StringBuilder sql,
+        DBSProcedure proc,
         Collection<? extends DBSProcedureParameter> parameters,
         boolean castParams
     );
@@ -587,14 +575,14 @@ public interface SQLDialect {
     @NotNull
     SQLTokenPredicateSet getSkipTokenPredicates();
 
-    default EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
-        return EnumSet.of(
-            ProjectionAliasVisibilityScope.WHERE,
-            ProjectionAliasVisibilityScope.GROUP_BY,
-            ProjectionAliasVisibilityScope.HAVING,
-            ProjectionAliasVisibilityScope.ORDER_BY
-        );
-    }
+    /**
+     * Returns the dialect features object containing semantic-analyzer-only configuration.
+     * <p>
+     * Dialects that need custom behaviour create a nested subclass of
+     * {@link SQLDialectFeatures} and return it from here.
+     */
+    @NotNull
+    SQLDialectFeatures getDialectFeatures();
 
     default void afterDataSourceInitialization(@NotNull DBPDataSource dataSource) {
     }

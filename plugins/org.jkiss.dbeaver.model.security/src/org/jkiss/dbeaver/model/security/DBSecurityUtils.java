@@ -20,8 +20,10 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.equinox.internal.security.storage.PasswordProviderSelector;
 import org.eclipse.equinox.security.storage.StorageException;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 
 public final class DBSecurityUtils {
+    private static final Log log = Log.getLog(DBSecurityUtils.class);
     private DBSecurityUtils() {
     }
 
@@ -38,12 +40,14 @@ public final class DBSecurityUtils {
             default -> null;
         };
         if (providerId == null) {
+            log.error("Cannot determine current OS");
             return null;
         }
         try {
             // The extension can be installed but unusable (notably a missing Linux keyring).
             return PasswordProviderSelector.getInstance().findStorageModule(providerId).getID();
         } catch (StorageException e) {
+            log.error("Cannot find local OS integrated security password provider '" + providerId + "'", e);
             return null;
         }
     }

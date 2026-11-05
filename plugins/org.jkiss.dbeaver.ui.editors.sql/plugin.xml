@@ -3,6 +3,24 @@
 
 <plugin>
 
+    <extension point="org.jkiss.dbeaver.commandFeature">
+        <feature id="SQL_SCRIPT_RECENT" commandId="org.jkiss.dbeaver.core.sql.editor.recent"/>
+        <feature id="SQL_SCRIPT_NEW" commandId="org.jkiss.dbeaver.core.sql.editor.create"/>
+        <feature id="SQL_EDITOR_EXECUTE_QUERY" commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement"/>
+        <feature id="SQL_EDITOR_EXECUTE_QUERY_NEW" commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew"/>
+        <feature id="SQL_EDITOR_EXECUTE_SCRIPT" commandId="org.jkiss.dbeaver.ui.editors.sql.run.script"/>
+        <feature id="SQL_EDITOR_EXECUTE_SCRIPT_NEW" commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew"/>
+        <feature id="SQL_EDITOR_EXPLAIN_PLAN" commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain"/>
+        <feature id="SQL_EDITOR_LOAD_PLAN" commandId="org.jkiss.dbeaver.ui.editors.sql.load.plan"/>
+        <feature id="SQL_EDITOR_SHOW_OUTPUT" commandId="org.jkiss.dbeaver.ui.editors.sql.show.output"/>
+        <feature id="SQL_EDITOR_SHOW_LOG" commandId="org.jkiss.dbeaver.ui.editors.sql.show.log"/>
+        <feature id="SQL_EDITOR_SHOW_VARIABLES" commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables"/>
+        <feature id="SQL_EDITOR_SELECT_ROW_COUNT" commandId="org.jkiss.dbeaver.ui.editors.sql.run.count"/>
+        <feature id="SQL_EDITOR_SELECT_ALL_ROWS" commandId="org.jkiss.dbeaver.ui.editors.sql.run.all.rows"/>
+        <feature id="SQL_EDITOR_EXECUTE_EXPRESSION" commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression"/>
+        <feature id="SQL_EDITOR_FORMAT_SQL" commandId="org.jkiss.dbeaver.ui.editors.text.content.format"/>
+    </extension>
+
     <extension-point id="org.jkiss.dbeaver.sql.covert" name="SQL text conversions" schema="schema/org.jkiss.dbeaver.sql.convert.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sql.executors" name="SQL Script executors" schema="schema/org.jkiss.dbeaver.sql.executors.exsd"/>
     <extension-point id="org.jkiss.dbeaver.sqlPresentation" name="SQL editor presentations" schema="schema/org.jkiss.dbeaver.sqlPresentation.exsd"/>
@@ -194,6 +212,12 @@
     </extension>
 
     <extension point="org.eclipse.core.expressions.definitions">
+        <definition id="org.jkiss.dbeaver.ui.editors.sql.preferences">
+            <or>
+                <reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/>
+                <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase"/>
+            </or>
+        </definition>
         <definition id="org.jkiss.dbeaver.core.ui.sql.editor.base">
             <with variable="activeEditor">
                 <instanceof value="org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase"/>
@@ -1513,13 +1537,13 @@
 
     <extension point="org.eclipse.ui.propertyPages">
         <page category="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLEditor" id="org.jkiss.dbeaver.preferences.main.sqleditor" name="%page.org.jkiss.dbeaver.preferences.main.sqleditor.name">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.ui.editors.sql.preferences"/></enabledWhen>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.codeeditor" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCodeEditing" name="%page.org.jkiss.dbeaver.preferences.main.sql.codeeditor.name">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.ui.editors.sql.preferences"/></enabledWhen>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.completion" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLCompletion" name="%page.org.jkiss.dbeaver.preferences.main.sql.completion.name">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.ui.editors.sql.preferences"/></enabledWhen>
         </page>
 <!--
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.dialects" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLDialects" name="%page.org.jkiss.dbeaver.preferences.main.sql.dialects.name">
@@ -1527,16 +1551,16 @@
         </page>
 -->
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.resources" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLResources" name="%page.org.jkiss.dbeaver.preferences.main.sql.resources.name">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.ui.editors.sql.preferences"/></enabledWhen>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sql.format" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLFormat" name="%page.org.jkiss.dbeaver.preferences.main.sql.format.name">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.ui.editors.sql.preferences"/></enabledWhen>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sqlexecute" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLExecute" name="%page.org.jkiss.dbeaver.preferences.main.sqlexecute.name">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.ui.editors.sql.preferences"/></enabledWhen>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLTemplates" id="org.jkiss.dbeaver.preferences.main.sql.templates" name="%page.org.jkiss.dbeaver.preferences.main.sql.templates.name">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.preferences.datasource"/></enabledWhen>
+            <enabledWhen><reference definitionId="org.jkiss.dbeaver.ui.editors.sql.preferences"/></enabledWhen>
         </page>
     </extension>
 
@@ -1680,7 +1704,8 @@
                 id="sqlworkbenchj"
                 class="org.jkiss.dbeaver.ui.editors.sql.format.sqlworkbenchj.SQLWorkbenchJFormatter"
                 label="SQL Workbench/J formatter"
-                description="Formatter from SQL Workbench/J"/>
+                description="Formatter from SQL Workbench/J"
+                supportsMultiuserMode="false"/>
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">

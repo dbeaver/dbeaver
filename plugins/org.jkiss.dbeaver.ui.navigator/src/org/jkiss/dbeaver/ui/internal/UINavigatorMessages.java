@@ -189,6 +189,9 @@ public class UINavigatorMessages extends NLS {
     public static String editors_entity_read_expensive_props_action;
     public static String editors_entity_dialog_persist_title;
     public static String editors_entity_dialog_preview_title;
+    public static String editors_entity_hyperlink_error_title;
+    public static String editors_entity_hyperlink_error_message;
+    public static String editors_entity_hyperlink_unavailable_message;
     public static String editors_entity_properties_text;
     public static String editors_entity_properties_name_tooltip;
     public static String editors_entity_properties_tooltip_suffix;
@@ -235,6 +238,7 @@ public class UINavigatorMessages extends NLS {
     public static String confirm_deleting_close_existing_connections_checkbox_tooltip;
     public static String confirm_deleting_delete_contents_checkbox;
     public static String confirm_deleting_delete_contents_checkbox_tooltip;
+    public static String confirm_deleting_required_contents_warning;
     public static String confirm_deleting_project_location_label;
     public static String question_no_sql_available;
     public static String error_sql_generation_title;

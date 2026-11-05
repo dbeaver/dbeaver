@@ -44,7 +44,7 @@ public class SQLSyntaxManager {
     @NotNull
     private SQLDialect sqlDialect = BasicSQLDialect.INSTANCE;
     @NotNull
-    private DBPPreferenceStore preferenceStore = DBWorkbench.getPlatform().getPreferenceStore();
+    private DBPPreferenceStore preferenceStore;
     @Nullable
     private String[][] identifierQuoteStrings;
     private String[][] stringQuoteStrings;
@@ -67,6 +67,11 @@ public class SQLSyntaxManager {
 
     public SQLSyntaxManager()
     {
+        this(DBWorkbench.getPlatform().getPreferenceStore());
+    }
+
+    public SQLSyntaxManager(@NotNull DBPPreferenceStore preferenceStore) {
+        this.preferenceStore = preferenceStore;
     }
 
     @NotNull
