@@ -225,7 +225,7 @@ class SQLOccurrencesHighlighter {
     }
 
     void updateInput(IEditorInput input) {
-        if (editor.isBigDocument() || !SQLEditorUtils.isSQLSyntaxParserApplied(input)) {
+        if (!SQLEditorUtils.isSQLSyntaxParserApplied(editor, input)) {
             uninstallOccurrencesFinder();
         } else {
             final DBPPreferenceStore prefStore = editor.getActivePreferenceStore();

@@ -1351,8 +1351,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     public boolean isFoldingEnabled() {
-        return !isBigDocument()
-            && SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput())
+        return SQLEditorUtils.isSQLSyntaxParserApplied(this)
             && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
     }
 
