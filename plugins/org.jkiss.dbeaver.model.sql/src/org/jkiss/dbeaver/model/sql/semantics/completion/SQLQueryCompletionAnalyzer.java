@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionAnalyzer;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionContext;
+import org.jkiss.dbeaver.model.sql.completion.SQLCompletionHelper;
 import org.jkiss.dbeaver.model.sql.completion.SQLCompletionRequest;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryConnectionDummyContext;
 import org.jkiss.dbeaver.model.stm.LSMInspections;
@@ -120,6 +121,10 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
     ) {
         Collection<SQLQueryCompletionSet> completionSets = completionContext.prepareProposal(monitor, this.request);
         SQLQueryCompletionTextProvider textProvider = new SQLQueryCompletionTextProvider(this.request, completionContext, monitor);
+        boolean hasNonPartitionTableOrView = completionSets.stream()
+            .flatMap(set -> set.getItems().stream())
+            .map(SQLQueryCompletionItem::getObject)
+            .anyMatch(SQLCompletionHelper::isNonPartitionTableOrView);
 
         List<SQLQueryCompletionProposal> proposals = new LinkedList<>();
 
@@ -129,6 +134,9 @@ public class SQLQueryCompletionAnalyzer implements DBRRunnableParametrized<DBRPr
         for (SQLQueryCompletionSet completionSet : completionSets) {
             for (SQLQueryCompletionItem item : completionSet.getItems()) {
                 DBSObject object = SQLQueryConnectionDummyContext.isDummyObject(item.getObject()) ? null : item.getObject();
+                if (hasNonPartitionTableOrView && SQLCompletionHelper.isTablePartition(object)) {
+                    continue;
+                }
                 String text = item.apply(textProvider);
                 if (texts.add(text)) {
                     String decoration = item.apply(SQLQueryCompletionExtraTextProvider.INSTANCE);

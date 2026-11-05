@@ -103,7 +103,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     }
 
     public List<SQLCompletionProposalBase> getProposals() {
-        return proposals;
+        if (proposals.stream().noneMatch(p -> SQLCompletionHelper.isNonPartitionTableOrView(p.getObject()))) {
+            return proposals;
+        }
+        return proposals.stream()
+            .filter(p -> !SQLCompletionHelper.isTablePartition(p.getObject()))
+            .toList();
     }
 
     public boolean isSearchFinished() {
@@ -1105,6 +1110,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                         }
                     }
                 }
+            }
+            if (parent instanceof DBSObjectContainer
+                && matchedObjects.stream().anyMatch(SQLCompletionHelper::isNonPartitionTableOrView)) {
+                matchedObjects.removeIf(SQLCompletionHelper::isTablePartition);
             }
             if (!combinedMatch.isEmpty()) {
                 String replaceString = combinedMatch.toString();

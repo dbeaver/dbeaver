@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
 import org.jkiss.dbeaver.model.sql.SQLHelpTopic;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
+import org.jkiss.dbeaver.model.struct.rdb.DBSView;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -35,6 +38,14 @@ public class SQLCompletionHelper {
     private static final Log log = Log.getLog(SQLCompletionHelper.class);
 
     public static final int ADDITIONAL_INFO_WAIT_TIMEOUT = 3000;
+
+    public static boolean isTablePartition(@Nullable DBPNamedObject object) {
+        return object instanceof DBSTablePartition;
+    }
+
+    public static boolean isNonPartitionTableOrView(@Nullable DBPNamedObject object) {
+        return (object instanceof DBSTable || object instanceof DBSView) && !(object instanceof DBSTablePartition);
+    }
 
     /**
      * @param monitor monitor
