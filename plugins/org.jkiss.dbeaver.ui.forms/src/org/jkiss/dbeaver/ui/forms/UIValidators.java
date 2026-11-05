@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.forms;
 
+import org.eclipse.core.runtime.IStatus;
 import org.jkiss.code.NotNull;
 
 /**
@@ -23,6 +24,16 @@ import org.jkiss.code.NotNull;
  */
 public final class UIValidators {
     private UIValidators() {
+    }
+
+    @NotNull
+    static IStatus validateInteger(@NotNull String value) {
+        try {
+            Integer.parseInt(value);
+            return UIValidator.ok();
+        } catch (NumberFormatException e) {
+            return UIValidator.error(UIFormsMessages.forms_validation_invalid_integer);
+        }
     }
 
     @NotNull

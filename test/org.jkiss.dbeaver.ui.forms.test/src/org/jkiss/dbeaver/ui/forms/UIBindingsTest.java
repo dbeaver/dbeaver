@@ -16,16 +16,106 @@
  */
 package org.jkiss.dbeaver.ui.forms;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Text;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.bindings.BindingContext;
 import org.jkiss.dbeaver.ui.bindings.ObservableValue;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 
 public class UIBindingsTest extends DBeaverUnitTest {
+    @Test
+    public void convertedTextUpdatesDoNotFeedBackIntoModel() {
+        var context = new BindingContext();
+        var model = ObservableValue.writable("value");
+        Text source = bindText(context, model, Function.identity());
+        Text uppercase = bindText(context, model, value -> value.toUpperCase(Locale.ROOT));
+        Text lowercase = bindText(context, model, value -> value.toLowerCase(Locale.ROOT));
+        Assertions.assertEquals("value", model.get());
+        Mockito.clearInvocations(source);
+
+        // A user edit must update both derived fields without rewriting the source (and its caret).
+        source.setText("vaLueX");
+
+        Assertions.assertEquals("vaLueX", model.get());
+        Assertions.assertEquals("VALUEX", uppercase.getText());
+        Assertions.assertEquals("valuex", lowercase.getText());
+        Mockito.verify(source, Mockito.times(1)).setText(Mockito.anyString());
+
+        model.set("External");
+        Assertions.assertEquals("External", source.getText());
+        Assertions.assertEquals("EXTERNAL", uppercase.getText());
+        Assertions.assertEquals("external", lowercase.getText());
+        Assertions.assertEquals("External", model.get());
+        context.dispose();
+    }
+
+    @Test
+    public void integerEditsAreNotReformattedBackIntoSource() {
+        var context = new BindingContext();
+        var model = ObservableValue.writable(12);
+        Text control = mockText();
+        context.bind(control, model, value -> control.setText(value.toString()),
+            () -> Integer.valueOf(control.getText()), SWT.Modify);
+
+        control.setText("0123");
+
+        Assertions.assertEquals(123, model.get());
+        Assertions.assertEquals("0123", control.getText());
+        model.set(456);
+        Assertions.assertEquals("456", control.getText());
+        context.dispose();
+    }
+
+    @NotNull
+    private static Text bindText(
+        @NotNull BindingContext context,
+        @NotNull ObservableValue<String> model,
+        @NotNull Function<String, String> converter
+    ) {
+        Text control = mockText();
+        context.bind(control, model, value -> {
+            String display = converter.apply(value);
+            if (!control.getText().equals(display)) {
+                control.setText(display);
+            }
+        }, control::getText, SWT.Modify);
+        return control;
+    }
+
+    @NotNull
+    private static Text mockText() {
+        Text control = Mockito.mock(Text.class);
+        var text = new AtomicReference<>("");
+        var listener = new AtomicReference<Listener>();
+        Mockito.when(control.getText()).thenAnswer(invocation -> text.get());
+        Mockito.doAnswer(invocation -> {
+            listener.set(invocation.getArgument(1));
+            return null;
+        }).when(control).addListener(Mockito.eq(SWT.Modify), Mockito.any(Listener.class));
+        // Model SWT's synchronous Modify notification, including programmatic setText calls.
+        Mockito.doAnswer(invocation -> {
+            text.set(invocation.getArgument(0));
+            if (listener.get() != null) {
+                listener.get().handleEvent(new Event());
+            }
+            return null;
+        }).when(control).setText(Mockito.anyString());
+        return control;
+    }
+
     @Test
     public void computedValuesFollowActiveDependencies() {
         var selected = ObservableValue.writable(false);

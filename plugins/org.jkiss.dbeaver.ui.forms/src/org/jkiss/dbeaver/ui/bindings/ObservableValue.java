@@ -27,6 +27,8 @@ import java.util.function.Supplier;
 
 /** Observable value with dynamically tracked dependencies. */
 public final class ObservableValue<T> {
+    // Tracks the current supplier's reads without mixing independent computations on other threads.
+    // This is evaluation context, not synchronization: each observable graph remains thread-confined.
     private static final ThreadLocal<ObservableValue<?>> COMPUTING = new ThreadLocal<>();
 
     private final List<BiConsumer<T, T>> listeners = new ArrayList<>();

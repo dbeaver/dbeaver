@@ -241,14 +241,7 @@ public sealed interface UIRowBuilder permits UIRowBuilderImpl {
 
         return textField(binding, tb -> {
             handler.accept(tb);
-            tb.toModel(value -> {
-                try {
-                    Integer.parseInt(value);
-                    return UIValidator.ok();
-                } catch (NumberFormatException e) {
-                    return UIValidator.error(UIFormsMessages.forms_validation_invalid_integer);
-                }
-            }, Integer::valueOf);
+            tb.toModel(UIValidators::validateInteger, Integer::valueOf);
             tb.fromModel(value -> value == null ? "" : format.format(value));
         });
     }

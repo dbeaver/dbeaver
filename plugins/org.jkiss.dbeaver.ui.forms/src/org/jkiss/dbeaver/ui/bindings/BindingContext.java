@@ -39,18 +39,33 @@ public final class BindingContext {
         @Nullable Supplier<T> readControl,
         int eventType
     ) {
+        // SWT setters can fire events synchronously. Do not echo an update back to its source.
+        boolean[] updating = {false};
         BiConsumer<T, T> change = (oldValue, newValue) -> {
-            if (!control.isDisposed()) {
-                writeControl.accept(newValue);
+            if (!updating[0] && !control.isDisposed()) {
+                updating[0] = true;
+                try {
+                    writeControl.accept(newValue);
+                } finally {
+                    updating[0] = false;
+                }
             }
         };
         model.addListener(change);
         cleanup.add(() -> model.removeListener(change));
         if (readControl != null) {
             Listener listener = event -> {
-                T value = readControl.get();
-                if (!Objects.equals(value, model.get())) {
-                    model.set(value);
+                if (updating[0]) {
+                    return;
+                }
+                updating[0] = true;
+                try {
+                    T value = readControl.get();
+                    if (!Objects.equals(value, model.get())) {
+                        model.set(value);
+                    }
+                } finally {
+                    updating[0] = false;
                 }
             };
             control.addListener(eventType, listener);
@@ -60,7 +75,7 @@ public final class BindingContext {
                 }
             });
         }
-        writeControl.accept(model.get());
+        change.accept(null, model.get());
     }
 
     public void dispose() {

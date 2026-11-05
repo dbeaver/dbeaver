@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.bindings.BindingContext;
 import org.jkiss.dbeaver.ui.bindings.ObservableValue;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
@@ -166,7 +167,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         if (row != null && row.visible != null || visible != null) {
             var binding = UIObservables.and(row != null ? row.visible : null, visible);
             var delegate = delegate(binding);
-            var listener = (java.util.function.BiConsumer<Boolean, Boolean>) (oldValue, newValue) -> {
+            var listener = (BiConsumer<Boolean, Boolean>) (oldValue, newValue) -> {
                 var data = (GridData) control.getLayoutData();
                 if (data != null && data.exclude == newValue) {
                     data.exclude = !newValue;
@@ -333,12 +334,12 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
             decoration.hide();
             context.bind(control, delegate(text), value -> {
                 String display = fromModelConverter != null ? fromModelConverter.apply(value) : (String) value;
-                if (!control.getText().equals(display == null ? "" : display)) {
-                    control.setText(display == null ? "" : display);
+                String displayText = display == null ? "" : display;
+                if (!control.getText().equals(displayText)) {
+                    control.setText(displayText);
                 }
                 decoration.hide();
-            }, null, SWT.NONE);
-            control.addListener(SWT.Modify, event -> {
+            }, () -> {
                 String value = control.getText();
                 IStatus status = toModelValidator != null ? toModelValidator.apply(value) : UIValidator.ok();
                 if (!status.isOK()) {
@@ -347,14 +348,11 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
                         status.getSeverity() == IStatus.WARNING ? FieldDecorationRegistry.DEC_WARNING : FieldDecorationRegistry.DEC_ERROR
                     ).getImage());
                     decoration.show();
-                    return;
+                    return text.get();
                 }
                 decoration.hide();
-                T converted = toModelConverter != null ? toModelConverter.apply(value) : (T) value;
-                if (!java.util.Objects.equals(text.get(), converted)) {
-                    text.set(converted);
-                }
-            });
+                return toModelConverter != null ? toModelConverter.apply(value) : (T) value;
+            }, SWT.Modify);
         }
     }
 
