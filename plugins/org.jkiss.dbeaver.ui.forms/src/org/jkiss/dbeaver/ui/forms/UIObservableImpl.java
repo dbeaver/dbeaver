@@ -29,13 +29,14 @@ record UIObservableImpl<T>(@NotNull ObservableValue<T> delegate, @NotNull Class<
         return new UIObservableImpl<>(ObservableValue.writable(value), type);
     }
 
+    @Nullable
     @Override
     public T get() {
         return delegate.get();
     }
 
     @Override
-    public void set(T value) {
+    public void set(@Nullable T value) {
         delegate.set(value);
     }
 

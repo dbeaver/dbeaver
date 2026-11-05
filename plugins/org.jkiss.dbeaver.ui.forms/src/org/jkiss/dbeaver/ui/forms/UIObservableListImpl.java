@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.forms;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
@@ -38,6 +39,7 @@ final class UIObservableListImpl<E> extends AbstractList<E> implements UIObserva
         return new UIObservableListImpl<>(values, type);
     }
 
+    @Nullable
     @Override
     public E get(int index) {
         return values.get(index);
@@ -48,20 +50,22 @@ final class UIObservableListImpl<E> extends AbstractList<E> implements UIObserva
         return values.size();
     }
 
+    @Nullable
     @Override
-    public E set(int index, E element) {
+    public E set(int index, @Nullable E element) {
         E old = values.set(index, element);
         changed();
         return old;
     }
 
     @Override
-    public void add(int index, E element) {
+    public void add(int index, @Nullable E element) {
         values.add(index, element);
         modCount++;
         changed();
     }
 
+    @Nullable
     @Override
     public E remove(int index) {
         E old = values.remove(index);
