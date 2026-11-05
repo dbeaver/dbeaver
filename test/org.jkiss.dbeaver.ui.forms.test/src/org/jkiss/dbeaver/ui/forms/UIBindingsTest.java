@@ -18,14 +18,12 @@ package org.jkiss.dbeaver.ui.forms;
 
 import org.jkiss.dbeaver.ui.bindings.ObservableValue;
 import org.jkiss.junit.DBeaverUnitTest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiConsumer;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 public class UIBindingsTest extends DBeaverUnitTest {
     @Test
@@ -42,7 +40,7 @@ public class UIBindingsTest extends DBeaverUnitTest {
         second.set("unused");
         first.set("updated");
 
-        assertEquals(List.of("second -> unused", "unused -> updated"), changes);
+        Assertions.assertEquals(List.of("second -> unused", "unused -> updated"), changes);
     }
 
     @Test
@@ -54,7 +52,7 @@ public class UIBindingsTest extends DBeaverUnitTest {
         value.removeListener(listener);
         value.set("second");
 
-        assertEquals(List.of(), changes);
+        Assertions.assertEquals(List.of(), changes);
     }
 
     @Test
@@ -66,7 +64,7 @@ public class UIBindingsTest extends DBeaverUnitTest {
         items.subList(0, 1).clear();
         items.listIterator().add("new");
 
-        assertEquals(List.of(List.of("second"), List.of("new", "second")), snapshots);
+        Assertions.assertEquals(List.of(List.of("second"), List.of("new", "second")), snapshots);
     }
 
     @Test
@@ -80,7 +78,7 @@ public class UIBindingsTest extends DBeaverUnitTest {
         selected.set(true);
         model.set("left");
 
-        assertEquals(List.of(true, false), changes);
-        assertFalse(selected.get());
+        Assertions.assertEquals(List.of(true, false), changes);
+        Assertions.assertFalse(selected.get());
     }
 }
