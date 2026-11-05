@@ -22,9 +22,12 @@ import org.antlr.v4.runtime.Recognizer;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
 import org.jkiss.dbeaver.model.lsm.sql.dialect.SQLStandardAnalyzer;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.stm.STMErrorListener;
 import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
@@ -32,19 +35,23 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class LSMAnalyzerImplTest extends DBeaverUnitTest {
-    private static final LSMAnalyzerParameters PARAMETERS = new LSMAnalyzerParameters(
-        Map.of("\"", "\""),
-        true,
-        false,
-        '?',
-        List.of(Map.entry(1, Set.of(":"))),
-        true
-    );
+    private static final LSMAnalyzerParameters PARAMETERS = createParameters();
+
+    private static LSMAnalyzerParameters createParameters() {
+        SimplePreferenceStore preferences = new SimplePreferenceStore() {
+            @Override
+            public void save() {
+                // In-memory test preferences.
+            }
+        };
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager(preferences);
+        syntaxManager.init(BasicSQLDialect.INSTANCE, preferences);
+        return LSMAnalyzerParameters.forDialect(BasicSQLDialect.INSTANCE, syntaxManager);
+    }
 
     @Test
     public void doesNotForwardErrorsFromFailedSllAttempt() {
@@ -56,6 +63,47 @@ public class LSMAnalyzerImplTest extends DBeaverUnitTest {
         Assertions.assertNotNull(tree);
         Assertions.assertEquals("SELECT", tree.start.getText());
         Assertions.assertEquals(0, listener.errorCount);
+    }
+
+    @Test
+    public void fallsBackWhenSllLeavesTrailingTokens() {
+        CountingErrorListener listener = new CountingErrorListener();
+        TrackingAnalyzer analyzer = new TrackingAnalyzer(PARAMETERS);
+
+        STMTreeRuleNode tree = analyzer.parseSqlQueryTree(
+            STMSource.fromString("SELECT * FROM Table1 t WHERE t."),
+            listener
+        );
+
+        Assertions.assertNotNull(tree);
+        Assertions.assertEquals(List.of(PredictionMode.SLL, PredictionMode.LL), analyzer.predictions);
+    }
+
+    @Test
+    public void fallsBackWhenSllCannotTokenizeInput() {
+        CountingErrorListener listener = new CountingErrorListener();
+        TrackingAnalyzer analyzer = new TrackingAnalyzer(PARAMETERS);
+
+        STMTreeRuleNode tree = analyzer.parseSqlQueryTree(STMSource.fromString("DROP TABLE foo^"), listener);
+
+        Assertions.assertNotNull(tree);
+        Assertions.assertTrue(analyzer.predictions.contains(PredictionMode.LL));
+        Assertions.assertTrue(listener.errorCount > 0);
+    }
+
+    private static final class TrackingAnalyzer extends SQLStandardAnalyzer {
+        private final List<PredictionMode> predictions = new ArrayList<>();
+
+        private TrackingAnalyzer(@NotNull LSMAnalyzerParameters parameters) {
+            super(parameters);
+        }
+
+        @NotNull
+        @Override
+        protected STMTreeRuleNode parseSqlQueryImpl(@NotNull SQLStandardParser parser) {
+            predictions.add(parser.getInterpreter().getPredictionMode());
+            return super.parseSqlQueryImpl(parser);
+        }
     }
 
     private static final class ForcedFallbackAnalyzer extends SQLStandardAnalyzer {

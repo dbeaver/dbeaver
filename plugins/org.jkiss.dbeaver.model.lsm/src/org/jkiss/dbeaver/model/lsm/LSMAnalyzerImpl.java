@@ -70,14 +70,15 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMP
     public STMTreeRuleNode parseSqlQueryTree(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
         try {
             // Do not report SLL-only errors to the caller: LL parsing may still succeed on the same input.
-            TParser parser = prepareParser(source, new STMSkippingErrorListener());
+            STMSkippingErrorListener sllErrors = new STMSkippingErrorListener();
+            TParser parser = prepareParser(source, sllErrors);
             parser.getInterpreter().setPredictionMode(PredictionMode.SLL);
             STMTreeRuleNode result = parseSqlQueryImpl(parser);
-            if (parser.getNumberOfSyntaxErrors() == 0) {
+            if (parser.getNumberOfSyntaxErrors() == 0 && sllErrors.getErrorCount() == 0 && !result.hasErrorChildren()) {
                 result.fixup(parser);
                 return result;
             }
-            log.debug("SLL parsing produced syntax errors, falling back to LL");
+            log.debug("SLL parsing produced syntax errors or left error nodes, falling back to LL");
         } catch (RecognitionException e) {
             log.debug("SLL parsing failed, falling back to LL", e);
         }
