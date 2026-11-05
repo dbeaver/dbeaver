@@ -43,19 +43,9 @@ public class DDProjectSyncService {
     private static final Log log = Log.getLog(DDProjectSyncService.class);
 
     private final DDShareClient client;
-    private final UUID accountId;
 
-    public DDProjectSyncService(
-        @NotNull DDShareClient client,
-        @NotNull UUID accountId
-    ) {
+    public DDProjectSyncService(@NotNull DDShareClient client) {
         this.client = client;
-        this.accountId = accountId;
-    }
-
-    @NotNull
-    UUID getAccountId() {
-        return accountId;
     }
 
     @NotNull
@@ -180,7 +170,7 @@ public class DDProjectSyncService {
 
             DDSharedProjectRevision revision = client.getCurrentProjectRevision(remoteProjectId);
             DDProjectSyncLocalBinding binding = new DDProjectSyncLocalBinding(
-                remoteProjectId, accountId, revision, content.getUnitIds());
+                remoteProjectId, remote.projectOwner(), revision, content.getUnitIds());
             log.debug("Shared project '" + project.getName() + "' as DataDam project " + remoteProjectId);
             return new ShareResult(remote, binding);
         } catch (Exception e) {
@@ -195,9 +185,6 @@ public class DDProjectSyncService {
         @NotNull DDSharedProject remote
     ) throws DBException {
         log.debug("Importing DataDam project '" + remote.name() + "' (" + remote.id() + ")");
-        if (!accountId.equals(remote.projectOwner())) {
-            throw new DBException("DataDam project belongs to another account: " + remote.id());
-        }
         try {
             DDSharedProjectPullResult pullResult = client.pullFiles(remote.id());
             DDProjectSyncContentAdapter content = getServerContentAdapter(pullResult.files());
@@ -207,7 +194,7 @@ public class DDProjectSyncService {
 
             content.write(project, pullResult.files());
             DDProjectSyncLocalBinding binding = new DDProjectSyncLocalBinding(
-                remote.id(), accountId, pullResult.currentRevision(), content.getUnitIds());
+                remote.id(), remote.projectOwner(), pullResult.currentRevision(), content.getUnitIds());
             log.debug("Imported DataDam project " + remote.id() + " as local project '" + project.getName() + "'");
             return binding;
         } catch (DBException e) {

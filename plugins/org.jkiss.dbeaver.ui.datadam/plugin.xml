@@ -21,13 +21,13 @@
 
     <extension point="org.eclipse.core.expressions.propertyTesters">
         <propertyTester
-            class="org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester"
-            id="org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester"
+            class="org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester"
+            id="org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester"
             namespace="org.jkiss.dbeaver.ui.datadam.projectSync"
             properties="enabled,canShare,canSync"
             type="org.jkiss.dbeaver.model.navigator.DBNProject"/>
         <propertyTester
-            class="org.jkiss.dbeaver.ui.datadam.project.DDProjectSyncPropertyTester"
+            class="org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester"
             id="org.jkiss.dbeaver.ui.datadam.project.DDProjectToolbarPropertyTester"
             namespace="org.jkiss.dbeaver.ui.datadam.projectSync"
             properties="enabled"
@@ -37,8 +37,13 @@
     <extension point="org.eclipse.core.runtime.adapters">
         <factory
             adaptableType="org.jkiss.dbeaver.model.navigator.DBNProject"
-            class="org.jkiss.dbeaver.ui.datadam.project.DDProjectDeleteContentsAdapterFactory">
+            class="org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectDeleteContentsAdapterFactory">
             <adapter type="org.jkiss.dbeaver.ui.navigator.actions.ProjectDeleteContentsPolicy"/>
+        </factory>
+        <factory
+            adaptableType="org.jkiss.dbeaver.model.navigator.DBNProject"
+            class="org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectVisibilityAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.ui.navigator.project.ProjectVisibilityPolicy"/>
         </factory>
     </extension>
 
@@ -46,7 +51,7 @@
         <decorator
             id="org.jkiss.dbeaver.ui.datadam.project.decorator"
             label="%decorator.datadam.project.label"
-            class="org.jkiss.dbeaver.ui.datadam.project.DDProjectDecorator"
+            class="org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectDecorator"
             lightweight="false"
             state="true">
             <enablement>

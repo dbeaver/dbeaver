@@ -142,7 +142,7 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
             return;
         }
 
-        AIUsage usage = usageRef.get() != null ? usageRef.get() : new AIUsage(0, 0, 0, 0);
+        AIUsage usage = usageRef.get();
         AIMessageMeta messageMeta = new AIMessageMeta(
             AIMetaTypes.PROMPT,
             engineDescriptor.getId(),
