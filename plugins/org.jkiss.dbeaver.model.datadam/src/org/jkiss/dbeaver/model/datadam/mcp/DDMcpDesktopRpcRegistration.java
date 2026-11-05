@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.datadam.mcp;
 
 import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamGsonRpcCodec;
+import com.dbeaver.datadam.mcp.api.model.DDMcpStatus;
 import com.dbeaver.datadam.mcp.api.service.desktop.DDMcpFunctionService;
 import com.dbeaver.messaging.requestreply.MessagingSubscription;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
@@ -25,7 +26,6 @@ import com.google.gson.ToNumberPolicy;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.datadam.DDDesktopPreferences;
 import org.jkiss.dbeaver.model.datadam.rpc.DDDesktopRpcRegistration;
 
 public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
@@ -36,31 +36,21 @@ public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
     @Nullable
     private MessagingSubscription subscription;
 
-    public DDMcpDesktopRpcRegistration() {
-        DDDesktopPreferences.getStore().addPropertyChangeListener(event -> {
-            if (DDDesktopPreferences.MCP_DESKTOP_ENABLED.equals(event.getProperty())) {
-                updateRegistration();
-            }
-        });
-    }
-
     @Override
     public synchronized void register(@NotNull MessagingRpcEndpoint endpoint) {
         if (this.endpoint != endpoint) {
             unregister();
             this.endpoint = endpoint;
         }
-        updateRegistration();
     }
 
-    private synchronized void updateRegistration() {
-        MessagingRpcEndpoint current = endpoint;
-        if (current == null || current.isClosed()) {
+    public void updateRegistration(@NotNull MessagingRpcEndpoint endpoint, @NotNull DDMcpStatus status) {
+        if (endpoint.isClosed()) {
             return;
         }
-        if (DDDesktopPreferences.getStore().getBoolean(DDDesktopPreferences.MCP_DESKTOP_ENABLED)) {
+        if (status == DDMcpStatus.ENABLED) {
             if (subscription == null) {
-                registerService(current);
+                registerService(endpoint);
             }
         } else {
             unregister();
