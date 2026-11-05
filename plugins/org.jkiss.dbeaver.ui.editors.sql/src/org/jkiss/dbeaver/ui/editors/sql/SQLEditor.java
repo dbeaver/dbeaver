@@ -1870,7 +1870,8 @@ public class SQLEditor extends SQLEditorBase implements
         createExtraViewControls();
         if (SQLPreferenceConstants.LOCATION_RIGHT.equals(location)
             && (outTab != null || logTab != null || varTab != null)
-            && resultTabs.getItemCount() == 0 && resultsSash.getMaximizedControl() == null
+            && resultTabs.getItemCount() == 0
+            && (resultsSash.getMaximizedControl() == null || resultsSash.getMaximizedControl() == resultTabs)
             && !resultsSash.isDownHidden()) {
             // The results area is now empty; keep the SQL editor visible instead.
             toggleResultPanel(false, false);
