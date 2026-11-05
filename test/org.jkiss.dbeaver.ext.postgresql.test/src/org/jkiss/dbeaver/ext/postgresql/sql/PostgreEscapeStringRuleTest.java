@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.sql;
 
 import org.eclipse.jface.text.Document;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
 import org.jkiss.dbeaver.model.text.parser.TPToken;
@@ -28,36 +29,48 @@ public class PostgreEscapeStringRuleTest extends DBeaverUnitTest {
 
     @Test
     public void recognizesEscapeStringAtLineStart() {
-        Assertions.assertEquals(SQLTokenType.T_STRING, evaluateToken("E'value' ", 0));
-        Assertions.assertEquals(SQLTokenType.T_STRING, evaluateToken("e'value' ", 0));
+        assertToken("E'value' ", 0, SQLTokenType.T_STRING, 8);
+        assertToken("e'value' ", 0, SQLTokenType.T_STRING, 8);
     }
 
     @Test
     public void recognizesEscapeStringAfterWhitespace() {
-        Assertions.assertEquals(SQLTokenType.T_STRING, evaluateToken("SELECT E'value' ", 7));
+        assertToken("SELECT E'value' ", 7, SQLTokenType.T_STRING, 15);
     }
 
     @Test
     public void ignoresEscapeStringAfterIdentifier() {
-        TPToken token = evaluate("SELECT xE'value'", 8);
-        Assertions.assertTrue(token.isUndefined());
+        assertUndefined("SELECT xE'value'", 8, 8);
     }
 
     @Test
     public void ignoresUnclosedEscapeString() {
-        TPToken token = evaluate("SELECT E'value", 7);
-        Assertions.assertTrue(token.isUndefined());
+        assertUndefined("SELECT E'value", 7, 7);
     }
 
-    private static SQLTokenType evaluateToken(String text, int offset) {
-        TPToken token = evaluate(text, offset);
+    private static void assertToken(
+        @NotNull String text,
+        int offset,
+        @NotNull SQLTokenType expectedType,
+        int expectedEndOffset
+    ) {
+        TPRuleBasedScanner scanner = createScanner(text, offset);
+        TPToken token = new PostgreEscapeStringRule().evaluate(scanner);
         Assertions.assertFalse(token.isUndefined());
-        return (SQLTokenType) token.getData();
+        Assertions.assertEquals(expectedType, token.getData());
+        Assertions.assertEquals(expectedEndOffset, scanner.getOffset());
     }
 
-    private static TPToken evaluate(String text, int offset) {
+    private static void assertUndefined(@NotNull String text, int offset, int expectedEndOffset) {
+        TPRuleBasedScanner scanner = createScanner(text, offset);
+        Assertions.assertTrue(new PostgreEscapeStringRule().evaluate(scanner).isUndefined());
+        Assertions.assertEquals(expectedEndOffset, scanner.getOffset());
+    }
+
+    @NotNull
+    private static TPRuleBasedScanner createScanner(@NotNull String text, int offset) {
         TPRuleBasedScanner scanner = new TPRuleBasedScanner();
         scanner.setRange(new Document(text), offset, text.length() - offset);
-        return new PostgreEscapeStringRule().evaluate(scanner);
+        return scanner;
     }
 }
