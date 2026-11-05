@@ -276,6 +276,11 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
     }
 
     protected boolean doExecute(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log) throws DBException, InterruptedException {
+        if (settings.getDataSourceContainer() == null) {
+            String dataSourceId = CommonUtils.toString(task.getProperties().get("dataSource")); //$NON-NLS-1$
+            throw new DBException(
+                NLS.bind(NativeToolMessages.native_tool_handler_error_connection_not_found, dataSourceId, task.getName()));
+        }
         validateClientHome(monitor, settings);
 
         long startTime = System.currentTimeMillis();
