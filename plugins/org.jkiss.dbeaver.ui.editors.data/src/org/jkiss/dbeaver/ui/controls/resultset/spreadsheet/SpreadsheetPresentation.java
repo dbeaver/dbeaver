@@ -2055,6 +2055,12 @@ public class SpreadsheetPresentation extends AbstractPresentation
 
     private class ContentProvider implements IGridContentProvider {
 
+        @Override
+        public boolean isArrayRow(@NotNull IGridRow row) {
+            return controller.isRecordMode() && row.getElement() instanceof DBDAttributeBinding binding
+                && binding.getDataKind() == DBPDataKind.ARRAY;
+        }
+
         @NotNull
         @Override
         public Object[] getElements(boolean horizontal) {
