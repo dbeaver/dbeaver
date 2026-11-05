@@ -32,6 +32,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
+import org.jkiss.dbeaver.model.ai.engine.BaseAIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
@@ -60,6 +61,14 @@ public abstract class AbstractAIEngineConfigurator<ENGINE extends AIEngineDescri
 
     private int timeout = AIEngineProperties.DEFAULT_TIMEOUT;
     private boolean logQuery;
+
+    protected void saveTemperature(@NotNull BaseAIEngineProperties configuration, @NotNull String temperature) {
+        if (temperature.isBlank()) {
+            configuration.clearTemperature();
+        } else {
+            configuration.setTemperature(CommonUtils.toDouble(temperature, 0.0));
+        }
+    }
 
     protected void updateModelParameters(
         @Nullable AIModel model,

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import com.google.gson.Gson;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIAssistant;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
@@ -33,6 +34,7 @@ import org.jkiss.dbeaver.model.ai.engine.AIModelCatalogEntry;
 import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModel;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.ai.impl.AIEngineRequestFactory;
 import org.jkiss.dbeaver.model.ai.impl.DummyTokenCounter;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -40,6 +42,7 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -49,6 +52,7 @@ import java.time.Clock;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -191,6 +195,51 @@ class OpenAIModelCatalogTest extends DBeaverUnitTest {
                 Mockito.verify(client).createChatCompletionStream(Mockito.same(monitor), sent.capture(), Mockito.same(consumer));
                 Assertions.assertEquals(0.7, sent.getValue().temperature);
             }
+        }
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+        "null,null", "null,false", "null,true", "0.0,null", "0.0,false", "0.0,true", "0.7,null", "0.7,false", "0.7,true"
+    }, nullValues = "null")
+    void savedTemperatureRespectsServerDefaultsAndCatalogSupport(
+        @Nullable Double temperature, @Nullable Boolean supported
+    ) throws Exception {
+        OpenAIProperties properties = new OpenAIProperties();
+        properties.setModel("gpt-test");
+        if (temperature == null) {
+            properties.clearTemperature();
+        } else {
+            properties.setTemperature(temperature);
+        }
+        Gson gson = new Gson();
+        properties = gson.fromJson(gson.toJson(properties), OpenAIProperties.class);
+        OpenAIClientResponses client = Mockito.mock(OpenAIClientResponses.class);
+        Mockito.when(client.createChatCompletion(Mockito.any(), Mockito.any())).thenReturn(gson.fromJson(
+            "{\"output\":[{\"type\":\"message\",\"content\":[{\"type\":\"output_text\",\"text\":\"ok\"}]}]}",
+            OAIResponsesResponse.class
+        ));
+        AIModelCatalogEntry entry = new AIModelCatalogEntry(null, supported, null, null, null, null);
+        try (
+            AutoCloseable ignored = AIModelCatalog.useForTests(Map.of("openai", Map.of("gpt-test", entry)));
+            OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties) {
+                @NotNull
+                @Override
+                protected OpenAIClientResponses createClient() {
+                    return client;
+                }
+            }
+        ) {
+            AIEngineRequest request = new AIEngineRequest(AIMessage.userMessage("test"));
+            AIEngineResponseConsumer consumer = Mockito.mock(AIEngineResponseConsumer.class);
+            engine.requestCompletion(monitor, request);
+            engine.requestCompletionStream(monitor, request, consumer);
+
+            ArgumentCaptor<OAIResponsesRequest> sent = ArgumentCaptor.forClass(OAIResponsesRequest.class);
+            Mockito.verify(client).createChatCompletion(Mockito.same(monitor), sent.capture());
+            Mockito.verify(client).createChatCompletionStream(Mockito.same(monitor), sent.capture(), Mockito.same(consumer));
+            Double expected = Boolean.FALSE.equals(supported) ? null : temperature;
+            Assertions.assertTrue(sent.getAllValues().stream().allMatch(value -> Objects.equals(expected, value.temperature)));
         }
     }
 
