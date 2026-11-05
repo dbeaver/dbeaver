@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.datadam.project;
+package org.jkiss.dbeaver.ui.datadam.project.navigator;
 
 import org.eclipse.jface.viewers.ILabelDecorator;
 import org.eclipse.jface.viewers.LabelProvider;
@@ -23,9 +23,11 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
+import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.BindingStatus;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIIcons;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 
 /** Replaces the icon of projects connected to the current DataDam account in the Project Navigator. */
 public class DDProjectDecorator extends LabelProvider implements ILabelDecorator {
@@ -40,14 +42,14 @@ public class DDProjectDecorator extends LabelProvider implements ILabelDecorator
             return null;
         }
         DDProjectUIManager manager = DDProjectUIManager.getInstance();
-        if (!manager.isDDReady()) {
+        if (!manager.isProjectSyncReady()) {
             return null;
         }
         try {
-            if (manager.getProjectManager().isBound(projectNode.getProject())) {
+            if (manager.getProjectManager().getBindingStatus(projectNode.getProject()) == BindingStatus.CURRENT_ACCOUNT) {
                 return DBeaverIcons.getImage(DDTrackingUIIcons.PROJECT_DATADAM);
             }
-        } catch (DBException e) {
+        } catch (DBException | IllegalStateException e) {
             log.debug("Error checking DataDam project binding", e);
         }
         return null;
