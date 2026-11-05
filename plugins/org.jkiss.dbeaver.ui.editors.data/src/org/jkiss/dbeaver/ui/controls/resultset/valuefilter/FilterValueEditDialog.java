@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
@@ -53,7 +54,7 @@ public class FilterValueEditDialog extends BaseDialog{
     private static final Log log = Log.getLog(FilterValueEditDialog.class);
 
     public FilterValueEditDialog(ResultSetViewer viewer, DBDAttributeBinding attr, ResultSetRow[] rows, DBCLogicalOperator operator) {
-		super(viewer.getControl().getShell(), "Edit value", null);
+		super(viewer.getControl().getShell(), ResultSetMessages.dialog_filter_value_edit_dialog_title, null);
 		handler = new GenericFilterValueEdit(viewer, attr, rows, operator);
 	}
 
@@ -127,13 +128,19 @@ public class FilterValueEditDialog extends BaseDialog{
 
 
         ViewerColumnController columnController = new ViewerColumnController(getClass().getName(), handler.getTableViewer());
-        columnController.addColumn("Value", "Value", SWT.LEFT, true, true, new ColumnLabelProvider() {
+        columnController.addColumn(
+            ResultSetMessages.dialog_filter_value_edit_column_value,
+            ResultSetMessages.dialog_filter_value_edit_column_value,
+            SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 return handler.getAttribute().getValueHandler().getValueDisplayString(handler.getAttribute(), ((DBDLabelValuePair)element).getValue(), DBDDisplayFormat.UI);
             }
         });
-        columnController.addColumn("Description", "Row description (composed from dictionary columns)", SWT.LEFT, true, true, new ColumnLabelProvider() {
+        columnController.addColumn(
+            ResultSetMessages.dialog_filter_value_edit_column_description,
+            ResultSetMessages.dialog_filter_value_edit_column_description_tip,
+            SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
                 return ((DBDLabelValuePair)element).getLabel();
@@ -150,7 +157,7 @@ public class FilterValueEditDialog extends BaseDialog{
                     }
 	            }
 	        },
-	        new Action("Select &None") {
+	        new Action(ResultSetMessages.dialog_filter_value_edit_select_none) {
 	            @Override
 	            public void run() {
                     for (TableItem item : handler.getTableViewer().getTable().getItems()) {
@@ -177,7 +184,12 @@ public class FilterValueEditDialog extends BaseDialog{
     protected void createButtonsForButtonBar(Composite parent)
     {
         if (handler.getOperator().getArgumentCount() == 1) {
-            Button copyButton = createButton(parent, IDialogConstants.DETAILS_ID, "Clipboard", false);
+            Button copyButton = createButton(
+                parent,
+                IDialogConstants.DETAILS_ID,
+                ResultSetMessages.dialog_filter_value_edit_button_clipboard,
+                false
+            );
             copyButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_CLIPBOARD));
         }
 
@@ -192,7 +204,10 @@ public class FilterValueEditDialog extends BaseDialog{
                 Object value = ResultSetUtils.getAttributeValueFromClipboard(handler.getAttribute());
                 handler.getEditor().primeEditorValue(value);
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("Copy from clipboard", "Can't copy value", e);
+                DBWorkbench.getPlatformUI().showError(
+                    ResultSetMessages.dialog_filter_value_edit_copy_error_title,
+                    ResultSetMessages.dialog_filter_value_edit_copy_error_message,
+                    e);
             }
         } else {
             super.buttonPressed(buttonId);

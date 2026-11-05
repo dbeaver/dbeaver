@@ -66,7 +66,7 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
     private boolean opened;
 
     protected ValueViewDialog(@NotNull IValueController valueController) {
-        super(valueController.getValueSite().getShell(), "Value view", null);
+        super(valueController.getValueSite().getShell(), ResultSetMessages.dialog_value_view_title, null);
         setShellStyle(SWT.CLOSE | SWT.TITLE | SWT.MAX | SWT.RESIZE);
         this.valueController = valueController;
         dialogSettings = UIUtils.getDialogSettings(SETTINGS_SECTION_DI);
@@ -155,7 +155,9 @@ public abstract class ValueViewDialog extends BaseDialog implements IValueEditor
     private void initColumnInfoVisibility(Link columnHideLink) {
         columnPanel.setVisible(columnInfoVisible);
         ((GridData) columnPanel.getLayoutData()).exclude = !columnInfoVisible;
-        columnHideLink.setText("Column Info: (<a>" + (columnInfoVisible ? "hide" : "show") + "</a>)");
+        columnHideLink.setText(columnInfoVisible
+            ? ResultSetMessages.dialog_value_view_column_info_hide
+            : ResultSetMessages.dialog_value_view_column_info_show);
     }
 
     @Override
