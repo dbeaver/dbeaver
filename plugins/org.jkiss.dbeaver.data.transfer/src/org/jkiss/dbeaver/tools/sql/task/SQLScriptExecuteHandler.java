@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
@@ -55,13 +56,23 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 /**
  * SQLScriptExecuteHandler
  */
-public class SQLScriptExecuteHandler implements DBTTaskHandler {
+public class SQLScriptExecuteHandler implements DBTTaskHandler, DBTTaskImportTransformer {
 
     private final DBCStatistics totalStatistics = new DBCStatistics();
+
+    @Override
+    public boolean transformTaskState(@NotNull Map<String, Object> state, @NotNull Map<String, String> projectNames) {
+        boolean changed = DBTTaskImportTransformer.remapProjectReference(state, projectNames);
+        for (Object dataSource : JSONUtils.getObjectList(state, "dataSources")) {
+            changed |= DBTTaskImportTransformer.remapProjectReference(dataSource, projectNames);
+        }
+        return changed;
+    }
 
     @Override
     @NotNull

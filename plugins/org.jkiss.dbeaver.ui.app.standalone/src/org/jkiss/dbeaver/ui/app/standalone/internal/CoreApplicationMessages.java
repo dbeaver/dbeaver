@@ -47,6 +47,10 @@ public class CoreApplicationMessages extends NLS {
     public static String collect_diagnostic_info_pick_path_title;
     public static String collect_diagnostic_info_pick_path_label;
     public static String collect_diagnostic_info_pick_path_warning;
+    public static String collect_diagnostic_info_sanitize_logs;
+    public static String collect_diagnostic_info_sanitize_logs_hint;
+    public static String collect_diagnostic_info_progress_title;
+    public static String collect_diagnostic_info_progress_prepare;
     public static String collect_diagnostic_info_error_message_title;
     public static String collect_diagnostic_info_error_message_text;
     public static String collect_diagnostic_info_error_message_hint;

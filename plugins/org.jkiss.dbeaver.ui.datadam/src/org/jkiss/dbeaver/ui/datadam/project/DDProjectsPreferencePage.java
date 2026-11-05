@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.LocalProjectInfo;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.SyncResult;
@@ -66,10 +65,8 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -95,7 +92,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private Control projectsHelp;
     private AbstractJob accountViewJob;
     @Nullable
-    private DDKeyBundle displayedBundle;
+    private UUID displayedAccountId;
     private TableViewer viewer;
     private Button showRemote;
     private Button refreshButton;
@@ -331,7 +328,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private void updateSelectionActions() {
         List<DDProjectView> selection = selectedRows();
         SelectionSyncAction syncAction = selectionSyncAction(selection);
-        boolean available = !operationRunning && displayedBundle != null && uiManager.isDDReady();
+        boolean available = !operationRunning && uiManager.isProjectSyncReady();
         refreshButton.setEnabled(available);
         editButton.setEnabled(available && selection.size() == 1 && selection.get(0).remoteProject() != null);
         syncButton.setEnabled(available && syncAction != SelectionSyncAction.NONE);
@@ -363,8 +360,8 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     }
 
     private void refreshKeys() {
-        DDKeyBundle bundle = accessService.getKeyBundle();
-        boolean present = bundle != null;
+        UUID accountId = accessService.getAccountId();
+        boolean present = accountId != null;
         accountRow.setVisible(present);
         ((GridData) accountRow.getLayoutData()).exclude = !present;
         boolean signedIn = accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN;
@@ -374,7 +371,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         forgetKeysButton.setEnabled(present);
         forgetKeysButton.setVisible(present);
         ((GridData) forgetKeysButton.getLayoutData()).exclude = !present;
-        boolean ready = signedIn && present;
+        boolean ready = uiManager.isProjectSyncReady();
         projectsDescription.setText(ready
             ? DDTrackingUIMessages.projects_page_sync_help : DDTrackingUIMessages.projects_page_description);
         projectsHelp.setVisible(!signedIn);
@@ -383,9 +380,9 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         viewer.getTable().setEnabled(present);
         content.layout(true, true);
 
-        if (!Objects.equals(displayedBundle, bundle)) {
-            displayedBundle = bundle;
-            accountText.setText(present ? bundle.accountId().toString() : DDTrackingUIMessages.sync_preference_page_unknown);
+        if (!Objects.equals(displayedAccountId, accountId)) {
+            displayedAccountId = accountId;
+            accountText.setText(present ? accountId.toString() : DDTrackingUIMessages.sync_preference_page_unknown);
             if (accountViewJob != null) {
                 accountViewJob.cancel();
             }
@@ -464,7 +461,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     }
 
     private void loadProjects() {
-        if (!uiManager.isDDReady()) {
+        if (!uiManager.isProjectSyncReady()) {
             viewer.setInput(List.of());
             updateTableHeight();
             updateSelectionActions();

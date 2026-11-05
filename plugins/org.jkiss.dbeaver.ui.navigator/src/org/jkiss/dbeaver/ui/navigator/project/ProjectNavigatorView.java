@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,17 @@
  */
 package org.jkiss.dbeaver.ui.navigator.project;
 
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIExecutionQueue;
@@ -73,6 +78,13 @@ public class ProjectNavigatorView extends DecoratedProjectView
     public void createPartControl(Composite parent)
     {
         super.createPartControl(parent);
+
+        getNavigatorViewer().addFilter(new ViewerFilter() {
+            @Override
+            public boolean select(@NotNull Viewer viewer, @Nullable Object parentElement, @NotNull Object element) {
+                return !(element instanceof DBNProject project) || ProjectVisibility.isVisible(project);
+            }
+        });
 
         UIUtils.setHelp(parent, IHelpContextIds.CTX_PROJECT_NAVIGATOR);
         UIExecutionQueue.queueExec(this::restoreState);

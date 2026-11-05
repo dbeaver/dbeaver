@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.app.standalone;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -61,9 +60,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageGeneral;
 import org.jkiss.dbeaver.ui.services.ApplicationPolicyService;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
-import org.osgi.framework.Bundle;
 
 import java.lang.reflect.Field;
 import java.util.Date;
@@ -95,7 +92,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     private static final String[] REDUNTANT_ACTIONS_SETS = new String[] {
         "org.eclipse.ui.WorkingSetActionSet", //$NON-NLS-1$
         //"org.eclipse.ui.edit.text.actionSet.navigation", //$NON-NLS-1$
-        //"org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo", //$NON-NLS-1$
+        "org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo", //$NON-NLS-1$
         //"org.eclipse.ui.actionSet.openFiles", //$NON-NLS-1$
         "org.eclipse.ui.edit.text.actionSet.annotationNavigation", //$NON-NLS-1$
         //"org.eclipse.ui.NavigateActionSet", //$NON-NLS-1$
@@ -289,29 +286,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 //            fileMenu.add(new EmergentExitAction(workbenchWindow));
 
             //fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
-        }
-
-        if (false) {
-            // Edit
-            // Disabled because new Eclipse adds this to the File menu by default
-            ActionSetRegistry asr = WorkbenchPlugin.getDefault().getActionSetRegistry();
-            IActionSetDescriptor actionSet = asr.findActionSet("org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo");
-            if (actionSet != null) {
-                MenuManager convertLDMenu = new MenuManager(actionSet.getLabel());
-                for (IConfigurationElement action : actionSet.getConfigurationElement().getChildren("action")) {
-                    String actionClassName = action.getAttribute("class");
-                    if (!CommonUtils.isEmpty(actionClassName)) {
-                        try {
-                            Bundle actionBundle = Platform.getBundle(action.getContributor().getName());
-                            Class<?> actionClass = actionBundle.loadClass(actionClassName);
-                            convertLDMenu.add((IAction)actionClass.getConstructor().newInstance());
-                        } catch (Throwable e) {
-                            log.error(e);
-                        }
-                    }
-                }
-                editMenu.add(convertLDMenu);
-            }
         }
 
         {
