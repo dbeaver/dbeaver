@@ -21,6 +21,7 @@ import com.dbeaver.datadam.mcp.api.model.DDMcpStatus;
 import com.dbeaver.datadam.mcp.api.service.desktop.DDMcpFunctionService;
 import com.dbeaver.messaging.requestreply.MessagingSubscription;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
+import com.dbeaver.messaging.rpc.MessagingRpcException;
 import com.google.gson.GsonBuilder;
 import com.google.gson.ToNumberPolicy;
 import org.jkiss.code.NotNull;
@@ -41,12 +42,13 @@ public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
         if (this.endpoint != endpoint) {
             unregister();
             this.endpoint = endpoint;
+            registerService(endpoint);
         }
     }
 
-    public void updateRegistration(@NotNull MessagingRpcEndpoint endpoint, @NotNull DDMcpStatus status) {
+    public synchronized void updateRegistration(@NotNull MessagingRpcEndpoint endpoint, @NotNull DDMcpStatus status) {
         if (endpoint.isClosed()) {
-            return;
+            throw new MessagingRpcException(MessagingRpcException.Reason.CLOSED);
         }
         if (status == DDMcpStatus.ENABLED) {
             if (subscription == null) {
