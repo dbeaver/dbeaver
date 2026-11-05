@@ -284,7 +284,9 @@
         <command id="org.jkiss.dbeaver.ui.editors.sql.show.log" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.log.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.log.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.show.outline" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.outline.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.outline.description" categoryId="org.jkiss.dbeaver.core.sql"/>
         <command id="org.jkiss.dbeaver.ui.editors.sql.show.variables" name="%command.org.jkiss.dbeaver.ui.editors.sql.show.variables.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.show.variables.description" categoryId="org.jkiss.dbeaver.core.sql"/>
-        <command id="org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanels" name="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanel.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanel.description" categoryId="org.jkiss.dbeaver.core.sql"/>
+        <command id="org.jkiss.dbeaver.ui.editors.sql.place.extraPanels" name="%command.org.jkiss.dbeaver.ui.editors.sql.place.extraPanels.name" categoryId="org.jkiss.dbeaver.core.sql">
+            <commandParameter id="location" name="%command.org.jkiss.dbeaver.ui.editors.sql.place.extraPanels.location.name" optional="false"/>
+        </command>
         <command id="org.jkiss.dbeaver.ui.editors.sql.switch.presentation" name="%command.org.jkiss.dbeaver.ui.editors.sql.switch.presentation.name" description="%command.org.jkiss.dbeaver.ui.editors.sql.switch.presentation.description" categoryId="org.jkiss.dbeaver.core.sql">
             <commandParameter
                     id="presentationId"
@@ -616,7 +618,7 @@
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerSwitchPanel">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor"/></enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanels" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerToggleExtraPanels">
+        <handler commandId="org.jkiss.dbeaver.ui.editors.sql.place.extraPanels" class="org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerPlaceExtraPanels">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.core.ui.sql.editor"/></enabledWhen>
         </handler>
 
@@ -1117,7 +1119,8 @@
                     <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables"/>
                     <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.outline" style="toggle"/>
                     <separator name="panels_config" visible="true"/>
-                    <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanels" style="toggle"/>
+                    <command commandId="org.jkiss.dbeaver.ui.editors.sql.place.extraPanels" label="%command.org.jkiss.dbeaver.ui.editors.sql.place.extraPanels.code.name" style="radio"><parameter name="location" value="right"/></command>
+                    <command commandId="org.jkiss.dbeaver.ui.editors.sql.place.extraPanels" label="%command.org.jkiss.dbeaver.ui.editors.sql.place.extraPanels.results.name" style="radio"><parameter name="location" value="results"/></command>
                 </menu>
                 <menu label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout.label">
                     <dynamic id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.layout.resultSet.orientation" class="org.jkiss.dbeaver.ui.editors.sql.SQLEditor$ResultSetOrientationMenuContributor"/>
@@ -1231,7 +1234,8 @@
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.variables"/>
                 <command commandId="org.jkiss.dbeaver.ui.editors.sql.show.outline" style="toggle"/>
                 <separator name="panels_config" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanels" style="toggle"/>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.place.extraPanels" label="%command.org.jkiss.dbeaver.ui.editors.sql.place.extraPanels.code.name" style="radio"><parameter name="location" value="right"/></command>
+                <command commandId="org.jkiss.dbeaver.ui.editors.sql.place.extraPanels" label="%command.org.jkiss.dbeaver.ui.editors.sql.place.extraPanels.results.name" style="radio"><parameter name="location" value="results"/></command>
             </menu>
         </menuContribution>
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ui.editors.sql.SQLEditor.EditorContext?after=group.copy">
