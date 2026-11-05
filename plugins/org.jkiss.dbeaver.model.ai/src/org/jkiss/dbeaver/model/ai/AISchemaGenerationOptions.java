@@ -17,7 +17,12 @@
 package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectDDLFilter;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 public record AISchemaGenerationOptions(
@@ -28,8 +33,27 @@ public record AISchemaGenerationOptions(
     boolean sendIndexes,
     boolean sendFullDDL,
     boolean sendReferences,
-    boolean useFQN
+    boolean useFQN,
+    @Nullable DBSObjectDDLFilter objectFilter
 ) {
+
+    public AISchemaGenerationOptions(
+        boolean sendObjectComment,
+        boolean sendColumnTypes,
+        boolean sendConstraints,
+        boolean sendForeignKeys,
+        boolean sendIndexes,
+        boolean sendFullDDL,
+        boolean sendReferences,
+        boolean useFQN
+    ) {
+        this(sendObjectComment, sendColumnTypes, sendConstraints, sendForeignKeys, sendIndexes,
+            sendFullDDL, sendReferences, useFQN, null);
+    }
+
+    public boolean includesObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object) throws DBException {
+        return objectFilter == null || objectFilter.includeObject(monitor, object);
+    }
 
     public static Builder builder() {
         return new Builder();
@@ -44,7 +68,8 @@ public record AISchemaGenerationOptions(
             .withSendIndexes(sendIndexes)
             .withSendFullDDL(sendFullDDL)
             .withSendReferences(sendReferences)
-            .withUseFQN(useFQN);
+            .withUseFQN(useFQN)
+            .withObjectFilter(objectFilter);
     }
 
     public static final class Builder {
@@ -56,6 +81,7 @@ public record AISchemaGenerationOptions(
         private boolean sendFullDDL;
         private boolean sendReferences;
         private boolean useFQN;
+        private DBSObjectDDLFilter objectFilter;
 
         private Builder() {
             // Init default settings
@@ -112,6 +138,12 @@ public record AISchemaGenerationOptions(
         }
 
         @NotNull
+        public Builder withObjectFilter(@Nullable DBSObjectDDLFilter objectFilter) {
+            this.objectFilter = objectFilter;
+            return this;
+        }
+
+        @NotNull
         public AISchemaGenerationOptions build() {
             return new AISchemaGenerationOptions(
                 sendObjectComment,
@@ -121,7 +153,8 @@ public record AISchemaGenerationOptions(
                 sendIndexes,
                 sendFullDDL,
                 sendReferences,
-                useFQN
+                useFQN,
+                objectFilter
             );
         }
     }

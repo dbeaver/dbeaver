@@ -110,10 +110,26 @@ public final class DBStructUtils {
         @NotNull Map<String, Object> options,
         boolean addComments
     ) throws DBException {
+        return generateTableDDL(monitor, table, options, addComments, null);
+    }
+
+    @NotNull
+    public static String generateTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntity table,
+        @NotNull Map<String, Object> options,
+        boolean addComments,
+        @Nullable DBSObjectDDLFilter filter
+    ) throws DBException {
+        if (filter != null && !filter.includeObject(monitor, table)) {
+            return "";
+        }
         final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
         final SQLObjectEditor<?, ?> entityEditor = editorsRegistry.getObjectManager(table.getClass(), SQLObjectEditor.class);
         if (entityEditor instanceof SQLTableManager tableManager) {
-            DBEPersistAction[] ddlActions = tableManager.getTableDDL(monitor, table, options);
+            DBEPersistAction[] ddlActions = filter == null
+                ? tableManager.getTableDDL(monitor, table, options)
+                : tableManager.getTableDDL(monitor, table, options, filter);
             return SQLUtils.generateScript(table.getDataSource(), ddlActions, addComments);
         }
         log.debug("Table editor not found for " + table.getClass().getName());
@@ -139,38 +155,71 @@ public final class DBStructUtils {
         return SQLUtils.generateCommentLine(object.getDataSource(), "Can't generate DDL: object editor not found for " + object.getClass().getName());
     }
 
+    @NotNull
     public static String getTableDDL(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSEntity table,
-        Map<String, Object> options,
+        @NotNull Map<String, Object> options,
         boolean addComments
     ) throws DBException {
-        if (table instanceof DBPScriptObject scriptObject) {
+        return getTableDDL(monitor, table, options, addComments, null);
+    }
+
+    @NotNull
+    public static String getTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSEntity table,
+        @NotNull Map<String, Object> options,
+        boolean addComments,
+        @Nullable DBSObjectDDLFilter filter
+    ) throws DBException {
+        if (filter != null && !filter.includeObject(monitor, table)) {
+            return "";
+        }
+        // A cached/native definition cannot apply a filter to individual generated children.
+        if (table instanceof DBPScriptObject scriptObject && filter == null) {
             String definitionText = scriptObject.getObjectDefinitionText(monitor, options);
             if (!CommonUtils.isEmpty(definitionText)) {
                 return definitionText;
             }
         }
-        return generateTableDDL(monitor, table, options, addComments);
+        return generateTableDDL(monitor, table, options, addComments, filter);
     }
 
     public static <T extends DBSEntity> void generateTableListDDL(
         @NotNull DBRProgressMonitor monitor,
         @NotNull StringBuilder sql,
         @NotNull Collection<T> tablesOrViews,
-        Map<String, Object> options,
+        @NotNull Map<String, Object> options,
         boolean addComments
+    ) throws DBException {
+        generateTableListDDL(monitor, sql, tablesOrViews, options, addComments, null);
+    }
+
+    public static <T extends DBSEntity> void generateTableListDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull StringBuilder sql,
+        @NotNull Collection<T> tablesOrViews,
+        @NotNull Map<String, Object> options,
+        boolean addComments,
+        @Nullable DBSObjectDDLFilter filter
     ) throws DBException {
         List<T> goodTableList = new ArrayList<>();
         List<T> cycleTableList = new ArrayList<>();
         List<T> viewList = new ArrayList<>();
 
-        DBStructUtils.sortTableList(monitor, tablesOrViews, goodTableList, cycleTableList, viewList);
+        List<T> includedTables = new ArrayList<>();
+        for (T table : tablesOrViews) {
+            if (filter == null || filter.includeObject(monitor, table)) {
+                includedTables.add(table);
+            }
+        }
+        DBStructUtils.sortTableList(monitor, includedTables, goodTableList, cycleTableList, viewList);
 
         // Good tables: generate full DDL
         for (T table : goodTableList) {
             sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_definition));
-            addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
+            addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments, filter));
         }
         {
             // Cycle tables: generate CREATE TABLE and CREATE FOREIGN KEY separately
@@ -190,34 +239,34 @@ public final class DBStructUtils {
             if (!CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SEPARATE_FOREIGN_KEYS_STATEMENTS, true)) {
                 for (T table : goodCycleTableList) {
                     sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_definition));
-                    addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
+                    addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments, filter));
                 }
             } else {
                 Map<String, Object> optionsNoFK = new HashMap<>(options);
                 optionsNoFK.put(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS, true);
                 for (T table : goodCycleTableList) {
                     sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_definition));
-                    addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, optionsNoFK, addComments));
+                    addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, optionsNoFK, addComments, filter));
                 }
                 Map<String, Object> optionsOnlyFK = new HashMap<>(options);
                 optionsOnlyFK.put(DBPScriptObject.OPTION_DDL_ONLY_FOREIGN_KEYS, true);
                 for (T table : goodCycleTableList) {
                     sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_foreign_keys));
-                    addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, optionsOnlyFK, addComments));
+                    addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, optionsOnlyFK, addComments, filter));
                 }
             }
 
             // the rest - tables which can't split their DDL
             for (T table : cycleTableList) {
                 sql.append(getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_definition));
-                addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments));
+                addDDLLine(sql, DBStructUtils.getTableDDL(monitor, table, options, addComments, filter));
             }
         }
         // Views: generate them after all tables.
         // TODO: find view dependencies and generate them in right order
         for (T table : viewList) {
             String objectNameComment = getObjectNameComment(table, ModelMessages.struct_utils_object_ddl_source);
-            String tableDDL = DBStructUtils.getTableDDL(monitor, table, options, addComments);
+            String tableDDL = DBStructUtils.getTableDDL(monitor, table, options, addComments, filter);
             if (!tableDDL.startsWith(objectNameComment)) {
                 sql.append(objectNameComment);
             }
