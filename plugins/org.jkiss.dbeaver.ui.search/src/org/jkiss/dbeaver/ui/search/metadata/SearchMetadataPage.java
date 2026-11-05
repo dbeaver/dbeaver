@@ -26,7 +26,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -61,8 +60,6 @@ public class SearchMetadataPage extends AbstractSearchPage {
     private static final String PROP_SHOW_CONNECTED = "search.metadata.show-connected-only"; //$NON-NLS-1$
     private static final String PROP_SEARCH_IN_COMMENTS = "search.metadata.search-in-comments"; //$NON-NLS-1$
     private static final String PROP_SEARCH_IN_DEFINITIONS = "search.metadata.search-in-definitions"; //$NON-NLS-1$
-
-    private static final boolean CONNECT_ON_CLICK = true;
 
     private Table typesTable;
     private Combo searchText;
@@ -163,35 +160,43 @@ public class SearchMetadataPage extends AbstractSearchPage {
                     return false;
                 }
             });
-            treeViewer.addSelectionChangedListener(
-                event -> {
+            treeViewer.addSelectionChangedListener(event -> fillObjectTypes());
+            // The navigator starts loading/connecting when a connection is expanded. Listen for its
+            // completion rather than starting a second connect job (which may be canceled as a duplicate).
+            INavigatorListener connectionListener = event -> {
+                if (event.getAction() == DBNEvent.Action.UPDATE &&
+                    (event.getNodeChange() == DBNEvent.NodeChange.AFTER_LOAD ||
+                        event.getNodeChange() == DBNEvent.NodeChange.LOAD) &&
+                    event.getNode() instanceof DBNDataSource dsNode &&
+                    dsNode.getDataSource() != null &&
+                    DBNDataSource.getDataSourceNode(getSelectedNode()) == dsNode)
+                {
                     fillObjectTypes();
-                    updateEnablement();
-                    IStructuredSelection structSel = (IStructuredSelection) event.getSelection();
-                    Object object = structSel.isEmpty() ? null : structSel.getFirstElement();
-                    if (object instanceof DBNNode) {
-                        for (DBNNode node = (DBNNode)object; node != null; node = node.getParentNode()) {
-                            if (node instanceof DBNDataSource dsNode && CONNECT_ON_CLICK) {
-                                try {
-                                    dsNode.initializeNode(null, status -> {
-                                        if (status.isOK()) {
-                                            UIUtils.asyncExec(() -> {
-                                                if (!dataSourceTree.isDisposed()) {
-                                                    fillObjectTypes();
-                                                }
-                                            });
-                                        }
-                                    });
-                                } catch (DBException e) {
-                                    // shouldn't be here
-                                    log.error(e);
-                                }
-                                break;
-                            }
-                        }
+                }
+            };
+            platform.getNavigatorModel().addListener(connectionListener);
+            dataSourceTree.addDisposeListener(e -> platform.getNavigatorModel().removeListener(connectionListener));
+            treeViewer.addTreeListener(new ITreeViewerListener() {
+                @Override
+                public void treeExpanded(TreeExpansionEvent event) {
+                    if (!(event.getElement() instanceof DBNDataSource dsNode)) {
+                        return;
+                    }
+                    // The chevron doesn't necessarily select the connection. Preserve a selected child,
+                    // since it determines the scope of the search.
+                    if (DBNDataSource.getDataSourceNode(getSelectedNode()) != dsNode) {
+                        treeViewer.setSelection(new StructuredSelection(dsNode));
+                    }
+                    if (dsNode.getDataSource() != null) {
+                        fillObjectTypes();
                     }
                 }
-            );
+
+                @Override
+                public void treeCollapsed(TreeExpansionEvent event) {
+                    // No action on collapse.
+                }
+            });
 
             treeViewer.addDoubleClickListener(event -> {
                 IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();

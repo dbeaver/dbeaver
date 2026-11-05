@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ext.cloudflare.d1.ui.config.CloudflareD1AuthConfigurato
 import org.jkiss.dbeaver.ext.cloudflare.d1.ui.internal.CloudflareD1UIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.utils.CommonUtils;
@@ -123,6 +124,8 @@ public class CloudflareD1ConnectionPage extends ConnectionPageAbstract {
         authConfigurator.copyCredentialsTo(configuration);
         if (!hasCredentials(configuration)) {
             setDatabaseStatus(CloudflareD1UIMessages.connection_credentials_required);
+            DBWorkbench.getPlatformUI().showError(
+                CloudflareD1UIMessages.connection_load_task, CloudflareD1UIMessages.connection_credentials_required);
             return;
         }
         loadingDatabases = true;
@@ -138,6 +141,9 @@ public class CloudflareD1ConnectionPage extends ConnectionPageAbstract {
                         throw new InterruptedException("Database discovery was cancelled.");
                     }
                 } catch (Exception e) {
+                    if (monitor.isCanceled()) {
+                        throw new InterruptedException("Database discovery was cancelled.");
+                    }
                     throw new InvocationTargetException(e);
                 } finally {
                     monitor.done();
@@ -168,6 +174,9 @@ public class CloudflareD1ConnectionPage extends ConnectionPageAbstract {
                 : NLS.bind(CloudflareD1UIMessages.connection_loaded, databases.size()));
         } else {
             setDatabaseStatus(CommonUtils.notEmpty(error.getMessage()));
+            if (!(error instanceof InterruptedException)) {
+                DBWorkbench.getPlatformUI().showError(CloudflareD1UIMessages.connection_load_task, null, error);
+            }
         }
         site.updateButtons();
     }
