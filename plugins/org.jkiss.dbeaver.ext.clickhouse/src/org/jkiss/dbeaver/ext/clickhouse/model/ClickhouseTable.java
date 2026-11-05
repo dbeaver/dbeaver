@@ -20,20 +20,25 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.clickhouse.model.data.ClickhouseComplexValueSerializer;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPObjectStatistics;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.data.ExecuteInsertBatchImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyLength;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ByteNumberFormat;
 import org.jkiss.utils.CommonUtils;
@@ -202,6 +207,51 @@ public class ClickhouseTable extends GenericTable implements DBPObjectStatistics
     @Override
     public String generateTableUpdateBegin(String tableName) {
         return "ALTER TABLE " + tableName + " UPDATE ";
+    }
+
+    @NotNull
+    @Override
+    protected ExecuteUpdateBatchImpl createUpdateBatch(
+        @NotNull DBSAttributeBase[] updateAttributes,
+        @NotNull DBSAttributeBase[] keyAttributes,
+        @Nullable DBDDataReceiver keysReceiver,
+        @NotNull DBCExecutionSource source
+    ) {
+        return new ExecuteUpdateBatchImpl(updateAttributes, keyAttributes, keysReceiver, source) {
+            @Override
+            protected boolean shouldBindAttribute(int index, @NotNull Object[] attributeValues) {
+                return super.shouldBindAttribute(index, attributeValues)
+                    && (index >= updateAttributes.length || !ClickhouseComplexValueSerializer.shouldInline(attributeValues[index]));
+            }
+        };
+    }
+
+    @NotNull
+    @Override
+    protected ExecuteInsertBatchImpl createInsertBatch(
+        @NotNull DBSAttributeBase[] attributes,
+        @Nullable DBDDataReceiver keysReceiver,
+        @NotNull DBCSession session,
+        @NotNull DBCExecutionSource source,
+        boolean useUpsert
+    ) {
+        return new ExecuteInsertBatchImpl(attributes, keysReceiver, true, session, source, this, useUpsert) {
+            @Override
+            protected boolean isStatementReusable(@NotNull Object[] attributeValues) {
+                for (Object value : attributeValues) {
+                    if (ClickhouseComplexValueSerializer.shouldInline(value)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            @Override
+            protected boolean shouldBindAttribute(int index, @NotNull Object[] attributeValues) {
+                return super.shouldBindAttribute(index, attributeValues)
+                    && !ClickhouseComplexValueSerializer.shouldInline(attributeValues[index]);
+            }
+        };
     }
 
     @Override

@@ -368,7 +368,18 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             return new ExecuteBatchWithMultipleInsert(attributes, keysReceiver, true, session, source, JDBCTable.this);
         }
 
-        return new ExecuteInsertBatchImpl(attributes, keysReceiver, true, session, source, JDBCTable.this, useUpsert(session));
+        return createInsertBatch(attributes, keysReceiver, session, source, useUpsert(session));
+    }
+
+    @NotNull
+    protected ExecuteInsertBatchImpl createInsertBatch(
+        @NotNull DBSAttributeBase[] attributes,
+        @Nullable DBDDataReceiver keysReceiver,
+        @NotNull DBCSession session,
+        @NotNull DBCExecutionSource source,
+        boolean useUpsert
+    ) {
+        return new ExecuteInsertBatchImpl(attributes, keysReceiver, true, session, source, this, useUpsert);
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -393,76 +404,127 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
         readRequiredMeta(session.getProgressMonitor());
 
-        DBSAttributeBase[] attributes = ArrayUtils.concatArrays(updateAttributes, keyAttributes);
+        return createUpdateBatch(updateAttributes, keyAttributes, keysReceiver, source);
+    }
 
-        return new ExecuteBatchImpl(attributes, keysReceiver, false) {
-            @NotNull
-            @Override
-            protected DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues, Map<String, Object> options) throws DBCException {
-                String tableAlias = null;
-                SQLDialect dialect = session.getDataSource().getSQLDialect();
-                if (dialect.supportsAliasInUpdate()) {
-                    tableAlias = DEFAULT_TABLE_ALIAS;
+    @NotNull
+    protected ExecuteUpdateBatchImpl createUpdateBatch(
+        @NotNull DBSAttributeBase[] updateAttributes,
+        @NotNull DBSAttributeBase[] keyAttributes,
+        @Nullable DBDDataReceiver keysReceiver,
+        @NotNull DBCExecutionSource source
+    ) {
+        return new ExecuteUpdateBatchImpl(updateAttributes, keyAttributes, keysReceiver, source);
+    }
+
+    protected class ExecuteUpdateBatchImpl extends ExecuteBatchImpl {
+        protected final DBSAttributeBase[] updateAttributes;
+        protected final DBSAttributeBase[] keyAttributes;
+        private final DBCExecutionSource source;
+
+        protected ExecuteUpdateBatchImpl(
+            @NotNull DBSAttributeBase[] updateAttributes,
+            @NotNull DBSAttributeBase[] keyAttributes,
+            @Nullable DBDDataReceiver keysReceiver,
+            @NotNull DBCExecutionSource source
+        ) {
+            super(ArrayUtils.concatArrays(updateAttributes, keyAttributes), keysReceiver, false);
+            this.updateAttributes = updateAttributes;
+            this.keyAttributes = keyAttributes;
+            this.source = source;
+        }
+
+        @NotNull
+        @Override
+        protected DBCStatement prepareStatement(
+            @NotNull DBCSession session,
+            @NotNull DBDValueHandler[] handlers,
+            @NotNull Object[] attributeValues,
+            @NotNull Map<String, Object> options
+        ) throws DBCException {
+            String tableAlias = null;
+            SQLDialect dialect = session.getDataSource().getSQLDialect();
+            if (dialect.supportsAliasInUpdate()) {
+                tableAlias = DEFAULT_TABLE_ALIAS;
+            }
+            // Make query
+            StringBuilder query = new StringBuilder();
+            String tableName = DBUtils.getEntityScriptName(JDBCTable.this, options);
+            query.append(generateTableUpdateBegin(tableName));
+            if (tableAlias != null) {
+                query.append(' ').append(tableAlias);
+            }
+            String updateSet = generateTableUpdateSet();
+            if (!CommonUtils.isEmpty(updateSet)) {
+                query.append("\n\t").append(updateSet); //$NON-NLS-1$ //$NON-NLS-2$
+            }
+
+            boolean hasKey = false;
+            for (int i = 0; i < updateAttributes.length; i++) {
+                DBSAttributeBase attribute = updateAttributes[i];
+                if (hasKey) {
+                    query.append(","); //$NON-NLS-1$
                 }
-                // Make query
-                StringBuilder query = new StringBuilder();
-                String tableName = DBUtils.getEntityScriptName(JDBCTable.this, options);
-                query.append(generateTableUpdateBegin(tableName));
+                hasKey = true;
                 if (tableAlias != null) {
-                    query.append(' ').append(tableAlias);
+                    query.append(tableAlias).append(dialect.getStructSeparator());
                 }
-                String updateSet = generateTableUpdateSet();
-                if (!CommonUtils.isEmpty(updateSet)) {
-                    query.append("\n\t").append(updateSet); //$NON-NLS-1$ //$NON-NLS-2$
+                query.append(DBStructUtils.getAttributeName(attribute, DBPAttributeReferencePurpose.UPDATE_TARGET))
+                    .append("="); //$NON-NLS-1$
+                DBDValueHandler valueHandler = handlers[i];
+                if (valueHandler instanceof DBDValueBinder) {
+                    query.append(((DBDValueBinder) valueHandler).makeQueryBind(attribute, attributeValues[i]));
+                } else {
+                    query.append("?"); //$NON-NLS-1$
                 }
-
-                boolean hasKey = false;
-                for (int i = 0; i < updateAttributes.length; i++) {
-                    DBSAttributeBase attribute = updateAttributes[i];
-                    if (hasKey) query.append(","); //$NON-NLS-1$
+            }
+            if (keyAttributes.length > 0) {
+                query.append("\n\tWHERE "); //$NON-NLS-1$
+                hasKey = false;
+                for (int i = 0; i < keyAttributes.length; i++) {
+                    DBSAttributeBase attribute = keyAttributes[i];
+                    if (hasKey) {
+                        query.append(" AND "); //$NON-NLS-1$
+                    }
                     hasKey = true;
-                    if (tableAlias != null) {
-                        query.append(tableAlias).append(dialect.getStructSeparator());
-                    }
-                    query.append(DBStructUtils.getAttributeName(attribute, DBPAttributeReferencePurpose.UPDATE_TARGET)).append("="); //$NON-NLS-1$
-                    DBDValueHandler valueHandler = handlers[i];
-                    if (valueHandler instanceof DBDValueBinder) {
-                        query.append(((DBDValueBinder) valueHandler).makeQueryBind(attribute, attributeValues[i]));
-                    } else {
-                        query.append("?"); //$NON-NLS-1$
-                    }
-                }
-                if (keyAttributes.length > 0) {
-                    query.append("\n\tWHERE "); //$NON-NLS-1$
-                    hasKey = false;
-                    for (int i = 0; i < keyAttributes.length; i++) {
-                        DBSAttributeBase attribute = keyAttributes[i];
-                        if (hasKey) query.append(" AND "); //$NON-NLS-1$
-                        hasKey = true;
-                        appendAttributeCriteria(tableAlias, dialect, query, attribute, attributeValues[updateAttributes.length + i]);
-                    }
-                }
-
-                // Execute
-                DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, keysReceiver != null);
-
-                dbStat.setStatementSource(source);
-                return dbStat;
-            }
-
-            @Override
-            protected void bindStatement(@NotNull DBDValueHandler[] handlers, @NotNull DBCStatement statement, Object[] attributeValues) throws DBCException {
-                int paramIndex = 0;
-                for (int k = 0; k < handlers.length; k++) {
-                    DBSAttributeBase attribute = attributes[k];
-                    if (k >= updateAttributes.length && DBUtils.isNullValue(attributeValues[k])) {
-                        // Skip NULL criteria binding
-                        continue;
-                    }
-                    handlers[k].bindValueObject(statement.getSession(), statement, attribute, paramIndex++, attributeValues[k]);
+                    appendAttributeCriteria(tableAlias, dialect, query, attribute, attributeValues[updateAttributes.length + i]);
                 }
             }
-        };
+
+            // Execute
+            DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, keysReceiver != null);
+
+            dbStat.setStatementSource(source);
+            return dbStat;
+        }
+
+        protected boolean shouldBindAttribute(int index, @NotNull Object[] attributeValues) {
+            return index < updateAttributes.length || !DBUtils.isNullValue(attributeValues[index]);
+        }
+
+        @Override
+        protected int getNextUsedParamIndex(@NotNull Object[] attributeValues, int paramIndex) {
+            do {
+                paramIndex++;
+            } while (paramIndex < attributeValues.length && !shouldBindAttribute(paramIndex, attributeValues));
+            return paramIndex;
+        }
+
+        @Override
+        protected void bindStatement(
+            @NotNull DBDValueHandler[] handlers,
+            @NotNull DBCStatement statement,
+            @NotNull Object[] attributeValues
+        ) throws DBCException {
+            int paramIndex = 0;
+            for (int k = 0; k < handlers.length; k++) {
+                DBSAttributeBase attribute = attributes[k];
+                if (!shouldBindAttribute(k, attributeValues)) {
+                    continue;
+                }
+                handlers[k].bindValueObject(statement.getSession(), statement, attribute, paramIndex++, attributeValues[k]);
+            }
+        }
     }
 
     ////////////////////////////////////////////////////////////////////
