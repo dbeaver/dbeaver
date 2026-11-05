@@ -1841,9 +1841,13 @@ public class SQLEditor extends SQLEditorBase implements
     // Panels
 
     public void setExtraPanelsLocation(@Nullable String location) {
-        if ((!SQLPreferenceConstants.LOCATION_RIGHT.equals(location)
-            && !SQLPreferenceConstants.LOCATION_RESULTS.equals(location))
-            || isExtraPanelsLocation(location)) {
+        if (!SQLPreferenceConstants.LOCATION_RIGHT.equals(location)
+            && !SQLPreferenceConstants.LOCATION_RESULTS.equals(location)) {
+            return;
+        }
+        if (isExtraPanelsLocation(location)) {
+            // Another editor may have changed the shared default without moving these controls.
+            getPreferenceStore().setValue(SQLPreferenceConstants.EXTRA_PANEL_LOCATION, location);
             return;
         }
         CTabItem selectedTab = getFolderForExtraPanels().getSelection();
