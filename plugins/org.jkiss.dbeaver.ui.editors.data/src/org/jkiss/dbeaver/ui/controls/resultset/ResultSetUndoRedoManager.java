@@ -52,6 +52,7 @@ final class ResultSetUndoRedoManager {
         @NotNull DBDAttributeBinding attribute,
         @NotNull ResultSetRow row,
         @Nullable int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath,
         @Nullable Object value
     ) throws DBException {
         int historyLimit = Math.clamp(
@@ -61,12 +62,12 @@ final class ResultSetUndoRedoManager {
         );
         if (historyLimit == 0) {
             clear();
-            return viewer.getModel().updateCellValue(attribute, row, rowIndexes, value, true);
+            return viewer.getModel().updateCellValue(attribute, row, rowIndexes, valuePath, value, true);
         }
-        CellEditHistoryItem historyItem = makeHistoryItem(attribute, row, rowIndexes);
+        CellEditHistoryItem historyItem = makeHistoryItem(attribute, row, rowIndexes, valuePath);
         boolean updated;
         try {
-            updated = viewer.getModel().updateCellValue(attribute, row, rowIndexes, value, true);
+            updated = viewer.getModel().updateCellValue(attribute, row, rowIndexes, valuePath, value, true);
         } catch (DBException e) {
             if (historyItem != null) {
                 historyItem.release();
@@ -93,13 +94,18 @@ final class ResultSetUndoRedoManager {
     boolean resetCellValue(
         @NotNull DBDAttributeBinding attribute,
         @NotNull ResultSetRow row,
-        @Nullable int[] rowIndexes
+        @Nullable int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath
     ) {
+        DBDAttributeBinding pathRoot = DBUtils.getRootValueBinding(valuePath);
+        DBDAttributeBinding changedAttribute = pathRoot != null && (attribute.getTopParent() != pathRoot
+            || (!row.isChanged(attribute) && row.isChanged(pathRoot)))
+            ? pathRoot : attribute;
         if (row.getState() == ResultSetRow.STATE_REMOVED) {
-            viewer.getModel().resetCellValue(attribute, row, rowIndexes);
+            viewer.getModel().resetCellValue(attribute, row, rowIndexes, valuePath);
             return true;
         }
-        if (!row.isChanged(attribute)) {
+        if (!row.isChanged(changedAttribute)) {
             return false;
         }
         int historyLimit = Math.clamp(
@@ -109,11 +115,11 @@ final class ResultSetUndoRedoManager {
         );
         if (historyLimit == 0) {
             clear();
-            viewer.getModel().resetCellValue(attribute, row, rowIndexes);
+            viewer.getModel().resetCellValue(attribute, row, rowIndexes, valuePath);
             return true;
         }
-        CellEditHistoryItem historyItem = makeHistoryItem(attribute, row, rowIndexes);
-        viewer.getModel().resetCellValue(attribute, row, rowIndexes);
+        CellEditHistoryItem historyItem = makeHistoryItem(attribute, row, rowIndexes, valuePath);
+        viewer.getModel().resetCellValue(attribute, row, rowIndexes, valuePath);
         if (historyItem != null) {
             CellSnapshot newValue = snapshotCell(historyItem.valueLocation);
             if (newValue != null) {
@@ -214,23 +220,27 @@ final class ResultSetUndoRedoManager {
     private CellEditHistoryItem makeHistoryItem(
         @NotNull DBDAttributeBinding attribute,
         @NotNull ResultSetRow row,
-        @Nullable int[] rowIndexes
+        @Nullable int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath
     ) {
-        ResultSetCellLocation currentCell = viewer.getActivePresentation().getCurrentCellLocation();
-        ResultSetValuePath valuePath = currentCell != null
-            && currentCell.getRow() == row
-            && currentCell.getAttribute() == attribute
-            && Arrays.equals(currentCell.getRowIndexes(), rowIndexes)
-            ? currentCell.getValuePath()
-            : null;
+        if (valuePath == null) {
+            ResultSetCellLocation currentCell = viewer.getActivePresentation().getCurrentCellLocation();
+            valuePath = currentCell != null
+                && currentCell.getRow() == row
+                && currentCell.getAttribute() == attribute
+                && Arrays.equals(currentCell.getRowIndexes(), rowIndexes)
+                ? currentCell.getValuePath()
+                : null;
+        }
         ResultSetCellLocation cell = new ResultSetCellLocation(
             attribute,
             row,
             rowIndexes == null ? null : rowIndexes.clone(),
             valuePath);
         // Nested edits and resets affect the entire root, including its original value and child change markers.
+        DBDAttributeBinding pathRoot = DBUtils.getRootValueBinding(valuePath);
         ResultSetCellLocation valueLocation = new ResultSetCellLocation(
-            attribute.getLevel() == 0 ? attribute : attribute.getTopParent(), row);
+            pathRoot == null ? attribute.getTopParent() : pathRoot, row);
         CellSnapshot oldValue = snapshotCell(valueLocation);
         if (oldValue == null) {
             return null;

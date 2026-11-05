@@ -500,6 +500,20 @@ public class ResultSetModel implements DBDResultSetModel {
         @Nullable Object value,
         boolean updateChanges
     ) throws DBException {
+        return updateCellValue(attr, row, rowIndexes, null, value, updateChanges);
+    }
+
+    boolean updateCellValue(
+        @NotNull DBDAttributeBinding attr,
+        @NotNull ResultSetRow row,
+        @Nullable int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath,
+        @Nullable Object value,
+        boolean updateChanges
+    ) throws DBException {
+        if (valuePath != null && valuePath.pathItems().size() > 1) {
+            return updateNestedValueByPath(attr, row, valuePath, value, updateChanges);
+        }
         // 1. Update root attribute
         // 2. Save old value in history (if it is complex then save root element)
         //
@@ -585,6 +599,61 @@ public class ResultSetModel implements DBDResultSetModel {
         return true;
     }
 
+    private boolean updateNestedValueByPath(
+        @NotNull DBDAttributeBinding attr,
+        @NotNull ResultSetRow row,
+        @NotNull ResultSetValuePath valuePath,
+        @Nullable Object value,
+        boolean updateChanges
+    ) throws DBException {
+        DBDAttributeBinding root = DBUtils.getRootValueBinding(valuePath);
+        if (root == null || root.getParentObject() != null || root.getOrdinalPosition() < 0
+            || root.getOrdinalPosition() >= attributes.length || attributes[root.getOrdinalPosition()] != root) {
+            throw new DBException("Nested value path does not identify a result-set attribute");
+        }
+        Object currentRoot = row.values[root.getOrdinalPosition()];
+        if (!(currentRoot instanceof DBDValue complexRoot)) {
+            throw new DBException("Cannot edit a member of a non-complex root value");
+        }
+        Object currentLeaf = DBUtils.getRowValueByPath(row, valuePath);
+        if (!(value instanceof DBDValue) && Objects.equals(currentLeaf, value)) {
+            return false;
+        }
+
+        boolean trackChange = updateChanges && row.getState() == ResultSetRow.STATE_NORMAL;
+        boolean firstChange = trackChange && !row.isChanged(root);
+        DBDValue editedRoot = complexRoot;
+        if (firstChange && complexRoot instanceof DBDValueCloneable cloneable) {
+            try {
+                editedRoot = cloneable.cloneValue(new VoidProgressMonitor());
+            } catch (DBCException e) {
+                // Preserve the existing in-place edit behavior if copying the root is not possible.
+                log.error("Error copying cell value", e);
+            }
+        }
+        try {
+            DBUtils.updateValueByPath(editedRoot, valuePath, value);
+        } catch (DBCException e) {
+            if (editedRoot != complexRoot) {
+                DBUtils.releaseValue(editedRoot);
+            }
+            throw e;
+        }
+
+        if (firstChange) {
+            row.addChange(root, currentRoot);
+        }
+        // A name-based nested binding may belong to another column; only mark children of this path's root.
+        if (trackChange && attr != root && attr.getTopParent() == root) {
+            row.addChange(attr, root);
+        }
+        row.values[root.getOrdinalPosition()] = editedRoot;
+        if (trackChange) {
+            changesCount++;
+        }
+        return true;
+    }
+
     private boolean isOriginalValueRestored(
         @NotNull DBDAttributeBinding attr,
         @NotNull DBDAttributeBinding topAttribute,
@@ -600,11 +669,25 @@ public class ResultSetModel implements DBDResultSetModel {
     }
 
     void resetCellValue(@NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, @Nullable int[] rowIndexes) {
+        resetCellValue(attr, row, rowIndexes, null);
+    }
+
+    void resetCellValue(
+        @NotNull DBDAttributeBinding attr,
+        @NotNull ResultSetRow row,
+        @Nullable int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath
+    ) {
+        DBDAttributeBinding pathRoot = DBUtils.getRootValueBinding(valuePath);
+        if (pathRoot != null && (attr.getTopParent() != pathRoot
+            || (!row.isChanged(attr) && row.isChanged(pathRoot)))) {
+            attr = pathRoot;
+            rowIndexes = null;
+        }
         if (row.getState() == ResultSetRow.STATE_REMOVED) {
             row.setState(ResultSetRow.STATE_NORMAL);
         } else if (row.isChanged(attr)) {
-            // TODO introduce value path here
-            DBUtils.resetValue(getCellValue(attr, row, rowIndexes, null, false));
+            DBUtils.resetValue(getCellValue(attr, row, rowIndexes, valuePath, false));
             try {
                 Object origValue = row.getChange(attr);
                 if (origValue instanceof DBDAttributeBinding refAttr) {

@@ -1863,7 +1863,19 @@ public class ResultSetViewer extends Viewer
         @Nullable int[] rowIndexes,
         @Nullable Object value,
         boolean refreshHints) throws DBException {
-        boolean updated = undoRedoManager.updateCellValue(attr, row, rowIndexes, value);
+        return updateCellValue(attr, row, rowIndexes, null, value, refreshHints);
+    }
+
+    @Override
+    public boolean updateCellValue(
+        @NotNull DBDAttributeBinding attr,
+        @NotNull ResultSetRow row,
+        @Nullable int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath,
+        @Nullable Object value,
+        boolean refreshHints
+    ) throws DBException {
+        boolean updated = undoRedoManager.updateCellValue(attr, row, rowIndexes, valuePath, value);
         if (updated && refreshHints) {
             refreshHintCache(
                 Collections.singletonList(attr),
@@ -1879,7 +1891,17 @@ public class ResultSetViewer extends Viewer
         @NotNull ResultSetRow row,
         @Nullable int[] rowIndexes
     ) {
-        if (!undoRedoManager.resetCellValue(attr, row, rowIndexes)) {
+        resetCellValue(attr, row, rowIndexes, null);
+    }
+
+    @Override
+    public void resetCellValue(
+        @NotNull DBDAttributeBinding attr,
+        @NotNull ResultSetRow row,
+        @Nullable int[] rowIndexes,
+        @Nullable ResultSetValuePath valuePath
+    ) {
+        if (!undoRedoManager.resetCellValue(attr, row, rowIndexes, valuePath)) {
             return;
         }
         refreshHintCache(
