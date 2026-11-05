@@ -973,8 +973,6 @@
                     categories="hadoop"
                     singleConnection="true">
                     <file type="jar" path="maven:/org.spark-project.hive:hive-jdbc:RELEASE" bundle="!drivers.apache_spark"/>
-                    <!-- libthrift 0.9.2 declares packaging=pom despite publishing a required JDBC dependency JAR. -->
-                    <file type="jar" path="https://repo.maven.apache.org/maven2/org/apache/thrift/libthrift/0.9.2/libthrift-0.9.2.jar" bundle="!drivers.apache_spark"/>
                     <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE" bundle="!drivers.apache_spark"/>
                     <file type="jar" path="drivers/apache_spark" bundle="drivers.apache_spark"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
