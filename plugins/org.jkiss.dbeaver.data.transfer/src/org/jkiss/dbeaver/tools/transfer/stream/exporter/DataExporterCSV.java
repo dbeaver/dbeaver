@@ -104,7 +104,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private HeaderPosition headerPosition;
     private HeaderFormat headerFormat;
     private DBPIdentifierCase headerCase;
-    private HeaderQuoting headerQuoting;
+    private HeaderQuoting headerQuoting = HeaderQuoting.ALWAYS;
     private String lineFeedEscapeString;
     private DBDAttributeBinding[] columns;
     private DataExporterArrayFormat dataExporterArrayFormat;
@@ -221,6 +221,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
                 case ALWAYS -> writeCellValue(header, true);
                 case WHEN_NECESSARY -> writeCellValue(header, false, false, true);
                 case NEVER -> writeCellValue(header, false, false, false);
+                default -> throw new IllegalStateException("Unexpected HeaderQuoting value: " + headerQuoting);
             }
             if (i < columnsSize - 1) {
                 writeDelimiter();
