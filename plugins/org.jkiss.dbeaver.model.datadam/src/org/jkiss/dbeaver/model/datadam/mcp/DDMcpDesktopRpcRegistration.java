@@ -37,6 +37,12 @@ public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
     @Nullable
     private MessagingSubscription subscription;
 
+    @NotNull
+    @Override
+    public String getId() {
+        return DDMcpFunctionService.SERVICE_ID;
+    }
+
     @Override
     public synchronized void register(@NotNull MessagingRpcEndpoint endpoint) {
         if (this.endpoint != endpoint) {
@@ -67,7 +73,6 @@ public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
         subscription = endpoint.register(
             DDMcpFunctionService.SERVICE_ID, DDMcpFunctionService.class,
             new DDMcpDesktopFunctionService(), codec);
-        log.debug("Registered DataDam desktop MCP RPC service");
     }
 
     private void unregister() {

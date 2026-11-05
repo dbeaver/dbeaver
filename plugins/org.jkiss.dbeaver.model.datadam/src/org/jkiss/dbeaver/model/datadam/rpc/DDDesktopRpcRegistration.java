@@ -24,5 +24,8 @@ import org.jkiss.code.NotNull;
  * The endpoint owns and closes its service registrations.
  */
 public interface DDDesktopRpcRegistration {
+    @NotNull
+    String getId();
+
     void register(@NotNull MessagingRpcEndpoint endpoint);
 }

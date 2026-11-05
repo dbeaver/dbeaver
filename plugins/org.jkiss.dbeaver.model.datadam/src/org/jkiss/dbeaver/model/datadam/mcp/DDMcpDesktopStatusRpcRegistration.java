@@ -28,6 +28,12 @@ public class DDMcpDesktopStatusRpcRegistration implements DDDesktopRpcRegistrati
         this.mcpRegistration = mcpRegistration;
     }
 
+    @NotNull
+    @Override
+    public String getId() {
+        return DDMcpDesktopStatusService.SERVICE_ID;
+    }
+
     @Override
     public void register(@NotNull MessagingRpcEndpoint endpoint) {
         endpoint.register(DDMcpDesktopStatusService.SERVICE_ID, DDMcpDesktopStatusService.class,
