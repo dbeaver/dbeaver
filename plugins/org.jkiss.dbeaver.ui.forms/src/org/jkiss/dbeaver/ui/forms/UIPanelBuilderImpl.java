@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.forms;
 
-import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.layout.LayoutConstants;
 import org.eclipse.swt.SWT;
@@ -27,6 +26,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.forms.events.IExpansionListener;
 import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.bindings.BindingContext;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TitledComposite;
 
@@ -140,7 +140,7 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
 
     @NotNull
     @Override
-    protected Control create(@NotNull DataBindingContext context, @NotNull Composite parent) {
+    protected Control create(@NotNull BindingContext context, @NotNull Composite parent) {
         if (rows.isEmpty()) {
             throw new IllegalStateException("Panel cannot be empty");
         }
@@ -196,7 +196,7 @@ final class UIPanelBuilderImpl extends UIControlBuilderImpl<UIPanelBuilder, Cont
     }
 
     private void buildRow(
-        @NotNull DataBindingContext context,
+        @NotNull BindingContext context,
         @NotNull UIRowBuilderImpl row,
         @NotNull Composite parent,
         int columns

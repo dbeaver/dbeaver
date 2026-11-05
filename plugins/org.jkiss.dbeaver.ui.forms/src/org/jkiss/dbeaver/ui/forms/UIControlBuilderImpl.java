@@ -16,16 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.forms;
 
-import org.eclipse.core.databinding.DataBindingContext;
-import org.eclipse.core.databinding.UpdateValueStrategy;
-import org.eclipse.core.databinding.conversion.IConverter;
-import org.eclipse.core.databinding.observable.list.IListChangeListener;
-import org.eclipse.core.databinding.observable.list.IObservableList;
-import org.eclipse.core.databinding.observable.value.IObservableValue;
-import org.eclipse.core.databinding.observable.value.IValueChangeListener;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jface.databinding.fieldassist.ControlDecorationSupport;
-import org.eclipse.jface.databinding.swt.typed.WidgetProperties;
+import org.eclipse.jface.fieldassist.ControlDecoration;
+import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
@@ -39,6 +32,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.bindings.BindingContext;
+import org.jkiss.dbeaver.ui.bindings.ObservableValue;
 
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -148,14 +143,14 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     }
 
     @NotNull
-    C build(@NotNull DataBindingContext context, @NotNull Composite parent, @Nullable UIRowBuilderImpl row) {
+    C build(@NotNull BindingContext context, @NotNull Composite parent, @Nullable UIRowBuilderImpl row) {
         C control = create(context, parent);
         bind(context, control, row);
         return control;
     }
 
     @NotNull
-    protected abstract C create(@NotNull DataBindingContext context, @NotNull Composite parent);
+    protected abstract C create(@NotNull BindingContext context, @NotNull Composite parent);
 
     boolean isInitiallyVisible(@Nullable UIRowBuilderImpl row) {
         return (row == null || row.visible == null || row.visible.get())
@@ -167,31 +162,30 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         return null;
     }
 
-    protected void bind(@NotNull DataBindingContext context, @NotNull C control, @Nullable UIRowBuilderImpl row) {
+    protected void bind(@NotNull BindingContext context, @NotNull C control, @Nullable UIRowBuilderImpl row) {
         if (row != null && row.visible != null || visible != null) {
             var binding = UIObservables.and(row != null ? row.visible : null, visible);
             var delegate = delegate(binding);
-            var listener = (IValueChangeListener<Boolean>) event -> {
+            var listener = (java.util.function.BiConsumer<Boolean, Boolean>) (oldValue, newValue) -> {
                 var data = (GridData) control.getLayoutData();
-                var value = (boolean) binding.get();
-                if (data.exclude == value) {
-                    data.exclude = !value;
+                if (data != null && data.exclude == newValue) {
+                    data.exclude = !newValue;
                     control.requestLayout();
                 }
             };
-            delegate.addValueChangeListener(listener);
-            control.addDisposeListener(event -> delegate.removeValueChangeListener(listener));
-            context.bindValue(WidgetProperties.visible().observe(control), delegate);
+            binding.addChangeListener(listener);
+            control.addDisposeListener(event -> binding.removeChangeListener(listener));
+            context.bind(control, delegate, control::setVisible, null, SWT.NONE);
         }
         if (row != null && row.enabled != null || enabled != null) {
             var binding = UIObservables.and(row != null ? row.enabled : null, enabled);
-            context.bindValue(WidgetProperties.enabled().observe(control), delegate(binding));
+            context.bind(control, delegate(binding), control::setEnabled, null, SWT.NONE);
         }
         if (font != null) {
-            context.bindValue(WidgetProperties.font().observe(control), delegate(font));
+            context.bind(control, delegate(font), control::setFont, null, SWT.NONE);
         }
         if (tooltip != null) {
-            context.bindValue(WidgetProperties.tooltipText().observe(control), delegate(tooltip));
+            context.bind(control, delegate(tooltip), control::setToolTipText, null, SWT.NONE);
         }
     }
 
@@ -202,13 +196,8 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
     }
 
     @NotNull
-    private static <T> IObservableValue<T> delegate(@NotNull UIObservable<T> observable) {
+    private static <T> ObservableValue<T> delegate(@NotNull UIObservable<T> observable) {
         return ((UIObservableImpl<T>) observable).delegate();
-    }
-
-    @NotNull
-    private static <E> IObservableList<E> delegate(@NotNull UIObservableList<E> observable) {
-        return ((UIObservableListImpl<E>) observable).delegate();
     }
 
     static final class LabelBuilderImpl extends UIControlBuilderImpl<LabelBuilder, Label> implements LabelBuilder {
@@ -239,19 +228,19 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
 
         @NotNull
         @Override
-        protected Label create(@NotNull DataBindingContext context, @NotNull Composite parent) {
+        protected Label create(@NotNull BindingContext context, @NotNull Composite parent) {
             return UIControlFactory.createLabel(parent, style);
         }
 
         @Override
-        protected void bind(@NotNull DataBindingContext context, @NotNull Label control, @Nullable UIRowBuilderImpl row) {
+        protected void bind(@NotNull BindingContext context, @NotNull Label control, @Nullable UIRowBuilderImpl row) {
             super.bind(context, control, row);
             if (text != null) {
-                context.bindValue(WidgetProperties.text().observe(control), UIControlBuilderImpl.delegate(text));
+                context.bind(control, delegate(text), value -> control.setText(value == null ? "" : value), null, SWT.NONE);
             }
             if (image != null) {
                 var observable = image.map(DBeaverIcons::getImage, Image.class);
-                context.bindValue(WidgetProperties.image().observe(control), UIControlBuilderImpl.delegate(observable));
+                context.bind(control, delegate(observable), control::setImage, null, SWT.NONE);
             }
         }
     }
@@ -269,16 +258,16 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
 
         @NotNull
         @Override
-        protected Link create(@NotNull DataBindingContext context, @NotNull Composite parent) {
+        protected Link create(@NotNull BindingContext context, @NotNull Composite parent) {
             Link link = UIControlFactory.createLink(parent, style);
             link.addSelectionListener(SelectionListener.widgetSelectedAdapter(onSelect));
             return link;
         }
 
         @Override
-        protected void bind(@NotNull DataBindingContext context, @NotNull Link control, @Nullable UIRowBuilderImpl row) {
+        protected void bind(@NotNull BindingContext context, @NotNull Link control, @Nullable UIRowBuilderImpl row) {
             super.bind(context, control, row);
-            context.bindValue(WidgetProperties.text().observe(control), UIControlBuilderImpl.delegate(text));
+            context.bind(control, delegate(text), value -> control.setText(value == null ? "" : value), null, SWT.NONE);
         }
     }
 
@@ -322,7 +311,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
 
         @NotNull
         @Override
-        protected Text create(@NotNull DataBindingContext context, @NotNull Composite parent) {
+        protected Text create(@NotNull BindingContext context, @NotNull Composite parent) {
             return UIControlFactory.createText(parent, style);
         }
 
@@ -334,29 +323,38 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
 
         @Override
         @SuppressWarnings("unchecked")
-        protected void bind(@NotNull DataBindingContext context, @NotNull Text control, @Nullable UIRowBuilderImpl row) {
+        protected void bind(@NotNull BindingContext context, @NotNull Text control, @Nullable UIRowBuilderImpl row) {
             super.bind(context, control, row);
             if (message != null) {
-                context.bindValue(WidgetProperties.message().observe(control), delegate(message));
+                context.bind(control, delegate(message), control::setMessage, null, SWT.NONE);
             }
 
-            UpdateValueStrategy<String, ? extends T> toModelStrategy = null;
-            UpdateValueStrategy<? super T, String> fromModelStrategy = null;
-
-            if (toModelConverter != null) {
-                toModelStrategy
-                    = (UpdateValueStrategy<String, ? extends T>) UpdateValueStrategy.create(IConverter.create(toModelConverter));
-                toModelStrategy.setAfterGetValidator(toModelValidator::apply);
-            }
-
-            if (fromModelConverter != null) {
-                fromModelStrategy = UpdateValueStrategy.create(IConverter.create(fromModelConverter));
-            }
-
-            var target = WidgetProperties.text(SWT.Modify).observe(control);
-            var binding = context.bindValue(target, delegate(text), toModelStrategy, fromModelStrategy);
-
-            ControlDecorationSupport.create(binding, SWT.TOP | SWT.LEFT);
+            ControlDecoration decoration = new ControlDecoration(control, SWT.TOP | SWT.LEFT);
+            decoration.hide();
+            context.bind(control, delegate(text), value -> {
+                String display = fromModelConverter != null ? fromModelConverter.apply(value) : (String) value;
+                if (!control.getText().equals(display == null ? "" : display)) {
+                    control.setText(display == null ? "" : display);
+                }
+                decoration.hide();
+            }, null, SWT.NONE);
+            control.addListener(SWT.Modify, event -> {
+                String value = control.getText();
+                IStatus status = toModelValidator != null ? toModelValidator.apply(value) : UIValidator.ok();
+                if (!status.isOK()) {
+                    decoration.setDescriptionText(status.getMessage());
+                    decoration.setImage(FieldDecorationRegistry.getDefault().getFieldDecoration(
+                        status.getSeverity() == IStatus.WARNING ? FieldDecorationRegistry.DEC_WARNING : FieldDecorationRegistry.DEC_ERROR
+                    ).getImage());
+                    decoration.show();
+                    return;
+                }
+                decoration.hide();
+                T converted = toModelConverter != null ? toModelConverter.apply(value) : (T) value;
+                if (!java.util.Objects.equals(text.get(), converted)) {
+                    text.set(converted);
+                }
+            });
         }
     }
 
@@ -395,7 +393,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
 
         @NotNull
         @Override
-        protected Button create(@NotNull DataBindingContext context, @NotNull Composite parent) {
+        protected Button create(@NotNull BindingContext context, @NotNull Composite parent) {
             Button button = UIControlFactory.createButton(parent, kind.toSWT());
             if (onSelect != null) {
                 button.addSelectionListener(SelectionListener.widgetSelectedAdapter(onSelect));
@@ -414,13 +412,13 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         }
 
         @Override
-        protected void bind(@NotNull DataBindingContext context, @NotNull Button control, @Nullable UIRowBuilderImpl row) {
+        protected void bind(@NotNull BindingContext context, @NotNull Button control, @Nullable UIRowBuilderImpl row) {
             super.bind(context, control, row);
             if (text != null) {
-                context.bindValue(WidgetProperties.text().observe(control), delegate(text));
+                context.bind(control, delegate(text), value -> control.setText(value == null ? "" : value), null, SWT.NONE);
             }
             if (selected != null) {
-                context.bindValue(WidgetProperties.buttonSelection().observe(control), delegate(selected));
+                context.bind(control, delegate(selected), control::setSelection, control::getSelection, SWT.Selection);
             }
         }
     }
@@ -445,7 +443,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
 
         @NotNull
         @Override
-        protected Combo create(@NotNull DataBindingContext context, @NotNull Composite parent) {
+        protected Combo create(@NotNull BindingContext context, @NotNull Composite parent) {
             Combo combo = UIControlFactory.createCombo(parent, style);
             for (T item : items) {
                 combo.add(converter.apply(item));
@@ -454,26 +452,31 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
         }
 
         @Override
-        protected void bind(@NotNull DataBindingContext context, @NotNull Combo control, @Nullable UIRowBuilderImpl row) {
+        protected void bind(@NotNull BindingContext context, @NotNull Combo control, @Nullable UIRowBuilderImpl row) {
             super.bind(context, control, row);
 
-            var selectionBinding = context.bindValue(
-                WidgetProperties.singleSelectionIndex().observe(control),
-                delegate(binding),
-                UpdateValueStrategy.create(IConverter.create(i -> i != null && i >= 0 && i < items.size() ? items.get(i) : null)),
-                UpdateValueStrategy.create(IConverter.create(items::indexOf))
-            );
-            var listener = (IListChangeListener<T>) event -> {
+            context.bind(control, delegate(binding), value -> select(control, items.indexOf(value)),
+                () -> control.getSelectionIndex() < 0 || control.getSelectionIndex() >= items.size()
+                    ? null : items.get(control.getSelectionIndex()), SWT.Selection);
+            Runnable listener = () -> {
                 control.removeAll();
                 for (T item : items) {
                     control.add(converter.apply(item));
                 }
                 // Refresh the observable index as well, without clearing the model for a temporarily empty list
-                selectionBinding.updateModelToTarget();
+                select(control, items.indexOf(binding.get()));
             };
-            var observableItems = UIControlBuilderImpl.delegate(items);
-            observableItems.addListChangeListener(listener);
-            control.addDisposeListener(event -> observableItems.removeListChangeListener(listener));
+            var observableItems = (UIObservableListImpl<?>) items;
+            observableItems.addListener(listener);
+            control.addDisposeListener(event -> observableItems.removeListener(listener));
+        }
+
+        private static void select(@NotNull Combo control, int index) {
+            if (index < 0) {
+                control.deselectAll();
+            } else {
+                control.select(index);
+            }
         }
     }
 
@@ -486,7 +489,7 @@ abstract sealed class UIControlBuilderImpl<B extends UIControlBuilder<B>, C exte
 
         @NotNull
         @Override
-        protected Control create(@NotNull DataBindingContext context, @NotNull Composite parent) {
+        protected Control create(@NotNull BindingContext context, @NotNull Composite parent) {
             return factory.apply(parent);
         }
     }

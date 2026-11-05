@@ -33,9 +33,8 @@ public sealed interface UIObservableList<E> extends List<E> permits UIObservable
     }
 
     @NotNull
-    @SuppressWarnings("unchecked")
     static <E> UIObservableList<E> copyOf(@NotNull Collection<? extends E> c, @NotNull Class<E> type) {
-        return UIObservableListImpl.of((Collection<E>) c, type);
+        return UIObservableListImpl.of(c, type);
     }
 
     /**
