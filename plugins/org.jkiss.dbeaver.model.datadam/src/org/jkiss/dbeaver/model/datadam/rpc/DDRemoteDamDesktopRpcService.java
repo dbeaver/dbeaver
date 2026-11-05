@@ -32,7 +32,6 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
 
     private final Object lock = new Object();
     private final DDRemoteDamChannel channel;
-    private final DDDesktopRpcRegistrationRegistry registrations;
     @Nullable
     private MessagingRpcEndpoint endpoint;
     private boolean invalidated;
@@ -41,15 +40,7 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
     private boolean closed;
 
     DDRemoteDamDesktopRpcService(@NotNull DDRemoteDamChannel channel) {
-        this(channel, DDDesktopRpcRegistrationRegistry.getInstance());
-    }
-
-    DDRemoteDamDesktopRpcService(
-        @NotNull DDRemoteDamChannel channel,
-        @NotNull DDDesktopRpcRegistrationRegistry registrations
-    ) {
         this.channel = channel;
-        this.registrations = registrations;
     }
 
     boolean resume(boolean initial) {
@@ -98,12 +89,6 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
                 MessagingRpcEndpoint opened = MessagingRpcEndpoint.open(
                     topic -> DDRemoteDamRpcTransport.forChannel(channel, topic, DDRemoteDamDesktopRpcService::executeRequest),
                     new DDRemoteDamGsonRpcCodec(new Gson()));
-                try {
-                    registerDesktopServices(opened);
-                } catch (RuntimeException e) {
-                    closeEndpoint(opened);
-                    throw e;
-                }
                 endpoint = opened;
                 invalidated = false;
                 return endpoint;
@@ -111,10 +96,6 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
                 throw new DBException("Cannot open DataDam RPC endpoint", e);
             }
         }
-    }
-
-    private void registerDesktopServices(@NotNull MessagingRpcEndpoint endpoint) {
-        registrations.registerAll(endpoint);
     }
 
     private static void executeRequest(@NotNull Runnable request) {

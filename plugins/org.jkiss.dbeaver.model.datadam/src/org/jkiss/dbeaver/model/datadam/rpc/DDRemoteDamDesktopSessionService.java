@@ -67,7 +67,9 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
     };
 
     public DDRemoteDamDesktopSessionService(@NotNull DDDesktopAccessService access, @NotNull DDRemoteDamDesktopChannel channel) {
-        this(access, channel, DDDesktopRpcRegistrationRegistry.getInstance());
+        this.access = access;
+        this.channel = channel;
+        this.rpc = new DDRemoteDamDesktopRpcService(channel);
     }
 
     public DDRemoteDamDesktopSessionService(
@@ -75,9 +77,7 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
         @NotNull DDRemoteDamDesktopChannel channel,
         @NotNull DDDesktopRpcRegistrationRegistry registrations
     ) {
-        this.access = access;
-        this.channel = channel;
-        this.rpc = new DDRemoteDamDesktopRpcService(channel, registrations);
+        this(access, channel);
     }
 
     @NotNull
@@ -122,7 +122,7 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
                     try {
                         rpc.getRpc();
                     } catch (DBException e) {
-                        log.warn("Cannot register desktop DataDam RPC services", e);
+                        log.warn("Cannot open desktop DataDam RPC endpoint", e);
                     }
                 }
             });
