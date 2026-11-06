@@ -21,6 +21,7 @@
                 <artifactId>tycho-p2-director-plugin</artifactId>
                 <version>${tycho-version}</version>
                 <configuration>
+                    <parallel>true</parallel>
                     <products>
                         <product>
                             <id>org.jkiss.dbeaver.core.product</id>
