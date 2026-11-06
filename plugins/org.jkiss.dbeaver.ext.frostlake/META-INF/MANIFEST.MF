@@ -1,0 +1,16 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: DBeaver Frostlake Model
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.frostlake;singleton:=true
+Bundle-Version: 1.0.0.qualifier
+Bundle-Vendor: DBeaver Corp
+Bundle-RequiredExecutionEnvironment: JavaSE-21
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.jkiss.dbeaver.ext.frostlake.internal.FrostlakeActivator
+Require-Bundle: org.jkiss.dbeaver.model;visibility:=reexport,
+ org.jkiss.dbeaver.model.sql;visibility:=reexport,
+ org.jkiss.dbeaver.ext.generic;visibility:=reexport
+Export-Package: org.jkiss.dbeaver.ext.frostlake,
+ org.jkiss.dbeaver.ext.frostlake.model
+Bundle-Localization: OSGI-INF/l10n/bundle
+Automatic-Module-Name: org.jkiss.dbeaver.ext.frostlake
