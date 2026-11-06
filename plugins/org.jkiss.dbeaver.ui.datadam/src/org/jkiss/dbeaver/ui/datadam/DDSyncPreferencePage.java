@@ -119,7 +119,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             1, GridData.FILL_HORIZONTAL, SWT.DEFAULT
         );
         userText = new Text(authenticationGroup, SWT.READ_ONLY);
-        UIUtils.fixReadonlyTextBackground(userText);
         GridData statusLayout = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
         userText.setLayoutData(statusLayout);
         accountActionButton = UIUtils.createPushButton(

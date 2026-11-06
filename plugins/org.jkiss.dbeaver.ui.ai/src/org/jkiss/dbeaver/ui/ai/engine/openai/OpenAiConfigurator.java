@@ -327,7 +327,6 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
         createURLInfoLink(parent);
         accountLabel = UIUtils.createControlLabel(parent, AIUIMessages.openai_configurator_account_label);
         accountText = new Text(parent, SWT.READ_ONLY);
-        UIUtils.fixReadonlyTextBackground(accountText);
         accountText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         accountActionButton = UIUtils.createPushButton(parent, AIUIMessages.openai_configurator_sign_in, null);
         accountActionButton.addListener(SWT.Selection, event -> {
