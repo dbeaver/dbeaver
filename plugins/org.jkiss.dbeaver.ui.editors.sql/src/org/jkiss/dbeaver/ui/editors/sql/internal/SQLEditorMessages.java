@@ -94,6 +94,8 @@ public class SQLEditorMessages extends NLS {
     public static String action_result_tabs_close_other_tabs;
     public static String action_result_tabs_close_tabs_to_the_left;
     public static String action_result_tabs_close_tabs_to_the_right;
+    public static String action_result_tabs_place_beside_code;
+    public static String action_result_tabs_place_with_results;
     public static String action_result_tabs_pin_tab;
     public static String action_result_tabs_unpin_tab;
     public static String action_result_tabs_unpin_all_tabs;
