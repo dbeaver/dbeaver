@@ -18,12 +18,15 @@ package org.jkiss.dbeaver.model.sql.completion;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
 import org.jkiss.dbeaver.model.sql.SQLHelpTopic;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 import org.jkiss.dbeaver.model.struct.rdb.DBSView;
@@ -45,6 +48,37 @@ public class SQLCompletionHelper {
 
     public static boolean isNonPartitionTableOrView(@Nullable DBPNamedObject object) {
         return (object instanceof DBSTable || object instanceof DBSView) && !(object instanceof DBSTablePartition);
+    }
+
+    /**
+     * Classifies a table or view reference for partition filtering.
+     * Returns {@code null} when the reference is not a table/view or cannot be resolved,
+     * so the caller can keep it as a fallback.
+     */
+    @Nullable
+    public static Boolean isTablePartitionReference(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBSObjectReference reference
+    ) {
+        Class<?> objectClass = reference.getObjectClass();
+        if (objectClass != null && DBSTablePartition.class.isAssignableFrom(objectClass)) {
+            return true;
+        }
+        if (objectClass == null
+            || (!DBSTable.class.isAssignableFrom(objectClass) && !DBSView.class.isAssignableFrom(objectClass))
+        ) {
+            return null;
+        }
+        try {
+            DBSObject object = reference.resolveObject(monitor);
+            if (object instanceof DBSTablePartition) {
+                return true;
+            }
+            return isNonPartitionTableOrView(object) ? Boolean.FALSE : null;
+        } catch (DBException e) {
+            log.debug("Failed to resolve object reference '" + reference.getName() + "'", e);
+            return null;
+        }
     }
 
     /**

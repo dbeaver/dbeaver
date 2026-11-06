@@ -1185,8 +1185,23 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         assistantParams.setCaseSensitive(request.getWordDetector().isQuoted(objectName));
         assistantParams.setGlobalSearch(request.getContext().isSearchGlobally());
         assistantParams.setMaxResults(MAX_STRUCT_PROPOSALS);
-        Collection<DBSObjectReference> references = assistant.findObjectsByMask(monitor, request.getContext().getExecutionContext(), assistantParams);
+        List<DBSObjectReference> references = new ArrayList<>(
+            assistant.findObjectsByMask(monitor, request.getContext().getExecutionContext(), assistantParams));
+        // Assistant returns unresolved references, so resolve them to apply the same partition fallback rule.
+        List<Boolean> partitionFlags = new ArrayList<>(references.size());
+        boolean hasNonPartitionTableOrView = false;
         for (DBSObjectReference reference : references) {
+            Boolean partitionFlag = SQLCompletionHelper.isTablePartitionReference(monitor, reference);
+            partitionFlags.add(partitionFlag);
+            if (Boolean.FALSE.equals(partitionFlag)) {
+                hasNonPartitionTableOrView = true;
+            }
+        }
+        for (int i = 0; i < references.size(); i++) {
+            if (hasNonPartitionTableOrView && Boolean.TRUE.equals(partitionFlags.get(i))) {
+                continue;
+            }
+            DBSObjectReference reference = references.get(i);
             proposals.add(
                 makeProposalsFromObject(
                     reference,
