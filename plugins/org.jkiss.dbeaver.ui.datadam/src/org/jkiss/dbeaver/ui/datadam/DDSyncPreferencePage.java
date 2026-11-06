@@ -53,12 +53,15 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private static final String SYNC_TITLE = DDTrackingUIMessages.sync_preference_page_title;
     private static final String MCP_SETTINGS_URL = "remote-dams";
     private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
+    private final UIObservable<Boolean> mcpLoading = UIObservable.of(false);
     private final UIObservable<Boolean> mcpUnavailable = UIObservable.of(false);
+    private final UIObservable<Boolean> mcpGloballyDisabled = UIObservable.of(false);
     private final UIObservable<Boolean> mcpVisible = UIObservable.of(false);
     private AbstractJob userViewJob;
+    @Nullable
+    private AbstractJob mcpJob;
 
     private Composite content;
-    private Composite mcpInfoRow;
     private Button mcpCheck;
     private Text userText;
     private Button accountActionButton;
@@ -92,14 +95,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         descriptionData.widthHint = 660;
         descriptionData.horizontalAlignment = SWT.BEGINNING;
         descriptionData.grabExcessHorizontalSpace = false;
-        Label mcpInfo = DDUIUtils.create(
-            content, DDTrackingUIMessages.sync_preference_page_mcp_globally_disabled,
-            DDTrackingUIMessages.sync_preference_page_mcp_settings_link,
-            DDUIConstants.DATADAM_DOCS_URL + MCP_SETTINGS_URL
-        );
-        mcpInfoRow = mcpInfo.getParent();
-        mcpInfoRow.setVisible(false);
-        ((GridData) mcpInfoRow.getLayoutData()).exclude = true;
         Control form = UIPanelBuilder.build(content, pb -> pb
             .margins(0, 0)
             .spacing(0, 8)
@@ -107,7 +102,10 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             .row(rb -> rb.visible(mcpVisible)
                 .titledPanel(DDTrackingUIMessages.sync_preference_page_ai_integration_group, panel -> panel
                     .margins(0, 0)
+                    .row(row -> row.visible(mcpGloballyDisabled).control(this::createMcpInfo))
                     .row(row -> row.control(this::createMcpCheck))
+                    .row(row -> row.visible(mcpLoading)
+                        .label(DDTrackingUIMessages.sync_preference_page_mcp_loading))
                     .row(row -> row.visible(mcpUnavailable)
                         .label(DDTrackingUIMessages.sync_preference_page_mcp_unavailable))
                 ))
@@ -121,13 +119,22 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     @NotNull
+    private Composite createMcpInfo(@NotNull Composite parent) {
+        return DDUIUtils.create(
+            parent, DDTrackingUIMessages.sync_preference_page_mcp_globally_disabled,
+            DDTrackingUIMessages.sync_preference_page_mcp_settings_link,
+            DDUIConstants.DATADAM_DOCS_URL + MCP_SETTINGS_URL
+        ).getParent();
+    }
+
+    @NotNull
     private Button createMcpCheck(@NotNull Composite parent) {
         mcpCheck = UIUtils.createCheckbox(parent,
             DDTrackingUIMessages.sync_preference_page_mcp_enabled,
             DDTrackingUIMessages.sync_preference_page_mcp_hint, false, 1);
         mcpCheck.setEnabled(false);
         mcpCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
-            updateMcpStatus(mcpCheck.getSelection(), !mcpCheck.getSelection())));
+            updateMcpStatus(mcpCheck.getSelection())));
         return mcpCheck;
     }
 
@@ -159,6 +166,9 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     public void dispose() {
         if (userViewJob != null) {
             userViewJob.cancel();
+        }
+        if (mcpJob != null) {
+            mcpJob.cancel();
         }
         super.dispose();
     }
@@ -204,6 +214,9 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         if (signedIn) {
             loadMcpStatus();
         } else {
+            if (mcpJob != null) {
+                mcpJob.cancel();
+            }
             showMcpStatus(null);
         }
         content.layout(true, true);
@@ -215,43 +228,77 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     private void loadMcpStatus() {
+        if (mcpJob != null) {
+            mcpJob.cancel();
+        }
+        showMcpLoading();
         try {
-            showMcpStatus(DDServerCatalog.getInstance().callInProgressDialog(
+            mcpJob = DDServerCatalog.getInstance().call(
                 "Read DataDam MCP status", DDMcpWebStatusService.SERVICE_ID, DDMcpWebStatusService.class,
-                DDMcpWebStatusService::getStatus));
-        } catch (DBException | InterruptedException e) {
+                DDMcpWebStatusService::getStatus,
+                status -> {
+                    if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                        showMcpStatus(status);
+                    }
+                },
+                error -> {
+                    if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                        log.debug("Cannot read DataDam MCP status", error);
+                        showMcpStatus(null);
+                    }
+                });
+        } catch (DBException e) {
             log.debug("Cannot read DataDam MCP status", e);
             showMcpStatus(null);
         }
     }
 
-    private void updateMcpStatus(boolean enabled, boolean previous) {
+    private void updateMcpStatus(boolean enabled) {
+        if (mcpJob != null) {
+            mcpJob.cancel();
+        }
+        showMcpLoading();
         try {
-            Boolean applied = DDServerCatalog.getInstance().callInProgressDialog(
+            mcpJob = DDServerCatalog.getInstance().call(
                 "Update DataDam MCP status", DDMcpWebStatusService.SERVICE_ID, DDMcpWebStatusService.class,
                 service -> {
                     service.setStatus(enabled ? DDMcpStatus.ENABLED : DDMcpStatus.DISABLED);
-                    return true;
+                    return null;
+                },
+                ignored -> {
+                    if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                        mcpLoading.set(false);
+                        mcpCheck.setEnabled(true);
+                    }
+                },
+                error -> {
+                    if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                        showMcpStatus(null);
+                        DBWorkbench.getPlatformUI().showError(
+                            SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_mcp_update_failed, error);
+                    }
                 });
-            if (!Boolean.TRUE.equals(applied)) {
-                showMcpStatus(null);
-            }
-        } catch (InterruptedException e) {
-            showMcpStatus(null);
         } catch (DBException e) {
-            mcpCheck.setSelection(previous);
+            showMcpStatus(null);
             DBWorkbench.getPlatformUI().showError(
                 SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_mcp_update_failed, e);
         }
     }
 
+    private void showMcpLoading() {
+        mcpCheck.setEnabled(false);
+        mcpLoading.set(true);
+        mcpUnavailable.set(false);
+        mcpGloballyDisabled.set(false);
+        content.layout(true, true);
+    }
+
     private void showMcpStatus(@Nullable DDMcpStatus status) {
         mcpCheck.setSelection(status == DDMcpStatus.ENABLED);
         mcpCheck.setEnabled(status == DDMcpStatus.ENABLED || status == DDMcpStatus.DISABLED);
+        mcpLoading.set(false);
         mcpUnavailable.set(status == null);
-        boolean globallyDisabled = status == DDMcpStatus.GLOBALLY_DISABLED;
-        mcpInfoRow.setVisible(globallyDisabled);
-        ((GridData) mcpInfoRow.getLayoutData()).exclude = !globallyDisabled;
+        mcpGloballyDisabled.set(status == DDMcpStatus.GLOBALLY_DISABLED);
         content.layout(true, true);
     }
 

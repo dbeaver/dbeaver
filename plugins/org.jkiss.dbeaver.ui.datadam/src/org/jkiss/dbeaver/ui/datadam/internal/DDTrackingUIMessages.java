@@ -36,6 +36,7 @@ public class DDTrackingUIMessages extends NLS {
     public static String sync_preference_page_desktop_sign_out;
     public static String sync_preference_page_mcp_enabled;
     public static String sync_preference_page_mcp_hint;
+    public static String sync_preference_page_mcp_loading;
     public static String sync_preference_page_mcp_unavailable;
     public static String sync_preference_page_mcp_globally_disabled;
     public static String sync_preference_page_mcp_settings_link;
