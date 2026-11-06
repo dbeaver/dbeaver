@@ -20,18 +20,25 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseDataSource;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseMapType;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDComposite;
+import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.data.AbstractDatabaseList;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
+import java.sql.SQLException;
+import java.util.AbstractMap;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-public class ClickhouseMapValue extends AbstractDatabaseList {
+public class ClickhouseMapValue extends AbstractDatabaseList implements DBDValueCloneable {
     private final ClickhouseDataSource dataSource;
     private final ClickhouseMapType mapType;
     private final DBSAttributeBase[] entryAttributes;
@@ -47,9 +54,23 @@ public class ClickhouseMapValue extends AbstractDatabaseList {
         this.dataSource = dataSource;
         this.mapType = type;
         this.entryAttributes = entryAttributes.toArray(DBSAttributeBase[]::new);
+        // FIXME: The ClickHouse JDBC driver returns a Map and has already discarded duplicate keys here.
+        // https://github.com/ClickHouse/clickhouse-java/issues/3047
         this.contents = contents.entrySet().stream()
             .map(entry -> new EntryComposite(entry.getKey(), entry.getValue()))
             .collect(Collectors.toList());
+    }
+
+    private ClickhouseMapValue(@NotNull ClickhouseMapValue source, @NotNull DBRProgressMonitor monitor) throws DBCException {
+        this.dataSource = source.dataSource;
+        this.mapType = source.mapType;
+        this.entryAttributes = source.entryAttributes;
+        this.contents = new ArrayList<>(source.contents.size());
+        for (EntryComposite entry : source.contents) {
+            Object key = entry.key instanceof DBDValueCloneable cloneable ? cloneable.cloneValue(monitor) : entry.key;
+            Object value = entry.value instanceof DBDValueCloneable cloneable ? cloneable.cloneValue(monitor) : entry.value;
+            this.contents.add(new EntryComposite(key, value));
+        }
     }
 
     @NotNull
@@ -97,6 +118,35 @@ public class ClickhouseMapValue extends AbstractDatabaseList {
         return contents;
     }
 
+    @NotNull
+    ClickhouseMapType getMapType() {
+        return mapType;
+    }
+
+    @NotNull
+    List<Map.Entry<Object, Object>> getEntries() {
+        List<Map.Entry<Object, Object>> entries = new ArrayList<>(contents.size());
+        for (EntryComposite entry : contents) {
+            entries.add(new AbstractMap.SimpleImmutableEntry<>(entry.key, entry.value));
+        }
+        return entries;
+    }
+
+    @NotNull
+    Map<Object, Object> toJdbcMap() throws DBCException, SQLException {
+        Map<Object, Object> map = new LinkedHashMap<>();
+        for (EntryComposite entry : contents) {
+            Object key = ClickhouseStructValueHandler.toJdbcValue(entry.key, mapType.getKeyType());
+            if (map.containsKey(key)) {
+                throw new DBCException(
+                    "ClickHouse JDBC driver loses duplicate Map keys (clickhouse-java#3047); cannot bind this value safely"
+                );
+            }
+            map.put(key, ClickhouseStructValueHandler.toJdbcValue(entry.value, mapType.getValueType()));
+        }
+        return map;
+    }
+
     @Override
     public boolean isNull() {
         return contents == null;
@@ -107,15 +157,25 @@ public class ClickhouseMapValue extends AbstractDatabaseList {
         return modified;
     }
 
+    @NotNull
+    @Override
+    public ClickhouseMapValue cloneValue(@NotNull DBRProgressMonitor monitor) throws DBCException {
+        return new ClickhouseMapValue(this, monitor);
+    }
+
     @Override
     public void release() {
         contents = null;
     }
 
+    @NotNull
     @Override
     public String toString() {
+        if (contents == null) {
+            return DBConstants.NULL_VALUE_LABEL;
+        }
         return contents.stream()
-            .map(Object::toString)
+            .map(String::valueOf)
             .collect(Collectors.joining(", "));
     }
 
@@ -181,6 +241,7 @@ public class ClickhouseMapValue extends AbstractDatabaseList {
             // do nothing
         }
 
+        @NotNull
         @Override
         public String toString() {
             return String.format("{%s : %s}", key, value);

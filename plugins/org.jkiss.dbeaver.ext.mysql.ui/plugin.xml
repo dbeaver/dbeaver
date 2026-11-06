@@ -85,7 +85,10 @@
         </editorContribution>
     </extension>
     <extension point="org.jkiss.dbeaver.sql.executors">
-        <executor class="org.jkiss.dbeaver.ext.mysql.tools.MySQLScriptExecutor" datasource="mysql"/>
+        <executor
+            class="org.jkiss.dbeaver.ext.mysql.tools.MySQLScriptExecutor"
+            datasource="mysql"
+            objectType="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog"/>
     </extension>
     <extension point="org.jkiss.dbeaver.dataSourceConfigurator">
         <configurator dataSource="mysql" class="org.jkiss.dbeaver.ext.mysql.ui.views.MySQLConnectionPage"/>

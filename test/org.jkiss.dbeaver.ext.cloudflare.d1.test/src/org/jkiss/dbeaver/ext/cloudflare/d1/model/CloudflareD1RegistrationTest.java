@@ -38,6 +38,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.w3c.dom.Element;
 
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -87,13 +88,13 @@ public class CloudflareD1RegistrationTest {
         var driver = DataSourceProviderRegistry.getInstance().getDataSourceProvider("cloudflare_d1")
             .getDriver("cloudflare_d1_jdbc");
         Assertions.assertNotNull(driver);
-        Assertions.assertEquals("jdbc:d1://initial-id", driver.getConnectionURL(configuration));
+        Assertions.assertEquals("jdbc:dbeaver:d1://initial-id", driver.getConnectionURL(configuration));
         // Exercise datasource URL generation rather than assuming a blank persisted URL reaches the driver unchanged.
         var container = Mockito.mock(DBPDataSourceContainer.class);
         Mockito.when(container.getDriver()).thenReturn(driver);
         var fallback = Mockito.mock(ConnectionUrlDataSource.class, Mockito.CALLS_REAL_METHODS);
         Mockito.doReturn(container).when(fallback).getContainer();
-        Assertions.assertEquals("jdbc:d1://initial-id", fallback.connectionUrl(configuration));
+        Assertions.assertEquals("jdbc:dbeaver:d1://initial-id", fallback.connectionUrl(configuration));
     }
 
     @Test
@@ -122,19 +123,32 @@ public class CloudflareD1RegistrationTest {
             Assertions.assertEquals("cloudflare_d1", provider.getAttribute("id"));
             var driver = (Element) plugin.getElementsByTagName("driver").item(0);
             Assertions.assertEquals("cloudflare_d1_jdbc", driver.getAttribute("id"));
-            Assertions.assertEquals("com.dbeaver.jdbc.d1.D1Driver", driver.getAttribute("class"));
+            Assertions.assertEquals("com.dbeaver.jdbc.driver.d1.D1Driver", driver.getAttribute("class"));
             var files = driver.getElementsByTagName("file");
-            int libraries = 0;
+            int mavenLibraries = 0;
+            var bundledLibraries = new HashSet<String>();
             for (int index = 0; index < files.getLength(); index++) {
                 var file = (Element) files.item(index);
                 if ("jar".equals(file.getAttribute("type"))) {
-                    libraries++;
-                    Assertions.assertEquals("maven:/com.dbeaver.jdbc:com.dbeaver.jdbc.driver.d1:RELEASE", file.getAttribute("path"));
-                    Assertions.assertFalse(file.hasAttribute("bundle"));
+                    String path = file.getAttribute("path");
+                    if (path.startsWith("maven:/")) {
+                        mavenLibraries++;
+                        Assertions.assertEquals("maven:/com.dbeaver.jdbc:com.dbeaver.jdbc.driver.d1:RELEASE", path);
+                        Assertions.assertEquals("!drivers.cloudflare.d1", file.getAttribute("bundle"));
+                    } else {
+                        Assertions.assertEquals("drivers.cloudflare.d1", file.getAttribute("bundle"));
+                        Assertions.assertTrue(bundledLibraries.add(path));
+                    }
                     Assertions.assertNotEquals("true", file.getAttribute("ignore-dependencies"));
                 }
             }
-            Assertions.assertEquals(1, libraries);
+            Assertions.assertEquals(1, mavenLibraries);
+            Assertions.assertEquals(Set.of(
+                "bundle:/com.dbeaver.jdbc.driver.d1",
+                "bundle:/com.dbeaver.jdbc.api",
+                "bundle:/org.jkiss.utils",
+                "bundle:/com.google.gson"
+            ), bundledLibraries);
             var auth = (Element) plugin.getElementsByTagName("authModel").item(0);
             Assertions.assertEquals("cloudflare_d1_native", auth.getAttribute("id"));
         }
