@@ -47,6 +47,7 @@ public class SQLConstants {
     public static final String KEYWORD_MERGE = "MERGE";
     public static final String KEYWORD_UPSERT = "UPSERT";
     public static final String KEYWORD_TRUNCATE = "TRUNCATE";
+    public static final String KEYWORD_WITH = "WITH";
 
     public static final String KEYWORD_FROM = "FROM";
     public static final String KEYWORD_INTO = "INTO";
@@ -74,11 +75,18 @@ public class SQLConstants {
 
     public static final String KEYWORD_FUNCTION = "FUNCTION";
     public static final String KEYWORD_PROCEDURE = "PROCEDURE";
+    public static final String KEYWORD_CALL = "CALL";
+    public static final String KEYWORD_EXEC = "EXEC";
+    public static final String KEYWORD_EXECUTE = "EXECUTE";
 
     public static final String KEYWORD_COMMIT = "COMMIT";
     public static final String KEYWORD_ROLLBACK = "ROLLBACK";
 
     public static final String KEYWORD_EXPLAIN = "EXPLAIN";
+    public static final String KEYWORD_SHOW = "SHOW";
+    public static final String KEYWORD_DESCRIBE = "DESCRIBE";
+    public static final String KEYWORD_DESC = "DESC";
+    public static final String KEYWORD_USE = "USE";
 
     public static final String KEYWORD_CASE = "CASE";
     

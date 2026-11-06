@@ -74,10 +74,28 @@ public class SQLQuery implements SQLScriptElement {
     private static final Pattern QUERY_TITLE_PATTERN = Pattern.compile("^\\s*(?:--|//|/\\*)\\s*(?:name|title)\\s*:\\s*(.+)$", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
     private static final Set<String> NON_DDL_KEYWORDS = Set.of(
-        "SELECT", "INSERT", "UPDATE", "DELETE", "MERGE", "CALL", "EXEC", "EXECUTE",
-        "SET", "SHOW", "DESCRIBE", "DESC", "EXPLAIN", "USE", "COMMIT", "ROLLBACK"
+        SQLConstants.KEYWORD_SELECT,
+        SQLConstants.KEYWORD_INSERT,
+        SQLConstants.KEYWORD_UPDATE,
+        SQLConstants.KEYWORD_DELETE,
+        SQLConstants.KEYWORD_MERGE,
+        SQLConstants.KEYWORD_CALL,
+        SQLConstants.KEYWORD_EXEC,
+        SQLConstants.KEYWORD_EXECUTE,
+        SQLConstants.KEYWORD_SET,
+        SQLConstants.KEYWORD_SHOW,
+        SQLConstants.KEYWORD_DESCRIBE,
+        SQLConstants.KEYWORD_DESC,
+        SQLConstants.KEYWORD_EXPLAIN,
+        SQLConstants.KEYWORD_USE,
+        SQLConstants.KEYWORD_COMMIT,
+        SQLConstants.KEYWORD_ROLLBACK
     );
-    private static final Set<String> UPDATE_DELETE_DANGER_KEYWORDS = Set.of("UPDATE", "DELETE", "WITH");
+    private static final Set<String> UPDATE_DELETE_DANGER_KEYWORDS = Set.of(
+        SQLConstants.KEYWORD_UPDATE,
+        SQLConstants.KEYWORD_DELETE,
+        SQLConstants.KEYWORD_WITH
+    );
 
     @Nullable
     private final DBPDataSource dataSource;
