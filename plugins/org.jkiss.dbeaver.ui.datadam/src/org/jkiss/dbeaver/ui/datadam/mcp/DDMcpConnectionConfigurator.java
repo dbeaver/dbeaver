@@ -16,12 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.datadam.mcp;
 
+import com.dbeaver.datadam.mcp.api.model.DDMcpStatus;
+import com.dbeaver.datadam.mcp.api.service.web.DDMcpWebStatusService;
+import com.dbeaver.messaging.rpc.MessagingRpcException;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.datadam.DDDesktopPreferences;
 import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionSettings;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -32,7 +34,15 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
     private Button enableCheck;
 
     public static boolean appliesTo() {
-        return DDDesktopPreferences.getStore().getBoolean(DDDesktopPreferences.MCP_DESKTOP_ENABLED);
+        DDMcpWebStatusService service = DDMcpConnectionSettings.getService();
+        if (service == null) {
+            return false;
+        }
+        try {
+            return service.getStatus() == DDMcpStatus.ENABLED;
+        } catch (MessagingRpcException e) {
+            return false;
+        }
     }
 
     @Override

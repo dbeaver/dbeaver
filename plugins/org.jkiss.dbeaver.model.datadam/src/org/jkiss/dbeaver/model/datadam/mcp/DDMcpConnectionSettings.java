@@ -16,8 +16,13 @@
  */
 package org.jkiss.dbeaver.model.datadam.mcp;
 
+import com.dbeaver.datadam.mcp.api.service.web.DDMcpWebStatusService;
+import com.dbeaver.messaging.rpc.MessagingRpcException;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamServerServiceCatalog;
 
 /**
  * Per-connection DataDam MCP permission stored with the connection configuration.
@@ -26,6 +31,15 @@ public final class DDMcpConnectionSettings {
     private static final String ENABLED_EXTENSION = "datadam.mcp.enabled";
 
     private DDMcpConnectionSettings() {
+    }
+
+    @Nullable
+    public static DDMcpWebStatusService getService() {
+        try {
+            return DDRemoteDamServerServiceCatalog.getInstance().getMcpStatusService();
+        } catch (DBException | MessagingRpcException e) {
+            return null;
+        }
     }
 
     public static boolean isEnabled(@NotNull DBPDataSourceContainer connection) {

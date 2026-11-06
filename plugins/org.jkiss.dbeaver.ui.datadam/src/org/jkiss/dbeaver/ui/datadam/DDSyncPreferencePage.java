@@ -16,6 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.datadam;
 
+import com.dbeaver.datadam.mcp.api.exception.DDMcpStatusException;
+import com.dbeaver.datadam.mcp.api.model.DDMcpStatus;
+import com.dbeaver.datadam.mcp.api.service.web.DDMcpWebStatusService;
+import com.dbeaver.messaging.rpc.MessagingRpcException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
@@ -27,11 +31,11 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.datadam.DDDesktopPreferences;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionSettings;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -42,7 +46,6 @@ import org.jkiss.dbeaver.ui.forms.UIGrowX;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
 import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
-import org.jkiss.dbeaver.utils.PrefUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -51,12 +54,15 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private static final Log log = Log.getLog(DDSyncPreferencePage.class);
 
     private static final String SYNC_TITLE = DDTrackingUIMessages.sync_preference_page_title;
+    private static final String MCP_SETTINGS_URL = "remote-dams";
     private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
-    private final UIObservable<Boolean> mcpEnabled = UIObservable.of(true);
+    private final UIObservable<Boolean> mcpUnavailable = UIObservable.of(false);
     private final UIObservable<Boolean> mcpVisible = UIObservable.of(false);
     private AbstractJob userViewJob;
 
     private Composite content;
+    private Composite mcpInfoRow;
+    private Button mcpCheck;
     private Text userText;
     private Button accountActionButton;
 
@@ -89,7 +95,14 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         descriptionData.widthHint = 660;
         descriptionData.horizontalAlignment = SWT.BEGINNING;
         descriptionData.grabExcessHorizontalSpace = false;
-        mcpEnabled.set(DDDesktopPreferences.getStore().getBoolean(DDDesktopPreferences.MCP_DESKTOP_ENABLED));
+        Label mcpInfo = DDUIUtils.create(
+            content, DDTrackingUIMessages.sync_preference_page_mcp_globally_disabled,
+            DDTrackingUIMessages.sync_preference_page_mcp_settings_link,
+            DDUIConstants.DATADAM_DOCS_URL + MCP_SETTINGS_URL
+        );
+        mcpInfoRow = mcpInfo.getParent();
+        mcpInfoRow.setVisible(false);
+        ((GridData) mcpInfoRow.getLayoutData()).exclude = true;
         Control form = UIPanelBuilder.build(content, pb -> pb
             .margins(0, 0)
             .spacing(0, 8)
@@ -97,19 +110,28 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             .row(rb -> rb.visible(mcpVisible)
                 .titledPanel(DDTrackingUIMessages.sync_preference_page_ai_integration_group, panel -> panel
                     .margins(0, 0)
-                    .row(row -> row.checkBox(DDTrackingUIMessages.sync_preference_page_mcp_enabled,
-                        DDTrackingUIMessages.sync_preference_page_mcp_hint, bb -> bb.selected(mcpEnabled))))));
+                    .row(row -> row.control(this::createMcpCheck))
+                    .row(row -> row.visible(mcpUnavailable)
+                        .label(DDTrackingUIMessages.sync_preference_page_mcp_unavailable))
+                ))
+        );
         GridData formLayout = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
         formLayout.verticalIndent = 16;
         form.setLayoutData(formLayout);
-        mcpEnabled.addChangeListener((previous, enabled) -> {
-            DBPPreferenceStore store = DDDesktopPreferences.getStore();
-            store.setValue(DDDesktopPreferences.MCP_DESKTOP_ENABLED, enabled);
-            PrefUtils.savePreferenceStore(store);
-        });
 
         refresh();
         return content;
+    }
+
+    @NotNull
+    private Button createMcpCheck(@NotNull Composite parent) {
+        mcpCheck = UIUtils.createCheckbox(parent,
+            DDTrackingUIMessages.sync_preference_page_mcp_enabled,
+            DDTrackingUIMessages.sync_preference_page_mcp_hint, false, 1);
+        mcpCheck.setEnabled(false);
+        mcpCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            updateMcpStatus(mcpCheck.getSelection(), !mcpCheck.getSelection())));
+        return mcpCheck;
     }
 
     @NotNull
@@ -182,13 +204,61 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             ? DDTrackingUIMessages.sync_preference_page_desktop_sign_out
             : DDTrackingUIMessages.sync_preference_page_desktop_sign_in);
         mcpVisible.set(signedIn);
-        mcpEnabled.set(DDDesktopPreferences.getStore().getBoolean(DDDesktopPreferences.MCP_DESKTOP_ENABLED));
+        if (signedIn) {
+            loadMcpStatus();
+        } else {
+            showMcpStatus(null);
+        }
         content.layout(true, true);
         if (signedIn) {
             loadLoggedUserView();
         } else if (userViewJob != null) {
             userViewJob.cancel();
         }
+    }
+
+    private void loadMcpStatus() {
+        DDMcpWebStatusService service = DDMcpConnectionSettings.getService();
+        if (service == null) {
+            showMcpStatus(null);
+            return;
+        }
+        try {
+            showMcpStatus(service.getStatus());
+        } catch (MessagingRpcException e) {
+            log.debug("Cannot read DataDam MCP status", e);
+            showMcpStatus(null);
+        }
+    }
+
+    private void updateMcpStatus(boolean enabled, boolean previous) {
+        DDMcpWebStatusService service = DDMcpConnectionSettings.getService();
+        if (service == null) {
+            showMcpStatus(null);
+            DBWorkbench.getPlatformUI().showError(
+                SYNC_TITLE,
+                DDTrackingUIMessages.sync_preference_page_mcp_update_failed,
+                new DBException("DataDam MCP status service is unavailable")
+            );
+            return;
+        }
+        try {
+            service.setStatus(enabled ? DDMcpStatus.ENABLED : DDMcpStatus.DISABLED);
+        } catch (DDMcpStatusException | MessagingRpcException e) {
+            mcpCheck.setSelection(previous);
+            DBWorkbench.getPlatformUI().showError(
+                SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_mcp_update_failed, e);
+        }
+    }
+
+    private void showMcpStatus(@Nullable DDMcpStatus status) {
+        mcpCheck.setSelection(status == DDMcpStatus.ENABLED);
+        mcpCheck.setEnabled(status == DDMcpStatus.ENABLED || status == DDMcpStatus.DISABLED);
+        mcpUnavailable.set(status == null);
+        boolean globallyDisabled = status == DDMcpStatus.GLOBALLY_DISABLED;
+        mcpInfoRow.setVisible(globallyDisabled);
+        ((GridData) mcpInfoRow.getLayoutData()).exclude = !globallyDisabled;
+        content.layout(true, true);
     }
 
     private void loadLoggedUserView() {
