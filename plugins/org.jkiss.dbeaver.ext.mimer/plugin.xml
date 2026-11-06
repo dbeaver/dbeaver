@@ -556,6 +556,19 @@
          preference (Preferences -> Mimer SQL -> GIS display), so any of the four can be turned
          off independently. -->
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
+        <!-- Use getBinaryStream()/getCharacterStream() for LOB columns. See MimerBLOBValueHandler's
+             and MimerCLOBValueHandler's javadoc for the full story. A new type here needs a matching
+             case in MimerValueHandlerProvider.getValueHandler() too, not just a <type> entry. -->
+        <provider
+            class="org.jkiss.dbeaver.ext.mimer.model.data.MimerValueHandlerProvider"
+            id="MimerValueHandlerProvider"
+            label="%provider.mimer_value_handler.name"
+            description="%provider.mimer_value_handler.description">
+            <datasource id="mimer"/>
+            <type id="2004"/> <!-- java.sql.Types.BLOB -->
+            <type id="2005"/> <!-- java.sql.Types.CLOB -->
+            <type id="2011"/> <!-- java.sql.Types.NCLOB -->
+        </provider>
         <transformer
             class="org.jkiss.dbeaver.ext.mimer.model.gis.MimerGisLocationTransformer"
             id="MimerGisLocationTransformer"

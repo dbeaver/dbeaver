@@ -14,5 +14,6 @@ Bundle-Localization: OSGI-INF/l10n/bundle
 Automatic-Module-Name: org.jkiss.dbeaver.ext.mimer
 Export-Package: org.jkiss.dbeaver.ext.mimer,
  org.jkiss.dbeaver.ext.mimer.model,
+ org.jkiss.dbeaver.ext.mimer.model.data,
  org.jkiss.dbeaver.ext.mimer.model.gis,
  org.jkiss.dbeaver.ext.mimer.model.plan
