@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model.plan;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -30,6 +31,13 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlannerConfiguration;
 import org.jkiss.dbeaver.model.impl.plan.AbstractExecutionPlan;
+import org.jkiss.dbeaver.model.sql.parser.SQLParserContext;
+import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
+import org.jkiss.dbeaver.model.text.parser.TPRuleBasedScanner;
+import org.jkiss.dbeaver.model.text.parser.TPToken;
+import org.jkiss.dbeaver.model.text.parser.TPTokenDefault;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLException;
 import org.jkiss.utils.xml.XMLUtils;
@@ -96,8 +104,9 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
     @NotNull
     @Override
     public String getPlanQueryString() {
+        String executableQuery = trimTerminalDelimiter(query);
         if (oldQuery) {
-            return "EXPLAIN " + (verbose ? "VERBOSE " : "") + query;
+            return "EXPLAIN " + (verbose ? "VERBOSE " : "") + executableQuery;
         } else {
             Map<String, Object> parameters = this.configuration.getParameters();
             StringBuilder explainStat = new StringBuilder(64);
@@ -123,9 +132,48 @@ public class PostgreExecutionPlan extends AbstractExecutionPlan {
                     explainStat.append(",").append(key);
                 }
             }
-            explainStat.append(") ").append(query);
+            explainStat.append(") ").append(executableQuery);
             return explainStat.toString();
         }
+    }
+
+    @NotNull
+    private static String trimTerminalDelimiter(@NotNull String query)
+    {
+        SQLParserContext parserContext = SQLScriptParser.prepareSqlParserContext(
+            null, new PostgreDialect(), DBWorkbench.getPlatform().getPreferenceStore(), query);
+        TPRuleBasedScanner scanner = parserContext.getScanner();
+        scanner.setRange(parserContext.getDocument(), 0, query.length());
+
+        int lastDelimiter = -1;
+        int lastDelimiterLength = 0;
+        boolean commentAfterDelimiter = false;
+        boolean codeAfterDelimiter = false;
+        while (true) {
+            TPToken token = scanner.nextToken();
+            if (token.isEOF()) {
+                break;
+            }
+            SQLTokenType tokenType = token instanceof TPTokenDefault tpTokenDefault
+                ? (SQLTokenType) tpTokenDefault.getData()
+                : SQLTokenType.T_OTHER;
+            if (tokenType == SQLTokenType.T_DELIMITER) {
+                lastDelimiter = scanner.getTokenOffset();
+                lastDelimiterLength = scanner.getTokenLength();
+                commentAfterDelimiter = false;
+                codeAfterDelimiter = false;
+            } else if (tokenType == SQLTokenType.T_COMMENT) {
+                if (lastDelimiter >= 0) {
+                    commentAfterDelimiter = true;
+                }
+            } else if (!token.isWhitespace() && lastDelimiter >= 0) {
+                codeAfterDelimiter = true;
+            }
+        }
+        if (lastDelimiter < 0 || !commentAfterDelimiter || codeAfterDelimiter) {
+            return query;
+        }
+        return query.substring(0, lastDelimiter) + query.substring(lastDelimiter + lastDelimiterLength);
     }
 
     @NotNull
