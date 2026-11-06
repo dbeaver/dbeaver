@@ -18,11 +18,15 @@ package org.jkiss.dbeaver.model.datadam.rpc;
 
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 
 /**
  * Registers a desktop service on each new authorized RPC endpoint.
  * The endpoint owns and closes its service registrations.
  */
 public interface DDDesktopRpcRegistration {
-    void register(@NotNull MessagingRpcEndpoint endpoint);
+    @NotNull
+    String getId();
+
+    void register(@NotNull MessagingRpcEndpoint endpoint) throws DBException;
 }

@@ -16,24 +16,31 @@
  */
 package org.jkiss.dbeaver.ui.datadam.mcp;
 
+import com.dbeaver.datadam.mcp.api.model.DDMcpStatus;
+import com.dbeaver.datadam.mcp.api.service.web.DDMcpWebStatusService;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.datadam.DDDesktopPreferences;
 import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionSettings;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.preferences.PrefPageDataSourceAI;
+import org.jkiss.dbeaver.ui.datadam.DDServerCatalog;
 import org.jkiss.dbeaver.ui.datadam.internal.DDMcpMessages;
 
 public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<PrefPageDataSourceAI, PrefPageDataSourceAI> {
+    private static final Log log = Log.getLog(DDMcpConnectionConfigurator.class);
     private Button enableCheck;
-
-    public static boolean appliesTo() {
-        return DDDesktopPreferences.getStore().getBoolean(DDDesktopPreferences.MCP_DESKTOP_ENABLED);
-    }
+    @Nullable
+    private AbstractJob statusJob;
 
     @Override
     public void createControl(
@@ -42,7 +49,43 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
         @NotNull Runnable propertyChangeListener
     ) {
         DBPDataSourceContainer connection = page.getConnection();
-        if (connection != null && appliesTo()) {
+        if (connection == null) {
+            return;
+        }
+        Label loading = new Label(parent, SWT.NONE);
+        loading.setText(DDMcpMessages.mcp_connection_status_loading);
+        loading.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        parent.addDisposeListener(e -> {
+            if (statusJob != null) {
+                statusJob.cancel();
+            }
+        });
+        try {
+            statusJob = DDServerCatalog.getInstance().createJob(
+                "Check DataDam MCP availability", DDMcpWebStatusService.SERVICE_ID, DDMcpWebStatusService.class,
+                DDMcpWebStatusService::getStatus,
+                status -> showStatus(parent, loading, page, status),
+                error -> {
+                    log.debug("Cannot read DataDam MCP status", error);
+                    showStatus(parent, loading, page, null);
+                });
+        } catch (DBException e) {
+            log.debug("Cannot read DataDam MCP status", e);
+            showStatus(parent, loading, page, null);
+        }
+    }
+
+    private void showStatus(
+        @NotNull Composite parent,
+        @NotNull Label loading,
+        @NotNull PrefPageDataSourceAI page,
+        @Nullable DDMcpStatus status
+    ) {
+        if (parent.isDisposed()) {
+            return;
+        }
+        loading.dispose();
+        if (status == DDMcpStatus.ENABLED) {
             Composite group = UIUtils.createTitledComposite(
                 parent, DDMcpMessages.mcp_connection_settings_group, 1, GridData.FILL_HORIZONTAL);
             enableCheck = UIUtils.createCheckbox(
@@ -52,7 +95,9 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
                 false,
                 1
             );
+            loadSettings(page);
         }
+        parent.layout(true, true);
     }
 
     @Override

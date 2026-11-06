@@ -17,13 +17,13 @@
 package org.jkiss.dbeaver.model.datadam.rpc;
 
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 
 public class DDDesktopRpcRegistrationRegistry {
     private static final Log log = Log.getLog(DDDesktopRpcRegistrationRegistry.class);
@@ -32,18 +32,77 @@ public class DDDesktopRpcRegistrationRegistry {
     private final List<DDDesktopRpcRegistration> registrations = new ArrayList<>();
 
     private DDDesktopRpcRegistrationRegistry() {
+        Map<String, DDDesktopRpcRegistrationDescriptor> descriptors = new LinkedHashMap<>();
         for (var extension : Platform.getExtensionRegistry().getConfigurationElementsFor(EXTENSION_ID)) {
             if (!"service".equals(extension.getName())) {
                 continue;
             }
-            try {
-                registrations.add((DDDesktopRpcRegistration) extension.createExecutableExtension("class"));
-            } catch (CoreException e) {
-                throw new IllegalStateException("Cannot create desktop RPC service from "
-                    + extension.getContributor().getName(), e);
+            DDDesktopRpcRegistrationDescriptor descriptor = new DDDesktopRpcRegistrationDescriptor(extension);
+            if (descriptors.putIfAbsent(descriptor.getId(), descriptor) != null) {
+                throw new IllegalStateException("Duplicate desktop RPC registration: " + descriptor.getId());
             }
         }
+        List<DDDesktopRpcRegistrationDescriptor> creationOrder = orderBy(
+            descriptors,
+            DDDesktopRpcRegistrationDescriptor::getDependsOn
+        );
+        List<DDDesktopRpcRegistrationDescriptor> registrationOrder = orderBy(
+            descriptors,
+            DDDesktopRpcRegistrationDescriptor::getRegisterAfter
+        );
+        Map<String, DDDesktopRpcRegistration> created = new HashMap<>();
+        for (DDDesktopRpcRegistrationDescriptor descriptor : creationOrder) {
+            List<DDDesktopRpcRegistration> dependencies = descriptor.getDependsOn().stream().map(created::get).toList();
+            try {
+                created.put(descriptor.getId(), descriptor.create(dependencies));
+            } catch (DBException e) {
+                throw new IllegalStateException("Cannot create desktop RPC registration " + descriptor.getId(), e);
+            }
+        }
+        for (DDDesktopRpcRegistrationDescriptor descriptor : registrationOrder) {
+            registrations.add(created.get(descriptor.getId()));
+        }
         log.debug("Found " + registrations.size() + " DataDam desktop RPC registrations");
+    }
+
+    @NotNull
+    private List<DDDesktopRpcRegistrationDescriptor> orderBy(
+        @NotNull Map<String, DDDesktopRpcRegistrationDescriptor> descriptors,
+        @NotNull Function<DDDesktopRpcRegistrationDescriptor, List<String>> dependencies
+    ) {
+        List<DDDesktopRpcRegistrationDescriptor> order = new ArrayList<>();
+        Set<String> visiting = new HashSet<>();
+        Set<String> visited = new HashSet<>();
+        for (DDDesktopRpcRegistrationDescriptor descriptor : descriptors.values()) {
+            addToOrder(descriptor, descriptors, dependencies, visiting, visited, order);
+        }
+        return order;
+    }
+
+    private void addToOrder(
+        @NotNull DDDesktopRpcRegistrationDescriptor descriptor,
+        @NotNull Map<String, DDDesktopRpcRegistrationDescriptor> descriptors,
+        @NotNull Function<DDDesktopRpcRegistrationDescriptor, List<String>> dependencies,
+        @NotNull Set<String> visiting,
+        @NotNull Set<String> visited,
+        @NotNull List<DDDesktopRpcRegistrationDescriptor> order
+    ) {
+        if (visited.contains(descriptor.getId())) {
+            return;
+        }
+        if (!visiting.add(descriptor.getId())) {
+            throw new IllegalStateException("Cyclic desktop RPC registration dependency: " + descriptor.getId());
+        }
+        for (String id : dependencies.apply(descriptor)) {
+            DDDesktopRpcRegistrationDescriptor dependency = descriptors.get(id);
+            if (dependency == null) {
+                throw new IllegalStateException("Missing desktop RPC registration dependency: " + id);
+            }
+            addToOrder(dependency, descriptors, dependencies, visiting, visited, order);
+        }
+        visiting.remove(descriptor.getId());
+        visited.add(descriptor.getId());
+        order.add(descriptor);
     }
 
     @NotNull
@@ -58,9 +117,9 @@ public class DDDesktopRpcRegistrationRegistry {
         for (DDDesktopRpcRegistration registration : registrations) {
             try {
                 registration.register(endpoint);
-            } catch (RuntimeException e) {
-                throw new IllegalStateException("Cannot register desktop RPC service "
-                    + registration.getClass().getName(), e);
+                log.debug("Registered DataDam desktop RPC service " + registration.getId());
+            } catch (DBException | RuntimeException e) {
+                log.warn("Cannot register desktop RPC service " + registration.getId(), e);
             }
         }
     }
