@@ -35,4 +35,17 @@
       </menuContribution>
    </extension>
 
+   <extension point="org.eclipse.ui.preferencePages">
+      <page id="org.jkiss.dbeaver.preferences.productConfiguration"
+            name="%pref.page.productConfiguration"
+            category="org.jkiss.dbeaver.preferences.general"
+            class="org.jkiss.dbeaver.ui.app.config.PrefPageProductConfiguration">
+         <keywordReference id="org.jkiss.dbeaver.ui.app.config.keyword.features"/>
+      </page>
+   </extension>
+
+   <extension point="org.eclipse.ui.keywords">
+      <keyword id="org.jkiss.dbeaver.ui.app.config.keyword.features" label="%pref.keyword.features"/>
+   </extension>
+
 </plugin>
