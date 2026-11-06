@@ -1,0 +1,265 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ext.oracle.model;
+
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.junit.DBeaverUnitTest;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
+
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class OracleTableFilterTest extends DBeaverUnitTest {
+
+    private DBPDataSourceContainer container;
+    private DBPPreferenceStore preferences;
+    private OracleSchema schema;
+    private JDBCSession session;
+    private JDBCPreparedStatement statement;
+
+    @BeforeEach
+    public void setUp() throws Exception {
+        container = Mockito.mock(DBPDataSourceContainer.class);
+        preferences = Mockito.mock(DBPPreferenceStore.class);
+        Mockito.when(container.getPreferenceStore()).thenReturn(preferences);
+        Mockito.when(preferences.getBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS)).thenReturn(true);
+        Mockito.when(container.getConnectionConfiguration()).thenReturn(new DBPConnectionConfiguration());
+        OracleDataSource dataSource = Mockito.mock(OracleDataSource.class);
+        Mockito.when(dataSource.getContainer()).thenReturn(container);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(new OracleSQLDialect());
+        Mockito.when(dataSource.isViewAvailable(Mockito.any(), Mockito.nullable(String.class), Mockito.anyString())).thenReturn(true);
+        schema = new OracleSchema(dataSource, 1, "TEST_SCHEMA");
+        session = Mockito.mock(JDBCSession.class);
+        statement = Mockito.mock(JDBCPreparedStatement.class);
+        Mockito.when(session.getProgressMonitor()).thenReturn(monitor);
+        Mockito.when(session.prepareStatement(Mockito.anyString())).thenReturn(statement);
+    }
+
+    @Test
+    public void filtersEachObjectTypeInNormalAndUnionQueries() throws Exception {
+        DBSObjectFilter tables = new DBSObjectFilter();
+        tables.addInclude("ABC");
+        tables.addInclude("*JOB_1234*");
+        tables.addExclude("BAD*");
+        tables.addExclude("OLD");
+        Mockito.when(container.getObjectFilter(OracleTable.class, schema, false)).thenReturn(tables);
+        DBSObjectFilter views = new DBSObjectFilter();
+        views.addExclude("HIDDEN*");
+        Mockito.when(container.getObjectFilter(OracleView.class, schema, false)).thenReturn(views);
+        DBSObjectFilter materializedViews = new DBSObjectFilter();
+        materializedViews.addInclude("MV?");
+        Mockito.when(container.getObjectFilter(OracleMaterializedView.class, schema, false)).thenReturn(materializedViews);
+
+        for (boolean useUnion : new boolean[] {false, true}) {
+            container.getConnectionConfiguration().setProviderProperty(
+                OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY, Boolean.toString(useUnion));
+            Mockito.clearInvocations(session, statement);
+            String sql = prepare(null);
+            schema.getTableCache().setFullCache(true);
+            assertTrue(schema.getTableCache().isFullyCached());
+            if (useUnion) {
+                assertTrue(sql.contains("UPPER(t.TABLE_NAME)=UPPER(?) OR t.TABLE_NAME LIKE ?"));
+                assertTrue(sql.contains("AND NOT (t.TABLE_NAME LIKE ?"));
+                assertTrue(sql.contains("o.OBJECT_NAME LIKE ?"));
+                assertTrue(sql.contains("UNION ALL"));
+                verifyBindings("TEST_SCHEMA", "ABC", "%JOB_1234%", "BAD%", "OLD",
+                    "TEST_SCHEMA", "HIDDEN%", "TEST_SCHEMA", "MV_");
+            } else {
+                assertTrue(sql.contains("O.OBJECT_TYPE='TABLE' AND (UPPER(O.OBJECT_NAME)=UPPER(?) OR O.OBJECT_NAME LIKE ?"));
+                assertTrue(sql.contains("AND NOT (O.OBJECT_NAME LIKE ?"));
+                assertTrue(sql.contains("O.OBJECT_TYPE='VIEW' AND NOT (O.OBJECT_NAME LIKE ?"));
+                assertTrue(sql.contains("O.OBJECT_TYPE='MATERIALIZED VIEW' AND (O.OBJECT_NAME LIKE ?"));
+                verifyBindings("TEST_SCHEMA", "ABC", "%JOB_1234%", "BAD%", "OLD", "HIDDEN%", "MV_");
+            }
+        }
+    }
+
+    @Test
+    public void disabledFiltersAndClientSidePreferenceLeaveListQueryUnfiltered() throws Exception {
+        DBSObjectFilter tables = new DBSObjectFilter();
+        tables.addInclude("MATCH*");
+        tables.setEnabled(false);
+        Mockito.when(container.getObjectFilter(OracleTable.class, schema, false)).thenReturn(tables);
+        String sql = prepare(null);
+        assertFalse(sql.contains("O.OBJECT_NAME LIKE"));
+        schema.getTableCache().setFullCache(true);
+        assertTrue(schema.getTableCache().isFullyCached());
+
+        tables.setEnabled(true);
+        Mockito.when(preferences.getBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS)).thenReturn(false);
+        Mockito.clearInvocations(session, statement);
+        sql = prepare(null);
+        assertFalse(sql.contains("O.OBJECT_NAME LIKE"));
+        verifyBindings("TEST_SCHEMA");
+    }
+
+    @Test
+    public void globalFilterIsOverriddenBySchemaFilterAndDoesNotRestrictExactLookup() throws Exception {
+        DBSObjectFilter global = new DBSObjectFilter();
+        global.addInclude("GLOBAL*");
+        DBSObjectFilter local = new DBSObjectFilter();
+        local.addInclude("LOCAL*");
+        Mockito.when(container.getObjectFilter(OracleTable.class, schema, false)).thenReturn(local);
+        Mockito.when(container.getObjectFilter(OracleView.class, schema, false)).thenReturn(global);
+
+        String sql = prepare(null);
+        assertTrue(sql.contains("O.OBJECT_TYPE='TABLE' AND (O.OBJECT_NAME LIKE ?"));
+        assertTrue(sql.contains("O.OBJECT_TYPE='VIEW' AND (O.OBJECT_NAME LIKE ?"));
+        verifyBindings("TEST_SCHEMA", "LOCAL%", "GLOBAL%");
+        schema.getTableCache().setFullCache(true);
+        assertTrue(schema.getTableCache().isFullyCached());
+
+        Mockito.clearInvocations(session, statement);
+        sql = prepare("REFERENCED_TABLE");
+        assertTrue(sql.contains("O.OBJECT_NAME=?"));
+        assertFalse(sql.contains("O.OBJECT_NAME LIKE ?"));
+        verifyBindings("TEST_SCHEMA", "REFERENCED_TABLE");
+        schema.getTableCache().clearCache();
+        schema.getTableCache().setFullCache(true);
+        assertTrue(schema.getTableCache().isFullyCached());
+    }
+
+    @Test
+    public void unionQueryUsesExactNameForReferenceLookupAndLeavesUnfilteredBranchesOpen() throws Exception {
+        DBSObjectFilter tables = new DBSObjectFilter();
+        tables.addInclude("FOO*");
+        container.getConnectionConfiguration().setProviderProperty(
+            OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY, "true");
+        Mockito.when(container.getObjectFilter(OracleTable.class, schema, false)).thenReturn(tables);
+
+        String sql = prepare(null);
+        assertTrue(sql.contains("t.TABLE_NAME LIKE ?"));
+        assertFalse(sql.contains("o.OBJECT_NAME LIKE ?"));
+        verifyBindings("TEST_SCHEMA", "FOO%", "TEST_SCHEMA", "TEST_SCHEMA");
+
+        Mockito.clearInvocations(session, statement);
+        sql = prepare("REF_TABLE");
+        assertTrue(sql.contains("WHERE OBJECT_NAME=?"));
+        assertFalse(sql.contains("TABLE_NAME LIKE ?"));
+        verifyBindings("TEST_SCHEMA", "TEST_SCHEMA", "TEST_SCHEMA", "REF_TABLE");
+    }
+
+    @Test
+    public void emptyAndEscapedMasksKeepIncludeExcludeSemantics() throws Exception {
+        DBSObjectFilter tables = new DBSObjectFilter();
+        tables.addInclude("");
+        tables.addInclude("A\\_B*");
+        tables.addExclude("");
+        tables.addExclude("OLD?");
+        Mockito.when(container.getObjectFilter(OracleTable.class, schema, false)).thenReturn(tables);
+
+        String sql = prepare(null);
+        assertTrue(sql.contains("O.OBJECT_TYPE='TABLE' AND (O.OBJECT_NAME LIKE ? ESCAPE"));
+        assertTrue(sql.contains("AND NOT (O.OBJECT_NAME LIKE ? ESCAPE"));
+        verifyBindings("TEST_SCHEMA", "A\\_B%", "OLD_");
+
+        tables.setInclude(List.of(""));
+        Mockito.clearInvocations(session, statement);
+        sql = prepare(null);
+        assertTrue(sql.contains("O.OBJECT_TYPE='TABLE' AND (1=0)"));
+        verifyBindings("TEST_SCHEMA", "OLD_");
+    }
+
+    @Test
+    public void escapedGlobCharactersRemainLiteralInBothQueryModes() throws Exception {
+        DBSObjectFilter tables = new DBSObjectFilter();
+        tables.addInclude("LITERAL\\*NAME");
+        tables.addInclude("LITERAL\\?NAME*");
+        tables.addInclude("ESCAPED\\_NAME%");
+        tables.addExclude("LITERAL\\?NAME_BAD*");
+        Mockito.when(container.getObjectFilter(OracleTable.class, schema, false)).thenReturn(tables);
+        tables.setCaseSensitive(true);
+        assertTrue(tables.matches("LITERAL*NAME"));
+        assertFalse(tables.matches("LITERAL%NAME"));
+        assertTrue(tables.matches("LITERAL?NAME_GOOD"));
+        assertFalse(tables.matches("LITERAL?NAME_BAD1"));
+
+        for (boolean useUnion : new boolean[] {false, true}) {
+            container.getConnectionConfiguration().setProviderProperty(
+                OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY, Boolean.toString(useUnion));
+            Mockito.clearInvocations(session, statement);
+            String sql = prepare(null);
+            String column = useUnion ? "t.TABLE_NAME" : "O.OBJECT_NAME";
+            assertTrue(sql.contains(column + " LIKE ? ESCAPE"));
+            assertTrue(sql.contains(" AND NOT (" + column + " LIKE ? ESCAPE"));
+            if (useUnion) {
+                verifyBindings("TEST_SCHEMA", "LITERAL*NAME", "LITERAL?NAME%", "ESCAPED\\_NAME%",
+                    "LITERAL?NAME_BAD%", "TEST_SCHEMA", "TEST_SCHEMA");
+            } else {
+                verifyBindings("TEST_SCHEMA", "LITERAL*NAME", "LITERAL?NAME%", "ESCAPED\\_NAME%",
+                    "LITERAL?NAME_BAD%");
+            }
+        }
+    }
+
+    @Test
+    public void filteredFullCacheDoesNotResolveMissingTableNames() throws Exception {
+        DBSObjectFilter tables = new DBSObjectFilter();
+        tables.addInclude("VISIBLE*");
+        Mockito.when(container.getObjectFilter(OracleTable.class, schema, false)).thenReturn(tables);
+        Mockito.when(container.isConnected()).thenReturn(true);
+        AtomicInteger lookups = new AtomicInteger();
+        OracleSchema.TableCache cache = schema.new TableCache() {
+            @Override
+            protected OracleTableBase reloadObject(
+                DBRProgressMonitor monitor,
+                OracleSchema owner,
+                OracleTableBase object,
+                String objectName
+            ) {
+                lookups.incrementAndGet();
+                return new OracleTable(owner, objectName);
+            }
+        };
+        cache.prepareLookupStatement(session, schema, null, null);
+        OracleTableBase previouslyResolved = cache.getObject(monitor, schema, "REFERENCED_TABLE");
+        cache.setFullCache(true);
+        assertSame(previouslyResolved, cache.getObject(monitor, schema, "REFERENCED_TABLE"));
+        assertNull(cache.getObject(monitor, schema, "FILTERED_OUT_TABLE"));
+        assertEquals(1, lookups.get());
+    }
+
+    private String prepare(String objectName) throws Exception {
+        schema.getTableCache().prepareLookupStatement(session, schema, null, objectName);
+        ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
+        Mockito.verify(session).prepareStatement(sql.capture());
+        return sql.getValue();
+    }
+
+    private void verifyBindings(String... values) throws Exception {
+        for (int i = 0; i < values.length; i++) {
+            Mockito.verify(statement).setString(i + 1, values[i]);
+        }
+        Mockito.verify(statement, Mockito.times(values.length)).setString(Mockito.anyInt(), Mockito.anyString());
+    }
+}

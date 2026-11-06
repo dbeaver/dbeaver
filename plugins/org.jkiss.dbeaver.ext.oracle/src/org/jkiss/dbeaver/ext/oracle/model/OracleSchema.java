@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -38,10 +39,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSVisibilityScopeProvider;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDialectRelational;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -736,6 +741,11 @@ public class OracleSchema extends OracleGlobalObject implements
 
     public class TableCache extends JDBCStructLookupCache<OracleSchema, OracleTableBase, OracleTableColumn> {
 
+        private static final int COLUMN_NAME_BATCH_SIZE = 500;
+        private static final int MAX_BATCHED_COLUMN_NAMES = 10000;
+
+        private volatile boolean listFilterApplied;
+
         protected TableCache()
         {
             super(OracleConstants.COLUMN_OBJECT_NAME);
@@ -747,6 +757,17 @@ public class OracleSchema extends OracleGlobalObject implements
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleTableBase object, @Nullable String objectName) throws SQLException {
             String tableOper = "=";
 
+            boolean fullList = object == null && objectName == null;
+            DBSObjectFilter[] filters = new DBSObjectFilter[3];
+            if (fullList && owner.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS)) {
+                filters[0] = owner.getDataSource().getContainer().getObjectFilter(OracleTable.class, owner, false);
+                filters[1] = owner.getDataSource().getContainer().getObjectFilter(OracleView.class, owner, false);
+                filters[2] = owner.getDataSource().getContainer().getObjectFilter(OracleMaterializedView.class, owner, false);
+            }
+            if (fullList) {
+                listFilterApplied = Arrays.stream(filters).anyMatch(filter -> filter != null && !filter.isNotApplicable());
+            }
+
             boolean hasAllAllTables = owner.getDataSource().isViewAvailable(session.getProgressMonitor(), null, "ALL_ALL_TABLES");
             boolean useAlternativeQuery = CommonUtils.toBoolean(getDataSource().getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY));
             String tablesSource = hasAllAllTables ? "ALL_TABLES" : "TABLES";
@@ -754,7 +775,7 @@ public class OracleSchema extends OracleGlobalObject implements
 
             JDBCPreparedStatement dbStat;
             if (!useAlternativeQuery) {
-                dbStat = session.prepareStatement("SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) +
+                StringBuilder sql = new StringBuilder("SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) +
                         " O.*,\n" +
                         tableTypeColumns + ",t.TABLESPACE_NAME,t.PARTITIONED,t.IOT_TYPE,t.IOT_NAME,t.TEMPORARY,t.SECONDARY,t.NESTED,t.NUM_ROWS\n" +
                         "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), getDataSource(), "OBJECTS") + " O\n" +
@@ -765,12 +786,114 @@ public class OracleSchema extends OracleGlobalObject implements
                         (object instanceof OracleTable ? " AND O.OBJECT_TYPE='TABLE'" : "") +
                         (object instanceof OracleView ? " AND O.OBJECT_TYPE='VIEW'" : "") +
                         (object instanceof OracleMaterializedView ? " AND O.OBJECT_TYPE='MATERIALIZED VIEW'" : ""));
-                dbStat.setString(1, owner.getName());
-                if (object != null || objectName != null)
-                    dbStat.setString(2, object != null ? object.getName() : objectName);
+                List<String> parameters = new ArrayList<>();
+                parameters.add(owner.getName());
+                if (fullList && listFilterApplied) {
+                    sql.append(" AND (");
+                    appendTypeFilter(sql, "TABLE", filters[0], parameters, false);
+                    appendTypeFilter(sql, "VIEW", filters[1], parameters, true);
+                    appendTypeFilter(sql, "MATERIALIZED VIEW", filters[2], parameters, true);
+                    sql.append(")");
+                } else if (!fullList) {
+                    parameters.add(object != null ? object.getName() : objectName);
+                }
+                dbStat = session.prepareStatement(sql.toString());
+                bindParameters(dbStat, parameters);
                 return dbStat;
             } else {
-                return getAlternativeTableStatement(session, owner, object, objectName, tablesSource, tableTypeColumns);
+                return getAlternativeTableStatement(session, owner, object, objectName, tablesSource, tableTypeColumns, filters);
+            }
+        }
+
+        @Override
+        public void clearCache() {
+            super.clearCache();
+            listFilterApplied = false;
+        }
+
+        private void appendTypeFilter(StringBuilder sql, String type, DBSObjectFilter filter, List<String> parameters, boolean or) {
+            if (or) {
+                sql.append(" OR ");
+            }
+            sql.append("(O.OBJECT_TYPE='").append(type).append("'");
+            appendNameFilter(sql, "O.OBJECT_NAME", filter, parameters);
+            sql.append(")");
+        }
+
+        private void appendNameFilter(StringBuilder sql, String column, DBSObjectFilter filter, List<String> parameters) {
+            if (filter == null || filter.isNotApplicable()) {
+                return;
+            }
+            if (!CommonUtils.isEmpty(filter.getInclude())) {
+                sql.append(" AND (");
+                appendNameMasks(sql, column, filter.getInclude(), parameters);
+                sql.append(")");
+            }
+            if (!CommonUtils.isEmpty(filter.getExclude())) {
+                sql.append(" AND NOT (");
+                appendNameMasks(sql, column, filter.getExclude(), parameters);
+                sql.append(")");
+            }
+        }
+
+        private void appendNameMasks(StringBuilder sql, String column, List<String> masks, List<String> parameters) {
+            boolean first = true;
+            for (String mask : masks) {
+                if (CommonUtils.isEmpty(mask)) {
+                    continue;
+                }
+                if (!first) {
+                    sql.append(" OR ");
+                }
+                first = false;
+                // Navigator filters compare exact names without regard to case, but wildcard
+                // masks use the Oracle dialect's case-sensitive LIKE semantics.
+                if (SQLUtils.isLikePattern(mask)) {
+                    sql.append(column).append(" LIKE ?").append(
+                        ((SQLDialectRelational) getDataSource().getSQLDialect()).getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE));
+                    parameters.add(toOracleLikePattern(mask));
+                } else {
+                    sql.append("UPPER(").append(column).append(")=UPPER(?)");
+                    parameters.add(mask);
+                }
+            }
+            if (first) {
+                sql.append("1=0");
+            }
+        }
+
+        private String toOracleLikePattern(String mask) {
+            StringBuilder pattern = new StringBuilder(mask.length());
+            for (int i = 0; i < mask.length(); i++) {
+                char c = mask.charAt(i);
+                if (c == '\\' && i + 1 < mask.length()) {
+                    char escaped = mask.charAt(i + 1);
+                    if (escaped == '*' || escaped == '?') {
+                        // SQL LIKE treats these as literals, unlike the navigator's glob syntax.
+                        pattern.append(escaped);
+                        i++;
+                        continue;
+                    }
+                    if (escaped == '%' || escaped == '_') {
+                        pattern.append(SQLConstants.DEFAULT_LIKE_ESCAPE).append(escaped);
+                        i++;
+                        continue;
+                    }
+                }
+                if (c == '*' || c == '?') {
+                    pattern.append(c == '*' ? '%' : '_');
+                } else if (c == '\\') {
+                    pattern.append(SQLConstants.DEFAULT_LIKE_ESCAPE).append(SQLConstants.DEFAULT_LIKE_ESCAPE);
+                } else {
+                    pattern.append(c);
+                }
+            }
+            return pattern.toString();
+        }
+
+        private void bindParameters(JDBCPreparedStatement statement, List<String> parameters) throws SQLException {
+            for (int i = 0; i < parameters.size(); i++) {
+                statement.setString(i + 1, parameters.get(i));
             }
         }
 
@@ -788,10 +911,43 @@ public class OracleSchema extends OracleGlobalObject implements
             }
         }
 
+        @NotNull
+        @Override
+        protected List<List<OracleTableBase>> getBulkChildrenBatches(@NotNull OracleSchema owner) {
+            if (!listFilterApplied) {
+                return super.getBulkChildrenBatches(owner);
+            }
+            List<OracleTableBase> tables = new ArrayList<>(getCachedObjects());
+            if (tables.size() > MAX_BATCHED_COLUMN_NAMES) {
+                // For broad filters, a single owner-wide read is cheaper than thousands of queries.
+                return super.getBulkChildrenBatches(owner);
+            }
+            List<List<OracleTableBase>> batches = new ArrayList<>();
+            for (int start = 0; start < tables.size(); start += COLUMN_NAME_BATCH_SIZE) {
+                batches.add(tables.subList(start, Math.min(start + COLUMN_NAME_BATCH_SIZE, tables.size())));
+            }
+            return batches;
+        }
+
+        @Override
+        protected boolean isEmptyBulkChildrenResultComplete() {
+            return listFilterApplied;
+        }
+
         @Override
         protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleTableBase forTable)
             throws SQLException
         {
+            return prepareChildrenStatement(session, owner, forTable, null);
+        }
+
+        @Override
+        protected JDBCStatement prepareChildrenStatement(
+            @NotNull JDBCSession session,
+            @NotNull OracleSchema owner,
+            @Nullable OracleTableBase forTable,
+            @Nullable List<OracleTableBase> batch
+        ) throws SQLException {
             boolean readColumnComments = CommonUtils.toBoolean(getDataSource().getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_METADATA_READ_COLUMN_COMMENTS));
             String colsView;
             if (!owner.getDataSource().isViewAvailable(session.getProgressMonitor(), OracleConstants.SCHEMA_SYS, "ALL_TAB_COLS")) {
@@ -816,6 +972,15 @@ public class OracleSchema extends OracleGlobalObject implements
             sql.append("WHERE c.OWNER=?");
             if (forTable != null) {
                 sql.append(" AND c.TABLE_NAME=?");
+            } else if (batch != null) {
+                sql.append(" AND c.TABLE_NAME IN (");
+                for (int i = 0; i < batch.size(); i++) {
+                    if (i > 0) {
+                        sql.append(',');
+                    }
+                    sql.append('?');
+                }
+                sql.append(')');
             }
 /*
             sql.append("\nORDER BY ");
@@ -828,6 +993,10 @@ public class OracleSchema extends OracleGlobalObject implements
             dbStat.setString(1, owner.getName());
             if (forTable != null) {
                 dbStat.setString(2, forTable.getName());
+            } else if (batch != null) {
+                for (int i = 0; i < batch.size(); i++) {
+                    dbStat.setString(i + 2, batch.get(i).getName());
+                }
             }
             return dbStat;
         }
@@ -846,7 +1015,7 @@ public class OracleSchema extends OracleGlobalObject implements
         }
 
         @NotNull
-        private JDBCStatement getAlternativeTableStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleTableBase object, @Nullable String objectName, String tablesSource, String tableTypeColumns) throws SQLException {
+        private JDBCStatement getAlternativeTableStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner, @Nullable OracleTableBase object, @Nullable String objectName, String tablesSource, String tableTypeColumns, DBSObjectFilter[] filters) throws SQLException {
             boolean hasName = object == null && objectName != null;
             JDBCPreparedStatement dbStat;
             StringBuilder sql = new StringBuilder();
@@ -864,11 +1033,26 @@ public class OracleSchema extends OracleGlobalObject implements
                     "WHERE o.OWNER =?\n" +
                     "AND o.OBJECT_TYPE = 'MATERIALIZED VIEW'";
             String unionAll = "UNION ALL ";
+            List<String> parameters = new ArrayList<>();
             if (hasName) {
                 sql.append("SELECT * FROM (");
             }
             if (object == null) {
-                sql.append(tableQuery).append(unionAll).append(viewQuery).append(unionAll).append(mviewQuery);
+                sql.append(tableQuery);
+                parameters.add(owner.getName());
+                if (!hasName) {
+                    appendNameFilter(sql, "t.TABLE_NAME", filters[0], parameters);
+                }
+                sql.append("\n").append(unionAll).append(viewQuery);
+                parameters.add(owner.getName());
+                if (!hasName) {
+                    appendNameFilter(sql, "o.OBJECT_NAME", filters[1], parameters);
+                }
+                sql.append("\n").append(unionAll).append(mviewQuery);
+                parameters.add(owner.getName());
+                if (!hasName) {
+                    appendNameFilter(sql, "o.OBJECT_NAME", filters[2], parameters);
+                }
             } else if (object instanceof OracleMaterializedView) {
                 sql.append(mviewQuery);
             } else if (object instanceof OracleView) {
@@ -885,18 +1069,14 @@ public class OracleSchema extends OracleGlobalObject implements
                     sql.append(" AND o.OBJECT_NAME=?");
                 }
             }
-            dbStat = session.prepareStatement(sql.toString());
-            String ownerName = owner.getName();
-            dbStat.setString(1, ownerName);
-            if (object == null) {
-                dbStat.setString(2, ownerName);
-                dbStat.setString(3, ownerName);
-                if (objectName != null) {
-                    dbStat.setString(4, objectName);
-                }
-            } else {
-                dbStat.setString(2, object.getName());
+            if (object != null) {
+                parameters.add(owner.getName());
+                parameters.add(object.getName());
+            } else if (hasName) {
+                parameters.add(objectName);
             }
+            dbStat = session.prepareStatement(sql.toString());
+            bindParameters(dbStat, parameters);
             return dbStat;
         }
     }
