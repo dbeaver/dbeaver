@@ -457,6 +457,7 @@ public class AIChatSession {
         if (configurationProfile == null) {
             configurationProfile = AISettingsManager.getStaticSettings().getDefaultConfiguration();
         }
+        configurationProfile.getEngineDescriptor();
         String engineId = configurationProfile.getEngineId();
         QuotaStatus quotaStatus = quotaService.getUserQuotaStatus(
             sessionId,
