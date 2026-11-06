@@ -62,19 +62,29 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
         this.useUpsert = useUpsert;
     }
 
-    protected int getNextUsedParamIndex(Object[] attributeValues, int paramIndex) {
-        paramIndex++;
-        DBSAttributeBase attribute = attributes[paramIndex];
-        while (DBUtils.isPseudoAttribute(attribute) || (!allNulls && DBUtils.isNullValue(attributeValues[paramIndex]))) {
+    protected int getNextUsedParamIndex(@NotNull Object[] attributeValues, int paramIndex) {
+        do {
             paramIndex++;
-        }
+        } while (paramIndex < attributeValues.length && !shouldBindAttribute(paramIndex, attributeValues));
         return paramIndex;
+    }
+
+    protected boolean shouldBindAttribute(int index, @NotNull Object[] attributeValues) {
+        DBSAttributeBase attribute = attributes[index];
+        return !allColumnsDefault && !DBUtils.isPseudoAttribute(attribute)
+            && (allNulls || !DBUtils.isNullValue(attributeValues[index]))
+            && (!allNulls || !attributeHasDefaultValue(attribute));
     }
 
     @NotNull
     @Override
-    protected DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues, Map<String, Object> options) throws DBCException {
-        StringBuilder queryForStatement = prepareQueryForStatement(session, handlers, attributeValues, attributes, table,false, options);
+    protected DBCStatement prepareStatement(
+        @NotNull DBCSession session,
+        @NotNull DBDValueHandler[] handlers,
+        @NotNull Object[] attributeValues,
+        @NotNull Map<String, Object> options
+    ) throws DBCException {
+        StringBuilder queryForStatement = prepareQueryForStatement(session, handlers, attributeValues, attributes, table, false, options);
         // Execute. USe plain statement if binding was disabled
         boolean skipBindValues = CommonUtils.toBoolean(options.get(DBSDataManipulator.OPTION_SKIP_BIND_VALUES));
         DBCStatement dbStat = session.prepareStatement(
@@ -96,10 +106,7 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
         int paramIndex = 0;
         for (int k = 0; k < handlers.length; k++) {
             DBSAttributeBase attribute = attributes[k];
-            if (DBUtils.isPseudoAttribute(attribute) || (!allNulls && DBUtils.isNullValue(attributeValues[k]))) {
-                continue;
-            }
-            if (allNulls && attributeHasDefaultValue(attribute)) {
+            if (!shouldBindAttribute(k, attributeValues)) {
                 continue;
             }
             handlers[k].bindValueObject(statement.getSession(), statement, attribute, paramIndex++, attributeValues[k]);
@@ -179,12 +186,19 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
                 DBSAttributeBase attribute = attributes[j];
                 DBDValueHandler valueHandler = handlers[j];
                 int k = i * attributes.length + j;
-                if (valueHandler instanceof DBDValueBinder) {
-                    rowValuesPart.add(((DBDValueBinder) valueHandler).makeQueryBind(attribute, attributeValues[k]));
-                } else if (skipBindValues) {
-                    rowValuesPart.add(SQLUtils.convertValueToSQL(session.getDataSource(), attribute, valueHandler, attributeValues[k], DBDDisplayFormat.NATIVE, false));
-                } else if (allNulls && attributeHasDefaultValue(attribute)) {
+                if (allNulls && attributeHasDefaultValue(attribute)) {
                     rowValuesPart.add("DEFAULT");
+                } else if (valueHandler instanceof DBDValueBinder binder) {
+                    String bind = binder.makeQueryBind(attribute, attributeValues[k]);
+                    if (skipBindValues && "?".equals(bind)) {
+                        rowValuesPart.add(SQLUtils.convertValueToSQL(
+                            session.getDataSource(), attribute, valueHandler, attributeValues[k], DBDDisplayFormat.NATIVE, false));
+                    } else {
+                        rowValuesPart.add(bind);
+                    }
+                } else if (skipBindValues) {
+                    rowValuesPart.add(SQLUtils.convertValueToSQL(
+                        session.getDataSource(), attribute, valueHandler, attributeValues[k], DBDDisplayFormat.NATIVE, false));
                 } else {
                     rowValuesPart.add("?");
                 }
