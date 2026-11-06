@@ -1247,7 +1247,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             } else if (name.equals(TARGET_NAME_BROWSE)) {
                 mapExistingTable((DatabaseMappingContainer) mapping);
             } else {
-                name = transformTargetName(name, mapping.getMappingType());
+                boolean skipCaseChanging = mapping instanceof DatabaseMappingContainer container
+                    && container.isSourceNameQuoted();
+                name = transformTargetName(name, mapping.getMappingType(), skipCaseChanging);
                 if (mapping instanceof DatabaseMappingContainer containerMapping) {
                     if (settings.getContainer() != null) {
                         if (setMappingTargetContainer(monitor, containerMapping, settings, name, forceRefresh)) {
@@ -1469,12 +1471,17 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     }
 
     private String transformTargetName(String name, @NotNull DatabaseMappingType mappingType) {
+        return transformTargetName(name, mappingType, false);
+    }
+
+    private String transformTargetName(String name, @NotNull DatabaseMappingType mappingType, boolean skipCaseChanging) {
         DBSObjectContainer container = getDatabaseConsumerSettings().getContainer();
         if (container == null || container.getDataSource() == null) {
             return name;
         }
-        if (mappingType == DatabaseMappingType.create) {
-            return DatabaseTransferUtils.getTransformedName(container.getDataSource(), name, false);
+        if (mappingType == DatabaseMappingType.create
+            || (mappingType == DatabaseMappingType.unspecified && skipCaseChanging)) {
+            return DatabaseTransferUtils.getTransformedName(container.getDataSource(), name, skipCaseChanging);
         }
         return DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
     }
