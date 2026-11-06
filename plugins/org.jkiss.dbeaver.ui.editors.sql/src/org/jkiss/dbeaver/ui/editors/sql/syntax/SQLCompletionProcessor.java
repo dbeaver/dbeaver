@@ -294,7 +294,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
                 completionJobs.forEach(j -> this.waitForJob(j.job));
                 hasRunningJobs = false;
                 // if any job was cancelled while running in background, break the whole proposals computation logic
-                if (completionJobs.stream().anyMatch(j -> j.job.isCanceled())) {
+                if (completionJobs.stream().anyMatch(j -> isJobAborted(j.job))) {
                     return Collections.emptyList();
                 } else {
                     // all the jobs succeed, validate if the result is applicable
@@ -336,14 +336,17 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
             return;
         }
         // Do not keep the UI blocked after query execution cancels metadata loading.
-        // A job canceled while still queued never runs, so isCanceled() stays false and its state becomes NONE.
-        while (!job.isFinished() && !job.isCanceled() && job.getState() != Job.NONE
-            && !DBWorkbench.getPlatform().isShuttingDown()) {
+        while (!job.isFinished() && !isJobAborted(job) && !DBWorkbench.getPlatform().isShuttingDown()) {
             if (!display.readAndDispatch()) {
                 display.sleep();
             }
         }
         display.update();
+    }
+
+    private static boolean isJobAborted(@NotNull AbstractJob job) {
+        // A job canceled while still queued never runs, so AbstractJob.isCanceled() stays false.
+        return job.isCanceled() || (!job.isFinished() && job.getState() == Job.NONE);
     }
 
     private enum ProposalsJobResultStatus {
