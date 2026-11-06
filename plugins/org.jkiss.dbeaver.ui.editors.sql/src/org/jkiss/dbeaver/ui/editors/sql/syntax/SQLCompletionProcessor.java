@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.sql.parser.SQLWordPartDetector;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.model.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.model.sql.semantics.completion.SQLQueryCompletionProposal;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
@@ -334,7 +335,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
             return;
         }
         // Do not keep the UI blocked after query execution cancels metadata loading.
-        while (!job.isFinished() && !job.isCanceled()) {
+        while (!job.isFinished() && !job.isCanceled() && !DBWorkbench.getPlatform().isShuttingDown()) {
             if (!display.readAndDispatch()) {
                 display.sleep();
             }
