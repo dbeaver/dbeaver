@@ -214,6 +214,10 @@
         <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.datadam.DDDesktopInitializer" order="100"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.syncUnit">
+        <unit class="org.jkiss.dbeaver.ui.datadam.mcp.DDMcpServerSyncUnit"/>
+    </extension>
+
     <extension point="org.eclipse.ui.preferencePages">
         <page
               id="org.jkiss.dbeaver.preferences.synchronization"
