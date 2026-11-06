@@ -26,8 +26,10 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.ToNumberPolicy;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.rpc.DDDesktopRpcRegistration;
+import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamServerServiceCatalog;
 
 public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
     private static final Log log = Log.getLog(DDMcpDesktopRpcRegistration.class);
@@ -44,11 +46,21 @@ public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
     }
 
     @Override
-    public synchronized void register(@NotNull MessagingRpcEndpoint endpoint) {
+    public synchronized void register(@NotNull MessagingRpcEndpoint endpoint) throws DBException {
+        DDMcpStatus status = readStatus();
         if (this.endpoint != endpoint) {
             unregister();
             this.endpoint = endpoint;
-            registerService(endpoint);
+        }
+        updateRegistration(endpoint, status);
+    }
+
+    @NotNull
+    private DDMcpStatus readStatus() throws DBException {
+        try {
+            return DDRemoteDamServerServiceCatalog.getInstance().getMcpStatusService().getStatus();
+        } catch (MessagingRpcException e) {
+            throw new DBException("Cannot read DataDam MCP status", e);
         }
     }
 

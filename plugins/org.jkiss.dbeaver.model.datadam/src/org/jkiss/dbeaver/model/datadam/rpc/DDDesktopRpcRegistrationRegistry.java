@@ -118,8 +118,8 @@ public class DDDesktopRpcRegistrationRegistry {
             try {
                 registration.register(endpoint);
                 log.debug("Registered DataDam desktop RPC service " + registration.getId());
-            } catch (RuntimeException e) {
-                throw new IllegalStateException("Cannot register desktop RPC service " + registration.getId(), e);
+            } catch (DBException | RuntimeException e) {
+                log.warn("Cannot register desktop RPC service " + registration.getId(), e);
             }
         }
     }

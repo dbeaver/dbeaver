@@ -53,7 +53,7 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
     }
 
     interface EndpointListener {
-        void endpointChanged(@Nullable MessagingRpcEndpoint endpoint);
+        void endpointChanged(@Nullable MessagingRpcEndpoint endpoint) throws DBException;
     }
 
     private record EndpointChange(@Nullable MessagingRpcEndpoint endpoint, boolean stop) {
