@@ -61,7 +61,7 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
             }
         });
         try {
-            statusJob = DDServerCatalog.getInstance().call(
+            statusJob = DDServerCatalog.getInstance().createJob(
                 "Check DataDam MCP availability", DDMcpWebStatusService.SERVICE_ID, DDMcpWebStatusService.class,
                 DDMcpWebStatusService::getStatus,
                 status -> showStatus(parent, loading, page, status),

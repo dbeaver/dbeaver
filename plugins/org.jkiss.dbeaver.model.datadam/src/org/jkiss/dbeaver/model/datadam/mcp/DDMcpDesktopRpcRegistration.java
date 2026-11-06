@@ -47,11 +47,11 @@ public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
 
     @Override
     public synchronized void register(@NotNull MessagingRpcEndpoint endpoint) throws DBException {
-        DDMcpStatus status = readStatus(endpoint);
         if (this.endpoint != endpoint) {
             unregister();
             this.endpoint = endpoint;
         }
+        DDMcpStatus status = readStatus(endpoint);
         updateRegistration(endpoint, status);
     }
 

@@ -63,7 +63,7 @@ public class DDServerCatalog {
     }
 
     @NotNull
-    public <S, R> AbstractJob call(
+    public <S, R> AbstractJob createJob(
         @NotNull String jobName,
         @NotNull String serviceId,
         @NotNull Class<S> serviceType,
@@ -85,15 +85,20 @@ public class DDServerCatalog {
                             onSuccess.accept(result);
                         }
                     });
+                } catch (DBException e) {
+                    notifyFailure(e, monitor);
                 } catch (Exception e) {
-                    DBException failure = e instanceof DBException dbException ? dbException : new DBException(jobName + " failed", e);
-                    UIUtils.asyncExec(() -> {
-                        if (!monitor.isCanceled() && !isCanceled()) {
-                            onFailure.accept(failure);
-                        }
-                    });
+                    notifyFailure(new DBException(jobName + " failed", e), monitor);
                 }
                 return Status.OK_STATUS;
+            }
+
+            private void notifyFailure(@NotNull DBException failure, @NotNull DBRProgressMonitor monitor) {
+                UIUtils.asyncExec(() -> {
+                    if (!monitor.isCanceled() && !isCanceled()) {
+                        onFailure.accept(failure);
+                    }
+                });
             }
         };
         job.setSystem(true);

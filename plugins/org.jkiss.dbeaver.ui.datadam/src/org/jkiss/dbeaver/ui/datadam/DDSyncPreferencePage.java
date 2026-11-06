@@ -233,7 +233,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         }
         showMcpLoading();
         try {
-            mcpJob = DDServerCatalog.getInstance().call(
+            mcpJob = DDServerCatalog.getInstance().createJob(
                 "Read DataDam MCP status", DDMcpWebStatusService.SERVICE_ID, DDMcpWebStatusService.class,
                 DDMcpWebStatusService::getStatus,
                 status -> {
@@ -259,7 +259,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         }
         showMcpLoading();
         try {
-            mcpJob = DDServerCatalog.getInstance().call(
+            mcpJob = DDServerCatalog.getInstance().createJob(
                 "Update DataDam MCP status", DDMcpWebStatusService.SERVICE_ID, DDMcpWebStatusService.class,
                 service -> {
                     service.setStatus(enabled ? DDMcpStatus.ENABLED : DDMcpStatus.DISABLED);
