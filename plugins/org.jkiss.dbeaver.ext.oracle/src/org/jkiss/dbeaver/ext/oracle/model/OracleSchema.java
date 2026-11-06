@@ -826,17 +826,18 @@ public class OracleSchema extends OracleGlobalObject implements
             }
             if (!CommonUtils.isEmpty(filter.getInclude())) {
                 sql.append(" AND (");
-                appendNameMasks(sql, column, filter.getInclude(), parameters);
+                appendNameMasks(sql, column, filter.getInclude(), parameters, !filter.isCaseSensitive());
                 sql.append(")");
             }
             if (!CommonUtils.isEmpty(filter.getExclude())) {
                 sql.append(" AND NOT (");
-                appendNameMasks(sql, column, filter.getExclude(), parameters);
+                // A case-insensitive exclusion could remove rows accepted by a case-sensitive navigator filter.
+                appendNameMasks(sql, column, filter.getExclude(), parameters, false);
                 sql.append(")");
             }
         }
 
-        private void appendNameMasks(StringBuilder sql, String column, List<String> masks, List<String> parameters) {
+        private void appendNameMasks(StringBuilder sql, String column, List<String> masks, List<String> parameters, boolean caseInsensitiveWildcards) {
             boolean first = true;
             for (String mask : masks) {
                 if (CommonUtils.isEmpty(mask)) {
@@ -846,11 +847,15 @@ public class OracleSchema extends OracleGlobalObject implements
                     sql.append(" OR ");
                 }
                 first = false;
-                // Navigator filters compare exact names without regard to case, but wildcard
-                // masks use the Oracle dialect's case-sensitive LIKE semantics.
+                // Exact names are matched case-insensitively by the navigator. Includes with
+                // case-insensitive wildcards may return extra rows for the navigator to filter.
                 if (SQLUtils.isLikePattern(mask)) {
-                    sql.append(column).append(" LIKE ?").append(
-                        ((SQLDialectRelational) getDataSource().getSQLDialect()).getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE));
+                    if (caseInsensitiveWildcards) {
+                        sql.append("UPPER(").append(column).append(") LIKE UPPER(?)");
+                    } else {
+                        sql.append(column).append(" LIKE ?");
+                    }
+                    sql.append(((SQLDialectRelational) getDataSource().getSQLDialect()).getLikeEscapeClause(SQLConstants.DEFAULT_LIKE_ESCAPE));
                     parameters.add(toOracleLikePattern(mask));
                 } else {
                     sql.append("UPPER(").append(column).append(")=UPPER(?)");
