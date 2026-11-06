@@ -27,7 +27,8 @@ import org.jkiss.dbeaver.ui.workbench.WorkbenchUtils;
 public class AIWorkbenchInitializer implements IWorkbenchWindowInitializer {
     @Override
     public void initializeWorkbenchWindow(@NotNull IWorkbenchWindowConfigurer configurer) {
-        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+        if (!DBWorkbench.isDistributed()
+            && !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
             WorkbenchUtils.removePreferencePages(AIPreferencePageMain.PAGE_ID);
         }
     }

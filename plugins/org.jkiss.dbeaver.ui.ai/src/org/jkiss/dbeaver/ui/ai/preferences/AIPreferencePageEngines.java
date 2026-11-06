@@ -69,6 +69,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
     private static final Log log = Log.getLog(AIPreferencePageEngines.class);
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.ai.engines";
     private final AISettings settings;
+    private AIPreferencePageUserProfiles userProfilesPage;
 
     private AIConfigurationProfile selectedProfile;
     private TableViewer profilesViewer;
@@ -122,16 +123,32 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         return null;
     }
 
+    @Nullable
+    @Override
+    public String getErrorMessage() {
+        return userProfilesPage == null ? super.getErrorMessage() : userProfilesPage.getErrorMessage();
+    }
+
+    @Override
+    public boolean isValid() {
+        return userProfilesPage == null ? super.isValid() : userProfilesPage.isValid();
+    }
+
     @Override
     public boolean performOk() {
+        if (userProfilesPage != null) {
+            return userProfilesPage.performOk();
+        }
         if (!hasAccessToPage()) {
             return false;
         }
         DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        if (!flushSelectedProfile()) {
+            return false;
+        }
         if (selectedProfile != settings.getDefaultConfigurationOrNull()) {
             AISettingsManager.getInstance().setDefaultConfiguration(selectedProfile);
         }
-        flushSelectedProfile();
         reloadEngines();
         AISettingsManager.getInstance().saveSettings(this.settings);
         AISettingsManager.getInstance().notifyProfilesChanged();
@@ -147,8 +164,18 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
+        if (!canManageConfiguration()) {
+            userProfilesPage = new AIPreferencePageUserProfiles();
+            userProfilesPage.setContainer(getContainer());
+            return userProfilesPage.createPreferenceContent(parent);
+        }
         Composite composite = UIUtils.createComposite(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        if (DBWorkbench.isDistributed()) {
+            UIUtils.createPushButton(composite, AIUIMessages.ai_user_profiles_title, null,
+                SelectionListener.widgetSelectedAdapter(event -> openUserProfiles()));
+        }
 
         partDivider = UIUtils.createPartDivider(null, composite, SWT.VERTICAL);
         partDivider.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -290,6 +317,20 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
         return composite;
     }
 
+    private void openUserProfiles() {
+        if (!flushSelectedProfile()) {
+            return;
+        }
+        AIConfigurationProfile previousDefault = settings.getDefaultConfigurationOrNull();
+        UIUtils.showPreferencesFor(getShell(), settings, AIPreferencePageUserProfiles.PAGE_ID);
+        loadSelectedProfileSettings();
+        profilesViewer.refresh();
+        AIConfigurationProfile currentDefault = settings.getDefaultConfigurationOrNull();
+        if (currentDefault != previousDefault && currentDefault != null) {
+            profilesViewer.setSelection(new StructuredSelection(currentDefault));
+        }
+    }
+
     private void reloadEngines() {
         profilesViewer.setInput(settings.getConfigurations());
     }
@@ -297,13 +338,14 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
     /**
      * Stores the current state of the profile editors into the selected profile.
      */
-    private void flushSelectedProfile() {
+    private boolean flushSelectedProfile() {
         if (selectedProfile == null || activeEngineConfiguratorPage == null) {
-            return;
+            return true;
         }
         selectedProfile.setProfileName(profileNameText.getText());
         try {
             activeEngineConfiguratorPage.saveSettings(selectedProfile.getConfiguration());
+            return true;
         } catch (DBException e) {
             log.error("Error saving engine settings", e);
 
@@ -312,6 +354,7 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
                 NLS.bind(AIUIMessages.ai_engines_page_save_error_message, selectedProfile.getEngineId()),
                 e
             );
+            return false;
         }
     }
 
@@ -672,6 +715,10 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
 
     @Override
     protected boolean hasAccessToPage() {
+        return DBWorkbench.isDistributed() || canManageConfiguration();
+    }
+
+    private boolean canManageConfiguration() {
         return DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER);
     }
 }

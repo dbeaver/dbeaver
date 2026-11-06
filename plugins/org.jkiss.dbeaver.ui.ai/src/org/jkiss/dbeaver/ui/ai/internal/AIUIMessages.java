@@ -166,4 +166,9 @@ public class AIUIMessages extends NLS {
 
     private AIUIMessages() {
     }
+    public static String ai_user_profiles_title;
+    public static String ai_user_profiles_description;
+    public static String ai_user_profiles_default_profile;
+    public static String ai_user_profiles_shared_description;
+    public static String ai_settings_user_save_error_title;
 }

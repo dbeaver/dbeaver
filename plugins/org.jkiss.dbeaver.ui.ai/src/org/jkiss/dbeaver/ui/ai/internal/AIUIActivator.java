@@ -39,7 +39,8 @@ public class AIUIActivator extends AbstractUIPlugin {
         // Trigger pref defaults
         new BundlePreferenceStore(getBundle());
 
-        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+        if (!DBWorkbench.isDistributed()
+            && !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
             WorkbenchUtils.removePreferencePages(PrefPageConstants.WORKBENCH_PREF_PAGE_ID + "/" + AIPreferencePageMain.PAGE_ID);
         }
     }

@@ -18,12 +18,15 @@ package org.jkiss.dbeaver.model.ai;
 
 import com.google.gson.annotations.JsonAdapter;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+
+import java.util.Map;
 
 /**
  * AI engine settings profile
@@ -41,6 +44,7 @@ public class AIConfigurationProfile {
     private AIEngineProperties configuration;
 
     private transient AIEngineDescriptor engineDescriptor;
+    private transient Map<String, String> resolvedUserCredentials;
 
     public AIConfigurationProfile() {
     }
@@ -119,7 +123,17 @@ public class AIConfigurationProfile {
 
     public void setConfiguration(@NotNull AIEngineProperties configuration) {
         this.configuration = configuration;
+        this.resolvedUserCredentials = null;
         this.global = configuration.isGlobal();
+    }
+
+    @Nullable
+    Map<String, String> getResolvedUserCredentials() {
+        return resolvedUserCredentials;
+    }
+
+    void setResolvedUserCredentials(@NotNull Map<String, String> credentials) {
+        resolvedUserCredentials = Map.copyOf(credentials);
     }
 
     public void saveSecrets() throws DBException {
@@ -129,7 +143,11 @@ public class AIConfigurationProfile {
     }
 
     public void resolveSecrets() throws DBException {
-        getConfiguration().resolveSecrets(this);
+        if (AIUserProfileCredentials.isUserProfile(this)) {
+            AIUserProfileCredentials.resolve(this);
+        } else {
+            getConfiguration().resolveSecrets(this);
+        }
     }
 
     @Override
