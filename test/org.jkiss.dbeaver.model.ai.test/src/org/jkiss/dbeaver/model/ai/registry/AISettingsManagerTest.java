@@ -307,8 +307,21 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
 
         try (JsonReader reader = new JsonReader(new StringReader(config))) {
             Assertions.assertEquals(JsonParser.parseString(config).getAsJsonObject().get("unsupported"),
-                new AISettingsManager.EngineConfigAdapter().read(reader).get("unsupported"));
+                new AISettingsManager.EngineConfigAdapter().read(reader).get("unsupported").getUnavailableConfiguration());
             Assertions.assertEquals(JsonToken.END_DOCUMENT, reader.peek());
+        }
+    }
+
+    @Test
+    public void readsSupportedLegacyConfigurationAsEngineProperties() throws Exception {
+        try (JsonReader reader = new JsonReader(new StringReader("""
+            {"openai": {"properties": {"gpt.model": "gpt-4o", "gpt.model.temperature": 0.4}}}
+            """))) {
+            var configuration = new AISettingsManager.EngineConfigAdapter().read(reader).get("openai");
+            OpenAIProperties properties = Assertions.assertInstanceOf(OpenAIProperties.class, configuration.getProperties());
+            Assertions.assertEquals("gpt-4o", properties.getModel());
+            Assertions.assertEquals(0.4, properties.getTemperature());
+            Assertions.assertNull(configuration.getUnavailableConfiguration());
         }
     }
 

@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.ai.AILegacyEngineConfiguration;
 import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.engine.AICredentialsProvider;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
@@ -335,28 +336,65 @@ public class AISettingsManager {
         }
     }
 
-    // legacy entries must survive products that do not provide their engines
-    public static class EngineConfigAdapter extends TypeAdapter<Map<String, JsonObject>> {
+    public static class EngineConfigAdapter extends TypeAdapter<Map<String, AILegacyEngineConfiguration>> {
         @Override
-        public void write(@NotNull JsonWriter out, @NotNull Map<String, JsonObject> value) throws IOException {
+        public void write(@NotNull JsonWriter out, @NotNull Map<String, AILegacyEngineConfiguration> value) throws IOException {
             out.beginObject();
-            for (Map.Entry<String, JsonObject> entry : value.entrySet()) {
+            for (Map.Entry<String, AILegacyEngineConfiguration> entry : value.entrySet()) {
                 out.name(entry.getKey());
-                writePreservedJson(out, entry.getValue());
+                AILegacyEngineConfiguration configuration = entry.getValue();
+                AIEngineProperties properties = configuration.getProperties();
+                if (properties != null) {
+                    out.beginObject();
+                    out.name("properties");
+                    SAVE_PROPS_GSON.toJson(properties, properties.getClass(), out);
+                    out.endObject();
+                } else {
+                    writePreservedJson(out, Objects.requireNonNull(configuration.getUnavailableConfiguration()));
+                }
             }
             out.endObject();
         }
 
         @NotNull
         @Override
-        public Map<String, JsonObject> read(@NotNull JsonReader in) throws IOException {
-            Map<String, JsonObject> result = new LinkedHashMap<>();
+        public Map<String, AILegacyEngineConfiguration> read(@NotNull JsonReader in) throws IOException {
+            Map<String, AILegacyEngineConfiguration> result = new LinkedHashMap<>();
             in.beginObject();
             while (in.hasNext()) {
-                result.put(in.nextName(), JsonParser.parseReader(in).getAsJsonObject());
+                String engineId = in.nextName();
+                JsonObject json = JsonParser.parseReader(in).getAsJsonObject();
+                AIEngineDescriptor descriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
+                if (descriptor == null) {
+                    result.put(engineId, AILegacyEngineConfiguration.unavailable(json));
+                } else {
+                    AIEngineProperties properties = READ_PROPS_GSON.fromJson(json.get("properties"), descriptor.getPropertiesType());
+                    result.put(engineId, new AILegacyEngineConfiguration(properties));
+                }
             }
             in.endObject();
             return result;
+        }
+
+        @NotNull
+        public static AIConfigurationProfile toProfile(@NotNull String engineId, @NotNull AILegacyEngineConfiguration configuration) {
+            AIConfigurationProfile profile = new AIConfigurationProfile();
+            profile.setProfileId(engineId);
+            profile.setProfileName(engineId);
+            profile.setEngineId(engineId);
+            profile.setMigrated(true);
+            AIEngineProperties properties = configuration.getProperties();
+            if (properties != null) {
+                profile.setConfiguration(properties);
+            } else {
+                JsonObject json = new JsonObject();
+                json.addProperty("name", engineId);
+                json.addProperty("engine", engineId);
+                json.addProperty("migrated", true);
+                json.add("configuration", Objects.requireNonNull(configuration.getUnavailableConfiguration()).get("properties"));
+                profile.setUnavailableProfile(json);
+            }
+            return profile;
         }
     }
 

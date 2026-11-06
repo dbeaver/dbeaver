@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
-import com.google.gson.JsonObject;
 import com.google.gson.annotations.JsonAdapter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -51,7 +50,7 @@ public class AISettings implements DBPAdaptable {
     // Deprecated. Use AIConfigurationProfile instead
     @Deprecated(forRemoval = true)
     @JsonAdapter(AISettingsManager.EngineConfigAdapter.class)
-    private final Map<String, JsonObject> engineConfigurations = new LinkedHashMap<>();
+    private final Map<String, AILegacyEngineConfiguration> engineConfigurations = new LinkedHashMap<>();
     private final Map<String, Object> properties = new LinkedHashMap<>();
     private final Map<String, String> customInstructions = new LinkedHashMap<>();
 
@@ -290,15 +289,9 @@ public class AISettings implements DBPAdaptable {
         boolean migrateLegacyConfigurations = configurations.isEmpty() && !engineConfigurations.isEmpty();
         if (migrateLegacyConfigurations) {
             // Profiles from engine settings
-            for (Map.Entry<String, JsonObject> entry : engineConfigurations.entrySet()) {
+            for (Map.Entry<String, AILegacyEngineConfiguration> entry : engineConfigurations.entrySet()) {
                 String engineId = entry.getKey();
-                JsonObject json = new JsonObject();
-                json.addProperty("name", engineId);
-                json.addProperty("engine", engineId);
-                json.addProperty("migrated", true);
-                json.add("configuration", entry.getValue().get("properties"));
-                AIConfigurationProfile profile = AISettingsManager.READ_PROPS_GSON.fromJson(json, AIConfigurationProfile.class);
-                profile.setProfileId(engineId);
+                AIConfigurationProfile profile = AISettingsManager.EngineConfigAdapter.toProfile(engineId, entry.getValue());
                 if (profile.isAvailable()) {
                     try {
                         if (profile.getConfiguration() instanceof OpenAIProperties properties
@@ -333,9 +326,7 @@ public class AISettings implements DBPAdaptable {
             if (!profile.isAvailable()) {
                 continue;
             }
-            AIEngineProperties properties = profile.getConfiguration();
-            JsonObject legacy = engineConfigurations.computeIfAbsent(profile.getEngineId(), key -> new JsonObject());
-            legacy.add("properties", AISettingsManager.SAVE_PROPS_GSON.toJsonTree(properties, properties.getClass()));
+            engineConfigurations.put(profile.getEngineId(), new AILegacyEngineConfiguration(profile.getConfiguration()));
         }
     }
 
