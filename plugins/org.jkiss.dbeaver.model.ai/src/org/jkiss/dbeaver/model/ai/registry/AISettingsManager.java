@@ -25,12 +25,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
+import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.engine.AICredentialsProvider;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.app.DBPApplication;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.PropertySerializationUtils;
@@ -114,6 +116,7 @@ public class AISettingsManager {
                 settings = READ_PROPS_GSON.fromJson(content, AISettings.class);
 
                 settings.finishSettingsLoading();
+                applyUserDefaultConfiguration(settings);
             } else {
                 settings = new AISettings();
             }
@@ -133,6 +136,36 @@ public class AISettingsManager {
         AISettings settings = this.getSettings();
         consumer.accept(settings);
         this.saveSettings(settings);
+    }
+
+    public void setDefaultConfiguration(@Nullable AIConfigurationProfile profile) {
+        getSettings().setUserDefaultConfiguration(profile);
+        saveDefaultConfiguration(profile);
+        raiseChangedEvent(this);
+    }
+
+    private static void applyUserDefaultConfiguration(@NotNull AISettings settings) {
+        String profileId = DBWorkbench.getPlatform().getPreferenceStore().getString(AIConstants.AI_DEFAULT_CONFIGURATION);
+        AIConfigurationProfile profile = settings.getConfigurationOrNull(profileId);
+        settings.setUserDefaultConfiguration(profile);
+        if (profile == null && !CommonUtils.isEmpty(profileId)) {
+            saveDefaultConfiguration(null);
+        }
+    }
+
+    private static void saveDefaultConfiguration(@Nullable AIConfigurationProfile profile) {
+        DBPPreferenceStore store = DBWorkbench.getPlatform().getPreferenceStore();
+        if (profile == null) {
+            store.setToDefault(AIConstants.AI_DEFAULT_CONFIGURATION);
+        } else {
+            store.setValue(AIConstants.AI_DEFAULT_CONFIGURATION, profile.getProfileId());
+        }
+        try {
+            store.save();
+        } catch (IOException e) {
+            log.error("Error saving default AI configuration", e);
+            DBWorkbench.getPlatformUI().showError(AIMessages.ai_settings_save_error_title, null, e);
+        }
     }
 
     public void saveSettings() {
@@ -168,6 +201,7 @@ public class AISettingsManager {
 
             DBWorkbench.getPlatform().getConfigurationController().saveConfigurationFile(AI_CONFIGURATION_FILE_NAME, content);
 
+            applyUserDefaultConfiguration(settings);
             this.getSettingsHolder().setSettings(settings);
         } catch (Exception e) {
             log.error("Error saving AI configuration", e);

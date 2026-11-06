@@ -45,6 +45,7 @@ public class AISettings implements DBPAdaptable {
 
     private final Map<String, AIConfigurationProfile> configurations = new LinkedHashMap<>();
     private String defaultConfiguration;
+    private transient String userDefaultConfiguration;
 
     private String activeEngine;
     // Deprecated. Use AIConfigurationProfile instead
@@ -104,6 +105,10 @@ public class AISettings implements DBPAdaptable {
 
     @Nullable
     public AIConfigurationProfile getDefaultConfigurationOrNull() {
+        AIConfigurationProfile userProfile = configurations.get(userDefaultConfiguration);
+        if (userProfile != null) {
+            return userProfile;
+        }
         if (CommonUtils.isEmpty(defaultConfiguration)) {
             if (!configurations.isEmpty()) {
                 defaultConfiguration = configurations.values().iterator().next().getProfileId();
@@ -118,6 +123,10 @@ public class AISettings implements DBPAdaptable {
             defaultConfiguration = profile.getProfileId();
         }
         return profile;
+    }
+
+    public void setUserDefaultConfiguration(@Nullable AIConfigurationProfile profile) {
+        userDefaultConfiguration = profile == null ? null : profile.getProfileId();
     }
 
     public void setDefaultConfiguration(@Nullable AIConfigurationProfile profile) {

@@ -16,10 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.forms;
 
-import org.eclipse.core.databinding.observable.Diffs;
-import org.eclipse.core.databinding.observable.value.ComputedValue;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ui.bindings.ObservableValue;
 
 import java.util.Objects;
 import java.util.function.Supplier;
@@ -45,34 +44,19 @@ public final class UIObservables {
         if (second == null) {
             return first;
         }
-        ComputedValue<Boolean> computed = new ComputedValue<>() {
-            @NotNull
-            @Override
-            protected Boolean calculate() {
-                return first.get() && second.get();
-            }
-        };
-        return new UIObservableImpl<>(computed, Boolean.class);
+        return computed(() -> first.get() && second.get(), Boolean.class);
     }
 
     @NotNull
     public static <T> UIObservable<Boolean> equals(@NotNull UIObservable<T> observable, @NotNull T value) {
-        ComputedValue<Boolean> computed = new ComputedValue<>() {
-            @NotNull
-            @Override
-            protected Boolean calculate() {
-                return Objects.equals(observable.get(), value);
-            }
-
-            @Override
-            protected void doSetValue(@NotNull Boolean newValue) {
-                if (newValue) {
+        return new UIObservableImpl<>(ObservableValue.computed(
+            () -> Objects.equals(observable.get(), value),
+            (old, selected) -> {
+                if (selected) {
                     observable.set(value);
-                    fireValueChange(Diffs.createValueDiff(false, true));
                 }
             }
-        };
-        return new UIObservableImpl<>(computed, Boolean.class);
+        ), Boolean.class);
     }
 
     @NotNull
@@ -82,6 +66,6 @@ public final class UIObservables {
 
     @NotNull
     public static <T> UIObservable<T> computed(@NotNull Supplier<T> supplier, @NotNull Class<T> type) {
-        return new UIObservableImpl<>(ComputedValue.create(supplier), type);
+        return new UIObservableImpl<>(ObservableValue.computed(supplier), type);
     }
 }

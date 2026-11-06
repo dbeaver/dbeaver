@@ -21,6 +21,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.stream.JsonReader;
 import com.google.gson.stream.JsonToken;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AISettings;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.ai.engine.AIModelFeature;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -47,6 +49,123 @@ import java.util.Map;
 import java.util.Set;
 
 public class AISettingsManagerTest extends DBeaverUnitTest {
+
+    @Test
+    public void savesUserDefaultWithoutChangingSharedConfiguration() throws Exception {
+        DBPPlatform platform = Mockito.mock(DBPPlatform.class, Mockito.RETURNS_DEEP_STUBS);
+        Mockito.when(platform.getApplication().isMultiuser()).thenReturn(true);
+        Mockito.when(platform.getConfigurationController().loadConfigurationFile(AISettingsManager.AI_CONFIGURATION_FILE_NAME))
+            .thenReturn("""
+                {"defaultConfiguration":"shared","activeEngine":"openai","configurations":{
+                    "shared":{"name":"Shared","engine":"openai","configuration":{}},
+                    "personal":{"name":"Personal","engine":"openai","configuration":{}}
+                }}
+                """);
+        AIEngineRegistry registry = Mockito.mock(AIEngineRegistry.class);
+        AIEngineDescriptor engine = Mockito.mock(AIEngineDescriptor.class);
+        Mockito.when(registry.getEngineDescriptor(OpenAIConstants.OPENAI_ENGINE)).thenReturn(engine);
+        Mockito.doReturn(OpenAIProperties.class).when(engine).getPropertiesType();
+        DBPPreferenceStore store = platform.getPreferenceStore();
+        Map<String, String> preferences = new HashMap<>();
+        Mockito.doAnswer(invocation -> {
+            preferences.put(invocation.getArgument(0), invocation.getArgument(1));
+            return null;
+        }).when(store).setValue(ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
+        Mockito.doAnswer(invocation -> {
+            preferences.remove(invocation.getArgument(0));
+            return null;
+        }).when(store).setToDefault(ArgumentMatchers.anyString());
+        Mockito.when(store.getString(ArgumentMatchers.anyString()))
+            .thenAnswer(invocation -> preferences.getOrDefault(invocation.getArgument(0), ""));
+
+        try (MockedStatic<DBWorkbench> workbench = Mockito.mockStatic(
+            DBWorkbench.class, Mockito.withSettings().mockMaker("mock-maker-inline"));
+            MockedStatic<AIEngineRegistry> registries = Mockito.mockStatic(
+                AIEngineRegistry.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
+            workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+            registries.when(AIEngineRegistry::getInstance).thenReturn(registry);
+            AISettingsManager manager = AISettingsManager.getInstance();
+            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
+            AISettings settings = manager.getSettings();
+            Mockito.when(platform.getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)).thenReturn(true);
+            manager.saveSettings();
+            Assertions.assertTrue(preferences.isEmpty());
+            Mockito.verify(store, Mockito.never()).save();
+            ArgumentCaptor<String> initialContent = ArgumentCaptor.forClass(String.class);
+            Mockito.verify(platform.getConfigurationController()).saveConfigurationFile(
+                ArgumentMatchers.eq(AISettingsManager.AI_CONFIGURATION_FILE_NAME), initialContent.capture());
+            String sharedConfiguration = initialContent.getValue();
+            manager.setDefaultConfiguration(settings.getConfiguration("shared"));
+            Assertions.assertEquals("shared", preferences.get(AIConstants.AI_DEFAULT_CONFIGURATION));
+            var changedSharedConfiguration = JsonParser.parseString(sharedConfiguration).getAsJsonObject();
+            changedSharedConfiguration.addProperty("defaultConfiguration", "personal");
+            Mockito.when(platform.getConfigurationController().loadConfigurationFile(AISettingsManager.AI_CONFIGURATION_FILE_NAME))
+                .thenReturn(changedSharedConfiguration.toString());
+            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
+            Assertions.assertEquals("shared", manager.getSettings().getDefaultConfiguration().getProfileId());
+
+            Mockito.when(platform.getConfigurationController().loadConfigurationFile(AISettingsManager.AI_CONFIGURATION_FILE_NAME))
+                .thenReturn(sharedConfiguration);
+            preferences.clear();
+            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
+            settings = manager.getSettings();
+            Mockito.clearInvocations(store, platform.getConfigurationController());
+            Mockito.when(platform.getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)).thenReturn(false);
+
+            AIConfigurationProfile profile = settings.getConfiguration("personal");
+            manager.setDefaultConfiguration(profile);
+
+            Assertions.assertFalse(platform.getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER));
+            Assertions.assertSame(profile, settings.getDefaultConfigurationOrNull());
+            Assertions.assertEquals("personal", preferences.get(AIConstants.AI_DEFAULT_CONFIGURATION));
+            Mockito.verify(store).save();
+            Mockito.verify(platform.getConfigurationController(), Mockito.never())
+                .saveConfigurationFile(ArgumentMatchers.anyString(), ArgumentMatchers.anyString());
+
+            Mockito.when(platform.getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)).thenReturn(true);
+            manager.saveSettings();
+            ArgumentCaptor<String> content = ArgumentCaptor.forClass(String.class);
+            Mockito.verify(platform.getConfigurationController())
+                .saveConfigurationFile(ArgumentMatchers.eq(AISettingsManager.AI_CONFIGURATION_FILE_NAME), content.capture());
+            var saved = JsonParser.parseString(content.getValue()).getAsJsonObject();
+            Assertions.assertEquals("shared", saved.get("defaultConfiguration").getAsString());
+            Assertions.assertEquals("openai", saved.get("activeEngine").getAsString());
+            Assertions.assertFalse(saved.has("userDefaultConfiguration"));
+
+            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
+            AISettings reloaded = manager.getSettings();
+            Assertions.assertNotSame(settings, reloaded);
+            Assertions.assertEquals("personal", reloaded.getDefaultConfiguration().getProfileId());
+            reloaded.removeConfiguration(reloaded.getConfiguration("personal"));
+            Assertions.assertEquals("shared", reloaded.getDefaultConfiguration().getProfileId());
+
+            manager.saveSettings();
+            Assertions.assertFalse(preferences.containsKey(AIConstants.AI_DEFAULT_CONFIGURATION));
+            Mockito.when(platform.getConfigurationController().loadConfigurationFile(AISettingsManager.AI_CONFIGURATION_FILE_NAME))
+                .thenReturn(sharedConfiguration);
+            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
+            Assertions.assertEquals("shared", manager.getSettings().getDefaultConfiguration().getProfileId());
+
+            manager.setDefaultConfiguration(manager.getSettings().getConfiguration("personal"));
+            var withoutPersonal = JsonParser.parseString(sharedConfiguration).getAsJsonObject();
+            withoutPersonal.getAsJsonObject("configurations").remove("personal");
+            Mockito.when(platform.getConfigurationController().loadConfigurationFile(AISettingsManager.AI_CONFIGURATION_FILE_NAME))
+                .thenReturn(withoutPersonal.toString());
+            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
+            Assertions.assertEquals("shared", manager.getSettings().getDefaultConfiguration().getProfileId());
+            Assertions.assertFalse(preferences.containsKey(AIConstants.AI_DEFAULT_CONFIGURATION));
+
+            var replacement = JsonParser.parseString(sharedConfiguration).getAsJsonObject();
+            replacement.getAsJsonObject("configurations").getAsJsonObject("personal").addProperty("name", "Replacement");
+            Mockito.when(platform.getConfigurationController().loadConfigurationFile(AISettingsManager.AI_CONFIGURATION_FILE_NAME))
+                .thenReturn(replacement.toString());
+            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
+            Assertions.assertEquals("shared", manager.getSettings().getDefaultConfiguration().getProfileId());
+            Assertions.assertEquals("Replacement", manager.getSettings().getConfiguration("personal").getProfileName());
+        } finally {
+            WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
+        }
+    }
 
     @Test
     public void headerSecretsShouldBeSavedForAllProfiles() throws Exception {

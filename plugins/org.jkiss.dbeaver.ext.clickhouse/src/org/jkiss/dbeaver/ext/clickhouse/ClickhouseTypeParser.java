@@ -84,13 +84,26 @@ public class ClickhouseTypeParser {
         }
 
         if (type instanceof ClickhouseMapType mapType && ENABLE_COMPLEX_TYPE_PARSING) {
+            if (object instanceof ClickhouseMapValue) {
+                return object;
+            }
+            Map<Object, Object> entries = new LinkedHashMap<>();
+            for (Map.Entry<?, ?> entry : ((Map<?, ?>) object).entrySet()) {
+                entries.put(
+                    makeValue(session, mapType.getKeyType(), entry.getKey()),
+                    makeValue(session, mapType.getValueType(), entry.getValue())
+                );
+            }
             return new ClickhouseMapValue(
                 (ClickhouseDataSource) session.getDataSource(),
                 mapType,
                 Objects.requireNonNull(mapType.getAttributes(session.getProgressMonitor())),
-                ((Map<?, ?>) object)
+                entries
             );
         } else if (type instanceof ClickhouseTupleType tuple && ENABLE_COMPLEX_TYPE_PARSING) {
+            if (object instanceof ClickhouseTupleValue) {
+                return object;
+            }
             final Object[] values;
             if (object instanceof Map) {
                 values = ((Map<?, ?>) object).entrySet().stream()
