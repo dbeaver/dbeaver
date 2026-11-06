@@ -32,6 +32,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -45,6 +46,7 @@ import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 
 public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
 
@@ -148,8 +150,10 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         UIUtils.fixReadonlyTextBackground(userText);
         GridData statusLayout = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
         userText.setLayoutData(statusLayout);
+        Composite accountActions = UIUtils.createComposite(authenticationGroup, 2);
+        accountActions.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         accountActionButton = UIUtils.createPushButton(
-            authenticationGroup, DDTrackingUIMessages.sync_preference_page_desktop_sign_in, null,
+            accountActions, DDTrackingUIMessages.sync_preference_page_desktop_sign_in, null,
             SelectionListener.widgetSelectedAdapter(e -> {
                 DDDesktopAccessService.Status status = accessService.getStatus();
                 if (status == DDDesktopAccessService.Status.SIGNED_IN) {
@@ -159,6 +163,11 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                 }
             })
         );
+        Link accountLink = UIUtils.createLink(accountActions,
+            "<a>" + DDTrackingUIMessages.sync_preference_page_open_account + "</a>",
+            SelectionListener.widgetSelectedAdapter(e -> UIUtils.openWebBrowser(
+                URI.create(DDEndpoints.getAccountBaseUrl()).resolve("/account").toString())));
+        accountLink.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         return authenticationGroup.getParent();
     }
 
