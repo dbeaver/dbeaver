@@ -82,14 +82,14 @@
                         dataSourceType="libsql"
                         label="LibSQL"
                         class="com.dbeaver.jdbc.driver.libsql.LibSqlDriver"
-                        sampleURL="jdbc:dbeaver:libsql:{server}"
-                        defaultDatabase="http://localhost"
+                        sampleURL="jdbc:dbeaver:libsql:{server}[?db_name={database}]"
+                        defaultServer="http://localhost"
                         description="LibSQL DBeaver JDBC driver. Works with standalone LibSQL server and with Turso."
                         webURL="https://github.com/tursodatabase/libsql"
                         databaseDocumentationSuffixURL="Database-driver-LibSQL"
                         singleConnection="true"
                         supportedConfigurationTypes="MANUAL,URL"
-                        supportedPageFields="server"
+                        supportedPageFields="server,database"
                         categories="sql">
                     <file type="jar" path="maven:/com.dbeaver.jdbc:com.dbeaver.jdbc.driver.libsql:RELEASE" bundle="!drivers.libsql" ignore-dependencies="true"/>
                     <file type="jar" path="drivers/libsql" bundle="drivers.libsql"/>
@@ -100,11 +100,13 @@
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="term-server" value="%props.term.server.name"/>
+                    <parameter name="term-database" value="%props.term.database.name"/>
 
                 </driver>
                 <main-properties drivers="libsql_jdbc">
                     <propertyGroup label="Settings">
                         <property id="server" label="Server" type="string"/>
+                        <property id="database" label="%props.term.database.name" type="string"/>
                     </propertyGroup>
                 </main-properties>
 
