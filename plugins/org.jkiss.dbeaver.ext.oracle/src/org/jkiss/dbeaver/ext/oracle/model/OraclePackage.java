@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObjectExt;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -62,6 +63,7 @@ public class OraclePackage extends OracleSchemaObject
     private Date created;
     private Date lastDDLTime;
     private Date bodyLastDDLTime;
+    private boolean bodyLastDDLTimeLoaded;
     private boolean temporary;
     protected String sourceDeclaration;
     protected String sourceDefinition;
@@ -71,7 +73,6 @@ public class OraclePackage extends OracleSchemaObject
         this.valid = OracleConstants.RESULT_STATUS_VALID.equals(JDBCUtils.safeGetString(dbResult, OracleConstants.COLUMN_STATUS));
         this.created = JDBCUtils.safeGetTimestamp(dbResult, OracleConstants.COLUMN_CREATED);
         this.lastDDLTime = JDBCUtils.safeGetTimestamp(dbResult, OracleConstants.COLUMN_LAST_DDL_TIME);
-        this.bodyLastDDLTime = JDBCUtils.safeGetTimestamp(dbResult, OracleConstants.COLUMN_BODY_LAST_DDL_TIME);
         this.temporary = JDBCUtils.safeGetBoolean(dbResult, OracleConstants.COLUMN_TEMPORARY, OracleConstants.RESULT_YES_VALUE);
     }
 
@@ -90,10 +91,39 @@ public class OraclePackage extends OracleSchemaObject
         return lastDDLTime;
     }
 
+    /**
+     * Package body DDL time is loaded on demand. Joining ALL_OBJECTS with itself
+     * to include this value in the package list makes metadata loading too slow.
+     */
     @Nullable
     @Property(viewable = true, order = 5)
-    public Date getBodyLastDDLTime() {
+    public Date getBodyLastDDLTime(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (!bodyLastDDLTimeLoaded) {
+            loadBodyLastDDLTime(monitor);
+        }
         return bodyLastDDLTime;
+    }
+
+    private void loadBodyLastDDLTime(@NotNull DBRProgressMonitor monitor) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load package body DDL time")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT " + OracleUtils.getSysCatalogHint(getDataSource()) +
+                    " LAST_DDL_TIME AS " + OracleConstants.COLUMN_BODY_LAST_DDL_TIME + " FROM " +
+                    OracleUtils.getAdminAllViewPrefix(monitor, getDataSource(), "OBJECTS") +
+                    " WHERE OWNER=? AND OBJECT_NAME=? AND OBJECT_TYPE='PACKAGE BODY'"
+            )) {
+                dbStat.setString(1, getSchema().getName());
+                dbStat.setString(2, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    bodyLastDDLTime = dbResult.next()
+                        ? JDBCUtils.safeGetTimestamp(dbResult, OracleConstants.COLUMN_BODY_LAST_DDL_TIME)
+                        : null;
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBException("Error reading package body DDL time", e);
+        }
+        bodyLastDDLTimeLoaded = true;
     }
 
     @Property(viewable = true, order = 6)
