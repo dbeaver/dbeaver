@@ -70,19 +70,15 @@ public class DatabaseTransferUtils {
      * but they must not be offered as target tables.
      */
     public static boolean isValidTargetTable(@Nullable DBSObject object) {
-        if (!(object instanceof DBSDataManipulator)) {
-            return false;
-        }
-        if (object instanceof DBSSequence) {
-            return false;
-        }
-        if (object instanceof DBSEntity entity
-            && (entity.getEntityType() == DBSEntityType.VIEW
-                || entity.getEntityType() == DBSEntityType.SEQUENCE
-                || DBUtils.isView(entity))) {
-            return false;
-        }
-        return true;
+        return object instanceof DBSDataManipulator
+            && !(object instanceof DBSSequence)
+            && (!(object instanceof DBSEntity entity) || isValidTargetEntity(entity));
+    }
+
+    private static boolean isValidTargetEntity(@NotNull DBSEntity entity) {
+        return entity.getEntityType() != DBSEntityType.VIEW
+            && entity.getEntityType() != DBSEntityType.SEQUENCE
+            && !DBUtils.isView(entity);
     }
 
     public static void refreshDatabaseModel(DBRProgressMonitor monitor, DatabaseConsumerSettings consumerSettings, DatabaseMappingContainer containerMapping) throws DBException {
