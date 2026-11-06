@@ -3057,10 +3057,6 @@ public class SQLEditor extends SQLEditorBase implements
         if (!canProcessQueries()) {
             return false;
         }
-        if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration viewerConfiguration) {
-            // Metadata loading must not delay query execution.
-            viewerConfiguration.cancelCompletionJobs();
-        }
 
         final DBPDataSourceContainer container = getDataSourceContainer();
         if (checkSession) {
@@ -3229,6 +3225,11 @@ public class SQLEditor extends SQLEditorBase implements
         if (curQueryProcessor == null || (newTab
             && useTabPerQuery(isSingleQueryNotScript) == (curQueryProcessor instanceof SingleTabQueryProcessor))) {
             createQueryProcessor(true, isSingleQuery, true);
+        }
+
+        if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration viewerConfiguration) {
+            // Metadata loading must not delay query execution.
+            viewerConfiguration.cancelCompletionJobs();
         }
 
         return curQueryProcessor.processQueries(

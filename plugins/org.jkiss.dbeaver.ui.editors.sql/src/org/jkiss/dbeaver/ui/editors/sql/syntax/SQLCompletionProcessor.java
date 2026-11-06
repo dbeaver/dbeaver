@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.*;
 import org.eclipse.jface.text.templates.GlobalTemplateVariables;
@@ -335,7 +336,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
             return;
         }
         // Do not keep the UI blocked after query execution cancels metadata loading.
-        while (!job.isFinished() && !job.isCanceled() && !DBWorkbench.getPlatform().isShuttingDown()) {
+        // A job canceled while still queued never runs, so isCanceled() stays false and its state becomes NONE.
+        while (!job.isFinished() && !job.isCanceled() && job.getState() != Job.NONE
+            && !DBWorkbench.getPlatform().isShuttingDown()) {
             if (!display.readAndDispatch()) {
                 display.sleep();
             }
