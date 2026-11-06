@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
@@ -62,6 +63,27 @@ public class DatabaseTransferUtils {
     private static final Pair<DBPDataKind, String> DATA_TYPE_BOOLEAN = new Pair<>(DBPDataKind.BOOLEAN, "BOOLEAN");
     private static final Pair<DBPDataKind, String> DATA_TYPE_STRING = new Pair<>(DBPDataKind.STRING, "VARCHAR");
     private static final Pair<DBPDataKind, String> DATA_TYPE_NATIONAL_STRING = new Pair<>(DBPDataKind.STRING, "NVARCHAR");
+
+    /**
+     * Checks whether the object can be used as a data transfer target.
+     * Some non-table entities (views, sequences) also implement {@link DBSDataManipulator},
+     * but they must not be offered as target tables.
+     */
+    public static boolean isValidTargetTable(@Nullable DBSObject object) {
+        if (!(object instanceof DBSDataManipulator)) {
+            return false;
+        }
+        if (object instanceof DBSSequence) {
+            return false;
+        }
+        if (object instanceof DBSEntity entity
+            && (entity.getEntityType() == DBSEntityType.VIEW
+                || entity.getEntityType() == DBSEntityType.SEQUENCE
+                || DBUtils.isView(entity))) {
+            return false;
+        }
+        return true;
+    }
 
     public static void refreshDatabaseModel(DBRProgressMonitor monitor, DatabaseConsumerSettings consumerSettings, DatabaseMappingContainer containerMapping) throws DBException {
         monitor.subTask("Refresh database model");
