@@ -46,10 +46,19 @@ public final class ProductConfigFeaturesPanel {
     private final Set<ProductConfigFeatureDescriptor> newFeatures = new HashSet<>();
     private final Map<ProductConfigFeatureDescriptor, Boolean> savedFeatures = new LinkedHashMap<>();
 
+    public ProductConfigFeaturesPanel() {
+        this(false, ProductConfigRegistry.getInstance().getAvailableFeatures());
+    }
+
     public ProductConfigFeaturesPanel(boolean featureUpdate) {
+        this(featureUpdate, featureUpdate
+            ? ProductConfigRegistry.getInstance().getAvailableFeatures()
+            : ProductConfigRegistry.getInstance().getFeatures());
+    }
+
+    private ProductConfigFeaturesPanel(boolean featureUpdate, @NotNull List<ProductConfigFeatureDescriptor> configurableFeatures) {
         this.featureUpdate = featureUpdate;
         var registry = ProductConfigRegistry.getInstance();
-        var configurableFeatures = featureUpdate ? availableFeatures : registry.getFeatures();
         for (ProductConfigFeatureDescriptor descriptor : configurableFeatures) {
             boolean enabled = registry.isFeatureEnabled(descriptor);
             features.put(descriptor, UIObservable.of(enabled));

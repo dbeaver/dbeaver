@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public final class PrefPageProductConfiguration extends AbstractPrefPage implements IWorkbenchPreferencePage {
-    private final ProductConfigFeaturesPanel features = new ProductConfigFeaturesPanel(false);
+    private final ProductConfigFeaturesPanel features = new ProductConfigFeaturesPanel();
     private boolean restartRequired;
 
     @Override
