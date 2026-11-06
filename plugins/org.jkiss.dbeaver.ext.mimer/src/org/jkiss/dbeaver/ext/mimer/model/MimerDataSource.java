@@ -43,7 +43,9 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Version;
 
+import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -51,6 +53,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * The Mimer SQL data source - adds datasource-global caches (users, groups, programs, databanks,
@@ -268,6 +272,58 @@ public class MimerDataSource extends GenericDataSource {
         return isServerVersionAtLeast(11, 0);
     }
 
+    // --- Driver version gate ---------------------------------------------------------------
+    // Mimer SQL has stayed on JDBC driver minor version 11.0 for many years, with individual
+    // driver fixes landing in patch releases instead - the inherited isDriverVersionAtLeast(major,
+    // minor) can't tell those apart (confirmed live: getDriverMajorVersion()/getDriverMinorVersion()
+    // both report the same "11"/"0" across the whole 11.0.x lineage), so readDriverVersion is
+    // overridden below to also capture the patch digit, and isDriverVersionAtLeast(major, minor,
+    // patch) reads it back.
+
+    /**
+     * Also captures the driver's patch/micro version from the free-form {@code
+     * DatabaseMetaData.getDriverVersion()} string (e.g. {@code "11.0.4 (51688)"}) - the only place
+     * it's available, since {@code getDriverMajorVersion()}/{@code getDriverMinorVersion()} alone
+     * can't distinguish one 11.0.x patch release from another. Falls back to whatever {@code
+     * super.readDriverVersion} already set (patch 0) if the string doesn't parse.
+     */
+    @Override
+    protected synchronized void readDriverVersion(@NotNull DatabaseMetaData metaData) {
+        super.readDriverVersion(metaData);
+        try {
+            Matcher matcher = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)").matcher(metaData.getDriverVersion());
+            if (matcher.find()) {
+                driverVersion = new Version(
+                    Integer.parseInt(matcher.group(1)),
+                    Integer.parseInt(matcher.group(2)),
+                    Integer.parseInt(matcher.group(3)));
+            }
+        } catch (SQLException ignored) {
+            // super's own major/minor-only Version (patch 0) already stands as the fallback
+        }
+    }
+
+    /**
+     * Like the inherited {@code isDriverVersionAtLeast(major, minor)}, but also compares the
+     * patch digit {@link #readDriverVersion} parses - needed to gate a fix that lands in a patch
+     * release rather than a new minor version. First used by {@link MimerValueHandlerProvider}.
+     */
+    public boolean isDriverVersionAtLeast(int major, int minor, int patch) {
+        if (driverVersion == null) {
+            return false;
+        }
+        if (driverVersion.getMajor() > major) {
+            return true;
+        } else if (driverVersion.getMajor() == major) {
+            if (driverVersion.getMinor() > minor) {
+                return true;
+            } else if (driverVersion.getMinor() == minor) {
+                return driverVersion.getMicro() >= patch;
+            }
+        }
+        return false;
+    }
+
     /**
      * Every collation across every schema, quoted schema-qualified name pairs flattened into one
      * list - used only by create-dialog pickers that need to offer any collation as a source
@@ -397,7 +453,7 @@ public class MimerDataSource extends GenericDataSource {
         List<MimerInfoRow> rows = new ArrayList<>(3);
         rows.add(new MimerInfoRow(this, "Product name", getInfo().getDatabaseProductName()));
         rows.add(new MimerInfoRow(this, "Product version", getInfo().getDatabaseProductVersion()));
-        org.osgi.framework.Version v = getInfo().getDatabaseVersion();
+        Version v = getInfo().getDatabaseVersion();
         if (v != null) {
             String num = v.getMicro() > 0
                 ? v.getMajor() + "." + v.getMinor() + "." + v.getMicro()

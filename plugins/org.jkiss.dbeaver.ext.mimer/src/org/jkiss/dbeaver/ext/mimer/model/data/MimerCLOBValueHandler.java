@@ -17,27 +17,51 @@
 package org.jkiss.dbeaver.ext.mimer.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.storage.StringContentStorage;
+import org.jkiss.dbeaver.model.data.storage.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
+import java.io.IOException;
 import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * The {@code CLOB}/{@code NCLOB} sibling of {@link MimerBLOBValueHandler}: the same driver
  * limitation applies to all three Mimer SQL LOB types - {@code getObject()}/{@code getClob()}/
  * {@code getString()} don't work, use {@code getCharacterStream()} instead. One handler covers
  * both {@code CLOB} and {@code NCLOB}.
+ * <p>
+ * Reads up to {@link ModelPreferences#MEMORY_CONTENT_MAX_SIZE} into memory and spills anything
+ * beyond that to a temp file, checking {@code DBRProgressMonitor#isCanceled()} throughout - see
+ * {@link MimerBLOBValueHandler}'s javadoc for why (the stream is tied to the current row, so this
+ * has to happen now rather than being deferred the way a real {@code Clob} locator could be).
  *
  * @author Mimer Information Technology
  */
 public class MimerCLOBValueHandler extends JDBCContentValueHandler {
 
     public static final MimerCLOBValueHandler INSTANCE = new MimerCLOBValueHandler();
+
+    // See MimerBLOBValueHandler's identical field for why this is needed - confirmed live as a
+    // real FileAlreadyExistsException, not just a theoretical risk.
+    private static final AtomicLong TEMP_FILE_SEQUENCE = new AtomicLong();
 
     @Override
     protected DBDContent fetchColumnValue(
@@ -47,6 +71,54 @@ public class MimerCLOBValueHandler extends JDBCContentValueHandler {
         int index
     ) throws DBCException, SQLException {
         Reader reader = resultSet.getCharacterStream(index);
-        return getValueFromObject(session, type, reader, false, false);
+        if (reader == null) {
+            return getValueFromObject(session, type, null, false, false);
+        }
+        try {
+            return spoolToContent(session, reader);
+        } catch (Exception e) {
+            throw new DBCException("Error reading CLOB content", e, session.getExecutionContext());
+        }
+    }
+
+    @NotNull
+    private static MimerContentCLOB spoolToContent(@NotNull DBCSession session, @NotNull Reader reader) throws IOException {
+        DBCExecutionContext context = session.getExecutionContext();
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+        DBPPlatform platform = DBWorkbench.getPlatform();
+        int memoryLimit = platform.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE);
+        String encoding = DBValueFormatting.getDefaultBinaryFileEncoding(context.getDataSource());
+
+        MimerContentCLOB content = new MimerContentCLOB(context);
+        try {
+            char[] buffer = new char[8192];
+            StringBuilder memoryBuffer = new StringBuilder(Math.min(memoryLimit, buffer.length * 8));
+            int total = 0;
+            int n;
+            while (!monitor.isCanceled() && total < memoryLimit && (n = reader.read(buffer)) >= 0) {
+                memoryBuffer.append(buffer, 0, n);
+                total += n;
+            }
+            if (monitor.isCanceled() || total < memoryLimit) {
+                content.setStorage(new StringContentStorage(memoryBuffer.toString()));
+            } else {
+                Path tempFile = ContentUtils.createTempContentFile(
+                    monitor, platform, "mimer_clob" + TEMP_FILE_SEQUENCE.incrementAndGet());
+                try (Writer os = Files.newBufferedWriter(tempFile, Charset.forName(encoding))) {
+                    os.write(memoryBuffer.toString());
+                    ContentUtils.copyStreams(reader, -1, os, monitor);
+                } catch (IOException e) {
+                    ContentUtils.deleteTempFile(tempFile);
+                    throw e;
+                } catch (Throwable e) {
+                    ContentUtils.deleteTempFile(tempFile);
+                    throw new IOException(e);
+                }
+                content.setStorage(new TemporaryContentStorage(platform, tempFile, encoding, true));
+            }
+        } finally {
+            reader.close();
+        }
+        return content;
     }
 }

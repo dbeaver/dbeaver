@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mimer.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -34,6 +35,13 @@ import java.sql.Types;
  * - are used automatically for every matching column on a Mimer SQL connection. A new case here
  * needs a matching {@code <type>} entry in {@code plugin.xml} too, or the registry filters the
  * column out before this class is ever consulted.
+ * <p>
+ * Falls back to {@code null} (the core JDBC-standard handler) once {@link
+ * MimerDataSource#isDriverVersionAtLeast(int, int, int)} says the connected driver is 11.0.6 or
+ * later - the same driver-version gating {@code OracleValueHandlerProvider} uses for its own
+ * handler choice, just with a patch-level cutoff (see that method's own javadoc for why the usual
+ * major/minor-only check can't express one). 11.0.6 isn't released yet and isn't confirmed to
+ * actually carry the fix - bump the patch number here if it turns out not to.
  *
  * @author Mimer Information Technology
  */
@@ -46,6 +54,9 @@ public class MimerValueHandlerProvider implements DBDValueHandlerProvider {
         @NotNull DBDFormatSettings preferences,
         @NotNull DBSTypedObject typedObject
     ) {
+        if (dataSource instanceof MimerDataSource mimerDataSource && mimerDataSource.isDriverVersionAtLeast(11, 0, 6)) {
+            return null;
+        }
         switch (typedObject.getTypeID()) {
             case Types.BLOB:
                 return MimerBLOBValueHandler.INSTANCE;
