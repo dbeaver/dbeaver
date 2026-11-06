@@ -237,7 +237,7 @@ class ProfileModelComposite extends Composite {
             item.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
                 if (item.getSelection() && !chat.isBusy()) {
                     cancelModelLoading();
-                    chat.setConversationProfile(chat.getActiveConversation(), profile);
+                    chat.selectConversationProfile(profile);
                 }
             }));
         }
