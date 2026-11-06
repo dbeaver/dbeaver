@@ -63,4 +63,19 @@ public class DuckDBDataSource extends GenericDataSource {
     protected JDBCExecutionContext createExecutionContext(@NotNull JDBCRemoteInstance instance, @NotNull String type) {
         return new DuckDBExecutionContext(instance, type);
     }
+
+    @Override
+    public void initialize(@NotNull DBRProgressMonitor monitor) throws DBException {
+        super.initialize(monitor);
+        // Contexts read their defaults before catalogs are loaded, so resolve their schemas now
+        resolveDefaultSchemas(monitor);
+    }
+
+    void resolveDefaultSchemas(@NotNull DBRProgressMonitor monitor) {
+        for (JDBCExecutionContext context : getDefaultInstance().getAllContexts()) {
+            if (context instanceof DuckDBExecutionContext duckDBContext) {
+                duckDBContext.resolveDefaultSchema(monitor);
+            }
+        }
+    }
 }

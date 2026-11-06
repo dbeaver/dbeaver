@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +17,12 @@
 package org.jkiss.dbeaver.ext.duckdb.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Set;
 
@@ -36,5 +40,16 @@ public class DuckDBGenericCatalog extends GenericCatalog {
     @Override
     public boolean isSystem() {
         return SYSTEM_CATALOG_NAMES.contains(this.getName());
+    }
+
+    @Nullable
+    @Override
+    public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
+        DBSObject refreshed = super.refreshObject(monitor);
+        // The refresh replaced the schema objects, so execution contexts must pick up the new ones
+        if (getDataSource() instanceof DuckDBDataSource dataSource) {
+            dataSource.resolveDefaultSchemas(monitor);
+        }
+        return refreshed;
     }
 }
