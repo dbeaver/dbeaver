@@ -61,7 +61,8 @@ public class AIUIUtils {
     }
 
     public static void showPreferences(@NotNull Shell shell) {
-        if (!DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+        if (!DBWorkbench.isDistributed()
+            && !DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
             return;
         }
         UIUtils.showPreferencesFor(

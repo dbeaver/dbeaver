@@ -159,6 +159,24 @@ public class AIUIMessages extends NLS {
     public static String ai_engines_page_configurator_not_found_title;
     public static String ai_engines_page_configurator_not_found_message;
 
+    public static String ai_profiles_set_default;
+    public static String ai_profiles_default;
+    public static String ai_profiles_credentials;
+    public static String ai_profiles_credentials_personal;
+    public static String ai_profiles_credentials_shared;
+    public static String ai_profiles_status;
+    public static String ai_profiles_status_managed;
+    public static String ai_profiles_status_configured;
+    public static String ai_profiles_status_not_configured;
+    public static String ai_profiles_status_not_required;
+    public static String ai_profiles_status_loading;
+    public static String ai_profiles_status_unavailable;
+    public static String ai_profiles_personal_description;
+    public static String ai_profiles_managed_description;
+    public static String ai_profiles_admin_description;
+    public static String ai_profiles_load_cancelled;
+    public static String ai_settings_user_save_error_title;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, AIUIMessages.class);

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.AIUserProfileCredentials;
 import org.jkiss.dbeaver.model.ai.engine.AICredentialsProvider;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
@@ -182,6 +183,13 @@ public class AISettingsManager {
                 return;
             }
 
+            if (AIUserProfileCredentials.isAvailable()) {
+                for (AIConfigurationProfile profile : settings.getConfigurations()) {
+                    if (!profile.isGlobal()) {
+                        AIUserProfileCredentials.saveChanges(profile);
+                    }
+                }
+            }
             if (!saveSecretsAsPlainText()) {
                 AIConfigurationProfile defaultProfile = settings.getDefaultConfigurationOrNull();
                 for (AIConfigurationProfile profile : settings.getConfigurations()) {
@@ -242,6 +250,14 @@ public class AISettingsManager {
             return PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
                 .registerTypeAdapter(AICredentialsProvider.class, new DBAAuthProviderAdapter()).create();
         }
+    }
+
+    @NotNull
+    private static AIEngineProperties getConfigurationForSave(@NotNull AIEngineProperties properties) throws DBException {
+        // personal tokens must never be written back to the shared configuration
+        return AIUserProfileCredentials.isAvailable() && !properties.isGlobal()
+            ? AIUserProfileCredentials.copyWithoutCredentials(properties)
+            : properties;
     }
 
     private interface AISettingsHolder {
@@ -332,8 +348,13 @@ public class AISettingsManager {
                 out.name(ep.getKey());
                 out.beginObject();
                 out.name("properties");
-                TypeAdapter childAdapter = AISettingsManager.SAVE_PROPS_GSON.getAdapter(ep.getValue().getClass());
-                childAdapter.write(out, ep.getValue());
+                try {
+                    AIEngineProperties configuration = getConfigurationForSave(ep.getValue());
+                    TypeAdapter childAdapter = SAVE_PROPS_GSON.getAdapter(configuration.getClass());
+                    childAdapter.write(out, configuration);
+                } catch (DBException e) {
+                    throw new IOException("Error preparing AI configuration", e);
+                }
                 out.endObject();
             }
 
@@ -388,8 +409,8 @@ public class AISettingsManager {
                 log.error("AI engine '" + value.getEngineId() + "' not found. Ignore config");
             } else {
                 try {
-                    AIEngineProperties configuration = value.getConfiguration();
-                    TypeAdapter childAdapter = AISettingsManager.SAVE_PROPS_GSON.getAdapter(configuration.getClass());
+                    AIEngineProperties configuration = getConfigurationForSave(value.getConfiguration());
+                    TypeAdapter childAdapter = SAVE_PROPS_GSON.getAdapter(configuration.getClass());
 
                     out.name("configuration");
                     childAdapter.write(out, configuration);
