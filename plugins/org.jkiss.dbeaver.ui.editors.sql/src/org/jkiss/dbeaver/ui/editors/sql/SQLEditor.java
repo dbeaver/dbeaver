@@ -3561,6 +3561,8 @@ public class SQLEditor extends SQLEditorBase implements
 
         refreshEditorIconAndTitle();
 
+        SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE_NATIVE);
+
         firePropertyChange(IWorkbenchPartConstants.PROP_TITLE);
 
         if (getSite() != null) {
