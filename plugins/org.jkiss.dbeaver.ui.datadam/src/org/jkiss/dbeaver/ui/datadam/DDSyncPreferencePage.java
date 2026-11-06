@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.datadam;
 
-import com.dbeaver.datadam.mcp.api.exception.DDMcpStatusException;
 import com.dbeaver.datadam.mcp.api.model.DDMcpStatus;
-import com.dbeaver.datadam.mcp.api.service.web.DDMcpWebStatusService;
-import com.dbeaver.messaging.rpc.MessagingRpcException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
@@ -218,36 +215,41 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     private void loadMcpStatus() {
-        DDMcpWebStatusService service = DDMcpConnectionSettings.getService();
-        if (service == null) {
-            showMcpStatus(null);
-            return;
-        }
+        DDMcpStatus[] status = new DDMcpStatus[1];
         try {
-            showMcpStatus(service.getStatus());
-        } catch (MessagingRpcException e) {
-            log.debug("Cannot read DataDam MCP status", e);
-            showMcpStatus(null);
+            UIUtils.runInProgressDialog(monitor -> {
+                try {
+                    status[0] = DDMcpConnectionSettings.getGlobalStatus(monitor);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            log.debug("Cannot read DataDam MCP status", e.getTargetException());
         }
+        showMcpStatus(status[0]);
     }
 
     private void updateMcpStatus(boolean enabled, boolean previous) {
-        DDMcpWebStatusService service = DDMcpConnectionSettings.getService();
-        if (service == null) {
-            showMcpStatus(null);
-            DBWorkbench.getPlatformUI().showError(
-                SYNC_TITLE,
-                DDTrackingUIMessages.sync_preference_page_mcp_update_failed,
-                new DBException("DataDam MCP status service is unavailable")
-            );
-            return;
-        }
+        boolean[] canceled = new boolean[1];
         try {
-            service.setStatus(enabled ? DDMcpStatus.ENABLED : DDMcpStatus.DISABLED);
-        } catch (DDMcpStatusException | MessagingRpcException e) {
+            UIUtils.runInProgressDialog(monitor -> {
+                try {
+                    DDMcpConnectionSettings.setGlobalStatus(enabled ? DDMcpStatus.ENABLED : DDMcpStatus.DISABLED, monitor);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                } catch (InterruptedException e) {
+                    canceled[0] = true;
+                    throw e;
+                }
+            });
+            if (canceled[0]) {
+                showMcpStatus(null);
+            }
+        } catch (InvocationTargetException e) {
             mcpCheck.setSelection(previous);
             DBWorkbench.getPlatformUI().showError(
-                SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_mcp_update_failed, e);
+                SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_mcp_update_failed, e.getTargetException());
         }
     }
 
