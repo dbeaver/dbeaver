@@ -37,7 +37,11 @@
                     supportedConfigurationTypes="MANUAL"
                     supportedPageFields="database"
                     categories="sql,cloud">
-                    <file type="jar" path="maven:/com.dbeaver.jdbc:com.dbeaver.jdbc.driver.d1:RELEASE"/>
+                    <file type="jar" path="maven:/com.dbeaver.jdbc:com.dbeaver.jdbc.driver.d1:RELEASE" bundle="!drivers.cloudflare.d1"/>
+                    <file type="jar" path="bundle:/com.dbeaver.jdbc.driver.d1" bundle="drivers.cloudflare.d1"/>
+                    <file type="jar" path="bundle:/com.dbeaver.jdbc.api" bundle="drivers.cloudflare.d1"/>
+                    <file type="jar" path="bundle:/org.jkiss.utils" bundle="drivers.cloudflare.d1"/>
+                    <file type="jar" path="bundle:/com.google.gson" bundle="drivers.cloudflare.d1"/>
                     <file type="license" path="licenses/external/asl-2.0.txt"/>
                     <parameter name="meta-model" value="cloudflare_d1"/>
                     <parameter name="supports-references" value="true"/>
