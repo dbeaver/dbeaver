@@ -260,11 +260,26 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     public static boolean isBigScript(@Nullable IEditorInput editorInput) {
+        return isBigScript(editorInput, getBigScriptFileLengthBoundary());
+    }
+
+    private static boolean isBigScript(@Nullable IEditorInput editorInput, long boundary) {
         if (editorInput != null) {
             File file = EditorUtils.getLocalFileFromInput(editorInput);
-            return file != null && file.length() > getBigScriptFileLengthBoundary();
+            return file != null && file.length() > boundary;
         }
         return false;
+    }
+
+    /**
+     * Checks whether the editor document is large enough to disable expensive SQL editor services.
+     * Unlike {@link #isBigScript(IEditorInput)}, this also covers SQL consoles and unsaved scripts
+     * which have no associated file.
+     */
+    public boolean isBigDocument() {
+        long boundary = getBigScriptFileLengthBoundary();
+        IDocument document = getDocument();
+        return (document != null && document.getLength() > boundary) || isBigScript(getEditorInput(), boundary);
     }
 
     static long getBigScriptFileLengthBoundary() {
@@ -284,7 +299,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     public boolean isAdvancedHighlightingEnabled() {
-        return this.getActivePreferenceStore().getBoolean(SQLModelPreferences.ADVANCED_HIGHLIGHTING_ENABLE);
+        return !isBigDocument()
+            && this.getActivePreferenceStore().getBoolean(SQLModelPreferences.ADVANCED_HIGHLIGHTING_ENABLE);
     }
 
     private void handleInputChange(IEditorInput input) {
@@ -1335,7 +1351,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     public boolean isFoldingEnabled() {
-        return SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput())
+        return SQLEditorUtils.isSQLSyntaxParserApplied(this)
             && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
     }
 

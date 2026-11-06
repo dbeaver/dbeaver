@@ -850,7 +850,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public boolean isFoldingEnabled() {
-        return SQLEditorUtils.isSQLSyntaxParserEnabled(getEditorInput())
+        return SQLEditorUtils.isSQLSyntaxParserApplied(this)
             && getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
     }
 

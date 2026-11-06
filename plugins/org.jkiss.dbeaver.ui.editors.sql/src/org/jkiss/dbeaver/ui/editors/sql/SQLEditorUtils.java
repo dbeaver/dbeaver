@@ -501,6 +501,20 @@ public class SQLEditorUtils {
     }
 
     /**
+     * Checks whether SQL syntax parser should be applied for the given editor and its current document
+     */
+    public static boolean isSQLSyntaxParserApplied(@NotNull SQLEditorBase editor) {
+        return isSQLSyntaxParserApplied(editor, editor.getEditorInput());
+    }
+
+    /**
+     * Checks whether SQL syntax parser should be applied for the given editor and input
+     */
+    public static boolean isSQLSyntaxParserApplied(@NotNull SQLEditorBase editor, @Nullable IEditorInput input) {
+        return !editor.isBigDocument() && isSQLSyntaxParserApplied(input);
+    }
+
+    /**
      * Checks whether Disable SQL syntax parser should be applied for the given editor
      */
     public static boolean isSQLSyntaxParserApplied(@Nullable IEditorInput input) {
