@@ -113,8 +113,10 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
 
         List<List<OBJECT>> batches = forObject == null ? getBulkChildrenBatches(owner) : Collections.singletonList(null);
         if (batches.isEmpty()) {
-            // The subclass knows there are no cached parents to read children for.
-            this.childrenCached = true;
+            // An empty list is complete only if loading the parents finished successfully.
+            if (!monitor.isCanceled() && isFullyCached()) {
+                this.childrenCached = true;
+            }
             return;
         }
 

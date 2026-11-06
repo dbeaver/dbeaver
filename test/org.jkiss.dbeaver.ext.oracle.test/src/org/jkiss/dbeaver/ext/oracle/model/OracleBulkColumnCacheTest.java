@@ -139,6 +139,54 @@ public class OracleBulkColumnCacheTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void canceledParentLoadDoesNotPreventBulkColumnRetry() throws Exception {
+        OracleSchema.TableCache cache = schema.new TableCache() {
+            @Override
+            protected JDBCSession openChildrenSession(DBRProgressMonitor monitor, OracleSchema owner) {
+                return session;
+            }
+        };
+        filteredCache(cache);
+        // The parent load is canceled after the initial loadChildren check, leaving the list uncached.
+        Mockito.when(monitor.isCanceled()).thenReturn(false, true);
+        cache.loadChildren(monitor, schema, null);
+        assertFalse(cache.isFullyCached());
+        Mockito.verifyNoInteractions(session, statement);
+
+        // Simulate the parent list becoming available on retry; bulk columns must still load.
+        Mockito.when(monitor.isCanceled()).thenReturn(false);
+        cache.setCache(List.of(new OracleTable(schema, "TABLE_1")));
+        JDBCResultSet resultSet = Mockito.mock(JDBCResultSet.class);
+        Mockito.when(statement.getResultSet()).thenReturn(resultSet);
+        Mockito.when(resultSet.next()).thenReturn(false);
+        cache.loadChildren(monitor, schema, null);
+        cache.loadChildren(monitor, schema, null);
+        Mockito.verify(session).prepareStatement(Mockito.anyString());
+    }
+
+    @Test
+    public void unfinishedParentLoadWithoutCancellationDoesNotMarkBulkLoadComplete() throws Exception {
+        OracleSchema.TableCache cache = schema.new TableCache() {
+            @Override
+            protected JDBCSession openChildrenSession(DBRProgressMonitor monitor, OracleSchema owner) {
+                return session;
+            }
+        };
+        filteredCache(cache);
+        // Unit-test mode leaves the parent cache unloaded without canceling the monitor.
+        cache.loadChildren(monitor, schema, null);
+        assertFalse(cache.isFullyCached());
+        Mockito.verifyNoInteractions(session, statement);
+
+        cache.setCache(List.of(new OracleTable(schema, "TABLE_1")));
+        JDBCResultSet resultSet = Mockito.mock(JDBCResultSet.class);
+        Mockito.when(statement.getResultSet()).thenReturn(resultSet);
+        Mockito.when(resultSet.next()).thenReturn(false);
+        cache.loadChildren(monitor, schema, null);
+        Mockito.verify(session).prepareStatement(Mockito.anyString());
+    }
+
+    @Test
     public void cancellationBeforeSecondBatchDoesNotMarkBulkLoadComplete() throws Exception {
         OracleSchema.TableCache cache = schema.new TableCache() {
             @Override
