@@ -392,6 +392,14 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     }
 
     public boolean checkConfiguration() {
+        AIConfigurationProfile profile = activeConversation.getProfile();
+        if (profile == null) {
+            profile = AISettingsManager.getStaticSettings().getDefaultConfigurationOrNull();
+        }
+        if (profile != null && !profile.isAvailable()) {
+            AIUIUtils.showPreferences(getShell());
+            return false;
+        }
         try {
             if (!AIUtils.hasValidConfiguration()) {
                 AIUIUtils.showPreferences(getShell());
