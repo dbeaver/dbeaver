@@ -16,19 +16,21 @@
  */
 package org.jkiss.dbeaver.ui.editors.erd.command;
 
-import org.eclipse.gef.commands.Command;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.erd.*;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVEntityForeignKey;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.erd.editor.ERDEditorPart;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 import org.jkiss.utils.CommonUtils;
@@ -50,6 +52,9 @@ public class AssociationCreateCommand extends Command {
     protected List<ERDEntityAttribute> sourceAttributes;
     protected List<ERDEntityAttribute> targetAttributes;
     private ERDEditorPart editor;
+    private AbstractJob directionLookupJob;
+    private int directionLookupGeneration;
+    private boolean undone;
 
     public AssociationCreateCommand() {
     }
@@ -72,23 +77,31 @@ public class AssociationCreateCommand extends Command {
 
     @Override
     public boolean canExecute() {
-        if (sourceEntity.equals(targetEntity)) {
+        if (sourceEntity == null || targetEntity == null || sourceEntity.equals(targetEntity)) {
             return false;
-        } else {
-
-            if (targetEntity == null) {
-                return false;
-            } else {
-                return !isAssociationExists();
-            }
         }
+        return !isAssociationExists();
     }
 
     protected boolean isAssociationExists() {
-        // Check for existence of relationship already
-        List<ERDAssociation> relationships = targetEntity.getReferences();
-        for (ERDAssociation currentRelationship : relationships) {
-            if (currentRelationship.getSourceEntity().equals(sourceEntity)) {
+        if (sourceEntity instanceof ERDEntity && targetEntity instanceof ERDEntity &&
+            !CommonUtils.isEmpty(sourceAttributes) && !CommonUtils.isEmpty(targetAttributes)) {
+            // GEF calls canExecute() on the UI thread. Determining FK direction
+            // may load database metadata and must not happen here with a
+            // non-cancellable VoidProgressMonitor.
+            // If only one direction already exists, the other may still be
+            // valid. Check the final direction during execute() instead.
+            return isAssociationExists(sourceEntity, targetEntity) &&
+                isAssociationExists(targetEntity, sourceEntity);
+        }
+
+        return isAssociationExists(sourceEntity, targetEntity);
+    }
+
+    private boolean isAssociationExists(@NotNull ERDElement<?> source, @NotNull ERDElement<?> target) {
+        // Check for an existing relationship in the final FK -> PK direction.
+        for (ERDAssociation currentRelationship : target.getReferences()) {
+            if (currentRelationship.getSourceEntity().equals(source)) {
                 return true;
             }
         }
@@ -97,7 +110,69 @@ public class AssociationCreateCommand extends Command {
 
     @Override
     public void execute() {
-        association = createAssociation(sourceEntity, targetEntity, true);
+        undone = false;
+        if (sourceEntity instanceof ERDEntity && targetEntity instanceof ERDEntity
+            && !CommonUtils.isEmpty(sourceAttributes) && !CommonUtils.isEmpty(targetAttributes)) {
+            resolveAssociationDirectionInBackground();
+        } else {
+            association = createAssociation(sourceEntity, targetEntity, true);
+        }
+    }
+
+    private void resolveAssociationDirectionInBackground() {
+        if (editor == null || editor.getDiagram() == null) {
+            log.error("Cannot create ERD association without an active diagram");
+            return;
+        }
+
+        // Capture the drag endpoints before scheduling; GEF models must only
+        // be updated on the UI thread, never from the background job.
+        final ERDEditorPart initiatingEditor = editor;
+        final var initiatingDiagram = editor.getDiagram();
+        final ERDElement<?> originalSource = sourceEntity;
+        final ERDElement<?> originalTarget = targetEntity;
+        final List<DBSEntityAttribute> srcAttrs = ERDUtils.getObjectsFromERD(sourceAttributes);
+        final List<DBSEntityAttribute> refAttrs = ERDUtils.getObjectsFromERD(targetAttributes);
+        final int generation = ++directionLookupGeneration;
+
+        directionLookupJob = new AbstractJob("Determine ERD foreign key direction") {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                if (monitor.isCanceled()) {
+                    return Status.CANCEL_STATUS;
+                }
+
+                boolean swap = false;
+                try {
+                    swap = needToSwapForeignKeyDirection(monitor, srcAttrs, refAttrs);
+                } catch (DBException e) {
+                    // Metadata lookup may fail even when the FK editor can work.
+                    // Preserve the original drag direction as the fallback.
+                    log.error("Cannot determine ERD foreign key direction; using drag direction", e);
+                }
+                if (monitor.isCanceled()) {
+                    return Status.CANCEL_STATUS;
+                }
+
+                final boolean shouldSwap = swap;
+                UIUtils.asyncExec(() -> {
+                    // A later command may become the undo-stack head while this
+                    // lookup runs. That does not invalidate the earlier creation.
+                    // Undo/redo invalidates its generation explicitly; editor and
+                    // diagram identity prevent applying results to a different view.
+                    if (monitor.isCanceled() || undone || generation != directionLookupGeneration
+                        || editor != initiatingEditor || editor.getDiagram() != initiatingDiagram) {
+                        return;
+                    }
+                    directionLookupJob = null;
+                    association = createAssociation(originalSource, originalTarget, true, shouldSwap);
+                });
+                return Status.OK_STATUS;
+            }
+        };
+        directionLookupJob.setUser(true);
+        directionLookupJob.schedule();
     }
 
     @NotNull
@@ -129,14 +204,23 @@ public class AssociationCreateCommand extends Command {
 
     @Override
     public void redo() {
+        undone = false;
         if (association != null) {
             sourceEntity.addAssociation(association, true);
             targetEntity.addReferenceAssociation(association, true);
+        } else {
+            execute();
         }
     }
 
     @Override
     public void undo() {
+        undone = true;
+        ++directionLookupGeneration;
+        if (directionLookupJob != null) {
+            directionLookupJob.cancel();
+            directionLookupJob = null;
+        }
         if (association != null) {
             sourceEntity.removeAssociation(association, true);
             targetEntity.removeReferenceAssociation(association, true);
@@ -149,28 +233,54 @@ public class AssociationCreateCommand extends Command {
         @Nullable ERDElement<?> targetEntity,
         boolean reflect
     ) {
+        return createAssociation(sourceEntity, targetEntity, reflect, false);
+    }
+
+    @Nullable
+    private ERDAssociation createAssociation(
+        @Nullable ERDElement<?> sourceEntity,
+        @Nullable ERDElement<?> targetEntity,
+        boolean reflect,
+        boolean shouldSwap
+    ) {
         ERDAssociation association = null;
         if (sourceEntity instanceof ERDEntity sourceERDEntity && targetEntity instanceof ERDEntity targetERDEntity) {
+            // Metadata was resolved in a cancellable background job before
+            // reaching this UI-only model/dialog creation path.
+            if (editor == null || editor.getDiagram() == null) {
+                log.error("Cannot create ERD association without an active diagram");
+                return null;
+            }
+
             DBSEntity srcEntityObject = sourceERDEntity.getObject();
             DBSEntity targetEntityObject = targetERDEntity.getObject();
+            ERDEntity associationSourceERDEntity = sourceERDEntity;
+            ERDEntity associationTargetERDEntity = targetERDEntity;
+            boolean directionSwapped = false;
 
             List<DBSEntityAttribute> srcAttrs = ERDUtils.getObjectsFromERD(sourceAttributes);
             List<DBSEntityAttribute> refAttrs = ERDUtils.getObjectsFromERD(targetAttributes);
 
-            try {
-                // Maybe we need to swap source and target
-                // Ref table must have a unique constraint with ref attributes
-                if (needToSwapForeignKeyDirection(new VoidProgressMonitor(), srcAttrs, refAttrs)) {
-                    DBSEntity tmpEntity = targetEntityObject;
-                    targetEntityObject = srcEntityObject;
-                    srcEntityObject = tmpEntity;
+            // Swap only after the background lookup has determined the final direction.
+            if (shouldSwap) {
+                directionSwapped = true;
+                ERDEntity tmpERDEntity = associationSourceERDEntity;
+                associationSourceERDEntity = associationTargetERDEntity;
+                associationTargetERDEntity = tmpERDEntity;
 
-                    List<DBSEntityAttribute> tmpAttrs = refAttrs;
-                    refAttrs = srcAttrs;
-                    srcAttrs = tmpAttrs;
-                }
-            } catch (DBException e) {
-                log.error("Error reading constraints", e);
+                DBSEntity tmpEntity = targetEntityObject;
+                targetEntityObject = srcEntityObject;
+                srcEntityObject = tmpEntity;
+
+                List<DBSEntityAttribute> tmpAttrs = refAttrs;
+                refAttrs = srcAttrs;
+                srcAttrs = tmpAttrs;
+            }
+
+            if (isAssociationExists(associationSourceERDEntity, associationTargetERDEntity)) {
+                // The final direction is known only after reading the attributes.
+                // Reject duplicates even if canExecute() allowed the opposite drag.
+                return null;
             }
 
             DBVEntity vEntity = DBVUtils.getVirtualEntity(srcEntityObject, true);
@@ -188,7 +298,12 @@ public class AssociationCreateCommand extends Command {
                 return null;
             }
             vEntity.persistConfiguration();
-            association = new ERDAssociation(vfk, sourceERDEntity, targetERDEntity, true);
+            association = new ERDAssociation(vfk, associationSourceERDEntity, associationTargetERDEntity, true);
+            if (directionSwapped) {
+                // Keep undo/redo consistent with the direction of the created association.
+                this.sourceEntity = associationSourceERDEntity;
+                this.targetEntity = associationTargetERDEntity;
+            }
         } else {
             if (sourceEntity != null && targetEntity != null) {
                 association = new ERDAssociation(sourceEntity, targetEntity, true);
@@ -209,11 +324,17 @@ public class AssociationCreateCommand extends Command {
         this.editor = editor;
     }
 
-    protected boolean needToSwapForeignKeyDirection(DBRProgressMonitor monitor, List<DBSEntityAttribute> srcAttrs, List<DBSEntityAttribute> targetAttrs) throws DBException {
+    protected boolean needToSwapForeignKeyDirection(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull List<DBSEntityAttribute> srcAttrs,
+        @NotNull List<DBSEntityAttribute> targetAttrs
+    ) throws DBException {
+        // The reference must point to an identifying key, not originate from one.
+        // Reverse the drag only when its source is unique and its target is not.
         return !CommonUtils.isEmpty(srcAttrs) &&
             !CommonUtils.isEmpty(targetAttrs) &&
-            !DBVUtils.isIdentifyingAttributes(monitor, srcAttrs) &&
-            DBVUtils.isIdentifyingAttributes(monitor, targetAttrs);
+            DBVUtils.isIdentifyingAttributes(monitor, srcAttrs) &&
+            !DBVUtils.isIdentifyingAttributes(monitor, targetAttrs);
     }
 }
 
