@@ -40,13 +40,12 @@ public class OraclePackageCacheTest extends DBeaverUnitTest {
     @Mock
     private DBRProgressMonitor monitor;
 
-    private OracleDataSource dataSource;
     private OracleSchema schema;
 
     @BeforeEach
     public void setUp() throws DBException {
         DBPDataSourceContainer container = configureTestContainer("oracle");
-        dataSource = new OracleDataSource(container);
+        OracleDataSource dataSource = new OracleDataSource(container);
         schema = new OracleSchema(dataSource, -1, "TEST_SCHEMA");
     }
 
