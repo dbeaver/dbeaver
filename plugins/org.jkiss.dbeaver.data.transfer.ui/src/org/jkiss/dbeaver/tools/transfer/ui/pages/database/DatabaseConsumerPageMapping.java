@@ -1312,7 +1312,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             if (ns != null) {
                 DBSObject existingObject = ns.getObjectByName(monitor, unQuotedNameForSearch);
                 if (existingObject != null) {
-                    if (DatabaseTransferUtils.isValidTargetTable(existingObject) && existingObject instanceof DBSDataManipulator targetTable) {
+                    if (DatabaseTransferUtils.isValidTargetTable(existingObject)
+                        && existingObject instanceof DBSDataManipulator targetTable) {
                         targetDataContainer = targetTable;
                     } else {
                         containerMapping.setTargetName(name);
