@@ -3054,6 +3054,10 @@ public class SQLEditor extends SQLEditorBase implements
             // Nothing to process
             return false;
         }
+        if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration viewerConfiguration) {
+            // Metadata loading must not delay query execution.
+            viewerConfiguration.cancelCompletionJobs();
+        }
         if (!canProcessQueries()) {
             return false;
         }
@@ -3559,8 +3563,6 @@ public class SQLEditor extends SQLEditorBase implements
         refreshActions();
 
         refreshEditorIconAndTitle();
-
-        SQLEditorPropertyTester.firePropertyChange(SQLEditorPropertyTester.PROP_CAN_EXECUTE_NATIVE);
 
         firePropertyChange(IWorkbenchPartConstants.PROP_TITLE);
 
