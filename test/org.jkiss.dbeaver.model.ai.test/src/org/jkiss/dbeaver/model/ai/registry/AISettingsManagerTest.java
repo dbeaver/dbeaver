@@ -450,6 +450,98 @@ public class AISettingsManagerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void preservesLegacyMappingWhenSavingMultipleProfiles() throws Exception {
+        AISettings settings = AISettingsManager.READ_PROPS_GSON.fromJson("""
+            {
+              "defaultConfiguration": "work",
+              "activeEngine": "openai",
+              "configurations": {
+                "work": {"name":"Work", "engine":"openai", "configuration":{"gpt.model":"gpt-4o"}},
+                "personal": {"name":"Personal", "engine":"openai", "configuration":{"gpt.model":"gpt-4.1"}}
+              },
+              "engineConfigurations": {"openai":{"properties":{"gpt.model":"gpt-4o"}}}
+            }
+            """, AISettings.class);
+        for (int iteration = 0; iteration < 3; iteration++) {
+            settings.finishSettingsLoading();
+            settings.setUserDefaultConfiguration(settings.getConfiguration("personal"));
+            settings.setProperty("test.chat.setting", iteration);
+            settings.prepareSettingsSaving();
+            JsonObject saved = AISettingsManager.SAVE_PROPS_GSON.toJsonTree(settings).getAsJsonObject();
+            Assertions.assertEquals("gpt-4o", saved.getAsJsonObject("engineConfigurations")
+                .getAsJsonObject("openai").getAsJsonObject("properties").get("gpt.model").getAsString());
+            JsonObject legacy = saved.deepCopy();
+            legacy.remove("configurations");
+            legacy.remove("defaultConfiguration");
+            AISettings restoredLegacy = AISettingsManager.READ_PROPS_GSON.fromJson(legacy, AISettings.class);
+            restoredLegacy.finishSettingsLoading();
+            Assertions.assertEquals("gpt-4o", restoredLegacy.getDefaultConfiguration().getConfiguration().getModel());
+            settings = AISettingsManager.READ_PROPS_GSON.fromJson(saved, AISettings.class);
+        }
+    }
+
+    @Test
+    public void usesSharedDefaultForNewLegacyEntry() throws Exception {
+        AISettings settings = AISettingsManager.READ_PROPS_GSON.fromJson("""
+            {
+              "defaultConfiguration": "personal",
+              "configurations": {
+                "personal": {"name":"Personal", "engine":"openai", "configuration":{"gpt.model":"gpt-4.1"}},
+                "work": {"name":"Work", "engine":"openai", "configuration":{"gpt.model":"gpt-4o"}}
+              }
+            }
+            """, AISettings.class);
+        settings.finishSettingsLoading();
+        settings.setUserDefaultConfiguration(settings.getConfiguration("work"));
+        settings.prepareSettingsSaving();
+        JsonObject saved = AISettingsManager.SAVE_PROPS_GSON.toJsonTree(settings).getAsJsonObject();
+        Assertions.assertEquals("gpt-4.1", saved.getAsJsonObject("engineConfigurations")
+            .getAsJsonObject("openai").getAsJsonObject("properties").get("gpt.model").getAsString());
+    }
+
+    @Test
+    public void preservesLegacyMappingForNonDefaultEngine() throws Exception {
+        AISettings settings = AISettingsManager.READ_PROPS_GSON.fromJson("""
+            {
+              "defaultConfiguration": "local",
+              "configurations": {
+                "local": {"name":"Local", "engine":"ollama", "configuration":{}},
+                "work": {"name":"Work", "engine":"openai", "configuration":{"gpt.model":"gpt-4o"}},
+                "personal": {"name":"Personal", "engine":"openai", "configuration":{"gpt.model":"gpt-4.1"}}
+              },
+              "engineConfigurations": {"openai":{"properties":{"gpt.model":"gpt-4o"}}}
+            }
+            """, AISettings.class);
+        settings.finishSettingsLoading();
+        settings.prepareSettingsSaving();
+        JsonObject saved = AISettingsManager.SAVE_PROPS_GSON.toJsonTree(settings).getAsJsonObject();
+        Assertions.assertEquals("gpt-4o", saved.getAsJsonObject("engineConfigurations")
+            .getAsJsonObject("openai").getAsJsonObject("properties").get("gpt.model").getAsString());
+    }
+
+    @Test
+    public void synchronizesMigratedLegacyProfileAfterReload() throws Exception {
+        AISettings settings = AISettingsManager.READ_PROPS_GSON.fromJson("""
+            {
+              "activeEngine": "ollama",
+              "engineConfigurations": {
+                "ollama": {"properties":{"ollama.model":"llama3"}},
+                "openai": {"properties":{"gpt.model":"gpt-4o"}}
+              }
+            }
+            """, AISettings.class);
+        settings.finishSettingsLoading();
+        settings.prepareSettingsSaving();
+        settings = AISettingsManager.READ_PROPS_GSON.fromJson(AISettingsManager.SAVE_PROPS_GSON.toJson(settings), AISettings.class);
+        settings.finishSettingsLoading();
+        settings.getConfiguration("openai").getConfiguration().setModel("gpt-4.1");
+        settings.prepareSettingsSaving();
+        JsonObject saved = AISettingsManager.SAVE_PROPS_GSON.toJsonTree(settings).getAsJsonObject();
+        Assertions.assertEquals("gpt-4.1", saved.getAsJsonObject("engineConfigurations")
+            .getAsJsonObject("openai").getAsJsonObject("properties").get("gpt.model").getAsString());
+    }
+
+    @Test
     public void restoresPreservedProfileWhenProviderBecomesAvailable() throws Exception {
         String source = """
             {"engine": "missing-test-engine", "name": "Restored profile", "configuration": {"gpt.model": "gpt-4o"}}

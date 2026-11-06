@@ -326,7 +326,16 @@ public class AISettings implements DBPAdaptable {
             if (!profile.isAvailable()) {
                 continue;
             }
-            engineConfigurations.put(profile.getEngineId(), new AILegacyEngineConfiguration(profile.getConfiguration()));
+            String engineId = profile.getEngineId();
+            if (!engineConfigurations.containsKey(engineId)
+                || profile.isMigrated() && profile.getProfileId().equals(engineId)) {
+                engineConfigurations.put(engineId, new AILegacyEngineConfiguration(profile.getConfiguration()));
+            }
+        }
+        // legacy settings are shared, so a per-user default must not choose their representative
+        AIConfigurationProfile sharedDefault = configurations.get(defaultConfiguration);
+        if (sharedDefault != null && sharedDefault.isAvailable()) {
+            engineConfigurations.put(sharedDefault.getEngineId(), new AILegacyEngineConfiguration(sharedDefault.getConfiguration()));
         }
     }
 
