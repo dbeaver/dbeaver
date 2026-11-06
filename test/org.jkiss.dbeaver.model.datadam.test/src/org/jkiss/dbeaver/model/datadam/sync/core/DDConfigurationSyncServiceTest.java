@@ -84,15 +84,7 @@ class DDConfigurationSyncServiceTest {
             server = configuration(0, new DDConfigurationPart(part.key(), part.kind(), part.projectId(), 1, part.encryptedValue()));
             return server;
         });
-        Mockito.when(client.updateConfiguration(Mockito.any(), Mockito.any())).thenAnswer(call -> {
-            DDUpdateConfigurationRequest input = call.getArgument(1);
-            var update = input.parts().getFirst();
-            DDConfigurationPart current = server.parts().getFirst();
-            server = configuration(server.version() + 1,
-                new DDConfigurationPart(UNIT_ID, DDConfigurationPartKind.ACCOUNT, null,
-                    current.version() + 1, update.encryptedValue()));
-            return new DDUpdateConfigurationResult(server, List.of());
-        });
+        Mockito.when(client.updateConfiguration(Mockito.any(), Mockito.any())).thenAnswer(call -> applyUpdate(call.getArgument(1)));
     }
 
     @Test
@@ -191,21 +183,95 @@ class DDConfigurationSyncServiceTest {
     }
 
     @Test
-    void aStaleServerVersionReturnsConflictWithoutRetryingOrAdvancingTheBaseline() throws Exception {
+    void concurrentServerChangesRequireAFreshConflictResolution() throws Exception {
         service.synchronize(MONITOR, unit, target);
         unit.value = "local change";
         String previous = state();
-        Mockito.doAnswer(call -> {
-            changeServer("concurrent remote change");
-            return new DDUpdateConfigurationResult(server, List.of(UNIT_ID));
-        }).when(client).updateConfiguration(Mockito.any(), Mockito.any());
+        Mockito.doAnswer(call -> conflictWithServer("concurrent remote change " + (server.version() + 1)))
+            .when(client).updateConfiguration(Mockito.any(), Mockito.any());
 
         Assertions.assertEquals(DDSyncChange.CONFLICT, service.synchronize(MONITOR, unit, target));
 
         Assertions.assertEquals(previous, state());
         Assertions.assertEquals("local change", unit.value);
-        Assertions.assertEquals("concurrent remote change", serverValue());
+        Assertions.assertEquals("concurrent remote change 1", serverValue());
         Mockito.verify(client).updateConfiguration(Mockito.any(), Mockito.any());
+
+        Assertions.assertEquals(DDSyncChange.CONFLICT, service.resolveConflict(MONITOR, unit, target, Resolution.USE_LOCAL_VERSION));
+
+        Assertions.assertEquals(previous, state());
+        Assertions.assertEquals("local change", unit.value);
+        Assertions.assertEquals("concurrent remote change 2", serverValue());
+        Mockito.verify(client, Mockito.times(2)).updateConfiguration(Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    void versionOnlyChangesRetryTheUploadWithFreshVersions() throws Exception {
+        service.synchronize(MONITOR, unit, target);
+        unit.value = "local change";
+        Mockito.doAnswer(call -> conflictWithServer("original"))
+            .doAnswer(call -> applyUpdate(call.getArgument(1)))
+            .when(client).updateConfiguration(Mockito.any(), Mockito.any());
+
+        Assertions.assertEquals(DDSyncChange.LOCAL, service.synchronize(MONITOR, unit, target));
+
+        Assertions.assertEquals("local change", serverValue());
+        Assertions.assertEquals(0, unit.writes);
+        Assertions.assertEquals(DDSyncChange.UNCHANGED, service().synchronize(MONITOR, unit, target));
+        Mockito.verify(client, Mockito.times(2)).updateConfiguration(Mockito.any(), Mockito.any());
+        Mockito.verify(client).updateConfiguration(Mockito.eq(CONFIGURATION_ID), Mockito.argThat(input ->
+            input.expectedConfigurationVersion() == 1 && input.parts().getFirst().expectedVersion() == 2));
+    }
+
+    @Test
+    void concurrentIdenticalContentIsAcknowledgedWithoutAnotherUpload() throws Exception {
+        service.synchronize(MONITOR, unit, target);
+        unit.value = "local change";
+        String previous = state();
+        Mockito.doAnswer(call -> conflictWithServer(unit.value)).when(client).updateConfiguration(Mockito.any(), Mockito.any());
+
+        Assertions.assertEquals(DDSyncChange.UNCHANGED, service.synchronize(MONITOR, unit, target));
+
+        Assertions.assertNotEquals(previous, state());
+        Assertions.assertEquals(0, unit.writes);
+        Assertions.assertEquals(DDSyncChange.UNCHANGED, service().synchronize(MONITOR, unit, target));
+        Mockito.verify(client).updateConfiguration(Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    void versionOnlyChangesPreserveAnExplicitResolution() throws Exception {
+        service.synchronize(MONITOR, unit, target);
+        unit.value = "local change";
+        changeServer("remote change");
+        Mockito.doAnswer(call -> conflictWithServer("remote change"))
+            .doAnswer(call -> applyUpdate(call.getArgument(1)))
+            .when(client).updateConfiguration(Mockito.any(), Mockito.any());
+
+        Assertions.assertEquals(DDSyncChange.LOCAL, service.resolveConflict(MONITOR, unit, target, Resolution.USE_LOCAL_VERSION));
+
+        Assertions.assertEquals("local change", serverValue());
+        Assertions.assertEquals(DDSyncChange.UNCHANGED, service().synchronize(MONITOR, unit, target));
+        Mockito.verify(client, Mockito.times(2)).updateConfiguration(Mockito.any(), Mockito.any());
+        Mockito.verify(client).updateConfiguration(Mockito.eq(CONFIGURATION_ID), Mockito.argThat(input ->
+            input.expectedConfigurationVersion() == 2 && input.parts().getFirst().expectedVersion() == 3));
+    }
+
+    @Test
+    void repeatedVersionRacesFailWithoutReportingAContentConflictOrAdvancingTheBaseline() throws Exception {
+        service.synchronize(MONITOR, unit, target);
+        unit.value = "local change";
+        String previous = state();
+        Mockito.doAnswer(call -> conflictWithServer("original"))
+            .doAnswer(call -> conflictWithServer("original"))
+            .doThrow(new AssertionError("Synchronization retried more than once"))
+            .when(client).updateConfiguration(Mockito.any(), Mockito.any());
+
+        Assertions.assertThrows(DBException.class, () -> service.synchronize(MONITOR, unit, target));
+
+        Assertions.assertEquals(previous, state());
+        Assertions.assertEquals("local change", unit.value);
+        Assertions.assertEquals("original", serverValue());
+        Mockito.verify(client, Mockito.times(2)).updateConfiguration(Mockito.any(), Mockito.any());
     }
 
     @Test
@@ -228,6 +294,22 @@ class DDConfigurationSyncServiceTest {
     @NotNull
     private DDConfigurationSyncService service() {
         return new DDConfigurationSyncService(client, "https://storage.example.test", ACCOUNT_ID);
+    }
+
+    @NotNull
+    private DDUpdateConfigurationResult applyUpdate(@NotNull DDUpdateConfigurationRequest input) {
+        var update = input.parts().getFirst();
+        DDConfigurationPart current = server.parts().getFirst();
+        server = configuration(server.version() + 1,
+            new DDConfigurationPart(UNIT_ID, DDConfigurationPartKind.ACCOUNT, null,
+                current.version() + 1, update.encryptedValue()));
+        return new DDUpdateConfigurationResult(server, List.of());
+    }
+
+    @NotNull
+    private DDUpdateConfigurationResult conflictWithServer(@NotNull String value) {
+        changeServer(value);
+        return new DDUpdateConfigurationResult(server, List.of(UNIT_ID));
     }
 
     private void changeServer(@NotNull String value) {

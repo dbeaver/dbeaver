@@ -54,6 +54,8 @@ public final class DDConfigurationSyncService {
         USE_SERVER_VERSION
     }
 
+    private static final int MAX_SYNC_ATTEMPTS = 2;
+
     private final DDConfigurationClient client;
     private final String storageUrl;
     private final UUID accountId;
@@ -102,54 +104,60 @@ public final class DDConfigurationSyncService {
         State previous = store.load();
         Map<String, byte[]> local = copyResources(unit.read(target));
         String localFingerprint = fingerprint(local);
-        DDConfiguration configuration = findConfiguration(monitor, unit.getId(), previous);
-        checkCanceled(monitor);
-        if (configuration == null) {
+        String confirmedServerFingerprint = null;
+        for (int attempt = 0; attempt < MAX_SYNC_ATTEMPTS; attempt++) {
+            checkCanceled(monitor);
+            DDConfiguration configuration = findConfiguration(monitor, unit.getId(), previous);
+            checkCanceled(monitor);
+            if (configuration == null) {
+                ensureLocalUnchanged(unit, target, localFingerprint);
+                configuration = client.createConfiguration(new DDCreateConfigurationRequest(unit.getName(), List.of(
+                    new DDCreateConfigurationPartRequest(
+                        unit.getId(), DDConfigurationPartKind.ACCOUNT, null, client.encryptPart(unit.getId(), encode(local))))));
+                saveState(store, previous, configuration, unit.getId(), localFingerprint);
+                return DDSyncChange.LOCAL;
+            }
+
+            DDConfigurationPart part = requirePart(configuration, unit.getId());
+            Map<String, byte[]> remote = decode(client.decryptPart(part));
+            String serverFingerprint = fingerprint(remote);
+            if (localFingerprint.equals(serverFingerprint)) {
+                saveState(store, previous, configuration, unit.getId(), serverFingerprint);
+                return DDSyncChange.UNCHANGED;
+            }
+            DDSyncChange change = previous == null ? DDSyncChange.SERVER : DDSyncUtils.classify(
+                localFingerprint, previous.fingerprint(), serverFingerprint);
+            if (change == DDSyncChange.CONFLICT) {
+                if (resolution == null || (attempt > 0 && !serverFingerprint.equals(confirmedServerFingerprint))) {
+                    return DDSyncChange.CONFLICT;
+                }
+                confirmedServerFingerprint = serverFingerprint;
+                change = resolution == Resolution.USE_LOCAL_VERSION ? DDSyncChange.LOCAL : DDSyncChange.SERVER;
+            }
+
+            checkCanceled(monitor);
             ensureLocalUnchanged(unit, target, localFingerprint);
-            configuration = client.createConfiguration(new DDCreateConfigurationRequest(unit.getName(), List.of(
-                new DDCreateConfigurationPartRequest(
-                    unit.getId(), DDConfigurationPartKind.ACCOUNT, null, client.encryptPart(unit.getId(), encode(local))))));
-            saveState(store, previous, configuration, unit.getId(), localFingerprint);
-            return DDSyncChange.LOCAL;
-        }
-
-        DDConfigurationPart part = requirePart(configuration, unit.getId());
-        Map<String, byte[]> remote = decode(client.decryptPart(part));
-        String serverFingerprint = fingerprint(remote);
-        if (localFingerprint.equals(serverFingerprint)) {
-            saveState(store, previous, configuration, unit.getId(), serverFingerprint);
-            return DDSyncChange.UNCHANGED;
-        }
-        DDSyncChange change = previous == null ? DDSyncChange.SERVER : DDSyncUtils.classify(
-            localFingerprint, previous.fingerprint(), serverFingerprint);
-        if (change == DDSyncChange.CONFLICT) {
-            if (resolution == null) {
-                return DDSyncChange.CONFLICT;
+            if (change == DDSyncChange.LOCAL) {
+                DDUpdateConfigurationResult result = client.updateConfiguration(configuration.configurationId(),
+                    new DDUpdateConfigurationRequest(configuration.version(), List.of(
+                        new DDUpdateConfigurationPartRequest(part.key(), part.version(), client.encryptPart(part.key(), encode(local))))));
+                if (result == null) {
+                    throw new DBException("DataDam configuration no longer exists: " + configuration.configurationId());
+                }
+                if (!result.conflictingKeys().isEmpty()) {
+                    continue;
+                }
+                if (!configuration.configurationId().equals(result.configuration().configurationId())) {
+                    throw new DBException("Unexpected DataDam configuration update response");
+                }
+                saveState(store, previous, result.configuration(), unit.getId(), localFingerprint);
+            } else {
+                unit.write(target, remote);
+                saveState(store, previous, configuration, unit.getId(), serverFingerprint);
             }
-            change = resolution == Resolution.USE_LOCAL_VERSION ? DDSyncChange.LOCAL : DDSyncChange.SERVER;
+            return change;
         }
-
-        checkCanceled(monitor);
-        ensureLocalUnchanged(unit, target, localFingerprint);
-        if (change == DDSyncChange.LOCAL) {
-            DDUpdateConfigurationResult result = client.updateConfiguration(configuration.configurationId(),
-                new DDUpdateConfigurationRequest(configuration.version(), List.of(
-                    new DDUpdateConfigurationPartRequest(part.key(), part.version(), client.encryptPart(part.key(), encode(local))))));
-            if (result == null) {
-                throw new DBException("DataDam configuration no longer exists: " + configuration.configurationId());
-            }
-            if (!result.conflictingKeys().isEmpty()) {
-                return DDSyncChange.CONFLICT;
-            }
-            if (!configuration.configurationId().equals(result.configuration().configurationId())) {
-                throw new DBException("Unexpected DataDam configuration update response");
-            }
-            saveState(store, previous, result.configuration(), unit.getId(), localFingerprint);
-        } else {
-            unit.write(target, remote);
-            saveState(store, previous, configuration, unit.getId(), serverFingerprint);
-        }
-        return change;
+        throw new DBException("DataDam configuration changed repeatedly during synchronization; retry synchronization");
     }
 
     @Nullable
