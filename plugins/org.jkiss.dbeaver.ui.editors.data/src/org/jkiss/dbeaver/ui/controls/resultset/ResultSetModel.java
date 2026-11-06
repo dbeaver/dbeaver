@@ -678,8 +678,9 @@ public class ResultSetModel implements DBDResultSetModel {
         @Nullable ResultSetValuePath valuePath
     ) {
         DBDAttributeBinding pathRoot = DBUtils.getRootValueBinding(valuePath);
-        if (pathRoot != null && (attr.getTopParent() != pathRoot
-            || (!row.isChanged(attr) && row.isChanged(pathRoot)))) {
+        // A binding from another hierarchy cannot mark this path's edit, so restore the path root.
+        // An unchanged sibling must not discard another member's changes.
+        if (pathRoot != null && attr.getTopParent() != pathRoot) {
             attr = pathRoot;
             rowIndexes = null;
         }

@@ -98,8 +98,9 @@ final class ResultSetUndoRedoManager {
         @Nullable ResultSetValuePath valuePath
     ) {
         DBDAttributeBinding pathRoot = DBUtils.getRootValueBinding(valuePath);
-        DBDAttributeBinding changedAttribute = pathRoot != null && (attribute.getTopParent() != pathRoot
-            || (!row.isChanged(attribute) && row.isChanged(pathRoot)))
+        // A binding from another hierarchy cannot mark this path's edit, so check the path root.
+        // An unchanged sibling shares that root but must not qualify for reset.
+        DBDAttributeBinding changedAttribute = pathRoot != null && attribute.getTopParent() != pathRoot
             ? pathRoot : attribute;
         if (row.getState() == ResultSetRow.STATE_REMOVED) {
             viewer.getModel().resetCellValue(attribute, row, rowIndexes, valuePath);
