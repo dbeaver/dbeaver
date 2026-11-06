@@ -87,13 +87,13 @@ public class CloudflareD1RegistrationTest {
         var driver = DataSourceProviderRegistry.getInstance().getDataSourceProvider("cloudflare_d1")
             .getDriver("cloudflare_d1_jdbc");
         Assertions.assertNotNull(driver);
-        Assertions.assertEquals("jdbc:d1://initial-id", driver.getConnectionURL(configuration));
+        Assertions.assertEquals("jdbc:dbeaver:d1://initial-id", driver.getConnectionURL(configuration));
         // Exercise datasource URL generation rather than assuming a blank persisted URL reaches the driver unchanged.
         var container = Mockito.mock(DBPDataSourceContainer.class);
         Mockito.when(container.getDriver()).thenReturn(driver);
         var fallback = Mockito.mock(ConnectionUrlDataSource.class, Mockito.CALLS_REAL_METHODS);
         Mockito.doReturn(container).when(fallback).getContainer();
-        Assertions.assertEquals("jdbc:d1://initial-id", fallback.connectionUrl(configuration));
+        Assertions.assertEquals("jdbc:dbeaver:d1://initial-id", fallback.connectionUrl(configuration));
     }
 
     @Test
@@ -122,7 +122,7 @@ public class CloudflareD1RegistrationTest {
             Assertions.assertEquals("cloudflare_d1", provider.getAttribute("id"));
             var driver = (Element) plugin.getElementsByTagName("driver").item(0);
             Assertions.assertEquals("cloudflare_d1_jdbc", driver.getAttribute("id"));
-            Assertions.assertEquals("com.dbeaver.jdbc.d1.D1Driver", driver.getAttribute("class"));
+            Assertions.assertEquals("com.dbeaver.jdbc.driver.d1.D1Driver", driver.getAttribute("class"));
             var files = driver.getElementsByTagName("file");
             int libraries = 0;
             for (int index = 0; index < files.getLength(); index++) {
