@@ -196,14 +196,20 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     }
 
     protected void disconnect(boolean removeContext) {
+        disconnect(removeContext, false);
+    }
+
+    private void disconnect(boolean removeContext, boolean abort) {
         notifyTransactionListeners(DBCTransactionListener::transactionContextClosed);
         transactionListeners.clear();
         // [JDBC] Need sync here because real connection close could take some time
         // while UI may invoke callbacks to operate with connection
         synchronized (this) {
-            // If we cannot determine if connection is in autocommit mode, assume that it is not
-            if (connection != null && !dataSource.closeConnection(connection, purpose, !isAutoCommit(false))) {
-                log.debug("Connection close timeout");
+            if (connection != null && !(abort && abortConnection(connection))) {
+                // If we cannot determine if connection is in autocommit mode, assume that it is not
+                if (!dataSource.closeConnection(connection, purpose, !isAutoCommit(false))) {
+                    log.debug("Connection close timeout");
+                }
             }
             this.connection = null;
         }
@@ -259,7 +265,10 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     @Override
     public void invalidateContext(@NotNull DBRProgressMonitor monitor, @NotNull DBCInvalidatePhase phase) throws DBException {
         if (phase == DBCInvalidatePhase.BEFORE_INVALIDATE) {
-            closeContext(false);
+            // The connection is replaced because it is (likely) broken. A graceful close waits for the server,
+            // which never answers on a dead network (up to CONNECTION_CLOSE_TIMEOUT for each context).
+            // Abort does not wait; either way the server rolls back what was not committed.
+            disconnect(false, true);
         }
 
         if (phase == DBCInvalidatePhase.INVALIDATE) {
@@ -274,6 +283,17 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     public void close() {
         closeContext(true);
         statementLock.close();
+    }
+
+    private boolean abortConnection(@NotNull Connection connection) {
+        try {
+            connection.abort(Runnable::run);
+            return true;
+        } catch (Throwable e) {
+            // Not supported by the driver (JDBC 4.1)
+            log.debug("Error aborting connection: " + e.getMessage());
+            return false;
+        }
     }
 
     private void closeContext(boolean removeContext) {

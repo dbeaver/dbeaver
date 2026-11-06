@@ -109,7 +109,9 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
         @NotNull DBRProgressMonitor monitor,
         @Nullable Thread blockThread
     ) throws DBException {
-        getConnection().getDataSource().cancelStatementExecute(monitor, this);
+        JDBCSession session = getConnection();
+        session.getDataSource().scheduleCanceledExecutionAbort(monitor, this, session.getExecutionContext());
+        session.getDataSource().cancelStatementExecute(monitor, this);
     }
 
     @NotNull
