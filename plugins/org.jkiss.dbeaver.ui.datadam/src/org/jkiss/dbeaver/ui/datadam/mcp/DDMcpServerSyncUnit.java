@@ -48,6 +48,11 @@ public final class DDMcpServerSyncUnit implements DBPSyncUnit {
         return DBPSyncScope.WORKSPACE;
     }
 
+    boolean isAvailable() {
+        ICommandService commands = PlatformUI.getWorkbench().getService(ICommandService.class);
+        return commands != null && commands.getCommand(READ_COMMAND).isDefined() && commands.getCommand(APPLY_COMMAND).isDefined();
+    }
+
     @NotNull
     @Override
     public Map<String, byte[]> read(@NotNull DBPSyncTarget target) throws DBException {
