@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.datadam;
 
 import com.dbeaver.datadam.mcp.api.model.DDMcpStatus;
+import com.dbeaver.datadam.mcp.api.service.web.DDMcpWebStatusService;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
@@ -32,7 +33,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
-import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionSettings;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -215,41 +215,33 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     private void loadMcpStatus() {
-        DDMcpStatus[] status = new DDMcpStatus[1];
         try {
-            UIUtils.runInProgressDialog(monitor -> {
-                try {
-                    status[0] = DDMcpConnectionSettings.getGlobalStatus(monitor);
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            });
-        } catch (InvocationTargetException e) {
-            log.debug("Cannot read DataDam MCP status", e.getTargetException());
+            showMcpStatus(DDServerCatalog.getInstance().callInProgressDialog(
+                "Read DataDam MCP status", DDMcpWebStatusService.SERVICE_ID, DDMcpWebStatusService.class,
+                DDMcpWebStatusService::getStatus));
+        } catch (DBException | InterruptedException e) {
+            log.debug("Cannot read DataDam MCP status", e);
+            showMcpStatus(null);
         }
-        showMcpStatus(status[0]);
     }
 
     private void updateMcpStatus(boolean enabled, boolean previous) {
-        boolean[] canceled = new boolean[1];
         try {
-            UIUtils.runInProgressDialog(monitor -> {
-                try {
-                    DDMcpConnectionSettings.setGlobalStatus(enabled ? DDMcpStatus.ENABLED : DDMcpStatus.DISABLED, monitor);
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                } catch (InterruptedException e) {
-                    canceled[0] = true;
-                    throw e;
-                }
-            });
-            if (canceled[0]) {
+            Boolean applied = DDServerCatalog.getInstance().callInProgressDialog(
+                "Update DataDam MCP status", DDMcpWebStatusService.SERVICE_ID, DDMcpWebStatusService.class,
+                service -> {
+                    service.setStatus(enabled ? DDMcpStatus.ENABLED : DDMcpStatus.DISABLED);
+                    return true;
+                });
+            if (!Boolean.TRUE.equals(applied)) {
                 showMcpStatus(null);
             }
-        } catch (InvocationTargetException e) {
+        } catch (InterruptedException e) {
+            showMcpStatus(null);
+        } catch (DBException e) {
             mcpCheck.setSelection(previous);
             DBWorkbench.getPlatformUI().showError(
-                SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_mcp_update_failed, e.getTargetException());
+                SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_mcp_update_failed, e);
         }
     }
 

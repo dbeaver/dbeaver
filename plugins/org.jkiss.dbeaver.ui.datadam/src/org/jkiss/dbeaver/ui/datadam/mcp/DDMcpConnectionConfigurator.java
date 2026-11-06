@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.datadam.mcp;
 
 import com.dbeaver.datadam.mcp.api.model.DDMcpStatus;
+import com.dbeaver.datadam.mcp.api.service.web.DDMcpWebStatusService;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
@@ -28,9 +29,8 @@ import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionSettings;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.preferences.PrefPageDataSourceAI;
+import org.jkiss.dbeaver.ui.datadam.DDServerCatalog;
 import org.jkiss.dbeaver.ui.datadam.internal.DDMcpMessages;
-
-import java.lang.reflect.InvocationTargetException;
 
 public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<PrefPageDataSourceAI, PrefPageDataSourceAI> {
     private static final Log log = Log.getLog(DDMcpConnectionConfigurator.class);
@@ -46,19 +46,15 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
         if (connection == null) {
             return;
         }
-        DDMcpStatus[] status = new DDMcpStatus[1];
+        DDMcpStatus status = null;
         try {
-            UIUtils.runInProgressDialog(monitor -> {
-                try {
-                    status[0] = DDMcpConnectionSettings.getGlobalStatus(monitor);
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            });
-        } catch (InvocationTargetException e) {
-            log.debug("Cannot read DataDam MCP status", e.getTargetException());
+            status = DDServerCatalog.getInstance().callInProgressDialog(
+                "Check DataDam MCP availability", DDMcpWebStatusService.SERVICE_ID, DDMcpWebStatusService.class,
+                DDMcpWebStatusService::getStatus);
+        } catch (DBException | InterruptedException e) {
+            log.debug("Cannot read DataDam MCP status", e);
         }
-        if (status[0] == DDMcpStatus.ENABLED) {
+        if (status == DDMcpStatus.ENABLED) {
             Composite group = UIUtils.createTitledComposite(
                 parent, DDMcpMessages.mcp_connection_settings_group, 1, GridData.FILL_HORIZONTAL);
             enableCheck = UIUtils.createCheckbox(

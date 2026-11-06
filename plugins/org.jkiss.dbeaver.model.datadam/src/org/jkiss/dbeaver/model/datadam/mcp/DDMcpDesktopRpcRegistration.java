@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.datadam.mcp;
 import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamGsonRpcCodec;
 import com.dbeaver.datadam.mcp.api.model.DDMcpStatus;
 import com.dbeaver.datadam.mcp.api.service.desktop.DDMcpFunctionService;
+import com.dbeaver.datadam.mcp.api.service.web.DDMcpWebStatusService;
 import com.dbeaver.messaging.requestreply.MessagingSubscription;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import com.dbeaver.messaging.rpc.MessagingRpcException;
@@ -29,7 +30,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.rpc.DDDesktopRpcRegistration;
-import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamServerServiceCatalog;
 
 public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
     private static final Log log = Log.getLog(DDMcpDesktopRpcRegistration.class);
@@ -47,7 +47,7 @@ public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
 
     @Override
     public synchronized void register(@NotNull MessagingRpcEndpoint endpoint) throws DBException {
-        DDMcpStatus status = readStatus();
+        DDMcpStatus status = readStatus(endpoint);
         if (this.endpoint != endpoint) {
             unregister();
             this.endpoint = endpoint;
@@ -56,9 +56,9 @@ public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
     }
 
     @NotNull
-    private DDMcpStatus readStatus() throws DBException {
+    private DDMcpStatus readStatus(@NotNull MessagingRpcEndpoint endpoint) throws DBException {
         try {
-            return DDRemoteDamServerServiceCatalog.getInstance().getMcpStatusService().getStatus();
+            return endpoint.proxy(DDMcpWebStatusService.SERVICE_ID, DDMcpWebStatusService.class).getStatus();
         } catch (MessagingRpcException e) {
             throw new DBException("Cannot read DataDam MCP status", e);
         }
