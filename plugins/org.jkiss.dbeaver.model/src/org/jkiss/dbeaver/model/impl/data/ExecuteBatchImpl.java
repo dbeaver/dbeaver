@@ -246,7 +246,13 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         return true;
     }
 
-    String formatQueryParameters(DBCSession session, String queryString, DBDValueHandler[] handlers, Object[] rowValues) {
+    @NotNull
+    String formatQueryParameters(
+        @NotNull DBCSession session,
+        @NotNull String queryString,
+        @NotNull DBDValueHandler[] handlers,
+        @NotNull Object[] rowValues
+    ) {
         if (handlers.length == 0) {
             return queryString;
         }

@@ -461,7 +461,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
             boolean hasKey = false;
             for (int i = 0; i < updateAttributes.length; i++) {
-                DBSAttributeBase attribute = updateAttributes[i];
                 if (hasKey) {
                     query.append(","); //$NON-NLS-1$
                 }
@@ -469,6 +468,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 if (tableAlias != null) {
                     query.append(tableAlias).append(dialect.getStructSeparator());
                 }
+                DBSAttributeBase attribute = updateAttributes[i];
                 query.append(DBStructUtils.getAttributeName(attribute, DBPAttributeReferencePurpose.UPDATE_TARGET))
                     .append("="); //$NON-NLS-1$
                 DBDValueHandler valueHandler = handlers[i];

@@ -314,6 +314,8 @@ public interface IResultSetController extends IDataController, DBPContextProvide
     );
 
     /**
+     * Refreshes cached hints for the specified attributes and rows.
+     *
      * @param rowIndexes          applicable only when single row is passed
      */
     void refreshHintCache(

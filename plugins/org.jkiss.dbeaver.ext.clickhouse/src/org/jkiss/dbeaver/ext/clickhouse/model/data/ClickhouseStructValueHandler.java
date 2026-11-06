@@ -135,8 +135,15 @@ public class ClickhouseStructValueHandler extends JDBCStructValueHandler impleme
         return converted;
     }
 
+    @Nullable
     @Override
-    public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy, boolean validateValue) throws DBCException {
+    public Object getValueFromObject(
+        @NotNull DBCSession session,
+        @NotNull DBSTypedObject type,
+        @Nullable Object object,
+        boolean copy,
+        boolean validateValue
+    ) throws DBCException {
         if (object instanceof DBDValue) {
             return object;
         }
@@ -156,7 +163,7 @@ public class ClickhouseStructValueHandler extends JDBCStructValueHandler impleme
 
     @NotNull
     @Override
-    public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format) {
+    public String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format) {
         if (format == DBDDisplayFormat.NATIVE && value instanceof ClickhouseTupleValue tuple) {
             return ClickhouseComplexValueSerializer.toSQL(tuple.getDataType().getDataSource(), column, tuple);
         }

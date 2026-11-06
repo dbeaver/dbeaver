@@ -62,7 +62,7 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
         this.useUpsert = useUpsert;
     }
 
-    protected int getNextUsedParamIndex(Object[] attributeValues, int paramIndex) {
+    protected int getNextUsedParamIndex(@NotNull Object[] attributeValues, int paramIndex) {
         do {
             paramIndex++;
         } while (paramIndex < attributeValues.length && !shouldBindAttribute(paramIndex, attributeValues));
@@ -78,8 +78,13 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
 
     @NotNull
     @Override
-    protected DBCStatement prepareStatement(@NotNull DBCSession session, DBDValueHandler[] handlers, Object[] attributeValues, Map<String, Object> options) throws DBCException {
-        StringBuilder queryForStatement = prepareQueryForStatement(session, handlers, attributeValues, attributes, table,false, options);
+    protected DBCStatement prepareStatement(
+        @NotNull DBCSession session,
+        @NotNull DBDValueHandler[] handlers,
+        @NotNull Object[] attributeValues,
+        @NotNull Map<String, Object> options
+    ) throws DBCException {
+        StringBuilder queryForStatement = prepareQueryForStatement(session, handlers, attributeValues, attributes, table, false, options);
         // Execute. USe plain statement if binding was disabled
         boolean skipBindValues = CommonUtils.toBoolean(options.get(DBSDataManipulator.OPTION_SKIP_BIND_VALUES));
         DBCStatement dbStat = session.prepareStatement(
@@ -192,7 +197,8 @@ public class ExecuteInsertBatchImpl extends ExecuteBatchImpl {
                         rowValuesPart.add(bind);
                     }
                 } else if (skipBindValues) {
-                    rowValuesPart.add(SQLUtils.convertValueToSQL(session.getDataSource(), attribute, valueHandler, attributeValues[k], DBDDisplayFormat.NATIVE, false));
+                    rowValuesPart.add(SQLUtils.convertValueToSQL(
+                        session.getDataSource(), attribute, valueHandler, attributeValues[k], DBDDisplayFormat.NATIVE, false));
                 } else {
                     rowValuesPart.add("?");
                 }

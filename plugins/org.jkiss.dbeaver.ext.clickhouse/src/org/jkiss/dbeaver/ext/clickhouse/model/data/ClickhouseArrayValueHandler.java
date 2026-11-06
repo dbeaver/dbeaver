@@ -104,6 +104,7 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler implement
         return type instanceof ClickhouseArrayType arrayType && containsCompositeType(arrayType.getComponentType());
     }
 
+    @Nullable
     @Override
     protected Object fetchColumnValue(
         @NotNull DBCSession session,
@@ -135,6 +136,7 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler implement
 
     }
 
+    @Nullable
     @Override
     public Object getValueFromObject(
         @NotNull DBCSession session,
@@ -202,7 +204,7 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler implement
     @Override
     public String getValueDisplayString(
         @NotNull DBSTypedObject column,
-        Object value,
+        @Nullable Object value,
         @NotNull DBDDisplayFormat format
     ) {
         if (format == DBDDisplayFormat.NATIVE && value instanceof ClickhouseMapValue map) {
