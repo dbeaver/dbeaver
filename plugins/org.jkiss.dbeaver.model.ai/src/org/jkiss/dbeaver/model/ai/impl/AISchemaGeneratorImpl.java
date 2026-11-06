@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -46,21 +47,20 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
     private static final Log log = Log.getLog(AISchemaGeneratorImpl.class);
 
     @Override
+    @NotNull
     public String generateSchema(
         @NotNull DBRProgressMonitor monitor,
         @Nullable DBCExecutionContext executionContext,
         @NotNull AISchemaGenerationOptions options,
         @NotNull DBSEntity entity
     ) throws DBException {
+        if (!options.includesObject(monitor, entity)) {
+            return "";
+        }
         StringBuilder ddl = new StringBuilder();
 
-        if (options.sendFullDDL()) {
-            String tableDDL = DBStructUtils.generateTableDDL(
-                monitor,
-                entity,
-                Map.of(DBPScriptObject.OPTION_SKIP_DROPS, true),
-                false
-            );
+        String tableDDL = options.sendFullDDL() ? getFullDDL(monitor, options, entity) : null;
+        if (!CommonUtils.isEmpty(tableDDL)) {
             DBStructUtils.addDDLLine(ddl, tableDDL);
         } else {
             generateCustomDDL(monitor, executionContext, options, entity, ddl);
@@ -70,16 +70,48 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         if (options.sendReferences() && executionContext != null) {
             if (entity instanceof DBSTable table) {
                 // Always generate native DDL because it uses FQNs and ALTER TABLE syntax
-                addReferencesDDL(monitor, executionContext, table, true, ddl);
+                addReferencesDDL(monitor, executionContext, options, table, true, ddl);
             }
         }
 
         return ddl.toString().trim();
     }
 
+    @Nullable
+    private String getFullDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AISchemaGenerationOptions options,
+        @NotNull DBSEntity entity
+    ) throws DBException {
+        Map<String, Object> ddlOptions = new HashMap<>();
+        ddlOptions.put(DBPScriptObject.OPTION_SKIP_DROPS, true);
+        if (options.objectFilter() != null) {
+            ddlOptions.put(DBPScriptObject.OPTION_DDL_OBJECT_FILTER, options.objectFilter());
+        }
+        // Explicit full-DDL requests include the allowed object's native definition verbatim.
+        // Its embedded dependency names and vendor-specific clauses are part of that definition.
+        if (entity instanceof DBPScriptObject scriptObject) {
+            String nativeDDL = scriptObject.getObjectDefinitionText(monitor, ddlOptions);
+            if (!CommonUtils.isEmpty(nativeDDL)) {
+                return nativeDDL;
+            }
+        }
+        SQLObjectEditor<?, ?> editor = DBWorkbench.getPlatform().getEditorsRegistry()
+            .getObjectManager(entity.getClass(), SQLObjectEditor.class);
+        if (editor instanceof SQLTableManager<?, ?>) {
+            return DBStructUtils.generateTableDDL(monitor, entity, ddlOptions, false, options.objectFilter());
+        }
+        if (editor != null) {
+            // Views and materialized views may use an ordinary object editor rather than a table manager.
+            return DBStructUtils.generateObjectDDL(monitor, entity, ddlOptions, false);
+        }
+        return null;
+    }
+
     private void addReferencesDDL(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBCExecutionContext executionContext,
+        @NotNull AISchemaGenerationOptions options,
         @NotNull DBSTable table,
         boolean nativeDDL,
         @NotNull StringBuilder ddl
@@ -89,7 +121,7 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
             if (!CommonUtils.isEmpty(references)) {
                 final DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
                 for (DBSEntityAssociation refKey : references) {
-                    if (refKey instanceof DBSTableForeignKey tfk) {
+                    if (refKey instanceof DBSTableForeignKey tfk && options.includesObject(monitor, refKey)) {
                         String fkScript;
                         if (nativeDDL) {
                             final SQLObjectEditor<?, ?> entityEditor = editorsRegistry.getObjectManager(
@@ -156,9 +188,9 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         }
 
         StringJoiner joiner = new StringJoiner(",", " (", ") ");
-        attributes.forEach(attr -> {
-            if (DBUtils.isHiddenObject(attr)) {
-                return;
+        for (DBSEntityAttribute attr : attributes) {
+            if (DBUtils.isHiddenObject(attr) || !options.includesObject(monitor, attr)) {
+                continue;
             }
 
             joiner.add(
@@ -166,14 +198,14 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
                     + (options.sendColumnTypes() ? " " + attr.getTypeName() : "")
                     + (options.sendObjectComment() && !describe(attr).isBlank() ? describe(attr) : "")
             );
-        });
+        }
 
         if (options.sendConstraints()) {
-            describeTableKeys(monitor, table).forEach(joiner::add);
+            describeTableKeys(monitor, options, table).forEach(joiner::add);
         }
 
         if (options.sendForeignKeys()) {
-            describeForeignKeys(monitor, table).forEach(joiner::add);
+            describeForeignKeys(monitor, options, table).forEach(joiner::add);
         }
 
         ddl.append(joiner);
@@ -193,8 +225,10 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
             && !(parent.equals(def.getDefaultCatalog()) || parent.equals(def.getDefaultSchema()));
     }
 
+    @NotNull
     private List<String> describeTableKeys(
         @NotNull DBRProgressMonitor monitor,
+        @NotNull AISchemaGenerationOptions options,
         @NotNull DBSEntity entity
     ) throws DBException {
         Collection<? extends DBSEntityConstraint> constraints = entity.getConstraints(monitor);
@@ -204,6 +238,9 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
 
         List<String> keyDescriptions = new ArrayList<>(constraints.size());
         for (DBSEntityConstraint c : constraints) {
+            if (!options.includesObject(monitor, c)) {
+                continue;
+            }
             String description = describeConstraint(monitor, c);
             if (!CommonUtils.isEmpty(description)) {
                 keyDescriptions.add(description);
@@ -242,6 +279,7 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
     @NotNull
     private List<String> describeForeignKeys(
         @NotNull DBRProgressMonitor monitor,
+        @NotNull AISchemaGenerationOptions options,
         @NotNull DBSEntity object
     ) throws DBException {
         Collection<? extends DBSEntityAssociation> associations = object.getAssociations(monitor);
@@ -251,6 +289,9 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
 
         List<String> fkDdls = new ArrayList<>(associations.size());
         for (DBSEntityAssociation association : associations) {
+            if (!options.includesObject(monitor, association)) {
+                continue;
+            }
             String fkDescription = describeForeignKey(monitor, association);
             if (!CommonUtils.isEmpty(fkDescription)) {
                 fkDdls.add(fkDescription);
