@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.qm.AIChatStorage;
 import org.jkiss.dbeaver.model.ai.quota.UserTokenQuotaService;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -391,6 +392,14 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     }
 
     public boolean checkConfiguration() {
+        AIConfigurationProfile profile = activeConversation.getProfile();
+        if (profile == null) {
+            profile = AISettingsManager.getStaticSettings().getDefaultConfigurationOrNull();
+        }
+        if (profile != null && !profile.isAvailable()) {
+            AIUIUtils.showPreferences(getShell());
+            return false;
+        }
         try {
             if (!AIUtils.hasValidConfiguration()) {
                 AIUIUtils.showPreferences(getShell());
@@ -487,6 +496,11 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         if (contextComposite != null) {
             contextComposite.showScopeDropDown();
         }
+    }
+
+    public void selectConversationProfile(@NotNull AIConfigurationProfile profile) {
+        AISettingsManager.getInstance().setDefaultConfiguration(profile);
+        setConversationProfile(getActiveConversation(), profile);
     }
 
     public void setConversationProfile(@NotNull AIChatConversation conversation, @Nullable AIConfigurationProfile profile) {

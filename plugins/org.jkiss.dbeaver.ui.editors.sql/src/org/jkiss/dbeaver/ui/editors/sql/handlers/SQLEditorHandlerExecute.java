@@ -22,6 +22,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -45,6 +46,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 public class SQLEditorHandlerExecute extends AbstractHandler {
     private static final Log log = Log.getLog(SQLEditorHandlerExecute.class);
 
+    @Nullable
     @Override
     public Object execute(@NotNull ExecutionEvent event) throws ExecutionException
     {
@@ -105,6 +107,9 @@ public class SQLEditorHandlerExecute extends AbstractHandler {
                         DBSObject object = executionContext.getDefaultCatalog();
                         if (object == null) {
                             object = editor.getDataSource();
+                        }
+                        if (object == null || (executorDescriptor.hasObjectTypes() && !executorDescriptor.appliesTo(object))) {
+                            return null;
                         }
                         if (editor.getGlobalScriptContext().getSourceFile() != null) {
                             nativeExecutor.execute(object, editor.getGlobalScriptContext().getSourceFile());

@@ -1139,6 +1139,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @Override
     @Nullable
     public IDialogPage getCurrentSubPage() {
+        if (tabFolder == null || tabFolder.isDisposed()) {
+            return null;
+        }
         final CTabItem selection = tabFolder.getSelection();
         return selection != null ? (IDialogPage) selection.getData() : null;
     }

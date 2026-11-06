@@ -25,12 +25,15 @@ import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.AIFunctionContext;
 import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.AIFunctionResult;
+import org.jkiss.dbeaver.model.ai.AIFunctionSettings;
 import org.jkiss.dbeaver.model.ai.AIFunctionType;
 import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
+import org.jkiss.dbeaver.model.ai.AIToolbox;
 import org.jkiss.dbeaver.model.ai.AIToolboxManager;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.junit.DBeaverUnitTest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
@@ -41,6 +44,29 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 public class AIAssistantFunctionErrorTest extends DBeaverUnitTest {
+    @Test
+    public void disabledFunctionCannotReadDataAfterModelRequestsIt() throws DBException {
+        AIAssistantImpl assistant = Mockito.spy(new AIAssistantImpl(Mockito.mock(DBPWorkspace.class)));
+        AIToolboxManager toolboxManager = Mockito.mock(AIToolboxManager.class);
+        AIToolbox toolbox = Mockito.mock(AIToolbox.class);
+        AIFunctionDescriptor function = Mockito.mock(AIFunctionDescriptor.class);
+        AIFunctionSettings settings = new AIFunctionSettings();
+        Mockito.when(toolboxManager.getFunctionSettings()).thenReturn(settings);
+        Mockito.when(function.getToolbox()).thenReturn(toolbox);
+        Mockito.when(function.isEnabledByDefault()).thenReturn(true);
+        Mockito.when(function.getId()).thenReturn("readTableSampleRows");
+        Mockito.when(toolbox.isEnabled()).thenReturn(true);
+        Mockito.when(toolbox.isAccessible()).thenReturn(true);
+        settings.getToolboxSettings(toolbox).setFunctionEnabled(function, false);
+        Mockito.doReturn(toolboxManager).when(assistant).getToolboxManager();
+        AIFunctionCall call = new AIFunctionCall("readTableSampleRows", Map.of());
+        call.setFunction(function);
+
+        Assertions.assertThrows(DBException.class, () -> assistant.callFunction(
+            new AIFunctionContext(new VoidProgressMonitor(), null, Mockito.mock(AIPromptGenerator.class)), call));
+        Mockito.verify(toolbox, Mockito.never()).callFunction(Mockito.any(), Mockito.any(), Mockito.any());
+    }
+
     @Test
     public void failedFunctionStopsRequestAndFinishesConversation() throws Exception {
         AIAssistantImpl assistant = Mockito.spy(new AIAssistantImpl(Mockito.mock(DBPWorkspace.class)));

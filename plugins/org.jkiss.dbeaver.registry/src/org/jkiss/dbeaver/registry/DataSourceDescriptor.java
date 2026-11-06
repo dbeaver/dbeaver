@@ -2140,15 +2140,16 @@ public class DataSourceDescriptor
                 if (actualConfig != connConfig || !dataSourceContainer.isSavePassword()) {
                     dataSourceContainer.resolvedConnectionInfo = promptConnectionInfo;
                 }
-                if (dataSourceContainer.isSavePassword()) {
+                if (!dataSourceContainer.isSavePassword()) {
+                    dataSourceContainer.setConnectionInfo(savedConnectionInfo);
+                    dataSourceContainer.setSavePassword(savedPasswordState);
+                } else if (!dataSourceContainer.isTemporary()) {
+                    // Updating an unregistered test connection would add it to the registry and navigator.
                     try {
                         dataSourceContainer.getRegistry().updateDataSource(dataSourceContainer);
                     } catch (DBException e) {
                         DBWorkbench.getPlatformUI().showError("Error saving datasource", null, e);
                     }
-                } else {
-                    dataSourceContainer.setConnectionInfo(savedConnectionInfo);
-                    dataSourceContainer.setSavePassword(savedPasswordState);
                 }
                 return true;
             }
