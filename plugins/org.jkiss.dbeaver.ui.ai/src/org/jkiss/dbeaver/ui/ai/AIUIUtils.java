@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageEngines;
-import org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageUserProfiles;
 
 
 public class AIUIUtils {
@@ -69,7 +68,7 @@ public class AIUIUtils {
         UIUtils.showPreferencesFor(
             shell,
             AISettingsManager.getInstance().getSettings(),
-            DBWorkbench.isDistributed() ? AIPreferencePageUserProfiles.PAGE_ID : AIPreferencePageEngines.PAGE_ID
+            AIPreferencePageEngines.PAGE_ID
         );
     }
 }

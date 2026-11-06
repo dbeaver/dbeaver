@@ -79,10 +79,6 @@
         </page>
     </extension>
     <extension point="org.eclipse.ui.propertyPages">
-        <page id="org.jkiss.dbeaver.preferences.ai.userProfiles"
-              class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageUserProfiles" name="%pref.page.ai.userProfiles.name">
-            <enabledWhen><reference definitionId="org.jkiss.dbeaver.ai.preferences"/></enabledWhen>
-        </page>
         <page id="org.jkiss.dbeaver.preferences.ai.engines" class="org.jkiss.dbeaver.ui.ai.preferences.AIPreferencePageEngines" name="%pref.page.ai.engines.name">
             <enabledWhen><reference definitionId="org.jkiss.dbeaver.ai.preferences"/></enabledWhen>
         </page>
