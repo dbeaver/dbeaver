@@ -23,10 +23,12 @@ import com.dbeaver.datadam.share.api.model.DDConfigurationSummary;
 import com.dbeaver.datadam.share.api.model.DDCreateConfigurationRequest;
 import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationRequest;
 import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationResult;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.datadam.sync.DDSyncChange;
 import org.jkiss.dbeaver.model.datadam.sync.core.DDConfigurationSyncService.Resolution;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -38,13 +40,17 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.security.MessageDigest;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
+import java.util.HexFormat;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -68,20 +74,20 @@ class DDConfigurationSyncServiceTest {
 
     @BeforeEach
     void setUp() throws Exception {
-        DBPWorkspace workspace = Mockito.mock(DBPWorkspace.class);
-        Mockito.when(workspace.getMetadataFolder()).thenReturn(metadata);
-        target = new DBPSyncTarget(workspace, null);
+        target = target(metadata);
         Mockito.when(client.encryptPart(Mockito.anyString(), Mockito.any(byte[].class)))
             .thenAnswer(call -> Base64.getEncoder().encodeToString(call.getArgument(1, byte[].class)));
         Mockito.when(client.decryptPart(Mockito.any())).thenAnswer(call ->
             Base64.getDecoder().decode(call.getArgument(0, DDConfigurationPart.class).encryptedValue()));
         Mockito.when(client.listConfigurations()).thenAnswer(call -> server == null ? List.of() : List.of(
-            new DDConfigurationSummary(server.configurationId(), server.name(), server.version(), TIME, TIME)));
-        Mockito.when(client.getConfiguration(Mockito.any())).thenAnswer(call -> server);
+            new DDConfigurationSummary(server.configurationId(), server.name(), TIME, TIME)));
+        Mockito.when(client.getConfiguration(Mockito.any())).thenAnswer(call ->
+            server != null && server.configurationId().equals(call.getArgument(0)) ? server : null);
         Mockito.when(client.createConfiguration(Mockito.any())).thenAnswer(call -> {
             DDCreateConfigurationRequest input = call.getArgument(0);
             var part = input.parts().getFirst();
-            server = configuration(0, new DDConfigurationPart(part.key(), part.kind(), part.projectId(), 1, part.encryptedValue()));
+            server = configuration(input.configurationId(), new DDConfigurationPart(
+                part.key(), part.kind(), part.projectId(), part.fingerprint(), part.encryptedValue()));
             return server;
         });
         Mockito.when(client.updateConfiguration(Mockito.any(), Mockito.any())).thenAnswer(call -> applyUpdate(call.getArgument(1)));
@@ -95,13 +101,15 @@ class DDConfigurationSyncServiceTest {
 
         changeServer("original");
         Assertions.assertEquals(DDSyncChange.UNCHANGED, service().synchronize(MONITOR, unit, target));
+        String baseline = server.parts().getFirst().fingerprint();
         unit.value = "local change";
 
         Assertions.assertEquals(DDSyncChange.LOCAL, service().synchronize(MONITOR, unit, target));
         Assertions.assertEquals("local change", serverValue());
         Mockito.verify(client).createConfiguration(Mockito.any());
-        Mockito.verify(client).updateConfiguration(Mockito.eq(CONFIGURATION_ID), Mockito.argThat(input ->
-            input.expectedConfigurationVersion() == 1 && input.parts().getFirst().expectedVersion() == 2));
+        Mockito.verify(client).updateConfiguration(Mockito.eq(server.configurationId()), Mockito.argThat(input ->
+            baseline.equals(input.parts().getFirst().lastKnownFingerprint())
+                && server.parts().getFirst().fingerprint().equals(input.parts().getFirst().fingerprint())));
     }
 
     @Test
@@ -187,7 +195,8 @@ class DDConfigurationSyncServiceTest {
         service.synchronize(MONITOR, unit, target);
         unit.value = "local change";
         String previous = state();
-        Mockito.doAnswer(call -> conflictWithServer("concurrent remote change " + (server.version() + 1)))
+        Mockito.doAnswer(call -> conflictWithServer("concurrent remote change 1"))
+            .doAnswer(call -> conflictWithServer("concurrent remote change 2"))
             .when(client).updateConfiguration(Mockito.any(), Mockito.any());
 
         Assertions.assertEquals(DDSyncChange.CONFLICT, service.synchronize(MONITOR, unit, target));
@@ -206,8 +215,10 @@ class DDConfigurationSyncServiceTest {
     }
 
     @Test
-    void versionOnlyChangesRetryTheUploadWithFreshVersions() throws Exception {
+    void legacyFingerprintAdoptionRetriesTheUploadWithTheCurrentFingerprint() throws Exception {
         service.synchronize(MONITOR, unit, target);
+        String baseline = server.parts().getFirst().fingerprint();
+        markServerFingerprintAsLegacy();
         unit.value = "local change";
         Mockito.doAnswer(call -> conflictWithServer("original"))
             .doAnswer(call -> applyUpdate(call.getArgument(1)))
@@ -219,8 +230,10 @@ class DDConfigurationSyncServiceTest {
         Assertions.assertEquals(0, unit.writes);
         Assertions.assertEquals(DDSyncChange.UNCHANGED, service().synchronize(MONITOR, unit, target));
         Mockito.verify(client, Mockito.times(2)).updateConfiguration(Mockito.any(), Mockito.any());
-        Mockito.verify(client).updateConfiguration(Mockito.eq(CONFIGURATION_ID), Mockito.argThat(input ->
-            input.expectedConfigurationVersion() == 1 && input.parts().getFirst().expectedVersion() == 2));
+        ArgumentCaptor<DDUpdateConfigurationRequest> requests = ArgumentCaptor.forClass(DDUpdateConfigurationRequest.class);
+        Mockito.verify(client, Mockito.times(2)).updateConfiguration(Mockito.eq(server.configurationId()), requests.capture());
+        Assertions.assertEquals("legacy-version:7", requests.getAllValues().getFirst().parts().getFirst().lastKnownFingerprint());
+        Assertions.assertEquals(baseline, requests.getAllValues().getLast().parts().getFirst().lastKnownFingerprint());
     }
 
     @Test
@@ -239,10 +252,12 @@ class DDConfigurationSyncServiceTest {
     }
 
     @Test
-    void versionOnlyChangesPreserveAnExplicitResolution() throws Exception {
+    void legacyFingerprintAdoptionPreservesAnExplicitResolution() throws Exception {
         service.synchronize(MONITOR, unit, target);
         unit.value = "local change";
         changeServer("remote change");
+        String baseline = server.parts().getFirst().fingerprint();
+        markServerFingerprintAsLegacy();
         Mockito.doAnswer(call -> conflictWithServer("remote change"))
             .doAnswer(call -> applyUpdate(call.getArgument(1)))
             .when(client).updateConfiguration(Mockito.any(), Mockito.any());
@@ -252,12 +267,14 @@ class DDConfigurationSyncServiceTest {
         Assertions.assertEquals("local change", serverValue());
         Assertions.assertEquals(DDSyncChange.UNCHANGED, service().synchronize(MONITOR, unit, target));
         Mockito.verify(client, Mockito.times(2)).updateConfiguration(Mockito.any(), Mockito.any());
-        Mockito.verify(client).updateConfiguration(Mockito.eq(CONFIGURATION_ID), Mockito.argThat(input ->
-            input.expectedConfigurationVersion() == 2 && input.parts().getFirst().expectedVersion() == 3));
+        ArgumentCaptor<DDUpdateConfigurationRequest> requests = ArgumentCaptor.forClass(DDUpdateConfigurationRequest.class);
+        Mockito.verify(client, Mockito.times(2)).updateConfiguration(Mockito.eq(server.configurationId()), requests.capture());
+        Assertions.assertEquals("legacy-version:7", requests.getAllValues().getFirst().parts().getFirst().lastKnownFingerprint());
+        Assertions.assertEquals(baseline, requests.getAllValues().getLast().parts().getFirst().lastKnownFingerprint());
     }
 
     @Test
-    void repeatedVersionRacesFailWithoutReportingAContentConflictOrAdvancingTheBaseline() throws Exception {
+    void repeatedWriteConflictsFailWithoutReportingAContentConflictOrAdvancingTheBaseline() throws Exception {
         service.synchronize(MONITOR, unit, target);
         unit.value = "local change";
         String previous = state();
@@ -291,6 +308,109 @@ class DDConfigurationSyncServiceTest {
         Assertions.assertEquals(0, unit.writes);
     }
 
+    @Test
+    void defaultConfigurationIdentityIsSharedAcrossWorkspacesButScopedToTheAccount() throws Exception {
+        service.synchronize(MONITOR, unit, target);
+        UUID firstId = server.configurationId();
+        server = null;
+
+        service().synchronize(MONITOR, new MemoryUnit(), target(metadata.resolve("second")));
+        Assertions.assertEquals(firstId, server.configurationId());
+        server = null;
+
+        UUID otherAccountId = UUID.fromString("00000000-0000-0000-0000-000000000003");
+        new DDConfigurationSyncService(client, "https://storage.example.test", otherAccountId)
+            .synchronize(MONITOR, new MemoryUnit(), target(metadata.resolve("third")));
+        Assertions.assertNotEquals(firstId, server.configurationId());
+    }
+
+    @Test
+    void rejectedCreationDownloadsTheConfigurationCreatedByAnotherClient() throws Exception {
+        Mockito.doAnswer(call -> {
+            DDCreateConfigurationRequest request = call.getArgument(0);
+            changeServer("winning settings");
+            server = configuration(request.configurationId(), server.parts().getFirst());
+            return null;
+        }).when(client).createConfiguration(Mockito.any());
+
+        Assertions.assertEquals(DDSyncChange.SERVER, service.synchronize(MONITOR, unit, target));
+
+        Assertions.assertEquals("winning settings", unit.value);
+        Assertions.assertEquals(server.configurationId().toString(),
+            JsonParser.parseString(state()).getAsJsonObject().get("configurationId").getAsString());
+        Mockito.verify(client).createConfiguration(Mockito.any());
+        Mockito.verify(client, Mockito.never()).updateConfiguration(Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    void repeatedCreationRejectionsDoNotSaveASuccessfulBaseline() throws Exception {
+        Mockito.doReturn(null).when(client).createConfiguration(Mockito.any());
+
+        Assertions.assertThrows(DBException.class, () -> service.synchronize(MONITOR, unit, target));
+
+        Assertions.assertEquals("original", unit.value);
+        Assertions.assertEquals(0, unit.writes);
+        Assertions.assertTrue(Files.notExists(metadata.resolve("datadam-sync")));
+        Mockito.verify(client, Mockito.times(2)).createConfiguration(Mockito.any());
+    }
+
+    @Test
+    void existingDefaultConfigurationReceivesOnlyTheMissingPart() throws Exception {
+        service.synchronize(MONITOR, unit, target);
+        DDConfigurationPart original = server.parts().getFirst();
+        DDConfigurationPart other = new DDConfigurationPart(
+            "other-settings", original.kind(), original.projectId(), original.fingerprint(), original.encryptedValue());
+        server = configuration(server.configurationId(), other);
+        MemoryUnit secondUnit = new MemoryUnit();
+        secondUnit.value = "new local settings";
+
+        Assertions.assertEquals(DDSyncChange.LOCAL,
+            service().synchronize(MONITOR, secondUnit, target(metadata.resolve("second"))));
+
+        Assertions.assertTrue(server.parts().contains(other));
+        Assertions.assertEquals("new local settings", serverValue());
+        Mockito.verify(client).createConfiguration(Mockito.any());
+        Mockito.verify(client).updateConfiguration(Mockito.eq(server.configurationId()), Mockito.argThat(input ->
+            input.parts().getFirst().lastKnownFingerprint() == null));
+    }
+
+    @Test
+    void oldStateAndLegacyFingerprintKeepTheirExistingConfigurationBinding() throws Exception {
+        changeServer("original");
+        markServerFingerprintAsLegacy();
+        service.synchronize(MONITOR, unit, target);
+        JsonObject oldState = JsonParser.parseString(state()).getAsJsonObject();
+        oldState.addProperty("configurationVersion", 8);
+        oldState.addProperty("partVersion", 7);
+        Files.writeString(stateFile(), oldState.toString());
+        unit.value = "local change";
+
+        Assertions.assertEquals(DDSyncChange.LOCAL, service().synchronize(MONITOR, unit, target));
+
+        Assertions.assertEquals(CONFIGURATION_ID, server.configurationId());
+        Assertions.assertEquals("local change", serverValue());
+        Mockito.verify(client, Mockito.never()).createConfiguration(Mockito.any());
+        Mockito.verify(client).updateConfiguration(Mockito.eq(CONFIGURATION_ID), Mockito.argThat(input ->
+            "legacy-version:7".equals(input.parts().getFirst().lastKnownFingerprint())));
+        JsonObject saved = JsonParser.parseString(state()).getAsJsonObject();
+        Assertions.assertFalse(saved.has("configurationVersion"));
+        Assertions.assertFalse(saved.has("partVersion"));
+    }
+
+    @Test
+    void mismatchedServerFingerprintDoesNotApplyOrSaveTheContent() throws Exception {
+        changeServer("remote settings");
+        DDConfigurationPart original = server.parts().getFirst();
+        server = configuration(server.configurationId(), new DDConfigurationPart(
+            original.key(), original.kind(), original.projectId(), "sha256-v1:" + "0".repeat(64), original.encryptedValue()));
+
+        Assertions.assertThrows(DBException.class, () -> service.synchronize(MONITOR, unit, target));
+
+        Assertions.assertEquals("original", unit.value);
+        Assertions.assertEquals(0, unit.writes);
+        Assertions.assertTrue(Files.notExists(metadata.resolve("datadam-sync")));
+    }
+
     @NotNull
     private DDConfigurationSyncService service() {
         return new DDConfigurationSyncService(client, "https://storage.example.test", ACCOUNT_ID);
@@ -299,36 +419,49 @@ class DDConfigurationSyncServiceTest {
     @NotNull
     private DDUpdateConfigurationResult applyUpdate(@NotNull DDUpdateConfigurationRequest input) {
         var update = input.parts().getFirst();
-        DDConfigurationPart current = server.parts().getFirst();
-        server = configuration(server.version() + 1,
-            new DDConfigurationPart(UNIT_ID, DDConfigurationPartKind.ACCOUNT, null,
-                current.version() + 1, update.encryptedValue()));
+        DDConfigurationPart current = server.parts().stream().filter(part -> part.key().equals(update.key())).findFirst().orElse(null);
+        if (current == null ? update.lastKnownFingerprint() != null : !current.fingerprint().equals(update.lastKnownFingerprint())) {
+            return new DDUpdateConfigurationResult(server, List.of(update.key()));
+        }
+        List<DDConfigurationPart> parts = new ArrayList<>(server.parts());
+        parts.remove(current);
+        parts.add(new DDConfigurationPart(update.key(), update.kind(), update.projectId(), update.fingerprint(), update.encryptedValue()));
+        server = new DDConfiguration(server.configurationId(), server.name(), TIME, TIME, List.copyOf(parts));
         return new DDUpdateConfigurationResult(server, List.of());
     }
 
     @NotNull
-    private DDUpdateConfigurationResult conflictWithServer(@NotNull String value) {
+    private DDUpdateConfigurationResult conflictWithServer(@NotNull String value) throws Exception {
         changeServer(value);
         return new DDUpdateConfigurationResult(server, List.of(UNIT_ID));
     }
 
-    private void changeServer(@NotNull String value) {
+    private void changeServer(@NotNull String value) throws Exception {
         String resource = Base64.getEncoder().encodeToString(value.getBytes(StandardCharsets.UTF_8));
-        String payload = "{\"version\":1,\"resources\":{\"settings.json\":\"" + resource + "\"}}";
-        long version = server == null ? 1 : server.parts().getFirst().version() + 1;
-        server = configuration(server == null ? 0 : server.version() + 1,
-            new DDConfigurationPart(UNIT_ID, DDConfigurationPartKind.ACCOUNT, null, version,
+        String payload = JSONUtils.GSON.toJson(JsonParser.parseString(
+            "{\"version\":1,\"resources\":{\"settings.json\":\"" + resource + "\"}}"));
+        String fingerprint = "sha256-v1:" + HexFormat.of().formatHex(
+            MessageDigest.getInstance("SHA-256").digest(payload.getBytes(StandardCharsets.UTF_8)));
+        server = configuration(server == null ? CONFIGURATION_ID : server.configurationId(),
+            new DDConfigurationPart(UNIT_ID, DDConfigurationPartKind.ACCOUNT, null, fingerprint,
                 Base64.getEncoder().encodeToString(payload.getBytes(StandardCharsets.UTF_8))));
     }
 
+    private void markServerFingerprintAsLegacy() {
+        DDConfigurationPart part = server.parts().getFirst();
+        server = configuration(server.configurationId(), new DDConfigurationPart(
+            part.key(), part.kind(), part.projectId(), "legacy-version:7", part.encryptedValue()));
+    }
+
     @NotNull
-    private static DDConfiguration configuration(long version, @NotNull DDConfigurationPart part) {
-        return new DDConfiguration(CONFIGURATION_ID, "Test settings", version, TIME, TIME, List.of(part));
+    private static DDConfiguration configuration(@NotNull UUID configurationId, @NotNull DDConfigurationPart part) {
+        return new DDConfiguration(configurationId, "Test settings", TIME, TIME, List.of(part));
     }
 
     @NotNull
     private String serverValue() {
-        String payload = new String(Base64.getDecoder().decode(server.parts().getFirst().encryptedValue()), StandardCharsets.UTF_8);
+        DDConfigurationPart part = server.parts().stream().filter(value -> value.key().equals(UNIT_ID)).findFirst().orElseThrow();
+        String payload = new String(Base64.getDecoder().decode(part.encryptedValue()), StandardCharsets.UTF_8);
         String resource = JsonParser.parseString(payload).getAsJsonObject().getAsJsonObject("resources")
             .get("settings.json").getAsString();
         return new String(Base64.getDecoder().decode(resource), StandardCharsets.UTF_8);
@@ -336,9 +469,21 @@ class DDConfigurationSyncServiceTest {
 
     @NotNull
     private String state() throws Exception {
+        return Files.readString(stateFile());
+    }
+
+    @NotNull
+    private Path stateFile() throws Exception {
         try (var files = Files.list(metadata.resolve("datadam-sync"))) {
-            return Files.readString(files.findFirst().orElseThrow());
+            return files.findFirst().orElseThrow();
         }
+    }
+
+    @NotNull
+    private static DBPSyncTarget target(@NotNull Path metadata) {
+        DBPWorkspace workspace = Mockito.mock(DBPWorkspace.class);
+        Mockito.when(workspace.getMetadataFolder()).thenReturn(metadata);
+        return new DBPSyncTarget(workspace, null);
     }
 
     private static final class MemoryUnit implements DBPSyncUnit {

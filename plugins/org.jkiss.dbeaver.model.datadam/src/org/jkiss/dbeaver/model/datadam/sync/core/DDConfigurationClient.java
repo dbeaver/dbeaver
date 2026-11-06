@@ -59,7 +59,6 @@ public class DDConfigurationClient extends DDClient {
     private static final String SUMMARY_FIELDS = """
         configurationId
         name
-        version
         createTime: createdAt
         lastSyncTime: lastSyncAt""";
     private static final String CONFIGURATION_FIELDS = SUMMARY_FIELDS + """
@@ -68,7 +67,7 @@ public class DDConfigurationClient extends DDClient {
             key
             kind
             projectId
-            version
+            fingerprint
             encryptedValue
         }""";
 
@@ -109,7 +108,7 @@ public class DDConfigurationClient extends DDClient {
         return gson.fromJson(result, DDConfiguration.class);
     }
 
-    @NotNull
+    @Nullable
     public DDConfiguration createConfiguration(@NotNull DDCreateConfigurationRequest input) throws DBException {
         JsonElement result = call("""
             mutation($input: CreateConfigurationInput!) {
@@ -117,9 +116,6 @@ public class DDConfigurationClient extends DDClient {
             %s
                 }
             }""".formatted(CONFIGURATION_FIELDS.indent(8)), Map.of("input", input), "createConfiguration");
-        if (result.isJsonNull()) {
-            throw new DBException("DataDam configuration was not created");
-        }
         return gson.fromJson(result, DDConfiguration.class);
     }
 

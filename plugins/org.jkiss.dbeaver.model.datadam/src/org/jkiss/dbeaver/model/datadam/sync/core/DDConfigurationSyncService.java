@@ -55,10 +55,12 @@ public final class DDConfigurationSyncService {
     }
 
     private static final int MAX_SYNC_ATTEMPTS = 2;
+    private static final String DEFAULT_CONFIGURATION_NAMESPACE = "desktop-default";
 
     private final DDConfigurationClient client;
     private final String storageUrl;
     private final UUID accountId;
+    private final UUID defaultConfigurationId;
 
     public DDConfigurationSyncService(
         @NotNull DDConfigurationClient client,
@@ -68,6 +70,8 @@ public final class DDConfigurationSyncService {
         this.client = client;
         this.storageUrl = storageUrl;
         this.accountId = accountId;
+        this.defaultConfigurationId = UUID.nameUUIDFromBytes(
+            (DEFAULT_CONFIGURATION_NAMESPACE + '\0' + accountId).getBytes(StandardCharsets.UTF_8));
     }
 
     @NotNull
@@ -111,16 +115,34 @@ public final class DDConfigurationSyncService {
             checkCanceled(monitor);
             if (configuration == null) {
                 ensureLocalUnchanged(unit, target, localFingerprint);
-                configuration = client.createConfiguration(new DDCreateConfigurationRequest(unit.getName(), List.of(
-                    new DDCreateConfigurationPartRequest(
-                        unit.getId(), DDConfigurationPartKind.ACCOUNT, null, client.encryptPart(unit.getId(), encode(local))))));
+                configuration = client.createConfiguration(new DDCreateConfigurationRequest(
+                    defaultConfigurationId, unit.getName(), List.of(new DDCreateConfigurationPartRequest(
+                        unit.getId(), DDConfigurationPartKind.ACCOUNT, null,
+                        localFingerprint, client.encryptPart(unit.getId(), encode(local))))));
+                if (configuration == null) {
+                    continue;
+                }
+                validateWriteResponse(configuration, defaultConfigurationId, unit.getId(), localFingerprint);
                 saveState(store, previous, configuration, unit.getId(), localFingerprint);
                 return DDSyncChange.LOCAL;
             }
 
-            DDConfigurationPart part = requirePart(configuration, unit.getId());
+            DDConfigurationPart part = previous == null ? findPart(configuration, unit.getId()) : requirePart(configuration, unit.getId());
+            if (part == null) {
+                ensureLocalUnchanged(unit, target, localFingerprint);
+                DDConfiguration updated = upload(configuration, null, unit.getId(), local, localFingerprint);
+                if (updated == null) {
+                    continue;
+                }
+                saveState(store, previous, updated, unit.getId(), localFingerprint);
+                return DDSyncChange.LOCAL;
+            }
             Map<String, byte[]> remote = decode(client.decryptPart(part));
             String serverFingerprint = fingerprint(remote);
+            if (!part.fingerprint().startsWith(DDConfigurationPart.LEGACY_FINGERPRINT_PREFIX)
+                && !serverFingerprint.equals(part.fingerprint())) {
+                throw new DBException("DataDam configuration fingerprint does not match its content: " + unit.getId());
+            }
             if (localFingerprint.equals(serverFingerprint)) {
                 saveState(store, previous, configuration, unit.getId(), serverFingerprint);
                 return DDSyncChange.UNCHANGED;
@@ -138,19 +160,11 @@ public final class DDConfigurationSyncService {
             checkCanceled(monitor);
             ensureLocalUnchanged(unit, target, localFingerprint);
             if (change == DDSyncChange.LOCAL) {
-                DDUpdateConfigurationResult result = client.updateConfiguration(configuration.configurationId(),
-                    new DDUpdateConfigurationRequest(configuration.version(), List.of(
-                        new DDUpdateConfigurationPartRequest(part.key(), part.version(), client.encryptPart(part.key(), encode(local))))));
-                if (result == null) {
-                    throw new DBException("DataDam configuration no longer exists: " + configuration.configurationId());
-                }
-                if (!result.conflictingKeys().isEmpty()) {
+                DDConfiguration updated = upload(configuration, part, unit.getId(), local, localFingerprint);
+                if (updated == null) {
                     continue;
                 }
-                if (!configuration.configurationId().equals(result.configuration().configurationId())) {
-                    throw new DBException("Unexpected DataDam configuration update response");
-                }
-                saveState(store, previous, result.configuration(), unit.getId(), localFingerprint);
+                saveState(store, previous, updated, unit.getId(), localFingerprint);
             } else {
                 unit.write(target, remote);
                 saveState(store, previous, configuration, unit.getId(), serverFingerprint);
@@ -158,6 +172,31 @@ public final class DDConfigurationSyncService {
             return change;
         }
         throw new DBException("DataDam configuration changed repeatedly during synchronization; retry synchronization");
+    }
+
+    @Nullable
+    private DDConfiguration upload(
+        @NotNull DDConfiguration configuration,
+        @Nullable DDConfigurationPart part,
+        @NotNull String unitId,
+        @NotNull Map<String, byte[]> resources,
+        @NotNull String fingerprint
+    ) throws DBException {
+        DDUpdateConfigurationResult result = client.updateConfiguration(configuration.configurationId(),
+            new DDUpdateConfigurationRequest(List.of(new DDUpdateConfigurationPartRequest(
+                unitId, DDConfigurationPartKind.ACCOUNT, null, part == null ? null : part.fingerprint(),
+                fingerprint, client.encryptPart(unitId, encode(resources))))));
+        if (result == null) {
+            throw new DBException("DataDam configuration no longer exists: " + configuration.configurationId());
+        }
+        if (result.configuration() == null || result.conflictingKeys() == null) {
+            throw new DBException("Invalid DataDam configuration update response");
+        }
+        if (!result.conflictingKeys().isEmpty()) {
+            return null;
+        }
+        validateWriteResponse(result.configuration(), configuration.configurationId(), unitId, fingerprint);
+        return result.configuration();
     }
 
     @Nullable
@@ -172,6 +211,14 @@ public final class DDConfigurationSyncService {
                 throw new DBException("DataDam configuration no longer exists: " + previous.configurationId());
             }
             return configuration;
+        }
+        DDConfiguration standard = client.getConfiguration(defaultConfigurationId);
+        if (standard != null) {
+            validateConfiguration(standard);
+            if (!defaultConfigurationId.equals(standard.configurationId())) {
+                throw new DBException("Unexpected DataDam configuration response");
+            }
+            return standard;
         }
         DDConfiguration found = null;
         for (DDConfigurationSummary summary : client.listConfigurations()) {
@@ -210,8 +257,8 @@ public final class DDConfigurationSyncService {
         @NotNull String unitId,
         @NotNull String fingerprint
     ) throws DBException {
-        DDConfigurationPart part = requirePart(configuration, unitId);
-        State next = new State(configuration.configurationId(), configuration.version(), part.version(), fingerprint);
+        requirePart(configuration, unitId);
+        State next = new State(configuration.configurationId(), fingerprint);
         if (!next.equals(previous)) {
             store.save(next);
         }
@@ -219,22 +266,44 @@ public final class DDConfigurationSyncService {
 
     @NotNull
     private static DDConfigurationPart requirePart(@NotNull DDConfiguration configuration, @NotNull String unitId) throws DBException {
+        DDConfigurationPart part = findPart(configuration, unitId);
+        if (part == null) {
+            throw new DBException("DataDam configuration does not contain synchronization unit: " + unitId);
+        }
+        return part;
+    }
+
+    @Nullable
+    private static DDConfigurationPart findPart(@NotNull DDConfiguration configuration, @NotNull String unitId) throws DBException {
         validateConfiguration(configuration);
         for (DDConfigurationPart part : configuration.parts()) {
             if (part.key().equals(unitId)) {
-                if (part.kind() != DDConfigurationPartKind.ACCOUNT || part.projectId() != null || part.version() < 1) {
+                if (part.kind() != DDConfigurationPartKind.ACCOUNT || part.projectId() != null
+                    || part.fingerprint() == null || part.fingerprint().isEmpty() || part.encryptedValue() == null) {
                     throw new DBException("Invalid DataDam workspace configuration part: " + unitId);
                 }
                 return part;
             }
         }
-        throw new DBException("DataDam configuration does not contain synchronization unit: " + unitId);
+        return null;
     }
 
     private static void validateConfiguration(@NotNull DDConfiguration configuration) throws DBException {
-        if (configuration.configurationId() == null || configuration.version() < 0 || configuration.parts() == null ||
+        if (configuration.configurationId() == null || configuration.parts() == null ||
             configuration.parts().stream().anyMatch(part -> part == null || part.key() == null || part.kind() == null)) {
             throw new DBException("Invalid DataDam configuration response");
+        }
+    }
+
+    private static void validateWriteResponse(
+        @NotNull DDConfiguration configuration,
+        @NotNull UUID configurationId,
+        @NotNull String unitId,
+        @NotNull String fingerprint
+    ) throws DBException {
+        DDConfigurationPart part = requirePart(configuration, unitId);
+        if (!configurationId.equals(configuration.configurationId()) || !fingerprint.equals(part.fingerprint())) {
+            throw new DBException("Unexpected DataDam configuration write response");
         }
     }
 

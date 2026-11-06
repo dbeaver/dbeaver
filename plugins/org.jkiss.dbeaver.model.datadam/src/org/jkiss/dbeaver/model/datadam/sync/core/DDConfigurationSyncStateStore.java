@@ -79,16 +79,13 @@ final class DDConfigurationSyncStateStore {
     }
 
     private static void validate(@Nullable State state) throws DBException {
-        if (state == null || state.configurationId() == null || state.configurationVersion() < 0 ||
-            state.partVersion() < 1 || state.fingerprint() == null || state.fingerprint().isEmpty()) {
+        if (state == null || state.configurationId() == null || state.fingerprint() == null || state.fingerprint().isEmpty()) {
             throw new DBException("Invalid DataDam configuration sync state");
         }
     }
 
     record State(
         @NotNull UUID configurationId,
-        long configurationVersion,
-        long partVersion,
         @NotNull String fingerprint
     ) {
     }

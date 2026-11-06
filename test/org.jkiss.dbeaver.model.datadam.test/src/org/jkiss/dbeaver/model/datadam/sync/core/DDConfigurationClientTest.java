@@ -47,15 +47,16 @@ class DDConfigurationClientTest {
     private static final UUID CONFIGURATION_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
     private static final UUID ACCOUNT_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
     private static final String PART_KEY = "mcp-server";
+    private static final String FINGERPRINT = "sha256-v1:" + "1".repeat(64);
+    private static final String UPDATED_FINGERPRINT = "sha256-v1:" + "2".repeat(64);
     private static final String CONFIGURATION = """
         {
             "configurationId": "%s",
             "name": "Desktop settings",
-            "version": 8,
             "createTime": "2026-11-06T12:00:00+02:00",
             "lastSyncTime": null,
-            "parts": [{"key": "%s", "kind": "ACCOUNT", "projectId": null, "version": 4, "encryptedValue": "encrypted"}]
-        }""".formatted(CONFIGURATION_ID, PART_KEY);
+            "parts": [{"key": "%s", "kind": "ACCOUNT", "projectId": null, "fingerprint": "%s", "encryptedValue": "encrypted"}]
+        }""".formatted(CONFIGURATION_ID, PART_KEY, FINGERPRINT);
 
     @Test
     void configurationMetadataUsesSsoWithoutEncryptionKeys() throws Exception {
@@ -75,36 +76,41 @@ class DDConfigurationClientTest {
         client.respond("configuration", CONFIGURATION);
         var configuration = client.getConfiguration(CONFIGURATION_ID);
         Assertions.assertNotNull(configuration);
-        Assertions.assertEquals(4, configuration.parts().getFirst().version());
+        Assertions.assertEquals(FINGERPRINT, configuration.parts().getFirst().fingerprint());
+        Assertions.assertFalse(client.body.get("query").getAsString().contains("version"));
 
-        var input = new DDCreateConfigurationRequest("Desktop settings", List.of(
-            new DDCreateConfigurationPartRequest(PART_KEY, DDConfigurationPartKind.ACCOUNT, null, "encrypted")));
+        var input = new DDCreateConfigurationRequest(CONFIGURATION_ID, "Desktop settings", List.of(
+            new DDCreateConfigurationPartRequest(PART_KEY, DDConfigurationPartKind.ACCOUNT, null, FINGERPRINT, "encrypted")));
         client.respond("createConfiguration", CONFIGURATION);
         Assertions.assertEquals(configuration, client.createConfiguration(input));
+        Assertions.assertEquals(CONFIGURATION_ID.toString(), client.body.getAsJsonObject("variables")
+            .getAsJsonObject("input").get("configurationId").getAsString());
         JsonObject part = client.body.getAsJsonObject("variables").getAsJsonObject("input")
             .getAsJsonArray("parts").get(0).getAsJsonObject();
         Assertions.assertEquals("ACCOUNT", part.get("kind").getAsString());
+        Assertions.assertEquals(FINGERPRINT, part.get("fingerprint").getAsString());
         Assertions.assertEquals("encrypted", part.get("encryptedValue").getAsString());
         Mockito.verify(accessService, Mockito.never()).getKeyBundle();
     }
 
     @Test
-    void updatePreservesExpectedVersionsAndReturnsConflictsWithoutRetry() throws Exception {
+    void updatePreservesFingerprintsAndReturnsConflictsWithoutRetry() throws Exception {
         StubClient client = new StubClient(accessService());
         client.respond("updateConfiguration", "{\"configuration\":" + CONFIGURATION + ",\"conflictingKeys\":[\"" + PART_KEY + "\"]}");
-        long expectedVersion = 4_294_967_296L;
-
-        var result = client.updateConfiguration(CONFIGURATION_ID, new DDUpdateConfigurationRequest(expectedVersion, List.of(
-            new DDUpdateConfigurationPartRequest(PART_KEY, 3, "new encrypted value"))));
+        var result = client.updateConfiguration(CONFIGURATION_ID, new DDUpdateConfigurationRequest(List.of(
+            new DDUpdateConfigurationPartRequest(
+                PART_KEY, DDConfigurationPartKind.ACCOUNT, null, FINGERPRINT, UPDATED_FINGERPRINT, "new encrypted value"))));
 
         Assertions.assertNotNull(result);
         Assertions.assertEquals(List.of(PART_KEY), result.conflictingKeys());
-        Assertions.assertEquals(8, result.configuration().version());
+        Assertions.assertEquals(FINGERPRINT, result.configuration().parts().getFirst().fingerprint());
         JsonObject variables = client.body.getAsJsonObject("variables");
         Assertions.assertEquals(CONFIGURATION_ID.toString(), variables.get("configurationId").getAsString());
         JsonObject input = variables.getAsJsonObject("input");
-        Assertions.assertEquals(expectedVersion, input.get("expectedConfigurationVersion").getAsLong());
-        Assertions.assertEquals(3, input.getAsJsonArray("parts").get(0).getAsJsonObject().get("expectedVersion").getAsLong());
+        Assertions.assertFalse(input.has("expectedConfigurationVersion"));
+        JsonObject part = input.getAsJsonArray("parts").get(0).getAsJsonObject();
+        Assertions.assertEquals(FINGERPRINT, part.get("lastKnownFingerprint").getAsString());
+        Assertions.assertEquals(UPDATED_FINGERPRINT, part.get("fingerprint").getAsString());
         Assertions.assertEquals(1, client.calls);
     }
 
@@ -115,8 +121,32 @@ class DDConfigurationClientTest {
         Assertions.assertNull(client.getConfiguration(CONFIGURATION_ID));
 
         client.respond("updateConfiguration", "null");
-        Assertions.assertNull(client.updateConfiguration(CONFIGURATION_ID, new DDUpdateConfigurationRequest(0, List.of(
-            new DDUpdateConfigurationPartRequest(PART_KEY, 1, "encrypted")))));
+        Assertions.assertNull(client.updateConfiguration(CONFIGURATION_ID, new DDUpdateConfigurationRequest(List.of(
+            new DDUpdateConfigurationPartRequest(
+                PART_KEY, DDConfigurationPartKind.ACCOUNT, null, FINGERPRINT, UPDATED_FINGERPRINT, "encrypted")))));
+    }
+
+    @Test
+    void conflictingCreationReturnsNullWithoutRetry() throws Exception {
+        StubClient client = new StubClient(accessService());
+        client.respond("createConfiguration", "null");
+
+        Assertions.assertNull(client.createConfiguration(new DDCreateConfigurationRequest(CONFIGURATION_ID, "Desktop settings", List.of(
+            new DDCreateConfigurationPartRequest(PART_KEY, DDConfigurationPartKind.ACCOUNT, null, FINGERPRINT, "encrypted")))));
+        Assertions.assertEquals(1, client.calls);
+    }
+
+    @Test
+    void initialPartWriteDoesNotInventABaseline() throws Exception {
+        StubClient client = new StubClient(accessService());
+        client.respond("updateConfiguration", "{\"configuration\":" + CONFIGURATION + ",\"conflictingKeys\":[]}");
+
+        client.updateConfiguration(CONFIGURATION_ID, new DDUpdateConfigurationRequest(List.of(
+            new DDUpdateConfigurationPartRequest(PART_KEY, DDConfigurationPartKind.ACCOUNT, null, null, FINGERPRINT, "encrypted"))));
+
+        JsonObject part = client.body.getAsJsonObject("variables").getAsJsonObject("input")
+            .getAsJsonArray("parts").get(0).getAsJsonObject();
+        Assertions.assertTrue(!part.has("lastKnownFingerprint") || part.get("lastKnownFingerprint").isJsonNull());
     }
 
     @Test
@@ -128,8 +158,9 @@ class DDConfigurationClientTest {
             ]}""";
 
         Assertions.assertThrows(DDTransportException.class, () -> client.updateConfiguration(
-            CONFIGURATION_ID, new DDUpdateConfigurationRequest(0, List.of(
-                new DDUpdateConfigurationPartRequest(PART_KEY, 1, "encrypted")))));
+            CONFIGURATION_ID, new DDUpdateConfigurationRequest(List.of(
+                new DDUpdateConfigurationPartRequest(
+                    PART_KEY, DDConfigurationPartKind.ACCOUNT, null, FINGERPRINT, UPDATED_FINGERPRINT, "encrypted")))));
         Assertions.assertEquals(1, client.calls);
     }
 
@@ -143,11 +174,11 @@ class DDConfigurationClientTest {
         StubClient client = new StubClient(accessService);
         byte[] content = "configuration content".getBytes(StandardCharsets.UTF_8);
         String encrypted = client.encryptPart(PART_KEY, content);
-        DDConfigurationPart part = new DDConfigurationPart(PART_KEY, DDConfigurationPartKind.ACCOUNT, null, 1, encrypted);
+        DDConfigurationPart part = new DDConfigurationPart(PART_KEY, DDConfigurationPartKind.ACCOUNT, null, FINGERPRINT, encrypted);
 
         Assertions.assertArrayEquals(content, client.decryptPart(part));
         Assertions.assertThrows(DBException.class, () -> client.decryptPart(
-            new DDConfigurationPart("another-part", DDConfigurationPartKind.ACCOUNT, null, 1, encrypted)));
+            new DDConfigurationPart("another-part", DDConfigurationPartKind.ACCOUNT, null, FINGERPRINT, encrypted)));
 
         Mockito.when(accessService.getKeyBundle()).thenReturn(new DDKeyBundle(CONFIGURATION_ID, "unused", key, 1));
         Assertions.assertThrows(DBException.class, () -> client.decryptPart(part));
