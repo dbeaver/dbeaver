@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -25,6 +27,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.junit.DBeaverUnitTest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -32,12 +35,6 @@ import org.mockito.Mockito;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class OracleTableFilterTest extends DBeaverUnitTest {
 
@@ -86,20 +83,21 @@ public class OracleTableFilterTest extends DBeaverUnitTest {
             Mockito.clearInvocations(session, statement);
             String sql = prepare(null);
             schema.getTableCache().setFullCache(true);
-            assertTrue(schema.getTableCache().isFullyCached());
+            Assertions.assertTrue(schema.getTableCache().isFullyCached());
             if (useUnion) {
-                assertTrue(sql.contains("UPPER(t.TABLE_NAME)=UPPER(?) OR UPPER(t.TABLE_NAME) LIKE UPPER(?)"));
-                assertTrue(sql.contains("AND NOT (t.TABLE_NAME LIKE ?"));
-                assertTrue(sql.contains("o.OBJECT_NAME LIKE ?"));
-                assertTrue(sql.contains("UPPER(o.OBJECT_NAME) LIKE UPPER(?)"));
-                assertTrue(sql.contains("UNION ALL"));
+                Assertions.assertTrue(sql.contains("UPPER(t.TABLE_NAME)=UPPER(?) OR UPPER(t.TABLE_NAME) LIKE UPPER(?)"));
+                Assertions.assertTrue(sql.contains("AND NOT (t.TABLE_NAME LIKE ?"));
+                Assertions.assertTrue(sql.contains("o.OBJECT_NAME LIKE ?"));
+                Assertions.assertTrue(sql.contains("UPPER(o.OBJECT_NAME) LIKE UPPER(?)"));
+                Assertions.assertTrue(sql.contains("UNION ALL"));
                 verifyBindings("TEST_SCHEMA", "ABC", "%JOB_1234%", "BAD%", "OLD",
                     "TEST_SCHEMA", "HIDDEN%", "TEST_SCHEMA", "MV_");
             } else {
-                assertTrue(sql.contains("O.OBJECT_TYPE='TABLE' AND (UPPER(O.OBJECT_NAME)=UPPER(?) OR UPPER(O.OBJECT_NAME) LIKE UPPER(?)"));
-                assertTrue(sql.contains("AND NOT (O.OBJECT_NAME LIKE ?"));
-                assertTrue(sql.contains("O.OBJECT_TYPE='VIEW' AND NOT (O.OBJECT_NAME LIKE ?"));
-                assertTrue(sql.contains("O.OBJECT_TYPE='MATERIALIZED VIEW' AND (UPPER(O.OBJECT_NAME) LIKE UPPER(?)"));
+                Assertions.assertTrue(sql.contains(
+                    "O.OBJECT_TYPE='TABLE' AND (UPPER(O.OBJECT_NAME)=UPPER(?) OR UPPER(O.OBJECT_NAME) LIKE UPPER(?)"));
+                Assertions.assertTrue(sql.contains("AND NOT (O.OBJECT_NAME LIKE ?"));
+                Assertions.assertTrue(sql.contains("O.OBJECT_TYPE='VIEW' AND NOT (O.OBJECT_NAME LIKE ?"));
+                Assertions.assertTrue(sql.contains("O.OBJECT_TYPE='MATERIALIZED VIEW' AND (UPPER(O.OBJECT_NAME) LIKE UPPER(?)"));
                 verifyBindings("TEST_SCHEMA", "ABC", "%JOB_1234%", "BAD%", "OLD", "HIDDEN%", "MV_");
             }
         }
@@ -112,15 +110,15 @@ public class OracleTableFilterTest extends DBeaverUnitTest {
         tables.setEnabled(false);
         Mockito.when(container.getObjectFilter(OracleTable.class, schema, false)).thenReturn(tables);
         String sql = prepare(null);
-        assertFalse(sql.contains("O.OBJECT_NAME LIKE"));
+        Assertions.assertFalse(sql.contains("O.OBJECT_NAME LIKE"));
         schema.getTableCache().setFullCache(true);
-        assertTrue(schema.getTableCache().isFullyCached());
+        Assertions.assertTrue(schema.getTableCache().isFullyCached());
 
         tables.setEnabled(true);
         Mockito.when(preferences.getBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS)).thenReturn(false);
         Mockito.clearInvocations(session, statement);
         sql = prepare(null);
-        assertFalse(sql.contains("O.OBJECT_NAME LIKE"));
+        Assertions.assertFalse(sql.contains("O.OBJECT_NAME LIKE"));
         verifyBindings("TEST_SCHEMA");
     }
 
@@ -134,20 +132,20 @@ public class OracleTableFilterTest extends DBeaverUnitTest {
         Mockito.when(container.getObjectFilter(OracleView.class, schema, false)).thenReturn(global);
 
         String sql = prepare(null);
-        assertTrue(sql.contains("O.OBJECT_TYPE='TABLE' AND (UPPER(O.OBJECT_NAME) LIKE UPPER(?)"));
-        assertTrue(sql.contains("O.OBJECT_TYPE='VIEW' AND (UPPER(O.OBJECT_NAME) LIKE UPPER(?)"));
+        Assertions.assertTrue(sql.contains("O.OBJECT_TYPE='TABLE' AND (UPPER(O.OBJECT_NAME) LIKE UPPER(?)"));
+        Assertions.assertTrue(sql.contains("O.OBJECT_TYPE='VIEW' AND (UPPER(O.OBJECT_NAME) LIKE UPPER(?)"));
         verifyBindings("TEST_SCHEMA", "LOCAL%", "GLOBAL%");
         schema.getTableCache().setFullCache(true);
-        assertTrue(schema.getTableCache().isFullyCached());
+        Assertions.assertTrue(schema.getTableCache().isFullyCached());
 
         Mockito.clearInvocations(session, statement);
         sql = prepare("REFERENCED_TABLE");
-        assertTrue(sql.contains("O.OBJECT_NAME=?"));
-        assertFalse(sql.contains("LIKE UPPER(?)"));
+        Assertions.assertTrue(sql.contains("O.OBJECT_NAME=?"));
+        Assertions.assertFalse(sql.contains("LIKE UPPER(?)"));
         verifyBindings("TEST_SCHEMA", "REFERENCED_TABLE");
         schema.getTableCache().clearCache();
         schema.getTableCache().setFullCache(true);
-        assertTrue(schema.getTableCache().isFullyCached());
+        Assertions.assertTrue(schema.getTableCache().isFullyCached());
     }
 
     @Test
@@ -159,14 +157,14 @@ public class OracleTableFilterTest extends DBeaverUnitTest {
         Mockito.when(container.getObjectFilter(OracleTable.class, schema, false)).thenReturn(tables);
 
         String sql = prepare(null);
-        assertTrue(sql.contains("UPPER(t.TABLE_NAME) LIKE UPPER(?)"));
-        assertFalse(sql.contains("o.OBJECT_NAME LIKE ?"));
+        Assertions.assertTrue(sql.contains("UPPER(t.TABLE_NAME) LIKE UPPER(?)"));
+        Assertions.assertFalse(sql.contains("o.OBJECT_NAME LIKE ?"));
         verifyBindings("TEST_SCHEMA", "FOO%", "TEST_SCHEMA", "TEST_SCHEMA");
 
         Mockito.clearInvocations(session, statement);
         sql = prepare("REF_TABLE");
-        assertTrue(sql.contains("WHERE OBJECT_NAME=?"));
-        assertFalse(sql.contains("LIKE UPPER(?)"));
+        Assertions.assertTrue(sql.contains("WHERE OBJECT_NAME=?"));
+        Assertions.assertFalse(sql.contains("LIKE UPPER(?)"));
         verifyBindings("TEST_SCHEMA", "TEST_SCHEMA", "TEST_SCHEMA", "REF_TABLE");
     }
 
@@ -180,14 +178,14 @@ public class OracleTableFilterTest extends DBeaverUnitTest {
         Mockito.when(container.getObjectFilter(OracleTable.class, schema, false)).thenReturn(tables);
 
         String sql = prepare(null);
-        assertTrue(sql.contains("O.OBJECT_TYPE='TABLE' AND (UPPER(O.OBJECT_NAME) LIKE UPPER(?) ESCAPE"));
-        assertTrue(sql.contains("AND NOT (O.OBJECT_NAME LIKE ? ESCAPE"));
+        Assertions.assertTrue(sql.contains("O.OBJECT_TYPE='TABLE' AND (UPPER(O.OBJECT_NAME) LIKE UPPER(?) ESCAPE"));
+        Assertions.assertTrue(sql.contains("AND NOT (O.OBJECT_NAME LIKE ? ESCAPE"));
         verifyBindings("TEST_SCHEMA", "A\\_B%", "OLD_");
 
         tables.setInclude(List.of(""));
         Mockito.clearInvocations(session, statement);
         sql = prepare(null);
-        assertTrue(sql.contains("O.OBJECT_TYPE='TABLE' AND (1=0)"));
+        Assertions.assertTrue(sql.contains("O.OBJECT_TYPE='TABLE' AND (1=0)"));
         verifyBindings("TEST_SCHEMA", "OLD_");
     }
 
@@ -200,10 +198,10 @@ public class OracleTableFilterTest extends DBeaverUnitTest {
         tables.addExclude("LITERAL\\?NAME_BAD*");
         Mockito.when(container.getObjectFilter(OracleTable.class, schema, false)).thenReturn(tables);
         tables.setCaseSensitive(true);
-        assertTrue(tables.matches("LITERAL*NAME"));
-        assertFalse(tables.matches("LITERAL%NAME"));
-        assertTrue(tables.matches("LITERAL?NAME_GOOD"));
-        assertFalse(tables.matches("LITERAL?NAME_BAD1"));
+        Assertions.assertTrue(tables.matches("LITERAL*NAME"));
+        Assertions.assertFalse(tables.matches("LITERAL%NAME"));
+        Assertions.assertTrue(tables.matches("LITERAL?NAME_GOOD"));
+        Assertions.assertFalse(tables.matches("LITERAL?NAME_BAD1"));
 
         for (boolean useUnion : new boolean[] {false, true}) {
             container.getConnectionConfiguration().setProviderProperty(
@@ -211,8 +209,8 @@ public class OracleTableFilterTest extends DBeaverUnitTest {
             Mockito.clearInvocations(session, statement);
             String sql = prepare(null);
             String column = useUnion ? "t.TABLE_NAME" : "O.OBJECT_NAME";
-            assertTrue(sql.contains(column + " LIKE ? ESCAPE"));
-            assertTrue(sql.contains(" AND NOT (" + column + " LIKE ? ESCAPE"));
+            Assertions.assertTrue(sql.contains(column + " LIKE ? ESCAPE"));
+            Assertions.assertTrue(sql.contains(" AND NOT (" + column + " LIKE ? ESCAPE"));
             if (useUnion) {
                 verifyBindings("TEST_SCHEMA", "LITERAL*NAME", "LITERAL?NAME%", "ESCAPED\\_NAME%",
                     "LITERAL?NAME_BAD%", "TEST_SCHEMA", "TEST_SCHEMA");
@@ -239,9 +237,9 @@ public class OracleTableFilterTest extends DBeaverUnitTest {
                 Mockito.clearInvocations(session, statement);
                 String sql = prepare(null);
                 String include = caseSensitive ? column + " LIKE ? ESCAPE" : "UPPER(" + column + ") LIKE UPPER(?) ESCAPE";
-                assertTrue(sql.contains("AND (" + include));
-                assertTrue(sql.contains("AND NOT (" + column + " LIKE ? ESCAPE"));
-                assertFalse(sql.contains("AND NOT (UPPER(" + column + ") LIKE UPPER(?)"));
+                Assertions.assertTrue(sql.contains("AND (" + include));
+                Assertions.assertTrue(sql.contains("AND NOT (" + column + " LIKE ? ESCAPE"));
+                Assertions.assertFalse(sql.contains("AND NOT (UPPER(" + column + ") LIKE UPPER(?)"));
                 if (useUnion) {
                     verifyBindings("TEST_SCHEMA", "foo%", "bar%", "TEST_SCHEMA", "TEST_SCHEMA");
                 } else {
@@ -254,8 +252,8 @@ public class OracleTableFilterTest extends DBeaverUnitTest {
         tables.setCaseSensitive(false);
         Mockito.clearInvocations(session, statement);
         String sql = prepare(null);
-        assertTrue(sql.contains("AND NOT (t.TABLE_NAME LIKE ? ESCAPE"));
-        assertFalse(sql.contains("UPPER(t.TABLE_NAME) LIKE UPPER(?)"));
+        Assertions.assertTrue(sql.contains("AND NOT (t.TABLE_NAME LIKE ? ESCAPE"));
+        Assertions.assertFalse(sql.contains("UPPER(t.TABLE_NAME) LIKE UPPER(?)"));
         verifyBindings("TEST_SCHEMA", "bar%", "TEST_SCHEMA", "TEST_SCHEMA");
     }
 
@@ -268,11 +266,12 @@ public class OracleTableFilterTest extends DBeaverUnitTest {
         AtomicInteger lookups = new AtomicInteger();
         OracleSchema.TableCache cache = schema.new TableCache() {
             @Override
+            @NotNull
             protected OracleTableBase reloadObject(
-                DBRProgressMonitor monitor,
-                OracleSchema owner,
-                OracleTableBase object,
-                String objectName
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull OracleSchema owner,
+                @Nullable OracleTableBase object,
+                @Nullable String objectName
             ) {
                 lookups.incrementAndGet();
                 return new OracleTable(owner, objectName);
@@ -281,19 +280,20 @@ public class OracleTableFilterTest extends DBeaverUnitTest {
         cache.prepareLookupStatement(session, schema, null, null);
         OracleTableBase previouslyResolved = cache.getObject(monitor, schema, "REFERENCED_TABLE");
         cache.setFullCache(true);
-        assertSame(previouslyResolved, cache.getObject(monitor, schema, "REFERENCED_TABLE"));
-        assertNull(cache.getObject(monitor, schema, "FILTERED_OUT_TABLE"));
-        assertEquals(1, lookups.get());
+        Assertions.assertSame(previouslyResolved, cache.getObject(monitor, schema, "REFERENCED_TABLE"));
+        Assertions.assertNull(cache.getObject(monitor, schema, "FILTERED_OUT_TABLE"));
+        Assertions.assertEquals(1, lookups.get());
     }
 
-    private String prepare(String objectName) throws Exception {
+    @NotNull
+    private String prepare(@Nullable String objectName) throws Exception {
         schema.getTableCache().prepareLookupStatement(session, schema, null, objectName);
         ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
         Mockito.verify(session).prepareStatement(sql.capture());
         return sql.getValue();
     }
 
-    private void verifyBindings(String... values) throws Exception {
+    private void verifyBindings(@NotNull String... values) throws Exception {
         for (int i = 0; i < values.length; i++) {
             Mockito.verify(statement).setString(i + 1, values[i]);
         }

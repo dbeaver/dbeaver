@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.oracle.model;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.junit.DBeaverUnitTest;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -33,10 +35,6 @@ import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class OracleBulkColumnCacheTest extends DBeaverUnitTest {
     private DBPDataSourceContainer container;
@@ -74,16 +72,16 @@ public class OracleBulkColumnCacheTest extends DBeaverUnitTest {
         cache.setCache(tables);
 
         List<List<OracleTableBase>> batches = cache.getBulkChildrenBatches(schema);
-        assertEquals(2, batches.size());
-        assertEquals(500, batches.get(0).size());
-        assertEquals(2, batches.get(1).size());
+        Assertions.assertEquals(2, batches.size());
+        Assertions.assertEquals(500, batches.get(0).size());
+        Assertions.assertEquals(2, batches.get(1).size());
 
         container.getConnectionConfiguration().setProviderProperty(OracleConstants.PROP_METADATA_READ_COLUMN_COMMENTS, "true");
         cache.prepareChildrenStatement(session, schema, null, batches.get(1));
         ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
         Mockito.verify(session).prepareStatement(sql.capture());
-        assertTrue(sql.getValue().contains("WHERE c.OWNER=? AND c.TABLE_NAME IN (?,?)"));
-        assertTrue(sql.getValue().contains("LEFT OUTER JOIN ALL_COL_COMMENTS cc"));
+        Assertions.assertTrue(sql.getValue().contains("WHERE c.OWNER=? AND c.TABLE_NAME IN (?,?)"));
+        Assertions.assertTrue(sql.getValue().contains("LEFT OUTER JOIN ALL_COL_COMMENTS cc"));
         Mockito.verify(statement).setString(1, "TEST_SCHEMA");
         Mockito.verify(statement).setString(2, "TABLE_500");
         Mockito.verify(statement).setString(3, "REFERENCED_TABLE");
@@ -91,8 +89,8 @@ public class OracleBulkColumnCacheTest extends DBeaverUnitTest {
         Mockito.clearInvocations(session, statement);
         cache.prepareChildrenStatement(session, schema, tables.get(0));
         Mockito.verify(session).prepareStatement(sql.capture());
-        assertTrue(sql.getValue().contains("WHERE c.OWNER=? AND c.TABLE_NAME=?"));
-        assertFalse(sql.getValue().contains(" IN ("));
+        Assertions.assertTrue(sql.getValue().contains("WHERE c.OWNER=? AND c.TABLE_NAME=?"));
+        Assertions.assertFalse(sql.getValue().contains(" IN ("));
     }
 
     @Test
@@ -105,12 +103,12 @@ public class OracleBulkColumnCacheTest extends DBeaverUnitTest {
         cache.setCache(tables);
 
         List<List<OracleTableBase>> batches = cache.getBulkChildrenBatches(schema);
-        assertEquals(1, batches.size());
+        Assertions.assertEquals(1, batches.size());
         cache.prepareChildrenStatement(session, schema, null, batches.getFirst());
         ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
         Mockito.verify(session).prepareStatement(sql.capture());
-        assertTrue(sql.getValue().contains("WHERE c.OWNER=?"));
-        assertFalse(sql.getValue().contains("c.TABLE_NAME IN ("));
+        Assertions.assertTrue(sql.getValue().contains("WHERE c.OWNER=?"));
+        Assertions.assertFalse(sql.getValue().contains("c.TABLE_NAME IN ("));
     }
 
     @Test
@@ -119,12 +117,12 @@ public class OracleBulkColumnCacheTest extends DBeaverUnitTest {
         cache.setCache(List.of(new OracleTable(schema, "TABLE_1")));
 
         List<List<OracleTableBase>> batches = cache.getBulkChildrenBatches(schema);
-        assertEquals(1, batches.size());
+        Assertions.assertEquals(1, batches.size());
         cache.prepareChildrenStatement(session, schema, null, batches.getFirst());
         ArgumentCaptor<String> sql = ArgumentCaptor.forClass(String.class);
         Mockito.verify(session).prepareStatement(sql.capture());
-        assertTrue(sql.getValue().contains("WHERE c.OWNER=?"));
-        assertFalse(sql.getValue().contains("c.TABLE_NAME IN ("));
+        Assertions.assertTrue(sql.getValue().contains("WHERE c.OWNER=?"));
+        Assertions.assertFalse(sql.getValue().contains("c.TABLE_NAME IN ("));
     }
 
     @Test
@@ -142,7 +140,8 @@ public class OracleBulkColumnCacheTest extends DBeaverUnitTest {
     public void canceledParentLoadDoesNotPreventBulkColumnRetry() throws Exception {
         OracleSchema.TableCache cache = schema.new TableCache() {
             @Override
-            protected JDBCSession openChildrenSession(DBRProgressMonitor monitor, OracleSchema owner) {
+            @NotNull
+            protected JDBCSession openChildrenSession(@NotNull DBRProgressMonitor monitor, @NotNull OracleSchema owner) {
                 return session;
             }
         };
@@ -150,7 +149,7 @@ public class OracleBulkColumnCacheTest extends DBeaverUnitTest {
         // The parent load is canceled after the initial loadChildren check, leaving the list uncached.
         Mockito.when(monitor.isCanceled()).thenReturn(false, true);
         cache.loadChildren(monitor, schema, null);
-        assertFalse(cache.isFullyCached());
+        Assertions.assertFalse(cache.isFullyCached());
         Mockito.verifyNoInteractions(session, statement);
 
         // Simulate the parent list becoming available on retry; bulk columns must still load.
@@ -168,14 +167,15 @@ public class OracleBulkColumnCacheTest extends DBeaverUnitTest {
     public void unfinishedParentLoadWithoutCancellationDoesNotMarkBulkLoadComplete() throws Exception {
         OracleSchema.TableCache cache = schema.new TableCache() {
             @Override
-            protected JDBCSession openChildrenSession(DBRProgressMonitor monitor, OracleSchema owner) {
+            @NotNull
+            protected JDBCSession openChildrenSession(@NotNull DBRProgressMonitor monitor, @NotNull OracleSchema owner) {
                 return session;
             }
         };
         filteredCache(cache);
         // Unit-test mode leaves the parent cache unloaded without canceling the monitor.
         cache.loadChildren(monitor, schema, null);
-        assertFalse(cache.isFullyCached());
+        Assertions.assertFalse(cache.isFullyCached());
         Mockito.verifyNoInteractions(session, statement);
 
         cache.setCache(List.of(new OracleTable(schema, "TABLE_1")));
@@ -190,7 +190,8 @@ public class OracleBulkColumnCacheTest extends DBeaverUnitTest {
     public void cancellationBeforeSecondBatchDoesNotMarkBulkLoadComplete() throws Exception {
         OracleSchema.TableCache cache = schema.new TableCache() {
             @Override
-            protected JDBCSession openChildrenSession(DBRProgressMonitor monitor, OracleSchema owner) {
+            @NotNull
+            protected JDBCSession openChildrenSession(@NotNull DBRProgressMonitor monitor, @NotNull OracleSchema owner) {
                 return session;
             }
         };
@@ -215,13 +216,14 @@ public class OracleBulkColumnCacheTest extends DBeaverUnitTest {
         Mockito.verify(session, Mockito.times(3)).prepareStatement(Mockito.anyString());
     }
 
+    @NotNull
     private OracleSchema.TableCache filteredCache() throws Exception {
         OracleSchema.TableCache cache = schema.getTableCache();
         filteredCache(cache);
         return cache;
     }
 
-    private void filteredCache(OracleSchema.TableCache cache) throws Exception {
+    private void filteredCache(@NotNull OracleSchema.TableCache cache) throws Exception {
         DBSObjectFilter filter = new DBSObjectFilter();
         filter.addInclude("TABLE_*");
         Mockito.when(container.getObjectFilter(OracleTable.class, schema, false)).thenReturn(filter);

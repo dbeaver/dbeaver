@@ -51,8 +51,22 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
     private volatile boolean childrenCached = false;
     private final Map<OBJECT, SimpleObjectCache<OBJECT, CHILD>> childrenCache = new IdentityHashMap<>();
 
-    abstract protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull OWNER owner, @Nullable OBJECT forObject)
-        throws SQLException;
+    @NotNull
+    protected abstract JDBCStatement prepareChildrenStatement(
+        @NotNull JDBCSession session,
+        @NotNull OWNER owner,
+        @Nullable OBJECT forObject
+    ) throws SQLException;
+
+    @NotNull
+    protected JDBCStatement prepareChildrenStatement(
+        @NotNull JDBCSession session,
+        @NotNull OWNER owner,
+        @Nullable OBJECT forObject,
+        @Nullable List<OBJECT> batch
+    ) throws SQLException {
+        return prepareChildrenStatement(session, owner, forObject);
+    }
 
     /**
      * Return null for the original, unrestricted bulk query. Subclasses may split a bulk load
@@ -61,15 +75,6 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
     @NotNull
     protected List<List<OBJECT>> getBulkChildrenBatches(@NotNull OWNER owner) {
         return Collections.singletonList(null);
-    }
-
-    protected JDBCStatement prepareChildrenStatement(
-        @NotNull JDBCSession session,
-        @NotNull OWNER owner,
-        @Nullable OBJECT forObject,
-        @Nullable List<OBJECT> batch
-    ) throws SQLException {
-        return prepareChildrenStatement(session, owner, forObject);
     }
 
     protected boolean isEmptyBulkChildrenResultComplete() {
@@ -81,8 +86,13 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
         return DBUtils.openMetaSession(monitor, owner, "Load child objects");
     }
 
-    abstract protected CHILD fetchChild(@NotNull JDBCSession session, @NotNull OWNER owner, @NotNull OBJECT parent, @NotNull JDBCResultSet dbResult)
-        throws SQLException, DBException;
+    @Nullable
+    protected abstract CHILD fetchChild(
+        @NotNull JDBCSession session,
+        @NotNull OWNER owner,
+        @NotNull OBJECT parent,
+        @NotNull JDBCResultSet dbResult
+    ) throws SQLException, DBException;
 
     protected JDBCStructCache(Object objectNameColumn) {
         this.objectNameColumn = objectNameColumn;
