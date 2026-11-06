@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.app.standalone.tipoftheday;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
@@ -29,7 +28,6 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
@@ -112,11 +110,9 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
 
         Composite dialogArea = super.createDialogArea(parent);
 
-        Composite tipArea = new Composite(dialogArea, SWT.BORDER);
-        tipArea.setLayoutData(new GridData(GridData.FILL_BOTH));
-        tipArea.setLayout(GridLayoutFactory.fillDefaults().create());
-
-        this.tipText = new StyledText(tipArea, SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL | SWT.NO_FOCUS);
+        // Put the border on the text itself: a bordered Composite adds a nested NSScrollView on macOS,
+        // whose temporary content inset can shift the text above its container during the initial layout.
+        this.tipText = new StyledText(dialogArea, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL | SWT.NO_FOCUS);
         this.tipText.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(300, 100).create());
         this.tipText.setMargins(5, 5, 5, 5);
         this.tipText.setFont(largeFont);
