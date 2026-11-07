@@ -455,6 +455,31 @@ public class SQLQueryCompletionAnalyzerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void testTablePartitionCompletionVisibility() throws DBException {
+        final RequestResult request = RequestBuilder
+            .tables(s -> {
+                s.table("partitioned_table", empty());
+                s.partitionTable("partitioned_table_p1", empty());
+                s.partitionTable("partitioned_table_p2", empty());
+                s.table("regular_table", empty());
+            })
+            .prepare();
+
+        Set<String> tableProposals = request.requestNewStrings("SELECT * FROM partitioned_|");
+        Assertions.assertTrue(tableProposals.stream().anyMatch(s -> s.startsWith("partitioned_table ")));
+        Assertions.assertFalse(tableProposals.stream().anyMatch(s -> s.startsWith("partitioned_table_p")));
+
+        final RequestResult partitionsOnlyRequest = RequestBuilder
+            .tables(s -> {
+                s.partitionTable("partitioned_table_p1", empty());
+                s.partitionTable("partitioned_table_p2", empty());
+            })
+            .prepare();
+        Set<String> partitionProposals = partitionsOnlyRequest.requestNewStrings("SELECT * FROM partitioned_table_p|");
+        Assertions.assertTrue(partitionProposals.stream().anyMatch(s -> s.startsWith("partitioned_table_p1")));
+    }
+
+    @Test
     public void testSchemaTableNamesCompletion() throws DBException {
         final RequestResult request = RequestBuilder
             .schemas(d -> {
