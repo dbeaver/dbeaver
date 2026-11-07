@@ -171,7 +171,9 @@ public class OpenAIClientResponses extends OpenAiClientBase {
 
     @NotNull
     protected OAIResponsesResponse parseCompletionResponse(@NotNull String responseBody) throws DBException {
-        return GSON.fromJson(responseBody, OAIResponsesResponse.class);
+        OAIResponsesResponse response = GSON.fromJson(responseBody, OAIResponsesResponse.class);
+        response.validateCompletion();
+        return response;
     }
 
     @NotNull

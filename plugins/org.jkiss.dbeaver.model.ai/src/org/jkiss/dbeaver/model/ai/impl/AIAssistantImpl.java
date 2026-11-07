@@ -106,6 +106,7 @@ public class AIAssistantImpl implements AIAssistant {
             );
 
             AIEngineRequest request = completionRequest;
+            int functionCallCount = 0;
 
             for (int tryIndex = 0; tryIndex < MAX_FUNCTION_CALLS; tryIndex++) {
                 Instant now = Instant.now();
@@ -125,26 +126,32 @@ public class AIAssistantImpl implements AIAssistant {
                 );
 
                 if (completionResponse.getType() == AIMessageType.FUNCTION) {
-                    AIFunctionCall functionCall = completionResponse.getFunctionCall();
-                    if (functionCall != null) {
+                    List<AIMessage> newMessages = new ArrayList<>(request.getMessages());
+                    List<String> actionResults = new ArrayList<>();
+                    for (AIFunctionCall functionCall : completionResponse.getFunctionCalls()) {
+                        if (functionCallCount++ >= MAX_FUNCTION_CALLS) {
+                            throw new DBException("Too many AI function calls (" + MAX_FUNCTION_CALLS + ")");
+                        }
                         AIFunctionResult result = callFunction(functionContext, functionCall);
-                        String stringValue = CommonUtils.toString(result.getValue());
                         if (result.getType() == AIFunctionType.ACTION) {
-                            return new AIAssistantResponse(
-                                AIAssistantResponse.Type.FUNCTION,
-                                stringValue,
-                                List.of(requestMeta)
-                            );
+                            actionResults.add(CommonUtils.toString(result.getValue()));
                         } else {
-                            List<AIMessage> newMessages = new ArrayList<>(request.getMessages());
                             AIMessage fcMessage = AIMessage.functionCall(functionCall, result);
                             newMessages.add(fcMessage);
-                            AIEngineRequest newRequest = new AIEngineRequest(newMessages);
-                            newRequest.setFunctions(request.getFunctions());
-
-                            request = newRequest;
-                            continue;
                         }
+                    }
+                    if (!actionResults.isEmpty()) {
+                        return new AIAssistantResponse(
+                            AIAssistantResponse.Type.FUNCTION,
+                            String.join("\n", actionResults),
+                            List.of(requestMeta)
+                        );
+                    }
+                    if (!completionResponse.getFunctionCalls().isEmpty()) {
+                        AIEngineRequest newRequest = new AIEngineRequest(newMessages);
+                        newRequest.setFunctions(request.getFunctions());
+                        request = newRequest;
+                        continue;
                     }
                 } else {
                     List<String> variants = completionResponse.getVariants();
@@ -290,8 +297,10 @@ public class AIAssistantImpl implements AIAssistant {
             } else {
                 AIEngineResponse response = engine.requestCompletion(monitor, request);
 
-                if (response.getFunctionCall() != null) {
-                    listener.nextChunk(new AIEngineResponseChunk(response.getFunctionCall()));
+                if (!response.getFunctionCalls().isEmpty()) {
+                    for (AIFunctionCall functionCall : response.getFunctionCalls()) {
+                        listener.nextChunk(new AIEngineResponseChunk(functionCall));
+                    }
                     listener.usage(response.getUsage());
                     listener.completeBlock();
                 } else if (response.getVariants() != null) {

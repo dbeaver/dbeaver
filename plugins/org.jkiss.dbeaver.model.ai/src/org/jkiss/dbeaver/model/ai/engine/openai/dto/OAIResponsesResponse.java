@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,8 +16,30 @@
  */
 package org.jkiss.dbeaver.model.ai.engine.openai.dto;
 
+import com.google.gson.annotations.SerializedName;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.utils.CommonUtils;
+
 import java.util.List;
+import java.util.Map;
 
 public class OAIResponsesResponse extends OAIResponsesBase {
     public List<OAIMessage> output;
+    public String status;
+    public OAIError error;
+    @SerializedName("incomplete_details")
+    public Map<String, String> incompleteDetails;
+
+    public void validateCompletion() throws DBException {
+        // some compatible endpoints omit status; reject explicit unsuccessful states without breaking those endpoints
+        if (status != null && !"completed".equals(status)) {
+            String detail = status;
+            if (error != null && !CommonUtils.isEmpty(error.message)) {
+                detail += ": " + error.message;
+            } else if (incompleteDetails != null && !CommonUtils.isEmpty(incompleteDetails.get("reason"))) {
+                detail += ": " + incompleteDetails.get("reason");
+            }
+            throw new DBException("Response did not complete: " + detail);
+        }
+    }
 }
