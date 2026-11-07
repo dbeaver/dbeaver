@@ -3227,6 +3227,11 @@ public class SQLEditor extends SQLEditorBase implements
             createQueryProcessor(true, isSingleQuery, true);
         }
 
+        if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration viewerConfiguration) {
+            // Metadata loading must not delay query execution.
+            viewerConfiguration.cancelCompletionJobs();
+        }
+
         return curQueryProcessor.processQueries(
             scriptContext,
             queries,
