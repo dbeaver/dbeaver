@@ -899,6 +899,59 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void parsedQueryKeepsFirstKeywordForCheapSafetyChecks() throws DBException {
+        String script = """
+            -- leading comment
+            INSERT INTO test_table VALUES (1);
+
+            SELECT 1;
+
+            WITH selected AS (SELECT 1) SELECT * FROM selected;
+            """;
+        SQLParserContext context = createParserContext(setDialect(POSTGRESQL_DIALECT_NAME), script);
+        List<SQLQuery> queries = SQLScriptParser.extractScriptQueries(
+            context,
+            0,
+            context.getDocument().getLength(),
+            true,
+            false,
+            false
+        ).stream()
+            .filter(SQLQuery.class::isInstance)
+            .map(SQLQuery.class::cast)
+            .toList();
+
+        Assertions.assertEquals(3, queries.size());
+        Assertions.assertEquals("INSERT", queries.get(0).getFirstKeyword());
+        Assertions.assertFalse(queries.get(0).mayBeDDLStatement());
+        Assertions.assertFalse(queries.get(0).isDropDangerous());
+        Assertions.assertFalse(queries.get(0).isDeleteUpdateDangerous());
+
+        Assertions.assertEquals("SELECT", queries.get(1).getFirstKeyword());
+        Assertions.assertFalse(queries.get(1).mayBeDDLStatement());
+
+        Assertions.assertEquals("WITH", queries.get(2).getFirstKeyword());
+        Assertions.assertTrue(queries.get(2).mayBeDDLStatement());
+    }
+
+    @Test
+    public void smartModeExtendedQueryKeepsFirstKeyword() throws DBException {
+        String query = """
+            select *
+
+            from test_table
+            where id = 1
+            """;
+
+        SQLParserContext context = createParserContext(setDialect(POSTGRESQL_DIALECT_NAME), query);
+        context.getSyntaxManager().setStatementDelimiterMode(ModelPreferences.SQLScriptStatementDelimiterMode.SMART);
+        SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, query.length(), 0, false, false);
+
+        Assertions.assertInstanceOf(SQLQuery.class, element);
+        Assertions.assertEquals("SELECT", ((SQLQuery) element).getFirstKeyword());
+    }
+
+    @Test
     public void extractSqlServerBatchDelimiterAfterTerminatedStatement() throws DBException {
         String script = "select 1;\n  GO\nselect 2\nGO -- final batch";
         List<SQLQuery> queries = extractWithBatchSeparators(script);

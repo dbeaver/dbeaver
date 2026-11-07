@@ -61,6 +61,82 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void unrecognizedKeywordHintShouldNotBypassDangerousDeleteCheck() {
+        var query = new SQLQuery(null, "DELETE FROM table");
+        query.setFirstKeyword("UNRECOGNIZED_KEYWORD");
+
+        Assertions.assertTrue(query.isDeleteUpdateDangerous());
+    }
+
+    @Test
+    public void copyConstructorKeepsFirstKeywordForUnchangedText() {
+        var source = new SQLQuery(null, "SELECT * FROM table");
+        source.setFirstKeyword("SELECT");
+
+        var copy = new SQLQuery(null, source.getText(), source);
+
+        Assertions.assertEquals("SELECT", copy.getFirstKeyword());
+    }
+
+    @Test
+    public void copyConstructorClearsFirstKeywordForChangedText() {
+        var source = new SQLQuery(null, "SELECT * FROM table");
+        source.setFirstKeyword("SELECT");
+
+        var copy = new SQLQuery(null, "DELETE FROM table", source);
+
+        Assertions.assertNull(copy.getFirstKeyword());
+    }
+
+    @Test
+    public void resetKeepsFirstKeywordForOriginalText() {
+        var query = new SQLQuery(null, "SELECT * FROM table");
+        query.setFirstKeyword("SELECT");
+
+        query.reset();
+
+        Assertions.assertEquals("SELECT", query.getFirstKeyword());
+        Assertions.assertFalse(query.mayBeDDLStatement());
+    }
+
+    @Test
+    public void resetRestoresOriginalFirstKeywordAfterTextChange() {
+        var query = new SQLQuery(null, "SELECT * FROM table");
+        query.setFirstKeyword("SELECT");
+        query.setText("DELETE FROM table WHERE id = 1");
+        Assertions.assertNull(query.getFirstKeyword());
+
+        query.reset();
+
+        Assertions.assertEquals("SELECT", query.getFirstKeyword());
+        Assertions.assertFalse(query.mayBeDDLStatement());
+    }
+
+    @Test
+    public void copyAfterResetKeepsFirstKeyword() {
+        var query = new SQLQuery(null, "SELECT * FROM table");
+        query.setFirstKeyword("SELECT");
+        query.reset();
+
+        var copy = new SQLQuery(null, query.getText(), query);
+
+        Assertions.assertEquals("SELECT", copy.getFirstKeyword());
+        Assertions.assertFalse(copy.mayBeDDLStatement());
+    }
+
+    @Test
+    public void changingOriginalTextInvalidatesKeywordAfterReset() {
+        var query = new SQLQuery(null, "SELECT * FROM table");
+        query.setFirstKeyword("SELECT");
+
+        query.setOriginalText("DELETE FROM table", true);
+        query.reset();
+
+        Assertions.assertNull(query.getFirstKeyword());
+        Assertions.assertTrue(query.mayBeDDLStatement());
+    }
+
+    @Test
     public void dangerousDeleteShouldReturnDangerous() {
         // given
         var query = new SQLQuery(null, "DELETE FROM table");

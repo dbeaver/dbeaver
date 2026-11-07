@@ -465,6 +465,7 @@ public class SQLScriptParser {
                         );
                         query.setEndsWithDelimiter(tokenType == SQLTokenType.T_DELIMITER);
                         query.setHasVariableKeyword(hasVariableKeyword);
+                        query.setFirstKeyword(firstKeyword);
                         return query;
                     }
                 }
@@ -472,8 +473,8 @@ public class SQLScriptParser {
                     statementStart = tokenEnd;
                     hasVariableKeyword = false;
                     hasNonCommentToken = false;
+                    firstKeyword = null;
                     if (isPredicateEvaluationEnabled) {
-                        firstKeyword = null;
                         predicateEvaluator.reset();
                         isControl = false;
                         hasBlocks = false;
@@ -1280,6 +1281,7 @@ public class SQLScriptParser {
                 SQLQuery query = new SQLQuery(this.context.getDataSource(), text, start, realEnd - start);
                 query.setEndsWithDelimiter(tailElement.isEndsWithDelimiter());
                 query.setHasVariableKeyword(headElement.hasVariableKeyword() || tailElement.hasVariableKeyword());
+                query.setFirstKeyword(headElement.getFirstKeyword());
                 return query;
             } catch (BadLocationException ex) {
                 return headElement;
