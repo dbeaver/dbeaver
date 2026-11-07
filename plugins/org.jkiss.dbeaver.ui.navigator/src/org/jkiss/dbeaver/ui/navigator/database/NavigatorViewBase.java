@@ -361,6 +361,7 @@ public abstract class NavigatorViewBase extends ViewPart
             case ModelPreferences.NAVIGATOR_SORT_FOLDERS_FIRST:
             case NavigatorPreferences.NAVIGATOR_COLOR_ALL_NODES:
             case NavigatorPreferences.NAVIGATOR_GROUP_BY_DRIVER:
+            case NavigatorPreferences.NAVIGATOR_SHOW_FILTER_NODE:
                 tree.getViewer().refresh();
                 break;
             case NavigatorPreferences.NAVIGATOR_SHOW_STATISTICS_INFO:
