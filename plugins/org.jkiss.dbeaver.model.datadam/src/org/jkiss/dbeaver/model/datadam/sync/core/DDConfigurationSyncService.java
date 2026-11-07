@@ -55,12 +55,10 @@ public final class DDConfigurationSyncService {
     }
 
     private static final int MAX_SYNC_ATTEMPTS = 2;
-    private static final String DEFAULT_CONFIGURATION_NAMESPACE = "desktop-default";
 
     private final DDConfigurationClient client;
     private final String storageUrl;
     private final UUID accountId;
-    private final UUID defaultConfigurationId;
 
     public DDConfigurationSyncService(
         @NotNull DDConfigurationClient client,
@@ -70,8 +68,6 @@ public final class DDConfigurationSyncService {
         this.client = client;
         this.storageUrl = storageUrl;
         this.accountId = accountId;
-        this.defaultConfigurationId = UUID.nameUUIDFromBytes(
-            (DEFAULT_CONFIGURATION_NAMESPACE + '\0' + accountId).getBytes(StandardCharsets.UTF_8));
     }
 
     @NotNull
@@ -115,14 +111,14 @@ public final class DDConfigurationSyncService {
             checkCanceled(monitor);
             if (configuration == null) {
                 ensureLocalUnchanged(unit, target, localFingerprint);
-                configuration = client.createConfiguration(new DDCreateConfigurationRequest(
-                    defaultConfigurationId, unit.getName(), List.of(new DDCreateConfigurationPartRequest(
+                configuration = client.createDefaultConfiguration(new DDCreateConfigurationRequest(
+                    unit.getName(), List.of(new DDCreateConfigurationPartRequest(
                         unit.getId(), DDConfigurationPartKind.ACCOUNT, null,
                         localFingerprint, client.encryptPart(unit.getId(), encode(local))))));
                 if (configuration == null) {
                     continue;
                 }
-                validateWriteResponse(configuration, defaultConfigurationId, unit.getId(), localFingerprint);
+                validateWriteResponse(configuration, unit.getId(), localFingerprint);
                 saveState(store, previous, configuration, unit.getId(), localFingerprint);
                 return DDSyncChange.LOCAL;
             }
@@ -195,7 +191,10 @@ public final class DDConfigurationSyncService {
         if (!result.conflictingKeys().isEmpty()) {
             return null;
         }
-        validateWriteResponse(result.configuration(), configuration.configurationId(), unitId, fingerprint);
+        if (!configuration.configurationId().equals(result.configuration().configurationId())) {
+            throw new DBException("Unexpected DataDam configuration update response");
+        }
+        validateWriteResponse(result.configuration(), unitId, fingerprint);
         return result.configuration();
     }
 
@@ -212,12 +211,9 @@ public final class DDConfigurationSyncService {
             }
             return configuration;
         }
-        DDConfiguration standard = client.getConfiguration(defaultConfigurationId);
+        DDConfiguration standard = client.getDefaultConfiguration();
         if (standard != null) {
             validateConfiguration(standard);
-            if (!defaultConfigurationId.equals(standard.configurationId())) {
-                throw new DBException("Unexpected DataDam configuration response");
-            }
             return standard;
         }
         DDConfiguration found = null;
@@ -297,12 +293,11 @@ public final class DDConfigurationSyncService {
 
     private static void validateWriteResponse(
         @NotNull DDConfiguration configuration,
-        @NotNull UUID configurationId,
         @NotNull String unitId,
         @NotNull String fingerprint
     ) throws DBException {
         DDConfigurationPart part = requirePart(configuration, unitId);
-        if (!configurationId.equals(configuration.configurationId()) || !fingerprint.equals(part.fingerprint())) {
+        if (!fingerprint.equals(part.fingerprint())) {
             throw new DBException("Unexpected DataDam configuration write response");
         }
     }

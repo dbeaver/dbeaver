@@ -58,6 +58,7 @@ import java.util.UUID;
 class DDConfigurationSyncServiceTest {
 
     private static final UUID CONFIGURATION_ID = UUID.fromString("00000000-0000-0000-0000-000000000001");
+    private static final UUID DEFAULT_CONFIGURATION_ID = UUID.fromString("00000000-0000-0000-0000-000000000004");
     private static final UUID ACCOUNT_ID = UUID.fromString("00000000-0000-0000-0000-000000000002");
     private static final LocalDateTime TIME = LocalDateTime.of(2026, 11, 6, 12, 0);
     private static final String UNIT_ID = "test-settings";
@@ -83,10 +84,12 @@ class DDConfigurationSyncServiceTest {
             new DDConfigurationSummary(server.configurationId(), server.name(), TIME, TIME)));
         Mockito.when(client.getConfiguration(Mockito.any())).thenAnswer(call ->
             server != null && server.configurationId().equals(call.getArgument(0)) ? server : null);
-        Mockito.when(client.createConfiguration(Mockito.any())).thenAnswer(call -> {
+        Mockito.when(client.getDefaultConfiguration()).thenAnswer(call ->
+            server != null && DEFAULT_CONFIGURATION_ID.equals(server.configurationId()) ? server : null);
+        Mockito.when(client.createDefaultConfiguration(Mockito.any())).thenAnswer(call -> {
             DDCreateConfigurationRequest input = call.getArgument(0);
             var part = input.parts().getFirst();
-            server = configuration(input.configurationId(), new DDConfigurationPart(
+            server = configuration(DEFAULT_CONFIGURATION_ID, new DDConfigurationPart(
                 part.key(), part.kind(), part.projectId(), part.fingerprint(), part.encryptedValue()));
             return server;
         });
@@ -106,7 +109,7 @@ class DDConfigurationSyncServiceTest {
 
         Assertions.assertEquals(DDSyncChange.LOCAL, service().synchronize(MONITOR, unit, target));
         Assertions.assertEquals("local change", serverValue());
-        Mockito.verify(client).createConfiguration(Mockito.any());
+        Mockito.verify(client).createDefaultConfiguration(Mockito.any());
         Mockito.verify(client).updateConfiguration(Mockito.eq(server.configurationId()), Mockito.argThat(input ->
             baseline.equals(input.parts().getFirst().lastKnownFingerprint())
                 && server.parts().getFirst().fingerprint().equals(input.parts().getFirst().fingerprint())));
@@ -120,7 +123,7 @@ class DDConfigurationSyncServiceTest {
 
         Assertions.assertEquals("server settings", unit.value);
         Assertions.assertEquals(1, unit.writes);
-        Mockito.verify(client, Mockito.never()).createConfiguration(Mockito.any());
+        Mockito.verify(client, Mockito.never()).createDefaultConfiguration(Mockito.any());
         Mockito.verify(client, Mockito.never()).updateConfiguration(Mockito.any(), Mockito.any());
     }
 
@@ -309,49 +312,46 @@ class DDConfigurationSyncServiceTest {
     }
 
     @Test
-    void defaultConfigurationIdentityIsSharedAcrossWorkspacesButScopedToTheAccount() throws Exception {
+    void serverAssignedDefaultConfigurationIsSharedAcrossWorkspaces() throws Exception {
         service.synchronize(MONITOR, unit, target);
-        UUID firstId = server.configurationId();
-        server = null;
+        MemoryUnit secondUnit = new MemoryUnit();
+        secondUnit.value = "other local settings";
 
-        service().synchronize(MONITOR, new MemoryUnit(), target(metadata.resolve("second")));
-        Assertions.assertEquals(firstId, server.configurationId());
-        server = null;
+        Assertions.assertEquals(DDSyncChange.SERVER,
+            service().synchronize(MONITOR, secondUnit, target(metadata.resolve("second"))));
 
-        UUID otherAccountId = UUID.fromString("00000000-0000-0000-0000-000000000003");
-        new DDConfigurationSyncService(client, "https://storage.example.test", otherAccountId)
-            .synchronize(MONITOR, new MemoryUnit(), target(metadata.resolve("third")));
-        Assertions.assertNotEquals(firstId, server.configurationId());
+        Assertions.assertEquals(DEFAULT_CONFIGURATION_ID, server.configurationId());
+        Assertions.assertEquals("original", secondUnit.value);
+        Mockito.verify(client).createDefaultConfiguration(Mockito.any());
     }
 
     @Test
     void rejectedCreationDownloadsTheConfigurationCreatedByAnotherClient() throws Exception {
         Mockito.doAnswer(call -> {
-            DDCreateConfigurationRequest request = call.getArgument(0);
             changeServer("winning settings");
-            server = configuration(request.configurationId(), server.parts().getFirst());
+            server = configuration(DEFAULT_CONFIGURATION_ID, server.parts().getFirst());
             return null;
-        }).when(client).createConfiguration(Mockito.any());
+        }).when(client).createDefaultConfiguration(Mockito.any());
 
         Assertions.assertEquals(DDSyncChange.SERVER, service.synchronize(MONITOR, unit, target));
 
         Assertions.assertEquals("winning settings", unit.value);
         Assertions.assertEquals(server.configurationId().toString(),
             JsonParser.parseString(state()).getAsJsonObject().get("configurationId").getAsString());
-        Mockito.verify(client).createConfiguration(Mockito.any());
+        Mockito.verify(client).createDefaultConfiguration(Mockito.any());
         Mockito.verify(client, Mockito.never()).updateConfiguration(Mockito.any(), Mockito.any());
     }
 
     @Test
     void repeatedCreationRejectionsDoNotSaveASuccessfulBaseline() throws Exception {
-        Mockito.doReturn(null).when(client).createConfiguration(Mockito.any());
+        Mockito.doReturn(null).when(client).createDefaultConfiguration(Mockito.any());
 
         Assertions.assertThrows(DBException.class, () -> service.synchronize(MONITOR, unit, target));
 
         Assertions.assertEquals("original", unit.value);
         Assertions.assertEquals(0, unit.writes);
         Assertions.assertTrue(Files.notExists(metadata.resolve("datadam-sync")));
-        Mockito.verify(client, Mockito.times(2)).createConfiguration(Mockito.any());
+        Mockito.verify(client, Mockito.times(2)).createDefaultConfiguration(Mockito.any());
     }
 
     @Test
@@ -369,7 +369,7 @@ class DDConfigurationSyncServiceTest {
 
         Assertions.assertTrue(server.parts().contains(other));
         Assertions.assertEquals("new local settings", serverValue());
-        Mockito.verify(client).createConfiguration(Mockito.any());
+        Mockito.verify(client).createDefaultConfiguration(Mockito.any());
         Mockito.verify(client).updateConfiguration(Mockito.eq(server.configurationId()), Mockito.argThat(input ->
             input.parts().getFirst().lastKnownFingerprint() == null));
     }
@@ -389,7 +389,7 @@ class DDConfigurationSyncServiceTest {
 
         Assertions.assertEquals(CONFIGURATION_ID, server.configurationId());
         Assertions.assertEquals("local change", serverValue());
-        Mockito.verify(client, Mockito.never()).createConfiguration(Mockito.any());
+        Mockito.verify(client, Mockito.never()).createDefaultConfiguration(Mockito.any());
         Mockito.verify(client).updateConfiguration(Mockito.eq(CONFIGURATION_ID), Mockito.argThat(input ->
             "legacy-version:7".equals(input.parts().getFirst().lastKnownFingerprint())));
         JsonObject saved = JsonParser.parseString(state()).getAsJsonObject();

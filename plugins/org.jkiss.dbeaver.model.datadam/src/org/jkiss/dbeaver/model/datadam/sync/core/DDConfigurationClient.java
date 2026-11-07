@@ -109,13 +109,24 @@ public class DDConfigurationClient extends DDClient {
     }
 
     @Nullable
-    public DDConfiguration createConfiguration(@NotNull DDCreateConfigurationRequest input) throws DBException {
+    public DDConfiguration getDefaultConfiguration() throws DBException {
         JsonElement result = call("""
-            mutation($input: CreateConfigurationInput!) {
-                createConfiguration(input: $input) {
+            query {
+                defaultConfiguration {
             %s
                 }
-            }""".formatted(CONFIGURATION_FIELDS.indent(8)), Map.of("input", input), "createConfiguration");
+            }""".formatted(CONFIGURATION_FIELDS.indent(8)), Map.of(), "defaultConfiguration");
+        return gson.fromJson(result, DDConfiguration.class);
+    }
+
+    @Nullable
+    public DDConfiguration createDefaultConfiguration(@NotNull DDCreateConfigurationRequest input) throws DBException {
+        JsonElement result = call("""
+            mutation($input: CreateConfigurationInput!) {
+                createDefaultConfiguration(input: $input) {
+            %s
+                }
+            }""".formatted(CONFIGURATION_FIELDS.indent(8)), Map.of("input", input), "createDefaultConfiguration");
         return gson.fromJson(result, DDConfiguration.class);
     }
 

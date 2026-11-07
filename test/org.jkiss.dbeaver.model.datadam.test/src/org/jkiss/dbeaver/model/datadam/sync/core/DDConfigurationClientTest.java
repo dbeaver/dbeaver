@@ -79,12 +79,14 @@ class DDConfigurationClientTest {
         Assertions.assertEquals(FINGERPRINT, configuration.parts().getFirst().fingerprint());
         Assertions.assertFalse(client.body.get("query").getAsString().contains("version"));
 
-        var input = new DDCreateConfigurationRequest(CONFIGURATION_ID, "Desktop settings", List.of(
+        client.respond("defaultConfiguration", CONFIGURATION);
+        Assertions.assertEquals(configuration, client.getDefaultConfiguration());
+
+        var input = new DDCreateConfigurationRequest("Desktop settings", List.of(
             new DDCreateConfigurationPartRequest(PART_KEY, DDConfigurationPartKind.ACCOUNT, null, FINGERPRINT, "encrypted")));
-        client.respond("createConfiguration", CONFIGURATION);
-        Assertions.assertEquals(configuration, client.createConfiguration(input));
-        Assertions.assertEquals(CONFIGURATION_ID.toString(), client.body.getAsJsonObject("variables")
-            .getAsJsonObject("input").get("configurationId").getAsString());
+        client.respond("createDefaultConfiguration", CONFIGURATION);
+        Assertions.assertEquals(configuration, client.createDefaultConfiguration(input));
+        Assertions.assertFalse(client.body.getAsJsonObject("variables").getAsJsonObject("input").has("configurationId"));
         JsonObject part = client.body.getAsJsonObject("variables").getAsJsonObject("input")
             .getAsJsonArray("parts").get(0).getAsJsonObject();
         Assertions.assertEquals("ACCOUNT", part.get("kind").getAsString());
@@ -129,9 +131,9 @@ class DDConfigurationClientTest {
     @Test
     void conflictingCreationReturnsNullWithoutRetry() throws Exception {
         StubClient client = new StubClient(accessService());
-        client.respond("createConfiguration", "null");
+        client.respond("createDefaultConfiguration", "null");
 
-        Assertions.assertNull(client.createConfiguration(new DDCreateConfigurationRequest(CONFIGURATION_ID, "Desktop settings", List.of(
+        Assertions.assertNull(client.createDefaultConfiguration(new DDCreateConfigurationRequest("Desktop settings", List.of(
             new DDCreateConfigurationPartRequest(PART_KEY, DDConfigurationPartKind.ACCOUNT, null, FINGERPRINT, "encrypted")))));
         Assertions.assertEquals(1, client.calls);
     }
