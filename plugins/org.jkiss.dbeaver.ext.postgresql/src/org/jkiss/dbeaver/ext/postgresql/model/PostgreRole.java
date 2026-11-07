@@ -186,11 +186,12 @@ public class PostgreRole implements
     /**
      * Returns true if this is the special PUBLIC pseudo-role.
      * PUBLIC is not stored in pg_roles but exists since cluster initialization and grants
-     * privileges to any connected user. In SQL statements and information_schema views it is
-     * represented by the 'PUBLIC' keyword (cannot be quoted) and by zero grantee id in ACLs.
+     * privileges to any connected user. It is identified by zero grantee id in ACLs and,
+     * on DBeaver side, by zero OID with the reserved lowercase name. Real roles may use
+     * any letter case (e.g. "PUBLIC") and are regular editable roles.
      */
     public boolean isPublicRole() {
-        return PostgreConstants.PUBLIC_ROLE_NAME.equalsIgnoreCase(getName());
+        return oid == 0 && PostgreConstants.PUBLIC_ROLE_NAME.equals(getName());
     }
 
     @Override
@@ -504,61 +505,96 @@ public class PostgreRole implements
     public List<PostgrePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBCException {
         List<PostgrePrivilege> permissions = new ArrayList<>();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read role privileges")) {
-            // The PUBLIC pseudo-role is reported by information_schema views and pg_get_userbyid()
-            // as the uppercase 'PUBLIC' keyword, while other roles are stored in lowercase.
-            String granteeName = isPublicRole() ? PostgreConstants.PUBLIC_ROLE_NAME.toUpperCase() : getName();
-            String tablePrivilegeSql = """
-                SELECT * FROM information_schema.table_privileges
-                WHERE table_catalog=? AND grantee=?""";
-            boolean supportsMaintainPrivilege = getDataSource().isServerVersionAtLeast(16, 0);
-            if (supportsMaintainPrivilege) {
-                tablePrivilegeSql += """
-                    \nUNION ALL
+            boolean publicRole = isPublicRole();
+            boolean supportsAclexplode = getDataSource().isServerVersionAtLeast(9, 0); // aclexplode() exists since PostgreSQL 9.0
+            if (supportsAclexplode) {
+                // Read privileges from system catalogs through aclexplode() instead of
+                // information_schema views, which cannot distinguish the PUBLIC pseudo-role
+                // (zero ACL grantee id) from real roles named PUBLIC in any letter case.
+                // Regular roles are resolved by name because a not yet saved role has zero OID too.
+                String granteeFilter = publicRole
+                    ? "acl.grantee = 0"
+                    : "acl.grantee = (SELECT r.oid FROM pg_catalog.pg_roles r WHERE r.rolname = ?)";
+                String tablePrivilegeSql = """
                     SELECT
                         pg_catalog.pg_get_userbyid(acl.grantor) AS grantor,
-                        pg_catalog.pg_get_userbyid(acl.grantee) AS grantee,
+                        CAST(? AS text) AS grantee,
                         current_database() AS table_catalog,
                         n.nspname AS table_schema,
                         c.relname AS table_name,
                         acl.privilege_type,
-                        CASE WHEN acl.is_grantable THEN 'YES' ELSE 'NO' END AS is_grantable,
-                    	'NO' AS with_hierarchy
+                        CASE WHEN acl.is_grantable OR acl.grantee = c.relowner THEN 'YES' ELSE 'NO' END AS is_grantable,
+                        'NO' AS with_hierarchy
                     FROM pg_catalog.pg_class c
                     JOIN pg_catalog.pg_namespace n ON n.oid = c.relnamespace
-                    CROSS JOIN LATERAL pg_catalog.aclexplode(c.relacl) AS acl
-                    WHERE c.relacl IS NOT NULL
+                    CROSS JOIN LATERAL pg_catalog.aclexplode(
+                        coalesce(c.relacl, pg_catalog.acldefault('r', c.relowner))) AS acl
+                    WHERE current_database() = ?
                       AND c.relkind IN ('r', 'v', 'f', 'p')
-                      AND acl.privilege_type in ('MAINTAIN')
-                      AND acl.grantee = ?;
-                    """;
-            }
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(tablePrivilegeSql)) {
-                dbStat.setString(1, getDatabase().getName());
-                dbStat.setString(2, granteeName);
-                if (supportsMaintainPrivilege) {
-                    dbStat.setLong(3, getObjectId());
+                      AND %s""".formatted(granteeFilter);
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(tablePrivilegeSql)) {
+                    dbStat.setString(1, getName());
+                    dbStat.setString(2, getDatabase().getName());
+                    if (!publicRole) {
+                        dbStat.setString(3, getName());
+                    }
+                    permissions.addAll(getRolePermissions(monitor, this, PostgrePrivilegeGrant.Kind.TABLE, dbStat));
+                } catch (Throwable e) {
+                    log.error("Error reading table privileges", e);
                 }
-                permissions.addAll(getRolePermissions(monitor, this, PostgrePrivilegeGrant.Kind.TABLE, dbStat));
-            } catch (Throwable e) {
-                log.error("Error reading table privileges", e);
-            }
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                String routinePrivilegeSql = """
+                    SELECT
+                        pg_catalog.pg_get_userbyid(acl.grantor) AS grantor,
+                        CAST(? AS text) AS grantee,
+                        current_database() AS specific_catalog,
+                        n.nspname AS specific_schema,
+                        pg_catalog.nameconcatoid(p.proname, p.oid) AS specific_name,
+                        acl.privilege_type,
+                        CASE WHEN acl.is_grantable OR acl.grantee = p.proowner THEN 'YES' ELSE 'NO' END AS is_grantable
+                    FROM pg_catalog.pg_proc p
+                    JOIN pg_catalog.pg_namespace n ON n.oid = p.pronamespace
+                    CROSS JOIN LATERAL pg_catalog.aclexplode(
+                        coalesce(p.proacl, pg_catalog.acldefault('f', p.proowner))) AS acl
+                    WHERE current_database() = ?
+                      AND %s""".formatted(granteeFilter);
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(routinePrivilegeSql)) {
+                    dbStat.setString(1, getName());
+                    dbStat.setString(2, getDatabase().getName());
+                    if (!publicRole) {
+                        dbStat.setString(3, getName());
+                    }
+                    permissions.addAll(getRolePermissions(monitor, this, PostgrePrivilegeGrant.Kind.FUNCTION, dbStat));
+                } catch (Throwable e) {
+                    log.error("Error reading routine privileges", e);
+                }
+            } else {
+                // information_schema views report the PUBLIC pseudo-role as the uppercase
+                // 'PUBLIC' keyword and cannot tell it apart from a real PUBLIC role.
+                String granteeName = publicRole ? PostgreConstants.PUBLIC_ROLE_NAME.toUpperCase() : getName();
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT * FROM information_schema.table_privileges WHERE table_catalog=? AND grantee=?")) {
+                    dbStat.setString(1, getDatabase().getName());
+                    dbStat.setString(2, granteeName);
+                    permissions.addAll(getRolePermissions(monitor, this, PostgrePrivilegeGrant.Kind.TABLE, dbStat));
+                } catch (Throwable e) {
+                    log.error("Error reading table privileges", e);
+                }
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT * FROM information_schema.routine_privileges WHERE specific_catalog=? AND grantee=?")) {
-                dbStat.setString(1, getDatabase().getName());
-                dbStat.setString(2, granteeName);
-                permissions.addAll(getRolePermissions(monitor, this, PostgrePrivilegeGrant.Kind.FUNCTION, dbStat));
-            } catch (Throwable e) {
-                log.error("Error reading routine privileges", e);
+                    dbStat.setString(1, getDatabase().getName());
+                    dbStat.setString(2, granteeName);
+                    permissions.addAll(getRolePermissions(monitor, this, PostgrePrivilegeGrant.Kind.FUNCTION, dbStat));
+                } catch (Throwable e) {
+                    log.error("Error reading routine privileges", e);
+                }
             }
             // Select acl for all schemas, sequences and materialized views
             boolean supportsDistinct = getDataSource().getServerType().supportsDistinctForStatementsWithAcl(); // Greenplum do not support DISTINCT keyword with the acl data type in the query
-            boolean supportsOnlySchemasPermissions = !getDataSource().isServerVersionAtLeast(9,0); // So we can't use aclexplode in old PG versions. Let's read only schemas permissions then
-            // PUBLIC pseudo-role is represented in ACLs by zero grantee oid.
-            // pg_get_userbyid(0) does not return 'PUBLIC' in modern PostgreSQL versions,
-            // so it must be filtered by the zero oid directly.
-            boolean publicRole = isPublicRole();
+            boolean supportsOnlySchemasPermissions = !supportsAclexplode; // So we can't use aclexplode in old PG versions. Let's read only schemas permissions then
+            // PUBLIC pseudo-role is represented in ACLs by zero grantee oid
+            // and cannot be resolved through pg_get_userbyid().
             String otherObjectsGranteeFilter = publicRole
-                ? "(tr.granteeI = 0 OR pg_get_userbyid(tr.granteeI) = 'PUBLIC')"
+                ? "tr.granteeI = 0"
                 : "pg_get_userbyid(tr.granteeI) = ?";
             String otherObjectsSQL;
             if (supportsOnlySchemasPermissions) {
@@ -596,7 +632,7 @@ public class PostgreRole implements
             try (JDBCPreparedStatement dbStat = session.prepareStatement(otherObjectsSQL)) {
                 if (!supportsOnlySchemasPermissions) {
                     if (!publicRole) {
-                        dbStat.setString(1, granteeName);
+                        dbStat.setString(1, getName());
                     }
                 }
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -672,7 +708,7 @@ public class PostgreRole implements
                         FROM pg_default_acl a WHERE a.defaclnamespace <> 0) as g
                         where %s""".formatted(defaultPrivilegeGranteeFilter))) {
                     if (!publicRole) {
-                        dbStat.setString(1, granteeName);
+                        dbStat.setString(1, getName());
                     }
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         while (dbResult.nextRow()) {
