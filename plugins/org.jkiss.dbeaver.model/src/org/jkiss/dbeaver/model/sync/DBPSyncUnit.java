@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sync;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Map;
 
@@ -45,4 +46,13 @@ public interface DBPSyncUnit {
     Map<String, byte[]> read(@NotNull DBPSyncTarget target) throws DBException;
 
     void write(@NotNull DBPSyncTarget target, @NotNull Map<String, byte[]> resources) throws DBException;
+
+    default void writeIfUnchanged(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBPSyncTarget target,
+        @NotNull Map<String, byte[]> expected,
+        @NotNull Map<String, byte[]> resources
+    ) throws DBException {
+        throw new DBException("Conditional synchronization writes are not supported");
+    }
 }

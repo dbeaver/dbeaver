@@ -25,6 +25,7 @@ import com.dbeaver.datadam.share.api.model.DDCreateConfigurationRequest;
 import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationPartRequest;
 import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationRequest;
 import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationResult;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -154,15 +155,15 @@ public final class DDConfigurationSyncService {
             }
 
             checkCanceled(monitor);
-            ensureLocalUnchanged(unit, target, localFingerprint);
             if (change == DDSyncChange.LOCAL) {
+                ensureLocalUnchanged(unit, target, localFingerprint);
                 DDConfiguration updated = upload(configuration, part, unit.getId(), local, localFingerprint);
                 if (updated == null) {
                     continue;
                 }
                 saveState(store, previous, updated, unit.getId(), localFingerprint);
             } else {
-                unit.write(target, remote);
+                unit.writeIfUnchanged(monitor, target, local, remote);
                 saveState(store, previous, configuration, unit.getId(), serverFingerprint);
             }
             return change;
@@ -302,9 +303,9 @@ public final class DDConfigurationSyncService {
         }
     }
 
-    private static void checkCanceled(@NotNull DBRProgressMonitor monitor) throws DBException {
+    private static void checkCanceled(@NotNull DBRProgressMonitor monitor) {
         if (monitor.isCanceled()) {
-            throw new DBException("DataDam configuration synchronization was canceled");
+            throw new OperationCanceledException("DataDam configuration synchronization was canceled");
         }
     }
 

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.datadam.mcp;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -203,7 +204,9 @@ public final class DDMcpPreferencePage extends AbstractPrefPage implements IWork
         syncJob = null;
         String problem = availabilityProblem();
         syncButton.setEnabled(problem == null);
-        if (result.matches(IStatus.CANCEL) || job.isCanceled() || !isCurrentAccount(job.accountId) || !getControl().isVisible()) {
+        if (!isCurrentAccount(job.accountId) || !getControl().isVisible()) {
+            setStatus(problem == null ? DDMcpMessages.mcp_sync_ready : problem);
+        } else if (result.matches(IStatus.CANCEL) || (job.change == DDSyncChange.CONFLICT && job.isCanceled())) {
             setStatus(problem == null ? DDMcpMessages.mcp_sync_canceled : problem);
         } else if (!result.isOK()) {
             setStatus(result.getMessage());
@@ -271,10 +274,11 @@ public final class DDMcpPreferencePage extends AbstractPrefPage implements IWork
                 DBPSyncTarget target = new DBPSyncTarget(DBWorkbench.getPlatform().getWorkspace(), null);
                 change = resolution == null ? service.synchronize(monitor, syncUnit, target)
                     : service.resolveConflict(monitor, syncUnit, target, resolution);
-                return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
+                return Status.OK_STATUS;
+            } catch (OperationCanceledException e) {
+                return Status.CANCEL_STATUS;
             } catch (DBException | RuntimeException e) {
-                return monitor.isCanceled() ? Status.CANCEL_STATUS
-                    : Status.error(NLS.bind(DDMcpMessages.mcp_sync_failed, e.getMessage()), e);
+                return Status.error(NLS.bind(DDMcpMessages.mcp_sync_failed, e.getMessage()), e);
             } finally {
                 monitor.done();
             }

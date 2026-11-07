@@ -25,6 +25,7 @@ import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationRequest;
 import com.dbeaver.datadam.share.api.model.DDUpdateConfigurationResult;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import org.eclipse.core.runtime.OperationCanceledException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
@@ -49,6 +50,7 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.HexFormat;
 import java.util.List;
@@ -312,6 +314,64 @@ class DDConfigurationSyncServiceTest {
     }
 
     @Test
+    void localEditsBeforeConditionalApplicationAreNotOverwritten() throws Exception {
+        service.synchronize(MONITOR, unit, target);
+        changeServer("remote change");
+        String previous = state();
+        MemoryUnit guarded = Mockito.spy(unit);
+        Mockito.doAnswer(call -> {
+            guarded.value = "new local settings";
+            return call.callRealMethod();
+        }).when(guarded).writeIfUnchanged(Mockito.same(MONITOR), Mockito.same(target), Mockito.anyMap(), Mockito.anyMap());
+
+        Assertions.assertThrows(DBException.class, () -> service.synchronize(MONITOR, guarded, target));
+
+        Assertions.assertEquals(previous, state());
+        Assertions.assertEquals("new local settings", guarded.value);
+        Assertions.assertEquals(0, guarded.writes);
+    }
+
+    @Test
+    void cancellationBeforeConditionalApplicationDoesNotAdvanceTheBaseline() throws Exception {
+        service.synchronize(MONITOR, unit, target);
+        changeServer("remote change");
+        String previous = state();
+        DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
+        MemoryUnit guarded = Mockito.spy(unit);
+        Mockito.doAnswer(call -> {
+            Mockito.when(monitor.isCanceled()).thenReturn(true);
+            return call.callRealMethod();
+        }).when(guarded).writeIfUnchanged(Mockito.same(monitor), Mockito.same(target), Mockito.anyMap(), Mockito.anyMap());
+
+        Assertions.assertThrows(OperationCanceledException.class, () -> service.synchronize(monitor, guarded, target));
+
+        Assertions.assertEquals(previous, state());
+        Assertions.assertEquals("original", guarded.value);
+        Assertions.assertEquals(0, guarded.writes);
+    }
+
+    @Test
+    void cancellationAfterApplicationPreservesTheSuccessfulResultAndBaseline() throws Exception {
+        service.synchronize(MONITOR, unit, target);
+        changeServer("remote change");
+        String previous = state();
+        DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
+        MemoryUnit guarded = Mockito.spy(unit);
+        Mockito.doAnswer(call -> {
+            Object result = call.callRealMethod();
+            Mockito.when(monitor.isCanceled()).thenReturn(true);
+            return result;
+        }).when(guarded).writeIfUnchanged(Mockito.same(monitor), Mockito.same(target), Mockito.anyMap(), Mockito.anyMap());
+
+        Assertions.assertEquals(DDSyncChange.SERVER, service.synchronize(monitor, guarded, target));
+
+        Assertions.assertEquals("remote change", guarded.value);
+        Assertions.assertEquals(1, guarded.writes);
+        Assertions.assertNotEquals(previous, state());
+        Assertions.assertEquals(DDSyncChange.UNCHANGED, service().synchronize(MONITOR, guarded, target));
+    }
+
+    @Test
     void serverAssignedDefaultConfigurationIsSharedAcrossWorkspaces() throws Exception {
         service.synchronize(MONITOR, unit, target);
         MemoryUnit secondUnit = new MemoryUnit();
@@ -516,6 +576,22 @@ class DDConfigurationSyncServiceTest {
             }
             value = new String(resources.get("settings.json"), StandardCharsets.UTF_8);
             writes++;
+        }
+
+        @Override
+        public void writeIfUnchanged(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBPSyncTarget target,
+            @NotNull Map<String, byte[]> expected,
+            @NotNull Map<String, byte[]> resources
+        ) throws DBException {
+            if (monitor.isCanceled()) {
+                throw new OperationCanceledException();
+            }
+            if (!Arrays.equals(expected.get("settings.json"), read(target).get("settings.json"))) {
+                throw new DBException("Local configuration changed during synchronization");
+            }
+            write(target, resources);
         }
     }
 }
