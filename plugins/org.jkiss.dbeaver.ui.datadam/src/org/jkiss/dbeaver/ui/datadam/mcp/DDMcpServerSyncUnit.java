@@ -129,12 +129,14 @@ public final class DDMcpServerSyncUnit implements DBPSyncUnit {
                 }
                 return configuration;
             });
-        } catch (Exception e) {
+        } catch (DBException e) {
             if (CommonUtils.getRootCause(e) instanceof OperationCanceledException canceled) {
                 throw canceled;
             }
-            if (e instanceof DBException dbException) {
-                throw dbException;
+            throw e;
+        } catch (Exception e) {
+            if (CommonUtils.getRootCause(e) instanceof OperationCanceledException canceled) {
+                throw canceled;
             }
             throw new DBException("Error executing MCP server configuration command", e);
         }
