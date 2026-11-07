@@ -214,6 +214,10 @@
         <workbenchWindowInitializer class="org.jkiss.dbeaver.ui.datadam.DDDesktopInitializer" order="100"/>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.syncUnit">
+        <unit class="org.jkiss.dbeaver.ui.datadam.mcp.DDMcpServerSyncUnit"/>
+    </extension>
+
     <extension point="org.eclipse.ui.preferencePages">
         <page
               id="org.jkiss.dbeaver.preferences.synchronization"
@@ -226,6 +230,13 @@
               category="org.jkiss.dbeaver.preferences.synchronization"
               class="org.jkiss.dbeaver.ui.datadam.project.DDProjectsPreferencePage"
               name="%preference.datadam.projects.name">
+            <keywordReference id="org.jkiss.dbeaver.ui.datadam.keyword.pref.synchronization"/>
+        </page>
+        <page
+              id="org.jkiss.dbeaver.preferences.synchronization.mcp"
+              category="org.jkiss.dbeaver.preferences.synchronization"
+              class="org.jkiss.dbeaver.ui.datadam.mcp.DDMcpPreferencePage"
+              name="%preference.datadam.mcp.name">
             <keywordReference id="org.jkiss.dbeaver.ui.datadam.keyword.pref.synchronization"/>
         </page>
     </extension>

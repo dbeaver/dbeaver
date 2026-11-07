@@ -25,6 +25,24 @@ public class DDMcpMessages extends NLS {
     public static String mcp_connection_settings_enabled;
     public static String mcp_connection_settings_enabled_tip;
 
+    public static String mcp_sync_page_description;
+    public static String mcp_sync_button;
+    public static String mcp_sync_ready;
+    public static String mcp_sync_unavailable;
+    public static String mcp_sync_sign_in_required;
+    public static String mcp_sync_keys_required;
+    public static String mcp_sync_job;
+    public static String mcp_sync_running;
+    public static String mcp_sync_uploaded;
+    public static String mcp_sync_downloaded;
+    public static String mcp_sync_unchanged;
+    public static String mcp_sync_canceled;
+    public static String mcp_sync_failed;
+    public static String mcp_sync_conflict_title;
+    public static String mcp_sync_conflict_message;
+    public static String mcp_sync_use_local;
+    public static String mcp_sync_use_server;
+
     static {
         NLS.initializeMessages(BUNDLE_NAME, DDMcpMessages.class);
     }

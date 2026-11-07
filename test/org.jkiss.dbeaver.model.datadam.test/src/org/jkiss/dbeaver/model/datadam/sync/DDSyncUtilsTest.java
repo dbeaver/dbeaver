@@ -14,15 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.datadam.sync.project;
+package org.jkiss.dbeaver.model.datadam.sync;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.datadam.sync.DDSyncChange;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class DDProjectSyncUtilsTest {
+class DDSyncUtilsTest {
 
     @Test
     void unchangedWhenNothingChanged() {
@@ -57,7 +56,7 @@ class DDProjectSyncUtilsTest {
     ) {
         assertEquals(
             expectedChange,
-            DDProjectSyncUtils.classify(localFingerprint, baselineFingerprint, serverFingerprint)
+            DDSyncUtils.classify(localFingerprint, baselineFingerprint, serverFingerprint)
         );
     }
 }

@@ -20,6 +20,7 @@ import com.dbeaver.datadam.share.api.model.DDSharedProjectRevision;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.sync.DDSyncChange;
+import org.jkiss.dbeaver.model.datadam.sync.DDSyncUtils;
 
 public final class DDProjectSyncUtils {
 
@@ -48,19 +49,6 @@ public final class DDProjectSyncUtils {
         @NotNull String lastKnownRevisionFingerprint,
         @NotNull String serverFingerprint
     ) {
-        boolean localChanged = !lastKnownRevisionFingerprint.equals(localFingerprint);
-        boolean serverChanged = !lastKnownRevisionFingerprint.equals(serverFingerprint);
-        DDSyncChange change;
-        if (localFingerprint.equals(serverFingerprint)) {
-            // Case when local and server have the same file state for some reason; then we must pull and update last sync.
-            change = serverChanged ? DDSyncChange.SERVER : DDSyncChange.UNCHANGED;
-        } else if (localChanged && serverChanged) {
-            change = DDSyncChange.CONFLICT;
-        } else if (localChanged) {
-            change = DDSyncChange.LOCAL;
-        } else {
-            change = DDSyncChange.SERVER;
-        }
-        return change;
+        return DDSyncUtils.classify(localFingerprint, lastKnownRevisionFingerprint, serverFingerprint);
     }
 }
