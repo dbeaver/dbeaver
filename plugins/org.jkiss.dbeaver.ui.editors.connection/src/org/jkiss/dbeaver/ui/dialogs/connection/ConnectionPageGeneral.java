@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -26,7 +25,6 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -355,21 +353,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                     SelectionListener.widgetSelectedAdapter(selectionEvent -> {
                         DBPConnectionType curConType = connectionTypeCombo.getSelectedItem();
                         DataSourceDescriptor dataSource = getActiveDataSource();
-                        PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
+                        UIUtils.showPreferencesFor(
                             ctGroup.getShell(),
                             dataSource.getConnectionConfiguration().getConnectionType(),
-                            PrefPageConnectionTypes.PAGE_ID,
-                            null,
-                            null,
-                            PreferencesUtil.OPTION_NONE
-                        );
-                        if (propDialog != null) {
-                            propDialog.getShell().setText(NLS.bind(
-                                UIConnectionMessages.dialog_connection_test_properties_title,
-                                connectionNameText.getText()
-                            ));
-                            propDialog.open();
-                        }
+                            PrefPageConnectionTypes.PAGE_ID);
                         loadConnectionTypes(connectionTypeCombo);
                         if (!connectionTypeCombo.getItems().contains(curConType)) {
                             curConType = connectionTypeCombo.getItems().getFirst();
