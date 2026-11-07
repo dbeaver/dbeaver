@@ -95,4 +95,17 @@ public class OraclePackageCacheTest extends DBeaverUnitTest {
         Mockito.verify(session, Mockito.times(1)).prepareStatement(Mockito.anyString());
         Mockito.verify(bodyResult, Mockito.times(1)).next();
     }
+
+    @Test
+    public void unsavedPackageDoesNotLoadBodyDdlTime() throws Exception {
+        OraclePackage pack = new OraclePackage(schema, "NEW_PACKAGE");
+
+        try (MockedStatic<DBUtils> dbUtils = Mockito.mockStatic(
+            DBUtils.class, Mockito.withSettings().mockMaker("mock-maker-inline"))
+        ) {
+            // The property viewer reads non-persisted objects with a null monitor.
+            Assertions.assertNull(pack.getBodyLastDDLTime(null));
+            dbUtils.verifyNoInteractions();
+        }
+    }
 }
