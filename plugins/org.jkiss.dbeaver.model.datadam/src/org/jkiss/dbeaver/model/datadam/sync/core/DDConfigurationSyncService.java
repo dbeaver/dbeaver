@@ -162,11 +162,12 @@ public final class DDConfigurationSyncService {
                     continue;
                 }
                 saveState(store, previous, updated, unit.getId(), localFingerprint);
+                return change;
             } else {
                 unit.writeIfUnchanged(monitor, target, local, remote);
                 saveState(store, previous, configuration, unit.getId(), serverFingerprint);
+                return change;
             }
-            return change;
         }
         throw new DBException("DataDam configuration changed repeatedly during synchronization; retry synchronization");
     }
