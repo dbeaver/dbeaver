@@ -73,7 +73,13 @@ public class PostgreConstants {
     public static final String PROP_SSL_ROOT_CERT = "rootCert";
     public static final String PROP_SSL_MODE = "sslMode";
     public static final String PROP_SSL_FACTORY = "sslFactory";
+    public static final String PROP_SSL_NEGOTIATION = "sslNegotiation";
     public static final String PROP_SSL_PROXY = "sslProxyServer";
+
+    /** pgjdbc connection property: "postgres" (classic SSLRequest, default) or "direct" (TLS handshake right away, PG17+) */
+    public static final String DRIVER_PROP_SSL_NEGOTIATION = "sslNegotiation";
+    public static final String SSL_NEGOTIATION_POSTGRES = "postgres";
+    public static final String SSL_NEGOTIATION_DIRECT = "direct";
     public static final String PROP_SERVER_TYPE = "serverType";
 
     public static final DBSObjectState STATE_UNAVAILABLE = new DBSObjectState("Unavailable", DBIcon.OVER_EXTERNAL);
