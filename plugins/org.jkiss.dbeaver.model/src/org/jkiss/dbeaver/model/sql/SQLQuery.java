@@ -112,6 +112,11 @@ public class SQLQuery implements SQLScriptElement {
     private boolean hasVariableKeyword;
     @Nullable
     private String firstKeyword;
+    /**
+     * First keyword of {@link #originalText}. Used by {@link #reset()} to restore the cheap safety-check hint.
+     */
+    @Nullable
+    private String originalFirstKeyword;
     private Object data;
     private int resultsOffset = -1;
     private int resultsMaxRows = -1;
@@ -149,6 +154,7 @@ public class SQLQuery implements SQLScriptElement {
         if (preserveOriginal) {
             this.originalText = sourceQuery.originalText;
             this.originalRepresentsOneStatement = sourceQuery.originalRepresentsOneStatement;
+            this.originalFirstKeyword = sourceQuery.originalFirstKeyword;
         } else {
             this.originalRepresentsOneStatement = sourceQuery.representsOneStatement;
         }
@@ -157,7 +163,17 @@ public class SQLQuery implements SQLScriptElement {
         this.data = sourceQuery.data;
         this.isEndsWithDelimiter = sourceQuery.isEndsWithDelimiter;
         this.hasVariableKeyword = sourceQuery.hasVariableKeyword;
-        this.firstKeyword = text.equals(sourceQuery.getText()) ? sourceQuery.firstKeyword : null;
+        if (text.equals(sourceQuery.getText())) {
+            this.firstKeyword = sourceQuery.firstKeyword;
+        } else if (text.equals(sourceQuery.originalText)) {
+            this.firstKeyword = sourceQuery.originalFirstKeyword;
+        } else {
+            this.firstKeyword = null;
+        }
+        if (!preserveOriginal) {
+            // The copy uses its own text as the baseline, so its keyword hint is the one computed above.
+            this.originalFirstKeyword = this.firstKeyword;
+        }
     }
 
     public SQLQuery(@Nullable DBPDataSource dataSource, @NotNull String text, int offset, int length) {
@@ -627,6 +643,8 @@ public class SQLQuery implements SQLScriptElement {
     public void setOriginalText(@NotNull String originalText, boolean representsOneStatement) {
         this.originalText = originalText;
         this.originalRepresentsOneStatement = representsOneStatement;
+        // The baseline keyword is only known when the new baseline is the current text.
+        this.originalFirstKeyword = originalText.equals(this.text) ? this.firstKeyword : null;
     }
 
     @NotNull
@@ -653,7 +671,8 @@ public class SQLQuery implements SQLScriptElement {
     public void setText(@NotNull String text, boolean representsOneStatement) {
         this.text = text;
         this.representsOneStatement = representsOneStatement;
-        this.firstKeyword = null;
+        // Restored baseline text keeps its known keyword; any other text invalidates the hint.
+        this.firstKeyword = text.equals(originalText) ? originalFirstKeyword : null;
         this.queryTitle = extractQueryTitle(text);
         resetParsedState();
     }
@@ -708,6 +727,10 @@ public class SQLQuery implements SQLScriptElement {
 
     public void setFirstKeyword(@Nullable String firstKeyword) {
         this.firstKeyword = firstKeyword == null ? null : firstKeyword.toUpperCase(java.util.Locale.ENGLISH);
+        if (text.equals(originalText)) {
+            // The parser sets the hint right after creating a query, when current text is the baseline.
+            this.originalFirstKeyword = this.firstKeyword;
+        }
     }
 
     /**
@@ -783,7 +806,7 @@ public class SQLQuery implements SQLScriptElement {
     public void reset() {
         this.text = this.originalText;
         this.representsOneStatement = this.originalRepresentsOneStatement;
-        this.firstKeyword = null;
+        this.firstKeyword = this.originalFirstKeyword;
         this.queryTitle = extractQueryTitle(originalText);
         resetParsedState();
         if (this.parameters != null) {
