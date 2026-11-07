@@ -30,6 +30,7 @@ import org.mockito.Mock;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.List;
 import java.util.stream.IntStream;
 
 public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
@@ -103,6 +104,16 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
         assertOutputMatches(expectedRow);
     }
 
+    @Test
+    public void attributeNamesKeepLettersOfOtherScripts() throws DBException, IOException {
+        Assertions.assertEquals("    <注文 数量=\"value\"/>", exportWithNames("注文", "数量").get(2));
+    }
+
+    @Test
+    public void attributeNamesStartingWithDigitGetUnderscorePrefix() throws DBException, IOException {
+        Assertions.assertEquals("    <T _1ST=\"value\"/>", exportWithNames("t", "1st").get(2));
+    }
+
     @BeforeEach
     public void setUp() throws DBException {
         stringWriter = new StringWriter();
@@ -121,6 +132,17 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
         exporter.exportHeader(session);
         exporter.exportRow(session, resultSet, new Object[]{row});
         exporter.exportFooter(null);
+    }
+
+    @NotNull
+    private List<String> exportWithNames(@NotNull String table, @NotNull String column) throws DBException, IOException {
+        StringWriter writer = new StringWriter();
+        DataExporterDbUnit dbUnitExporter = new DataExporterDbUnit();
+        dbUnitExporter.init(ExporterTestsUtils.getIStreamDataExporterSiteMock(table, column, writer, outputEncoding));
+        dbUnitExporter.exportHeader(session);
+        dbUnitExporter.exportRow(session, resultSet, new Object[]{"value"});
+        dbUnitExporter.exportFooter(null);
+        return writer.toString().lines().toList();
     }
 
     private void assertOutputMatches(@NotNull String expectedRow) {

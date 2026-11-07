@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -64,7 +65,7 @@ public class DataExporterXML extends StreamExporterAbstract {
     {
         PrintWriter out = getWriter();
         out.write("<?xml version=\"1.0\" encoding=\"" + getSite().getOutputEncoding() + "\"?>\n");
-        tableName = escapeXmlElementName(getSite().getSource().getName());
+        tableName = DTUtils.escapeXmlElementName(getSite().getSource().getName());
         if (includeDoctype) {
             out.write("<!DOCTYPE " + tableName + " [\n");
             out.write("  <!ELEMENT " + tableName + " (DATA_RECORD*)>\n");
@@ -75,14 +76,14 @@ public class DataExporterXML extends StreamExporterAbstract {
                 if (CommonUtils.isEmpty(colName)) {
                     colName = columns[i].getName();
                 }
-                out.write(escapeXmlElementName(colName) + "?");
+                out.write(DTUtils.escapeXmlElementName(colName) + "?");
                 if (i < columnsSize - 1) {
                     out.write(",");
                 }
             }
             out.write(")+>\n");
             for (int i = 0; i < columnsSize; i++) {
-                out.write("  <!ELEMENT " + escapeXmlElementName(columns[i].getName()) + " (#PCDATA)>\n");
+                out.write("  <!ELEMENT " + DTUtils.escapeXmlElementName(columns[i].getName()) + " (#PCDATA)>\n");
             }
             out.write("]>\n");
         }
@@ -96,7 +97,7 @@ public class DataExporterXML extends StreamExporterAbstract {
         out.write("  <DATA_RECORD>\n");
         for (int i = 0; i < row.length; i++) {
             DBDAttributeBinding column = columns[i];
-            String columnName = escapeXmlElementName(column.getName());
+            String columnName = DTUtils.escapeXmlElementName(column.getName());
             out.write("    <" + columnName + ">");
             if (DBUtils.isNullValue(row[i])) {
                 writeTextCell(null);
@@ -162,15 +163,5 @@ public class DataExporterXML extends StreamExporterAbstract {
                 }
             }
         }
-    }
-
-    private String escapeXmlElementName(String name) {
-        String escapedName = name.replaceAll("[^\\p{Alpha}\\p{Digit}]+", "_");
-        char firstCharacter = escapedName.charAt(0);
-        if (Character.isAlphabetic(firstCharacter) || firstCharacter == '_') {
-            return escapedName;
-        }
-
-        return "_" + escapedName;
     }
 }

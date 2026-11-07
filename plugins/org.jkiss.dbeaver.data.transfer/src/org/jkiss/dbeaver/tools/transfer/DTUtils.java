@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -49,6 +49,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Data transfer utils
@@ -57,6 +58,9 @@ public class DTUtils {
 
     private static final Log log = Log.getLog(DTUtils.class);
     private static final int MAX_SAMPLE_ROWS = 1000;
+
+    // Letters, combining marks and digits of any script may appear in XML names, characters U+0080..U+00BF may not
+    private static final Pattern XML_NAME_INVALID_CHARS = Pattern.compile("(?:[^\\p{L}\\p{M}\\p{Nd}]|[\\u0080-\\u00BF])+");
 
     public static void addSummary(StringBuilder summary, String option, Object value) {
         summary.append("\t").append(option).append(": ").append(value).append("\n");
@@ -77,6 +81,17 @@ public class DTUtils {
                 addSummary(summary, prop.getDisplayName(), propValue);
             }
         }
+    }
+
+    @NotNull
+    public static String escapeXmlElementName(@NotNull String name) {
+        String escapedName = XML_NAME_INVALID_CHARS.matcher(name).replaceAll("_");
+        int firstCharacter = escapedName.codePointAt(0);
+        if (Character.isLetter(firstCharacter) || firstCharacter == '_') {
+            return escapedName;
+        }
+
+        return "_" + escapedName;
     }
 
     /**

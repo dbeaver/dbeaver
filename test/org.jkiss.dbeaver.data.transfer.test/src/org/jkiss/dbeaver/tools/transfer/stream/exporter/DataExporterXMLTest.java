@@ -29,6 +29,7 @@ import org.mockito.Mock;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.List;
 import java.util.stream.IntStream;
 
 public class DataExporterXMLTest {
@@ -104,6 +105,26 @@ public class DataExporterXMLTest {
         assertOutputMatches(expectedRow);
     }
 
+    @Test
+    public void elementNamesKeepLettersOfOtherScripts() throws DBException, IOException {
+        List<String> output = exportWithNames("顧客", "氏名");
+
+        Assertions.assertEquals("<顧客>", output.get(1));
+        Assertions.assertEquals("    <氏名>value</氏名>", output.get(3));
+        Assertions.assertEquals("</顧客>", output.get(5));
+    }
+
+    @Test
+    public void elementNamesKeepAccentedLettersAndCombiningMarks() throws DBException, IOException {
+        Assertions.assertEquals("    <Größe>value</Größe>", exportWithNames("t", "Größe").get(3));
+        Assertions.assertEquals("    <नाम>value</नाम>", exportWithNames("t", "नाम").get(3));
+    }
+
+    @Test
+    public void elementNamesStartingWithNonAsciiDigitGetUnderscorePrefix() throws DBException, IOException {
+        Assertions.assertEquals("    <_２０２６年>value</_２０２６年>", exportWithNames("t", "２０２６年").get(3));
+    }
+
     @BeforeEach
     public void setUp() throws DBException {
         stringWriter = new StringWriter();
@@ -124,6 +145,17 @@ public class DataExporterXMLTest {
         exporter.exportHeader(session);
         exporter.exportRow(session, resultSet, new Object[]{row});
         exporter.exportFooter(null);
+    }
+
+    @NotNull
+    private List<String> exportWithNames(@NotNull String table, @NotNull String column) throws DBException, IOException {
+        StringWriter writer = new StringWriter();
+        DataExporterXML xmlExporter = new DataExporterXML();
+        xmlExporter.init(ExporterTestsUtils.getIStreamDataExporterSiteMock(table, column, writer, outputEncoding));
+        xmlExporter.exportHeader(session);
+        xmlExporter.exportRow(session, resultSet, new Object[]{"value"});
+        xmlExporter.exportFooter(null);
+        return writer.toString().lines().toList();
     }
 
     private void assertOutputMatches(@NotNull String expectedRow) {
