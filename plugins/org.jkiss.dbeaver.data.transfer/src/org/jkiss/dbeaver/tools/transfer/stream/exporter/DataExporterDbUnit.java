@@ -108,7 +108,7 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
                 continue;
             }
             DBDAttributeBinding column = columns[i];
-            String columnName = DataExporterXML.escapeXmlElementName(column.getName());
+            String columnName = DTUtils.escapeXmlElementName(column.getName());
             if (columnName != null && upperCaseColumnNames) {
                 columnName = columnName.toUpperCase();
             }

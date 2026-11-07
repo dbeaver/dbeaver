@@ -35,7 +35,6 @@ import org.jkiss.utils.xml.XMLUtils;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.util.regex.Pattern;
 
 /**
  * XML Exporter
@@ -43,9 +42,6 @@ import java.util.regex.Pattern;
 public class DataExporterXML extends StreamExporterAbstract {
 
     private static final String PROP_INCLUDE_DOCTYPE_DECLARATION = "includeDoctype";
-
-    // Letters, combining marks and digits of any script may appear in XML names, characters U+0080..U+00BF may not
-    private static final Pattern XML_NAME_INVALID_CHARS = Pattern.compile("(?:[^\\p{L}\\p{M}\\p{Nd}]|[\\u0080-\\u00BF])+");
 
     private DBDAttributeBinding[] columns;
     private String tableName;
@@ -69,7 +65,7 @@ public class DataExporterXML extends StreamExporterAbstract {
     {
         PrintWriter out = getWriter();
         out.write("<?xml version=\"1.0\" encoding=\"" + getSite().getOutputEncoding() + "\"?>\n");
-        tableName = escapeXmlElementName(getSite().getSource().getName());
+        tableName = DTUtils.escapeXmlElementName(getSite().getSource().getName());
         if (includeDoctype) {
             out.write("<!DOCTYPE " + tableName + " [\n");
             out.write("  <!ELEMENT " + tableName + " (DATA_RECORD*)>\n");
@@ -80,14 +76,14 @@ public class DataExporterXML extends StreamExporterAbstract {
                 if (CommonUtils.isEmpty(colName)) {
                     colName = columns[i].getName();
                 }
-                out.write(escapeXmlElementName(colName) + "?");
+                out.write(DTUtils.escapeXmlElementName(colName) + "?");
                 if (i < columnsSize - 1) {
                     out.write(",");
                 }
             }
             out.write(")+>\n");
             for (int i = 0; i < columnsSize; i++) {
-                out.write("  <!ELEMENT " + escapeXmlElementName(columns[i].getName()) + " (#PCDATA)>\n");
+                out.write("  <!ELEMENT " + DTUtils.escapeXmlElementName(columns[i].getName()) + " (#PCDATA)>\n");
             }
             out.write("]>\n");
         }
@@ -101,7 +97,7 @@ public class DataExporterXML extends StreamExporterAbstract {
         out.write("  <DATA_RECORD>\n");
         for (int i = 0; i < row.length; i++) {
             DBDAttributeBinding column = columns[i];
-            String columnName = escapeXmlElementName(column.getName());
+            String columnName = DTUtils.escapeXmlElementName(column.getName());
             out.write("    <" + columnName + ">");
             if (DBUtils.isNullValue(row[i])) {
                 writeTextCell(null);
@@ -167,16 +163,5 @@ public class DataExporterXML extends StreamExporterAbstract {
                 }
             }
         }
-    }
-
-    @NotNull
-    static String escapeXmlElementName(@NotNull String name) {
-        String escapedName = XML_NAME_INVALID_CHARS.matcher(name).replaceAll("_");
-        int firstCharacter = escapedName.codePointAt(0);
-        if (Character.isLetter(firstCharacter) || firstCharacter == '_') {
-            return escapedName;
-        }
-
-        return "_" + escapedName;
     }
 }
