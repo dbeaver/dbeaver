@@ -1110,7 +1110,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 DBSObjectContainer container = settings.getContainer();
                 Collection<? extends DBSObject> children = container.getChildren(new LoggingProgressMonitor(log));
                 for (DBSObject child : CommonUtils.safeCollection(children)) {
-                    if (child instanceof DBSDataManipulator) {
+                    if (DatabaseTransferUtils.isValidTargetTable(child)) {
                         items.add(transformTargetName(
                             DBUtils.getQuotedIdentifier(child),
                             dmc.getMappingType()));
@@ -1312,8 +1312,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             if (ns != null) {
                 DBSObject existingObject = ns.getObjectByName(monitor, unQuotedNameForSearch);
                 if (existingObject != null) {
-                    if (existingObject instanceof DBSDataManipulator) {
-                        targetDataContainer = (DBSDataManipulator) existingObject;
+                    if (DatabaseTransferUtils.isValidTargetTable(existingObject)
+                        && existingObject instanceof DBSDataManipulator targetTable) {
+                        targetDataContainer = targetTable;
                     } else {
                         containerMapping.setTargetName(name);
                         containerMapping.refreshMappingType(
@@ -1332,9 +1333,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         }
 
         if (targetDataContainer == null) {
-            // Search for existing data manipulator (writable table)
+            // Search for an existing writable table
             for (DBSObject child : CommonUtils.safeCollection(container.getChildren(monitor))) {
-                if (child instanceof DBSDataManipulator && unQuotedNameForSearch.equalsIgnoreCase(child.getName())) {
+                if (DatabaseTransferUtils.isValidTargetTable(child) && unQuotedNameForSearch.equalsIgnoreCase(child.getName())) {
                     targetDataContainer = (DBSDataManipulator) child;
                     break;
                 }
@@ -1421,20 +1422,22 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             if (mappings.length == 1 && mappings[0].getTarget() != null) {
                 selectedNode = navigatorModel.getNodeByObject(mappings[0].getTarget());
             }
-            DBNNode node = DBWorkbench.getPlatformUI().selectObject(
+            DBNNode node = ObjectBrowserDialog.selectObject(
                 getShell(),
                 DTUIMessages.database_consumer_page_mapping_node_title,
                 rootNode,
                 selectedNode,
                 new Class[] {DBSObjectContainer.class, DBSDataManipulator.class},
                 new Class[] {DBSDataManipulator.class},
-                null);
+                null,
+                null,
+                DatabaseConsumerPageMapping::isTargetTableNode);
             if (node instanceof DBSWrapper dbw) {
                 DBSObject object = dbw.getObject();
                 try {
                     boolean needsUpdate = false;
                     for (DatabaseMappingContainer mapping : mappings) {
-                        if (object instanceof DBSDataManipulator dm) {
+                        if (DatabaseTransferUtils.isValidTargetTable(object) && object instanceof DBSDataManipulator dm) {
                             mapping.setTarget(dm);
                             mapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.existing, false);
                             if (mappings.length == 1) {
@@ -1466,6 +1469,14 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     public void updateMappingsAndButtons() {
         mappingViewer.refresh();
         mappingViewer.setSelection(mappingViewer.getSelection());
+    }
+
+    private static boolean isTargetTableNode(@NotNull DBNNode node) {
+        if (node instanceof DBSWrapper wrapper) {
+            DBSObject object = wrapper.getObject();
+            return !(object instanceof DBSDataManipulator) || DatabaseTransferUtils.isValidTargetTable(object);
+        }
+        return true;
     }
 
     private String transformTargetName(String name, @NotNull DatabaseMappingType mappingType) {
