@@ -10,6 +10,8 @@ Fragment-Host: org.jkiss.dbeaver.ext.cdata
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.jkiss.dbeaver.headless,
  org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.model.jdbc,
  org.jkiss.dbeaver.registry,
  org.jkiss.dbeaver.test.platform,
- org.jkiss.dbeaver.ext.cdata
+ org.jkiss.dbeaver.ext.cdata,
+ org.jkiss.dbeaver.ext.generic

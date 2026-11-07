@@ -215,8 +215,13 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         return dependencies;
     }
 
+    @NotNull
     public Path getCacheFile() {
-        String fileExt = getPackagingFileExtension();
+        return getCacheFile(getPackagingFileExtension());
+    }
+
+    @NotNull
+    public Path getCacheFile(@NotNull String fileExt) {
         if (artifact.getRepository().getType() == MavenRepository.RepositoryType.LOCAL) {
             String externalURL = getExternalURL(fileExt);
             try {
@@ -239,7 +244,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     private String getPackagingFileExtension() {
         final String packaging = CommonUtils.notEmpty(this.packaging);
         return switch (packaging) { // empty packaging
-            case "", MavenArtifact.PACKAGING_BUNDLE, MavenArtifact.PACKAGING_MAVEN_PLUGIN, MavenArtifact.FILE_POM ->
+            case "", MavenArtifact.PACKAGING_BUNDLE, MavenArtifact.PACKAGING_MAVEN_PLUGIN ->
                 MavenArtifact.FILE_JAR;
             default -> packaging;
         };
@@ -484,8 +489,12 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                     continue;
                 }
                 String classifier = evaluateString(XMLUtils.getChildElementBody(dep, "classifier"));
+                String type = evaluateString(XMLUtils.getChildElementBody(dep, "type"));
+                if (CommonUtils.isEmpty(type)) {
+                    type = MavenArtifact.FILE_JAR;
+                }
 
-                MavenArtifactDependency dmInfo = depManagement ? null : findDependencyManagement(groupId, artifactId);
+                MavenArtifactDependency dmInfo = depManagement ? null : findDependencyManagement(groupId, artifactId, type, classifier);
 
                 // Resolve scope
                 String scopeName = XMLUtils.getChildElementBody(dep, "scope");
@@ -547,7 +556,8 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                         classifier,
                         version,
                         scope,
-                        optional);
+                        optional,
+                        type);
                     result.add(dependency);
 
                     // Exclusions
@@ -584,12 +594,20 @@ public class MavenArtifactVersion implements IMavenIdentifier {
             (resolveOptionalDependencies && scope == MavenArtifactDependency.Scope.PROVIDED);
     }
 
-    private MavenArtifactDependency findDependencyManagement(String groupId, String artifactId) {
+    @Nullable
+    private MavenArtifactDependency findDependencyManagement(
+        @NotNull String groupId,
+        @NotNull String artifactId,
+        @NotNull String type,
+        @Nullable String classifier
+    ) {
         for (MavenProfile profile : profiles) {
             if (profile.isActive() && profile.dependencyManagement != null) {
                 for (MavenArtifactDependency dmArtifact : profile.dependencyManagement) {
                     if (dmArtifact.getGroupId().equals(groupId) &&
-                        dmArtifact.getArtifactId().equals(artifactId)) {
+                        dmArtifact.getArtifactId().equals(artifactId) &&
+                        dmArtifact.getType().equals(type) &&
+                        CommonUtils.equalObjects(dmArtifact.getClassifier(), classifier)) {
                         return dmArtifact;
                     }
                 }
@@ -598,13 +616,13 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         // Check in imported BOMs
         if (imports != null) {
             for (MavenArtifactVersion i : imports) {
-                MavenArtifactDependency dependencyManagement = i.findDependencyManagement(groupId, artifactId);
+                MavenArtifactDependency dependencyManagement = i.findDependencyManagement(groupId, artifactId, type, classifier);
                 if (dependencyManagement != null) {
                     return dependencyManagement;
                 }
             }
         }
-        return parent == null ? null : parent.findDependencyManagement(groupId, artifactId);
+        return parent == null ? null : parent.findDependencyManagement(groupId, artifactId, type, classifier);
     }
 
     private String evaluateString(String value) {

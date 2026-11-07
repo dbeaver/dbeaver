@@ -113,7 +113,7 @@ public class DesktopUI extends ConsoleUserInterface {
         }
     }
 
-    // This method is called during startup thru @ComponentReference in workbench
+    // Called when the application initializes its platform UI.
     public void initialize() {
         new AbstractJob("Workbench listener") {
             @NotNull

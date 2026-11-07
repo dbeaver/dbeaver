@@ -70,6 +70,11 @@ public class PostgreServerYellowBrick extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsProcedureReturnValue() {
+        return true;
+    }
+
+    @Override
     public boolean isPGObject(@NotNull Object object) {
         String className = object.getClass().getName();
         return YB_VECTOR_CLASS.equals(className);

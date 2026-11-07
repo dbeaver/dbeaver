@@ -29,12 +29,11 @@ import java.util.Map;
  */
 public interface AIUIFeatures {
 
-    DBRFeature CATEGORY_AI_CHAT = DBRFeature.createCategory("AI Chat", "AI Chat features");
-    DBRFeature AI_CHAT = DBRFeature.createFeature(CATEGORY_AI_CHAT, "Show AI Chat");
-    DBRFeature AI_CHAT_DROP_EVENT = DBRFeature.createFeature(CATEGORY_AI_CHAT, "AI Drop event");
-    DBRFeature AI_CHAT_OPEN_AS_EVENT = DBRFeature.createFeature(CATEGORY_AI_CHAT, "Open File with specific handler");
-    DBRFeature AI_CHAT_ATTACHMENT_INTERACT = DBRFeature.createFeature(CATEGORY_AI_CHAT, "AI Chat attachment interaction");
-    DBRFeature SEND_PROMPT_EVENT = DBRFeature.createFeature(CATEGORY_AI_CHAT, "Send user prompt event");
+    DBRFeature AI_CHAT = new DBRFeature("AI_CHAT");
+    DBRFeature AI_CHAT_DROP_EVENT = new DBRFeature("AI_CHAT_DROP_EVENT");
+    DBRFeature AI_CHAT_OPEN_AS_EVENT = new DBRFeature("AI_CHAT_OPEN_AS_EVENT");
+    DBRFeature AI_CHAT_ATTACHMENT_INTERACT = new DBRFeature("AI_CHAT_ATTACHMENT_INTERACT");
+    DBRFeature SEND_PROMPT_EVENT = new DBRFeature("SEND_PROMPT_EVENT");
     String PARAM_FILE_TYPE = "fileType";
     String ATTACHMENT_HANDLER_ID = "handlerID";
     String ATTACHMENT_INTERACTION_NAME = "interactionName";

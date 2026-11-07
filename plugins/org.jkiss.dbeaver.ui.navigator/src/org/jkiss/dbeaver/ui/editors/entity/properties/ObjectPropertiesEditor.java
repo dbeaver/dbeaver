@@ -627,7 +627,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             DBRRunnableWithProgress tabsCollector = monitor ->
                 collectNavigatorTabs(monitor, part, node, tabList, editors, mappedFolderTypes);
             try {
-                if (node.needsInitialization()) {
+                if (node.needsInitialization() && !hasOnlyMandatoryItemTabs(node)) {
                     UIUtils.runInProgressService(tabsCollector);
                 } else {
                     tabsCollector.run(new VoidProgressMonitor());
@@ -680,6 +680,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
     }
 
+    private static boolean hasOnlyMandatoryItemTabs(@NotNull DBNDatabaseNode node) {
+        List<DBXTreeNode> children = node.getMeta().getChildren(node);
+        return !CommonUtils.isEmpty(children)
+            && children.stream().allMatch(child -> child instanceof DBXTreeItem item && !item.isOptional());
+    }
+
     @NotNull
     private static ITabbedFolder createNavigatorFolderPage(
         @NotNull IDatabaseEditor part,
@@ -712,8 +718,11 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             // Do not add children tabs
         } else if (node != null) {
             try {
-                DBNNode[] children = DBNUtils.getNodeChildrenFiltered(monitor, node, false);
-                if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getDataSourceContainer().getNavigatorSettings().isHideFolders()) {
+                // mandatory item tabs are described by metadata; leave their data loading to the page's background job
+                DBNNode[] children = node instanceof DBNDatabaseNode databaseNode && hasOnlyMandatoryItemTabs(databaseNode)
+                    ? null : DBNUtils.getNodeChildrenFiltered(monitor, node, false);
+                if (node instanceof DBNDatabaseNode databaseNode
+                    && databaseNode.getDataSourceContainer().getNavigatorSettings().isHideFolders()) {
                     if (children != null) {
                         // Folders are hidden in navigator. But we must show them here for all present child items
                         Map<DBXTreeFolder, List<DBNNode>> childMap = new LinkedHashMap<>();
@@ -774,7 +783,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                                         new TabbedFolderInfo(
                                             nodeName,
                                             nodeName,
-                                            node.getNodeIconDefault(),
+                                            CommonUtils.notNull(child.getIcon(databaseNode), node.getNodeIconDefault()),
                                             node.getNodeDescription(),
                                             false,
                                             new TabbedFolderPageNode(part, node, child)));

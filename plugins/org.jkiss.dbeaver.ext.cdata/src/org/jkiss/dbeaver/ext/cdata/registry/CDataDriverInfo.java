@@ -31,9 +31,24 @@ public record CDataDriverInfo(
     @SerializedName("purchase_url") @NotNull String purchaseUrl,
     @SerializedName("datatype_id") @NotNull String dataTypeId,
     @SerializedName("order_sku") @Nullable String orderSku,
-    @SerializedName("annual_price_usd") @Nullable BigDecimal annualPriceUsd
+    @SerializedName("annual_price_usd") @Nullable BigDecimal annualPriceUsd,
+    @Nullable String iconDriver
 ) {
     private static final String DOCUMENTATION_URL_PREFIX = "https://cdn.cdata.com/help/";
+
+    public CDataDriverInfo(
+        @NotNull String dataSource,
+        @NotNull String objectName,
+        @NotNull String driverName,
+        int versionYear,
+        @NotNull CDataDriverTier tier,
+        @NotNull String purchaseUrl,
+        @NotNull String dataTypeId,
+        @Nullable String orderSku,
+        @Nullable BigDecimal annualPriceUsd
+    ) {
+        this(dataSource, objectName, driverName, versionYear, tier, purchaseUrl, dataTypeId, orderSku, annualPriceUsd, null);
+    }
 
     public CDataDriverInfo(
         @NotNull String dataSource,
@@ -46,6 +61,13 @@ public record CDataDriverInfo(
         @Nullable String orderSku
     ) {
         this(dataSource, objectName, driverName, versionYear, tier, purchaseUrl, dataTypeId, orderSku, null);
+    }
+
+    @NotNull
+    CDataDriverInfo withSettings(@Nullable CDataDriverSettings settings) {
+        return new CDataDriverInfo(dataSource, objectName, driverName, versionYear, tier, purchaseUrl,
+            settings == null ? dataSource : settings.dataTypeId(), orderSku, annualPriceUsd,
+            settings == null ? null : settings.iconDriver());
     }
 
     @Nullable

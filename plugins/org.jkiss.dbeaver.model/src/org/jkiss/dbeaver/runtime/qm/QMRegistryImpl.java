@@ -86,6 +86,12 @@ public class QMRegistryImpl implements QMRegistry {
       	defaultHandler = null;
     }
 
+    public void flushPendingEvents() {
+        if (metaHandler != null) {
+            metaHandler.flushPendingEvents();
+        }
+    }
+
     @NotNull
     @Override
     public QMMCollector getMetaCollector()

@@ -20,12 +20,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectDDLFilter;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
 
@@ -186,11 +188,37 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
         @Nullable
         @Override
-        public DBEPersistAction[] getPersistActions(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext executionContext, @NotNull Map<String, Object> options) throws DBException {
-            List<DBEPersistAction> actions = new ArrayList<>();
-            addStructObjectCreateActions(monitor, executionContext, actions, this, options);
-            addObjectExtraActions(monitor, executionContext, actions, this, options);
-            return actions.toArray(new DBEPersistAction[0]);
+        public DBEPersistAction[] getPersistActions(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull DBCExecutionContext executionContext,
+            @NotNull Map<String, Object> options
+        ) throws DBException {
+            DBSObjectDDLFilter filter = options.get(DBPScriptObject.OPTION_DDL_OBJECT_FILTER) instanceof DBSObjectDDLFilter ddlFilter ?
+                ddlFilter : null;
+            if (filter != null && !filter.includeObject(monitor, getObject())) {
+                return new DBEPersistAction[0];
+            }
+            Map<DBPObject, NestedObjectCommand<?, ?>> unfiltered =
+                filter == null ? null : new LinkedHashMap<>(objectCommands);
+            try {
+                // Also cover extra nested commands contributed by database-specific managers.
+                if (unfiltered != null) {
+                    for (DBPObject child : unfiltered.keySet()) {
+                        if (child instanceof DBSObject object && !filter.includeObject(monitor, object)) {
+                            objectCommands.remove(child);
+                        }
+                    }
+                }
+                List<DBEPersistAction> actions = new ArrayList<>();
+                addStructObjectCreateActions(monitor, executionContext, actions, this, options);
+                addObjectExtraActions(monitor, executionContext, actions, this, options);
+                return actions.toArray(new DBEPersistAction[0]);
+            } finally {
+                if (unfiltered != null) {
+                    objectCommands.clear();
+                    objectCommands.putAll(unfiltered);
+                }
+            }
         }
     }
 

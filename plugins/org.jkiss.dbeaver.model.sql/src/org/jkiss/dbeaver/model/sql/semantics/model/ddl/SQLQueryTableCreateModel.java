@@ -74,6 +74,9 @@ public class SQLQueryTableCreateModel extends SQLQueryModelContent {
 
     @Override
     public void resolveObjectAndRowsReferences(@NotNull SQLQueryRowsSourceContext context, @NotNull SQLQueryRecognitionContext statistics) {
+        for (SQLQueryColumnSpec columnSpec : this.columns) {
+            columnSpec.resolveDeclaredType(context, statistics);
+        }
         if (this.tableName != null && this.tableName.isNotClassified() && !this.tableName.parts.isEmpty()) {
 
             SQLQuerySymbolOrigin nameOrigin = new SQLQuerySymbolOrigin.DbObjectRef(context, RelationalObjectType.TYPE_TABLE);

@@ -108,7 +108,7 @@ public class QMAIChatStorageInMemory implements AIChatStorage {
                 return; // Conversation found and removed
             }
         }
-        throw new DBException("Conversation not found: " + conversationId);
+        // Empty conversations can exist in the chat session without having been saved to storage.
     }
 
     @Override

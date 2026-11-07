@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.ui.preferences;
  * AbstractPrefPage
  */
 public abstract class UIPreferences {
+
+    public static final String DRIVER_SELECTOR_SHOW_COMMERCIAL_DRIVERS = "driver.selector.showCommercialDrivers";
 
     public static final String UI_USE_EMBEDDED_AUTH = "ui.use.redirect.auth"; //$NON-NLS-1$
 

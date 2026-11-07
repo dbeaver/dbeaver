@@ -47,7 +47,8 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 {
     private static final Log log = Log.getLog(DBNFileSystem.class);
 
-    private DBFVirtualFileSystem fileSystem;
+    private final DBFVirtualFileSystem fileSystem;
+    private volatile boolean disposed;
     private DBNFileSystemRoot[] children;
 
     public DBNFileSystem(@NotNull DBNNode parentNode, @NotNull DBFVirtualFileSystem fileSystem) {
@@ -89,13 +90,13 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
 
     @Override
     public boolean isDisposed() {
-        return fileSystem == null || super.isDisposed();
+        return disposed || super.isDisposed();
     }
 
     @Override
     protected void dispose(boolean reflect) {
+        disposed = true;
         children = null;
-        this.fileSystem = null;
 
         super.dispose(reflect);
     }
@@ -167,7 +168,7 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
         @Nullable DBNFileSystemRoot[] mergeWith
     ) throws DBException {
         DBFVirtualFileSystem fileSystem = this.fileSystem;
-        if (fileSystem == null || DBWorkbench.getPlatform().isShuttingDown()) {
+        if (isDisposed() || DBWorkbench.getPlatform().isShuttingDown()) {
             return new DBNFileSystemRoot[0];
         }
         List<DBNFileSystemRoot> result = new ArrayList<>();
@@ -220,6 +221,12 @@ public class DBNFileSystem extends DBNNode implements DBNLazyNode
         }
         getModel().fireNodeUpdate(this, this, DBNEvent.NodeChange.REFRESH);
         return this;
+    }
+
+    @NotNull
+    @Override
+    public String getLocalizedName(@NotNull String locale) {
+        return getNodeDisplayName();
     }
 
     @NotNull

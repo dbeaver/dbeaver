@@ -31,6 +31,9 @@ public interface DBTTaskRunStorage {
         NAME, TYPE, PROJECT, STATUS, START_TIME, FINISH_TIME, DURATION
     }
 
+    record TaskType(@NotNull String id, @NotNull String name) {
+    }
+
     record Filter(
         @Nullable String projectId,
         @Nullable String taskId,
@@ -82,6 +85,20 @@ public interface DBTTaskRunStorage {
         return findRuns(monitor, filter, 0, limit);
     }
 
-    /** Deletes matching runs. Null task/run IDs select all tasks/runs in the project. Never deletes log files. */
-    void deleteRuns(@NotNull String projectId, @Nullable String taskId, @Nullable String runId) throws DBException;
+    /**
+     * Returns task types recorded in the current workspace, independent of view filters and pagination.
+     * Each type ID has a representative recorded name, including types of deleted or temporary tasks
+     * and unavailable plugins. The default returns an empty list for providers without this optional support.
+     */
+    @NotNull
+    default List<TaskType> findTaskTypes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        return List.of();
+    }
+
+    /**
+     * Deletes matching runs in the current workspace. Null project/task/run IDs leave the corresponding
+     * filter unrestricted; all three null clears the workspace, including runs of deleted projects.
+     * Never deletes log files.
+     */
+    void deleteRuns(@Nullable String projectId, @Nullable String taskId, @Nullable String runId) throws DBException;
 }

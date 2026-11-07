@@ -39,6 +39,7 @@ import java.util.*;
  * Connection configuration.
  */
 public class DBPConnectionConfiguration implements DBPObject {
+    public static final String ATTRIBUTE_TEST_CONNECTION_SOURCE = "test-connection-source";
     // Variables
     public static final String VARIABLE_HOST = "host";
     public static final String VARIABLE_HOST_TUNNEL = "host.tunnel";

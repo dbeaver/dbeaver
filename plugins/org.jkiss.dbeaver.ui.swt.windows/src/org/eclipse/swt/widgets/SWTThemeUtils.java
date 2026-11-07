@@ -68,12 +68,11 @@ public final class SWTThemeUtils {
         if (menuBar.foreground != display.menuBarForegroundPixel || menuBar.background != display.menuBarBackgroundPixel) {
             menuBar.initThemeColors();
             menuBar.updateBackground();
-            menuBar.updateForeground();
             boolean callback = menuBar.needsMenuCallback();
             MenuItem[] items = menuBar.getItems();
             for (int i = 0; i < items.length; i++) {
                 // SWT chooses both the owner-draw type and bitmap callback when it creates a menu item.
-                // Menu.updateForeground() changes only the bitmap, leaving Windows to draw the text twice.
+                // Changing only the bitmap leaves Windows to draw the text twice.
                 MENUITEMINFO info = new MENUITEMINFO();
                 info.cbSize = MENUITEMINFO.sizeof;
                 info.fMask = OS.MIIM_FTYPE;
@@ -140,6 +139,15 @@ public final class SWTThemeUtils {
                 dark || isBrokenCtrl ? getDarkThemeIdByWidgetType(control) : null,
                 null
             );
+        }
+        if (control instanceof Tree tree && tree.hwndHeader != 0) {
+            // SWT's columned trees have separate native parent and header windows.
+            // Neither is an SWT Control, so the skin listener cannot update them.
+            OS.AllowDarkModeForWindow(tree.hwndParent, dark);
+            OS.SetWindowTheme(tree.hwndParent, dark ? WINDOW_THEME_DEFAULT : null, null);
+            OS.AllowDarkModeForWindow(tree.hwndHeader, dark);
+            OS.SetWindowTheme(tree.hwndHeader, dark ? WINDOW_THEME_DEFAULT : null, null);
+            OS.InvalidateRect(tree.hwndHeader, null, true);
         }
     }
 

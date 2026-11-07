@@ -52,6 +52,15 @@ public class JDBCCompositeDynamic extends JDBCComposite {
         @Nullable Struct contents,
         @Nullable ResultSetMetaData metaData
     ) throws DBCException {
+        this(session, contents, metaData, null);
+    }
+
+    public JDBCCompositeDynamic(
+        @NotNull DBCSession session,
+        @Nullable Struct contents,
+        @Nullable ResultSetMetaData metaData,
+        @Nullable String[] attributeNames
+    ) throws DBCException {
         super(contents);
 
         this.type = new StructType(session.getDataSource());
@@ -82,7 +91,9 @@ public class JDBCCompositeDynamic extends JDBCComposite {
                     for (int i = 0, attrValuesLength = attrValues.length; i < attrValuesLength; i++) {
                         Object value = attrValues[i];
                         DBSDataType attrType = resolveAttrType(session, value);
-                        StructAttribute attr = new StructAttribute(attrType, i, value);
+                        StructAttribute attr = attributeNames != null && attributeNames.length == attrValues.length
+                            ? new StructAttribute(attributeNames[i], attrType, i, value)
+                            : new StructAttribute(attrType, i, value);
                         value = DBUtils.findValueHandler(session, attrType).getValueFromObject(session, attr, value, false, modified);
                         attributes[i] = attr;
                         values[i] = value;

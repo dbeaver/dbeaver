@@ -104,7 +104,8 @@ public final class NavigatorNodesDeletionConfirmations {
         final Reply[] reply = {null};
         MessageBoxBuilder messageBoxBuilder = MessageBoxBuilder.builder(shell)
             .setTitle(title)
-            .setMessage(message)
+            .setMessage(deleter != null && deleter.hasRequiredContentDeletion()
+                ? message + "\n\n" + UINavigatorMessages.confirm_deleting_required_contents_warning : message)
             .setPrimaryImage(DBIcon.STATUS_WARNING)
             .setReplies(replies)
             .setDefaultReply(Reply.CANCEL)

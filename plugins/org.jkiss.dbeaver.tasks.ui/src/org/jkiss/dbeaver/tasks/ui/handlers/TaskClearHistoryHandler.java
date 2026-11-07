@@ -18,13 +18,14 @@ package org.jkiss.dbeaver.tasks.ui.handlers;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.task.DBTTask;
 import org.jkiss.dbeaver.model.task.DBTTaskEvent;
 import org.jkiss.dbeaver.model.task.DBTTaskManager;
 import org.jkiss.dbeaver.model.task.DBTTaskRunStorage;
+import org.jkiss.dbeaver.registry.task.TaskConstants;
 import org.jkiss.dbeaver.registry.task.TaskRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
@@ -35,6 +36,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
+import java.util.Objects;
 
 public class TaskClearHistoryHandler implements DBRRunnableWithProgress {
     private static final Log log = Log.getLog(TaskClearHistoryHandler.class);
@@ -42,20 +45,24 @@ public class TaskClearHistoryHandler implements DBRRunnableWithProgress {
 
     @Override
     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-        final DBPProject project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        if (project == null) {
-            return;
-        }
-        final DBTTaskManager manager = project.getTaskManager();
+        final DBPWorkspace workspace = DBWorkbench.getPlatform().getWorkspace();
+        // Uninitialized project managers have no running tasks or cached statistics to clear.
+        final List<DBTTaskManager> managers = workspace.getProjects().stream()
+            .map(project -> project.getTaskManager(false))
+            .filter(Objects::nonNull)
+            .distinct()
+            .toList();
 
         try {
             monitor.beginTask("Clear task run history", 2);
 
             monitor.subTask("Cancel running tasks");
-            manager.cancelRunningTasks();
+            for (DBTTaskManager manager : managers) {
+                manager.cancelRunningTasks();
+            }
             // Cancellation is asynchronous. Wait for final history writes, including directly executed tasks
             // that cannot be joined through the Eclipse job manager, before deleting their records and logs.
-            while (manager.hasRunningTasks()) {
+            while (managers.stream().anyMatch(DBTTaskManager::hasRunningTasks)) {
                 if (monitor.isCanceled()) {
                     throw new InterruptedException();
                 }
@@ -69,10 +76,11 @@ public class TaskClearHistoryHandler implements DBRRunnableWithProgress {
             monitor.subTask("Delete task run records");
             DBTTaskRunStorage storage = DBTTaskRunStorage.getInstance();
             if (storage != null) {
-                storage.deleteRuns(project.getId(), null, null);
+                storage.deleteRuns(null, null, null);
             }
-            if (Files.exists(manager.getStatisticsFolder())) {
-                Files.walkFileTree(manager.getStatisticsFolder(), new SimpleFileVisitor<>() {
+            Path statisticsFolder = workspace.getMetadataFolder().resolve(TaskConstants.TASK_STATS_FOLDER);
+            if (Files.exists(statisticsFolder)) {
+                Files.walkFileTree(statisticsFolder, new SimpleFileVisitor<>() {
                     @Override
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                         log.trace("Deleting " + file);
@@ -88,9 +96,11 @@ public class TaskClearHistoryHandler implements DBRRunnableWithProgress {
                     }
                 });
             }
-            for (DBTTask task : manager.getAllTasks()) {
-                task.refreshRunStatistics();
-                TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_UPDATE));
+            for (DBTTaskManager manager : managers) {
+                for (DBTTask task : manager.getAllTasks()) {
+                    task.refreshRunStatistics();
+                    TaskRegistry.getInstance().notifyTaskListeners(new DBTTaskEvent(task, DBTTaskEvent.Action.TASK_UPDATE));
+                }
             }
             monitor.worked(1);
         } catch (IOException | DBException e) {
