@@ -147,13 +147,13 @@ public class OSGIFrameworkHandler {
         Path workPath = Paths.get("").toAbsolutePath();
         Path currentPath = workPath.toAbsolutePath();
         while (currentPath != null) {
-            Path potentialWorkspaceDir = currentPath.resolve("dbeaver-workspace/products");
+            Path potentialWorkspaceDir = currentPath.resolve(".workspace/products");
             if (Files.exists(potentialWorkspaceDir)) {
                 return workPath.relativize(potentialWorkspaceDir);
             }
             currentPath = currentPath.getParent();
         }
-        throw new IllegalStateException("dbeaver-workspace/products directory not found");
+        throw new IllegalStateException(".workspace/products directory not found");
     }
 
     public void waitUntilReady() {
