@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -44,6 +45,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Connection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -68,6 +70,8 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
     private Path csvFile;
 
     private AttrMapping[] mappings;
+    // Target table may contain columns that are not mapped from the source (extra, skipped or generated columns).
+    private String copyColumnList;
 
     private int copyBufferSize = 100 * 1024;
 
@@ -128,16 +132,21 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
             tableAttrs.removeIf(a -> a.getOrdinalPosition() < 0);
             mappings = new AttrMapping[tableAttrs.size()];
 
+            List<PostgreTableColumn> copyColumns = new ArrayList<>(tableAttrs.size());
             for (int i = 0; i < tableAttrs.size(); i++) {
                 PostgreTableColumn attr = tableAttrs.get(i);
                 DBDValueHandler valueHandler = DBUtils.findValueHandler(session, attr);
-                AttrMapping mapping = new AttrMapping(
-                    attr,
-                    valueHandler,
-                    ArrayUtils.indexOf(attributes, attr)
-                );
-                mappings[i] = mapping;
+                int srcPos = ArrayUtils.indexOf(attributes, attr);
+                if (srcPos >= 0 && attr.getGeneratedValue() != null) {
+                    // Generated columns are computed by PostgreSQL and cannot be referenced in COPY.
+                    srcPos = -1;
+                }
+                mappings[i] = new AttrMapping(attr, valueHandler, srcPos);
+                if (srcPos >= 0) {
+                    copyColumns.add(attr);
+                }
             }
+            copyColumnList = buildCopyColumnList(copyColumns, session.getDataSource());
         } catch (Exception e) {
             throw new DBCException("Can't instantiate CopyManager", e);
         }
@@ -183,6 +192,21 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
             '"';
     }
 
+    @NotNull
+    static String buildCopyColumnList(
+        @NotNull List<? extends DBSAttributeBase> columns,
+        @NotNull DBPDataSource dataSource
+    ) {
+        StringBuilder columnList = new StringBuilder();
+        for (DBSAttributeBase column : columns) {
+            if (!columnList.isEmpty()) {
+                columnList.append(", ");
+            }
+            columnList.append(DBUtils.getQuotedIdentifier(dataSource, column.getName()));
+        }
+        return columnList.toString();
+    }
+
     @Override
     public void flushRows(@NotNull DBCSession session) throws DBCException {
         try {
@@ -206,7 +230,9 @@ public class PostgreCopyLoader implements DBSDataBulkLoader, DBSDataBulkLoader.B
 
         session.getProgressMonitor().subTask("Copy into " + tableFQN);
 
-        String queryText = "COPY " + tableFQN + " FROM STDIN (FORMAT CSV, ESCAPE E'\\\\')";
+        String queryText = "COPY " + tableFQN
+            + (CommonUtils.isEmpty(copyColumnList) ? "" : " (" + copyColumnList + ")")
+            + " FROM STDIN (FORMAT CSV, ESCAPE E'\\\\')";
 
         try {
             Object rowCount;
