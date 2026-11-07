@@ -10,6 +10,8 @@
 
     <launcherArgs>
         <programArgs></programArgs>
+        <!-- Load JVM in-process so UI runs inside dbeaver.exe (complements explicit AppUserModelID; avoids duplicate pinned icons). -->
+        <programArgsWin>-vm jre/bin/server/jvm.dll</programArgsWin>
         <programArgsMac>-vm ../Eclipse/jre/Contents/Home/lib/libjli.dylib</programArgsMac>
 
         <vmArgs>
