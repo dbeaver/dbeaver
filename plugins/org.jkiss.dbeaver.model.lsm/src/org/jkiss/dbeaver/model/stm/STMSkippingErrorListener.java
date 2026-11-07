@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.stm;
 
+import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.Parser;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
@@ -26,15 +27,24 @@ import java.util.BitSet;
 
 public class STMSkippingErrorListener implements STMErrorListener {
 
-    private int errorCount;
+    private int lexerErrorCount;
+    private int parserErrorCount;
 
     @Override
     public void syntaxError(Recognizer<?, ?> recognizer, Object o, int i, int i1, String s, RecognitionException e) {
-        errorCount++;
+        if (recognizer instanceof Lexer) {
+            lexerErrorCount++;
+        } else {
+            parserErrorCount++;
+        }
     }
 
     public int getErrorCount() {
-        return errorCount;
+        return lexerErrorCount + parserErrorCount;
+    }
+
+    public int getLexerErrorCount() {
+        return lexerErrorCount;
     }
 
     @Override

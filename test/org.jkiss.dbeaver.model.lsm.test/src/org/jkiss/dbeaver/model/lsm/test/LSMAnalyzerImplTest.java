@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.lsm.test;
 import org.antlr.v4.runtime.BaseErrorListener;
 import org.antlr.v4.runtime.RecognitionException;
 import org.antlr.v4.runtime.Recognizer;
+import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.atn.PredictionMode;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -35,6 +36,7 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -66,6 +68,44 @@ public class LSMAnalyzerImplTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void usesOnlySllWhenItSucceeds() {
+        CountingErrorListener listener = new CountingErrorListener();
+        TrackingAnalyzer analyzer = new TrackingAnalyzer(PARAMETERS);
+
+        STMTreeRuleNode tree = analyzer.parseSqlQueryTree(STMSource.fromString("SELECT 1"), listener);
+
+        Assertions.assertNotNull(tree);
+        Assertions.assertEquals(List.of(PredictionMode.SLL), analyzer.predictions);
+        Assertions.assertEquals(0, analyzer.reusedParserCount);
+        Assertions.assertEquals(0, listener.errorCount);
+    }
+
+    @Test
+    public void fallsBackWhenSllHitsParserError() {
+        CountingErrorListener listener = new CountingErrorListener();
+        TrackingAnalyzer analyzer = new TrackingAnalyzer(PARAMETERS);
+
+        STMTreeRuleNode tree = analyzer.parseSqlQueryTree(STMSource.fromString("(SELECT 1"), listener);
+
+        Assertions.assertNotNull(tree);
+        Assertions.assertEquals(List.of(PredictionMode.SLL, PredictionMode.LL), analyzer.predictions);
+        Assertions.assertEquals(1, analyzer.reusedParserCount);
+        Assertions.assertTrue(listener.errorCount > 0);
+    }
+
+    @Test
+    public void fallsBackToFreshParserWhenTokenReuseIsUnsupported() {
+        CountingErrorListener listener = new CountingErrorListener();
+        NoReuseAnalyzer analyzer = new NoReuseAnalyzer(PARAMETERS);
+
+        STMTreeRuleNode tree = analyzer.parseSqlQueryTree(STMSource.fromString("(SELECT 1"), listener);
+
+        Assertions.assertNotNull(tree);
+        Assertions.assertEquals(List.of(PredictionMode.SLL, PredictionMode.LL), analyzer.predictions);
+        Assertions.assertEquals(2, analyzer.prepareParserCount);
+    }
+
+    @Test
     public void fallsBackWhenSllLeavesTrailingTokens() {
         CountingErrorListener listener = new CountingErrorListener();
         TrackingAnalyzer analyzer = new TrackingAnalyzer(PARAMETERS);
@@ -77,6 +117,21 @@ public class LSMAnalyzerImplTest extends DBeaverUnitTest {
 
         Assertions.assertNotNull(tree);
         Assertions.assertEquals(List.of(PredictionMode.SLL, PredictionMode.LL), analyzer.predictions);
+        Assertions.assertEquals(1, analyzer.reusedParserCount);
+    }
+
+    @Test
+    public void reusesTokenStreamWhenSourceComesFromReader() throws Exception {
+        CountingErrorListener listener = new CountingErrorListener();
+        TrackingAnalyzer analyzer = new TrackingAnalyzer(PARAMETERS);
+
+        STMTreeRuleNode tree = analyzer.parseSqlQueryTree(
+            STMSource.fromReader(new StringReader("(SELECT 1")),
+            listener
+        );
+
+        Assertions.assertNotNull(tree);
+        Assertions.assertEquals(1, analyzer.reusedParserCount);
     }
 
     @Test
@@ -88,11 +143,13 @@ public class LSMAnalyzerImplTest extends DBeaverUnitTest {
 
         Assertions.assertNotNull(tree);
         Assertions.assertTrue(analyzer.predictions.contains(PredictionMode.LL));
+        Assertions.assertEquals(0, analyzer.reusedParserCount);
         Assertions.assertTrue(listener.errorCount > 0);
     }
 
     private static final class TrackingAnalyzer extends SQLStandardAnalyzer {
         private final List<PredictionMode> predictions = new ArrayList<>();
+        private int reusedParserCount;
 
         private TrackingAnalyzer(@NotNull LSMAnalyzerParameters parameters) {
             super(parameters);
@@ -103,6 +160,51 @@ public class LSMAnalyzerImplTest extends DBeaverUnitTest {
         protected STMTreeRuleNode parseSqlQueryImpl(@NotNull SQLStandardParser parser) {
             predictions.add(parser.getInterpreter().getPredictionMode());
             return super.parseSqlQueryImpl(parser);
+        }
+
+        @NotNull
+        @Override
+        protected SQLStandardParser createParser(
+            @NotNull TokenStream tokenStream,
+            @NotNull LSMAnalyzerParameters parameters
+        ) {
+            reusedParserCount++;
+            return super.createParser(tokenStream, parameters);
+        }
+    }
+
+    private static final class NoReuseAnalyzer extends SQLStandardAnalyzer {
+        private final List<PredictionMode> predictions = new ArrayList<>();
+        private int prepareParserCount;
+
+        private NoReuseAnalyzer(@NotNull LSMAnalyzerParameters parameters) {
+            super(parameters);
+        }
+
+        @NotNull
+        @Override
+        protected STMTreeRuleNode parseSqlQueryImpl(@NotNull SQLStandardParser parser) {
+            predictions.add(parser.getInterpreter().getPredictionMode());
+            return super.parseSqlQueryImpl(parser);
+        }
+
+        @Nullable
+        @Override
+        protected SQLStandardParser createParser(
+            @NotNull TokenStream tokenStream,
+            @NotNull LSMAnalyzerParameters parameters
+        ) {
+            return null;
+        }
+
+        @NotNull
+        @Override
+        protected SQLStandardParser prepareParser(
+            @NotNull STMSource source,
+            @Nullable STMErrorListener errorListener
+        ) {
+            prepareParserCount++;
+            return super.prepareParser(source, errorListener);
         }
     }
 
