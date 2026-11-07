@@ -142,9 +142,73 @@ public class LSMAnalyzerImplTest extends DBeaverUnitTest {
         STMTreeRuleNode tree = analyzer.parseSqlQueryTree(STMSource.fromString("DROP TABLE foo^"), listener);
 
         Assertions.assertNotNull(tree);
-        Assertions.assertTrue(analyzer.predictions.contains(PredictionMode.LL));
-        Assertions.assertEquals(0, analyzer.reusedParserCount);
-        Assertions.assertTrue(listener.errorCount > 0);
+        Assertions.assertEquals(List.of(PredictionMode.SLL, PredictionMode.LL), analyzer.predictions);
+        Assertions.assertEquals(1, analyzer.reusedParserCount);
+        Assertions.assertEquals(1, listener.errorCount);
+    }
+
+    @Test
+    public void reportsSameLexerErrorsAsFreshLexerWhenReusingTokens() {
+        for (String sql : List.of(
+            "DROP TABLE foo^",
+            "SELECT !x FROM t",
+            "SELECT \\ FROM t",
+            "SELECT café FROM t",
+            ") SELECT ^",
+            "^1 ^2 ^3"
+        )) {
+            List<String> reused = parseErrors(new TrackingAnalyzer(PARAMETERS), sql);
+            List<String> fresh = parseErrors(new NoReuseAnalyzer(PARAMETERS), sql);
+
+            Assertions.assertEquals(fresh, reused, sql);
+            Assertions.assertFalse(reused.isEmpty(), sql);
+        }
+    }
+
+    @Test
+    public void reportsLexerErrorsToConsoleWhenNoListenerIsProvided() {
+        TrackingAnalyzer analyzer = new TrackingAnalyzer(PARAMETERS);
+
+        STMTreeRuleNode tree = analyzer.parseSqlQueryTree(STMSource.fromString("DROP TABLE foo^"), null);
+
+        Assertions.assertNotNull(tree);
+        Assertions.assertEquals(List.of(PredictionMode.SLL, PredictionMode.LL), analyzer.predictions);
+        Assertions.assertEquals(1, analyzer.reusedParserCount);
+    }
+
+    @Test
+    public void relexesWhenTokenReuseIsUnsupportedAndLexerFails() {
+        RecordingErrorListener listener = new RecordingErrorListener();
+        NoReuseAnalyzer analyzer = new NoReuseAnalyzer(PARAMETERS);
+
+        STMTreeRuleNode tree = analyzer.parseSqlQueryTree(STMSource.fromString("DROP TABLE foo^"), listener);
+
+        Assertions.assertNotNull(tree);
+        Assertions.assertEquals(List.of(PredictionMode.SLL, PredictionMode.LL), analyzer.predictions);
+        Assertions.assertEquals(2, analyzer.prepareParserCount);
+        Assertions.assertEquals(1, listener.errors.size());
+    }
+
+    @Test
+    public void reusesTokenStreamWhenSourceComesFromReaderAndLexerFails() throws Exception {
+        RecordingErrorListener listener = new RecordingErrorListener();
+        TrackingAnalyzer analyzer = new TrackingAnalyzer(PARAMETERS);
+
+        STMTreeRuleNode tree = analyzer.parseSqlQueryTree(
+            STMSource.fromReader(new StringReader("DROP TABLE foo^")),
+            listener
+        );
+
+        Assertions.assertNotNull(tree);
+        Assertions.assertEquals(List.of(PredictionMode.SLL, PredictionMode.LL), analyzer.predictions);
+        Assertions.assertEquals(1, analyzer.reusedParserCount);
+        Assertions.assertEquals(1, listener.errors.size());
+    }
+
+    private static List<String> parseErrors(SQLStandardAnalyzer analyzer, String sql) {
+        RecordingErrorListener listener = new RecordingErrorListener();
+        analyzer.parseSqlQueryTree(STMSource.fromString(sql), listener);
+        return listener.errors;
     }
 
     private static final class TrackingAnalyzer extends SQLStandardAnalyzer {
@@ -220,6 +284,22 @@ public class LSMAnalyzerImplTest extends DBeaverUnitTest {
                 parser.notifyErrorListeners("Forced SLL failure");
             }
             return super.parseSqlQueryImpl(parser);
+        }
+    }
+
+    private static final class RecordingErrorListener extends BaseErrorListener implements STMErrorListener {
+        private final List<String> errors = new ArrayList<>();
+
+        @Override
+        public void syntaxError(
+            @NotNull Recognizer<?, ?> recognizer,
+            @Nullable Object offendingSymbol,
+            int line,
+            int charPositionInLine,
+            @NotNull String msg,
+            @Nullable RecognitionException e
+        ) {
+            errors.add(line + ":" + charPositionInLine + ":" + msg);
         }
     }
 

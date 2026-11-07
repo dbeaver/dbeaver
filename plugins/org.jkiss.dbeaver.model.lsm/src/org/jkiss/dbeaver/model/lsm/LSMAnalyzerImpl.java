@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.lsm;
 
+import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.BailErrorStrategy;
 import org.antlr.v4.runtime.BufferedTokenStream;
 import org.antlr.v4.runtime.ConsoleErrorListener;
@@ -37,6 +38,9 @@ import org.jkiss.dbeaver.model.stm.STMSkippingErrorListener;
 import org.jkiss.dbeaver.model.stm.STMSource;
 import org.jkiss.dbeaver.model.stm.STMTreeRuleNode;
 import org.jkiss.utils.Pair;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMParserOverrides> implements LSMAnalyzer {
 
@@ -85,20 +89,21 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMP
 
     @Nullable
     private TParser prepareParserForReuse(
-        @NotNull TokenStream tokenStream,
+        @NotNull BufferedTokenStream bufferedTokens,
         @Nullable STMErrorListener errorListener
     ) {
-        TParser parser = this.createParser(tokenStream, this.parameters);
+        TokenSource tokenSource = bufferedTokens.getTokenSource();
+        if (!(tokenSource instanceof Lexer lexer)) {
+            // Without a lexer to reconfigure, the SLL listener would stay attached and later lexer errors
+            // would never reach the caller. Force a clean re-lex instead.
+            return null;
+        }
+        TParser parser = this.createParser(bufferedTokens, this.parameters);
         if (parser == null) {
             return null;
         }
         configureErrorListeners(parser, errorListener);
-        if (tokenStream instanceof BufferedTokenStream bufferedTokens) {
-            TokenSource tokenSource = bufferedTokens.getTokenSource();
-            if (tokenSource instanceof Lexer lexer) {
-                configureErrorListeners(lexer, errorListener);
-            }
-        }
+        configureErrorListeners(lexer, errorListener);
         parser.getInterpreter().setPredictionMode(PredictionMode.LL);
         return parser;
     }
@@ -119,7 +124,7 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMP
     @Override
     public STMTreeRuleNode parseSqlQueryTree(@NotNull STMSource source, @Nullable STMErrorListener errorListener) {
         // Do not report SLL-only errors to the caller: LL parsing may still succeed on the same input.
-        STMSkippingErrorListener sllErrors = new STMSkippingErrorListener();
+        SllErrorListener sllErrors = new SllErrorListener();
         TParser sllParser = null;
         try {
             sllParser = prepareParser(source, sllErrors);
@@ -142,15 +147,17 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMP
             log.debug("SLL parsing failed, falling back to LL", e);
         }
 
-        // Reuse the already lexed tokens when the failure was not caused by the lexer. This avoids
-        // tokenizing the same input twice on the LL fallback.
-        if (sllParser != null
-            && sllErrors.getLexerErrorCount() == 0
-            && sllParser.getTokenStream() instanceof BufferedTokenStream bufferedTokens
-        ) {
+        // Reuse the already lexed tokens whenever possible. This avoids tokenizing the same input twice
+        // on the LL fallback.
+        if (sllParser != null && sllParser.getTokenStream() instanceof BufferedTokenStream bufferedTokens) {
             TParser llParser = prepareParserForReuse(bufferedTokens, errorListener);
             if (llParser != null) {
                 try {
+                    // The SLL trial does not forward errors to the caller, so replay the lexer errors it collected.
+                    // Errors from tokens not lexed yet will be reported by the reused lexer during the LL parse.
+                    sllErrors.replayLexerErrors(
+                        errorListener != null ? errorListener : ConsoleErrorListener.INSTANCE
+                    );
                     bufferedTokens.seek(0);
                     STMTreeRuleNode result = parseSqlQueryImpl(llParser);
                     result.fixup(llParser);
@@ -173,6 +180,58 @@ public abstract class LSMAnalyzerImpl<TLexer extends Lexer, TParser extends STMP
         } catch (RecognitionException e) {
             log.debug("Recognition exception occurred while trying to parse the query", e);
             return null;
+        }
+    }
+
+    /**
+     * Error listener for the tentative SLL pass. Parser errors are only counted, while lexer errors are also
+     * recorded: the LL pass may reuse the token stream and would otherwise never report them.
+     */
+    private static final class SllErrorListener extends STMSkippingErrorListener {
+        @Nullable
+        private List<LexerError> lexerErrors;
+
+        @Override
+        public void syntaxError(
+            @NotNull Recognizer<?, ?> recognizer,
+            @Nullable Object offendingSymbol,
+            int line,
+            int charPositionInLine,
+            @NotNull String msg,
+            @Nullable RecognitionException e
+        ) {
+            super.syntaxError(recognizer, offendingSymbol, line, charPositionInLine, msg, e);
+            if (recognizer instanceof Lexer) {
+                if (lexerErrors == null) {
+                    lexerErrors = new ArrayList<>();
+                }
+                lexerErrors.add(new LexerError(recognizer, offendingSymbol, line, charPositionInLine, msg, e));
+            }
+        }
+
+        void replayLexerErrors(@NotNull ANTLRErrorListener errorListener) {
+            if (lexerErrors != null) {
+                for (LexerError error : lexerErrors) {
+                    errorListener.syntaxError(
+                        error.recognizer(),
+                        error.offendingSymbol(),
+                        error.line(),
+                        error.charPositionInLine(),
+                        error.message(),
+                        error.exception()
+                    );
+                }
+            }
+        }
+
+        private record LexerError(
+            @NotNull Recognizer<?, ?> recognizer,
+            @Nullable Object offendingSymbol,
+            int line,
+            int charPositionInLine,
+            @NotNull String message,
+            @Nullable RecognitionException exception
+        ) {
         }
     }
 
