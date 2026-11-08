@@ -306,6 +306,9 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
     @NotNull
     private DataSourceDescriptor getActiveDataSource() {
+        if (dataSourceDescriptor != null) {
+            return dataSourceDescriptor;
+        }
         ConnectionPageSettings pageSettings = getWizard().getPageSettings();
         return pageSettings == null ? wizard.getActiveDataSource() : pageSettings.getActiveDataSource();
     }
