@@ -166,7 +166,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 } else {
                     ConnectionPageSettings settings = wizard.getPageSettings();
 
-                    if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getName())) {
+                    if (dataSourceDescriptor != null && !wizard.isNew() && !CommonUtils.isEmpty(dataSourceDescriptor.getName())) {
                         connectionNameText.setText(dataSourceDescriptor.getName());
                     } else {
                         if (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged) {
@@ -192,7 +192,8 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
                 setConnectionType(connectionTypeCombo, conConfig.getConnectionType());
 
-                folderSelector.setFolder(dataSourceDescriptor.getFolder());
+                folderSelector.setFolder(dataSourceDescriptor.getFolder() == null && wizard.isNew()
+                    ? curDataSourceFolder : dataSourceDescriptor.getFolder());
 
                 if (dataSourceDescriptor.getDescription() != null) {
                     descriptionText.setText(dataSourceDescriptor.getDescription());
@@ -317,7 +318,8 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     @Override
     public void createControl(@NotNull Composite parent) {
         if (navigatorSettings == null) {
-            DBNBrowseSettings settings = getWizard().getSelectedNavigatorSettings();
+            DBNBrowseSettings settings = dataSourceDescriptor == null
+                ? getWizard().getSelectedNavigatorSettings() : dataSourceDescriptor.getNavigatorSettings();
             navigatorSettings = new DataSourceNavigatorSettings(settings.isUserSettings() ? settings.getOriginalSettings() : settings);
         }
 
@@ -341,7 +343,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             UIUtils.setDefaultTextControlWidthHint(connectionNameText);
 
             connectionNameText.addModifyListener(e -> {
-                if (dataSourceDescriptor == null || !connectionNameText.getText().equals(connectionName)) {
+                if (!updatingConnectionName && (dataSourceDescriptor == null || !connectionNameText.getText().equals(connectionName))) {
                     connectionNameChanged = true;
                     getContainer().updateButtons();
                 }
@@ -678,7 +680,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
         if (connectionNameChanged) {
             name = generateConnectionName(getWizard().getPageSettings(), connectionNameText.getText());
-        } else if (dataSourceDescriptor != null) {
+        } else if (dataSourceDescriptor != null && !wizard.isNew()) {
             name = dataSourceDescriptor.getName();
         } else {
             name = generateConnectionName(getWizard().getPageSettings(),
@@ -751,6 +753,11 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
     public void setDataSourceFolder(@Nullable DBPDataSourceFolder dataSourceFolder) {
         this.curDataSourceFolder = dataSourceFolder;
+    }
+
+    @Nullable
+    DBPDataSourceFolder getDataSourceFolder() {
+        return curDataSourceFolder;
     }
 
 }

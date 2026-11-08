@@ -110,7 +110,6 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     private ToolItem handlerItem;
     private ToolItem profileItem;
     private ToolBar handlersToolbar;
-    private boolean updatingGeneratedName;
     private final Runnable logoUpdateCallback = () -> UIUtils.asyncExec(this::updateDriverLogo);
 
     /**
@@ -969,15 +968,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Override
     public void updateButtons() {
-        if (!updatingGeneratedName && wizard.getConnectionNameOverride() == null
-            && connectionEditor != null && connectionEditor.getControl() != null) {
-            updatingGeneratedName = true;
-            try {
-                connectionEditor.saveSettings(getActiveDataSource());
-                refreshConnectionName();
-            } finally {
-                updatingGeneratedName = false;
-            }
+        if (wizard.getConnectionNameOverride() == null) {
+            refreshConnectionName();
         }
         updatePageCompletion();
         // getWizard().getContainer().updateButtons();

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
@@ -55,6 +56,7 @@ public class NewConnectionWizard extends ConnectionWizard
     private ConnectionPageConnector pageConnector;
     private final Map<DBPDriver, ConnectionPageSettings> settingsPages = new HashMap<>();
     private ConnectionPageGeneral pageGeneral;
+    private final Set<DBPDriver> generalSettingsEdited = new HashSet<>();
     private DataSourceDescriptor dataSourceNew;
 
     /** A default constructor used by Eclipse's "New" command */
@@ -142,6 +144,23 @@ public class NewConnectionWizard extends ConnectionWizard
             return null;
         }
         return this.settingsPages.get(selectedDriver);
+    }
+
+    void openGeneralSettingsDialog() {
+        DataSourceDescriptor dataSource = getActiveDataSource();
+        ConnectionPageSettings settings = getPageSettings();
+        if (settings != null) {
+            settings.saveSettings(dataSource);
+        }
+        ConnectionPageGeneral generalPage = new ConnectionPageGeneral(this, dataSource);
+        generalPage.setDataSourceFolder(pageGeneral.getDataSourceFolder());
+        String previousName = getConnectionNameOverride();
+        if (new EditWizardPageDialog(this, generalPage, dataSource).open() == IDialogConstants.OK_ID) {
+            generalSettingsEdited.add(dataSource.getDriver());
+            pageGeneral.setDataSourceFolder(dataSource.getFolder());
+        } else {
+            restoreConnectionNameOverride(previousName);
+        }
     }
 
     /**
@@ -362,7 +381,9 @@ public class NewConnectionWizard extends ConnectionWizard
         if (pageSettings != null) {
             pageSettings.saveSettings(dataSource);
         }
-        pageGeneral.saveSettings(dataSource);
+        if (!generalSettingsEdited.contains(driver)) {
+            pageGeneral.saveSettings(dataSource);
+        }
         applyConnectionName(dataSource);
         //pageNetwork.saveSettings(dataSource);
     }

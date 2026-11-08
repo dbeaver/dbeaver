@@ -225,7 +225,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
         UIUtils.createLabelSeparator(panel, SWT.HORIZONTAL, 5);
 
-        Composite details = UIUtils.createComposite(panel, site.isNew() ? 4 : 3);
+        Composite details = UIUtils.createComposite(panel, 3);
         gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 5;
         details.setLayoutData(gd);
@@ -241,13 +241,14 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         });
         refreshConnectionName();
 
-        if (site.isNew()) {
-            UIUtils.createPushButton(details, null,
-                UIConnectionMessages.dialog_connection_edit_wizard_conn_conf_general_link, UIIcon.CONFIGURATION,
-                SelectionListener.widgetSelectedAdapter(e -> site.openSettingsPage(ConnectionPageGeneral.PAGE_NAME)));
-        }
-
         ToolBar toolbar = new ToolBar(details, SWT.FLAT | SWT.RIGHT);
+        if (site.isNew()) {
+            ToolItem generalItem = new ToolItem(toolbar, SWT.PUSH);
+            generalItem.setImage(DBeaverIcons.getImage(UIIcon.CONFIGURATION));
+            generalItem.setToolTipText(UIConnectionMessages.dialog_connection_edit_wizard_conn_conf_general_link);
+            generalItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                ((NewConnectionWizard) site.getWizard()).openGeneralSettingsDialog()));
+        }
         driverItem = new ToolItem(toolbar, SWT.DROP_DOWN);
         driverItem.setText(site.getDriver().getFullName());
         driverItem.setImage(DBeaverIcons.getImage(site.getDriver().getIcon()));

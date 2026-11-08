@@ -173,6 +173,14 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         }
     }
 
+    void restoreConnectionNameOverride(@Nullable String name) {
+        connectionNameOverride = name;
+        ConnectionPageSettings settings = getPageSettings();
+        if (settings != null) {
+            settings.refreshConnectionName();
+        }
+    }
+
     @Nullable
     String getConnectionNameOverride() {
         return connectionNameOverride;
