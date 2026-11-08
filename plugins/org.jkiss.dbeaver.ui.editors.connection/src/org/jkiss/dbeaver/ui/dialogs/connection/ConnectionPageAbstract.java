@@ -161,7 +161,10 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         }
         updatingConnectionName = true;
         try {
-            String name = ((ConnectionWizard) site.getWizard()).getConnectionNamePreview();
+            ConnectionWizard wizard = (ConnectionWizard) site.getWizard();
+            ConnectionPageSettings settings = wizard.getPageSettings();
+            String name = settings == null ? wizard.getConnectionNamePreview() : settings.getConnectionNamePreview();
+            wizard.updateWindowTitle(name);
             if (!connectionNameText.getText().equals(name)) {
                 connectionNameText.setText(name);
             }

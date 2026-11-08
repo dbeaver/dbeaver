@@ -31,6 +31,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ModelPreferences.SeparateConnectionBehavior;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -53,7 +54,6 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizard;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.IConnectionWizard;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
-import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 
@@ -79,12 +79,24 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
     }
 
     @Override
+    @NotNull
     public String getWindowTitle() {
-        if (isNew()) {
+        if ((isNew() && getPageCount() == 0) || getSelectedDriver() == null) {
             return UIConnectionMessages.dialog_new_connection_wizard_title;
-        } else {
-            DataSourceDescriptor activeDataSource = getActiveDataSource();
-            return NLS.bind( UIConnectionMessages.dialog_connection_edit_title, activeDataSource.getName());
+        }
+        return getWindowTitle(getConnectionNamePreview());
+    }
+
+    @NotNull
+    private String getWindowTitle(@NotNull String connectionName) {
+        return isNew()
+            ? UIConnectionMessages.dialog_new_connection_wizard_title + " - " + connectionName
+            : NLS.bind(UIConnectionMessages.dialog_connection_edit_title, connectionName);
+    }
+
+    void updateWindowTitle(@NotNull String connectionName) {
+        if (getContainer() != null && getShell() != null && !getShell().isDisposed()) {
+            getShell().setText(getWindowTitle(connectionName));
         }
     }
 
@@ -162,19 +174,12 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
     void setConnectionNameOverride(@NotNull String name) {
         connectionNameOverride = name;
+        updateWindowTitle(name);
         for (IWizardPage page : getPages()) {
             if (page instanceof ConnectionPageGeneral generalPage) {
                 generalPage.setConnectionName(name);
             }
         }
-        ConnectionPageSettings settings = getPageSettings();
-        if (settings != null) {
-            settings.refreshConnectionName();
-        }
-    }
-
-    void restoreConnectionNameOverride(@Nullable String name) {
-        connectionNameOverride = name;
         ConnectionPageSettings settings = getPageSettings();
         if (settings != null) {
             settings.refreshConnectionName();
@@ -188,6 +193,11 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
 
     @NotNull
     String getConnectionNamePreview() {
+        return getConnectionNamePreview(getActiveDataSource());
+    }
+
+    @NotNull
+    String getConnectionNamePreview(@NotNull DataSourceDescriptor dataSource) {
         if (connectionNameOverride != null) {
             return connectionNameOverride;
         }
@@ -196,13 +206,15 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
         }
         String pattern = DBWorkbench.getPlatform().getPreferenceStore()
             .getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
-        ConnectionPageSettings settings = getPageSettings();
-        return generateConnectionName(pattern, settings == null ? null : settings.getActiveDataSource());
+        return generateConnectionName(pattern, dataSource);
     }
 
     void applyConnectionName(@NotNull DataSourceDescriptor dataSource) {
         if (connectionNameOverride != null) {
             dataSource.setName(generateConnectionName(connectionNameOverride, dataSource));
+        } else if (isNew()) {
+            dataSource.setName(generateConnectionName(DBWorkbench.getPlatform().getPreferenceStore()
+                .getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN), dataSource));
         }
     }
 
@@ -216,8 +228,19 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
             pattern = GeneralUtils.variablePattern(DBPConnectionConfiguration.VAR_HOST_OR_DATABASE);
         }
         String name = GeneralUtils.replaceVariables(pattern,
-            new ConnectionNameResolver(dataSource, dataSource.getConnectionConfiguration(), getOriginalDataSource()));
-        return DataSourceUtils.generateUniqueDataSourceName(settings.getDataSourceRegistry(), name, 1);
+            new ConnectionNameResolver(dataSource, dataSource.getConnectionConfiguration(), isNew() ? null : getOriginalDataSource()));
+        Set<String> existingNames = new HashSet<>();
+        DataSourceDescriptor original = getOriginalDataSource();
+        for (DBPDataSourceContainer existing : settings.getDataSourceRegistry().getDataSources()) {
+            if (original == null || !existing.getId().equals(original.getId())) {
+                existingNames.add(existing.getName());
+            }
+        }
+        String uniqueName = name;
+        for (int index = 1; existingNames.contains(uniqueName); index++) {
+            uniqueName = name + " (" + index + ")";
+        }
+        return uniqueName;
     }
 
     public void testConnection() {

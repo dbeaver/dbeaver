@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
+import org.jkiss.dbeaver.ui.UIEditorsWorkbenchInitializer;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
@@ -99,6 +100,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
 
     private boolean connectionNameChanged = false;
     private boolean updatingConnectionName;
+    private String editedConnectionName;
     private boolean activated = false;
 
     private Button readOnlyConnection;
@@ -281,7 +283,8 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             }
             DataSourceDescriptor dataSource = settings.getActiveDataSource();
             DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
-            final ConnectionNameResolver resolver = new ConnectionNameResolver(dataSource, connectionInfo, dataSourceDescriptor);
+            final ConnectionNameResolver resolver = new ConnectionNameResolver(
+                dataSource, connectionInfo, wizard.isNew() ? null : dataSourceDescriptor);
             newName = GeneralUtils.replaceVariables(resultName, resolver);
             newName = DataSourceUtils.generateUniqueDataSourceName(settings.getDataSourceRegistry(), newName, 1);
         } else {
@@ -334,13 +337,32 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 GridData.FILL_HORIZONTAL
             );
 
+            UIUtils.createControlLabel(miscGroup, UIConnectionMessages.dialog_connection_wizard_final_label_connection_name);
+            Composite nameGroup = UIUtils.createComposite(miscGroup, 2);
+            nameGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
-            connectionNameText = UIUtils.createLabelText(
-                miscGroup,
-                UIConnectionMessages.dialog_connection_wizard_final_label_connection_name,
-                CommonUtils.toString(connectionName)
-            );
+            connectionNameText = new Text(nameGroup, SWT.BORDER);
+            connectionNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            connectionNameText.setText(CommonUtils.toString(connectionName));
             UIUtils.setDefaultTextControlWidthHint(connectionNameText);
+            UIUtils.createPushButton(nameGroup, null,
+                UIConnectionMessages.dialog_connection_name_pattern_settings, UIIcon.CONFIGURATION,
+                SelectionListener.widgetSelectedAdapter(e -> {
+                    UIUtils.showPreferencesFor(getShell(), null, UIEditorsWorkbenchInitializer.MAIN_PAGE);
+                    if (!connectionNameChanged && wizard.getConnectionNameOverride() == null) {
+                        updatingConnectionName = true;
+                        try {
+                            connectionNameText.setText(generateConnectionName(wizard.getPageSettings(),
+                                DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN)));
+                        } finally {
+                            updatingConnectionName = false;
+                        }
+                    }
+                    ConnectionPageSettings settings = wizard.getPageSettings();
+                    if (settings != null) {
+                        settings.refreshConnectionName();
+                    }
+                }));
 
             connectionNameText.addModifyListener(e -> {
                 if (!updatingConnectionName && (dataSourceDescriptor == null || !connectionNameText.getText().equals(connectionName))) {
@@ -348,7 +370,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                     getContainer().updateButtons();
                 }
                 if (!updatingConnectionName) {
-                    wizard.setConnectionNameOverride(connectionNameText.getText());
+                    editedConnectionName = connectionNameText.getText();
+                    if (Arrays.asList(wizard.getPages()).contains(this)) {
+                        wizard.setConnectionNameOverride(editedConnectionName);
+                    }
                 }
             });
             ContentAssistUtils.installContentProposal(
@@ -758,6 +783,11 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
     @Nullable
     DBPDataSourceFolder getDataSourceFolder() {
         return curDataSourceFolder;
+    }
+
+    @Nullable
+    String getEditedConnectionName() {
+        return editedConnectionName;
     }
 
 }

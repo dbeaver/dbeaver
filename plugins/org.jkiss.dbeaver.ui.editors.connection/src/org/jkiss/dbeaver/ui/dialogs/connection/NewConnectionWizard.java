@@ -154,12 +154,13 @@ public class NewConnectionWizard extends ConnectionWizard
         }
         ConnectionPageGeneral generalPage = new ConnectionPageGeneral(this, dataSource);
         generalPage.setDataSourceFolder(pageGeneral.getDataSourceFolder());
-        String previousName = getConnectionNameOverride();
         if (new EditWizardPageDialog(this, generalPage, dataSource).open() == IDialogConstants.OK_ID) {
             generalSettingsEdited.add(dataSource.getDriver());
             pageGeneral.setDataSourceFolder(dataSource.getFolder());
-        } else {
-            restoreConnectionNameOverride(previousName);
+            String editedName = generalPage.getEditedConnectionName();
+            if (editedName != null) {
+                setConnectionNameOverride(editedName);
+            }
         }
     }
 
@@ -383,6 +384,10 @@ public class NewConnectionWizard extends ConnectionWizard
         }
         if (!generalSettingsEdited.contains(driver)) {
             pageGeneral.saveSettings(dataSource);
+        } else {
+            DataSourceDescriptor draft = getActiveDataSource();
+            dataSource.setFolder(draft.getFolder());
+            dataSource.setModifyPermissions(draft.getModifyPermission());
         }
         applyConnectionName(dataSource);
         //pageNetwork.saveSettings(dataSource);

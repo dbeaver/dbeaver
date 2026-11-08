@@ -110,6 +110,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     private ToolItem handlerItem;
     private ToolItem profileItem;
     private ToolBar handlersToolbar;
+    private boolean updatingNamePreview;
     private final Runnable logoUpdateCallback = () -> UIUtils.asyncExec(this::updateDriverLogo);
 
     /**
@@ -976,8 +977,26 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     void refreshConnectionName() {
-        if (connectionEditor instanceof ConnectionPageAbstract page) {
+        if (!updatingNamePreview && connectionEditor instanceof ConnectionPageAbstract page) {
             page.refreshConnectionName();
+        }
+    }
+
+    @NotNull
+    String getConnectionNamePreview() {
+        if (!wizard.isNew() || wizard.getConnectionNameOverride() != null || updatingNamePreview
+            || connectionEditor == null || connectionEditor.getControl() == null) {
+            return wizard.getConnectionNamePreview();
+        }
+        updatingNamePreview = true;
+        DataSourceDescriptor snapshot = getActiveDataSource().getRegistry().createDataSource(getActiveDataSource());
+        try {
+            // Read current controls without changing the draft while it may still be loading.
+            connectionEditor.saveSettings(snapshot);
+            return wizard.getConnectionNamePreview(snapshot);
+        } finally {
+            snapshot.dispose();
+            updatingNamePreview = false;
         }
     }
 

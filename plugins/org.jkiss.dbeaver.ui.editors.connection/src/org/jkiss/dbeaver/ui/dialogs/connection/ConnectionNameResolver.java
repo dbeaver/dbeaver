@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,9 @@ public class ConnectionNameResolver implements IVariableResolver {
         DBPConnectionConfiguration.VARIABLE_CONN_TYPE,
         DBPConnectionConfiguration.VAR_PROJECT_NAME,
         DBPConnectionConfiguration.VARIABLE_DATE,
-        DBPConnectionConfiguration.VAR_HOST_OR_DATABASE
+        DBPConnectionConfiguration.VAR_HOST_OR_DATABASE,
+        DBPConnectionConfiguration.VAR_DRIVER_NAME,
+        DBPConnectionConfiguration.VAR_DRIVER_ID
     };
 
     public static final String[][] CONNECTION_NAME_VARIABLES_INFO = new String[][]{
@@ -59,7 +61,9 @@ public class ConnectionNameResolver implements IVariableResolver {
         {DBPConnectionConfiguration.VARIABLE_CONN_TYPE, "connection type"},
         {DBPConnectionConfiguration.VAR_PROJECT_NAME, "project name"},
         {DBPConnectionConfiguration.VARIABLE_DATE, "current date"},
-        {DBPConnectionConfiguration.VAR_HOST_OR_DATABASE, "Legacy configuration for the connection name"}
+        {DBPConnectionConfiguration.VAR_HOST_OR_DATABASE, "host or database name"},
+        {DBPConnectionConfiguration.VAR_DRIVER_NAME, "driver name"},
+        {DBPConnectionConfiguration.VAR_DRIVER_ID, "short driver ID"}
     };
 
     @NotNull
@@ -89,18 +93,15 @@ public class ConnectionNameResolver implements IVariableResolver {
     }
 
     @NotNull
-    private String generateLegacyConnectionName() {
+    private String generateHostOrDatabaseConnectionName() {
         String newName = descriptor == null ? "" : getDataSourceContainer().getName(); //$NON-NLS-1$
         if (CommonUtils.isEmpty(newName)) {
-            newName = getConfiguration().getDatabaseName();
+            newName = getConfiguration().getHostName();
             if (CommonUtils.isEmpty(newName) || newName.isBlank()) {
-                newName = getConfiguration().getHostName();
+                newName = getConfiguration().getDatabaseName();
             }
             if (CommonUtils.isEmpty(newName)) {
                 newName = getConfiguration().getServerName();
-            }
-            if (CommonUtils.isEmpty(newName)) {
-                newName = getDataSourceContainer().getDriver().getName();
             }
             if (CommonUtils.isEmpty(newName)) {
                 newName = UIConnectionMessages.dialog_connection_wizard_final_default_new_connection_name;
@@ -137,7 +138,7 @@ public class ConnectionNameResolver implements IVariableResolver {
                 case DBPConnectionConfiguration.VARIABLE_USER:
                     return configuration.getUserName();
                 case DBPConnectionConfiguration.VAR_HOST_OR_DATABASE:
-                    return generateLegacyConnectionName();
+                    return generateHostOrDatabaseConnectionName();
                 case DBPConnectionConfiguration.VARIABLE_URL:
                     return configuration.getUrl();
                 case DBPConnectionConfiguration.VARIABLE_CONN_TYPE:
@@ -149,6 +150,10 @@ public class ConnectionNameResolver implements IVariableResolver {
         }
         if (dataSourceContainer != null) {
             switch (name) {
+                case DBPConnectionConfiguration.VAR_DRIVER_NAME:
+                    return dataSourceContainer.getDriver().getName();
+                case DBPConnectionConfiguration.VAR_DRIVER_ID:
+                    return dataSourceContainer.getDriver().getId();
                 case DBPConnectionConfiguration.VAR_PROJECT_NAME:
                     return dataSourceContainer.getProject().getName();
                 case DBPConnectionConfiguration.VARIABLE_DATE:
