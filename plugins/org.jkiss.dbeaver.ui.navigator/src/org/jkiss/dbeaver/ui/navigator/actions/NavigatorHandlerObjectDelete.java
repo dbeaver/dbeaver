@@ -95,7 +95,19 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             );
             return false;
         }
-        return tryDeleteObjects(window, objects, NavigatorObjectsDeleter.of(objects, window));
+        NavigatorObjectsDeleter deleter = createDeleter(window, objects);
+        return deleter != null && tryDeleteObjects(window, objects, deleter);
+    }
+
+    @Nullable
+    private static NavigatorObjectsDeleter createDeleter(@NotNull IWorkbenchWindow window, @NotNull List<?> objects) {
+        try {
+            return NavigatorObjectsDeleter.of(objects, window);
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(
+                UINavigatorMessages.actions_navigator_error_dialog_delete_object_title, e.getMessage(), e);
+            return null;
+        }
     }
 
     private static boolean containsNodesFromDifferentDataSources(@NotNull List<?> objects) {
@@ -182,10 +194,14 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         } catch (InvocationTargetException e) {
             DBWorkbench.getPlatformUI().showError(
                     UINavigatorMessages.search_dependencies_error_title, UINavigatorMessages.search_dependencies_error_message, e.getTargetException());
-        } catch (InterruptedException ignored) {
+        } catch (InterruptedException expected) {
+            // Ignore interruption during dependency lookup.
         }
         if (!CommonUtils.isEmpty(dependentObjectsListNodes)) {
-            NavigatorObjectsDeleter dependentObjectsDeleter = NavigatorObjectsDeleter.of(dependentObjectsListNodes, window);
+            NavigatorObjectsDeleter dependentObjectsDeleter = createDeleter(window, dependentObjectsListNodes);
+            if (dependentObjectsDeleter == null) {
+                return false;
+            }
             String confirmMessage;
             if (dependentObjectsListNodes.size() == 1) {
                 DBNDatabaseNode node = (DBNDatabaseNode) dependentObjectsListNodes.get(0);

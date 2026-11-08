@@ -29,8 +29,6 @@ public class DDUIMessages extends NLS {
     public static String datadam_configurator_label_api_key;
     public static String datadam_configurator_label_endpoint;
     public static String datadam_configurator_label_temperature;
-    public static String datadam_configurator_log_query_label;
-    public static String datadam_configurator_log_query_tip;
     public static String datadam_desktop_initialize_job;
 
     private DDUIMessages() {

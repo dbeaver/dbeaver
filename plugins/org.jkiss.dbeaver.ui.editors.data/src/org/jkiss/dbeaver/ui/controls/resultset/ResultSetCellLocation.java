@@ -45,7 +45,7 @@ public class ResultSetCellLocation {
         @Nullable int[] rowIndexes,
         @Nullable ResultSetValuePath valuePath
     ) {
-        this.attribute = getLeafAttribute(attribute, rowIndexes);
+        this.attribute = valuePath == null ? getLeafAttribute(attribute, rowIndexes) : attribute;
         this.row = row;
         this.rowIndexes = rowIndexes;
         this.valuePath = valuePath;

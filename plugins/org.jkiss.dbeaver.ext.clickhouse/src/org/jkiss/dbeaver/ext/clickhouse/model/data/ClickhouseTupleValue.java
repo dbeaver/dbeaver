@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.clickhouse.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseTupleType;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDComposite;
 import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -105,6 +106,11 @@ public class ClickhouseTupleValue implements DBDComposite, DBDValueCloneable {
     }
 
     @Override
+    public boolean requiresWholeValueUpdate() {
+        return true;
+    }
+
+    @Override
     public void release() {
         values = null;
     }
@@ -115,10 +121,14 @@ public class ClickhouseTupleValue implements DBDComposite, DBDValueCloneable {
         return new ClickhouseTupleValue(monitor, type, values);
     }
 
+    @NotNull
     @Override
     public String toString() {
+        if (values == null) {
+            return DBConstants.NULL_VALUE_LABEL;
+        }
         String elements = Arrays.stream(values)
-            .map(Object::toString)
+            .map(String::valueOf)
             .collect(Collectors.joining(", "));
         return "(" + elements + ")";
     }

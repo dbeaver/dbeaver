@@ -456,6 +456,13 @@ public class AIAssistantImpl implements AIAssistant {
         if (function == null) {
             throw new DBCMessageException("Function '" + functionName + "' not found");
         }
+        AIFunctionSettings settings = getToolboxManager().getFunctionSettings();
+        AIToolbox toolbox = function.getToolbox();
+        if (!settings.isFunctionsEnabled() || !toolbox.isEnabled() || !toolbox.isAccessible()
+            || !settings.getToolboxSettings(toolbox).isEnabled()
+            || !settings.getToolboxSettings(toolbox).isFunctionEnabled(function)) {
+            throw new DBCMessageException("Function '" + functionName + "' is disabled");
+        }
         Map<String, Object> arguments = functionCall.getArguments();
 
         if (isLoggingEnabled()) {

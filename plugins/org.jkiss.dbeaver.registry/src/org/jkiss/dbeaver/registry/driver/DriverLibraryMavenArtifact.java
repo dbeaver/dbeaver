@@ -284,7 +284,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
         return null;
     }
 
-    @Nullable
+    @NotNull
     @Override
     public Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor) throws IOException {
         List<DriverLibraryMavenDependency> dependencies = new ArrayList<>();
@@ -302,8 +302,8 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract {
                     }
 
                     MavenArtifactVersion depArtifact = MavenRegistry.getInstance().findArtifact(monitor, localVersion, dependency);
-                    if (depArtifact != null && MavenArtifact.FILE_POM.equals(depArtifact.getPackaging())) {
-                        // POM-only artifacts describe dependencies but have no driver library to download.
+                    if (MavenArtifact.FILE_POM.equals(dependency.getType())) {
+                        // POM-only dependencies have no driver library to download.
                         continue;
                     }
                     if (depArtifact != null) {

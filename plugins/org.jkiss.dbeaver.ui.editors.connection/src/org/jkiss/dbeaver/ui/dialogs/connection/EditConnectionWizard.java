@@ -320,6 +320,9 @@ public class EditConnectionWizard extends ConnectionWizard {
     @Override
     public boolean performFinish() {
         PersistResult result = persistDataSource();
+        if (result != PersistResult.ERROR) {
+            firePropertyChangeEvent(PROP_CONNECTION_SAVED, null, originalDataSource);
+        }
         if (result == PersistResult.CHANGED && originalDataSource.isConnected()) {
             if (UIUtils.confirmAction(getShell(), UIConnectionMessages.dialog_connection_edit_wizard_conn_change_title,
                 NLS.bind(UIConnectionMessages.dialog_connection_edit_wizard_conn_change_question,
