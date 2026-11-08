@@ -16,8 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.datadam;
 
-import com.dbeaver.datadam.mcp.api.model.DDMcpStatus;
-import com.dbeaver.datadam.mcp.api.service.web.DDMcpWebStatusService;
+import com.dbeaver.datadam.dam.remote.api.DDRemoteDamSettingKeys;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
@@ -32,8 +31,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.datadam.DDAccountClient;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -62,6 +63,8 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private AbstractJob userViewJob;
     @Nullable
     private AbstractJob mcpJob;
+    @Nullable
+    private DDAccountClient.DamSettingsState mcpSettings;
 
     private Composite content;
     private Button mcpCheck;
@@ -125,7 +128,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         return DDUIUtils.create(
             parent, DDTrackingUIMessages.sync_preference_page_mcp_globally_disabled,
             DDTrackingUIMessages.sync_preference_page_mcp_settings_link,
-            DDUIConstants.DATADAM_DOCS_URL + MCP_SETTINGS_URL
+            URI.create(DDEndpoints.getAccountBaseUrl()).resolve("/" + MCP_SETTINGS_URL).toString()
         ).getParent();
     }
 
@@ -243,8 +246,9 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         showMcpLoading();
         try {
             mcpJob = DDServerCatalog.getInstance().createJob(
-                "Read DataDam MCP status", DDMcpWebStatusService.SERVICE_ID, DDMcpWebStatusService.class,
-                DDMcpWebStatusService::getStatus,
+                "Read DataDam MCP status",
+                account -> account.getDamSettings(
+                    DDRemoteDamDesktopSessionService.getInstance().getClientDamId(), DDRemoteDamSettingKeys.MCP_ENABLED),
                 status -> {
                     if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
                         showMcpStatus(status);
@@ -263,21 +267,23 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     private void updateMcpStatus(boolean enabled) {
+        var previous = mcpSettings;
+        if (previous == null) {
+            return;
+        }
         if (mcpJob != null) {
             mcpJob.cancel();
         }
         showMcpLoading();
         try {
             mcpJob = DDServerCatalog.getInstance().createJob(
-                "Update DataDam MCP status", DDMcpWebStatusService.SERVICE_ID, DDMcpWebStatusService.class,
-                service -> {
-                    service.setStatus(enabled ? DDMcpStatus.ENABLED : DDMcpStatus.DISABLED);
-                    return null;
-                },
-                ignored -> {
+                "Update DataDam MCP status",
+                account -> new DDAccountClient.DamSettingsState(previous.accountId(), account.setDamSetting(
+                    DDRemoteDamDesktopSessionService.getInstance().getClientDamId(), DDRemoteDamSettingKeys.MCP_ENABLED,
+                    Boolean.toString(enabled), previous.accountId()), previous.canManage()),
+                updated -> {
                     if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
-                        mcpLoading.set(false);
-                        mcpCheck.setEnabled(true);
+                        showMcpStatus(updated);
                     }
                 },
                 error -> {
@@ -302,12 +308,14 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         content.layout(true, true);
     }
 
-    private void showMcpStatus(@Nullable DDMcpStatus status) {
-        mcpCheck.setSelection(status == DDMcpStatus.ENABLED);
-        mcpCheck.setEnabled(status == DDMcpStatus.ENABLED || status == DDMcpStatus.DISABLED);
+    private void showMcpStatus(@Nullable DDAccountClient.DamSettingsState state) {
+        mcpSettings = state;
+        boolean accountEnabled = state != null && state.settings().isAccountEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true);
+        mcpCheck.setSelection(accountEnabled && state.settings().isDamEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, false));
+        mcpCheck.setEnabled(accountEnabled && state.canManage());
         mcpLoading.set(false);
-        mcpUnavailable.set(status == null);
-        mcpGloballyDisabled.set(status == DDMcpStatus.GLOBALLY_DISABLED);
+        mcpUnavailable.set(state == null);
+        mcpGloballyDisabled.set(state != null && !accountEnabled);
         content.layout(true, true);
     }
 

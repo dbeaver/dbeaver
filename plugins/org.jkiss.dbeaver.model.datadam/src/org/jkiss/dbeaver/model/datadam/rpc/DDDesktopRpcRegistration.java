@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam.rpc;
 
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -28,5 +29,5 @@ public interface DDDesktopRpcRegistration {
     @NotNull
     String getId();
 
-    void register(@NotNull MessagingRpcEndpoint endpoint) throws DBException;
+    void register(@NotNull MessagingRpcEndpoint endpoint, @NotNull DDRemoteDamSettings settings) throws DBException;
 }

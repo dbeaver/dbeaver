@@ -16,30 +16,27 @@
  */
 package org.jkiss.dbeaver.ui.datadam;
 
-import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
+import org.jkiss.dbeaver.model.datadam.DDAccountClient;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.net.URI;
 import java.util.function.Consumer;
 
 public class DDServerCatalog {
     @Nullable
     private static DDServerCatalog instance;
 
-    private final DDRemoteDamDesktopSessionService session;
-    private final ConcurrentMap<ServiceKey, ServiceEntry> services = new ConcurrentHashMap<>();
+    private final DDAccountClient account = new DDAccountClient(URI.create(DDEndpoints.getAccountBaseUrl()));
 
     private DDServerCatalog() throws DBException {
-        session = DDRemoteDamDesktopSessionService.getInstance();
     }
 
     @NotNull
@@ -56,18 +53,10 @@ public class DDServerCatalog {
         R run(@NotNull S service) throws Exception;
     }
 
-    private record ServiceKey(@NotNull String id, @NotNull Class<?> type) {
-    }
-
-    private record ServiceEntry(@NotNull MessagingRpcEndpoint endpoint, @NotNull Object service) {
-    }
-
     @NotNull
-    public <S, R> AbstractJob createJob(
+    public <R> AbstractJob createJob(
         @NotNull String jobName,
-        @NotNull String serviceId,
-        @NotNull Class<S> serviceType,
-        @NotNull ServiceCall<S, R> operation,
+        @NotNull ServiceCall<DDAccountClient, R> operation,
         @NotNull Consumer<R> onSuccess,
         @NotNull Consumer<DBException> onFailure
     ) {
@@ -79,7 +68,7 @@ public class DDServerCatalog {
                     return Status.CANCEL_STATUS;
                 }
                 try {
-                    R result = operation.run(getService(serviceId, serviceType));
+                    R result = operation.run(account);
                     UIUtils.asyncExec(() -> {
                         if (!monitor.isCanceled() && !isCanceled()) {
                             onSuccess.accept(result);
@@ -106,16 +95,4 @@ public class DDServerCatalog {
         return job;
     }
 
-    @NotNull
-    private <S> S getService(@NotNull String serviceId, @NotNull Class<S> serviceType) throws DBException {
-        MessagingRpcEndpoint endpoint = session.getRpc();
-        ServiceKey key = new ServiceKey(serviceId, serviceType);
-        ServiceEntry entry = services.compute(key, (ignored, cached) -> {
-            if (cached != null && cached.endpoint() == endpoint) {
-                return cached;
-            }
-            return new ServiceEntry(endpoint, endpoint.proxy(serviceId, serviceType));
-        });
-        return serviceType.cast(entry.service());
-    }
 }

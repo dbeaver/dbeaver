@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.datadam.rpc;
 
+import com.dbeaver.datadam.dam.remote.api.exception.DDRemoteDamException;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
+import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamSettingsService;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
@@ -113,14 +116,29 @@ public class DDDesktopRpcRegistrationRegistry {
         return instance;
     }
 
-    public void registerAll(@NotNull MessagingRpcEndpoint endpoint) {
+    public void registerEndpoint(@NotNull MessagingRpcEndpoint endpoint, @NotNull DDRemoteDamSettings settings) throws DBException {
+        if (endpoint.isClosed()) {
+            return;
+        }
+        Object settingsLock = new Object();
+        synchronized (settingsLock) {
+            // a callback arriving during initialization must be applied after the handshake snapshot
+            endpoint.register(DDRemoteDamSettingsService.SERVICE_ID, DDRemoteDamSettingsService.class, updated -> {
+                synchronized (settingsLock) {
+                    try {
+                        registerAll(endpoint, updated);
+                    } catch (DBException e) {
+                        throw new DDRemoteDamException("Cannot apply DAM settings", e);
+                    }
+                }
+            });
+            registerAll(endpoint, settings);
+        }
+    }
+
+    public void registerAll(@NotNull MessagingRpcEndpoint endpoint, @NotNull DDRemoteDamSettings settings) throws DBException {
         for (DDDesktopRpcRegistration registration : registrations) {
-            try {
-                registration.register(endpoint);
-                log.debug("Registered DataDam desktop RPC service " + registration.getId());
-            } catch (DBException | RuntimeException e) {
-                log.warn("Cannot register desktop RPC service " + registration.getId(), e);
-            }
+            registration.register(endpoint, settings);
         }
     }
 }

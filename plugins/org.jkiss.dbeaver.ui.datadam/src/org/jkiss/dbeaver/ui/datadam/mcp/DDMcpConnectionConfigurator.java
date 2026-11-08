@@ -16,8 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.datadam.mcp;
 
-import com.dbeaver.datadam.mcp.api.model.DDMcpStatus;
-import com.dbeaver.datadam.mcp.api.service.web.DDMcpWebStatusService;
+import com.dbeaver.datadam.dam.remote.api.DDRemoteDamSettingKeys;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
@@ -28,7 +27,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.datadam.DDAccountClient;
 import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionSettings;
+import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -62,8 +63,9 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
         });
         try {
             statusJob = DDServerCatalog.getInstance().createJob(
-                "Check DataDam MCP availability", DDMcpWebStatusService.SERVICE_ID, DDMcpWebStatusService.class,
-                DDMcpWebStatusService::getStatus,
+                "Check DataDam MCP availability",
+                account -> account.getDamSettings(
+                    DDRemoteDamDesktopSessionService.getInstance().getClientDamId(), DDRemoteDamSettingKeys.MCP_ENABLED),
                 status -> showStatus(parent, loading, page, status),
                 error -> {
                     log.debug("Cannot read DataDam MCP status", error);
@@ -79,13 +81,13 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
         @NotNull Composite parent,
         @NotNull Label loading,
         @NotNull PrefPageDataSourceAI page,
-        @Nullable DDMcpStatus status
+        @Nullable DDAccountClient.DamSettingsState status
     ) {
         if (parent.isDisposed()) {
             return;
         }
         loading.dispose();
-        if (status == DDMcpStatus.ENABLED) {
+        if (status != null && status.settings().isEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true, false)) {
             Composite group = UIUtils.createTitledComposite(
                 parent, DDMcpMessages.mcp_connection_settings_group, 1, GridData.FILL_HORIZONTAL);
             enableCheck = UIUtils.createCheckbox(

@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.model.datadam.mcp;
 
+import com.dbeaver.datadam.dam.remote.api.DDRemoteDamSettingKeys;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
 import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamGsonRpcCodec;
-import com.dbeaver.datadam.mcp.api.model.DDMcpStatus;
 import com.dbeaver.datadam.mcp.api.service.desktop.DDMcpFunctionService;
-import com.dbeaver.datadam.mcp.api.service.web.DDMcpWebStatusService;
 import com.dbeaver.messaging.requestreply.MessagingSubscription;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import com.dbeaver.messaging.rpc.MessagingRpcException;
@@ -27,7 +27,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.ToNumberPolicy;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.rpc.DDDesktopRpcRegistration;
 
@@ -46,29 +45,15 @@ public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
     }
 
     @Override
-    public synchronized void register(@NotNull MessagingRpcEndpoint endpoint) throws DBException {
+    public synchronized void register(@NotNull MessagingRpcEndpoint endpoint, @NotNull DDRemoteDamSettings settings) {
+        if (endpoint.isClosed()) {
+            throw new MessagingRpcException(MessagingRpcException.Reason.CLOSED);
+        }
         if (this.endpoint != endpoint) {
             unregister();
             this.endpoint = endpoint;
         }
-        DDMcpStatus status = readStatus(endpoint);
-        updateRegistration(endpoint, status);
-    }
-
-    @NotNull
-    private DDMcpStatus readStatus(@NotNull MessagingRpcEndpoint endpoint) throws DBException {
-        try {
-            return endpoint.proxy(DDMcpWebStatusService.SERVICE_ID, DDMcpWebStatusService.class).getStatus();
-        } catch (MessagingRpcException e) {
-            throw new DBException("Cannot read DataDam MCP status", e);
-        }
-    }
-
-    public synchronized void updateRegistration(@NotNull MessagingRpcEndpoint endpoint, @NotNull DDMcpStatus status) {
-        if (endpoint.isClosed()) {
-            throw new MessagingRpcException(MessagingRpcException.Reason.CLOSED);
-        }
-        if (status == DDMcpStatus.ENABLED) {
+        if (settings.isEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true, false)) {
             if (subscription == null) {
                 registerService(endpoint);
             }

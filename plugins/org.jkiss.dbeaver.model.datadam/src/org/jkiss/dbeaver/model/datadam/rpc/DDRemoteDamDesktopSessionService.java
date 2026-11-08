@@ -78,9 +78,9 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
         this.access = access;
         this.channel = channel;
         this.rpc = new DDRemoteDamDesktopRpcService(channel);
-        this.rpc.addEndpointListener(endpoint -> {
+        this.rpc.addEndpointListener((endpoint, settings) -> {
             if (endpoint != null) {
-                registrations.registerAll(endpoint);
+                registrations.registerEndpoint(endpoint, settings);
             }
         });
     }
@@ -139,6 +139,11 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
                 }
             }
         }
+    }
+
+    @NotNull
+    public String getClientDamId() {
+        return channel.getClientDamId();
     }
 
     @NotNull
