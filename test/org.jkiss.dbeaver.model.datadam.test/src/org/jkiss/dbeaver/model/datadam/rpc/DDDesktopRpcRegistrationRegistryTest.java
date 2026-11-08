@@ -45,7 +45,10 @@ class DDDesktopRpcRegistrationRegistryTest {
         List<DDRemoteDamSettings> applied = new CopyOnWriteArrayList<>();
         Mockito.doCallRealMethod().when(registry).registerEndpoint(endpoint, initial);
         Mockito.when(endpoint.register(Mockito.anyString(), Mockito.eq(DDRemoteDamSettingsService.class), Mockito.any()))
-            .thenAnswer(call -> { callback.set(call.getArgument(2)); return null; });
+            .thenAnswer(call -> {
+                callback.set(call.getArgument(2));
+                return null;
+            });
         Mockito.doAnswer(call -> {
             if (call.getArgument(1).equals(initial)) {
                 entered.countDown();
@@ -55,9 +58,15 @@ class DDDesktopRpcRegistrationRegistryTest {
             return null;
         }).when(registry).registerAll(Mockito.eq(endpoint), Mockito.any());
         try (var workers = Executors.newVirtualThreadPerTaskExecutor()) {
-            var start = workers.submit(() -> { registry.registerEndpoint(endpoint, initial); return null; });
+            var start = workers.submit(() -> {
+                registry.registerEndpoint(endpoint, initial);
+                return null;
+            });
             Assertions.assertTrue(entered.await(3, TimeUnit.SECONDS));
-            var update = workers.submit(() -> { callback.get().updateSettings(updated); return null; });
+            var update = workers.submit(() -> {
+                callback.get().updateSettings(updated);
+                return null;
+            });
             release.countDown();
             start.get(3, TimeUnit.SECONDS);
             update.get(3, TimeUnit.SECONDS);
@@ -74,7 +83,10 @@ class DDDesktopRpcRegistrationRegistryTest {
         var callback = new AtomicReference<DDRemoteDamSettingsService>();
         Mockito.doCallRealMethod().when(registry).registerEndpoint(endpoint, DDRemoteDamSettings.EMPTY);
         Mockito.when(endpoint.register(Mockito.anyString(), Mockito.eq(DDRemoteDamSettingsService.class), Mockito.any()))
-            .thenAnswer(call -> { callback.set(call.getArgument(2)); return null; });
+            .thenAnswer(call -> {
+                callback.set(call.getArgument(2));
+                return null;
+            });
         Mockito.doThrow(new DBException("initial registration failed")).doNothing()
             .when(registry).registerAll(endpoint, DDRemoteDamSettings.EMPTY);
         Assertions.assertThrows(DBException.class, () -> registry.registerEndpoint(endpoint, DDRemoteDamSettings.EMPTY));

@@ -171,6 +171,7 @@ class DDAccountClientTest {
             Assertions.assertThrows(DBException.class, () -> client().getCryptoState());
         }
     }
+
     @NotNull
     private DDAccountClient client() {
         return new DDAccountClient(account) {

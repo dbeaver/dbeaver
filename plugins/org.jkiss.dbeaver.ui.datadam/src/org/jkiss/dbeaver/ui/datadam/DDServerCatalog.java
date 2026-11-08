@@ -47,6 +47,7 @@ public class DDServerCatalog {
         return instance;
     }
 
+    /** An Account request executed outside the UI thread. */
     @FunctionalInterface
     public interface ServiceCall<S, R> {
         @Nullable
