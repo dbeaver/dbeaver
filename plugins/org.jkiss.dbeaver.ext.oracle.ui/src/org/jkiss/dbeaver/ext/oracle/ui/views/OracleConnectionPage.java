@@ -43,14 +43,12 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriverConfigurationType;
-import org.jkiss.dbeaver.registry.DBConnectionConstants;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
-import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -70,7 +68,6 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
     private Combo serviceNameCombo;
     private Combo tnsNameCombo;
 	private CTabFolder connectionTypeFolder;
-    private ClientHomesSelector oraHomeSelector;
     private Text connectionUrlText;
 
     private ControlsListener controlModifyListener;
@@ -89,9 +86,13 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         addrGroup.setLayout(new GridLayout(1, false));
         addrGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        UIUtils.createControlLabel(addrGroup, OracleUIMessages.dialog_connection_connection_type_group);
-
-        connectionTypeFolder = new CTabFolder(addrGroup, SWT.TOP | SWT.MULTI);
+        Composite serverGroup = UIUtils.createTitledComposite(
+            addrGroup,
+            UIConnectionMessages.dialog_connection_server_label,
+            1,
+            GridData.FILL_HORIZONTAL
+        );
+        connectionTypeFolder = new CTabFolder(serverGroup, SWT.TOP | SWT.MULTI);
         connectionTypeFolder.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         createBasicConnectionControls(connectionTypeFolder);
@@ -106,13 +107,6 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         }));
 
         createAuthPanel(addrGroup, 1);
-        Composite bottomControls = UIUtils.createPlaceholder(addrGroup, 3);
-        bottomControls.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-        if (DBWorkbench.hasFeature(DBConnectionConstants.PRODUCT_FEATURE_ADVANCED_DATABASE_ADMINISTRATION)) {
-            createClientHomeGroup(bottomControls);
-        }
-
         createDriverPanel(addrGroup);
         setControl(addrGroup);
     }
@@ -205,7 +199,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
             }
             return Collections.emptyList();
         }
-        String oraHome = oraHomeSelector == null ? null : oraHomeSelector.getSelectedHome();
+        String oraHome = site.getActiveDataSource().getConnectionConfiguration().getClientHomeId();
         if (CommonUtils.isEmpty(oraHome)) {
             // check default oraHome before checking tnsAdmin
             File defaultOraHomePath = OCIUtils.getDefaultOraHomePath();
@@ -269,19 +263,12 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         connectionUrlText.addModifyListener(controlModifyListener);
     }
 
-    private void createClientHomeGroup(@NotNull Composite bottomControls) {
-        oraHomeSelector = new ClientHomesSelector(bottomControls, OracleUIMessages.dialog_connection_ora_home) {
-            @Override
-            protected void handleHomeChange() {
-                populateTnsNameCombo();
-            }
-        };
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.widthHint = UIUtils.getFontHeight(bottomControls) * 30;
-        oraHomeSelector.getPanel().setLayoutData(gd);
-
-        Label ph = new Label(bottomControls, SWT.NONE);
-        ph.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+    @Override
+    public void setVisible(boolean visible) {
+        super.setVisible(visible);
+        if (visible && activated) {
+            populateTnsNameCombo();
+        }
     }
 
     @Override
@@ -290,9 +277,6 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         if (!super.isComplete()) {
             return false;
         }
-//        if (isOCI && CommonUtils.isEmpty(oraHomeSelector.getSelectedHome())) {
-//            return false;
-//        }
         return switch (connectionType) {
             case OracleConstants.ConnectionType.BASIC -> !CommonUtils.isEmpty(serviceNameCombo.getText());
             case OracleConstants.ConnectionType.TNS -> !CommonUtils.isEmpty(tnsNameCombo.getText());
@@ -321,10 +305,6 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
         final String sidService = connectionInfo.getProviderProperty(OracleConstants.PROP_SID_SERVICE);
         if (sidService != null) {
             sidServiceCombo.setText(OracleConnectionType.valueOf(sidService).getTitle());
-        }
-
-        if (oraHomeSelector != null) {
-            oraHomeSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId(), site.isNew());
         }
 
         if (tnsNameCombo.getItemCount() == 0) {
@@ -391,10 +371,6 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
     @Override
     public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
-        if (oraHomeSelector != null) {
-            connectionInfo.setClientHomeId(oraHomeSelector.getSelectedHome());
-        }
-
         connectionInfo.setProviderProperty(OracleConstants.PROP_CONNECTION_TYPE, connectionType);
         switch (connectionType) {
             case OracleConstants.ConnectionType.BASIC:
