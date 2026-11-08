@@ -231,14 +231,13 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
             for (String alias : serviceNames) {
                 tnsNameCombo.add(alias);
             }
-            if (!oldText.isEmpty()) {
-                UIUtils.setComboSelection(tnsNameCombo, oldText);
-            } else if (aliasAmongServiceNames) {
-                UIUtils.setComboSelection(tnsNameCombo, networkAlias);
-            }
-            if (tnsNameCombo.getSelectionIndex() < 0) {
-                tnsNameCombo.select(0);
-            }
+        }
+        if (!oldText.isEmpty()) {
+            tnsNameCombo.setText(oldText);
+        } else if (aliasAmongServiceNames) {
+            UIUtils.setComboSelection(tnsNameCombo, networkAlias);
+        } else if (!serviceNames.isEmpty()) {
+            tnsNameCombo.select(0);
         }
     }
 
