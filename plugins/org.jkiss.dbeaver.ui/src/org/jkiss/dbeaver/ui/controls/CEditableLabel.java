@@ -49,10 +49,10 @@ public class CEditableLabel extends Composite {
         setLayout(new Layout() {
             @NotNull
             @Override
-            protected Point computeSize(@NotNull Composite composite, int wHint, int hHint, boolean flushCache) {
+            protected Point computeSize(@NotNull Composite composite, int widthHint, int heightHint, boolean flushCache) {
                 Point size = text.computeSize(SWT.DEFAULT, SWT.DEFAULT, flushCache);
-                return new Point(wHint == SWT.DEFAULT ? size.x : wHint,
-                    hHint == SWT.DEFAULT ? size.y + getTopInset() : hHint);
+                return new Point(widthHint == SWT.DEFAULT ? size.x : widthHint,
+                    heightHint == SWT.DEFAULT ? size.y + getTopInset() : heightHint);
             }
 
             @Override

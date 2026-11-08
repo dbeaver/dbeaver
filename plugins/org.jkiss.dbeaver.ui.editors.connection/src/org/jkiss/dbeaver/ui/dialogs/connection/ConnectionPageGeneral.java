@@ -352,8 +352,9 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                     if (!connectionNameChanged && wizard.getConnectionNameOverride() == null) {
                         updatingConnectionName = true;
                         try {
-                            connectionNameText.setText(generateConnectionName(wizard.getPageSettings(),
-                                DBWorkbench.getPlatform().getPreferenceStore().getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN)));
+                            String pattern = DBWorkbench.getPlatform().getPreferenceStore()
+                                .getString(ModelPreferences.DEFAULT_CONNECTION_NAME_PATTERN);
+                            connectionNameText.setText(generateConnectionName(wizard.getPageSettings(), pattern));
                         } finally {
                             updatingConnectionName = false;
                         }

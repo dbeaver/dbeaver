@@ -41,7 +41,12 @@ public class VariablesHintLabel {
     private final Control infoLabel;
     private IVariableResolver resolver;
 
-    public VariablesHintLabel(Composite parent, String hintLabel, String hintTitle, String[][] vars) {
+    public VariablesHintLabel(
+        @NotNull Composite parent,
+        @NotNull String hintLabel,
+        @NotNull String hintTitle,
+        @NotNull String[][] vars
+    ) {
         this(parent, hintLabel, hintTitle, vars, true);
     }
 
@@ -67,11 +72,12 @@ public class VariablesHintLabel {
 
     }
 
+    @NotNull
     public Control getInfoLabel() {
         return infoLabel;
     }
 
-    public void setResolver(IVariableResolver resolver) {
+    public void setResolver(@Nullable IVariableResolver resolver) {
         this.resolver = resolver;
     }
 
@@ -107,7 +113,8 @@ public class VariablesHintLabel {
         }
 
         @Override
-        protected Composite createDialogArea(Composite parent) {
+        @NotNull
+        protected Composite createDialogArea(@NotNull Composite parent) {
             Composite composite = super.createDialogArea(parent);
 
             Table table = new Table(composite, SWT.BORDER | SWT.FULL_SELECTION);
@@ -134,7 +141,7 @@ public class VariablesHintLabel {
         }
 
         @Override
-        protected void createButtonsForButtonBar(Composite parent) {
+        protected void createButtonsForButtonBar(@NotNull Composite parent) {
             createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
         }
     }
