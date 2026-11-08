@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSecurity;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.CEditableLabel;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
@@ -83,7 +84,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected final Map<String, Set<Control>> propGroupMap = new HashMap<>();
 
     protected IDataSourceConnectionEditorSite site;
-    private Text connectionNameText;
+    private CEditableLabel connectionNameText;
     private boolean updatingConnectionName;
     private ToolItem driverItem;
     protected Text passwordText;
@@ -148,38 +149,34 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     }
 
     void refreshConnectionName() {
+        refreshConnectionName(false);
+    }
+
+    private void refreshConnectionName(boolean allowFocused) {
         if (connectionNameText == null || connectionNameText.isDisposed()) {
             return;
         }
-        if (connectionNameText.isFocusControl() && (connectionNameText.getStyle() & SWT.BORDER) != 0) {
+        if (!allowFocused && connectionNameText.isFocusControl()) {
             return;
         }
         updatingConnectionName = true;
         try {
-            connectionNameText.setText(((ConnectionWizard) site.getWizard()).getConnectionNamePreview());
+            String name = ((ConnectionWizard) site.getWizard()).getConnectionNamePreview();
+            if (!connectionNameText.getText().equals(name)) {
+                connectionNameText.setText(name);
+            }
         } finally {
             updatingConnectionName = false;
         }
     }
 
     private void activateConnectionNameEditor() {
+        var selection = connectionNameText.getSelection();
         saveSettings(site.getActiveDataSource());
         if (((ConnectionWizard) site.getWizard()).getConnectionNameOverride() == null) {
-            refreshConnectionName();
+            refreshConnectionName(true);
         }
-        recreateConnectionNameText(SWT.BORDER | SWT.SINGLE);
-        connectionNameText.setFocus();
-    }
-
-    private void recreateConnectionNameText(int style) {
-        var font = connectionNameText.getFont();
-        connectionNameText = UIUtils.recreateTextControl(connectionNameText, style);
-        connectionNameText.setFont(font);
-        if ((style & SWT.BORDER) != 0) {
-            connectionNameText.addFocusListener(FocusListener.focusLostAdapter(e -> recreateConnectionNameText(SWT.SINGLE)));
-        } else {
-            connectionNameText.addFocusListener(FocusListener.focusGainedAdapter(e -> activateConnectionNameEditor()));
-        }
+        connectionNameText.setSelection(selection);
     }
 
     @Override
@@ -234,7 +231,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         details.setLayoutData(gd);
 
         UIUtils.createControlLabel(details, UIConnectionMessages.dialog_connection_wizard_final_label_connection_name);
-        connectionNameText = new Text(details, SWT.SINGLE);
+        connectionNameText = new CEditableLabel(details, SWT.NONE);
         connectionNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         connectionNameText.addFocusListener(FocusListener.focusGainedAdapter(e -> activateConnectionNameEditor()));
         connectionNameText.addModifyListener(e -> {
