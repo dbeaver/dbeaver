@@ -228,7 +228,7 @@ public abstract class ConnectionWizard extends ActiveWizard implements IConnecti
             pattern = GeneralUtils.variablePattern(DBPConnectionConfiguration.VAR_HOST_OR_DATABASE);
         }
         String name = GeneralUtils.replaceVariables(pattern,
-            new ConnectionNameResolver(dataSource, dataSource.getConnectionConfiguration(), isNew() ? null : getOriginalDataSource()));
+            new ConnectionNameResolver(dataSource, dataSource.getConnectionConfiguration(), null));
         Set<String> existingNames = new HashSet<>();
         DataSourceDescriptor original = getOriginalDataSource();
         for (DBPDataSourceContainer existing : settings.getDataSourceRegistry().getDataSources()) {

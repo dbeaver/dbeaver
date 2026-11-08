@@ -283,8 +283,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             }
             DataSourceDescriptor dataSource = settings.getActiveDataSource();
             DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
-            final ConnectionNameResolver resolver = new ConnectionNameResolver(
-                dataSource, connectionInfo, wizard.isNew() ? null : dataSourceDescriptor);
+            final ConnectionNameResolver resolver = new ConnectionNameResolver(dataSource, connectionInfo, null);
             newName = GeneralUtils.replaceVariables(resultName, resolver);
             newName = DataSourceUtils.generateUniqueDataSourceName(settings.getDataSourceRegistry(), newName, 1);
         } else {
@@ -349,7 +348,7 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                 UIConnectionMessages.dialog_connection_name_pattern_settings, UIIcon.CONFIGURATION,
                 SelectionListener.widgetSelectedAdapter(e -> {
                     UIUtils.showPreferencesFor(getShell(), null, UIEditorsWorkbenchInitializer.MAIN_PAGE);
-                    if (!connectionNameChanged && wizard.getConnectionNameOverride() == null) {
+                    if (wizard.isNew() && !connectionNameChanged && wizard.getConnectionNameOverride() == null) {
                         updatingConnectionName = true;
                         try {
                             String pattern = DBWorkbench.getPlatform().getPreferenceStore()
