@@ -51,8 +51,8 @@ import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
+import org.jkiss.dbeaver.ui.controls.SmartComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.utils.CommonUtils;
 
@@ -201,7 +201,7 @@ class ColumnsMappingDialog extends DialogPage {
                     }
 
                     items.add(DatabaseMappingAttribute.TARGET_NAME_SKIP);
-                    return new CustomComboBoxCellEditor(
+                    return new SmartComboBoxCellEditor(
                         mappingViewer,
                         mappingViewer.getTable(),
                         items.toArray(new String[0]),
@@ -289,7 +289,7 @@ class ColumnsMappingDialog extends DialogPage {
                 String targetType = attrMapping.getTargetType(settings.getTargetDataSource(attrMapping), true);
                 types.put(targetType.toUpperCase(Locale.ROOT), targetType);
 
-                return new CustomComboBoxCellEditor(
+                return new SmartComboBoxCellEditor(
                     mappingViewer,
                     mappingViewer.getTable(),
                     types.values().toArray(new String[0]),
@@ -340,7 +340,7 @@ class ColumnsMappingDialog extends DialogPage {
                 new EditingSupport(mappingViewer) {
                     @Override
                     protected CellEditor getCellEditor(Object element) {
-                        return new CustomComboBoxCellEditor(
+                        return new SmartComboBoxCellEditor(
                             mappingViewer,
                             mappingViewer.getTable(),
                             getCollationItems((DatabaseMappingAttribute) element),

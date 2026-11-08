@@ -62,8 +62,8 @@ import org.jkiss.dbeaver.tools.transfer.ui.handlers.DataImportPropertyTester;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.ObjectContainerSelectorPanel;
+import org.jkiss.dbeaver.ui.controls.SmartComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.navigator.dialogs.ObjectBrowserDialog;
 import org.jkiss.utils.ArrayUtils;
@@ -1061,7 +1061,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     }
 
     @NotNull
-    protected CustomComboBoxCellEditor createMappingTypeEditor(@NotNull DatabaseMappingObject mapping) {
+    protected SmartComboBoxCellEditor createMappingTypeEditor(@NotNull DatabaseMappingObject mapping) {
         List<String> mappingTypes = new ArrayList<>();
         DatabaseMappingType mappingType = mapping.getMappingType();
         if (mappingType != DatabaseMappingType.skip) {
@@ -1086,7 +1086,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 mappingTypes.add(DatabaseMappingType.create.name());
             }
         }
-        return new CustomComboBoxCellEditor(
+        return new SmartComboBoxCellEditor(
             mappingViewer,
             mappingViewer.getTree(),
             mappingTypes.toArray(new String[0]),
