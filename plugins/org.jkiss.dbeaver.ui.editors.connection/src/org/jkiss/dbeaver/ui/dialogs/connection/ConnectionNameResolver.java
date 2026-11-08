@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.URI;
 import java.util.StringTokenizer;
 
 public class ConnectionNameResolver implements IVariableResolver {
@@ -97,6 +98,9 @@ public class ConnectionNameResolver implements IVariableResolver {
         String newName = descriptor == null ? "" : getDataSourceContainer().getName(); //$NON-NLS-1$
         if (CommonUtils.isEmpty(newName)) {
             newName = getConfiguration().getHostName();
+            if (CommonUtils.equalObjects(dataSourceContainer.getDriver().getDefaultHost(), newName)) {
+                newName = null;
+            }
             if (CommonUtils.isEmpty(newName) || newName.isBlank()) {
                 newName = getConfiguration().getDatabaseName();
             }
@@ -105,6 +109,19 @@ public class ConnectionNameResolver implements IVariableResolver {
             }
             if (CommonUtils.isEmpty(newName)) {
                 newName = UIConnectionMessages.dialog_connection_wizard_final_default_new_connection_name;
+            }
+            try {
+                URI uri = URI.create(newName);
+                String path = uri.getPath();
+                if (path != null && path.length() > 2) {
+                    return path;
+                }
+                String host = uri.getHost();
+                if (host != null && host.length() > 2) {
+                    return host;
+                }
+            } catch (Exception e) {
+                // not uri, ignore
             }
             StringTokenizer st = new StringTokenizer(newName, "/\\"); //$NON-NLS-1$
             while (st.hasMoreTokens()) {
