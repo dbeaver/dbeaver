@@ -245,10 +245,9 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     }
 
     @Override
-    public void loadSettings()
-    {
+    public void loadSettings() {
         // Load values from new connection info
-        DBPPreferenceStore globalPreferences = DBWorkbench.getPlatform().getPreferenceStore();
+        final DBPPreferenceStore globalPreferences = DBWorkbench.getPlatform().getPreferenceStore();
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         if (oraHomeSelector != null) {
             oraHomeSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId(), site.isNew());
@@ -320,8 +319,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     }
 
     @Override
-    public void saveSettings(@NotNull DBPDataSourceContainer dataSource)
-    {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
         if (oraHomeSelector != null) {
             dataSource.getConnectionConfiguration().setClientHomeId(oraHomeSelector.getSelectedHome());
         }

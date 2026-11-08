@@ -57,15 +57,16 @@ public class ClientHomesSelector implements ISelectionProvider {
 
     public ClientHomesSelector(
         @NotNull Composite parent,
-        @Nullable String title)
-    {
+        @Nullable String title
+    ) {
         this(parent, title, true);
     }
+
     public ClientHomesSelector(
         @NotNull Composite parent,
         @Nullable String title,
-        boolean createComposite)
-    {
+        boolean createComposite
+    ) {
         selectorPanel = createComposite ? UIUtils.createComposite(parent, title == null ? 1 : 2) : parent;
 
         if (title != null) {
@@ -82,16 +83,16 @@ public class ClientHomesSelector implements ISelectionProvider {
         }
         homesCombo.setLayoutData(gd);
         homesCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                if (homesCombo.getSelectionIndex() == homesCombo.getItemCount() - 1) {
-                    homesCombo.select(currentHomeIndex);
-                    manageHomes();
-                } else {
-                    currentHomeId = homeIds.get(homesCombo.getSelectionIndex());
-                    currentHomeIndex = homesCombo.getSelectionIndex();
-                }
-                displayClientVersion();
-                handleHomeChange();
-            }));
+            if (homesCombo.getSelectionIndex() == homesCombo.getItemCount() - 1) {
+                homesCombo.select(currentHomeIndex);
+                manageHomes();
+            } else {
+                currentHomeId = homeIds.get(homesCombo.getSelectionIndex());
+                currentHomeIndex = homesCombo.getSelectionIndex();
+            }
+            displayClientVersion();
+            handleHomeChange();
+        }));
         homesCombo.setEnabled(false);
 //        versionLabel = new Label(this, SWT.CENTER);
 //        gd = new GridData();
@@ -223,7 +224,7 @@ public class ClientHomesSelector implements ISelectionProvider {
     }
 
     @Override
-    public void setSelection(ISelection selection) {
+    public void setSelection(@NotNull ISelection selection) {
 
     }
 }

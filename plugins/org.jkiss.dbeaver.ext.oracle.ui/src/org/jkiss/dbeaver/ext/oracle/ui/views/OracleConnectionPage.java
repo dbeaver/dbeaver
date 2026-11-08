@@ -67,7 +67,7 @@ public class OracleConnectionPage extends ConnectionPageWithAuth implements IDia
     private Combo sidServiceCombo;
     private Combo serviceNameCombo;
     private Combo tnsNameCombo;
-	private CTabFolder connectionTypeFolder;
+    private CTabFolder connectionTypeFolder;
     private Text connectionUrlText;
 
     private ControlsListener controlModifyListener;
