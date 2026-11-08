@@ -41,6 +41,8 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
+import java.util.List;
+
 public class DBUtilsTest extends DBeaverUnitTest {
 
     BasicSQLDialect sqlDialect = new BasicSQLDialect() {
@@ -366,6 +368,17 @@ public class DBUtilsTest extends DBeaverUnitTest {
 
         // All nulls should produce empty string
         Assertions.assertEquals("", DBUtils.getSimpleQualifiedName(null, null, null));
+    }
+
+    @Test
+    public void testConvertArrayStringToList() {
+        Assertions.assertEquals(List.of("a", "b"), DBUtils.convertArrayStringToList("[a, b]"));
+        Assertions.assertEquals(List.of("a", "b c"), DBUtils.convertArrayStringToList("[\"a\", \"b c\"]"));
+        Assertions.assertEquals(List.of(), DBUtils.convertArrayStringToList("[]"));
+        // A quoted element ending with a comma is split into tokens, one of which is a single quote character
+        Assertions.assertEquals(
+            List.of("\"FROM AAAA", "\""),
+            DBUtils.convertArrayStringToList("[\"FROM AAAA,\"]"));
     }
 
 }
