@@ -15,6 +15,8 @@
  * limitations under the License.
  */
 
+package org.jkiss.dbeaver.checkstyle;
+
 import org.jkiss.code.NotNull;
 
 /**
