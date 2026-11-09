@@ -101,6 +101,24 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
         ITextViewer viewer,
         int documentOffset
     ) {
+        // Brackets the computation with the assistant's completion computation counter,
+        // see SQLContentAssistant for why navigation keys must be consumed meanwhile.
+        if (contentAssistant != null) {
+            contentAssistant.completionComputationStarted();
+        }
+        try {
+            return computeCompletionProposalsImpl(viewer, documentOffset);
+        } finally {
+            if (contentAssistant != null) {
+                contentAssistant.completionComputationFinished();
+            }
+        }
+    }
+
+    private ICompletionProposal[] computeCompletionProposalsImpl(
+        ITextViewer viewer,
+        int documentOffset
+    ) {
         IDocument document = editor.getDocument();
         if (document == null) {
             return new ICompletionProposal[0];

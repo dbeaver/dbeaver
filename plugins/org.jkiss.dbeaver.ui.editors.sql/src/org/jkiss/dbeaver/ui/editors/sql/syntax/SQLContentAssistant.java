@@ -26,7 +26,9 @@ import org.eclipse.jface.text.contentassist.ContentAssistEvent;
 import org.eclipse.jface.text.contentassist.ContentAssistant;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.VerifyKeyListener;
+import org.eclipse.swt.events.VerifyEvent;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils.ProposalActivationKey;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -49,6 +51,14 @@ public class SQLContentAssistant extends ContentAssistant {
     private ITextViewer installedTextViewer;
 
     private final VerifyKeyListener proposalActivationKeyListener;
+
+    /**
+     * Depth of nested {@code computeCompletionProposals} invocations. Proposal computation
+     * pumps the UI event loop while waiting for the background analyzer jobs, so keystrokes
+     * made in the meantime are dispatched to the editor before the proposal popup exists.
+     * Only touched on the UI thread: processors are invoked there and the pump does not leave it.
+     */
+    private int completionComputationDepth = 0;
 
     private final IDocumentListener completionDocumentListener = new IDocumentListener() {
         @Override
@@ -84,6 +94,15 @@ public class SQLContentAssistant extends ContentAssistant {
         super(); // Sync. Maybe we should make it async
         this.editor = editor;
         this.proposalActivationKeyListener = event -> {
+            if (isCompletionComputing() && !isProposalPopupActive() && isEditorNavigationKey(event)) {
+                // Consume navigation keys until the proposal popup is able to handle its keys
+                // itself. Otherwise they move the caret out of the completion region and
+                // close the completion session the user is waiting for. Only relevant while
+                // the assistant works synchronously: the popup is created after the proposals
+                // are computed, so no shell exists to consume these keys during the computation.
+                event.doit = false;
+                return;
+            }
             if (!isProposalPopupActive()) {
                 return;
             }
@@ -100,6 +119,43 @@ public class SQLContentAssistant extends ContentAssistant {
     @Override
     public boolean isProposalPopupActive() {
         return super.isProposalPopupActive();
+    }
+
+    void completionComputationStarted() {
+        completionComputationDepth++;
+    }
+
+    void completionComputationFinished() {
+        if (completionComputationDepth > 0) {
+            completionComputationDepth--;
+        }
+    }
+
+    boolean isCompletionComputing() {
+        return completionComputationDepth > 0;
+    }
+
+    private static boolean isEditorNavigationKey(VerifyEvent event) {
+        // Mirrors CompletionProposalPopup.verifyKey: navigation keys carry no character,
+        // only a keyCode in the arrow/page/home/end range. Modified combos (Shift+Arrow,
+        // Ctrl+Home and the like) are consumed too: any caret or selection change would
+        // leave the completion region and close the session.
+        if (event.character != 0) {
+            return false;
+        }
+        switch (event.keyCode) {
+            case SWT.ARROW_DOWN:
+            case SWT.ARROW_UP:
+            case SWT.ARROW_LEFT:
+            case SWT.ARROW_RIGHT:
+            case SWT.PAGE_DOWN:
+            case SWT.PAGE_UP:
+            case SWT.HOME:
+            case SWT.END:
+                return true;
+            default:
+                return false;
+        }
     }
 
     @Override
