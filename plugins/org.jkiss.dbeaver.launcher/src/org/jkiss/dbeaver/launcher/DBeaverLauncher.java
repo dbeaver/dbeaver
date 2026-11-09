@@ -205,6 +205,7 @@ public class DBeaverLauncher {
     private static final String PROP_INSTALL_AREA = "osgi.install.area"; //$NON-NLS-1$
     private static final String PROP_CONFIG_AREA = "osgi.configuration.area"; //$NON-NLS-1$
     private static final String PROP_CONFIG_AREA_DEFAULT = "osgi.configuration.area.default"; //$NON-NLS-1$
+    private static final String PROP_INSTANCE_AREA_DEFAULT = "osgi.instance.area.default"; //$NON-NLS-1$
     private static final String PROP_BASE_CONFIG_AREA = "osgi.baseConfiguration.area"; //$NON-NLS-1$
     private static final String PROP_SHARED_CONFIG_AREA = "osgi.sharedConfiguration.area"; //$NON-NLS-1$
     private static final String PROP_CONFIG_CASCADED = "osgi.configuration.cascaded"; //$NON-NLS-1$
@@ -575,6 +576,12 @@ public class DBeaverLauncher {
         processConfiguration();
         processGlobalConfiguration();
         Path dbeaverDataDir = getDataDirectory();
+        if (System.getProperty(PROP_INSTANCE_AREA_DEFAULT) == null) {
+            Path defaultWorkspace = detectDefaultWorkspaceLocation(passThruArgs, dbeaverDataDir);
+            if (defaultWorkspace.isAbsolute()) {
+                System.setProperty(PROP_INSTANCE_AREA_DEFAULT, defaultWorkspace.toUri().toString());
+            }
+        }
         try {
             CommandLineExecuteResult commandLineExecuteResult = processCommandLineAsClient(passThruArgs, dbeaverDataDir);
             if (commandLineExecuteResult.shutdown()) {
