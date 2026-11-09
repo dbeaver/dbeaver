@@ -17,6 +17,8 @@ package org.jkiss.dbeaver.ext.cdata.ui;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.JFaceResources;
@@ -75,6 +77,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class CDataConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
     private static final Log log = Log.getLog(CDataConnectionPage.class);
@@ -400,23 +403,29 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
         }
         CDataDriverDescriptor driver = getDriver();
         hierarchyLoadPending = false;
+        var loaded = new AtomicReference<CDataConnectionHierarchy>();
         hierarchyJob = new AbstractJob(CDataUIMessages.connection_editor_loading) {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
-                CDataConnectionHierarchy loaded = null;
                 try {
                     if (!monitor.isCanceled()) {
-                        loaded = CDataConnectionHierarchyReader.read(monitor, driver);
+                        loaded.set(CDataConnectionHierarchyReader.read(monitor, driver));
                     }
                 } catch (DBException | RuntimeException e) {
                     if (!monitor.isCanceled()) {
                         log.debug("Unable to load CData connection hierarchy", e);
                     }
                 }
-                CDataConnectionHierarchy result = monitor.isCanceled() ? null : loaded;
+                return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
+            }
+        };
+        hierarchyJob.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(@NotNull IJobChangeEvent event) {
+                CDataConnectionHierarchy result = event.getResult().isOK() ? loaded.get() : null;
                 UIUtils.asyncExec(() -> {
-                    if (urlText.isDisposed() || hierarchyJob != this) {
+                    if (urlText.isDisposed() || hierarchyJob != event.getJob()) {
                         return;
                     }
                     hierarchyJob = null;
@@ -441,9 +450,8 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
                         refreshStatus();
                     }
                 });
-                return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
             }
-        };
+        });
         showHierarchyStatus(CDataUIMessages.connection_editor_loading, false);
         site.updateButtons();
         hierarchyJob.setUser(true);
