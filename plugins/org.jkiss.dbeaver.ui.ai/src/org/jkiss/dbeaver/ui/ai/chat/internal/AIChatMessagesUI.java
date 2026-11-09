@@ -147,6 +147,10 @@ public class AIChatMessagesUI extends NLS {
     public static String ai_chat_context_load_failed;
     public static String ai_chat_context_load_cancelled;
 
+    public static String ai_chat_sql_connection_title;
+    public static String ai_chat_sql_connection_message;
+    public static String ai_chat_sql_connection_changed;
+
     static {
         NLS.initializeMessages(AIChatMessagesUI.class.getName(), AIChatMessagesUI.class);
     }

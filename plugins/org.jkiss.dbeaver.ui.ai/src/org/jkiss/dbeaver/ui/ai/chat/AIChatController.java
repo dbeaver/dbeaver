@@ -47,7 +47,7 @@ public interface AIChatController extends DBPContextProvider {
 
     int getChatFeatures();
 
-    void executeInEditor(@NotNull String text);
+    void executeInEditor(@NotNull String text, @Nullable AIChatConversation conversation);
 
     void openInEditor(@NotNull String text, @Nullable AIChatConversation conversation);
 

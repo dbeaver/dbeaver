@@ -217,14 +217,8 @@ public class AIChatUtils {
             .collect(Collectors.joining(". "));
     }
 
-    /**
-     * Executes the specified text in the editor using the provided AIChatController.
-     *
-     * @param chatController the AIChatController instance used to execute the text in the editor; must not be null
-     * @param text the text to be executed in the editor; must not be null
-     */
-    public static void executeInEditor(@NotNull AIChatController chatController, @NotNull String text) {
-        chatController.executeInEditor(text);
+    public static void executeInEditor(@NotNull AIChatControl chat, @NotNull String text) {
+        chat.getController().executeInEditor(text, chat.getActiveConversation());
     }
 
     /**

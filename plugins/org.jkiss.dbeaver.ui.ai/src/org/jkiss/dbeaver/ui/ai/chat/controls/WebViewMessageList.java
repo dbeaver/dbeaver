@@ -321,7 +321,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             if (arguments.length < 1) {
                 throw new IllegalArgumentException("executeInEditor requires at least one argument");
             }
-            AIChatUtils.executeInEditor(chat.getController(), arguments[0].toString());
+            AIChatUtils.executeInEditor(chat, arguments[0].toString());
             return null;
         });
 

@@ -19,10 +19,12 @@ package org.jkiss.dbeaver.ui.ai.chat;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.window.Window;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -35,6 +37,7 @@ import org.jkiss.dbeaver.model.ai.AIChatConversation;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIContextSettings;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQueryListener;
@@ -47,6 +50,8 @@ import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
+import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
+import org.jkiss.dbeaver.ui.controls.DatabaseLabelProviders;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor;
@@ -62,15 +67,18 @@ public abstract class AIChatControllerBase implements AIChatController {
     private static final String CHAT_CONSOLE_PART_PROPERTY = "org.jkiss.dbeaver.ui.ai.chatConsole";
 
     @Override
-    public void executeInEditor(@NotNull String text) {
+    public void executeInEditor(@NotNull String text, @Nullable AIChatConversation conversation) {
+        DBPDataSourceContainer container = selectSqlConnection(conversation);
+        if (container == null) {
+            return;
+        }
         boolean inNewConsole = DBWorkbench.getPlatform().getPreferenceStore()
             .getBoolean(AIConstants.AI_CHAT_EXECUTE_IN_NEW_CONSOLE);
         Consumer<SQLEditor> executor = editor -> UIUtils.asyncExec(() -> {
             try {
                 UIUtils.runWithMonitor(monitor -> {
-                    DBPDataSourceContainer container = editor.getDataSourceContainer();
-                    if (container == null) {
-                        throw new DBException("No database connection is associated with the editor");
+                    if (!checkEditorConnection(editor, container)) {
+                        return false;
                     }
 
                     boolean dsConnected = DBUtils.initDataSource(
@@ -87,9 +95,9 @@ public abstract class AIChatControllerBase implements AIChatController {
             }
         });
         if (inNewConsole) {
-            this.openChatConsole(executor);
+            this.openChatConsole(container, executor);
         } else {
-            this.findOrOpenEditor(executor);
+            this.findOrOpenEditor(container, executor);
         }
     }
 
@@ -108,7 +116,7 @@ public abstract class AIChatControllerBase implements AIChatController {
             parserContext, 0, text.length(), true, false, true
         );
 
-        DBPDataSource dataSource = this.getActiveDataSource();
+        DBPDataSource dataSource = container.getDataSource();
         if (dataSource == null) {
             return;
         }
@@ -116,11 +124,11 @@ public abstract class AIChatControllerBase implements AIChatController {
             return;
         }
         try {
-            AIUtils.disableAutoCommitIfNeeded(
-                monitor,
-                scriptElements,
-                AbstractDataSourceHandler.getExecutionContextFromPart(editor)
-            );
+            DBCExecutionContext executionContext = AbstractDataSourceHandler.getExecutionContextFromPart(editor);
+            if (executionContext != null && executionContext.getDataSource() != dataSource) {
+                throw new DBException("The SQL editor connection has changed");
+            }
+            AIUtils.disableAutoCommitIfNeeded(monitor, scriptElements, executionContext);
         } catch (DBException e) {
             log.error("Error when trying to disable auto-commit:", e);
             return;
@@ -128,7 +136,6 @@ public abstract class AIChatControllerBase implements AIChatController {
 
 
         boolean oldShowScriptRulerOnExecution = editor.getShowScriptRulerOnExecution();
-        editor.setShowScriptRulerOnExecution(false);
         SQLQueryListener queryListener = new SQLQueryListener() {
             @Override
             public void onEndSqlJob(@NotNull DBCSession session, @NotNull SqlJobResult result) {
@@ -137,6 +144,9 @@ public abstract class AIChatControllerBase implements AIChatController {
             }
         };
         UIUtils.syncExec(() -> {
+            if (!checkEditorConnection(editor, container)) {
+                return;
+            }
             List<SQLScriptElement> queriesToExecute = scriptElements;
             if (insertQueryText) {
                 IRegion queryRegion = setConsoleText(editor, text);
@@ -150,6 +160,7 @@ public abstract class AIChatControllerBase implements AIChatController {
                     queriesToExecute = reExtracted;
                 }
             }
+            editor.setShowScriptRulerOnExecution(false);
             editor.processQueries(
                 queriesToExecute,
                 queriesToExecute.size() > 1,
@@ -164,7 +175,14 @@ public abstract class AIChatControllerBase implements AIChatController {
 
     @Override
     public void openInEditor(@NotNull String text, @Nullable AIChatConversation conversation) {
-        this.findOrOpenEditor(editor -> {
+        DBPDataSourceContainer container = selectSqlConnection(conversation);
+        if (container == null) {
+            return;
+        }
+        this.findOrOpenEditor(container, editor -> {
+            if (!checkEditorConnection(editor, container)) {
+                return;
+            }
             IRegion insertedRegion = insertText(editor, text);
             if (insertedRegion == null) {
                 return;
@@ -220,16 +238,7 @@ public abstract class AIChatControllerBase implements AIChatController {
         return new Region(0, text.length());
     }
 
-    private void openNewEditor(@NotNull Consumer<SQLEditor> consumer) {
-        AIContextSettings settings = getContextSettings();
-        if (settings == null) {
-            DBWorkbench.getPlatformUI().showError("Can't open editor", "Please set the active connection");
-            return;
-        }
-        DBPDataSourceContainer container = settings.getDataSourceContainer();
-        if (container == null) {
-            return;
-        }
+    private void openNewEditor(@NotNull DBPDataSourceContainer container, @NotNull Consumer<SQLEditor> consumer) {
         SQLEditorUtils.openNewSqlConsoleAndTryConnect(container, editorOrNull -> {
             if (editorOrNull != null) {
                 consumer.accept(editorOrNull);
@@ -237,16 +246,7 @@ public abstract class AIChatControllerBase implements AIChatController {
         });
     }
 
-    private void openChatConsole(@NotNull Consumer<SQLEditor> consumer) {
-        AIContextSettings settings = getContextSettings();
-        if (settings == null) {
-            DBWorkbench.getPlatformUI().showError("Can't open editor", "Please set the active connection");
-            return;
-        }
-        DBPDataSourceContainer container = settings.getDataSourceContainer();
-        if (container == null) {
-            return;
-        }
+    private void openChatConsole(@NotNull DBPDataSourceContainer container, @NotNull Consumer<SQLEditor> consumer) {
         SQLEditor chatConsole = findChatConsole(container);
         if (chatConsole != null) {
             IWorkbenchPage page = UIUtils.getActiveWorkbenchWindow().getActivePage();
@@ -280,19 +280,10 @@ public abstract class AIChatControllerBase implements AIChatController {
         return null;
     }
 
-    private void findOrOpenEditor(@NotNull Consumer<SQLEditor> consumer) {
-        AIContextSettings settings = getContextSettings();
-        if (settings == null) {
-            DBWorkbench.getPlatformUI().showError("Can't open editor", "Please set the active connection");
-            return;
-        }
+    private void findOrOpenEditor(@NotNull DBPDataSourceContainer container, @NotNull Consumer<SQLEditor> consumer) {
         IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
         IWorkbenchPage page = window.getActivePage();
         if (page == null) {
-            return;
-        }
-        DBPDataSourceContainer container = settings.getDataSourceContainer();
-        if (container == null) {
             return;
         }
         IEditorPart activeEditor = page.getActiveEditor();
@@ -306,7 +297,7 @@ public abstract class AIChatControllerBase implements AIChatController {
             }
         }
 
-        openNewEditor(consumer);
+        openNewEditor(container, consumer);
     }
 
     private static boolean activateEditor(
@@ -324,12 +315,42 @@ public abstract class AIChatControllerBase implements AIChatController {
     }
 
     @Nullable
-    private DBPDataSource getActiveDataSource() {
-        AIContextSettings settings = getContextSettings();
-        if (settings == null || settings.getDataSourceContainer() == null) {
+    private DBPDataSourceContainer selectSqlConnection(@Nullable AIChatConversation conversation) {
+        List<DBPDataSourceContainer> containers;
+        if (conversation != null) {
+            containers = conversation.getDataSources();
+        } else {
+            AIContextSettings settings = getContextSettings();
+            DBPDataSourceContainer container = settings == null ? null : settings.getDataSourceContainer();
+            containers = container == null ? List.of() : List.of(container);
+        }
+        if (containers.isEmpty()) {
+            DBWorkbench.getPlatformUI().showError("Can't open editor", "Please set the active connection");
             return null;
         }
-        return settings.getDataSourceContainer().getDataSource();
+        if (containers.size() == 1 && conversation == null) {
+            return containers.getFirst();
+        }
+        ElementListSelectionDialog dialog = new ElementListSelectionDialog(
+            UIUtils.getActiveWorkbenchShell(), new DatabaseLabelProviders.ConnectionLabelProvider());
+        dialog.setTitle(AIChatMessagesUI.ai_chat_sql_connection_title);
+        dialog.setMessage(AIChatMessagesUI.ai_chat_sql_connection_message);
+        dialog.setMultipleSelection(false);
+        dialog.setElements(containers.toArray());
+        if (dialog.open() == Window.OK && dialog.getFirstResult() instanceof DBPDataSourceContainer selected
+            && conversation != null && conversation.getDataSources().contains(selected)) {
+            return selected;
+        }
+        return null;
+    }
+
+    private static boolean checkEditorConnection(@NotNull SQLEditor editor, @NotNull DBPDataSourceContainer container) {
+        if (editor.getDataSourceContainer() == container) {
+            return true;
+        }
+        DBWorkbench.getPlatformUI().showError(
+            AIChatMessagesUI.ai_chat_sql_connection_title, AIChatMessagesUI.ai_chat_sql_connection_changed);
+        return false;
     }
 
 }
