@@ -113,6 +113,8 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_unpin_columns;
     public static String controls_resultset_viewer_hide_column_x;
     public static String controls_resultset_viewer_hide_columns_x;
+    public static String controls_resultset_viewer_hide_null_columns;
+    public static String controls_resultset_viewer_hide_empty_string_columns;
     public static String controls_resultset_viewer_hide_columns_error_title;
     public static String controls_resultset_viewer_hide_columnss_error_text;
     public static String controls_resultset_viewer_show_hidden_columns;
