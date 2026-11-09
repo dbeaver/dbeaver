@@ -228,6 +228,13 @@
               name="%preference.datadam.projects.name">
             <keywordReference id="org.jkiss.dbeaver.ui.datadam.keyword.pref.synchronization"/>
         </page>
+        <page
+              id="org.jkiss.dbeaver.preferences.synchronization.mcp.connections"
+              category="org.jkiss.dbeaver.preferences.synchronization"
+              class="org.jkiss.dbeaver.ui.datadam.mcp.DDMcpConnectionsPreferencePage"
+              name="%preference.datadam.mcp.connections.name">
+            <keywordReference id="org.jkiss.dbeaver.ui.datadam.keyword.pref.synchronization"/>
+        </page>
     </extension>
     <extension point="org.eclipse.ui.keywords">
         <keyword id="org.jkiss.dbeaver.ui.datadam.keyword.pref.synchronization" label="%keyword.org.jkiss.dbeaver.ui.datadam.keyword.pref.synchronization.label"/>

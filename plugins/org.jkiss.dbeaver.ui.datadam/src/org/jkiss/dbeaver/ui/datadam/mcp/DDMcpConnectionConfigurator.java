@@ -27,7 +27,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
-import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionSettings;
+import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionCatalog;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.datadam.DDDesktopDamService;
 import org.jkiss.dbeaver.ui.datadam.internal.DDMcpMessages;
 
 public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<PrefPageDataSourceAI, PrefPageDataSourceAI> {
+    private final DDMcpConnectionCatalog mcpConnectionCatalog = DDMcpConnectionCatalog.getInstance();
     private static final Log log = Log.getLog(DDMcpConnectionConfigurator.class);
     private Button enableCheck;
     private boolean resetPending;
@@ -104,7 +105,7 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
         resetPending = false;
         DBPDataSourceContainer connection = page.getConnection();
         if (connection != null && enableCheck != null) {
-            enableCheck.setSelection(DDMcpConnectionSettings.isEnabled(connection));
+            enableCheck.setSelection(mcpConnectionCatalog.isEnabled(connection));
         }
     }
 
@@ -112,7 +113,7 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
     public void saveSettings(@NotNull PrefPageDataSourceAI page) {
         DBPDataSourceContainer connection = page.getConnection();
         if (connection != null && (enableCheck != null || resetPending)) {
-            DDMcpConnectionSettings.setEnabled(connection, enableCheck != null && enableCheck.getSelection());
+            mcpConnectionCatalog.setEnabled(connection, enableCheck != null && enableCheck.getSelection());
             resetPending = false;
         }
     }

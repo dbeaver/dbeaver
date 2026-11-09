@@ -21,7 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager;
+import org.jkiss.dbeaver.model.datadam.DDWorkspace;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectVisibilityPolicy;
 
@@ -42,9 +42,7 @@ public class DDProjectVisibilityAdapterFactory implements IAdapterFactory, Proje
     @Override
     public boolean isVisible(@NotNull DBPProject project) throws DBException {
         try {
-            DDProjectManager.BindingStatus status = DDProjectManager.getInstance().getBindingStatus(project);
-            return status == DDProjectManager.BindingStatus.UNBOUND
-                || status == DDProjectManager.BindingStatus.CURRENT_ACCOUNT;
+            return DDWorkspace.getInstance().isVisibleInCurrentAccount(project);
         } catch (IllegalStateException e) {
             return false;
         }
