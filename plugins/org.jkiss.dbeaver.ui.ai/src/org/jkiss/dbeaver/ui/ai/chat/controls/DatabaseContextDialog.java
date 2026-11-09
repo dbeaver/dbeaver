@@ -54,10 +54,7 @@ import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.ai.controls.ScopeSelectorDialog;
 import org.jkiss.dbeaver.ui.controls.DatabaseLabelProviders;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
-import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
-import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseObjectsSelectorPanel;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -439,24 +436,6 @@ class DatabaseContextDialog extends BaseDialog {
         private void createSelector(@NotNull DBNNode root, @NotNull List<DBNNode> checked) {
             DBPDataSourceContainer container = database.getContainer();
             selector = new DatabaseObjectsSelectorPanel(objects, context, SWT.SINGLE | SWT.BORDER | SWT.CHECK, true) {
-                @NotNull
-                @Override
-                protected DatabaseNavigatorTree createNavigatorTree(
-                    @Nullable DBNNode rootNode,
-                    int style,
-                    @Nullable DatabaseNavigatorTreeFilter navigatorFilter
-                ) {
-                    return new DatabaseNavigatorTree(this, rootNode, style, false, navigatorFilter) {
-                        @NotNull
-                        @Override
-                        protected Text createFilterText(@NotNull Composite parent) {
-                            // native macOS search-field drawing dominates the window-drag profile
-                            return RuntimeUtils.isMacOS() ? new Text(parent, SWT.SINGLE | SWT.BORDER)
-                                : super.createFilterText(parent);
-                        }
-                    };
-                }
-
                 @NotNull
                 @Override
                 protected DBPProject getSelectedProject() {
