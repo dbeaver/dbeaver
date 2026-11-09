@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mimer.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -56,6 +57,8 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class MimerBLOBValueHandler extends JDBCContentValueHandler {
 
+    private static final Log log = Log.getLog(MimerBLOBValueHandler.class);
+
     public static final MimerBLOBValueHandler INSTANCE = new MimerBLOBValueHandler();
 
     // ContentUtils.makeTempFile names the file "<name>-" + System.currentTimeMillis() + ".data" -
@@ -93,6 +96,7 @@ public class MimerBLOBValueHandler extends JDBCContentValueHandler {
         String encoding = DBValueFormatting.getDefaultBinaryFileEncoding(context.getDataSource());
 
         MimerContentBLOB content = new MimerContentBLOB(context);
+        boolean spooled = false;
         try {
             byte[] buffer = new byte[8192];
             ByteArrayOutputStream memoryBuffer = new ByteArrayOutputStream(Math.min(memoryLimit, buffer.length * 8));
@@ -119,8 +123,21 @@ public class MimerBLOBValueHandler extends JDBCContentValueHandler {
                 }
                 content.setStorage(new TemporaryContentStorage(platform, tempFile, encoding, true));
             }
+            spooled = true;
         } finally {
-            stream.close();
+            try {
+                stream.close();
+            } catch (IOException e) {
+                if (spooled) {
+                    // The spooled storage (possibly a temp file) is otherwise unreachable from here on -
+                    // nothing else would ever release it, leaking a temp file on every retry.
+                    content.release();
+                    throw e;
+                }
+                // The read/write itself already failed and is propagating its own exception out of the
+                // try block - don't let a close() failure on top of that mask it.
+                log.debug("Error closing Mimer BLOB stream after a failed read", e);
+            }
         }
         return content;
     }

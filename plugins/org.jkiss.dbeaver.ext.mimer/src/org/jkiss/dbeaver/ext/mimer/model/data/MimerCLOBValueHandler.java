@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mimer.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -57,6 +58,8 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class MimerCLOBValueHandler extends JDBCContentValueHandler {
 
+    private static final Log log = Log.getLog(MimerCLOBValueHandler.class);
+
     public static final MimerCLOBValueHandler INSTANCE = new MimerCLOBValueHandler();
 
     // See MimerBLOBValueHandler's identical field for why this is needed - confirmed live as a
@@ -90,6 +93,7 @@ public class MimerCLOBValueHandler extends JDBCContentValueHandler {
         String encoding = DBValueFormatting.getDefaultBinaryFileEncoding(context.getDataSource());
 
         MimerContentCLOB content = new MimerContentCLOB(context);
+        boolean spooled = false;
         try {
             char[] buffer = new char[8192];
             StringBuilder memoryBuffer = new StringBuilder(Math.min(memoryLimit, buffer.length * 8));
@@ -116,8 +120,20 @@ public class MimerCLOBValueHandler extends JDBCContentValueHandler {
                 }
                 content.setStorage(new TemporaryContentStorage(platform, tempFile, encoding, true));
             }
+            spooled = true;
         } finally {
-            reader.close();
+            try {
+                reader.close();
+            } catch (IOException e) {
+                if (spooled) {
+                    // See MimerBLOBValueHandler's identical finally for why this must release the
+                    // spooled storage (possibly a temp file) before rethrowing - otherwise every retry
+                    // leaks another one, since nothing else would ever reach this content to release it.
+                    content.release();
+                    throw e;
+                }
+                log.debug("Error closing Mimer CLOB reader after a failed read", e);
+            }
         }
         return content;
     }

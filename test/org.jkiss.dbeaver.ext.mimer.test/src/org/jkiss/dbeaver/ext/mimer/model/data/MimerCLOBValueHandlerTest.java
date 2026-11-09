@@ -170,6 +170,25 @@ public class MimerCLOBValueHandlerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void noTempFileIsLeftBehindWhenClosingTheReaderFailsAfterASuccessfulSpill() throws Exception {
+        // See MimerBLOBValueHandlerTest's identical test for why this specifically targets close()
+        // failing after the spill itself already succeeded.
+        Mockito.when(type.getTypeID()).thenReturn(Types.CLOB);
+        int memoryLimit = DBWorkbench.getPlatform().getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE);
+        char[] largeContent = new char[memoryLimit + 1000];
+        java.util.Arrays.fill(largeContent, 'x');
+        Path lobFolder = ContentUtils.getLobFolder(progressMonitor, DBWorkbench.getPlatform());
+        Set<Path> before = listFiles(lobFolder);
+        Mockito.when(resultSet.getCharacterStream(1)).thenReturn(failingToCloseAfter(largeContent));
+
+        Assertions.assertThrows(DBCException.class,
+            () -> MimerCLOBValueHandler.INSTANCE.fetchValueObject(session, resultSet, type, 0));
+
+        Assertions.assertEquals(before, listFiles(lobFolder),
+            "No leftover temp file should remain after a close failure following a successful spill");
+    }
+
+    @Test
     public void repeatedSpillsToDiskInQuickSuccessionDoNotCollideOnTheSameMillisecond() throws Exception {
         // See MimerBLOBValueHandlerTest's identical test for why this reliably reproduces the
         // real, live FileAlreadyExistsException TEMP_FILE_SEQUENCE's per-call counter fixes.
@@ -234,6 +253,32 @@ public class MimerCLOBValueHandlerTest extends DBeaverUnitTest {
         SimulatedFailure(String message) {
             super(message);
         }
+    }
+
+    @NotNull
+    private static Reader failingToCloseAfter(char[] content) {
+        // Not a CharArrayReader subclass - its own close() has no throws clause at all (confirmed
+        // via javap, not guessed), so it can't be overridden to throw a real IOException. Reader's
+        // own close() is abstract with one, so implementing it directly can.
+        return new Reader() {
+            private int position = 0;
+
+            @Override
+            public int read(char[] cbuf, int off, int len) {
+                if (position >= content.length) {
+                    return -1;
+                }
+                int n = Math.min(len, content.length - position);
+                System.arraycopy(content, position, cbuf, off, n);
+                position += n;
+                return n;
+            }
+
+            @Override
+            public void close() throws IOException {
+                throw new IOException("Simulated close failure after a successful read");
+            }
+        };
     }
 
     @NotNull

@@ -163,6 +163,25 @@ public class MimerBLOBValueHandlerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void noTempFileIsLeftBehindWhenClosingTheStreamFailsAfterASuccessfulSpill() throws Exception {
+        // Unlike the test above, the spill itself succeeds here - only the stream's own close()
+        // (in the finally) fails afterward. The temp file the just-built content already owns is
+        // otherwise unreachable once this throws, since nothing else holds a reference to call
+        // release() on it - this is what would leak a temp file on every retry without the fix.
+        int memoryLimit = DBWorkbench.getPlatform().getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE);
+        byte[] largeContent = new byte[memoryLimit + 1000];
+        Path lobFolder = ContentUtils.getLobFolder(progressMonitor, DBWorkbench.getPlatform());
+        Set<Path> before = listFiles(lobFolder);
+        Mockito.when(resultSet.getBinaryStream(1)).thenReturn(failingToCloseAfter(largeContent));
+
+        Assertions.assertThrows(DBCException.class,
+            () -> MimerBLOBValueHandler.INSTANCE.fetchValueObject(session, resultSet, type, 0));
+
+        Assertions.assertEquals(before, listFiles(lobFolder),
+            "No leftover temp file should remain after a close failure following a successful spill");
+    }
+
+    @Test
     public void repeatedSpillsToDiskInQuickSuccessionDoNotCollideOnTheSameMillisecond() throws Exception {
         // ContentUtils.makeTempFile names the file "<name>-" + System.currentTimeMillis() +
         // ".data" - millisecond resolution, with no uniqueness of its own beyond whatever name
@@ -223,6 +242,16 @@ public class MimerBLOBValueHandlerTest extends DBeaverUnitTest {
         SimulatedFailure(String message) {
             super(message);
         }
+    }
+
+    @NotNull
+    private static InputStream failingToCloseAfter(byte[] content) {
+        return new ByteArrayInputStream(content) {
+            @Override
+            public void close() throws IOException {
+                throw new IOException("Simulated close failure after a successful read");
+            }
+        };
     }
 
     @NotNull
