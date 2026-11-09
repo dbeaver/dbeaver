@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<extensions>
+    <extension>
+        <groupId>org.eclipse.tycho</groupId>
+        <artifactId>tycho-build</artifactId>
+        <!-- Keep in sync with tycho-version in dbeaver-common/root/pom.xml. -->
+        <version>5.0.4</version>
+    </extension>
+</extensions>
