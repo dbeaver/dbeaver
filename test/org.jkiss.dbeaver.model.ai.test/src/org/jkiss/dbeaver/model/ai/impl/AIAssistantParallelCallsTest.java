@@ -34,7 +34,6 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -134,30 +133,46 @@ class AIAssistantParallelCallsTest {
     @Test
     void forwardsAllCallsWhenChatStreamingIsDisabled() throws Exception {
         AIAssistantImpl assistant = Mockito.spy(new AIAssistantImpl(Mockito.mock(DBPWorkspace.class)));
+        Mockito.doNothing().when(assistant).checkAiEnablement();
         Mockito.doReturn(false).when(assistant).isLoggingEnabled();
+        Mockito.doReturn(Mockito.mock(AIToolboxManager.class)).when(assistant).getToolboxManager();
         AIEngineRequestFactory factory = Mockito.mock(AIEngineRequestFactory.class);
         Mockito.doReturn(factory).when(assistant).getRequestFactory();
         Mockito.when(factory.build(Mockito.any(), Mockito.eq(assistant), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyList()))
             .thenReturn(new AIEngineRequest(AIMessage.userMessage("Inspect database")));
+        AIFunctionDescriptor function = Mockito.mock(AIFunctionDescriptor.class);
+        Mockito.when(function.getParameters()).thenReturn(new AIFunctionParameter[0]);
         AIFunctionCall first = new AIFunctionCall("tables", Map.of());
         AIFunctionCall second = new AIFunctionCall("views", Map.of());
+        first.setFunction(function);
+        second.setFunction(function);
         AIEngine<?> engine = Mockito.mock(AIEngine.class);
+        Mockito.doReturn(Mockito.mock(AIEngineProperties.class)).when(engine).getProperties();
         Mockito.when(engine.requestCompletion(Mockito.any(), Mockito.any()))
             .thenReturn(new AIEngineResponse(List.of(first, second), null));
-        AIEngineResponseConsumer listener = Mockito.mock(AIEngineResponseConsumer.class);
-        Method execute = AIAssistantImpl.class.getDeclaredMethod("executeEngineStreamRequest", DBRProgressMonitor.class,
-            AIConfigurationProfile.class, AIFunctionContext.class, AIEngine.class, List.class, AIEngineResponseConsumer.class);
-        execute.setAccessible(true);
+        AIEngineDescriptor descriptor = Mockito.mock(AIEngineDescriptor.class);
+        AIConfigurationProfile profile = Mockito.mock(AIConfigurationProfile.class);
+        Mockito.when(profile.getEngineDescriptor()).thenReturn(descriptor);
+        Mockito.doReturn(engine).when(descriptor).createEngineInstance(profile);
+        AIChatConversation conversation = Mockito.mock(AIChatConversation.class);
+        Mockito.when(conversation.getProfile()).thenReturn(profile);
+        Mockito.when(conversation.isActive()).thenReturn(true);
+        Mockito.when(conversation.getPromptGenerator()).thenReturn(Mockito.mock(AIPromptGenerator.class));
+        AIChatSession session = Mockito.mock(AIChatSession.class);
+        Mockito.when(session.getAssistant()).thenReturn(assistant);
+        AIChatResponseConsumer listener = Mockito.mock(AIChatResponseConsumer.class);
         try (MockedStatic<AIUtils> utils = Mockito.mockStatic(
             AIUtils.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
             utils.when(AIUtils::useStreamMode).thenReturn(false);
-            execute.invoke(assistant, Mockito.mock(DBRProgressMonitor.class), Mockito.mock(AIConfigurationProfile.class),
-                Mockito.mock(AIFunctionContext.class), engine, List.of(), listener);
+            assistant.generateTextStream(Mockito.mock(DBRProgressMonitor.class), session, conversation,
+                new AIChatRequest(null, List.of(AIMessage.userMessage("Inspect database")), null), listener);
         }
-        ArgumentCaptor<AIEngineResponseChunk> chunks = ArgumentCaptor.forClass(AIEngineResponseChunk.class);
-        Mockito.verify(listener, Mockito.times(2)).nextChunk(chunks.capture());
-        Assertions.assertEquals(List.of(first, second), chunks.getAllValues().stream()
-            .map(AIEngineResponseChunk::getFunctionCall).toList());
-        Mockito.verify(listener).completeBlock();
+        ArgumentCaptor<AIMessage> confirmation = ArgumentCaptor.forClass(AIMessage.class);
+        Mockito.verify(conversation).addMessage(confirmation.capture());
+        Assertions.assertInstanceOf(AIFunctionCallConfirmation.class, confirmation.getValue().getConfirmation());
+        Assertions.assertEquals(List.of(first, second),
+            ((AIFunctionCallConfirmation) confirmation.getValue().getConfirmation()).getFunctionCalls());
+        Mockito.verify(listener).complete(Mockito.anyList(), Mockito.eq(false), Mockito.eq(false));
+        Mockito.verify(listener, Mockito.never()).error(Mockito.any());
     }
 }
