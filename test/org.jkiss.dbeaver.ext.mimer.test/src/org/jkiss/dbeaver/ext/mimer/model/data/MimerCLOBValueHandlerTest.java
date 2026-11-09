@@ -221,13 +221,19 @@ public class MimerCLOBValueHandlerTest extends DBeaverUnitTest {
                     remaining--;
                     return 1;
                 }
-                throw new RuntimeException("Simulated non-IOException failure mid-copy");
+                throw new SimulatedFailure("Simulated non-IOException failure mid-copy");
             }
 
             @Override
             public void close() {
             }
         };
+    }
+
+    private static final class SimulatedFailure extends RuntimeException {
+        SimulatedFailure(String message) {
+            super(message);
+        }
     }
 
     @NotNull

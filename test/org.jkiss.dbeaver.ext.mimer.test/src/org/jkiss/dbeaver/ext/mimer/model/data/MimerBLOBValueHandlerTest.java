@@ -197,7 +197,7 @@ public class MimerBLOBValueHandlerTest extends DBeaverUnitTest {
         // Well under memoryLimit, so this fails inside the initial in-memory read loop - before
         // any temp file exists, and before the loop's own "copy the rest to disk" branch is ever
         // reached. fetchColumnValue's own catch has to be broad enough to still convert this to
-        // a DBCException rather than letting the raw RuntimeException escape uncaught.
+        // a DBCException rather than letting the raw exception escape uncaught.
         Mockito.when(resultSet.getBinaryStream(1)).thenReturn(failingAfter(5));
 
         Assertions.assertThrows(DBCException.class,
@@ -214,9 +214,15 @@ public class MimerBLOBValueHandlerTest extends DBeaverUnitTest {
                 if (remaining-- > 0) {
                     return 'x';
                 }
-                throw new RuntimeException("Simulated non-IOException failure mid-copy");
+                throw new SimulatedFailure("Simulated non-IOException failure mid-copy");
             }
         };
+    }
+
+    private static final class SimulatedFailure extends RuntimeException {
+        SimulatedFailure(String message) {
+            super(message);
+        }
     }
 
     @NotNull
