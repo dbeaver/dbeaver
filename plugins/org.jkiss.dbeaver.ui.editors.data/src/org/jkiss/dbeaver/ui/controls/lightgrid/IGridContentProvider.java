@@ -82,6 +82,11 @@ public interface IGridContentProvider extends IContentProvider {
     @Nullable
     Object[] getChildren(@NotNull IGridItem item);
 
+    /** Whether this row represents an array whose elements may have different counts across grid columns. */
+    default boolean isArrayRow(@NotNull IGridRow row) {
+        return false;
+    }
+
     /**
      * Return for collection cell values returns size of collection.
      * Called for all cells of columns for which isCollectionElement() returns true.
@@ -128,6 +133,24 @@ public interface IGridContentProvider extends IContentProvider {
      */
     @Nullable
     Object getCellValue(@NotNull IGridColumn colElement, @NotNull IGridRow rowElement, boolean formatString);
+
+    /**
+     * Cheap gate for starting a cell-selection drag (e.g. record mode / copy policy).
+     * Full payload is built later in {@link #getCellSelectionDragText(List)}.
+     */
+    default boolean canStartCellSelectionDrag(@NotNull List<GridCell> selectedCells) {
+        return false;
+    }
+
+    /**
+     * Text to transfer when dragging the given cell selection (e.g. into a SQL editor).
+     * Return {@code null} if cell-selection drag is not supported for this selection.
+     * Cell drags populate {@link org.eclipse.swt.dnd.TextTransfer} only.
+     */
+    @Nullable
+    default String getCellSelectionDragText(@NotNull List<GridCell> selectedCells) {
+        return null;
+    }
 
     @NotNull
     String getCellLinkText(@NotNull IGridColumn colElement, @NotNull IGridRow rowElement);

@@ -285,7 +285,7 @@ public class ResultSetHandlerMain extends AbstractHandler implements IElementUpd
                                 }
                             }
                         } else {
-                            rsv.resetCellValue(attr, row, selection.getElementRowIndexes(cell));
+                            rsv.resetCellValue(attr, row, selection.getElementRowIndexes(cell), selection.getElementValuePath(cell));
                         }
                     }
                 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ public enum SQLQuerySymbolClass {
     SCHEMA(SQLTokenType.T_SCHEMA, ModelSQLMessages.model_sql_semantic_symbolClass_SCHEMA),
     TABLE(SQLTokenType.T_TABLE, ModelSQLMessages.model_sql_semantic_symbolClass_TABLE),
     OBJECT(SQLTokenType.T_TABLE, ModelSQLMessages.model_sql_semantic_symbolClass_OBJECT),
+    TYPE(SQLTokenType.T_TYPE, ModelSQLMessages.model_sql_semantic_symbolClass_TYPE),
     FUNCTION(SQLTokenType.T_FUNCTION, ModelSQLMessages.model_sql_semantic_symbolClass_FUNCTION),
     TABLE_ALIAS(SQLTokenType.T_TABLE_ALIAS, ModelSQLMessages.model_sql_semantic_symbolClass_TABLE_ALIAS),
     COLUMN(SQLTokenType.T_COLUMN, ModelSQLMessages.model_sql_semantic_symbolClass_COLUMN),

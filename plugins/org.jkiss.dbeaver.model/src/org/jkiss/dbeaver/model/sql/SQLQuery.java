@@ -309,8 +309,9 @@ public class SQLQuery implements SQLScriptElement {
                 type = SQLQueryType.MERGE;
             } else if (statement instanceof Commit) {
                 type = SQLQueryType.COMMIT;
-            } else if (statement instanceof RollbackStatement) {
-                type = SQLQueryType.ROLLBACK;
+            } else if (statement instanceof RollbackStatement rollback) {
+                // ROLLBACK TO [SAVEPOINT] name keeps the transaction open, so it must not be treated as a full rollback
+                type = rollback.getSavepointName() == null ? SQLQueryType.ROLLBACK : SQLQueryType.UNKNOWN;
             } else {
                 type = SQLQueryType.UNKNOWN;
             }

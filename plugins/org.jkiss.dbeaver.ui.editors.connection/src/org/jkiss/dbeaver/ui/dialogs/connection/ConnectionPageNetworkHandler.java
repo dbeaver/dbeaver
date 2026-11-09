@@ -18,9 +18,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.jkiss.code.NotNull;
@@ -72,7 +70,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
     }
 
     @Override
-    public void createControl(Composite parent) {
+    public void createControl(@NotNull Composite parent) {
         try {
             String implName = handlerDescriptor.getHandlerType().getImplName();
             UIPropertyConfiguratorDescriptor configDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(implName);
@@ -85,8 +83,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
             return;
         }
 
-        Composite composite = new Composite(parent, SWT.NONE);
-        composite.setLayout(new GridLayout(1, false));
+        Composite composite = UIUtils.createComposite(parent, 1);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         profileProvidedHint = UIUtils.createInfoLink(

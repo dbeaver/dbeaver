@@ -41,6 +41,22 @@
                     <file type="jar" path="drivers/duckdb" bundle="drivers.duckdb"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
+                <driver
+                        id="motherduck_jdbc"
+                        label="MotherDuck"
+                        class="org.duckdb.DuckDBDriver"
+                        sampleURL="jdbc:duckdb:md:[{database}]"
+                        defaultPort=""
+                        webURL="https://motherduck.com/docs/integrations/sql-ides/dbeaver/"
+                        description="%driver.motherduck.description"
+                        supportedConfigurationTypes="MANUAL,URL"
+                        categories="sql,analytic">
+                    <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:windows_arm64:RELEASE" os="win32" arch="aarch64" bundle="!drivers.duckdb"/>
+                    <file type="jar" path="maven:/org.duckdb:duckdb_jdbc:RELEASE" os="win32" arch="aarch64" exclude="true" bundle="!drivers.duckdb"/>
+                    <file type="license" path="https://raw.githubusercontent.com/duckdb/duckdb/master/LICENSE" bundle="!drivers.duckdb"/>
+                    <file type="jar" path="drivers/duckdb" bundle="drivers.duckdb"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                </driver>
                 <provider-properties>
                     <propertyGroup label="SQL">
                         <property id="duckdb.dd.plain.string" label="Show $$ quote as String" type="boolean" description="Show $$ quote as String"/>
@@ -85,6 +101,18 @@
             <type name="BLOB"/>
             <type kind="STRUCT"/>
         </provider>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceAuth">
+        <authModel
+                id="motherduck_token"
+                label="%auth.motherduck.token.label"
+                description="%auth.motherduck.token.description"
+                class="org.jkiss.dbeaver.ext.duckdb.model.MotherDuckAuthModelToken"
+                default="true">
+            <datasource id="duckdb" driver="motherduck_jdbc"/>
+            <replace model="native"/>
+        </authModel>
     </extension>
 
 

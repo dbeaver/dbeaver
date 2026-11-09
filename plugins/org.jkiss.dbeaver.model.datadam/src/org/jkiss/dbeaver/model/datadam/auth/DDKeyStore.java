@@ -31,6 +31,8 @@ import javax.crypto.SecretKey;
 public class DDKeyStore {
 
     private static final Log log = Log.getLog(DDKeyStore.class);
+    private static final DDKeyStore INSTANCE = new DDKeyStore(DDSecretStorage.getInstance());
+    private final DBSSecretController secretStorage;
 
     @Deprecated(forRemoval = true)
     public static final String ACCESS_KEY_PREFIX = "ddgk_";
@@ -38,14 +40,19 @@ public class DDKeyStore {
     private static final String SECRET_KEY_BUNDLE = "datadam.key-bundle";
     private static final String BUNDLE_SEPARATOR = "\\.";
 
-    private DDKeyStore() {
+    public DDKeyStore(@NotNull DBSSecretController secretStorage) {
+        this.secretStorage = secretStorage;
     }
 
     @Nullable
     public static DDKeyBundle load() throws DBException {
+        return INSTANCE.loadBundle();
+    }
+
+    @Nullable
+    public DDKeyBundle loadBundle() throws DBException {
         try {
-            String value = DBSSecretController.getGlobalSecretController()
-                .getPrivateSecretValue(SECRET_KEY_BUNDLE);
+            String value = secretStorage.getPrivateSecretValue(SECRET_KEY_BUNDLE);
             if (CommonUtils.isEmpty(value)) {
                 return null;
             }
@@ -98,9 +105,13 @@ public class DDKeyStore {
     }
 
     public static void save(@NotNull DDKeyBundle bundle) throws DBException {
+        INSTANCE.saveBundle(bundle);
+    }
+
+    public void saveBundle(@NotNull DDKeyBundle bundle) throws DBException {
         DDKeyBundle current = null;
         try {
-            current = load();
+            current = loadBundle();
         } catch (DBException e) {
             log.debug("Could not read stored keys before replacement", e);
         }
@@ -109,15 +120,17 @@ public class DDKeyStore {
             && bundle.generation() < current.generation()) {
             throw new DBException("The keys are older than the stored ones");
         }
-        DBSSecretController controller = DBSSecretController.getGlobalSecretController();
-        controller.setPrivateSecretValue(SECRET_KEY_BUNDLE, JSONUtils.GSON.toJson(bundle));
-        controller.flushChanges();
+        secretStorage.setPrivateSecretValue(SECRET_KEY_BUNDLE, JSONUtils.GSON.toJson(bundle));
+        secretStorage.flushChanges();
     }
 
     public static void clear() throws DBException {
-        DBSSecretController controller = DBSSecretController.getGlobalSecretController();
-        controller.setPrivateSecretValue(SECRET_KEY_BUNDLE, null);
-        controller.flushChanges();
+        INSTANCE.clearBundle();
+    }
+
+    public void clearBundle() throws DBException {
+        secretStorage.setPrivateSecretValue(SECRET_KEY_BUNDLE, null);
+        secretStorage.flushChanges();
     }
 
     @Deprecated(forRemoval = true)

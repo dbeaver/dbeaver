@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.AbstractContextDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * SQLFormatterDescriptor
@@ -34,6 +35,7 @@ public class SQLFormatterDescriptor extends AbstractContextDescriptor {
     private final String id;
     private final String label;
     private final String description;
+    private final boolean supportsMultiuserMode;
     private final AbstractDescriptor.ObjectType formatterImplClass;
 
     public SQLFormatterDescriptor(IConfigurationElement config) {
@@ -41,6 +43,7 @@ public class SQLFormatterDescriptor extends AbstractContextDescriptor {
         this.id = config.getAttribute("id");
         this.label = config.getAttribute("label");
         this.description = config.getAttribute("description");
+        this.supportsMultiuserMode = CommonUtils.getBoolean(config.getAttribute("supportsMultiuserMode"), true);
         this.formatterImplClass = new AbstractDescriptor.ObjectType(config.getAttribute("class"));
     }
 
@@ -54,6 +57,10 @@ public class SQLFormatterDescriptor extends AbstractContextDescriptor {
 
     public String getDescription() {
         return description;
+    }
+
+    public boolean supportsMultiuserMode() {
+        return supportsMultiuserMode;
     }
 
     @NotNull

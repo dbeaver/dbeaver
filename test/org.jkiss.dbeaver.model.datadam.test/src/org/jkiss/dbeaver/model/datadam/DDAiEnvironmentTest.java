@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.datadam;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.engine.BaseAIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
+import org.jkiss.dbeaver.model.datadam.ai.DDAIEngineProperties;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;

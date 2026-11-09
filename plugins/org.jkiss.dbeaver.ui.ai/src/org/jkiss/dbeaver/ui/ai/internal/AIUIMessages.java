@@ -19,6 +19,13 @@ package org.jkiss.dbeaver.ui.ai.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class AIUIMessages extends NLS {
+    public static String ollama_preference_page_hostname;
+    public static String ollama_preference_page_hostname_required;
+    public static String ollama_preference_page_temperature;
+    public static String ollama_preference_page_temperature_info;
+    public static String ollama_preference_page_context_size;
+    public static String ollama_preference_page_model;
+
     public static String ai_engine_configurator_use_env;
     public static String ai_engine_configurator_use_env_tip;
     public static String ai_engine_configurator_use_env_variables_tip;
@@ -44,6 +51,7 @@ public class AIUIMessages extends NLS {
     public static String gpt_preference_page_chat_execute_in_new_console_tip;
     public static String gpt_preference_page_combo_engine;
     public static String gpt_preference_page_text_temperature;
+    public static String ai_engine_configurator_temperature_default;
     public static String gpt_preference_page_refresh_models;
     public static String gpt_preference_page_ai_query_confirm_group;
     public static String gpt_preference_page_ai_query_confirm_rule_execute;
@@ -81,6 +89,9 @@ public class AIUIMessages extends NLS {
     public static String scope_selector_customize;
     public static String scope_selector_not_available;
     public static String scope_selector_custom_objects;
+    public static String scope_selector_loading;
+    public static String scope_selector_load_error;
+    public static String scope_selector_empty;
     public static String openai_configurator_log_query_label;
     public static String openai_configurator_log_query_tip;
     public static String openai_configurator_temperature_tip;
@@ -128,6 +139,8 @@ public class AIUIMessages extends NLS {
     public static String ai_engines_page_duplicate_profile_tip;
     public static String ai_engines_page_delete_profile_tip;
     public static String ai_engines_page_no_active_engine;
+    public static String ai_engines_page_provider_unavailable;
+    public static String ai_engines_page_provider_unavailable_details;
     public static String ai_engines_page_profile_id_label;
     public static String ai_engines_page_profile_name_label;
     public static String ai_engines_page_group_settings;

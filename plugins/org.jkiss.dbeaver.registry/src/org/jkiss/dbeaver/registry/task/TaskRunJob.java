@@ -125,6 +125,7 @@ public class TaskRunJob extends AbstractJob implements DBRRunnableContext {
                     try {
                         taskRunStatus = executeTask(activeMonitor, logStream);
                         taskRun.setExtraMessage(taskRunStatus.getResultMessage());
+                        executionHistory.recordResultMessage(taskRunStatus.getResultMessage());
                     } catch (Throwable e) {
                         taskError = e;
                         executionHistory.recordError(e);

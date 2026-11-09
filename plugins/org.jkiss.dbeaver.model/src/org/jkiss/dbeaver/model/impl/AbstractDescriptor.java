@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
@@ -282,13 +283,33 @@ public abstract class AbstractDescriptor {
                 // Use only type name
                 return getTypeInfoCache(clazz).containsKey(implName);
             }
+            // Even with forceCheck, an unrelated type cannot match. Avoid loading its bundle just to reject it.
+            if (!Object.class.getName().equals(implName) && !hasTypeName(clazz, implName)) {
+                return false;
+            }
             getObjectClass();
             return implClass != null && implClass.isAssignableFrom(clazz);
         }
 
+        private boolean hasTypeName(@Nullable Class<?> clazz, @Nullable String typeName) {
+            if (clazz == null) {
+                return false;
+            }
+            if (clazz.getName().equals(typeName)) {
+                return true;
+            }
+            for (Class<?> implementedInterface : clazz.getInterfaces()) {
+                if (hasTypeName(implementedInterface, typeName)) {
+                    return true;
+                }
+            }
+            return hasTypeName(clazz.getSuperclass(), typeName);
+        }
+
         @Override
+        @NotNull
         public String toString() {
-            return implName;
+            return String.valueOf(implName);
         }
     }
 
@@ -389,7 +410,7 @@ public abstract class AbstractDescriptor {
     }
 
     @NotNull
-    protected DBPImage iconToImage(String icon, @NotNull DBPImage defIcon) {
+    protected DBPImage iconToImage(@Nullable String icon, @NotNull DBPImage defIcon) {
         DBPImage result = iconToImage(icon);
         return Objects.requireNonNullElse(result, defIcon);
     }
@@ -403,7 +424,7 @@ public abstract class AbstractDescriptor {
             return DBIcon.getImageById(icon.substring(1));
         } else {
             if (!icon.startsWith("platform:")) {
-                icon = "platform:/plugin/" + pluginId + "/" + icon;
+                icon = RuntimeUtils.makePlatformResourceUrl(pluginId, icon);
             }
             return new DBIcon(icon);
         }

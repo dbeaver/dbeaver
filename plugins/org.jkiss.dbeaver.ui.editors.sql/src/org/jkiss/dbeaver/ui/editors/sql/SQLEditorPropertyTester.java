@@ -25,8 +25,11 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.internal.findandreplace.overlay.FindReplaceOverlay;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -65,7 +68,7 @@ public class SQLEditorPropertyTester extends PropertyTester {
     }
 
     @Override
-    public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
+    public boolean test(@Nullable Object receiver, @NotNull String property, @NotNull Object[] args, @Nullable Object expectedValue) {
         if (!(receiver instanceof SQLEditor editor)) {
             return false;
         }
@@ -86,12 +89,16 @@ public class SQLEditorPropertyTester extends PropertyTester {
             }
             case PROP_CAN_EXECUTE_NATIVE: {
                 try {
-                    if (!hasConnection) {
+                    if (!hasConnection || !(editor.getExecutionContext() instanceof DBCExecutionContextDefaults<?, ?> defaults)) {
                         return false;
                     }
+                    var object = defaults.getDefaultCatalog();
+                    var target = object == null ? editor.getDataSource() : object;
                     SQLNativeExecutorDescriptor executorDescriptor =
                         SQLNativeExecutorRegistry.getInstance().getExecutorDescriptor(editor.getDataSourceContainer());
-                    return executorDescriptor != null && executorDescriptor.getNativeExecutor() != null;
+                    return target != null && executorDescriptor != null
+                        && (!executorDescriptor.hasObjectTypes() || executorDescriptor.appliesTo(target))
+                        && executorDescriptor.getNativeExecutor() != null;
                 } catch (DBException exception) {
                     log.error("Error checking native execution", exception);
                     return false;

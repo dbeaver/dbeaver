@@ -110,6 +110,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     private ToolItem handlerItem;
     private ToolItem profileItem;
     private ToolBar handlersToolbar;
+    private boolean updatingNamePreview;
     private final Runnable logoUpdateCallback = () -> UIUtils.asyncExec(this::updateDriverLogo);
 
     /**
@@ -968,8 +969,35 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Override
     public void updateButtons() {
+        if (wizard.getConnectionNameOverride() == null) {
+            refreshConnectionName();
+        }
         updatePageCompletion();
         // getWizard().getContainer().updateButtons();
+    }
+
+    void refreshConnectionName() {
+        if (!updatingNamePreview && connectionEditor instanceof ConnectionPageAbstract page) {
+            page.refreshConnectionName();
+        }
+    }
+
+    @NotNull
+    String getConnectionNamePreview() {
+        if (!wizard.isNew() || wizard.getConnectionNameOverride() != null || updatingNamePreview
+            || connectionEditor == null || connectionEditor.getControl() == null) {
+            return wizard.getConnectionNamePreview();
+        }
+        updatingNamePreview = true;
+        DataSourceDescriptor snapshot = getActiveDataSource().getRegistry().createDataSource(getActiveDataSource());
+        try {
+            // Read current controls without changing the draft while it may still be loading.
+            connectionEditor.saveSettings(snapshot);
+            return wizard.getConnectionNamePreview(snapshot);
+        } finally {
+            snapshot.dispose();
+            updatingNamePreview = false;
+        }
     }
 
     @Override
@@ -1139,6 +1167,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @Override
     @Nullable
     public IDialogPage getCurrentSubPage() {
+        if (tabFolder == null || tabFolder.isDisposed()) {
+            return null;
+        }
         final CTabItem selection = tabFolder.getSelection();
         return selection != null ? (IDialogPage) selection.getData() : null;
     }

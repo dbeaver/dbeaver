@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai.engine.copilot.dto;
 
 import com.google.gson.annotations.SerializedName;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.List;
 
@@ -29,8 +30,22 @@ public record CopilotChatRequest(
     boolean stream,
     @SerializedName("n") int responseCount,
     @SerializedName("top_p") int topP,
-    double temperature
+    double temperature,
+    boolean useServerDefaultTemperature
 ) {
+    public CopilotChatRequest(
+        @NotNull String model,
+        boolean intent,
+        @NotNull List<CopilotMessage> messages,
+        @NotNull List<CopilotFunction> tools,
+        boolean stream,
+        int responseCount,
+        int topP,
+        double temperature
+    ) {
+        this(model, intent, messages, tools, stream, responseCount, topP, temperature, false);
+    }
+
     @NotNull
     public static Builder builder() {
         return new Builder();
@@ -48,6 +63,7 @@ public record CopilotChatRequest(
         private int responseCount;
         private int topP;
         private double temperature;
+        private boolean useServerDefaultTemperature;
 
         @NotNull
         public Builder withModel(@NotNull String model) {
@@ -93,13 +109,20 @@ public record CopilotChatRequest(
 
         @NotNull
         public Builder withTemperature(double temperature) {
-            this.temperature = temperature;
+            return withOptionalTemperature(Double.valueOf(temperature));
+        }
+
+        @NotNull
+        public Builder withOptionalTemperature(@Nullable Double temperature) {
+            this.temperature = temperature == null ? 0.0 : temperature;
+            this.useServerDefaultTemperature = temperature == null;
             return this;
         }
 
         @NotNull
         public CopilotChatRequest build() {
-            return new CopilotChatRequest(model, intent, messages, tools, stream, responseCount, topP, temperature);
+            return new CopilotChatRequest(model, intent, messages, tools, stream, responseCount, topP, temperature,
+                useServerDefaultTemperature);
         }
     }
 }

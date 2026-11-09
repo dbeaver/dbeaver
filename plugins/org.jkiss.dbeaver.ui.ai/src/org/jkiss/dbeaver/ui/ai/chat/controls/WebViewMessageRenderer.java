@@ -55,6 +55,7 @@ import java.util.stream.Stream;
 final class WebViewMessageRenderer {
 
     private static final Log log = Log.getLog(WebViewMessageRenderer.class);
+    private static final int MESSAGE_IMAGE_SIZE = 128;
 
     private final Browser browser;
     private final AIImageThumbnailBrowser thumbnailBrowser;
@@ -193,7 +194,7 @@ final class WebViewMessageRenderer {
                     int imageIndex = index;
                     try {
                         AIImageAttachment image = images.get(index);
-                        int size = AIImageAttachmentTile.PREVIEW_SIZE * 2;
+                        int size = MESSAGE_IMAGE_SIZE * 2;
                         boolean webp = "image/webp".equals(image.mediaType());
                         String source = webp ? null : AIImageThumbnail.toDataUrl(image.getBytes(), size);
                         if (monitor.isCanceled()) {
@@ -247,8 +248,11 @@ final class WebViewMessageRenderer {
     @Nullable
     private static Map<String, String> buildMessageMeta(@NotNull AIChatMessage message) {
         var meta = message.message().getMeta();
-        if (meta == null) {
-            return null;
+        if (CommonUtils.isEmpty(meta)) {
+            return message.message().getRole() == AIMessageType.ASSISTANT ? Map.of(
+                "time", AIChatUtils.formatMessageTime(message.message()),
+                "usage", AIChatMessagesUI.ai_chat_message_meta_tokens_unavailable
+            ) : null;
         }
 
         AIExtendedUsage extendedUsage = AIExtendedUsage.from(meta);
@@ -256,12 +260,15 @@ final class WebViewMessageRenderer {
         return Map.of(
             "time", AIChatUtils.formatMessageTime(message.message()),
             "duration", DurationFormatter.format(extendedUsage.totalTime(), DurationFormat.SHORT),
-            "usage", formatUsage(AIExtendedUsage.from(meta))
+            "usage", formatUsage(extendedUsage)
         );
     }
 
     @NotNull
     static String formatUsage(@NotNull AIExtendedUsage usage) {
+        if (!usage.hasUsage()) {
+            return AIChatMessagesUI.ai_chat_message_meta_tokens_unavailable;
+        }
         return NLS.bind(
             AIChatMessagesUI.ai_chat_message_meta_tokens,
             usage.totalInputTokens(),

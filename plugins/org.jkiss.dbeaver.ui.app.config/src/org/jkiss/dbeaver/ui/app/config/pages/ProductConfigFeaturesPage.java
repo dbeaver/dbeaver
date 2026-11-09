@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.app.config.pages;
 
+import org.eclipse.jface.resource.JFaceResources;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
 import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
@@ -28,14 +28,17 @@ import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.forms.*;
 import org.jkiss.utils.StringUtils;
 
-import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Consumer;
 
 public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
-    private static final Log log = Log.getLog(ProductConfigFeaturesPage.class);
-
-    private final Map<ProductConfigFeatureDescriptor, UIObservable<Boolean>> features = new HashMap<>();
+    private final List<ProductConfigFeatureDescriptor> availableFeatures = ProductConfigRegistry.getInstance().getAvailableFeatures();
+    private final Map<ProductConfigFeatureDescriptor, UIObservable<Boolean>> features = new LinkedHashMap<>();
+    private final Set<ProductConfigFeatureDescriptor> newFeatures = new HashSet<>();
 
     public ProductConfigFeaturesPage() {
         super(ProductConfigMessages.features_title, ProductConfigMessages.features_description);
@@ -43,14 +46,32 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
 
     @Override
     public void createControl(@NotNull Composite parent) {
+        if (getWizard().isFeatureUpdate()) {
+            setTitle(ProductConfigMessages.features_update_title);
+            setDescription(ProductConfigMessages.features_update_description);
+        }
         setControl(UIPanelBuilder.build(parent, buildPanel()));
+    }
+
+    @Override
+    public boolean isPageApplicable() {
+        return !getWizard().isFeatureUpdate() || !availableFeatures.isEmpty();
+    }
+
+    @Override
+    public boolean isApplicableToFeatureUpdate() {
+        return true;
     }
 
     @Override
     public void loadSettings() {
         var registry = ProductConfigRegistry.getInstance();
-        for (ProductConfigFeatureDescriptor descriptor : registry.getFeatures()) {
+        var configurableFeatures = getWizard().isFeatureUpdate() ? availableFeatures : registry.getFeatures();
+        for (ProductConfigFeatureDescriptor descriptor : configurableFeatures) {
             features.put(descriptor, UIObservable.of(registry.isFeatureEnabled(descriptor)));
+            if (getWizard().isFeatureUpdate() && registry.isFeatureNew(descriptor)) {
+                newFeatures.add(descriptor);
+            }
         }
     }
 
@@ -78,7 +99,9 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
         return pb -> pb
             .row(rb -> rb
                 .label(lb -> lb
-                    .text(ProductConfigMessages.features_list_header)
+                    .text(getWizard().isFeatureUpdate()
+                        ? ProductConfigMessages.features_update_header
+                        : ProductConfigMessages.features_list_header)
                     .wrap()
                     .hint(TEXT_WIDTH_HINT, TEXT_HEIGHT_HINT)
                     .align(UIAlignX.FILL)
@@ -87,14 +110,18 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
                 .align(UIAlignX.FILL, UIAlignY.FILL)
                 .grow(UIGrowX.ALWAYS, UIGrowY.ALWAYS)
                 .indent(pb2 -> {
-                    for (ProductConfigFeatureDescriptor descriptor : ProductConfigRegistry.getInstance().getFeatures()) {
-                        if (!isFeatureVisible(descriptor)) {
-                            continue;
-                        }
-                        pb2.row(rb1 -> rb1
-                            .checkBox(descriptor.getLabel(), bb -> bb
-                                .tooltip(StringUtils.wrap(descriptor.getDescription(), UITextUtils.TOOLTIP_WRAP_LENGTH))
-                                .selected(features.get(descriptor))));
+                    for (ProductConfigFeatureDescriptor descriptor : availableFeatures) {
+                        boolean isNew = newFeatures.contains(descriptor);
+                        String label = isNew
+                            ? NLS.bind(ProductConfigMessages.features_new_label, descriptor.getLabel())
+                            : descriptor.getLabel();
+                        pb2.row(rb1 -> rb1.checkBox(label, bb -> {
+                            bb.tooltip(StringUtils.wrap(descriptor.getDescription(), UITextUtils.TOOLTIP_WRAP_LENGTH))
+                                .selected(features.get(descriptor));
+                            if (isNew) {
+                                bb.font(JFaceResources.getFontRegistry().getBold(JFaceResources.DEFAULT_FONT));
+                            }
+                        }));
                     }
                 })))
             .row(rb -> rb
@@ -110,13 +137,4 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
                     .grow(UIGrowX.ALWAYS)));
     }
 
-    private boolean isFeatureVisible(@NotNull ProductConfigFeatureDescriptor descriptor) {
-        try {
-            var tester = descriptor.getAvailabilityTester();
-            return tester == null || tester.isFeatureAvailable();
-        } catch (DBException e) {
-            log.error("Error checking availability of product configuration feature '" + descriptor.getId() + "'", e);
-            return true;
-        }
-    }
 }

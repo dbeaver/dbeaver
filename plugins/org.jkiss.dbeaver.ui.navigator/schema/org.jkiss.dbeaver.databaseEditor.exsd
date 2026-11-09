@@ -24,6 +24,7 @@
          <attribute name="objectType" type="string"><annotation><appInfo><meta.attribute kind="java"/></appInfo></annotation></attribute>
          <attribute name="main" type="boolean" use="default" value="false"/>
          <attribute name="embeddable" type="boolean" use="default" value="false"/>
+         <attribute name="lazy" type="boolean" use="default" value="false"/>
          <attribute name="position" type="string"/>
          <attribute name="label" type="string" use="required"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>
          <attribute name="description" type="string"><annotation><appInfo><meta.attribute translatable="true"/></appInfo></annotation></attribute>

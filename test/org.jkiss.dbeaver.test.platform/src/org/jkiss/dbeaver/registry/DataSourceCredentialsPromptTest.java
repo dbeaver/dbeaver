@@ -18,14 +18,7 @@ package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.bigquery.auth.BQAuthModel;
-import org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelADIntegrated;
-import org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelADPassword;
-import org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelCustom;
-import org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelDatabase;
-import org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelMFA;
-import org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelMSI;
-import org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelNTLM;
-import org.jkiss.dbeaver.ext.mssql.auth.SQLServerAuthModelWindows;
+import org.jkiss.dbeaver.ext.mssql.auth.*;
 import org.jkiss.dbeaver.ext.oracle.model.auth.OracleAuthOS;
 import org.jkiss.dbeaver.model.access.DBAAuthModel;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;

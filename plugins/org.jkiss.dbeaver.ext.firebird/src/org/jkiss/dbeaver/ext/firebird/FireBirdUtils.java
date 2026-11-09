@@ -306,15 +306,22 @@ public class FireBirdUtils {
         return sql.toString();
     }
 
-    public static String getTriggerSourceWithHeader(DBRProgressMonitor monitor, FireBirdTrigger trigger, String source) throws DBException {
+    @NotNull
+    public static String getTriggerSourceWithHeader(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull FireBirdTrigger trigger,
+        @NotNull String source
+    ) throws DBException {
         StringBuilder sql = new StringBuilder();
-        sql.append("CREATE TRIGGER ").append(trigger.getName()).append(" ");
+        sql.append("CREATE TRIGGER ").append(trigger.getName());
         FireBirdTriggerType type = trigger.getType();
-        if (type.isDbEvent()) {
-            sql.append(type.getDisplayName());
-        } else if (trigger.getTable() != null) {
-            sql.append("FOR ").append(DBUtils.getQuotedIdentifier(trigger.getTable()));
+        if (type != null && type.isDbEvent()) {
             sql.append(" ").append(type.getDisplayName());
+        } else if (trigger.getTable() != null) {
+            sql.append(" FOR ").append(DBUtils.getQuotedIdentifier(trigger.getTable()));
+            if (type != null) {
+                sql.append(" ").append(type.getDisplayName());
+            }
         }
         sql.append("\n").append(source);
 

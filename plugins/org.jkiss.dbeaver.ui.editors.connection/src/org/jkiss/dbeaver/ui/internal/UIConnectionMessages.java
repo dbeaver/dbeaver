@@ -23,8 +23,11 @@ public class UIConnectionMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.internal.UIConnectionMessages"; //$NON-NLS-1$
 
     public static String dialog_connection_edit_wizard_conn_conf_general_link;
+    public static String dialog_connection_name_pattern_settings;
     public static String dialog_connection_edit_connection_settings_variables_hint_label;
     public static String dialog_connection_database_documentation;
+    public static String dialog_connection_view_documentation;
+    public static String dialog_connection_view_driver_license;
     public static String dialog_connection_advanced_settings;
 
     public static String dialog_connection_driver;
@@ -283,7 +286,7 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_drivers_group_location;
 
     public static String dialog_connection_driver_project;
-    public static String dialog_connection_show_cdata;
+    public static String dialog_connection_show_commercial_drivers;
 
     public static String dialog_edit_driver_edit_maven_raw;
     public static String dialog_edit_driver_edit_maven_settings;

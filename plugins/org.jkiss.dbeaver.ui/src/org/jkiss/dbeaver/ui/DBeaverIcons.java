@@ -18,7 +18,9 @@
 package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -42,21 +44,27 @@ public class DBeaverIcons {
     private static class IconDescriptor {
         @NotNull
         String id;
-        @NotNull
+        @Nullable
         Image image;
         @NotNull
         ImageDescriptor imageDescriptor;
 
         IconDescriptor(@NotNull String id, @NotNull ImageDescriptor imageDescriptor) {
             this.id = id;
-            this.image = imageDescriptor.createImage(false);
             this.imageDescriptor = imageDescriptor;
         }
 
-        IconDescriptor(@NotNull String id, @NotNull Image image) {
-            this.id = id;
-            this.image = image;
-            this.imageDescriptor = ImageDescriptor.createFromImage(image);
+        @Nullable
+        Image getImage() {
+            if (image == null) {
+                // Descriptor lookup must not allocate native resources or rasterize SVGs.
+                // Image creation remains on the requesting display thread.
+                if (Display.getCurrent() == null) {
+                    SWT.error(SWT.ERROR_THREAD_INVALID_ACCESS);
+                }
+                image = imageDescriptor.createImage(imageDescriptor instanceof OverlayImageDescriptor);
+            }
+            return image;
         }
 
         IconDescriptor(@NotNull String id, @NotNull Image image, @NotNull ImageDescriptor imageDescriptor) {
@@ -71,12 +79,12 @@ public class DBeaverIcons {
 
     @NotNull
     public static Image getImage(@Nullable DBPImage image) {
-        return getIconDescriptor(image, true).image;
+        return getIconDescriptor(image, true).getImage();
     }
 
     @NotNull
     public static Image getImage(@Nullable DBPImage image, boolean useCache) {
-        return getIconDescriptor(image, useCache).image;
+        return getIconDescriptor(image, useCache).getImage();
     }
 
     @Nullable
@@ -85,7 +93,7 @@ public class DBeaverIcons {
         if (icon == null) {
             return null;
         }
-        return icon.image;
+        return icon.getImage();
     }
 
     @NotNull
@@ -151,8 +159,7 @@ public class DBeaverIcons {
             if (image.getBottomRight() != null) {
                 ovrImage.setBottomRight(accumulateDecorations(image, DBIconComposite::getBottomRight));
             }
-            Image resultImage = ovrImage.createImage();
-            icon = new IconDescriptor(compositeId, resultImage);
+            icon = new IconDescriptor(compositeId, ovrImage);
             if (useCache) {
                 compositeMap.put(compositeId, icon);
             }

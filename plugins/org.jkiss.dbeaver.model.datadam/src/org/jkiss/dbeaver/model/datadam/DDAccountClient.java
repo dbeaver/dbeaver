@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
-import com.dbeaver.rest.client.AbstractRestClient;
 import com.google.gson.JsonParseException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -34,7 +33,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /** Account requests authenticated by the current desktop SSO session. */
-public class DDAccountClient extends AbstractRestClient {
+public class DDAccountClient extends DDClient {
     private static final String GRAPHQL_PATH = "graphql";
     private static final String ACCOUNT_INFO_QUERY = """
         query AccountInfo {

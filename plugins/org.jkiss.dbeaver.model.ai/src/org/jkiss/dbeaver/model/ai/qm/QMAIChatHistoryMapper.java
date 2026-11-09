@@ -41,7 +41,6 @@ import org.jkiss.utils.CommonUtils;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
@@ -145,7 +144,7 @@ public class QMAIChatHistoryMapper {
                 Objects.requireNonNull(toQMAIChatRole(it.message().getRole()), "Chat role is null"),
                 getFunctionCallsString(it.message()),
                 toFunctionResultJson(it.message().getFunctionResult()),
-                it.message().getTime().toInstant(ZoneOffset.UTC),
+                it.message().getTime().atZone(ZoneId.systemDefault()).toInstant(),
                 false,
                 toQMAIMessageMeta(it.message().getMeta()),
                 it.message().getImages().isEmpty() ? null : it.message().getImages()
