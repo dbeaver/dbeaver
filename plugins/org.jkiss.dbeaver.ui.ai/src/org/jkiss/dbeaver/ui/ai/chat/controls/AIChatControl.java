@@ -955,13 +955,19 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                 return;
             }
         }
+        if (containers.isEmpty() || isBusy() || isWaitingForResponse() || conversation.isActive()) {
+            return;
+        }
         List<DBPDataSourceContainer> selectedContainers = containers;
-        new AbstractJob(AIChatMessagesUI.ai_chat_add_connection) {
+        scheduleConnectionChange(new AbstractJob(AIChatMessagesUI.ai_chat_add_connection) {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
                     for (DBPDataSourceContainer container : selectedContainers) {
+                        if (monitor.isCanceled()) {
+                            return Status.CANCEL_STATUS;
+                        }
                         chatSession.addDataSource(monitor, conversation, container);
                     }
                     return Status.OK_STATUS;
@@ -969,26 +975,45 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                     return GeneralUtils.makeExceptionStatus(exception);
                 }
             }
-        }.schedule();
+        });
     }
 
     void removeConnection(@NotNull String connectionId) {
-        if (isBusy() || isWaitingForResponse()) {
+        if (isBusy() || isWaitingForResponse() || activeConversation.isActive()) {
             return;
         }
         AIChatConversation conversation = activeConversation;
-        new AbstractJob(AIChatMessagesUI.ai_chat_remove_connection) {
+        scheduleConnectionChange(new AbstractJob(AIChatMessagesUI.ai_chat_remove_connection) {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
+                    if (monitor.isCanceled()) {
+                        return Status.CANCEL_STATUS;
+                    }
                     chatSession.removeDataSource(monitor, conversation, connectionId);
                     return Status.OK_STATUS;
                 } catch (DBException exception) {
                     return GeneralUtils.makeExceptionStatus(exception);
                 }
             }
-        }.schedule();
+        });
+    }
+
+    private void scheduleConnectionChange(@NotNull AbstractJob job) {
+        chatSession.setBusy(true);
+        job.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(@NotNull IJobChangeEvent event) {
+                chatSession.setBusy(false);
+            }
+        });
+        try {
+            job.schedule();
+        } catch (RuntimeException exception) {
+            chatSession.setBusy(false);
+            throw exception;
+        }
     }
 
     void enableConnectionDropTargets(@NotNull Control control) {

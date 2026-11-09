@@ -68,7 +68,7 @@ public class AIChatSession {
     private final Object initializationLock = new Object();
     private final Object conversationsLock = new Object();
     private volatile Map<UUID, AIChatConversation> conversations = new LinkedHashMap<>();
-    private boolean busy;
+    private volatile boolean busy;
     private AIAssistant assistant;
     private volatile boolean initialized = false;
     private volatile boolean isClosed = false;
