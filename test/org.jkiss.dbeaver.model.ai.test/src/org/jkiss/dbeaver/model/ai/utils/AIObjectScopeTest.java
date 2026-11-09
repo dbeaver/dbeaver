@@ -173,6 +173,92 @@ public class AIObjectScopeTest extends DBeaverUnitTest {
         AIUtils.checkQueryInScope(context, new SQLQuery(dataSource, "SELECT 1"));
     }
 
+    @Test
+    public void sqlRejectsAdditionalStatementsBeforeResolvingObjects() throws DBException {
+        for (String sql : List.of(
+            "SELECT 1; DELETE FROM secret",
+            "SELECT 1; SELECT 2",
+            "SELECT 1; /* trailing command */ SELECT * FROM secret",
+            "SELECT 1; -- trailing command\nDELETE FROM secret",
+            "SHOW TABLES; DELETE FROM secret",
+            "SHOW COLUMNS FROM allowed; DELETE FROM secret"
+        )) {
+            DBException failure = Assertions.assertThrows(DBException.class,
+                () -> AIUtils.checkQueryInScope(context, new SQLQuery(dataSource, sql)));
+            Assertions.assertTrue(failure.getMessage().contains("single SQL statement"));
+        }
+        Mockito.verify(root, Mockito.never()).getChild(Mockito.any(), Mockito.anyString());
+    }
+
+    @Test
+    public void sqlRejectsMalformedTrailingStatements() {
+        Assertions.assertThrows(DBException.class,
+            () -> AIUtils.checkQueryInScope(context, new SQLQuery(dataSource, "SELECT 1; INVALID SQL")));
+    }
+
+    @Test
+    public void sqlAllowsDelimitersInsideLiteralsAndComments() throws DBException {
+        for (String sql : List.of(
+            "SELECT '; DELETE FROM secret'",
+            "SELECT 1; -- DELETE FROM secret",
+            "SELECT 1 /* ; DELETE FROM secret */;",
+            "SELECT ';' AS value; /* trailing comment */"
+        )) {
+            AIUtils.checkQueryInScope(context, new SQLQuery(dataSource, sql));
+        }
+        Mockito.verify(root, Mockito.never()).getChild(Mockito.any(), Mockito.anyString());
+    }
+
+    @Test
+    public void sqlSupportsShowTablesWithoutScopeRestrictions() throws DBException {
+        AIUtils.checkQueryInScope(context, new SQLQuery(dataSource, "SHOW TABLES"));
+        AIUtils.checkQueryInScope(context, new SQLQuery(dataSource, "SHOW TABLES LIKE 'orders%'"));
+    }
+
+    @Test
+    public void sqlAllowsDelimitersInsideQuotedIdentifiers() throws DBException {
+        try (var dbUtils = Mockito.mockStatic(DBUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            stubTable(dbUtils, "\"allowed;name\"", allowed);
+            AIUtils.checkQueryInScope(context, new SQLQuery(dataSource, "SELECT * FROM \"allowed;name\""));
+        }
+    }
+
+    @Test
+    public void sqlRejectsShowTablesWithScopeRestrictions() {
+        for (AIDatabaseScope scope : List.of(AIDatabaseScope.CURRENT_DATABASE, AIDatabaseScope.CURRENT_SCHEMA, AIDatabaseScope.CUSTOM)) {
+            Mockito.when(databaseContext.getScope()).thenReturn(scope);
+            Assertions.assertThrows(DBException.class,
+                () -> AIUtils.checkQueryInScope(context, new SQLQuery(dataSource, "SHOW TABLES")));
+        }
+        Mockito.when(databaseContext.getScope()).thenReturn(AIDatabaseScope.CURRENT_DATASOURCE);
+        Mockito.when(databaseContext.hasDataSourceCustomScope()).thenReturn(true);
+        Assertions.assertThrows(DBException.class,
+            () -> AIUtils.checkQueryInScope(context, new SQLQuery(dataSource, "SHOW TABLES")));
+    }
+
+    @Test
+    public void sqlChecksObjectsReferencedByShowTablesFilters() {
+        try (var dbUtils = Mockito.mockStatic(DBUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            stubTable(dbUtils, "secret", secret);
+            Assertions.assertThrows(DBException.class, () -> AIUtils.checkQueryInScope(context,
+                new SQLQuery(dataSource, "SHOW TABLES WHERE EXISTS (SELECT 1 FROM secret)")));
+        }
+    }
+
+    @Test
+    public void sqlSupportsShowColumnsWithoutBypassingTableScope() throws DBException {
+        try (var dbUtils = Mockito.mockStatic(DBUtils.class, Mockito.CALLS_REAL_METHODS)) {
+            stubTable(dbUtils, "allowed", allowed);
+            stubTable(dbUtils, "secret", secret);
+            AIUtils.checkQueryInScope(context, new SQLQuery(dataSource, "SHOW COLUMNS FROM allowed"));
+            Assertions.assertThrows(DBException.class,
+                () -> AIUtils.checkQueryInScope(context, new SQLQuery(dataSource, "SHOW COLUMNS FROM secret")));
+            Mockito.when(databaseContext.getScope()).thenReturn(AIDatabaseScope.CUSTOM);
+            Mockito.when(databaseContext.getCustomEntities()).thenReturn(List.of(allowed));
+            AIUtils.checkQueryInScope(context, new SQLQuery(dataSource, "SHOW COLUMNS FROM allowed"));
+        }
+    }
+
     private void stubTable(
         @NotNull org.mockito.MockedStatic<DBUtils> dbUtils,
         @NotNull String name,

@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.ai.utils;
 
+import net.sf.jsqlparser.statement.ShowColumnsStatement;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -43,6 +46,7 @@ import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -708,13 +712,37 @@ public final class AIUtils {
     }
 
     public static void checkQueryInScope(@NotNull AIFunctionContext context, @NotNull SQLQuery query) throws DBException {
-        var statement = query.getStatement();
-        if (statement == null) {
-            throw new DBException("Cannot verify database objects in SQL query", query.getParseError());
+        List<Statement> statements;
+        try {
+            DBPDataSource dataSource = query.getDataSource();
+            statements = SQLSemanticProcessor.parseQueries(dataSource == null ? null : dataSource.getSQLDialect(), query.getText());
+        } catch (DBException | RuntimeException exception) {
+            throw new DBException("Cannot verify database objects in SQL query", exception);
         }
+        if (statements.size() != 1) {
+            throw new DBException("A single SQL statement is required for transfer or export");
+        }
+        Statement statement = statements.getFirst();
         Set<String> tableNames;
         try {
-            tableNames = new TablesNamesFinder<>().getTables(statement);
+            TablesNamesFinder<?> finder = new TablesNamesFinder<>();
+            if (statement instanceof ShowColumnsStatement columns) {
+                tableNames = Set.of(columns.getTableName());
+            } else if (statement instanceof ShowTablesStatement tables) {
+                AIDatabaseContext database = context.getContext();
+                if (database == null || database.getScope() != AIDatabaseScope.CURRENT_DATASOURCE || database.hasDataSourceCustomScope()) {
+                    throw new DBException("SHOW TABLES cannot be verified within a restricted database scope");
+                }
+                tableNames = new LinkedHashSet<>();
+                if (tables.getLikeExpression() != null) {
+                    tableNames.addAll(finder.getTables(tables.getLikeExpression()));
+                }
+                if (tables.getWhereCondition() != null) {
+                    tableNames.addAll(finder.getTables(tables.getWhereCondition()));
+                }
+            } else {
+                tableNames = finder.getTables(statement);
+            }
         } catch (RuntimeException exception) {
             throw new DBException("Cannot verify database objects in SQL query", exception);
         }
