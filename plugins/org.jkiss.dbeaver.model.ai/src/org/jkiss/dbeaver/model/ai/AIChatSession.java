@@ -124,6 +124,22 @@ public class AIChatSession {
         }
     }
 
+    private void saveConnectionChange(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIChatConversation conversation,
+        @NotNull AIChatConversation.ConnectionsState snapshot
+    ) throws DBException {
+        boolean saved = false;
+        try {
+            saveConversation(monitor, conversation);
+            saved = true;
+        } finally {
+            if (!saved) {
+                conversation.restoreConnections(snapshot);
+            }
+        }
+    }
+
     @NotNull
     public AIChatStorage getStorage() {
         return storage;
@@ -255,10 +271,14 @@ public class AIChatSession {
         @NotNull AIChatConversation conversation,
         @NotNull DBPDataSourceContainer dataSource
     ) throws DBException {
-        if (conversation.addDataSource(dataSource)) {
-            saveConversation(monitor, conversation);
-            notifyListeners(AIChatListener::conversationConnectionsChanged, conversation);
+        synchronized (conversation.getPersistenceLock()) {
+            AIChatConversation.ConnectionsState snapshot = conversation.snapshotConnections(dataSource.getId());
+            if (!conversation.addDataSource(dataSource)) {
+                return;
+            }
+            saveConnectionChange(monitor, conversation, snapshot);
         }
+        notifyListeners(AIChatListener::conversationConnectionsChanged, conversation);
     }
 
     public void removeDataSource(
@@ -266,10 +286,14 @@ public class AIChatSession {
         @NotNull AIChatConversation conversation,
         @NotNull String connectionId
     ) throws DBException {
-        if (conversation.removeDataSource(connectionId)) {
-            saveConversation(monitor, conversation);
-            notifyListeners(AIChatListener::conversationConnectionsChanged, conversation);
+        synchronized (conversation.getPersistenceLock()) {
+            AIChatConversation.ConnectionsState snapshot = conversation.snapshotConnections(connectionId);
+            if (!conversation.removeDataSource(connectionId)) {
+                return;
+            }
+            saveConnectionChange(monitor, conversation, snapshot);
         }
+        notifyListeners(AIChatListener::conversationConnectionsChanged, conversation);
     }
 
     @Nullable

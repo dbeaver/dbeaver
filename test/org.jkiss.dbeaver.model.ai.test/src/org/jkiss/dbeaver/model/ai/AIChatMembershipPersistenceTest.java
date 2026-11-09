@@ -37,6 +37,8 @@ import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class AIChatMembershipPersistenceTest extends DBeaverUnitTest {
     private final DBPProject project = Mockito.mock(DBPProject.class);
@@ -146,6 +148,162 @@ public class AIChatMembershipPersistenceTest extends DBeaverUnitTest {
         QMAIContext saved = memory.findConversations("session").getFirst().getContext();
         Assertions.assertEquals(Set.of(object), saved.getObjects());
         Assertions.assertEquals(List.of(new QMAIDataSource("project", "additional")), saved.getAdditionalDataSources());
+        assertNoDatabaseAccess();
+    }
+
+    @Test
+    public void failedAdditionRestoresMembershipAndCanBeRetried() throws DBException {
+        DBException failure = new DBException("Storage temporarily unavailable");
+        Mockito.doThrow(failure).doThrow(failure).doNothing().when(storage).saveConversation(Mockito.anyString(), Mockito.any());
+        for (int attempt = 0; attempt < 2; attempt++) {
+            Assertions.assertSame(failure, Assertions.assertThrows(DBException.class,
+                () -> session.addDataSource(new VoidProgressMonitor(), conversation, additional)));
+            Assertions.assertEquals(List.of(primary), conversation.getDataSources());
+            Mockito.verifyNoInteractions(listener);
+        }
+        session.addDataSource(new VoidProgressMonitor(), conversation, additional);
+        Assertions.assertEquals(List.of(primary, additional), conversation.getDataSources());
+        Mockito.verify(storage, Mockito.times(3)).saveConversation(Mockito.eq("session"), Mockito.any());
+        Mockito.verify(listener).conversationConnectionsChanged(conversation);
+        assertNoDatabaseAccess();
+    }
+
+    @Test
+    public void failedRemovalRestoresConnectionOrderAndScopesBeforeRetry() throws DBException {
+        DBPDataSourceContainer second = Mockito.mock(DBPDataSourceContainer.class);
+        configure(second, "second");
+        conversation.addDataSource(additional);
+        conversation.addDataSource(second);
+        AIContextSettingsChatConversation scope = new AIContextSettingsChatConversation(session, conversation, additional);
+        scope.setScope(AIDatabaseScope.CUSTOM);
+        scope.setCustomObjectIds(new String[] { "allowed_table" });
+        conversation.setCustomSettings(additional, scope);
+        AIContextSettingsChatConversation otherScope = new AIContextSettingsChatConversation(session, conversation, second);
+        otherScope.setScope(AIDatabaseScope.CURRENT_DATABASE);
+        conversation.setCustomSettings(second, otherScope);
+        DBException failure = new DBException("Storage temporarily unavailable");
+        Mockito.doThrow(failure).doNothing().when(storage).saveConversation(Mockito.anyString(), Mockito.any());
+        Assertions.assertSame(failure, Assertions.assertThrows(DBException.class,
+            () -> session.removeDataSource(new VoidProgressMonitor(), conversation, "additional")));
+        Assertions.assertEquals(List.of(primary, additional, second), conversation.getDataSources());
+        Assertions.assertSame(scope, conversation.getCustomSettings(additional));
+        Assertions.assertSame(otherScope, conversation.getCustomSettings(second));
+        Assertions.assertArrayEquals(new String[] { "allowed_table" }, scope.getCustomObjectIds());
+        Mockito.verifyNoInteractions(listener);
+        session.removeDataSource(new VoidProgressMonitor(), conversation, "additional");
+        Assertions.assertEquals(List.of(primary, second), conversation.getDataSources());
+        Assertions.assertNull(conversation.getCustomSettings(additional));
+        Assertions.assertSame(otherScope, conversation.getCustomSettings(second));
+        ArgumentCaptor<QMAIConversationHistory> saved = ArgumentCaptor.forClass(QMAIConversationHistory.class);
+        Mockito.verify(storage, Mockito.times(2)).saveConversation(Mockito.eq("session"), saved.capture());
+        QMAIContext context = saved.getValue().getContext();
+        Assertions.assertEquals(List.of(new QMAIDataSource("project", "second")), context.getAdditionalDataSources());
+        Assertions.assertEquals(Set.of("second"), context.getConnectionSettings().keySet());
+        Mockito.verify(listener).conversationConnectionsChanged(conversation);
+        assertNoDatabaseAccess();
+    }
+
+    @Test
+    public void failedRemovalDoesNotRevertAnotherConnectionsSettings() throws DBException {
+        DBPDataSourceContainer second = Mockito.mock(DBPDataSourceContainer.class);
+        configure(second, "second");
+        conversation.addDataSource(additional);
+        conversation.addDataSource(second);
+        AIContextSettingsChatConversation updated = new AIContextSettingsChatConversation(session, conversation, second);
+        updated.setScope(AIDatabaseScope.CURRENT_SCHEMA);
+        Mockito.doAnswer(invocation -> {
+            conversation.setCustomSettings(second, updated);
+            throw new DBException("Storage temporarily unavailable");
+        }).when(storage).saveConversation(Mockito.anyString(), Mockito.any());
+        Assertions.assertThrows(DBException.class,
+            () -> session.removeDataSource(new VoidProgressMonitor(), conversation, "additional"));
+        Assertions.assertEquals(List.of(primary, additional, second), conversation.getDataSources());
+        Assertions.assertSame(updated, conversation.getCustomSettings(second));
+        Mockito.verifyNoInteractions(listener);
+    }
+
+    @Test
+    public void unexpectedSaveFailureRestoresAnAddition() throws DBException {
+        IllegalStateException failure = new IllegalStateException("Storage unavailable");
+        Mockito.doThrow(failure).when(storage).saveConversation(Mockito.anyString(), Mockito.any());
+        Assertions.assertSame(failure, Assertions.assertThrows(IllegalStateException.class,
+            () -> session.addDataSource(new VoidProgressMonitor(), conversation, additional)));
+        Assertions.assertEquals(List.of(primary), conversation.getDataSources());
+        Mockito.verifyNoInteractions(listener);
+    }
+
+    @Test
+    public void unexpectedSaveFailureRestoresARemoval() throws DBException {
+        conversation.addDataSource(additional);
+        AIContextSettingsChatConversation scope = new AIContextSettingsChatConversation(session, conversation, additional);
+        scope.setScope(AIDatabaseScope.CURRENT_SCHEMA);
+        conversation.setCustomSettings(additional, scope);
+        IllegalStateException failure = new IllegalStateException("Storage unavailable");
+        Mockito.doThrow(failure).when(storage).saveConversation(Mockito.anyString(), Mockito.any());
+        Assertions.assertSame(failure, Assertions.assertThrows(IllegalStateException.class,
+            () -> session.removeDataSource(new VoidProgressMonitor(), conversation, "additional")));
+        Assertions.assertEquals(List.of(primary, additional), conversation.getDataSources());
+        Assertions.assertSame(scope, conversation.getCustomSettings(additional));
+        Mockito.verifyNoInteractions(listener);
+    }
+
+    @Test
+    public void failedHistoryPreparationRestoresMembershipWithoutNotifying() {
+        IllegalStateException failure = new IllegalStateException("Cannot prepare settings");
+        Mockito.doThrow(failure).when(session).getConversationSettings(conversation);
+        Assertions.assertSame(failure, Assertions.assertThrows(IllegalStateException.class,
+            () -> session.addDataSource(new VoidProgressMonitor(), conversation, additional)));
+        Assertions.assertEquals(List.of(primary), conversation.getDataSources());
+        Mockito.verifyNoInteractions(storage, listener);
+    }
+
+    @Test
+    public void anotherEditWaitsForRollbackAndPersistsOnlyCommittedConnections() throws Exception {
+        DBPDataSourceContainer second = Mockito.mock(DBPDataSourceContainer.class);
+        configure(second, "second");
+        CountDownLatch writing = new CountDownLatch(1);
+        CountDownLatch release = new CountDownLatch(1);
+        AtomicInteger attempts = new AtomicInteger();
+        AtomicReference<QMAIConversationHistory> committed = new AtomicReference<>();
+        DBException failure = new DBException("Storage temporarily unavailable");
+        Mockito.doAnswer(invocation -> {
+            if (attempts.incrementAndGet() == 1) {
+                writing.countDown();
+                Assertions.assertTrue(release.await(5, TimeUnit.SECONDS));
+                throw failure;
+            }
+            committed.set(invocation.getArgument(1));
+            return null;
+        }).when(storage).saveConversation(Mockito.anyString(), Mockito.any());
+        FutureTask<DBException> first = new FutureTask<>(() -> Assertions.assertThrows(DBException.class,
+            () -> session.addDataSource(new VoidProgressMonitor(), conversation, additional)));
+        FutureTask<Void> next = new FutureTask<>(() -> {
+            session.addDataSource(new VoidProgressMonitor(), conversation, second);
+            return null;
+        });
+        Thread firstWorker = new Thread(first);
+        Thread nextWorker = new Thread(next);
+        firstWorker.start();
+        try {
+            Assertions.assertTrue(writing.await(2, TimeUnit.SECONDS));
+            nextWorker.start();
+            long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(2);
+            while (nextWorker.getState() != Thread.State.BLOCKED && System.nanoTime() < deadline) {
+                Thread.sleep(1);
+            }
+            Assertions.assertEquals(Thread.State.BLOCKED, nextWorker.getState());
+            Assertions.assertEquals(List.of(primary, additional), conversation.getDataSources());
+        } finally {
+            release.countDown();
+            firstWorker.join(5000);
+            nextWorker.join(5000);
+        }
+        Assertions.assertSame(failure, first.get(2, TimeUnit.SECONDS));
+        next.get(2, TimeUnit.SECONDS);
+        Assertions.assertEquals(List.of(primary, second), conversation.getDataSources());
+        Assertions.assertEquals(List.of(new QMAIDataSource("project", "second")),
+            committed.get().getContext().getAdditionalDataSources());
+        Mockito.verify(listener).conversationConnectionsChanged(conversation);
         assertNoDatabaseAccess();
     }
 
