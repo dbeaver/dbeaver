@@ -15,11 +15,14 @@
  * limitations under the License.
  */
 
+import org.jkiss.code.NotNull;
+
 /**
  * Temporary CI fixture for the shared DBeaver rules and nullability checks.
  */
 class CheckstyleSmoke {
-  public String getValue(String value) {
-    return value;
-  }
+    @NotNull
+    public String getValue(@NotNull String value) {
+        return value;
+    }
 }
