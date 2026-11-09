@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,11 +16,14 @@
  */
 package org.jkiss.dbeaver.model.impl.jdbc.exec;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -36,16 +39,40 @@ import java.util.Map;
  */
 public class JDBCResultSetMetaDataImpl implements JDBCResultSetMetaData
 {
+    @Nullable
     protected JDBCResultSet resultSet;
     protected ResultSetMetaData original;
+    private final JDBCSession session;
+    private final JDBCStatement statement;
     protected List<DBCAttributeMetaData> columns = new ArrayList<>();
     protected Map<String, JDBCTableMetaData> tables = new HashMap<>();
 
     public JDBCResultSetMetaDataImpl(JDBCResultSet resultSet)
         throws SQLException
     {
+        this(resultSet, resultSet.getOriginal().getMetaData());
+    }
+
+    public JDBCResultSetMetaDataImpl(JDBCResultSet resultSet, ResultSetMetaData original) throws SQLException {
         this.resultSet = resultSet;
-        this.original = resultSet.getOriginal().getMetaData();
+        this.session = resultSet.getSession();
+        this.statement = resultSet.getSourceStatement();
+        this.original = original;
+        initColumns();
+    }
+
+    public JDBCResultSetMetaDataImpl(
+        @NotNull JDBCSession session,
+        @NotNull JDBCStatement statement,
+        @NotNull ResultSetMetaData original
+    ) throws SQLException {
+        this.session = session;
+        this.statement = statement;
+        this.original = original;
+        initColumns();
+    }
+
+    private void initColumns() throws SQLException {
         int count = original.getColumnCount();
         for (int i = 0; i < count; i++) {
             columns.add(createColumnMetaDataImpl(i));
@@ -57,9 +84,20 @@ public class JDBCResultSetMetaDataImpl implements JDBCResultSetMetaData
         return new JDBCColumnMetaData(this, index);
     }
 
+    @Nullable
     public JDBCResultSet getResultSet()
     {
         return resultSet;
+    }
+
+    @NotNull
+    public JDBCSession getSession() {
+        return session;
+    }
+
+    @NotNull
+    public JDBCStatement getSourceStatement() {
+        return statement;
     }
 
     public ResultSetMetaData getOriginal()

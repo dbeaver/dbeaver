@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.cockroach.PostgreServerCockroachDB;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.model.jdbc.PostgreJdbcFactory;
@@ -129,6 +130,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         return switch (featureId) {
             case DBPDataSource.FEATURE_MAX_STRING_LENGTH -> 10485760;
             case DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS -> true;
+            case DBPDataSource.FEATURE_JDBC_TABLE_READ_REQUIRES_PREPARED_COLUMN_METADATA ->
+                getServerType() instanceof PostgreServerCockroachDB;
             default -> super.getDataSourceFeature(featureId);
         };
     }

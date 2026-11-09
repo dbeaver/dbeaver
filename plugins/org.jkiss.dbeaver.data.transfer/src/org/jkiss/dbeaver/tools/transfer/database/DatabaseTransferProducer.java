@@ -49,6 +49,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.serialize.DTObjectSerializer;
 import org.jkiss.dbeaver.tools.transfer.serialize.SerializerContext;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -217,6 +218,10 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
             boolean selectiveExportFromUI = useFetchedRows != null;
             boolean extractInSegments = useFetchedRows == null &&
                 settings.getExtractType() == DatabaseProducerSettings.ExtractType.SEGMENTS;
+            boolean prepareColumnMetadata = !selectiveExportFromUI && settings.getFetchSize() > 0
+                && consumer instanceof StreamTransferConsumer
+                && Boolean.TRUE.equals(dataSource.getDataSourceFeature(
+                    DBPDataSource.FEATURE_JDBC_TABLE_READ_REQUIRES_PREPARED_COLUMN_METADATA));
 
             DBCExecutionContext context;
             if (dataContainer instanceof DBPContextProvider contextProvider) {
@@ -298,7 +303,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                 -1,
                                 maxRows,
                                 readFlags,
-                                settings.getFetchSize()
+                                settings.getFetchSize(),
+                                prepareColumnMetadata
                             ));
                             checkCanceled(monitor);
                         } else {
@@ -308,7 +314,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                             for (; ; ) {
                                 checkCanceled(monitor);
                                 DBCStatistics statistics = dataContainer.readData(
-                                    transferSource, session, consumer, dataFilter, offset, segmentSize, readFlags, settings.getFetchSize());
+                                    transferSource, session, consumer, dataFilter, offset, segmentSize, readFlags,
+                                    settings.getFetchSize(), prepareColumnMetadata);
                                 checkCanceled(monitor);
                                 if (statistics.getRowsFetched() < segmentSize) {
                                     // Done

@@ -93,6 +93,25 @@ public interface DBSDataContainer extends DBSObject {
         throws DBException;
 
     /**
+     * Read data with optional advance preparation of result column metadata.
+     * Non-JDBC containers can ignore the request.
+     */
+    @NotNull
+    default DBCStatistics readData(
+        @Nullable DBCExecutionSource source,
+        @NotNull DBCSession session,
+        @NotNull DBDDataReceiver dataReceiver,
+        @Nullable DBDDataFilter dataFilter,
+        long firstRow,
+        long maxRows,
+        long flags,
+        int fetchSize,
+        boolean prepareColumnMetadata
+    ) throws DBException {
+        return readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, fetchSize);
+    }
+
+    /**
      * Counts data rows in container.
      *
      * @param source execution source

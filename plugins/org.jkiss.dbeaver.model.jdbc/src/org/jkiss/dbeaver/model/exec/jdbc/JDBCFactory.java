@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.exec.jdbc;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSource;
 
 import java.sql.*;
 
@@ -61,5 +62,28 @@ public interface JDBCFactory {
 
     JDBCResultSetMetaData createResultSetMetaData(@NotNull JDBCResultSet resultSet)
         throws SQLException;
+
+    /**
+     * Create metadata for the actual result set from a {@link JDBCResultSetMetaDataSnapshot}, preserving
+     * driver-specific metadata handling without querying its active cursor.
+     * Used when {@link DBPDataSource#FEATURE_JDBC_TABLE_READ_REQUIRES_PREPARED_COLUMN_METADATA}
+     * is requested; {@code original} is {@link JDBCResultSetMetaDataSnapshot#toMetaData()}.
+     */
+    JDBCResultSetMetaData createResultSetMetaData(
+        @NotNull JDBCResultSet resultSet,
+        @NotNull ResultSetMetaData original
+    ) throws SQLException;
+
+    /**
+     * Resolve metadata from a separate prepared statement before opening the streaming cursor.
+     * {@link JDBCResultSetMetaDataSnapshot#capture(JDBCSession, JDBCPreparedStatement)} uses
+     * the resolved columns when the caller requests
+     * {@link DBPDataSource#FEATURE_JDBC_TABLE_READ_REQUIRES_PREPARED_COLUMN_METADATA}.
+     */
+    JDBCResultSetMetaData createResultSetMetaData(
+        @NotNull JDBCSession session,
+        @NotNull JDBCStatement statement,
+        @NotNull ResultSetMetaData original
+    ) throws SQLException;
 
 }
