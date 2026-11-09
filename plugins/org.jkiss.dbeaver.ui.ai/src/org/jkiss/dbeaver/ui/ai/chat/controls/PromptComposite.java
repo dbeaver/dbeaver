@@ -374,7 +374,7 @@ public class PromptComposite extends Composite {
         }
     }
 
-    private void updatePromptEditorSize() {
+    void updatePromptEditorSize() {
         int textLength = promptText.getCharCount();
         int lineHeight = promptText.getLineCount() * promptText.getLineHeight();
         Rectangle textBounds = textLength <= 0 ?

@@ -149,6 +149,7 @@ public class DatabaseTasksView extends ViewPart implements DBTTaskListener {
 
         loadViewConfig();
         loadTasks();
+        taskRunColumnController.autoSizeColumns();
 
         projectListener = new DBPProjectListener() {
             @Override
