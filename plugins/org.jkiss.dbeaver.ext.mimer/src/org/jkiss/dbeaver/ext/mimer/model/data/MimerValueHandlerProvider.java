@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.Types;
@@ -36,12 +37,17 @@ import java.sql.Types;
  * needs a matching {@code <type>} entry in {@code plugin.xml} too, or the registry filters the
  * column out before this class is ever consulted.
  * <p>
- * Falls back to {@code null} (the core JDBC-standard handler) once {@link
+ * Falls back to {@link JDBCContentValueHandler#INSTANCE} - the same handler the core JDBC-standard
+ * provider would give a BLOB/CLOB/NCLOB column - once {@link
  * MimerDataSource#isDriverVersionAtLeast(int, int, int)} says the connected driver is 11.0.6 or
- * later - the same driver-version gating {@code OracleValueHandlerProvider} uses for its own
- * handler choice, just with a patch-level cutoff (see that method's own javadoc for why the usual
- * major/minor-only check can't express one). 11.0.6 isn't released yet and isn't confirmed to
- * actually carry the fix - bump the patch number here if it turns out not to.
+ * later. Returning {@code null} here would NOT reach that standard provider:
+ * {@code DataTypeProviderRegistry#getValueHandlerProvider} picks this, the first non-global
+ * provider matching both the datasource and the column type, and returns immediately - the global
+ * providers are never even consulted - so {@code DBUtils#findValueHandler} would fall straight
+ * through to {@code DefaultValueHandler}, which can't bind a value at all (throws on every write)
+ * and skips the content-wrapper machinery LOB viewing/export relies on. 11.0.6 isn't released yet
+ * and isn't confirmed to actually carry the fix - bump the patch number here if it turns out not
+ * to.
  *
  * @author Mimer Information Technology
  */
@@ -54,15 +60,18 @@ public class MimerValueHandlerProvider implements DBDValueHandlerProvider {
         @NotNull DBDFormatSettings preferences,
         @NotNull DBSTypedObject typedObject
     ) {
-        if (dataSource instanceof MimerDataSource mimerDataSource && mimerDataSource.isDriverVersionAtLeast(11, 0, 6)) {
-            return null;
-        }
+        boolean fixedByDriver = dataSource instanceof MimerDataSource mimerDataSource
+            && mimerDataSource.isDriverVersionAtLeast(11, 0, 6);
         switch (typedObject.getTypeID()) {
             case Types.BLOB:
-                return MimerBLOBValueHandler.INSTANCE;
             case Types.CLOB:
             case Types.NCLOB:
-                return MimerCLOBValueHandler.INSTANCE;
+                if (fixedByDriver) {
+                    return JDBCContentValueHandler.INSTANCE;
+                }
+                return typedObject.getTypeID() == Types.BLOB
+                    ? MimerBLOBValueHandler.INSTANCE
+                    : MimerCLOBValueHandler.INSTANCE;
             default:
                 return null;
         }
