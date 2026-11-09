@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.clickhouse.ui;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
@@ -44,9 +45,13 @@ public class ClickhouseSSLConfigurator extends SSLConfiguratorTrustStoreUI {
 
     @Override
     public void createControl(@NotNull Composite parent, Object object, @NotNull Runnable propertyChangeListener) {
-        createSSLConfigHint(parent, true, 0);
-        createTrustStoreConfigGroup(parent);
-        Composite advancedSettingsGroup = UIUtils.createTitledComposite(parent,
+        Composite composite = new Composite(parent, SWT.NONE);
+        composite.setLayout(new GridLayout(1, false));
+        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        Composite sslParameters = createTrustStoreConfigGroup(composite);
+        createSSLConfigHint(sslParameters, true, 1);
+        Composite advancedSettingsGroup = UIUtils.createTitledComposite(composite,
             ClickhouseMessages.dialog_connection_page_advanced_settings,
             1,
             GridData.FILL_HORIZONTAL);

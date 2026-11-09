@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,9 +35,14 @@ public class PostgreEscapeStringRule implements TPPredicateRule {
 
     @Override
     public TPToken evaluate(TPCharacterScanner scanner, boolean resume) {
-        int ch;
-        int chRead = 2;
+        int ch = scanner.read();
+        if (ch != 'e' && ch != 'E') {
+            scanner.unread();
+            return TPTokenAbstract.UNDEFINED;
+        }
+        scanner.unread();
 
+        int chRead = 2;
         if (scanner.getColumn() > 0) {
             scanner.unread();
             if (Character.isLetterOrDigit(ch = scanner.read()) || ch == '_') {

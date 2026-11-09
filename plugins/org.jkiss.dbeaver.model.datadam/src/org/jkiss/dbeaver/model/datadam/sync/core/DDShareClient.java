@@ -24,10 +24,11 @@ import com.google.gson.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDClient;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
+import org.jkiss.dbeaver.model.datadam.auth.DDBundleCredentials;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
+import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.GsonUtils;
@@ -48,7 +49,6 @@ import javax.crypto.SecretKey;
 
 public class DDShareClient extends DDClient implements DDSharedProjectService {
 
-    private static final Log log = Log.getLog(DDShareClient.class);
     private static final int TIMEOUT_MS = 30000;
     private static final String GRAPHQL_ENDPOINT = "/graphql";
     private static final String FIELD_NAME = "name";
@@ -62,13 +62,11 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
         createTime
         updateTime""";
 
-    private final DDSyncCredentials credentials;
-    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
-    private SecretKey dataKey;
+    private final DDDesktopAccessService accessService;
 
-    public DDShareClient(@NotNull String url, @NotNull DDSyncCredentials credentials) {
+    public DDShareClient(@NotNull String url, @NotNull DDDesktopAccessService accessService) {
         super(url, DEFAULT_CONNECT_TIMEOUT, TIMEOUT_MS, List.of(), HttpClient.Redirect.NEVER);
-        this.credentials = credentials;
+        this.accessService = accessService;
         this.gson = GsonUtils.gsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeIsoAdapter())
             .create();
@@ -238,8 +236,11 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
         try {
             DDSharedProjectPullResponse response = pullProjectConfiguration(projectId);
             Map<String, byte[]> files = new LinkedHashMap<>();
-            for (DDSharedProjectFile file : response.files()) {
-                files.put(file.fileName(), decryptBytes(projectId.toString(), file.fileName(), file.encryptedContents()));
+            if (!response.files().isEmpty()) {
+                SecretKey key = getDataKey();
+                for (DDSharedProjectFile file : response.files()) {
+                    files.put(file.fileName(), decryptBytes(key, projectId.toString(), file.fileName(), file.encryptedContents()));
+                }
             }
             return new DDSharedProjectPullResult(files, response.currentRevision());
         } catch (DBException e) {
@@ -293,12 +294,15 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
     ) throws DDShareException {
         try {
             List<DDSharedProjectFile> projectFiles = new ArrayList<>();
-            for (Map.Entry<String, Pair<String, byte[]>> file : preparedFiles.files().entrySet()) {
-                Pair<String, byte[]> preparedFile = file.getValue();
-                projectFiles.add(new DDSharedProjectFile(
-                    file.getKey(),
-                    encryptBytes(projectId.toString(), file.getKey(), preparedFile.getSecond()),
-                    preparedFile.getFirst()));
+            if (!preparedFiles.files().isEmpty()) {
+                SecretKey key = getDataKey();
+                for (Map.Entry<String, Pair<String, byte[]>> file : preparedFiles.files().entrySet()) {
+                    Pair<String, byte[]> preparedFile = file.getValue();
+                    projectFiles.add(new DDSharedProjectFile(
+                        file.getKey(),
+                        encryptBytes(key, projectId.toString(), file.getKey(), preparedFile.getSecond()),
+                        preparedFile.getFirst()));
+                }
             }
             return pushProjectConfiguration(
                 projectId,
@@ -335,13 +339,26 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
     }
 
     @NotNull
-    private String encryptBytes(@NotNull String projectId, @NotNull String field, @NotNull byte[] data) throws DBException {
-        return Base64.getEncoder().encodeToString(DDCrypto.encrypt(getDataKey(), data, aad(projectId, field)));
+    private String encryptBytes(
+        @NotNull SecretKey key, @NotNull String projectId, @NotNull String field, @NotNull byte[] data
+    ) throws DBException {
+        return Base64.getEncoder().encodeToString(DDCrypto.encrypt(key, data, aad(projectId, field)));
     }
 
     @NotNull
-    private byte[] decryptBytes(@NotNull String projectId, @NotNull String field, @NotNull String ciphertext) throws DBException {
-        return DDCrypto.decrypt(getDataKey(), decodeBase64(ciphertext), aad(projectId, field));
+    private byte[] decryptBytes(
+        @NotNull SecretKey key, @NotNull String projectId, @NotNull String field, @NotNull String ciphertext
+    ) throws DBException {
+        return DDCrypto.decrypt(key, decodeBase64(ciphertext), aad(projectId, field));
+    }
+
+    @NotNull
+    private SecretKey getDataKey() throws DBException {
+        DDKeyBundle bundle = accessService.getKeyBundle();
+        if (bundle == null) {
+            throw new DBException("Import encryption keys for the current DataDam account before transferring files");
+        }
+        return new DDBundleCredentials(bundle).getDataKey();
     }
 
     @NotNull
@@ -360,14 +377,6 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
     @NotNull
     public static byte[] aad(@NotNull String projectId, @NotNull String field) {
         return (projectId + '\u0000' + field).getBytes(StandardCharsets.UTF_8);
-    }
-
-    @NotNull
-    private SecretKey getDataKey() throws DBException {
-        if (dataKey == null) {
-            dataKey = credentials.getDataKey();
-        }
-        return dataKey;
     }
 
     @NotNull
@@ -431,10 +440,4 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
         }
         super.handleRequestException(message, e);
     }
-
-    @Override
-    protected void logDebug(@NotNull String message) {
-        log.debug(message);
-    }
-
 }

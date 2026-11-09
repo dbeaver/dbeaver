@@ -47,6 +47,8 @@ public class AIConstants {
     public static final String AI_GLOBAL_PROPERTY = "global";
     public static final String AI_NON_GLOBAL_CREDENTIALS_HIDE_EXPRESSION = "object." + AI_GLOBAL_PROPERTY + " == false";
 
+    public static final String AI_DEFAULT_CONFIGURATION = "ai.default.configuration";
+
     // Engine settings
 
     public static final String AI_MODEL_PROPERTY = "model";

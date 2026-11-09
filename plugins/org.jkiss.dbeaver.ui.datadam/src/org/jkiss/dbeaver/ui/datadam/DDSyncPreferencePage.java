@@ -59,7 +59,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private Composite content;
     private Text userText;
     private Button accountActionButton;
-    private Button refreshTokenButton;
 
     public DDSyncPreferencePage() {
         noDefaultAndApplyButton();
@@ -117,28 +116,23 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private Control createAuthenticationGroup(@NotNull Composite parent) {
         Composite authenticationGroup = UIUtils.createTitledComposite(
             parent, DDTrackingUIMessages.sync_preference_page_authentication_group,
-            2, GridData.FILL_HORIZONTAL, SWT.DEFAULT
+            1, GridData.FILL_HORIZONTAL, SWT.DEFAULT
         );
         userText = new Text(authenticationGroup, SWT.READ_ONLY);
         UIUtils.fixReadonlyTextBackground(userText);
         GridData statusLayout = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
-        statusLayout.horizontalSpan = 2;
         userText.setLayoutData(statusLayout);
         accountActionButton = UIUtils.createPushButton(
             authenticationGroup, DDTrackingUIMessages.sync_preference_page_desktop_sign_in, null,
             SelectionListener.widgetSelectedAdapter(e -> {
                 DDDesktopAccessService.Status status = accessService.getStatus();
-                if (status == DDDesktopAccessService.Status.SIGNED_IN || status == DDDesktopAccessService.Status.EXPIRED) {
+                if (status == DDDesktopAccessService.Status.SIGNED_IN) {
                     logOut();
                 } else {
                     logIn();
                 }
             })
         );
-        refreshTokenButton = UIUtils.createPushButton(
-            authenticationGroup, DDTrackingUIMessages.sync_preference_page_refresh_token, null,
-            SelectionListener.widgetSelectedAdapter(e -> logIn()));
-        refreshTokenButton.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
         return authenticationGroup.getParent();
     }
 
@@ -184,12 +178,9 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         boolean signedIn = status == DDDesktopAccessService.Status.SIGNED_IN;
         userText.setText(signedIn ? DDTrackingUIMessages.sync_preference_page_account_signed_in
             : DDTrackingUIMessages.sync_preference_page_account_not_signed_in);
-        boolean canRefresh = signedIn || status == DDDesktopAccessService.Status.EXPIRED;
-        accountActionButton.setText(canRefresh
+        accountActionButton.setText(signedIn
             ? DDTrackingUIMessages.sync_preference_page_desktop_sign_out
             : DDTrackingUIMessages.sync_preference_page_desktop_sign_in);
-        refreshTokenButton.setVisible(canRefresh);
-        ((GridData) refreshTokenButton.getLayoutData()).exclude = !canRefresh;
         mcpVisible.set(signedIn);
         mcpEnabled.set(DDDesktopPreferences.getStore().getBoolean(DDDesktopPreferences.MCP_DESKTOP_ENABLED));
         content.layout(true, true);

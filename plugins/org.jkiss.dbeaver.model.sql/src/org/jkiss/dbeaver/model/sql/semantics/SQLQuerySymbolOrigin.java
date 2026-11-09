@@ -75,6 +75,7 @@ public abstract class SQLQuerySymbolOrigin {
         VALUE,
         FUNCTION,
         TABLE,
+        TYPE,
         OBJECT
     }
 
@@ -171,6 +172,11 @@ public abstract class SQLQuerySymbolOrigin {
 
         public boolean isIncludingRowsets() {
             return this.includingRowsets;
+        }
+
+        @Override
+        public boolean isApplicable(@NotNull LSMInspections.SyntaxInspectionResult syntaxInspectionResult) {
+            return this.objectTypes.contains(RelationalObjectType.TYPE_DATA_TYPE) || super.isApplicable(syntaxInspectionResult);
         }
 
         @Override

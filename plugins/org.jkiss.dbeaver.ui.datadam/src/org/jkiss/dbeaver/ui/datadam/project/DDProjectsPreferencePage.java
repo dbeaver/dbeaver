@@ -40,8 +40,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.LocalProjectInfo;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.SyncResult;
 import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -52,13 +52,12 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.DDImportKeyDialog;
 import org.jkiss.dbeaver.ui.datadam.DDUIConstants;
 import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIIcons;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictDialog.Choice;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictResolver.Choice;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager.ProjectJobBatchResult;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
@@ -66,10 +65,8 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
@@ -82,6 +79,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private static final int MAX_VISIBLE_ROWS = 12;
 
     private final DDProjectUIManager uiManager = DDProjectUIManager.getInstance();
+    private final DDProjectConflictResolver conflictResolver = new DDProjectConflictResolver(uiManager);
     private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
 
@@ -94,9 +92,10 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private Control projectsHelp;
     private AbstractJob accountViewJob;
     @Nullable
-    private DDKeyBundle displayedBundle;
+    private UUID displayedAccountId;
     private TableViewer viewer;
     private Button showRemote;
+    private Button refreshButton;
     private Composite actionButtons;
     private Button editButton;
     private Button syncButton;
@@ -163,7 +162,10 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         GridData projectsLayout = new GridData(SWT.FILL, SWT.FILL, true, true);
         projectsLayout.verticalIndent = 3;
         projectsSection.setLayoutData(projectsLayout);
-        showRemote = new Button(projectsSection, SWT.CHECK);
+        Composite controlsRow = UIUtils.createComposite(projectsSection, 2);
+        controlsRow.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        showRemote = new Button(controlsRow, SWT.CHECK);
+        showRemote.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, true, false));
         showRemote.setText(DDTrackingUIMessages.projects_show_remote);
         showRemote.setSelection(DBWorkbench.getPlatform().getPreferenceStore().getBoolean(PREF_SHOW_REMOTE_PROJECTS));
         showRemote.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
@@ -171,6 +173,8 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             updateTableHeight();
             updateSelectionActions();
         }));
+        refreshButton = iconButton(controlsRow, UIIcon.REFRESH, DDTrackingUIMessages.projects_refresh, this::loadProjects);
+        refreshButton.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
 
         Composite tableRow = new Composite(projectsSection, SWT.NONE);
         GridLayout tableRowLayout = new GridLayout(2, false);
@@ -324,11 +328,12 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private void updateSelectionActions() {
         List<DDProjectView> selection = selectedRows();
         SelectionSyncAction syncAction = selectionSyncAction(selection);
-        boolean download = syncAction == SelectionSyncAction.DOWNLOAD;
-        boolean available = !operationRunning && displayedBundle != null && uiManager.isDDReady();
+        boolean available = !operationRunning && uiManager.isProjectSyncReady();
+        refreshButton.setEnabled(available);
         editButton.setEnabled(available && selection.size() == 1 && selection.get(0).remoteProject() != null);
         syncButton.setEnabled(available && syncAction != SelectionSyncAction.NONE);
-        syncButton.setImage(DBeaverIcons.getImage(download ? UIIcon.DOWNLOAD : DDTrackingUIIcons.PROJECT_SYNC));
+        boolean download = syncAction == SelectionSyncAction.DOWNLOAD;
+        syncButton.setImage(DBeaverIcons.getImage(download ? DDTrackingUIIcons.IMPORT_PROJECT : DDTrackingUIIcons.PROJECT_SYNC));
         syncButton.setToolTipText(download ? DDTrackingUIMessages.projects_download : DDTrackingUIMessages.projects_sync);
         boolean selected = !selection.isEmpty();
         unbindButton.setEnabled(available && selected && selection.stream().allMatch(this::canUnbind));
@@ -355,8 +360,8 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     }
 
     private void refreshKeys() {
-        DDKeyBundle bundle = accessService.getKeyBundle();
-        boolean present = bundle != null;
+        UUID accountId = accessService.getAccountId();
+        boolean present = accountId != null;
         accountRow.setVisible(present);
         ((GridData) accountRow.getLayoutData()).exclude = !present;
         boolean signedIn = accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN;
@@ -366,7 +371,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         forgetKeysButton.setEnabled(present);
         forgetKeysButton.setVisible(present);
         ((GridData) forgetKeysButton.getLayoutData()).exclude = !present;
-        boolean ready = signedIn && present;
+        boolean ready = uiManager.isProjectSyncReady();
         projectsDescription.setText(ready
             ? DDTrackingUIMessages.projects_page_sync_help : DDTrackingUIMessages.projects_page_description);
         projectsHelp.setVisible(!signedIn);
@@ -375,9 +380,9 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         viewer.getTable().setEnabled(present);
         content.layout(true, true);
 
-        if (!Objects.equals(displayedBundle, bundle)) {
-            displayedBundle = bundle;
-            accountText.setText(present ? bundle.accountId().toString() : DDTrackingUIMessages.sync_preference_page_unknown);
+        if (!Objects.equals(displayedAccountId, accountId)) {
+            displayedAccountId = accountId;
+            accountText.setText(present ? accountId.toString() : DDTrackingUIMessages.sync_preference_page_unknown);
             if (accountViewJob != null) {
                 accountViewJob.cancel();
             }
@@ -456,7 +461,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     }
 
     private void loadProjects() {
-        if (!uiManager.isDDReady()) {
+        if (!uiManager.isProjectSyncReady()) {
             viewer.setInput(List.of());
             updateTableHeight();
             updateSelectionActions();
@@ -467,11 +472,8 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             public void run(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
                 monitor.beginTask(DDTrackingUIMessages.project_sync_import_list_job, IProgressMonitor.UNKNOWN);
                 try {
-                    if (!DDDesktopTokenUIManager.getInstance().ensureTokenReady(monitor)) {
-                        return;
-                    }
                     List<DDProjectView> views = uiManager.loadProjectViews(monitor);
-                    if (!monitor.isCanceled()) {
+                    if (views != null && !monitor.isCanceled()) {
                         result = views;
                     }
                 } catch (DBException e) {
@@ -534,7 +536,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         return switch (row.status()) {
             case NOT_SYNC -> DBIcon.PROJECT;
             case NOT_ON_DEVICE -> DDTrackingUIIcons.STATUS_NOT_ON_DEVICE;
-            case MISSING_ON_SERVER -> DBIcon.STATUS_WARNING;
+            case MISSING_ON_SERVER -> DBIcon.SMALL_WARNING;
             case UP_TO_DATE -> UIIcon.OK_MARK;
             case LOCAL_CHANGES -> DDTrackingUIIcons.STATUS_LOCAL_CHANGES;
             case SERVER_CHANGES -> DDTrackingUIIcons.STATUS_SERVER_CHANGES;
@@ -556,7 +558,10 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         dialog.setTitle(DDTrackingUIMessages.projects_connect);
         dialog.setMessage(DDTrackingUIMessages.projects_choose_local);
         try {
-            dialog.setElements(uiManager.getNotDatadamLocalProjects().toArray());
+            dialog.setElements(uiManager.getLocalProjects().stream()
+                .filter(info -> info.remoteProjectId() == null)
+                .map(LocalProjectInfo::project)
+                .toArray());
         } catch (DBException e) {
             showError(DDTrackingUIMessages.projects_connect_failed, e);
             return;
@@ -614,9 +619,9 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
 
     private void resolveProjectConflict(@NotNull DBPProject project) {
         try {
-            Choice choice = uiManager.openConflictDialog(getShell(), project);
+            Choice choice = conflictResolver.openConflictDialog(getShell(), project);
             if (choice != null) {
-                ProjectJobBatchResult<?> result = runOperation(() -> uiManager.applyConflictChoice(project, choice));
+                ProjectJobBatchResult<?> result = runOperation(() -> conflictResolver.applyConflictChoice(project, choice));
                 if (result != null) {
                     showConflictWarning(result);
                 }

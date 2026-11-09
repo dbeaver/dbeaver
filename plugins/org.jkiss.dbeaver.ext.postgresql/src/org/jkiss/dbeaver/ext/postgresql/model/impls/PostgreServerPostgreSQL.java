@@ -104,6 +104,11 @@ public class PostgreServerPostgreSQL extends PostgreServerExtensionBase {
     }
 
     @Override
+    public boolean supportsLogicalReplication() {
+        return dataSource.isServerVersionAtLeast(14, 0);
+    }
+
+    @Override
     public boolean supportsAlterStorageStrategy() {
         return true;
     }

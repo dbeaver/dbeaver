@@ -86,10 +86,14 @@ public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseabl
         return null;
     }
 
+    default boolean matchesModel(@NotNull AIModel model, @Nullable String modelName) {
+        return model.name().equals(modelName);
+    }
+
     default boolean supportsImageInput(@NotNull DBRProgressMonitor monitor) throws DBException {
         try {
             return getModels(monitor).stream()
-                .filter(model -> model.name().equals(getProperties().getEffectiveModel()))
+                .filter(model -> matchesModel(model, getProperties().getEffectiveModel()))
                 .findFirst()
                 .map(AIModel::imageInputSupported)
                 .orElse(true);
