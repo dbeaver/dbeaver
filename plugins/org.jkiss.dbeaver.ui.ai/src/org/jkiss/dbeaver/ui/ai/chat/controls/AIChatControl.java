@@ -857,8 +857,12 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     void enableDragAndDrop(@NotNull Control control) {
         int operations = DND.DROP_DEFAULT | DND.DROP_MOVE | DND.DROP_COPY | DND.DROP_LINK;
         DropTarget dropTarget = new DropTarget(control, operations);
-        dropTarget.setTransfer(TreeNodeTransfer.getInstance(), FileTransfer.getInstance(), ImageTransfer.getInstance(),
-            TextTransfer.getInstance());
+        if (control instanceof StyledText) {
+            dropTarget.setTransfer(FileTransfer.getInstance(), ImageTransfer.getInstance(), TextTransfer.getInstance());
+        } else {
+            dropTarget.setTransfer(TreeNodeTransfer.getInstance(), FileTransfer.getInstance(), ImageTransfer.getInstance(),
+                TextTransfer.getInstance());
+        }
         dropTarget.addDropListener(new DropTargetAdapter() {
             @Override
             public void dragEnter(@NotNull DropTargetEvent event) {
@@ -901,8 +905,8 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             }
 
             private void handleDragEvent(@NotNull DropTargetEvent event) {
-                if (TreeNodeTransfer.getInstance().getDraggedNodes() != null) {
-                    if (!(control instanceof StyledText) && canAttachDroppedConnections(TreeNodeTransfer.getInstance().getDraggedNodes())) {
+                if (!(control instanceof StyledText) && TreeNodeTransfer.getInstance().getDraggedNodes() != null) {
+                    if (canAttachDroppedConnections(TreeNodeTransfer.getInstance().getDraggedNodes())) {
                         event.detail = DND.DROP_COPY;
                         showConnectionDropOverlay();
                     } else {
