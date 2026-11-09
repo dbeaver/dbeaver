@@ -148,7 +148,8 @@ class AIAssistantParallelCallsTest {
         Method execute = AIAssistantImpl.class.getDeclaredMethod("executeEngineStreamRequest", DBRProgressMonitor.class,
             AIConfigurationProfile.class, AIFunctionContext.class, AIEngine.class, List.class, AIEngineResponseConsumer.class);
         execute.setAccessible(true);
-        try (MockedStatic<AIUtils> utils = Mockito.mockStatic(AIUtils.class)) {
+        try (MockedStatic<AIUtils> utils = Mockito.mockStatic(
+            AIUtils.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
             utils.when(AIUtils::useStreamMode).thenReturn(false);
             execute.invoke(assistant, Mockito.mock(DBRProgressMonitor.class), Mockito.mock(AIConfigurationProfile.class),
                 Mockito.mock(AIFunctionContext.class), engine, List.of(), listener);

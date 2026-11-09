@@ -188,7 +188,8 @@ class OpenAIResponsesTest {
         properties.setModel("o3");
         properties.setToken("local-test-key");
         properties.setTemperature(0.5);
-        try (MockedStatic<GeneralUtils> utils = Mockito.mockStatic(GeneralUtils.class);
+        try (MockedStatic<GeneralUtils> utils = Mockito.mockStatic(
+            GeneralUtils.class, Mockito.withSettings().mockMaker("mock-maker-inline"));
             OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)) {
             utils.when(GeneralUtils::getProductTitle).thenReturn("Responses regression test");
             DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
@@ -220,7 +221,8 @@ class OpenAIResponsesTest {
             exchange.close();
         });
         server.start();
-        try (MockedStatic<GeneralUtils> utils = Mockito.mockStatic(GeneralUtils.class);
+        try (MockedStatic<GeneralUtils> utils = Mockito.mockStatic(
+            GeneralUtils.class, Mockito.withSettings().mockMaker("mock-maker-inline"));
             OpenAIClientResponses client = new OpenAIClientResponses(
                 "http://127.0.0.1:" + server.getAddress().getPort(), List.of(), false)) {
             utils.when(GeneralUtils::getProductTitle).thenReturn("Responses regression test");

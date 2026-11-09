@@ -253,7 +253,8 @@ class OpenAIReasoningHistoryTest {
         server.start();
         OpenAIProperties properties = properties();
         properties.setBaseUrl("http://127.0.0.1:" + server.getAddress().getPort());
-        try (MockedStatic<GeneralUtils> utils = Mockito.mockStatic(GeneralUtils.class);
+        try (MockedStatic<GeneralUtils> utils = Mockito.mockStatic(
+            GeneralUtils.class, Mockito.withSettings().mockMaker("mock-maker-inline"));
             OpenAIEngine<OpenAIProperties> engine = new OpenAIEngine<>(properties)) {
             utils.when(GeneralUtils::getProductTitle).thenReturn("Reasoning history test");
             List<AIMessage> history = new ArrayList<>(List.of(AIMessage.userMessage("Inspect a schema")));
