@@ -95,6 +95,24 @@ public class AIConnectionCapabilitiesTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void endpointToolsRemainAvailableWhenOnlyAdditionalDatabaseSupportsThem() throws DBException {
+        AIFunctionContext context = context(sqlite, postgres);
+        for (String endpoint : List.of(AIFunctionParams.SOURCE_CONNECTION_ID_PARAM, AIFunctionParams.TARGET_CONNECTION_ID_PARAM)) {
+            AIFunctionDescriptor function = Mockito.mock(AIFunctionDescriptor.class);
+            Mockito.when(function.getParameter(endpoint)).thenReturn(Mockito.mock(AIFunctionParameter.class));
+            Mockito.when(function.getFunctionState(Mockito.any())).thenAnswer(invocation ->
+                ((AIFunctionContext) invocation.getArgument(0)).getContext() == postgres.database()
+                    ? AIFunctionVerifier.FunctionState.APPLICABLE : AIFunctionVerifier.FunctionState.NOT_APPLICABLE);
+            Assertions.assertEquals(AIFunctionVerifier.FunctionState.APPLICABLE,
+                AIEngineRequestFactory.getRequestFunctionState(function, context));
+            Mockito.when(postgres.container().isConnected()).thenReturn(false);
+            Assertions.assertEquals(AIFunctionVerifier.FunctionState.NOT_APPLICABLE,
+                AIEngineRequestFactory.getRequestFunctionState(function, context));
+            Mockito.when(postgres.container().isConnected()).thenReturn(true);
+        }
+    }
+
+    @Test
     public void rejectsSchemaToolForSqliteBeforeReadingItsChildren() throws DBException {
         AIFunctionContext context = context(postgres, sqlite);
         AIFunctionInternalRegistry registry = Mockito.mock(AIFunctionInternalRegistry.class, Mockito.CALLS_REAL_METHODS);

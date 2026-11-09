@@ -210,8 +210,9 @@ public class AIEngineRequestFactory {
             }
             connections.append(gson.toJson(details)).append('\n');
         }
-        connections.append("Use connectionId to select a connection for database tools. " +
-            "An omitted or empty connectionId selects the primary connection. " +
+        connections.append("Use connectionId for tools with one database connection. " +
+            "Use sourceConnectionId and targetConnectionId for transfer and comparison tools. " +
+            "An omitted or empty connection selector selects the primary connection. " +
             "Only these connections are available. Each connection has its own dialect, scope and access restrictions. " +
             "The primary connection's dialect and namespace defaults do not apply to other connections. " +
             "Call listSchemaNames only for connections that support schemas. " +
@@ -228,7 +229,9 @@ public class AIEngineRequestFactory {
         AIFunctionVerifier.FunctionState state = function.getFunctionState(context);
         AIChatConversation conversation = context.getConversation();
         if (state != AIFunctionVerifier.FunctionState.NOT_APPLICABLE || conversation == null
-            || function.getParameter(AIFunctionParams.CONNECTION_ID_PARAM) == null) {
+            || function.getParameter(AIFunctionParams.CONNECTION_ID_PARAM) == null
+                && function.getParameter(AIFunctionParams.SOURCE_CONNECTION_ID_PARAM) == null
+                && function.getParameter(AIFunctionParams.TARGET_CONNECTION_ID_PARAM) == null) {
             return state;
         }
         for (var container : conversation.getDataSources()) {

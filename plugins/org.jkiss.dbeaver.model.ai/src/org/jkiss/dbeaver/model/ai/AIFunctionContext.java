@@ -84,14 +84,25 @@ public class AIFunctionContext {
         @NotNull Map<String, Object> arguments
     ) throws DBException {
         Object connectionId = arguments.get(AIFunctionParams.CONNECTION_ID_PARAM);
+        if (connectionId != null && function.getParameter(AIFunctionParams.CONNECTION_ID_PARAM) == null
+            && (function.getParameter(AIFunctionParams.SOURCE_CONNECTION_ID_PARAM) != null
+                || function.getParameter(AIFunctionParams.TARGET_CONNECTION_ID_PARAM) != null)) {
+            throw new DBException("Use sourceConnectionId and targetConnectionId instead of connectionId for " + function.getId());
+        }
         if (connectionId != null && !(connectionId instanceof String)) {
             throw new DBException("Connection ID must be a string");
         }
         AIFunctionContext selected = function.getParameter(AIFunctionParams.CONNECTION_ID_PARAM) != null || connectionId != null
             ? withConnection((String) connectionId) : this;
         // validate both endpoints before any source data is read
-        selected.withConnectionParameter(arguments, AIFunctionParams.SOURCE_CONNECTION_ID_PARAM);
-        selected.withConnectionParameter(arguments, AIFunctionParams.TARGET_CONNECTION_ID_PARAM);
+        if (function.getParameter(AIFunctionParams.SOURCE_CONNECTION_ID_PARAM) != null
+            || arguments.containsKey(AIFunctionParams.SOURCE_CONNECTION_ID_PARAM)) {
+            selected.withConnectionParameter(arguments, AIFunctionParams.SOURCE_CONNECTION_ID_PARAM);
+        }
+        if (function.getParameter(AIFunctionParams.TARGET_CONNECTION_ID_PARAM) != null
+            || arguments.containsKey(AIFunctionParams.TARGET_CONNECTION_ID_PARAM)) {
+            selected.withConnectionParameter(arguments, AIFunctionParams.TARGET_CONNECTION_ID_PARAM);
+        }
         return selected;
     }
 
@@ -100,7 +111,7 @@ public class AIFunctionContext {
         throws DBException {
         Object connectionId = arguments.get(parameterName);
         if (connectionId == null) {
-            return this;
+            return withConnection(null);
         }
         if (!(connectionId instanceof String id)) {
             throw new DBException("Connection ID must be a string");
