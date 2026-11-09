@@ -213,6 +213,7 @@ public class AIAssistantFunctionErrorTest extends DBeaverUnitTest {
     @NotNull
     private static AIFunctionCall call(@NotNull AIFunctionType type) {
         AIFunctionDescriptor descriptor = Mockito.mock(AIFunctionDescriptor.class);
+        Mockito.when(descriptor.supportsConnectionRouting()).thenReturn(true);
         Mockito.when(descriptor.getType()).thenReturn(type);
         Mockito.when(descriptor.getId()).thenReturn("test_function");
         Mockito.when(descriptor.getFullId()).thenReturn("test_function");

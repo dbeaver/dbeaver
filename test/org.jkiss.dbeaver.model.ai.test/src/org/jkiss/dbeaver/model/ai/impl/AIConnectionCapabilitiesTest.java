@@ -99,6 +99,7 @@ public class AIConnectionCapabilitiesTest extends DBeaverUnitTest {
         AIFunctionContext context = context(sqlite, postgres);
         for (String endpoint : List.of(AIFunctionParams.SOURCE_CONNECTION_ID_PARAM, AIFunctionParams.TARGET_CONNECTION_ID_PARAM)) {
             AIFunctionDescriptor function = Mockito.mock(AIFunctionDescriptor.class);
+            Mockito.when(function.supportsConnectionRouting()).thenReturn(true);
             Mockito.when(function.getParameter(endpoint)).thenReturn(Mockito.mock(AIFunctionParameter.class));
             Mockito.when(function.getFunctionState(Mockito.any())).thenAnswer(invocation ->
                 ((AIFunctionContext) invocation.getArgument(0)).getContext() == postgres.database()
@@ -110,6 +111,19 @@ public class AIConnectionCapabilitiesTest extends DBeaverUnitTest {
                 AIEngineRequestFactory.getRequestFunctionState(function, context));
             Mockito.when(postgres.container().isConnected()).thenReturn(true);
         }
+    }
+
+    @Test
+    public void externalConnectionParametersDoNotTriggerDatabaseCapabilityChecks() throws DBException {
+        AIFunctionDescriptor function = Mockito.mock(AIFunctionDescriptor.class);
+        Mockito.when(function.getParameter(AIFunctionParams.CONNECTION_ID_PARAM)).thenReturn(Mockito.mock(AIFunctionParameter.class));
+        Mockito.when(function.getFunctionState(Mockito.any())).thenReturn(AIFunctionVerifier.FunctionState.NOT_APPLICABLE);
+        AIFunctionContext context = context(sqlite, postgres);
+        Assertions.assertEquals(AIFunctionVerifier.FunctionState.NOT_APPLICABLE,
+            AIEngineRequestFactory.getRequestFunctionState(function, context));
+        Mockito.verify(function).getFunctionState(context);
+        Mockito.verify(function).supportsConnectionRouting();
+        Mockito.verifyNoMoreInteractions(function);
     }
 
     @Test
@@ -200,6 +214,7 @@ public class AIConnectionCapabilitiesTest extends DBeaverUnitTest {
     private static AIFunctionDescriptor schemaFunction() {
         AIFunctionDescriptor descriptor = Mockito.mock(AIFunctionDescriptor.class, Mockito.CALLS_REAL_METHODS);
         Mockito.when(descriptor.getId()).thenReturn("listSchemaNames");
+        Mockito.when(descriptor.supportsConnectionRouting()).thenReturn(true);
         Mockito.when(descriptor.getParameter(AIFunctionParams.CONNECTION_ID_PARAM)).thenReturn(Mockito.mock(AIFunctionParameter.class));
         Mockito.when(descriptor.getInstance()).thenReturn(new ListSchemaNamesFunction());
         return descriptor;

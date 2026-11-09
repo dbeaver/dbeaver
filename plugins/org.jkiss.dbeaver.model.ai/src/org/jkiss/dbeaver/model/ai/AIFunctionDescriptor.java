@@ -85,6 +85,10 @@ public interface AIFunctionDescriptor {
     @Nullable
     AIFunctionParameter getParameter(@NotNull String name);
 
+    default boolean supportsConnectionRouting() {
+        return false;
+    }
+
     @NotNull
     String[] getDependsOn();
 

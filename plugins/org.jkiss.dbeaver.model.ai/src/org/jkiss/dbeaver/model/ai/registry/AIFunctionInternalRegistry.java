@@ -151,7 +151,7 @@ public class AIFunctionInternalRegistry {
     ) throws DBException {
         AIFunction function = descriptor.getInstance();
         context = context.forFunction(descriptor, arguments);
-        if (descriptor.getParameter(AIFunctionParams.CONNECTION_ID_PARAM) != null
+        if (descriptor.supportsConnectionRouting() && descriptor.getParameter(AIFunctionParams.CONNECTION_ID_PARAM) != null
             && function instanceof AIFunctionVerifier verifier
             && verifier.getFunctionState(context, descriptor) == AIFunctionVerifier.FunctionState.NOT_APPLICABLE) {
             String connection = context.getContext() == null ? "none"

@@ -84,6 +84,9 @@ public class AIFunctionContext {
         @NotNull AIFunctionDescriptor function,
         @NotNull Map<String, Object> arguments
     ) throws DBException {
+        if (!function.supportsConnectionRouting()) {
+            return this;
+        }
         Object connectionId = arguments.get(AIFunctionParams.CONNECTION_ID_PARAM);
         if (connectionId != null && function.getParameter(AIFunctionParams.CONNECTION_ID_PARAM) == null
             && (function.getParameter(AIFunctionParams.SOURCE_CONNECTION_ID_PARAM) != null
@@ -126,6 +129,9 @@ public class AIFunctionContext {
         @NotNull Map<String, Object> arguments,
         @NotNull String parameterName
     ) throws DBException {
+        if (!function.supportsConnectionRouting()) {
+            return this;
+        }
         if (parameterName.startsWith("source") && function.getParameter(AIFunctionParams.SOURCE_CONNECTION_ID_PARAM) != null) {
             return withConnectionParameter(arguments, AIFunctionParams.SOURCE_CONNECTION_ID_PARAM);
         }

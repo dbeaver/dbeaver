@@ -210,8 +210,9 @@ public class AIEngineRequestFactory {
             }
             connections.append(gson.toJson(details)).append('\n');
         }
-        connections.append("Use connectionId for tools with one database connection. " +
-            "Use sourceConnectionId and targetConnectionId for transfer and comparison tools. " +
+        connections.append("For built-in database tools, use connectionId for one connection, " +
+            "or sourceConnectionId and targetConnectionId for transfer and comparison tools. " +
+            "These selectors do not apply to external MCP tools; follow their own parameter schemas. " +
             "An omitted or empty connection selector selects the primary connection. " +
             "Only these connections are available. Each connection has its own dialect, scope and access restrictions. " +
             "The primary connection's dialect and namespace defaults do not apply to other connections. " +
@@ -229,9 +230,7 @@ public class AIEngineRequestFactory {
         AIFunctionVerifier.FunctionState state = function.getFunctionState(context);
         AIChatConversation conversation = context.getConversation();
         if (state != AIFunctionVerifier.FunctionState.NOT_APPLICABLE || conversation == null
-            || function.getParameter(AIFunctionParams.CONNECTION_ID_PARAM) == null
-                && function.getParameter(AIFunctionParams.SOURCE_CONNECTION_ID_PARAM) == null
-                && function.getParameter(AIFunctionParams.TARGET_CONNECTION_ID_PARAM) == null) {
+            || !function.supportsConnectionRouting()) {
             return state;
         }
         for (var container : conversation.getDataSources()) {

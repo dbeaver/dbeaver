@@ -134,7 +134,7 @@ public class AIMultiConnectionTest extends DBeaverUnitTest {
         Assertions.assertSame(primaryContext, context.withConnection("primary").getContext());
         Assertions.assertSame(primaryContext, context.withConnection("").getContext());
         Assertions.assertThrows(DBException.class, () -> context.withConnection("other"));
-        Assertions.assertThrows(DBException.class, () -> context.forFunction(Mockito.mock(AIFunctionDescriptor.class),
+        Assertions.assertThrows(DBException.class, () -> context.forFunction(connectionFunction(),
             Map.of(AIFunctionParams.CONNECTION_ID_PARAM, 123)));
     }
 
@@ -147,7 +147,7 @@ public class AIMultiConnectionTest extends DBeaverUnitTest {
         AIFunctionContext context = new AIFunctionContext(new VoidProgressMonitor(), primaryContext,
             conversation.getPromptGenerator(), conversation, connectionId ->
                 conversation.getDataSource(connectionId) == primary ? primaryContext : additionalContext);
-        AIFunctionDescriptor descriptor = Mockito.mock(AIFunctionDescriptor.class);
+        AIFunctionDescriptor descriptor = connectionFunction();
         AIFunction function = Mockito.mock(AIFunction.class);
         Mockito.when(descriptor.getInstance()).thenReturn(function);
         Mockito.when(descriptor.getParameter(AIFunctionParams.CONNECTION_ID_PARAM))
@@ -345,7 +345,7 @@ public class AIMultiConnectionTest extends DBeaverUnitTest {
         AIFunctionContext context = new AIFunctionContext(new VoidProgressMonitor(), databaseContext(primary),
             Mockito.mock(AIPromptGenerator.class));
         for (String id : List.of("transferData", "dataCompare", "schemaCompare")) {
-            AIFunctionDescriptor descriptor = Mockito.mock(AIFunctionDescriptor.class);
+            AIFunctionDescriptor descriptor = connectionFunction();
             Mockito.when(descriptor.getId()).thenReturn(id);
             Mockito.when(descriptor.getParameter(AIFunctionParams.SOURCE_CONNECTION_ID_PARAM))
                 .thenReturn(Mockito.mock(AIFunctionParameter.class));
@@ -371,7 +371,7 @@ public class AIMultiConnectionTest extends DBeaverUnitTest {
         Mockito.when(provider.getContext("additional")).thenReturn(additionalContext);
         AIFunctionContext context = new AIFunctionContext(new VoidProgressMonitor(), databaseContext(primary),
             Mockito.mock(AIPromptGenerator.class), conversation(primary), provider);
-        AIFunctionDescriptor descriptor = Mockito.mock(AIFunctionDescriptor.class);
+        AIFunctionDescriptor descriptor = connectionFunction();
         Mockito.when(descriptor.getParameter(AIFunctionParams.CONNECTION_ID_PARAM))
             .thenReturn(Mockito.mock(AIFunctionParameter.class));
         Assertions.assertSame(additionalContext,
@@ -389,7 +389,7 @@ public class AIMultiConnectionTest extends DBeaverUnitTest {
         AIFunctionContext context = new AIFunctionContext(new VoidProgressMonitor(), primaryContext,
             conversation.getPromptGenerator(), conversation, connectionId ->
                 conversation.getDataSource(connectionId) == primary ? primaryContext : additionalContext);
-        AIFunctionDescriptor descriptor = Mockito.mock(AIFunctionDescriptor.class);
+        AIFunctionDescriptor descriptor = connectionFunction();
         AIFunction function = Mockito.mock(AIFunction.class);
         Mockito.when(descriptor.getInstance()).thenReturn(function);
         AIFunctionInternalRegistry registry = Mockito.mock(AIFunctionInternalRegistry.class, Mockito.CALLS_REAL_METHODS);
@@ -406,7 +406,7 @@ public class AIMultiConnectionTest extends DBeaverUnitTest {
     public void sourceAndTargetTransformersReceiveTheirOwnContexts() throws DBException {
         AIChatConversation conversation = conversation(primary);
         conversation.addDataSource(additional);
-        AIFunctionDescriptor descriptor = Mockito.mock(AIFunctionDescriptor.class);
+        AIFunctionDescriptor descriptor = connectionFunction();
         AIFunctionParameter tableParameter = Mockito.mock(AIFunctionParameter.class);
         Mockito.when(tableParameter.getTransformer()).thenReturn((databaseContext, functionContext, function, parameter, value) -> {
             Assertions.assertSame(databaseContext, functionContext.getContext());
@@ -551,6 +551,13 @@ public class AIMultiConnectionTest extends DBeaverUnitTest {
         Mockito.when(registry.getDataSource("additional")).thenReturn(additional);
         return new AIChatSession(workspace, provider, Mockito.mock(AIChatStorage.class), monitor -> "session",
             Mockito.mock(UserTokenQuotaService.class));
+    }
+
+    @NotNull
+    private static AIFunctionDescriptor connectionFunction() {
+        AIFunctionDescriptor descriptor = Mockito.mock(AIFunctionDescriptor.class);
+        Mockito.when(descriptor.supportsConnectionRouting()).thenReturn(true);
+        return descriptor;
     }
 
     @NotNull
