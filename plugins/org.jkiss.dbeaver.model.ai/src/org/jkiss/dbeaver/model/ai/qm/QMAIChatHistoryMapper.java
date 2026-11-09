@@ -362,7 +362,8 @@ public class QMAIChatHistoryMapper {
             meta.usage().totalInputTokens(),
             meta.usage().cachedTokens(),
             meta.usage().totalOutputTokens(),
-            meta.usage().reasoningTokens()
+            meta.usage().reasoningTokens(),
+            meta.responseMetadata()
         );
     }
 
@@ -390,7 +391,8 @@ public class QMAIChatHistoryMapper {
                 meta.reasoningTokens()
             ),
             meta.timeSpent(),
-            meta.systemPromptLength()
+            meta.systemPromptLength(),
+            meta.responseMetadata()
         );
     }
 }

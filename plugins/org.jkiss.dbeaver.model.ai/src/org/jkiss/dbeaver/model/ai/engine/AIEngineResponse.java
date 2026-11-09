@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Completion request
@@ -38,6 +39,17 @@ public class AIEngineResponse {
     @Nullable
     private final AIUsage usage;
     private int processingTime;
+    @NotNull
+    private Map<String, String> messageMetadata = Map.of();
+
+    @NotNull
+    public Map<String, String> getMessageMetadata() {
+        return messageMetadata;
+    }
+
+    public void setMessageMetadata(@NotNull Map<String, String> messageMetadata) {
+        this.messageMetadata = Map.copyOf(messageMetadata);
+    }
 
     /**
      * Constructs response with text message

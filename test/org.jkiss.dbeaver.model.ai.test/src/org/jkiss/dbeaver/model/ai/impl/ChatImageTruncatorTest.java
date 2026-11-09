@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -30,6 +31,23 @@ import java.util.stream.IntStream;
 class ChatImageTruncatorTest {
     private static final AIImageAttachment IMAGE = AIImageAttachment.fromBytes("image.png", Base64.getDecoder().decode(
         "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aN1cAAAAASUVORK5CYII="));
+
+    @Test
+    void reservesImagesWhenCountingTheFullResponsesContext() throws DBException {
+        ChatTruncator truncator = builder(100).imageTokenCounter(image -> 30)
+            .contextTokenCounter(messages -> messages.stream().mapToInt(message -> new DummyTokenCounter()
+                .count(message.getContent()) + (message.getRole() == AIMessageType.ASSISTANT ? 20 : 0))
+                .sum()).build();
+        AIMessage latest = AIMessage.userMessage("describe ".repeat(100)).withImages(List.of(IMAGE));
+        List<AIMessage> truncated = truncator.tryTruncate(List.of(AIMessage.systemMessage("system ".repeat(100)),
+            AIMessage.assistantMessage("Old response", null), latest));
+        Assertions.assertNotNull(truncated);
+        Assertions.assertEquals(List.of(IMAGE), truncated.getLast().getImages());
+        int total = truncated.stream().mapToInt(message -> new DummyTokenCounter().count(message.getContent())
+            + message.getImages().size() * 30).sum();
+        Assertions.assertTrue(total <= 70);
+        Assertions.assertEquals(1, latest.getImages().size());
+    }
 
     @Test
     void dropsOlderImageMessagesToFitTheBudget() throws DBException {

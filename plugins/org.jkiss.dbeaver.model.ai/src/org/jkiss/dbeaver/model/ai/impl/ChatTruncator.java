@@ -37,6 +37,7 @@ public final class ChatTruncator {
     private final int reserveForOverhead;
     private final TokenCounter counter;
     private final ToIntFunction<AIImageAttachment> imageTokenCounter;
+    private final ToIntFunction<List<AIMessage>> contextTokenCounter;
 
     private ChatTruncator(@NotNull Builder b) {
         this.maxTokens = b.maxTokens;
@@ -45,6 +46,7 @@ public final class ChatTruncator {
         this.counter = Objects.requireNonNull(b.counter, "TokenCounter is required");
         this.reserveForSystem = b.reserveForSystem;
         this.imageTokenCounter = b.imageTokenCounter;
+        this.contextTokenCounter = b.contextTokenCounter;
         if (maxTokens <= reserveForReply + reserveForOverhead) {
             throw new IllegalArgumentException("This AI request does not fit into the selected context window");
         }
@@ -62,6 +64,13 @@ public final class ChatTruncator {
         List<AIMessage> messages = filterNonEmpty(input);
         if (messages.isEmpty()) {
             return null;
+        }
+
+        if (contextTokenCounter != null) {
+            long visibleTokens = messages.stream().mapToLong(message -> counter.count(message.getContent())).sum();
+            if (contextTokenCounter.applyAsInt(messages) > visibleTokens) {
+                return truncateContext(messages);
+            }
         }
 
         // 1) Extract and merge SYSTEM messages
@@ -152,6 +161,65 @@ public final class ChatTruncator {
 
         result.addAll(pickedReverse);
         return truncated ? result : null;
+    }
+
+    @Nullable
+    private List<AIMessage> truncateContext(@NotNull List<AIMessage> messages) throws DBException {
+        int budget = maxTokens - reserveForReply - reserveForOverhead;
+        if (countContextTokens(messages) <= budget) {
+            return null;
+        }
+        List<AIMessage> systems = messages.stream().filter(message -> message.getRole() == AIMessageType.SYSTEM).toList();
+        AIMessage system = systems.isEmpty() ? null : mergeSystems(systems);
+        List<List<AIMessage>> turns = new ArrayList<>();
+        for (AIMessage message : messages) {
+            if (message.getRole() == AIMessageType.SYSTEM) {
+                continue;
+            }
+            if (turns.isEmpty() || message.getRole() == AIMessageType.USER) {
+                turns.add(new ArrayList<>());
+            }
+            turns.getLast().add(message);
+        }
+        List<AIMessage> selected = new ArrayList<>(turns.isEmpty() ? List.of() : turns.getLast());
+        if (countContextTokens(selected) > budget) {
+            if (selected.size() != 1 || selected.getFirst().getRole() != AIMessageType.USER) {
+                throw new DBException("The latest AI turn exceeds the selected context window. "
+                    + "Increase the context window size or start a new conversation.");
+            }
+            if (countImageTokens(selected.getFirst()) > budget) {
+                throw new DBException("The images in the latest message exceed the selected context window. "
+                    + "Remove some images or increase the context window size.");
+            }
+            AIMessage trimmed = tryTruncateMessage(selected.getFirst(), budget);
+            selected.set(0, trimmed == null ? selected.getFirst() : trimmed);
+        }
+        int systemReserve = system == null ? 0 : Math.min(reserveForSystem, counter.count(system.getContent()));
+        // native reasoning and tool items must be retained or removed together with their user turn
+        for (int index = turns.size() - 2; index >= 0; index--) {
+            List<AIMessage> candidate = new ArrayList<>(turns.get(index));
+            candidate.addAll(selected);
+            if (countContextTokens(candidate) > Math.max(budget - systemReserve, countContextTokens(selected))) {
+                break;
+            }
+            selected = candidate;
+        }
+        if (system != null) {
+            AIMessage trimmed = tryTruncateMessage(system, Math.max(0, budget - countContextTokens(selected)));
+            selected.addFirst(trimmed == null ? system : trimmed);
+        }
+        if (countContextTokens(selected) > budget) {
+            throw new DBException("The AI conversation exceeds the selected context window");
+        }
+        return selected;
+    }
+
+    private int countContextTokens(@NotNull List<AIMessage> messages) {
+        long tokens = contextTokenCounter.applyAsInt(messages);
+        for (AIMessage message : messages) {
+            tokens += countImageTokens(message);
+        }
+        return (int) Math.min(tokens, Integer.MAX_VALUE);
     }
 
     @NotNull
@@ -286,6 +354,7 @@ public final class ChatTruncator {
         private int reserveForOverhead;
         private TokenCounter counter;
         private ToIntFunction<AIImageAttachment> imageTokenCounter = image -> AIImageAttachment.DEFAULT_TOKEN_ESTIMATE;
+        private ToIntFunction<List<AIMessage>> contextTokenCounter;
 
         @NotNull
         public Builder maxTokens(int v) {
@@ -320,6 +389,12 @@ public final class ChatTruncator {
         @NotNull
         public Builder imageTokenCounter(@NotNull ToIntFunction<AIImageAttachment> counter) {
             this.imageTokenCounter = Objects.requireNonNull(counter);
+            return this;
+        }
+
+        @NotNull
+        public Builder contextTokenCounter(@Nullable ToIntFunction<List<AIMessage>> contextTokenCounter) {
+            this.contextTokenCounter = contextTokenCounter;
             return this;
         }
 

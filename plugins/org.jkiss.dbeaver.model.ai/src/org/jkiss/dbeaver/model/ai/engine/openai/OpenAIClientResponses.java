@@ -123,7 +123,7 @@ public class OpenAIClientResponses extends OpenAiClientBase {
 
         HttpRequest modifiedRequest = applyFilters(request);
 
-        Consumer<String> stringConsumer = new OpenAiAPIStreamConsumer(listener);
+        Consumer<String> stringConsumer = new OpenAiAPIStreamConsumer(listener, completionRequest.reasoningSource);
         client.sendAsync(
             modifiedRequest,
             stringConsumer,

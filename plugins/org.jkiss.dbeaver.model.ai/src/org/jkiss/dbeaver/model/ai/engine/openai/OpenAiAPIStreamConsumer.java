@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
@@ -48,12 +49,19 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
     private static final String EVENT_EVENT = "event:";
     private static final String EVENT_TYPE_ARGUMENTS_DELTA = "response.function_call_arguments.delta";
     private final AIEngineResponseConsumer listener;
+    private final String reasoningSource;
     private boolean functionCall;
+    private final List<AIFunctionCall> functionCalls = new ArrayList<>();
     private boolean failed;
     private final List<OAIMessage> reasoning = new ArrayList<>();
 
     public OpenAiAPIStreamConsumer(@NotNull AIEngineResponseConsumer listener) {
+        this(listener, null);
+    }
+
+    public OpenAiAPIStreamConsumer(@NotNull AIEngineResponseConsumer listener, @Nullable String reasoningSource) {
         this.listener = listener;
+        this.reasoningSource = reasoningSource;
     }
 
     @Override
@@ -88,13 +96,20 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
                     return;
                 }
                 if (EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type)) {
+                    if (functionCalls.isEmpty()) {
+                        listener.messageMetadata(OpenAiUtils.createReasoningMetadata(
+                            reasoning, reasoningSource, chunk.response.getAIUsage()));
+                    } else {
+                        functionCalls.forEach(call -> OpenAiUtils.setReasoningUsage(call, chunk.response.getAIUsage()));
+                    }
                     listener.usage(chunk.response.getAIUsage());
                 } else {
 
                     if (chunk.item != null && OAIMessage.TYPE_FUNCTION_CALL.equals(chunk.item.type)) {
                         if (EVENT_TYPE_ITEM_DONE.equals(chunk.type)) {
-                            listener.nextChunk(new AIEngineResponseChunk(
-                                OpenAiUtils.createFunctionCall(chunk.item, reasoning)));
+                            AIFunctionCall call = OpenAiUtils.createFunctionCall(chunk.item, reasoning, reasoningSource);
+                            functionCalls.add(call);
+                            listener.nextChunk(new AIEngineResponseChunk(call));
                             functionCall = false;
                         } else {
                             functionCall = true;

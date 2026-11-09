@@ -21,12 +21,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.AIFunctionParameter;
 import org.jkiss.dbeaver.model.ai.AIImageAttachment;
 import org.jkiss.dbeaver.model.ai.AIImageDimensions;
 import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.AIMessageMeta;
+import org.jkiss.dbeaver.model.ai.AIMessageType;
+import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
@@ -37,11 +41,14 @@ import java.io.IOException;
 import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
+import java.util.function.ToIntFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -94,16 +101,59 @@ public class OpenAiUtils {
 
     @NotNull
     public static AIFunctionCall createFunctionCall(@NotNull OAIMessage message, @NotNull List<OAIMessage> reasoning) throws DBException {
+        return createFunctionCall(message, reasoning, null);
+    }
+
+    @NotNull
+    public static AIFunctionCall createFunctionCall(
+        @NotNull OAIMessage message,
+        @NotNull List<OAIMessage> reasoning,
+        @Nullable String reasoningSource
+    ) throws DBException {
         AIFunctionCall call = createFunctionCall(message);
-        if (!reasoning.isEmpty()) {
+        if (!reasoning.isEmpty() || reasoningSource != null) {
             Map<String, String> metadata = new HashMap<>();
             if (call.getMessageMetadata() != null) {
                 metadata.putAll(call.getMessageMetadata());
             }
-            metadata.put(OpenAIConstants.TOOL_CALL_REASONING, JSONUtils.GSON.toJson(reasoning));
+            metadata.putAll(createReasoningMetadata(reasoning, reasoningSource));
             call.setMessageMetadata(metadata);
         }
         return call;
+    }
+
+    @NotNull
+    static Map<String, String> createReasoningMetadata(@NotNull List<OAIMessage> reasoning, @Nullable String reasoningSource) {
+        return createReasoningMetadata(reasoning, reasoningSource, null);
+    }
+
+    @NotNull
+    static Map<String, String> createReasoningMetadata(
+        @NotNull List<OAIMessage> reasoning,
+        @Nullable String reasoningSource,
+        @Nullable AIUsage usage
+    ) {
+        Map<String, String> metadata = new HashMap<>();
+        if (!reasoning.isEmpty()) {
+            metadata.put(OpenAIConstants.TOOL_CALL_REASONING, JSONUtils.GSON.toJson(reasoning));
+        }
+        if (reasoningSource != null) {
+            metadata.put(OpenAIConstants.REASONING_SOURCE, reasoningSource);
+        }
+        if (!reasoning.isEmpty() && usage != null && usage.reasoningTokens() > 0) {
+            metadata.put(OpenAIConstants.REASONING_TOKENS, Integer.toString(usage.reasoningTokens()));
+        }
+        return metadata;
+    }
+
+    static void setReasoningUsage(@NotNull AIFunctionCall call, @Nullable AIUsage usage) {
+        if (usage != null && usage.reasoningTokens() > 0 && call.getMessageMetadata() != null
+            && call.getMessageMetadata().containsKey(OpenAIConstants.TOOL_CALL_REASONING)
+        ) {
+            Map<String, String> metadata = new HashMap<>(call.getMessageMetadata());
+            metadata.put(OpenAIConstants.REASONING_TOKENS, Integer.toString(usage.reasoningTokens()));
+            call.setMessageMetadata(metadata);
+        }
     }
 
     @NotNull
@@ -112,9 +162,31 @@ public class OpenAiUtils {
         @Nullable String modelName,
         @Nullable Double temperature
     ) {
+        return createOpenAiRequest(request, modelName, temperature, null);
+    }
+
+    @NotNull
+    public static OAIResponsesRequest createOpenAiRequest(
+        @NotNull AIEngineRequest request,
+        @Nullable String modelName,
+        @Nullable Double temperature,
+        @Nullable String reasoningSource
+    ) {
+        return createOpenAiRequest(request, modelName, temperature, reasoningSource, false);
+    }
+
+    @NotNull
+    public static OAIResponsesRequest createOpenAiRequest(
+        @NotNull AIEngineRequest request,
+        @Nullable String modelName,
+        @Nullable Double temperature,
+        @Nullable String reasoningSource,
+        boolean reasoningHistoryRequired
+    ) {
         OAIResponsesRequest oaiRequest = new OAIResponsesRequest();
         List<AIMessage> messages = request.getMessages();
-        oaiRequest.input = fromMessages(messages);
+        oaiRequest.input = fromMessages(messages, reasoningSource, reasoningHistoryRequired && !request.getFunctions().isEmpty());
+        oaiRequest.reasoningSource = reasoningSource;
         oaiRequest.store = false;
         oaiRequest.include = new String[] {"reasoning.encrypted_content"};
         oaiRequest.model = modelName;
@@ -170,13 +242,30 @@ public class OpenAiUtils {
     }
 
     @NotNull
-    private static List<OAIMessage> fromMessages(@NotNull List<AIMessage> messages) {
+    private static List<OAIMessage> fromMessages(
+        @NotNull List<AIMessage> messages,
+        @Nullable String reasoningSource,
+        boolean reasoningRequired
+    ) {
         List<OAIMessage> result = new ArrayList<>(messages.size());
         List<OAIMessage> outputs = new ArrayList<>();
         String previousReasoning = null;
         for (AIMessage message : messages) {
             AIFunctionCall call = message.getFunctionCall();
             if (call != null) {
+                Map<String, String> metadata = call.getMessageMetadata();
+                if (reasoningRequired && (metadata == null || !metadata.containsKey(OpenAIConstants.TOOL_CALL_REASONING))
+                    || metadata != null && (metadata.containsKey(OpenAIConstants.TOOL_CALL_REASONING)
+                    || metadata.containsKey(OpenAIConstants.REASONING_SOURCE))
+                    && !isReasoningCompatible(metadata, reasoningSource)
+                ) {
+                    result.addAll(outputs);
+                    outputs.clear();
+                    previousReasoning = null;
+                    // foreign tool state cannot be replayed as this provider's function call
+                    result.add(importResponse(message));
+                    continue;
+                }
                 OAIMessage functionCallMessage = OAIMessageFactory.fromAIMessage(message);
                 if (!CommonUtils.isEmpty(functionCallMessage.callId)) {
                     String reasoning = call.getMessageMetadata() == null ? null
@@ -197,11 +286,110 @@ public class OpenAiUtils {
                 result.addAll(outputs);
                 outputs.clear();
                 previousReasoning = null;
+                Map<String, String> metadata = message.getMeta() == null ? Map.of() : message.getMeta().stream()
+                    .map(AIMessageMeta::responseMetadata)
+                    .filter(state -> state.containsKey(OpenAIConstants.TOOL_CALL_REASONING)
+                        || state.containsKey(OpenAIConstants.REASONING_SOURCE) || state.containsKey(AIConstants.RESPONSE_INCOMPLETE))
+                    .findFirst().orElse(Map.of());
+                if (Boolean.parseBoolean(metadata.get(AIConstants.RESPONSE_INCOMPLETE))
+                    || !metadata.isEmpty() && !isReasoningCompatible(metadata, reasoningSource)
+                    || reasoningRequired && message.getRole() == AIMessageType.ASSISTANT
+                        && !metadata.containsKey(OpenAIConstants.TOOL_CALL_REASONING)
+                ) {
+                    result.add(importResponse(message));
+                    continue;
+                }
+                String reasoning = metadata.get(OpenAIConstants.TOOL_CALL_REASONING);
+                if (reasoning != null) {
+                    result.addAll(List.of(JSONUtils.GSON.fromJson(reasoning, OAIMessage[].class)));
+                }
                 result.add(OAIMessageFactory.fromAIMessage(message));
             }
         }
         result.addAll(outputs);
         return result;
+    }
+
+    private static boolean isReasoningCompatible(@NotNull Map<String, String> metadata, @Nullable String reasoningSource) {
+        return reasoningSource == null || reasoningSource.equals(metadata.get(OpenAIConstants.REASONING_SOURCE));
+    }
+
+    @NotNull
+    private static OAIMessage importResponse(@NotNull AIMessage message) {
+        // reasoning providers may reject assistant turns without their original state
+        return OAIMessageFactory.fromAIMessage(AIMessage.userMessage("Previous assistant response:\n" + message.getContent())
+            .withImages(message.getImages()));
+    }
+
+    static int countContextTokens(
+        @NotNull List<AIMessage> messages,
+        @NotNull String reasoningSource,
+        boolean reasoningRequired,
+        @NotNull ToIntFunction<String> textCounter
+    ) {
+        List<OAIMessage> input = fromMessages(messages, reasoningSource, reasoningRequired);
+        long tokens = 0;
+        Set<String> retainedReasoning = new HashSet<>();
+        for (OAIMessage message : input) {
+            tokens += countTextTokens(message, textCounter);
+            if (OAIMessage.TYPE_FUNCTION_REASONING.equals(message.type)) {
+                retainedReasoning.add(JSONUtils.GSON.toJson(message));
+            }
+        }
+        Map<String, Integer> reportedTokens = new HashMap<>();
+        for (AIMessage message : messages) {
+            if (message.getFunctionCall() != null) {
+                Map<String, String> metadata = message.getFunctionCall().getMessageMetadata();
+                if (metadata != null) {
+                    collectReasoningUsage(reportedTokens, metadata, 0);
+                }
+            } else if (message.getMeta() != null) {
+                for (AIMessageMeta meta : message.getMeta()) {
+                    collectReasoningUsage(
+                        reportedTokens, meta.responseMetadata(), meta.usage() == null ? 0 : meta.usage().reasoningTokens());
+                }
+            }
+        }
+        for (var entry : reportedTokens.entrySet()) {
+            List<OAIMessage> reasoning = List.of(JSONUtils.GSON.fromJson(entry.getKey(), OAIMessage[].class));
+            if (reasoning.stream().allMatch(item -> retainedReasoning.contains(JSONUtils.GSON.toJson(item)))) {
+                long estimatedTokens = reasoning.stream().mapToLong(item -> countTextTokens(item, textCounter)).sum();
+                tokens += Math.max(0, entry.getValue() - estimatedTokens);
+            }
+        }
+        return (int) Math.min(tokens, Integer.MAX_VALUE);
+    }
+
+    private static void collectReasoningUsage(
+        @NotNull Map<String, Integer> groups,
+        @NotNull Map<String, String> metadata,
+        int reportedTokens
+    ) {
+        String reasoning = metadata.get(OpenAIConstants.TOOL_CALL_REASONING);
+        if (reasoning != null) {
+            groups.merge(reasoning, Math.max(reportedTokens, CommonUtils.toInt(metadata.get(OpenAIConstants.REASONING_TOKENS))), Math::max);
+        }
+    }
+
+    private static long countTextTokens(@NotNull OAIMessage message, @NotNull ToIntFunction<String> textCounter) {
+        long tokens = textCounter.applyAsInt(message.getFullText());
+        if (message.arguments != null) {
+            tokens += textCounter.applyAsInt(message.arguments);
+        }
+        if (message.output != null) {
+            tokens += textCounter.applyAsInt(message.output);
+        }
+        if (message.summary != null) {
+            for (OAIMessageContent summary : message.summary) {
+                tokens += summary.text == null ? 0 : textCounter.applyAsInt(summary.text);
+            }
+        }
+        if (OAIMessage.TYPE_FUNCTION_REASONING.equals(message.type) && message.getFullText().isEmpty()
+            && message.encryptedContent != null
+        ) {
+            tokens += textCounter.applyAsInt(message.encryptedContent);
+        }
+        return tokens;
     }
 
     public static boolean shouldFallbackToLegacyChat(@Nullable String message) {

@@ -17,8 +17,11 @@
 
 package org.jkiss.dbeaver.model.ai.impl;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiAPIStreamConsumer;
+import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiUtils;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
@@ -37,6 +40,56 @@ import java.util.Map;
 import java.util.Objects;
 
 class AIAssistantParallelCallsTest {
+    @ParameterizedTest
+    @ValueSource(strings = {"incomplete", "failed", "canceled", "monitor_canceled"})
+    void importsPartialAssistantTextAfterInterruptedResponses(@NotNull String status) {
+        AIEngine<?> engine = Mockito.mock(AIEngine.class);
+        Mockito.doReturn(Mockito.mock(AIEngineProperties.class)).when(engine).getProperties();
+        AIChatConversation conversation = Mockito.mock(AIChatConversation.class);
+        Mockito.when(conversation.isActive()).thenReturn(true);
+        DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
+        AIChatResponseConsumer listener = Mockito.mock(AIChatResponseConsumer.class);
+        AIEngineResponseConsumerImpl consumer = new AIEngineResponseConsumerImpl(listener, monitor, engine, conversation,
+            Mockito.mock(AIEngineDescriptor.class), calls -> Assertions.fail("Unexpected function dispatch"));
+        OpenAiAPIStreamConsumer stream = new OpenAiAPIStreamConsumer(consumer, "source");
+        stream.accept("data: {\"type\":\"response.output_text.delta\",\"delta\":\"SELECT \"}");
+        boolean canceled = status.endsWith("canceled");
+        if (canceled) {
+            Mockito.when(monitor.isCanceled()).thenReturn(true);
+            Mockito.when(conversation.getState()).thenReturn(status.equals("canceled")
+                ? AIChatConversation.State.CANCELED : AIChatConversation.State.STARTED);
+            consumer.nextChunk(new AIEngineResponseChunk(List.of("discarded")));
+        } else {
+            stream.accept("data: {\"type\":\"response." + status + "\",\"response\":{\"status\":\"" + status + "\",\"output\":[]}}");
+        }
+        ArgumentCaptor<List<AIMessageMeta>> saved = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(listener).complete(saved.capture(), Mockito.eq(true), Mockito.eq(canceled));
+        Assertions.assertEquals("true", saved.getValue().getFirst().responseMetadata().get(AIConstants.RESPONSE_INCOMPLETE));
+        var next = OpenAiUtils.createOpenAiRequest(new AIEngineRequest(List.of(
+            AIMessage.assistantMessage("SELECT ", saved.getValue()), AIMessage.userMessage("Continue"))), "test", null, "source");
+        Assertions.assertTrue(next.input.stream().allMatch(message -> "user".equals(message.role)));
+        Assertions.assertTrue(next.input.getFirst().getFullText().contains("SELECT "));
+        Mockito.verify(listener).nextMessageChunk("SELECT ");
+    }
+
+    @Test
+    void attachesProviderStateToCompletedAssistantMessage() {
+        AIEngine<?> engine = Mockito.mock(AIEngine.class);
+        Mockito.doReturn(Mockito.mock(AIEngineProperties.class)).when(engine).getProperties();
+        AIChatConversation conversation = Mockito.mock(AIChatConversation.class);
+        Mockito.when(conversation.isActive()).thenReturn(true);
+        AIChatResponseConsumer listener = Mockito.mock(AIChatResponseConsumer.class);
+        AIEngineResponseConsumerImpl consumer = new AIEngineResponseConsumerImpl(listener, Mockito.mock(DBRProgressMonitor.class),
+            engine, conversation, Mockito.mock(AIEngineDescriptor.class), calls -> Assertions.fail("Unexpected function call"));
+        Map<String, String> metadata = Map.of("provider-state", "opaque-state");
+        consumer.nextChunk(new AIEngineResponseChunk(List.of("Answer")));
+        consumer.messageMetadata(metadata);
+        consumer.completeBlock();
+        ArgumentCaptor<List<AIMessageMeta>> completed = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(listener).complete(completed.capture(), Mockito.eq(true), Mockito.eq(false));
+        Assertions.assertEquals(metadata, completed.getValue().getFirst().responseMetadata());
+    }
+
     @ParameterizedTest
     @ValueSource(booleans = {false, true})
     void processesEverySynchronousCall(boolean actions) throws Exception {

@@ -296,6 +296,7 @@ public class AIAssistantImpl implements AIAssistant {
                 engine.requestCompletionStream(monitor, request, listener);
             } else {
                 AIEngineResponse response = engine.requestCompletion(monitor, request);
+                listener.messageMetadata(response.getMessageMetadata());
 
                 if (!response.getFunctionCalls().isEmpty()) {
                     for (AIFunctionCall functionCall : response.getFunctionCalls()) {

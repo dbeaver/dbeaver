@@ -63,6 +63,7 @@ public class AIConstants {
     public static final String AI_TOOL_GET_TABLE_DETAILS = AIFunctionDescriptor.getFullFunctionId(AI_TOOLBOX_INTERNAL, "getTableDetails");
     public static final String AI_PROMPT_FEATURE_FULL_DDL = "fullDDL";
     public static final String AI_USE_STREAM_MODE = "ai.streamMode";
+    public static final String RESPONSE_INCOMPLETE = "response.incomplete";
     // AI Chat
     public static final String AI_CHAT_EXECUTE_IN_NEW_CONSOLE = "ai.chat.executeInNewConsole";
     public static final String AI_CHAT_SHOW_MESSAGE_TIME = "ai.chat.show.message.time";

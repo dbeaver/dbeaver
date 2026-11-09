@@ -19,14 +19,18 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.AIImageAttachment;
+import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
+import org.jkiss.dbeaver.model.ai.impl.ChatTruncator;
+import org.jkiss.dbeaver.model.ai.impl.DummyTokenCounter;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -35,6 +39,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.ToIntFunction;
 
 public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
 
@@ -97,19 +102,22 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
         List<AIFunctionCall> functionCalls = new ArrayList<>();
         for (OAIMessage message : completionResult.output) {
             if (OAIMessage.TYPE_FUNCTION_CALL.equals(message.type)) {
-                functionCalls.add(OpenAiUtils.createFunctionCall(message, reasoning));
+                functionCalls.add(OpenAiUtils.createFunctionCall(message, reasoning, reasoningSource()));
             }
         }
         AIUsage usage = completionResult.getAIUsage();
+        functionCalls.forEach(call -> OpenAiUtils.setReasoningUsage(call, usage));
         if (!functionCalls.isEmpty()) {
             return new AIEngineResponse(functionCalls, usage);
         }
         List<OAIMessage> messages = completionResult.output.stream()
             .filter(message -> OAIMessage.TYPE_MESSAGE.equals(message.type))
             .toList();
-        return new AIEngineResponse(AIMessageType.ASSISTANT, messages.isEmpty()
+        AIEngineResponse response = new AIEngineResponse(AIMessageType.ASSISTANT, messages.isEmpty()
             ? List.of(AIMessages.ai_empty_engine_response)
             : messages.stream().map(OAIMessage::getFullText).toList(), usage);
+        response.setMessageMetadata(OpenAiUtils.createReasoningMetadata(reasoning, reasoningSource(), usage));
+        return response;
     }
 
     @Override
@@ -150,13 +158,47 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     @NotNull
     private OAIResponsesRequest createRequest(@NotNull AIEngineRequest request) throws DBException {
-        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(request, model(), temperature());
+        AIEngineRequest prepared = request;
+        Integer configuredWindow = properties.getEffectiveContextWindowSize();
+        int contextWindow = configuredWindow == null ? AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE : configuredWindow;
+        if (contextWindow > 0) {
+            DummyTokenCounter counter = new DummyTokenCounter();
+            List<AIMessage> truncated = ChatTruncator.builder().maxTokens(contextWindow)
+                .reserveForSystem(contextWindow / 2).tokenCounter(counter)
+                .imageTokenCounter(this::estimateImageTokens)
+                .contextTokenCounter(getContextTokenCounter(counter::count, !request.getFunctions().isEmpty()))
+                .build().tryTruncate(request.getMessages());
+            if (truncated != null) {
+                prepared = new AIEngineRequest(truncated);
+                prepared.setFunctions(request.getFunctions());
+                request.setWasPromptTruncated(true);
+            }
+        }
+        OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(
+            prepared, model(), temperature(), reasoningSource(), properties.isReasoningHistoryRequired());
         if (properties instanceof OpenAIProperties openAIProperties
             && openAIProperties.isChatGptAccountAuthentication()
         ) {
             OpenAiUtils.prepareChatGptAccountRequest(oaiRequest);
         }
         return oaiRequest;
+    }
+
+    @NotNull
+    @Override
+    public ToIntFunction<List<AIMessage>> getContextTokenCounter(
+        @NotNull ToIntFunction<String> textCounter,
+        boolean functionsEnabled
+    ) throws DBException {
+        String source = reasoningSource();
+        return messages -> OpenAiUtils.countContextTokens(messages, source,
+            functionsEnabled && properties.isReasoningHistoryRequired(), textCounter);
+    }
+
+    @NotNull
+    private String reasoningSource() throws DBException {
+        return properties.getClass().getName() + "\n" + properties.getEffectiveBaseUrl() + "\n" + model() + "\n"
+            + (properties instanceof OpenAIProperties openAIProperties ? openAIProperties.getAuthentication() : "");
     }
 
     @NotNull
