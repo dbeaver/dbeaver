@@ -41,7 +41,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Locale;
-import java.util.function.Consumer;
 
 public class OpenAIClientChat extends OpenAiClientBase {
     private static final Gson GSON = new GsonBuilder().create();
@@ -125,12 +124,12 @@ public class OpenAIClientChat extends OpenAiClientBase {
 
         HttpRequest modifiedRequest = applyFilters(request);
 
-        Consumer<String> stringConsumer = new OpenAiAPIStreamConsumer(listener);
+        OpenAiAPIStreamConsumer stringConsumer = new OpenAiAPIStreamConsumer(listener);
         client.sendAsync(
             modifiedRequest,
             stringConsumer,
-            listener::error,
-            listener::completeBlock
+            stringConsumer::error,
+            stringConsumer::complete
         );
     }
 }

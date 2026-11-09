@@ -53,6 +53,8 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
     private boolean functionCall;
     private final List<AIFunctionCall> functionCalls = new ArrayList<>();
     private boolean failed;
+    private boolean completed;
+    private boolean closed;
     private final List<OAIMessage> reasoning = new ArrayList<>();
 
     public OpenAiAPIStreamConsumer(@NotNull AIEngineResponseConsumer listener) {
@@ -66,7 +68,7 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
 
     @Override
     public void accept(@Nullable String event) {
-        if (failed || CommonUtils.isEmpty(event)) {
+        if (failed || closed || CommonUtils.isEmpty(event)) {
             return;
         }
         if (event.startsWith(DATA_EVENT)) {
@@ -77,11 +79,10 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
             try {
                 OAIResponsesChunk chunk = GSON.fromJson(data, OAIResponsesChunk.class);
                 if (chunk.error != null) {
-                    listener.error(new DBException(chunk.error.code + ": " + chunk.error.message));
+                    error(new DBException(chunk.error.code + ": " + chunk.error.message));
                     return;
                 }
                 if ("response.failed".equals(chunk.type) || "response.incomplete".equals(chunk.type)) {
-                    failed = true;
                     if (chunk.response != null) {
                         listener.usage(chunk.response.getAIUsage());
                         chunk.response.status = chunk.type.substring("response.".length());
@@ -96,6 +97,10 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
                     return;
                 }
                 if (EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type)) {
+                    if (chunk.response == null) {
+                        throw new DBException("Missing completed response");
+                    }
+                    chunk.response.validateCompletion();
                     if (functionCalls.isEmpty()) {
                         listener.messageMetadata(OpenAiUtils.createReasoningMetadata(
                             reasoning, reasoningSource, chunk.response.getAIUsage()));
@@ -103,13 +108,13 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
                         functionCalls.forEach(call -> OpenAiUtils.setReasoningUsage(call, chunk.response.getAIUsage()));
                     }
                     listener.usage(chunk.response.getAIUsage());
+                    completed = true;
                 } else {
 
                     if (chunk.item != null && OAIMessage.TYPE_FUNCTION_CALL.equals(chunk.item.type)) {
                         if (EVENT_TYPE_ITEM_DONE.equals(chunk.type)) {
                             AIFunctionCall call = OpenAiUtils.createFunctionCall(chunk.item, reasoning, reasoningSource);
                             functionCalls.add(call);
-                            listener.nextChunk(new AIEngineResponseChunk(call));
                             functionCall = false;
                         } else {
                             functionCall = true;
@@ -125,7 +130,7 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
                     }
                 }
             } catch (Exception e) {
-                listener.error(e);
+                error(e);
             }
         } else if (event.startsWith(EVENT_EVENT)) {
             String eventType = event.substring(EVENT_EVENT.length()).trim();
@@ -145,6 +150,32 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
         } else {
             log.debug("Unknown OpenAI event: " + event);
         }
+    }
+
+    public void error(@NotNull Throwable error) {
+        if (failed || closed) {
+            return;
+        }
+        failed = true;
+        functionCalls.clear();
+        listener.error(error);
+    }
+
+    public void complete() {
+        if (failed || closed) {
+            return;
+        }
+        if (!completed) {
+            error(new DBException("Response stream ended before completion"));
+            return;
+        }
+        closed = true;
+        // completed items are provisional until the entire response succeeds
+        for (AIFunctionCall call : functionCalls) {
+            listener.nextChunk(new AIEngineResponseChunk(call));
+        }
+        functionCalls.clear();
+        listener.completeBlock();
     }
 
     @NotNull

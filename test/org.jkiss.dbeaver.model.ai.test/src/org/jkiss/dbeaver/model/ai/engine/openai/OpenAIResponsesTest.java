@@ -100,6 +100,8 @@ class OpenAIResponsesTest {
             + REASONING.replace("opaque-reasoning", "partial") + "}");
         consumer.accept("data: {\"type\":\"response.output_item.done\",\"item\":" + REASONING + "}");
         consumer.accept("data: {\"type\":\"response.output_item.done\",\"item\":" + CALL + "}");
+        consumer.accept("data: {\"type\":\"response.completed\",\"response\":{\"status\":\"completed\"}}");
+        consumer.complete();
         ArgumentCaptor<AIEngineResponseChunk> chunks = ArgumentCaptor.forClass(AIEngineResponseChunk.class);
         Mockito.verify(listener).nextChunk(chunks.capture());
         OAIResponsesRequest next = OpenAiUtils.createOpenAiRequest(
@@ -231,12 +233,13 @@ class OpenAIResponsesTest {
             Mockito.doAnswer(invocation -> {
                 done.countDown();
                 return null;
-            }).when(listener).completeBlock();
+            }).when(listener).error(Mockito.any());
             OAIResponsesRequest request = OpenAiUtils.createOpenAiRequest(request(), "o3", null);
             request.stream = true;
             client.createChatCompletionStream(Mockito.mock(DBRProgressMonitor.class), request, listener);
             Assertions.assertTrue(done.await(5, TimeUnit.SECONDS));
             Mockito.verify(listener).error(Mockito.isA(DBException.class));
+            Mockito.verify(listener, Mockito.never()).completeBlock();
             ArgumentCaptor<AIEngineResponseChunk> chunks = ArgumentCaptor.forClass(AIEngineResponseChunk.class);
             Mockito.verify(listener).nextChunk(chunks.capture());
             Assertions.assertEquals(List.of("SELECT "), chunks.getValue().getChoices());

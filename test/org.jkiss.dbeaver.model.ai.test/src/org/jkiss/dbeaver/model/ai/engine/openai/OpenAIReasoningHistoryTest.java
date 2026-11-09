@@ -208,6 +208,7 @@ class OpenAIReasoningHistoryTest {
         stream.accept("data: {\"type\":\"response.output_item.done\",\"item\":" + CALL.replace("call_1", "call_2") + "}");
         stream.accept("data: {\"type\":\"response.completed\",\"response\":{\"output\":[],\"usage\":{"
             + "\"input_tokens\":1,\"output_tokens\":2001,\"output_tokens_details\":{\"reasoning_tokens\":2000}}}}");
+        stream.complete();
         ArgumentCaptor<AIEngineResponseChunk> chunks = ArgumentCaptor.forClass(AIEngineResponseChunk.class);
         Mockito.verify(listener, Mockito.times(2)).nextChunk(chunks.capture());
         List<AIMessage> history = chunks.getAllValues().stream().map(chunk -> {
