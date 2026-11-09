@@ -13,6 +13,7 @@ Require-Bundle: org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.ui.ai,
  org.jkiss.dbeaver.model.datadam,
+ com.dbeaver.datadam.mcp.api,
  org.jkiss.dbeaver.model,
  org.eclipse.ui
 Automatic-Module-Name: org.jkiss.dbeaver.ui.datadam

@@ -16,16 +16,18 @@
  */
 package org.jkiss.dbeaver.model.datadam.mcp;
 
+import com.dbeaver.datadam.dam.remote.api.DDRemoteDamSettingKeys;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
 import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamGsonRpcCodec;
-import com.dbeaver.datadam.mcp.api.service.DDMcpFunctionService;
+import com.dbeaver.datadam.mcp.api.service.desktop.DDMcpFunctionService;
 import com.dbeaver.messaging.requestreply.MessagingSubscription;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
+import com.dbeaver.messaging.rpc.MessagingRpcException;
 import com.google.gson.GsonBuilder;
 import com.google.gson.ToNumberPolicy;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.datadam.DDDesktopPreferences;
 import org.jkiss.dbeaver.model.datadam.rpc.DDDesktopRpcRegistration;
 
 public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
@@ -36,31 +38,24 @@ public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
     @Nullable
     private MessagingSubscription subscription;
 
-    public DDMcpDesktopRpcRegistration() {
-        DDDesktopPreferences.getStore().addPropertyChangeListener(event -> {
-            if (DDDesktopPreferences.MCP_DESKTOP_ENABLED.equals(event.getProperty())) {
-                updateRegistration();
-            }
-        });
+    @NotNull
+    @Override
+    public String getId() {
+        return DDMcpFunctionService.SERVICE_ID;
     }
 
     @Override
-    public synchronized void register(@NotNull MessagingRpcEndpoint endpoint) {
+    public synchronized void register(@NotNull MessagingRpcEndpoint endpoint, @NotNull DDRemoteDamSettings settings) {
+        if (endpoint.isClosed()) {
+            throw new MessagingRpcException(MessagingRpcException.Reason.CLOSED);
+        }
         if (this.endpoint != endpoint) {
             unregister();
             this.endpoint = endpoint;
         }
-        updateRegistration();
-    }
-
-    private synchronized void updateRegistration() {
-        MessagingRpcEndpoint current = endpoint;
-        if (current == null || current.isClosed()) {
-            return;
-        }
-        if (DDDesktopPreferences.getStore().getBoolean(DDDesktopPreferences.MCP_DESKTOP_ENABLED)) {
+        if (settings.isEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true, false)) {
             if (subscription == null) {
-                registerService(current);
+                registerService(endpoint);
             }
         } else {
             unregister();
@@ -75,7 +70,6 @@ public class DDMcpDesktopRpcRegistration implements DDDesktopRpcRegistration {
         subscription = endpoint.register(
             DDMcpFunctionService.SERVICE_ID, DDMcpFunctionService.class,
             new DDMcpDesktopFunctionService(), codec);
-        log.debug("Registered DataDam desktop MCP RPC service");
     }
 
     private void unregister() {

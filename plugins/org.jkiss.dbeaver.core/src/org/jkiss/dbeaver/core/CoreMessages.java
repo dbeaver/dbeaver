@@ -210,6 +210,8 @@ public class CoreMessages extends NLS {
     public static String pref_page_ui_general_checkbox_automatic_updates;
     public static String pref_page_general_button_open_product_configuration;
     public static String pref_page_general_group_product_configuration;
+    public static String pref_page_general_product_configuration_hint;
+    public static String pref_page_general_product_configuration_link;
     public static String pref_page_general_workbench;
     public static String pref_page_ui_general_group_browser;
     public static String pref_page_ui_general_group_theme;
