@@ -43,6 +43,7 @@ public class SQLQueryParameter {
     private final int tokenOffset;
     private final int tokenLength;
     private boolean nativeBinding;
+    private boolean inComment;
     private SQLQueryParameter previous;
 
     public SQLQueryParameter(SQLSyntaxManager syntaxManager, int ordinalPosition, String name, String originalName) {
@@ -74,6 +75,18 @@ public class SQLQueryParameter {
 
     public void setNativeBinding(boolean nativeBinding) {
         this.nativeBinding = nativeBinding;
+    }
+
+    /**
+     * True for a variable found inside a comment the server ignores.
+     * It is substituted when it has a value, but its value is never asked for.
+     */
+    public boolean isInComment() {
+        return inComment;
+    }
+
+    public void setInComment(boolean inComment) {
+        this.inComment = inComment;
     }
 
     public int getTokenOffset() {
