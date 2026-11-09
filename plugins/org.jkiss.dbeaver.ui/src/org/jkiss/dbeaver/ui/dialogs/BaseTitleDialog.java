@@ -21,7 +21,9 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -49,6 +51,14 @@ public class BaseTitleDialog extends TitleAreaDialog {
     @Override
     protected boolean isResizable() {
         return true;
+    }
+
+    @NotNull
+    @Override
+    protected Control createContents(@NotNull Composite parent) {
+        Control contents = super.createContents(parent);
+        applyDialogFont(contents);
+        return contents;
     }
 
     @Override
