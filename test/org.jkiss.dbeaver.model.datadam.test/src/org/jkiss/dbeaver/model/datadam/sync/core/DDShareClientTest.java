@@ -43,7 +43,6 @@ class DDShareClientTest {
 
     @Test
     void projectMetadataRoundTripsWithoutAnEncryptionKey() throws Exception {
-        DDSyncCredentials credentials = Mockito.mock(DDSyncCredentials.class);
         AtomicReference<JsonObject> request = new AtomicReference<>();
         JsonObject project = JsonParser.parseString("""
             {"id":"%s", "name":"Проект <test>", "description":"Plain description",
@@ -66,7 +65,7 @@ class DDShareClientTest {
             var manager = Mockito.mock(DDDesktopAccessService.class);
             session.when(DDDesktopAccessService::getInstance).thenReturn(manager);
             Mockito.when(manager.getAccessTokenForResource(Mockito.any())).thenReturn("test-token");
-            DDShareClient client = new DDShareClient("http://127.0.0.1:" + server.getAddress().getPort(), credentials);
+            DDShareClient client = new DDShareClient("http://127.0.0.1:" + server.getAddress().getPort(), manager);
 
             response.set("{\"data\":{\"createProject\":" + project + "}}");
             var created = client.createProject(UUID.fromString(PROJECT_A), "Проект <test>", "Plain description");
@@ -85,7 +84,7 @@ class DDShareClientTest {
 
             response.set("{\"data\":{\"projects\":[" + project + "]}}");
             Assertions.assertEquals(updated, client.listProjects().getFirst());
-            Mockito.verifyNoInteractions(credentials);
+            Mockito.verify(manager, Mockito.never()).getKeyBundle();
         } finally {
             server.stop(0);
         }
@@ -112,8 +111,7 @@ class DDShareClientTest {
             var manager = Mockito.mock(DDDesktopAccessService.class);
             session.when(DDDesktopAccessService::getInstance).thenReturn(manager);
             Mockito.when(manager.getAccessTokenForResource(Mockito.any())).thenReturn("test-token");
-            DDSyncCredentials credentials = Mockito.mock(DDSyncCredentials.class);
-            Assertions.assertThrows(DDShareException.class, () -> new DDShareClient(base, credentials).listProjects());
+            Assertions.assertThrows(DDShareException.class, () -> new DDShareClient(base, manager).listProjects());
             Assertions.assertEquals(0, redirected.get());
         } finally {
             server.stop(0);
@@ -122,12 +120,14 @@ class DDShareClientTest {
 
     @Test
     void storageCallsRequireSsoInsteadOfFallingBackToBundleSignatures() throws Exception {
-        DDSyncCredentials credentials = Mockito.mock(DDSyncCredentials.class);
-        DDShareClient client = new DDShareClient("http://127.0.0.1:1", credentials);
+        DDDesktopAccessService accessService = Mockito.mock(DDDesktopAccessService.class);
+        Mockito.when(accessService.getAccessTokenForResource(Mockito.any()))
+            .thenThrow(new DBException("Sign in to DataDam first"));
+        DDShareClient client = new DDShareClient("http://127.0.0.1:1", accessService);
 
         DDShareException error = Assertions.assertThrows(DDShareException.class, client::listProjects);
         Assertions.assertTrue(error.getCause().getMessage().contains("Sign in to DataDam"));
-        Mockito.verifyNoInteractions(credentials);
+        Mockito.verify(accessService, Mockito.never()).getKeyBundle();
     }
 
     @Test

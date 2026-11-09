@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.datadam;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
  * Interactive access check performed before a user-requested network operation.
  */
 public class DDDesktopTokenUIManager {
+    private static final Log log = Log.getLog(DDDesktopTokenUIManager.class);
     private static final DDDesktopTokenUIManager INSTANCE = new DDDesktopTokenUIManager();
 
     private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
@@ -47,10 +49,14 @@ public class DDDesktopTokenUIManager {
         }
         DDDesktopAccessService.Status status = accessService.getStatus();
         if (status == DDDesktopAccessService.Status.UNLOADED) {
-            accessService.load();
+            try {
+                accessService.load();
+            } catch (DBException e) {
+                log.debug("Could not load DataDam desktop access", e);
+            }
             status = accessService.getStatus();
         }
-        if (status == DDDesktopAccessService.Status.EXPIRED) {
+        if (status == DDDesktopAccessService.Status.INVALID_TOKEN) {
             Boolean accepted = UIUtils.syncExec(new RunnableWithResult<>() {
                 @Override
                 public Boolean runWithResult() {

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.datadam;
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.interceptor.HttpInterceptor;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.net.http.HttpClient;
@@ -26,6 +27,8 @@ import java.util.List;
 
 /** Common HTTP configuration for DataDam desktop clients. */
 public abstract class DDClient extends AbstractRestClient {
+    private final Log log = Log.getLog(getClass());
+
     protected DDClient(
         @NotNull String url,
         int connectTimeoutMs,
@@ -40,5 +43,10 @@ public abstract class DDClient extends AbstractRestClient {
     @Override
     protected String getUserAgent() {
         return GeneralUtils.getProductUserAgent();
+    }
+
+    @Override
+    protected void logDebug(@NotNull String message) {
+        log.debug(message);
     }
 }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -60,7 +60,9 @@ public class ClickhouseTypeParser {
         return ENABLE_COMPLEX_TYPE_PARSING && (
             typeName.startsWith(ClickhouseConstants.DATA_TYPE_MAP) ||
                 typeName.startsWith(ClickhouseConstants.DATA_TYPE_TUPLE) ||
-                typeName.startsWith(ClickhouseConstants.DATA_TYPE_ARRAY)
+                typeName.startsWith(ClickhouseConstants.DATA_TYPE_ARRAY) ||
+                typeName.startsWith(ClickhouseConstants.DATA_TYPE_NULLABLE) ||
+                typeName.startsWith(ClickhouseConstants.DATA_TYPE_LOW_CARDINALITY)
             );
     }
 
@@ -82,13 +84,26 @@ public class ClickhouseTypeParser {
         }
 
         if (type instanceof ClickhouseMapType mapType && ENABLE_COMPLEX_TYPE_PARSING) {
+            if (object instanceof ClickhouseMapValue) {
+                return object;
+            }
+            Map<Object, Object> entries = new LinkedHashMap<>();
+            for (Map.Entry<?, ?> entry : ((Map<?, ?>) object).entrySet()) {
+                entries.put(
+                    makeValue(session, mapType.getKeyType(), entry.getKey()),
+                    makeValue(session, mapType.getValueType(), entry.getValue())
+                );
+            }
             return new ClickhouseMapValue(
                 (ClickhouseDataSource) session.getDataSource(),
                 mapType,
                 Objects.requireNonNull(mapType.getAttributes(session.getProgressMonitor())),
-                ((Map<?, ?>) object)
+                entries
             );
         } else if (type instanceof ClickhouseTupleType tuple && ENABLE_COMPLEX_TYPE_PARSING) {
+            if (object instanceof ClickhouseTupleValue) {
+                return object;
+            }
             final Object[] values;
             if (object instanceof Map) {
                 values = ((Map<?, ?>) object).entrySet().stream()
@@ -255,12 +270,25 @@ public class ClickhouseTypeParser {
 
     @NotNull
     public static String getTypeNameWithoutModifiers(@NotNull String fullTypeName) {
-        final int div = fullTypeName.indexOf('(');
-        if (div < 0) {
-            return fullTypeName;
-        } else {
-            return fullTypeName.substring(0, div);
+        String typeName = fullTypeName.trim();
+        while (true) {
+            final int div = typeName.indexOf('(');
+            if (div < 0) {
+                return typeName;
+            }
+
+            final String baseTypeName = typeName.substring(0, div).trim();
+            if (isMarkerType(baseTypeName) && typeName.endsWith(")")) {
+                typeName = typeName.substring(div + 1, typeName.length() - 1).trim();
+            } else {
+                return baseTypeName;
+            }
         }
+    }
+
+    private static boolean isMarkerType(@NotNull String typeName) {
+        return ClickhouseConstants.DATA_TYPE_NULLABLE.equals(typeName) ||
+            ClickhouseConstants.DATA_TYPE_LOW_CARDINALITY.equals(typeName);
     }
 
     private static boolean isEnum(@NotNull String type) {

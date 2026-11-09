@@ -38,6 +38,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.datatransfer";
 
     private Button reconnectToLastDatabaseButton;
+    private Button captureUnsavedTaskLogsButton;
     private Text fallbackOutputDirectoryText;
     private Combo nameCaseCombo;
     private Combo replaceCombo;
@@ -85,6 +86,11 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
                 group,
                 DTUIMessages.pref_data_transfer_wizard_reconnect_to_database,
                 preferences.getBoolean(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE)
+            );
+            captureUnsavedTaskLogsButton = UIUtils.createCheckbox(
+                group,
+                DTUIMessages.pref_data_transfer_wizard_capture_unsaved_task_logs,
+                preferences.getBoolean(DTConstants.PREF_CAPTURE_UNSAVED_TASK_LOGS)
             );
         }
 
@@ -156,6 +162,9 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
         if (fallbackOutputDirectoryText != null) {
             fallbackOutputDirectoryText.setText(CommonUtils.notEmpty(preferences.getString(DTConstants.PREF_FALLBACK_OUTPUT_DIRECTORY)));
         }
+        if (captureUnsavedTaskLogsButton != null) {
+            captureUnsavedTaskLogsButton.setSelection(preferences.getBoolean(DTConstants.PREF_CAPTURE_UNSAVED_TASK_LOGS));
+        }
         if (isDataSourcePreferencePage()) {
             preferences = store;
         }
@@ -176,6 +185,9 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
         if (fallbackOutputDirectoryText != null) {
             preferences.setValue(DTConstants.PREF_FALLBACK_OUTPUT_DIRECTORY, fallbackOutputDirectoryText.getText());
         }
+        if (captureUnsavedTaskLogsButton != null) {
+            preferences.setValue(DTConstants.PREF_CAPTURE_UNSAVED_TASK_LOGS, captureUnsavedTaskLogsButton.getSelection());
+        }
 
         if (isDataSourcePreferencePage()) {
             preferences = store;
@@ -190,6 +202,7 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
     @Override
     protected void clearPreferences(DBPPreferenceStore store) {
         store.setToDefault(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE);
+        store.setToDefault(DTConstants.PREF_CAPTURE_UNSAVED_TASK_LOGS);
         store.setToDefault(DTConstants.PREF_FALLBACK_OUTPUT_DIRECTORY);
         store.setToDefault(DTConstants.PREF_NAME_CASE_MAPPING);
         store.setToDefault(DTConstants.PREF_REPLACE_MAPPING);
@@ -201,6 +214,9 @@ public class PrefPageDataTransfer extends TargetPrefPage implements IWorkbenchPr
         final DBPPreferenceStore preferences = DTActivator.getDefault().getPreferences();
         if (reconnectToLastDatabaseButton != null) {
             reconnectToLastDatabaseButton.setSelection(preferences.getDefaultBoolean(DTConstants.PREF_RECONNECT_TO_LAST_DATABASE));
+        }
+        if (captureUnsavedTaskLogsButton != null) {
+            captureUnsavedTaskLogsButton.setSelection(preferences.getDefaultBoolean(DTConstants.PREF_CAPTURE_UNSAVED_TASK_LOGS));
         }
         if (fallbackOutputDirectoryText != null) {
             fallbackOutputDirectoryText.setText("");

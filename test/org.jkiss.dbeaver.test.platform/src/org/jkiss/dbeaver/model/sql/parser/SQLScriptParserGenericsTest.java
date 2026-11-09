@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.rules.ScriptParameterRule;
@@ -528,6 +529,37 @@ public class SQLScriptParserGenericsTest extends DBeaverUnitTest {
         Assertions.assertEquals("myVar", cmd.getParameter().substring(0, end).trim());
     }
 
+
+    @Test
+    public void nestedProcedureTemporaryTablesStayInOneScriptElement() {
+        String sql = """
+            CREATE PROCEDURE qa_temps AS BEGIN
+                CREATE TEMP TABLE removed (id INT);
+                CREATE TEMP TABLE replaced (id INT);
+                CREATE TEMP TABLE retained (id INT);
+                BEGIN
+                    DROP TABLE removed, replaced;
+                    CREATE TEMP TABLE replaced (id TEXT);
+                END;
+                SELECT id FROM removed;
+                SELECT id FROM replaced;
+                SELECT id FROM retained;
+            END;
+            """;
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(BasicSQLDialect.INSTANCE);
+        SQLParserContext context = createParserContext(BasicSQLDialect.INSTANCE, sql);
+        List<SQLScriptElement> elements = SQLScriptParser.extractScriptQueries(
+            context, 0, sql.length(), false, false, false
+        );
+        Assertions.assertEquals(1, elements.size());
+        for (String name : List.of("removed", "replaced", "retained")) {
+            int caret = sql.lastIndexOf("FROM " + name) + "FROM ".length() + 1;
+            SQLScriptElement element = SQLScriptParser.parseQuery(context, 0, sql.length(), caret, false, false);
+            Assertions.assertNotNull(element);
+            Assertions.assertTrue(element.getText().startsWith("CREATE PROCEDURE qa_temps"), name);
+            Assertions.assertTrue(element.getText().contains("SELECT id FROM retained"), name);
+        }
+    }
 
     private void assertParse(String dialectName, String[] expected) throws DBException {
         String source = Arrays.stream(expected).filter(e -> e != null).collect(Collectors.joining());

@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsDataContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryRowsSourceContext;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModelContent;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryNodeModelVisitor;
-import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueColumnReferenceExpression;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueTargetReferenceExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueExpression;
 import org.jkiss.dbeaver.model.sql.semantics.model.select.SQLQueryRowsSourceModel;
 import org.jkiss.dbeaver.model.stm.STMKnownRuleNames;
@@ -109,8 +109,12 @@ public class SQLQueryUpdateModel extends SQLQueryModelContent {
                         : switch (setTargetNode.getNodeKindId()) {
                             case SQLStandardParser.RULE_setTarget -> {
                                 STMTreeNode targetNameNode = setTargetNode.findFirstNonErrorChild();
-                                SQLQuerySymbolEntry targetName = targetNameNode == null ? null : recognizer.collectIdentifier(targetNameNode, null);
-                                yield List.of(new SQLQueryValueColumnReferenceExpression(setTargetNode, targetName));
+                                STMTreeNode identifier = targetNameNode == null ? null
+                                    : STMKnownRuleNames.identifier.equals(targetNameNode.getNodeName()) ? targetNameNode
+                                    : targetNameNode.findFirstChildOfName(STMKnownRuleNames.identifier);
+                                SQLQuerySymbolEntry targetName = identifier == null
+                                    ? null : recognizer.collectLocalVariableName(identifier);
+                                yield List.of(new SQLQueryValueTargetReferenceExpression(setTargetNode, targetName));
                             }
                             case SQLStandardParser.RULE_setTargetList ->
                                 STMUtils.expandSubtree(

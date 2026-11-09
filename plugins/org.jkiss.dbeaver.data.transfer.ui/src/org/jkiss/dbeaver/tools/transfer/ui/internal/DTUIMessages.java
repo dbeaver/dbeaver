@@ -252,6 +252,7 @@ public class DTUIMessages extends NLS {
 
     public static String pref_data_transfer_wizard_title;
     public static String pref_data_transfer_wizard_reconnect_to_database;
+    public static String pref_data_transfer_wizard_capture_unsaved_task_logs;
     public static String pref_data_transfer_options_title;
     public static String pref_data_transfer_options_fallback_directory;
     public static String pref_data_transfer_options_fallback_directory_tip;

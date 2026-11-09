@@ -16,10 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.forms;
 
-import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ui.bindings.BindingContext;
 
 import java.util.function.Consumer;
 
@@ -31,7 +31,7 @@ public sealed interface UIPanelBuilder extends UIControlBuilder<UIPanelBuilder> 
     static Control build(@NotNull Composite parent, @NotNull Consumer<? super UIPanelBuilder> handler) {
         var builder = UIPanelBuilderImpl.panel();
         handler.accept(builder);
-        var context = new DataBindingContext();
+        var context = new BindingContext();
         try {
             var control = builder.build(context, parent, null);
             control.addDisposeListener(event -> context.dispose());
