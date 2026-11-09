@@ -20,11 +20,13 @@ import org.eclipse.jface.fieldassist.ComboContentAdapter;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
+import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -174,7 +176,10 @@ public class PrefPageGeneral extends AbstractPrefPage implements IWorkbenchPrefe
     }
 
     private void createProductConfigurationLink(@NotNull Composite parent) {
-        if (!(getContainer() instanceof IWorkbenchPreferenceContainer container)) {
+        if (!(getContainer() instanceof IWorkbenchPreferenceContainer container)
+            || PlatformUI.getWorkbench().getPreferenceManager().getElements(PreferenceManager.POST_ORDER).stream()
+                .noneMatch(node -> PRODUCT_CONFIGURATION_PAGE_ID.equals(node.getId()))
+        ) {
             return;
         }
         Composite group = UIUtils.createTitledComposite(
