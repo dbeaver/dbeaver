@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -237,6 +238,23 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         @NotNull OBJECT_TYPE table,
         @NotNull Map<String, Object> options
     ) throws DBException {
+        return getTableDDL(monitor, table, options, null);
+    }
+
+    @NotNull
+    public DBEPersistAction[] getTableDDL(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull OBJECT_TYPE table,
+        @NotNull Map<String, Object> options,
+        @Nullable DBSObjectDDLFilter filter
+    ) throws DBException {
+        if (filter != null && !filter.includeObject(monitor, table)) {
+            return new DBEPersistAction[0];
+        }
+        if (filter != null) {
+            options = new HashMap<>(options);
+            options.put(DBPScriptObject.OPTION_DDL_OBJECT_FILTER, filter);
+        }
 
         List<DBEPersistAction> actions = new ArrayList<>();
 
@@ -261,10 +279,11 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
                 try {
                     for (DBSEntityAssociation foreignKey : CommonUtils.safeCollection(table.getAssociations(monitor))) {
                         if (!(foreignKey instanceof DBSTableForeignKey) ||
-                            skipObject(foreignKey)) {
+                            skipObject(foreignKey) || filter != null && !filter.includeObject(monitor, foreignKey)) {
                             continue;
                         }
-                        DBEPersistAction[] cmdActions = fkm.makeCreateCommand((DBSTableForeignKey) foreignKey, options).getPersistActions(monitor, executionContext, options);
+                        DBEPersistAction[] cmdActions = fkm.makeCreateCommand((DBSTableForeignKey) foreignKey, options)
+                            .getPersistActions(monitor, executionContext, options);
                         if (cmdActions != null) {
                             Collections.addAll(actions, cmdActions);
                         }
@@ -299,7 +318,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         if (tcm != null) {
             // Aggregate nested column, constraint and index commands
             for (DBSEntityAttribute column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
-                if (skipObject(column)) {
+                if (skipObject(column) || filter != null && !filter.includeObject(monitor, column)) {
                     // Do not include hidden (pseudo?) and inherited columns in DDL
                     continue;
                 }
@@ -309,7 +328,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         if (pkm != null && !CommonUtils.getOption(options, DBPScriptObject.OPTION_SKIP_UNIQUE_KEYS)) {
             try {
                 for (DBSEntityConstraint constraint : CommonUtils.safeCollection(table.getConstraints(monitor))) {
-                    if (!isIncludeConstraintInDDL(monitor, constraint)) {
+                    if (!isIncludeConstraintInDDL(monitor, constraint)
+                        || filter != null && !filter.includeObject(monitor, constraint)) {
                         continue;
                     }
                     command.aggregateCommand(pkm.makeCreateCommand(constraint, options));
@@ -321,9 +341,9 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         }
         if (ccm != null) {
             try {
-                if (table instanceof DBSCheckConstraintContainer) {
-                    for (DBSTableCheckConstraint constraint : CommonUtils.safeCollection(((DBSCheckConstraintContainer)table).getCheckConstraints(monitor))) {
-                        if (skipObject(constraint)) {
+                if (table instanceof DBSCheckConstraintContainer container) {
+                    for (DBSTableCheckConstraint constraint : CommonUtils.safeCollection(container.getCheckConstraints(monitor))) {
+                        if (skipObject(constraint) || filter != null && !filter.includeObject(monitor, constraint)) {
                             continue;
                         }
                         command.aggregateCommand(ccm.makeCreateCommand(constraint, options));
@@ -337,7 +357,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         if (fkm != null && !CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS)) {
             try {
                 for (DBSEntityAssociation foreignKey : CommonUtils.safeCollection(table.getAssociations(monitor))) {
-                    if (!(foreignKey instanceof DBSTableForeignKey) || skipObject(foreignKey)) {
+                    if (!(foreignKey instanceof DBSTableForeignKey) || skipObject(foreignKey)
+                        || filter != null && !filter.includeObject(monitor, foreignKey)) {
                         continue;
                     }
                     command.aggregateCommand(fkm.makeCreateCommand((DBSTableForeignKey) foreignKey, options));
@@ -349,8 +370,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         }
         if (im != null && table instanceof DBSTable && !CommonUtils.getOption(options, DBPScriptObject.OPTION_SKIP_INDEXES)) {
             try {
-                for (DBSTableIndex index : CommonUtils.safeCollection(((DBSTable)table).getIndexes(monitor))) {
-                    if (!isIncludeIndexInDDL(monitor, index)) {
+                for (DBSTableIndex index : CommonUtils.safeCollection(((DBSTable) table).getIndexes(monitor))) {
+                    if (!isIncludeIndexInDDL(monitor, index) || filter != null && !filter.includeObject(monitor, index)) {
                         continue;
                     }
                     command.aggregateCommand(im.makeCreateCommand(index, options));

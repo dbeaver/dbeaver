@@ -21,6 +21,13 @@ import org.eclipse.osgi.util.NLS;
 public class CoreMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.core.CoreResources"; //$NON-NLS-1$
 
+    public static String connection_init_confirmation_title;
+    public static String connection_init_confirmation_message;
+    public static String connection_init_confirmation_connection;
+    public static String connection_init_confirmation_url;
+    public static String connection_init_confirmation_script;
+    public static String connection_init_confirmation_allow;
+
 
     public static String driver_license_required_title;
     public static String driver_license_required_message;
@@ -203,6 +210,8 @@ public class CoreMessages extends NLS {
     public static String pref_page_ui_general_checkbox_automatic_updates;
     public static String pref_page_general_button_open_product_configuration;
     public static String pref_page_general_group_product_configuration;
+    public static String pref_page_general_product_configuration_hint;
+    public static String pref_page_general_product_configuration_link;
     public static String pref_page_general_workbench;
     public static String pref_page_ui_general_group_browser;
     public static String pref_page_ui_general_group_theme;

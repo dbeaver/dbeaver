@@ -23,6 +23,8 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -53,7 +55,7 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
     protected Text passwordText;
 
     protected Button savePasswordCheck;
-    protected Button showPasswordButton;
+    protected ToolItem showPasswordButton;
 
     protected DBPDataSourceContainer dataSource;
 
@@ -249,11 +251,12 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         }
 
         if (supportsPasswordView && canEditCredentialsPerPolicy) {
-            showPasswordButton = UIUtils.createPushButton(
-                panel,
-                null,
+            ToolBar toolbar = new ToolBar(panel, SWT.FLAT);
+            showPasswordButton = UIUtils.createToolItem(
+                toolbar,
                 UIConnectionMessages.dialog_connection_auth_label_show_password,
-                UIIcon.SHOW_ALL_DETAILS, SelectionListener.widgetSelectedAdapter(e -> showPasswordText(serviceSecurity))
+                UIIcon.SHOW_ALL_DETAILS,
+                SelectionListener.widgetSelectedAdapter(e -> showPasswordText(serviceSecurity))
             );
         }
     }

@@ -189,6 +189,7 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
         try {
             if (driverChanged) {
                 cancelHierarchyLoading();
+                activeLicense = null;
                 hierarchy = null;
                 hierarchyLoadPending = true;
                 editor.setHierarchy(null);

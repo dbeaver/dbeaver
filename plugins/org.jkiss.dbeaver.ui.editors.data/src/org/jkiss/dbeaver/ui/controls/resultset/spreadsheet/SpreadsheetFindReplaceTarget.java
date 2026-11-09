@@ -276,11 +276,11 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
                     .updateValue(editedContent, !replaceAll);
             } else {
                 // Standard value update
-                // TODO introduce value path here
                 controller.updateCellValue(
                     cellLocation.getAttribute(),
                     cellLocation.getRow(),
                     cellLocation.getRowIndexes(),
+                    cellLocation.getValuePath(),
                     newValue,
                     !replaceAll
                 );

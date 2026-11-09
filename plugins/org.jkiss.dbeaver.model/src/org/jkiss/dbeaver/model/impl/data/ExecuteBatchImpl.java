@@ -110,6 +110,9 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         if (values.size() <= 1) {
             useBatch = false;
         }
+        if (useBatch && !values.stream().allMatch(this::isStatementReusable)) {
+            useBatch = false;
+        }
         boolean skipBindValues = CommonUtils.toBoolean(options.get(DBSDataManipulator.OPTION_SKIP_BIND_VALUES));
         if (skipBindValues) {
             useBatch = false;
@@ -137,7 +140,8 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                     //session.getProgressMonitor().subTask("Save batch (" + rowIndex + " of " + values.size() + ")");
                 }
 
-                boolean reuse = !skipBindValues && reuseStatement;
+                boolean reuse = !skipBindValues && reuseStatement && isStatementReusable(rowValues)
+                    && (rowIndex == 0 || isStatementReusable(values.get(rowIndex - 1)));
                 if (reuse) {
                     for (int i = 0; i < rowValues.length; i++) {
                         nulls[i] = DBUtils.isNullValue(rowValues[i]);
@@ -156,6 +160,10 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                         statementsInBatch = 0;
                         reuse = true;
                     }
+                }
+                if (!reuse && statement != null && statementsInBatch == 0) {
+                    DBUtils.closeSafely(statement);
+                    statement = null;
                 }
                 if (statement == null || !reuse) {
                     statement = prepareStatement(session, handlers, rowValues, options);
@@ -200,6 +208,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                 } finally {
                     if (!reuse && !useBatch) {
                         DBUtils.closeSafely(statement);
+                        statement = null;
                     }
                 }
             }
@@ -233,7 +242,17 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         return paramIndex;
     }
 
-    String formatQueryParameters(DBCSession session, String queryString, DBDValueHandler[] handlers, Object[] rowValues) {
+    protected boolean isStatementReusable(@NotNull Object[] attributeValues) {
+        return true;
+    }
+
+    @NotNull
+    String formatQueryParameters(
+        @NotNull DBCSession session,
+        @NotNull String queryString,
+        @NotNull DBDValueHandler[] handlers,
+        @NotNull Object[] rowValues
+    ) {
         if (handlers.length == 0) {
             return queryString;
         }

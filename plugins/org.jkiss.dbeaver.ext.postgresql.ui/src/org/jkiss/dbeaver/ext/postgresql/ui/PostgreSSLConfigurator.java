@@ -63,8 +63,8 @@ public class PostgreSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         gd.minimumHeight = 200;
         composite.setLayoutData(gd);
 
-        createSSLConfigHint(composite, true, 1);
-        createTrustStoreConfigGroup(composite);
+        Composite sslParameters = createTrustStoreConfigGroup(composite);
+        createSSLConfigHint(sslParameters, true, 1);
 
         if (this.getEditIntention() != DBPConnectionEditIntention.CREDENTIALS_ONLY) {
             Composite advGroup = UIUtils.createTitledComposite(

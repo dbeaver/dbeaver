@@ -22,6 +22,11 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 
 import java.util.List;
 
+/**
+ * Location of a value within one result-set row. The first attribute item identifies the top-level
+ * column; subsequent attribute and zero-based index items traverse composites and collections in order.
+ * For example: {@code column -> [0] -> field -> [1]}.
+ */
 public record ResultSetValuePath(
     @NotNull List<PathItem> pathItems
 ) {

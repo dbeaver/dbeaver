@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.parser.SQLParserActionKind;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.sql.parser.tokens.predicates.TokenPredicateFactory;
@@ -49,13 +50,13 @@ import org.jkiss.utils.SecurityUtils;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.Locale;
+import java.util.Set;
 
 /**
  * Oracle SQL dialect
  */
 public class OracleSQLDialect extends JDBCSQLDialect
     implements SQLDataTypeConverter, SQLDialectDDLExtension, SQLDialectSchemaController {
-
     private static final Log log = Log.getLog(OracleSQLDialect.class);
 
     private static final String[] EXEC_KEYWORDS = new String[]{"call"};
@@ -117,17 +118,17 @@ public class OracleSQLDialect extends JDBCSQLDialect
         "LATERAL"
     };
 
-    private static final GlobalVariableInfo[] GLOBAL_VARIABLES = {
-        new GlobalVariableInfo("SYSDATE", OracleMessages.global_variable_sysdate, DBPDataKind.DATETIME),
-        new GlobalVariableInfo("SYSTIMESTAMP", OracleMessages.global_variable_systimestamp, DBPDataKind.DATETIME),
-        new GlobalVariableInfo("DBTIMEZONE", OracleMessages.global_variable_dbtimezone, DBPDataKind.DATETIME),
-        new GlobalVariableInfo("SESSIONTIMEZONE", OracleMessages.global_variable_sessiontimezone, DBPDataKind.DATETIME),
-        new GlobalVariableInfo("CURRENT_DATE", OracleMessages.global_variable_current_date, DBPDataKind.DATETIME),
-        new GlobalVariableInfo("CURRENT_TIMESTAMP", OracleMessages.global_variable_current_timestamp, DBPDataKind.DATETIME),
-        new GlobalVariableInfo("ORA_INVOKING_USER", OracleMessages.global_variable_ora_invoking_user, DBPDataKind.STRING),
-        new GlobalVariableInfo("ORA_INVOKING_USERID", OracleMessages.global_variable_ora_invoking_userid, DBPDataKind.NUMERIC),
-        new GlobalVariableInfo("UID", OracleMessages.global_variable_uid, DBPDataKind.NUMERIC),
-        new GlobalVariableInfo("USER", OracleMessages.global_variable_user, DBPDataKind.STRING),
+    private static final SQLDialectFeatures.GlobalVariableInfo[] GLOBAL_VARIABLES = {
+        new SQLDialectFeatures.GlobalVariableInfo("SYSDATE", OracleMessages.global_variable_sysdate, DBPDataKind.DATETIME),
+        new SQLDialectFeatures.GlobalVariableInfo("SYSTIMESTAMP", OracleMessages.global_variable_systimestamp, DBPDataKind.DATETIME),
+        new SQLDialectFeatures.GlobalVariableInfo("DBTIMEZONE", OracleMessages.global_variable_dbtimezone, DBPDataKind.DATETIME),
+        new SQLDialectFeatures.GlobalVariableInfo("SESSIONTIMEZONE", OracleMessages.global_variable_sessiontimezone, DBPDataKind.DATETIME),
+        new SQLDialectFeatures.GlobalVariableInfo("CURRENT_DATE", OracleMessages.global_variable_current_date, DBPDataKind.DATETIME),
+        new SQLDialectFeatures.GlobalVariableInfo("CURRENT_TIMESTAMP", OracleMessages.global_variable_current_timestamp, DBPDataKind.DATETIME),
+        new SQLDialectFeatures.GlobalVariableInfo("ORA_INVOKING_USER", OracleMessages.global_variable_ora_invoking_user, DBPDataKind.STRING),
+        new SQLDialectFeatures.GlobalVariableInfo("ORA_INVOKING_USERID", OracleMessages.global_variable_ora_invoking_userid, DBPDataKind.NUMERIC),
+        new SQLDialectFeatures.GlobalVariableInfo("UID", OracleMessages.global_variable_uid, DBPDataKind.NUMERIC),
+        new SQLDialectFeatures.GlobalVariableInfo("USER", OracleMessages.global_variable_user, DBPDataKind.STRING),
     };
 
     private static final String AUTO_INCREMENT_KEYWORD = "GENERATED ALWAYS AS IDENTITY";
@@ -377,7 +378,7 @@ public class OracleSQLDialect extends JDBCSQLDialect
         addSQLKeyword("KEEP");
         addSQLKeyword("DENSE_RANK");
 
-        addKeywords(Arrays.stream(GLOBAL_VARIABLES).map(GlobalVariableInfo::name).toList(), DBPKeywordType.OTHER);
+        addKeywords(Arrays.stream(GLOBAL_VARIABLES).map(SQLDialectFeatures.GlobalVariableInfo::name).toList(), DBPKeywordType.OTHER);
         turnFunctionIntoKeyword("TRUNCATE");
 
         super.cachedDialectSkipTokenPredicates = this.makeDialectSkipTokenPredicates(dataSource);
@@ -409,12 +410,6 @@ public class OracleSQLDialect extends JDBCSQLDialect
     @Override
     public String[] getExecuteKeywords() {
         return EXEC_KEYWORDS;
-    }
-
-    @NotNull
-    @Override
-    public GlobalVariableInfo[] getGlobalVariables() {
-        return GLOBAL_VARIABLES;
     }
 
     @NotNull
@@ -829,16 +824,59 @@ public class OracleSQLDialect extends JDBCSQLDialect
         return "CREATE USER " + schemaName + " IDENTIFIED BY \"" + SecurityUtils.generatePassword(10) + "\"";
     }
 
-    @Override
-    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
-        return EnumSet.of(
-            ProjectionAliasVisibilityScope.ORDER_BY
-        );
-    }
-
     @NotNull
     @Override
     public String toSortableTextColumn(@NotNull String columnName) {
         return "DBMS_LOB.SUBSTR(" + columnName + ", 1000, 1)";
+    }
+
+    @NotNull
+    @Override
+    public SQLDialectFeatures getDialectFeatures() {
+        return DialectFeatures.INSTANCE;
+    }
+
+    private static final class DialectFeatures extends SQLDialectFeatures {
+        private static final DialectFeatures INSTANCE = new DialectFeatures();
+
+        /** Oracle resolves a column before a same-named PL/SQL variable or parameter in static SQL.
+
+         @see <a href="https://docs.oracle.com/en/database/oracle/oracle-database/19/lnpls/column-name-precedence.html">Column name precedence</a>
+         */
+        @NotNull
+        @Override
+        public ProceduralVariableConflictPolicy getProceduralVariableConflictPolicy() {
+            return ProceduralVariableConflictPolicy.PREFER_COLUMN;
+        }
+
+        @NotNull
+        @Override
+        public Set<String> getSignatureModifierKeywords() {
+            return Set.of("IN", "OUT", "NOCOPY");
+        }
+
+        /** A nested PL/SQL unit can redeclare an identifier from an enclosing unit.
+
+         @see <a href="https://docs.oracle.com/en/database/oracle/oracle-database/19/lnpls/scope-and-visibility-identifiers.html">Identifier scope</a>
+         */
+        @NotNull
+        @Override
+        public LocalVariableShadowing getLocalVariableShadowing(@NotNull LocalVariableKind kind) {
+            return LocalVariableShadowing.ALLOW_OUTER;
+        }
+
+        @NotNull
+        @Override
+        public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+            return EnumSet.of(
+                ProjectionAliasVisibilityScope.ORDER_BY
+            );
+        }
+
+        @NotNull
+        @Override
+        public GlobalVariableInfo[] getGlobalVariables() {
+            return GLOBAL_VARIABLES;
+        }
     }
 }

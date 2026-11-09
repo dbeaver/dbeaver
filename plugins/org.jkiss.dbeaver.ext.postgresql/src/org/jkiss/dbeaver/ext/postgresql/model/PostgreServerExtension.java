@@ -57,6 +57,10 @@ public interface PostgreServerExtension {
 
     boolean supportsEventTriggers();
 
+    default boolean supportsLogicalReplication() {
+        return false;
+    }
+
     /** True if supports objects dependencies metadata reading */
     boolean supportsDependencies();
 
