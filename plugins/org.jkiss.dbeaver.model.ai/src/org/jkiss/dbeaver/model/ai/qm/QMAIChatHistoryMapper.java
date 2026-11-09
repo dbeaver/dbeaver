@@ -41,7 +41,9 @@ import org.jkiss.utils.CommonUtils;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -65,6 +67,14 @@ public class QMAIChatHistoryMapper {
             : new QMAIDataSource(chatDataSource.getProject().getId(), chatDataSource.getId());
         String contextJson = contextSettings == null ? null : contextSettings.saveSettingsToString();
         QMAIContext qmaiContext = new QMAIContext(contextJson, (context == null ? Set.of() : toQMAIContextObjects(context)));
+        Map<String, Map<String, Object>> connectionSettings = new LinkedHashMap<>();
+        for (DBPDataSourceContainer connection : conversation.getDataSources()) {
+            AIContextSettingsChatConversation settings = conversation.getCustomSettings(connection);
+            if (connection != chatDataSource && settings != null) {
+                connectionSettings.put(connection.getId(), settings.saveSettingsToMap());
+            }
+        }
+        qmaiContext = qmaiContext.withConnectionSettings(connectionSettings);
 
         return new QMAIConversationHistory(
             conversation.getId().toString(),

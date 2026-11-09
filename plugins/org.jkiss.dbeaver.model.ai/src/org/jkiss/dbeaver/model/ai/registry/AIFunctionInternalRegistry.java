@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.*;
+import org.jkiss.dbeaver.model.ai.functions.AIFunctionParams;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 
 import java.util.*;
@@ -150,6 +151,14 @@ public class AIFunctionInternalRegistry {
     ) throws DBException {
         AIFunction function = descriptor.getInstance();
         context = context.forFunction(descriptor, arguments);
+        if (descriptor.getParameter(AIFunctionParams.CONNECTION_ID_PARAM) != null
+            && function instanceof AIFunctionVerifier verifier
+            && verifier.getFunctionState(context, descriptor) == AIFunctionVerifier.FunctionState.NOT_APPLICABLE) {
+            String connection = context.getContext() == null ? "none"
+                : context.getContext().getDataSource().getDataSourceContainer().getId();
+            throw new DBException("Function '" + descriptor.getId() + "' is not supported by connection '" + connection
+                + "'. Use this connection's advertised capabilities to choose a supported database tool.");
+        }
         return function.callFunction(context, arguments);
     }
 }

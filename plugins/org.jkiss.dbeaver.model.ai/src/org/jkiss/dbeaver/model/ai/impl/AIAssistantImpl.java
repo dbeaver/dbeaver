@@ -335,25 +335,27 @@ public class AIAssistantImpl implements AIAssistant {
                 functionContext.addFunctionCall(fc);
 
                 try {
-                    AIFunctionContext selectedContext = functionContext.forFunction(function, fc.getArguments());
-                    fc.transformArguments(selectedContext.getContext(), selectedContext);
-                    // Call
                     AIFunctionResult result;
-                    if (function.getType() == AIFunctionType.ACTION && DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
-                        result = new AIFunctionResult(AIFunctionType.ACTION, fc.getArguments());
-                    } else {
-                        result = this.callFunction(selectedContext, fc);
+                    try {
+                        AIFunctionContext selectedContext = functionContext.forFunction(function, fc.getArguments());
+                        fc.transformArguments(selectedContext.getContext(), selectedContext);
+                        if (function.getType() == AIFunctionType.ACTION && DBWorkbench.getPlatform().getApplication().isHeadlessMode()) {
+                            result = new AIFunctionResult(AIFunctionType.ACTION, fc.getArguments());
+                        } else {
+                            result = this.callFunction(selectedContext, fc);
+                        }
+                    } catch (DBException exception) {
+                        if (monitor.isCanceled()) {
+                            chatListener.complete(List.of(), true, true);
+                            return;
+                        }
+                        result = functionError(function, exception);
                     }
                     // Create meta info
                     AIMessage fcMessage = AIMessage.functionCall(fc, result);
                     // Visualize result in chat
                     chatListener.processFunctionCall(fcMessage);
-                    if (result.getException() != null) {
-                        chatListener.error(result.getException());
-                        chatListener.complete(List.of(), true, false);
-                        return;
-                    }
-                    if (function.getType() == AIFunctionType.INFORMATION) {
+                    if (function.getType() == AIFunctionType.INFORMATION || result.getException() != null) {
                         newMessages.add(fcMessage);
                     }
                 } catch (Exception e) {
@@ -482,15 +484,16 @@ public class AIAssistantImpl implements AIAssistant {
         try {
             result = function.getToolbox().callFunction(context, function, arguments);
         } catch (DBException e) {
-            result = new AIFunctionResult(
-                function.getType(),
-                "Error calling function '" + function.getId() + "': " + e.getMessage(),
-                null,
-                e
-            );
+            result = functionError(function, e);
         }
 
         return result;
+    }
+
+    @NotNull
+    private static AIFunctionResult functionError(@NotNull AIFunctionDescriptor function, @NotNull DBException exception) {
+        return new AIFunctionResult(function.getType(),
+            "Error calling function '" + function.getId() + "': " + exception.getMessage(), null, exception);
     }
 
     protected void checkAiEnablement() throws DBException {

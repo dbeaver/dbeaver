@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -70,6 +71,7 @@ public class AIChatConversation {
     private final LocalDateTime time;
     @Nullable
     private AIContextSettingsChatConversation customSettings;
+    private final Map<String, AIContextSettingsChatConversation> additionalSettings = new ConcurrentHashMap<>();
     @Nullable
     private AIConfigurationProfile profile;
 
@@ -120,7 +122,7 @@ public class AIChatConversation {
         this.promptGenerator = promptGenerator;
         this.container = container;
         this.messages = new CopyOnWriteArrayList<>(messages);
-        this.time = messages.isEmpty() ? LocalDateTime.now() : messages.getLast().message().getTime();
+        this.time = messages.isEmpty() ? LocalDateTime.now() : messages.getFirst().message().getTime();
         this.nextMessageId = nextMessageId;
         this.profile = profile;
     }
@@ -297,6 +299,7 @@ public class AIChatConversation {
         if (isActive()) {
             throw new DBException("Cannot change connections while the conversation is active");
         }
+        additionalSettings.remove(connectionId);
         return additionalDataSources.removeIf(dataSource -> dataSource.getId().equals(connectionId));
     }
 
@@ -313,6 +316,14 @@ public class AIChatConversation {
         throw new DBException("Connection '" + connectionId + "' is not attached to this conversation. Access restricted.");
     }
 
+    @NotNull
+    public synchronized AIChatConversation createEmptyCopy(@NotNull String name) {
+        AIChatConversation copy = new AIChatConversation(
+            UUIDv7.randomUUID(), name, promptGenerator, List.of(), container, 0, profile);
+        copy.additionalDataSources.addAll(additionalDataSources);
+        return copy;
+    }
+
     public int getNextMessageId() {
         return nextMessageId;
     }
@@ -327,8 +338,26 @@ public class AIChatConversation {
         return customSettings;
     }
 
+    @Nullable
+    public AIContextSettingsChatConversation getCustomSettings(@NotNull DBPDataSourceContainer dataSource) {
+        return dataSource == container ? customSettings : additionalSettings.get(dataSource.getId());
+    }
+
     public void setCustomSettings(@Nullable AIContextSettingsChatConversation customSettings) {
         this.customSettings = customSettings;
+    }
+
+    public void setCustomSettings(
+        @NotNull DBPDataSourceContainer dataSource,
+        @Nullable AIContextSettingsChatConversation settings
+    ) {
+        if (dataSource == container) {
+            customSettings = settings;
+        } else if (settings == null) {
+            additionalSettings.remove(dataSource.getId());
+        } else {
+            additionalSettings.put(dataSource.getId(), settings);
+        }
     }
 
     @Nullable

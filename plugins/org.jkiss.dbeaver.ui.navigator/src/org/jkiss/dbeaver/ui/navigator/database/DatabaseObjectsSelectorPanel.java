@@ -68,7 +68,7 @@ public class DatabaseObjectsSelectorPanel extends Composite {
         selectedProject = this.getSelectedProject();
         DBNNode rootNode = this.getRootNode();
         DatabaseNavigatorTreeFilter navigatorFilter = enableFilter ? createNavigatorFilter() : null;
-        dataSourceTree = new DatabaseNavigatorTree(this, rootNode, style, false, navigatorFilter);
+        dataSourceTree = createNavigatorTree(rootNode, style, navigatorFilter);
         if (enableFilter) {
             dataSourceTree.setFilterObjectType(DatabaseNavigatorTreeFilterObjectType.container);
         }
@@ -102,6 +102,15 @@ public class DatabaseObjectsSelectorPanel extends Composite {
             dataSourceTree.getViewer().addSelectionChangedListener(event -> onSelectionChange(
                 ((IStructuredSelection)event.getSelection()).getFirstElement()));
         }
+    }
+
+    @NotNull
+    protected DatabaseNavigatorTree createNavigatorTree(
+        @Nullable DBNNode rootNode,
+        int style,
+        @Nullable DatabaseNavigatorTreeFilter navigatorFilter
+    ) {
+        return new DatabaseNavigatorTree(this, rootNode, style, false, navigatorFilter);
     }
 
     @NotNull

@@ -68,11 +68,12 @@ public class AIObjectScopeTest extends DBeaverUnitTest {
         Mockito.when(root.getChild(Mockito.any(), Mockito.eq("private"))).thenReturn(schema);
         Mockito.when(allowed.getParentObject()).thenReturn(root);
         Mockito.when(secret.getParentObject()).thenReturn(root);
-        Mockito.when(databaseContext.isObjectExcluded(secret)).thenReturn(true);
+        Mockito.when(databaseContext.isObjectAllowed(Mockito.any())).thenReturn(true);
+        Mockito.when(databaseContext.isObjectAllowed(secret)).thenReturn(false);
     }
 
     @Test
-    public void tableResolutionRejectsExclusions() {
+    public void tableResolutionRejectsObjectsOutsideDataSourceScope() {
         try (var dbUtils = Mockito.mockStatic(DBUtils.class, Mockito.CALLS_REAL_METHODS)) {
             stubTable(dbUtils, "secret", secret);
             DBException failure = Assertions.assertThrows(DBException.class, () -> AIUtils.findTableInContext(context, "secret"));
@@ -92,8 +93,8 @@ public class AIObjectScopeTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void schemaResolutionRejectsExclusions() {
-        Mockito.when(databaseContext.isObjectExcluded(schema)).thenReturn(true);
+    public void schemaResolutionRejectsObjectsOutsideDataSourceScope() {
+        Mockito.when(databaseContext.isObjectAllowed(schema)).thenReturn(false);
         DBException failure = Assertions.assertThrows(DBException.class, () -> AIUtils.findSchemaInContext(context, "private"));
         Assertions.assertTrue(failure.getMessage().contains("outside the allowed scope"));
     }

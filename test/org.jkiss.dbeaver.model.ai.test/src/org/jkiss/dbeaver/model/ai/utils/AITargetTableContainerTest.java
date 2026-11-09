@@ -51,6 +51,7 @@ public class AITargetTableContainerTest extends DBeaverUnitTest {
     public void setUp() throws DBException {
         Mockito.when(databaseContext.getExecutionContext()).thenReturn(executionContext);
         Mockito.when(databaseContext.getScope()).thenReturn(AIDatabaseScope.CURRENT_DATASOURCE);
+        Mockito.when(databaseContext.isObjectAllowed(Mockito.any())).thenReturn(true);
         Mockito.when(executionContext.getDataSource()).thenReturn(dataSource);
         Mockito.doReturn(defaults).when(executionContext).getContextDefaults();
         Mockito.when(defaults.getDefaultSchema()).thenReturn(schema);
@@ -93,7 +94,7 @@ public class AITargetTableContainerTest extends DBeaverUnitTest {
 
     @Test
     public void excludedTargetSchemaIsRejected() {
-        Mockito.when(databaseContext.isObjectExcluded(schema)).thenReturn(true);
+        Mockito.when(databaseContext.isObjectAllowed(schema)).thenReturn(false);
         Assertions.assertThrows(DBException.class, () -> AIUtils.findTableContainerInContext(context, "album"));
     }
 

@@ -320,6 +320,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         return filterControl;
     }
 
+    @NotNull
+    protected Text createFilterText(@NotNull Composite parent) {
+        return new Text(parent, SWT.SINGLE | SWT.BORDER | SWT.SEARCH | SWT.ICON_CANCEL);
+    }
+
     private TreeViewer doCreateTreeViewer(Composite parent, int style) {
         checkEnabled = (style & SWT.CHECK) != 0;
 
@@ -970,6 +975,12 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     }
 
     private class CustomFilteredTree extends FilteredTree {
+
+        @NotNull
+        @Override
+        protected Text doCreateFilterText(@NotNull Composite parent) {
+            return DatabaseNavigatorTree.this.createFilterText(parent);
+        }
 
         CustomFilteredTree(int treeStyle) {
             super(

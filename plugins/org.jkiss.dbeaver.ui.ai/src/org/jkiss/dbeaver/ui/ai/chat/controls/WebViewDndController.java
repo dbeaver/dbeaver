@@ -95,22 +95,22 @@ final class WebViewDndController {
 
         dropTarget.addDropListener(new DropTargetAdapter() {
             @Override
-            public void dragEnter(DropTargetEvent event) {
+            public void dragEnter(@NotNull DropTargetEvent event) {
                 handleDragEvent(event);
             }
 
             @Override
-            public void dragOver(DropTargetEvent event) {
+            public void dragOver(@NotNull DropTargetEvent event) {
                 handleDragEvent(event);
             }
 
             @Override
-            public void dragLeave(DropTargetEvent event) {
+            public void dragLeave(@NotNull DropTargetEvent event) {
                 hideDndOverlay();
             }
 
             @Override
-            public void dragOperationChanged(DropTargetEvent event) {
+            public void dragOperationChanged(@NotNull DropTargetEvent event) {
                 handleDragEvent(event);
             }
 
@@ -122,7 +122,7 @@ final class WebViewDndController {
             }
 
             @Override
-            public void drop(DropTargetEvent event) {
+            public void drop(@NotNull DropTargetEvent event) {
                 log.debug("DND: drop on overlay");
                 hideDndOverlay();
 
@@ -183,7 +183,11 @@ final class WebViewDndController {
                 super.function(arguments1);
                 if (isDropSupported(arguments1)) {
                     log.debug("DND: onDragEnter from JS");
-                    showDndOverlay();
+                    if (chat.canAttachDroppedConnections(TreeNodeTransfer.getInstance().getDraggedNodes())) {
+                        chat.showConnectionDropOverlay();
+                    } else {
+                        showDndOverlay();
+                    }
                 }
                 return null;
             }

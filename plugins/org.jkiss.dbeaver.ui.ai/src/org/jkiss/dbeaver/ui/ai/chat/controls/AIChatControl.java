@@ -32,10 +32,13 @@ import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.MouseListener;
 import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.ImageLoader;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Listener;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -62,6 +65,7 @@ import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatController;
@@ -99,6 +103,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     private AIChatConversation activeConversation;
     private WebViewMessageList messageList;
     private ContextComposite contextComposite;
+    private Composite connectionDropOverlay;
 
     public AIChatControl(@NotNull Composite parent, @NotNull AIChatController controller) {
         super(parent, SWT.NONE);
@@ -158,6 +163,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         tabList.add(profileModelComposite);
         setTabList(tabList.toArray(new Control[0]));
 
+        createConnectionDropOverlay();
         WidgetElement.applyStyles(this, true);
 
         addDisposeListener(e -> chatSession.closeSession());
@@ -437,11 +443,17 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     }
 
     public void createNewConversation() {
-        if (isBusy()) {
+        createNewConversation(false);
+    }
+
+    public void createNewConversation(boolean keepConnections) {
+        if (isBusy() || isWaitingForResponse()) {
             return;
         }
         try {
-            selectConversation(createEmptyConversation(createNewConversationName(), getDataSourceContainer()));
+            String name = createNewConversationName();
+            selectConversation(keepConnections ? activeConversation.createEmptyCopy(name)
+                : createEmptyConversation(name, getDataSourceContainer()));
             setFocusOnPrompt();
         } catch (Exception e) {
             DBWorkbench.getPlatformUI().showError(
@@ -510,10 +522,11 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     }
 
     public void renameConversation(@NotNull AIChatConversation conversation, @NotNull String newName) {
-        conversation.setCaption(
-            AIChatUtils.normalizeConversationCaption(newName)
-        );
-        chatSession.notifyConversationRenamed(conversation, newName);
+        String caption = AIChatUtils.normalizeConversationCaption(newName);
+        if (!conversation.getCaption().equals(caption)) {
+            conversation.setCaption(caption);
+            chatSession.notifyConversationRenamed(conversation, conversation.getCaption());
+        }
     }
 
     @Nullable
@@ -864,7 +877,7 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
 
             @Override
             public void drop(@NotNull DropTargetEvent event) {
-                if (event.data instanceof Collection<?> nodes) {
+                if (event.data instanceof Collection<?> nodes && !(control instanceof StyledText)) {
                     attachDroppedConnections(nodes);
                     return;
                 }
@@ -888,8 +901,13 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
             }
 
             private void handleDragEvent(@NotNull DropTargetEvent event) {
-                if (canAttachDroppedConnections(TreeNodeTransfer.getInstance().getDraggedNodes())) {
-                    updateDropEvent(event);
+                if (TreeNodeTransfer.getInstance().getDraggedNodes() != null) {
+                    if (!(control instanceof StyledText) && canAttachDroppedConnections(TreeNodeTransfer.getInstance().getDraggedNodes())) {
+                        event.detail = DND.DROP_COPY;
+                        showConnectionDropOverlay();
+                    } else {
+                        event.detail = DND.DROP_NONE;
+                    }
                     return;
                 }
                 if (!isDropSupported(event)) {
@@ -919,20 +937,27 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         if (!canAttachDroppedConnections(objects)) {
             return;
         }
+        addConnections(objects.stream().map(DBNDataSource.class::cast).map(DBNDataSource::getDataSourceContainer).toList());
+    }
+
+    void addConnections(@NotNull List<DBPDataSourceContainer> containers) {
+        if (isBusy() || isWaitingForResponse() || activeConversation.isActive()) {
+            return;
+        }
         AIChatConversation conversation = activeConversation;
-        List<DBPDataSourceContainer> containers = objects.stream().map(DBNDataSource.class::cast)
-            .map(DBNDataSource::getDataSourceContainer).toList();
+        containers = containers.stream().filter(container -> !conversation.getDataSources().contains(container)).toList();
         for (DBPDataSourceContainer container : containers) {
             if (!AIUIUtils.confirmMetaTransfer(new AIContextSettingsDataSource(container))) {
                 return;
             }
         }
+        List<DBPDataSourceContainer> selectedContainers = containers;
         new AbstractJob(AIChatMessagesUI.ai_chat_add_connection) {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
-                    for (DBPDataSourceContainer container : containers) {
+                    for (DBPDataSourceContainer container : selectedContainers) {
                         chatSession.addDataSource(monitor, conversation, container);
                     }
                     return Status.OK_STATUS;
@@ -941,6 +966,112 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
                 }
             }
         }.schedule();
+    }
+
+    void removeConnection(@NotNull String connectionId) {
+        if (isBusy() || isWaitingForResponse()) {
+            return;
+        }
+        AIChatConversation conversation = activeConversation;
+        new AbstractJob(AIChatMessagesUI.ai_chat_remove_connection) {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                try {
+                    chatSession.removeDataSource(monitor, conversation, connectionId);
+                    return Status.OK_STATUS;
+                } catch (DBException exception) {
+                    return GeneralUtils.makeExceptionStatus(exception);
+                }
+            }
+        }.schedule();
+    }
+
+    void enableConnectionDropTargets(@NotNull Control control) {
+        DropTarget target = new DropTarget(control, DND.DROP_COPY | DND.DROP_DEFAULT);
+        target.setTransfer(TreeNodeTransfer.getInstance());
+        target.addDropListener(new DropTargetAdapter() {
+            @Override
+            public void dragEnter(@NotNull DropTargetEvent event) {
+                dragOver(event);
+            }
+
+            @Override
+            public void dragOver(@NotNull DropTargetEvent event) {
+                event.detail = canAttachDroppedConnections(TreeNodeTransfer.getInstance().getDraggedNodes())
+                    ? DND.DROP_COPY : DND.DROP_NONE;
+                if (event.detail == DND.DROP_COPY && control != connectionDropOverlay) {
+                    showConnectionDropOverlay();
+                }
+            }
+
+            @Override
+            public void dragLeave(@NotNull DropTargetEvent event) {
+                if (control == connectionDropOverlay) {
+                    hideConnectionDropOverlay();
+                }
+            }
+
+            @Override
+            public void dragOperationChanged(@NotNull DropTargetEvent event) {
+                dragOver(event);
+            }
+
+            @Override
+            public void drop(@NotNull DropTargetEvent event) {
+                hideConnectionDropOverlay();
+                if (event.data instanceof Collection<?> nodes) {
+                    attachDroppedConnections(nodes);
+                }
+            }
+        });
+        if (control instanceof Composite composite) {
+            for (Control child : composite.getChildren()) {
+                enableConnectionDropTargets(child);
+            }
+        }
+    }
+
+    private void createConnectionDropOverlay() {
+        connectionDropOverlay = new Composite(this, SWT.DOUBLE_BUFFERED);
+        GridData data = new GridData();
+        data.exclude = true;
+        connectionDropOverlay.setLayoutData(data);
+        connectionDropOverlay.setVisible(false);
+        connectionDropOverlay.addPaintListener(event -> {
+            Rectangle bounds = connectionDropOverlay.getClientArea();
+            event.gc.setBackground(BaseThemeSettings.instance.colorAccent);
+            event.gc.setAlpha(20);
+            event.gc.fillRectangle(bounds);
+            event.gc.setAlpha(255);
+            event.gc.setForeground(BaseThemeSettings.instance.colorAccent);
+            event.gc.setLineStyle(SWT.LINE_DASH);
+            event.gc.drawRectangle(1, 1, bounds.width - 3, bounds.height - 3);
+            String text = AIChatMessagesUI.ai_chat_drag_n_drop_connections_message;
+            Point size = event.gc.textExtent(text);
+            event.gc.drawText(text, Math.max(4, (bounds.width - size.x) / 2), (bounds.height - size.y) / 2, true);
+        });
+        enableConnectionDropTargets(connectionDropOverlay);
+        Listener dragEndListener = event -> hideConnectionDropOverlay();
+        getDisplay().addFilter(DND.DragEnd, dragEndListener);
+        addDisposeListener(event -> getDisplay().removeFilter(DND.DragEnd, dragEndListener));
+    }
+
+    void showConnectionDropOverlay() {
+        if (connectionDropOverlay == null || isDisposed() || messageList == null) {
+            return;
+        }
+        Rectangle viewport = messageList.getBounds();
+        int top = contextComposite == null ? viewport.y : contextComposite.getBounds().y;
+        connectionDropOverlay.setBounds(viewport.x, top, viewport.width, viewport.y + viewport.height - top);
+        connectionDropOverlay.moveAbove(null);
+        connectionDropOverlay.setVisible(true);
+    }
+
+    void hideConnectionDropOverlay() {
+        if (connectionDropOverlay != null && !connectionDropOverlay.isDisposed()) {
+            connectionDropOverlay.setVisible(false);
+        }
     }
 
     private boolean canDescribeDroppedObjects() {

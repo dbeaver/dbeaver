@@ -112,6 +112,41 @@ public class AIChatMessagesUI extends NLS {
     public static String ai_chat_image_loading;
     public static String ai_chat_image_clipboard_name;
 
+    public static String ai_chat_add_connections;
+    public static String ai_chat_add_connections_description;
+    public static String ai_chat_filter_connections;
+    public static String ai_chat_add_selected;
+    public static String ai_chat_add_selected_count;
+    public static String ai_chat_remove_connection;
+    public static String ai_chat_remove_connection_named;
+    public static String ai_chat_connections_expand;
+    public static String ai_chat_connections_collapse;
+    public static String ai_chat_connections_count;
+    public static String ai_chat_conversation_same_databases;
+    public static String ai_chat_more;
+    public static String ai_chat_conversation_error;
+    public static String ai_chat_empty_connections_hint;
+
+    public static String ai_chat_database_context;
+    public static String ai_chat_select_conversation;
+    public static String ai_chat_primary_context_applies_to;
+    public static String ai_chat_primary_objects_sent;
+    public static String ai_chat_context_apply;
+    public static String ai_chat_configure_database_context;
+    public static String ai_chat_context_objects;
+    public static String ai_chat_context_all_objects;
+    public static String ai_chat_context_selected_objects;
+    public static String ai_chat_context_apply_to;
+    public static String ai_chat_context_all_available;
+    public static String ai_chat_context_filter_objects;
+    public static String ai_chat_context_objects_selected;
+    public static String ai_chat_context_tables_selected;
+    public static String ai_chat_context_connect;
+    public static String ai_chat_context_retry;
+    public static String ai_chat_context_loading;
+    public static String ai_chat_context_load_failed;
+    public static String ai_chat_context_load_cancelled;
+
     static {
         NLS.initializeMessages(AIChatMessagesUI.class.getName(), AIChatMessagesUI.class);
     }

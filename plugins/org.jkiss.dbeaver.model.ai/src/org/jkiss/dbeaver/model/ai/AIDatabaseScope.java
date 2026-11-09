@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,13 @@
 
 package org.jkiss.dbeaver.model.ai;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.ai.internal.AIMessages;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Completion scope
@@ -30,11 +36,28 @@ public enum AIDatabaseScope {
 
     private final String title;
 
-    AIDatabaseScope(String title) {
+    AIDatabaseScope(@NotNull String title) {
         this.title = title;
     }
 
+    @NotNull
     public String getTitle() {
         return title;
+    }
+
+    @NotNull
+    public static List<AIDatabaseScope> getAvailableScopes(@Nullable DBCExecutionContextDefaults<?, ?> defaults) {
+        List<AIDatabaseScope> scopes = new ArrayList<>();
+        if (defaults != null) {
+            if (defaults.getDefaultSchema() != null || defaults.supportsSchemaChange()) {
+                scopes.add(CURRENT_SCHEMA);
+            }
+            if (defaults.getDefaultCatalog() != null || defaults.supportsCatalogChange()) {
+                scopes.add(CURRENT_DATABASE);
+            }
+        }
+        scopes.add(CURRENT_DATASOURCE);
+        scopes.add(CUSTOM);
+        return List.copyOf(scopes);
     }
 }

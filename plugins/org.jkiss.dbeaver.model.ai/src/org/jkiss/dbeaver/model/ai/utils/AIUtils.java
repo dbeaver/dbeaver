@@ -497,14 +497,14 @@ public final class AIUtils {
         if (object instanceof DBPDataSource || object instanceof DBPDataSourceContainer) {
             return true;
         }
+        if (!context.isObjectAllowed(object)) {
+            return false;
+        }
         if (object instanceof DBSCatalog catalog) {
             return isCatalogInScope(context, executionContext, catalog);
         } else if (object instanceof DBSSchema schema) {
             return isSchemaInScope(context, executionContext, schema);
         } else {
-            if (!context.isObjectAllowed(object)) {
-                return false;
-            }
             if (context.getScope() == AIDatabaseScope.CUSTOM) {
                 // Check that this object in the custom entity list
                 List<DBSObject> customEntities = context.getCustomEntities();

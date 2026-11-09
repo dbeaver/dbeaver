@@ -24,8 +24,8 @@ import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.functions.AIFunctionParams;
 import org.jkiss.dbeaver.model.ai.qm.AIChatStorage;
 import org.jkiss.dbeaver.model.ai.qm.QMAIContext;
-import org.jkiss.dbeaver.model.ai.quota.UserTokenQuotaService;
 import org.jkiss.dbeaver.model.ai.qm.QMAIDataSource;
+import org.jkiss.dbeaver.model.ai.quota.UserTokenQuotaService;
 import org.jkiss.dbeaver.model.ai.registry.AIFunctionInternalRegistry;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -233,6 +233,53 @@ public class AIMultiConnectionTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void conversationScopeDoesNotRestoreRevokedConnectionConsent() throws DBException {
+        AIChatConversation conversation = conversation(primary);
+        conversation.addDataSource(additional);
+        AIChatContextProvider provider = Mockito.mock(AIChatContextProvider.class);
+        AIChatSession session = registeredSession(provider);
+        AIContextSettingsChatConversation scope = new AIContextSettingsChatConversation(session, conversation, additional);
+        scope.setMetaTransferConfirmed(true);
+        scope.setScope(AIDatabaseScope.CURRENT_DATASOURCE);
+        conversation.setCustomSettings(additional, scope);
+        try (var settings = Mockito.mockConstruction(AIContextSettingsDataSource.class)) {
+            AIFunctionContext context = session.createFunctionContext(new VoidProgressMonitor(), conversation, databaseContext(primary));
+            DBException exception = Assertions.assertThrows(DBException.class, () -> context.withConnection("additional"));
+            Assertions.assertTrue(exception.getMessage().contains("not confirmed"));
+            Mockito.verifyNoInteractions(provider);
+        }
+    }
+
+    @Test
+    public void additionalConnectionUsesItsConversationScopeInsteadOfTheGlobalScope() throws DBException {
+        AIChatConversation conversation = conversation(primary);
+        conversation.addDataSource(additional);
+        Mockito.when(additional.isConnected()).thenReturn(true);
+        AIChatContextProvider provider = Mockito.mock(AIChatContextProvider.class);
+        Mockito.when(provider.getExecutionContext(additional)).thenReturn(Mockito.mock(DBCExecutionContext.class));
+        AIChatSession session = registeredSession(provider);
+        AIContextSettingsChatConversation scope = new AIContextSettingsChatConversation(session, conversation, additional);
+        scope.setMetaTransferConfirmed(true);
+        scope.setScope(AIDatabaseScope.CUSTOM);
+        scope.setCustomObjectIds(new String[0]);
+        conversation.setCustomSettings(additional, scope);
+        DBPPlatform platform = Mockito.mock(DBPPlatform.class);
+        Mockito.when(platform.getPreferenceStore()).thenReturn(Mockito.mock(DBPPreferenceStore.class));
+        try (var workbench = Mockito.mockStatic(DBWorkbench.class);
+             var settings = Mockito.mockConstruction(AIContextSettingsDataSource.class, (mock, construction) -> {
+                 Mockito.when(mock.isMetaTransferConfirmed()).thenReturn(true);
+                 Mockito.when(mock.getDataSourceContainer()).thenReturn(additional);
+                 Mockito.when(mock.getScope()).thenReturn(AIDatabaseScope.CURRENT_DATASOURCE);
+             })) {
+            workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+            AIFunctionContext context = session.createFunctionContext(new VoidProgressMonitor(), conversation, databaseContext(primary));
+            DBException exception = Assertions.assertThrows(DBException.class, () -> context.withConnection("additional"));
+            Assertions.assertTrue(exception.getMessage().startsWith("Custom scope is empty"));
+            Mockito.verify(conversation.getPromptGenerator(), Mockito.never()).configureDatabaseContext(Mockito.any());
+        }
+    }
+
+    @Test
     public void additionalConnectionKeepsItsExecutionContextAndScope() throws DBException {
         AIChatConversation conversation = conversation(primary);
         conversation.addDataSource(additional);
@@ -382,6 +429,58 @@ public class AIMultiConnectionTest extends DBeaverUnitTest {
         Mockito.verify(listener, Mockito.never()).conversationChanged(Mockito.any());
         Assertions.assertEquals(List.of(primary), conversation.getDataSources());
         Assertions.assertSame(primary, conversation.getDataSource());
+    }
+
+    @Test
+    public void emptyCopyKeepsDatabasesAndProfileWithoutHistoryOrRequestState() throws DBException {
+        AIChatConversation original = conversation(primary);
+        original.addDataSource(additional);
+        AIConfigurationProfile profile = Mockito.mock(AIConfigurationProfile.class);
+        original.setProfile(profile);
+        original.addMessage(AIMessage.userMessage("Original prompt"));
+        original.startConversation();
+
+        AIChatConversation copy = original.createEmptyCopy("Another conversation");
+        Assertions.assertNotEquals(original.getId(), copy.getId());
+        Assertions.assertEquals("Another conversation", copy.getCaption());
+        Assertions.assertEquals(List.of(primary, additional), copy.getDataSources());
+        Assertions.assertSame(profile, copy.getProfile());
+        Assertions.assertSame(original.getPromptGenerator(), copy.getPromptGenerator());
+        Assertions.assertTrue(copy.getMessages().isEmpty());
+        Assertions.assertEquals(0, copy.getNextMessageId());
+        Assertions.assertFalse(copy.isActive());
+        copy.removeDataSource("additional");
+        Assertions.assertEquals(List.of(primary, additional), original.getDataSources());
+    }
+
+    @Test
+    public void emptyCopySupportsConversationWithoutDatabase() {
+        AIChatConversation original = conversation(null);
+        AIChatConversation copy = original.createEmptyCopy("Empty");
+        Assertions.assertNull(copy.getDataSource());
+        Assertions.assertTrue(copy.getDataSources().isEmpty());
+    }
+
+    @Test
+    public void allConversationsIncludeOtherPrimaryDatabasesAndUnconnectedChats() throws DBException {
+        AIChatSession session = registeredSession(Mockito.mock(AIChatContextProvider.class));
+        AIChatConversation first = conversation(primary);
+        first.addDataSource(additional);
+        AIChatConversation second = conversation(additional);
+        AIChatConversation unconnected = conversation(null);
+        DBPPlatform platform = Mockito.mock(DBPPlatform.class, Mockito.RETURNS_DEEP_STUBS);
+        Mockito.when(platform.getApplication().isHeadlessMode()).thenReturn(true);
+        try (org.mockito.MockedStatic<DBWorkbench> workbench = Mockito.mockStatic(DBWorkbench.class)) {
+            workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+            session.addConversation(first);
+            session.addConversation(second);
+            session.addConversation(unconnected);
+
+            Assertions.assertEquals(Set.of(first, second, unconnected), Set.copyOf(session.getAllConversations()));
+            Assertions.assertEquals(List.of(first), session.getAllConversations(primary));
+            Assertions.assertEquals(List.of(second), session.getAllConversations(additional));
+            Assertions.assertEquals(List.of(unconnected), session.getAllConversations(null));
+        }
     }
 
     @NotNull

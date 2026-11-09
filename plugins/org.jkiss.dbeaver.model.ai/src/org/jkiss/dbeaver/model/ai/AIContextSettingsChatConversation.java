@@ -29,24 +29,43 @@ public class AIContextSettingsChatConversation extends AIContextSettings {
 
     private final AIChatSession session;
     private final AIChatConversation conversation;
+    private final DBPDataSourceContainer dataSourceContainer;
 
     public AIContextSettingsChatConversation(
         @NotNull AIChatSession session,
         @NotNull AIChatConversation conversation
     ) {
+        this(session, conversation, conversation.getDataSource());
+    }
+
+    public AIContextSettingsChatConversation(
+        @NotNull AIChatSession session,
+        @NotNull AIChatConversation conversation,
+        @Nullable DBPDataSourceContainer dataSourceContainer
+    ) {
         this.session = session;
         this.conversation = conversation;
+        this.dataSourceContainer = dataSourceContainer;
+        setConversationScoped(true);
+    }
+
+    public boolean isConversationScoped() {
+        return Boolean.TRUE.equals(settings.conversationScope);
+    }
+
+    public void setConversationScoped(boolean conversationScoped) {
+        settings.conversationScope = conversationScoped;
     }
 
     @Nullable
     @Override
     public DBPDataSourceContainer getDataSourceContainer() {
-        return conversation.getDataSource();
+        return dataSourceContainer;
     }
 
     @Override
     public void saveSettings() throws DBException {
-        DBPDataSourceContainer dataSource = this.conversation.getDataSource();
+        DBPDataSourceContainer dataSource = getDataSourceContainer();
         if (dataSource != null) {
             AIContextSettingsDataSource dsSettings = new AIContextSettingsDataSource(dataSource);
             if (dsSettings.isMetaTransferConfirmed() != this.isMetaTransferConfirmed()) {
