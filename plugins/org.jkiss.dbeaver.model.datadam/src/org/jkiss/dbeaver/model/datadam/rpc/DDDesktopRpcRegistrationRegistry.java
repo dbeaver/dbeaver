@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.model.datadam.rpc;
 
 import com.dbeaver.datadam.dam.remote.api.exception.DDRemoteDamException;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
-import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamSettingsService;
+import com.dbeaver.datadam.dam.remote.api.service.desktop.DDRemoteDamSettingsService;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;

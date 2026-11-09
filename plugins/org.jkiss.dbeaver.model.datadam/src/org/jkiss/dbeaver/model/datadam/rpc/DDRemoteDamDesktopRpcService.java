@@ -28,19 +28,13 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 
-import java.util.List;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.concurrent.LinkedBlockingQueue;
-
 final class DDRemoteDamDesktopRpcService implements AutoCloseable {
     private static final Log log = Log.getLog(DDRemoteDamDesktopRpcService.class);
-    private static final EndpointChange STOP = new EndpointChange(null, DDRemoteDamSettings.EMPTY, true);
 
     private final Object lock = new Object();
+    private final Object initializationLock = new Object();
     private final DDRemoteDamChannel channel;
-    private final List<EndpointListener> endpointListeners = new CopyOnWriteArrayList<>();
-    private final BlockingQueue<EndpointChange> endpointChanges = new LinkedBlockingQueue<>();
+    private final DDDesktopRpcRegistrationRegistry registrations;
     @Nullable
     private MessagingRpcEndpoint endpoint;
     private boolean invalidated;
@@ -48,20 +42,9 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
     private boolean active;
     private boolean closed;
 
-    DDRemoteDamDesktopRpcService(@NotNull DDRemoteDamChannel channel) {
+    DDRemoteDamDesktopRpcService(@NotNull DDRemoteDamChannel channel, @NotNull DDDesktopRpcRegistrationRegistry registrations) {
         this.channel = channel;
-        Thread.ofVirtual().name("Notify DataDam RPC endpoint listeners").start(this::deliverEndpointChanges);
-    }
-
-    interface EndpointListener {
-        void endpointChanged(@Nullable MessagingRpcEndpoint endpoint, @NotNull DDRemoteDamSettings settings) throws DBException;
-    }
-
-    private record EndpointChange(@Nullable MessagingRpcEndpoint endpoint, @NotNull DDRemoteDamSettings settings, boolean stop) {
-    }
-
-    void addEndpointListener(@NotNull EndpointListener listener) {
-        endpointListeners.add(listener);
+        this.registrations = registrations;
     }
 
     boolean resume(boolean initial) {
@@ -83,9 +66,6 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
             }
             accessObserved |= !initial;
             active = false;
-            if (endpoint != null && !invalidated) {
-                notifyEndpointChanged(null, DDRemoteDamSettings.EMPTY);
-            }
             invalidated = true;
             stopped = endpoint;
         }
@@ -97,54 +77,46 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
     MessagingRpcEndpoint getRpc() throws DBException {
         synchronized (lock) {
             requireActive();
-            if (endpoint != null && endpoint.isCloseComplete()) {
-                endpoint = null;
-                if (!invalidated) {
-                    notifyEndpointChanged(null, DDRemoteDamSettings.EMPTY);
+        }
+        synchronized (initializationLock) {
+            MessagingRpcEndpoint opened;
+            DDRemoteDamSettings settings;
+            synchronized (lock) {
+                requireActive();
+                if (endpoint != null && endpoint.isCloseComplete()) {
+                    endpoint = null;
                 }
-            }
-            if (endpoint != null) {
-                if (invalidated || endpoint.isClosed()) {
-                    throw new DBException("DataDam RPC endpoint is still closing");
+                if (endpoint != null) {
+                    if (invalidated || endpoint.isClosed()) {
+                        throw new DBException("DataDam RPC endpoint is still closing");
+                    }
+                    return endpoint;
                 }
-                return endpoint;
-            }
-            var status = channel.getStatus();
-            if (!status.isReady()) {
-                throw new DBException("DataDam RPC requires a ready message channel");
-            }
-            try {
-                MessagingRpcEndpoint opened = MessagingRpcEndpoint.open(
+                var status = channel.getStatus();
+                if (!status.isReady()) {
+                    throw new DBException("DataDam RPC requires a ready message channel");
+                }
+                opened = MessagingRpcEndpoint.open(
                     topic -> DDRemoteDamRpcTransport.forChannel(channel, topic, DDRemoteDamDesktopRpcService::executeRequest),
                     new DDRemoteDamGsonRpcCodec(new Gson()));
                 endpoint = opened;
                 invalidated = false;
-                notifyEndpointChanged(opened, status.session().settings());
-                return endpoint;
-            } catch (RuntimeException e) {
+                settings = status.session().settings();
+            }
+            try {
+                // registration may call the channel; keep authorization changes and shutdown unblocked
+                registrations.registerEndpoint(opened, settings);
+                synchronized (lock) {
+                    requireActive();
+                    if (invalidated || opened.isClosed()) {
+                        throw new DBException("DataDam RPC endpoint closed during initialization");
+                    }
+                    return opened;
+                }
+            } catch (DBException | RuntimeException e) {
+                closeEndpoint(opened);
                 throw new DBException("Cannot open DataDam RPC endpoint", e);
             }
-        }
-    }
-
-    private void notifyEndpointChanged(@Nullable MessagingRpcEndpoint current, @NotNull DDRemoteDamSettings settings) {
-        endpointChanges.add(new EndpointChange(current, settings, false));
-    }
-
-    private void deliverEndpointChanges() {
-        try {
-            EndpointChange change;
-            while (!(change = endpointChanges.take()).stop()) {
-                for (EndpointListener listener : endpointListeners) {
-                    try {
-                        listener.endpointChanged(change.endpoint(), change.settings());
-                    } catch (Throwable e) {
-                        log.warn("DataDam RPC endpoint listener failed", e);
-                    }
-                }
-            }
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
         }
     }
 
@@ -182,12 +154,8 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
             }
             closed = true;
             active = false;
-            if (endpoint != null && !invalidated) {
-                notifyEndpointChanged(null, DDRemoteDamSettings.EMPTY);
-            }
             invalidated = true;
             stopped = endpoint;
-            endpointChanges.add(STOP);
         }
         closeEndpoint(stopped);
     }

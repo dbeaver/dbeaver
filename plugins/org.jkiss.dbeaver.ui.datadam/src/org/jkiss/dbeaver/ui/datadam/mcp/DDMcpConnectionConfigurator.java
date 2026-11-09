@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.ui.datadam.internal.DDMcpMessages;
 public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<PrefPageDataSourceAI, PrefPageDataSourceAI> {
     private static final Log log = Log.getLog(DDMcpConnectionConfigurator.class);
     private Button enableCheck;
+    private boolean resetPending;
     @Nullable
     private AbstractJob statusJob;
 
@@ -97,13 +98,16 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
                 false,
                 1
             );
-            loadSettings(page);
+            if (!resetPending) {
+                loadSettings(page);
+            }
         }
         parent.layout(true, true);
     }
 
     @Override
     public void loadSettings(@NotNull PrefPageDataSourceAI page) {
+        resetPending = false;
         DBPDataSourceContainer connection = page.getConnection();
         if (connection != null && enableCheck != null) {
             enableCheck.setSelection(DDMcpConnectionSettings.isEnabled(connection));
@@ -113,13 +117,15 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
     @Override
     public void saveSettings(@NotNull PrefPageDataSourceAI page) {
         DBPDataSourceContainer connection = page.getConnection();
-        if (connection != null && enableCheck != null) {
-            DDMcpConnectionSettings.setEnabled(connection, enableCheck.getSelection());
+        if (connection != null && (enableCheck != null || resetPending)) {
+            DDMcpConnectionSettings.setEnabled(connection, enableCheck != null && enableCheck.getSelection());
+            resetPending = false;
         }
     }
 
     @Override
     public void resetSettings(@NotNull PrefPageDataSourceAI page) {
+        resetPending = true;
         if (enableCheck != null) {
             enableCheck.setSelection(false);
         }
