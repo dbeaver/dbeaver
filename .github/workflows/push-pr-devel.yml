@@ -26,8 +26,8 @@ jobs:
 
   lint-java:
     name: Check style
-    uses: dbeaver/dbeaver-common/.github/workflows/java-checkstyle.yml@devel
-    secrets: inherit
+    uses: dbeaver/dbeaver-common/.github/workflows/java-checkstyle.yml@29475df88ad1d8b32ea593100bcb9e89a4e40fbe
+    with:
+      common-ref: 29475df88ad1d8b32ea593100bcb9e89a4e40fbe
     permissions:
       contents: read
-      pull-requests: read
