@@ -217,7 +217,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         // activating driver properties may open a modal download dialog
         control.update();
         activateCurrentItem();
-        handlersToolbar.setVisible(!getDriver().isEmbedded());
+        handlersToolbar.setVisible(isNetworkConfigurationEnabled());
         UIUtils.asyncExec(() -> connectionEditor.activateEditor());
     }
 
@@ -1053,6 +1053,13 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         super.dispose();
     }
 
+    private boolean isNetworkConfigurationEnabled() {
+        DBPDriver driver = getDriver();
+        return (!driver.isEmbedded()
+            || CommonUtils.toBoolean(driver.getDriverParameter(DBConstants.DRIVER_PARAM_ENABLE_NETWORK_PARAMETERS)))
+            && !CommonUtils.toBoolean(driver.getDriverParameter(DBConstants.DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS));
+    }
+
     @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
@@ -1071,10 +1078,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         if (activeConnectionEditor instanceof IDialogPageProvider pageProvider) {
             subPages = pageProvider.getDialogPages(extrasOnly, true);
 
-            if ((!getDriver().isEmbedded() || CommonUtils.toBoolean(getDriver().getDriverParameter(DBConstants.DRIVER_PARAM_ENABLE_NETWORK_PARAMETERS)))
-                && !CommonUtils.toBoolean(getDriver().getDriverParameter(DBConstants.DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS))
-            ) {
-                // Add network tabs (for non-embedded drivers)
+            if (isNetworkConfigurationEnabled()) {
+                // Add network tabs for drivers that support network configuration
                 for (NetworkHandlerDescriptor descriptor : NetworkHandlerRegistry.getInstance().getDescriptors(getActiveDataSource())) {
                     if (driverSubstitution != null && !driverSubstitution.getInstance().isNetworkHandlerSupported(descriptor)) {
                         continue;
