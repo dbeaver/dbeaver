@@ -576,7 +576,7 @@ public class DBeaverLauncher {
         processConfiguration();
         processGlobalConfiguration();
         Path dbeaverDataDir = getDataDirectory();
-        if (System.getProperty(PROP_INSTANCE_AREA_DEFAULT) == null) {
+        if (System.getProperty(PROP_INSTANCE_AREA_DEFAULT) == null && !Arrays.asList(passThruArgs).contains(ARG_DATA)) {
             Path defaultWorkspace = detectDefaultWorkspaceLocation(passThruArgs, dbeaverDataDir);
             if (defaultWorkspace.isAbsolute()) {
                 System.setProperty(PROP_INSTANCE_AREA_DEFAULT, defaultWorkspace.toUri().toString());
