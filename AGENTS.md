@@ -55,7 +55,8 @@ The commercial products share the same model layer as DBeaver CE + browser-based
 
 ### Plugin packaging rules
 
-- Every plugin has a `META-INF/MANIFEST.MF` (bundle metadata) and a `pom.xml` with packaging `eclipse-plugin`.
+- Every plugin has a `META-INF/MANIFEST.MF` (bundle metadata). Tycho derives the Maven model from it; keep a bundle `pom.xml` only when it has additional build configuration.
+- `.mvn/extensions.xml` enables pom-less builds. Keep its Tycho version aligned with `tycho-version` in `dbeaver-common/root/pom.xml`. Use `pom.model.packaging` in `build.properties` when the bundle's packaging differs from Tycho's `.test`/`.tests` naming convention.
 - `plugin.xml` declares Eclipse extension points and extensions.
 - Bundle source code is in the `src` folder specified in `build.properties` (as required by Tycho).
 
