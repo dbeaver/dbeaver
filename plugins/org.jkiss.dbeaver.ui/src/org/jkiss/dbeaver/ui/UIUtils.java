@@ -2676,6 +2676,7 @@ public class UIUtils {
         final Control[] tabList = parent.getTabList();
 
         final Text text = new Text(parent, style);
+        text.setFont(original.getFont());
         text.setText(original.getText());
         text.setLayoutData(original.getLayoutData());
         text.moveAbove(original);
@@ -2701,6 +2702,28 @@ public class UIUtils {
     private static void copyListeners(@NotNull Widget source, @NotNull Widget target, int eventType) {
         for (Listener listener : source.getListeners(eventType)) {
             target.addListener(eventType, listener);
+        }
+    }
+
+    public static void applyDialogFont(@Nullable Control control) {
+        if (control == null || control.isDisposed()) {
+            return;
+        }
+        Dialog.applyDialogFont(control);
+        applyDialogFontToTextControls(control);
+    }
+
+    private static void applyDialogFontToTextControls(@NotNull Control control) {
+        if (control instanceof Text) {
+            // JFace caches defaults by widget class, but Text defaults can differ by style (e.g. on Cocoa).
+            Font originalFont = control.getFont();
+            control.setFont(null);
+            boolean defaultFont = Arrays.equals(originalFont.getFontData(), control.getFont().getFontData());
+            control.setFont(defaultFont ? JFaceResources.getDialogFont() : originalFont);
+        } else if (control instanceof Composite composite) {
+            for (Control child : composite.getChildren()) {
+                applyDialogFontToTextControls(child);
+            }
         }
     }
 

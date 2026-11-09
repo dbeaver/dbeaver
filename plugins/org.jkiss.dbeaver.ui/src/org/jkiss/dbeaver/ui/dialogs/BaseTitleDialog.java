@@ -57,7 +57,7 @@ public class BaseTitleDialog extends TitleAreaDialog {
     @Override
     protected Control createContents(@NotNull Composite parent) {
         Control contents = super.createContents(parent);
-        applyDialogFont(contents);
+        UIUtils.applyDialogFont(contents);
         return contents;
     }
 
