@@ -105,7 +105,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     ) throws DBException {
         Double temperature = getRequestTemperature();
         Pair<OAIResponsesRequest, CopilotChatRequest> copilotChatRequestOAIResponsesRequestPair = new Pair<>(
-            OpenAiUtils.createOpenAiRequest(request, getModelName(), temperature),
+            OpenAiUtils.createOpenAiRequest(request, getModelName(), temperature, reasoningSource()),
             createLegacyChatRequest(request, false, temperature)
         );
         Object chatResponse = client.getInstance().chat(
@@ -162,7 +162,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     ) throws DBException {
         Double temperature = getRequestTemperature();
         Pair<OAIResponsesRequest, CopilotChatRequest> copilotChatRequestOAIResponsesRequestPair = new Pair<>(
-            OpenAiUtils.createOpenAiRequest(request, getModelName(), temperature),
+            OpenAiUtils.createOpenAiRequest(request, getModelName(), temperature, reasoningSource()),
             createLegacyChatRequest(request, true, temperature)
         );
         client.getInstance().createChatCompletionStream(
@@ -195,6 +195,11 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     @Nullable
     public String getModelName() {
         return properties.getEffectiveModel();
+    }
+
+    @NotNull
+    private String reasoningSource() {
+        return properties.getClass().getName() + "\n" + properties.getEffectiveBaseAuthUrl() + "\n" + getModelName();
     }
 
     @NotNull

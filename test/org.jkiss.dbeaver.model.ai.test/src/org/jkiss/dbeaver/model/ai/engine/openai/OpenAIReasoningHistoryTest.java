@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIAssistant;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AIConstants;
+import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.AIFunctionContext;
 import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.AIFunctionParameter;
@@ -219,6 +220,32 @@ class OpenAIReasoningHistoryTest {
         Assertions.assertTrue(tokens >= 2000);
         Assertions.assertTrue(tokens < 2100);
         Mockito.verify(listener, Mockito.never()).error(Mockito.any());
+    }
+
+    @Test
+    void replaysInterleavedStreamingReasoningOnceAndCountsTheWholeGroupOnce() {
+        AIEngineResponseConsumer listener = Mockito.mock(AIEngineResponseConsumer.class);
+        OpenAiAPIStreamConsumer stream = new OpenAiAPIStreamConsumer(listener, "source");
+        stream.accept("data: {\"type\":\"response.output_item.done\",\"item\":" + REASONING + "}");
+        stream.accept("data: {\"type\":\"response.output_item.done\",\"item\":" + CALL + "}");
+        stream.accept("data: {\"type\":\"response.output_item.done\",\"item\":" + REASONING.replace("rs_1", "rs_2") + "}");
+        stream.accept("data: {\"type\":\"response.output_item.done\",\"item\":" + CALL.replace("call_1", "call_2") + "}");
+        stream.accept("data: {\"type\":\"response.completed\",\"response\":{\"status\":\"completed\",\"usage\":{"
+            + "\"input_tokens\":1,\"output_tokens\":2001,\"output_tokens_details\":{\"reasoning_tokens\":2000}}}}");
+        stream.complete();
+        ArgumentCaptor<AIEngineResponseChunk> chunks = ArgumentCaptor.forClass(AIEngineResponseChunk.class);
+        Mockito.verify(listener, Mockito.times(2)).nextChunk(chunks.capture());
+        List<AIMessage> history = chunks.getAllValues().stream().map(chunk -> AIMessage.functionCall(
+            JSONUtils.GSON.fromJson(JSONUtils.GSON.toJson(chunk.getFunctionCall()), AIFunctionCall.class),
+            new AIFunctionResult(AIFunctionType.INFORMATION, "table"))).toList();
+        OAIResponsesRequest next = OpenAiUtils.createOpenAiRequest(new AIEngineRequest(history), "o3", null, "source");
+        Assertions.assertEquals(List.of("reasoning", "function_call", "reasoning", "function_call",
+            "function_call_output", "function_call_output"), next.input.stream().map(item -> item.type).toList());
+        Assertions.assertEquals(List.of("rs_1", "rs_2"), next.input.stream()
+            .filter(item -> "reasoning".equals(item.type)).map(item -> item.id).toList());
+        int tokens = OpenAiUtils.countContextTokens(history, "source", false, new DummyTokenCounter()::count);
+        Assertions.assertTrue(tokens >= 2000);
+        Assertions.assertTrue(tokens < 2100);
     }
 
     @NotNull

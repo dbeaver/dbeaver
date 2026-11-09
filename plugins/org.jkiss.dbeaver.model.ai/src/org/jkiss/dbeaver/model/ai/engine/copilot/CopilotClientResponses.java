@@ -140,7 +140,7 @@ public class CopilotClientResponses extends CopilotClientBase<Pair<OAIResponsesR
         chatRequest.getFirst().stream = true;
         HttpRequest request = createCompletionRequest(chatRequest.getFirst(), session);
 
-        OpenAiAPIStreamConsumer stringConsumer = new OpenAiAPIStreamConsumer(listener);
+        OpenAiAPIStreamConsumer stringConsumer = new OpenAiAPIStreamConsumer(listener, chatRequest.getFirst().reasoningSource);
         client.sendAsync(
             request,
             stringConsumer,

@@ -124,7 +124,7 @@ public class OpenAIClientChat extends OpenAiClientBase {
 
         HttpRequest modifiedRequest = applyFilters(request);
 
-        OpenAiAPIStreamConsumer stringConsumer = new OpenAiAPIStreamConsumer(listener);
+        OpenAiAPIStreamConsumer stringConsumer = new OpenAiAPIStreamConsumer(listener, completionRequest.reasoningSource);
         client.sendAsync(
             modifiedRequest,
             stringConsumer,

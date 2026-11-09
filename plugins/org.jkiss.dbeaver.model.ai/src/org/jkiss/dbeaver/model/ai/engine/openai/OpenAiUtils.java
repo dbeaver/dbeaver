@@ -44,7 +44,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
@@ -249,7 +248,7 @@ public class OpenAiUtils {
     ) {
         List<OAIMessage> result = new ArrayList<>(messages.size());
         List<OAIMessage> outputs = new ArrayList<>();
-        String previousReasoning = null;
+        List<String> previousReasoning = null;
         for (AIMessage message : messages) {
             AIFunctionCall call = message.getFunctionCall();
             if (call != null) {
@@ -270,15 +269,18 @@ public class OpenAiUtils {
                 if (!CommonUtils.isEmpty(functionCallMessage.callId)) {
                     String reasoning = call.getMessageMetadata() == null ? null
                         : call.getMessageMetadata().get(OpenAIConstants.TOOL_CALL_REASONING);
-                    // reasoning belongs to the whole parallel call group; replay it once, before calls and their results
-                    if (reasoning == null || !Objects.equals(reasoning, previousReasoning)) {
+                    List<OAIMessage> reasoningItems = reasoning == null ? List.of()
+                        : List.of(JSONUtils.GSON.fromJson(reasoning, OAIMessage[].class));
+                    List<String> reasoningKeys = reasoningItems.stream().map(JSONUtils.GSON::toJson).toList();
+                    boolean continuation = reasoning != null && previousReasoning != null
+                        && isReasoningPrefix(previousReasoning, reasoningKeys);
+                    if (!continuation) {
                         result.addAll(outputs);
                         outputs.clear();
-                        if (reasoning != null) {
-                            result.addAll(List.of(JSONUtils.GSON.fromJson(reasoning, OAIMessage[].class)));
-                        }
-                        previousReasoning = reasoning;
                     }
+                    // streamed calls can carry growing snapshots of the same reasoning group
+                    result.addAll(reasoningItems.subList(continuation ? previousReasoning.size() : 0, reasoningItems.size()));
+                    previousReasoning = reasoning == null ? null : reasoningKeys;
                     result.add(functionCallMessage);
                     outputs.add(OAIMessageFactory.fromAIMessage(message, functionCallMessage.callId));
                 }
@@ -310,6 +312,10 @@ public class OpenAiUtils {
         return result;
     }
 
+    private static boolean isReasoningPrefix(@NotNull List<String> prefix, @NotNull List<String> reasoning) {
+        return prefix.size() <= reasoning.size() && prefix.equals(reasoning.subList(0, prefix.size()));
+    }
+
     private static boolean isReasoningCompatible(@NotNull Map<String, String> metadata, @Nullable String reasoningSource) {
         return reasoningSource == null || reasoningSource.equals(metadata.get(OpenAIConstants.REASONING_SOURCE));
     }
@@ -336,7 +342,7 @@ public class OpenAiUtils {
                 retainedReasoning.add(JSONUtils.GSON.toJson(message));
             }
         }
-        Map<String, Integer> reportedTokens = new HashMap<>();
+        Map<String, ReasoningUsage> reportedTokens = new HashMap<>();
         for (AIMessage message : messages) {
             if (message.getFunctionCall() != null) {
                 Map<String, String> metadata = message.getFunctionCall().getMessageMetadata();
@@ -350,25 +356,41 @@ public class OpenAiUtils {
                 }
             }
         }
-        for (var entry : reportedTokens.entrySet()) {
-            List<OAIMessage> reasoning = List.of(JSONUtils.GSON.fromJson(entry.getKey(), OAIMessage[].class));
-            if (reasoning.stream().allMatch(item -> retainedReasoning.contains(JSONUtils.GSON.toJson(item)))) {
-                long estimatedTokens = reasoning.stream().mapToLong(item -> countTextTokens(item, textCounter)).sum();
-                tokens += Math.max(0, entry.getValue() - estimatedTokens);
+        for (ReasoningUsage usage : reportedTokens.values()) {
+            if (retainedReasoning.containsAll(usage.keys())) {
+                long estimatedTokens = usage.items().stream().mapToLong(item -> countTextTokens(item, textCounter)).sum();
+                tokens += Math.max(0, usage.tokens() - estimatedTokens);
             }
         }
         return (int) Math.min(tokens, Integer.MAX_VALUE);
     }
 
     private static void collectReasoningUsage(
-        @NotNull Map<String, Integer> groups,
+        @NotNull Map<String, ReasoningUsage> groups,
         @NotNull Map<String, String> metadata,
         int reportedTokens
     ) {
         String reasoning = metadata.get(OpenAIConstants.TOOL_CALL_REASONING);
         if (reasoning != null) {
-            groups.merge(reasoning, Math.max(reportedTokens, CommonUtils.toInt(metadata.get(OpenAIConstants.REASONING_TOKENS))), Math::max);
+            int tokens = Math.max(reportedTokens, CommonUtils.toInt(metadata.get(OpenAIConstants.REASONING_TOKENS)));
+            List<OAIMessage> items = List.of(JSONUtils.GSON.fromJson(reasoning, OAIMessage[].class));
+            if (items.isEmpty()) {
+                return;
+            }
+            List<String> keys = items.stream().map(JSONUtils.GSON::toJson).toList();
+            String group = keys.getFirst();
+            ReasoningUsage previous = groups.get(group);
+            if (previous == null || isReasoningPrefix(previous.keys(), keys)) {
+                groups.put(group, new ReasoningUsage(items, keys, Math.max(tokens, previous == null ? 0 : previous.tokens())));
+            } else if (isReasoningPrefix(keys, previous.keys())) {
+                groups.put(group, new ReasoningUsage(previous.items(), previous.keys(), Math.max(tokens, previous.tokens())));
+            } else {
+                groups.put(reasoning, new ReasoningUsage(items, keys, tokens));
+            }
         }
+    }
+
+    private record ReasoningUsage(@NotNull List<OAIMessage> items, @NotNull List<String> keys, int tokens) {
     }
 
     private static long countTextTokens(@NotNull OAIMessage message, @NotNull ToIntFunction<String> textCounter) {

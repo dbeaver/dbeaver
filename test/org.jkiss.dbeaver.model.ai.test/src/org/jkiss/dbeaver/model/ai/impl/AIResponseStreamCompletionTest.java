@@ -20,9 +20,13 @@ package org.jkiss.dbeaver.model.ai.impl;
 import com.sun.net.httpserver.HttpServer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.ai.AIAssistant;
 import org.jkiss.dbeaver.model.ai.AIChatConversation;
+import org.jkiss.dbeaver.model.ai.AIChatMessage;
 import org.jkiss.dbeaver.model.ai.AIChatResponseConsumer;
+import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIMessage;
+import org.jkiss.dbeaver.model.ai.AIMessageMeta;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
@@ -37,6 +41,7 @@ import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiAPIStreamConsumer;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiClientBase;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiUtils;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
+import org.jkiss.dbeaver.model.ai.qm.QMAIChatHistoryMapper;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -137,13 +142,6 @@ class AIResponseStreamCompletionTest {
             AIChatConversation conversation = Mockito.mock(AIChatConversation.class);
             Mockito.when(conversation.isActive()).thenReturn(true);
             CountDownLatch done = new CountDownLatch(1);
-            OpenAIEngine<?> engine = Mockito.mock(OpenAIEngine.class, Mockito.RETURNS_DEEP_STUBS);
-            AIEngineResponseConsumerImpl consumer = new AIEngineResponseConsumerImpl(
-                listener, Mockito.mock(DBRProgressMonitor.class), engine, conversation,
-                Mockito.mock(AIEngineDescriptor.class), calls -> {
-                    dispatched.addAndGet(calls.size());
-                    done.countDown();
-                });
             Mockito.doAnswer(invocation -> {
                 if (!"completed".equals(ending)) {
                     done.countDown();
@@ -153,7 +151,16 @@ class AIResponseStreamCompletionTest {
             OAIResponsesRequest request = OpenAiUtils.createOpenAiRequest(
                 new AIEngineRequest(AIMessage.userMessage("Inspect tables")), "o3", null);
             request.stream = true;
+            request.reasoningSource = "source";
             DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
+            OpenAIEngine<?> engine = Mockito.mock(OpenAIEngine.class, Mockito.RETURNS_DEEP_STUBS);
+            AIEngineResponseConsumerImpl consumer = new AIEngineResponseConsumerImpl(
+                listener, Mockito.mock(DBRProgressMonitor.class), engine, conversation,
+                Mockito.mock(AIEngineDescriptor.class), calls -> {
+                    Assertions.assertEquals("source", calls.getFirst().getMessageMetadata().get(OpenAIConstants.REASONING_SOURCE));
+                    dispatched.addAndGet(calls.size());
+                    done.countDown();
+                });
             if (client instanceof OpenAiClientBase openai) {
                 openai.createChatCompletionStream(monitor, request, consumer);
             } else if (client instanceof CopilotClientResponses copilot) {
@@ -174,6 +181,32 @@ class AIResponseStreamCompletionTest {
             Assertions.assertEquals(0, dispatched.get());
             Mockito.verify(listener).error(Mockito.any());
         }
+    }
+
+    @Test
+    void preservesInterruptedResponseStateAfterReloadingHistory() {
+        OpenAIEngine<?> engine = Mockito.mock(OpenAIEngine.class, Mockito.RETURNS_DEEP_STUBS);
+        AIChatConversation conversation = Mockito.mock(AIChatConversation.class);
+        Mockito.when(conversation.isActive()).thenReturn(true);
+        AIChatResponseConsumer listener = Mockito.mock(AIChatResponseConsumer.class);
+        AIEngineResponseConsumerImpl consumer = new AIEngineResponseConsumerImpl(listener,
+            Mockito.mock(DBRProgressMonitor.class), engine, conversation, Mockito.mock(AIEngineDescriptor.class),
+            calls -> Assertions.fail("Unexpected calls"));
+        OpenAiAPIStreamConsumer stream = new OpenAiAPIStreamConsumer(consumer, "source");
+        stream.accept("data: {\"type\":\"response.output_text.delta\",\"delta\":\"SELECT \"}");
+        stream.complete();
+        ArgumentCaptor<List<AIMessageMeta>> metadata = ArgumentCaptor.forClass(List.class);
+        Mockito.verify(listener).complete(metadata.capture(), Mockito.eq(true), Mockito.eq(false));
+        Assertions.assertNull(metadata.getValue().getFirst().usage());
+        AIMessage partial = AIMessage.assistantMessage("SELECT ", metadata.getValue());
+        List<AIChatMessage> restored = QMAIChatHistoryMapper.toAIMessages(Mockito.mock(AIAssistant.class),
+            QMAIChatHistoryMapper.toQMAIChatMessages(List.of(new AIChatMessage(1, partial))));
+        AIMessage message = restored.getFirst().message();
+        Assertions.assertNull(message.getMeta().getFirst().usage());
+        Assertions.assertEquals("true", message.getMeta().getFirst().responseMetadata().get(AIConstants.RESPONSE_INCOMPLETE));
+        OAIResponsesRequest request = OpenAiUtils.createOpenAiRequest(new AIEngineRequest(List.of(message)), "o3", null, "source");
+        Assertions.assertEquals("user", request.input.getFirst().role);
+        Assertions.assertTrue(request.input.getFirst().getFullText().contains("Previous assistant response:"));
     }
 
     @NotNull
