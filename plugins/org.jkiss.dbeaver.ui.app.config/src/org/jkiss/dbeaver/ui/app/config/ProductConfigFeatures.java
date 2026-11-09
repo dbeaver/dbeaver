@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 public final class ProductConfigFeatures {
     public static final DBRFeature WIZARD_SHOWN = new DBRFeature("WIZARD_SHOWN");
     public static final DBRFeature WIZARD_CLOSED = new DBRFeature("WIZARD_CLOSED");
+    public static final DBRFeature COMMERCIAL_DRIVERS_TOGGLED = new DBRFeature("PRODUCT_CONFIG_COMMERCIAL_DRIVERS_TOGGLED");
 
     private ProductConfigFeatures() {
     }

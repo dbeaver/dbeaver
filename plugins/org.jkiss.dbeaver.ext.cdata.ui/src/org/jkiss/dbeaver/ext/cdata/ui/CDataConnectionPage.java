@@ -34,6 +34,8 @@ import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.dialogs.PreferencesUtil;
+import org.eclipse.ui.forms.events.IExpansionListener;
+import org.eclipse.ui.forms.widgets.ExpandableComposite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -59,12 +61,12 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IDialogPageProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ExpandableCompositeEx;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageWithAuth;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.text.NumberFormat;
 import java.util.HashSet;
@@ -73,7 +75,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicReference;
 
 public class CDataConnectionPage extends ConnectionPageWithAuth implements IDialogPageProvider {
     private static final Log log = Log.getLog(CDataConnectionPage.class);
@@ -105,10 +106,14 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
     private final Set<String> editedUrlProperties = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
     private final Set<String> pendingUrlProperties = new TreeSet<>(String.CASE_INSENSITIVE_ORDER);
     private boolean updatingUrl;
+    private AbstractJob hierarchyJob;
+    private boolean hierarchyLoadPending;
+    private ExpandableCompositeEx licenseExpander;
+    private Boolean activeLicense;
+    private boolean urlEdited;
 
     @Override
     public void createControl(@NotNull Composite parent) {
-        hierarchy = readConnectionHierarchy();
         ScrolledComposite scroll = UIUtils.createScrolledComposite(parent, SWT.H_SCROLL | SWT.V_SCROLL);
         scroll.setShowFocusedControl(true);
         Composite page = new Composite(scroll, SWT.NONE);
@@ -125,6 +130,7 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
         urlText.setLayoutData(urlData);
         urlText.addModifyListener(event -> {
             if (!loadingSettings && !updatingUrl) {
+                urlEdited = true;
                 propertiesChanged(null);
             }
         });
@@ -166,6 +172,7 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
         setControl(scroll);
         UIUtils.configureScrolledComposite(scroll, page);
         page.addDisposeListener(event -> {
+            cancelHierarchyLoading();
             if (licensedDriver != null) {
                 licensedDriver.removeLicenseChangeListener(licenseChangeListener);
                 licensedDriver = null;
@@ -181,10 +188,13 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
         boolean driverChanged = licensedDriver != driver;
         try {
             if (driverChanged) {
+                cancelHierarchyLoading();
+                hierarchy = null;
+                hierarchyLoadPending = true;
+                editor.setHierarchy(null);
+                urlEdited = false;
                 if (licensedDriver != null) {
                     licensedDriver.removeLicenseChangeListener(licenseChangeListener);
-                    hierarchy = readConnectionHierarchy();
-                    editor.setHierarchy(null);
                 }
                 licensedDriver = driver;
                 driver.addLicenseChangeListener(licenseChangeListener);
@@ -204,7 +214,9 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
                 hierarchy.loadConfiguration(getDriver().getDriverInfo().jdbcName(), configuration);
                 editor.setHierarchy(hierarchy);
             }
-            showHierarchyStatus(hierarchy == null ? CDataUIMessages.connection_editor_fallback : "", hierarchy == null);
+            showHierarchyStatus(hierarchy == null
+                ? hierarchyJob == null ? CDataUIMessages.connection_editor_fallback : CDataUIMessages.connection_editor_loading
+                : "", hierarchy == null && hierarchyJob == null);
             selectUrlMode(hierarchy == null || configuration.getConfigurationType() == DBPDriverConfigurationType.URL);
             refreshStatus();
         } catch (DBException e) {
@@ -220,6 +232,13 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
         UIUtils.updateDialogSize(statusLabel);
         if (driverChanged) {
             checkLicense();
+        }
+        if (hierarchyLoadPending && hierarchyJob == null) {
+            UIUtils.asyncExec(() -> {
+                if (!urlText.isDisposed() && site.getDriver() == driver && licensedDriver == driver && hierarchyLoadPending) {
+                    reloadConnectionHierarchy();
+                }
+            });
         }
     }
 
@@ -275,7 +294,8 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
 
     @Override
     public boolean isComplete() {
-        return urlText != null && !urlText.getText().isBlank() && pendingUrlProperties.isEmpty() && getErrorMessage() == null
+        return urlText != null && hierarchyJob == null && !urlText.getText().isBlank()
+            && pendingUrlProperties.isEmpty() && getErrorMessage() == null
             && (isCustomURL() || editor.getValidationError() == null);
     }
 
@@ -366,43 +386,67 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
         hierarchyStatus.getParent().layout(true, true);
     }
 
-    @Nullable
-    private CDataConnectionHierarchy readConnectionHierarchy() {
-        CDataDriverDescriptor driver = getDriver();
-        AtomicReference<CDataConnectionHierarchy> loaded = new AtomicReference<>();
-        try {
-            UIUtils.runInProgressService(monitor -> {
-                monitor.beginTask(CDataUIMessages.connection_editor_loading, 1);
-                try {
-                    CDataConnectionHierarchy result = CDataConnectionHierarchyReader.read(monitor, driver);
-                    if (monitor.isCanceled()) {
-                        throw new InterruptedException();
-                    }
-                    loaded.set(result);
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                } finally {
-                    monitor.done();
-                }
-            });
-        } catch (InvocationTargetException e) {
-            log.debug("Unable to load CData connection hierarchy", e.getTargetException());
-        } catch (InterruptedException expected) {
-            return null;
+    private void cancelHierarchyLoading() {
+        if (hierarchyJob != null) {
+            hierarchyJob.cancel();
+            hierarchyJob = null;
         }
-        return loaded.get();
     }
 
     private void reloadConnectionHierarchy() {
-        saveSettings(site.getActiveDataSource());
-        CDataConnectionHierarchy loaded = readConnectionHierarchy();
-        if (urlText.isDisposed()) {
+        if (hierarchyJob != null || urlText.isDisposed()) {
             return;
         }
-        hierarchy = loaded;
-        editor.setHierarchy(null);
-        loadSettings();
-        checkLicense();
+        CDataDriverDescriptor driver = getDriver();
+        hierarchyLoadPending = false;
+        hierarchyJob = new AbstractJob(CDataUIMessages.connection_editor_loading) {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                CDataConnectionHierarchy loaded = null;
+                try {
+                    if (!monitor.isCanceled()) {
+                        loaded = CDataConnectionHierarchyReader.read(monitor, driver);
+                    }
+                } catch (DBException | RuntimeException e) {
+                    if (!monitor.isCanceled()) {
+                        log.debug("Unable to load CData connection hierarchy", e);
+                    }
+                }
+                CDataConnectionHierarchy result = monitor.isCanceled() ? null : loaded;
+                UIUtils.asyncExec(() -> {
+                    if (urlText.isDisposed() || hierarchyJob != this) {
+                        return;
+                    }
+                    hierarchyJob = null;
+                    if (site.getDriver() != driver) {
+                        hierarchyLoadPending = true;
+                        return;
+                    }
+                    if (result != null) {
+                        var dataSource = site.getActiveDataSource();
+                        var configurationType = dataSource.getConnectionConfiguration().getConfigurationType();
+                        saveSettings(dataSource);
+                        if (hierarchy == null && !urlEdited) {
+                            dataSource.getConnectionConfiguration().setConfigurationType(configurationType);
+                        }
+                        hierarchy = result;
+                        editor.setHierarchy(null);
+                        loadSettings();
+                        checkLicense();
+                    } else {
+                        showHierarchyStatus(CDataUIMessages.connection_editor_fallback, true);
+                        site.updateButtons();
+                        refreshStatus();
+                    }
+                });
+                return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
+            }
+        };
+        showHierarchyStatus(CDataUIMessages.connection_editor_loading, false);
+        site.updateButtons();
+        hierarchyJob.setUser(true);
+        hierarchyJob.schedule();
     }
 
     @NotNull
@@ -412,8 +456,21 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
     }
 
     private void createLicenseGroup(@NotNull Composite composite) {
-        Composite licenseGroup = UIUtils.createTitledComposite(
-            composite, CDataUIMessages.license_group_title, 2, GridData.FILL_HORIZONTAL);
+        licenseExpander = UIUtils.createExpandableCompositeWithSeparator(
+            composite, SWT.NONE, ExpandableComposite.TWISTIE | ExpandableComposite.CLIENT_INDENT);
+        licenseExpander.setText(CDataUIMessages.license_group_title);
+        licenseExpander.setShowTextAsTitle(true);
+        licenseExpander.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        Composite licenseGroup = UIUtils.createComposite(licenseExpander, 2);
+        licenseExpander.setClient(licenseGroup);
+        licenseExpander.addExpansionListener(IExpansionListener.expansionStateChangedAdapter(event -> {
+            updateLicenseGroupTitle();
+            composite.layout(true, true);
+            ScrolledComposite scroll = UIUtils.getParentOfType(composite, ScrolledComposite.class);
+            if (scroll != null) {
+                scroll.setMinSize(composite.computeSize(SWT.DEFAULT, SWT.DEFAULT));
+            }
+        }));
         Composite status = UIUtils.createPlaceholder(licenseGroup, 2, 4);
         status.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         statusIcon = new Label(status, SWT.NONE);
@@ -453,6 +510,12 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
         refreshStatus();
     }
 
+    private void updateLicenseGroupTitle() {
+        licenseExpander.setText(licenseExpander.isExpanded() ? CDataUIMessages.license_group_title
+            : CDataUIMessages.license_group_title + " — " + statusLabel.getText());
+        licenseExpander.redraw();
+    }
+
     private void checkLicense() {
         CDataDriverDescriptor driver = getDriver();
         if (!driver.getDefaultDriverLoader().isDriverInstalled() || !checkingDrivers.add(driver)) {
@@ -470,7 +533,7 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
                 } finally {
                     UIUtils.asyncExec(() -> {
                         checkingDrivers.remove(driver);
-                        if (!retryLicenseButton.isDisposed() && getDriver() == driver) {
+                        if (!retryLicenseButton.isDisposed() && site.getDriver() == driver) {
                             retryLicenseButton.setEnabled(true);
                             refreshStatus();
                         }
@@ -595,6 +658,12 @@ public class CDataConnectionPage extends ConnectionPageWithAuth implements IDial
         UIUtils.setControlVisible(trialButton, !unverified && driver.supportsTrialLicense());
         UIUtils.setControlVisible(buyButton, !unverified && (!license.getStatus().isValid() || license.isTrialLicense()));
         UIUtils.setControlVisible(activateButton, !unverified && (!license.getStatus().isValid() || license.isTrialLicense()));
+        boolean hasActiveLicense = license.isValidLicense();
+        if (activeLicense == null || activeLicense != hasActiveLicense) {
+            activeLicense = hasActiveLicense;
+            licenseExpander.setExpanded(!hasActiveLicense, true);
+        }
+        updateLicenseGroupTitle();
         licenseDetails.getParent().layout(true, true);
         if (getControl() != null) {
             UIUtils.updateDialogSize(statusLabel);

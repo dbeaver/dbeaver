@@ -140,6 +140,28 @@ public class CDataDriverDescriptorTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void promotedStubIconsAreReplacedByVendorImages() {
+        var registry = DataSourceProviderRegistry.getInstance();
+        var stub = registry.findDriver("generic:mongo-ce");
+        Assertions.assertNotNull(stub);
+        Assertions.assertNotNull(stub.getDriverStub());
+        var driver = new CDataDriverDescriptor(registry.getDataSourceProvider("generic"), "test-cdata-stub-images",
+            new CDataDriverInfo("mongodb", "mongodb", "MongoDB JDBC Driver", 2026,
+                CDataDriverTier.PROFESSIONAL, "https://www.cdata.com/", "mongodb", null, null, "generic:mongo-ce"));
+        var updates = new AtomicInteger();
+        try (var icons = Mockito.mockStatic(CDataDriverIconLoader.class)) {
+            icons.when(() -> CDataDriverIconLoader.load(Mockito.eq("mongodb"), Mockito.any())).thenAnswer(invocation -> {
+                invocation.<CDataDriverIconLoader.IconConsumer>getArgument(1).accept(DBIcon.DATABASE_DEFAULT, DBIcon.DATABASE_BIG_DEFAULT);
+                return null;
+            });
+            driver.loadIcon(updates::incrementAndGet);
+            Assertions.assertSame(DBIcon.DATABASE_BIG_DEFAULT, ((DBIconComposite) driver.getIconBig()).getMain());
+            Assertions.assertSame(CDataIcons.CDATA_OVERLAY_BIG, ((DBIconComposite) driver.getIconBig()).getBottomRight());
+            Assertions.assertEquals(1, updates.get());
+        }
+    }
+
+    @Test
     public void reuseNativeDriverImagesWithoutDownloading() {
         var registry = DataSourceProviderRegistry.getInstance();
         var nativeDriver = registry.findDriver("postgresql:postgres-jdbc");

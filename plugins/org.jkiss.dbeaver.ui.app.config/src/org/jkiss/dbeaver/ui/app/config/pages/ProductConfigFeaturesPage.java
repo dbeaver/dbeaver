@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.config.ProductConfigFeatureDescriptor;
 import org.jkiss.dbeaver.model.config.ProductConfigRegistry;
 import org.jkiss.dbeaver.ui.UITextUtils;
+import org.jkiss.dbeaver.ui.app.config.ProductConfigFeatures;
 import org.jkiss.dbeaver.ui.app.config.nls.ProductConfigMessages;
 import org.jkiss.dbeaver.ui.forms.*;
 import org.jkiss.utils.StringUtils;
@@ -68,7 +69,14 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
         var registry = ProductConfigRegistry.getInstance();
         var configurableFeatures = getWizard().isFeatureUpdate() ? availableFeatures : registry.getFeatures();
         for (ProductConfigFeatureDescriptor descriptor : configurableFeatures) {
-            features.put(descriptor, UIObservable.of(registry.isFeatureEnabled(descriptor)));
+            UIObservable<Boolean> enabled = UIObservable.of(registry.isFeatureEnabled(descriptor));
+            if ("commercial-drivers".equals(descriptor.getId())) {
+                enabled.addChangeListener((oldValue, newValue) -> ProductConfigFeatures.COMMERCIAL_DRIVERS_TOGGLED.use(Map.of(
+                    "enabled", newValue,
+                    "origin", getWizard().getOrigin()
+                )));
+            }
+            features.put(descriptor, enabled);
             if (getWizard().isFeatureUpdate() && registry.isFeatureNew(descriptor)) {
                 newFeatures.add(descriptor);
             }
