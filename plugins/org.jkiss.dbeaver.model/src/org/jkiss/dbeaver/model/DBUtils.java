@@ -875,9 +875,8 @@ public final class DBUtils {
      */
     @Nullable
     public static Object getRowValueByPath(@NotNull DBDValueRow row, @NotNull ResultSetValuePath valuePath) {
-        if (!(valuePath.pathItems().getFirst() instanceof ResultSetValuePath.PathAttributeItem rootAttr
-            && rootAttr.attribute() instanceof DBDAttributeBinding rootBinding)
-        ) {
+        DBDAttributeBinding rootBinding = getRootValueBinding(valuePath);
+        if (rootBinding == null) {
             log.debug("Root valuePath item expected to be an attribute binding.");
             return null;
         }
@@ -898,6 +897,65 @@ public final class DBUtils {
             log.debug("ResultSet value valuePath was not completely applied.");
         }
         return value;
+    }
+
+    @Nullable
+    public static DBDAttributeBinding getRootValueBinding(@Nullable ResultSetValuePath valuePath) {
+        if (valuePath != null && !valuePath.pathItems().isEmpty()
+            && valuePath.pathItems().getFirst() instanceof ResultSetValuePath.PathAttributeItem root
+            && root.attribute() instanceof DBDAttributeBinding binding) {
+            return binding;
+        }
+        return null;
+    }
+
+    /**
+     * Update a nested value using the same ordered attribute and index steps as {@link #getRowValueByPath}.
+     * The first step identifies the root attribute; the supplied root value is its already resolved value.
+     * Traverse the intermediate steps and set the last collection item or composite attribute.
+     * An invalid or missing intermediate step throws instead of silently returning null as a read can.
+     */
+    public static void updateValueByPath(
+        @NotNull DBDValue rootValue,
+        @NotNull ResultSetValuePath valuePath,
+        @Nullable Object newValue
+    ) throws DBCException {
+        List<ResultSetValuePath.PathItem> items = valuePath.pathItems();
+        if (items.size() < 2 || getRootValueBinding(valuePath) == null) {
+            throw new DBCException("Invalid nested value path");
+        }
+
+        Object parent = rootValue;
+        for (int i = 1; i < items.size() - 1; i++) {
+            ResultSetValuePath.PathItem item = items.get(i);
+            if (item instanceof ResultSetValuePath.PathIndexItem index && parent instanceof DBDCollection collection) {
+                checkValuePathIndex(index.index(), collection);
+                parent = collection.getItem(index.index());
+            } else if (item instanceof ResultSetValuePath.PathAttributeItem attribute && parent instanceof DBDComposite composite) {
+                parent = composite.getAttributeValue(attribute.attribute());
+            } else {
+                throw new DBCException("Cannot resolve nested value path");
+            }
+            if (parent == null) {
+                throw new DBCException("Nested value path contains a null intermediate value");
+            }
+        }
+
+        ResultSetValuePath.PathItem last = items.getLast();
+        if (last instanceof ResultSetValuePath.PathIndexItem index && parent instanceof DBDCollection collection) {
+            checkValuePathIndex(index.index(), collection);
+            collection.setItem(index.index(), newValue);
+        } else if (last instanceof ResultSetValuePath.PathAttributeItem attribute && parent instanceof DBDComposite composite) {
+            composite.setAttributeValue(attribute.attribute(), newValue);
+        } else {
+            throw new DBCException("Cannot update nested value path");
+        }
+    }
+
+    private static void checkValuePathIndex(int index, @NotNull DBDCollection collection) throws DBCException {
+        if (index < 0 || index >= collection.getItemCount()) {
+            throw new DBCException("Collection index out of range: " + index);
+        }
     }
 
     @Nullable

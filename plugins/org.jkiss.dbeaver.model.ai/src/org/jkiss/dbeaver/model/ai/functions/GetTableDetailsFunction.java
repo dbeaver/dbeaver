@@ -111,16 +111,16 @@ public class GetTableDetailsFunction implements AIFunction {
         boolean fullDDL = context.getPrompt().hasFeature(AIConstants.AI_PROMPT_FEATURE_FULL_DDL);
 
         AIDatabaseContext databaseContext = context.getContext();
-        boolean restricted = databaseContext != null && databaseContext.hasDataSourceCustomScope();
         AISchemaGenerationOptions options = AISchemaGenerationOptions.builder()
             .withSendColumnTypes(true)
-            .withSendForeignKeys(sendConstraints && !restricted)
+            .withSendForeignKeys(sendConstraints)
             .withSendConstraints(sendConstraints)
             .withSendObjectComment(sendComments)
             .withSendIndexes(sendIndexes)
-            .withSendFullDDL(fullDDL && !restricted)
-            .withSendReferences(sendReferences && !restricted)
+            .withSendFullDDL(fullDDL)
+            .withSendReferences(sendReferences)
             .withUseFQN(true)
+            .withObjectFilter(databaseContext == null ? null : databaseContext.getSchemaGenerationOptions().objectFilter())
             .build();
 
         DBCExecutionContext executionContext = databaseContext == null ? null : databaseContext.getExecutionContext();

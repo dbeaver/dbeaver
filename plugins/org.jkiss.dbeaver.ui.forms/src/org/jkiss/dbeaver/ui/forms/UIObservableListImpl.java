@@ -16,142 +16,62 @@
  */
 package org.jkiss.dbeaver.ui.forms;
 
-import org.eclipse.core.databinding.observable.list.IObservableList;
-import org.eclipse.core.databinding.observable.list.WritableList;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
+import java.util.AbstractList;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
-import java.util.ListIterator;
 
-@SuppressWarnings("CheckStyle")
-record UIObservableListImpl<E>(@NotNull IObservableList<E> delegate, @NotNull Class<E> type) implements UIObservableList<E> {
+final class UIObservableListImpl<E> extends AbstractList<E> implements UIObservableList<E> {
+    private final List<E> values;
+    private final Class<E> type;
+    private final List<Runnable> listeners = new ArrayList<>();
+
+    private UIObservableListImpl(@NotNull Collection<? extends E> values, @NotNull Class<E> type) {
+        this.values = new ArrayList<>(values);
+        this.type = type;
+    }
+
     @NotNull
-    static <E> UIObservableListImpl<E> of(@NotNull Collection<E> c, @NotNull Class<E> type) {
-        return new UIObservableListImpl<>(new WritableList<>(c, type), type);
+    static <E> UIObservableListImpl<E> of(@NotNull Collection<? extends E> values, @NotNull Class<E> type) {
+        return new UIObservableListImpl<>(values, type);
+    }
+
+    @Nullable
+    @Override
+    public E get(int index) {
+        return values.get(index);
     }
 
     @Override
     public int size() {
-        return delegate.size();
+        return values.size();
+    }
+
+    @Nullable
+    @Override
+    public E set(int index, @Nullable E element) {
+        E old = values.set(index, element);
+        changed();
+        return old;
     }
 
     @Override
-    public boolean isEmpty() {
-        return delegate.isEmpty();
+    public void add(int index, @Nullable E element) {
+        values.add(index, element);
+        modCount++;
+        changed();
     }
 
-    @Override
-    public boolean contains(Object o) {
-        return delegate.contains(o);
-    }
-
-    @NotNull
-    @Override
-    public Iterator<E> iterator() {
-        return delegate.iterator();
-    }
-
-    @NotNull
-    @Override
-    public Object[] toArray() {
-        return delegate.toArray();
-    }
-
-    @NotNull
-    @Override
-    public <T> T[] toArray(@NotNull T[] a) {
-        return delegate.toArray(a);
-    }
-
-    @Override
-    public boolean add(E e) {
-        return delegate.add(e);
-    }
-
-    @Override
-    public boolean remove(Object o) {
-        return delegate.remove(o);
-    }
-
-    @Override
-    public boolean containsAll(@NotNull Collection<?> c) {
-        //noinspection SlowListContainsAll
-        return delegate.containsAll(c);
-    }
-
-    @Override
-    public boolean addAll(@NotNull Collection<? extends E> c) {
-        return delegate.addAll(c);
-    }
-
-    @Override
-    public boolean addAll(int index, @NotNull Collection<? extends E> c) {
-        return delegate.addAll(index, c);
-    }
-
-    @Override
-    public boolean removeAll(@NotNull Collection<?> c) {
-        return delegate.removeAll(c);
-    }
-
-    @Override
-    public boolean retainAll(@NotNull Collection<?> c) {
-        return delegate.retainAll(c);
-    }
-
-    @Override
-    public void clear() {
-        delegate.clear();
-    }
-
-    @Override
-    public E get(int index) {
-        return delegate.get(index);
-    }
-
-    @Override
-    public E set(int index, E element) {
-        return delegate.set(index, element);
-    }
-
-    @Override
-    public void add(int index, E element) {
-        delegate.add(index, element);
-    }
-
+    @Nullable
     @Override
     public E remove(int index) {
-        return delegate.remove(index);
-    }
-
-    @Override
-    public int indexOf(Object o) {
-        return delegate.indexOf(o);
-    }
-
-    @Override
-    public int lastIndexOf(Object o) {
-        return delegate.lastIndexOf(o);
-    }
-
-    @NotNull
-    @Override
-    public ListIterator<E> listIterator() {
-        return delegate.listIterator();
-    }
-
-    @NotNull
-    @Override
-    public ListIterator<E> listIterator(int index) {
-        return delegate.listIterator(index);
-    }
-
-    @NotNull
-    @Override
-    public List<E> subList(int fromIndex, int toIndex) {
-        return delegate.subList(fromIndex, toIndex);
+        E old = values.remove(index);
+        modCount++;
+        changed();
+        return old;
     }
 
     @NotNull
@@ -160,9 +80,17 @@ record UIObservableListImpl<E>(@NotNull IObservableList<E> delegate, @NotNull Cl
         return type;
     }
 
-    @Override
-    @NotNull
-    public IObservableList<E> delegate() {
-        return delegate;
+    void addListener(@NotNull Runnable listener) {
+        listeners.add(listener);
+    }
+
+    void removeListener(@NotNull Runnable listener) {
+        listeners.remove(listener);
+    }
+
+    private void changed() {
+        for (Runnable listener : List.copyOf(listeners)) {
+            listener.run();
+        }
     }
 }

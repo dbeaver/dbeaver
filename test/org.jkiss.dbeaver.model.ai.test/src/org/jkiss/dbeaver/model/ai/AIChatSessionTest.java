@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.qm.AIChatStorage;
+import org.jkiss.dbeaver.model.ai.qm.QMAIChatStorageInMemory;
 import org.jkiss.dbeaver.model.ai.qm.QMAIContext;
 import org.jkiss.dbeaver.model.ai.qm.QMAIConversationHistory;
 import org.jkiss.dbeaver.model.ai.quota.QuotaStatus;
@@ -48,6 +49,47 @@ import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 public class AIChatSessionTest extends DBeaverUnitTest {
+    @Test
+    public void removesUnsavedEmptyConversationFromInMemorySession() throws DBException {
+        QMAIChatStorageInMemory storage = new QMAIChatStorageInMemory();
+        AIChatSession session = session(storage);
+        session.init(new VoidProgressMonitor());
+        AIChatConversation conversation = new AIChatConversation(
+            UUID.randomUUID(), "New conversation", Mockito.mock(AIPromptGenerator.class), List.of(), null, 0, null
+        );
+        session.addConversation(conversation);
+        AIChatListener listener = Mockito.mock(AIChatListener.class);
+        session.addListener(listener);
+
+        Assertions.assertEquals(List.of(conversation), session.getAllConversations(null));
+        Assertions.assertTrue(conversation.getMessages().isEmpty());
+        Assertions.assertTrue(storage.findConversations("session").isEmpty());
+
+        session.removeConversation(conversation);
+
+        Assertions.assertTrue(session.getAllConversations(null).isEmpty());
+        Assertions.assertFalse(session.hasConversation(conversation.getId()));
+        Mockito.verify(listener).conversationRemoved(conversation);
+    }
+
+    @Test
+    public void removesSavedEmptyConversationFromInMemoryStorage() throws DBException {
+        QMAIChatStorageInMemory storage = new QMAIChatStorageInMemory();
+        AIChatSession session = session(storage);
+        session.init(new VoidProgressMonitor());
+        AIChatConversation conversation = new AIChatConversation(
+            UUID.randomUUID(), "Saved empty conversation", Mockito.mock(AIPromptGenerator.class), List.of(), null, 0, null
+        );
+        session.addConversation(conversation);
+        session.saveConversationSettings(new VoidProgressMonitor(), conversation);
+        Assertions.assertEquals(1, storage.findConversations("session").size());
+
+        session.removeConversation(conversation);
+
+        Assertions.assertTrue(session.getAllConversations(null).isEmpty());
+        Assertions.assertTrue(storage.findConversations("session").isEmpty());
+    }
+
     @Test
     public void initializesHistoryWithCallerMonitor() throws DBException {
         AIChatStorage storage = Mockito.mock(AIChatStorage.class);

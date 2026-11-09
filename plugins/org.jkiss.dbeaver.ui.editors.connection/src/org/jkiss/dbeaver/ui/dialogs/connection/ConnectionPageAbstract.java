@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.jface.fieldassist.ControlDecoration;
 import org.eclipse.jface.fieldassist.FieldDecorationRegistry;
@@ -24,8 +27,10 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ResourceLocator;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -45,6 +50,7 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceSecurity;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.CEditableLabel;
 import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
@@ -78,12 +84,12 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected final Map<String, Set<Control>> propGroupMap = new HashMap<>();
 
     protected IDataSourceConnectionEditorSite site;
-    // Driver name
-    protected Label driverText;
+    private CEditableLabel connectionNameText;
+    private boolean updatingConnectionName;
+    private ToolItem driverItem;
     protected Text passwordText;
     protected Button savePasswordCheck;
     protected ToolBar userManagementToolbar;
-    private VariablesHintLabel variablesHintLabel;
     @Nullable
     protected Button typeManualRadio;
     @Nullable
@@ -91,10 +97,8 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     private Combo driverSubstitutionCombo;
 
     private ImageDescriptor curImageDescriptor;
-    private Button licenseButton;
-    @Nullable
-    private Control databaseDocumentationInfoLabel;
 
+    @NotNull
     public IDataSourceConnectionEditorSite getSite() {
         return site;
     }
@@ -117,12 +121,11 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     @Override
     public void loadSettings() {
         DBPDriver driver = site.getDriver();
-        if (driver != null && driverText != null) {
-            driverText.setText(CommonUtils.toString(driver.getFullName()));
+        if (driverItem != null) {
+            driverItem.setText(driver.getFullName());
+            driverItem.setImage(DBeaverIcons.getImage(driver.getIcon()));
         }
-        if (licenseButton != null) {
-            UIUtils.setControlVisible(licenseButton, driver != null && !CommonUtils.isEmpty(driver.getLicense()));
-        }
+        refreshConnectionName();
 
         DataSourceDescriptor dataSource = (DataSourceDescriptor) getSite().getActiveDataSource();
 
@@ -133,21 +136,6 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 savePasswordCheck.setSelection(true);
             }
         }
-
-        if (variablesHintLabel != null) {
-            if (dataSource != null) {
-                variablesHintLabel.setResolver(new DataSourceVariableResolver(dataSource,
-                    dataSource.getConnectionConfiguration()));
-            } else {
-                variablesHintLabel.setResolver(null);
-            }
-        }
-
-        if (driver != null && databaseDocumentationInfoLabel != null) {
-            databaseDocumentationInfoLabel.setVisible(
-                CommonUtils.isNotEmpty(driver.getDatabaseDocumentationSuffixURL()));
-        }
-
         if (driverSubstitutionCombo != null) {
             final DBPDriverSubstitutionDescriptor driverSubstitution = dataSource.getDriverSubstitution();
             if (driverSubstitution != null) {
@@ -158,10 +146,40 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 driverSubstitutionCombo.select(0);
             }
         }
+    }
 
-        if (databaseDocumentationInfoLabel != null) {
-            UIUtils.setInfoLinkText(databaseDocumentationInfoLabel, site.getDriver().getFullName() + " ");
+    void refreshConnectionName() {
+        refreshConnectionName(false);
+    }
+
+    private void refreshConnectionName(boolean allowFocused) {
+        if (connectionNameText == null || connectionNameText.isDisposed()) {
+            return;
         }
+        if (!allowFocused && connectionNameText.isFocusControl()) {
+            return;
+        }
+        updatingConnectionName = true;
+        try {
+            ConnectionWizard wizard = (ConnectionWizard) site.getWizard();
+            ConnectionPageSettings settings = wizard.getPageSettings();
+            String name = settings == null ? wizard.getConnectionNamePreview() : settings.getConnectionNamePreview();
+            wizard.updateWindowTitle(name);
+            if (!connectionNameText.getText().equals(name)) {
+                connectionNameText.setText(name);
+            }
+        } finally {
+            updatingConnectionName = false;
+        }
+    }
+
+    private void activateConnectionNameEditor() {
+        var selection = connectionNameText.getSelection();
+        saveSettings(site.getActiveDataSource());
+        if (((ConnectionWizard) site.getWizard()).getConnectionNameOverride() == null) {
+            refreshConnectionName(true);
+        }
+        connectionNameText.setSelection(selection);
     }
 
     @Override
@@ -200,102 +218,112 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         }
     }
 
-    protected void createDriverPanel(Composite parent) {
-
-        Composite panel = UIUtils.createComposite(parent, 5);
+    protected void createDriverPanel(@NotNull Composite parent) {
+        final Composite panel = UIUtils.createComposite(parent, 5);
         GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_END);
         gd.horizontalSpan = ((GridLayout) parent.getLayout()).numColumns;
         gd.grabExcessHorizontalSpace = true;
         gd.grabExcessVerticalSpace = true;
         panel.setLayoutData(gd);
 
-        if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
-            variablesHintLabel = new VariablesHintLabel(panel,
-                UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label,
-                UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label,
-                DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES,
-                false);
-            ((GridData) variablesHintLabel.getInfoLabel().getLayoutData()).horizontalSpan = 2;
-        } else {
-            UIUtils.createFormPlaceholder(panel, 2, 1);
-        }
-
-        formDatabaseDocumentationInfoLabel(panel);
-
-        if (site.isNew()) {
-            Button advSettingsButton = UIUtils.createDialogButton(panel,
-                UIConnectionMessages.dialog_connection_edit_wizard_conn_conf_general_link,
-                SelectionListener.widgetSelectedAdapter(e -> site.openSettingsPage("ConnectionPageGeneral")));
-            advSettingsButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-        } else {
-            UIUtils.createEmptyLabel(panel, 1, 1);
-        }
-
         UIUtils.createLabelSeparator(panel, SWT.HORIZONTAL, 5);
 
-        {
-            Composite driverInfoComp = UIUtils.createComposite(panel, 5);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 5;
-            driverInfoComp.setLayoutData(gd);
+        Composite details = UIUtils.createComposite(panel, 3);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        gd.horizontalSpan = 5;
+        details.setLayoutData(gd);
 
-            Label driverLabel = UIUtils.createControlLabel(driverInfoComp, UIConnectionMessages.dialog_connection_driver);
-            driverLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        UIUtils.createControlLabel(details, UIConnectionMessages.dialog_connection_wizard_final_label_connection_name);
+        connectionNameText = new CEditableLabel(details, SWT.NONE);
+        connectionNameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        connectionNameText.addFocusListener(FocusListener.focusGainedAdapter(e -> activateConnectionNameEditor()));
+        connectionNameText.addModifyListener(e -> {
+            if (!updatingConnectionName) {
+                ((ConnectionWizard) site.getWizard()).setConnectionNameOverride(connectionNameText.getText());
+            }
+        });
+        refreshConnectionName();
 
-            driverText = new Label(driverInfoComp, SWT.NONE);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            //gd.grabExcessHorizontalSpace = true;
-            gd.horizontalSpan = 2;
-            //gd.widthHint = 200;
-            driverText.setLayoutData(gd);
-
+        ToolBar toolbar = new ToolBar(details, SWT.FLAT | SWT.RIGHT);
+        if (site.isNew()) {
+            ToolItem generalItem = new ToolItem(toolbar, SWT.PUSH);
+            generalItem.setImage(DBeaverIcons.getImage(UIIcon.CONFIGURATION));
+            generalItem.setToolTipText(UIConnectionMessages.dialog_connection_edit_wizard_conn_conf_general_link);
+            generalItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                ((NewConnectionWizard) site.getWizard()).openGeneralSettingsDialog()));
+        }
+        driverItem = new ToolItem(toolbar, SWT.DROP_DOWN);
+        driverItem.setText(site.getDriver().getFullName());
+        driverItem.setImage(DBeaverIcons.getImage(site.getDriver().getIcon()));
+        var menuManager = new MenuManager();
+        menuManager.setRemoveAllWhenShown(true);
+        menuManager.addMenuListener(manager -> {
+            String url = site.getDriver().getDatabaseDocumentationSuffixURL();
             if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_DRIVER_MANAGER)) {
-                Button driverButton = UIUtils.createDialogButton(driverInfoComp, UIConnectionMessages.dialog_connection_edit_driver_button,
-                    SelectionListener.widgetSelectedAdapter(e -> {
+                manager.add(new Action(UIConnectionMessages.dialog_connection_edit_driver_button) {
+                    @Override
+                    public void run() {
                         if (site.openDriverEditor()) {
                             updateDriverInfo(site.getDriver());
+                            driverItem.setText(site.getDriver().getFullName());
+                            driverItem.setImage(DBeaverIcons.getImage(site.getDriver().getIcon()));
+                            toolbar.getParent().layout(true);
                         }
-                }));
-                driverButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-            } else {
-                UIUtils.createEmptyLabel(driverInfoComp, 1, 1);
+                    }
+                });
+                if (CommonUtils.isNotEmpty(url) || CommonUtils.isNotEmpty(site.getDriver().getLicense())) {
+                    manager.add(new Separator());
+                }
             }
-
-            {
-                licenseButton = UIUtils.createDialogButton(driverInfoComp, UIConnectionMessages.dialog_edit_driver_text_driver_license,
-                    SelectionListener.widgetSelectedAdapter(e -> {
-                        String driverLicense = site.getDriver().getLicense();
-                        if (CommonUtils.isEmpty(driverLicense)) {
-                            driverLicense = "N/A";
-                        }
-                        AcceptLicenseDialog licenseDialog = new AcceptLicenseDialog(getShell(), site.getDriver().getFullName(), driverLicense);
-                        licenseDialog.setViewMode(true);
-                        licenseDialog.open();
-                    }));
-                licenseButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+            if (CommonUtils.isNotEmpty(url)) {
+                manager.add(new Action(UIConnectionMessages.dialog_connection_view_documentation) {
+                    @Override
+                    public void run() {
+                        ShellUtils.launchProgram(url.startsWith("https://") || url.startsWith("http://")
+                            ? url : HelpUtils.getHelpExternalReference(url));
+                    }
+                });
             }
-        }
+            if (CommonUtils.isNotEmpty(site.getDriver().getLicense())) {
+                manager.add(new Action(UIConnectionMessages.dialog_connection_view_driver_license) {
+                    @Override
+                    public void run() {
+                        AcceptLicenseDialog dialog = new AcceptLicenseDialog(
+                            getShell(), site.getDriver().getFullName(), site.getDriver().getLicense());
+                        dialog.setViewMode(true);
+                        dialog.open();
+                    }
+                });
+            }
+            if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
+                if (manager.getItems().length > 0) {
+                    manager.add(new Separator());
+                }
+                manager.add(new Action(UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label) {
+                    @Override
+                    public void run() {
+                        DataSourceDescriptor dataSource = (DataSourceDescriptor) site.getActiveDataSource();
+                        VariablesHintLabel.openDialog(
+                            getShell(),
+                            UIConnectionMessages.dialog_connection_edit_connection_settings_variables_hint_label,
+                            DBPConnectionConfiguration.INTERNAL_CONNECT_VARIABLES,
+                            new DataSourceVariableResolver(dataSource, dataSource.getConnectionConfiguration())
+                        );
+                    }
+                });
+            }
+        });
+        driverItem.addDisposeListener(e -> menuManager.dispose());
+        driverItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
+            var bounds = driverItem.getBounds();
+            Point location = toolbar.getDisplay().map(toolbar, null, bounds.x, bounds.height);
+            Menu menu = menuManager.createContextMenu(details);
+            menu.setLocation(location.x, location.y);
+            menu.setVisible(true);
+        }));
     }
 
-    private void formDatabaseDocumentationInfoLabel(Composite panel) {
-        databaseDocumentationInfoLabel = UIUtils.createInfoLabel(
-            panel,
-            site.getDriver().getFullName() + " ",
-            () -> {
-                String databaseDocumentationSuffixURL = site.getDriver().getDatabaseDocumentationSuffixURL();
-                ShellUtils.launchProgram(databaseDocumentationSuffixURL.startsWith("https://")
-                    || databaseDocumentationSuffixURL.startsWith("http://")
-                    ? databaseDocumentationSuffixURL
-                    : HelpUtils.getHelpExternalReference(databaseDocumentationSuffixURL));
-            });
-        databaseDocumentationInfoLabel.setToolTipText(
-            UIConnectionMessages.dialog_connection_database_documentation);
-        databaseDocumentationInfoLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
-        databaseDocumentationInfoLabel.setVisible(CommonUtils.isNotEmpty(
-            site.getDriver().getDatabaseDocumentationSuffixURL()));
-    }
-
-    protected void updateDriverInfo(DBPDriver driver) {
+    protected void updateDriverInfo(@NotNull DBPDriver driver) {
 
     }
 

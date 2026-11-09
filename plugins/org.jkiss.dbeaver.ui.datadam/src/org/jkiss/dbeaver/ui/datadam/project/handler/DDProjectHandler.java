@@ -41,7 +41,7 @@ abstract class DDProjectHandler<J extends Job> extends AbstractHandler {
     @Nullable
     @Override
     public Object execute(@NotNull ExecutionEvent event) {
-        if (!uiManager.isDDReady()) {
+        if (!uiManager.isProjectSyncReady()) {
             return null;
         }
         DBPProject project = NavigatorUtils.getSelectedProject(
@@ -74,6 +74,7 @@ abstract class DDProjectHandler<J extends Job> extends AbstractHandler {
             public void done(@NotNull IJobChangeEvent event) {
                 UIUtils.asyncExec(() -> {
                     IStatus status = event.getResult();
+                    uiManager.refreshProjectVisibility();
                     if (status.isOK()) {
                         onSuccess(job);
                     } else if (status.getSeverity() == IStatus.ERROR) {

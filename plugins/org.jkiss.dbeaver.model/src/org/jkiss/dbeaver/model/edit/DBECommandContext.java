@@ -36,6 +36,9 @@ public interface DBECommandContext extends DBPContextProvider {
     // Do not use transactions in conect save
     String OPTION_AVOID_TRANSACTIONS = "avoidTransactions";
 
+    // Execute the save batch on a separate connection without changing the caller's transaction.
+    String OPTION_ISOLATED_EXECUTION = "isolatedExecution";
+
     boolean isDirty();
 
     @Nullable

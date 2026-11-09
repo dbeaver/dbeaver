@@ -23,17 +23,22 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.clickhouse.ClickhouseTypeParser;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseArrayType;
 import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseDataSource;
+import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseMapType;
+import org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseTupleType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.data.DBDValueBinder;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -41,7 +46,7 @@ import java.sql.Array;
 import java.sql.SQLException;
 import java.util.*;
 
-public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
+public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler implements DBDValueBinder {
     private static final Log log = Log.getLog(ClickhouseArrayValueHandler.class);
 
     public static final ClickhouseArrayValueHandler INSTANCE = new ClickhouseArrayValueHandler();
@@ -49,6 +54,14 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
     public static final String ARRAY_PREFIX = "[";
     public static final String ARRAY_SUFFIX = "]";
     public static final Set<Character> QUOTED_CHARS = Set.of('[', ']', '"', ' ', '\\');
+
+    @NotNull
+    @Override
+    public String makeQueryBind(@NotNull DBSAttributeBase attribute, @NotNull Object value) {
+        return ClickhouseComplexValueSerializer.shouldInline(value)
+            ? getValueDisplayString(attribute, value, DBDDisplayFormat.NATIVE)
+            : "?";
+    }
 
     @Override
     protected boolean convertSingleValueToArray() {
@@ -65,6 +78,33 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
         return true;
     }
 
+    @Override
+    protected void bindParameter(
+        @NotNull JDBCSession session,
+        @NotNull JDBCPreparedStatement statement,
+        @NotNull DBSTypedObject paramType,
+        int paramIndex,
+        @Nullable Object value
+    ) throws DBCException, SQLException {
+        if (value instanceof ClickhouseMapValue map && !map.isNull()) {
+            statement.setObject(paramIndex, map.toJdbcMap());
+        } else if (value instanceof JDBCCollection collection && !collection.isNull()
+            && containsCompositeType(collection.getComponentType())) {
+            // getArrayValue() unwraps nested DBDValues to Object[], which the driver treats as arrays, not tuples.
+            statement.setObject(paramIndex, ClickhouseStructValueHandler.toJdbcValue(collection, null));
+        } else {
+            super.bindParameter(session, statement, paramType, paramIndex, value);
+        }
+    }
+
+    private static boolean containsCompositeType(@NotNull DBSDataType type) {
+        if (type instanceof ClickhouseMapType || type instanceof ClickhouseTupleType) {
+            return true;
+        }
+        return type instanceof ClickhouseArrayType arrayType && containsCompositeType(arrayType.getComponentType());
+    }
+
+    @Nullable
     @Override
     protected Object fetchColumnValue(
         @NotNull DBCSession session,
@@ -96,6 +136,7 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
 
     }
 
+    @Nullable
     @Override
     public Object getValueFromObject(
         @NotNull DBCSession session,
@@ -111,6 +152,9 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
         if (object == null) {
             return super.getValueFromObject(session, type, object, copy, validateValue);
         }
+        if (object instanceof JDBCCollection collection && collection.isNull()) {
+            return copy ? collection.cloneValue(session.getProgressMonitor()) : collection;
+        }
 
         ClickhouseArrayType arrayType = getArrayType(session, type);
         DBSDataType itemType = arrayType.getComponentType(session.getProgressMonitor());
@@ -118,66 +162,57 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
             throw new DBCException("Array type " + arrayType.getFullTypeName() + " doesn't have a component type");
         }
 
-        if (object instanceof List<?> list) {
-            return makeCollectionFromNestedJavaCollection((JDBCSession) session, itemType, list);
-        } else if (object instanceof Array array && itemType.getName().startsWith("Tuple")) {
-            // Tuples are represented as Object[] and need to be handled separately to avoid confusion with nested arrays
-            return makeCollectionFromTupleArray(session, itemType, array);
-        } else if (object instanceof String string && string.startsWith(ARRAY_PREFIX) && string.endsWith(ARRAY_SUFFIX)) {
+        if (object instanceof String string && string.startsWith(ARRAY_PREFIX) && string.endsWith(ARRAY_SUFFIX)) {
             return JDBCCollection.makeCollectionFromString((JDBCSession) session, string);
+        }
+        if (object instanceof Array array) {
+            try {
+                return makeCollectionFromArray(session, itemType, array.getArray());
+            } catch (SQLException e) {
+                throw new DBCException("Can't extract array data from JDBC array", e);
+            }
+        }
+        if (object instanceof Collection<?> collection) {
+            return makeCollectionFromArray(session, itemType, collection.toArray());
+        }
+        if (object.getClass().isArray()) {
+            return makeCollectionFromArray(session, itemType, object);
         }
 
         return super.getValueFromObject(session, type, object, copy, validateValue);
     }
 
     @NotNull
-    private Object makeCollectionFromNestedJavaCollection(
-        @NotNull JDBCSession session,
+    private Object makeCollectionFromArray(
+        @NotNull DBCSession session,
         @NotNull DBSDataType itemType,
-        Collection<?> collection
+        @NotNull Object array
     ) throws DBCException {
+        int length = java.lang.reflect.Array.getLength(array);
+        Object[] items = new Object[length];
         try {
-            if (itemType instanceof ClickhouseArrayType arrayItemType) {
-                List<Object> convertedItems = new ArrayList<>(collection.size());
-                for (Object item : collection) {
-                    if (item instanceof Collection<?> collectionItem) {
-                        convertedItems.add(makeCollectionFromNestedJavaCollection(session, arrayItemType, collectionItem));
-                    } else {
-                        DBDValueHandler valueHandler = DBUtils.findValueHandler(session, arrayItemType);
-                        convertedItems.add(
-                            valueHandler.getValueFromObject(session, arrayItemType, item, false, true)
-                        );
-                    }
-                }
-
-                DBDValueHandler valueHandler = DBUtils.findValueHandler(session, arrayItemType);
-                return new JDBCCollection(
-                    session.getProgressMonitor(),
-                    arrayItemType.getComponentType(session.getProgressMonitor()),
-                    valueHandler,
-                    convertedItems.toArray()
-                );
-            } else {
-                DBDValueHandler valueHandler = DBUtils.findValueHandler(session, itemType);
-                return new JDBCCollection(
-                    session.getProgressMonitor(),
-                    itemType,
-                    valueHandler,
-                    collection.toArray()
-                );
+            for (int i = 0; i < length; i++) {
+                items[i] = ClickhouseTypeParser.makeValue(session, itemType, java.lang.reflect.Array.get(array, i));
             }
         } catch (DBException e) {
             throw new DBCException("Can't extract array data from Java array", e);
         }
+        return new JDBCCollection(session.getProgressMonitor(), itemType, DBUtils.findValueHandler(session, itemType), items);
     }
 
     @NotNull
     @Override
     public String getValueDisplayString(
         @NotNull DBSTypedObject column,
-        Object value,
+        @Nullable Object value,
         @NotNull DBDDisplayFormat format
     ) {
+        if (format == DBDDisplayFormat.NATIVE && value instanceof ClickhouseMapValue map) {
+            return ClickhouseComplexValueSerializer.toSQL(map.getMapType().getDataSource(), column, map);
+        }
+        if (format == DBDDisplayFormat.NATIVE && value instanceof JDBCCollection collection) {
+            return ClickhouseComplexValueSerializer.toSQL(collection.getComponentType().getDataSource(), column, collection);
+        }
         if (!DBUtils.isNullValue(value) && value instanceof JDBCCollection collection) {
             final StringJoiner output = new StringJoiner(ARRAY_DELIMITER, ARRAY_PREFIX, ARRAY_SUFFIX);
 
@@ -246,30 +281,6 @@ public class ClickhouseArrayValueHandler extends JDBCArrayValueHandler {
         }
 
         return value.contains(ARRAY_DELIMITER);
-    }
-
-    @NotNull
-    private Object makeCollectionFromTupleArray(
-        @NotNull DBCSession session,
-        @NotNull DBSDataType itemType,
-        @NotNull Array array
-    ) {
-        DBDValueHandler valueHandler = DBUtils.findValueHandler(session, itemType);
-        try {
-            ArrayList<Object> tuples = new ArrayList<>();
-            for (Object tuple : (Object[]) array.getArray()) {
-                Object value = valueHandler.getValueFromObject(session, itemType, tuple, false, false);
-                tuples.add(value);
-            }
-            return new JDBCCollection(
-                session.getProgressMonitor(),
-                itemType,
-                valueHandler,
-                tuples.toArray()
-            );
-        } catch (DBCException | SQLException e) {
-            throw new IllegalStateException(e);
-        }
     }
 
     @NotNull

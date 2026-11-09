@@ -36,7 +36,7 @@ public final class DBSecurityUtils {
         String providerId = switch (Platform.getOS()) {
             case Platform.OS_MACOSX -> DBSecurityProviders.MACOS_KEYCHAIN;
             case Platform.OS_WIN32 -> DBSecurityProviders.WINDOWS_INTEGRATION;
-            case Platform.OS_LINUX -> DBSecurityProviders.LINUX_INTEGRATION;
+            case Platform.OS_LINUX -> DBSecurityProviders.LINUX_KEYRING;
             default -> null;
         };
         if (providerId == null) {

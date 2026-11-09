@@ -58,6 +58,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private static final String PROP_HEADER = "header";
     private static final String PROP_HEADER_FORMAT = "headerFormat";
     private static final String PROP_HEADER_CASE = "headerCase";
+    private static final String PROP_HEADER_QUOTING = "headerQuoting";
     public static final String PROP_QUOTE_CHAR = "quoteChar";
     private static final String PROP_QUOTE_ALWAYS = "quoteAlways";
     public static final String PROP_QUOTE_NEVER = "quoteNever";
@@ -85,6 +86,12 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         both
     }
 
+    private enum HeaderQuoting {
+        ALWAYS,
+        WHEN_NECESSARY,
+        NEVER
+    }
+
     private static final String ROW_DELIMITER_DEFAULT = "default";
 
     private String delimiter;
@@ -97,6 +104,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     private HeaderPosition headerPosition;
     private HeaderFormat headerFormat;
     private DBPIdentifierCase headerCase;
+    private HeaderQuoting headerQuoting = HeaderQuoting.ALWAYS;
     private String lineFeedEscapeString;
     private DBDAttributeBinding[] columns;
     private DataExporterArrayFormat dataExporterArrayFormat;
@@ -141,6 +149,11 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         }
 
         headerFormat = CommonUtils.valueOf(HeaderFormat.class, CommonUtils.toString(properties.get(PROP_HEADER_FORMAT)), HeaderFormat.label);
+        headerQuoting = switch (CommonUtils.toString(properties.get(PROP_HEADER_QUOTING))) {
+            case "when necessary" -> HeaderQuoting.WHEN_NECESSARY;
+            case "never" -> HeaderQuoting.NEVER;
+            default -> HeaderQuoting.ALWAYS;
+        };
         formatNumbers = CommonUtils.toBoolean(getSite().getProperties().get(PROP_FORMAT_NUMBERS));
         headerCase = switch (CommonUtils.toString(properties.get(PROP_HEADER_CASE))) {
             case "as is" -> DBPIdentifierCase.MIXED;
@@ -203,7 +216,13 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
                     }
                 }
             }
-            writeCellValue(sanitizeFormula(headerCase.transform(colName)), true);
+            String header = sanitizeFormula(headerCase.transform(colName));
+            switch (headerQuoting) {
+                case ALWAYS -> writeCellValue(header, true);
+                case WHEN_NECESSARY -> writeCellValue(header, false, false, true);
+                case NEVER -> writeCellValue(header, false, false, false);
+                default -> throw new IllegalStateException("Unexpected HeaderQuoting value: " + headerQuoting);
+            }
             if (i < columnsSize - 1) {
                 writeDelimiter();
             }
@@ -345,6 +364,10 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
     }
 
     private void writeCellValue(@NotNull String value, boolean isQuote) {
+        writeCellValue(value, isQuote, true, true);
+    }
+
+    private void writeCellValue(@NotNull String value, boolean isQuote, boolean useQuoteStrategy, boolean allowQuotes) {
         boolean isNeedQuote = isQuote;
         String preparedValue = value;
         if (CommonUtils.isNotEmpty(lineFeedEscapeString) && LINE_BREAK_REGEX.matcher(value).find()) {
@@ -353,7 +376,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         }
 
         // we decided to escape only one char quotes. Multichar quotes will NOT be escaped
-        if (useQuotes && quoteChar.length() == 1 && preparedValue.indexOf(quoteChar.charAt(0)) != -1) {
+        if (useQuotes && allowQuotes && quoteChar.length() == 1 && preparedValue.indexOf(quoteChar.charAt(0)) != -1) {
             // escape quotes with double quotes
             char singleQuoteChar = quoteChar.charAt(0);
             isNeedQuote = true;
@@ -367,7 +390,7 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
             }
             preparedValue = buffer.toString();
         }
-        isNeedQuote = useQuotes && (isNeedQuote || cellValueNeedsQuotation(preparedValue));
+        isNeedQuote = useQuotes && allowQuotes && (isNeedQuote || cellValueNeedsQuotation(preparedValue, useQuoteStrategy));
 
         PrintWriter out = getWriter();
         if (isNeedQuote) {
@@ -379,11 +402,9 @@ public class DataExporterCSV extends StreamExporterAbstract implements IAppendab
         }
     }
 
-    private boolean cellValueNeedsQuotation(@NotNull String line) {
-        if (quoteStrategy == QuoteStrategy.ALL ||
-            quoteStrategy == QuoteStrategy.ALL_INCLUDING_NULLS ||
-            line.isEmpty()
-        ) {
+    private boolean cellValueNeedsQuotation(@NotNull String line, boolean useQuoteStrategy) {
+        if (useQuoteStrategy && (quoteStrategy == QuoteStrategy.ALL ||
+            quoteStrategy == QuoteStrategy.ALL_INCLUDING_NULLS || line.isEmpty())) {
             return true;
         } else {
             return line.contains(delimiter)
