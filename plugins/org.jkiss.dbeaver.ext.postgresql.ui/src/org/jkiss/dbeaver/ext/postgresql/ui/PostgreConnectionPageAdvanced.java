@@ -75,7 +75,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
     }
 
     @Override
-    public void createControl(Composite parent) {
+    public void createControl(@NotNull Composite parent) {
         Composite cfgGroup = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
         cfgGroup.setLayout(gl);
@@ -108,12 +108,15 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
             }
         }
 
+        Composite settingsColumns = UIUtils.createComposite(cfgGroup, 2);
+        settingsColumns.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
         {
             Composite secureGroup = UIUtils.createTitledComposite(
-                cfgGroup,
+                settingsColumns,
                 PostgreMessages.dialog_setting_connection_settings,
                 2,
-                GridData.FILL_HORIZONTAL
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
             );
 
             showTemplates = UIUtils.createCheckbox(
@@ -161,9 +164,12 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
             );
         }
 
+        Composite rightColumn = UIUtils.createComposite(settingsColumns, 1);
+        rightColumn.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING));
+
         {
             Composite secureGroup = UIUtils.createTitledComposite(
-                cfgGroup,
+                rightColumn,
                 PostgreMessages.dialog_setting_group_sql,
                 2,
                 GridData.HORIZONTAL_ALIGN_BEGINNING
@@ -189,7 +195,7 @@ public class PostgreConnectionPageAdvanced extends ConnectionPageAbstract {
 
         if (serverType.turnOffPreparedStatements()) {
             Composite performanceGroup = UIUtils.createTitledComposite(
-                cfgGroup,
+                rightColumn,
                 PostgreMessages.dialog_setting_group_performance,
                 1,
                 GridData.HORIZONTAL_ALIGN_BEGINNING

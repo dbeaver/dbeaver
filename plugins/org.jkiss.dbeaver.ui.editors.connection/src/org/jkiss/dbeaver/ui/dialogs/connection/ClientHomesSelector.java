@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
@@ -55,38 +56,43 @@ public class ClientHomesSelector implements ISelectionProvider {
     private final Map<ISelectionChangedListener, SelectionListener> listeners = new IdentityHashMap<>();
 
     public ClientHomesSelector(
-        Composite parent,
-        String title)
-    {
+        @NotNull Composite parent,
+        @Nullable String title
+    ) {
         this(parent, title, true);
     }
-    public ClientHomesSelector(
-        Composite parent,
-        String title,
-        boolean createComposite)
-    {
-        selectorPanel = createComposite ? UIUtils.createComposite(parent, 2) : parent;
 
-        Label controlLabel = UIUtils.createControlLabel(selectorPanel, title);
-        controlLabel.setToolTipText(UIConnectionMessages.controls_client_home_selector_tip);
+    public ClientHomesSelector(
+        @NotNull Composite parent,
+        @Nullable String title,
+        boolean createComposite
+    ) {
+        selectorPanel = createComposite ? UIUtils.createComposite(parent, title == null ? 1 : 2) : parent;
+
+        if (title != null) {
+            Label controlLabel = UIUtils.createControlLabel(selectorPanel, title);
+            controlLabel.setToolTipText(UIConnectionMessages.controls_client_home_selector_tip);
+        }
         //label.setFont(UIUtils.makeBoldFont(label.getFont()));
         homesCombo = new Combo(selectorPanel, SWT.READ_ONLY);
         //directoryDialog = new DirectoryDialog(selectorContainer.getShell(), SWT.OPEN);
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        GridData gd = new GridData(title == null ? GridData.FILL_HORIZONTAL : GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.grabExcessHorizontalSpace = true;
-        gd.widthHint = UIUtils.getFontHeight(homesCombo) * 30;
+        if (title != null) {
+            gd.widthHint = UIUtils.getFontHeight(homesCombo) * 30;
+        }
         homesCombo.setLayoutData(gd);
         homesCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
-                if (homesCombo.getSelectionIndex() == homesCombo.getItemCount() - 1) {
-                    homesCombo.select(currentHomeIndex);
-                    manageHomes();
-                } else {
-                    currentHomeId = homeIds.get(homesCombo.getSelectionIndex());
-                    currentHomeIndex = homesCombo.getSelectionIndex();
-                }
-                displayClientVersion();
-                handleHomeChange();
-            }));
+            if (homesCombo.getSelectionIndex() == homesCombo.getItemCount() - 1) {
+                homesCombo.select(currentHomeIndex);
+                manageHomes();
+            } else {
+                currentHomeId = homeIds.get(homesCombo.getSelectionIndex());
+                currentHomeIndex = homesCombo.getSelectionIndex();
+            }
+            displayClientVersion();
+            handleHomeChange();
+        }));
         homesCombo.setEnabled(false);
 //        versionLabel = new Label(this, SWT.CENTER);
 //        gd = new GridData();
@@ -218,7 +224,7 @@ public class ClientHomesSelector implements ISelectionProvider {
     }
 
     @Override
-    public void setSelection(ISelection selection) {
+    public void setSelection(@NotNull ISelection selection) {
 
     }
 }
