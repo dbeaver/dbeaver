@@ -10,12 +10,6 @@
         <propertyConfigurator class="org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseShellCommand" uiClass="org.jkiss.dbeaver.ui.dialogs.connection.ShellCommandAuthModelConfigurator"/>
     </extension>
 
-    <extension point="org.eclipse.core.runtime.adapters">
-        <factory adaptableType="org.jkiss.dbeaver.model.connection.DBPConnectionType" class="org.jkiss.dbeaver.ui.preferences.ConnectionTypeAdapterFactory">
-            <adapter type="org.eclipse.ui.model.IWorkbenchAdapter"/>
-        </factory>
-    </extension>
-
     <extension point="org.eclipse.ui.commands">
         <command id="org.jkiss.dbeaver.core.new.connection" name="%command.org.jkiss.dbeaver.core.new.connection.name" description="%command.org.jkiss.dbeaver.core.new.connection.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.new.connection.from.url" name="%command.org.jkiss.dbeaver.core.new.connection.from.url.name" description="%command.org.jkiss.dbeaver.core.new.connection.from.url.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
@@ -129,7 +123,7 @@
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" id="org.jkiss.dbeaver.preferences.connectionTypes" name="%page.org.jkiss.dbeaver.preferences.connectionTypes.name">
             <enabledWhen>
                 <or>
-                    <instanceof value="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
+                    <adapt type="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
                     <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
                 </or>
             </enabledWhen>
