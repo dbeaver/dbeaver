@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.qm.AIChatStorage;
 import org.jkiss.dbeaver.model.ai.qm.QMAIChatHistoryMapper;
+import org.jkiss.dbeaver.model.ai.qm.QMAIChatStorageInMemory;
 import org.jkiss.dbeaver.model.ai.qm.QMAIContext;
 import org.jkiss.dbeaver.model.ai.quota.UserTokenQuotaService;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
@@ -332,6 +333,194 @@ public class AIChatContextSettingsEditTest extends DBeaverUnitTest {
         return execution;
     }
 
+    @Test
+    public void failedApplyMustRetainThePreviouslyActiveScope() throws DBException {
+        AIContextSettingsChatConversation original = new AIContextSettingsChatConversation(session, conversation, additional);
+        original.setScope(AIDatabaseScope.CUSTOM);
+        original.setCustomObjectIds(new String[] { "allowed_table" });
+        conversation.setCustomSettings(additional, original);
+        AIChatContextSettingsEdit edit = new AIChatContextSettingsEdit(session, conversation);
+        edit.getDatabases().get(1).getSettings().setScope(AIDatabaseScope.CURRENT_DATASOURCE);
+        Mockito.doThrow(new DBException("Storage temporarily unavailable"))
+            .when(session).saveConversationSettings(Mockito.any(), Mockito.same(conversation));
+        Assertions.assertThrows(DBException.class, () -> edit.apply(new VoidProgressMonitor()));
+        Assertions.assertEquals(AIDatabaseScope.CUSTOM, session.getConversationSettings(conversation, additional).getScope(),
+            "failed Apply must leave the old scope active when the dialog remains open or is cancelled");
+    }
+
+    @Test
+    public void editsAfterFailedApplyMustRemainDetachedFromTheActiveScope() throws DBException {
+        AIChatContextSettingsEdit edit = new AIChatContextSettingsEdit(session, conversation);
+        var pending = edit.getDatabases().get(1);
+        pending.setConnectionLevel(false);
+        pending.getSettings().setScope(AIDatabaseScope.CUSTOM);
+        pending.getSettings().setCustomObjectIds(new String[] { "allowed_table" });
+        Mockito.doThrow(new DBException("Storage temporarily unavailable"))
+            .when(session).saveConversationSettings(Mockito.any(), Mockito.same(conversation));
+        Assertions.assertThrows(DBException.class, () -> edit.apply(new VoidProgressMonitor()));
+        pending.getSettings().setScope(AIDatabaseScope.CURRENT_SCHEMA);
+        Assertions.assertNull(conversation.getCustomSettings(additional),
+            "editing the still-open dialog after failed Apply must not mutate live conversation settings");
+    }
+
+    @Test
+    public void successfulApplyKeepsTheDraftAndItsObjectArrayDetached() throws DBException {
+        AIChatContextSettingsEdit edit = new AIChatContextSettingsEdit(session, conversation);
+        var pending = edit.getDatabases().get(1);
+        pending.setConnectionLevel(false);
+        pending.getSettings().setScope(AIDatabaseScope.CUSTOM);
+        pending.getSettings().setCustomObjectIds(new String[] { "allowed_table" });
+        edit.apply(new VoidProgressMonitor());
+        AIContextSettingsChatConversation active = conversation.getCustomSettings(additional);
+        Assertions.assertNotSame(pending.getSettings(), active);
+        pending.getSettings().getCustomObjectIds()[0] = "unapplied_table";
+        pending.getSettings().setScope(AIDatabaseScope.CURRENT_DATASOURCE);
+        Assertions.assertEquals(AIDatabaseScope.CUSTOM, active.getScope());
+        Assertions.assertArrayEquals(new String[] { "allowed_table" }, active.getCustomObjectIds());
+    }
+
+    @Test
+    public void failedApplyCanBeRetriedWithAnUpdatedDraft() throws DBException {
+        AIChatContextSettingsEdit edit = new AIChatContextSettingsEdit(session, conversation);
+        var pending = edit.getDatabases().get(1);
+        pending.setConnectionLevel(false);
+        pending.getSettings().setScope(AIDatabaseScope.CUSTOM);
+        pending.getSettings().setCustomObjectIds(new String[] { "first_table" });
+        DBException failure = new DBException("Storage temporarily unavailable");
+        Mockito.doThrow(failure).doNothing().when(session).saveConversationSettings(Mockito.any(), Mockito.same(conversation));
+        Assertions.assertSame(failure, Assertions.assertThrows(DBException.class, () -> edit.apply(new VoidProgressMonitor())));
+        Assertions.assertNull(conversation.getCustomSettings(additional));
+        pending.getSettings().setCustomObjectIds(new String[] { "second_table" });
+        edit.apply(new VoidProgressMonitor());
+        AIContextSettingsChatConversation active = conversation.getCustomSettings(additional);
+        Assertions.assertNotSame(pending.getSettings(), active);
+        Assertions.assertArrayEquals(new String[] { "second_table" }, active.getCustomObjectIds());
+        Mockito.verify(session, Mockito.times(2)).saveConversationSettings(Mockito.any(), Mockito.same(conversation));
+    }
+
+    @Test
+    public void failedApplyRestoresBothConversationOverrides() throws DBException {
+        AIContextSettingsChatConversation first = new AIContextSettingsChatConversation(session, conversation, primary);
+        first.setScope(AIDatabaseScope.CURRENT_SCHEMA);
+        conversation.setCustomSettings(primary, first);
+        AIContextSettingsChatConversation second = new AIContextSettingsChatConversation(session, conversation, additional);
+        second.setScope(AIDatabaseScope.CUSTOM);
+        second.setCustomObjectIds(new String[] { "allowed_table" });
+        conversation.setCustomSettings(additional, second);
+        AIChatContextSettingsEdit edit = new AIChatContextSettingsEdit(session, conversation);
+        edit.getDatabases().getFirst().getSettings().setScope(AIDatabaseScope.CURRENT_DATASOURCE);
+        edit.getDatabases().get(1).getSettings().setScope(AIDatabaseScope.CURRENT_SCHEMA);
+        Mockito.doThrow(new DBException("Storage temporarily unavailable"))
+            .when(session).saveConversationSettings(Mockito.any(), Mockito.same(conversation));
+        Assertions.assertThrows(DBException.class, () -> edit.apply(new VoidProgressMonitor()));
+        Assertions.assertSame(first, conversation.getCustomSettings(primary));
+        Assertions.assertSame(second, conversation.getCustomSettings(additional));
+        Assertions.assertArrayEquals(new String[] { "allowed_table" }, second.getCustomObjectIds());
+        Mockito.verify(primary, Mockito.never()).persistConfiguration();
+        Mockito.verify(additional, Mockito.never()).persistConfiguration();
+    }
+
+    @Test
+    public void failedApplyRestoresConnectionDefaultsWithoutRestoringRevokedConsent() throws DBException {
+        additionalSettings.put("scope", "CUSTOM");
+        additionalSettings.put("objects", List.of("allowed_table", "other_allowed_table"));
+        AIContextSettingsChatConversation original = new AIContextSettingsChatConversation(session, conversation, additional);
+        original.setScope(AIDatabaseScope.CUSTOM);
+        original.setCustomObjectIds(new String[] { "allowed_table" });
+        conversation.setCustomSettings(additional, original);
+        AIChatContextSettingsEdit edit = new AIChatContextSettingsEdit(session, conversation);
+        var pending = edit.getDatabases().get(1);
+        pending.setConnectionLevel(true);
+        pending.getSettings().setScope(AIDatabaseScope.CURRENT_SCHEMA);
+        Mockito.doAnswer(invocation -> {
+            additionalSettings.put("confirmed", false);
+            throw new DBException("Storage temporarily unavailable");
+        }).when(session).saveConversationSettings(Mockito.any(), Mockito.same(conversation));
+        Assertions.assertThrows(DBException.class, () -> edit.apply(new VoidProgressMonitor()));
+        AIContextSettingsDataSource restored = new AIContextSettingsDataSource(additional);
+        Assertions.assertEquals(AIDatabaseScope.CUSTOM, restored.getScope());
+        Assertions.assertArrayEquals(new String[] { "allowed_table", "other_allowed_table" }, restored.getCustomObjectIds());
+        Assertions.assertFalse(restored.isMetaTransferConfirmed());
+        Assertions.assertSame(original, conversation.getCustomSettings(additional));
+        Mockito.verify(additional, Mockito.times(2)).persistConfiguration();
+        Mockito.verify(primary, Mockito.never()).persistConfiguration();
+    }
+
+    @Test
+    public void failedConnectionWriteRestoresTheWholeBatchAndKeepsTheOriginalError() throws DBException {
+        AIChatContextSettingsEdit edit = new AIChatContextSettingsEdit(session, conversation);
+        edit.getDatabases().getFirst().getSettings().setScope(AIDatabaseScope.CURRENT_SCHEMA);
+        edit.getDatabases().get(1).getSettings().setScope(AIDatabaseScope.CURRENT_DATABASE);
+        IllegalStateException failure = new IllegalStateException("Cannot persist additional connection");
+        Mockito.when(additional.persistConfiguration()).thenThrow(failure).thenReturn(true);
+        Assertions.assertSame(failure, Assertions.assertThrows(IllegalStateException.class,
+            () -> edit.apply(new VoidProgressMonitor())));
+        Assertions.assertEquals(AIDatabaseScope.CURRENT_DATASOURCE, new AIContextSettingsDataSource(primary).getScope());
+        Assertions.assertEquals(AIDatabaseScope.CURRENT_DATASOURCE, new AIContextSettingsDataSource(additional).getScope());
+        Assertions.assertNull(conversation.getCustomSettings(primary));
+        Assertions.assertNull(conversation.getCustomSettings(additional));
+        Mockito.verify(primary, Mockito.times(2)).persistConfiguration();
+        Mockito.verify(additional, Mockito.times(2)).persistConfiguration();
+        Mockito.verify(session, Mockito.never()).saveConversationSettings(Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    public void failedRollbackIsReportedWithoutReplacingTheSaveError() throws DBException {
+        AIChatContextSettingsEdit edit = new AIChatContextSettingsEdit(session, conversation);
+        edit.getDatabases().get(1).getSettings().setScope(AIDatabaseScope.CURRENT_SCHEMA);
+        DBException failure = new DBException("History storage unavailable");
+        IllegalStateException rollbackFailure = new IllegalStateException("Cannot persist restored connection");
+        Mockito.when(additional.persistConfiguration()).thenReturn(true).thenThrow(rollbackFailure);
+        Mockito.doThrow(failure).when(session).saveConversationSettings(Mockito.any(), Mockito.same(conversation));
+        Assertions.assertSame(failure, Assertions.assertThrows(DBException.class, () -> edit.apply(new VoidProgressMonitor())));
+        Assertions.assertArrayEquals(new Throwable[] { rollbackFailure }, failure.getSuppressed());
+        Assertions.assertEquals(AIDatabaseScope.CURRENT_DATASOURCE, new AIContextSettingsDataSource(additional).getScope());
+    }
+
+    @Test
+    public void historyAndActiveSettingsStayConsistentAcrossFailureAndRetry() throws DBException {
+        QMAIChatStorageInMemory storage = Mockito.spy(new QMAIChatStorageInMemory());
+        session = new AIChatSession(Mockito.mock(DBPWorkspace.class), Mockito.mock(AIChatContextProvider.class),
+            storage, monitor -> "session", Mockito.mock(UserTokenQuotaService.class));
+        AIContextSettingsChatConversation original = new AIContextSettingsChatConversation(session, conversation, additional);
+        original.setScope(AIDatabaseScope.CUSTOM);
+        original.setCustomObjectIds(new String[] { "old_table" });
+        conversation.setCustomSettings(additional, original);
+        storage.saveConversation("session", QMAIChatHistoryMapper.toQMAIChatHistory(
+            conversation, session.getConversationSettings(conversation), null));
+        AIChatContextSettingsEdit edit = new AIChatContextSettingsEdit(session, conversation);
+        var pending = edit.getDatabases().get(1).getSettings();
+        pending.setCustomObjectIds(new String[] { "new_table" });
+        DBException failure = new DBException("History storage unavailable");
+        Mockito.doThrow(failure).doCallRealMethod().when(storage).saveConversation(Mockito.anyString(), Mockito.any());
+        Assertions.assertSame(failure, Assertions.assertThrows(DBException.class, () -> edit.apply(new VoidProgressMonitor())));
+        Assertions.assertSame(original, conversation.getCustomSettings(additional));
+        Assertions.assertEquals(List.of("old_table"), storage.findConversations("session").getFirst()
+            .getContext().getConnectionSettings().get("additional").get("objects"));
+        edit.apply(new VoidProgressMonitor());
+        Assertions.assertArrayEquals(new String[] { "new_table" }, conversation.getCustomSettings(additional).getCustomObjectIds());
+        Assertions.assertEquals(List.of("new_table"), storage.findConversations("session").getFirst()
+            .getContext().getConnectionSettings().get("additional").get("objects"));
+        Assertions.assertNotSame(pending, conversation.getCustomSettings(additional));
+        Mockito.verify(primary, Mockito.never()).connect(Mockito.any(), Mockito.anyBoolean(), Mockito.anyBoolean());
+        Mockito.verify(additional, Mockito.never()).connect(Mockito.any(), Mockito.anyBoolean(), Mockito.anyBoolean());
+    }
+
+    @Test
+    public void rejectedConfigurationWriteRollsBackWithoutSavingHistory() throws DBException {
+        AIChatContextSettingsEdit edit = new AIChatContextSettingsEdit(session, conversation);
+        edit.getDatabases().get(1).getSettings().setScope(AIDatabaseScope.CURRENT_SCHEMA);
+        IllegalStateException cause = new IllegalStateException("Connection configuration storage unavailable");
+        Mockito.when(additional.getRegistry().getLastError()).thenReturn(cause);
+        Mockito.when(additional.persistConfiguration()).thenReturn(false, true);
+        DBException failure = Assertions.assertThrows(DBException.class, () -> edit.apply(new VoidProgressMonitor()));
+        Assertions.assertSame(cause, failure.getCause());
+        Assertions.assertEquals(AIDatabaseScope.CURRENT_DATASOURCE, new AIContextSettingsDataSource(additional).getScope());
+        Assertions.assertNull(conversation.getCustomSettings(additional));
+        Mockito.verify(session, Mockito.never()).saveConversationSettings(Mockito.any(), Mockito.any());
+        Mockito.verify(additional, Mockito.times(2)).persistConfiguration();
+    }
+
     private static void configure(
         @NotNull DBPDataSourceContainer container,
         @NotNull String id,
@@ -341,7 +530,10 @@ public class AIChatContextSettingsEditTest extends DBeaverUnitTest {
         settings.put("confirmed", true);
         settings.put("scope", "CURRENT_DATASOURCE");
         Mockito.when(container.getId()).thenReturn(id);
+        Mockito.when(container.getName()).thenReturn(id);
         Mockito.when(container.getProject()).thenReturn(project);
+        Mockito.when(container.getRegistry()).thenReturn(Mockito.mock(DBPDataSourceRegistry.class));
+        Mockito.when(container.persistConfiguration()).thenReturn(true);
         Mockito.when(container.getExtension(AIContextSettingsDataSource.AI_DS_EXTENSION)).thenAnswer(invocation -> settings);
         Mockito.doAnswer(invocation -> {
             settings.clear();

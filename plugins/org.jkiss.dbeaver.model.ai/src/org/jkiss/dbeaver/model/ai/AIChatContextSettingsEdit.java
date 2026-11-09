@@ -26,7 +26,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AIChatContextSettingsEdit {
     private final AIChatSession session;
@@ -46,13 +48,17 @@ public class AIChatContextSettingsEdit {
     }
 
     public void apply(@NotNull DBRProgressMonitor monitor) throws DBException {
+        synchronized (conversation.getPersistenceLock()) {
+            applyChanges(monitor);
+        }
+    }
+
+    private void applyChanges(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (conversation.isActive()) {
             throw new DBException("Cannot change database context while the conversation is active");
         }
-        for (DatabaseEdit database : databases) {
-            if (!database.isChanged()) {
-                continue;
-            }
+        List<DatabaseEdit> changedDatabases = databases.stream().filter(DatabaseEdit::isChanged).toList();
+        for (DatabaseEdit database : changedDatabases) {
             if (conversation.getDataSource(database.container.getId()) != database.container) {
                 throw new DBException("The conversation connection has changed");
             }
@@ -64,32 +70,69 @@ public class AIChatContextSettingsEdit {
                 throw new DBException("Select database objects for " + database.container.getName() + " before applying custom scope");
             }
         }
-        boolean changed = false;
-        for (DatabaseEdit database : databases) {
-            if (!database.isChanged()) {
-                continue;
-            }
-            DBPDataSourceContainer container = conversation.getDataSource(database.container.getId());
-            if (container != database.container) {
-                throw new DBException("The conversation connection has changed");
-            }
-            AIContextSettingsDataSource connectionSettings = new AIContextSettingsDataSource(container);
-            if (database.connectionLevel) {
-                connectionSettings.setScope(database.settings.getScope());
-                connectionSettings.setCustomObjectIds(database.settings.getScope() == AIDatabaseScope.CUSTOM
-                    ? database.settings.getCustomObjectIds() : null);
-                connectionSettings.saveSettings();
-                conversation.setCustomSettings(container, null);
-            } else {
-                database.settings.setConversationScoped(true);
-                database.settings.setMetaTransferConfirmed(connectionSettings.isMetaTransferConfirmed());
-                database.settings.setMcpEnabled(connectionSettings.isMcpEnabled());
-                conversation.setCustomSettings(container, database.settings);
-            }
-            changed = true;
+        if (changedDatabases.isEmpty()) {
+            return;
         }
-        if (changed) {
+        Map<DBPDataSourceContainer, AIContextSettingsChatConversation> originalOverrides = new LinkedHashMap<>();
+        Map<DBPDataSourceContainer, AIContextSettingsDataSource> originalDefaults = new LinkedHashMap<>();
+        try {
+            for (DatabaseEdit database : changedDatabases) {
+                DBPDataSourceContainer container = database.container;
+                AIContextSettingsDataSource connectionSettings = new AIContextSettingsDataSource(container);
+                originalOverrides.put(container, conversation.getCustomSettings(container));
+                if (database.connectionLevel) {
+                    AIContextSettingsDataSource applied = new AIContextSettingsDataSource(container);
+                    applied.setScope(database.settings.getScope());
+                    String[] objects = database.settings.getCustomObjectIds();
+                    applied.setCustomObjectIds(database.settings.getScope() == AIDatabaseScope.CUSTOM && objects != null
+                        ? objects.clone() : null);
+                    originalDefaults.put(container, connectionSettings);
+                    saveConnectionSettings(applied);
+                    conversation.setCustomSettings(container, null);
+                } else {
+                    AIContextSettingsChatConversation applied = new AIContextSettingsChatConversation(session, conversation, container);
+                    applied.loadSettingsFromMap(database.settings.saveSettingsToMap());
+                    applied.setConversationScoped(true);
+                    applied.setMetaTransferConfirmed(connectionSettings.isMetaTransferConfirmed());
+                    applied.setMcpEnabled(connectionSettings.isMcpEnabled());
+                    conversation.setCustomSettings(container, applied);
+                }
+            }
             session.saveConversationSettings(monitor, conversation);
+        } catch (DBException | RuntimeException | Error failure) {
+            restoreSettings(originalOverrides, originalDefaults, failure);
+            throw failure;
+        }
+    }
+
+    private void restoreSettings(
+        @NotNull Map<DBPDataSourceContainer, AIContextSettingsChatConversation> originalOverrides,
+        @NotNull Map<DBPDataSourceContainer, AIContextSettingsDataSource> originalDefaults,
+        @NotNull Throwable failure
+    ) {
+        originalOverrides.forEach(conversation::setCustomSettings);
+        for (var entry : originalDefaults.entrySet()) {
+            try {
+                AIContextSettingsDataSource current = new AIContextSettingsDataSource(entry.getKey());
+                current.setScope(entry.getValue().getScope());
+                String[] objects = entry.getValue().getCustomObjectIds();
+                current.setCustomObjectIds(objects == null ? null : objects.clone());
+                saveConnectionSettings(current);
+            } catch (DBException | RuntimeException | Error rollbackFailure) {
+                if (rollbackFailure != failure) {
+                    failure.addSuppressed(rollbackFailure);
+                }
+            }
+        }
+    }
+
+    private static void saveConnectionSettings(@NotNull AIContextSettingsDataSource settings) throws DBException {
+        DBPDataSourceContainer container = settings.getDataSourceContainer();
+        // apply needs the persistence result that AIContextSettingsDataSource.saveSettings discards
+        container.setExtension(AIContextSettingsDataSource.AI_DS_EXTENSION, settings.saveSettingsToMap());
+        if (!container.persistConfiguration()) {
+            throw new DBException("Cannot save database context for connection '" + container.getName() + "'",
+                container.getRegistry().getLastError());
         }
     }
 
