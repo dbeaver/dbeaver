@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mimer.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.mimer.MimerConstants;
 import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
@@ -27,15 +28,26 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.Types;
+import java.util.Locale;
 
 /**
  * Registered in {@code plugin.xml} ({@code org.jkiss.dbeaver.dataTypeProvider}, scoped to
- * {@code <datasource id="mimer"/>} plus one {@code <type id="...">} per type handled here) so
- * {@link MimerBLOBValueHandler}/{@link MimerCLOBValueHandler} - the fix for a Mimer SQL JDBC
- * Driver limitation reading {@code BLOB}/{@code CLOB}/{@code NCLOB} values, see their own javadoc
- * - are used automatically for every matching column on a Mimer SQL connection. A new case here
- * needs a matching {@code <type>} entry in {@code plugin.xml} too, or the registry filters the
- * column out before this class is ever consulted.
+ * {@code <datasource id="mimer"/>} plus one {@code <type id="...">}/{@code <type name="...">}
+ * per type handled here) so {@link MimerBLOBValueHandler}/{@link MimerCLOBValueHandler} - the fix
+ * for a Mimer SQL JDBC Driver limitation reading {@code BLOB}/{@code CLOB}/{@code NCLOB} values,
+ * see their own javadoc - are used automatically for every matching column on a Mimer SQL
+ * connection. A new case here needs a matching {@code <type>} entry in {@code plugin.xml} too, or
+ * the registry filters the column out before this class is ever consulted.
+ * <p>
+ * {@link #getValueHandler} tries {@code typedObject.getTypeID()} first, but the driver's raw
+ * catalog {@code DATA_TYPE} for {@code NATIONAL CHAR LARGE OBJECT} doesn't match {@code
+ * Types.NCLOB} (see {@link MimerConstants#TYPE_NAMES_LARGE_OBJECT}'s own comment) -
+ * {@code GenericMetaModel#createTableColumnImpl}/{@code JDBCColumnMetaData} normally correct it
+ * via {@code MimerDataSource#getLocalDataType(String)} before this class ever sees it, but that's
+ * an indirect side effect of a type-name lookup elsewhere in this plugin, not something this class
+ * controls. So it also falls back to matching {@code typedObject.getTypeName()} directly against
+ * the same name sets {@code MimerDataSource#resolveDataKind} already uses, rather than trusting
+ * the type ID alone.
  * <p>
  * Falls back to {@link JDBCContentValueHandler#INSTANCE} - the same handler the core JDBC-standard
  * provider would give a BLOB/CLOB/NCLOB column - once {@link
@@ -60,20 +72,42 @@ public class MimerValueHandlerProvider implements DBDValueHandlerProvider {
         @NotNull DBDFormatSettings preferences,
         @NotNull DBSTypedObject typedObject
     ) {
+        Boolean isBlob = classify(typedObject);
+        if (isBlob == null) {
+            return null;
+        }
         boolean fixedByDriver = dataSource instanceof MimerDataSource mimerDataSource
             && mimerDataSource.isDriverVersionAtLeast(11, 0, 6);
+        if (fixedByDriver) {
+            return JDBCContentValueHandler.INSTANCE;
+        }
+        return isBlob ? MimerBLOBValueHandler.INSTANCE : MimerCLOBValueHandler.INSTANCE;
+    }
+
+    /**
+     * {@code true} for a BLOB-like type, {@code false} for a CLOB/NCLOB-like type, {@code null}
+     * if {@code typedObject} isn't one of Mimer SQL's three LOB types at all.
+     */
+    @Nullable
+    private static Boolean classify(@NotNull DBSTypedObject typedObject) {
         switch (typedObject.getTypeID()) {
             case Types.BLOB:
+                return true;
             case Types.CLOB:
             case Types.NCLOB:
-                if (fixedByDriver) {
-                    return JDBCContentValueHandler.INSTANCE;
-                }
-                return typedObject.getTypeID() == Types.BLOB
-                    ? MimerBLOBValueHandler.INSTANCE
-                    : MimerCLOBValueHandler.INSTANCE;
+                return false;
             default:
-                return null;
+                break;
         }
+        String typeName = typedObject.getTypeName();
+        if (typeName == null) {
+            return null;
+        }
+        String upperTypeName = typeName.toUpperCase(Locale.ENGLISH);
+        if (!MimerConstants.TYPE_NAMES_LARGE_OBJECT.contains(upperTypeName)
+            && !MimerConstants.TYPE_NAMES_LARGE_OBJECT_ABBREVIATED.contains(upperTypeName)) {
+            return null;
+        }
+        return upperTypeName.equals("BLOB") || upperTypeName.contains("BINARY");
     }
 }

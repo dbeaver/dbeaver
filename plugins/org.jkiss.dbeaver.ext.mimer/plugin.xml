@@ -558,7 +558,11 @@
     <extension point="org.jkiss.dbeaver.dataTypeProvider">
         <!-- Use getBinaryStream()/getCharacterStream() for LOB columns. See MimerBLOBValueHandler's
              and MimerCLOBValueHandler's javadoc for the full story. A new type here needs a matching
-             case in MimerValueHandlerProvider.getValueHandler() too, not just a <type> entry. -->
+             case in MimerValueHandlerProvider.getValueHandler() too, not just a <type> entry.
+             The <type name="..."> entries below are a fallback for when the column's type ID isn't
+             (or stops being) one of the three above - e.g. the NATIONAL CHAR LARGE OBJECT driver
+             bug reporting a vendor-specific code instead of Types.NCLOB - see
+             MimerValueHandlerProvider's own javadoc and MimerConstants#TYPE_NAMES_LARGE_OBJECT. -->
         <provider
             class="org.jkiss.dbeaver.ext.mimer.model.data.MimerValueHandlerProvider"
             id="MimerValueHandlerProvider"
@@ -568,6 +572,15 @@
             <type id="2004"/> <!-- java.sql.Types.BLOB -->
             <type id="2005"/> <!-- java.sql.Types.CLOB -->
             <type id="2011"/> <!-- java.sql.Types.NCLOB -->
+            <type name="BLOB"/>
+            <type name="CLOB"/>
+            <type name="NCLOB"/>
+            <type name="BINARY LARGE OBJECT"/>
+            <type name="CHARACTER LARGE OBJECT"/>
+            <type name="CHAR LARGE OBJECT"/>
+            <type name="NCHAR LARGE OBJECT"/>
+            <type name="NATIONAL CHAR LARGE OBJECT"/>
+            <type name="NATIONAL CHARACTER LARGE OBJECT"/>
         </provider>
         <transformer
             class="org.jkiss.dbeaver.ext.mimer.model.gis.MimerGisLocationTransformer"

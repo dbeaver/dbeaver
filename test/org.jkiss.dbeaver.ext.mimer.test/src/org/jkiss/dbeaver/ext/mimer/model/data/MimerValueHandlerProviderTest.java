@@ -33,13 +33,15 @@ import java.sql.Types;
 /**
  * {@link MimerValueHandlerProvider} is scoped to {@code java.sql.Types.BLOB}/{@code CLOB}/{@code
  * NCLOB} - every type the Mimer SQL JDBC Driver limitation {@link MimerBLOBValueHandler}/{@link
- * MimerCLOBValueHandler} work around affects (see their own javadoc). Every other
- * type must fall through to {@code null} (core's own default handler), not get silently
- * redirected too - this plugin.xml's {@code <type>} list must stay in sync with this switch, see
- * {@link MimerValueHandlerProvider}'s own javadoc. The 11.0.6+ cutoff must return a real handler
- * ({@link JDBCContentValueHandler#INSTANCE}), never {@code null} - see that class's own javadoc
- * for why {@code null} here would silently fall through to {@code DefaultValueHandler} instead of
- * the core JDBC-standard provider.
+ * MimerCLOBValueHandler} work around affects (see their own javadoc) - plus a type-name fallback
+ * for when the type ID doesn't land on one of those three (see {@link
+ * MimerValueHandlerProvider}'s own javadoc for why that happens and why it's matched by name
+ * rather than trusted to always be normalized away upstream). Every other type must fall through
+ * to {@code null} (core's own default handler), not get silently redirected too - this
+ * plugin.xml's {@code <type>} list must stay in sync with this switch. The 11.0.6+ cutoff must
+ * return a real handler ({@link JDBCContentValueHandler#INSTANCE}), never {@code null} - see that
+ * class's own javadoc for why {@code null} here would silently fall through to {@code
+ * DefaultValueHandler} instead of the core JDBC-standard provider.
  *
  * @author Mimer Information Technology
  */
@@ -91,6 +93,63 @@ public class MimerValueHandlerProviderTest extends DBeaverUnitTest {
         Mockito.when(type.getTypeID()).thenReturn(Types.VARCHAR);
 
         Assertions.assertNull(provider.getValueHandler(dataSource, preferences, type));
+    }
+
+    // The type ID a real column reports is normally already normalized (see this class's own
+    // javadoc) - these tests simulate the type ID NOT being one of BLOB/CLOB/NCLOB (a bogus
+    // vendor-specific code, same shape as the confirmed-live NATIONAL CHAR LARGE OBJECT driver
+    // bug) to pin down the name-based fallback independently of that normalization chain.
+    private static final int UNRECOGNIZED_TYPE_ID = -10;
+
+    @Test
+    public void fallsBackToTheClobHandlerByNameWhenTheTypeIdDoesNotMatch() {
+        Mockito.when(type.getTypeID()).thenReturn(UNRECOGNIZED_TYPE_ID);
+        Mockito.when(type.getTypeName()).thenReturn("NATIONAL CHAR LARGE OBJECT");
+
+        DBDValueHandler handler = provider.getValueHandler(dataSource, preferences, type);
+
+        Assertions.assertSame(MimerCLOBValueHandler.INSTANCE, handler);
+    }
+
+    @Test
+    public void fallsBackToTheClobHandlerForTheAnticipatedSpelledOutNationalName() {
+        // A possible future catalog spelling instead of "NATIONAL CHAR LARGE OBJECT" above -
+        // see MimerConstants#TYPE_NAMES_LARGE_OBJECT's own comment.
+        Mockito.when(type.getTypeID()).thenReturn(UNRECOGNIZED_TYPE_ID);
+        Mockito.when(type.getTypeName()).thenReturn("NATIONAL CHARACTER LARGE OBJECT");
+
+        DBDValueHandler handler = provider.getValueHandler(dataSource, preferences, type);
+
+        Assertions.assertSame(MimerCLOBValueHandler.INSTANCE, handler);
+    }
+
+    @Test
+    public void fallsBackToTheBlobHandlerByNameWhenTheTypeIdDoesNotMatch() {
+        Mockito.when(type.getTypeID()).thenReturn(UNRECOGNIZED_TYPE_ID);
+        Mockito.when(type.getTypeName()).thenReturn("BINARY LARGE OBJECT");
+
+        DBDValueHandler handler = provider.getValueHandler(dataSource, preferences, type);
+
+        Assertions.assertSame(MimerBLOBValueHandler.INSTANCE, handler);
+    }
+
+    @Test
+    public void returnsNullWhenNeitherTheTypeIdNorTheNameMatch() {
+        Mockito.when(type.getTypeID()).thenReturn(UNRECOGNIZED_TYPE_ID);
+        Mockito.when(type.getTypeName()).thenReturn("VARCHAR");
+
+        Assertions.assertNull(provider.getValueHandler(dataSource, preferences, type));
+    }
+
+    @Test
+    public void theNameFallbackAlsoRespectsTheDriverVersionCutoff() {
+        Mockito.when(mimerDataSource.isDriverVersionAtLeast(11, 0, 6)).thenReturn(true);
+        Mockito.when(type.getTypeID()).thenReturn(UNRECOGNIZED_TYPE_ID);
+        Mockito.when(type.getTypeName()).thenReturn("NATIONAL CHAR LARGE OBJECT");
+
+        DBDValueHandler handler = provider.getValueHandler(mimerDataSource, preferences, type);
+
+        Assertions.assertSame(JDBCContentValueHandler.INSTANCE, handler);
     }
 
     @Test
