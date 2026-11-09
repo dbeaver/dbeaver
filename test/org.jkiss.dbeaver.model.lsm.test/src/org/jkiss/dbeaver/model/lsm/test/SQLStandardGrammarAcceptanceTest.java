@@ -25,6 +25,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.Trees;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
@@ -923,13 +924,39 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
         return createParameters(dialect);
     }
 
+    @Test
+    void acceptsNamedParametersNamedLikeTrimKeywords() {
+        String sql = "SELECT x.v FROM t x WHERE x.a = :trim AND x.b = :both AND x.c = :leading AND x.d = :trailing";
+        SQLStandardParser parser = makeParser(sql, createParameters(BasicSQLDialect.INSTANCE, true));
+        var tree = parser.sqlQuery();
+        Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors());
+        Assertions.assertEquals(4, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_namedParameter).size());
+    }
+
+    @Test
+    void acceptsAttributeNamesNamedLikeTrimKeywords() {
+        String sql = "SELECT x.payload:trim, x.payload:both, x.payload:leading, x.payload:trailing FROM t x";
+        SQLStandardParser parser = makeParser(sql);
+        var tree = parser.sqlQuery();
+        Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors());
+        Assertions.assertEquals(4, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_valueExpressionAttributeSpec).size());
+    }
+
     private static LSMAnalyzerParameters createParameters(@NotNull SQLDialect dialect) {
+        return createParameters(dialect, false);
+    }
+
+    private static LSMAnalyzerParameters createParameters(@NotNull SQLDialect dialect, boolean namedParameters) {
         var preferences = new SimplePreferenceStore() {
             @Override
             public void save() {
                 // In-memory test preferences.
             }
         };
+        if (namedParameters) {
+            preferences.setValue(ModelPreferences.SQL_PARAMETERS_ENABLED, true);
+            preferences.setValue(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX, ":");
+        }
         var syntaxManager = new SQLSyntaxManager(preferences);
         syntaxManager.init(dialect, preferences);
         return LSMAnalyzerParameters.forDialect(dialect, syntaxManager);

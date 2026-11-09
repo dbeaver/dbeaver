@@ -438,14 +438,14 @@ intervalOperation:       intervalQualifier?((((Asterisk|Solidus) factor)+ (sign 
 intervalOperation2: Asterisk intervalFactor((((Asterisk|Solidus) factor)+ (sign intervalTerm)*)|((sign intervalTerm)+));
 
 valueExpressionPrimary: valueExpressionAtom valueExpressionAttributeSpec? valueExpressionCastSpec?;
-valueExpressionAttributeSpec: Colon Identifier; // https://docs.snowflake.com/en/user-guide/tutorials/json-basics-tutorial
+valueExpressionAttributeSpec: Colon colonIdentifier; // https://docs.snowflake.com/en/user-guide/tutorials/json-basics-tutorial
 valueExpressionCastSpec: TypeCast dataType typeModifier*;
 valueExpressionAtom: unsignedNumericLiteral|generalLiteral|countAllExpression
     |scalarSubquery|caseExpression|LeftParen valueExpression anyUnexpected?? RightParen|castSpecification
     |nullSpecification|truthValue|variableExpression|generalValueSpecification|extractExpression|functionCallExpression|aggregateExpression|valueReference|anyWordsWithProperty;
 
 variableExpression: BatchVariableName|ClientVariableName|namedParameter|anonymouseParameter;
-namedParameter: {isNamedParametersEnabled}? (Colon|CustomNamedParameterPrefix) Identifier;
+namedParameter: {isNamedParametersEnabled}? (Colon|CustomNamedParameterPrefix) colonIdentifier;
 anonymouseParameter: {isAnonymousParametersEnabled}? (QuestionMark|CustomAnonymousParameterMark);
 
 numericPrimary: (valueExpressionPrimary|extractExpression);
@@ -777,3 +777,6 @@ routineResultField: {namedRoutineArgumentAhead()}? identifier dataType typeModif
 routineTrailing: routineBody routineDefinitionExtension*;
 // A declaration section cannot consume the BEGIN block it is supposed to precede.
 proceduralDeclaration: localVariableDeclaration|cursorDeclaration|localRelationDeclaration|localRoutineDeclaration;
+
+// TRIM specification words became tokens, but parameter and attribute names after a colon may still use them.
+colonIdentifier: Identifier|TRIM|BOTH|LEADING|TRAILING;
