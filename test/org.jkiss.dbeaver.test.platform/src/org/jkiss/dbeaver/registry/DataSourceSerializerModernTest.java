@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.registry;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPApplication;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.connection.DBPConfigurationProfile;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderRegistry;
@@ -30,7 +31,9 @@ import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class DataSourceSerializerModernTest extends DBeaverUnitTest {
@@ -82,6 +85,25 @@ public class DataSourceSerializerModernTest extends DBeaverUnitTest {
         );
     }
 
+    @Test
+    public void testCompletedDriverMigrationDoesNotLoadProvider() {
+        DataSourceProviderDescriptor provider = Mockito.mock(DataSourceProviderDescriptor.class);
+        Mockito.when(provider.supportsDriverMigration()).thenReturn(true);
+        Mockito.when(provider.getMigrationCompletedProperty()).thenReturn("migration-status");
+        DBPConnectionConfiguration configuration = new DBPConnectionConfiguration();
+
+        Assertions.assertTrue(DataSourceSerializerModern.shouldCheckProviderMigration(provider, configuration));
+
+        configuration.setProviderProperty("migration-status", "complete");
+        Assertions.assertFalse(DataSourceSerializerModern.shouldCheckProviderMigration(provider, configuration));
+
+        Mockito.when(provider.getMigrationCompletedProperty()).thenReturn(null);
+        Assertions.assertTrue(DataSourceSerializerModern.shouldCheckProviderMigration(provider, configuration));
+
+        Mockito.when(provider.supportsDriverMigration()).thenReturn(false);
+        Assertions.assertFalse(DataSourceSerializerModern.shouldCheckProviderMigration(provider, configuration));
+    }
+
     @ParameterizedTest
     @CsvSource({"true", "false"})
     public void testCloseIdleConnectionExplicitValue(boolean enabled) {
@@ -90,6 +112,72 @@ public class DataSourceSerializerModernTest extends DBeaverUnitTest {
             DataSourceSerializerModern.readCloseIdleConnectionSetting(
                 Map.of(RegistryConstants.ATTR_CLOSE_IDLE_ENABLED, enabled)
             )
+        );
+    }
+
+    @Test
+    public void testSaveSecuredCredentialsReplacesStaleProperties() throws Exception {
+        Map<String, Map<String, Map<String, String>>> secureProperties = new LinkedHashMap<>();
+        Map<String, Map<String, String>> dataSourceProperties = new LinkedHashMap<>();
+        dataSourceProperties.put(
+            DataSourceParser.NODE_CONNECTION,
+            new LinkedHashMap<>(Map.of(
+                RegistryConstants.ATTR_USER, "shared-user",
+                RegistryConstants.ATTR_PASSWORD, "shared-password",
+                "token", "shared-token"
+            ))
+        );
+        dataSourceProperties.put("network/test", new LinkedHashMap<>(Map.of("key", "value")));
+        secureProperties.put("test-datasource", dataSourceProperties);
+
+        DataSourceDescriptor dataSource = Mockito.mock(DataSourceDescriptor.class);
+        Mockito.when(dataSource.getId()).thenReturn("test-datasource");
+        Method saveSecuredCredentials = DataSourceParser.class.getDeclaredMethod(
+            "saveSecuredCredentials",
+            DataSourceParser.ContextParameters.class,
+            DataSourceDescriptor.class,
+            DBPConfigurationProfile.class,
+            String.class,
+            SecureCredentials.class
+        );
+        saveSecuredCredentials.setAccessible(true);
+
+        saveSecuredCredentials.invoke(
+            null,
+            new DataSourceParser.ContextParameters(null, null, secureProperties),
+            dataSource,
+            null,
+            null,
+            new SecureCredentials()
+        );
+
+        Assertions.assertAll(
+            () -> Assertions.assertFalse(dataSourceProperties.containsKey(DataSourceParser.NODE_CONNECTION)),
+            () -> Assertions.assertEquals(Map.of("key", "value"), dataSourceProperties.get("network/test"))
+        );
+
+        dataSourceProperties.put(
+            DataSourceParser.NODE_CONNECTION,
+            new LinkedHashMap<>(Map.of(
+                RegistryConstants.ATTR_USER, "shared-user",
+                RegistryConstants.ATTR_PASSWORD, "shared-password",
+                "token", "shared-token"
+            ))
+        );
+        SecureCredentials privateCredentials = new SecureCredentials();
+        privateCredentials.setUserName("private-user");
+        saveSecuredCredentials.invoke(
+            null,
+            new DataSourceParser.ContextParameters(null, null, secureProperties),
+            dataSource,
+            null,
+            null,
+            privateCredentials
+        );
+
+        Assertions.assertEquals(
+            Map.of(RegistryConstants.ATTR_USER, "private-user"),
+            dataSourceProperties.get(DataSourceParser.NODE_CONNECTION)
         );
     }
 

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSObjectDDLFilter;
 import org.jkiss.dbeaver.model.struct.cache.DBSCompositeCache;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -471,6 +472,10 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
             @NotNull DBCExecutionContext executionContext,
             @NotNull Map<String, Object> options
         ) throws DBException {
+            Object filter = options.get(DBPScriptObject.OPTION_DDL_OBJECT_FILTER);
+            if (filter instanceof DBSObjectDDLFilter ddlFilter && !ddlFilter.includeObject(monitor, getObject())) {
+                return new DBEPersistAction[0];
+            }
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectCreateActions(monitor, executionContext, actions, this, options);
             addObjectExtraActions(monitor, executionContext, actions, this, options);

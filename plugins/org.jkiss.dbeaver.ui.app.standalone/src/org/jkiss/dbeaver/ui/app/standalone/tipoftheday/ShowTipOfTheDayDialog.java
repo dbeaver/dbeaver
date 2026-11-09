@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.app.standalone.tipoftheday;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyleRange;
@@ -29,11 +28,8 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
@@ -46,7 +42,6 @@ import org.jkiss.dbeaver.ui.BaseThemeSettings;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.URI;
@@ -87,6 +82,16 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
         return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
+    @Override
+    public int open() {
+        int result = super.open();
+        // populate wrapped text after the modeless shell has its final client size
+        if (!this.tipText.isDisposed()) {
+            showTip();
+        }
+        return result;
+    }
+
     @NotNull
     @Override
     protected Composite createDialogArea(@NotNull Composite parent) {
@@ -105,11 +110,9 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
 
         Composite dialogArea = super.createDialogArea(parent);
 
-        Composite tipArea = new Composite(dialogArea, SWT.BORDER);
-        tipArea.setLayoutData(new GridData(GridData.FILL_BOTH));
-        tipArea.setLayout(GridLayoutFactory.fillDefaults().create());
-
-        this.tipText = new StyledText(tipArea, SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL | SWT.NO_FOCUS);
+        // Put the border on the text itself: a bordered Composite adds a nested NSScrollView on macOS,
+        // whose temporary content inset can shift the text above its container during the initial layout.
+        this.tipText = new StyledText(dialogArea, SWT.BORDER | SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL | SWT.NO_FOCUS);
         this.tipText.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).hint(300, 100).create());
         this.tipText.setMargins(5, 5, 5, 5);
         this.tipText.setFont(largeFont);
@@ -123,8 +126,6 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
             LinkRange link = this.getLinkAt(new Point(e.x, e.y));
             this.tipText.setCursor(link == null ? null : this.tipText.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
         });
-        showTip();
-
         if (this.displayShowOnStartup) {
             Button showTipButton = UIUtils.createCheckbox(
                 dialogArea,
@@ -213,7 +214,7 @@ public class ShowTipOfTheDayDialog extends AbstractPopupPanel {
         this.tipText.setStyleRanges(styles.toArray(StyleRange[]::new));
         parsedLinks.sort(Comparator.comparingInt(LinkRange::start)); // links are already sorted implicitly, so just ensure - its fast
         this.links = parsedLinks;
-        this.tipText.setTopIndex(0);
+        this.tipText.setTopPixel(0);
     }
 
     @Nullable

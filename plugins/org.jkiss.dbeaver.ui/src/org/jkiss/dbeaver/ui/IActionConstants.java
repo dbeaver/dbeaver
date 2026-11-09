@@ -23,6 +23,8 @@ package org.jkiss.dbeaver.ui;
 public interface IActionConstants {
 
     String LOG_VIEW_ID = "org.eclipse.pde.runtime.LogView"; //$NON-NLS-1$
+    String DEBUG_VIEW_ID = "org.eclipse.debug.ui.DebugView"; //$NON-NLS-1$
+    String DEBUG_UI_PLUGIN_ID = "org.jkiss.dbeaver.debug.ui"; //$NON-NLS-1$
     String HELP_VIEW_ID = "org.eclipse.help.ui.HelpView"; //$NON-NLS-1$
     String CHAT_VIEW_ID = "com.dbeaver.ai.chat"; //$NON-NLS-1$
 

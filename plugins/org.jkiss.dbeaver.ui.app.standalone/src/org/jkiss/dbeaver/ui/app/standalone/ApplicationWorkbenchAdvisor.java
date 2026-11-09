@@ -294,6 +294,8 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
     public void preStartup() {
         super.preStartup();
 
+        WorkbenchPatcher.patchViewIcons(Workbench.getInstance());
+        WorkbenchPatcher.patchSoftwareMenuIcons(Workbench.getInstance());
         WorkbenchPatcher.hideUnavailableView(Workbench.getInstance(), IActionConstants.CHAT_VIEW_ID);
 
         // Activate proxy

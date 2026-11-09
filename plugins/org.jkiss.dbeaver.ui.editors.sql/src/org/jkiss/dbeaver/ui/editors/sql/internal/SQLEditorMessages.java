@@ -94,6 +94,8 @@ public class SQLEditorMessages extends NLS {
     public static String action_result_tabs_close_other_tabs;
     public static String action_result_tabs_close_tabs_to_the_left;
     public static String action_result_tabs_close_tabs_to_the_right;
+    public static String action_result_tabs_place_beside_code;
+    public static String action_result_tabs_place_with_results;
     public static String action_result_tabs_pin_tab;
     public static String action_result_tabs_unpin_tab;
     public static String action_result_tabs_unpin_all_tabs;
@@ -455,6 +457,15 @@ public class SQLEditorMessages extends NLS {
 
     public static String sql_editor_outline_no_elements_label;
     public static String sql_editor_outline_query_analysis_disabled_label;
+    public static String sql_information_local_entity;
+    public static String sql_information_local_type;
+    public static String sql_information_local_kind_variable;
+    public static String sql_information_local_kind_parameter;
+    public static String sql_information_local_kind_row_variable;
+    public static String sql_information_local_kind_row_reference;
+    public static String sql_information_local_kind_rowset;
+    public static String sql_information_local_kind_cursor;
+    public static String sql_information_local_kind_cursor_variable;
     public static String update_conflict_message;
     public static String update_conflict_message_revert;
     public static String update_conflict_message_overwrite;

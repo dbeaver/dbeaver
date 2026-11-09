@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ext.cdata.registry;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.cdata.model.CDataIcons;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBIconComposite;
@@ -140,6 +142,37 @@ public class CDataDriverDescriptorTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void promotedStubIconsAreReplacedByVendorImages() throws Exception {
+        var registry = DataSourceProviderRegistry.getInstance();
+        var stub = registry.findDriver("generic:mongo-ce");
+        Assertions.assertNotNull(stub);
+        Assertions.assertNotNull(stub.getDriverStub());
+        assertCachedDriverIcons("testcdatastubicons", "generic:mongo-ce");
+    }
+
+    @Test
+    public void reuseNativeDriverImagesWithoutDownloading() {
+        var registry = DataSourceProviderRegistry.getInstance();
+        var nativeDriver = registry.findDriver("postgresql:postgres-jdbc");
+        Assertions.assertNotNull(nativeDriver);
+        var driver = new CDataDriverDescriptor(registry.getDataSourceProvider("generic"), "test-cdata-native-images",
+            new CDataDriverInfo("postgresql", "postgresql", "PostgreSQL JDBC Driver", 2026,
+                CDataDriverTier.PROFESSIONAL, "https://www.cdata.com/", "postgresql", null, null,
+                "postgresql:postgres-jdbc"));
+        var updates = new AtomicInteger();
+        driver.loadIcon(updates::incrementAndGet);
+        driver.loadLogo(updates::incrementAndGet);
+        driver.loadIcon(updates::incrementAndGet);
+        driver.loadLogo(updates::incrementAndGet);
+
+        Assertions.assertSame(nativeDriver.getPlainIcon(), ((DBIconComposite) driver.getPlainIcon()).getMain());
+        Assertions.assertSame(nativeDriver.getIconBig(), ((DBIconComposite) driver.getIconBig()).getMain());
+        Assertions.assertSame(CDataIcons.CDATA_OVERLAY, ((DBIconComposite) driver.getPlainIcon()).getBottomRight());
+        Assertions.assertSame(nativeDriver.getLogoImage(), driver.getLogoImage());
+        Assertions.assertEquals(2, updates.get());
+    }
+
+    @Test
     public void dynamicDataSourceTypeTracksLoadedDriverIcons() {
         var registry = DataSourceProviderRegistry.getInstance();
         var driver = new CDataDriverDescriptor(registry.getDataSourceProvider("generic"), "test-cdata-new-source",
@@ -162,10 +195,14 @@ public class CDataDriverDescriptorTest extends DBeaverUnitTest {
 
     @Test
     public void loadCachedIconsInBackground() throws Exception {
+        assertCachedDriverIcons("testcdataicons", null);
+    }
+
+    private void assertCachedDriverIcons(@NotNull String dataSource, @Nullable String imageDriver) throws Exception {
         var registry = DataSourceProviderRegistry.getInstance();
-        var driver = new CDataDriverDescriptor(registry.getDataSourceProvider("generic"), "test-cdata-icons",
-            new CDataDriverInfo("testcdataicons", "testcdataicons", "Test icons JDBC Driver", 2026,
-                CDataDriverTier.PROFESSIONAL, "https://www.cdata.com/", "test-cdata-icons-type", null));
+        var driver = new CDataDriverDescriptor(registry.getDataSourceProvider("generic"), "test-cdata-icons-" + dataSource,
+            new CDataDriverInfo(dataSource, dataSource, "Test icons JDBC Driver", 2026,
+                CDataDriverTier.PROFESSIONAL, "https://www.cdata.com/", "test-cdata-icons-type-" + dataSource, null, null, imageDriver));
         var type = driver.getDataSourceType();
         var placeholder = type.getIconBig();
         var iconDirectory = CDataDriverLoaderDescriptor.getStoragePath().resolve("icons");
@@ -174,7 +211,7 @@ public class CDataDriverDescriptorTest extends DBeaverUnitTest {
         try {
             for (var entry : sizes.entrySet()) {
                 var image = new BufferedImage(entry.getValue(), entry.getValue(), BufferedImage.TYPE_INT_ARGB);
-                ImageIO.write(image, "png", iconDirectory.resolve("testcdataicons" + entry.getKey()).toFile());
+                ImageIO.write(image, "png", iconDirectory.resolve(dataSource + entry.getKey()).toFile());
             }
             var updated = new CompletableFuture<Void>();
 
@@ -184,9 +221,12 @@ public class CDataDriverDescriptorTest extends DBeaverUnitTest {
             Assertions.assertNotSame(placeholder, type.getIconBig());
             Assertions.assertSame(driver.getPlainIcon(), type.getIcon());
             Assertions.assertSame(driver.getIconBig(), type.getIconBig());
+            var icon = (DBIconComposite) driver.getIconBig();
+            Assertions.assertEquals(iconDirectory.resolve(dataSource + "_big.png").toUri().toString(), icon.getMain().getLocation());
+            Assertions.assertSame(CDataIcons.CDATA_OVERLAY_BIG, icon.getBottomRight());
         } finally {
             for (String suffix : sizes.keySet()) {
-                Files.deleteIfExists(iconDirectory.resolve("testcdataicons" + suffix));
+                Files.deleteIfExists(iconDirectory.resolve(dataSource + suffix));
             }
         }
     }

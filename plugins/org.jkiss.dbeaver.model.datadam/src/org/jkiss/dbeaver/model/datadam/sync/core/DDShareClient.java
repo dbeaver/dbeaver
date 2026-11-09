@@ -19,14 +19,16 @@ package org.jkiss.dbeaver.model.datadam.sync.core;
 import com.dbeaver.datadam.share.api.exception.DDShareException;
 import com.dbeaver.datadam.share.api.model.*;
 import com.dbeaver.datadam.share.api.service.DDSharedProjectService;
-import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
 import com.google.gson.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.datadam.DDClient;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
+import org.jkiss.dbeaver.model.datadam.auth.DDBundleCredentials;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
+import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.GsonUtils;
@@ -45,7 +47,7 @@ import java.time.ZoneOffset;
 import java.util.*;
 import javax.crypto.SecretKey;
 
-public class DDShareClient extends AbstractRestClient implements DDSharedProjectService {
+public class DDShareClient extends DDClient implements DDSharedProjectService {
 
     private static final int TIMEOUT_MS = 30000;
     private static final String GRAPHQL_ENDPOINT = "/graphql";
@@ -60,13 +62,11 @@ public class DDShareClient extends AbstractRestClient implements DDSharedProject
         createTime
         updateTime""";
 
-    private final DDSyncCredentials credentials;
-    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
-    private SecretKey dataKey;
+    private final DDDesktopAccessService accessService;
 
-    public DDShareClient(@NotNull String url, @NotNull DDSyncCredentials credentials) {
+    public DDShareClient(@NotNull String url, @NotNull DDDesktopAccessService accessService) {
         super(url, DEFAULT_CONNECT_TIMEOUT, TIMEOUT_MS, List.of(), HttpClient.Redirect.NEVER);
-        this.credentials = credentials;
+        this.accessService = accessService;
         this.gson = GsonUtils.gsonBuilder()
             .registerTypeAdapter(LocalDateTime.class, new LocalDateTimeIsoAdapter())
             .create();
@@ -236,8 +236,11 @@ public class DDShareClient extends AbstractRestClient implements DDSharedProject
         try {
             DDSharedProjectPullResponse response = pullProjectConfiguration(projectId);
             Map<String, byte[]> files = new LinkedHashMap<>();
-            for (DDSharedProjectFile file : response.files()) {
-                files.put(file.fileName(), decryptBytes(projectId.toString(), file.fileName(), file.encryptedContents()));
+            if (!response.files().isEmpty()) {
+                SecretKey key = getDataKey();
+                for (DDSharedProjectFile file : response.files()) {
+                    files.put(file.fileName(), decryptBytes(key, projectId.toString(), file.fileName(), file.encryptedContents()));
+                }
             }
             return new DDSharedProjectPullResult(files, response.currentRevision());
         } catch (DBException e) {
@@ -291,12 +294,15 @@ public class DDShareClient extends AbstractRestClient implements DDSharedProject
     ) throws DDShareException {
         try {
             List<DDSharedProjectFile> projectFiles = new ArrayList<>();
-            for (Map.Entry<String, Pair<String, byte[]>> file : preparedFiles.files().entrySet()) {
-                Pair<String, byte[]> preparedFile = file.getValue();
-                projectFiles.add(new DDSharedProjectFile(
-                    file.getKey(),
-                    encryptBytes(projectId.toString(), file.getKey(), preparedFile.getSecond()),
-                    preparedFile.getFirst()));
+            if (!preparedFiles.files().isEmpty()) {
+                SecretKey key = getDataKey();
+                for (Map.Entry<String, Pair<String, byte[]>> file : preparedFiles.files().entrySet()) {
+                    Pair<String, byte[]> preparedFile = file.getValue();
+                    projectFiles.add(new DDSharedProjectFile(
+                        file.getKey(),
+                        encryptBytes(key, projectId.toString(), file.getKey(), preparedFile.getSecond()),
+                        preparedFile.getFirst()));
+                }
             }
             return pushProjectConfiguration(
                 projectId,
@@ -333,13 +339,26 @@ public class DDShareClient extends AbstractRestClient implements DDSharedProject
     }
 
     @NotNull
-    private String encryptBytes(@NotNull String projectId, @NotNull String field, @NotNull byte[] data) throws DBException {
-        return Base64.getEncoder().encodeToString(DDCrypto.encrypt(getDataKey(), data, aad(projectId, field)));
+    private String encryptBytes(
+        @NotNull SecretKey key, @NotNull String projectId, @NotNull String field, @NotNull byte[] data
+    ) throws DBException {
+        return Base64.getEncoder().encodeToString(DDCrypto.encrypt(key, data, aad(projectId, field)));
     }
 
     @NotNull
-    private byte[] decryptBytes(@NotNull String projectId, @NotNull String field, @NotNull String ciphertext) throws DBException {
-        return DDCrypto.decrypt(getDataKey(), decodeBase64(ciphertext), aad(projectId, field));
+    private byte[] decryptBytes(
+        @NotNull SecretKey key, @NotNull String projectId, @NotNull String field, @NotNull String ciphertext
+    ) throws DBException {
+        return DDCrypto.decrypt(key, decodeBase64(ciphertext), aad(projectId, field));
+    }
+
+    @NotNull
+    private SecretKey getDataKey() throws DBException {
+        DDKeyBundle bundle = accessService.getKeyBundle();
+        if (bundle == null) {
+            throw new DBException("Import encryption keys for the current DataDam account before transferring files");
+        }
+        return new DDBundleCredentials(bundle).getDataKey();
     }
 
     @NotNull
@@ -358,14 +377,6 @@ public class DDShareClient extends AbstractRestClient implements DDSharedProject
     @NotNull
     public static byte[] aad(@NotNull String projectId, @NotNull String field) {
         return (projectId + '\u0000' + field).getBytes(StandardCharsets.UTF_8);
-    }
-
-    @NotNull
-    private SecretKey getDataKey() throws DBException {
-        if (dataKey == null) {
-            dataKey = credentials.getDataKey();
-        }
-        return dataKey;
     }
 
     @NotNull
@@ -429,5 +440,4 @@ public class DDShareClient extends AbstractRestClient implements DDSharedProject
         }
         super.handleRequestException(message, e);
     }
-
 }

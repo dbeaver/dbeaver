@@ -18,9 +18,11 @@ package org.jkiss.dbeaver.ui.e4;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.e4.ui.model.application.ui.MElementContainer;
+import org.eclipse.e4.ui.model.application.ui.MUILabel;
 import org.eclipse.e4.ui.model.application.ui.advanced.MPerspective;
 import org.eclipse.e4.ui.model.application.ui.basic.MPart;
 import org.eclipse.e4.ui.model.application.ui.basic.MPartStack;
@@ -46,12 +48,15 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.ShellUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.CoreCommandConstants;
@@ -65,6 +70,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerRenameFile;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.File;
 import java.util.List;
@@ -73,6 +79,8 @@ import java.util.List;
 public class DBeaverStackRenderer extends StackRenderer {
 
     private static final Log log = Log.getLog(DBeaverStackRenderer.class);
+    private static final String DEBUG_VIEW_ICON_URI = RuntimeUtils.makePlatformResourceUrl(
+        IActionConstants.DEBUG_UI_PLUGIN_ID, "icons/debug_config.png");
 
     private static final String ONBOARDING_CONTAINER = "EditorStack.OnboardingContainer"; //$NON-NLS-1$
     private static final String ONBOARDING_COMPOSITE = "EditorStack.OnboardingComposite"; //$NON-NLS-1$
@@ -87,8 +95,24 @@ public class DBeaverStackRenderer extends StackRenderer {
         }
     }
 
+    @Nullable
     @Override
-    public void showAvailableItems(MElementContainer<?> stack, CTabFolder folder, boolean forceCenter) {
+    public Image getImage(@NotNull MUILabel element) {
+        if (element instanceof MPart part) {
+            if (IActionConstants.LOG_VIEW_ID.equals(part.getElementId())) {
+                // The compatibility view can restore Eclipse's image when its title changes.
+                return DBeaverIcons.getImage(DBIcon.SMALL_ERROR);
+            }
+            if (IActionConstants.DEBUG_VIEW_ID.equals(part.getElementId()) &&
+                Platform.getBundle(IActionConstants.DEBUG_UI_PLUGIN_ID) != null) {
+                return getImageFromURI(DEBUG_VIEW_ICON_URI);
+            }
+        }
+        return super.getImage(element);
+    }
+
+    @Override
+    public void showAvailableItems(@NotNull MElementContainer<?> stack, @NotNull CTabFolder folder, boolean forceCenter) {
         final IEclipseContext ctx = getContext(stack);
         final DBeaverPartList list = new DBeaverPartList(
             folder.getShell(),

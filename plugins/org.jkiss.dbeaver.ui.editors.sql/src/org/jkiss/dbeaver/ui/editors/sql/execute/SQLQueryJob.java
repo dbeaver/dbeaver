@@ -779,6 +779,9 @@ public class SQLQueryJob extends DataSourceJob {
                                         statistics.setError(e);
                                     }
                                 }
+                            } else {
+                                // The result is skipped without reading any rows, so the max rows check must not use a count left from the previous fetch
+                                rowsFetched = 0;
                             }
                         }
                     }

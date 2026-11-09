@@ -22,11 +22,13 @@ import org.jkiss.code.Nullable;
 import java.util.Date;
 
 /**
- * An execution snapshot. Excludes user/product metadata, task settings, results, errors and log contents.
+ * An execution snapshot with an optional short result/error summary.
+ * Excludes user/product metadata, task settings, full results/errors, stack traces and log contents.
  *
  * @param id workspace-unique execution identity; also the log filename ID for new executions
  * @param legacyRunId original log filename ID for imported executions, whose old IDs were only task-scoped;
  *                    null for new executions. Logs stay in the task's statistics directory without being renamed.
+ * @param resultSummary short single-line result, error or cancellation reason
  */
 public record DBTTaskRunRecord(
     @NotNull String id,
@@ -40,10 +42,35 @@ public record DBTTaskRunRecord(
     long finishTime,
     @NotNull Status status,
     boolean hasLog,
-    @Nullable String legacyRunId
+    @Nullable String legacyRunId,
+    @Nullable String resultSummary
 ) implements DBTTaskRun {
+    public static final int MAX_RESULT_SUMMARY_LENGTH = 1024;
+
     public enum Status {
         RUNNING, SUCCESS, FAILED, CANCELED
+    }
+
+    public DBTTaskRunRecord {
+        resultSummary = normalizeResultSummary(resultSummary);
+    }
+
+    public DBTTaskRunRecord(
+        @NotNull String id,
+        @NotNull String taskId,
+        @NotNull String taskName,
+        @NotNull String taskTypeId,
+        @NotNull String taskTypeName,
+        @NotNull String projectId,
+        @NotNull String projectName,
+        long startTime,
+        long finishTime,
+        @NotNull Status status,
+        boolean hasLog,
+        @Nullable String legacyRunId
+    ) {
+        this(id, taskId, taskName, taskTypeId, taskTypeName, projectId, projectName,
+            startTime, finishTime, status, hasLog, legacyRunId, null);
     }
 
     public DBTTaskRunRecord(
@@ -65,8 +92,34 @@ public record DBTTaskRunRecord(
 
     @NotNull
     public DBTTaskRunRecord finished(long time, @NotNull Status outcome) {
+        return finished(time, outcome, resultSummary);
+    }
+
+    @NotNull
+    public DBTTaskRunRecord finished(long time, @NotNull Status outcome, @Nullable String resultSummary) {
         return new DBTTaskRunRecord(id, taskId, taskName, taskTypeId, taskTypeName, projectId, projectName,
-            startTime, time, outcome, hasLog, legacyRunId);
+            startTime, time, outcome, hasLog, legacyRunId, resultSummary);
+    }
+
+    /** Bounds summaries at capture time as well as when constructing a snapshot. */
+    @Nullable
+    public static String normalizeResultSummary(@Nullable String summary) {
+        if (summary == null) {
+            return null;
+        }
+        summary = summary.replaceAll("\\R|\\t", " ").strip();
+        if (summary.isEmpty()) {
+            return null;
+        }
+        if (summary.length() > MAX_RESULT_SUMMARY_LENGTH) {
+            int end = MAX_RESULT_SUMMARY_LENGTH;
+            // Keep supplementary characters intact at the UTF-16 length boundary.
+            if (Character.isHighSurrogate(summary.charAt(end - 1)) && Character.isLowSurrogate(summary.charAt(end))) {
+                end--;
+            }
+            summary = summary.substring(0, end).stripTrailing();
+        }
+        return summary;
     }
 
     @NotNull
@@ -114,7 +167,7 @@ public record DBTTaskRunRecord(
     @Override
     public String getErrorMessage() {
         return switch (status) {
-            case FAILED -> "Failed";
+            case FAILED -> resultSummary == null ? "Failed" : resultSummary;
             case CANCELED -> "Canceled";
             default -> null;
         };
@@ -129,6 +182,9 @@ public record DBTTaskRunRecord(
     @Nullable
     @Override
     public String getExtraMessage() {
-        return null;
+        return switch (status) {
+            case SUCCESS, CANCELED -> resultSummary;
+            default -> null;
+        };
     }
 }

@@ -54,6 +54,8 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_create_folder_folder_name;
     public static String actions_navigator_create_new;
     public static String actions_navigator_delete;
+    public static String actions_navigator_delete_multiple;
+    public static String actions_navigator_delete_objects;
     public static String actions_navigator_delete_script;
     public static String actions_navigator_edit;
     public static String actions_navigator_persist_delete_in_the_editor_title;
@@ -66,6 +68,8 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_view;
     public static String actions_navigator_view_script_button;
     public static String actions_navigator_filter_objects;
+    public static String actions_navigator_clear_user_filter;
+    public static String actions_navigator_clear_all_users_filter;
     public static String actions_navigator_search_filter_connection_name;
     public static String actions_navigator_search_filter_connection_description;
     public static String actions_navigator_search_filter_container_name;
@@ -187,6 +191,9 @@ public class UINavigatorMessages extends NLS {
     public static String editors_entity_read_expensive_props_action;
     public static String editors_entity_dialog_persist_title;
     public static String editors_entity_dialog_preview_title;
+    public static String editors_entity_hyperlink_error_title;
+    public static String editors_entity_hyperlink_error_message;
+    public static String editors_entity_hyperlink_unavailable_message;
     public static String editors_entity_properties_text;
     public static String editors_entity_properties_name_tooltip;
     public static String editors_entity_properties_tooltip_suffix;
@@ -233,6 +240,7 @@ public class UINavigatorMessages extends NLS {
     public static String confirm_deleting_close_existing_connections_checkbox_tooltip;
     public static String confirm_deleting_delete_contents_checkbox;
     public static String confirm_deleting_delete_contents_checkbox_tooltip;
+    public static String confirm_deleting_required_contents_warning;
     public static String confirm_deleting_project_location_label;
     public static String question_no_sql_available;
     public static String error_sql_generation_title;
@@ -254,10 +262,14 @@ public class UINavigatorMessages extends NLS {
     public static String navigator_project_explorer_columns_type_description;
     public static String navigator_nodes_filtered_by_settings_text;
     public static String navigator_nodes_filtered_by_settings_tip;
+    public static String navigator_nodes_filtered_by_user_filter_text;
+    public static String navigator_nodes_filtered_by_all_users_filter_text;
     public static String navigator_nodes_filtered_by_search_text;
     public static String navigator_nodes_filtered_by_search_tip;
     public static String navigator_nodes_filtered_by_search_and_filter_text;
     public static String navigator_nodes_filtered_by_search_and_filter_tip;
+    public static String navigator_nodes_filtered_by_search_and_user_filter_text;
+    public static String navigator_nodes_filtered_by_search_and_all_users_filter_text;
 
     public static String datasource_list_action_empty;
     public static String filter_connection_name_placeholder;

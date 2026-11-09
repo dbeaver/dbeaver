@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,6 +47,10 @@ public class CoreApplicationMessages extends NLS {
     public static String collect_diagnostic_info_pick_path_title;
     public static String collect_diagnostic_info_pick_path_label;
     public static String collect_diagnostic_info_pick_path_warning;
+    public static String collect_diagnostic_info_sanitize_logs;
+    public static String collect_diagnostic_info_sanitize_logs_hint;
+    public static String collect_diagnostic_info_progress_title;
+    public static String collect_diagnostic_info_progress_prepare;
     public static String collect_diagnostic_info_error_message_title;
     public static String collect_diagnostic_info_error_message_text;
     public static String collect_diagnostic_info_error_message_hint;
@@ -59,6 +63,9 @@ public class CoreApplicationMessages extends NLS {
 
     public static String notification_perspective_reset_title;
     public static String notification_perspective_reset_message;
+
+    public static String version_update_prepare;
+    public static String version_update_error_prepare;
 
     static {
         // initialize resource bundle

@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 
 import java.util.List;
@@ -29,5 +30,13 @@ public interface DriverProvider {
 
     @NotNull
     List<DriverDescriptor> getProvidedDrivers(@NotNull DataSourceProviderDescriptor dataSourceProvider);
+
+    @NotNull
+    default List<DBPDriver> refreshProvidedDrivers(
+        @NotNull DataSourceProviderDescriptor dataSourceProvider,
+        @NotNull List<DBPDriver> drivers
+    ) {
+        return List.of();
+    }
 
 }

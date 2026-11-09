@@ -110,8 +110,11 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         boolean supportNewInstance,
         @NotNull String[] args
     ) throws Exception {
-        if (args.length == 0 && ArrayUtils.isEmpty(getDefaultArgs())) {
-            return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
+        if (args.length == 0) {
+            args = getDefaultArgs();
+            if (ArrayUtils.isEmpty(args)) {
+                return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
+            }
         }
         initializeCommands();
         log.trace("Executing command line: " + String.join(" ", args));
@@ -178,9 +181,23 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
                 String[] defaultArgs = getDefaultArgs();
                 if (ArrayUtils.isEmpty(defaultArgs)) {
                     return new CLIProcessResult(CLIProcessResult.PostAction.START_INSTANCE);
-                } else {
-                    return executeCommandLineCommands(controller, uiActivated, supportNewInstance, defaultArgs);
                 }
+                if (defaultArgs.length == 1 && AbstractTopLevelCommand.HELP_OPTION.equals(defaultArgs[0])) {
+                    // A root-only parse has no contributed commands; otherwise reuse the complete model for help.
+                    if (commandsToExecute.isEmpty()) {
+                        commandLine = initCommandLine(
+                            controller,
+                            context,
+                            new CLIRunMeta(uiActivated, supportNewInstance),
+                            extractCommandsToExecuteFromArgs(defaultArgs)
+                        );
+                    }
+                    return new CLIProcessResult(
+                        CLIProcessResult.PostAction.SHUTDOWN,
+                        CLIUtils.getHelpFromCommand(commandLine.getCommandSpec())
+                    );
+                }
+                return executeCommandLineCommands(controller, uiActivated, supportNewInstance, defaultArgs);
             }
             validateCommandLineParameters(parseResult);
 
@@ -379,7 +396,7 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
             }
 
             var implClass = commandDescriptor.getImplClass();
-            CommandLine command = new CommandLine(implClass);
+            CommandLine command = createCommandLine(commandDescriptor);
             transformCommand(command.getCommandSpec(), commandDescriptor.getImplClass());
             topLevel.addSubcommand(command);
         }
@@ -389,6 +406,11 @@ public abstract class ApplicationCommandLine<T extends ApplicationInstanceContro
         }
         topLevel.setHelpFactory(new CLIHelpFactory());
         return topLevel;
+    }
+
+    @NotNull
+    protected CommandLine createCommandLine(@NotNull CLICommandDescriptor descriptor) {
+        return new CommandLine(descriptor.getImplClass());
     }
 
     private void transformCommand(

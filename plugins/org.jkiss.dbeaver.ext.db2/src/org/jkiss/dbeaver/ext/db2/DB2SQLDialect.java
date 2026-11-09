@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2013-2015 Denis Forveille (titou10.titou10@gmail.com)
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexString;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.parser.rules.SQLMultiWordRule;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -60,8 +61,8 @@ public class DB2SQLDialect extends JDBCSQLDialect implements TPRuleProvider {
 
     public static final String[] EXEC_KEYWORDS = new String[]{"CALL"};
 
-    private static final GlobalVariableInfo[] GLOBAL_VARIABLES = {
-        new GlobalVariableInfo("CLIENT_IPADDR", DB2Messages.global_variable_client_ipaddr_description, DBPDataKind.STRING)
+    private static final SQLDialectFeatures.GlobalVariableInfo[] GLOBAL_VARIABLES = {
+        new SQLDialectFeatures.GlobalVariableInfo("CLIENT_IPADDR", DB2Messages.global_variable_client_ipaddr_description, DBPDataKind.STRING)
     };
 
     private static final boolean LOAD_ROUTINES_FROM_SYSCAT = false;
@@ -98,12 +99,6 @@ public class DB2SQLDialect extends JDBCSQLDialect implements TPRuleProvider {
     @Override
     public String[] getExecuteKeywords() {
         return EXEC_KEYWORDS;
-    }
-
-    @NotNull
-    @Override
-    public GlobalVariableInfo[] getGlobalVariables() {
-        return GLOBAL_VARIABLES;
     }
 
     @Override
@@ -197,10 +192,27 @@ public class DB2SQLDialect extends JDBCSQLDialect implements TPRuleProvider {
         return false;
     }
 
+    @NotNull
     @Override
-    public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
-        return EnumSet.of(
-            ProjectionAliasVisibilityScope.ORDER_BY
-        );
+    public SQLDialectFeatures getDialectFeatures() {
+        return DialectFeatures.INSTANCE;
+    }
+
+    private static class DialectFeatures extends SQLDialectFeatures {
+
+        static final DialectFeatures INSTANCE = new DialectFeatures();
+
+        @NotNull
+        @Override
+        public GlobalVariableInfo[] getGlobalVariables() {
+            return GLOBAL_VARIABLES;
+        }
+
+        @Override
+        public EnumSet<ProjectionAliasVisibilityScope> getProjectionAliasVisibilityScope() {
+            return EnumSet.of(
+                ProjectionAliasVisibilityScope.ORDER_BY
+            );
+        }
     }
 }

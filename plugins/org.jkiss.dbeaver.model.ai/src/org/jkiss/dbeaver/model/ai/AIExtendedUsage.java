@@ -27,8 +27,10 @@ public record AIExtendedUsage(
     int totalOutputTokens,
     int reasoningTokens,
     int embeddingTokens,
-    Duration totalTime
+    @NotNull Duration totalTime,
+    boolean hasUsage
 ) {
+    @NotNull
     public static AIExtendedUsage from(@NotNull List<AIMessageMeta> messageMetas) {
         int totalInputTokens = 0;
         int cachedTokens = 0;
@@ -36,6 +38,7 @@ public record AIExtendedUsage(
         int reasoningTokens = 0;
         int embeddingTokens = 0;
         Duration totalTime = Duration.ZERO;
+        boolean hasUsage = false;
 
         for (AIMessageMeta messageMeta : messageMetas) {
             totalTime = totalTime.plus(messageMeta.timeSpent());
@@ -43,6 +46,7 @@ public record AIExtendedUsage(
             if (messageMeta.usage() == null) {
                 continue;
             }
+            hasUsage = true;
             if (messageMeta.type().equals(AIMetaTypes.EMBEDDING)) {
                 embeddingTokens += messageMeta.usage().totalInputTokens();
             } else {
@@ -59,7 +63,8 @@ public record AIExtendedUsage(
             totalOutputTokens,
             reasoningTokens,
             embeddingTokens,
-            totalTime
+            totalTime,
+            hasUsage
         );
     }
 }

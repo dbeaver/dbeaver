@@ -16,44 +16,60 @@
  */
 package org.jkiss.dbeaver.ui.datadam;
 
+import com.dbeaver.datadam.dam.remote.api.DDRemoteDamSettingKeys;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.window.Window;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.datadam.DDAccountClient;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.forms.UIAlignX;
+import org.jkiss.dbeaver.ui.forms.UIGrowX;
+import org.jkiss.dbeaver.ui.forms.UIObservable;
+import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
 import java.lang.reflect.InvocationTargetException;
+import java.net.URI;
 
 public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
 
-    private static final String SYNC_TITLE = DDTrackingUIMessages.sync_preference_page_title;
-    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
-    private AbstractJob userViewJob;
+    private static final Log log = Log.getLog(DDSyncPreferencePage.class);
 
-    private Text accountText;
-    private Composite accountRow;
+    private static final String SYNC_TITLE = DDTrackingUIMessages.sync_preference_page_title;
+    private static final String MCP_SETTINGS_URL = "remote-dams";
+    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
+    private final UIObservable<Boolean> mcpLoading = UIObservable.of(false);
+    private final UIObservable<Boolean> mcpUnavailable = UIObservable.of(false);
+    private final UIObservable<Boolean> mcpGloballyDisabled = UIObservable.of(false);
+    private final UIObservable<Boolean> mcpVisible = UIObservable.of(false);
+    private AbstractJob userViewJob;
+    @Nullable
+    private AbstractJob mcpJob;
+    @Nullable
+    private DDAccountClient.DamSettingsState mcpSettings;
+
+    private Composite content;
+    private Button mcpCheck;
     private Text userText;
-    private Composite userRow;
-    private Button loginButton;
-    private Button reloginButton;
-    private Button logoutButton;
-    private Button importKeysButton;
-    private Button forgetKeysButton;
-    private Composite keysGroup;
+    private Button accountActionButton;
 
     public DDSyncPreferencePage() {
         noDefaultAndApplyButton();
@@ -67,70 +83,104 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     @NotNull
     @Override
     protected Control createPreferenceContent(@NotNull Composite parent) {
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
-        Composite group = UIUtils.createTitledComposite(
-            composite,
-            DDTrackingUIMessages.sync_preference_page_account_group,
-            2,
-            GridData.FILL_HORIZONTAL,
-            SWT.DEFAULT);
-        userRow = UIUtils.createComposite(group, 2);
-        GridData userRowData = new GridData(GridData.FILL_HORIZONTAL);
-        userRowData.horizontalSpan = 2;
-        userRow.setLayoutData(userRowData);
-        userText = UIUtils.createLabelText(
-            userRow, DDTrackingUIMessages.sync_preference_page_user_label, "", SWT.READ_ONLY, idFieldLayout());
-
-        Composite buttons = UIUtils.createComposite(group, 3);
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.horizontalSpan = 2;
-        buttons.setLayoutData(gd);
-        loginButton = UIUtils.createPushButton(
-            buttons, DDTrackingUIMessages.sync_preference_page_desktop_sign_in, null,
-            SelectionListener.widgetSelectedAdapter(e -> logIn()));
-        reloginButton = UIUtils.createPushButton(
-            buttons, DDTrackingUIMessages.sync_preference_page_desktop_sign_in_again, null,
-            SelectionListener.widgetSelectedAdapter(e -> logIn()));
-        logoutButton = UIUtils.createPushButton(
-            buttons, DDTrackingUIMessages.sync_preference_page_desktop_sign_out, null,
-            SelectionListener.widgetSelectedAdapter(e -> logOut()));
-
-        keysGroup = UIUtils.createTitledComposite(
-            composite, DDTrackingUIMessages.sync_preference_page_encryption_keys_group,
-            2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
-        accountRow = UIUtils.createComposite(keysGroup, 2);
-        GridData accountRowData = new GridData(GridData.FILL_HORIZONTAL);
-        accountRowData.horizontalSpan = 2;
-        accountRow.setLayoutData(accountRowData);
-        accountText = UIUtils.createLabelText(
-            accountRow, DDTrackingUIMessages.sync_preference_page_account_label, "", SWT.READ_ONLY, idFieldLayout());
-        Composite keyButtons = UIUtils.createComposite(keysGroup, 2);
-        GridData keyButtonsGd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        keyButtonsGd.horizontalSpan = 2;
-        keyButtons.setLayoutData(keyButtonsGd);
-        importKeysButton = UIUtils.createPushButton(
-            keyButtons, DDTrackingUIMessages.sync_preference_page_import_keys_button, null,
-            SelectionListener.widgetSelectedAdapter(e -> importKeys()));
-        forgetKeysButton = UIUtils.createPushButton(
-            keyButtons, DDTrackingUIMessages.sync_preference_page_forget_keys_button, null,
-            SelectionListener.widgetSelectedAdapter(e -> {
-                if (UIUtils.confirmAction(
-                    getShell(),
-                    DDTrackingUIMessages.sync_preference_page_forget_keys_confirm_title,
-                    DDTrackingUIMessages.sync_preference_page_forget_keys_confirm_message)
-                ) {
-                    forgetKeys();
-                }
-            }));
+        content = UIUtils.createPlaceholder(parent, 1);
+        content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        ((GridLayout) content.getLayout()).verticalSpacing = 8;
+        Label description = DDUIUtils.create(
+            content, DDTrackingUIMessages.sync_preference_page_description,
+            DDTrackingUIMessages.sync_preference_page_about_link, DDUIConstants.DATADAM_DOCS_URL
+        );
+        Composite descriptionRow = description.getParent();
+        descriptionRow.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+        GridLayout descriptionLayout = (GridLayout) descriptionRow.getLayout();
+        descriptionLayout.marginLeft = 0;
+        descriptionLayout.marginTop = 8;
+        descriptionLayout.marginBottom = 0;
+        GridData descriptionData = (GridData) description.getLayoutData();
+        descriptionData.widthHint = 660;
+        descriptionData.horizontalAlignment = SWT.BEGINNING;
+        descriptionData.grabExcessHorizontalSpace = false;
+        Control form = UIPanelBuilder.build(content, pb -> pb
+            .margins(0, 0)
+            .spacing(0, 8)
+            .row(rb -> rb.control(this::createAuthenticationGroup, cb -> cb.align(UIAlignX.FILL).grow(UIGrowX.ALWAYS)))
+            .row(rb -> rb.visible(mcpVisible)
+                .titledPanel(DDTrackingUIMessages.sync_preference_page_ai_integration_group, panel -> panel
+                    .margins(0, 0)
+                    .row(row -> row.visible(mcpGloballyDisabled).control(this::createMcpInfo))
+                    .row(row -> row.control(this::createMcpCheck))
+                    .row(row -> row.visible(mcpLoading)
+                        .label(DDTrackingUIMessages.sync_preference_page_mcp_loading))
+                    .row(row -> row.visible(mcpUnavailable)
+                        .label(DDTrackingUIMessages.sync_preference_page_mcp_unavailable))
+                ))
+        );
+        GridData formLayout = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        formLayout.verticalIndent = 16;
+        form.setLayoutData(formLayout);
 
         refresh();
-        return composite;
+        return content;
+    }
+
+    @NotNull
+    private Composite createMcpInfo(@NotNull Composite parent) {
+        return DDUIUtils.create(
+            parent, DDTrackingUIMessages.sync_preference_page_mcp_globally_disabled,
+            DDTrackingUIMessages.sync_preference_page_mcp_settings_link,
+            URI.create(DDEndpoints.getAccountBaseUrl()).resolve("/" + MCP_SETTINGS_URL).toString()
+        ).getParent();
+    }
+
+    @NotNull
+    private Button createMcpCheck(@NotNull Composite parent) {
+        mcpCheck = UIUtils.createCheckbox(parent,
+            DDTrackingUIMessages.sync_preference_page_mcp_enabled,
+            DDTrackingUIMessages.sync_preference_page_mcp_hint, false, 1);
+        mcpCheck.setEnabled(false);
+        mcpCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+            updateMcpStatus(mcpCheck.getSelection())));
+        return mcpCheck;
+    }
+
+    @NotNull
+    private Control createAuthenticationGroup(@NotNull Composite parent) {
+        Composite authenticationGroup = UIUtils.createTitledComposite(
+            parent, DDTrackingUIMessages.sync_preference_page_authentication_group,
+            1, GridData.FILL_HORIZONTAL, SWT.DEFAULT
+        );
+        userText = new Text(authenticationGroup, SWT.READ_ONLY);
+        UIUtils.fixReadonlyTextBackground(userText);
+        GridData statusLayout = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
+        userText.setLayoutData(statusLayout);
+        Composite accountActions = UIUtils.createComposite(authenticationGroup, 2);
+        accountActions.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+        accountActionButton = UIUtils.createPushButton(
+            accountActions, DDTrackingUIMessages.sync_preference_page_desktop_sign_in, null,
+            SelectionListener.widgetSelectedAdapter(e -> {
+                DDDesktopAccessService.Status status = accessService.getStatus();
+                if (status == DDDesktopAccessService.Status.SIGNED_IN) {
+                    logOut();
+                } else {
+                    logIn();
+                }
+            })
+        );
+        Link accountLink = UIUtils.createLink(accountActions,
+            "<a>" + DDTrackingUIMessages.sync_preference_page_open_account + "</a>",
+            SelectionListener.widgetSelectedAdapter(e -> UIUtils.openWebBrowser(
+                URI.create(DDEndpoints.getAccountBaseUrl()).resolve("/account").toString())));
+        accountLink.setLayoutData(new GridData(SWT.BEGINNING, SWT.CENTER, false, false));
+        return authenticationGroup.getParent();
     }
 
     @Override
     public void dispose() {
         if (userViewJob != null) {
             userViewJob.cancel();
+        }
+        if (mcpJob != null) {
+            mcpJob.cancel();
         }
         super.dispose();
     }
@@ -156,70 +206,117 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         void run(@NotNull DBRProgressMonitor monitor) throws DBException, InterruptedException;
     }
 
-    @NotNull
-    private static GridData idFieldLayout() {
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.widthHint = UIUtils.getFontHeight(Display.getCurrent().getSystemFont()) * 22;
-        return gd;
-    }
-
-    private void importKeys() {
-        DDImportKeyDialog dialog = new DDImportKeyDialog(getShell());
-        if (dialog.open() != Window.OK) {
-            return;
-        }
-        String phrase = dialog.getPhrase();
-        runOperation(DDTrackingUIMessages.sync_preference_page_import_keys_failed,
-            monitor -> accessService.importKeys(phrase));
-    }
-
-    private void forgetKeys() {
-        runOperation(DDTrackingUIMessages.sync_preference_page_cannot_forget_keys,
-            monitor -> accessService.forgetKeys());
-    }
-
     private void logIn() {
-        runOperation(DDTrackingUIMessages.sync_preference_page_login_failed, monitor -> {
-            DDTrackingInitializer.stop();
-            try {
-                accessService.signIn(monitor);
-            } finally {
-                if (accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
-                    DDTrackingInitializer.start();
-                }
-            }
-        });
+        runOperation(DDTrackingUIMessages.sync_preference_page_login_failed, accessService::signIn);
     }
 
     private void logOut() {
-        runOperation(DDTrackingUIMessages.sync_preference_page_logout_failed, monitor -> {
-            DDTrackingInitializer.stop();
-            accessService.signOut();
-        });
+        runOperation(DDTrackingUIMessages.sync_preference_page_logout_failed, monitor -> accessService.signOut());
     }
 
     private void refresh() {
-        DDKeyBundle bundle = accessService.getKeyBundle();
-        boolean present = bundle != null;
-        accountRow.setVisible(present);
-        ((GridData) accountRow.getLayoutData()).exclude = !present;
         DDDesktopAccessService.Status status = accessService.getStatus();
         boolean signedIn = status == DDDesktopAccessService.Status.SIGNED_IN;
-        boolean showUser = signedIn || status == DDDesktopAccessService.Status.EXPIRED;
-        userRow.setVisible(showUser);
-        ((GridData) userRow.getLayoutData()).exclude = !showUser;
-        accountText.setText(present ? bundle.accountId().toString() : DDTrackingUIMessages.sync_preference_page_unknown);
-        userText.setText(DDTrackingUIMessages.sync_preference_page_unknown);
-        loginButton.setEnabled(!signedIn);
-        reloginButton.setEnabled(signedIn || status == DDDesktopAccessService.Status.EXPIRED);
-        logoutButton.setEnabled(status != DDDesktopAccessService.Status.SIGNED_OUT);
-        importKeysButton.setEnabled(signedIn);
-        forgetKeysButton.setEnabled(present);
-        Composite keysSection = keysGroup.getParent();
-        keysSection.setVisible(signedIn);
-        ((GridData) keysSection.getLayoutData()).exclude = !signedIn;
-        keysSection.getParent().layout(true, true);
-        loadLoggedUserView();
+        userText.setText(signedIn ? DDTrackingUIMessages.sync_preference_page_account_signed_in
+            : DDTrackingUIMessages.sync_preference_page_account_not_signed_in);
+        accountActionButton.setText(signedIn
+            ? DDTrackingUIMessages.sync_preference_page_desktop_sign_out
+            : DDTrackingUIMessages.sync_preference_page_desktop_sign_in);
+        mcpVisible.set(signedIn);
+        if (signedIn) {
+            loadMcpStatus();
+        } else {
+            if (mcpJob != null) {
+                mcpJob.cancel();
+            }
+            showMcpStatus(null);
+        }
+        content.layout(true, true);
+        if (signedIn) {
+            loadLoggedUserView();
+        } else if (userViewJob != null) {
+            userViewJob.cancel();
+        }
+    }
+
+    private void loadMcpStatus() {
+        if (mcpJob != null) {
+            mcpJob.cancel();
+        }
+        showMcpLoading();
+        try {
+            mcpJob = DDServerCatalog.getInstance().createJob(
+                "Read DataDam MCP status",
+                account -> account.getDamSettings(
+                    DDRemoteDamDesktopSessionService.getInstance().getClientDamId()),
+                status -> {
+                    if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                        showMcpStatus(status);
+                    }
+                },
+                error -> {
+                    if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                        log.debug("Cannot read DataDam MCP status", error);
+                        showMcpStatus(null);
+                    }
+                });
+        } catch (DBException e) {
+            log.debug("Cannot read DataDam MCP status", e);
+            showMcpStatus(null);
+        }
+    }
+
+    private void updateMcpStatus(boolean enabled) {
+        var previous = mcpSettings;
+        if (previous == null) {
+            return;
+        }
+        if (mcpJob != null) {
+            mcpJob.cancel();
+        }
+        showMcpLoading();
+        try {
+            mcpJob = DDServerCatalog.getInstance().createJob(
+                "Update DataDam MCP status",
+                account -> new DDAccountClient.DamSettingsState(previous.accountId(), account.setDamSetting(
+                    DDRemoteDamDesktopSessionService.getInstance().getClientDamId(), DDRemoteDamSettingKeys.MCP_ENABLED,
+                    Boolean.toString(enabled), previous.accountId()), previous.canManage()),
+                updated -> {
+                    if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                        showMcpStatus(updated);
+                    }
+                },
+                error -> {
+                    if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                        showMcpStatus(null);
+                        DBWorkbench.getPlatformUI().showError(
+                            SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_mcp_update_failed, error);
+                    }
+                });
+        } catch (DBException e) {
+            showMcpStatus(null);
+            DBWorkbench.getPlatformUI().showError(
+                SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_mcp_update_failed, e);
+        }
+    }
+
+    private void showMcpLoading() {
+        mcpCheck.setEnabled(false);
+        mcpLoading.set(true);
+        mcpUnavailable.set(false);
+        mcpGloballyDisabled.set(false);
+        content.layout(true, true);
+    }
+
+    private void showMcpStatus(@Nullable DDAccountClient.DamSettingsState state) {
+        mcpSettings = state;
+        boolean accountEnabled = state != null && state.settings().isAccountEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true);
+        mcpCheck.setSelection(accountEnabled && state.settings().isDamEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, false));
+        mcpCheck.setEnabled(accountEnabled && state.canManage());
+        mcpLoading.set(false);
+        mcpUnavailable.set(state == null);
+        mcpGloballyDisabled.set(state != null && !accountEnabled);
+        content.layout(true, true);
     }
 
     private void loadLoggedUserView() {
@@ -235,12 +332,13 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                 }
                 var user = accessService.getLoggedUserView();
                 UIUtils.asyncExec(() -> {
-                    if (!accountText.isDisposed() && userViewJob == this && !monitor.isCanceled()) {
+                    if (!userText.isDisposed() && userViewJob == this && !monitor.isCanceled()
+                        && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
                         userText.setText(user.userName() == null
-                            ? DDTrackingUIMessages.sync_preference_page_unknown : user.userName());
-                        accountText.setText(user.accountName() != null ? user.accountName()
-                            : user.accountId() == null ? DDTrackingUIMessages.sync_preference_page_unknown
-                                : user.accountId().toString());
+                            ? DDTrackingUIMessages.sync_preference_page_account_signed_in
+                            : NLS.bind(
+                                DDTrackingUIMessages.sync_preference_page_account_signed_in_as, user.userName()));
+                        userText.getParent().layout(true, true);
                     }
                 });
                 return Status.OK_STATUS;

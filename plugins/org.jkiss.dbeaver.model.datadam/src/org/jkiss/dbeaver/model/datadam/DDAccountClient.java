@@ -16,7 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
-import com.dbeaver.rest.client.AbstractRestClient;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
 import com.google.gson.JsonParseException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -34,7 +34,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /** Account requests authenticated by the current desktop SSO session. */
-public class DDAccountClient extends AbstractRestClient {
+public class DDAccountClient extends DDClient {
     private static final String GRAPHQL_PATH = "graphql";
     private static final String ACCOUNT_INFO_QUERY = """
         query AccountInfo {
@@ -57,6 +57,19 @@ public class DDAccountClient extends AbstractRestClient {
             }
         }
         """;
+    private static final String DAM_SETTINGS_QUERY = """
+        query DamSettings($clientDamId: String!) {
+            accountInfo { accountId }
+            damSettings(clientDamId: $clientDamId) { account dam }
+            canManageSettings
+        }
+        """;
+    private static final String SET_DAM_SETTING = """
+        mutation SetDamSetting($clientDamId: String!, $key: String!, $value: String!, $expectedAccountId: ID!) {
+            setDamSetting(clientDamId: $clientDamId, key: $key, value: $value, expectedAccountId: $expectedAccountId) { account dam }
+        }
+        """;
+
     public DDAccountClient(@NotNull URI accountUrl) {
         super(accountUrl.resolve("/").toString(), DEFAULT_CONNECT_TIMEOUT, 10_000, List.of(), HttpClient.Redirect.NEVER);
     }
@@ -97,6 +110,47 @@ public class DDAccountClient extends AbstractRestClient {
             throw new DBException("Could not read account name from DataDam Account");
         }
         return response.data().accountInfo().accountName();
+    }
+
+    @NotNull
+    public DamSettingsState getDamSettings(@NotNull String clientDamId) throws DBException {
+        DamSettingsResponse response = executePostRequest(GRAPHQL_PATH, Map.of(), Map.of(
+            "query", DAM_SETTINGS_QUERY, "variables", Map.of("clientDamId", clientDamId)), DamSettingsResponse.class);
+        if (response == null || response.errors() != null && !response.errors().isEmpty()
+            || response.data() == null || response.data().accountInfo() == null
+            || response.data().accountInfo().accountId() == null || response.data().damSettings() == null
+            || response.data().canManageSettings() == null) {
+            throw new DBException("Could not read DAM settings from DataDam Account");
+        }
+        var data = response.data();
+        return new DamSettingsState(data.accountInfo().accountId(), data.damSettings(), data.canManageSettings());
+    }
+
+    @NotNull
+    public DDRemoteDamSettings setDamSetting(
+        @NotNull String clientDamId, @NotNull String key, @NotNull String value, @NotNull UUID expectedAccountId
+    ) throws DBException {
+        DamSettingsResponse response = executePostRequest(GRAPHQL_PATH, Map.of(), Map.of(
+            "query", SET_DAM_SETTING, "variables", Map.of(
+                "clientDamId", clientDamId, "key", key, "value", value, "expectedAccountId", expectedAccountId.toString())),
+            DamSettingsResponse.class);
+        if (response == null || response.errors() != null && !response.errors().isEmpty()
+            || response.data() == null || response.data().setDamSetting() == null) {
+            throw new DBException("Could not update DAM settings in DataDam Account");
+        }
+        return response.data().setDamSetting();
+    }
+
+    public record DamSettingsState(@NotNull UUID accountId, @NotNull DDRemoteDamSettings settings, boolean canManage) {
+    }
+
+    private record DamSettingsResponse(@Nullable DamSettingsData data, @Nullable List<Object> errors) {
+    }
+
+    private record DamSettingsData(
+        @Nullable AccountState accountInfo, @Nullable DDRemoteDamSettings damSettings,
+        @Nullable DDRemoteDamSettings setDamSetting, @Nullable Boolean canManageSettings
+    ) {
     }
 
     @NotNull
