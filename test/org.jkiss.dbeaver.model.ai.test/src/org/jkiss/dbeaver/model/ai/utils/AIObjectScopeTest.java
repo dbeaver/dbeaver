@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.ai.utils;
 
+import net.sf.jsqlparser.statement.Block;
+import net.sf.jsqlparser.statement.UnsupportedStatement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -30,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -257,6 +260,30 @@ public class AIObjectScopeTest extends DBeaverUnitTest {
             Mockito.when(databaseContext.getCustomEntities()).thenReturn(List.of(allowed));
             AIUtils.checkQueryInScope(context, new SQLQuery(dataSource, "SHOW COLUMNS FROM allowed"));
         }
+    }
+
+    @Test
+    public void sqlRejectsUnsupportedStatementsBeforeResolvingObjects() throws DBException {
+        for (AIDatabaseScope scope : AIDatabaseScope.values()) {
+            Mockito.when(databaseContext.getScope()).thenReturn(scope);
+            for (String sql : List.of("SHOW FULL COLUMNS FROM secret", "SHOW FULL COLUMNS FROM allowed")) {
+                Assertions.assertInstanceOf(UnsupportedStatement.class,
+                    SQLSemanticProcessor.parseQueries(dataSource.getSQLDialect(), sql).getFirst());
+                DBException failure = Assertions.assertThrows(DBException.class,
+                    () -> AIUtils.checkQueryInScope(context, new SQLQuery(dataSource, sql)));
+                Assertions.assertInstanceOf(UnsupportedOperationException.class, failure.getCause());
+            }
+        }
+        Mockito.verify(root, Mockito.never()).getChild(Mockito.any(), Mockito.anyString());
+    }
+
+    @Test
+    public void sqlRejectsUnsupportedStatementsInsideBlocks() throws DBException {
+        String sql = "BEGIN SHOW FULL COLUMNS FROM secret; END";
+        Assertions.assertInstanceOf(Block.class, SQLSemanticProcessor.parseQueries(dataSource.getSQLDialect(), sql).getFirst());
+        DBException failure = Assertions.assertThrows(DBException.class,
+            () -> AIUtils.checkQueryInScope(context, new SQLQuery(dataSource, sql)));
+        Assertions.assertInstanceOf(UnsupportedOperationException.class, failure.getCause());
     }
 
     private void stubTable(

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai.utils;
 
 import net.sf.jsqlparser.statement.ShowColumnsStatement;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.show.ShowTablesStatement;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.jkiss.code.NotNull;
@@ -725,7 +726,13 @@ public final class AIUtils {
         Statement statement = statements.getFirst();
         Set<String> tableNames;
         try {
-            TablesNamesFinder<?> finder = new TablesNamesFinder<>();
+            TablesNamesFinder<Void> finder = new TablesNamesFinder<>() {
+                @NotNull
+                @Override
+                public <S> Void visit(@NotNull UnsupportedStatement unsupported, @Nullable S visitorContext) {
+                    throw new UnsupportedOperationException("Cannot verify unsupported SQL statement");
+                }
+            };
             if (statement instanceof ShowColumnsStatement columns) {
                 tableNames = Set.of(columns.getTableName());
             } else if (statement instanceof ShowTablesStatement tables) {
