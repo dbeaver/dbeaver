@@ -26,6 +26,8 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
@@ -102,16 +104,21 @@ class DDAccountClientTest {
         Assertions.assertEquals(100000, state.iterations());
     }
 
-    @Test
-    void readsSettingsAndWritesThroughAccountWithIdentityGuard() throws Exception {
+    @ParameterizedTest
+    @ValueSource(booleans = {true, false})
+    void readsSettingsAndWritesThroughAccountWithIdentityGuard(boolean canManage) throws Exception {
         var client = client();
         response.set("""
             {"data":{"accountInfo":{"accountId":"8decb064-2709-4914-b6b6-68eaef98cac3"},
-            "damSettings":{"account":{"mcp.enabled":"false"},"dam":{"mcp.enabled":"true"}},"canManageDamSetting":true}}
-            """);
-        var state = client.getDamSettings("desktop", DDRemoteDamSettingKeys.MCP_ENABLED);
+            "damSettings":{"account":{"mcp.enabled":"false"},"dam":{"mcp.enabled":"true"}},"canManageSettings":%s}}
+            """.formatted(canManage));
+        var state = client.getDamSettings("desktop");
         Assertions.assertEquals(ACCOUNT_ID, state.accountId());
-        Assertions.assertTrue(state.canManage());
+        Assertions.assertEquals(canManage, state.canManage());
+        var request = JsonParser.parseString(posted.get()).getAsJsonObject();
+        Assertions.assertEquals(Set.of("clientDamId"), request.getAsJsonObject("variables").keySet());
+        Assertions.assertTrue(request.get("query").getAsString().contains("canManageSettings"));
+        Assertions.assertFalse(request.get("query").getAsString().contains("$key"));
         Assertions.assertFalse(state.settings().isEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true, false));
         Assertions.assertTrue(state.settings().isDamEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, false));
         response.set("""
@@ -132,7 +139,7 @@ class DDAccountClientTest {
         for (String invalid : List.of("null", "{\"data\":{}}", "{\"data\":null}",
             "{\"errors\":[{\"message\":\"Access denied\"}],\"data\":{\"setDamSetting\":{\"account\":{},\"dam\":{}}}}")) {
             response.set(invalid);
-            Assertions.assertThrows(DBException.class, () -> client.getDamSettings("desktop", DDRemoteDamSettingKeys.MCP_ENABLED));
+            Assertions.assertThrows(DBException.class, () -> client.getDamSettings("desktop"));
             Assertions.assertThrows(DBException.class,
                 () -> client.setDamSetting("desktop", DDRemoteDamSettingKeys.MCP_ENABLED, "true", ACCOUNT_ID));
         }

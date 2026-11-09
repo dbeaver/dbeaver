@@ -58,10 +58,10 @@ public class DDAccountClient extends DDClient {
         }
         """;
     private static final String DAM_SETTINGS_QUERY = """
-        query DamSettings($clientDamId: String!, $key: String!) {
+        query DamSettings($clientDamId: String!) {
             accountInfo { accountId }
             damSettings(clientDamId: $clientDamId) { account dam }
-            canManageDamSetting(key: $key)
+            canManageSettings
         }
         """;
     private static final String SET_DAM_SETTING = """
@@ -113,17 +113,17 @@ public class DDAccountClient extends DDClient {
     }
 
     @NotNull
-    public DamSettingsState getDamSettings(@NotNull String clientDamId, @NotNull String key) throws DBException {
+    public DamSettingsState getDamSettings(@NotNull String clientDamId) throws DBException {
         DamSettingsResponse response = executePostRequest(GRAPHQL_PATH, Map.of(), Map.of(
-            "query", DAM_SETTINGS_QUERY, "variables", Map.of("clientDamId", clientDamId, "key", key)), DamSettingsResponse.class);
+            "query", DAM_SETTINGS_QUERY, "variables", Map.of("clientDamId", clientDamId)), DamSettingsResponse.class);
         if (response == null || response.errors() != null && !response.errors().isEmpty()
             || response.data() == null || response.data().accountInfo() == null
             || response.data().accountInfo().accountId() == null || response.data().damSettings() == null
-            || response.data().canManageDamSetting() == null) {
+            || response.data().canManageSettings() == null) {
             throw new DBException("Could not read DAM settings from DataDam Account");
         }
         var data = response.data();
-        return new DamSettingsState(data.accountInfo().accountId(), data.damSettings(), data.canManageDamSetting());
+        return new DamSettingsState(data.accountInfo().accountId(), data.damSettings(), data.canManageSettings());
     }
 
     @NotNull
@@ -149,7 +149,7 @@ public class DDAccountClient extends DDClient {
 
     private record DamSettingsData(
         @Nullable AccountState accountInfo, @Nullable DDRemoteDamSettings damSettings,
-        @Nullable DDRemoteDamSettings setDamSetting, @Nullable Boolean canManageDamSetting
+        @Nullable DDRemoteDamSettings setDamSetting, @Nullable Boolean canManageSettings
     ) {
     }
 

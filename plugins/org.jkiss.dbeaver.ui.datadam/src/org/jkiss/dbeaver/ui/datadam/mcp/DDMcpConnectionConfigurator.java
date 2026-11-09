@@ -66,7 +66,7 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
             statusJob = DDServerCatalog.getInstance().createJob(
                 "Check DataDam MCP availability",
                 account -> account.getDamSettings(
-                    DDRemoteDamDesktopSessionService.getInstance().getClientDamId(), DDRemoteDamSettingKeys.MCP_ENABLED),
+                    DDRemoteDamDesktopSessionService.getInstance().getClientDamId()),
                 status -> showStatus(parent, loading, page, status),
                 error -> {
                     log.debug("Cannot read DataDam MCP status", error);

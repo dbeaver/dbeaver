@@ -248,7 +248,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             mcpJob = DDServerCatalog.getInstance().createJob(
                 "Read DataDam MCP status",
                 account -> account.getDamSettings(
-                    DDRemoteDamDesktopSessionService.getInstance().getClientDamId(), DDRemoteDamSettingKeys.MCP_ENABLED),
+                    DDRemoteDamDesktopSessionService.getInstance().getClientDamId()),
                 status -> {
                     if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
                         showMcpStatus(status);
