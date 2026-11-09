@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.BaseThemeSettings;
+import org.jkiss.dbeaver.ui.ConnectionFeatures;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIStyles;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -50,6 +51,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
@@ -86,6 +88,8 @@ class ConnectionPageConnector extends ActiveWizardPage<NewConnectionWizard> {
             showCommercialDriversButton.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
             showCommercialDriversButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
                 showCommercialDrivers = showCommercialDriversButton.getSelection();
+                ConnectionFeatures.COMMERCIAL_DRIVERS_TOGGLED.use(Map.of(
+                    "enabled", showCommercialDrivers, "page", "connector"));
                 var store = DBWorkbench.getPlatform().getPreferenceStore();
                 store.setValue(UIPreferences.DRIVER_SELECTOR_SHOW_COMMERCIAL_DRIVERS, showCommercialDrivers);
                 PrefUtils.savePreferenceStore(store);
