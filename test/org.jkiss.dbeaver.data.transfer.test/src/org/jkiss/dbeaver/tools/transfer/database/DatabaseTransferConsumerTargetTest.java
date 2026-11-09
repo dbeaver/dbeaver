@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.tools.transfer.DataTransferSettings;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockMakers;
 import org.mockito.Mockito;
 
 import java.util.List;
@@ -94,7 +95,8 @@ public class DatabaseTransferConsumerTargetTest extends DBeaverUnitTest {
         Map<String, Object> previousMapping = Map.of("targetName", "old_table");
         settings.loadSettings(runnableContext, transferSettings, Map.of("mappings", Map.of("source", previousMapping)));
         DatabaseMappingContainer mapping = Mockito.mock(DatabaseMappingContainer.class);
-        try (var dbUtils = Mockito.mockStatic(DBUtils.class)) {
+        try (var dbUtils = Mockito.mockStatic(
+            DBUtils.class, Mockito.withSettings().mockMaker(MockMakers.INLINE))) {
             dbUtils.when(() -> DBUtils.getObjectFullId(source)).thenReturn("source");
             settings.addDataMappings(runnableContext, source, mapping, false);
             Mockito.verify(mapping, Mockito.never()).loadSettings(Mockito.any(), Mockito.anyMap());
