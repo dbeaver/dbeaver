@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBRuntimeException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.ai.*;
+import org.jkiss.dbeaver.model.ai.functions.AIFunctionParams;
 import org.jkiss.dbeaver.model.exec.DBCFeatureNotSupportedException;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -208,6 +209,13 @@ public class AIFunctionInternalDescriptor extends AbstractDescriptor implements 
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean supportsConnectionRouting() {
+        return getParameter(AIFunctionParams.CONNECTION_ID_PARAM) != null
+            || getParameter(AIFunctionParams.SOURCE_CONNECTION_ID_PARAM) != null
+            || getParameter(AIFunctionParams.TARGET_CONNECTION_ID_PARAM) != null;
     }
 
     @NotNull

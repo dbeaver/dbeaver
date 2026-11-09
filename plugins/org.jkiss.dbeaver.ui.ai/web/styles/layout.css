@@ -106,6 +106,9 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: center;
+    padding: 15px 24px;
+    box-sizing: border-box;
+    pointer-events: none;
 }
 
 .center-text-content {
@@ -118,4 +121,16 @@ html, body {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+}
+
+.empty-connections-hint {
+    position: absolute;
+    top: 15px;
+    left: 8px;
+    right: 8px;
+    color: var(--text-color);
+    text-align: center;
+    font-size: 0.85em;
+    opacity: 0.6;
+    user-select: none;
 }

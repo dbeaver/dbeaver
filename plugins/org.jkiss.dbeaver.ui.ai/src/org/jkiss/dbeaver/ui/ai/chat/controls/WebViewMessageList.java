@@ -321,7 +321,7 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
             if (arguments.length < 1) {
                 throw new IllegalArgumentException("executeInEditor requires at least one argument");
             }
-            AIChatUtils.executeInEditor(chat.getController(), arguments[0].toString());
+            AIChatUtils.executeInEditor(chat, arguments[0].toString());
             return null;
         });
 
@@ -381,14 +381,14 @@ public class WebViewMessageList extends Composite implements AISettingsEventList
                     @Override
                     protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                         try {
-                            if (functionResult != null && functionResult.getCallback() != null) {
+                            AIDatabaseContext databaseContext = chat.getChatSession().createDatabaseContext(monitor, conversation);
+                            AIFunctionContext functionContext = chat.getChatSession()
+                                .createFunctionContext(monitor, conversation, databaseContext);
+                            if (functionCall != null && functionCall.getFunction() != null) {
+                                functionCall.getFunction().getToolbox().callFunction(
+                                    functionContext, functionCall.getFunction(), functionCall.getArguments());
+                            } else if (functionResult != null && functionResult.getCallback() != null) {
                                 functionResult.getCallback().runTask(monitor);
-                            } else if (functionCall != null && functionCall.getFunction() != null) {
-                                AIDatabaseContext databaseContext = chat.getChatSession().createDatabaseContext(monitor, conversation);
-                                functionCall.getFunction().getInstance().callFunction(
-                                    new AIFunctionContext(monitor, databaseContext, conversation.getPromptGenerator()),
-                                    functionCall.getArguments()
-                                );
                             }
                         } catch (DBException e) {
                             return GeneralUtils.makeExceptionStatus(e);

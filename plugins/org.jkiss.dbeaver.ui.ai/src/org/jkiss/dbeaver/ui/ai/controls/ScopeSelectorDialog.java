@@ -165,7 +165,7 @@ public class ScopeSelectorDialog extends BaseDialog {
         }
     }
 
-    private static boolean isSupportedNode(@NotNull DBNNode node) {
+    public static boolean isSupportedNode(@NotNull DBNNode node) {
         if (node instanceof DBNDatabaseFolder folder) {
             Class<? extends DBSObject> childrenClass = folder.getChildrenClass();
             return childrenClass != null && (
@@ -216,7 +216,7 @@ public class ScopeSelectorDialog extends BaseDialog {
         super.okPressed();
     }
 
-    private static void collectSelectedNodes(
+    public static void collectSelectedNodes(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBNNode node,
         @NotNull Set<DBNNode> result

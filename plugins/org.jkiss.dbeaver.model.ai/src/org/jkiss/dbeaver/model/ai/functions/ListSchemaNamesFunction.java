@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.ai.AIFunctionContext;
 import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.AIFunctionResult;
 import org.jkiss.dbeaver.model.ai.AIFunctionType;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseCapabilities;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -118,31 +119,14 @@ public class ListSchemaNamesFunction extends ListStructNamesFunction {
         @NotNull AIFunctionContext context,
         @NotNull AIFunctionDescriptor function
     ) {
-        AIDatabaseContext dbContext = context.getContext();
-        DBCExecutionContext executionContext = dbContext == null ? null : dbContext.getExecutionContext();
-        if (executionContext != null) {
-            DBPDataSource dataSource = executionContext.getDataSource();
-            if (dataSource instanceof DBSObjectContainer oc) {
-                try {
-                    Class<? extends DBSObject> catType = oc.getPrimaryChildType(context.getMonitor());
-                    if (DBSSchema.class.isAssignableFrom(catType)) {
-                        return FunctionState.APPLICABLE;
-                    } else if (DBSCatalog.class.isAssignableFrom(catType)) {
-                        DBCExecutionContextDefaults<?, ?> contextDefaults = executionContext.getContextDefaults();
-                        if (contextDefaults != null) {
-                            DBSCatalog catalog = contextDefaults.getDefaultCatalog();
-                            if (catalog != null) {
-                                Class<? extends DBSObject> cct = catalog.getPrimaryChildType(context.getMonitor());
-                                if (DBSSchema.class.isAssignableFrom(cct)) {
-                                    return FunctionState.APPLICABLE;
-                                }
-                            }
-                        }
-                    }
-                } catch (DBException e) {
-                    log.debug(e);
-                }
-            }
+        if (context.getContext() == null) {
+            return FunctionState.NOT_APPLICABLE;
+        }
+        try {
+            return Boolean.FALSE.equals(AIDatabaseCapabilities.read(context).schemas())
+                ? FunctionState.NOT_APPLICABLE : FunctionState.APPLICABLE;
+        } catch (DBException exception) {
+            log.debug(exception);
         }
         return FunctionState.NOT_APPLICABLE;
     }

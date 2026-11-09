@@ -44,6 +44,8 @@ public class AIChatMessagesUI extends NLS {
     public static String ai_chat_empty_hint;
     public static String ai_chat_drag_n_drop_message;
     public static String ai_chat_drag_n_drop_objects_message;
+    public static String ai_chat_drag_n_drop_connections_message;
+    public static String ai_chat_add_connection;
     public static String ai_chat_default_conversation_name;
     public static String ai_chat_attach_button_tip;
     public static String ai_chat_confirm_title;
@@ -109,6 +111,45 @@ public class AIChatMessagesUI extends NLS {
     public static String ai_chat_image_limit;
     public static String ai_chat_image_loading;
     public static String ai_chat_image_clipboard_name;
+
+    public static String ai_chat_add_connections;
+    public static String ai_chat_add_connections_description;
+    public static String ai_chat_filter_connections;
+    public static String ai_chat_add_selected;
+    public static String ai_chat_add_selected_count;
+    public static String ai_chat_remove_connection;
+    public static String ai_chat_remove_connection_named;
+    public static String ai_chat_connections_expand;
+    public static String ai_chat_connections_collapse;
+    public static String ai_chat_connections_count;
+    public static String ai_chat_conversation_same_databases;
+    public static String ai_chat_more;
+    public static String ai_chat_conversation_error;
+    public static String ai_chat_empty_connections_hint;
+
+    public static String ai_chat_database_context;
+    public static String ai_chat_select_conversation;
+    public static String ai_chat_primary_context_applies_to;
+    public static String ai_chat_primary_objects_sent;
+    public static String ai_chat_context_apply;
+    public static String ai_chat_configure_database_context;
+    public static String ai_chat_context_objects;
+    public static String ai_chat_context_all_objects;
+    public static String ai_chat_context_selected_objects;
+    public static String ai_chat_context_apply_to;
+    public static String ai_chat_context_all_available;
+    public static String ai_chat_context_filter_objects;
+    public static String ai_chat_context_objects_selected;
+    public static String ai_chat_context_tables_selected;
+    public static String ai_chat_context_connect;
+    public static String ai_chat_context_retry;
+    public static String ai_chat_context_loading;
+    public static String ai_chat_context_load_failed;
+    public static String ai_chat_context_load_cancelled;
+
+    public static String ai_chat_sql_connection_title;
+    public static String ai_chat_sql_connection_message;
+    public static String ai_chat_sql_connection_changed;
 
     static {
         NLS.initializeMessages(AIChatMessagesUI.class.getName(), AIChatMessagesUI.class);

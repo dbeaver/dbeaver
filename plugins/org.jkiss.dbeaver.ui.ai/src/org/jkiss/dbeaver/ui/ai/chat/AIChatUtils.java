@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.*;
+import org.jkiss.dbeaver.model.ai.utils.AIChatTimeUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
@@ -45,9 +46,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.format.FormatStyle;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -162,10 +160,9 @@ public class AIChatUtils {
     ) {
         try {
             if (conversation != null) {
-                if (settings instanceof AIContextSettingsChatConversation cs) {
-                    conversation.setCustomSettings(cs);
-                } else {
-                    conversation.setCustomSettings(null);
+                DBPDataSourceContainer container = settings.getDataSourceContainer();
+                if (container != null) {
+                    conversation.setCustomSettings(container, settings instanceof AIContextSettingsChatConversation cs ? cs : null);
                 }
             }
             settings.saveSettings();
@@ -220,14 +217,8 @@ public class AIChatUtils {
             .collect(Collectors.joining(". "));
     }
 
-    /**
-     * Executes the specified text in the editor using the provided AIChatController.
-     *
-     * @param chatController the AIChatController instance used to execute the text in the editor; must not be null
-     * @param text the text to be executed in the editor; must not be null
-     */
-    public static void executeInEditor(@NotNull AIChatController chatController, @NotNull String text) {
-        chatController.executeInEditor(text);
+    public static void executeInEditor(@NotNull AIChatControl chat, @NotNull String text) {
+        chat.getController().executeInEditor(text, chat.getActiveConversation());
     }
 
     /**
@@ -252,22 +243,9 @@ public class AIChatUtils {
         }
     }
 
-    /**
-     * Formats the message timestamp into a user-friendly string representation.
-     * If the message was sent on the current day, it returns only the time in a short format (e.g., "10:30 AM").
-     * Otherwise, it includes both the date and time in a medium format (e.g., "Jul 30, 2025, 10:30 AM").
-     *
-     * @param message the AIMessage instance from which the timestamp is extracted; must not be null.
-     * @return a string representing the formatted timestamp of the message.
-     */
     @NotNull
     public static String formatMessageTime(@NotNull AIMessage message) {
-        LocalDateTime time = message.getTime();
-        if (time.getDayOfYear() == LocalDateTime.now().getDayOfYear()) {
-            return time.format(DateTimeFormatter.ofLocalizedTime(FormatStyle.SHORT));
-        } else {
-            return time.format(DateTimeFormatter.ofLocalizedDateTime(FormatStyle.MEDIUM));
-        }
+        return AIChatTimeUtils.format(message.getTime(), false);
     }
 
     /**

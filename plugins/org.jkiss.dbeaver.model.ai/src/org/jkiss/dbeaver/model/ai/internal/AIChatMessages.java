@@ -20,6 +20,9 @@ import org.eclipse.osgi.util.NLS;
 
 public class AIChatMessages extends NLS {
     public static String ai_chat_conversation_cancelled;
+    public static String ai_chat_date_today;
+    public static String ai_chat_date_yesterday;
+    public static String ai_chat_connection_failed;
 
     static {
         NLS.initializeMessages(AIChatMessages.class.getName(), AIChatMessages.class);

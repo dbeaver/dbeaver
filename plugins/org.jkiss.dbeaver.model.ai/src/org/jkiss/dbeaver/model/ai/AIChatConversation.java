@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
@@ -26,11 +27,13 @@ import org.jkiss.utils.StringUtils;
 import org.jkiss.utils.UUIDv7;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -63,10 +66,12 @@ public class AIChatConversation {
     private final Object persistenceLock = new Object();
     @Nullable
     private final DBPDataSourceContainer container;
+    private final List<DBPDataSourceContainer> additionalDataSources = new CopyOnWriteArrayList<>();
     @NotNull
     private final LocalDateTime time;
     @Nullable
     private AIContextSettingsChatConversation customSettings;
+    private final Map<String, AIContextSettingsChatConversation> additionalSettings = new ConcurrentHashMap<>();
     @Nullable
     private AIConfigurationProfile profile;
 
@@ -117,7 +122,7 @@ public class AIChatConversation {
         this.promptGenerator = promptGenerator;
         this.container = container;
         this.messages = new CopyOnWriteArrayList<>(messages);
-        this.time = messages.isEmpty() ? LocalDateTime.now() : messages.getLast().message().getTime();
+        this.time = messages.isEmpty() ? LocalDateTime.now() : messages.getFirst().message().getTime();
         this.nextMessageId = nextMessageId;
         this.profile = profile;
     }
@@ -262,6 +267,94 @@ public class AIChatConversation {
         return container;
     }
 
+    @Nullable
+    public DBPDataSourceContainer getDataSource(@Nullable String connectionId) throws DBException {
+        if (CommonUtils.isEmptyTrimmed(connectionId)) {
+            return container;
+        }
+        for (DBPDataSourceContainer dataSource : getDataSources()) {
+            if (dataSource.getId().equals(connectionId)) {
+                return dataSource;
+            }
+        }
+        throw new DBException("Connection '" + connectionId + "' is not attached to this conversation. Access restricted.");
+    }
+
+    @NotNull
+    public List<DBPDataSourceContainer> getDataSources() {
+        if (container == null) {
+            return List.of();
+        }
+        List<DBPDataSourceContainer> dataSources = new ArrayList<>();
+        dataSources.add(container);
+        dataSources.addAll(additionalDataSources);
+        return List.copyOf(dataSources);
+    }
+
+    record ConnectionsState(
+        @NotNull List<DBPDataSourceContainer> dataSources,
+        @NotNull String connectionId,
+        @Nullable AIContextSettingsChatConversation settings
+    ) {
+    }
+
+    @NotNull
+    ConnectionsState snapshotConnections(@NotNull String connectionId) {
+        return new ConnectionsState(List.copyOf(additionalDataSources), connectionId, additionalSettings.get(connectionId));
+    }
+
+    void restoreConnections(@NotNull ConnectionsState snapshot) {
+        additionalDataSources.clear();
+        additionalDataSources.addAll(snapshot.dataSources());
+        if (snapshot.settings() == null) {
+            additionalSettings.remove(snapshot.connectionId());
+        } else {
+            additionalSettings.put(snapshot.connectionId(), snapshot.settings());
+        }
+    }
+
+    public boolean addDataSource(@NotNull DBPDataSourceContainer dataSource) throws DBException {
+        synchronized (persistenceLock) {
+            if (isActive()) {
+                throw new DBException("Cannot change connections while the conversation is active");
+            }
+            if (container == null) {
+                throw new DBException("A primary connection is required");
+            }
+            if (!container.getProject().getId().equals(dataSource.getProject().getId())) {
+                throw new DBException("Additional connections must belong to the primary connection's project");
+            }
+            if (getDataSources().stream().anyMatch(current -> current.getId().equals(dataSource.getId()))) {
+                return false;
+            }
+            additionalDataSources.add(dataSource);
+            return true;
+        }
+    }
+
+    public boolean removeDataSource(@NotNull String connectionId) throws DBException {
+        synchronized (persistenceLock) {
+            if (isActive()) {
+                throw new DBException("Cannot change connections while the conversation is active");
+            }
+            boolean removed = additionalDataSources.removeIf(dataSource -> dataSource.getId().equals(connectionId));
+            if (removed) {
+                additionalSettings.remove(connectionId);
+            }
+            return removed;
+        }
+    }
+
+
+
+    @NotNull
+    public synchronized AIChatConversation createEmptyCopy(@NotNull String name) {
+        AIChatConversation copy = new AIChatConversation(
+            UUIDv7.randomUUID(), name, promptGenerator, List.of(), container, 0, profile);
+        copy.additionalDataSources.addAll(additionalDataSources);
+        return copy;
+    }
+
     public int getNextMessageId() {
         return nextMessageId;
     }
@@ -276,8 +369,26 @@ public class AIChatConversation {
         return customSettings;
     }
 
+    @Nullable
+    public AIContextSettingsChatConversation getCustomSettings(@NotNull DBPDataSourceContainer dataSource) {
+        return dataSource == container ? customSettings : additionalSettings.get(dataSource.getId());
+    }
+
     public void setCustomSettings(@Nullable AIContextSettingsChatConversation customSettings) {
         this.customSettings = customSettings;
+    }
+
+    public void setCustomSettings(
+        @NotNull DBPDataSourceContainer dataSource,
+        @Nullable AIContextSettingsChatConversation settings
+    ) {
+        if (dataSource == container) {
+            customSettings = settings;
+        } else if (settings == null) {
+            additionalSettings.remove(dataSource.getId());
+        } else {
+            additionalSettings.put(dataSource.getId(), settings);
+        }
     }
 
     @Nullable

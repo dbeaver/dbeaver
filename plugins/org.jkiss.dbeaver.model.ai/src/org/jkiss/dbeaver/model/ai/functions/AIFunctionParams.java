@@ -17,6 +17,9 @@
 package org.jkiss.dbeaver.model.ai.functions;
 
 public final class AIFunctionParams {
+    public static final String CONNECTION_ID_PARAM = "connectionId";
+    public static final String SOURCE_CONNECTION_ID_PARAM = "sourceConnectionId";
+    public static final String TARGET_CONNECTION_ID_PARAM = "targetConnectionId";
     public static final String CATALOG_PARAM = "catalogName";
     public static final String SCHEMAS_PARAM = "schemaNames";
     public static final String TABLE_NAMES_PARAM = "tableNames";

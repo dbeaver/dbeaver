@@ -53,6 +53,7 @@ public abstract class AIContextSettings {
         public boolean mcpEnabled;
         public AIDatabaseScope scope;
         public String[] objects;
+        public Boolean conversationScope;
     }
 
     @Nullable

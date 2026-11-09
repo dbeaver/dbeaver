@@ -16,7 +16,15 @@
  */
 package org.jkiss.dbeaver.ui.ai.chat.internal;
 
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.ImageData;
+import org.eclipse.swt.graphics.ImageDataProvider;
+import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.Display;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 
 import java.util.List;
 
@@ -26,6 +34,10 @@ public class AIChatIcons {
     public static final DBIcon ASSISTANT = new DBIcon("ai-assistant", "robot.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SEND = new DBIcon("ai-chat-send", "ai-chat-send.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon ATTACH = new DBIcon("ai-attach", "attach.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CONNECTION_ADD = new DBIcon("ai-connection-add", "connection-add.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CONVERSATION_SELECTED = new DBIcon("ai-conversation-selected", "conversation-selected.svg");
+    public static final DBIcon CHIP_CLOSE = new DBIcon("ai-chip-close", "chip-close.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CHIP_CLOSE_HOVER = new DBIcon("ai-chip-close-hover", "chip-close-hover.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon MIC_ON = new DBIcon("ai-mic-on", "mic_on.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon MIC_OFF = new DBIcon("ai-mic-off", "mic_off.svg"); //$NON-NLS-1$ //$NON-NLS-2$
 
@@ -37,7 +49,26 @@ public class AIChatIcons {
     public static final DBIcon RECORDING5 = new DBIcon("RECORDING0", "mic-animation/recording05.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon RECORDING6 = new DBIcon("RECORDING0", "mic-animation/recording06.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon RECORDING7 = new DBIcon("RECORDING0", "mic-animation/recording07.svg"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final List<DBIcon> RECORDING = List.of(RECORDING0, RECORDING1, RECORDING2, RECORDING3, RECORDING4, RECORDING5, RECORDING6, RECORDING7);
+    public static final List<DBIcon> RECORDING = List.of(
+        RECORDING0, RECORDING1, RECORDING2, RECORDING3, RECORDING4, RECORDING5, RECORDING6, RECORDING7);
+
+    @NotNull
+    public static Image createForegroundImage(@NotNull Display display, @NotNull DBPImage icon, @NotNull RGB foreground) {
+        Image source = DBeaverIcons.getImage(icon);
+        return new Image(display, (ImageDataProvider) zoom -> {
+            ImageData data = source.getImageData(zoom);
+            int pixel = data.palette.getPixel(foreground);
+            for (int row = 0; row < data.height; row++) {
+                for (int column = 0; column < data.width; column++) {
+                    int alpha = data.getPixel(column, row) == data.transparentPixel ? 0 : data.getAlpha(column, row);
+                    data.setPixel(column, row, pixel);
+                    data.setAlpha(column, row, alpha);
+                }
+            }
+            data.transparentPixel = -1;
+            return data;
+        });
+    }
 
     static {
         DBIcon.loadIcons(AIChatIcons.class);

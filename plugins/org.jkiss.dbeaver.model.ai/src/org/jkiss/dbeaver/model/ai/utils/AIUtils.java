@@ -16,6 +16,11 @@
  */
 package org.jkiss.dbeaver.model.ai.utils;
 
+import net.sf.jsqlparser.statement.ShowColumnsStatement;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.UnsupportedStatement;
+import net.sf.jsqlparser.statement.show.ShowTablesStatement;
+import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -37,10 +42,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.security.DBSecurityUtils;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -495,14 +502,14 @@ public final class AIUtils {
         if (object instanceof DBPDataSource || object instanceof DBPDataSourceContainer) {
             return true;
         }
+        if (!context.isObjectAllowed(object)) {
+            return false;
+        }
         if (object instanceof DBSCatalog catalog) {
             return isCatalogInScope(context, executionContext, catalog);
         } else if (object instanceof DBSSchema schema) {
             return isSchemaInScope(context, executionContext, schema);
         } else {
-            if (!context.isObjectAllowed(object)) {
-                return false;
-            }
             if (context.getScope() == AIDatabaseScope.CUSTOM) {
                 // Check that this object in the custom entity list
                 List<DBSObject> customEntities = context.getCustomEntities();
@@ -626,6 +633,9 @@ public final class AIUtils {
         if (schema == null) {
             throw new DBException("Cannot find schema '" + schemaName + "' in current scope");
         } else if (schema instanceof DBSSchema dbsSchema) {
+            if (!isObjectInScope(dbContext, executionContext, dbsSchema)) {
+                throw new DBException("Schema '" + schemaName + "' is outside the allowed scope. Access restricted.");
+            }
             return dbsSchema;
         } else {
             throw new DBException("Schema '" + schemaName + "' is not a valid schema object");
@@ -669,6 +679,9 @@ public final class AIUtils {
 
         SQLIdentifierDetector wordDetector = new SQLIdentifierDetector(dialect);
         String[] nameParts = wordDetector.splitIdentifier(tableName);
+        if (nameParts.length > 3) {
+            throw new DBException("Unsupported qualified table name: " + tableName);
+        }
         if (nameParts.length == 1) {
             if (!CommonUtils.isEmpty(schemaName)) {
                 if (!CommonUtils.isEmpty(catalogName)) {
@@ -690,10 +703,108 @@ public final class AIUtils {
         if (table == null) {
             throw new DBException("Table '" + tableName + "' not found");
         } else if (table instanceof DBSDataContainer entity) {
+            if (!isObjectInScope(dbContext, executionContext, entity)) {
+                throw new DBException("Table '" + tableName + "' is outside the allowed scope. Access restricted.");
+            }
             return entity;
         } else {
             throw new DBException("Table '" + tableName + "' is not a data container (" + table + ")");
         }
+    }
+
+    public static void checkQueryInScope(@NotNull AIFunctionContext context, @NotNull SQLQuery query) throws DBException {
+        List<Statement> statements;
+        try {
+            DBPDataSource dataSource = query.getDataSource();
+            statements = SQLSemanticProcessor.parseQueries(dataSource == null ? null : dataSource.getSQLDialect(), query.getText());
+        } catch (DBException | RuntimeException exception) {
+            throw new DBException("Cannot verify database objects in SQL query", exception);
+        }
+        if (statements.size() != 1) {
+            throw new DBException("A single SQL statement is required for transfer or export");
+        }
+        Statement statement = statements.getFirst();
+        Set<String> tableNames;
+        try {
+            TablesNamesFinder<Void> finder = new TablesNamesFinder<>() {
+                @NotNull
+                @Override
+                public <S> Void visit(@NotNull UnsupportedStatement unsupported, @Nullable S visitorContext) {
+                    throw new UnsupportedOperationException("Cannot verify unsupported SQL statement");
+                }
+            };
+            if (statement instanceof ShowColumnsStatement columns) {
+                tableNames = Set.of(columns.getTableName());
+            } else if (statement instanceof ShowTablesStatement tables) {
+                AIDatabaseContext database = context.getContext();
+                if (database == null || database.getScope() != AIDatabaseScope.CURRENT_DATASOURCE || database.hasDataSourceCustomScope()) {
+                    throw new DBException("SHOW TABLES cannot be verified within a restricted database scope");
+                }
+                tableNames = new LinkedHashSet<>();
+                if (tables.getLikeExpression() != null) {
+                    tableNames.addAll(finder.getTables(tables.getLikeExpression()));
+                }
+                if (tables.getWhereCondition() != null) {
+                    tableNames.addAll(finder.getTables(tables.getWhereCondition()));
+                }
+            } else {
+                tableNames = finder.getTables(statement);
+            }
+        } catch (RuntimeException exception) {
+            throw new DBException("Cannot verify database objects in SQL query", exception);
+        }
+        for (String tableName : tableNames) {
+            findTableInContext(context, tableName);
+        }
+    }
+
+    @NotNull
+    public static DBSObjectContainer findTableContainerInContext(
+        @NotNull AIFunctionContext context,
+        @Nullable String tableName
+    ) throws DBException {
+        AIDatabaseContext databaseContext = context.getContext();
+        if (databaseContext == null) {
+            throw new DBException("Not connected to database");
+        }
+        DBCExecutionContext executionContext = databaseContext.getExecutionContext();
+        DBPDataSource dataSource = executionContext.getDataSource();
+        if (!(dataSource instanceof DBSObjectContainer root)) {
+            throw new DBException("Cannot determine object container in data source " + dataSource);
+        }
+        SQLDialect dialect = dataSource.getSQLDialect();
+        String[] parts = CommonUtils.isEmptyTrimmed(tableName) ? new String[0]
+            : new SQLIdentifierDetector(dialect).splitIdentifier(tableName);
+        if (parts.length > 3) {
+            throw new DBException("Invalid target table name: " + tableName);
+        }
+        DBSObject container;
+        if (parts.length < 2) {
+            container = DBUtils.getSelectedObject(executionContext);
+            if (container == null) {
+                container = root;
+            }
+        } else {
+            DBCExecutionContextDefaults<?, ?> defaults = executionContext.getContextDefaults();
+            boolean supportsSchemas = defaults != null && (defaults.getDefaultSchema() != null || defaults.supportsSchemaChange()) ||
+                DBSSchema.class.isAssignableFrom(root.getPrimaryChildType(context.getMonitor()));
+            String parentName = DBUtils.getUnQuotedNormalizedIdentifier(dialect, parts[parts.length - 2]);
+            String catalogName = parts.length == 3 ? DBUtils.getUnQuotedNormalizedIdentifier(dialect, parts[0])
+                : supportsSchemas ? null : parentName;
+            String schemaName = parts.length == 3 || supportsSchemas ? parentName : null;
+            container = DBUtils.getObjectByPath(context.getMonitor(), executionContext, root, catalogName, schemaName, null, true);
+        }
+        if (!(container instanceof DBSObjectContainer targetContainer)) {
+            throw new DBException("Cannot determine target table container. Specify a catalog/schema in targetTable.");
+        }
+        Class<? extends DBSObject> childType = targetContainer.getPrimaryChildType(context.getMonitor());
+        if (!DBSDataContainer.class.isAssignableFrom(childType) && !DBSEntity.class.isAssignableFrom(childType)) {
+            throw new DBException("Target container does not contain tables. Specify a catalog/schema in targetTable.");
+        }
+        if (!isObjectInScope(databaseContext, executionContext, targetContainer)) {
+            throw new DBException("Target container is outside the allowed scope. Access restricted.");
+        }
+        return targetContainer;
     }
 
     /**

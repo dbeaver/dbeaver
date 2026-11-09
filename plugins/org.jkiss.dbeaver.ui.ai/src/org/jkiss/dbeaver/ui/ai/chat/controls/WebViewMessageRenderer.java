@@ -481,7 +481,10 @@ final class WebViewMessageRenderer {
     }
 
     void showEmptyChat() {
-        execute("showCenterText", Map.of("text", AIChatMessagesUI.ai_chat_empty_hint));
+        execute("showCenterText", Map.of(
+            "text", AIChatMessagesUI.ai_chat_empty_hint,
+            "connectionsHint", AIChatMessagesUI.ai_chat_empty_connections_hint
+        ));
     }
 
     void execute(@NotNull String function, @NotNull Object... args) {

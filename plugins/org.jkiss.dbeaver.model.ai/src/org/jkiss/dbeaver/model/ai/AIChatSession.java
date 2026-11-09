@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -23,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.dbeaver.model.ai.internal.AIChatMessages;
 import org.jkiss.dbeaver.model.ai.qm.*;
 import org.jkiss.dbeaver.model.ai.quota.QuotaStatus;
 import org.jkiss.dbeaver.model.ai.quota.UserTokenQuotaService;
@@ -66,7 +68,7 @@ public class AIChatSession {
     private final Object initializationLock = new Object();
     private final Object conversationsLock = new Object();
     private volatile Map<UUID, AIChatConversation> conversations = new LinkedHashMap<>();
-    private boolean busy;
+    private volatile boolean busy;
     private AIAssistant assistant;
     private volatile boolean initialized = false;
     private volatile boolean isClosed = false;
@@ -106,16 +108,8 @@ public class AIChatSession {
 
         loadConversationImages(monitor, conversation);
         AIContextSettings contextSettings = getConversationSettings(conversation);
-        AIDatabaseContext databaseContext = null;
-        try {
-            if (contextSettings != null) {
-                databaseContext = createDatabaseContext(monitor, conversation.getPromptGenerator(), contextSettings);
-            }
-        } catch (DBException e) {
-            log.warn("Error creating database context for conversation save", e);
-        }
-
-        saveConversation(sessionIdProvider.getSessionId(monitor), conversation, contextSettings, databaseContext);
+        // database metadata is captured when preparing an AI request
+        saveConversation(sessionIdProvider.getSessionId(monitor), conversation, contextSettings, null);
     }
 
     private void saveConversation(
@@ -127,6 +121,22 @@ public class AIChatSession {
         // serialize the history snapshot and storage write with other saves of this conversation
         synchronized (conversation.getPersistenceLock()) {
             storage.saveConversation(sessionId, QMAIChatHistoryMapper.toQMAIChatHistory(conversation, settings, context));
+        }
+    }
+
+    private void saveConnectionChange(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIChatConversation conversation,
+        @NotNull AIChatConversation.ConnectionsState snapshot
+    ) throws DBException {
+        boolean saved = false;
+        try {
+            saveConversation(monitor, conversation);
+            saved = true;
+        } finally {
+            if (!saved) {
+                conversation.restoreConnections(snapshot);
+            }
         }
     }
 
@@ -149,6 +159,144 @@ public class AIChatSession {
     }
 
     @Nullable
+    private AIDatabaseContext createDatabaseContext(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable AIPromptGenerator promptGenerator,
+        @NotNull AIContextSettings settings
+    ) throws DBException {
+        DBPDataSourceContainer container = settings.getDataSourceContainer();
+        if (container == null) {
+            return null;
+        }
+        connectDataSource(monitor, container);
+        DBCExecutionContext executionContext = contextProvider.getExecutionContext(container);
+        DBSLogicalDataSource lgDataSource = DBSLogicalDataSource.createLogicalDataSource(container, executionContext);
+
+        updateScopeSettingsIfNeeded(settings, container);
+        assert settings.getScope() != null;
+        AIDatabaseContext.Builder builder = new AIDatabaseContext.Builder(lgDataSource).setScope(settings.getScope());
+        if (executionContext != null) {
+            builder.setExecutionContext(executionContext);
+        }
+        if (settings.getScope() == AIDatabaseScope.CUSTOM) {
+            DBPDataSource dataSource = container.getDataSource();
+            if (dataSource != null) {
+                String[] customObjectIds = settings.getCustomObjectIds();
+                if (!ArrayUtils.isEmpty(customObjectIds)) {
+                    Set<String> idSet = new LinkedHashSet<>();
+                    Collections.addAll(idSet, customObjectIds); // Duplicates are allowed - we cannot use Set.of here
+                    builder.setCustomEntities(AITextUtils.loadCustomEntities(monitor, dataSource, idSet));
+                }
+            }
+        }
+        return (promptGenerator == null ? builder : promptGenerator.configureDatabaseContext(builder)).build();
+    }
+
+    @NotNull
+    public AIFunctionContext createFunctionContext(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIChatConversation conversation,
+        @Nullable AIDatabaseContext primaryContext
+    ) {
+        Map<String, AIDatabaseContext> contexts = new HashMap<>();
+        return new AIFunctionContext(monitor, primaryContext, conversation.getPromptGenerator(), conversation, connectionId -> {
+            DBPDataSourceContainer container = conversation.getDataSource(connectionId);
+            if (container == null) {
+                return null;
+            }
+            checkDataSourceAvailable(container);
+            if (container == conversation.getDataSource()) {
+                if (primaryContext == null || primaryContext.getDataSource().getDataSourceContainer() != container) {
+                    throw new DBException("Primary connection context is not available");
+                }
+                return primaryContext;
+            }
+            AIContextSettings settings = getValidatedAdditionalSettings(conversation, container);
+            AIDatabaseContext existingContext = contexts.get(container.getId());
+            if (existingContext == null) {
+                // primary prompt configuration must not override another connection's context or scope
+                existingContext = createDatabaseContext(monitor, null, settings);
+                if (existingContext != null) {
+                    contexts.put(container.getId(), existingContext);
+                }
+            }
+            return existingContext;
+        });
+    }
+
+    void connectAdditionalDataSources(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIChatConversation conversation,
+        @NotNull AIChatResponseConsumer listener
+    ) {
+        for (DBPDataSourceContainer container : conversation.getDataSources()) {
+            if (container == conversation.getDataSource()) {
+                continue;
+            }
+            if (monitor.isCanceled() || conversation.getState() == AIChatConversation.State.CANCELED || isClosed()) {
+                return;
+            }
+            try {
+                checkDataSourceAvailable(container);
+                getValidatedAdditionalSettings(conversation, container);
+                connectDataSource(monitor, container);
+            } catch (DBException exception) {
+                log.debug("Cannot connect an additional AI chat data source", exception);
+                listener.warning(NLS.bind(AIChatMessages.ai_chat_connection_failed, container.getName(), exception.getMessage()));
+            }
+        }
+    }
+
+    private void checkDataSourceAvailable(@NotNull DBPDataSourceContainer container) throws DBException {
+        if (workspace.getProjectById(container.getProject().getId()) != container.getProject()
+            || !container.isTemporary() && container.getProject().getDataSourceRegistry().getDataSource(container.getId()) != container) {
+            throw new DBException("Connection '" + container.getId() + "' is no longer available");
+        }
+    }
+
+    @NotNull
+    private AIContextSettings getValidatedAdditionalSettings(
+        @NotNull AIChatConversation conversation,
+        @NotNull DBPDataSourceContainer container
+    ) throws DBException {
+        AIContextSettings settings = getConversationSettings(conversation, container);
+        if (!settings.isMetaTransferConfirmed() || !new AIContextSettingsDataSource(container).isMetaTransferConfirmed()) {
+            throw new DBException("AI metadata access is not confirmed for connection '" + container.getName() + "'");
+        }
+        return settings;
+    }
+
+    public void addDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIChatConversation conversation,
+        @NotNull DBPDataSourceContainer dataSource
+    ) throws DBException {
+        synchronized (conversation.getPersistenceLock()) {
+            AIChatConversation.ConnectionsState snapshot = conversation.snapshotConnections(dataSource.getId());
+            if (!conversation.addDataSource(dataSource)) {
+                return;
+            }
+            saveConnectionChange(monitor, conversation, snapshot);
+        }
+        notifyListeners(AIChatListener::conversationConnectionsChanged, conversation);
+    }
+
+    public void removeDataSource(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AIChatConversation conversation,
+        @NotNull String connectionId
+    ) throws DBException {
+        synchronized (conversation.getPersistenceLock()) {
+            AIChatConversation.ConnectionsState snapshot = conversation.snapshotConnections(connectionId);
+            if (!conversation.removeDataSource(connectionId)) {
+                return;
+            }
+            saveConnectionChange(monitor, conversation, snapshot);
+        }
+        notifyListeners(AIChatListener::conversationConnectionsChanged, conversation);
+    }
+
+    @Nullable
     public AIContextSettings getConversationSettings(@NotNull AIChatConversation conversation) {
         DBPDataSourceContainer dataSource = conversation.getDataSource();
         if (dataSource == null) {
@@ -156,10 +304,22 @@ public class AIChatSession {
         }
         AIContextSettingsDataSource dataSourceSettings = new AIContextSettingsDataSource(dataSource);
         AIContextSettingsChatConversation customSettings = conversation.getCustomSettings();
-        if (customSettings != null && !dataSourceSettings.equalsSettings(customSettings)) {
+        if (customSettings != null && (customSettings.isConversationScoped() || !dataSourceSettings.equalsSettings(customSettings))) {
             return customSettings;
         }
         return dataSourceSettings;
+    }
+
+    @NotNull
+    public AIContextSettings getConversationSettings(
+        @NotNull AIChatConversation conversation,
+        @NotNull DBPDataSourceContainer container
+    ) {
+        if (container == conversation.getDataSource()) {
+            return Objects.requireNonNull(getConversationSettings(conversation));
+        }
+        AIContextSettingsChatConversation settings = conversation.getCustomSettings(container);
+        return settings == null ? new AIContextSettingsDataSource(container) : settings;
     }
 
     public void init() throws DBException {
@@ -194,12 +354,34 @@ public class AIChatSession {
                     history,
                     dataSourceContainer
                 );
+                for (QMAIDataSource additionalDataSource : history.getContext().getAdditionalDataSources()) {
+                    DBPDataSourceContainer additionalContainer = getContainer(additionalDataSource);
+                    if (additionalContainer != null && dataSourceContainer != null) {
+                        try {
+                            conversation.addDataSource(additionalContainer);
+                        } catch (DBException exception) {
+                            log.warn("Cannot restore additional conversation connection", exception);
+                        }
+                    }
+                }
                 String contextJson = history.getContext().getContextJson();
                 if (contextJson != null) {
                     AIContextSettingsChatConversation convSettings = new AIContextSettingsChatConversation(this, conversation);
                     convSettings.loadSettingsFromString(contextJson);
                     convSettings.loadDataSourceDefaults();
                     conversation.setCustomSettings(convSettings);
+                }
+                for (var entry : history.getContext().getConnectionSettings().entrySet()) {
+                    DBPDataSourceContainer additionalContainer = conversation.getDataSources().stream()
+                        .filter(source -> source != dataSourceContainer && source.getId().equals(entry.getKey()))
+                        .findFirst().orElse(null);
+                    if (additionalContainer != null) {
+                        AIContextSettingsChatConversation settings = new AIContextSettingsChatConversation(
+                            this, conversation, additionalContainer);
+                        settings.loadSettingsFromMap(entry.getValue());
+                        settings.loadDataSourceDefaults();
+                        conversation.setCustomSettings(additionalContainer, settings);
+                    }
                 }
                 loadedConversations.put(conversation.getId(), conversation);
             }
@@ -279,6 +461,14 @@ public class AIChatSession {
     public AIChatConversation getConversation(@NotNull UUID id) throws DBException {
         init();
         return conversations.get(id);
+    }
+
+    @NotNull
+    public List<AIChatConversation> getAllConversations() throws DBException {
+        init();
+        return conversations.values().stream()
+            .sorted(Comparator.comparing(AIChatConversation::getLastMessageTime).reversed())
+            .toList();
     }
 
     @NotNull
@@ -480,6 +670,7 @@ public class AIChatSession {
         } catch (DBException e) {
             return finishConversationWithError(conversation, chatListener, e);
         }
+        connectAdditionalDataSources(monitor, conversation, chatListener);
         if (isContextChanged(conversation.getId(), context) && !conversation.isTemporary()) {
             saveConversation(sessionId, conversation, settings, context);
         }
@@ -550,45 +741,18 @@ public class AIChatSession {
         return messages;
     }
 
-    @Nullable
-    private AIDatabaseContext createDatabaseContext(
-        @NotNull DBRProgressMonitor monitor,
-        @NotNull AIPromptGenerator promptGenerator,
-        @NotNull AIContextSettings settings
-    ) throws DBException {
-        DBPDataSourceContainer container = settings.getDataSourceContainer();
-        if (container == null) {
-            return null;
-        }
+
+
+    private static void connectDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
+            throws DBException {
         if (!container.isConnected()) {
             boolean connected = container.connect(monitor, true, true);
             if (!connected || !container.isConnected()) {
                 String connectionError = container.getConnectionError();
-                throw new DBException("Error connecting to data source '" + container.getName() + "'" +
-                    (connectionError == null || connectionError.isBlank() ? "" : ": " + connectionError));
+                throw new DBException("Error connecting to data source '" + container.getName() + "'"
+                    + (connectionError == null || connectionError.isBlank() ? "" : ": " + connectionError));
             }
         }
-        DBCExecutionContext executionContext = contextProvider.getExecutionContext(container);
-        DBSLogicalDataSource lgDataSource = DBSLogicalDataSource.createLogicalDataSource(container, executionContext);
-
-        updateScopeSettingsIfNeeded(settings, container);
-        assert settings.getScope() != null;
-        AIDatabaseContext.Builder builder = new AIDatabaseContext.Builder(lgDataSource).setScope(settings.getScope());
-        if (executionContext != null) {
-            builder.setExecutionContext(executionContext);
-        }
-        if (settings.getScope() == AIDatabaseScope.CUSTOM) {
-            DBPDataSource dataSource = container.getDataSource();
-            if (dataSource != null) {
-                String[] customObjectIds = settings.getCustomObjectIds();
-                if (!ArrayUtils.isEmpty(customObjectIds)) {
-                    Set<String> idSet = new LinkedHashSet<>();
-                    Collections.addAll(idSet, customObjectIds); // Duplicates are allowed - we cannot use Set.of here
-                    builder.setCustomEntities(AITextUtils.loadCustomEntities(monitor, dataSource, idSet));
-                }
-            }
-        }
-        return promptGenerator.configureDatabaseContext(builder).build();
     }
 
     @NotNull

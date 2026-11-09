@@ -30,7 +30,7 @@ function clearChat() {
 }
 
 function updateAiNoticeVisibility() {
-    aiNotice.hidden = chat.querySelector('.message') === null;
+    aiNotice.hidden = chat.querySelector('.message') !== null;
 }
 
 function getClassName(role) {
@@ -48,12 +48,11 @@ function getClassName(role) {
 }
 
 function setBusy(args) {
-    hideCenterText();
-
     const wasBusy = isBusy;
     isBusy = Boolean(args.busy);
     ensureBusyIndicator();
     if (isBusy) {
+        hideCenterText();
         if (!wasBusy) {
             announceWaiting();
         }
@@ -66,7 +65,14 @@ function showCenterText(args) {
 
     const centerDiv = document.createElement('div');
     centerDiv.id = 'center-text-content';
-    centerDiv.innerHTML = `<div class="center-text-content">${args.text}</div>`;
+    const connectionsHint = document.createElement('div');
+    connectionsHint.className = 'empty-connections-hint';
+    connectionsHint.textContent = args.connectionsHint;
+    centerDiv.appendChild(connectionsHint);
+    const hint = document.createElement('div');
+    hint.className = 'center-text-content';
+    hint.textContent = args.text;
+    centerDiv.appendChild(hint);
 
     document.body.appendChild(centerDiv);
 }

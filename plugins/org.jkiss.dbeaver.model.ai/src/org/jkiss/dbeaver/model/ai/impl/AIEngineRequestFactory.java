@@ -16,15 +16,19 @@
  */
 package org.jkiss.dbeaver.model.ai.impl;
 
+import com.google.gson.Gson;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.*;
+import org.jkiss.dbeaver.model.ai.engine.AIDatabaseCapabilities;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
 import org.jkiss.dbeaver.model.ai.engine.AIEngine;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
+import org.jkiss.dbeaver.model.ai.functions.AIFunctionParams;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIPromptGeneratorRegistry;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -75,8 +79,12 @@ public class AIEngineRequestFactory {
         AIPromptGenerator promptGenerator = functionContext.getPrompt();
         AIDatabaseContext databaseContext = functionContext.getContext();
         String systemPrompt = promptGenerator.build(assistant, databaseContext);
+        AIChatConversation conversation = functionContext.getConversation();
+        if (conversation != null && conversation.getDataSources().size() > 1) {
+            systemPrompt += describeConnections(functionContext);
+        }
 
-        RequestFunctions requestFunctions = determineRequestTools(
+        final RequestFunctions requestFunctions = determineRequestTools(
             assistant,
             profile,
             functionContext,
@@ -156,6 +164,90 @@ public class AIEngineRequestFactory {
         return request;
     }
 
+    @NotNull
+    static String describeConnections(@NotNull AIFunctionContext context) {
+        AIChatConversation conversation = context.getConversation();
+        if (conversation == null) {
+            return "";
+        }
+        StringBuilder connections = new StringBuilder("\nAvailable conversation connections (JSON):\n");
+        Gson gson = new Gson();
+        for (var container : conversation.getDataSources()) {
+            Map<String, Object> details = new LinkedHashMap<>();
+            details.put("connectionId", container.getId());
+            details.put("name", container.getName());
+            details.put("primary", container == conversation.getDataSource());
+            details.put("connected", container.isConnected());
+            details.put("metadataAvailable", false);
+            details.put("supportsCatalogs", "unknown");
+            details.put("supportsSchemas", "unknown");
+            if (container.isConnected()) {
+                try {
+                    AIFunctionContext selected = context.withConnection(container.getId());
+                    AIDatabaseContext database = selected.getContext();
+                    if (database != null) {
+                        details.put("metadataAvailable", true);
+                        var execution = database.getExecutionContext();
+                        details.put("dialect", execution.getDataSource().getSQLDialect().getDialectName());
+                        AIDatabaseCapabilities capabilities = AIDatabaseCapabilities.read(selected);
+                        details.put("supportsCatalogs", capabilities.catalogs() == null ? "unknown" : capabilities.catalogs());
+                        details.put("supportsSchemas", capabilities.schemas() == null ? "unknown" : capabilities.schemas());
+                        var defaults = execution.getContextDefaults();
+                        if (defaults != null) {
+                            var catalog = defaults.getDefaultCatalog();
+                            if (catalog != null && AIUtils.isCatalogInScope(database, execution, catalog)) {
+                                details.put("defaultCatalog", catalog.getName());
+                            }
+                            var schema = defaults.getDefaultSchema();
+                            if (schema != null && AIUtils.isSchemaInScope(database, execution, schema)) {
+                                details.put("defaultSchema", schema.getName());
+                            }
+                        }
+                    }
+                } catch (DBException exception) {
+                    log.debug("Cannot describe conversation connection capabilities", exception);
+                }
+            }
+            connections.append(gson.toJson(details)).append('\n');
+        }
+        connections.append("For built-in database tools, use connectionId for one connection, " +
+            "or sourceConnectionId and targetConnectionId for transfer and comparison tools. " +
+            "These selectors do not apply to external MCP tools; follow their own parameter schemas. " +
+            "An omitted or empty connection selector selects the primary connection. " +
+            "Only these connections are available. Each connection has its own dialect, scope and access restrictions. " +
+            "The primary connection's dialect and namespace defaults do not apply to other connections. " +
+            "Call listSchemaNames only for connections that support schemas. " +
+            "Omit schema/catalog parameters when the selected connection does not support them. " +
+            "Unknown capabilities do not imply support; never guess schema or catalog names.");
+        return connections.toString();
+    }
+
+    @NotNull
+    static AIFunctionVerifier.FunctionState getRequestFunctionState(
+        @NotNull AIFunctionDescriptor function,
+        @NotNull AIFunctionContext context
+    ) {
+        AIFunctionVerifier.FunctionState state = function.getFunctionState(context);
+        AIChatConversation conversation = context.getConversation();
+        if (state != AIFunctionVerifier.FunctionState.NOT_APPLICABLE || conversation == null
+            || !function.supportsConnectionRouting()) {
+            return state;
+        }
+        for (var container : conversation.getDataSources()) {
+            if (container == conversation.getDataSource() || !container.isConnected()) {
+                continue;
+            }
+            try {
+                if (function.getFunctionState(context.withConnection(container.getId())) == AIFunctionVerifier.FunctionState.APPLICABLE) {
+                    return AIFunctionVerifier.FunctionState.APPLICABLE;
+                }
+            } catch (DBException exception) {
+                log.debug("Cannot check function for conversation connection", exception);
+            }
+        }
+        return state;
+    }
+
     private boolean isFunctionsEnabled(@NotNull AIAssistant assistant, @NotNull AIConfigurationProfile profile) throws DBException {
         if (!assistant.isFunctionSupported(profile)) {
             return false;
@@ -189,10 +281,13 @@ public class AIEngineRequestFactory {
         List<AIFunctionDescriptor> functions = new ArrayList<>();
         List<AIFunctionDescriptor> autoFunctions = new ArrayList<>();
         for (AIFunctionDescriptor fd : toolboxManager.getAllFunctions(AIFunctionPurpose.TOOL)) {
-            AIFunctionVerifier.FunctionState state = fd.getFunctionState(functionContext);
+            AIFunctionVerifier.FunctionState state = getRequestFunctionState(fd, functionContext);
             switch (state) {
                 case APPLICABLE -> functions.add(fd);
                 case AUTO_CALL -> autoFunctions.add(fd);
+                default -> {
+                    continue;
+                }
             }
         }
 
