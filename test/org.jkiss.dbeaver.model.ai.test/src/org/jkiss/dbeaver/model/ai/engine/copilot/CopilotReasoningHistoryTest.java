@@ -17,23 +17,31 @@
 package org.jkiss.dbeaver.model.ai.engine.copilot;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.ai.AIAssistant;
+import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AIFunctionCall;
+import org.jkiss.dbeaver.model.ai.AIFunctionContext;
 import org.jkiss.dbeaver.model.ai.AIFunctionResult;
 import org.jkiss.dbeaver.model.ai.AIFunctionType;
 import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.AIMessageMeta;
+import org.jkiss.dbeaver.model.ai.AIPromptGenerator;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineResponse;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotChatRequest;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.CopilotSessionToken;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIConstants;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
+import org.jkiss.dbeaver.model.ai.impl.AIEngineRequestFactory;
+import org.jkiss.dbeaver.model.ai.impl.DummyTokenCounter;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.Pair;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
@@ -79,6 +87,60 @@ class CopilotReasoningHistoryTest {
             Assertions.assertNotEquals(initial.reasoningSource, changed.reasoningSource);
             Assertions.assertTrue(changed.input.stream().allMatch(item -> "message".equals(item.type)));
             Assertions.assertFalse(JSONUtils.GSON.toJson(changed).contains("opaque-state"));
+        }
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void preservesEverySynchronousResponsesCall(boolean textFirst) throws Exception {
+        CopilotClientResponses mockClient = client();
+        String call = "{\"type\":\"function_call\",\"call_id\":\"call_1\",\"name\":\"db_listTables\",\"arguments\":\"{}\"}";
+        String text = "{\"type\":\"message\",\"content\":[{\"type\":\"output_text\",\"text\":\"Checking\"}]}";
+        Mockito.when(mockClient.chat(Mockito.any(), Mockito.any(), Mockito.any())).thenReturn(JSONUtils.GSON.fromJson(
+            "{\"status\":\"completed\",\"output\":[" + (textFirst ? text + "," : "")
+                + call + "," + call.replace("call_1", "call_2") + "]}", OAIResponsesResponse.class));
+        try (CopilotCompletionEngine<CopilotProperties> engine = engine(properties(), mockClient)) {
+            AIEngineResponse response = engine.requestCompletion(Mockito.mock(DBRProgressMonitor.class),
+                new AIEngineRequest(AIMessage.userMessage("Inspect tables")));
+            Assertions.assertEquals(List.of("call_1", "call_2"), response.getFunctionCalls().stream()
+                .map(item -> item.getMessageMetadata().get(OpenAIConstants.TOOL_RESULT_CALL_ID)).toList());
+        }
+    }
+
+    @Test
+    void boundsNativeReasoningThroughTheCommonRequestFactory() throws Exception {
+        CopilotClientResponses mockClient = client();
+        CopilotProperties properties = properties();
+        properties.setContextWindowSize(4000);
+        try (CopilotCompletionEngine<CopilotProperties> engine = engine(properties, mockClient)) {
+            String source = send(engine, mockClient, new AIEngineRequest(AIMessage.userMessage("test")), false).reasoningSource;
+            AIMessageMeta meta = new AIMessageMeta("prompt", "copilot", "test-model", new AIUsage(1, 0, 6001, 6000), Duration.ZERO, 0,
+                Map.of(OpenAIConstants.REASONING_SOURCE, source, OpenAIConstants.TOOL_CALL_REASONING, REASONING,
+                    OpenAIConstants.REASONING_TOKENS, "6000"));
+            List<AIMessage> history = List.of(AIMessage.userMessage("Old question"),
+                AIMessage.assistantMessage("Old answer", List.of(meta)), AIMessage.userMessage("New question"));
+            AIPromptGenerator prompt = Mockito.mock(AIPromptGenerator.class);
+            Mockito.when(prompt.build(Mockito.any(), Mockito.any())).thenReturn("System");
+            AIFunctionContext context = Mockito.mock(AIFunctionContext.class);
+            Mockito.when(context.getPrompt()).thenReturn(prompt);
+            AIEngineRequestFactory factory = new AIEngineRequestFactory(new DummyTokenCounter()) {
+                @NotNull
+                @Override
+                protected RequestFunctions determineRequestTools(
+                    @NotNull AIAssistant assistant,
+                    @NotNull AIConfigurationProfile profile,
+                    @NotNull AIFunctionContext functionContext,
+                    long userMessageCount
+                ) {
+                    return new RequestFunctions(List.of(), List.of());
+                }
+            };
+            AIEngineRequest next = factory.build(Mockito.mock(DBRProgressMonitor.class), Mockito.mock(AIAssistant.class),
+                Mockito.mock(AIConfigurationProfile.class), engine, context, history);
+            Assertions.assertTrue(next.wasPromptTruncated());
+            Assertions.assertEquals(List.of("System", "New question"), next.getMessages().stream().map(AIMessage::getContent).toList());
+            OAIResponsesRequest wire = send(engine, mockClient, next, false);
+            Assertions.assertTrue(wire.input.stream().noneMatch(item -> "reasoning".equals(item.type)));
         }
     }
 

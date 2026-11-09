@@ -58,6 +58,7 @@ public class OpenAIAccountClient extends OpenAIClientResponses {
     protected OAIResponsesResponse parseCompletionResponse(@NotNull String responseBody) throws DBException {
         OAIResponsesResponse response = new OAIResponsesResponse();
         response.output = new ArrayList<>();
+        boolean completed = false;
 
         for (String line : responseBody.split("\n")) {
             if (!line.startsWith(OpenAiAPIStreamConsumer.DATA_EVENT)) {
@@ -83,12 +84,17 @@ public class OpenAIAccountClient extends OpenAIClientResponses {
             }
             if (OpenAiAPIStreamConsumer.EVENT_TYPE_ITEM_DONE.equals(chunk.type) && chunk.item != null) {
                 response.output.add(chunk.item);
-            } else if (OpenAiAPIStreamConsumer.EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type) && chunk.response != null) {
+            } else if (OpenAiAPIStreamConsumer.EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type)) {
+                if (chunk.response == null) {
+                    throw new DBException("Missing completed response");
+                }
+                chunk.response.validateCompletion();
                 response.usage = chunk.response.usage;
+                completed = true;
             }
         }
 
-        if (response.output.isEmpty()) {
+        if (!completed || response.output.isEmpty()) {
             throw new DBException("Incomplete response from the ChatGPT account API");
         }
         return response;

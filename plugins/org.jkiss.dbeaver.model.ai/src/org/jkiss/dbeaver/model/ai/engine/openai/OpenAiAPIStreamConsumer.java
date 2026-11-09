@@ -105,7 +105,7 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
                         listener.messageMetadata(OpenAiUtils.createReasoningMetadata(
                             reasoning, reasoningSource, chunk.response.getAIUsage()));
                     } else {
-                        functionCalls.forEach(call -> OpenAiUtils.setReasoningUsage(call, chunk.response.getAIUsage()));
+                        OpenAiUtils.completeReasoning(functionCalls, reasoning, reasoningSource, chunk.response.getAIUsage());
                     }
                     listener.usage(chunk.response.getAIUsage());
                     completed = true;

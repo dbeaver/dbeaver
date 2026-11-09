@@ -128,10 +128,12 @@ public class AIAssistantImpl implements AIAssistant {
                 if (completionResponse.getType() == AIMessageType.FUNCTION) {
                     List<AIMessage> newMessages = new ArrayList<>(request.getMessages());
                     List<String> actionResults = new ArrayList<>();
-                    for (AIFunctionCall functionCall : completionResponse.getFunctionCalls()) {
-                        if (functionCallCount++ >= MAX_FUNCTION_CALLS) {
-                            throw new DBException("Too many AI function calls (" + MAX_FUNCTION_CALLS + ")");
-                        }
+                    List<AIFunctionCall> calls = completionResponse.getFunctionCalls();
+                    if (calls.size() > MAX_FUNCTION_CALLS - functionCallCount) {
+                        throw new DBException("Too many AI function calls (" + MAX_FUNCTION_CALLS + ")");
+                    }
+                    functionCallCount += calls.size();
+                    for (AIFunctionCall functionCall : calls) {
                         AIFunctionResult result = callFunction(functionContext, functionCall);
                         if (result.getType() == AIFunctionType.ACTION) {
                             actionResults.add(CommonUtils.toString(result.getValue()));

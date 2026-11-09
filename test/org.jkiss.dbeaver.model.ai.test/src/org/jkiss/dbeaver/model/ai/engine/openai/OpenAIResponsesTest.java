@@ -248,6 +248,26 @@ class OpenAIResponsesTest {
         }
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"", "data: [DONE]\n", "data: {\"type\":\"response.completed\"}\n",
+        "data: {\"type\":\"response.completed\",\"response\":{\"status\":\"incomplete\"}}\n"})
+    void rejectsAccountStreamsWithoutAValidCompletedResponse(@NotNull String ending) {
+        try (OpenAIAccountClient client = new OpenAIAccountClient(new OpenAIProperties())) {
+            Assertions.assertThrows(DBException.class, () -> client.parseCompletionResponse(
+                "data: {\"type\":\"response.output_item.done\",\"item\":" + CALL + "}\n" + ending));
+        }
+    }
+
+    @Test
+    void acceptsCompletedAccountToolCalls() throws Exception {
+        try (OpenAIAccountClient client = new OpenAIAccountClient(new OpenAIProperties())) {
+            OAIResponsesResponse result = client.parseCompletionResponse(
+                "data: {\"type\":\"response.output_item.done\",\"item\":" + CALL + "}\n"
+                    + "data: {\"type\":\"response.completed\",\"response\":{\"status\":\"completed\"}}\n");
+            Assertions.assertEquals("call_1", result.output.getFirst().callId);
+        }
+    }
+
     @NotNull
     private static OpenAIEngine<OpenAIProperties> engine(@NotNull OpenAIClientResponses client) {
         OpenAIProperties properties = new OpenAIProperties();

@@ -32,7 +32,9 @@ import org.jkiss.dbeaver.model.ai.AIMessageMeta;
 import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineRequest;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineResponse;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.*;
+import org.jkiss.dbeaver.model.ai.internal.AIMessages;
 import org.jkiss.dbeaver.model.ai.utils.MonitoredHttpClient;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.utils.CommonUtils;
@@ -143,6 +145,52 @@ public class OpenAiUtils {
             metadata.put(OpenAIConstants.REASONING_TOKENS, Integer.toString(usage.reasoningTokens()));
         }
         return metadata;
+    }
+
+    @NotNull
+    public static AIEngineResponse toEngineResponse(
+        @NotNull OAIResponsesResponse result,
+        @Nullable String reasoningSource
+    ) throws DBException {
+        result.validateCompletion();
+        List<OAIMessage> reasoning = new ArrayList<>();
+        List<AIFunctionCall> calls = new ArrayList<>();
+        for (OAIMessage item : result.output) {
+            if (OAIMessage.TYPE_FUNCTION_REASONING.equals(item.type)) {
+                reasoning.add(item);
+            } else if (OAIMessage.TYPE_FUNCTION_CALL.equals(item.type)) {
+                calls.add(createFunctionCall(item, reasoning, reasoningSource));
+            }
+        }
+        AIUsage usage = result.getAIUsage();
+        if (!calls.isEmpty()) {
+            completeReasoning(calls, reasoning, reasoningSource, usage);
+            return new AIEngineResponse(calls, usage);
+        }
+        List<String> choices = result.output.stream().filter(item -> OAIMessage.TYPE_MESSAGE.equals(item.type))
+            .map(OAIMessage::getFullText).toList();
+        AIEngineResponse response = new AIEngineResponse(AIMessageType.ASSISTANT,
+            choices.isEmpty() ? List.of(AIMessages.ai_empty_engine_response) : choices, usage);
+        response.setMessageMetadata(createReasoningMetadata(reasoning, reasoningSource, usage));
+        return response;
+    }
+
+    static void completeReasoning(
+        @NotNull List<AIFunctionCall> calls,
+        @NotNull List<OAIMessage> reasoning,
+        @Nullable String reasoningSource,
+        @Nullable AIUsage usage
+    ) {
+        AIFunctionCall last = calls.getLast();
+        Map<String, String> metadata = last.getMessageMetadata() == null ? new HashMap<>() : new HashMap<>(last.getMessageMetadata());
+        String snapshot = metadata.get(OpenAIConstants.TOOL_CALL_REASONING);
+        int beforeCall = snapshot == null ? 0 : JSONUtils.GSON.fromJson(snapshot, OAIMessage[].class).length;
+        if (reasoning.size() > beforeCall) {
+            metadata.putAll(createReasoningMetadata(reasoning, reasoningSource, usage));
+            metadata.put(OpenAIConstants.REASONING_AFTER_CALL, Integer.toString(reasoning.size() - beforeCall));
+            last.setMessageMetadata(metadata);
+        }
+        calls.forEach(call -> setReasoningUsage(call, usage));
     }
 
     static void setReasoningUsage(@NotNull AIFunctionCall call, @Nullable AIUsage usage) {
@@ -279,9 +327,12 @@ public class OpenAiUtils {
                         outputs.clear();
                     }
                     // streamed calls can carry growing snapshots of the same reasoning group
-                    result.addAll(reasoningItems.subList(continuation ? previousReasoning.size() : 0, reasoningItems.size()));
+                    int afterCall = metadata == null ? 0 : CommonUtils.toInt(metadata.get(OpenAIConstants.REASONING_AFTER_CALL));
+                    int beforeCall = reasoningItems.size() - afterCall;
+                    result.addAll(reasoningItems.subList(continuation ? previousReasoning.size() : 0, beforeCall));
                     previousReasoning = reasoning == null ? null : reasoningKeys;
                     result.add(functionCallMessage);
+                    result.addAll(reasoningItems.subList(beforeCall, reasoningItems.size()));
                     outputs.add(OAIMessageFactory.fromAIMessage(message, functionCallMessage.callId));
                 }
             } else {
@@ -327,7 +378,7 @@ public class OpenAiUtils {
             .withImages(message.getImages()));
     }
 
-    static int countContextTokens(
+    public static int countContextTokens(
         @NotNull List<AIMessage> messages,
         @NotNull String reasoningSource,
         boolean reasoningRequired,
