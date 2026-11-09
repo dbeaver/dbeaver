@@ -51,7 +51,14 @@ public class QMAIChatStorageInMemory implements AIChatStorage {
     @Override
     public void saveConversation(@NotNull String sessionId, @NotNull QMAIConversationHistory chat) throws DBException {
         conversations.computeIfAbsent(sessionId, k -> new ConcurrentHashMap<>())
-            .put(chat.getId(), chat);
+            .compute(chat.getId(), (id, previous) -> {
+                if (previous != null) {
+                    Set<QMAIContextObject> objects = new HashSet<>(previous.getContext().getObjects());
+                    objects.addAll(chat.getContext().getObjects());
+                    chat.setContext(new QMAIContext(chat.getContext().getContextJson(), objects));
+                }
+                return chat;
+            });
     }
 
     @Override

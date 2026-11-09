@@ -108,16 +108,8 @@ public class AIChatSession {
 
         loadConversationImages(monitor, conversation);
         AIContextSettings contextSettings = getConversationSettings(conversation);
-        AIDatabaseContext databaseContext = null;
-        try {
-            if (contextSettings != null) {
-                databaseContext = createDatabaseContext(monitor, conversation.getPromptGenerator(), contextSettings);
-            }
-        } catch (DBException e) {
-            log.warn("Error creating database context for conversation save", e);
-        }
-
-        saveConversation(sessionIdProvider.getSessionId(monitor), conversation, contextSettings, databaseContext);
+        // database metadata is captured when preparing an AI request
+        saveConversation(sessionIdProvider.getSessionId(monitor), conversation, contextSettings, null);
     }
 
     private void saveConversation(
