@@ -45,6 +45,7 @@ public class AIFunctionContext {
     @Nullable
     private DatabaseContextProvider databaseContextProvider;
 
+    /** Resolves a conversation connection's database context. */
     @FunctionalInterface
     public interface DatabaseContextProvider {
         @Nullable
@@ -108,7 +109,7 @@ public class AIFunctionContext {
 
     @NotNull
     public AIFunctionContext withConnectionParameter(@NotNull Map<String, Object> arguments, @NotNull String parameterName)
-        throws DBException {
+            throws DBException {
         Object connectionId = arguments.get(parameterName);
         if (connectionId == null) {
             return withConnection(null);

@@ -267,6 +267,19 @@ public class AIChatConversation {
         return container;
     }
 
+    @Nullable
+    public DBPDataSourceContainer getDataSource(@Nullable String connectionId) throws DBException {
+        if (CommonUtils.isEmptyTrimmed(connectionId)) {
+            return container;
+        }
+        for (DBPDataSourceContainer dataSource : getDataSources()) {
+            if (dataSource.getId().equals(connectionId)) {
+                return dataSource;
+            }
+        }
+        throw new DBException("Connection '" + connectionId + "' is not attached to this conversation. Access restricted.");
+    }
+
     @NotNull
     public List<DBPDataSourceContainer> getDataSources() {
         if (container == null) {
@@ -303,18 +316,7 @@ public class AIChatConversation {
         return additionalDataSources.removeIf(dataSource -> dataSource.getId().equals(connectionId));
     }
 
-    @Nullable
-    public DBPDataSourceContainer getDataSource(@Nullable String connectionId) throws DBException {
-        if (CommonUtils.isEmptyTrimmed(connectionId)) {
-            return container;
-        }
-        for (DBPDataSourceContainer dataSource : getDataSources()) {
-            if (dataSource.getId().equals(connectionId)) {
-                return dataSource;
-            }
-        }
-        throw new DBException("Connection '" + connectionId + "' is not attached to this conversation. Access restricted.");
-    }
+
 
     @NotNull
     public synchronized AIChatConversation createEmptyCopy(@NotNull String name) {

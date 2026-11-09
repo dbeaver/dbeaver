@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 
 import java.util.List;
@@ -217,12 +218,13 @@ public class AIMultiConnectionTest extends DBeaverUnitTest {
         AIChatSession session = registeredSession(provider);
         DBPPlatform platform = Mockito.mock(DBPPlatform.class);
         Mockito.when(platform.getPreferenceStore()).thenReturn(Mockito.mock(DBPPreferenceStore.class));
-        try (var platformMock = Mockito.mockStatic(DBWorkbench.class);
-             var settings = Mockito.mockConstruction(AIContextSettingsDataSource.class, (mock, construction) -> {
+        MockedConstruction.MockInitializer<AIContextSettingsDataSource> initializer = (mock, construction) -> {
             Mockito.when(mock.isMetaTransferConfirmed()).thenReturn(true);
             Mockito.when(mock.getDataSourceContainer()).thenReturn(additional);
             Mockito.when(mock.getScope()).thenReturn(AIDatabaseScope.CUSTOM);
-        })) {
+        };
+        try (var platformMock = Mockito.mockStatic(DBWorkbench.class);
+             var settings = Mockito.mockConstruction(AIContextSettingsDataSource.class, initializer)) {
             platformMock.when(DBWorkbench::getPlatform).thenReturn(platform);
             AIFunctionContext context = session.createFunctionContext(new VoidProgressMonitor(), conversation, databaseContext(primary));
             DBException exception = Assertions.assertThrows(DBException.class, () -> context.withConnection("additional"));
@@ -404,11 +406,6 @@ public class AIMultiConnectionTest extends DBeaverUnitTest {
     public void sourceAndTargetTransformersReceiveTheirOwnContexts() throws DBException {
         AIChatConversation conversation = conversation(primary);
         conversation.addDataSource(additional);
-        AIDatabaseContext primaryContext = databaseContext(primary);
-        AIDatabaseContext additionalContext = databaseContext(additional);
-        AIFunctionContext context = new AIFunctionContext(new VoidProgressMonitor(), primaryContext,
-            conversation.getPromptGenerator(), conversation, connectionId ->
-                conversation.getDataSource(connectionId) == primary ? primaryContext : additionalContext);
         AIFunctionDescriptor descriptor = Mockito.mock(AIFunctionDescriptor.class);
         AIFunctionParameter tableParameter = Mockito.mock(AIFunctionParameter.class);
         Mockito.when(tableParameter.getTransformer()).thenReturn((databaseContext, functionContext, function, parameter, value) -> {
@@ -427,6 +424,11 @@ public class AIMultiConnectionTest extends DBeaverUnitTest {
             AIFunctionParams.SOURCE_CONNECTION_ID_PARAM, "additional",
             AIFunctionParams.TARGET_CONNECTION_ID_PARAM, "primary"));
         call.setFunction(descriptor);
+        AIDatabaseContext primaryContext = databaseContext(primary);
+        AIDatabaseContext additionalContext = databaseContext(additional);
+        AIFunctionContext context = new AIFunctionContext(new VoidProgressMonitor(), primaryContext,
+            conversation.getPromptGenerator(), conversation, connectionId ->
+                conversation.getDataSource(connectionId) == primary ? primaryContext : additionalContext);
         call.transformArguments(primaryContext, context);
         Assertions.assertEquals("additional", call.getArguments().get("sourceTable_id"));
         Assertions.assertEquals("primary", call.getArguments().get("targetTable_id"));

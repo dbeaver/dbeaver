@@ -286,6 +286,9 @@ public class AIEngineRequestFactory {
             switch (state) {
                 case APPLICABLE -> functions.add(fd);
                 case AUTO_CALL -> autoFunctions.add(fd);
+                default -> {
+                    continue;
+                }
             }
         }
 

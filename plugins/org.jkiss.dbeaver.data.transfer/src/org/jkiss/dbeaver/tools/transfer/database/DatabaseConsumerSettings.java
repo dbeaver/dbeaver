@@ -561,7 +561,11 @@ public class DatabaseConsumerSettings implements IDataTransferConsumerSettings {
         }
     }
 
-    public void addDataMappings(DBRRunnableContext context, DBSDataContainer dataContainer, DatabaseMappingContainer mappingContainer) {
+    public void addDataMappings(
+        @NotNull DBRRunnableContext context,
+        @NotNull DBSDataContainer dataContainer,
+        @NotNull DatabaseMappingContainer mappingContainer
+    ) {
         addDataMappings(context, dataContainer, mappingContainer, true);
     }
 

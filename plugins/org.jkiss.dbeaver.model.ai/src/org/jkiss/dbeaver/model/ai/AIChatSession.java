@@ -150,6 +150,40 @@ public class AIChatSession {
         return databaseContext;
     }
 
+    @Nullable
+    private AIDatabaseContext createDatabaseContext(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable AIPromptGenerator promptGenerator,
+        @NotNull AIContextSettings settings
+    ) throws DBException {
+        DBPDataSourceContainer container = settings.getDataSourceContainer();
+        if (container == null) {
+            return null;
+        }
+        connectDataSource(monitor, container);
+        DBCExecutionContext executionContext = contextProvider.getExecutionContext(container);
+        DBSLogicalDataSource lgDataSource = DBSLogicalDataSource.createLogicalDataSource(container, executionContext);
+
+        updateScopeSettingsIfNeeded(settings, container);
+        assert settings.getScope() != null;
+        AIDatabaseContext.Builder builder = new AIDatabaseContext.Builder(lgDataSource).setScope(settings.getScope());
+        if (executionContext != null) {
+            builder.setExecutionContext(executionContext);
+        }
+        if (settings.getScope() == AIDatabaseScope.CUSTOM) {
+            DBPDataSource dataSource = container.getDataSource();
+            if (dataSource != null) {
+                String[] customObjectIds = settings.getCustomObjectIds();
+                if (!ArrayUtils.isEmpty(customObjectIds)) {
+                    Set<String> idSet = new LinkedHashSet<>();
+                    Collections.addAll(idSet, customObjectIds); // Duplicates are allowed - we cannot use Set.of here
+                    builder.setCustomEntities(AITextUtils.loadCustomEntities(monitor, dataSource, idSet));
+                }
+            }
+        }
+        return (promptGenerator == null ? builder : promptGenerator.configureDatabaseContext(builder)).build();
+    }
+
     @NotNull
     public AIFunctionContext createFunctionContext(
         @NotNull DBRProgressMonitor monitor,
@@ -691,39 +725,7 @@ public class AIChatSession {
         return messages;
     }
 
-    @Nullable
-    private AIDatabaseContext createDatabaseContext(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable AIPromptGenerator promptGenerator,
-        @NotNull AIContextSettings settings
-    ) throws DBException {
-        DBPDataSourceContainer container = settings.getDataSourceContainer();
-        if (container == null) {
-            return null;
-        }
-        connectDataSource(monitor, container);
-        DBCExecutionContext executionContext = contextProvider.getExecutionContext(container);
-        DBSLogicalDataSource lgDataSource = DBSLogicalDataSource.createLogicalDataSource(container, executionContext);
 
-        updateScopeSettingsIfNeeded(settings, container);
-        assert settings.getScope() != null;
-        AIDatabaseContext.Builder builder = new AIDatabaseContext.Builder(lgDataSource).setScope(settings.getScope());
-        if (executionContext != null) {
-            builder.setExecutionContext(executionContext);
-        }
-        if (settings.getScope() == AIDatabaseScope.CUSTOM) {
-            DBPDataSource dataSource = container.getDataSource();
-            if (dataSource != null) {
-                String[] customObjectIds = settings.getCustomObjectIds();
-                if (!ArrayUtils.isEmpty(customObjectIds)) {
-                    Set<String> idSet = new LinkedHashSet<>();
-                    Collections.addAll(idSet, customObjectIds); // Duplicates are allowed - we cannot use Set.of here
-                    builder.setCustomEntities(AITextUtils.loadCustomEntities(monitor, dataSource, idSet));
-                }
-            }
-        }
-        return (promptGenerator == null ? builder : promptGenerator.configureDatabaseContext(builder)).build();
-    }
 
     private static void connectDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container)
             throws DBException {

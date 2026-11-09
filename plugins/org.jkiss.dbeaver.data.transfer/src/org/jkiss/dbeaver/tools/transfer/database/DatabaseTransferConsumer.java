@@ -128,7 +128,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         this.localTargetObject = targetObject;
     }
 
-    public DatabaseTransferConsumer(DBSObjectContainer targetObjectContainer) {
+    public DatabaseTransferConsumer(@NotNull DBSObjectContainer targetObjectContainer) {
         this(targetObjectContainer, null);
     }
 
@@ -142,6 +142,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         return targetTableName;
     }
 
+    @Nullable
     public DBSObjectContainer getTargetObjectContainer() {
         return targetObjectContainer;
     }

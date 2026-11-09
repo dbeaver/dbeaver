@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai.utils;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -172,7 +173,11 @@ public class AIObjectScopeTest extends DBeaverUnitTest {
         AIUtils.checkQueryInScope(context, new SQLQuery(dataSource, "SELECT 1"));
     }
 
-    private void stubTable(org.mockito.MockedStatic<DBUtils> dbUtils, String name, DBSObject table) {
+    private void stubTable(
+        @NotNull org.mockito.MockedStatic<DBUtils> dbUtils,
+        @NotNull String name,
+        @NotNull DBSObject table
+    ) {
         String normalizedName = DBUtils.getUnQuotedNormalizedIdentifier(dataSource.getSQLDialect(), name);
         dbUtils.when(() -> DBUtils.getObjectByPath(context.getMonitor(), executionContext, root, null, null, normalizedName, true))
             .thenReturn(table);
