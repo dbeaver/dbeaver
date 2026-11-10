@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.ai.preferences;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
@@ -25,6 +24,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AIUserProfileCredentials;
+import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.utils.CommonUtils;
@@ -34,6 +35,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 final class AIProfileCredentialsEditor {
+    private final Map<AIConfigurationProfile, AIConfigurationProfile> personalProfiles = new LinkedHashMap<>();
     private final Map<AIConfigurationProfile, Map<String, String>> savedCredentials = new LinkedHashMap<>();
     private final Map<AIConfigurationProfile, Map<String, String>> changes = new LinkedHashMap<>();
     private final Map<AIConfigurationProfile, DBException> loadErrors = new LinkedHashMap<>();
@@ -50,6 +52,15 @@ final class AIProfileCredentialsEditor {
                         profile.resolveSecrets();
                     }
                     if (!profile.isGlobal()) {
+                        AIConfigurationProfile personalProfile = new AIConfigurationProfile();
+                        personalProfile.setProfileId(profile.getProfileId());
+                        personalProfile.setProfileName(profile.getProfileName());
+                        personalProfile.setEngineId(profile.getEngineId());
+                        AIEngineProperties configuration = profile.getConfiguration();
+                        personalProfile.setConfiguration(AISettingsManager.READ_PROPS_GSON.fromJson(
+                            AISettingsManager.READ_PROPS_GSON.toJson(configuration), configuration.getClass()));
+                        AIUserProfileCredentials.resolve(personalProfile);
+                        personalProfiles.put(profile, personalProfile);
                         loaded.put(profile, AIUserProfileCredentials.load(profile));
                     }
                 } catch (DBException e) {
@@ -65,15 +76,12 @@ final class AIProfileCredentialsEditor {
 
     void createControl(@NotNull Composite parent, @NotNull AIConfigurationProfile profile) throws DBException {
         checkLoaded(profile);
-        Label description = new Label(parent, SWT.WRAP);
-        description.setText(profile.isGlobal()
-            ? AIUIMessages.ai_profiles_managed_description
-            : AIUIMessages.ai_profiles_personal_description);
-        GridData descriptionData = new GridData(GridData.FILL_HORIZONTAL);
-        descriptionData.horizontalSpan = 2;
-        descriptionData.widthHint = 450;
-        description.setLayoutData(descriptionData);
-        if (profile.isGlobal() || !savedCredentials.containsKey(profile)) {
+        if (profile.isGlobal()) {
+            Label description = new Label(parent, SWT.NONE);
+            description.setText(AIUIMessages.ai_profiles_managed_description);
+            return;
+        }
+        if (!savedCredentials.containsKey(profile)) {
             return;
         }
         Map<String, String> credentials = new LinkedHashMap<>(savedCredentials.get(profile));
@@ -88,48 +96,29 @@ final class AIProfileCredentialsEditor {
     }
 
     @NotNull
-    String getStatus(@NotNull AIConfigurationProfile profile) {
-        if (loadErrors.containsKey(profile)) {
-            return AIUIMessages.ai_profiles_status_unavailable;
+    AIEngineProperties getConfiguration(@NotNull AIConfigurationProfile profile) throws DBException {
+        checkLoaded(profile);
+        AIConfigurationProfile personal = personalProfiles.get(profile);
+        if (personal == null) {
+            throw new DBException("Personal AI profile credentials are not loaded");
         }
-        if (profile.isGlobal()) {
-            return AIUIMessages.ai_profiles_status_managed;
-        }
-        Map<String, String> credentials = savedCredentials.get(profile);
-        if (credentials == null) {
-            return AIUIMessages.ai_profiles_status_loading;
-        }
-        if (credentials.isEmpty()) {
-            return AIUIMessages.ai_profiles_status_not_required;
-        }
-        return credentials.values().stream().anyMatch(value -> !CommonUtils.isEmpty(value))
-            ? AIUIMessages.ai_profiles_status_configured
-            : AIUIMessages.ai_profiles_status_not_configured;
+        return personal.getConfiguration();
     }
 
     void saveChanges() throws DBException {
-        for (var entry : changes.entrySet()) {
-            AIUserProfileCredentials.save(entry.getKey(), entry.getValue());
-            entry.getKey().resolveSecrets();
-            savedCredentials.get(entry.getKey()).putAll(entry.getValue());
+        for (var entry : personalProfiles.entrySet()) {
+            AIConfigurationProfile profile = entry.getKey();
+            AIConfigurationProfile personal = entry.getValue();
+            if (changes.containsKey(profile)) {
+                AIUserProfileCredentials.save(profile, changes.get(profile));
+                personal.resolveSecrets();
+                savedCredentials.get(profile).putAll(changes.get(profile));
+            } else {
+                AIUserProfileCredentials.saveChanges(personal);
+            }
+            profile.resolveSecrets();
         }
         changes.clear();
-    }
-
-    void updateCredentials(@NotNull AIConfigurationProfile profile) throws DBException {
-        if (profile.isGlobal()) {
-            return;
-        }
-        Map<String, String> credentials = new LinkedHashMap<>();
-        var properties = profile.getConfiguration();
-        try {
-            for (var property : AIUserProfileCredentials.getCredentialProperties(properties)) {
-                credentials.put(property.getId(), CommonUtils.toString(property.readValue(properties, null, false)));
-            }
-        } catch (IllegalAccessException | InvocationTargetException | IllegalArgumentException e) {
-            throw new DBException("Error reading AI profile credentials", e);
-        }
-        savedCredentials.put(profile, credentials);
     }
 
     boolean isLoaded() {

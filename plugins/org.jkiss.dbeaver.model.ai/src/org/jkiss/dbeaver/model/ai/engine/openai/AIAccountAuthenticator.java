@@ -26,8 +26,7 @@ import java.util.concurrent.CompletableFuture;
 
 public interface AIAccountAuthenticator {
     static boolean isSupported() {
-        return !DBWorkbench.isDistributed()
-            && !DBWorkbench.getPlatform().getApplication().isMultiuser()
+        return !DBWorkbench.getPlatform().getApplication().isMultiuser()
             && !DBWorkbench.getPlatform().getApplication().isHeadlessMode();
     }
 

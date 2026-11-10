@@ -137,7 +137,9 @@ public class AIConfigurationProfile {
     }
 
     public void saveSecrets() throws DBException {
-        if (configuration != null) {
+        if (AIUserProfileCredentials.isUserProfile(this)) {
+            AIUserProfileCredentials.saveChanges(this);
+        } else if (configuration != null) {
             configuration.saveSecrets(this);
         }
     }

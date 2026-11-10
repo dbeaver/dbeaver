@@ -19,11 +19,13 @@ package org.jkiss.dbeaver.model.ai;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
+import org.jkiss.dbeaver.model.ai.engine.openai.AIAccountAuthenticator;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.auth.SMSession;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.model.secret.DBSSecretController;
 import org.jkiss.dbeaver.model.secret.DBSSecretObject;
@@ -37,6 +39,7 @@ import org.mockito.ArgumentMatchers;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import java.util.HashMap;
 import java.util.Map;
 
 class AIUserProfileCredentialsTest extends DBeaverUnitTest {
@@ -283,6 +286,223 @@ class AIUserProfileCredentialsTest extends DBeaverUnitTest {
                 WorkspaceConfigEventManager.fireConfigChangedEvent(AISettingsManager.AI_CONFIGURATION_FILE_NAME);
             }
         }
+    }
+
+    @Test
+    void resolvesAccountCredentialsFromTheWebProfileStore() throws Exception {
+        OpenAIProperties properties = new OpenAIProperties();
+        properties.setAccessToken("stale-other-account");
+        properties.setModel("administrator-model");
+        properties.setBaseUrl("https://administrator.example/v1");
+        AIConfigurationProfile profile = userProfile(properties);
+        Map<String, String> secrets = new HashMap<>(Map.of(
+            "ai.profile.work.accountAuthentication", "true",
+            "ai.profile.work.accessToken", "web-access",
+            "ai.profile.work.refreshToken", "web-refresh",
+            "ai.profile.work.accountEmail", "user@example.com",
+            "ai.profile.work.accountId", "web-account",
+            "ai.profile.work.expiresAt", Long.toString(System.currentTimeMillis() + 600_000)
+        ));
+        DBSSecretController controller = privateStore(secrets);
+        try (MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(
+            DBSSecretController.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
+            controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
+            AIUserProfileCredentials.resolve(profile);
+            Assertions.assertTrue(properties.isAccountAuthentication());
+            Assertions.assertEquals("web-access", properties.getAccessToken());
+            Assertions.assertEquals("web-refresh", properties.getRefreshToken());
+            Assertions.assertEquals("user@example.com", properties.getAccountEmail());
+            Assertions.assertEquals("web-account", properties.getAccountId());
+            Assertions.assertEquals("administrator-model", properties.getModel());
+            Assertions.assertEquals("https://administrator.example/v1", properties.getBaseUrl());
+            secrets.remove("ai.profile.work.refreshToken");
+            Assertions.assertThrows(DBException.class,
+                () -> properties.getValidAccessToken(Mockito.mock(AIAccountAuthenticator.class)));
+        }
+    }
+
+    @Test
+    void savesAndClearsAccountTokensOnlyInThePrivateProfileStore() throws Exception {
+        OpenAIProperties properties = new OpenAIProperties();
+        AIConfigurationProfile profile = userProfile(properties);
+        Map<String, String> secrets = new HashMap<>();
+        DBSSecretController controller = privateStore(secrets);
+        try (MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(
+            DBSSecretController.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
+            controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
+            AIUserProfileCredentials.resolve(profile);
+            properties.setAccountAuthentication(true);
+            properties.setAccountTokens(new AIAccountAuthenticator.Tokens(
+                "desktop-access", "desktop-refresh", 600, "personal-account", "user@example.com"));
+            properties.saveAccountTokens();
+            Assertions.assertEquals("desktop-access", secrets.get("ai.profile.work.accessToken"));
+            Assertions.assertEquals("desktop-refresh", secrets.get("ai.profile.work.refreshToken"));
+            Assertions.assertEquals("true", secrets.get("ai.profile.work.accountAuthentication"));
+            Assertions.assertTrue(secrets.keySet().stream().allMatch(key -> key.startsWith("ai.profile.work.")));
+            properties.clearAccountTokens();
+            properties.saveAccountTokens();
+            Assertions.assertNull(secrets.get("ai.profile.work.accessToken"));
+            Assertions.assertNull(secrets.get("ai.profile.work.refreshToken"));
+            AIUserProfileCredentials.resolve(profile);
+            Assertions.assertFalse(properties.isAccountConnected());
+        }
+    }
+
+    @Test
+    void switchingToApiTokenKeepsAccountTokensAndDoesNotChangeSharedSettings() throws Exception {
+        OpenAIProperties properties = new OpenAIProperties();
+        AIConfigurationProfile profile = userProfile(properties);
+        Map<String, String> secrets = new HashMap<>(Map.of(
+            "ai.profile.work.accountAuthentication", "true",
+            "ai.profile.work.accessToken", "account-access",
+            "ai.profile.work.refreshToken", "account-refresh"
+        ));
+        DBSSecretController controller = privateStore(secrets);
+        try (MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(
+            DBSSecretController.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
+            controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
+            AIUserProfileCredentials.resolve(profile);
+            properties.setAccountAuthentication(false);
+            properties.setToken("api-token");
+            AIUserProfileCredentials.saveChanges(profile);
+            Assertions.assertEquals("false", secrets.get("ai.profile.work.accountAuthentication"));
+            Assertions.assertEquals("api-token", secrets.get("ai.profile.work.token"));
+            Assertions.assertEquals("account-refresh", secrets.get("ai.profile.work.refreshToken"));
+            AIUserProfileCredentials.resolve(profile);
+            Assertions.assertFalse(properties.isAccountAuthentication());
+            Assertions.assertEquals("api-token", properties.getToken());
+        }
+    }
+
+    @Test
+    void accountCredentialsNeverFallBackToAnotherProfile() throws Exception {
+        OpenAIProperties properties = new OpenAIProperties();
+        AIConfigurationProfile profile = userProfile(properties);
+        Map<String, String> secrets = new HashMap<>(Map.of(
+            "ai.profile.other.accessToken", "another-user-access",
+            "ai.profile.other.refreshToken", "another-user-refresh"
+        ));
+        DBSSecretController controller = privateStore(secrets);
+        try (MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(
+            DBSSecretController.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
+            controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
+            AIUserProfileCredentials.resolve(profile);
+            Assertions.assertNull(properties.getAccessToken());
+            Assertions.assertNull(properties.getRefreshToken());
+            Assertions.assertFalse(properties.isAccountConnected());
+        }
+    }
+
+    @Test
+    void accountAuthorizationIsAvailableInTeamDesktopButNotHeadlessOrMultiuser() {
+        DBPPlatform platform = Mockito.mock(DBPPlatform.class, Mockito.RETURNS_DEEP_STUBS);
+        try (MockedStatic<DBWorkbench> workbench = Mockito.mockStatic(
+            DBWorkbench.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
+            workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+            workbench.when(DBWorkbench::isDistributed).thenReturn(true);
+            Assertions.assertTrue(AIAccountAuthenticator.isSupported());
+            Mockito.when(platform.getApplication().isHeadlessMode()).thenReturn(true);
+            Assertions.assertFalse(AIAccountAuthenticator.isSupported());
+            Mockito.when(platform.getApplication().isHeadlessMode()).thenReturn(false);
+            Mockito.when(platform.getApplication().isMultiuser()).thenReturn(true);
+            Assertions.assertFalse(AIAccountAuthenticator.isSupported());
+        }
+    }
+
+    @Test
+    void completedAccountAuthorizationCannotWriteAfterTheTeamSessionChanges() throws Exception {
+        OpenAIProperties properties = new OpenAIProperties();
+        AIConfigurationProfile profile = userProfile(properties);
+        DBPPlatform platform = Mockito.mock(DBPPlatform.class, Mockito.RETURNS_DEEP_STUBS);
+        SMSession session = Mockito.mock(SMSession.class);
+        Mockito.when(platform.getWorkspace().getWorkspaceSession()).thenReturn(session);
+        DBSSecretController controller = privateStore(new HashMap<>());
+        try (MockedStatic<DBWorkbench> workbench = Mockito.mockStatic(
+                 DBWorkbench.class, Mockito.withSettings().mockMaker("mock-maker-inline"));
+             MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(
+                 DBSSecretController.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
+            workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+            workbench.when(DBWorkbench::isPlatformStarted).thenReturn(true);
+            controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
+            AIUserProfileCredentials.resolve(profile);
+            properties.setAccountTokens(new AIAccountAuthenticator.Tokens("access", "refresh", 600, "account", "user@example.com"));
+            Mockito.when(platform.getWorkspace().getWorkspaceSession()).thenReturn(Mockito.mock(SMSession.class));
+            Assertions.assertThrows(DBException.class, properties::saveAccountTokens);
+            Mockito.verify(controller, Mockito.never()).setPrivateSecretValue(
+                ArgumentMatchers.any(DBSSecretObject.class), ArgumentMatchers.any(DBSSecretValue.class));
+        }
+    }
+
+    @Test
+    void accountCredentialWritesStopIfTheTeamSessionChangesMidSave() throws Exception {
+        OpenAIProperties properties = new OpenAIProperties();
+        AIConfigurationProfile profile = userProfile(properties);
+        DBPPlatform platform = Mockito.mock(DBPPlatform.class, Mockito.RETURNS_DEEP_STUBS);
+        Mockito.when(platform.getWorkspace().getWorkspaceSession()).thenReturn(Mockito.mock(SMSession.class));
+        DBSSecretController controller = privateStore(new HashMap<>());
+        Mockito.doAnswer(invocation -> {
+            Mockito.when(platform.getWorkspace().getWorkspaceSession()).thenReturn(Mockito.mock(SMSession.class));
+            return null;
+        }).when(controller).setPrivateSecretValue(ArgumentMatchers.any(DBSSecretObject.class), ArgumentMatchers.any(DBSSecretValue.class));
+        try (MockedStatic<DBWorkbench> workbench = Mockito.mockStatic(
+                 DBWorkbench.class, Mockito.withSettings().mockMaker("mock-maker-inline"));
+             MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(
+                 DBSSecretController.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
+            workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+            workbench.when(DBWorkbench::isPlatformStarted).thenReturn(true);
+            controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
+            AIUserProfileCredentials.resolve(profile);
+            properties.setAccountTokens(new AIAccountAuthenticator.Tokens("access", "refresh", 600, "account", "user@example.com"));
+            Assertions.assertThrows(DBException.class, properties::saveAccountTokens);
+            Mockito.verify(controller).setPrivateSecretValue(
+                ArgumentMatchers.any(DBSSecretObject.class), ArgumentMatchers.any(DBSSecretValue.class));
+            Mockito.verify(controller, Mockito.never()).flushChanges();
+        }
+    }
+
+    @Test
+    void tokenRefreshDoesNotOverwriteCredentialsRotatedByAnotherClient() throws Exception {
+        OpenAIProperties properties = new OpenAIProperties();
+        AIConfigurationProfile profile = userProfile(properties);
+        Map<String, String> secrets = new HashMap<>(Map.of(
+            "ai.profile.work.accountAuthentication", "true",
+            "ai.profile.work.accessToken", "expired-access",
+            "ai.profile.work.refreshToken", "old-refresh"
+        ));
+        DBSSecretController controller = privateStore(secrets);
+        AIAccountAuthenticator authenticator = Mockito.mock(AIAccountAuthenticator.class);
+        Mockito.when(authenticator.refresh("old-refresh")).thenAnswer(invocation -> {
+            secrets.put("ai.profile.work.refreshToken", "web-rotated-refresh");
+            return new AIAccountAuthenticator.Tokens("desktop-access", "desktop-refresh", 600, "account", "user@example.com");
+        });
+        try (MockedStatic<DBSSecretController> controllers = Mockito.mockStatic(
+            DBSSecretController.class, Mockito.withSettings().mockMaker("mock-maker-inline"))) {
+            controllers.when(DBSSecretController::getGlobalSecretController).thenReturn(controller);
+            AIUserProfileCredentials.resolve(profile);
+            Assertions.assertThrows(DBException.class, () -> properties.getValidAccessToken(authenticator));
+            Assertions.assertEquals("web-rotated-refresh", secrets.get("ai.profile.work.refreshToken"));
+            Mockito.verify(controller, Mockito.never()).setPrivateSecretValue(
+                ArgumentMatchers.any(DBSSecretObject.class), ArgumentMatchers.any(DBSSecretValue.class));
+        }
+    }
+
+    private DBSSecretController privateStore(Map<String, String> secrets) throws DBException {
+        DBSSecretController controller = Mockito.mock(DBSSecretController.class);
+        Mockito.when(controller.getPrivateSecretValue(ArgumentMatchers.anyString()))
+            .thenAnswer(invocation -> secrets.get(invocation.getArgument(0)));
+        Mockito.doAnswer(invocation -> {
+            DBSSecretObject object = invocation.getArgument(0);
+            DBSSecretValue value = invocation.getArgument(1);
+            Assertions.assertEquals("aiProfile", object.getSecretObjectType());
+            Assertions.assertEquals("work", object.getSecretObjectId());
+            if (value.getValue() == null) {
+                secrets.remove(value.getId());
+            } else {
+                secrets.put(value.getId(), value.getValue());
+            }
+            return null;
+        }).when(controller).setPrivateSecretValue(ArgumentMatchers.any(DBSSecretObject.class), ArgumentMatchers.any(DBSSecretValue.class));
+        return controller;
     }
 
     private AIConfigurationProfile userProfile(AIEngineProperties properties) throws DBException {

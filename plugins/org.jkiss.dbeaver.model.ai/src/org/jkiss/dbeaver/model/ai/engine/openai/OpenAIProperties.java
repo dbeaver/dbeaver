@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
+import org.jkiss.dbeaver.model.ai.AIUserProfileCredentials;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.engine.AIAccountProperties;
 import org.jkiss.dbeaver.model.ai.engine.AIModel;
@@ -483,8 +484,8 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         synchronized (credentials) {
             long expiresInSeconds = Math.max(0, (credentials.expiresAt - System.currentTimeMillis()) / 1000);
             credentials.saveAccountTokensInternal(credentials.refreshToken, new AIAccountAuthenticator.Tokens(
-                credentials.accessToken,
-                credentials.refreshToken,
+                CommonUtils.notEmpty(credentials.accessToken),
+                CommonUtils.notEmpty(credentials.refreshToken),
                 expiresInSeconds,
                 credentials.accountId,
                 credentials.accountEmail
@@ -616,7 +617,7 @@ public class OpenAIProperties extends BaseAIEngineProperties implements OpenAIBa
         @Nullable String previousRefreshToken,
         @NotNull AIAccountAuthenticator.Tokens tokens
     ) throws DBException {
-        if (profile != null) {
+        if (profile != null && !AIUserProfileCredentials.isUserProfile(profile)) {
             saveSecrets(profile);
         }
         if (accountTokenPersistence != null && tokens.accessToken() != null && tokens.refreshToken() != null) {

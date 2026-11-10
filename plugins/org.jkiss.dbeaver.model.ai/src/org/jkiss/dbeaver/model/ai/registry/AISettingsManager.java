@@ -193,6 +193,9 @@ public class AISettingsManager {
             if (!saveSecretsAsPlainText()) {
                 AIConfigurationProfile defaultProfile = settings.getDefaultConfigurationOrNull();
                 for (AIConfigurationProfile profile : settings.getConfigurations()) {
+                    if (AIUserProfileCredentials.isUserProfile(profile)) {
+                        continue;
+                    }
                     if (profile == defaultProfile) {
                         profile.saveSecrets();
                     } else if (profile.getConfiguration() instanceof OpenAIProperties properties) {
