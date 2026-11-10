@@ -338,7 +338,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             computer = System.getenv("HOSTNAME");
         }
         String productName = GeneralUtils.getProductName();
-        String suggestedName = computer == null || computer.isBlank() ? productName : productName + " on " + computer;
+        String suggestedName = computer == null || computer.isBlank() ? productName : productName + ": " + computer;
         InputDialog dialog = new InputDialog(
             getShell(), DDTrackingUIMessages.sync_preference_page_dam_name_edit,
             DDTrackingUIMessages.sync_preference_page_dam_name_prompt,
