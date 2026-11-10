@@ -19,15 +19,11 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIImageAttachment;
-import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIModel;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
-import org.jkiss.dbeaver.model.ai.impl.ChatTruncator;
-import org.jkiss.dbeaver.model.ai.impl.DummyTokenCounter;
 import org.jkiss.dbeaver.model.ai.utils.DisposableLazyValue;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -35,7 +31,6 @@ import org.jkiss.utils.CommonUtils;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.ToIntFunction;
 
 public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseCompletionEngine<PROPS> {
 
@@ -119,30 +114,8 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
 
     @NotNull
     private OAIResponsesRequest createRequest(@NotNull AIEngineRequest request) throws DBException {
-        AIEngineRequest prepared = request;
-        Integer configuredWindow = properties.getEffectiveContextWindowSize();
-        if (configuredWindow == null) {
-            AIModelCatalogEntry entry = getCachedCatalogEntry();
-            if (entry != null && entry.limit() != null && entry.limit().context() != null && entry.limit().context() > 0) {
-                configuredWindow = entry.limit().context();
-            }
-        }
-        int contextWindow = configuredWindow == null ? AIConstants.DEFAULT_CONTEXT_WINDOW_SIZE : configuredWindow;
-        if (contextWindow > 0) {
-            DummyTokenCounter counter = new DummyTokenCounter();
-            List<AIMessage> truncated = ChatTruncator.builder().maxTokens(contextWindow)
-                .reserveForSystem(contextWindow / 2).tokenCounter(counter)
-                .imageTokenCounter(this::estimateImageTokens)
-                .contextTokenCounter(getContextTokenCounter(counter::count, !request.getFunctions().isEmpty()))
-                .build().tryTruncate(request.getMessages());
-            if (truncated != null) {
-                prepared = new AIEngineRequest(truncated);
-                prepared.setFunctions(request.getFunctions());
-                request.setWasPromptTruncated(true);
-            }
-        }
         OAIResponsesRequest oaiRequest = OpenAiUtils.createOpenAiRequest(
-            prepared, model(), getRequestTemperature(), reasoningSource(), properties.isReasoningHistoryRequired());
+            request, model(), getRequestTemperature(), reasoningSource(), properties.isReasoningHistoryRequired());
         if (properties instanceof OpenAIProperties openAIProperties
             && openAIProperties.isChatGptAccountAuthentication()
         ) {
@@ -168,17 +141,6 @@ public class OpenAIEngine<PROPS extends OpenAIBaseProperties> extends BaseComple
     ) {
         return OpenAIModels.CATALOG_PROVIDER_ID.equals(getCatalogProviderId())
             ? OpenAIModels.findCatalogEntry(catalog, modelName) : super.findCatalogEntry(catalog, modelName);
-    }
-
-    @NotNull
-    @Override
-    public ToIntFunction<List<AIMessage>> getContextTokenCounter(
-        @NotNull ToIntFunction<String> textCounter,
-        boolean functionsEnabled
-    ) throws DBException {
-        String source = reasoningSource();
-        return messages -> OpenAiUtils.countContextTokens(messages, source,
-            functionsEnabled && properties.isReasoningHistoryRequired(), textCounter);
     }
 
     @NotNull

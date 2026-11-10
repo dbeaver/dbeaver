@@ -106,7 +106,6 @@ public class AIAssistantImpl implements AIAssistant {
             );
 
             AIEngineRequest request = completionRequest;
-            int functionCallCount = 0;
 
             for (int tryIndex = 0; tryIndex < MAX_FUNCTION_CALLS; tryIndex++) {
                 Instant now = Instant.now();
@@ -129,10 +128,6 @@ public class AIAssistantImpl implements AIAssistant {
                     List<AIMessage> newMessages = new ArrayList<>(request.getMessages());
                     List<String> actionResults = new ArrayList<>();
                     List<AIFunctionCall> calls = completionResponse.getFunctionCalls();
-                    if (calls.size() > MAX_FUNCTION_CALLS - functionCallCount) {
-                        throw new DBException("Too many AI function calls (" + MAX_FUNCTION_CALLS + ")");
-                    }
-                    functionCallCount += calls.size();
                     for (AIFunctionCall functionCall : calls) {
                         AIFunctionResult result = callFunction(functionContext, functionCall);
                         if (result.getType() == AIFunctionType.ACTION) {

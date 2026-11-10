@@ -31,11 +31,8 @@ public class OpenAIConstants {
     public static final String ENDPOINT_RESPONSES = "responses";
 
     // Chat API endpoint
-    public static final String TOOL_CALL_REASONING = "openai.reasoning";
     public static final String RESPONSE_OUTPUT = "openai.response.output";
     public static final String REASONING_SOURCE = "openai.reasoning.source";
-    public static final String REASONING_AFTER_CALL = "openai.reasoning.afterCall";
-    public static final String REASONING_TOKENS = "openai.reasoning.tokens";
     public static final String TOOL_RESULT_CALL_ID = "call_id";
     public static final String AI_LOG_QUERY = "gpt.log.query";
     public static final String LEGACY_FALLBACK = "legacy_fallback";

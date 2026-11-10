@@ -21,7 +21,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.AIChatConversation;
 import org.jkiss.dbeaver.model.ai.AIChatResponseConsumer;
 import org.jkiss.dbeaver.model.ai.AIChatSession;
-import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.AIFunctionDescriptor;
 import org.jkiss.dbeaver.model.ai.AIFunctionParameter;
@@ -45,6 +44,7 @@ import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
@@ -150,33 +150,7 @@ class AIResponseHistoryTest {
     }
 
     @ParameterizedTest
-    @ValueSource(booleans = {false, true})
-    void retainsCommentaryFromDeltasWithoutAMessageDoneEvent(boolean terminalOutput) {
-        OAIResponsesResponse response = response(REASONING + "," + TEXT + "," + CALL);
-        AIEngineResponseConsumer listener = Mockito.mock(AIEngineResponseConsumer.class);
-        OpenAiAPIStreamConsumer stream = new OpenAiAPIStreamConsumer(listener, "source");
-        stream.accept("data: {\"type\":\"response.output_item.done\",\"item\":" + REASONING + "}");
-        stream.accept("data: {\"type\":\"response.output_text.delta\",\"delta\":\"Checking\"}");
-        stream.accept("data: {\"type\":\"response.output_text.delta\",\"delta\":\" tables\"}");
-        stream.accept("data: {\"type\":\"response.output_item.done\",\"item\":" + CALL + "}");
-        String completed = terminalOutput ? JSONUtils.GSON.toJson(response) : "{\"status\":\"completed\"}";
-        stream.accept("data: {\"type\":\"response.completed\",\"response\":" + completed + "}");
-        stream.complete();
-        ArgumentCaptor<Map<String, String>> metadata = ArgumentCaptor.forClass(Map.class);
-        Mockito.verify(listener).messageMetadata(metadata.capture());
-        ArgumentCaptor<AIEngineResponseChunk> chunks = ArgumentCaptor.forClass(AIEngineResponseChunk.class);
-        Mockito.verify(listener, Mockito.times(3)).nextChunk(chunks.capture());
-        Mockito.verify(listener, Mockito.never()).error(Mockito.any());
-        AIMessageMeta meta = new AIMessageMeta("prompt", "openai", "model", null, Duration.ZERO, 0, metadata.getValue());
-        List<AIMessage> history = List.of(AIMessage.assistantMessage("Checking tables", List.of(meta)),
-            AIMessage.functionCall(chunks.getValue().getFunctionCall(), new AIFunctionResult(AIFunctionType.INFORMATION, "table")));
-        OAIResponsesRequest next = request(history, "source", true);
-        Assertions.assertEquals(4, next.input.size());
-        Assertions.assertEquals(JSONUtils.GSON.toJson(response.output), JSONUtils.GSON.toJson(next.input.subList(0, 3)));
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"missing", "foreign", "incomplete"})
+    @ValueSource(strings = {"missing", "foreign"})
     void importsUnsafeGroupsWithoutOrphanedCallsOrReasoning(@NotNull String reason) throws Exception {
         List<AIFunctionCall> calls = OpenAiUtils.toEngineResponse(response(REASONING + "," + CALL + ","
             + CALL.replace("call_1", "call_2")), "source").getFunctionCalls();
@@ -186,18 +160,44 @@ class AIResponseHistoryTest {
         switch (reason) {
             case "missing" -> history.removeLast();
             case "foreign" -> source = "other-source";
-            case "incomplete" -> {
-                AIMessageMeta meta = new AIMessageMeta("prompt", "openai", "model", null, Duration.ZERO, 0,
-                    Map.of(AIConstants.RESPONSE_INCOMPLETE, "true",
-                        OpenAIConstants.RESPONSE_OUTPUT, calls.getFirst().getMessageMetadata().get(OpenAIConstants.RESPONSE_OUTPUT),
-                        OpenAIConstants.REASONING_SOURCE, "source"));
-                history.addFirst(AIMessage.assistantMessage("Interrupted", List.of(meta)));
-            }
             default -> throw new IllegalArgumentException(reason);
         }
         OAIResponsesRequest next = request(history, source, true);
         Assertions.assertEquals(history.size(), next.input.size());
         Assertions.assertTrue(next.input.stream().allMatch(item -> "message".equals(item.type) && "user".equals(item.role)));
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void preservesPlainAnswerReasoningAfterHistoryReload(boolean streaming) throws Exception {
+        OAIResponsesResponse response = response(REASONING + "," + TEXT + "," + REASONING.replace("rs_1", "rs_2") + "," + TEXT);
+        Map<String, String> state;
+        if (streaming) {
+            AIEngineResponseConsumer listener = Mockito.mock(AIEngineResponseConsumer.class);
+            stream(response, new OpenAiAPIStreamConsumer(listener, "source"));
+            ArgumentCaptor<Map<String, String>> metadata = ArgumentCaptor.forClass(Map.class);
+            Mockito.verify(listener).messageMetadata(metadata.capture());
+            state = metadata.getValue();
+        } else {
+            state = OpenAiUtils.toEngineResponse(response, "source").getMessageMetadata();
+        }
+        AIMessageMeta metadata = new AIMessageMeta("prompt", "openai", "model", null, Duration.ZERO, 0, state);
+        AIMessageMeta reopened = QMAIChatHistoryMapper.toAIMessageMeta(QMAIChatHistoryMapper.toQMAIMessageMeta(metadata));
+        OAIResponsesRequest next = request(List.of(AIMessage.assistantMessage("Checking tables", List.of(reopened)),
+            AIMessage.userMessage("Continue")), "source", true);
+        Assertions.assertEquals(JSONUtils.GSON.toJson(response.output), JSONUtils.GSON.toJson(next.input.subList(0, 4)));
+        Assertions.assertEquals("user", next.input.getLast().role);
+        Assertions.assertEquals("Continue", next.input.getLast().getFullText());
+        Assertions.assertNull(reopened.usage());
+    }
+
+    @Test
+    void leavesNativeHistoryDisabledForLegacyCallers() throws Exception {
+        AIFunctionCall call = OpenAiUtils.toEngineResponse(response(REASONING + "," + CALL), "source").getFunctionCall();
+        AIMessage result = AIMessage.functionCall(call, new AIFunctionResult(AIFunctionType.INFORMATION, "table"));
+        OAIResponsesRequest next = OpenAiUtils.createOpenAiRequest(new AIEngineRequest(List.of(result)), "model", null);
+        Assertions.assertEquals(List.of("function_call", "function_call_output"), next.input.stream().map(item -> item.type).toList());
+        Assertions.assertNull(next.include);
     }
 
     @NotNull

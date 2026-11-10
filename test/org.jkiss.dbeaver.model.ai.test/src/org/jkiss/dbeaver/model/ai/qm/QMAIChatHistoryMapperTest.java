@@ -21,7 +21,6 @@ import com.google.gson.JsonParser;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.AIAssistant;
 import org.jkiss.dbeaver.model.ai.AIChatMessage;
-import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.AIFunctionResult;
 import org.jkiss.dbeaver.model.ai.AIFunctionType;
@@ -83,7 +82,7 @@ public class QMAIChatHistoryMapperTest {
     @Test
     public void preservesMetadataWithoutInventingReportedUsage() {
         List<AIMessageMeta> original = List.of(new AIMessageMeta(AIMetaTypes.PROMPT, "test", "model", null,
-            Duration.ofSeconds(2), 10, Map.of(AIConstants.RESPONSE_INCOMPLETE, "true")));
+            Duration.ofSeconds(2), 10, Map.of("openai.response.output", "opaque-state")));
         List<QMAIMessageMeta> stored = QMAIChatHistoryMapper.toQMAIMessageMeta(original);
         Assertions.assertEquals(1, stored.size());
         QMAIMessageMeta restored = JSONUtils.GSON.fromJson(JSONUtils.GSON.toJson(stored.getFirst()), QMAIMessageMeta.class);

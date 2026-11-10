@@ -140,7 +140,6 @@ public class AIEngineRequestFactory {
             .reserveForReply(REPLY_TOKEN_RESERVE)
             .reserveForOverhead(OVERHEAD_TOKEN_RESERVE)
             .tokenCounter(tokenCounter)
-            .contextTokenCounter(engine.getContextTokenCounter(tokenCounter::count, !requestFunctions.supportedFunctions().isEmpty()))
             .imageTokenCounter(image -> imageTokenCounts.computeIfAbsent(image, engine::estimateImageTokens))
             .build();
 

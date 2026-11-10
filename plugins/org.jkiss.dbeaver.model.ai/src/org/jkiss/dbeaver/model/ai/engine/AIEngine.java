@@ -22,11 +22,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.AIImageAttachment;
-import org.jkiss.dbeaver.model.ai.AIMessage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
-import java.util.function.ToIntFunction;
 
 /**
  * Completion engine
@@ -76,14 +74,6 @@ public interface AIEngine<PROPS extends AIEngineProperties> extends AutoCloseabl
     default int estimateImageTokens(@NotNull AIImageAttachment image) {
         // conservative reserve for engines without a model-specific image tokenizer
         return AIImageAttachment.DEFAULT_TOKEN_ESTIMATE;
-    }
-
-    @Nullable
-    default ToIntFunction<List<AIMessage>> getContextTokenCounter(
-        @NotNull ToIntFunction<String> textCounter,
-        boolean functionsEnabled
-    ) throws DBException {
-        return null;
     }
 
     default boolean matchesModel(@NotNull AIModel model, @Nullable String modelName) {

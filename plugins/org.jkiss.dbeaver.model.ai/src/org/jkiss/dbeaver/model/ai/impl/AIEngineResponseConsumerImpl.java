@@ -30,7 +30,6 @@ import org.jkiss.utils.CommonUtils;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -52,12 +51,6 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
     private final AtomicInteger systemPromptLength = new AtomicInteger(0);
     private final List<AIFunctionCall> functionCalls = new ArrayList<>();
     private final Consumer<List<AIFunctionCall>> functionCallConsumer;
-    private volatile Map<String, String> messageMetadata = Map.of();
-
-    @Override
-    public void messageMetadata(@NotNull Map<String, String> metadata) {
-        messageMetadata = Map.copyOf(metadata);
-    }
 
     public AIEngineResponseConsumerImpl(
         @NotNull AIChatResponseConsumer chatListener,
@@ -79,10 +72,17 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
         this.logResponses = logResponses;
     }
 
+    private Map<String, String> messageMetadata = Map.of();
+
+    @Override
+    public void messageMetadata(@NotNull Map<String, String> metadata) {
+        messageMetadata = Map.copyOf(metadata);
+    }
+
     @Override
     public void nextChunk(@NotNull AIEngineResponseChunk chunk) {
         if (monitor.isCanceled() || !conversation.isActive()) {
-            close(true, monitor.isCanceled() || conversation.getState() == AIChatConversation.State.CANCELED);
+            close(true, conversation.getState() == AIChatConversation.State.CANCELED);
             return;
         }
         if (chunk.getFunctionCall() != null) {
@@ -109,7 +109,6 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
         if (logResponses) {
             throwable.printStackTrace(System.err);
         }
-        markIncomplete();
         chatListener.error(throwable);
         close(true);
     }
@@ -151,10 +150,6 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
             return;
         }
 
-        if (isCanceled) {
-            markIncomplete();
-        }
-
         AIUsage usage = usageRef.get();
         AIMessageMeta messageMeta = new AIMessageMeta(
             AIMetaTypes.PROMPT,
@@ -174,12 +169,6 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
             log.error(e);
         }
         closed = true;
-    }
-
-    private void markIncomplete() {
-        Map<String, String> metadata = new HashMap<>(messageMetadata);
-        metadata.put(AIConstants.RESPONSE_INCOMPLETE, Boolean.TRUE.toString());
-        messageMetadata = Map.copyOf(metadata);
     }
 
 }

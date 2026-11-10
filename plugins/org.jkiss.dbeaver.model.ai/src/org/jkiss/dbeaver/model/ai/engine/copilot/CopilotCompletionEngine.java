@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.ai.AIUsage;
 import org.jkiss.dbeaver.model.ai.engine.*;
 import org.jkiss.dbeaver.model.ai.engine.copilot.dto.*;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiUtils;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesRequest;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAITool;
@@ -38,7 +39,6 @@ import org.jkiss.utils.Pair;
 
 import java.util.List;
 import java.util.Objects;
-import java.util.function.ToIntFunction;
 
 public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCompletionEngine<P> {
 
@@ -105,7 +105,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     ) throws DBException {
         Double temperature = getRequestTemperature();
         Pair<OAIResponsesRequest, CopilotChatRequest> copilotChatRequestOAIResponsesRequestPair = new Pair<>(
-            OpenAiUtils.createOpenAiRequest(request, getModelName(), temperature, reasoningSource()),
+            OpenAiUtils.createOpenAiRequest(request, getModelName(), temperature),
             createLegacyChatRequest(request, false, temperature)
         );
         Object chatResponse = client.getInstance().chat(
@@ -114,7 +114,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
             copilotChatRequestOAIResponsesRequestPair
         );
         if (chatResponse instanceof OAIResponsesResponse oaiResponse) {
-            return OpenAiUtils.toEngineResponse(oaiResponse, reasoningSource());
+            return toEngineResponse(oaiResponse);
         } else if (chatResponse instanceof CopilotChatResponseLegacy copilotResponse) {
             return toEngineResponse(copilotResponse);
         } else {
@@ -162,7 +162,7 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     ) throws DBException {
         Double temperature = getRequestTemperature();
         Pair<OAIResponsesRequest, CopilotChatRequest> copilotChatRequestOAIResponsesRequestPair = new Pair<>(
-            OpenAiUtils.createOpenAiRequest(request, getModelName(), temperature, reasoningSource()),
+            OpenAiUtils.createOpenAiRequest(request, getModelName(), temperature),
             createLegacyChatRequest(request, true, temperature)
         );
         client.getInstance().createChatCompletionStream(
@@ -198,21 +198,6 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
     }
 
     @NotNull
-    @Override
-    public ToIntFunction<List<AIMessage>> getContextTokenCounter(
-        @NotNull ToIntFunction<String> textCounter,
-        boolean functionsEnabled
-    ) {
-        String source = reasoningSource();
-        return messages -> OpenAiUtils.countContextTokens(messages, source, false, textCounter);
-    }
-
-    @NotNull
-    private String reasoningSource() {
-        return properties.getClass().getName() + "\n" + properties.getEffectiveBaseAuthUrl() + "\n" + getModelName();
-    }
-
-    @NotNull
     private CopilotChatRequest createLegacyChatRequest(
         @NotNull AIEngineRequest request,
         boolean stream,
@@ -233,6 +218,32 @@ public class CopilotCompletionEngine<P extends CopilotProperties> extends BaseCo
             .build();
     }
 
+
+    @NotNull
+    private AIEngineResponse toEngineResponse(@NotNull OAIResponsesResponse response) throws DBException {
+        List<OAIMessage> messages = response.output.stream()
+            .filter(msg -> !OAIMessage.TYPE_FUNCTION_REASONING.equals(msg.type))
+            .toList();
+        AIUsage usage = response.getAIUsage();
+        if (messages.isEmpty()) {
+            return new AIEngineResponse(
+                AIMessageType.ASSISTANT,
+                List.of(AIMessages.ai_empty_engine_response),
+                usage
+            );
+        }
+        OAIMessage message = messages.getFirst();
+        if (OAIMessage.TYPE_FUNCTION_CALL.equals(message.type)) {
+            AIFunctionCall fc = OpenAiUtils.createFunctionCall(message);
+            return new AIEngineResponse(fc, usage);
+        } else {
+            List<String> choices = messages.stream()
+                .map(OAIMessage::getFullText)
+                .toList();
+
+            return new AIEngineResponse(AIMessageType.ASSISTANT, choices, usage);
+        }
+    }
 
     @NotNull
     private static List<CopilotMessage> toCopilotMessages(@NotNull List<AIMessage> messages) {

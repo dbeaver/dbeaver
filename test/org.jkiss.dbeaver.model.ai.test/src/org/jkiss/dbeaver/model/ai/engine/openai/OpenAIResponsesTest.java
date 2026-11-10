@@ -95,7 +95,7 @@ class OpenAIResponsesTest {
     @Test
     void replaysCompletedStreamingReasoningWithoutDisplayingIt() throws Exception {
         AIEngineResponseConsumer listener = Mockito.mock(AIEngineResponseConsumer.class);
-        OpenAiAPIStreamConsumer consumer = new OpenAiAPIStreamConsumer(listener);
+        OpenAiAPIStreamConsumer consumer = new OpenAiAPIStreamConsumer(listener, "source");
         consumer.accept("data: {\"type\":\"response.output_item.added\",\"item\":"
             + REASONING.replace("opaque-reasoning", "partial") + "}");
         consumer.accept("data: {\"type\":\"response.output_item.done\",\"item\":" + REASONING + "}");
@@ -105,7 +105,7 @@ class OpenAIResponsesTest {
         ArgumentCaptor<AIEngineResponseChunk> chunks = ArgumentCaptor.forClass(AIEngineResponseChunk.class);
         Mockito.verify(listener).nextChunk(chunks.capture());
         OAIResponsesRequest next = OpenAiUtils.createOpenAiRequest(
-            new AIEngineRequest(List.of(savedResult(chunks.getValue().getFunctionCall()))), "o3", null);
+            new AIEngineRequest(List.of(savedResult(chunks.getValue().getFunctionCall()))), "o3", null, "source", false);
         Assertions.assertEquals(List.of("reasoning", "function_call", "function_call_output"),
             next.input.stream().map(message -> message.type).toList());
         Assertions.assertTrue(JSONUtils.GSON.toJson(next.input.getFirst()).contains("opaque-reasoning"));
@@ -116,7 +116,7 @@ class OpenAIResponsesTest {
     @ValueSource(strings = {"failed", "incomplete"})
     void reportsUnsuccessfulStreamingResponses(@NotNull String status) {
         AIEngineResponseConsumer listener = Mockito.mock(AIEngineResponseConsumer.class);
-        OpenAiAPIStreamConsumer consumer = new OpenAiAPIStreamConsumer(listener);
+        OpenAiAPIStreamConsumer consumer = new OpenAiAPIStreamConsumer(listener, "source");
         consumer.accept("data: {\"type\":\"response." + status + "\",\"response\":"
             + "{\"status\":\"" + status + "\",\"error\":{\"message\":\"Backend unavailable\"},"
             + "\"incomplete_details\":{\"reason\":\"max_output_tokens\"},\"output\":[]}}");
@@ -130,10 +130,8 @@ class OpenAIResponsesTest {
     @ParameterizedTest
     @ValueSource(strings = {"failed", "incomplete", "cancelled", "in_progress"})
     void rejectsUnsuccessfulSynchronousResponses(@NotNull String status) {
-        try (OpenAIClientResponses client = new OpenAIClientResponses(OpenAIClientResponses.OPENAI_ENDPOINT, List.of(), false)) {
-            Assertions.assertThrows(DBException.class, () -> client.parseCompletionResponse(
-                "{\"status\":\"" + status + "\",\"output\":[" + TEXT + "]}"));
-        }
+        Assertions.assertThrows(DBException.class,
+            () -> OpenAiUtils.toEngineResponse(response(status, TEXT + "," + CALL), "source"));
     }
 
     @Test
@@ -144,31 +142,7 @@ class OpenAIResponsesTest {
             AIEngineResponse response = engine.requestCompletion(new VoidProgressMonitor(), request());
             Assertions.assertEquals(List.of("Checking tables"), response.getVariants());
             Assertions.assertTrue(response.getFunctionCalls().isEmpty());
-        }
-    }
-
-    @Test
-    void reportsFailureDetailsAndAcceptsCompatibleResponsesWithoutStatus() throws Exception {
-        try (OpenAIClientResponses client = new OpenAIClientResponses(OpenAIClientResponses.OPENAI_ENDPOINT, List.of(), false)) {
-            DBException error = Assertions.assertThrows(DBException.class, () -> client.parseCompletionResponse(
-                "{\"status\":\"incomplete\",\"error\":null,\"incomplete_details\":{\"reason\":\"max_output_tokens\"}}"));
-            Assertions.assertTrue(error.getMessage().contains("max_output_tokens"));
-            DBException failed = Assertions.assertThrows(DBException.class, () -> client.parseCompletionResponse(
-                "{\"status\":\"failed\",\"error\":{\"message\":\"Backend unavailable\"}}"));
-            Assertions.assertTrue(failed.getMessage().contains("Backend unavailable"));
-            Assertions.assertEquals("Checking tables", client.parseCompletionResponse("{\"output\":[" + TEXT + "]}")
-                .output.getFirst().getFullText());
-        }
-    }
-
-    @ParameterizedTest
-    @ValueSource(strings = {"failed", "incomplete"})
-    void rejectsFailedAccountResponsesAfterCompletedItems(@NotNull String status) {
-        OpenAIProperties properties = new OpenAIProperties();
-        try (OpenAIAccountClient client = new OpenAIAccountClient(properties)) {
-            Assertions.assertThrows(DBException.class, () -> client.parseCompletionResponse(
-                "data: {\"type\":\"response.output_item.done\",\"item\":" + TEXT + "}\n"
-                + "data: {\"type\":\"response." + status + "\",\"response\":{\"output\":[]}}\n"));
+            Assertions.assertTrue(response.getMessageMetadata().isEmpty());
         }
     }
 
@@ -250,23 +224,27 @@ class OpenAIResponsesTest {
     }
 
     @ParameterizedTest
-    @ValueSource(strings = {"", "data: [DONE]\n", "data: {\"type\":\"response.completed\"}\n",
-        "data: {\"type\":\"response.completed\",\"response\":{\"status\":\"incomplete\"}}\n"})
-    void rejectsAccountStreamsWithoutAValidCompletedResponse(@NotNull String ending) {
-        try (OpenAIAccountClient client = new OpenAIAccountClient(new OpenAIProperties())) {
-            Assertions.assertThrows(DBException.class, () -> client.parseCompletionResponse(
-                "data: {\"type\":\"response.output_item.done\",\"item\":" + CALL + "}\n" + ending));
+    @ValueSource(strings = {"eof", "failed", "incomplete", "error", "completed_then_error", "transport"})
+    void discardsProvisionalCallsAndReasoningOnStreamFailure(@NotNull String ending) {
+        AIEngineResponseConsumer listener = Mockito.mock(AIEngineResponseConsumer.class);
+        OpenAiAPIStreamConsumer stream = new OpenAiAPIStreamConsumer(listener, "source");
+        stream.accept("data: {\"type\":\"response.output_item.done\",\"item\":" + REASONING + "}");
+        stream.accept("data: {\"type\":\"response.output_item.done\",\"item\":" + CALL + "}");
+        switch (ending) {
+            case "failed", "incomplete" -> stream.accept("data: {\"type\":\"response." + ending + "\"}");
+            case "completed_then_error" -> {
+                stream.accept("data: {\"type\":\"response.completed\",\"response\":{\"status\":\"completed\"}}");
+                stream.accept("data: {\"type\":\"error\",\"code\":\"server_error\",\"message\":\"Unavailable\"}");
+            }
+            case "error" -> stream.accept("data: {\"type\":\"error\",\"code\":\"server_error\",\"message\":\"Unavailable\"}");
+            case "transport" -> stream.error(new DBException("Connection lost"));
+            default -> { }
         }
-    }
-
-    @Test
-    void acceptsCompletedAccountToolCalls() throws Exception {
-        try (OpenAIAccountClient client = new OpenAIAccountClient(new OpenAIProperties())) {
-            OAIResponsesResponse result = client.parseCompletionResponse(
-                "data: {\"type\":\"response.output_item.done\",\"item\":" + CALL + "}\n"
-                    + "data: {\"type\":\"response.completed\",\"response\":{\"status\":\"completed\"}}\n");
-            Assertions.assertEquals("call_1", result.output.getFirst().callId);
-        }
+        stream.complete();
+        Mockito.verify(listener).error(Mockito.any());
+        Mockito.verify(listener, Mockito.never()).messageMetadata(Mockito.anyMap());
+        Mockito.verify(listener, Mockito.never()).nextChunk(Mockito.any());
+        Mockito.verify(listener, Mockito.never()).completeBlock();
     }
 
     @NotNull

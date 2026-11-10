@@ -18,11 +18,8 @@
 package org.jkiss.dbeaver.model.ai.impl;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.*;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiAPIStreamConsumer;
-import org.jkiss.dbeaver.model.ai.engine.openai.OpenAiUtils;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
@@ -35,44 +32,11 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
 class AIAssistantParallelCallsTest {
-    @ParameterizedTest
-    @ValueSource(strings = {"incomplete", "failed", "canceled", "monitor_canceled"})
-    void importsPartialAssistantTextAfterInterruptedResponses(@NotNull String status) {
-        AIEngine<?> engine = Mockito.mock(AIEngine.class);
-        Mockito.doReturn(Mockito.mock(AIEngineProperties.class)).when(engine).getProperties();
-        AIChatConversation conversation = Mockito.mock(AIChatConversation.class);
-        Mockito.when(conversation.isActive()).thenReturn(true);
-        DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
-        AIChatResponseConsumer listener = Mockito.mock(AIChatResponseConsumer.class);
-        AIEngineResponseConsumerImpl consumer = new AIEngineResponseConsumerImpl(listener, monitor, engine, conversation,
-            Mockito.mock(AIEngineDescriptor.class), calls -> Assertions.fail("Unexpected function dispatch"));
-        OpenAiAPIStreamConsumer stream = new OpenAiAPIStreamConsumer(consumer, "source");
-        stream.accept("data: {\"type\":\"response.output_text.delta\",\"delta\":\"SELECT \"}");
-        boolean canceled = status.endsWith("canceled");
-        if (canceled) {
-            Mockito.when(monitor.isCanceled()).thenReturn(true);
-            Mockito.when(conversation.getState()).thenReturn(status.equals("canceled")
-                ? AIChatConversation.State.CANCELED : AIChatConversation.State.STARTED);
-            consumer.nextChunk(new AIEngineResponseChunk(List.of("discarded")));
-        } else {
-            stream.accept("data: {\"type\":\"response." + status + "\",\"response\":{\"status\":\"" + status + "\",\"output\":[]}}");
-        }
-        ArgumentCaptor<List<AIMessageMeta>> saved = ArgumentCaptor.forClass(List.class);
-        Mockito.verify(listener).complete(saved.capture(), Mockito.eq(true), Mockito.eq(canceled));
-        Assertions.assertEquals("true", saved.getValue().getFirst().responseMetadata().get(AIConstants.RESPONSE_INCOMPLETE));
-        var next = OpenAiUtils.createOpenAiRequest(new AIEngineRequest(List.of(
-            AIMessage.assistantMessage("SELECT ", saved.getValue()), AIMessage.userMessage("Continue"))), "test", null, "source");
-        Assertions.assertTrue(next.input.stream().allMatch(message -> "user".equals(message.role)));
-        Assertions.assertTrue(next.input.getFirst().getFullText().contains("SELECT "));
-        Mockito.verify(listener).nextMessageChunk("SELECT ");
-    }
-
     @Test
     void attachesProviderStateToCompletedAssistantMessage() {
         AIEngine<?> engine = Mockito.mock(AIEngine.class);
@@ -130,44 +94,6 @@ class AIAssistantParallelCallsTest {
         }
         Mockito.verify(assistant).callFunction(Mockito.any(), Mockito.eq(first));
         Mockito.verify(assistant).callFunction(Mockito.any(), Mockito.eq(second));
-    }
-
-    @ParameterizedTest
-    @ValueSource(booleans = {false, true})
-    void rejectsOversizedGroupsBeforeExecutingAnyAction(boolean priorCalls) throws Exception {
-        AIAssistantImpl assistant = Mockito.spy(new AIAssistantImpl(Mockito.mock(DBPWorkspace.class)));
-        Mockito.doNothing().when(assistant).checkAiEnablement();
-        AIConfigurationProfile profile = Mockito.mock(AIConfigurationProfile.class);
-        AIEngineDescriptor descriptor = Mockito.mock(AIEngineDescriptor.class);
-        Mockito.when(profile.getEngineDescriptor()).thenReturn(descriptor);
-        AIEngine<?> engine = Mockito.mock(AIEngine.class);
-        Mockito.doReturn(engine).when(descriptor).createEngineInstance(profile);
-        Mockito.doReturn(Mockito.mock(AIEngineProperties.class)).when(engine).getProperties();
-        AIEngineRequest request = new AIEngineRequest(AIMessage.userMessage("test"));
-        Mockito.doReturn(request).when(assistant).buildAiEngineRequest(Mockito.any(), Mockito.eq(profile), Mockito.any(),
-            Mockito.anyList(), Mockito.eq(engine));
-        AIFunctionCall action = new AIFunctionCall("action", Map.of());
-        AIFunctionCall information = new AIFunctionCall("information", Map.of());
-        Mockito.doReturn(new AIFunctionResult(AIFunctionType.ACTION, "changed"))
-            .when(assistant).callFunction(Mockito.any(), Mockito.eq(action));
-        Mockito.doReturn(new AIFunctionResult(AIFunctionType.INFORMATION, "information"))
-            .when(assistant).callFunction(Mockito.any(), Mockito.eq(information));
-        AIEngineResponse oversized = new AIEngineResponse(Collections.nCopies(priorCalls ? 2 : AIAssistantImpl.MAX_FUNCTION_CALLS + 1,
-            action), null);
-        if (priorCalls) {
-            AIEngineResponse previous = new AIEngineResponse(
-                Collections.nCopies(AIAssistantImpl.MAX_FUNCTION_CALLS - 1, information), null);
-            Mockito.doReturn(previous, oversized).when(assistant)
-                .requestCompletion(Mockito.eq(engine), Mockito.eq(profile), Mockito.any(), Mockito.any());
-        } else {
-            Mockito.doReturn(oversized).when(assistant)
-                .requestCompletion(Mockito.eq(engine), Mockito.eq(profile), Mockito.any(), Mockito.any());
-        }
-        Assertions.assertThrows(DBException.class, () -> assistant.generateText(Mockito.mock(DBRProgressMonitor.class), profile,
-            Mockito.mock(AIFunctionContext.class), request.getMessages()));
-        Mockito.verify(assistant, Mockito.never()).callFunction(Mockito.any(), Mockito.eq(action));
-        Mockito.verify(assistant, Mockito.times(priorCalls ? AIAssistantImpl.MAX_FUNCTION_CALLS - 1 : 0))
-            .callFunction(Mockito.any(), Mockito.eq(information));
     }
 
     @Test
