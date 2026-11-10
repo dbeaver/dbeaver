@@ -196,9 +196,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         damNameRow.setLayoutData(rowLayout);
         UIUtils.createLabel(damNameRow, DDTrackingUIMessages.sync_preference_page_dam_name_label);
         damNameLabel = UIUtils.createLabel(damNameRow, "");
-        GridData nameLayout = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
-        nameLayout.widthHint = 300;
-        damNameLabel.setLayoutData(nameLayout);
         damNameEditButton = new Button(damNameRow, SWT.PUSH);
         damNameEditButton.setImage(DBeaverIcons.getImage(UIIcon.EDIT));
         damNameEditButton.setToolTipText(DDTrackingUIMessages.sync_preference_page_dam_name_edit);
@@ -285,7 +282,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             damNameJob.cancel();
         }
         damNameEditButton.setEnabled(false);
-        damNameLabel.setText(DDTrackingUIMessages.sync_preference_page_dam_name_connecting);
+        setDamNameText(DDTrackingUIMessages.sync_preference_page_dam_name_connecting);
         damNameJob = new AbstractJob("Read DataDam desktop name") {
             @NotNull
             @Override
@@ -327,9 +324,14 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
 
     private void showDam(@Nullable DDDamInfo result) {
         dam = result;
-        damNameLabel.setText(result == null ? DDTrackingUIMessages.sync_preference_page_dam_name_unavailable
+        setDamNameText(result == null ? DDTrackingUIMessages.sync_preference_page_dam_name_unavailable
             : result.damName() == null ? DDTrackingUIMessages.sync_preference_page_dam_name_not_set : result.damName());
         damNameEditButton.setEnabled(result != null);
+    }
+
+    private void setDamNameText(@NotNull String name) {
+        damNameLabel.setText(name);
+        damNameRow.getParent().layout(true, true);
     }
 
     private void editDamName() {
@@ -361,7 +363,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             damNameJob.cancel();
         }
         damNameEditButton.setEnabled(false);
-        damNameLabel.setText(DDTrackingUIMessages.sync_preference_page_dam_name_connecting);
+        setDamNameText(DDTrackingUIMessages.sync_preference_page_dam_name_connecting);
         damNameJob = new AbstractJob("Update DataDam desktop name") {
             @NotNull
             @Override
