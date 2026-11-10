@@ -1233,6 +1233,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         boolean updateAttributesNames
     ) {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
+        // Reset the previous conflict message: it is recalculated for every mapping attempt
+        mappingErrorMessage = null;
         try {
             if (name.equals(DatabaseMappingAttribute.TARGET_NAME_SKIP)) {
                 if (mapping instanceof DatabaseMappingAttribute) {
@@ -1316,17 +1318,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         && existingObject instanceof DBSDataManipulator targetTable) {
                         targetDataContainer = targetTable;
                     } else {
-                        containerMapping.setTargetName(name);
-                        containerMapping.refreshMappingType(
-                            monitor,
-                            DatabaseMappingType.unspecified,
-                            false,
-                            false);
-                        mappingErrorMessage =
-                            "Name '" + unQuotedNameForSearch + "' is already used by " + DBUtils.getObjectTypeName(existingObject);
-
-                        UIUtils.asyncExec(() -> mappingViewer.refresh());
-                        return true;
+                        return reportTargetNameConflict(monitor, containerMapping, name, unQuotedNameForSearch, existingObject);
                     }
                 }
             }
@@ -1334,11 +1326,22 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
         if (targetDataContainer == null) {
             // Search for an existing writable table
+            DBSObject conflictingObject = null;
             for (DBSObject child : CommonUtils.safeCollection(container.getChildren(monitor))) {
-                if (DatabaseTransferUtils.isValidTargetTable(child) && unQuotedNameForSearch.equalsIgnoreCase(child.getName())) {
+                if (!unQuotedNameForSearch.equalsIgnoreCase(child.getName())) {
+                    continue;
+                }
+                if (DatabaseTransferUtils.isValidTargetTable(child)) {
                     targetDataContainer = (DBSDataManipulator) child;
                     break;
+                } else if (conflictingObject == null) {
+                    conflictingObject = child;
                 }
+            }
+            if (targetDataContainer == null && conflictingObject != null) {
+                // The name is taken by an object which cannot be used as a target (for instance a view).
+                // Report the conflict instead of silently switching the mapping to "create".
+                return reportTargetNameConflict(monitor, containerMapping, name, unQuotedNameForSearch, conflictingObject);
             }
         }
         if (targetDataContainer != null) {
@@ -1364,6 +1367,31 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Reports a target name collision with an object which cannot be used as a data transfer target.
+     *
+     * @return always {@code true}, meaning that the mapping was handled
+     */
+    private boolean reportTargetNameConflict(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DatabaseMappingContainer containerMapping,
+        @NotNull String name,
+        @NotNull String unQuotedNameForSearch,
+        @NotNull DBSObject existingObject
+    ) throws DBException {
+        containerMapping.setTargetName(name);
+        containerMapping.refreshMappingType(
+            monitor,
+            DatabaseMappingType.unspecified,
+            false,
+            false);
+        mappingErrorMessage =
+            "Name '" + unQuotedNameForSearch + "' is already used by " + DBUtils.getObjectTypeName(existingObject);
+
+        UIUtils.asyncExec(() -> mappingViewer.refresh());
+        return true;
     }
 
     private void updateMappingRules() {
@@ -1396,6 +1424,10 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             //loadAndUpdateColumnsModel();
             for (Object element : elementList) {
                 if (element instanceof DatabaseMappingContainer container) {
+                    if (container.getTarget() != null) {
+                        // Keep the target already resolved from a saved task mapping
+                        continue;
+                    }
                     setMappingTarget(monitor, container, container.getTargetName(), true, false);
                 }
             }
