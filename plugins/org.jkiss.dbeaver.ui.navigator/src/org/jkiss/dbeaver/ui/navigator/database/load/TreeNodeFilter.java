@@ -22,6 +22,8 @@ import org.eclipse.jface.viewers.IToolTipProvider;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.internal.UINavigatorMessages;
 import org.jkiss.dbeaver.ui.navigator.UIServiceFilterConfig;
@@ -39,7 +41,27 @@ public class TreeNodeFilter extends ContextMenuTreeNodeSpecial implements IToolT
 
     @Override
     public String getText(Object element) {
-        return UINavigatorMessages.navigator_nodes_filtered_by_settings_text;
+        return getText(false);
+    }
+
+    String getText(boolean withSearch) {
+        if (DBWorkbench.findService(UIServiceFilterConfig.class) != null && getParent() instanceof DBNDatabaseNode dbNode) {
+            DBXTreeItem itemsMeta = dbNode.getItemsMeta();
+            DBSObjectFilter filter = itemsMeta == null ? null : dbNode.getNodeFilter(itemsMeta, false);
+            if (filter != null) {
+                if (filter.isUserFilter()) {
+                    return withSearch
+                        ? UINavigatorMessages.navigator_nodes_filtered_by_search_and_user_filter_text
+                        : UINavigatorMessages.navigator_nodes_filtered_by_user_filter_text;
+                }
+                return withSearch
+                    ? UINavigatorMessages.navigator_nodes_filtered_by_search_and_all_users_filter_text
+                    : UINavigatorMessages.navigator_nodes_filtered_by_all_users_filter_text;
+            }
+        }
+        return withSearch
+            ? UINavigatorMessages.navigator_nodes_filtered_by_search_and_filter_text
+            : UINavigatorMessages.navigator_nodes_filtered_by_settings_text;
     }
 
     @Override

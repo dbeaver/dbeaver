@@ -44,7 +44,11 @@ public class ProductConfigDataCollectionPage extends ProductConfigWizardPage {
 
     @Override
     public void loadSettings() {
-        sendUsageStatistics.set(collectionRequired || UIStatisticsActivator.getCurrentTrackingEnabled());
+        if (collectionRequired) {
+            sendUsageStatistics.set(true);
+        } else if (UIStatisticsActivator.isSkipDataShareConfirmation()) {
+            sendUsageStatistics.set(UIStatisticsActivator.getCurrentTrackingEnabled());
+        }
     }
 
     @Override

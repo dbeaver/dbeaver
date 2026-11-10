@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.ext.oracle.ui.internal.OracleUIMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.registry.DBConnectionConstants;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
@@ -80,18 +81,21 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     }
 
     @Override
-    public void createControl(Composite parent) {
+    public void createControl(@NotNull Composite parent) {
         Composite cfgGroup = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(2, false);
-        gl.marginHeight = 10;
-        gl.marginWidth = 10;
         cfgGroup.setLayout(gl);
         GridData gd = new GridData(GridData.FILL_BOTH);
         cfgGroup.setLayoutData(gd);
 
+        Composite leftColumn = UIUtils.createPlaceholder(cfgGroup, 1);
+        leftColumn.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+        Composite rightColumn = UIUtils.createPlaceholder(cfgGroup, 1);
+        rightColumn.setLayoutData(new GridData(SWT.FILL, SWT.TOP, true, false));
+
         {
             Composite sessionGroup = UIUtils.createTitledComposite(
-                cfgGroup,
+                leftColumn,
                 OracleUIMessages.dialog_controlgroup_session_settings,
                 2,
                 GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING,
@@ -123,7 +127,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
         {
             Composite performanceGroup = UIUtils.createTitledComposite(
-                cfgGroup,
+                rightColumn,
                 OracleUIMessages.dialog_controlgroup_performance,
                 1,
                 GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
@@ -177,7 +181,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
         {
             Composite contentGroup = UIUtils.createTitledComposite(
-                cfgGroup,
+                leftColumn,
                 OracleUIMessages.dialog_controlgroup_content,
                 1,
                 GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
@@ -200,7 +204,7 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
 
         {
             Composite dataGroup = UIUtils.createTitledComposite(
-                cfgGroup,
+                rightColumn,
                 OracleUIMessages.pref_page_oracle_group_data,
                 1,
                 GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING
@@ -212,6 +216,21 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
                 OracleUIMessages.pref_page_oracle_checkbox_show_date_as_date_tip,
                 false,
                 1);
+        }
+
+        if (DBWorkbench.hasFeature(DBConnectionConstants.PRODUCT_FEATURE_ADVANCED_DATABASE_ADMINISTRATION)) {
+            Composite clientGroup = UIUtils.createTitledComposite(
+                rightColumn,
+                OracleUIMessages.dialog_connection_ora_home,
+                1,
+                GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
+            );
+            oraHomeSelector = new ClientHomesSelector(clientGroup, null, false) {
+                @Override
+                protected void handleHomeChange() {
+                    site.getActiveDataSource().getConnectionConfiguration().setClientHomeId(getSelectedHome());
+                }
+            };
         }
 
         setControl(cfgGroup);
@@ -226,13 +245,13 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     }
 
     @Override
-    public void loadSettings()
-    {
-        //oraHomeSelector.setVisible(isOCI);
-
+    public void loadSettings() {
         // Load values from new connection info
-        DBPPreferenceStore globalPreferences = DBWorkbench.getPlatform().getPreferenceStore();
+        final DBPPreferenceStore globalPreferences = DBWorkbench.getPlatform().getPreferenceStore();
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
+        if (oraHomeSelector != null) {
+            oraHomeSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId(), site.isNew());
+        }
         Map<String, String> providerProperties = connectionInfo.getProviderProperties();
 
         // Settings
@@ -300,8 +319,10 @@ public class OracleConnectionExtraPage extends ConnectionPageAbstract
     }
 
     @Override
-    public void saveSettings(@NotNull DBPDataSourceContainer dataSource)
-    {
+    public void saveSettings(@NotNull DBPDataSourceContainer dataSource) {
+        if (oraHomeSelector != null) {
+            dataSource.getConnectionConfiguration().setClientHomeId(oraHomeSelector.getSelectedHome());
+        }
         Map<String, String> providerProperties = dataSource.getConnectionConfiguration().getProviderProperties();
 
         {

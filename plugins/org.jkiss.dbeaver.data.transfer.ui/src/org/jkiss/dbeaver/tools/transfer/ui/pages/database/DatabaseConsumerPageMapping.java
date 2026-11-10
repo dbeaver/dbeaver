@@ -1309,8 +1309,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
 
         // Check name conflict in namespace
         DBSNamespaceContainer namespaceContainer = DBUtils.getAdapter(DBSNamespaceContainer.class, container);
+        DBSNamespace ns = null;
         if (namespaceContainer != null) {
-            DBSNamespace ns = namespaceContainer.getNamespaceForObjectType(RelationalObjectType.TYPE_TABLE);
+            ns = namespaceContainer.getNamespaceForObjectType(RelationalObjectType.TYPE_TABLE);
             if (ns != null) {
                 DBSObject existingObject = ns.getObjectByName(monitor, unQuotedNameForSearch);
                 if (existingObject != null) {
@@ -1324,8 +1325,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             }
         }
 
-        if (targetDataContainer == null) {
-            // Search for an existing writable table
+        if (targetDataContainer == null && ns == null) {
+            // Without a namespace, search for an existing data manipulator (writable table).
+            // A namespace lookup already covers a missing name without loading every child in the container.
             DBSObject conflictingObject = null;
             for (DBSObject child : CommonUtils.safeCollection(container.getChildren(monitor))) {
                 if (!unQuotedNameForSearch.equalsIgnoreCase(child.getName())) {

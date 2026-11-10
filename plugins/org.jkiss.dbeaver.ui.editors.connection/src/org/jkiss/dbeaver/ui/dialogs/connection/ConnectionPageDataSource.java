@@ -36,12 +36,15 @@ import org.jkiss.dbeaver.model.navigator.DBNBrowseSettings;
 import org.jkiss.dbeaver.model.rm.RMConstants;
 import org.jkiss.dbeaver.registry.DataSourceNavigatorSettings;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.ui.ConnectionFeatures;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.driver.DataSourceTypeViewer;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+
+import java.util.Map;
 
 /**
  * Data source selection page
@@ -118,7 +121,11 @@ class ConnectionPageDataSource extends ActiveWizardPage<NewConnectionWizard> imp
                     UIConnectionMessages.dialog_connection_show_commercial_drivers, DataSourceTypeViewer.isShowCommercialDrivers());
                 showCommercialDrivers.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
                 showCommercialDrivers.addSelectionListener(SelectionListener.widgetSelectedAdapter(
-                    event -> dataSourceTypeViewer.setShowCommercialDrivers(showCommercialDrivers.getSelection())));
+                    event -> {
+                        boolean enabled = showCommercialDrivers.getSelection();
+                        ConnectionFeatures.COMMERCIAL_DRIVERS_TOGGLED.use(Map.of("enabled", enabled, "page", "dataSource"));
+                        dataSourceTypeViewer.setShowCommercialDrivers(enabled);
+                    }));
             }
         }
 
