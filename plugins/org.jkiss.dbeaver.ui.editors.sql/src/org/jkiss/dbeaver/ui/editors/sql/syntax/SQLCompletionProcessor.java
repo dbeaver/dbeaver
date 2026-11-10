@@ -179,7 +179,8 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
                     DBPPreferenceStore store = this.editor.getActivePreferenceStore();
                     SQLAutocompletionMode mode = SQLAutocompletionMode.fromPreferences(store);
                     boolean useNewCompletionEngine = mode.useNewAnalyzer
-                        && store.getBoolean(SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE)
+                        && editor.isAdvancedHighlightingEnabled()
+                        && SQLEditorUtils.isSQLSyntaxParserApplied(editor)
                         && store.getBoolean(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS)
                         && dataSource != null && dataSource.getSQLDialect() instanceof BasicSQLDialect;
 

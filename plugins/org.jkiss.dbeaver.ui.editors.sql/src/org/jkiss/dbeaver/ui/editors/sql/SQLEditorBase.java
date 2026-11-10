@@ -622,6 +622,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         }
 
         super.doSetInput(input);
+        // The pre-switch call above used the new input but the old document. Re-evaluate after the
+        // input switch so occurrence setup sees the document that is actually installed.
+        handleInputChange(getEditorInput());
     }
 
     @Override

@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.tracking.SQLScriptVariablesTracker;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLReconcilingStrategy;
 import org.jkiss.dbeaver.utils.ListNode;
 
@@ -409,6 +410,11 @@ public class SQLBackgroundParsingJob {
      */
     @NotNull
     public SQLQueryCompletionContext obtainCompletionContext(DBRProgressMonitor monitor, @NotNull Position completionRequestPosition) {
+        if (!this.editor.isAdvancedHighlightingEnabled()
+            || !SQLEditorUtils.isSQLSyntaxParserApplied(this.editor)) {
+            // The parser is not running for this editor, so there is no parse future to wait for.
+            return SQLQueryCompletionContext.prepareEmpty(0, completionRequestPosition.getOffset());
+        }
         CompletableFuture<?> lastAwaitedFuture = null;
         do {
             CompletableFuture<?> futureToAwait = null;
