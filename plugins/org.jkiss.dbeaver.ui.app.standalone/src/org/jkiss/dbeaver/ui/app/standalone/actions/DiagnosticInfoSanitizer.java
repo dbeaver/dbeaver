@@ -45,9 +45,11 @@ final class DiagnosticInfoSanitizer {
     private static final Pattern HOST = Pattern.compile(
         "(?i)(\\b(?:host(?:name)?|server)\\s*[=:]\\s*)([\\w.-]+)"
     );
-    // Bundle identifiers following " - Start [" in log headers are not hostnames.
+    private static final Pattern BUNDLE_START_LINE = Pattern.compile(
+        "(?m)^(?:\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\\.\\d{3} - )?Start \\[[^\\r\\n]*(?:\\r?\\n|$)"
+    );
     private static final Pattern DOMAIN = Pattern.compile(
-        "(?<! - Start \\[)(?<![\\w.@])(?!\\d+\\.\\d+\\.)(?i:(?:[a-z0-9-]+\\.))+"
+        "(?<![\\w.])(?!\\d+\\.\\d+\\.)(?i:(?:[a-z0-9-]+\\.))+"
             + "(?:[a-z][a-z0-9-]+|[A-Z]{2,})(?![\\w.-])"
     );
     private static final Pattern QUOTED_PATH = Pattern.compile(
@@ -68,10 +70,10 @@ final class DiagnosticInfoSanitizer {
         "(?i)\\b\\w*version(?:\\s*[:=]\\s*|\\s+)['\"]?\\d+(?:\\.\\d+){3,}"
     );
     private static final Pattern ECLIPSE_LOG_BUNDLE = Pattern.compile("!(?:ENTRY|SUBENTRY\\s+\\d+)\\s+");
+    private static final Pattern TECHNICAL_IDENTIFIER = Pattern.compile("(?:org\\.(?:eclipse|jkiss)|com\\.dbeaver)\\..+");
     private static final Pattern PROPERTY_NAME = Pattern.compile("(?m)^[\\t ]*[\\w.-]+[\\t ]*(?=[=:])");
 
-    private final List<String> environmentValues;
-    private final List<Pattern> shortEnvironmentValues;
+    private final List<Pattern> environmentValues;
 
     DiagnosticInfoSanitizer() {
         this(System.getenv());
@@ -79,27 +81,41 @@ final class DiagnosticInfoSanitizer {
 
     DiagnosticInfoSanitizer(@NotNull Map<String, String> environment) {
         // Longer values first so a short value cannot split a longer secret.
-        List<String> values = environment.entrySet().stream()
+        environmentValues = environment.entrySet().stream()
             // Build numbers, version strings and shell counters are not secrets; replacing them destroys support information.
             .filter(entry -> entry.getValue() != null
                 && (!entry.getValue().matches("\\d+(?:\\.\\d+)*(?:\\.[a-zA-Z][\\w-]*)?")
                 || SENSITIVE_ENV_KEY.matcher(entry.getKey()).find()))
-            .map(Map.Entry::getValue)
-            .toList();
-        environmentValues = values.stream()
-            .filter(value -> value != null && value.length() >= 5 && !value.isBlank())
+            .filter(entry -> !entry.getValue().isBlank())
+            .sorted(Comparator.comparingInt((Map.Entry<String, String> entry) -> entry.getValue().length()).reversed())
+            .map(entry -> {
+                String value = entry.getValue();
+                // Ordinary values (e.g. SESSIONNAME=Console) must not split Java identifiers.
+                boolean secret = value.length() >= 5 && SENSITIVE_ENV_KEY.matcher(entry.getKey()).find();
+                return secret ? Pattern.quote(value) : "(?<![\\w$])" + Pattern.quote(value) + "(?![\\w$])";
+            })
             .distinct()
-            .sorted(Comparator.comparingInt(String::length).reversed())
-            .toList();
-        shortEnvironmentValues = values.stream()
-            .filter(value -> value != null && !value.isBlank() && value.length() < 5)
-            .distinct()
-            .map(value -> Pattern.compile("(?<![\\w])" + Pattern.quote(value) + "(?![\\w])"))
+            .map(Pattern::compile)
             .toList();
     }
 
     @NotNull
     String sanitize(@NotNull String text) {
+        // Bundle startup lines contain technical metadata, not connection information.
+        Matcher bundleStarts = BUNDLE_START_LINE.matcher(text);
+        StringBuilder sanitized = new StringBuilder(text.length());
+        int offset = 0;
+        while (bundleStarts.find()) {
+            sanitized.append(sanitizeText(text.substring(offset, bundleStarts.start())));
+            sanitized.append(bundleStarts.group());
+            offset = bundleStarts.end();
+        }
+        sanitized.append(sanitizeText(text.substring(offset)));
+        return sanitized.toString();
+    }
+
+    @NotNull
+    private String sanitizeText(@NotNull String text) {
         String result = CONNECTION.matcher(text).replaceAll(REDACTED);
         result = URI_WITH_USERINFO.matcher(result).replaceAll(REDACTED);
         result = AUTHORIZATION_HEADER.matcher(result).replaceAll(m -> Matcher.quoteReplacement(m.group(1) + REDACTED));
@@ -128,7 +144,9 @@ final class DiagnosticInfoSanitizer {
             boolean bundle = ECLIPSE_LOG_BUNDLE.matcher(prefix).matches();
             Matcher property = PROPERTY_NAME.matcher(lineAt(beforeDomains, m.start()));
             boolean propertyName = property.lookingAt() && prefix.length() < property.end();
-            return isStackFrame(beforeDomains, m.start()) || bundle || propertyName
+            // Known Java namespaces also occur in Eclipse messages outside stack frames and bundle headers.
+            boolean identifier = !prefix.endsWith("@") && TECHNICAL_IDENTIFIER.matcher(m.group()).matches();
+            return isStackFrame(beforeDomains, m.start()) || bundle || propertyName || identifier
                 ? Matcher.quoteReplacement(m.group()) : REDACTED;
         });
         // Environment values can also occur in property names. Only replace them outside the key.
@@ -147,10 +165,7 @@ final class DiagnosticInfoSanitizer {
     @NotNull
     private String sanitizeEnvironmentValues(@NotNull String text) {
         String result = text;
-        for (String value : environmentValues) {
-            result = result.replace(value, REDACTED);
-        }
-        for (Pattern pattern : shortEnvironmentValues) {
+        for (Pattern pattern : environmentValues) {
             result = pattern.matcher(result).replaceAll(REDACTED);
         }
         return result;
