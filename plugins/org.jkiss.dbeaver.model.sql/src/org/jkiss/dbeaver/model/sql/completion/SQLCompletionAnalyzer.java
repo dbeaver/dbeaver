@@ -57,6 +57,7 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * Completion analyzer
@@ -108,7 +109,7 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         }
         return proposals.stream()
             .filter(p -> !SQLCompletionHelper.isTablePartition(p.getObject()))
-            .toList();
+            .collect(Collectors.toCollection(ArrayList::new));
     }
 
     public boolean isSearchFinished() {

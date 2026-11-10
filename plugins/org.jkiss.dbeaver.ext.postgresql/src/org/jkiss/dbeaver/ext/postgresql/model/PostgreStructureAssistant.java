@@ -287,6 +287,15 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         return queryParams;
     }
 
+    /**
+     * Checks whether the server exposes the {@code pg_class.relispartition} column.
+     * The column was introduced in PostgreSQL 10, but some server types (for instance Greenplum 6)
+     * report partition support while being based on an older PostgreSQL version.
+     */
+    static boolean supportsPartitionColumn(@NotNull PostgreDataSource dataSource) {
+        return dataSource.isServerVersionAtLeast(10, 0) && dataSource.getServerType().supportsPartitions();
+    }
+
     private static void findTablesByMask(
         @NotNull JDBCSession session,
         @NotNull PostgreDatabase database,
@@ -295,7 +304,7 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         @NotNull Collection<? super DBSObjectReference> objects
     ) throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
-        boolean supportsPartitions = database.getDataSource().getServerType().supportsPartitions();
+        boolean supportsPartitions = supportsPartitionColumn(database.getDataSource());
 
         PostgreQueryBuilder queryParams = new PostgreQueryBuilder(
             "pc.oid,pc.relname,pc.relnamespace,pc.relkind" + (supportsPartitions ? ",pc.relispartition" : ""),
