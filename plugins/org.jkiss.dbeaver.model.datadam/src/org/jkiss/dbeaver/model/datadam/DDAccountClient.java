@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.model.datadam;
 
 import com.dbeaver.datadam.dam.remote.api.model.DDConnectedRemoteDam;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
+import com.google.gson.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -106,7 +103,7 @@ public class DDAccountClient extends DDClient {
         CryptoResponse response = executePostRequest(GRAPHQL_PATH, Map.of(), Map.of("query", CRYPTO_STATE_QUERY), CryptoResponse.class);
         if (response == null || response.errors() != null && !response.errors().isEmpty()
             || response.data() == null || response.data().gatewayCryptoState() == null) {
-            throw new DBException("Could not read encryption keys from DataDam Account");
+            throw responseError("Could not read encryption keys from DataDam Account", response == null ? null : response.errors());
         }
         DDCryptoState state = response.data().gatewayCryptoState();
         if (state.accountId() == null) {
@@ -122,7 +119,7 @@ public class DDAccountClient extends DDClient {
         if (response == null || response.errors() != null && !response.errors().isEmpty()
             || response.data() == null || response.data().gatewayCryptoState() == null
             || response.data().gatewayCryptoState().accountId() == null) {
-            throw new DBException("Could not read account ID from DataDam Account");
+            throw responseError("Could not read account ID from DataDam Account", response == null ? null : response.errors());
         }
         return response.data().gatewayCryptoState().accountId();
     }
@@ -134,7 +131,7 @@ public class DDAccountClient extends DDClient {
         if (response == null || response.errors() != null && !response.errors().isEmpty()
             || response.data() == null || response.data().accountInfo() == null
             || response.data().accountInfo().accountName() == null) {
-            throw new DBException("Could not read account name from DataDam Account");
+            throw responseError("Could not read account name from DataDam Account", response == null ? null : response.errors());
         }
         return response.data().accountInfo().accountName();
     }
@@ -147,7 +144,7 @@ public class DDAccountClient extends DDClient {
             || response.data() == null || response.data().accountInfo() == null
             || response.data().accountInfo().accountId() == null || response.data().damSettings() == null
             || response.data().canManageSettings() == null) {
-            throw new DBException("Could not read DAM settings from DataDam Account");
+            throw responseError("Could not read DAM settings from DataDam Account", response == null ? null : response.errors());
         }
         var data = response.data();
         return new DamSettingsState(data.accountInfo().accountId(), data.damSettings(), data.canManageSettings());
@@ -163,7 +160,7 @@ public class DDAccountClient extends DDClient {
             DamSettingsResponse.class);
         if (response == null || response.errors() != null && !response.errors().isEmpty()
             || response.data() == null || response.data().setDamSetting() == null) {
-            throw new DBException("Could not update DAM settings in DataDam Account");
+            throw responseError("Could not update DAM settings in DataDam Account", response == null ? null : response.errors());
         }
         return response.data().setDamSetting();
     }
@@ -189,10 +186,10 @@ public class DDAccountClient extends DDClient {
     ) throws DBException {
         JsonObject response = executePostRequest(GRAPHQL_PATH, Map.of(), Map.of(
             "query", query, "variables", variables), JsonObject.class);
-        if (response == null || response.has("errors") && !response.get("errors").isJsonNull()
-            && !response.getAsJsonArray("errors").isEmpty()
+        JsonArray errors = response != null && response.get("errors") instanceof JsonArray array ? array : null;
+        if (response == null || errors != null && !errors.isEmpty()
             || !response.has("data") || !response.get("data").isJsonObject()) {
-            throw new DBException("Could not read DAM from DataDam Account");
+            throw responseError("Could not read DAM from DataDam Account", errors);
         }
         JsonElement dam = response.getAsJsonObject("data").get(field);
         if (dam == null) {
@@ -205,10 +202,19 @@ public class DDAccountClient extends DDClient {
         }
     }
 
+    @NotNull
+    private DBException responseError(@NotNull String message, @Nullable JsonArray errors) {
+        if (errors != null && !errors.isEmpty() && errors.get(0) instanceof JsonObject first
+            && first.get("message") instanceof JsonPrimitive detail) {
+            return new DBException(message + ": " + detail.getAsString());
+        }
+        return new DBException(message);
+    }
+
     public record DamSettingsState(@NotNull UUID accountId, @NotNull DDRemoteDamSettings settings, boolean canManage) {
     }
 
-    private record DamSettingsResponse(@Nullable DamSettingsData data, @Nullable List<Object> errors) {
+    private record DamSettingsResponse(@Nullable DamSettingsData data, @Nullable JsonArray errors) {
     }
 
     private record DamSettingsData(
@@ -241,13 +247,13 @@ public class DDAccountClient extends DDClient {
         super.handleRequestException(message, e);
     }
 
-    private record CryptoResponse(@Nullable CryptoData data, @Nullable List<Object> errors) {
+    private record CryptoResponse(@Nullable CryptoData data, @Nullable JsonArray errors) {
     }
 
     private record CryptoData(@Nullable DDCryptoState gatewayCryptoState) {
     }
 
-    private record AccountResponse(@Nullable AccountData data, @Nullable List<Object> errors) {
+    private record AccountResponse(@Nullable AccountData data, @Nullable JsonArray errors) {
     }
 
     private record AccountData(@Nullable AccountState gatewayCryptoState, @Nullable AccountState accountInfo) {
