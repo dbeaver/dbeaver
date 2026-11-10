@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.ui.forms.UIGrowX;
 import org.jkiss.dbeaver.ui.forms.UIObservable;
 import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
@@ -336,7 +337,8 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         if (computer == null || computer.isBlank()) {
             computer = System.getenv("HOSTNAME");
         }
-        String suggestedName = computer == null || computer.isBlank() ? "DBeaver Desktop" : "DBeaver on " + computer;
+        String productName = GeneralUtils.getProductName();
+        String suggestedName = computer == null || computer.isBlank() ? productName : productName + " on " + computer;
         InputDialog dialog = new InputDialog(
             getShell(), DDTrackingUIMessages.sync_preference_page_dam_name_edit,
             DDTrackingUIMessages.sync_preference_page_dam_name_prompt,
