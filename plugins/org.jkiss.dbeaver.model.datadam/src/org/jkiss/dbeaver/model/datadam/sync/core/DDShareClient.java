@@ -51,7 +51,6 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
 
     private static final int TIMEOUT_MS = 30000;
     private static final String GRAPHQL_ENDPOINT = "/graphql";
-    private static final String CREDENTIAL_ID_HEADER = "X-DataDam-Credential-Id";
     private static final String FIELD_NAME = "name";
     private static final String FIELD_DESCRIPTION = "description";
 
@@ -121,14 +120,15 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
         try {
             Map<String, Object> variables = new HashMap<>();
             variables.put("projectId", projectId.toString());
+            variables.put("apiKeyId", requireCredentialBundle().apiKeyId());
             variables.put(FIELD_NAME, name);
             variables.put(FIELD_DESCRIPTION, description);
             JsonObject data = call("""
-                mutation($projectId: ID!, $name: String!, $description: String) {
-                    createProject(projectId: $projectId, name: $name, description: $description) {
+                mutation($apiKeyId: ID!, $projectId: ID!, $name: String!, $description: String) {
+                    createProject(apiKeyId: $apiKeyId, projectId: $projectId, name: $name, description: $description) {
                 %s
                     }
-                }""".formatted(PROJECT_FIELDS.indent(8)), variables, requireCredentialBundle());
+                }""".formatted(PROJECT_FIELDS.indent(8)), variables);
             return gson.fromJson(data.get("createProject"), DDSharedProject.class);
         } catch (DBException e) {
             throw new DDShareException("Failed to create project", e);
@@ -272,8 +272,12 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
     ) throws DDShareException {
         try {
             JsonObject data = call("""
-                mutation($projectId: ID!, $projectContent: ProjectConfigurationInput!, $lastKnownConfigurationFingerprint: String!) {
+                mutation(
+                    $apiKeyId: ID!, $projectId: ID!,
+                    $projectContent: ProjectConfigurationInput!, $lastKnownConfigurationFingerprint: String!
+                ) {
                     pushProjectConfiguration(
+                        apiKeyId: $apiKeyId
                         projectId: $projectId
                         projectContent: $projectContent
                         lastKnownConfigurationFingerprint: $lastKnownConfigurationFingerprint
@@ -287,7 +291,8 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
                 Map.of(
                     "projectId", projectId.toString(),
                     "projectContent", projectContent,
-                    "lastKnownConfigurationFingerprint", lastKnownConfigurationFingerprint), bundle);
+                    "lastKnownConfigurationFingerprint", lastKnownConfigurationFingerprint,
+                    "apiKeyId", Objects.requireNonNull(bundle.apiKeyId())));
             JsonElement result = data.get("pushProjectConfiguration");
             if (result == null || result.isJsonNull()) {
                 throw new DDShareException("Project not found or configuration fingerprint is stale: " + projectId);
@@ -406,18 +411,8 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
 
     @NotNull
     private JsonObject call(@NotNull String query, @NotNull Map<String, Object> variables) throws DBException {
-        return call(query, variables, null);
-    }
-
-    @NotNull
-    private JsonObject call(
-        @NotNull String query, @NotNull Map<String, Object> variables, @Nullable DDKeyBundle bundle
-    ) throws DBException {
         byte[] body = gson.toJson(Map.of("query", query, "variables", variables)).getBytes(StandardCharsets.UTF_8);
         HttpRequest.Builder request = request(body);
-        if (bundle != null) {
-            request.header(CREDENTIAL_ID_HEADER, Objects.requireNonNull(bundle.apiKeyId()).toString());
-        }
         JsonObject response = execute(request, JsonObject.class);
 
         if (response.get("errors") instanceof JsonArray errors && !errors.isEmpty()) {

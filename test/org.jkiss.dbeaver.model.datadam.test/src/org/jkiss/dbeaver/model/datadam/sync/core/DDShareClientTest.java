@@ -79,7 +79,8 @@ class DDShareClientTest {
             var created = client.createProject(UUID.fromString(PROJECT_A), "Проект <test>", "Plain description");
             Assertions.assertEquals("Проект <test>", request.get().getAsJsonObject("variables").get("name").getAsString());
             Assertions.assertEquals("Plain description", request.get().getAsJsonObject("variables").get("description").getAsString());
-            Assertions.assertEquals(keyId.toString(), credentialId.get());
+            Assertions.assertNull(credentialId.get());
+            Assertions.assertEquals(keyId.toString(), request.get().getAsJsonObject("variables").get("apiKeyId").getAsString());
             Assertions.assertEquals("Проект <test>", created.name());
             Assertions.assertEquals("Plain description", created.description());
 
@@ -100,7 +101,7 @@ class DDShareClientTest {
     }
 
     @Test
-    void uploadUsesTheSameBundleForEncryptionAndCredentialHeader() throws Exception {
+    void uploadUsesTheSameBundleForEncryptionAndCredentialParameter() throws Exception {
         SecretKey key = KeyGenerator.getInstance("AES").generateKey();
         UUID keyId = UUID.randomUUID();
         var bundle = new DDKeyBundle(UUID.randomUUID(), "unused", Base64.getEncoder().encodeToString(key.getEncoded()), 1, keyId);
@@ -128,7 +129,8 @@ class DDShareClientTest {
             byte[] contents = "project configuration".getBytes(StandardCharsets.UTF_8);
             client.pushFiles(UUID.fromString(PROJECT_A),
                 new PreparedFiles(Map.of("data-sources.json", new Pair<>("file", contents)), "next"), "old");
-            Assertions.assertEquals(keyId.toString(), credentialId.get());
+            Assertions.assertNull(credentialId.get());
+            Assertions.assertEquals(keyId.toString(), request.get().getAsJsonObject("variables").get("apiKeyId").getAsString());
             String encrypted = request.get().getAsJsonObject("variables").getAsJsonObject("projectContent")
                 .getAsJsonArray("files").get(0).getAsJsonObject().get("encryptedContents").getAsString();
             Assertions.assertArrayEquals(contents, DDCrypto.decrypt(key, Base64.getDecoder().decode(encrypted),
