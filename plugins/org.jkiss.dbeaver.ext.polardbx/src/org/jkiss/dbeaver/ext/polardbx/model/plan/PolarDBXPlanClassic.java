@@ -24,27 +24,35 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.plan.DBCPlanCostNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
+import org.jkiss.dbeaver.model.exec.plan.DBCPlanSourceFormat;
+import org.jkiss.dbeaver.model.impl.local.CachedResultSet;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 public class PolarDBXPlanClassic extends MySQLPlanAbstract {
-    private List<PolarDBXPlanNodePlain> rootNodes;
+    private static final Pattern OPERATOR_LINE = Pattern.compile("[\\w$]+(?:\\(.*)?", Pattern.DOTALL);
+    private final List<PolarDBXPlanNodePlain> rootNodes;
+    private CachedResultSet rawResultSet;
 
     public PolarDBXPlanClassic(@NotNull JDBCSession session, @NotNull String query) throws DBCException {
         super((MySQLDataSource) session.getDataSource(), query);
         try (JDBCPreparedStatement dbStat = session.prepareStatement(getPlanQueryString())) {
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                List<PolarDBXPlanNodePlain> nodes = new ArrayList<>();
+                rawResultSet = new CachedResultSet(getPlanQueryString(), dbResult.getMetaData());
+                List<String> lines = new ArrayList<>();
                 while (dbResult.next()) {
-                    PolarDBXPlanNodePlain node = new PolarDBXPlanNodePlain(null, dbResult);
-                    nodes.add(node);
+                    rawResultSet.addRow(dbResult);
+                    String line = dbResult.getString(1);
+                    if (line != null) {
+                        lines.add(line);
+                    }
                 }
-                rootNodes = nodes;
+                rootNodes = parsePlanNodes(lines);
             }
         } catch (SQLException e) {
             throw new DBCException(e, session.getExecutionContext());
@@ -60,13 +68,45 @@ public class PolarDBXPlanClassic extends MySQLPlanAbstract {
         this.rootNodes = rootNodes;
     }
 
+    @NotNull
+    static List<PolarDBXPlanNodePlain> parsePlanNodes(@NotNull List<String> lines) {
+        List<PolarDBXPlanNodePlain> roots = new ArrayList<>();
+        List<PolarDBXPlanNodePlain> ancestors = new ArrayList<>();
+        List<Integer> indents = new ArrayList<>();
+        // CN returns an indented, single-column plan, not TiDB's FORMAT="brief" columns.
+        for (String line : lines) {
+            String operator = line.strip();
+            if (!OPERATOR_LINE.matcher(operator).matches()) {
+                // Keep footer metadata (HitCache, Source, TemplateId, etc.) in the raw result only.
+                continue;
+            }
+            int indent = line.length() - line.stripLeading().length();
+            while (!indents.isEmpty() && indents.getLast() >= indent) {
+                indents.removeLast();
+                ancestors.removeLast();
+            }
+            PolarDBXPlanNodePlain node = new PolarDBXPlanNodePlain(operator);
+            if (ancestors.isEmpty()) {
+                roots.add(node);
+            } else {
+                node.setParent(ancestors.getLast());
+            }
+            ancestors.add(node);
+            indents.add(indent);
+        }
+        return roots;
+    }
+
+    @NotNull
+    @Override
+    public DBCPlanSourceFormat getPlanSourceDataFormat() {
+        return DBCPlanSourceFormat.RESULT_SET;
+    }
+
     @Nullable
     @Override
-    public Object getPlanFeature(@NotNull String feature) {
-        if (DBCPlanCostNode.FEATURE_PLAN_ROWS.equals(feature)) {
-            return true;
-        }
-        return super.getPlanFeature(feature);
+    public Object getPlanSourceData() {
+        return rawResultSet;
     }
 
     @NotNull
@@ -78,7 +118,7 @@ public class PolarDBXPlanClassic extends MySQLPlanAbstract {
     @NotNull
     @Override
     public String getPlanQueryString() {
-        return "EXPLAIN FORMAT = \"brief\" " + query;
+        return "EXPLAIN " + query;
     }
 
     @NotNull

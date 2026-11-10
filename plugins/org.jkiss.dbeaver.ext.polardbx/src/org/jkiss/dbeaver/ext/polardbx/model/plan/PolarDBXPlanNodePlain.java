@@ -20,10 +20,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanNode;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -47,13 +45,10 @@ public class PolarDBXPlanNodePlain extends MySQLPlanNode {
         this.nested = nodes;
     }
 
-    public PolarDBXPlanNodePlain(@Nullable PolarDBXPlanNodePlain parent, @NotNull ResultSet dbResult) {
-        this.parent = parent;
-        this.id = JDBCUtils.safeGetString(dbResult, "id");
-        this.estRows = JDBCUtils.safeGetString(dbResult, "estRows");
-        this.task = JDBCUtils.safeGetString(dbResult, "task");
-        this.accessObject = JDBCUtils.safeGetString(dbResult, "access object");
-        this.operatorInfo = JDBCUtils.safeGetString(dbResult, "operator info");
+    public PolarDBXPlanNodePlain(@NotNull String operator) {
+        int detailsOffset = operator.indexOf('(');
+        this.id = detailsOffset < 0 ? operator : operator.substring(0, detailsOffset);
+        this.operatorInfo = operator;
     }
 
     public PolarDBXPlanNodePlain(
@@ -109,7 +104,7 @@ public class PolarDBXPlanNodePlain extends MySQLPlanNode {
     @Nullable
     @Override
     public String getNodeName() {
-        return this.accessObject;
+        return accessObject == null || accessObject.isEmpty() ? id : accessObject;
     }
 
     @Nullable

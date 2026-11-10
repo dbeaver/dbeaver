@@ -548,10 +548,6 @@ public class PolarDBXCatalog extends MySQLCatalog {
 
     }
 
-    /**
-     * PolarDB-X smart index cache implementation.
-     * Avoids repeated queries and optimizes the loading strategy.
-     */
     public class PolarDBXIndexCache extends MySQLCatalog.IndexCache {
 
         PolarDBXIndexCache(@NotNull TableCache tableCache) {
@@ -562,12 +558,13 @@ public class PolarDBXCatalog extends MySQLCatalog {
         protected void loadObjects(@NotNull DBRProgressMonitor monitor, @NotNull MySQLCatalog owner, @Nullable MySQLTable forParent)
                 throws DBException {
             synchronized (this) {
-                super.loadObjects(monitor, owner, null);
+                super.loadObjects(monitor, owner, forParent);
             }
         }
 
         @Override
         public void clearObjectCache(@NotNull MySQLTable table) {
+            // Also reset the full-cache flag so a subsequent schema-wide request reloads the refreshed table.
             clearCache();
         }
     }
