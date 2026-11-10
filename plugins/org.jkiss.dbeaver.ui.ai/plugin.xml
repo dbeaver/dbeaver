@@ -11,22 +11,7 @@
             class="org.jkiss.dbeaver.ui.ai.preferences.PrefPageDataSourceAI"
             title="%pref.page.ai.connection.name"
             description="%pref.page.ai.connection.description">
-            <enabledWhen>
-                <or>
-                    <test property="org.jkiss.dbeaver.ui.ai.hasConnectionSettings" forcePluginActivation="true"/>
-                    <test property="org.jkiss.dbeaver.ui.datadam.mcp.enabled" forcePluginActivation="true"/>
-                </or>
-            </enabledWhen>
         </page>
-    </extension>
-
-    <extension point="org.eclipse.core.expressions.propertyTesters">
-        <propertyTester
-            class="org.jkiss.dbeaver.ui.ai.preferences.AIConnectionSettingsPropertyTester"
-            id="org.jkiss.dbeaver.ui.ai.preferences.AIConnectionSettingsPropertyTester"
-            namespace="org.jkiss.dbeaver.ui.ai"
-            properties="hasConnectionSettings"
-            type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
