@@ -258,6 +258,85 @@ class AIResponseHistoryTest {
         Assertions.assertNotNull(result.getFunctionCall());
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void doesNotReplayCommentaryRemovedEntirelyByTheExistingLimiter(boolean withReasoning) throws Exception {
+        String text = "a".repeat(8000);
+        OAIResponsesResponse response = response((withReasoning ? REASONING + "," : "")
+            + TEXT.replace("Checking tables", text) + "," + CALL);
+        AIEngineResponseConsumer listener = Mockito.mock(AIEngineResponseConsumer.class);
+        AtomicReference<Map<String, String>> state = new AtomicReference<>(Map.of());
+        AtomicReference<AIFunctionCall> call = new AtomicReference<>();
+        Mockito.doAnswer(invocation -> {
+            state.set(invocation.getArgument(0));
+            return null;
+        }).when(listener).messageMetadata(Mockito.anyMap());
+        Mockito.doAnswer(invocation -> {
+            AIEngineResponseChunk chunk = invocation.getArgument(0);
+            if (chunk.getFunctionCall() != null) {
+                call.set(chunk.getFunctionCall());
+            }
+            return null;
+        }).when(listener).nextChunk(Mockito.any());
+        OpenAiAPIStreamConsumer stream = new OpenAiAPIStreamConsumer(listener, "source");
+        for (OAIMessage item : response.output) {
+            if ("message".equals(item.type)) {
+                stream.accept("data: {\"type\":\"response.output_text.delta\",\"delta\":" + JSONUtils.GSON.toJson(text) + "}");
+            }
+            stream.accept("data: {\"type\":\"response.output_item.done\",\"item\":" + JSONUtils.GSON.toJson(item) + "}");
+        }
+        stream.accept("data: {\"type\":\"response.completed\",\"response\":{\"status\":\"completed\"}}");
+        stream.complete();
+        Mockito.verify(listener, Mockito.never()).error(Mockito.any());
+        Assertions.assertNotNull(call.get());
+        AIMessageMeta meta = new AIMessageMeta("prompt", "openai", "model", null, Duration.ZERO, 0, state.get());
+        AIMessage commentary = AIMessage.assistantMessage(text, List.of(meta));
+        AIMessage finalAnswer = AIMessage.assistantMessage("Done", List.of());
+        AIMessage user = AIMessage.userMessage("Continue");
+        DummyTokenCounter counter = new DummyTokenCounter();
+        int contextWindow = 2048;
+        int replyReserve = 256;
+        int budget = contextWindow - replyReserve - 128;
+        int remaining = budget - counter.count(finalAnswer.getContent()) - counter.count(user.getContent());
+        AIMessage sample = AIMessage.functionCall(call.get(), new AIFunctionResult(AIFunctionType.INFORMATION, "x"));
+        int valueLength = remaining * DummyTokenCounter.TOKEN_TO_CHAR_RATIO - (sample.getContent().length() - 1);
+        AIMessage result = AIMessage.functionCall(call.get(), new AIFunctionResult(AIFunctionType.INFORMATION, "b".repeat(valueLength)));
+        List<AIMessage> history = List.of(AIMessage.userMessage("Inspect"), commentary, result, finalAnswer, user);
+        List<AIMessage> trimmed = ChatTruncator.builder().maxTokens(contextWindow).reserveForSystem(0)
+            .reserveForReply(replyReserve).reserveForOverhead(128).tokenCounter(counter).build().tryTruncate(history);
+        Assertions.assertNotNull(trimmed);
+        Assertions.assertEquals(List.of(result, finalAnswer, user), trimmed);
+        Map<String, String> callState = Map.copyOf(call.get().getMessageMetadata());
+        OAIResponsesRequest next = request(trimmed, "source", false);
+        Assertions.assertFalse(JSONUtils.GSON.toJson(next.input).contains(text));
+        Assertions.assertTrue(next.input.stream().mapToInt(item -> counter.count(item.getFullText())
+            + (item.output == null ? 0 : counter.count(item.output))
+            + (item.arguments == null ? 0 : counter.count(item.arguments))).sum() <= contextWindow - replyReserve);
+        Assertions.assertEquals(callState, call.get().getMessageMetadata());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"", " \n", "\u2003"})
+    void replaysToolOnlyHistoryAfterWhitespaceStreaming(@NotNull String text) {
+        OAIResponsesResponse response = response(REASONING + "," + TEXT.replace("\"Checking tables\"", JSONUtils.GSON.toJson(text))
+            + "," + CALL);
+        AIEngineResponseConsumer listener = Mockito.mock(AIEngineResponseConsumer.class);
+        OpenAiAPIStreamConsumer stream = new OpenAiAPIStreamConsumer(listener, "source");
+        stream.accept("data: {\"type\":\"response.output_text.delta\",\"delta\":" + JSONUtils.GSON.toJson(text) + "}");
+        stream.accept("data: {\"type\":\"response.output_item.done\",\"item\":" + CALL + "}");
+        stream.accept("data: {\"type\":\"response.completed\",\"response\":" + JSONUtils.GSON.toJson(response) + "}");
+        stream.complete();
+        Mockito.verify(listener, Mockito.never()).error(Mockito.any());
+        ArgumentCaptor<AIEngineResponseChunk> chunks = ArgumentCaptor.forClass(AIEngineResponseChunk.class);
+        Mockito.verify(listener, Mockito.times(2)).nextChunk(chunks.capture());
+        AIFunctionCall call = chunks.getValue().getFunctionCall();
+        Assertions.assertNotNull(call);
+        AIMessage result = AIMessage.functionCall(call, new AIFunctionResult(AIFunctionType.INFORMATION, "table"));
+        OAIResponsesRequest next = request(List.of(result), "source", true);
+        Assertions.assertEquals(JSONUtils.GSON.toJson(response.output), JSONUtils.GSON.toJson(next.input.subList(0, 3)));
+        Assertions.assertEquals("function_call_output", next.input.getLast().type);
+    }
+
     @NotNull
     private static OAIResponsesRequest request(@NotNull List<AIMessage> history, @NotNull String source, boolean reasoningRequired) {
         AIEngineRequest request = new AIEngineRequest(history);

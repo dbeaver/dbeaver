@@ -57,6 +57,7 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
     private boolean failed;
     private OAIResponsesResponse completedResponse;
     private boolean closed;
+    private boolean messageExpected;
     private final List<OAIMessage> output = new ArrayList<>();
 
     public OpenAiAPIStreamConsumer(@NotNull AIEngineResponseConsumer listener) {
@@ -128,6 +129,7 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
                         List<String> choices = processChunk(chunk);
 
                         if (!choices.isEmpty()) {
+                            messageExpected |= choices.getFirst() != null && !choices.getFirst().isBlank();
                             listener.nextChunk(new AIEngineResponseChunk(choices));
                         }
                     }
@@ -174,7 +176,7 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
         }
         closed = true;
         // completed items are provisional until the entire response succeeds
-        var metadata = OpenAiUtils.completeResponse(functionCalls, completedResponse.output, reasoningSource);
+        var metadata = OpenAiUtils.completeResponse(functionCalls, completedResponse.output, reasoningSource, messageExpected);
         if (!metadata.isEmpty()) {
             listener.messageMetadata(metadata);
         }

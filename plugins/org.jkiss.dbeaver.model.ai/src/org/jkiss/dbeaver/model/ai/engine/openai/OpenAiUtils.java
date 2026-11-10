@@ -110,7 +110,7 @@ public class OpenAiUtils {
                 calls.add(createFunctionCall(item));
             }
         }
-        Map<String, String> metadata = completeResponse(calls, result.output, reasoningSource);
+        Map<String, String> metadata = completeResponse(calls, result.output, reasoningSource, false);
         AIEngineResponse response;
         if (calls.isEmpty()) {
             List<String> choices = result.output.stream().filter(item -> OAIMessage.TYPE_MESSAGE.equals(item.type))
@@ -128,14 +128,16 @@ public class OpenAiUtils {
     static Map<String, String> completeResponse(
         @NotNull List<AIFunctionCall> calls,
         @NotNull List<OAIMessage> output,
-        @Nullable String reasoningSource
+        @Nullable String reasoningSource,
+        boolean messageExpected
     ) {
         if (reasoningSource == null || output.stream().noneMatch(item -> OAIMessage.TYPE_FUNCTION_REASONING.equals(item.type))) {
             return Map.of();
         }
         // preserve the native order even if the user approves tool calls in a different order
         Map<String, String> metadata = Map.of(OpenAIConstants.RESPONSE_OUTPUT, JSONUtils.GSON.toJson(output),
-            OpenAIConstants.REASONING_SOURCE, reasoningSource);
+            OpenAIConstants.REASONING_SOURCE, reasoningSource,
+            OpenAIConstants.RESPONSE_REQUIRES_MESSAGE, Boolean.toString(messageExpected));
         for (AIFunctionCall call : calls) {
             Map<String, String> callMetadata = new HashMap<>(metadata);
             if (call.getMessageMetadata() != null) {
@@ -288,6 +290,8 @@ public class OpenAiUtils {
         @Nullable String reasoningSource
     ) {
         Map<String, AIMessage> results = new HashMap<>();
+        boolean messageRequired = false;
+        boolean messagePresent = false;
         for (int index = turnStart; index < messages.size(); index++) {
             AIMessage message = messages.get(index);
             if (index > turnStart && message.getRole() == AIMessageType.USER) {
@@ -300,10 +304,15 @@ public class OpenAiUtils {
                 ) {
                     return null;
                 }
+                messageRequired |= Boolean.parseBoolean(metadata.get(OpenAIConstants.RESPONSE_REQUIRES_MESSAGE));
+                messagePresent |= message.getRole() == AIMessageType.ASSISTANT;
                 if (message.getFunctionCall() != null) {
                     results.put(metadata.get(OpenAIConstants.TOOL_RESULT_CALL_ID), message);
                 }
             }
+        }
+        if (messageRequired && !messagePresent) {
+            return null;
         }
         List<OAIMessage> nativeOutput = List.of(JSONUtils.GSON.fromJson(output, OAIMessage[].class));
         List<OAIMessage> restored = new ArrayList<>(nativeOutput);
