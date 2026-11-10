@@ -52,6 +52,8 @@ import org.jkiss.dbeaver.ui.dialogs.BaseWizard;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Map;
+
 public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbenchPropertyPage {
     private static final Log log = Log.getLog(PrefPageDataSourceAI.class);
     private static final String CSS_CLASS_FORM_HINT = "dbeaverFormHint";
@@ -61,6 +63,7 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
     private Button enableAiCheck;
     private Combo metadataScopeCombo;
     private IObjectPropertyConfigurator<AIContextSettingsDataSource, PrefPageDataSourceAI> aiConfigurator;
+    private Composite aiConfiguratorContent;
     private ControlEnableState aiConfiguratorEnableState;
 
     @NotNull
@@ -78,13 +81,13 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
                 try {
                     IObjectPropertyConfigurator<AIContextSettingsDataSource, PrefPageDataSourceAI> configurator =
                         descriptor.createConfigurator();
-                    Composite configuratorContent = UIUtils.createComposite(content, 1);
-                    configuratorContent.setLayoutData(new GridData(GridData.FILL_BOTH));
-                    configurator.createControl(configuratorContent, settings, () -> {});
+                    aiConfiguratorContent = UIUtils.createComposite(content, 1);
+                    aiConfiguratorContent.setLayoutData(new GridData(GridData.FILL_BOTH));
+                    configurator.createControl(aiConfiguratorContent, settings, () -> {});
                     configurator.loadSettings(this);
                     enableAiCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(
-                        event -> updateConfiguratorEnablement(configuratorContent)));
-                    updateConfiguratorEnablement(configuratorContent);
+                        event -> updateConfiguratorEnablement(aiConfiguratorContent)));
+                    updateConfiguratorEnablement(aiConfiguratorContent);
                     aiConfigurator = configurator;
                 } catch (DBException e) {
                     log.error("Cannot load AI connection settings", e);
@@ -97,16 +100,20 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
     private void updateConfiguratorEnablement(@NotNull Composite content) {
         boolean enabled = enableAiCheck.getSelection();
         if (enabled) {
-            if (aiConfiguratorEnableState != null) {
-                aiConfiguratorEnableState.restore();
-                aiConfiguratorEnableState = null;
-                resetConfiguratorTextColors(content);
-            }
+            restoreConfiguratorEnablement(content);
         } else if (aiConfiguratorEnableState == null) {
             aiConfiguratorEnableState = ControlEnableState.disable(content);
         }
         CSSUtils.setCSSClass(content, enabled ? null : CSS_CLASS_FORM_HINT);
         CSSUtils.applyStyles(content);
+    }
+
+    private void restoreConfiguratorEnablement(@NotNull Composite content) {
+        if (aiConfiguratorEnableState != null) {
+            aiConfiguratorEnableState.restore();
+            aiConfiguratorEnableState = null;
+            resetConfiguratorTextColors(content);
+        }
     }
 
     private void resetConfiguratorTextColors(@NotNull Composite content) {
@@ -142,7 +149,13 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
         metadataScopeCombo.addSelectionListener(SelectionListener.widgetSelectedAdapter(event -> {
             int scopeIndex = metadataScopeCombo.getSelectionIndex();
             if (scopeIndex >= 0) {
-                settings.setScope(CommonUtils.fromOrdinal(AIDatabaseScope.class, scopeIndex));
+                AIDatabaseScope scope = CommonUtils.fromOrdinal(AIDatabaseScope.class, scopeIndex);
+                if (scope == AIDatabaseScope.CUSTOM) {
+                    updateScopeSelection();
+                    configureCustomScope(connection);
+                } else {
+                    settings.setScope(scope);
+                }
             }
         }));
         Button scopeButton = UIUtils.createDialogButton(
@@ -159,9 +172,7 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
         if (settings.getScope() == null) {
             AIUtils.updateScopeSettingsIfNeeded(settings, connection, DBUtils.getDefaultContext(connection, true));
         }
-        if (settings.getScope() != null) {
-            metadataScopeCombo.select(settings.getScope().ordinal());
-        }
+        updateScopeSelection();
     }
 
     private void configureCustomScope(@NotNull DBPDataSourceContainer connection) {
@@ -174,8 +185,15 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
             ? wizard.getRunnableContext() : null;
         AIChatUtils.chooseCustomScope(
             getShell(), settings, metadataConnection, dataSource -> DBUtils.getDefaultContext(dataSource, false), null, runnableContext);
-        if (settings.getScope() != null) {
-            metadataScopeCombo.select(settings.getScope().ordinal());
+        updateScopeSelection();
+    }
+
+    private void updateScopeSelection() {
+        AIDatabaseScope scope = settings.getScope();
+        if (scope == null) {
+            metadataScopeCombo.deselectAll();
+        } else {
+            metadataScopeCombo.select(scope.ordinal());
         }
     }
 
@@ -213,8 +231,17 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
     @Override
     protected void performDefaults() {
         super.performDefaults();
+        if (settings == null) {
+            return;
+        }
+        settings.loadSettingsFromMap(Map.of());
+        enableAiCheck.setSelection(settings.isMetaTransferConfirmed());
+        updateScopeSelection();
         if (aiConfigurator != null) {
+            restoreConfiguratorEnablement(aiConfiguratorContent);
             aiConfigurator.resetSettings(this);
+            aiConfigurator.loadSettings(this);
+            updateConfiguratorEnablement(aiConfiguratorContent);
         }
     }
 
