@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
 import java.time.Duration;
+import java.util.Map;
 
 public record AIMessageMeta(
     @NotNull String type,
@@ -27,6 +28,21 @@ public record AIMessageMeta(
     @Nullable String modelId,
     @Nullable AIUsage usage,
     @NotNull Duration timeSpent,
-    int systemPromptLength
+    int systemPromptLength,
+    @NotNull Map<String, String> responseMetadata
 ) {
+    public AIMessageMeta {
+        responseMetadata = responseMetadata == null ? Map.of() : Map.copyOf(responseMetadata);
+    }
+
+    public AIMessageMeta(
+        @NotNull String type,
+        @NotNull String engineId,
+        @Nullable String modelId,
+        @Nullable AIUsage usage,
+        @NotNull Duration timeSpent,
+        int systemPromptLength
+    ) {
+        this(type, engineId, modelId, usage, timeSpent, systemPromptLength, Map.of());
+    }
 }

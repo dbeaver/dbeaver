@@ -61,6 +61,8 @@ import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
+import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatController;
@@ -158,6 +160,16 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         setTabList(tabList.toArray(new Control[0]));
 
         WidgetElement.applyStyles(this, true);
+
+        UIUtils.installAndUpdateMainFont(this);
+        if (promptComposite != null) {
+            promptComposite.updatePromptEditorSize();
+            BaseThemeSettings.instance.addPropertyListener(
+                UIFonts.DBeaver.MAIN_FONT,
+                s -> promptComposite.updatePromptEditorSize(),
+                this
+            );
+        }
 
         addDisposeListener(e -> chatSession.closeSession());
     }
@@ -392,6 +404,14 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     }
 
     public boolean checkConfiguration() {
+        AIConfigurationProfile profile = activeConversation.getProfile();
+        if (profile == null) {
+            profile = AISettingsManager.getStaticSettings().getDefaultConfigurationOrNull();
+        }
+        if (profile != null && !profile.isAvailable()) {
+            AIUIUtils.showPreferences(getShell());
+            return false;
+        }
         try {
             if (!AIUtils.hasValidConfiguration()) {
                 AIUIUtils.showPreferences(getShell());

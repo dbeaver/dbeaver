@@ -234,6 +234,10 @@ public class UIIcon {
         "sql_tab_per_result_true", "sql/sql_multiple_results_per_tab_false.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_MULTIPLE_RESULTS_PER_TAB_TRUE = new DBIcon(
         "sql_tab_per_result_false", "sql/sql_multiple_results_per_tab_true.svg"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon SQL_AUX_TABS_BOTTOM_BESIDE_CODE = new DBIcon("sql/aux_tabs_bottom_beside_code.svg"); //$NON-NLS-1$
+    public static final DBIcon SQL_AUX_TABS_BOTTOM_WITH_RESULTS = new DBIcon("sql/aux_tabs_bottom_with_results.svg"); //$NON-NLS-1$
+    public static final DBIcon SQL_AUX_TABS_RIGHT_BESIDE_CODE = new DBIcon("sql/aux_tabs_right_beside_code.svg"); //$NON-NLS-1$
+    public static final DBIcon SQL_AUX_TABS_RIGHT_WITH_RESULTS = new DBIcon("sql/aux_tabs_right_with_results.svg"); //$NON-NLS-1$
     public static final DBIcon SQL_ANALYSE = new DBIcon("sql_analyse", "sql/sql_analyse.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_EXPLAIN_PLAN = new DBIcon("sql_explain", "sql/sql_plan.svg"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SQL_VALIDATE = new DBIcon("sql_validate", "sql/sql_validate.svg"); //$NON-NLS-1$ //$NON-NLS-2$

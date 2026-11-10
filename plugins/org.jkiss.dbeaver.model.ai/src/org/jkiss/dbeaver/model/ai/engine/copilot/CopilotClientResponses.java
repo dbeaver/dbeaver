@@ -140,12 +140,12 @@ public class CopilotClientResponses extends CopilotClientBase<Pair<OAIResponsesR
         chatRequest.getFirst().stream = true;
         HttpRequest request = createCompletionRequest(chatRequest.getFirst(), session);
 
-        Consumer<String> stringConsumer = new OpenAiAPIStreamConsumer(listener);
+        OpenAiAPIStreamConsumer stringConsumer = new OpenAiAPIStreamConsumer(listener);
         client.sendAsync(
             request,
             stringConsumer,
-            listener::error,
-            listener::completeBlock,
+            stringConsumer::error,
+            stringConsumer::complete,
             (failureReason) -> {
                 if (OpenAIConstants.LEGACY_FALLBACK.equals(failureReason)) {
                     try {

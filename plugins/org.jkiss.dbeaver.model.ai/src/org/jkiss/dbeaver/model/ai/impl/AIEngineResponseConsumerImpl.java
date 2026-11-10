@@ -31,6 +31,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
@@ -69,6 +70,13 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
 
     void setLogResponses(boolean logResponses) {
         this.logResponses = logResponses;
+    }
+
+    private Map<String, String> messageMetadata = Map.of();
+
+    @Override
+    public void messageMetadata(@NotNull Map<String, String> metadata) {
+        messageMetadata = Map.copyOf(metadata);
     }
 
     @Override
@@ -149,7 +157,8 @@ class AIEngineResponseConsumerImpl implements AIEngineResponseConsumer {
             engine.getProperties().getModelDisplayName(),
             usage,
             Duration.between(startTime, Instant.now()),
-            systemPromptLength.get()
+            systemPromptLength.get(),
+            messageMetadata
         );
 
         chatListener.complete(List.of(messageMeta), finishConversation, isCanceled);
