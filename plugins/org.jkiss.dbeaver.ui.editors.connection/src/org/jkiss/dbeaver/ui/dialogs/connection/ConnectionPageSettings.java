@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -217,7 +216,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         // activating driver properties may open a modal download dialog
         control.update();
         activateCurrentItem();
-        handlersToolbar.setVisible(!getDriver().isEmbedded());
+        handlersToolbar.setVisible(isNetworkConfigurationEnabled());
         UIUtils.asyncExec(() -> connectionEditor.activateEditor());
     }
 
@@ -387,7 +386,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
 
             activateCurrentItem();
-            Dialog.applyDialogFont(tabFolder);
+            UIUtils.applyDialogFont(tabFolder);
             UIUtils.setHelp(getControl(), IHelpContextIds.CTX_CON_WIZARD_SETTINGS);
         } catch (Exception ex) {
             log.warn(ex);
@@ -854,7 +853,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                     panel.setRedraw(false);
                     try {
                         page.createControl(panel);
-                        Dialog.applyDialogFont(panel);
+                        UIUtils.applyDialogFont(panel);
                         UIUtils.configureScrolledComposite(panel, page.getControl());
                     } catch (Throwable e) {
                         DBWorkbench.getPlatformUI().showError("Error creating configuration page", null, e);
@@ -1053,6 +1052,13 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         super.dispose();
     }
 
+    private boolean isNetworkConfigurationEnabled() {
+        DBPDriver driver = getDriver();
+        return (!driver.isEmbedded()
+            || CommonUtils.toBoolean(driver.getDriverParameter(DBConstants.DRIVER_PARAM_ENABLE_NETWORK_PARAMETERS)))
+            && !CommonUtils.toBoolean(driver.getDriverParameter(DBConstants.DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS));
+    }
+
     @Nullable
     @Override
     public IDialogPage[] getDialogPages(boolean extrasOnly, boolean forceCreate) {
@@ -1071,10 +1077,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         if (activeConnectionEditor instanceof IDialogPageProvider pageProvider) {
             subPages = pageProvider.getDialogPages(extrasOnly, true);
 
-            if ((!getDriver().isEmbedded() || CommonUtils.toBoolean(getDriver().getDriverParameter(DBConstants.DRIVER_PARAM_ENABLE_NETWORK_PARAMETERS)))
-                && !CommonUtils.toBoolean(getDriver().getDriverParameter(DBConstants.DRIVER_PARAM_DISABLE_NETWORK_PARAMETERS))
-            ) {
-                // Add network tabs (for non-embedded drivers)
+            if (isNetworkConfigurationEnabled()) {
+                // Add network tabs for drivers that support network configuration
                 for (NetworkHandlerDescriptor descriptor : NetworkHandlerRegistry.getInstance().getDescriptors(getActiveDataSource())) {
                     if (driverSubstitution != null && !driverSubstitution.getInstance().isNetworkHandlerSupported(descriptor)) {
                         continue;

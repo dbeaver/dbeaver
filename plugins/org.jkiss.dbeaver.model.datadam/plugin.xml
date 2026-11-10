@@ -14,7 +14,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.model.datadam.desktopRpcService">
-        <service class="org.jkiss.dbeaver.model.datadam.mcp.DDMcpDesktopRpcRegistration"/>
+        <service id="mcp" class="org.jkiss.dbeaver.model.datadam.mcp.DDMcpDesktopRpcRegistration"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.pluginService">
