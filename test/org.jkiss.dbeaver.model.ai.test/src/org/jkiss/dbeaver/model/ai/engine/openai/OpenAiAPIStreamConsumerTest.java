@@ -90,7 +90,9 @@ public class OpenAiAPIStreamConsumerTest extends DBeaverUnitTest {
         Assertions.assertNotNull(functionCall);
         Assertions.assertEquals("db_listTableNames", functionCall.getFunctionName());
         Assertions.assertEquals(Map.of("schemaNames", "dbo"), functionCall.getArguments());
-        Assertions.assertEquals(Map.of("call_id", "call_1"), functionCall.getMessageMetadata());
+        Assertions.assertEquals("call_1", functionCall.getMessageMetadata().get(OpenAIConstants.TOOL_RESULT_CALL_ID));
+        Assertions.assertNotNull(functionCall.getMessageMetadata().get(OpenAIConstants.RESPONSE_OUTPUT));
+        Mockito.verify(listener).messageMetadata(Mockito.anyMap());
         Mockito.verify(listener).usage(Mockito.any());
         Mockito.verify(listener).completeBlock();
         Mockito.verifyNoMoreInteractions(listener);

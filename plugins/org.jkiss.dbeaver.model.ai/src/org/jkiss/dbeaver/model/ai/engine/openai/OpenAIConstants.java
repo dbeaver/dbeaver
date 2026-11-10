@@ -32,6 +32,7 @@ public class OpenAIConstants {
 
     // Chat API endpoint
     public static final String TOOL_CALL_REASONING = "openai.reasoning";
+    public static final String RESPONSE_OUTPUT = "openai.response.output";
     public static final String REASONING_SOURCE = "openai.reasoning.source";
     public static final String REASONING_AFTER_CALL = "openai.reasoning.afterCall";
     public static final String REASONING_TOKENS = "openai.reasoning.tokens";

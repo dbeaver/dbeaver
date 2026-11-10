@@ -200,8 +200,9 @@ class OpenAIResponsesTest {
             engine.requestCompletion(monitor, new AIEngineRequest(calls.getFunctionCalls().stream()
                 .map(OpenAIResponsesTest::savedResult).toList()));
             OAIResponsesRequest next = JSONUtils.GSON.fromJson(bodies.getLast(), OAIResponsesRequest.class);
-            Assertions.assertEquals(List.of("reasoning", "function_call", "function_call", "function_call_output", "function_call_output"),
-                next.input.stream().map(message -> message.type).toList());
+            Assertions.assertEquals(List.of("reasoning", "message", "function_call", "function_call",
+                "function_call_output", "function_call_output"), next.input.stream().map(message -> message.type).toList());
+            Assertions.assertEquals("Checking tables", next.input.get(1).getFullText());
             Assertions.assertEquals(List.of("reasoning.encrypted_content"), List.of(next.include));
             Assertions.assertTrue(bodies.getLast().contains("opaque-reasoning"));
         } finally {

@@ -55,7 +55,9 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
     private boolean failed;
     private boolean completed;
     private boolean closed;
-    private final List<OAIMessage> reasoning = new ArrayList<>();
+    private final List<OAIMessage> output = new ArrayList<>();
+    private OAIMessage streamingMessage;
+    private final StringBuilder streamingText = new StringBuilder();
 
     public OpenAiAPIStreamConsumer(@NotNull AIEngineResponseConsumer listener) {
         this(listener, null);
@@ -92,7 +94,7 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
                 }
                 if (chunk.item != null && OAIMessage.TYPE_FUNCTION_REASONING.equals(chunk.item.type)) {
                     if (EVENT_TYPE_ITEM_DONE.equals(chunk.type)) {
-                        reasoning.add(chunk.item);
+                        output.add(chunk.item);
                     }
                     return;
                 }
@@ -101,19 +103,20 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
                         throw new DBException("Missing completed response");
                     }
                     chunk.response.validateCompletion();
-                    if (functionCalls.isEmpty()) {
-                        listener.messageMetadata(OpenAiUtils.createReasoningMetadata(
-                            reasoning, reasoningSource, chunk.response.getAIUsage()));
-                    } else {
-                        OpenAiUtils.completeReasoning(functionCalls, reasoning, reasoningSource, chunk.response.getAIUsage());
+                    if (streamingMessage != null) {
+                        streamingMessage.content = List.of(new OAIMessageContent(false, streamingText.toString()));
                     }
+                    List<OAIMessage> completedOutput = CommonUtils.isEmpty(chunk.response.output) ? output : chunk.response.output;
+                    listener.messageMetadata(OpenAiUtils.completeResponse(
+                        functionCalls, completedOutput, reasoningSource, chunk.response.getAIUsage()));
                     listener.usage(chunk.response.getAIUsage());
                     completed = true;
                 } else {
 
                     if (chunk.item != null && OAIMessage.TYPE_FUNCTION_CALL.equals(chunk.item.type)) {
                         if (EVENT_TYPE_ITEM_DONE.equals(chunk.type)) {
-                            AIFunctionCall call = OpenAiUtils.createFunctionCall(chunk.item, reasoning, reasoningSource);
+                            output.add(chunk.item);
+                            AIFunctionCall call = OpenAiUtils.createFunctionCall(chunk.item);
                             functionCalls.add(call);
                             functionCall = false;
                         } else {
@@ -121,10 +124,30 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
                         }
                         return;
                     }
+                    if (EVENT_TYPE_ITEM_DONE.equals(chunk.type) && chunk.item != null
+                        && OAIMessage.TYPE_MESSAGE.equals(chunk.item.type)
+                    ) {
+                        if (streamingMessage == null) {
+                            output.add(chunk.item);
+                        } else {
+                            output.set(output.indexOf(streamingMessage), chunk.item);
+                            streamingMessage = null;
+                            streamingText.setLength(0);
+                        }
+                    }
                     if (!functionCall) {
                         List<String> choices = processChunk(chunk);
 
                         if (!choices.isEmpty()) {
+                            if (EVENT_TYPE_TEXT_DELTA.equals(chunk.type)) {
+                                if (streamingMessage == null) {
+                                    streamingMessage = new OAIMessage();
+                                    streamingMessage.type = OAIMessage.TYPE_MESSAGE;
+                                    streamingMessage.role = "assistant";
+                                    output.add(streamingMessage);
+                                }
+                                streamingText.append(chunk.delta);
+                            }
                             listener.nextChunk(new AIEngineResponseChunk(choices));
                         }
                     }
