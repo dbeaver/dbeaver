@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.annotations.JsonAdapter;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -45,6 +47,7 @@ public class AIConfigurationProfile {
 
     private transient AIEngineDescriptor engineDescriptor;
     private transient Map<String, String> resolvedUserCredentials;
+    private transient JsonObject unavailableProfile;
 
     public AIConfigurationProfile() {
     }
@@ -76,6 +79,26 @@ public class AIConfigurationProfile {
         this.engineId = engineId;
     }
 
+    public boolean isAvailable() {
+        return AIEngineRegistry.getInstance().getEngineDescriptor(engineId) != null;
+    }
+
+    @Nullable
+    public JsonObject getUnavailableProfile() {
+        return unavailableProfile;
+    }
+
+    public void setUnavailableProfile(@NotNull JsonObject unavailableProfile) {
+        this.unavailableProfile = unavailableProfile;
+        JsonElement properties = unavailableProfile.get("configuration");
+        if (properties != null && properties.isJsonObject()) {
+            JsonElement globalValue = properties.getAsJsonObject().get("global");
+            if (globalValue != null && globalValue.isJsonPrimitive() && globalValue.getAsJsonPrimitive().isBoolean()) {
+                global = globalValue.getAsBoolean();
+            }
+        }
+    }
+
     public boolean isGlobal() {
         return configuration == null ? global : configuration.isGlobal();
     }
@@ -101,7 +124,8 @@ public class AIConfigurationProfile {
         if (engineDescriptor == null) {
             engineDescriptor = AIEngineRegistry.getInstance().getEngineDescriptor(engineId);
             if (engineDescriptor == null) {
-                throw new DBException("AI engine " + engineId + " not found");
+                throw new DBException("AI provider '" + engineId
+                    + "' is unavailable in this product. Select an available AI profile.");
             }
         }
         return engineDescriptor;

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai;
 
+import com.google.gson.JsonParser;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.WorkspaceConfigEventManager;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
@@ -147,7 +148,9 @@ class AIUserProfileCredentialsTest extends DBeaverUnitTest {
             engines.when(AIEngineRegistry::getInstance).thenReturn(registry);
             AISettings settings = AISettingsManager.READ_PROPS_GSON.fromJson("""
                 {"configurations":{"work":{"name":"Work","engine":"openai",
-                  "configuration":{"global":false,"gpt.token":"personal-token","gpt.model":"admin-model"}}}}
+                  "configuration":{"global":false,"gpt.token":"personal-token","gpt.model":"admin-model"}},
+                  "unavailable":{"name":"Unavailable","engine":"missing-provider",
+                  "configuration":{"global":false,"preserved":null,"option":"unchanged"}}}}
                 """, AISettings.class);
             settings.finishSettingsLoading();
             OpenAIProperties properties = (OpenAIProperties) settings.getConfiguration("work").getConfiguration();
@@ -159,7 +162,14 @@ class AIUserProfileCredentialsTest extends DBeaverUnitTest {
             Assertions.assertNull(sanitized.getAccessToken());
             Assertions.assertNull(sanitized.getRefreshToken());
             Assertions.assertEquals(properties.getCustomHeaders(), sanitized.getCustomHeaders());
+            settings.prepareSettingsSaving();
             String serialized = AISettingsManager.SAVE_PROPS_GSON.toJson(settings);
+            var json = JsonParser.parseString(serialized).getAsJsonObject();
+            Assertions.assertTrue(json.getAsJsonObject("engineConfigurations").has("openai"));
+            var unavailable = json.getAsJsonObject("configurations").getAsJsonObject("unavailable");
+            Assertions.assertEquals("missing-provider", unavailable.get("engine").getAsString());
+            Assertions.assertEquals("unchanged", unavailable.getAsJsonObject("configuration").get("option").getAsString());
+            Assertions.assertTrue(unavailable.getAsJsonObject("configuration").get("preserved").isJsonNull());
             Assertions.assertFalse(serialized.contains("personal-token"));
             Assertions.assertFalse(serialized.contains("personal-access-token"));
             Assertions.assertFalse(serialized.contains("personal-refresh-token"));

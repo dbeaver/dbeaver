@@ -246,6 +246,7 @@ public class ProgressPageControl extends ConComposite implements ISearchContextP
 
         hideControls(true);
 
+        UIUtils.installAndUpdateMainFont(infoGroup);
         return infoGroup;
     }
 

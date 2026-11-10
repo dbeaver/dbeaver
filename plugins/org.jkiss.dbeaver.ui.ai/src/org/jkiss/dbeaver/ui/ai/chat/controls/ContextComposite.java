@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatController;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -730,11 +731,14 @@ public class ContextComposite extends Composite {
         ) {
             super(genProfileName(profile), AS_RADIO_BUTTON);
             this.profile = profile;
-            try {
-                AIEngineDescriptor engine = profile.getEngineDescriptor();
-                setImageDescriptor(DBeaverIcons.getImageDescriptor(engine.getIcon()));
-            } catch (DBException e) {
-                log.debug(e);
+            setEnabled(profile.isAvailable());
+            if (profile.isAvailable()) {
+                try {
+                    AIEngineDescriptor engine = profile.getEngineDescriptor();
+                    setImageDescriptor(DBeaverIcons.getImageDescriptor(engine.getIcon()));
+                } catch (DBException e) {
+                    log.debug(e);
+                }
             }
             AIConfigurationProfile chatProfile = chat.getActiveConversation().getProfile();
             if (chatProfile == null) {
@@ -745,6 +749,9 @@ public class ContextComposite extends Composite {
 
         @NotNull
         private static String genProfileName(@NotNull AIConfigurationProfile profile) {
+            if (!profile.isAvailable()) {
+                return profile.getProfileName() + " - " + AIUIMessages.ai_engines_page_provider_unavailable;
+            }
             String model = null;
             try {
                 model = profile.getConfiguration().getModel();
@@ -756,7 +763,7 @@ public class ContextComposite extends Composite {
 
         @Override
         public void run() {
-            if (!isChecked()) {
+            if (!isChecked() || !profile.isAvailable()) {
                 return;
             }
             chat.selectConversationProfile(profile);

@@ -20,12 +20,14 @@ import org.eclipse.jface.fieldassist.ComboContentAdapter;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
+import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -40,7 +42,6 @@ import org.jkiss.dbeaver.registry.language.PlatformLanguageDescriptor;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
-import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -60,8 +61,8 @@ import java.util.List;
 public class PrefPageGeneral extends AbstractPrefPage implements IWorkbenchPreferencePage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.general"; //$NON-NLS-1$
 
-    private static final String PRODUCT_CONFIGURATION_COMMAND_ID =
-        "org.jkiss.dbeaver.ui.app.config.showWizard"; //$NON-NLS-1$
+    private static final String PRODUCT_CONFIGURATION_PAGE_ID =
+        "org.jkiss.dbeaver.preferences.productConfiguration"; //$NON-NLS-1$
 
     @Nullable
     private Button automaticUpdateCheck;
@@ -82,7 +83,7 @@ public class PrefPageGeneral extends AbstractPrefPage implements IWorkbenchPrefe
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
         createGeneralSettings(composite);
         createRegionalSettings(composite);
-        createProductConfigurationButton(composite);
+        createProductConfigurationLink(composite);
         setSettings();
         injectConfigurators(composite);
         return composite;
@@ -174,9 +175,11 @@ public class PrefPageGeneral extends AbstractPrefPage implements IWorkbenchPrefe
         ));
     }
 
-    private void createProductConfigurationButton(@NotNull Composite parent) {
-        var command = ActionUtils.findCommand(PRODUCT_CONFIGURATION_COMMAND_ID);
-        if (command == null) {
+    private void createProductConfigurationLink(@NotNull Composite parent) {
+        if (!(getContainer() instanceof IWorkbenchPreferenceContainer container)
+            || PlatformUI.getWorkbench().getPreferenceManager().getElements(PreferenceManager.POST_ORDER).stream()
+                .noneMatch(node -> PRODUCT_CONFIGURATION_PAGE_ID.equals(node.getId()))
+        ) {
             return;
         }
         Composite group = UIUtils.createTitledComposite(
@@ -185,14 +188,18 @@ public class PrefPageGeneral extends AbstractPrefPage implements IWorkbenchPrefe
             1,
             GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING
         );
-        Button button = UIUtils.createPushButton(
+        Label hint = new Label(group, SWT.WRAP);
+        hint.setText(CoreMessages.pref_page_general_product_configuration_hint);
+        GridData hintData = new GridData(GridData.FILL_HORIZONTAL);
+        hintData.widthHint = 400;
+        hint.setLayoutData(hintData);
+        UIUtils.createPreferenceLink(
             group,
-            CoreMessages.pref_page_general_button_open_product_configuration,
-            null,
-            SelectionListener.widgetSelectedAdapter(e ->
-                ActionUtils.runCommand(PRODUCT_CONFIGURATION_COMMAND_ID, UIUtils.getActiveWorkbenchWindow()))
+            CoreMessages.pref_page_general_product_configuration_link,
+            PRODUCT_CONFIGURATION_PAGE_ID,
+            container,
+            null
         );
-        button.setEnabled(command.isEnabled());
     }
 
     private void setSettings() {

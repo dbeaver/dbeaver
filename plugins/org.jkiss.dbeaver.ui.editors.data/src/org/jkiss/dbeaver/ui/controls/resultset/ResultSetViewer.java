@@ -1409,6 +1409,7 @@ public class ResultSetViewer extends Viewer
                 ToolBar toolBar = panelToolBar.createControl(trControl);
                 toolBar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
+            UIUtils.installAndUpdateMainFont(trControl);
         } finally {
             panelFolder.setRedraw(true);
         }

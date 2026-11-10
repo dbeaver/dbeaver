@@ -62,6 +62,22 @@ public class CDataConnectionHierarchyTest extends DBeaverUnitTest {
         """;
 
     @Test
+    public void cachedDefinitionsCreateIndependentConfigurations() throws Exception {
+        var template = CDataConnectionHierarchy.parse(DEFINITION);
+        template.loadValues(Map.of("Password", "first-secret", "Server", "first-host", "Timeout", "45"));
+        var first = template.newConfiguration();
+        first.loadValues(Map.of("Password", "second-secret", "Server", "second-host"));
+        var second = template.newConfiguration();
+        Assertions.assertEquals("", second.getValue(property(second, "Password")));
+        Assertions.assertEquals("", second.getValue(property(second, "Server")));
+        var timeout = second.getAdvancedProperties().stream()
+            .filter(property -> property.name().equals("Timeout")).findFirst().orElseThrow();
+        Assertions.assertEquals("30", second.getValue(timeout));
+        Assertions.assertEquals("first-host", template.getValue(property(template, "Server")));
+        Assertions.assertEquals("second-host", first.getValue(property(first, "Server")));
+    }
+
+    @Test
     public void separatesGeneralFieldsFromAuthenticationModels() throws Exception {
         var hierarchy = CDataConnectionHierarchy.parse(DEFINITION);
         Assertions.assertEquals(java.util.List.of("Edition", "Server"),

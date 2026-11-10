@@ -47,6 +47,9 @@ final class AIProfileCredentialsEditor {
         Map<AIConfigurationProfile, DBException> errors = new LinkedHashMap<>();
         UIUtils.getDialogRunnableContext().run(true, true, monitor -> {
             for (AIConfigurationProfile profile : profiles) {
+                if (!profile.isAvailable()) {
+                    continue;
+                }
                 try {
                     if (resolveSecrets) {
                         profile.resolveSecrets();
