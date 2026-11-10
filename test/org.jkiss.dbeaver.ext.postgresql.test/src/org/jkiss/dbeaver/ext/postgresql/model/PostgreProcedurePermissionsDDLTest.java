@@ -108,6 +108,17 @@ public class PostgreProcedurePermissionsDDLTest extends DBeaverUnitTest {
         Assertions.assertTrue(ddl.contains("REVOKE ALL ON FUNCTION public.acltest() FROM PUBLIC"), ddl);
     }
 
+    @Test
+    public void keepsGrantOption() throws DBException {
+        // proacl after GRANT EXECUTE ... TO qa_acl_user WITH GRANT OPTION (#42798)
+        String ddl = generatePermissionsDDL(PostgreProcedureKind.f, "tester=X/tester", "qa_acl_user=X*/tester");
+
+        Assertions.assertTrue(ddl.endsWith(
+            "GRANT ALL ON FUNCTION public.acltest() TO tester\n"
+                + "GRANT ALL ON FUNCTION public.acltest() TO qa_acl_user WITH GRANT OPTION"
+        ), ddl);
+    }
+
     @NotNull
     private String generatePermissionsDDL(@NotNull PostgreProcedureKind kind, @NotNull String... aclItems) throws DBException {
         PostgreProcedure procedure = new PostgreProcedure(testSchema) {
