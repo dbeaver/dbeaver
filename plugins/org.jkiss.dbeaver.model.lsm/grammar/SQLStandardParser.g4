@@ -307,7 +307,6 @@ rowValuePredicate: rowValueConstructor (comparisonPredicate|betweenPredicate|inP
 comparisonPredicate: compOp rowValueConstructor?;
 betweenPredicate: (NOT)? BETWEEN (rowValueConstructor (AND rowValueConstructor?)?)?;
 inPredicate: (NOT)? IN inPredicateValue?;
-distinctPredicate: IS NOT? DISTINCT FROM rowValueConstructor?;
 nullPredicate: IS (NOT? NULL | NOTNULL)?;
 quantifiedComparisonPredicate: compOp quantifier tableSubquery?;
 matchPredicate: MATCH (UNIQUE)? (matchType)? tableSubquery?;
@@ -623,12 +622,10 @@ anyValue: rowValueConstructor|searchCondition;
 anyWordWithAnyValue: anyWord anyValue;
 anyProperty: LeftParen (anyValue (Comma anyValue)*) RightParen;
 anyWordsWithProperty: anyWord+ anyProperty?;
-functionCallExpression: trimFunctionName LeftParen trimSpecification? (functionCallOperand? FROM)? functionCallOperand (Comma functionCallOperand)* RightParen
+functionCallExpression: trimFunctionName LeftParen (trimSpecification? functionCallOperand? FROM)? functionCallOperand (Comma functionCallOperand)* RightParen
     | functionCallTargetName LeftParen (functionCallOperand ((Comma|FROM|anyWord) functionCallOperand)*)? RightParen overClause?;
 functionCallTargetName: qualifiedName|IF;
 functionCallOperand: anyValue;
-trimFunctionName: TRIM;
-trimSpecification: BOTH|LEADING|TRAILING;
 
 aggregateExpression: actualIdentifier LeftParen aggregateExprParam+ orderByClause? separatorClause? RightParen (WITHIN GROUP LeftParen orderByClause RightParen)? (FILTER LeftParen WHERE searchCondition RightParen)?;
 aggregateExprParam: DISTINCT|ALL|LIMIT|SEPARATOR|OFFSET|Comma|rowValueConstructor;
@@ -780,3 +777,8 @@ proceduralDeclaration: localVariableDeclaration|cursorDeclaration|localRelationD
 
 // TRIM specification words became tokens, but parameter and attribute names after a colon may still use them.
 colonIdentifier: Identifier|TRIM|BOTH|LEADING|TRAILING;
+
+// IS [NOT] DISTINCT FROM, and TRIM([BOTH|LEADING|TRAILING] [chars] FROM source).
+distinctPredicate: IS NOT? DISTINCT FROM rowValueConstructor?;
+trimFunctionName: TRIM;
+trimSpecification: BOTH|LEADING|TRAILING;

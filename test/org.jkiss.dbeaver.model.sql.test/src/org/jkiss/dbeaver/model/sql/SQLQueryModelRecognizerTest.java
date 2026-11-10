@@ -761,6 +761,18 @@ public class SQLQueryModelRecognizerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void recognizesTrimSpecificationWordAsColumnWithoutFrom() {
+        SQLQueryModel model = SQLQueryModelRecognizer.recognizeQuery(
+            createContext(new VoidProgressMonitor()),
+            "SELECT TRIM(BOTH + x.suffix) FROM test_table x"
+        );
+
+        Assertions.assertNotNull(model);
+        List<String> symbols = model.getAllSymbols().stream().map(SQLQuerySymbolEntry::getRawName).toList();
+        Assertions.assertTrue(symbols.containsAll(List.of("BOTH", "suffix")), () -> "TRIM source operand not recognized: " + symbols);
+    }
+
+    @Test
     public void resolvesVisibleUnprefixedVariableReferences() {
         SQLQueryVariableInfo definition = new SQLQueryVariableInfo(
             "current_value",
