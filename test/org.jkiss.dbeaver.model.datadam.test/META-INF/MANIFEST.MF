@@ -9,6 +9,7 @@ Fragment-Host: org.jkiss.dbeaver.model.datadam
 Require-Bundle: org.jkiss.dbeaver.model.datadam,
  org.jkiss.dbeaver.model.ai,
  org.jkiss.dbeaver.model,
+ com.dbeaver.datadam.mcp.api,
  com.dbeaver.datadam.share.api,
  com.dbeaver.datadam.sso.api,
  com.dbeaver.datadam.dam.remote.api,

@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.action.*;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.layout.GridLayoutFactory;
@@ -387,7 +386,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             }
 
             activateCurrentItem();
-            Dialog.applyDialogFont(tabFolder);
+            UIUtils.applyDialogFont(tabFolder);
             UIUtils.setHelp(getControl(), IHelpContextIds.CTX_CON_WIZARD_SETTINGS);
         } catch (Exception ex) {
             log.warn(ex);
@@ -854,7 +853,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
                     panel.setRedraw(false);
                     try {
                         page.createControl(panel);
-                        Dialog.applyDialogFont(panel);
+                        UIUtils.applyDialogFont(panel);
                         UIUtils.configureScrolledComposite(panel, page.getControl());
                     } catch (Throwable e) {
                         DBWorkbench.getPlatformUI().showError("Error creating configuration page", null, e);

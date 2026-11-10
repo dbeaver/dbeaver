@@ -41,7 +41,6 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.internal.WorkbenchMessages;
-import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.part.FileEditorInput;
 import org.eclipse.ui.progress.UIJob;
@@ -105,6 +104,7 @@ import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.addins.SQLEditorAddInsRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.commands.MultipleResultsPerTabMenuContribution;
 import org.jkiss.dbeaver.ui.editors.sql.execute.SQLQueryJob;
+import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerPlaceExtraPanels;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorVariablesResolver;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
 import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorActivator;
@@ -1212,6 +1212,10 @@ public class SQLEditor extends SQLEditorBase implements
                 updateExtraViewToolbar(ac);
             }
         }));
+        MenuManager extraTabsMenu = new MenuManager();
+        extraTabsMenu.setRemoveAllWhenShown(true);
+        extraTabsMenu.addMenuListener(this::addExtraPanelsPlacementActions);
+        sqlExtraPanelFolder.setMenu(extraTabsMenu.createContextMenu(sqlExtraPanelFolder));
 
         sqlExtraPanelToolbar = new ToolBarManager();
         sqlExtraPanelToolbar.createControl(sqlExtraPanelFolder);
@@ -1780,6 +1784,8 @@ public class SQLEditor extends SQLEditorBase implements
                     }
                 }
                 manager.add(new Separator());
+                addExtraPanelsPlacementActions(manager);
+                manager.add(new Separator());
                 manager.add(ActionUtils.makeCommandContribution(getSite(), SQLEditorCommands.CMD_SQL_EDITOR_MAXIMIZE_PANEL));
             });
             menuMgr.setRemoveAllWhenShown(true);
@@ -1834,7 +1840,23 @@ public class SQLEditor extends SQLEditorBase implements
     /////////////////////////////////////////////////////////////
     // Panels
 
-    public void toggleExtraPanelsLayout() {
+    public void setExtraPanelsLocation(@Nullable String location) {
+        if (!SQLPreferenceConstants.LOCATION_RIGHT.equals(location)
+            && !SQLPreferenceConstants.LOCATION_RESULTS.equals(location)) {
+            return;
+        }
+        if (resultTabs == null) {
+            // Deferred result-tab creation will use the requested location.
+            getPreferenceStore().setValue(SQLPreferenceConstants.EXTRA_PANEL_LOCATION, location);
+            SQLEditorHandlerPlaceExtraPanels.refreshCommandState(getSite());
+            return;
+        }
+        if (isExtraPanelsLocation(location)) {
+            // Another editor may have changed the shared default without moving these controls.
+            getPreferenceStore().setValue(SQLPreferenceConstants.EXTRA_PANEL_LOCATION, location);
+            return;
+        }
+        CTabItem selectedTab = getFolderForExtraPanels().getSelection();
         CTabItem outTab = getExtraViewTab(outputViewer);
         CTabItem logTab = getExtraViewTab(logViewer);
         CTabItem varTab = getExtraViewTab(variablesViewer);
@@ -1849,15 +1871,22 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         IPreferenceStore preferenceStore = getPreferenceStore();
-        String epLocation = getExtraPanelsLocation();
-        if (SQLPreferenceConstants.LOCATION_RESULTS.equals(epLocation)) {
-            epLocation = SQLPreferenceConstants.LOCATION_RIGHT;
-        } else {
-            epLocation = SQLPreferenceConstants.LOCATION_RESULTS;
-        }
-        preferenceStore.setValue(SQLPreferenceConstants.EXTRA_PANEL_LOCATION, epLocation);
+        preferenceStore.setValue(SQLPreferenceConstants.EXTRA_PANEL_LOCATION, location);
 
         createExtraViewControls();
+        if (SQLPreferenceConstants.LOCATION_RIGHT.equals(location)
+            && (outTab != null || logTab != null || varTab != null)
+            && resultTabs.getItemCount() == 0
+            && (resultsSash.getMaximizedControl() == null || resultsSash.getMaximizedControl() == resultTabs)
+            && !resultsSash.isDownHidden()) {
+            // The results area is now empty; keep the SQL editor visible instead.
+            toggleResultPanel(false, false);
+        }
+        if (SQLPreferenceConstants.LOCATION_RESULTS.equals(location)
+            && (outTab != null || logTab != null || varTab != null)) {
+            // Reveal hidden results without creating an empty query result tab.
+            showResultsPanel(false);
+        }
 
         if (outTab != null) {
             showOutputPanel(true);
@@ -1868,10 +1897,47 @@ public class SQLEditor extends SQLEditorBase implements
         if (varTab != null) {
             showVariablesPanel(true);
         }
+        CTabItem restoredSelection = selectedTab == outTab && outTab != null ? getExtraViewTab(outputViewer)
+            : selectedTab == logTab && logTab != null ? getExtraViewTab(logViewer)
+            : selectedTab == varTab && varTab != null ? getExtraViewTab(variablesViewer)
+            : selectedTab;
+        if (restoredSelection != null && !restoredSelection.isDisposed()) {
+            restoredSelection.getParent().setSelection(restoredSelection);
+            if (restoredSelection.getParent() == sqlExtraPanelFolder) {
+                updateExtraViewToolbar((IActionContributor) restoredSelection.getData("actionContributor"));
+            }
+        }
+        SQLEditorHandlerPlaceExtraPanels.refreshCommandState(getSite());
     }
 
     public String getExtraPanelsLocation() {
         return getPreferenceStore().getString(SQLPreferenceConstants.EXTRA_PANEL_LOCATION);
+    }
+
+    public boolean isExtraPanelsLocation(@NotNull String location) {
+        return SQLPreferenceConstants.LOCATION_RESULTS.equals(location)
+            == (resultTabs == null
+                ? SQLPreferenceConstants.LOCATION_RESULTS.equals(getExtraPanelsLocation())
+                : getFolderForExtraPanels() == resultTabs);
+    }
+
+    private void addExtraPanelsPlacementActions(@NotNull IMenuManager manager) {
+        addExtraPanelsPlacementAction(manager, SQLPreferenceConstants.LOCATION_RIGHT,
+            SQLEditorMessages.action_result_tabs_place_beside_code);
+        addExtraPanelsPlacementAction(manager, SQLPreferenceConstants.LOCATION_RESULTS,
+            SQLEditorMessages.action_result_tabs_place_with_results);
+    }
+
+    private void addExtraPanelsPlacementAction(@NotNull IMenuManager manager, @NotNull String location, @NotNull String label) {
+        Action action = new Action(label, Action.AS_RADIO_BUTTON) {
+            @Override
+            public void run() {
+                setExtraPanelsLocation(location);
+            }
+        };
+        action.setChecked(isExtraPanelsLocation(location));
+        action.setImageDescriptor(SQLEditorHandlerPlaceExtraPanels.getPlacementIcon(location));
+        manager.add(action);
     }
 
     private void createExtraViewControls() {
@@ -1911,6 +1977,9 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private CTabFolder getFolderForExtraPanels() {
+        if (outputViewer != null && !outputViewer.isDisposed()) {
+            return (CTabFolder) outputViewer.getParent();
+        }
         CTabFolder folder = this.sqlExtraPanelFolder;
         String epLocation = getExtraPanelsLocation();
         if (SQLPreferenceConstants.LOCATION_RESULTS.equals(epLocation)) {
@@ -2005,12 +2074,6 @@ public class SQLEditor extends SQLEditorBase implements
         if (actionContributor != null) {
             actionContributor.contributeActions(sqlExtraPanelToolbar);
         }
-        sqlExtraPanelToolbar.add(ActionUtils.makeCommandContribution(
-            getSite(),
-            "org.jkiss.dbeaver.ui.editors.sql.toggle.extraPanels",
-            CommandContributionItem.STYLE_CHECK,
-            UIIcon.ARROW_DOWN
-        ));
         sqlExtraPanelToolbar.update(true);
     }
 
@@ -2385,6 +2448,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void updateResultSetOrientation() {
+        ResultSetOrientation previousOrientation = resultSetOrientation;
         try {
             resultSetOrientation = ResultSetOrientation.valueOf(DBWorkbench.getPlatform().getPreferenceStore()
                 .getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION));
@@ -2393,6 +2457,9 @@ public class SQLEditor extends SQLEditorBase implements
         }
         if (resultsSash != null) {
             resultsSash.setOrientation(resultSetOrientation.getSashOrientation());
+            if (previousOrientation != resultSetOrientation) {
+                SQLEditorHandlerPlaceExtraPanels.refreshCommandState(getSite());
+            }
         }
     }
 

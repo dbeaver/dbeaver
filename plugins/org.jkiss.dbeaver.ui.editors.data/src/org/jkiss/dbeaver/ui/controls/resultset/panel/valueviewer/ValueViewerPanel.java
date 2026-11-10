@@ -271,6 +271,7 @@ public class ValueViewerPanel extends ResultSetPanelBase implements DBPAdaptable
                         Label valueLabel = new Label(viewPlaceholder, SWT.NONE);
                         valueLabel.setText(ResultSetMessages.reference_value_editor_value_label);
                         valueLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                        UIUtils.installAndUpdateMainFont(valueLabel);
                     }
                     valueEditor.createControl();
                 } catch (Exception e) {

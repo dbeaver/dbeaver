@@ -45,23 +45,40 @@ public final class ProductConfigFeaturesPanel {
     private final Map<ProductConfigFeatureDescriptor, UIObservable<Boolean>> features = new LinkedHashMap<>();
     private final Set<ProductConfigFeatureDescriptor> newFeatures = new HashSet<>();
     private final Map<ProductConfigFeatureDescriptor, Boolean> savedFeatures = new LinkedHashMap<>();
+    private boolean reloadingSettings;
 
     public ProductConfigFeaturesPanel() {
-        this(false, ProductConfigRegistry.getInstance().getAvailableFeatures());
+        this(false, ProductConfigRegistry.getInstance().getAvailableFeatures(), ProductConfigWizard.Origin.BY_USER);
     }
 
     public ProductConfigFeaturesPanel(boolean featureUpdate) {
-        this(featureUpdate, featureUpdate
-            ? ProductConfigRegistry.getInstance().getAvailableFeatures()
-            : ProductConfigRegistry.getInstance().getFeatures());
+        this(featureUpdate, ProductConfigWizard.Origin.BY_USER);
     }
 
-    private ProductConfigFeaturesPanel(boolean featureUpdate, @NotNull List<ProductConfigFeatureDescriptor> configurableFeatures) {
+    public ProductConfigFeaturesPanel(boolean featureUpdate, @NotNull ProductConfigWizard.Origin origin) {
+        this(featureUpdate, featureUpdate
+            ? ProductConfigRegistry.getInstance().getAvailableFeatures()
+            : ProductConfigRegistry.getInstance().getFeatures(), origin);
+    }
+
+    private ProductConfigFeaturesPanel(
+        boolean featureUpdate,
+        @NotNull List<ProductConfigFeatureDescriptor> configurableFeatures,
+        @NotNull ProductConfigWizard.Origin origin
+    ) {
         this.featureUpdate = featureUpdate;
         var registry = ProductConfigRegistry.getInstance();
         for (ProductConfigFeatureDescriptor descriptor : configurableFeatures) {
             boolean enabled = registry.isFeatureEnabled(descriptor);
-            features.put(descriptor, UIObservable.of(enabled));
+            UIObservable<Boolean> selection = UIObservable.of(enabled);
+            if ("commercial-drivers".equals(descriptor.getId())) {
+                selection.addChangeListener((oldValue, newValue) -> {
+                    if (!reloadingSettings) {
+                        ProductConfigFeatures.COMMERCIAL_DRIVERS_TOGGLED.use(Map.of("enabled", newValue, "origin", origin));
+                    }
+                });
+            }
+            features.put(descriptor, selection);
             savedFeatures.put(descriptor, enabled);
             if (featureUpdate && registry.isFeatureNew(descriptor)) {
                 newFeatures.add(descriptor);
@@ -84,15 +101,20 @@ public final class ProductConfigFeaturesPanel {
     }
 
     public void reloadSettings() {
-        var registry = ProductConfigRegistry.getInstance();
-        for (Map.Entry<ProductConfigFeatureDescriptor, UIObservable<Boolean>> entry : features.entrySet()) {
-            boolean enabled = registry.isFeatureEnabled(entry.getKey());
-            boolean saved = savedFeatures.get(entry.getKey());
-            // retain pending preference edits when the wizard leaves the saved value unchanged
-            if (enabled != saved || entry.getValue().get() == saved) {
-                entry.getValue().set(enabled);
+        reloadingSettings = true;
+        try {
+            var registry = ProductConfigRegistry.getInstance();
+            for (Map.Entry<ProductConfigFeatureDescriptor, UIObservable<Boolean>> entry : features.entrySet()) {
+                boolean enabled = registry.isFeatureEnabled(entry.getKey());
+                boolean saved = savedFeatures.get(entry.getKey());
+                // retain pending preference edits when the wizard leaves the saved value unchanged
+                if (enabled != saved || entry.getValue().get() == saved) {
+                    entry.getValue().set(enabled);
+                }
+                savedFeatures.put(entry.getKey(), enabled);
             }
-            savedFeatures.put(entry.getKey(), enabled);
+        } finally {
+            reloadingSettings = false;
         }
     }
 

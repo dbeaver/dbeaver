@@ -68,6 +68,8 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_view;
     public static String actions_navigator_view_script_button;
     public static String actions_navigator_filter_objects;
+    public static String actions_navigator_clear_user_filter;
+    public static String actions_navigator_clear_all_users_filter;
     public static String actions_navigator_search_filter_connection_name;
     public static String actions_navigator_search_filter_connection_description;
     public static String actions_navigator_search_filter_container_name;
@@ -260,10 +262,14 @@ public class UINavigatorMessages extends NLS {
     public static String navigator_project_explorer_columns_type_description;
     public static String navigator_nodes_filtered_by_settings_text;
     public static String navigator_nodes_filtered_by_settings_tip;
+    public static String navigator_nodes_filtered_by_user_filter_text;
+    public static String navigator_nodes_filtered_by_all_users_filter_text;
     public static String navigator_nodes_filtered_by_search_text;
     public static String navigator_nodes_filtered_by_search_tip;
     public static String navigator_nodes_filtered_by_search_and_filter_text;
     public static String navigator_nodes_filtered_by_search_and_filter_tip;
+    public static String navigator_nodes_filtered_by_search_and_user_filter_text;
+    public static String navigator_nodes_filtered_by_search_and_all_users_filter_text;
 
     public static String datasource_list_action_empty;
     public static String filter_connection_name_placeholder;
