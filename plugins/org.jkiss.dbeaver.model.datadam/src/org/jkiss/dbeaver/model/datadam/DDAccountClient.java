@@ -69,6 +69,16 @@ public class DDAccountClient extends DDClient {
             setDamSetting(clientDamId: $clientDamId, key: $key, value: $value, expectedAccountId: $expectedAccountId) { account dam }
         }
         """;
+    private static final String DAM_NAME_QUERY = """
+        query DesktopDamName($clientDamId: String!) {
+            connectedRemoteDamByClientId(clientDamId: $clientDamId) { damId damName }
+        }
+        """;
+    private static final String RENAME_DAM = """
+        mutation RenameDesktopDam($clientDamId: String!, $damName: String!) {
+            renameConnectedRemoteDamByClientId(clientDamId: $clientDamId, damName: $damName) { damId damName }
+        }
+        """;
 
     public DDAccountClient(@NotNull URI accountUrl) {
         super(accountUrl.resolve("/").toString(), DEFAULT_CONNECT_TIMEOUT, 10_000, List.of(), HttpClient.Redirect.NEVER);
@@ -139,6 +149,37 @@ public class DDAccountClient extends DDClient {
             throw new DBException("Could not update DAM settings in DataDam Account");
         }
         return response.data().setDamSetting();
+    }
+
+    @Nullable
+    public DDDamInfo getDam(@NotNull String clientDamId) throws DBException {
+        DamNameResponse response = executePostRequest(GRAPHQL_PATH, Map.of(), Map.of(
+            "query", DAM_NAME_QUERY, "variables", Map.of("clientDamId", clientDamId)), DamNameResponse.class);
+        if (response == null || response.errors() != null && !response.errors().isEmpty() || response.data() == null) {
+            throw new DBException("Could not read DAM name from DataDam Account");
+        }
+        return response.data().connectedRemoteDamByClientId();
+    }
+
+    @NotNull
+    public DDDamInfo renameDam(@NotNull String clientDamId, @NotNull String damName) throws DBException {
+        DamNameResponse response = executePostRequest(GRAPHQL_PATH, Map.of(), Map.of(
+            "query", RENAME_DAM, "variables", Map.of("clientDamId", clientDamId, "damName", damName)), DamNameResponse.class);
+        if (response == null || response.errors() != null && !response.errors().isEmpty()
+            || response.data() == null || response.data().renameConnectedRemoteDamByClientId() == null
+            || response.data().renameConnectedRemoteDamByClientId().damId() == null
+            || response.data().renameConnectedRemoteDamByClientId().damName() == null) {
+            throw new DBException("Could not update DAM name in DataDam Account");
+        }
+        return response.data().renameConnectedRemoteDamByClientId();
+    }
+
+    private record DamNameResponse(@Nullable DamNameData data, @Nullable List<Object> errors) {
+    }
+
+    private record DamNameData(
+        @Nullable DDDamInfo connectedRemoteDamByClientId, @Nullable DDDamInfo renameConnectedRemoteDamByClientId
+    ) {
     }
 
     public record DamSettingsState(@NotNull UUID accountId, @NotNull DDRemoteDamSettings settings, boolean canManage) {

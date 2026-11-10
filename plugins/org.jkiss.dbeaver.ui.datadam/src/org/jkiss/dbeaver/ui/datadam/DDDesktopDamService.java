@@ -16,35 +16,74 @@
  */
 package org.jkiss.dbeaver.ui.datadam;
 
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
+import org.jkiss.dbeaver.model.datadam.DDDamInfo;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
+import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.net.URI;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
-public class DDServerCatalog {
+public class DDDesktopDamService {
     @Nullable
-    private static DDServerCatalog instance;
+    private static DDDesktopDamService instance;
 
     private final DDAccountClient account = new DDAccountClient(URI.create(DDEndpoints.getAccountBaseUrl()));
 
-    private DDServerCatalog() throws DBException {
+    private DDDesktopDamService() {
     }
 
     @NotNull
-    public static synchronized DDServerCatalog getInstance() throws DBException {
+    public static synchronized DDDesktopDamService getInstance() {
         if (instance == null) {
-            instance = new DDServerCatalog();
+            instance = new DDDesktopDamService();
         }
         return instance;
+    }
+
+    @Nullable
+    public DDDamInfo getDam(@NotNull DBRProgressMonitor monitor) throws DBException, InterruptedException {
+        return account.getDam(awaitClientDamId(monitor));
+    }
+
+    @NotNull
+    public DDDamInfo renameDam(@NotNull String name, @NotNull DBRProgressMonitor monitor) throws DBException, InterruptedException {
+        return account.renameDam(awaitClientDamId(monitor), name);
+    }
+
+    @NotNull
+    private String awaitClientDamId(@NotNull DBRProgressMonitor monitor) throws DBException, InterruptedException {
+        var session = DDRemoteDamDesktopSessionService.getInstance();
+        var channel = session.getChannel();
+        if (!channel.getStatus().isReady()) {
+            CountDownLatch ready = new CountDownLatch(1);
+            try (DDRemoteDamSubscription ignored = channel.observeState(status -> {
+                if (status.isReady()) {
+                    ready.countDown();
+                }
+            })) {
+                while (!ready.await(250, TimeUnit.MILLISECONDS)) {
+                    if (monitor.isCanceled()) {
+                        throw new InterruptedException("Waiting for DataDam connection was canceled");
+                    }
+                }
+            }
+        }
+        if (monitor.isCanceled()) {
+            throw new InterruptedException("Waiting for DataDam connection was canceled");
+        }
+        return session.getClientDamId();
     }
 
     /** An Account request executed outside the UI thread. */
