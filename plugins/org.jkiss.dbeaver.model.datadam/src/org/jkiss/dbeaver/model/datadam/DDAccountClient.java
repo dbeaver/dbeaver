@@ -16,19 +16,25 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
+import com.dbeaver.datadam.dam.remote.api.model.DDConnectedRemoteDam;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.DDCryptoState;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.utils.GsonUtils;
 import org.jkiss.utils.HttpConstants;
 
 import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -69,19 +75,30 @@ public class DDAccountClient extends DDClient {
             setDamSetting(clientDamId: $clientDamId, key: $key, value: $value, expectedAccountId: $expectedAccountId) { account dam }
         }
         """;
+    private static final String DAM_FIELDS = """
+        damId appDeploymentId appInstanceId workspaceId remoteAddress online sessionCount
+        applications { product version }
+        firstConnectedAt lastConnectedAt lastDisconnectedAt clientDamId remoteAddresses damName
+        """;
     private static final String DAM_NAME_QUERY = """
         query DesktopDamName($clientDamId: String!) {
-            connectedRemoteDamByClientId(clientDamId: $clientDamId) { damId damName }
+            connectedRemoteDamByClientId(clientDamId: $clientDamId) {
+                %s
+            }
         }
-        """;
+        """.formatted(DAM_FIELDS);
     private static final String RENAME_DAM = """
         mutation RenameDesktopDam($clientDamId: String!, $damName: String!) {
-            renameConnectedRemoteDamByClientId(clientDamId: $clientDamId, damName: $damName) { damId damName }
+            renameConnectedRemoteDamByClientId(clientDamId: $clientDamId, damName: $damName) {
+                %s
+            }
         }
-        """;
+        """.formatted(DAM_FIELDS);
 
     public DDAccountClient(@NotNull URI accountUrl) {
         super(accountUrl.resolve("/").toString(), DEFAULT_CONNECT_TIMEOUT, 10_000, List.of(), HttpClient.Redirect.NEVER);
+        gson = GsonUtils.gsonBuilder().registerTypeAdapter(OffsetDateTime.class,
+            (JsonDeserializer<OffsetDateTime>) (json, type, context) -> OffsetDateTime.parse(json.getAsString())).create();
     }
 
     @NotNull
@@ -152,34 +169,40 @@ public class DDAccountClient extends DDClient {
     }
 
     @Nullable
-    public DDDamInfo getDam(@NotNull String clientDamId) throws DBException {
-        DamNameResponse response = executePostRequest(GRAPHQL_PATH, Map.of(), Map.of(
-            "query", DAM_NAME_QUERY, "variables", Map.of("clientDamId", clientDamId)), DamNameResponse.class);
-        if (response == null || response.errors() != null && !response.errors().isEmpty() || response.data() == null) {
-            throw new DBException("Could not read DAM name from DataDam Account");
-        }
-        return response.data().connectedRemoteDamByClientId();
+    public DDConnectedRemoteDam getDam(@NotNull String clientDamId) throws DBException {
+        return requestDam(DAM_NAME_QUERY, Map.of("clientDamId", clientDamId), "connectedRemoteDamByClientId");
     }
 
     @NotNull
-    public DDDamInfo renameDam(@NotNull String clientDamId, @NotNull String damName) throws DBException {
-        DamNameResponse response = executePostRequest(GRAPHQL_PATH, Map.of(), Map.of(
-            "query", RENAME_DAM, "variables", Map.of("clientDamId", clientDamId, "damName", damName)), DamNameResponse.class);
-        if (response == null || response.errors() != null && !response.errors().isEmpty()
-            || response.data() == null || response.data().renameConnectedRemoteDamByClientId() == null
-            || response.data().renameConnectedRemoteDamByClientId().damId() == null
-            || response.data().renameConnectedRemoteDamByClientId().damName() == null) {
+    public DDConnectedRemoteDam renameDam(@NotNull String clientDamId, @NotNull String damName) throws DBException {
+        DDConnectedRemoteDam result = requestDam(RENAME_DAM, Map.of("clientDamId", clientDamId, "damName", damName),
+            "renameConnectedRemoteDamByClientId");
+        if (result == null || result.damId() == null || result.damName() == null) {
             throw new DBException("Could not update DAM name in DataDam Account");
         }
-        return response.data().renameConnectedRemoteDamByClientId();
+        return result;
     }
 
-    private record DamNameResponse(@Nullable DamNameData data, @Nullable List<Object> errors) {
-    }
-
-    private record DamNameData(
-        @Nullable DDDamInfo connectedRemoteDamByClientId, @Nullable DDDamInfo renameConnectedRemoteDamByClientId
-    ) {
+    @Nullable
+    private DDConnectedRemoteDam requestDam(
+        @NotNull String query, @NotNull Map<String, String> variables, @NotNull String field
+    ) throws DBException {
+        JsonObject response = executePostRequest(GRAPHQL_PATH, Map.of(), Map.of(
+            "query", query, "variables", variables), JsonObject.class);
+        if (response == null || response.has("errors") && !response.get("errors").isJsonNull()
+            && !response.getAsJsonArray("errors").isEmpty()
+            || !response.has("data") || !response.get("data").isJsonObject()) {
+            throw new DBException("Could not read DAM from DataDam Account");
+        }
+        JsonElement dam = response.getAsJsonObject("data").get(field);
+        if (dam == null) {
+            throw new DBException("Invalid DAM response from DataDam Account");
+        }
+        try {
+            return dam.isJsonNull() ? null : gson.fromJson(dam, DDConnectedRemoteDam.class);
+        } catch (JsonParseException e) {
+            throw new DBException("Invalid DAM response from DataDam Account", e);
+        }
     }
 
     public record DamSettingsState(@NotNull UUID accountId, @NotNull DDRemoteDamSettings settings, boolean canManage) {

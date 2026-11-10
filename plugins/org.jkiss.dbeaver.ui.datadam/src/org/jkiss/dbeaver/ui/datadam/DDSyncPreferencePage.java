@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.datadam;
 
 import com.dbeaver.datadam.dam.remote.api.DDRemoteDamSettingKeys;
+import com.dbeaver.datadam.dam.remote.api.model.DDConnectedRemoteDam;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDam;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -35,7 +36,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
-import org.jkiss.dbeaver.model.datadam.DDDamInfo;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
@@ -83,7 +83,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private Button damNameEditButton;
     private Composite damNameRow;
     @Nullable
-    private DDDamInfo dam;
+    private DDConnectedRemoteDam dam;
 
     public DDSyncPreferencePage() {
         noDefaultAndApplyButton();
@@ -291,7 +291,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                     return Status.CANCEL_STATUS;
                 }
                 try {
-                    var result = DDDesktopDamService.getInstance().getDam(monitor);
+                    var result = DDDesktopDamService.getInstance().getDam();
                     UIUtils.asyncExec(() -> {
                         if (isDamNameJobActive(this, monitor)) {
                             showDam(result);
@@ -300,8 +300,6 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                             }
                         }
                     });
-                } catch (InterruptedException e) {
-                    return Status.CANCEL_STATUS;
                 } catch (DBException e) {
                     UIUtils.asyncExec(() -> {
                         if (isDamNameJobActive(this, monitor)) {
@@ -322,7 +320,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN;
     }
 
-    private void showDam(@Nullable DDDamInfo result) {
+    private void showDam(@Nullable DDConnectedRemoteDam result) {
         dam = result;
         setDamNameText(result == null ? DDTrackingUIMessages.sync_preference_page_dam_name_unavailable
             : result.damName() == null ? DDTrackingUIMessages.sync_preference_page_dam_name_not_set : result.damName());
@@ -372,14 +370,12 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                     return Status.CANCEL_STATUS;
                 }
                 try {
-                    var updated = DDDesktopDamService.getInstance().renameDam(name, monitor);
+                    var updated = DDDesktopDamService.getInstance().renameDam(name);
                     UIUtils.asyncExec(() -> {
                         if (isDamNameJobActive(this, monitor)) {
                             showDam(updated);
                         }
                     });
-                } catch (InterruptedException e) {
-                    return Status.CANCEL_STATUS;
                 } catch (DBException e) {
                     UIUtils.asyncExec(() -> {
                         if (isDamNameJobActive(this, monitor)) {
