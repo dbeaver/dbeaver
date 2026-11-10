@@ -20,7 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDCollection;
+import org.jkiss.dbeaver.model.data.DBDValueRow;
 import org.jkiss.dbeaver.model.data.DBDVoid;
+import org.jkiss.dbeaver.model.data.ResultSetValuePath;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
@@ -40,6 +42,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.Mockito;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class DBUtilsTest extends DBeaverUnitTest {
 
@@ -210,6 +215,30 @@ public class DBUtilsTest extends DBeaverUnitTest {
         // A shallower array in another column must not reappear at deeper row levels.
         Mockito.when(outer.get(0)).thenReturn(42);
         Assertions.assertSame(DBDVoid.INSTANCE, DBUtils.getAttributeValue(attribute, attributes, values, new int[] { 0, 0 }, false));
+    }
+
+    @Test
+    public void testRowValuePathDistinguishesMissingArrayPositionFromNullElement() {
+        DBDAttributeBinding attribute = Mockito.mock(DBDAttributeBinding.class);
+        Mockito.when(attribute.getOrdinalPosition()).thenReturn(0);
+        DBDValueRow row = Mockito.mock(DBDValueRow.class);
+        Mockito.when(row.getValues()).thenReturn(new Object[] { Arrays.asList("present", null) });
+
+        ResultSetValuePath.PathAttributeItem root = new ResultSetValuePath.PathAttributeItem(attribute);
+        Assertions.assertEquals("present", DBUtils.getRowValueByPath(row, new ResultSetValuePath(List.of(
+            root, new ResultSetValuePath.PathIndexItem(0)))));
+        Assertions.assertNull(DBUtils.getRowValueByPath(row, new ResultSetValuePath(List.of(
+            root, new ResultSetValuePath.PathIndexItem(1)))));
+        Assertions.assertSame(DBDVoid.INSTANCE, DBUtils.getRowValueByPath(row, new ResultSetValuePath(List.of(
+            root, new ResultSetValuePath.PathIndexItem(2)))));
+        Assertions.assertSame(DBDVoid.INSTANCE, DBUtils.getRowValueByPath(row, new ResultSetValuePath(List.of(
+            root, new ResultSetValuePath.PathIndexItem(2), new ResultSetValuePath.PathIndexItem(0)))));
+
+        Mockito.when(row.getValues()).thenReturn(new Object[] { List.of(List.of("nested")) });
+        Assertions.assertEquals("nested", DBUtils.getRowValueByPath(row, new ResultSetValuePath(List.of(
+            root, new ResultSetValuePath.PathIndexItem(0), new ResultSetValuePath.PathIndexItem(0)))));
+        Assertions.assertSame(DBDVoid.INSTANCE, DBUtils.getRowValueByPath(row, new ResultSetValuePath(List.of(
+            root, new ResultSetValuePath.PathIndexItem(0), new ResultSetValuePath.PathIndexItem(1)))));
     }
 
     @Test
