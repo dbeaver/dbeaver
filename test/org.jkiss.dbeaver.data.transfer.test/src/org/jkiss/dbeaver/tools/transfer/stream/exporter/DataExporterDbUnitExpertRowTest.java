@@ -134,6 +134,11 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
         exporter.exportFooter(null);
     }
 
+    @Test
+    public void emptyAttributeNameBecomesUnderscore() throws DBException, IOException {
+        Assertions.assertEquals("    <T _=\"value\"/>", exportWithNames("t", "").get(2));
+    }
+
     @NotNull
     private List<String> exportWithNames(@NotNull String table, @NotNull String column) throws DBException, IOException {
         StringWriter writer = new StringWriter();

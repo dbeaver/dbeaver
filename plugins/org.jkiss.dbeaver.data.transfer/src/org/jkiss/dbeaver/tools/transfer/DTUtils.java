@@ -46,6 +46,8 @@ import org.jkiss.dbeaver.tools.transfer.serialize.SerializerRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
@@ -83,15 +85,47 @@ public class DTUtils {
         }
     }
 
+    /**
+     * Turns a table or column name into a valid XML name. Characters that the output encoding
+     * can't represent are replaced as well, since the writer would turn them into '?'.
+     */
     @NotNull
-    public static String escapeXmlElementName(@NotNull String name) {
+    public static String escapeXmlElementName(@NotNull String name, @Nullable String encoding) {
         String escapedName = XML_NAME_INVALID_CHARS.matcher(name).replaceAll("_");
+        CharsetEncoder encoder = getEncoder(encoding);
+        if (encoder != null && !encoder.canEncode(escapedName)) {
+            StringBuilder encodable = new StringBuilder(escapedName.length());
+            escapedName.codePoints().forEach(codePoint -> {
+                String character = Character.toString(codePoint);
+                if (encoder.canEncode(character)) {
+                    encodable.append(character);
+                } else if (encodable.isEmpty() || encodable.charAt(encodable.length() - 1) != '_') {
+                    encodable.append('_');
+                }
+            });
+            escapedName = encodable.toString();
+        }
+        if (escapedName.isEmpty()) {
+            return "_";
+        }
         int firstCharacter = escapedName.codePointAt(0);
         if (Character.isLetter(firstCharacter) || firstCharacter == '_') {
             return escapedName;
         }
 
         return "_" + escapedName;
+    }
+
+    @Nullable
+    private static CharsetEncoder getEncoder(@Nullable String encoding) {
+        if (CommonUtils.isEmpty(encoding)) {
+            return null;
+        }
+        try {
+            return Charset.forName(encoding).newEncoder();
+        } catch (IllegalArgumentException e) {
+            return null;
+        }
     }
 
     /**

@@ -64,8 +64,9 @@ public class DataExporterXML extends StreamExporterAbstract {
     private void printHeader()
     {
         PrintWriter out = getWriter();
-        out.write("<?xml version=\"1.0\" encoding=\"" + getSite().getOutputEncoding() + "\"?>\n");
-        tableName = DTUtils.escapeXmlElementName(getSite().getSource().getName());
+        String outputEncoding = getSite().getOutputEncoding();
+        out.write("<?xml version=\"1.0\" encoding=\"" + outputEncoding + "\"?>\n");
+        tableName = DTUtils.escapeXmlElementName(getSite().getSource().getName(), outputEncoding);
         if (includeDoctype) {
             out.write("<!DOCTYPE " + tableName + " [\n");
             out.write("  <!ELEMENT " + tableName + " (DATA_RECORD*)>\n");
@@ -76,14 +77,14 @@ public class DataExporterXML extends StreamExporterAbstract {
                 if (CommonUtils.isEmpty(colName)) {
                     colName = columns[i].getName();
                 }
-                out.write(DTUtils.escapeXmlElementName(colName) + "?");
+                out.write(DTUtils.escapeXmlElementName(colName, outputEncoding) + "?");
                 if (i < columnsSize - 1) {
                     out.write(",");
                 }
             }
             out.write(")+>\n");
             for (int i = 0; i < columnsSize; i++) {
-                out.write("  <!ELEMENT " + DTUtils.escapeXmlElementName(columns[i].getName()) + " (#PCDATA)>\n");
+                out.write("  <!ELEMENT " + DTUtils.escapeXmlElementName(columns[i].getName(), outputEncoding) + " (#PCDATA)>\n");
             }
             out.write("]>\n");
         }
@@ -97,7 +98,7 @@ public class DataExporterXML extends StreamExporterAbstract {
         out.write("  <DATA_RECORD>\n");
         for (int i = 0; i < row.length; i++) {
             DBDAttributeBinding column = columns[i];
-            String columnName = DTUtils.escapeXmlElementName(column.getName());
+            String columnName = DTUtils.escapeXmlElementName(column.getName(), getSite().getOutputEncoding());
             out.write("    <" + columnName + ">");
             if (DBUtils.isNullValue(row[i])) {
                 writeTextCell(null);

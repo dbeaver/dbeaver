@@ -147,11 +147,34 @@ public class DataExporterXMLTest {
         exporter.exportFooter(null);
     }
 
+    @Test
+    public void elementNamesReplaceLettersTheOutputEncodingCannotWrite() throws DBException, IOException {
+        List<String> output = exportWithNames("顧客", "Größe", "US-ASCII");
+
+        Assertions.assertEquals("<_>", output.get(1));
+        Assertions.assertEquals("    <Gr_e>value</Gr_e>", output.get(3));
+        Assertions.assertEquals("    <Größe>value</Größe>", exportWithNames("t", "Größe", "ISO-8859-1").get(3));
+    }
+
+    @Test
+    public void emptyElementNameBecomesUnderscore() throws DBException, IOException {
+        Assertions.assertEquals("    <_>value</_>", exportWithNames("t", "").get(3));
+    }
+
     @NotNull
     private List<String> exportWithNames(@NotNull String table, @NotNull String column) throws DBException, IOException {
+        return exportWithNames(table, column, outputEncoding);
+    }
+
+    @NotNull
+    private List<String> exportWithNames(
+        @NotNull String table,
+        @NotNull String column,
+        @NotNull String encoding
+    ) throws DBException, IOException {
         StringWriter writer = new StringWriter();
         DataExporterXML xmlExporter = new DataExporterXML();
-        xmlExporter.init(ExporterTestsUtils.getIStreamDataExporterSiteMock(table, column, writer, outputEncoding));
+        xmlExporter.init(ExporterTestsUtils.getIStreamDataExporterSiteMock(table, column, writer, encoding));
         xmlExporter.exportHeader(session);
         xmlExporter.exportRow(session, resultSet, new Object[]{"value"});
         xmlExporter.exportFooter(null);
