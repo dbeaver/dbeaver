@@ -108,10 +108,12 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
                 continue;
             }
             DBDAttributeBinding column = columns[i];
-            String columnName = DTUtils.escapeXmlElementName(column.getName(), getSite().getOutputEncoding());
-            if (columnName != null && upperCaseColumnNames) {
+            String columnName = column.getName();
+            if (upperCaseColumnNames) {
+                // Before escaping, since upper case can need characters the output encoding doesn't have
                 columnName = columnName.toUpperCase();
             }
+            columnName = DTUtils.escapeXmlElementName(columnName, getSite().getOutputEncoding());
             out.write(" " + columnName + "=\"");
             Object columnValue = row[i];
             if (DBUtils.isNullValue(columnValue)) {

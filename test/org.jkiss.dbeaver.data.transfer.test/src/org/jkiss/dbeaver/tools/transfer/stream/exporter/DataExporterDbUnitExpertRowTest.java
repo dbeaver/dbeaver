@@ -139,11 +139,26 @@ public class DataExporterDbUnitExpertRowTest extends DBeaverUnitTest {
         Assertions.assertEquals("    <T _=\"value\"/>", exportWithNames("t", "").get(2));
     }
 
+    @Test
+    public void upperCaseAttributeNamesAreCheckedAgainstTheOutputEncoding() throws DBException, IOException {
+        // ISO-8859-1 has ÿ but not its upper case Ÿ
+        Assertions.assertEquals("    <T _=\"value\"/>", exportWithNames("t", "ÿ", "ISO-8859-1").get(2));
+    }
+
     @NotNull
     private List<String> exportWithNames(@NotNull String table, @NotNull String column) throws DBException, IOException {
+        return exportWithNames(table, column, outputEncoding);
+    }
+
+    @NotNull
+    private List<String> exportWithNames(
+        @NotNull String table,
+        @NotNull String column,
+        @NotNull String encoding
+    ) throws DBException, IOException {
         StringWriter writer = new StringWriter();
         DataExporterDbUnit dbUnitExporter = new DataExporterDbUnit();
-        dbUnitExporter.init(ExporterTestsUtils.getIStreamDataExporterSiteMock(table, column, writer, outputEncoding));
+        dbUnitExporter.init(ExporterTestsUtils.getIStreamDataExporterSiteMock(table, column, writer, encoding));
         dbUnitExporter.exportHeader(session);
         dbUnitExporter.exportRow(session, resultSet, new Object[]{"value"});
         dbUnitExporter.exportFooter(null);
