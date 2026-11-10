@@ -51,6 +51,7 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
 
     private static final int TIMEOUT_MS = 30000;
     private static final String GRAPHQL_ENDPOINT = "/graphql";
+    private static final String CREDENTIAL_ID_HEADER = "X-DataDam-Credential-Id";
     private static final String FIELD_NAME = "name";
     private static final String FIELD_DESCRIPTION = "description";
 
@@ -127,7 +128,7 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
                     createProject(projectId: $projectId, name: $name, description: $description) {
                 %s
                     }
-                }""".formatted(PROJECT_FIELDS.indent(8)), variables);
+                }""".formatted(PROJECT_FIELDS.indent(8)), variables, requireCredentialBundle());
             return gson.fromJson(data.get("createProject"), DDSharedProject.class);
         } catch (DBException e) {
             throw new DDShareException("Failed to create project", e);
@@ -256,6 +257,20 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
         @NotNull String lastKnownConfigurationFingerprint
     ) throws DDShareException {
         try {
+            return pushProjectConfiguration(projectId, projectContent, lastKnownConfigurationFingerprint, requireCredentialBundle());
+        } catch (DBException e) {
+            throw new DDShareException("Failed to push project configuration", e);
+        }
+    }
+
+    @NotNull
+    private DDSharedProjectRevision pushProjectConfiguration(
+        @NotNull UUID projectId,
+        @NotNull DDSharedProjectConfiguration projectContent,
+        @NotNull String lastKnownConfigurationFingerprint,
+        @NotNull DDKeyBundle bundle
+    ) throws DDShareException {
+        try {
             JsonObject data = call("""
                 mutation($projectId: ID!, $projectContent: ProjectConfigurationInput!, $lastKnownConfigurationFingerprint: String!) {
                     pushProjectConfiguration(
@@ -272,7 +287,7 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
                 Map.of(
                     "projectId", projectId.toString(),
                     "projectContent", projectContent,
-                    "lastKnownConfigurationFingerprint", lastKnownConfigurationFingerprint));
+                    "lastKnownConfigurationFingerprint", lastKnownConfigurationFingerprint), bundle);
             JsonElement result = data.get("pushProjectConfiguration");
             if (result == null || result.isJsonNull()) {
                 throw new DDShareException("Project not found or configuration fingerprint is stale: " + projectId);
@@ -293,9 +308,10 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
         @NotNull String lastKnownConfigurationFingerprint
     ) throws DDShareException {
         try {
+            DDKeyBundle bundle = requireCredentialBundle();
             List<DDSharedProjectFile> projectFiles = new ArrayList<>();
             if (!preparedFiles.files().isEmpty()) {
-                SecretKey key = getDataKey();
+                SecretKey key = new DDBundleCredentials(bundle).getDataKey();
                 for (Map.Entry<String, Pair<String, byte[]>> file : preparedFiles.files().entrySet()) {
                     Pair<String, byte[]> preparedFile = file.getValue();
                     projectFiles.add(new DDSharedProjectFile(
@@ -307,7 +323,7 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
             return pushProjectConfiguration(
                 projectId,
                 new DDSharedProjectConfiguration(preparedFiles.configurationFingerprint(), projectFiles),
-                lastKnownConfigurationFingerprint);
+                lastKnownConfigurationFingerprint, bundle);
         } catch (DBException e) {
             throw new DDShareException("Failed to encrypt project files", e);
         }
@@ -353,6 +369,15 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
     }
 
     @NotNull
+    private DDKeyBundle requireCredentialBundle() throws DBException {
+        DDKeyBundle bundle = accessService.getKeyBundle();
+        if (bundle == null || bundle.apiKeyId() == null) {
+            throw new DBException("Import the current DataDam recovery phrase before sharing projects");
+        }
+        return bundle;
+    }
+
+    @NotNull
     private SecretKey getDataKey() throws DBException {
         DDKeyBundle bundle = accessService.getKeyBundle();
         if (bundle == null) {
@@ -381,8 +406,19 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
 
     @NotNull
     private JsonObject call(@NotNull String query, @NotNull Map<String, Object> variables) throws DBException {
+        return call(query, variables, null);
+    }
+
+    @NotNull
+    private JsonObject call(
+        @NotNull String query, @NotNull Map<String, Object> variables, @Nullable DDKeyBundle bundle
+    ) throws DBException {
         byte[] body = gson.toJson(Map.of("query", query, "variables", variables)).getBytes(StandardCharsets.UTF_8);
-        JsonObject response = execute(request(body), JsonObject.class);
+        HttpRequest.Builder request = request(body);
+        if (bundle != null) {
+            request.header(CREDENTIAL_ID_HEADER, Objects.requireNonNull(bundle.apiKeyId()).toString());
+        }
+        JsonObject response = execute(request, JsonObject.class);
 
         if (response.get("errors") instanceof JsonArray errors && !errors.isEmpty()) {
             throw mapGraphQlError(errors);
