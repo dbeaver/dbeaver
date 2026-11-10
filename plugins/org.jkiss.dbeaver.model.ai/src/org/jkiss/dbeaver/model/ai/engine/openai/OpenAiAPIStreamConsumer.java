@@ -21,11 +21,14 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.ai.AIFunctionCall;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIError;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessage;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIMessageContent;
 import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesChunk;
+import org.jkiss.dbeaver.model.ai.engine.openai.dto.OAIResponsesResponse;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -48,15 +51,27 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
     private static final String EVENT_EVENT = "event:";
     private static final String EVENT_TYPE_ARGUMENTS_DELTA = "response.function_call_arguments.delta";
     private final AIEngineResponseConsumer listener;
+    private final String reasoningSource;
     private boolean functionCall;
+    private final List<AIFunctionCall> functionCalls = new ArrayList<>();
+    private boolean failed;
+    private OAIResponsesResponse completedResponse;
+    private boolean closed;
+    private boolean messageExpected;
+    private final List<OAIMessage> output = new ArrayList<>();
 
     public OpenAiAPIStreamConsumer(@NotNull AIEngineResponseConsumer listener) {
+        this(listener, null);
+    }
+
+    public OpenAiAPIStreamConsumer(@NotNull AIEngineResponseConsumer listener, @Nullable String reasoningSource) {
         this.listener = listener;
+        this.reasoningSource = reasoningSource;
     }
 
     @Override
     public void accept(@Nullable String event) {
-        if (CommonUtils.isEmpty(event)) {
+        if (failed || closed || CommonUtils.isEmpty(event)) {
             return;
         }
         if (event.startsWith(DATA_EVENT)) {
@@ -67,17 +82,43 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
             try {
                 OAIResponsesChunk chunk = GSON.fromJson(data, OAIResponsesChunk.class);
                 if (chunk.error != null) {
-                    listener.error(new DBException(chunk.error.code + ": " + chunk.error.message));
+                    error(new DBException(chunk.error.code + ": " + chunk.error.message));
+                    return;
+                }
+                if ("error".equals(chunk.type)) {
+                    OAIError error = GSON.fromJson(data, OAIError.class);
+                    throw new DBException(error.code + ": " + error.message);
+                }
+                if ("response.failed".equals(chunk.type) || "response.incomplete".equals(chunk.type)) {
+                    if (chunk.response != null) {
+                        listener.usage(chunk.response.getAIUsage());
+                        chunk.response.status = chunk.type.substring("response.".length());
+                        chunk.response.validateCompletion();
+                    }
+                    throw new DBException("Response did not complete: " + chunk.type);
+                }
+                if (EVENT_TYPE_ITEM_DONE.equals(chunk.type) && chunk.item != null) {
+                    output.add(chunk.item);
+                }
+                if (chunk.item != null && OAIMessage.TYPE_FUNCTION_REASONING.equals(chunk.item.type)) {
                     return;
                 }
                 if (EVENT_TYPE_RESPONSE_COMPLETED.equals(chunk.type)) {
+                    if (chunk.response == null) {
+                        throw new DBException("Missing completed response");
+                    }
+                    chunk.response.validateCompletion();
+                    completedResponse = chunk.response;
+                    if (CommonUtils.isEmpty(completedResponse.output)) {
+                        completedResponse.output = List.copyOf(output);
+                    }
                     listener.usage(chunk.response.getAIUsage());
                 } else {
 
                     if (chunk.item != null && OAIMessage.TYPE_FUNCTION_CALL.equals(chunk.item.type)) {
                         if (EVENT_TYPE_ITEM_DONE.equals(chunk.type)) {
-                            listener.nextChunk(new AIEngineResponseChunk(
-                                OpenAiUtils.createFunctionCall(chunk.item)));
+                            AIFunctionCall call = OpenAiUtils.createFunctionCall(chunk.item);
+                            functionCalls.add(call);
                             functionCall = false;
                         } else {
                             functionCall = true;
@@ -88,12 +129,13 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
                         List<String> choices = processChunk(chunk);
 
                         if (!choices.isEmpty()) {
+                            messageExpected |= choices.getFirst() != null && !choices.getFirst().isBlank();
                             listener.nextChunk(new AIEngineResponseChunk(choices));
                         }
                     }
                 }
             } catch (Exception e) {
-                listener.error(e);
+                error(e);
             }
         } else if (event.startsWith(EVENT_EVENT)) {
             String eventType = event.substring(EVENT_EVENT.length()).trim();
@@ -115,6 +157,36 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
         }
     }
 
+    public void error(@NotNull Throwable error) {
+        if (failed || closed) {
+            return;
+        }
+        failed = true;
+        functionCalls.clear();
+        listener.error(error);
+    }
+
+    public void complete() {
+        if (failed || closed) {
+            return;
+        }
+        if (completedResponse == null) {
+            error(new DBException("Response stream ended before completion"));
+            return;
+        }
+        closed = true;
+        // completed items are provisional until the entire response succeeds
+        var metadata = OpenAiUtils.completeResponse(functionCalls, completedResponse.output, reasoningSource, messageExpected);
+        if (!metadata.isEmpty()) {
+            listener.messageMetadata(metadata);
+        }
+        for (AIFunctionCall call : functionCalls) {
+            listener.nextChunk(new AIEngineResponseChunk(call));
+        }
+        functionCalls.clear();
+        listener.completeBlock();
+    }
+
     @NotNull
     private static List<String> processChunk(@NotNull OAIResponsesChunk chunk) {
         List<String> choices = new ArrayList<>();
@@ -122,6 +194,9 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
             choices.add(chunk.delta);
         } else if (chunk.response != null && chunk.response.output != null) {
             for (OAIMessage msg : chunk.response.output) {
+                if (!OAIMessage.TYPE_MESSAGE.equals(msg.type) || msg.content == null) {
+                    continue;
+                }
                 for (OAIMessageContent content : msg.content) {
                     if (!CommonUtils.isEmpty(content.text)) {
                         choices.add(content.text);

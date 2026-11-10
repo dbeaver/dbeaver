@@ -123,12 +123,12 @@ public class OpenAIClientResponses extends OpenAiClientBase {
 
         HttpRequest modifiedRequest = applyFilters(request);
 
-        Consumer<String> stringConsumer = new OpenAiAPIStreamConsumer(listener);
+        OpenAiAPIStreamConsumer stringConsumer = new OpenAiAPIStreamConsumer(listener, completionRequest.reasoningSource);
         client.sendAsync(
             modifiedRequest,
             stringConsumer,
-            listener::error,
-            listener::completeBlock,
+            stringConsumer::error,
+            stringConsumer::complete,
             (failureReason) -> {
                 if (OpenAIConstants.LEGACY_FALLBACK.equals(failureReason)) {
                     if (backupClient == null) {

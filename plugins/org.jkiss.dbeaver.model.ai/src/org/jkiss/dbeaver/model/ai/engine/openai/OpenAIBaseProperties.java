@@ -64,6 +64,10 @@ public interface OpenAIBaseProperties extends AIEngineProperties {
         return true;
     }
 
+    default boolean isReasoningHistoryRequired() {
+        return false;
+    }
+
     @Override
     default boolean isValidConfiguration() {
         return (!isTokenRequired() || !CommonUtils.isEmptyTrimmed(getEffectiveToken()))
