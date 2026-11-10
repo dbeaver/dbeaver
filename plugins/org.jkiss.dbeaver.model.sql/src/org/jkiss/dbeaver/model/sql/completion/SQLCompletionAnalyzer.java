@@ -1187,11 +1187,11 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         assistantParams.setMaxResults(MAX_STRUCT_PROPOSALS);
         List<DBSObjectReference> references = new ArrayList<>(
             assistant.findObjectsByMask(monitor, request.getContext().getExecutionContext(), assistantParams));
-        // Assistant returns unresolved references, so resolve them to apply the same partition fallback rule.
+        // Assistant returns unresolved references; classify them by the partition flag without resolving.
         List<Boolean> partitionFlags = new ArrayList<>(references.size());
         boolean hasNonPartitionTableOrView = false;
         for (DBSObjectReference reference : references) {
-            Boolean partitionFlag = SQLCompletionHelper.isTablePartitionReference(monitor, reference);
+            Boolean partitionFlag = SQLCompletionHelper.isTablePartitionReference(reference);
             partitionFlags.add(partitionFlag);
             if (Boolean.FALSE.equals(partitionFlag)) {
                 hasNonPartitionTableOrView = true;

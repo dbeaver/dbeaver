@@ -295,9 +295,10 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         @NotNull Collection<? super DBSObjectReference> objects
     ) throws SQLException, DBException {
         DBRProgressMonitor monitor = session.getProgressMonitor();
+        boolean supportsPartitions = database.getDataSource().getServerType().supportsPartitions();
 
         PostgreQueryBuilder queryParams = new PostgreQueryBuilder(
-            "pc.oid,pc.relname,pc.relnamespace,pc.relkind",
+            "pc.oid,pc.relname,pc.relnamespace,pc.relkind" + (supportsPartitions ? ",pc.relispartition" : ""),
             "pg_catalog.pg_class pc",
             "pc.relname",
             schemas,
@@ -324,6 +325,8 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
                     final long tableId = JDBCUtils.safeGetLong(dbResult, "oid");
                     final String tableName = JDBCUtils.safeGetString(dbResult, "relname");
                     final PostgreClass.RelKind tableType = PostgreClass.RelKind.valueOf(JDBCUtils.safeGetString(dbResult, "relkind"));
+                    final boolean tablePartition = supportsPartitions
+                        && JDBCUtils.safeGetBoolean(dbResult, "relispartition");
                     final PostgreSchema tableSchema = database.getSchema(session.getProgressMonitor(), schemaId);
                     if (tableSchema == null) {
                         log.debug("Can't resolve table '" + tableName + "' - owner schema " + schemaId + " not found");
@@ -333,6 +336,12 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
                         tableType == PostgreClass.RelKind.r ? PostgreTable.class :
                             (tableType == PostgreClass.RelKind.v ? PostgreView.class : PostgreMaterializedView.class),
                         RelationalObjectType.TYPE_TABLE) {
+                        @NotNull
+                        @Override
+                        public Boolean isTablePartition() {
+                            return tablePartition;
+                        }
+
                         @NotNull
                         @Override
                         public DBSObject resolveObject(@NotNull DBRProgressMonitor monitor) throws DBException {

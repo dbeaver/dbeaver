@@ -18,14 +18,11 @@ package org.jkiss.dbeaver.model.sql.completion;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLHelpProvider;
 import org.jkiss.dbeaver.model.sql.SQLHelpTopic;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
@@ -37,8 +34,6 @@ import org.jkiss.utils.CommonUtils;
  * SQL Completion proposal
  */
 public class SQLCompletionHelper {
-
-    private static final Log log = Log.getLog(SQLCompletionHelper.class);
 
     public static final int ADDITIONAL_INFO_WAIT_TIMEOUT = 3000;
 
@@ -52,33 +47,34 @@ public class SQLCompletionHelper {
 
     /**
      * Classifies a table or view reference for partition filtering.
-     * Returns {@code null} when the reference is not a table/view or cannot be resolved,
-     * so the caller can keep it as a fallback.
+     * Uses the partition flag provided by the reference when available.
+     * Returns {@code null} when the reference does not provide this information,
+     * so the caller can keep it as a fallback without resolving it.
      */
+    @Nullable
+    public static Boolean isTablePartitionReference(@NotNull DBSObjectReference reference) {
+        Boolean tablePartition = reference.isTablePartition();
+        if (tablePartition != null) {
+            return tablePartition;
+        }
+        Class<?> objectClass = reference.getObjectClass();
+        if (objectClass != null && DBSTablePartition.class.isAssignableFrom(objectClass)) {
+            return true;
+        }
+        return null;
+    }
+
+    /**
+     * @deprecated Use {@link #isTablePartitionReference(DBSObjectReference)} instead.
+     *             This overload is kept for API compatibility and does not resolve the reference.
+     */
+    @Deprecated
     @Nullable
     public static Boolean isTablePartitionReference(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBSObjectReference reference
     ) {
-        Class<?> objectClass = reference.getObjectClass();
-        if (objectClass != null && DBSTablePartition.class.isAssignableFrom(objectClass)) {
-            return true;
-        }
-        if (objectClass == null
-            || (!DBSTable.class.isAssignableFrom(objectClass) && !DBSView.class.isAssignableFrom(objectClass))
-        ) {
-            return null;
-        }
-        try {
-            DBSObject object = reference.resolveObject(monitor);
-            if (object instanceof DBSTablePartition) {
-                return true;
-            }
-            return isNonPartitionTableOrView(object) ? Boolean.FALSE : null;
-        } catch (DBException e) {
-            log.debug("Failed to resolve object reference '" + reference.getName() + "'", e);
-            return null;
-        }
+        return isTablePartitionReference(reference);
     }
 
     /**

@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.model.sql.completion;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
@@ -35,59 +34,61 @@ import static org.mockito.Mockito.when;
 
 public class SQLCompletionHelperTest extends DBeaverUnitTest {
 
-    private final VoidProgressMonitor monitor = new VoidProgressMonitor();
-
     @Test
     public void partitionReferenceClassDoesNotRequireResolution() throws DBException {
         DBSObjectReference reference = mock(DBSObjectReference.class);
+        when(reference.isTablePartition()).thenReturn(null);
         doReturn(DBSTablePartition.class).when(reference).getObjectClass();
 
-        Assertions.assertEquals(Boolean.TRUE, SQLCompletionHelper.isTablePartitionReference(monitor, reference));
+        Assertions.assertEquals(Boolean.TRUE, SQLCompletionHelper.isTablePartitionReference(reference));
         verify(reference, never()).resolveObject(any());
     }
 
     @Test
-    public void resolvedPartitionIsRecognized() throws DBException {
+    public void partitionFlagTrueIsUsedWithoutResolution() throws DBException {
         DBSObjectReference reference = mock(DBSObjectReference.class);
-        doReturn(DBSTable.class).when(reference).getObjectClass();
-        when(reference.resolveObject(any())).thenReturn(mock(DBSTablePartition.class));
+        when(reference.isTablePartition()).thenReturn(true);
 
-        Assertions.assertEquals(Boolean.TRUE, SQLCompletionHelper.isTablePartitionReference(monitor, reference));
+        Assertions.assertEquals(Boolean.TRUE, SQLCompletionHelper.isTablePartitionReference(reference));
+        verify(reference, never()).resolveObject(any());
     }
 
     @Test
-    public void resolvedRegularTableIsNotPartition() throws DBException {
+    public void partitionFlagFalseIsUsedWithoutResolution() throws DBException {
         DBSObjectReference reference = mock(DBSObjectReference.class);
-        doReturn(DBSTable.class).when(reference).getObjectClass();
-        when(reference.resolveObject(any())).thenReturn(mock(DBSTable.class));
+        when(reference.isTablePartition()).thenReturn(false);
 
-        Assertions.assertEquals(Boolean.FALSE, SQLCompletionHelper.isTablePartitionReference(monitor, reference));
+        Assertions.assertEquals(Boolean.FALSE, SQLCompletionHelper.isTablePartitionReference(reference));
+        verify(reference, never()).resolveObject(any());
     }
 
     @Test
-    public void resolvedViewIsNotPartition() throws DBException {
+    public void tableReferenceWithoutFlagIsUnknownAndNotResolved() throws DBException {
         DBSObjectReference reference = mock(DBSObjectReference.class);
+        when(reference.isTablePartition()).thenReturn(null);
+        doReturn(DBSTable.class).when(reference).getObjectClass();
+
+        Assertions.assertNull(SQLCompletionHelper.isTablePartitionReference(reference));
+        verify(reference, never()).resolveObject(any());
+    }
+
+    @Test
+    public void viewReferenceWithoutFlagIsUnknownAndNotResolved() throws DBException {
+        DBSObjectReference reference = mock(DBSObjectReference.class);
+        when(reference.isTablePartition()).thenReturn(null);
         doReturn(DBSView.class).when(reference).getObjectClass();
-        when(reference.resolveObject(any())).thenReturn(mock(DBSView.class));
 
-        Assertions.assertEquals(Boolean.FALSE, SQLCompletionHelper.isTablePartitionReference(monitor, reference));
-    }
-
-    @Test
-    public void unresolvedReferenceIsUnknown() throws DBException {
-        DBSObjectReference reference = mock(DBSObjectReference.class);
-        doReturn(DBSTable.class).when(reference).getObjectClass();
-        when(reference.resolveObject(any())).thenThrow(new DBException("Object not found"));
-
-        Assertions.assertNull(SQLCompletionHelper.isTablePartitionReference(monitor, reference));
+        Assertions.assertNull(SQLCompletionHelper.isTablePartitionReference(reference));
+        verify(reference, never()).resolveObject(any());
     }
 
     @Test
     public void nonTableReferenceIsUnknownAndNotResolved() throws DBException {
         DBSObjectReference reference = mock(DBSObjectReference.class);
+        when(reference.isTablePartition()).thenReturn(null);
         doReturn(String.class).when(reference).getObjectClass();
 
-        Assertions.assertNull(SQLCompletionHelper.isTablePartitionReference(monitor, reference));
+        Assertions.assertNull(SQLCompletionHelper.isTablePartitionReference(reference));
         verify(reference, never()).resolveObject(any());
     }
 }

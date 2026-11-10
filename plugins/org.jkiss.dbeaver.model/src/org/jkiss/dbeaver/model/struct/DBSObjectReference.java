@@ -40,6 +40,17 @@ public interface DBSObjectReference extends DBPNamedObject, DBPQualifiedObject {
     @Nullable
     String getObjectDescription();
 
+    /**
+     * Returns whether this reference points to a table partition.
+     *
+     * @return {@code true} for a table partition, {@code false} for a regular table or view,
+     *         or {@code null} when this information is not available without resolving the object
+     */
+    @Nullable
+    default Boolean isTablePartition() {
+        return null;
+    }
+
     @NotNull
     DBSObject resolveObject(@NotNull DBRProgressMonitor monitor)
         throws DBException;
