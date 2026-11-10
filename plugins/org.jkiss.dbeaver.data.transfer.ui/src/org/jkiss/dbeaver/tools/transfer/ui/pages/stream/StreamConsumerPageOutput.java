@@ -408,6 +408,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
 
     private void createFileConflictResolutionPanel(@NotNull Composite advancedSettingPanel, @NotNull StreamConsumerSettings settings) {
         final ExpandableComposite fcExpander = new ExpandableComposite(advancedSettingPanel, SWT.NONE);
+        fcExpander.setText(DTMessages.data_transfer_file_name_conflict_behavior_setting_text);
         fcExpander.setLayoutData(new GridData(
             GridData.FILL,
             GridData.BEGINNING,
@@ -419,13 +420,11 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
         fcExpander.addExpansionListener(new ExpansionAdapter() {
             @Override
             public void expansionStateChanged(ExpansionEvent e) {
-                updateFileConflictExpanderTitle(fcExpander, settings);
                 UIUtils.resizeShell(advancedSettingPanel.getShell());
             }
         });
         Composite fileConflictBehaviorSettings = UIUtils.createComposite(fcExpander, 2);
         fcExpander.setClient(fileConflictBehaviorSettings);
-        updateFileConflictExpanderTitle(fcExpander, settings);
 
         dataFileConflictBehaviorSelector = new EnumSelectionGroup<>(
             fileConflictBehaviorSettings,
@@ -438,10 +437,7 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             ),
             v -> v.title,
             DataFileConflictBehavior.ASK,
-            v -> {
-                settings.setDataFileConflictBehavior(v);
-                updateFileConflictExpanderTitle(fcExpander, settings);
-            },
+            settings::setDataFileConflictBehavior,
             v -> v != DataFileConflictBehavior.OVERWRITE || confirmPossibleFileOverwrite()
         );
         blobFileConflictBehaviorSelector = new EnumSelectionGroup<>(
@@ -450,22 +446,9 @@ public class StreamConsumerPageOutput extends DataTransferPageNodeSettings {
             List.of(BlobFileConflictBehavior.ASK, BlobFileConflictBehavior.PATCHNAME, BlobFileConflictBehavior.OVERWRITE),
             v -> v.title,
             BlobFileConflictBehavior.ASK,
-            v -> {
-                settings.setBlobFileConflictBehavior(v);
-                updateFileConflictExpanderTitle(fcExpander, settings);
-            },
+            settings::setBlobFileConflictBehavior,
             v -> v != BlobFileConflictBehavior.OVERWRITE || confirmPossibleFileOverwrite()
         );
-    }
-
-    private void updateFileConflictExpanderTitle(ExpandableComposite expander, StreamConsumerSettings settings) {
-        if (expander.isExpanded()) {
-            expander.setText(DTMessages.data_transfer_file_name_conflict_behavior_setting_text);
-        } else {
-            String text = DTMessages.data_transfer_file_conflict_behavior_setting + ": " + settings.getDataFileConflictBehavior().title +
-                "; " + DTMessages.data_transfer_blob_file_conflict_behavior_setting + ": " + settings.getBlobFileConflictBehavior().title;
-            expander.setText(text);
-        }
     }
 
     private void updateControlsEnablement() {
