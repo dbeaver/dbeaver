@@ -200,6 +200,64 @@ class AIResponseHistoryTest {
         Assertions.assertNull(next.include);
     }
 
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void keepsTruncatedNativeHistoryWithinTheExistingWindow(boolean reasoningRequired) throws Exception {
+        String answer = "a".repeat(8000);
+        var response = OpenAiUtils.toEngineResponse(response(REASONING + "," + TEXT.replace("Checking tables", answer)), "source");
+        AIMessageMeta meta = new AIMessageMeta("prompt", "openai", "model", null, Duration.ZERO, 0, response.getMessageMetadata());
+        AIMessage original = AIMessage.assistantMessage(answer, List.of(meta));
+        List<AIMessage> history = List.of(AIMessage.userMessage("Old question"), original, AIMessage.userMessage("Continue"));
+        DummyTokenCounter counter = new DummyTokenCounter();
+        int contextWindow = 2048;
+        int replyReserve = 256;
+        List<AIMessage> trimmed = ChatTruncator.builder().maxTokens(contextWindow).reserveForSystem(0)
+            .reserveForReply(replyReserve).reserveForOverhead(128).tokenCounter(counter).build().tryTruncate(history);
+        Assertions.assertNotNull(trimmed);
+        AIMessage shortened = trimmed.stream().filter(message -> message.getRole() == original.getRole()).findFirst().orElseThrow();
+        Assertions.assertTrue(shortened.getContent().length() < answer.length());
+        OAIResponsesRequest next = request(trimmed, "source", reasoningRequired);
+        Assertions.assertTrue(next.input.stream().mapToInt(item -> counter.count(item.getFullText())).sum()
+            <= contextWindow - replyReserve);
+        Assertions.assertEquals("Previous assistant response:\n" + shortened.getContent(), next.input.getFirst().getFullText());
+        Assertions.assertTrue(next.input.stream().allMatch(item -> "message".equals(item.type)));
+        Assertions.assertEquals(answer, original.getContent());
+        Assertions.assertFalse(meta.responseMetadata().containsKey(AIMessage.RESPONSE_CONTENT_MODIFIED));
+        Assertions.assertEquals(original.getMeta(), original.withContent(answer).getMeta());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void invalidatesTheWholeToolGroupWhenCommentaryChanges(boolean commentaryFirst) throws Exception {
+        var response = OpenAiUtils.toEngineResponse(response(REASONING + "," + TEXT + "," + CALL), "source");
+        AIMessageMeta meta = new AIMessageMeta("prompt", "openai", "model", null, Duration.ZERO, 0, response.getMessageMetadata());
+        AIMessage original = AIMessage.assistantMessage("Checking tables", List.of(meta));
+        AIMessage shortened = original.withContent("Checking");
+        AIMessage result = AIMessage.functionCall(response.getFunctionCall(), new AIFunctionResult(AIFunctionType.INFORMATION, "table"));
+        List<AIMessage> history = commentaryFirst ? List.of(shortened, result) : List.of(result, shortened);
+        OAIResponsesRequest next = request(history, "source", true);
+        Assertions.assertEquals(2, next.input.size());
+        Assertions.assertTrue(next.input.stream().allMatch(item -> "message".equals(item.type) && "user".equals(item.role)));
+        Assertions.assertFalse(JSONUtils.GSON.toJson(next.input).contains("Checking tables"));
+        Assertions.assertFalse(meta.responseMetadata().containsKey(AIMessage.RESPONSE_CONTENT_MODIFIED));
+        Assertions.assertFalse(response.getFunctionCall().getMessageMetadata().containsKey(AIMessage.RESPONSE_CONTENT_MODIFIED));
+    }
+
+    @Test
+    void importsATruncatedToolResultWithoutNativeState() throws Exception {
+        var response = OpenAiUtils.toEngineResponse(response(REASONING + "," + CALL), "source");
+        AIMessage result = AIMessage.functionCall(response.getFunctionCall(),
+            new AIFunctionResult(AIFunctionType.INFORMATION, "a".repeat(8000)));
+        List<AIMessage> history = List.of(AIMessage.userMessage("Inspect"), result, AIMessage.userMessage("Continue"));
+        List<AIMessage> trimmed = ChatTruncator.builder().maxTokens(2048).reserveForSystem(0)
+            .reserveForReply(256).reserveForOverhead(128).tokenCounter(new DummyTokenCounter()).build().tryTruncate(history);
+        Assertions.assertNotNull(trimmed);
+        OAIResponsesRequest next = request(trimmed, "source", true);
+        Assertions.assertTrue(next.input.stream().allMatch(item -> "message".equals(item.type) && "user".equals(item.role)));
+        Assertions.assertTrue(next.input.stream().anyMatch(item -> item.getFullText().contains("was completed")));
+        Assertions.assertNotNull(result.getFunctionCall());
+    }
+
     @NotNull
     private static OAIResponsesRequest request(@NotNull List<AIMessage> history, @NotNull String source, boolean reasoningRequired) {
         AIEngineRequest request = new AIEngineRequest(history);

@@ -250,7 +250,9 @@ public class OpenAiUtils {
                     replayed.add(output);
                     result.addAll(restored);
                 }
-            } else if (reasoningRequired && (message.getRole() == AIMessageType.ASSISTANT || message.getFunctionCall() != null)) {
+            } else if (reasoningRequired && (message.getRole() == AIMessageType.ASSISTANT
+                || message.getRole() == AIMessageType.FUNCTION || message.getFunctionCall() != null)
+            ) {
                 // deepseek requires original reasoning for assistant/tool history when tools are enabled
                 result.add(importResponse(message));
             } else if (message.getFunctionCall() != null) {
@@ -293,7 +295,9 @@ public class OpenAiUtils {
             }
             Map<String, String> metadata = getResponseMetadata(message);
             if (output.equals(metadata.get(OpenAIConstants.RESPONSE_OUTPUT))) {
-                if (reasoningSource != null && !reasoningSource.equals(metadata.get(OpenAIConstants.REASONING_SOURCE))) {
+                if (Boolean.parseBoolean(metadata.get(AIMessage.RESPONSE_CONTENT_MODIFIED))
+                    || reasoningSource != null && !reasoningSource.equals(metadata.get(OpenAIConstants.REASONING_SOURCE))
+                ) {
                     return null;
                 }
                 if (message.getFunctionCall() != null) {

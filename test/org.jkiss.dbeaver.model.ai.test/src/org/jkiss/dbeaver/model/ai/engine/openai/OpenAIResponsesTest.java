@@ -247,6 +247,29 @@ class OpenAIResponsesTest {
         Mockito.verify(listener, Mockito.never()).completeBlock();
     }
 
+    @ParameterizedTest
+    @ValueSource(strings = {"nested", "nested_typed", "top_level"})
+    void preservesErrorDetailsFromBothStreamFormats(@NotNull String format) {
+        AIEngineResponseConsumer listener = Mockito.mock(AIEngineResponseConsumer.class);
+        OpenAiAPIStreamConsumer stream = new OpenAiAPIStreamConsumer(listener, "source");
+        stream.accept("data: {\"type\":\"response.output_item.done\",\"item\":" + CALL + "}");
+        String details = "\"code\":\"invalid_request\",\"message\":\"Test invalid API key\"";
+        String event = switch (format) {
+            case "nested" -> "{\"error\":{" + details + "}}";
+            case "nested_typed" -> "{\"type\":\"error\",\"error\":{" + details + "}}";
+            case "top_level" -> "{\"type\":\"error\"," + details + "}";
+            default -> throw new IllegalArgumentException(format);
+        };
+        stream.accept("data: " + event);
+        stream.complete();
+        ArgumentCaptor<Throwable> failure = ArgumentCaptor.forClass(Throwable.class);
+        Mockito.verify(listener).error(failure.capture());
+        Assertions.assertEquals("invalid_request: Test invalid API key", failure.getValue().getMessage());
+        Mockito.verify(listener, Mockito.never()).nextChunk(Mockito.any());
+        Mockito.verify(listener, Mockito.never()).messageMetadata(Mockito.anyMap());
+        Mockito.verify(listener, Mockito.never()).completeBlock();
+    }
+
     @NotNull
     private static OpenAIEngine<OpenAIProperties> engine(@NotNull OpenAIClientResponses client) {
         OpenAIProperties properties = new OpenAIProperties();

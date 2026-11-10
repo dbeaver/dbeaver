@@ -80,13 +80,13 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
             }
             try {
                 OAIResponsesChunk chunk = GSON.fromJson(data, OAIResponsesChunk.class);
-                if ("error".equals(chunk.type)) {
-                    OAIError error = GSON.fromJson(data, OAIError.class);
-                    throw new DBException(error.code + ": " + error.message);
-                }
                 if (chunk.error != null) {
                     error(new DBException(chunk.error.code + ": " + chunk.error.message));
                     return;
+                }
+                if ("error".equals(chunk.type)) {
+                    OAIError error = GSON.fromJson(data, OAIError.class);
+                    throw new DBException(error.code + ": " + error.message);
                 }
                 if ("response.failed".equals(chunk.type) || "response.incomplete".equals(chunk.type)) {
                     if (chunk.response != null) {
