@@ -97,11 +97,15 @@ public class OraclePackage extends OracleSchemaObject
      */
     @Nullable
     @Property(viewable = true, order = 5)
-    public Date getBodyLastDDLTime(@NotNull DBRProgressMonitor monitor) throws DBException {
+    public Date getBodyLastDDLTime(@Nullable DBRProgressMonitor monitor) throws DBException {
         if (!isPersisted()) {
             // New packages do not exist in ALL_OBJECTS yet, and the property viewer passes a null monitor
             // for non-persisted objects.
             return null;
+        }
+        if (monitor == null) {
+            // Loading requires a progress monitor. Return whatever was cached; it stays null if not loaded yet.
+            return bodyLastDDLTime;
         }
         if (!bodyLastDDLTimeLoaded) {
             loadBodyLastDDLTime(monitor);

@@ -108,4 +108,21 @@ public class OraclePackageCacheTest extends DBeaverUnitTest {
             dbUtils.verifyNoInteractions();
         }
     }
+
+    @Test
+    public void persistedPackageWithNullMonitorDoesNotLoadBodyDdlTime() throws Exception {
+        ResultSet packageRow = Mockito.mock(ResultSet.class);
+        Mockito.when(packageRow.getString("OBJECT_NAME")).thenReturn("TEST_PACKAGE");
+        Mockito.when(packageRow.getString("STATUS")).thenReturn("VALID");
+
+        OraclePackage pack = new OraclePackage(schema, packageRow);
+
+        try (MockedStatic<DBUtils> dbUtils = Mockito.mockStatic(
+            DBUtils.class, Mockito.withSettings().mockMaker("mock-maker-inline"))
+        ) {
+            // Lazy loading needs a monitor, so a null monitor must return the cached value without querying.
+            Assertions.assertNull(pack.getBodyLastDDLTime(null));
+            dbUtils.verifyNoInteractions();
+        }
+    }
 }
