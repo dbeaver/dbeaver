@@ -68,6 +68,7 @@ final class DiagnosticInfoSanitizer {
         "(?i)\\b\\w*version(?:\\s*[:=]\\s*|\\s+)['\"]?\\d+(?:\\.\\d+){3,}"
     );
     private static final Pattern ECLIPSE_LOG_BUNDLE = Pattern.compile("!(?:ENTRY|SUBENTRY\\s+\\d+)\\s+");
+    private static final Pattern PROPERTY_NAME = Pattern.compile("(?m)^[\\t ]*[\\w.-]+[\\t ]*(?=[=:])");
 
     private final List<String> environmentValues;
     private final List<Pattern> shortEnvironmentValues;
@@ -125,8 +126,27 @@ final class DiagnosticInfoSanitizer {
         result = DOMAIN.matcher(result).replaceAll(m -> {
             String prefix = beforeDomains.substring(beforeDomains.lastIndexOf('\n', m.start() - 1) + 1, m.start());
             boolean bundle = ECLIPSE_LOG_BUNDLE.matcher(prefix).matches();
-            return isStackFrame(beforeDomains, m.start()) || bundle ? Matcher.quoteReplacement(m.group()) : REDACTED;
+            Matcher property = PROPERTY_NAME.matcher(lineAt(beforeDomains, m.start()));
+            boolean propertyName = property.lookingAt() && prefix.length() < property.end();
+            return isStackFrame(beforeDomains, m.start()) || bundle || propertyName
+                ? Matcher.quoteReplacement(m.group()) : REDACTED;
         });
+        // Environment values can also occur in property names. Only replace them outside the key.
+        Matcher properties = PROPERTY_NAME.matcher(result);
+        StringBuilder sanitized = new StringBuilder(result.length());
+        int offset = 0;
+        while (properties.find()) {
+            sanitized.append(sanitizeEnvironmentValues(result.substring(offset, properties.start())));
+            sanitized.append(properties.group());
+            offset = properties.end();
+        }
+        sanitized.append(sanitizeEnvironmentValues(result.substring(offset)));
+        return sanitized.toString();
+    }
+
+    @NotNull
+    private String sanitizeEnvironmentValues(@NotNull String text) {
+        String result = text;
         for (String value : environmentValues) {
             result = result.replace(value, REDACTED);
         }
