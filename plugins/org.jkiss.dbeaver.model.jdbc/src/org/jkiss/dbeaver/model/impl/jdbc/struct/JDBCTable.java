@@ -149,8 +149,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         int fetchSize,
         boolean prepareColumnMetadata
     ) throws DBException {
-        DBCStatistics statistics = new DBCStatistics();
-        boolean hasLimits = firstRow >= 0 && maxRows > 0;
+        final DBCStatistics statistics = new DBCStatistics();
+        final boolean hasLimits = firstRow >= 0 && maxRows > 0;
 
         DBPDataSource dataSource = session.getDataSource();
         DBRProgressMonitor monitor = session.getProgressMonitor();

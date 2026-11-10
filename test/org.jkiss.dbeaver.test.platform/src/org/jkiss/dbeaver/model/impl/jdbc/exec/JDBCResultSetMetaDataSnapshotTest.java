@@ -35,7 +35,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
-
 import javax.sql.rowset.RowSetMetaDataImpl;
 
 class JDBCResultSetMetaDataSnapshotTest {
@@ -120,10 +119,12 @@ class JDBCResultSetMetaDataSnapshotTest {
     }
 
     public static class BaseResultSetMetaData extends RowSetMetaDataImpl {
+        @NotNull
         public String getBaseSchemaName(int column) {
             return "base_schema";
         }
 
+        @NotNull
         public String getBaseTableName(int column) {
             return "base_table";
         }

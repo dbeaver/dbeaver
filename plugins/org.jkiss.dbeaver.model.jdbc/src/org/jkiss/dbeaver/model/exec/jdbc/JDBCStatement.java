@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.exec.jdbc;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -49,6 +50,7 @@ public interface JDBCStatement extends Statement, DBCStatement, DBCScriptStateme
     JDBCResultSetMetaDataSnapshot getResultSetMetaDataSnapshot();
 
     @Override
+    @NotNull
     JDBCSession getConnection();
 
     @Nullable

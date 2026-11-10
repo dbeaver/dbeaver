@@ -32,6 +32,7 @@ import java.sql.SQLException;
  */
 public class PostgreJdbcFactory extends JDBCFactoryDefault
 {
+    @NotNull
     @Override
     public JDBCResultSetMetaData createResultSetMetaData(@NotNull JDBCResultSet resultSet) throws SQLException {
         if (resultSet.getSession().getDataSource().isDriverVersionAtLeast(9, 0)) {
@@ -42,6 +43,7 @@ public class PostgreJdbcFactory extends JDBCFactoryDefault
         }
     }
 
+    @NotNull
     @Override
     public JDBCResultSetMetaData createResultSetMetaData(
         @NotNull JDBCResultSet resultSet,
@@ -53,6 +55,7 @@ public class PostgreJdbcFactory extends JDBCFactoryDefault
         return new JDBCResultSetMetaDataImpl(resultSet, original);
     }
 
+    @NotNull
     @Override
     public JDBCResultSetMetaData createResultSetMetaData(
         @NotNull JDBCSession session,

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.exec.jdbc;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -28,7 +29,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-
 import javax.sql.rowset.RowSetMetaDataImpl;
 
 /**
@@ -45,7 +45,11 @@ public final class JDBCResultSetMetaDataSnapshot {
         this.labels = Collections.unmodifiableList(new ArrayList<>(labels));
     }
 
-    public static JDBCResultSetMetaDataSnapshot prepare(JDBCSession jdbcSession, String queryString) throws DBCException {
+    @NotNull
+    public static JDBCResultSetMetaDataSnapshot prepare(
+        @NotNull JDBCSession jdbcSession,
+        @NotNull String queryString
+    ) throws DBCException {
         try (JDBCPreparedStatement metadataStatement = jdbcSession.prepareStatement(queryString)) {
             return JDBCResultSetMetaDataSnapshot.capture(jdbcSession, metadataStatement);
         } catch (SQLException e) {
@@ -62,7 +66,9 @@ public final class JDBCResultSetMetaDataSnapshot {
         if (original == null) {
             throw new DBCException("Cannot describe the export result before opening its cursor");
         }
-        JDBCResultSetMetaData metadata = session.getDataSource().getJdbcFactory().createResultSetMetaData(session, metadataStatement, original);
+        JDBCResultSetMetaData metadata = session.getDataSource().getJdbcFactory().createResultSetMetaData(
+            session, metadataStatement, original
+        );
 
         List<? extends DBCAttributeMetaData> attributes = metadata.getAttributes();
         int count = attributes.size();
@@ -71,7 +77,6 @@ public final class JDBCResultSetMetaDataSnapshot {
         for (int i = 1; i <= count; i++) {
             // Use the factory's resolved columns, including driver-specific base names and
             // its per-property fallbacks. The raw label is only needed to validate the cursor.
-            JDBCColumnMetaData column = (JDBCColumnMetaData) attributes.get(i - 1);
             labels.add(original.getColumnLabel(i));
             int nullable;
             try {
@@ -82,6 +87,7 @@ public final class JDBCResultSetMetaDataSnapshot {
             if (nullable < ResultSetMetaData.columnNoNulls || nullable > ResultSetMetaData.columnNullableUnknown) {
                 nullable = ResultSetMetaData.columnNullableUnknown;
             }
+            JDBCColumnMetaData column = (JDBCColumnMetaData) attributes.get(i - 1);
             columns.add(new Column(
                 column.getLabel(), column.getName(), column.getEntityName(), column.getSchemaName(),
                 column.getCatalogName(), column.getTypeID(), column.getTypeName(), nullable,
@@ -127,7 +133,8 @@ public final class JDBCResultSetMetaDataSnapshot {
     }
 
     private record Column(
-        String label, String name, String table, String schema, String catalog, int type, String typeName,
+        @NotNull String label, @NotNull String name, @Nullable String table, @Nullable String schema,
+        @Nullable String catalog, int type, @NotNull String typeName,
         int nullable, boolean autoIncrement, boolean writable, int displaySize, int precision, int scale
     ) {
     }
@@ -140,6 +147,7 @@ public final class JDBCResultSetMetaDataSnapshot {
             this.columns = columns;
         }
 
+        @NotNull
         private Column column(int index) throws SQLException {
             if (index < 1 || index > columns.size()) {
                 throw new SQLException("Invalid column index: " + index);

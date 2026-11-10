@@ -47,13 +47,11 @@ public class JDBCResultSetMetaDataImpl implements JDBCResultSetMetaData
     protected List<DBCAttributeMetaData> columns = new ArrayList<>();
     protected Map<String, JDBCTableMetaData> tables = new HashMap<>();
 
-    public JDBCResultSetMetaDataImpl(JDBCResultSet resultSet)
-        throws SQLException
-    {
+    public JDBCResultSetMetaDataImpl(@NotNull JDBCResultSet resultSet) throws SQLException {
         this(resultSet, resultSet.getOriginal().getMetaData());
     }
 
-    public JDBCResultSetMetaDataImpl(JDBCResultSet resultSet, ResultSetMetaData original) throws SQLException {
+    public JDBCResultSetMetaDataImpl(@NotNull JDBCResultSet resultSet, @NotNull ResultSetMetaData original) throws SQLException {
         this.resultSet = resultSet;
         this.session = resultSet.getSession();
         this.statement = resultSet.getSourceStatement();
@@ -85,8 +83,7 @@ public class JDBCResultSetMetaDataImpl implements JDBCResultSetMetaData
     }
 
     @Nullable
-    public JDBCResultSet getResultSet()
-    {
+    public JDBCResultSet getResultSet() {
         return resultSet;
     }
 
@@ -100,8 +97,8 @@ public class JDBCResultSetMetaDataImpl implements JDBCResultSetMetaData
         return statement;
     }
 
-    public ResultSetMetaData getOriginal()
-    {
+    @NotNull
+    public ResultSetMetaData getOriginal() {
         return original;
     }
 

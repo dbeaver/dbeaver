@@ -60,8 +60,8 @@ public interface JDBCFactory {
         boolean disableLogging
     ) throws SQLException;
 
-    JDBCResultSetMetaData createResultSetMetaData(@NotNull JDBCResultSet resultSet)
-        throws SQLException;
+    @NotNull
+    JDBCResultSetMetaData createResultSetMetaData(@NotNull JDBCResultSet resultSet) throws SQLException;
 
     /**
      * Create metadata for the actual result set from a {@link JDBCResultSetMetaDataSnapshot}, preserving
@@ -69,6 +69,7 @@ public interface JDBCFactory {
      * Used when {@link DBPDataSource#FEATURE_JDBC_TABLE_READ_REQUIRES_PREPARED_COLUMN_METADATA}
      * is requested; {@code original} is {@link JDBCResultSetMetaDataSnapshot#toMetaData()}.
      */
+    @NotNull
     JDBCResultSetMetaData createResultSetMetaData(
         @NotNull JDBCResultSet resultSet,
         @NotNull ResultSetMetaData original
@@ -80,6 +81,7 @@ public interface JDBCFactory {
      * the resolved columns when the caller requests
      * {@link DBPDataSource#FEATURE_JDBC_TABLE_READ_REQUIRES_PREPARED_COLUMN_METADATA}.
      */
+    @NotNull
     JDBCResultSetMetaData createResultSetMetaData(
         @NotNull JDBCSession session,
         @NotNull JDBCStatement statement,

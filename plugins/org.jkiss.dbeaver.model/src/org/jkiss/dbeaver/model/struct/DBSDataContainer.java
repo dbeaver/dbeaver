@@ -89,8 +89,8 @@ public interface DBSDataContainer extends DBSObject {
         long firstRow,
         long maxRows,
         long flags,
-        int fetchSize)
-        throws DBException;
+        int fetchSize
+    ) throws DBException;
 
     /**
      * Read data with optional advance preparation of result column metadata.

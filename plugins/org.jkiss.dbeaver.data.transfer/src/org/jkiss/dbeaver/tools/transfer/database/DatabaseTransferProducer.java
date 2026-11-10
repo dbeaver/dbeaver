@@ -216,9 +216,9 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
             boolean forceDataReadTransactions
                 = Boolean.TRUE.equals(dataSource.getDataSourceFeature(DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS));
             boolean selectiveExportFromUI = useFetchedRows != null;
-            boolean extractInSegments = useFetchedRows == null &&
+            final boolean extractInSegments = useFetchedRows == null &&
                 settings.getExtractType() == DatabaseProducerSettings.ExtractType.SEGMENTS;
-            boolean prepareColumnMetadata = !selectiveExportFromUI && settings.getFetchSize() > 0
+            final boolean prepareColumnMetadata = !selectiveExportFromUI && settings.getFetchSize() > 0
                 && consumer instanceof StreamTransferConsumer
                 && Boolean.TRUE.equals(dataSource.getDataSourceFeature(
                     DBPDataSource.FEATURE_JDBC_TABLE_READ_REQUIRES_PREPARED_COLUMN_METADATA));

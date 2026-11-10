@@ -76,6 +76,7 @@ public class JDBCFactoryDefault implements JDBCFactory {
         return new JDBCResultSetImpl(session, statement, original, disableLogging);
     }
 
+    @NotNull
     @Override
     public JDBCResultSetMetaData createResultSetMetaData(
         @NotNull JDBCResultSet resultSet
@@ -83,6 +84,7 @@ public class JDBCFactoryDefault implements JDBCFactory {
         return new JDBCResultSetMetaDataImpl(resultSet);
     }
 
+    @NotNull
     @Override
     public JDBCResultSetMetaData createResultSetMetaData(
         @NotNull JDBCResultSet resultSet,
@@ -91,6 +93,7 @@ public class JDBCFactoryDefault implements JDBCFactory {
         return new JDBCResultSetMetaDataImpl(resultSet, original);
     }
 
+    @NotNull
     @Override
     public JDBCResultSetMetaData createResultSetMetaData(
         @NotNull JDBCSession session,

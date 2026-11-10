@@ -21,8 +21,8 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaDataSnapshot;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaDataSnapshot;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.AbstractResultSet;
@@ -216,9 +216,7 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
 
     @NotNull
     @Override
-    public JDBCResultSetMetaData getMeta()
-        throws DBCException
-    {
+    public JDBCResultSetMetaData getMeta() throws DBCException {
         if (metaData == null) {
             try {
                 if (metaDataSnapshot != null) {
