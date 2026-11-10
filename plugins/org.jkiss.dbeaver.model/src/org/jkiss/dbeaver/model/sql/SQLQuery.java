@@ -59,6 +59,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -93,8 +94,7 @@ public class SQLQuery implements SQLScriptElement {
     );
     private static final Set<String> UPDATE_DELETE_DANGER_KEYWORDS = Set.of(
         SQLConstants.KEYWORD_UPDATE,
-        SQLConstants.KEYWORD_DELETE,
-        SQLConstants.KEYWORD_WITH
+        SQLConstants.KEYWORD_DELETE
     );
 
     @Nullable
@@ -720,13 +720,21 @@ public class SQLQuery implements SQLScriptElement {
         this.hasVariableKeyword = hasVariableKeyword;
     }
 
+    /**
+     * Returns the first keyword of the statement, or {@code null} when it is unknown.
+     * It is only a hint used to skip expensive safety checks; unknown values must never skip them.
+     */
     @Nullable
     public String getFirstKeyword() {
         return firstKeyword;
     }
 
+    /**
+     * Sets the first keyword hint. When the current text is still the baseline text, the hint is also
+     * remembered as the original one so that {@link #reset()} can restore it.
+     */
     public void setFirstKeyword(@Nullable String firstKeyword) {
-        this.firstKeyword = firstKeyword == null ? null : firstKeyword.toUpperCase(java.util.Locale.ENGLISH);
+        this.firstKeyword = firstKeyword == null ? null : firstKeyword.toUpperCase(Locale.ENGLISH);
         if (text.equals(originalText)) {
             // The parser sets the hint right after creating a query, when current text is the baseline.
             this.originalFirstKeyword = this.firstKeyword;

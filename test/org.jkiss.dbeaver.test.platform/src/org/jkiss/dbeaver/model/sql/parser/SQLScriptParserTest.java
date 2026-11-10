@@ -935,6 +935,31 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void parsedWithDeleteKeepsWithKeywordAndStaysDangerous() throws DBException {
+        String script = """
+            WITH deleted AS (SELECT id FROM test_table)
+            DELETE FROM other_table;
+            """;
+        SQLParserContext context = createParserContext(setDialect(POSTGRESQL_DIALECT_NAME), script);
+        List<SQLQuery> queries = SQLScriptParser.extractScriptQueries(
+            context,
+            0,
+            context.getDocument().getLength(),
+            true,
+            false,
+            false
+        ).stream()
+            .filter(SQLQuery.class::isInstance)
+            .map(SQLQuery.class::cast)
+            .toList();
+
+        Assertions.assertEquals(1, queries.size());
+        Assertions.assertEquals("WITH", queries.get(0).getFirstKeyword());
+        Assertions.assertTrue(queries.get(0).mayBeDDLStatement());
+        Assertions.assertTrue(queries.get(0).isDeleteUpdateDangerous());
+    }
+
+    @Test
     public void smartModeExtendedQueryKeepsFirstKeyword() throws DBException {
         String query = """
             select *

@@ -145,6 +145,35 @@ public class SQLQueryDangerousDetectionTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void dropAfterBlockCommentShouldStillBeDangerous() {
+        var query = new SQLQuery(null, "/* nightly maintenance */ DROP TABLE users");
+        query.setFirstKeyword("DROP");
+
+        Assertions.assertTrue(query.mayBeDDLStatement());
+        Assertions.assertTrue(query.isDropDangerous());
+    }
+
+    @Test
+    public void changingTextToDangerousDeleteShouldInvalidateKeywordHint() {
+        var query = new SQLQuery(null, "SELECT * FROM table");
+        query.setFirstKeyword("SELECT");
+        Assertions.assertFalse(query.isDeleteUpdateDangerous());
+
+        query.setText("DELETE FROM table");
+        Assertions.assertNull(query.getFirstKeyword());
+        Assertions.assertTrue(query.isDeleteUpdateDangerous());
+    }
+
+    @Test
+    public void withDeleteShouldBeDangerous() {
+        var query = new SQLQuery(null, "WITH deleted AS (SELECT id FROM table) DELETE FROM other_table");
+        query.setFirstKeyword("WITH");
+
+        Assertions.assertTrue(query.mayBeDDLStatement());
+        Assertions.assertTrue(query.isDeleteUpdateDangerous());
+    }
+
+    @Test
     public void dropTableStatementShouldReturnTableDropType() {
         // given
         var query = new SQLQuery(null, "DROP table users");
