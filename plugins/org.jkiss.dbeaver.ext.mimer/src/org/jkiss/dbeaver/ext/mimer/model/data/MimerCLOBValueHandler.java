@@ -75,7 +75,14 @@ public class MimerCLOBValueHandler extends JDBCContentValueHandler {
     ) throws DBCException, SQLException {
         Reader reader = resultSet.getCharacterStream(index);
         if (reader == null) {
-            return getValueFromObject(session, type, null, false, false);
+            // Not getValueFromObject(session, type, null, false, false) - that switches on
+            // type.getTypeID(), which for a NATIONAL CHAR LARGE OBJECT column can still be the
+            // driver's bogus vendor code rather than Types.NCLOB (see
+            // MimerValueHandlerProvider's javadoc), and would silently fall back to a binary
+            // JDBCContentBytes wrapper instead of a CLOB one. This handler already knows the
+            // column is a CLOB - construct the empty wrapper directly instead of redispatching
+            // on an identifier that isn't reliable here.
+            return new MimerContentCLOB(session.getExecutionContext());
         }
         try {
             return spoolToContent(session, reader);

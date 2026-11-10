@@ -143,6 +143,21 @@ public class MimerBLOBValueHandlerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void nullValueStaysABlobWrapperEvenWhenTheTypeIdIsNotReliable() throws Exception {
+        // MimerValueHandlerProvider's type-name fallback can dispatch here with a type ID that
+        // isn't Types.BLOB (the driver's own vendor code for a national LOB variant) - the null
+        // branch must not redispatch on that ID, or it would silently come back as a binary
+        // JDBCContentBytes wrapper instead.
+        Mockito.when(type.getTypeID()).thenReturn(-10);
+        Mockito.when(resultSet.getBinaryStream(1)).thenReturn(null);
+
+        DBDContent result = (DBDContent) MimerBLOBValueHandler.INSTANCE.fetchValueObject(session, resultSet, type, 0);
+
+        Assertions.assertInstanceOf(JDBCContentBLOB.class, result);
+        Assertions.assertTrue(result.isNull());
+    }
+
+    @Test
     public void noTempFileIsLeftBehindWhenSomethingGoesWrongWhileSpillingToDisk() throws Exception {
         // Past MEMORY_CONTENT_MAX_SIZE so fetchColumnValue has already committed to the
         // temp-file branch before the stream fails - exactly the case the Throwable catch

@@ -139,6 +139,21 @@ public class MimerCLOBValueHandlerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void nullValueStaysAClobWrapperEvenWhenTheTypeIdIsNotReliable() throws Exception {
+        // MimerValueHandlerProvider's type-name fallback can dispatch here with a type ID that
+        // isn't Types.CLOB/NCLOB (the driver's own vendor code for NATIONAL CHAR LARGE OBJECT) -
+        // the null branch must not redispatch on that ID, or it would silently come back as a
+        // binary JDBCContentBytes wrapper instead.
+        Mockito.when(type.getTypeID()).thenReturn(-10);
+        Mockito.when(resultSet.getCharacterStream(1)).thenReturn(null);
+
+        DBDContent result = (DBDContent) MimerCLOBValueHandler.INSTANCE.fetchValueObject(session, resultSet, type, 0);
+
+        Assertions.assertInstanceOf(JDBCContentCLOB.class, result);
+        Assertions.assertTrue(result.isNull());
+    }
+
+    @Test
     public void displayStringShowsSizeOnceSpilledToATempFileInsteadOfStayingInMemory() throws Exception {
         // See MimerBLOBValueHandlerTest's identical test for why a plain DBDContentStorage mock
         // (not a DBDContentCached) stands in for a real spilled TemporaryContentStorage here.

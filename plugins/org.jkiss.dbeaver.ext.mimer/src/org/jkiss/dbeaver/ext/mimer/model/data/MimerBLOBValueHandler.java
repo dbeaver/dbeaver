@@ -78,7 +78,11 @@ public class MimerBLOBValueHandler extends JDBCContentValueHandler {
     ) throws DBCException, SQLException {
         InputStream stream = resultSet.getBinaryStream(index);
         if (stream == null) {
-            return getValueFromObject(session, type, null, false, false);
+            // See MimerCLOBValueHandler's identical branch for why this constructs the empty
+            // wrapper directly instead of calling getValueFromObject(session, type, null, false,
+            // false) - that redispatches on type.getTypeID(), which isn't reliable for every
+            // Mimer LOB type name.
+            return new MimerContentBLOB(session.getExecutionContext());
         }
         try {
             return spoolToContent(session, stream);
