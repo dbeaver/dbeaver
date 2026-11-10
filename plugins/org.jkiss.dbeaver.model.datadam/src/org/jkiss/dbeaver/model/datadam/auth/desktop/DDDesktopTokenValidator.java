@@ -64,6 +64,10 @@ public class DDDesktopTokenValidator {
         }
     }
 
+    public boolean matchesIssuer(@NotNull DDDesktopUserToken token) {
+        return DDEndpoints.getSsoBaseUrl().equals(token.issuer());
+    }
+
     private boolean matchesEndpoint(@NotNull DDDesktopUserToken token, @NotNull URI resource) {
         URI requestedOrigin = originOf(resource);
         String path = normalizedPath(resource);

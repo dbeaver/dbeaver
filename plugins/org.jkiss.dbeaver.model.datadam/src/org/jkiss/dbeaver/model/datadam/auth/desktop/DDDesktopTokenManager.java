@@ -26,6 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoClient;
 import org.jkiss.dbeaver.model.datadam.auth.DDDesktopSsoLogin;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -96,8 +97,8 @@ class DDDesktopTokenManager {
         }
         log.debug("Loading DataDam desktop token");
         DDDesktopUserToken saved = store.load();
-        if (saved != null && !validator.matchesResource(saved, resource)) {
-            log.debug("Saved DataDam desktop token does not match the requested endpoint");
+        if (saved != null && (!validator.matchesResource(saved, resource) || !validator.matchesIssuer(saved))) {
+            log.debug("Saved DataDam desktop token does not match the configured endpoints");
             saved = null;
         }
         if (saved == null) {
@@ -146,7 +147,7 @@ class DDDesktopTokenManager {
             throw new DBException("DataDam authorization cannot be refreshed. Sign in again");
         }
         log.debug("Refreshing DataDam desktop token");
-        try (DDDesktopSsoClient client = new DDDesktopSsoClient(URI.create(current.issuer()))) {
+        try (DDDesktopSsoClient client = new DDDesktopSsoClient(URI.create(DDEndpoints.getSsoBaseUrl()))) {
             var response = client.refresh(refreshToken, DDSsoScopes.format(current.scopes()));
             DDDesktopUserToken rotated = new DDDesktopUserToken(
                 response.accessToken(), current.issuer(), current.endpoints(), current.scopes(), response.refreshToken());
@@ -179,7 +180,10 @@ class DDDesktopTokenManager {
     ) throws DBException, InterruptedException {
         log.debug("Signing in to DataDam desktop access");
         var config = discover(accountUrl);
-        var result = login.login(URI.create(config.issuer()), null,
+        if (!DDEndpoints.getSsoBaseUrl().equals(config.issuer())) {
+            throw new DBException("DataDam SSO issuer does not match the configured endpoint");
+        }
+        var result = login.login(URI.create(DDEndpoints.getSsoBaseUrl()), null,
             Set.of(DDSsoConstants.SCOPE_ACCOUNT_FULL_ACCESS, DDSsoConstants.SCOPE_DBEAVER_STORAGE_FULL_ACCESS,
                 DDSsoConstants.SCOPE_MCP_CONNECT), monitor, browser);
         DDDesktopUserToken saved = new DDDesktopUserToken(
@@ -221,10 +225,12 @@ class DDDesktopTokenManager {
             if (refreshToken == null) {
                 return;
             }
-            String issuer = previous.issuer();
+            if (!DDEndpoints.getSsoBaseUrl().equals(previous.issuer())) {
+                return;
+            }
             Job.createSystem(
                 "Revoke DataDam desktop token", monitor -> {
-                    try (DDDesktopSsoClient client = new DDDesktopSsoClient(URI.create(issuer))) {
+                    try (DDDesktopSsoClient client = new DDDesktopSsoClient(URI.create(DDEndpoints.getSsoBaseUrl()))) {
                         client.revoke(refreshToken);
                     } catch (Exception e) {
                         log.warn("DataDam credentials cleared locally, but server revocation could not be confirmed", e);
