@@ -148,6 +148,8 @@ public class PostgreStructureAssistant implements DBSStructureAssistant<PostgreE
         }
 
         if (executionContext.getDefaultCatalog() != database) {
+            // A database selected as the search scope may not have been opened in the navigator yet.
+            database.checkInstanceConnection(monitor);
             executionContext = database.getMetaContext();
         }
 
