@@ -213,7 +213,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
             boolean newConnection = settings.isOpenNewConnections() && !getDatabaseObject().getDataSource().getContainer().getDriver()
                 .isEmbedded();
-            boolean forceDataReadTransactions
+            final boolean forceDataReadTransactions
                 = Boolean.TRUE.equals(dataSource.getDataSourceFeature(DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS));
             boolean selectiveExportFromUI = useFetchedRows != null;
             final boolean extractInSegments = useFetchedRows == null &&
