@@ -593,7 +593,9 @@ public class OpenAiConfigurator<ENGINE extends AIEngineDescriptor, PROPERTIES ex
                     if (!popupCompletion.complete(null)) {
                         return org.eclipse.core.runtime.Status.CANCEL_STATUS;
                     }
-                    targetProperties.setAccountAuthentication(true);
+                    if (DBWorkbench.isDistributed() && !targetProperties.isGlobal()) {
+                        targetProperties.setAccountAuthentication(true);
+                    }
                     targetProperties.setAccountTokens(tokens);
                     DBException persistenceError = saveAccountTokens(targetProperties);
                     UIUtils.asyncExec(() -> {

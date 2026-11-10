@@ -178,7 +178,9 @@ public class AIPreferencePageEngines extends AbstractPrefPage implements IWorkbe
             table.setLayoutData(gridData);
 
             createProfilesColumns();
-            table.addListener(SWT.Resize, event -> packProfilesColumns());
+            if (DBWorkbench.isDistributed()) {
+                table.addListener(SWT.Resize, event -> packProfilesColumns());
+            }
             reloadEngines();
 
             Composite buttonsPanel = UIUtils.createComposite(profilesPanel, 1);
