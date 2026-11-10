@@ -33,6 +33,7 @@ import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Timestamp;
 
 public class OraclePackageCacheTest extends DBeaverUnitTest {
@@ -124,5 +125,31 @@ public class OraclePackageCacheTest extends DBeaverUnitTest {
             Assertions.assertNull(pack.getBodyLastDDLTime(null));
             dbUtils.verifyNoInteractions();
         }
+    }
+
+    @Test
+    public void failedBodyDdlTimeLoadIsRetriedOnNextRead() throws Exception {
+        ResultSet packageRow = Mockito.mock(ResultSet.class);
+        Mockito.when(packageRow.getString("OBJECT_NAME")).thenReturn("TEST_PACKAGE");
+        Mockito.when(packageRow.getString("STATUS")).thenReturn("VALID");
+
+        OraclePackage pack = new OraclePackage(schema, packageRow);
+
+        JDBCSession session = Mockito.mock(JDBCSession.class);
+        JDBCPreparedStatement statement = Mockito.mock(JDBCPreparedStatement.class);
+        Mockito.when(session.prepareStatement(Mockito.anyString())).thenThrow(new SQLException("metadata is unavailable"));
+
+        try (MockedStatic<DBUtils> dbUtils = Mockito.mockStatic(
+            DBUtils.class, Mockito.withSettings().mockMaker("mock-maker-inline"))
+        ) {
+            dbUtils.when(() -> DBUtils.openMetaSession(monitor, pack, "Load package body DDL time"))
+                .thenReturn(session);
+
+            Assertions.assertThrows(DBException.class, () -> pack.getBodyLastDDLTime(monitor));
+            // A failed load must not be remembered as completed, otherwise the value would never be loaded again.
+            Assertions.assertThrows(DBException.class, () -> pack.getBodyLastDDLTime(monitor));
+        }
+
+        Mockito.verify(session, Mockito.times(2)).prepareStatement(Mockito.anyString());
     }
 }

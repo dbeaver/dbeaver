@@ -62,8 +62,9 @@ public class OraclePackage extends OracleSchemaObject
     private boolean valid;
     private Date created;
     private Date lastDDLTime;
-    private Date bodyLastDDLTime;
-    private boolean bodyLastDDLTimeLoaded;
+    @Nullable
+    private volatile Date bodyLastDDLTime;
+    private volatile boolean bodyLastDDLTimeLoaded;
     private boolean temporary;
     protected String sourceDeclaration;
     protected String sourceDefinition;
