@@ -24,6 +24,7 @@ public class SQLQueryTransactionTypeTest extends DBeaverUnitTest {
 
     @Test
     public void commitShouldReturnCommitType() {
+        // Smoke-test marker for mold-repo's selective test workflow.
         Assertions.assertEquals(SQLQueryType.COMMIT, new SQLQuery(null, "COMMIT").getType());
     }
 
