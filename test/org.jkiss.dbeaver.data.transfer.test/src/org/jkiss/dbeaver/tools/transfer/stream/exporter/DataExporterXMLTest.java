@@ -26,10 +26,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Answers;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.IntStream;
 
 public class DataExporterXMLTest {
@@ -123,6 +125,24 @@ public class DataExporterXMLTest {
     @Test
     public void elementNamesStartingWithNonAsciiDigitGetUnderscorePrefix() throws DBException, IOException {
         Assertions.assertEquals("    <_２０２６年>value</_２０２６年>", exportWithNames("t", "２０２６年").get(3));
+    }
+
+    @Test
+    public void doctypeUsesTheElementNamesOfTheRows() throws DBException, IOException {
+        StringWriter writer = new StringWriter();
+        IStreamDataExporterSite site = ExporterTestsUtils.getIStreamDataExporterSiteMock("顧客", "名前", writer, outputEncoding);
+        Mockito.when(site.getProperties()).thenReturn(Map.of("includeDoctype", true));
+        Mockito.when(site.getAttributes()[0].getLabel()).thenReturn("氏名");
+        DataExporterXML xmlExporter = new DataExporterXML();
+        xmlExporter.init(site);
+        xmlExporter.exportHeader(session);
+        xmlExporter.exportRow(session, resultSet, new Object[]{"value"});
+        xmlExporter.exportFooter(null);
+
+        List<String> output = writer.toString().lines().toList();
+        Assertions.assertTrue(output.contains("  <!ELEMENT DATA_RECORD (名前?)+>"), writer.toString());
+        Assertions.assertTrue(output.contains("  <!ELEMENT 名前 (#PCDATA)>"), writer.toString());
+        Assertions.assertTrue(output.contains("    <名前>value</名前>"), writer.toString());
     }
 
     @BeforeEach

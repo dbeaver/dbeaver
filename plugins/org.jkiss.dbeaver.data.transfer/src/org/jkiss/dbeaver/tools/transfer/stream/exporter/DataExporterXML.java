@@ -72,11 +72,8 @@ public class DataExporterXML extends StreamExporterAbstract {
             out.write("  <!ELEMENT DATA_RECORD (");
             int columnsSize = columns.length;
             for (int i = 0; i < columnsSize; i++) {
-                String colName = columns[i].getLabel();
-                if (CommonUtils.isEmpty(colName)) {
-                    colName = columns[i].getName();
-                }
-                out.write(DTUtils.escapeXmlElementName(colName, outputEncoding) + "?");
+                // The same name as the element declarations below and the rows use
+                out.write(DTUtils.escapeXmlElementName(columns[i].getName(), outputEncoding) + "?");
                 if (i < columnsSize - 1) {
                     out.write(",");
                 }
