@@ -252,7 +252,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
             switch (event.getProperty()) {
                 case SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION:
                     assistant.enableAutoActivation(
-                        SQLEditorUtils.isSQLSyntaxParserApplied(editor.getEditorInput())
+                        SQLEditorUtils.isSQLSyntaxParserApplied(editor)
                         && configStore.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION)
                     );
                     break;
@@ -275,7 +275,10 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
     }
 
     private void configureContentAssistant(DBPPreferenceStore store, SQLContentAssistant assistant) {
-        assistant.enableAutoActivation(store.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION));
+        assistant.enableAutoActivation(
+            SQLEditorUtils.isSQLSyntaxParserApplied(editor)
+            && store.getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION)
+        );
         assistant.setAutoActivationDelay(store.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
     }
@@ -339,7 +342,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         // Add a "damager-repairer" for changes within one-line SQL comments.
         addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_COMMENT, ThemeConstants.SQL_EDITOR_COLOR_COMMENT);
         SQLEditorBase sqlEditor = this.getSQLEditor();
-        if (SQLEditorUtils.isSQLSyntaxParserApplied(sqlEditor.getEditorInput())) {
+        if (SQLEditorUtils.isSQLSyntaxParserApplied(sqlEditor)) {
             // Add a "damager-repairer" for changes within string literals.
             addContentTypeDamageRepairer(reconciler, SQLParserPartitions.CONTENT_TYPE_SQL_STRING);
             if (sqlEditor.isAdvancedHighlightingEnabled()) {

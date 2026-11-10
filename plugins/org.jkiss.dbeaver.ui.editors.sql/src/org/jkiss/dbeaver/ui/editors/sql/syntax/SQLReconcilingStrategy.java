@@ -203,6 +203,11 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         if (resource == null || annotationModel == null) {
             return;
         }
+        if (!SQLEditorUtils.isSQLSyntaxParserApplied(editor)) {
+            // Folding is not available for this document (for instance a large script), so there is no
+            // folded state to save. Keep the previously persisted state instead of erasing it.
+            return;
+        }
         StringJoiner stringJoiner = new StringJoiner(";");
         for (SQLScriptElementImpl position : cache) {
             ProjectionAnnotation annotation = position.getAnnotation();

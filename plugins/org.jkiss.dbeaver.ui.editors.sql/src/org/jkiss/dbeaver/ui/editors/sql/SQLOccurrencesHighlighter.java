@@ -54,6 +54,10 @@ class SQLOccurrencesHighlighter {
     private Annotation[] occurrenceAnnotations = null;
     private boolean markOccurrencesUnderCursor;
     private boolean markOccurrencesForSelection;
+    /**
+     * Set when occurrences were uninstalled only because the document became too large.
+     */
+    private boolean suspendedForBigDocument;
     private OccurrencesFinderJob occurrencesFinderJob;
     private OccurrencesFinderJobCanceler occurrencesFinderJobCanceler;
 
@@ -205,6 +209,12 @@ class SQLOccurrencesHighlighter {
         return this.markOccurrencesUnderCursor;
     }
 
+    private boolean shouldMarkOccurrences() {
+        DBPPreferenceStore prefStore = editor.getActivePreferenceStore();
+        return prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR)
+            || prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
+    }
+
     private void setMarkingOccurrences(boolean markUnderCursor, boolean markSelection) {
         if (markUnderCursor != this.markOccurrencesUnderCursor || markSelection != this.markOccurrencesForSelection) {
             this.markOccurrencesUnderCursor = markUnderCursor;
@@ -226,8 +236,12 @@ class SQLOccurrencesHighlighter {
 
     void updateInput(IEditorInput input) {
         if (!SQLEditorUtils.isSQLSyntaxParserApplied(editor, input)) {
+            // Remember whether occurrences were suspended just because of the large document size,
+            // so they can be restored if the document shrinks again.
+            this.suspendedForBigDocument = editor.isBigDocument();
             uninstallOccurrencesFinder();
         } else {
+            this.suspendedForBigDocument = false;
             final DBPPreferenceStore prefStore = editor.getActivePreferenceStore();
             setMarkingOccurrences(
                 prefStore.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
@@ -265,6 +279,11 @@ class SQLOccurrencesHighlighter {
         }
 
         public void selectionChanged(SelectionChangedEvent event) {
+            // The highlighter is uninstalled while the document is large. Re-evaluate on user activity so
+            // occurrences come back when the document shrinks below the large-document threshold.
+            if (suspendedForBigDocument && shouldMarkOccurrences() && !editor.isBigDocument()) {
+                updateInput(editor.getEditorInput());
+            }
             ISelection selection = event.getSelection();
             if (selection instanceof ITextSelection) {
                 SQLOccurrencesHighlighter.this.updateOccurrenceAnnotations((ITextSelection) selection);

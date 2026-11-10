@@ -410,13 +410,18 @@ public class SQLBackgroundParsingJob {
      */
     @NotNull
     public SQLQueryCompletionContext obtainCompletionContext(DBRProgressMonitor monitor, @NotNull Position completionRequestPosition) {
-        if (!this.editor.isAdvancedHighlightingEnabled()
-            || !SQLEditorUtils.isSQLSyntaxParserApplied(this.editor)) {
+        if (!isParserRunning()) {
             // The parser is not running for this editor, so there is no parse future to wait for.
             return SQLQueryCompletionContext.prepareEmpty(0, completionRequestPosition.getOffset());
         }
         CompletableFuture<?> lastAwaitedFuture = null;
         do {
+            if (!isParserRunning()) {
+                // The document may have crossed the large-document threshold (or the parser was disabled)
+                // while this request was waiting for the parsing result. In that case the scheduled parse
+                // is dropped and the awaited future never completes.
+                return SQLQueryCompletionContext.prepareEmpty(0, completionRequestPosition.getOffset());
+            }
             CompletableFuture<?> futureToAwait = null;
             synchronized (this.syncRoot) {
                 if (completionRequestPosition.isDeleted()) {
@@ -469,6 +474,16 @@ public class SQLBackgroundParsingJob {
             }
         } while (!completionRequestPosition.isDeleted());
         return SQLQueryCompletionContext.prepareEmpty(0, completionRequestPosition.getOffset());
+    }
+
+    /**
+     * Checks whether the background parser is actually running for this editor.
+     * It is disabled for large documents and when the SQL syntax parser is not applied.
+     */
+    private boolean isParserRunning() {
+        return this.editor.getRuleManager() != null
+            && this.editor.isAdvancedHighlightingEnabled()
+            && SQLEditorUtils.isSQLSyntaxParserApplied(this.editor);
     }
 
     // Caller holds syncRoot.
