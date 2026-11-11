@@ -19,6 +19,13 @@ package org.jkiss.dbeaver.ui.ai.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class AIUIMessages extends NLS {
+    public static String ai_connection_settings_group;
+    public static String ai_connection_settings_enable_label;
+    public static String ai_connection_settings_enable_tip;
+    public static String ai_connection_settings_scope_label;
+    public static String ai_connection_settings_scope_tip;
+    public static String ai_connection_settings_custom_scope_label;
+    public static String ai_connection_settings_custom_scope_tip;
     public static String ollama_preference_page_hostname;
     public static String ollama_preference_page_hostname_required;
     public static String ollama_preference_page_temperature;
