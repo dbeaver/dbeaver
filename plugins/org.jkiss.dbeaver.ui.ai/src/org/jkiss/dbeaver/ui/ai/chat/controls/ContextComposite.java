@@ -386,6 +386,7 @@ public class ContextComposite extends Composite {
                     container == null ? DBWorkbench.getPlatform().getWorkspace().getActiveProject() : container.getProject(),
                     container
                 );
+                dialog.setModeless(true);
                 if (dialog.open() == Window.OK) {
                     try {
                         chat.setDataSource(dialog.getDataSource());
