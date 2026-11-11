@@ -58,22 +58,6 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
     }
 
     @NotNull
-    public DDSsoConfigResponse discover() throws DBException {
-        try {
-            DDSsoConfigResponse config = executeGetRequest(
-                CommonUtils.removeLeadingSlash(DDSsoConstants.APPLICATION_CONFIG_PATH), DDSsoConfigResponse.class);
-            if (config == null || config.issuer() == null) {
-                throw new DBException("Invalid desktop SSO configuration");
-            }
-            URI issuer = URI.create(config.issuer());
-            requireSecureServer(issuer);
-            return config;
-        } catch (IllegalArgumentException e) {
-            throw new DBException("Invalid desktop SSO configuration", e);
-        }
-    }
-
-    @NotNull
     URI authorizationUrl(
         @NotNull String redirectUri, @NotNull String state, @NotNull String challenge, @Nullable String resource, @NotNull String scope
     ) throws DBException {
