@@ -437,9 +437,9 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
             driverSubstitutionCombo = UIUtils.createLabelCombo(
                 substitutionGroup,
-                "Driver type",
+                UIConnectionMessages.dialog_connection_driver_type,
                 NLS.bind(
-                    "Replaces the current driver ({0}) with the selected one.\nProvides all functionality of the original driver but driven by the substituting driver.",
+                    UIConnectionMessages.dialog_connection_driver_type_tip,
                     site.getActiveDataSource().getDriver().getFullName()
                 ),
                 SWT.DROP_DOWN | SWT.READ_ONLY
