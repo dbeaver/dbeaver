@@ -504,17 +504,16 @@
                         threadSafe="false"
                         categories="sql,embedded">
                     <replace provider="generic" driver="mimer"/>
-                    <!-- Was repo:/drivers/mimer/mimjdbc3.jar - DBeaver's own hosted copy, an
-                         orphaned, long-stale build (driver 3.28) that predates BUILTIN.UUID
-                         support (added in driver 3.39) and is what caused UUID columns to
-                         render as raw binary. com.mimer.jdbc:mimjdbc is
-                         genuinely published on Maven Central (search.maven.org's own search
-                         index lags behind the real repository content and wrongly suggests it
-                         isn't - resolve directly via `mvn dependency:resolve`, not the search
-                         UI) - RELEASE picks up new Mimer SQL driver releases automatically; the
-                         bracketed value is only DBeaver's fallback if RELEASE resolution itself
-                         fails. -->
-                    <file type="jar" path="maven:/com.mimer.jdbc:mimjdbc:RELEASE[11.0.4]"/>
+                    <!-- Was repo:/drivers/mimer/mimjdbc3.jar - DBeaver's own stale hosted copy
+                         (driver 3.28, predates BUILTIN.UUID support). com.mimer.jdbc:mimjdbc is
+                         genuinely on Maven Central (resolve via `mvn dependency:resolve`, not
+                         search.maven.org, which lags behind).
+                         No [x.y.z] version pin here, deliberately - that bypasses RELEASE
+                         resolution and sticks to that exact version forever. Plain RELEASE lets
+                         a new driver release reach existing installs without a new DBeaver
+                         release, at the cost of a live Maven Central lookup on first use each
+                         session - with no offline fallback if that lookup fails. -->
+                    <file type="jar" path="maven:/com.mimer.jdbc:mimjdbc:RELEASE"/>
                     <parameter name="split-procedures-and-functions" value="true"/>
                     <parameter name="supports-multi-insert" value="true"/>
                     <!-- Schemas are a separate, in-tree-browsed concept, never picked at
