@@ -61,7 +61,10 @@ class MimerContentBLOB extends JDBCContentBLOB {
     @Nullable
     @Override
     public String getDisplayString(@NotNull DBDDisplayFormat format) {
-        if (storage instanceof DBDContentCached) {
+        if (storage == null || storage instanceof DBDContentCached) {
+            // storage == null means this value is SQL NULL (blob is never set, see the
+            // constructor) - let the superclass report the NULL marker instead of treating it
+            // as a zero-length BLOB below.
             return super.getDisplayString(format);
         }
         try {
