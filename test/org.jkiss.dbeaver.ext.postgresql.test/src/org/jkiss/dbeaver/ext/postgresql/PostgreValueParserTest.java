@@ -16,11 +16,19 @@
  */
 package org.jkiss.dbeaver.ext.postgresql;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataTypeAttribute;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
 import org.jkiss.dbeaver.ext.postgresql.model.data.PostgreArrayValueHandler;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPDataSourceProviderDescriptor;
 import org.jkiss.dbeaver.model.data.DBDCollection;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
@@ -28,6 +36,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.NumberDataFormatter;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
+import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCComposite;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCNumberValueHandler;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterProfile;
@@ -73,6 +82,39 @@ public class PostgreValueParserTest extends DBeaverUnitTest {
     @Mock
     private PostgreDataType structItemType;
 
+    @Mock
+    private PostgreDataType compositeArrayType;
+
+    @Mock
+    private PostgreDataType outerCompositeType;
+
+    @Mock
+    private PostgreDataType innerCompositeType;
+
+    @Mock
+    private PostgreDataTypeAttribute outerFirstAttribute;
+
+    @Mock
+    private PostgreDataTypeAttribute outerSecondAttribute;
+
+    @Mock
+    private PostgreDataTypeAttribute innerFirstAttribute;
+
+    @Mock
+    private PostgreDataTypeAttribute innerSecondAttribute;
+
+    @Mock
+    private DBPDataSourceContainer container;
+
+    @Mock
+    private DBPDriver driver;
+
+    @Mock
+    private DBPDataSourceProviderDescriptor providerDescriptor;
+
+    @Mock
+    private PostgreServerExtension serverType;
+
     private NumberDataFormatter numberDataFormatter = new NumberDataFormatter();
     @Mock
     private DataFormatterProfile dataFormatterProfile = new DataFormatterProfile("test_profile", new TestPreferenceStore());
@@ -84,6 +126,102 @@ public class PostgreValueParserTest extends DBeaverUnitTest {
     public void setUp() throws Exception {
         numberDataFormatter.init(doubleItemType, Locale.ENGLISH, new HashMap<>());
         setupGeneralWhenMocks();
+    }
+
+    @Test
+    public void convertCompositeArrayStringPreservesDimensions() throws DBException {
+        setupCompositeArrayMocks();
+
+        // PostgreSQL text representation of a 3D array with a single recti element
+        String value = "{{{" + createArrayElement(13, 12, 13, 14) + "}}}";
+        Object[] outerArray = parseCompositeArray(value);
+
+        JDBCCollection secondDimension = Assertions.assertInstanceOf(JDBCCollection.class, outerArray[0]);
+        JDBCCollection thirdDimension = Assertions.assertInstanceOf(JDBCCollection.class, secondDimension.getItem(0));
+        assertRecti(thirdDimension.getItem(0), 13, 12, 13, 14);
+
+        Assertions.assertEquals(value, getArrayDisplayString(outerArray, DBDDisplayFormat.NATIVE));
+        Assertions.assertEquals("{{{\"((13,12),(13,14))\"}}}", getArrayDisplayString(outerArray, DBDDisplayFormat.UI));
+    }
+
+    @Test
+    public void editStringOfCompositeArrayCanBeParsedBack() throws DBException {
+        setupCompositeArrayMocks();
+
+        String nativeValue = "{{{" + createArrayElement(11, 12, 13, 14) + "}}}";
+        Object[] array = parseCompositeArray(nativeValue);
+
+        String editValue = getArrayDisplayString(array, DBDDisplayFormat.EDIT);
+        Assertions.assertEquals(nativeValue, editValue);
+
+        String editedValue = editValue.replace("(11,12)", "(15,12)");
+        Object[] editedArray = parseCompositeArray(editedValue);
+        JDBCCollection secondDimension = Assertions.assertInstanceOf(JDBCCollection.class, editedArray[0]);
+        JDBCCollection thirdDimension = Assertions.assertInstanceOf(JDBCCollection.class, secondDimension.getItem(0));
+
+        assertRecti(thirdDimension.getItem(0), 15, 12, 13, 14);
+        Assertions.assertEquals(
+            "{{{" + createArrayElement(15, 12, 13, 14) + "}}}",
+            getArrayDisplayString(editedArray, DBDDisplayFormat.NATIVE));
+    }
+
+    @Test
+    public void convertSingleDimensionCompositeArray() throws DBException {
+        setupCompositeArrayMocks();
+
+        String value = "{" + createArrayElement(11, 12, 13, 14) + "," + createArrayElement(21, 22, 23, 24) + "}";
+        Object[] array = parseCompositeArray(value);
+
+        Assertions.assertEquals(2, array.length);
+        assertRecti(array[0], 11, 12, 13, 14);
+        assertRecti(array[1], 21, 22, 23, 24);
+        Assertions.assertEquals(value, getArrayDisplayString(array, DBDDisplayFormat.NATIVE));
+    }
+
+    @Test
+    public void convertTwoDimensionalCompositeArrayPreservesAllElements() throws DBException {
+        setupCompositeArrayMocks();
+
+        String value = "{{"
+            + createArrayElement(11, 12, 13, 14) + "," + createArrayElement(21, 22, 23, 24)
+            + "},{"
+            + createArrayElement(31, 32, 33, 34) + "," + createArrayElement(41, 42, 43, 44)
+            + "}}";
+        Object[] array = parseCompositeArray(value);
+
+        Assertions.assertEquals(2, array.length);
+        JDBCCollection firstRow = Assertions.assertInstanceOf(JDBCCollection.class, array[0]);
+        JDBCCollection secondRow = Assertions.assertInstanceOf(JDBCCollection.class, array[1]);
+        Assertions.assertEquals(2, firstRow.getItemCount());
+        Assertions.assertEquals(2, secondRow.getItemCount());
+        assertRecti(firstRow.getItem(0), 11, 12, 13, 14);
+        assertRecti(firstRow.getItem(1), 21, 22, 23, 24);
+        assertRecti(secondRow.getItem(0), 31, 32, 33, 34);
+        assertRecti(secondRow.getItem(1), 41, 42, 43, 44);
+        Assertions.assertEquals(value, getArrayDisplayString(array, DBDDisplayFormat.NATIVE));
+    }
+
+    @Test
+    public void convertCompositeArrayWithNullElement() throws DBException {
+        setupCompositeArrayMocks();
+
+        String value = "{" + createArrayElement(11, 12, 13, 14) + ",NULL}";
+        Object[] array = parseCompositeArray(value);
+
+        Assertions.assertEquals(2, array.length);
+        assertRecti(array[0], 11, 12, 13, 14);
+        Assertions.assertTrue(Assertions.assertInstanceOf(JDBCComposite.class, array[1]).isNull());
+        Assertions.assertEquals(value, getArrayDisplayString(array, DBDDisplayFormat.NATIVE));
+    }
+
+    @Test
+    public void convertEmptyCompositeArray() throws DBException {
+        setupCompositeArrayMocks();
+
+        Object[] array = parseCompositeArray("{}");
+
+        Assertions.assertEquals(0, array.length);
+        Assertions.assertEquals("{}", getArrayDisplayString(array, DBDDisplayFormat.NATIVE));
     }
 
     @Test
@@ -295,6 +433,87 @@ public class PostgreValueParserTest extends DBeaverUnitTest {
             IllegalArgumentException.class,
             () -> PostgreValueParser.parsePrimitiveArray("{1},", Function.identity(), String[]::new),
             "Junk after closing right brace");
+    }
+
+    private void setupCompositeArrayMocks() throws DBException {
+        Mockito.when(session.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSource.getContainer()).thenReturn(container);
+        Mockito.when(container.getDriver()).thenReturn(driver);
+        Mockito.when(driver.getProviderDescriptor()).thenReturn(providerDescriptor);
+        Mockito.when(providerDescriptor.getId()).thenReturn("postgresql");
+        Mockito.when(dataSource.getServerType()).thenReturn(serverType);
+
+        setupCompositeType();
+        Mockito.when(compositeArrayType.getDataKind()).thenReturn(DBPDataKind.ARRAY);
+        Mockito.when(compositeArrayType.getComponentType(session.getProgressMonitor())).thenReturn(outerCompositeType);
+        Mockito.when(compositeArrayType.getArrayDelimiter()).thenReturn(",");
+        Mockito.when(outerCompositeType.getArrayDelimiter()).thenReturn(",");
+    }
+
+    @NotNull
+    private Object[] parseCompositeArray(@NotNull String value) throws DBException {
+        Object parsedValue = PostgreValueParser.convertStringToValue(session, compositeArrayType, value);
+        return Assertions.assertInstanceOf(Object[].class, parsedValue);
+    }
+
+    @NotNull
+    private String getArrayDisplayString(@NotNull Object[] array, @NotNull DBDDisplayFormat format) {
+        JDBCCollection collection = new JDBCCollection(
+            session.getProgressMonitor(), outerCompositeType, DBUtils.findValueHandler(session, outerCompositeType), array);
+        return PostgreArrayValueHandler.INSTANCE.getValueDisplayString(compositeArrayType, collection, format);
+    }
+
+    @NotNull
+    private static String createArrayElement(int originX, int originY, int sizeX, int sizeY) {
+        return "\"(\\\"(" + originX + "," + originY + ")\\\",\\\"(" + sizeX + "," + sizeY + ")\\\")\"";
+    }
+
+    private static void assertRecti(@NotNull Object value, int originX, int originY, int sizeX, int sizeY) {
+        JDBCComposite recti = Assertions.assertInstanceOf(JDBCComposite.class, value);
+        JDBCComposite origin = Assertions.assertInstanceOf(JDBCComposite.class, recti.getValues()[0]);
+        JDBCComposite size = Assertions.assertInstanceOf(JDBCComposite.class, recti.getValues()[1]);
+        Assertions.assertArrayEquals(new Object[]{originX, originY}, origin.getValues());
+        Assertions.assertArrayEquals(new Object[]{sizeX, sizeY}, size.getValues());
+    }
+
+    private void setupCompositeType() throws DBException {
+        Mockito.when(innerCompositeType.getDataSource()).thenReturn(dataSource);
+        Mockito.when(innerCompositeType.getDataKind()).thenReturn(DBPDataKind.STRUCT);
+        Mockito.when(innerCompositeType.getTypeID()).thenReturn(Types.STRUCT);
+        Mockito.when(innerCompositeType.getTypeName()).thenReturn("vec2i");
+        Mockito.when(innerCompositeType.getAttributes(session.getProgressMonitor())).thenReturn(
+            List.of(innerFirstAttribute, innerSecondAttribute));
+
+        Mockito.when(outerCompositeType.getDataSource()).thenReturn(dataSource);
+        Mockito.when(outerCompositeType.getDataKind()).thenReturn(DBPDataKind.STRUCT);
+        Mockito.when(outerCompositeType.getTypeID()).thenReturn(Types.STRUCT);
+        Mockito.when(outerCompositeType.getTypeName()).thenReturn("recti");
+        Mockito.when(outerCompositeType.getAttributes(session.getProgressMonitor())).thenReturn(
+            List.of(outerFirstAttribute, outerSecondAttribute));
+
+        setupIntAttribute(innerFirstAttribute, "x", 0);
+        setupIntAttribute(innerSecondAttribute, "y", 1);
+        setupCompositeAttribute(outerFirstAttribute, "origin", 0);
+        setupCompositeAttribute(outerSecondAttribute, "size", 1);
+
+        Mockito.when(outerFirstAttribute.getDataType()).thenReturn(innerCompositeType);
+        Mockito.when(outerSecondAttribute.getDataType()).thenReturn(innerCompositeType);
+    }
+
+    private void setupIntAttribute(@NotNull PostgreDataTypeAttribute attribute, @NotNull String name, int position) {
+        Mockito.when(attribute.getName()).thenReturn(name);
+        Mockito.when(attribute.getOrdinalPosition()).thenReturn(position);
+        Mockito.when(attribute.getDataKind()).thenReturn(DBPDataKind.NUMERIC);
+        Mockito.when(attribute.getTypeID()).thenReturn(Types.INTEGER);
+        Mockito.when(attribute.getTypeName()).thenReturn("int4");
+    }
+
+    private void setupCompositeAttribute(@NotNull PostgreDataTypeAttribute attribute, @NotNull String name, int position) {
+        Mockito.when(attribute.getName()).thenReturn(name);
+        Mockito.when(attribute.getOrdinalPosition()).thenReturn(position);
+        Mockito.when(attribute.getDataKind()).thenReturn(DBPDataKind.STRUCT);
+        Mockito.when(attribute.getTypeID()).thenReturn(Types.STRUCT);
+        Mockito.when(attribute.getTypeName()).thenReturn("vec2i");
     }
 
     private void setupGeneralWhenMocks() throws Exception {
