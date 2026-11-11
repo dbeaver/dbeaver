@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.ai.chat.controls;
 import org.eclipse.e4.ui.css.swt.dom.WidgetElement;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.layout.GridLayoutFactory;
+import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.AccessibleAdapter;
@@ -53,6 +54,8 @@ import org.jkiss.dbeaver.ui.ai.chat.AIChatController;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatUtils;
 import org.jkiss.dbeaver.ui.ai.chat.internal.AIChatMessagesUI;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
+import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -373,6 +376,29 @@ public class ContextComposite extends Composite {
                 }
             });
         }
+        manager.add(new Separator());
+        manager.add(new Action(UIMessages.browse_button_choose) {
+            @Override
+            public void run() {
+                DBPDataSourceContainer container = chat.getDataSourceContainer();
+                SelectDataSourceDialog dialog = new SelectDataSourceDialog(
+                    getShell(),
+                    container == null ? DBWorkbench.getPlatform().getWorkspace().getActiveProject() : container.getProject(),
+                    container
+                );
+                if (dialog.open() == Window.OK) {
+                    try {
+                        chat.setDataSource(dialog.getDataSource());
+                    } catch (DBException e) {
+                        DBWorkbench.getPlatformUI().showError(
+                            "Error setting data source",
+                            "Could not set data source: " + e.getMessage(),
+                            e
+                        );
+                    }
+                }
+            }
+        });
     }
 
     private void fillConversationDropDown(@NotNull IMenuManager manager) {
