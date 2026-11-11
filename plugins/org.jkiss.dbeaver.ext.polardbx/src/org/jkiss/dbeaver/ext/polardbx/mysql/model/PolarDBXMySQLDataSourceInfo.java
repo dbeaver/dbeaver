@@ -44,9 +44,7 @@ public class PolarDBXMySQLDataSourceInfo extends JDBCDataSourceInfo {
 
     @NotNull
     @Override
-    public String getDatabaseProductVersion() {
-        return dataSource.getServerVersion();
-    }
+return serverVersion.isEmpty() ? super.getDatabaseProductVersion() : serverVersion;
 
     /**
      * Get the database product name; the Standard Edition is shown as PolarDB-X (Standard Edition).
