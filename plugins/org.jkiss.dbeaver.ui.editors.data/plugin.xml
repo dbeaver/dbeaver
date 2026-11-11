@@ -339,8 +339,8 @@
         <command id="org.jkiss.dbeaver.core.resultset.export" name="%command.org.jkiss.dbeaver.core.resultset.export.name" description="%command.org.jkiss.dbeaver.core.resultset.export.description" categoryId="org.jkiss.dbeaver.core.rs">
             <commandParameter id="exportWithParameter" name="exportWithParameter" optional="true"/>
         </command>
-        <command id="org.jkiss.dbeaver.core.resultset.zoomIn" name="Zoom in data grid" categoryId="org.jkiss.dbeaver.core.rs"/>
-        <command id="org.jkiss.dbeaver.core.resultset.zoomOut" name="Zoom out data grid" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.zoomIn" name="%command.org.jkiss.dbeaver.core.resultset.zoomIn.name" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.zoomOut" name="%command.org.jkiss.dbeaver.core.resultset.zoomOut.name" categoryId="org.jkiss.dbeaver.core.rs"/>
 
         <command id="org.jkiss.dbeaver.ui.editors.data.forSelection" name="%command.org.jkiss.dbeaver.ui.editors.data.forSelection.name" description="%command.org.jkiss.dbeaver.ui.editors.data.forSelection.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.generate.uuid" name="%command.org.jkiss.dbeaver.ui.editors.data.generate.uuid.name" description="%command.org.jkiss.dbeaver.ui.editors.data.generate.uuid.description" categoryId="org.jkiss.dbeaver.core.database"/>
