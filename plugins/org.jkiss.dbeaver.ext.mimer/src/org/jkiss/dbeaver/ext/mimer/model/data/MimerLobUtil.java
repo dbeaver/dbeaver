@@ -38,7 +38,24 @@ import java.nio.file.Path;
  */
 final class MimerLobUtil {
 
+    // ByteArrayOutputStream/CharArrayWriter's own default growth (double the backing array via
+    // Arrays.copyOf, old and new simultaneously live during the copy) would transiently need up
+    // to ~1.5x whatever's already been read whenever memoryLimit itself is large - the
+    // content.memory.maxsize preference allows up to 1 GiB. Growing by this fixed amount instead
+    // bounds that transient overshoot to one step, independent of how large memoryLimit is set.
+    private static final int MEMORY_GROWTH_STEP = 1 << 20;
+
     private MimerLobUtil() {
+    }
+
+    /**
+     * The next backing-array size to grow a memory buffer to, given it must hold at least
+     * {@code required} bytes/chars and should never exceed {@code memoryLimit} except when
+     * {@code required} itself already does (the one read that pushes past the limit and ends the
+     * read loop).
+     */
+    static int nextCapacity(int currentCapacity, int required, int memoryLimit) {
+        return Math.max(required, Math.min(memoryLimit, currentCapacity + MEMORY_GROWTH_STEP));
     }
 
     @FunctionalInterface

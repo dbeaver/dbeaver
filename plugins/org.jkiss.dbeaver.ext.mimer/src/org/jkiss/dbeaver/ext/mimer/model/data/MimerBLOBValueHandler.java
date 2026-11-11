@@ -35,13 +35,13 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -122,21 +122,26 @@ public class MimerBLOBValueHandler extends JDBCContentValueHandler {
         boolean spooled = false;
         try {
             byte[] buffer = new byte[8192];
-            ByteArrayOutputStream memoryBuffer = new ByteArrayOutputStream(Math.min(memoryLimit, buffer.length * 8));
+            byte[] memoryBuffer = new byte[Math.min(memoryLimit, buffer.length * 8)];
             int total = 0;
             int n;
             while (!monitor.isCanceled() && total < memoryLimit && (n = stream.read(buffer)) >= 0) {
-                memoryBuffer.write(buffer, 0, n);
+                if (total + n > memoryBuffer.length) {
+                    memoryBuffer = Arrays.copyOf(memoryBuffer, MimerLobUtil.nextCapacity(memoryBuffer.length, total + n, memoryLimit));
+                }
+                System.arraycopy(buffer, 0, memoryBuffer, total, n);
                 total += n;
             }
             if (monitor.isCanceled() || total < memoryLimit) {
-                content.setStorage(new BytesContentStorage(memoryBuffer.toByteArray(), encoding));
+                content.setStorage(new BytesContentStorage(Arrays.copyOf(memoryBuffer, total), encoding));
             } else {
+                int spooledTotal = total;
+                byte[] spooledBuffer = memoryBuffer;
                 Path tempFile = MimerLobUtil.spoolToTempFile(
                     monitor, platform, "mimer_blob" + TEMP_FILE_SEQUENCE.incrementAndGet(),
                     tempFilePath -> {
                         try (OutputStream os = Files.newOutputStream(tempFilePath)) {
-                            memoryBuffer.writeTo(os);
+                            os.write(spooledBuffer, 0, spooledTotal);
                             ContentUtils.copyStreams(stream, -1, os, monitor);
                         }
                     });
