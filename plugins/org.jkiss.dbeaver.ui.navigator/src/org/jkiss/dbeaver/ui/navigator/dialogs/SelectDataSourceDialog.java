@@ -84,6 +84,14 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
     }
 
     @Override
+    protected void configureShell(@NotNull Shell shell) {
+        super.configureShell(shell);
+        if (isModeless()) {
+            closeOnFocusLost(shell);
+        }
+    }
+
+    @Override
     protected IDialogSettings getDialogBoundsSettings()
     {
         return UIUtils.getDialogSettings(DIALOG_ID);
