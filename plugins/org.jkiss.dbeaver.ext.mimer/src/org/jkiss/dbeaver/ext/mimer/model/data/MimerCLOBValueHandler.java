@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.ContentUtils;
 
+import java.io.CharArrayWriter;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Writer;
@@ -121,11 +122,11 @@ public class MimerCLOBValueHandler extends JDBCContentValueHandler {
         boolean spooled = false;
         try {
             char[] buffer = new char[8192];
-            StringBuilder memoryBuffer = new StringBuilder(Math.min(memoryLimit, buffer.length * 8));
+            CharArrayWriter memoryBuffer = new CharArrayWriter(Math.min(memoryLimit, buffer.length * 8));
             int total = 0;
             int n;
             while (!monitor.isCanceled() && total < memoryLimit && (n = reader.read(buffer)) >= 0) {
-                memoryBuffer.append(buffer, 0, n);
+                memoryBuffer.write(buffer, 0, n);
                 total += n;
             }
             if (monitor.isCanceled() || total < memoryLimit) {
@@ -134,7 +135,7 @@ public class MimerCLOBValueHandler extends JDBCContentValueHandler {
                 Path tempFile = ContentUtils.createTempContentFile(
                     monitor, platform, "mimer_clob" + TEMP_FILE_SEQUENCE.incrementAndGet());
                 try (Writer os = Files.newBufferedWriter(tempFile, Charset.forName(encoding))) {
-                    os.write(memoryBuffer.toString());
+                    memoryBuffer.writeTo(os);
                     ContentUtils.copyStreams(reader, -1, os, monitor);
                 } catch (IOException e) {
                     ContentUtils.deleteTempFile(tempFile);

@@ -135,7 +135,7 @@ public class MimerBLOBValueHandler extends JDBCContentValueHandler {
                 Path tempFile = ContentUtils.createTempContentFile(
                     monitor, platform, "mimer_blob" + TEMP_FILE_SEQUENCE.incrementAndGet());
                 try (OutputStream os = Files.newOutputStream(tempFile)) {
-                    os.write(memoryBuffer.toByteArray());
+                    memoryBuffer.writeTo(os);
                     ContentUtils.copyStreams(stream, -1, os, monitor);
                 } catch (IOException e) {
                     ContentUtils.deleteTempFile(tempFile);
