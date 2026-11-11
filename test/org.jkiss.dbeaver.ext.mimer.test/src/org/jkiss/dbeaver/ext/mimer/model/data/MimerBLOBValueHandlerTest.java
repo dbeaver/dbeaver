@@ -158,6 +158,28 @@ public class MimerBLOBValueHandlerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void getValueFromObjectWithNullStaysABlobWrapperEvenWhenTheTypeIdIsNotReliable() throws Exception {
+        // New-row initialization and the "Set to NULL" grid action both call
+        // getValueFromObject(session, type, null, false, false) directly - not through
+        // fetchColumnValue/fetchValueObject, so that path needs its own coverage separate from
+        // nullValueStaysABlobWrapperEvenWhenTheTypeIdIsNotReliable above.
+        Mockito.when(type.getTypeID()).thenReturn(-10);
+
+        DBDContent result = MimerBLOBValueHandler.INSTANCE.getValueFromObject(session, type, null, false, false);
+
+        Assertions.assertInstanceOf(JDBCContentBLOB.class, result);
+        Assertions.assertTrue(result.isNull());
+    }
+
+    @Test
+    public void displayStringReturnsNullForASqlNullValueInsteadOfAZeroLengthPlaceholder() {
+        MimerContentBLOB content = new MimerContentBLOB(executionContext);
+
+        Assertions.assertNull(content.getDisplayString(DBDDisplayFormat.UI),
+            "A SQL NULL value should display as NULL, not a zero-length \"[BLOB, 0B]\" placeholder");
+    }
+
+    @Test
     public void noTempFileIsLeftBehindWhenSomethingGoesWrongWhileSpillingToDisk() throws Exception {
         // Past MEMORY_CONTENT_MAX_SIZE so fetchColumnValue has already committed to the
         // temp-file branch before the stream fails - exactly the case the Throwable catch

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.mimer.model.data;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBValueFormatting;
@@ -78,17 +79,32 @@ public class MimerBLOBValueHandler extends JDBCContentValueHandler {
     ) throws DBCException, SQLException {
         InputStream stream = resultSet.getBinaryStream(index);
         if (stream == null) {
-            // See MimerCLOBValueHandler's identical branch for why this constructs the empty
-            // wrapper directly instead of calling getValueFromObject(session, type, null, false,
-            // false) - that redispatches on type.getTypeID(), which isn't reliable for every
-            // Mimer LOB type name.
-            return new MimerContentBLOB(session.getExecutionContext());
+            return getValueFromObject(session, type, null, false, false);
         }
         try {
             return spoolToContent(session, stream);
         } catch (Exception e) {
             throw new DBCException("Error reading BLOB content", e, session.getExecutionContext());
         }
+    }
+
+    @Override
+    public DBDContent getValueFromObject(
+        @NotNull DBCSession session,
+        @NotNull DBSTypedObject type,
+        @Nullable Object object,
+        boolean copy,
+        boolean validateValue
+    ) throws DBCException {
+        if (object == null) {
+            // See MimerCLOBValueHandler's identical override for why this constructs the empty
+            // wrapper directly instead of letting the inherited switch redispatch on
+            // type.getTypeID(), which isn't reliable for every Mimer LOB type name. Covers every
+            // null path, not just a fetched result-set value - new-row initialization and "Set to
+            // NULL" both call this method directly rather than through fetchColumnValue.
+            return new MimerContentBLOB(session.getExecutionContext());
+        }
+        return super.getValueFromObject(session, type, object, copy, validateValue);
     }
 
     @NotNull

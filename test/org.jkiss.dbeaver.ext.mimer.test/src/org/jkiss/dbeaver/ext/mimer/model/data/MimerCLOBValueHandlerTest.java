@@ -154,6 +154,28 @@ public class MimerCLOBValueHandlerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void getValueFromObjectWithNullStaysAClobWrapperEvenWhenTheTypeIdIsNotReliable() throws Exception {
+        // New-row initialization and the "Set to NULL" grid action both call
+        // getValueFromObject(session, type, null, false, false) directly - not through
+        // fetchColumnValue/fetchValueObject, so that path needs its own coverage separate from
+        // nullValueStaysAClobWrapperEvenWhenTheTypeIdIsNotReliable above.
+        Mockito.when(type.getTypeID()).thenReturn(-10);
+
+        DBDContent result = MimerCLOBValueHandler.INSTANCE.getValueFromObject(session, type, null, false, false);
+
+        Assertions.assertInstanceOf(JDBCContentCLOB.class, result);
+        Assertions.assertTrue(result.isNull());
+    }
+
+    @Test
+    public void displayStringReturnsNullForASqlNullValueInsteadOfAZeroLengthPlaceholder() {
+        MimerContentCLOB content = new MimerContentCLOB(executionContext);
+
+        Assertions.assertNull(content.getDisplayString(DBDDisplayFormat.UI),
+            "A SQL NULL value should display as NULL, not a zero-length \"[CLOB, 0B]\" placeholder");
+    }
+
+    @Test
     public void displayStringShowsSizeOnceSpilledToATempFileInsteadOfStayingInMemory() throws Exception {
         // See MimerBLOBValueHandlerTest's identical test for why a plain DBDContentStorage mock
         // (not a DBDContentCached) stands in for a real spilled TemporaryContentStorage here.
