@@ -140,10 +140,10 @@ public class DDAccountClient extends DDClient {
     @NotNull
     public DamSettingsState getDamSettings(@NotNull String clientDamId) throws DBException {
         DamSettingsData data = executeGraphQl(DAM_SETTINGS_QUERY, Map.of("clientDamId", clientDamId), DamSettingsData.class,
-            "Could not read DAM settings from DataDam Account");
+            "Could not read Dam settings from DataDam Account");
         if (data.accountInfo() == null || data.accountInfo().accountId() == null || data.damSettings() == null
             || data.canManageSettings() == null) {
-            throw new DBException("Could not read DAM settings from DataDam Account");
+            throw new DBException("Could not read Dam settings from DataDam Account");
         }
         return new DamSettingsState(data.accountInfo().accountId(), data.damSettings(), data.canManageSettings());
     }
@@ -154,9 +154,9 @@ public class DDAccountClient extends DDClient {
     ) throws DBException {
         DamSettingsData data = executeGraphQl(SET_DAM_SETTING, Map.of(
             "clientDamId", clientDamId, "key", key, "value", value, "expectedAccountId", expectedAccountId.toString()),
-            DamSettingsData.class, "Could not update DAM settings in DataDam Account");
+            DamSettingsData.class, "Could not update Dam settings in DataDam Account");
         if (data.setDamSetting() == null) {
-            throw new DBException("Could not update DAM settings in DataDam Account");
+            throw new DBException("Could not update Dam settings in DataDam Account");
         }
         return data.setDamSetting();
     }
@@ -164,17 +164,17 @@ public class DDAccountClient extends DDClient {
     @Nullable
     public DDConnectedRemoteDam getDam(@NotNull String clientDamId) throws DBException {
         DamData data = executeGraphQl(DAM_NAME_QUERY, Map.of("clientDamId", clientDamId), DamData.class,
-            "Could not read DAM from DataDam Account");
+            "Could not read Dam from DataDam Account");
         return data.connectedRemoteDam();
     }
 
     @NotNull
     public DDConnectedRemoteDam renameDam(@NotNull String clientDamId, @NotNull String damName) throws DBException {
         DamData data = executeGraphQl(RENAME_DAM, Map.of("clientDamId", clientDamId, "damName", damName), DamData.class,
-            "Could not update DAM name in DataDam Account");
+            "Could not update Dam name in DataDam Account");
         DDConnectedRemoteDam result = data.connectedRemoteDam();
         if (result == null || result.damId() == null || result.damName() == null) {
-            throw new DBException("Could not update DAM name in DataDam Account");
+            throw new DBException("Could not update Dam name in DataDam Account");
         }
         return result;
     }
