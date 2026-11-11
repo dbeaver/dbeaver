@@ -14,7 +14,7 @@
 
         <vmArgs>
             -XX:+IgnoreUnrecognizedVMOptions
-            -Dosgi.requiredJavaVersion=21
+            -Dosgi.requiredJavaVersion=25
             -Dfile.encoding=UTF-8
             --sun-misc-unsafe-memory-access=allow
             --enable-native-access=ALL-UNNAMED
