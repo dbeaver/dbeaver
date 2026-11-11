@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.datadam.auth;
 
 import com.dbeaver.datadam.sso.api.DDSsoConstants;
 import com.dbeaver.datadam.sso.api.DDSsoScopes;
-import com.dbeaver.datadam.sso.api.model.DDSsoConfigResponse;
 import com.dbeaver.datadam.sso.api.model.DDSsoTokenResponse;
 import com.dbeaver.rest.client.MediaType;
 import com.google.gson.JsonParseException;
@@ -41,22 +40,6 @@ public class DDDesktopSsoClient extends DDClient implements AutoCloseable {
     public DDDesktopSsoClient(@NotNull URI issuer) throws DBException {
         super(CommonUtils.removeTrailingSlash(issuer.toString()), DEFAULT_CONNECT_TIMEOUT, 10_000, List.of(), HttpClient.Redirect.NEVER);
         requireSecureServer(issuer);
-    }
-
-    @NotNull
-    public DDSsoConfigResponse discover() throws DBException {
-        try {
-            DDSsoConfigResponse config = executeGetRequest(
-                CommonUtils.removeLeadingSlash(DDSsoConstants.APPLICATION_CONFIG_PATH), DDSsoConfigResponse.class);
-            if (config == null || config.issuer() == null) {
-                throw new DBException("Invalid desktop SSO configuration");
-            }
-            URI issuer = URI.create(config.issuer());
-            requireSecureServer(issuer);
-            return config;
-        } catch (IllegalArgumentException e) {
-            throw new DBException("Invalid desktop SSO configuration", e);
-        }
     }
 
     @NotNull

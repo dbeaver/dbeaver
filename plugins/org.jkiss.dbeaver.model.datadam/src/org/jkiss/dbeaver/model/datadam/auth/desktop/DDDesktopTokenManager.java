@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.datadam.auth.desktop;
 
 import com.dbeaver.datadam.sso.api.DDSsoConstants;
 import com.dbeaver.datadam.sso.api.DDSsoScopes;
-import com.dbeaver.datadam.sso.api.model.DDSsoConfigResponse;
 import com.google.gson.JsonObject;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
@@ -150,7 +149,10 @@ class DDDesktopTokenManager {
         try (DDDesktopSsoClient client = new DDDesktopSsoClient(URI.create(DDEndpoints.getSsoBaseUrl()))) {
             var response = client.refresh(refreshToken, DDSsoScopes.format(current.scopes()));
             DDDesktopUserToken rotated = new DDDesktopUserToken(
-                response.accessToken(), current.issuer(), current.endpoints(), current.scopes(), response.refreshToken());
+                response.accessToken(), validator.getIssuer(response.accessToken()), current.endpoints(), current.scopes(), response.refreshToken());
+            if (!validator.matchesIssuer(rotated)) {
+                throw new DBException("Refreshed DataDam token has an unexpected issuer");
+            }
             if (validator.isExpired(rotated)) {
                 throw new DBException("Refreshed DataDam token has expired");
             }
@@ -179,17 +181,16 @@ class DDDesktopTokenManager {
         @NotNull DDDesktopSsoLogin.BrowserOpener browser
     ) throws DBException, InterruptedException {
         log.debug("Signing in to DataDam desktop access");
-        var config = discover(accountUrl);
-        if (!DDEndpoints.getSsoBaseUrl().equals(config.issuer())) {
-            throw new DBException("DataDam SSO issuer does not match the configured endpoint");
-        }
         var result = login.login(URI.create(DDEndpoints.getSsoBaseUrl()), null,
             Set.of(DDSsoConstants.SCOPE_ACCOUNT_FULL_ACCESS, DDSsoConstants.SCOPE_DBEAVER_STORAGE_FULL_ACCESS,
                 DDSsoConstants.SCOPE_MCP_CONNECT), monitor, browser);
         DDDesktopUserToken saved = new DDDesktopUserToken(
-            result.accessToken(), config.issuer(), Set.of(accountUrl.toString(), storageUrl.toString()),
+            result.accessToken(), validator.getIssuer(result.accessToken()), Set.of(accountUrl.toString(), storageUrl.toString()),
             DDSsoScopes.parse(result.scope()), result.refreshToken()
         );
+        if (!validator.matchesIssuer(saved)) {
+            throw new DBException("DataDam desktop token has an unexpected issuer");
+        }
         if (validator.isExpired(saved)) {
             throw new DBException("DataDam desktop token has expired");
         }
@@ -239,13 +240,6 @@ class DDDesktopTokenManager {
             ).schedule();
         } catch (Exception e) {
             log.warn("Could not revoke DataDam desktop token", e);
-        }
-    }
-
-    @NotNull
-    private DDSsoConfigResponse discover(@NotNull URI accountUrl) throws DBException {
-        try (DDDesktopSsoClient client = new DDDesktopSsoClient(accountUrl)) {
-            return client.discover();
         }
     }
 }
