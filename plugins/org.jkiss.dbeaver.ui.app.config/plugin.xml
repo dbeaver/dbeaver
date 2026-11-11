@@ -15,8 +15,8 @@
       <command
           id="org.jkiss.dbeaver.ui.app.config.showWizard"
           categoryId="org.jkiss.dbeaver.core.util"
-          name="Show Product Configuration..."
-          description="Show product configuration wizard"/>
+          name="%command.org.jkiss.dbeaver.ui.app.config.showWizard.name"
+          description="%command.org.jkiss.dbeaver.ui.app.config.showWizard.description"/>
    </extension>
 
    <extension point="org.eclipse.ui.handlers">
