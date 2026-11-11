@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentBLOB;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentLOB;
-import org.jkiss.utils.ByteNumberFormat;
 
 /**
  * A {@link JDBCContentBLOB} with no {@code java.sql.Blob} of its own - {@link
@@ -68,7 +67,7 @@ class MimerContentBLOB extends JDBCContentBLOB {
             return super.getDisplayString(format);
         }
         try {
-            return "[BLOB, " + new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO).format(getContentLength()) + "]";
+            return MimerLobUtil.sizedPlaceholder("BLOB", getContentLength());
         } catch (DBCException e) {
             return super.getDisplayString(format);
         }

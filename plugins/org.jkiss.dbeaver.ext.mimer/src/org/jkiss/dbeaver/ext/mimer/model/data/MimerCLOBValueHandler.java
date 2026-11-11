@@ -64,8 +64,7 @@ public class MimerCLOBValueHandler extends JDBCContentValueHandler {
 
     public static final MimerCLOBValueHandler INSTANCE = new MimerCLOBValueHandler();
 
-    // See MimerBLOBValueHandler's identical field for why this is needed - confirmed live as a
-    // real FileAlreadyExistsException, not just a theoretical risk.
+    // See MimerBLOBValueHandler's identical field for why this is needed.
     private static final AtomicLong TEMP_FILE_SEQUENCE = new AtomicLong();
 
     @Override
@@ -132,34 +131,19 @@ public class MimerCLOBValueHandler extends JDBCContentValueHandler {
             if (monitor.isCanceled() || total < memoryLimit) {
                 content.setStorage(new StringContentStorage(memoryBuffer.toString()));
             } else {
-                Path tempFile = ContentUtils.createTempContentFile(
-                    monitor, platform, "mimer_clob" + TEMP_FILE_SEQUENCE.incrementAndGet());
-                try (Writer os = Files.newBufferedWriter(tempFile, Charset.forName(encoding))) {
-                    memoryBuffer.writeTo(os);
-                    ContentUtils.copyStreams(reader, -1, os, monitor);
-                } catch (IOException e) {
-                    ContentUtils.deleteTempFile(tempFile);
-                    throw e;
-                } catch (Throwable e) {
-                    ContentUtils.deleteTempFile(tempFile);
-                    throw new IOException(e);
-                }
+                Path tempFile = MimerLobUtil.spoolToTempFile(
+                    monitor, platform, "mimer_clob" + TEMP_FILE_SEQUENCE.incrementAndGet(),
+                    tempFilePath -> {
+                        try (Writer os = Files.newBufferedWriter(tempFilePath, Charset.forName(encoding))) {
+                            memoryBuffer.writeTo(os);
+                            ContentUtils.copyStreams(reader, -1, os, monitor);
+                        }
+                    });
                 content.setStorage(new TemporaryContentStorage(platform, tempFile, encoding, true));
             }
             spooled = true;
         } finally {
-            try {
-                reader.close();
-            } catch (IOException e) {
-                if (spooled) {
-                    // See MimerBLOBValueHandler's identical finally for why this must release the
-                    // spooled storage (possibly a temp file) before rethrowing - otherwise every retry
-                    // leaks another one, since nothing else would ever reach this content to release it.
-                    content.release();
-                    throw e;
-                }
-                log.debug("Error closing Mimer CLOB reader after a failed read", e);
-            }
+            MimerLobUtil.closeAfterSpooling(reader, spooled, content::release, log, "CLOB");
         }
         return content;
     }

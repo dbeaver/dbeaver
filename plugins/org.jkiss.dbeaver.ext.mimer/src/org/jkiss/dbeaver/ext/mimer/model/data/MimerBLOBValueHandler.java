@@ -67,7 +67,7 @@ public class MimerBLOBValueHandler extends JDBCContentValueHandler {
     // collisions by including the real Blob object's own hashCode() in <name>; we have no such
     // object (that's the whole workaround), so a monotonic counter stands in instead - two spools
     // landing in the same millisecond (easily possible fetching a page of small-ish values) would
-    // otherwise throw FileAlreadyExistsException, confirmed live.
+    // otherwise throw FileAlreadyExistsException.
     private static final AtomicLong TEMP_FILE_SEQUENCE = new AtomicLong();
 
     @Override
@@ -132,35 +132,19 @@ public class MimerBLOBValueHandler extends JDBCContentValueHandler {
             if (monitor.isCanceled() || total < memoryLimit) {
                 content.setStorage(new BytesContentStorage(memoryBuffer.toByteArray(), encoding));
             } else {
-                Path tempFile = ContentUtils.createTempContentFile(
-                    monitor, platform, "mimer_blob" + TEMP_FILE_SEQUENCE.incrementAndGet());
-                try (OutputStream os = Files.newOutputStream(tempFile)) {
-                    memoryBuffer.writeTo(os);
-                    ContentUtils.copyStreams(stream, -1, os, monitor);
-                } catch (IOException e) {
-                    ContentUtils.deleteTempFile(tempFile);
-                    throw e;
-                } catch (Throwable e) {
-                    ContentUtils.deleteTempFile(tempFile);
-                    throw new IOException(e);
-                }
+                Path tempFile = MimerLobUtil.spoolToTempFile(
+                    monitor, platform, "mimer_blob" + TEMP_FILE_SEQUENCE.incrementAndGet(),
+                    tempFilePath -> {
+                        try (OutputStream os = Files.newOutputStream(tempFilePath)) {
+                            memoryBuffer.writeTo(os);
+                            ContentUtils.copyStreams(stream, -1, os, monitor);
+                        }
+                    });
                 content.setStorage(new TemporaryContentStorage(platform, tempFile, encoding, true));
             }
             spooled = true;
         } finally {
-            try {
-                stream.close();
-            } catch (IOException e) {
-                if (spooled) {
-                    // The spooled storage (possibly a temp file) is otherwise unreachable from here on -
-                    // nothing else would ever release it, leaking a temp file on every retry.
-                    content.release();
-                    throw e;
-                }
-                // The read/write itself already failed and is propagating its own exception out of the
-                // try block - don't let a close() failure on top of that mask it.
-                log.debug("Error closing Mimer BLOB stream after a failed read", e);
-            }
+            MimerLobUtil.closeAfterSpooling(stream, spooled, content::release, log, "BLOB");
         }
         return content;
     }

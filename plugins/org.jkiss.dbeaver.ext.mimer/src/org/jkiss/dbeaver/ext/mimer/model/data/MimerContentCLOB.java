@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentCLOB;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentLOB;
-import org.jkiss.utils.ByteNumberFormat;
 
 /**
  * The {@code CLOB}/{@code NCLOB} sibling of {@link MimerContentBLOB} - same reasoning, see its
@@ -59,7 +58,7 @@ class MimerContentCLOB extends JDBCContentCLOB {
             return super.getDisplayString(format);
         }
         try {
-            return "[CLOB, " + new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO).format(getContentLength()) + "]";
+            return MimerLobUtil.sizedPlaceholder("CLOB", getContentLength());
         } catch (DBCException e) {
             return super.getDisplayString(format);
         }
