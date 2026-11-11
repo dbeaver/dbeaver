@@ -142,14 +142,18 @@ public class MimerValueHandlerProviderTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void theNameFallbackAlsoRespectsTheDriverVersionCutoff() {
+    public void theNameFallbackIgnoresTheDriverVersionCutoff() {
+        // The 11.0.6+ cutoff is for the separate getObject()/stream-read bug, not the vendor-ID
+        // mismatch the name fallback exists for - a column only reached via that fallback still
+        // has the wrong type ID regardless of driver version, so it must keep using the
+        // Mimer-specific wrapper even past the cutoff.
         Mockito.when(mimerDataSource.isDriverVersionAtLeast(11, 0, 6)).thenReturn(true);
         Mockito.when(type.getTypeID()).thenReturn(UNRECOGNIZED_TYPE_ID);
         Mockito.when(type.getTypeName()).thenReturn("NATIONAL CHAR LARGE OBJECT");
 
         DBDValueHandler handler = provider.getValueHandler(mimerDataSource, preferences, type);
 
-        Assertions.assertSame(JDBCContentValueHandler.INSTANCE, handler);
+        Assertions.assertSame(MimerCLOBValueHandler.INSTANCE, handler);
     }
 
     @Test

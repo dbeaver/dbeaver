@@ -52,14 +52,18 @@ import java.util.Locale;
  * Falls back to {@link JDBCContentValueHandler#INSTANCE} - the same handler the core JDBC-standard
  * provider would give a BLOB/CLOB/NCLOB column - once {@link
  * MimerDataSource#isDriverVersionAtLeast(int, int, int)} says the connected driver is 11.0.6 or
- * later. Returning {@code null} here would NOT reach that standard provider:
- * {@code DataTypeProviderRegistry#getValueHandlerProvider} picks this, the first non-global
- * provider matching both the datasource and the column type, and returns immediately - the global
- * providers are never even consulted - so {@code DBUtils#findValueHandler} would fall straight
- * through to {@code DefaultValueHandler}, which can't bind a value at all (throws on every write)
- * and skips the content-wrapper machinery LOB viewing/export relies on. 11.0.6 isn't released yet
- * and isn't confirmed to actually carry the fix - bump the patch number here if it turns out not
- * to.
+ * later, but only when the type ID itself already matched BLOB/CLOB/NCLOB directly: that cutoff
+ * is for the separate {@code getObject()}/stream-read bug, not the vendor-ID mismatch the name
+ * fallback above exists for, so a column only reached via the name fallback keeps using the
+ * Mimer-specific wrapper regardless of driver version - its null/create-new handling still can't
+ * be trusted to the standard handler while the ID itself stays wrong. Returning {@code null} here
+ * would NOT reach that standard provider: {@code DataTypeProviderRegistry#getValueHandlerProvider}
+ * picks this, the first non-global provider matching both the datasource and the column type, and
+ * returns immediately - the global providers are never even consulted - so
+ * {@code DBUtils#findValueHandler} would fall straight through to {@code DefaultValueHandler},
+ * which can't bind a value at all (throws on every write) and skips the content-wrapper machinery
+ * LOB viewing/export relies on. 11.0.6 isn't released yet and isn't confirmed to actually carry
+ * the fix - bump the patch number here if it turns out not to.
  *
  * @author Mimer Information Technology
  */
@@ -72,34 +76,48 @@ public class MimerValueHandlerProvider implements DBDValueHandlerProvider {
         @NotNull DBDFormatSettings preferences,
         @NotNull DBSTypedObject typedObject
     ) {
-        Boolean isBlob = classify(typedObject);
-        if (isBlob == null) {
+        Boolean isBlobById = classifyByTypeId(typedObject.getTypeID());
+        if (isBlobById != null) {
+            boolean fixedByDriver = dataSource instanceof MimerDataSource mimerDataSource
+                && mimerDataSource.isDriverVersionAtLeast(11, 0, 6);
+            if (fixedByDriver) {
+                return JDBCContentValueHandler.INSTANCE;
+            }
+            return isBlobById ? MimerBLOBValueHandler.INSTANCE : MimerCLOBValueHandler.INSTANCE;
+        }
+        // The type ID itself didn't match BLOB/CLOB/NCLOB, so this connection's vendor-ID quirk
+        // (see this class's own javadoc) is still present regardless of isDriverVersionAtLeast -
+        // that cutoff only covers the separate getObject()/stream-read bug, not this ID mismatch,
+        // so the Mimer-specific wrapper (and its own null/create-new handling) always applies here.
+        Boolean isBlobByName = classifyByName(typedObject.getTypeName());
+        if (isBlobByName == null) {
             return null;
         }
-        boolean fixedByDriver = dataSource instanceof MimerDataSource mimerDataSource
-            && mimerDataSource.isDriverVersionAtLeast(11, 0, 6);
-        if (fixedByDriver) {
-            return JDBCContentValueHandler.INSTANCE;
-        }
-        return isBlob ? MimerBLOBValueHandler.INSTANCE : MimerCLOBValueHandler.INSTANCE;
+        return isBlobByName ? MimerBLOBValueHandler.INSTANCE : MimerCLOBValueHandler.INSTANCE;
     }
 
     /**
      * {@code true} for a BLOB-like type, {@code false} for a CLOB/NCLOB-like type, {@code null}
-     * if {@code typedObject} isn't one of Mimer SQL's three LOB types at all.
+     * if {@code typeId} isn't one of Mimer SQL's three LOB types at all.
      */
     @Nullable
-    private static Boolean classify(@NotNull DBSTypedObject typedObject) {
-        switch (typedObject.getTypeID()) {
+    private static Boolean classifyByTypeId(int typeId) {
+        switch (typeId) {
             case Types.BLOB:
                 return true;
             case Types.CLOB:
             case Types.NCLOB:
                 return false;
             default:
-                break;
+                return null;
         }
-        String typeName = typedObject.getTypeName();
+    }
+
+    /**
+     * Same classification as {@link #classifyByTypeId(int)}, by name instead of type ID.
+     */
+    @Nullable
+    private static Boolean classifyByName(@Nullable String typeName) {
         if (typeName == null) {
             return null;
         }
