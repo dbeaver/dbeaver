@@ -24,6 +24,7 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -150,11 +151,10 @@ public abstract class AbstractPopupPanel extends BaseDialog {
             if (shell == null || shell.isDisposed()) {
                 return;
             }
-            if (!(event.widget instanceof Control clicked)) {
-                // Menu items and other non-control widgets belong to transient UI
+            Shell clickedShell = getWidgetShell(event.widget);
+            if (clickedShell == null) {
                 return;
             }
-            Shell clickedShell = clicked.getShell();
             // Ignore clicks inside the popup and its child shells (e.g. a drop-down opened from it)
             if (isPopupShell(shell, clickedShell)) {
                 return;
@@ -171,16 +171,63 @@ public abstract class AbstractPopupPanel extends BaseDialog {
                     return;
                 }
             }
-            UIUtils.asyncExec(() -> {
-                Shell currentShell = getShell();
-                if (currentShell != null && !currentShell.isDisposed()) {
-                    cancelPressed();
-                }
-            });
+            UIUtils.asyncExec(this::closeIfOpen);
+        };
+        // Menu bars and menu items do not report mouse events as controls, so close the popup
+        // as soon as a menu that does not belong to it is shown.
+        Listener menuFilter = event -> {
+            Shell shell = getShell();
+            if (shell == null || shell.isDisposed() || !(event.widget instanceof Menu menu)) {
+                return;
+            }
+            Shell menuShell = getMenuShell(menu);
+            if (menuShell == null || isPopupShell(shell, menuShell) || isBlockingDialog(menuShell)) {
+                return;
+            }
+            UIUtils.asyncExec(this::closeIfOpen);
         };
         display.addFilter(SWT.MouseDown, mouseFilter);
-        popupShell.addDisposeListener(e -> display.removeFilter(SWT.MouseDown, mouseFilter));
+        display.addFilter(SWT.Show, menuFilter);
+        popupShell.addDisposeListener(e -> {
+            display.removeFilter(SWT.MouseDown, mouseFilter);
+            display.removeFilter(SWT.Show, menuFilter);
+        });
         return true;
+    }
+
+    private void closeIfOpen() {
+        Shell shell = getShell();
+        if (shell != null && !shell.isDisposed()) {
+            cancelPressed();
+        }
+    }
+
+    private static @Nullable Shell getWidgetShell(@NotNull Widget widget) {
+        if (widget instanceof Control control) {
+            return control.getShell();
+        }
+        if (widget instanceof MenuItem item) {
+            return getMenuShell(item.getParent());
+        }
+        if (widget instanceof Menu menu) {
+            return getMenuShell(menu);
+        }
+        return null;
+    }
+
+    private static @Nullable Shell getMenuShell(@NotNull Menu menu) {
+        Menu topMenu = menu;
+        while (topMenu.getParentMenu() != null) {
+            topMenu = topMenu.getParentMenu();
+        }
+        Object parent = topMenu.getParent();
+        if (parent instanceof Control control) {
+            return control.getShell();
+        }
+        if (parent instanceof Shell shell) {
+            return shell;
+        }
+        return null;
     }
 
     private static boolean isPopupShell(@NotNull Shell popupShell, @NotNull Shell shell) {
