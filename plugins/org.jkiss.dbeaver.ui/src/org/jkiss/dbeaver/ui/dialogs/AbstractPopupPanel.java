@@ -191,6 +191,8 @@ public abstract class AbstractPopupPanel extends BaseDialog {
         popupShell.addDisposeListener(e -> {
             display.removeFilter(SWT.MouseDown, mouseFilter);
             display.removeFilter(SWT.Show, menuFilter);
+            // The dialog may be opened again, which recreates the shell
+            closeOnOutsideClickInstalled = false;
         });
         return true;
     }
