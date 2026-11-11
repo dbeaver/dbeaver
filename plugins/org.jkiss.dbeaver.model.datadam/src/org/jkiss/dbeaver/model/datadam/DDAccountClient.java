@@ -20,6 +20,7 @@ import com.dbeaver.datadam.dam.remote.api.model.DDConnectedRemoteDam;
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonParseException;
+import com.google.gson.ToNumberPolicy;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -80,14 +81,14 @@ public class DDAccountClient extends DDClient {
         """;
     private static final String DAM_NAME_QUERY = """
         query DesktopDamName($clientDamId: String!) {
-            connectedRemoteDamByClientId(clientDamId: $clientDamId) {
+            connectedRemoteDam: connectedRemoteDamByClientId(clientDamId: $clientDamId) {
                 %s
             }
         }
         """.formatted(DAM_FIELDS);
     private static final String RENAME_DAM = """
         mutation RenameDesktopDam($clientDamId: String!, $damName: String!) {
-            renameConnectedRemoteDamByClientId(clientDamId: $clientDamId, damName: $damName) {
+            connectedRemoteDam: renameConnectedRemoteDamByClientId(clientDamId: $clientDamId, damName: $damName) {
                 %s
             }
         }
@@ -95,18 +96,21 @@ public class DDAccountClient extends DDClient {
 
     public DDAccountClient(@NotNull URI accountUrl) {
         super(accountUrl.resolve("/").toString(), DEFAULT_CONNECT_TIMEOUT, 10_000, List.of(), HttpClient.Redirect.NEVER);
-        gson = GsonUtils.gsonBuilder().registerTypeAdapter(OffsetDateTime.class,
-            (JsonDeserializer<OffsetDateTime>) (json, type, context) -> OffsetDateTime.parse(json.getAsString())).create();
+        gson = GsonUtils.gsonBuilder()
+            .registerTypeAdapter(OffsetDateTime.class,
+                (JsonDeserializer<OffsetDateTime>) (json, type, context) -> OffsetDateTime.parse(json.getAsString()))
+            .setObjectToNumberStrategy(ToNumberPolicy.BIG_DECIMAL)
+            .create();
     }
 
     @NotNull
     public DDCryptoState getCryptoState() throws DBException {
-        CryptoResponse response = executeGraphQl(CRYPTO_STATE_QUERY, Map.of(), CryptoResponse.class);
-        if (response == null || response.errors() != null && !response.errors().isEmpty()
-            || response.data() == null || response.data().gatewayCryptoState() == null) {
-            throw responseError("Could not read encryption keys from DataDam Account", response == null ? null : response.errors());
+        CryptoData data = executeGraphQl(CRYPTO_STATE_QUERY, Map.of(), CryptoData.class,
+            "Could not read encryption keys from DataDam Account");
+        if (data.gatewayCryptoState() == null) {
+            throw new DBException("Could not read encryption keys from DataDam Account");
         }
-        DDCryptoState state = response.data().gatewayCryptoState();
+        DDCryptoState state = data.gatewayCryptoState();
         if (state.accountId() == null) {
             throw new DBException("DataDam Account response has no account ID");
         }
@@ -115,37 +119,32 @@ public class DDAccountClient extends DDClient {
 
     @NotNull
     public UUID getAccountId() throws DBException {
-        AccountResponse response = executeGraphQl(ACCOUNT_ID_QUERY, Map.of(), AccountResponse.class);
-        if (response == null || response.errors() != null && !response.errors().isEmpty()
-            || response.data() == null || response.data().gatewayCryptoState() == null
-            || response.data().gatewayCryptoState().accountId() == null) {
-            throw responseError("Could not read account ID from DataDam Account", response == null ? null : response.errors());
+        AccountData data = executeGraphQl(ACCOUNT_ID_QUERY, Map.of(), AccountData.class,
+            "Could not read account ID from DataDam Account");
+        if (data.gatewayCryptoState() == null || data.gatewayCryptoState().accountId() == null) {
+            throw new DBException("Could not read account ID from DataDam Account");
         }
-        return response.data().gatewayCryptoState().accountId();
+        return data.gatewayCryptoState().accountId();
     }
 
     @NotNull
     public String getAccountName() throws DBException {
-        AccountResponse response = executeGraphQl(ACCOUNT_INFO_QUERY, Map.of(), AccountResponse.class);
-        if (response == null || response.errors() != null && !response.errors().isEmpty()
-            || response.data() == null || response.data().accountInfo() == null
-            || response.data().accountInfo().accountName() == null) {
-            throw responseError("Could not read account name from DataDam Account", response == null ? null : response.errors());
+        AccountData data = executeGraphQl(ACCOUNT_INFO_QUERY, Map.of(), AccountData.class,
+            "Could not read account name from DataDam Account");
+        if (data.accountInfo() == null || data.accountInfo().accountName() == null) {
+            throw new DBException("Could not read account name from DataDam Account");
         }
-        return response.data().accountInfo().accountName();
+        return data.accountInfo().accountName();
     }
 
     @NotNull
     public DamSettingsState getDamSettings(@NotNull String clientDamId) throws DBException {
-        DamSettingsResponse response = executeGraphQl(
-            DAM_SETTINGS_QUERY, Map.of("clientDamId", clientDamId), DamSettingsResponse.class);
-        if (response == null || response.errors() != null && !response.errors().isEmpty()
-            || response.data() == null || response.data().accountInfo() == null
-            || response.data().accountInfo().accountId() == null || response.data().damSettings() == null
-            || response.data().canManageSettings() == null) {
-            throw responseError("Could not read DAM settings from DataDam Account", response == null ? null : response.errors());
+        DamSettingsData data = executeGraphQl(DAM_SETTINGS_QUERY, Map.of("clientDamId", clientDamId), DamSettingsData.class,
+            "Could not read DAM settings from DataDam Account");
+        if (data.accountInfo() == null || data.accountInfo().accountId() == null || data.damSettings() == null
+            || data.canManageSettings() == null) {
+            throw new DBException("Could not read DAM settings from DataDam Account");
         }
-        var data = response.data();
         return new DamSettingsState(data.accountInfo().accountId(), data.damSettings(), data.canManageSettings());
     }
 
@@ -153,57 +152,56 @@ public class DDAccountClient extends DDClient {
     public DDRemoteDamSettings setDamSetting(
         @NotNull String clientDamId, @NotNull String key, @NotNull String value, @NotNull UUID expectedAccountId
     ) throws DBException {
-        DamSettingsResponse response = executeGraphQl(SET_DAM_SETTING, Map.of(
+        DamSettingsData data = executeGraphQl(SET_DAM_SETTING, Map.of(
             "clientDamId", clientDamId, "key", key, "value", value, "expectedAccountId", expectedAccountId.toString()),
-            DamSettingsResponse.class);
-        if (response == null || response.errors() != null && !response.errors().isEmpty()
-            || response.data() == null || response.data().setDamSetting() == null) {
-            throw responseError("Could not update DAM settings in DataDam Account", response == null ? null : response.errors());
+            DamSettingsData.class, "Could not update DAM settings in DataDam Account");
+        if (data.setDamSetting() == null) {
+            throw new DBException("Could not update DAM settings in DataDam Account");
         }
-        return response.data().setDamSetting();
+        return data.setDamSetting();
     }
 
     @Nullable
     public DDConnectedRemoteDam getDam(@NotNull String clientDamId) throws DBException {
-        return requestDam(DAM_NAME_QUERY, Map.of("clientDamId", clientDamId), "connectedRemoteDamByClientId");
+        DamData data = executeGraphQl(DAM_NAME_QUERY, Map.of("clientDamId", clientDamId), DamData.class,
+            "Could not read DAM from DataDam Account");
+        return data.connectedRemoteDam();
     }
 
     @NotNull
     public DDConnectedRemoteDam renameDam(@NotNull String clientDamId, @NotNull String damName) throws DBException {
-        DDConnectedRemoteDam result = requestDam(RENAME_DAM, Map.of("clientDamId", clientDamId, "damName", damName),
-            "renameConnectedRemoteDamByClientId");
+        DamData data = executeGraphQl(RENAME_DAM, Map.of("clientDamId", clientDamId, "damName", damName), DamData.class,
+            "Could not update DAM name in DataDam Account");
+        DDConnectedRemoteDam result = data.connectedRemoteDam();
         if (result == null || result.damId() == null || result.damName() == null) {
             throw new DBException("Could not update DAM name in DataDam Account");
         }
         return result;
     }
 
-    @Nullable
-    private DDConnectedRemoteDam requestDam(
-        @NotNull String query, @NotNull Map<String, String> variables, @NotNull String field
-    ) throws DBException {
-        Map<?, ?> response = executeGraphQl(query, variables, Map.class);
-        List<?> errors = response != null && response.get("errors") instanceof List<?> list ? list : null;
-        if (response == null || errors != null && !errors.isEmpty() || !(response.get("data") instanceof Map<?, ?> data)) {
-            throw responseError("Could not read DAM from DataDam Account", errors);
-        }
-        Object dam = data.get(field);
-        if (!data.containsKey(field) || dam != null && !(dam instanceof Map<?, ?>)) {
-            throw new DBException("Invalid DAM response from DataDam Account");
-        }
-        try {
-            return dam == null ? null : gson.fromJson(gson.toJsonTree(dam), DDConnectedRemoteDam.class);
-        } catch (JsonParseException e) {
-            throw new DBException("Invalid DAM response from DataDam Account", e);
-        }
-    }
-
-    @Nullable
+    @NotNull
     private <T> T executeGraphQl(
-        @NotNull String query, @NotNull Map<String, ?> variables, @NotNull Class<T> responseType
+        @NotNull String query, @NotNull Map<String, ?> variables, @NotNull Class<T> dataType, @NotNull String errorMessage
     ) throws DBException {
         Map<String, ?> body = variables.isEmpty() ? Map.of("query", query) : Map.of("query", query, "variables", variables);
-        return executePostRequest(GRAPHQL_PATH, Map.of(), body, responseType);
+        Map<?, ?> response = executePostRequest(GRAPHQL_PATH, Map.of(), body, Map.class);
+        List<?> errors = response != null && response.get("errors") instanceof List<?> list ? list : null;
+        if (response == null || errors != null && !errors.isEmpty() || !(response.get("data") instanceof Map<?, ?> data)) {
+            throw responseError(errorMessage, errors);
+        }
+        return convertGraphQlData(data, dataType);
+    }
+
+    @NotNull
+    private <T> T convertGraphQlData(@NotNull Object data, @NotNull Class<T> dataType) throws DBException {
+        if (dataType.isInstance(data)) {
+            return dataType.cast(data);
+        }
+        try {
+            return gson.fromJson(gson.toJsonTree(data), dataType);
+        } catch (JsonParseException e) {
+            throw new DBException("Invalid DataDam Account response", e);
+        }
     }
 
     @NotNull
@@ -218,13 +216,13 @@ public class DDAccountClient extends DDClient {
     public record DamSettingsState(@NotNull UUID accountId, @NotNull DDRemoteDamSettings settings, boolean canManage) {
     }
 
-    private record DamSettingsResponse(@Nullable DamSettingsData data, @Nullable List<Map<String, Object>> errors) {
-    }
-
     private record DamSettingsData(
         @Nullable AccountState accountInfo, @Nullable DDRemoteDamSettings damSettings,
         @Nullable DDRemoteDamSettings setDamSetting, @Nullable Boolean canManageSettings
     ) {
+    }
+
+    private record DamData(@Nullable DDConnectedRemoteDam connectedRemoteDam) {
     }
 
     @NotNull
@@ -251,13 +249,7 @@ public class DDAccountClient extends DDClient {
         super.handleRequestException(message, e);
     }
 
-    private record CryptoResponse(@Nullable CryptoData data, @Nullable List<Map<String, Object>> errors) {
-    }
-
     private record CryptoData(@Nullable DDCryptoState gatewayCryptoState) {
-    }
-
-    private record AccountResponse(@Nullable AccountData data, @Nullable List<Map<String, Object>> errors) {
     }
 
     private record AccountData(@Nullable AccountState gatewayCryptoState, @Nullable AccountState accountInfo) {
