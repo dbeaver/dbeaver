@@ -178,6 +178,8 @@ public class UINavigatorMessages extends NLS {
     public static String CreateLinkHandler_e_create_link_title;
     public static String CreateLinkHandler_e_create_link_validation;
     public static String dialog_select_datasource_title;
+    public static String dialog_select_datasource_button_select;
+    public static String dialog_select_datasource_button_none;
 
     public static String controls_object_list_job_props_read;
     public static String controls_object_list_message_items;
