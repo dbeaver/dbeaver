@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.polardbx.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
+import org.jkiss.utils.CommonUtils;
 
 public class PolarDBXMySQLDataSourceInfo extends JDBCDataSourceInfo {
 
@@ -44,7 +45,10 @@ public class PolarDBXMySQLDataSourceInfo extends JDBCDataSourceInfo {
 
     @NotNull
     @Override
-return serverVersion.isEmpty() ? super.getDatabaseProductVersion() : serverVersion;
+    public String getDatabaseProductVersion() {
+        String serverVersion = dataSource.getServerVersion();
+        return CommonUtils.isEmpty(serverVersion) ? super.getDatabaseProductVersion() : serverVersion;
+    }
 
     /**
      * Get the database product name; the Standard Edition is shown as PolarDB-X (Standard Edition).

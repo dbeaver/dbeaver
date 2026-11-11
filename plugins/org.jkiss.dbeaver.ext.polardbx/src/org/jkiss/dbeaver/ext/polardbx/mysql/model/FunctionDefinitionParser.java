@@ -135,7 +135,7 @@ public class FunctionDefinitionParser {
      */
     @Nullable
     private static ParameterInfo parseReturnTypeUsingOriginalLogic(@NotNull String procedureDef) {
-        int returnsIndex = procedureDef.toUpperCase().indexOf("RETURNS");
+        int returnsIndex = procedureDef.toUpperCase(Locale.ROOT).indexOf("RETURNS");
         if (returnsIndex != -1) {
             int declarationStart = returnsIndex + "RETURNS".length();
 
@@ -173,7 +173,7 @@ public class FunctionDefinitionParser {
         int minEndPos = procedureDef.length();
 
         for (String keyword : endKeywords) {
-            int keywordPos = procedureDef.toUpperCase().indexOf(keyword, startPos);
+            int keywordPos = procedureDef.toUpperCase(Locale.ROOT).indexOf(keyword, startPos);
             if (keywordPos != -1 && keywordPos < minEndPos) {
                 minEndPos = keywordPos;
             }
@@ -285,11 +285,11 @@ public class FunctionDefinitionParser {
 
         // Remove direction modifiers - based on existing logic
         String cleanParam = parameterDefinition;
-        if (cleanParam.toUpperCase().startsWith("IN ")) {
+        if (cleanParam.toUpperCase(Locale.ROOT).startsWith("IN ")) {
             cleanParam = cleanParam.substring(3).trim();
-        } else if (cleanParam.toUpperCase().startsWith("OUT ")) {
+        } else if (cleanParam.toUpperCase(Locale.ROOT).startsWith("OUT ")) {
             cleanParam = cleanParam.substring(4).trim();
-        } else if (cleanParam.toUpperCase().startsWith("INOUT ")) {
+        } else if (cleanParam.toUpperCase(Locale.ROOT).startsWith("INOUT ")) {
             cleanParam = cleanParam.substring(6).trim();
         }
 
@@ -348,7 +348,7 @@ public class FunctionDefinitionParser {
         }
 
         // Normalize type info - based on existing logic
-        String normalizedType = typeInfo.trim().toUpperCase();
+        String normalizedType = typeInfo.trim().toUpperCase(Locale.ROOT);
 
         // Determine base MySQL type - based on DatabaseMetaData.TypeDescriptor logic
         String baseTypeName = extractBaseTypeName(normalizedType);
