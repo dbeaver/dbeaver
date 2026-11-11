@@ -275,8 +275,8 @@ public class MimerDataSource extends GenericDataSource {
     // --- Driver version gate ---------------------------------------------------------------
     // Mimer SQL has stayed on JDBC driver minor version 11.0 for many years, with individual
     // driver fixes landing in patch releases instead - the inherited isDriverVersionAtLeast(major,
-    // minor) can't tell those apart (confirmed live: getDriverMajorVersion()/getDriverMinorVersion()
-    // both report the same "11"/"0" across the whole 11.0.x lineage), so readDriverVersion is
+    // minor) can't tell those apart (getDriverMajorVersion()/getDriverMinorVersion() both report
+    // the same "11"/"0" across the whole 11.0.x lineage), so readDriverVersion is
     // overridden below to also capture the patch digit, and isDriverVersionAtLeast(major, minor,
     // patch) reads it back.
 
@@ -290,9 +290,17 @@ public class MimerDataSource extends GenericDataSource {
     @Override
     protected synchronized void readDriverVersion(@NotNull DatabaseMetaData metaData) {
         super.readDriverVersion(metaData);
+        // Always recomputes rather than guarding on driverVersion == null (super already set
+        // it just above) - safe only because this method is synchronized and, per initialize()'s
+        // own call site, runs exactly once per connection; re-running it on an already-connected
+        // instance would re-parse rather than keep the first result, unlike the superclass.
         try {
-            Matcher matcher = Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)").matcher(metaData.getDriverVersion());
-            if (matcher.find()) {
+            String rawVersion = metaData.getDriverVersion();
+            Matcher matcher = rawVersion == null ? null : Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)").matcher(rawVersion);
+            // lookingAt(), not find() - anchors at the start so a stray dotted triplet elsewhere
+            // in a future driver's version string (e.g. a build/date tag) can't be mismatched for
+            // the real version.
+            if (matcher != null && matcher.lookingAt()) {
                 driverVersion = new Version(
                     Integer.parseInt(matcher.group(1)),
                     Integer.parseInt(matcher.group(2)),
