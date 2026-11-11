@@ -27,12 +27,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.DDCryptoState;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.utils.GsonUtils;
-import org.jkiss.utils.HttpConstants;
 
-import java.lang.reflect.Type;
 import java.net.URI;
 import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Map;
@@ -40,7 +37,6 @@ import java.util.UUID;
 
 /** Account requests authenticated by the current desktop SSO session. */
 public class DDAccountClient extends DDClient {
-    private static final String GRAPHQL_PATH = "graphql";
     private static final String ACCOUNT_INFO_QUERY = """
         query AccountInfo {
             accountInfo {
@@ -55,6 +51,12 @@ public class DDAccountClient extends DDClient {
             }
         }
         """;
+    private static final String PERMISSIONS_QUERY = """
+        query DamPermissions {
+            myPermissions
+        }
+        """;
+    private static final String RENAME_DAM_PERMISSION = "REMOTE_DAM_MANAGE";
     private static final String CRYPTO_STATE_QUERY = """
         query GatewayCryptoState {
             gatewayCryptoState {
@@ -95,7 +97,12 @@ public class DDAccountClient extends DDClient {
         """.formatted(DAM_FIELDS);
 
     public DDAccountClient(@NotNull URI accountUrl) {
-        super(accountUrl.resolve("/").toString(), DEFAULT_CONNECT_TIMEOUT, 10_000, List.of(), HttpClient.Redirect.NEVER);
+        this(accountUrl, DDDesktopAccessService.getInstance());
+    }
+
+    public DDAccountClient(@NotNull URI accountUrl, @NotNull DDDesktopAccessService accessService) {
+        super(accountUrl.resolve("/").toString(), DEFAULT_CONNECT_TIMEOUT, 10_000, List.of(), HttpClient.Redirect.NEVER,
+            accessService);
         gson = GsonUtils.gsonBuilder()
             .registerTypeAdapter(OffsetDateTime.class,
                 (JsonDeserializer<OffsetDateTime>) (json, type, context) -> OffsetDateTime.parse(json.getAsString()))
@@ -105,7 +112,7 @@ public class DDAccountClient extends DDClient {
 
     @NotNull
     public DDCryptoState getCryptoState() throws DBException {
-        CryptoData data = executeGraphQl(CRYPTO_STATE_QUERY, Map.of(), CryptoData.class,
+        CryptoData data = executeGraphQl(CRYPTO_STATE_QUERY, CryptoData.class,
             "Could not read encryption keys from DataDam Account");
         if (data.gatewayCryptoState() == null) {
             throw new DBException("Could not read encryption keys from DataDam Account");
@@ -119,7 +126,7 @@ public class DDAccountClient extends DDClient {
 
     @NotNull
     public UUID getAccountId() throws DBException {
-        AccountData data = executeGraphQl(ACCOUNT_ID_QUERY, Map.of(), AccountData.class,
+        AccountData data = executeGraphQl(ACCOUNT_ID_QUERY, AccountData.class,
             "Could not read account ID from DataDam Account");
         if (data.gatewayCryptoState() == null || data.gatewayCryptoState().accountId() == null) {
             throw new DBException("Could not read account ID from DataDam Account");
@@ -129,12 +136,21 @@ public class DDAccountClient extends DDClient {
 
     @NotNull
     public String getAccountName() throws DBException {
-        AccountData data = executeGraphQl(ACCOUNT_INFO_QUERY, Map.of(), AccountData.class,
+        AccountData data = executeGraphQl(ACCOUNT_INFO_QUERY, AccountData.class,
             "Could not read account name from DataDam Account");
         if (data.accountInfo() == null || data.accountInfo().accountName() == null) {
             throw new DBException("Could not read account name from DataDam Account");
         }
         return data.accountInfo().accountName();
+    }
+
+    public boolean canRenameDam() throws DBException {
+        PermissionsData data = executeGraphQl(PERMISSIONS_QUERY, PermissionsData.class,
+            "Could not read Dam permissions from DataDam Account");
+        if (data.myPermissions() == null) {
+            throw new DBException("Could not read Dam permissions from DataDam Account");
+        }
+        return data.myPermissions().contains(RENAME_DAM_PERMISSION);
     }
 
     @NotNull
@@ -179,40 +195,6 @@ public class DDAccountClient extends DDClient {
         return result;
     }
 
-    @NotNull
-    private <T> T executeGraphQl(
-        @NotNull String query, @NotNull Map<String, ?> variables, @NotNull Class<T> dataType, @NotNull String errorMessage
-    ) throws DBException {
-        Map<String, ?> body = variables.isEmpty() ? Map.of("query", query) : Map.of("query", query, "variables", variables);
-        Map<?, ?> response = executePostRequest(GRAPHQL_PATH, Map.of(), body, Map.class);
-        List<?> errors = response != null && response.get("errors") instanceof List<?> list ? list : null;
-        if (response == null || errors != null && !errors.isEmpty() || !(response.get("data") instanceof Map<?, ?> data)) {
-            throw responseError(errorMessage, errors);
-        }
-        return convertGraphQlData(data, dataType);
-    }
-
-    @NotNull
-    private <T> T convertGraphQlData(@NotNull Object data, @NotNull Class<T> dataType) throws DBException {
-        if (dataType.isInstance(data)) {
-            return dataType.cast(data);
-        }
-        try {
-            return gson.fromJson(gson.toJsonTree(data), dataType);
-        } catch (JsonParseException e) {
-            throw new DBException("Invalid DataDam Account response", e);
-        }
-    }
-
-    @NotNull
-    private DBException responseError(@NotNull String message, @Nullable List<?> errors) {
-        if (errors != null && !errors.isEmpty() && errors.get(0) instanceof Map<?, ?> first
-            && first.get("message") instanceof String detail) {
-            return new DBException(message + ": " + detail);
-        }
-        return new DBException(message);
-    }
-
     public record DamSettingsState(@NotNull UUID accountId, @NotNull DDRemoteDamSettings settings, boolean canManage) {
     }
 
@@ -223,16 +205,6 @@ public class DDAccountClient extends DDClient {
     }
 
     private record DamData(@Nullable DDConnectedRemoteDam connectedRemoteDam) {
-    }
-
-    @NotNull
-    @Override
-    protected <T> T execute(@NotNull HttpRequest.Builder builder, @NotNull Type type) throws DBException {
-        URI uri = builder.build().uri();
-        DDEndpoints.requireSecureTransport(uri);
-        builder.setHeader(HttpConstants.HEADER_AUTHORIZATION,
-            HttpConstants.BEARER_PREFIX + DDDesktopAccessService.getInstance().getAccessTokenForResource(uri));
-        return super.execute(builder, type);
     }
 
     @NotNull
@@ -253,6 +225,9 @@ public class DDAccountClient extends DDClient {
     }
 
     private record AccountData(@Nullable AccountState gatewayCryptoState, @Nullable AccountState accountInfo) {
+    }
+
+    private record PermissionsData(@Nullable List<String> myPermissions) {
     }
 
     private record AccountState(@Nullable UUID accountId, @Nullable String accountName) {

@@ -82,6 +82,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private Label damNameLabel;
     private Button damNameEditButton;
     private Composite damNameRow;
+    private boolean canRenameDam = true;
     @Nullable
     private DDConnectedRemoteDam dam;
 
@@ -290,20 +291,32 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                 if (monitor.isCanceled()) {
                     return Status.CANCEL_STATUS;
                 }
+                var service = DDDesktopDamService.getInstance();
+                boolean canRename = true;
                 try {
-                    var result = DDDesktopDamService.getInstance().getDam();
+                    canRename = service.canRenameDam();
+                } catch (DBException e) {
+                    log.debug("Cannot read DataDam rename permissions", e);
+                }
+                boolean allowed = canRename;
+                try {
+                    var result = service.getDam(monitor);
                     UIUtils.asyncExec(() -> {
                         if (isDamNameJobActive(this, monitor)) {
+                            canRenameDam = allowed;
                             showDam(result);
-                            if (result != null && result.damName() == null) {
+                            if (allowed && result != null && result.damName() == null) {
                                 editDamName();
                             }
                         }
                     });
+                } catch (InterruptedException e) {
+                    return Status.CANCEL_STATUS;
                 } catch (DBException e) {
                     UIUtils.asyncExec(() -> {
                         if (isDamNameJobActive(this, monitor)) {
                             log.debug("Cannot read DataDam desktop name", e);
+                            canRenameDam = allowed;
                             showDam(null);
                         }
                     });
@@ -324,7 +337,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
         dam = result;
         setDamNameText(result == null ? DDTrackingUIMessages.sync_preference_page_dam_name_unavailable
             : result.damName() == null ? DDTrackingUIMessages.sync_preference_page_dam_name_not_set : result.damName());
-        damNameEditButton.setEnabled(result != null);
+        damNameEditButton.setEnabled(canRenameDam);
     }
 
     private void setDamNameText(@NotNull String name) {
