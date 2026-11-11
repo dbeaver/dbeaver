@@ -886,6 +886,14 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         return PostgreUtils.extractPermissionsFromACL(monitor, this, acl, false);
     }
 
+    /**
+     * True when proacl was read as an array, including an empty one ({}).
+     * False for NULL (default privileges) or a value that couldn't be read.
+     */
+    public boolean hasExplicitAcl() {
+        return acl instanceof java.sql.Array;
+    }
+
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         return getContainer().getProceduresCache().refreshObject(monitor, getContainer(), this);
