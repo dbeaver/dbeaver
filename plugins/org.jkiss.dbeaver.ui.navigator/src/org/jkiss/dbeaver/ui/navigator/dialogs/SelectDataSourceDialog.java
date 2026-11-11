@@ -340,8 +340,8 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
         composite.setFont(parent.getFont());
 
         // Add the buttons to the button bar.
-        createButton(composite, IDialogConstants.OK_ID, "&Select", true); //$NON-NLS-1$
-        createButton(composite, IDialogConstants.IGNORE_ID, "&None", false); //$NON-NLS-1$
+        createButton(composite, IDialogConstants.OK_ID, UINavigatorMessages.dialog_select_datasource_button_select, true);
+        createButton(composite, IDialogConstants.IGNORE_ID, UINavigatorMessages.dialog_select_datasource_button_none, false);
 //        if (!isModeless()) {
 //            createButton(composite, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
 //        }

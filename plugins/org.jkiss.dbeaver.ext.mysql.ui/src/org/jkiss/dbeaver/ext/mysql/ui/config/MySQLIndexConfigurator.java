@@ -21,7 +21,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableColumn;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndex;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableIndexColumn;
@@ -96,8 +95,8 @@ public class MySQLIndexConfigurator implements DBEObjectConfigurator<MySQLTableI
         protected void createAttributeColumns(@NotNull Table columnsTable) {
             super.createAttributeColumns(columnsTable);
 
-            TableColumn colDesc = UIUtils.createTableColumn(columnsTable, SWT.NONE, MySQLMessages.table_column_length);
-            colDesc.setToolTipText(MySQLMessages.table_column_length_tooltip);
+            TableColumn colDesc = UIUtils.createTableColumn(columnsTable, SWT.NONE, MySQLUIMessages.table_column_length);
+            colDesc.setToolTipText(MySQLUIMessages.table_column_length_tooltip);
         }
 
         @Override
