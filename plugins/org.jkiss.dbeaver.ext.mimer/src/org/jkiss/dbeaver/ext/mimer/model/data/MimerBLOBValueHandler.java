@@ -82,7 +82,7 @@ public class MimerBLOBValueHandler extends JDBCContentValueHandler {
             return getValueFromObject(session, type, null, false, false);
         }
         try {
-            return spoolToContent(session, stream);
+            return spoolToContent(session.getProgressMonitor(), session, stream);
         } catch (Exception e) {
             throw new DBCException("Error reading BLOB content", e, session.getExecutionContext());
         }
@@ -108,9 +108,12 @@ public class MimerBLOBValueHandler extends JDBCContentValueHandler {
     }
 
     @NotNull
-    private static MimerContentBLOB spoolToContent(@NotNull DBCSession session, @NotNull InputStream stream) throws IOException {
+    private static MimerContentBLOB spoolToContent(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCSession session,
+        @NotNull InputStream stream
+    ) throws IOException {
         DBCExecutionContext context = session.getExecutionContext();
-        DBRProgressMonitor monitor = session.getProgressMonitor();
         DBPPlatform platform = DBWorkbench.getPlatform();
         int memoryLimit = platform.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE);
         String encoding = DBValueFormatting.getDefaultBinaryFileEncoding(context.getDataSource());
