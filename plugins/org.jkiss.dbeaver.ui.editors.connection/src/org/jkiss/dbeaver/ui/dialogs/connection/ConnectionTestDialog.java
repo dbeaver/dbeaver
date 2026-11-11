@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -73,6 +73,7 @@ public class ConnectionTestDialog extends BaseDialog {
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.widthHint = 300;
             Text serverText = new Text(composite, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
+            serverText.setBackground(composite.getBackground());
             serverText.setText(serverVersion.trim());
             serverText.setLayoutData(gd);
         }
@@ -81,6 +82,7 @@ public class ConnectionTestDialog extends BaseDialog {
             UIUtils.createEmptyLabel(composite, 1, 1);
             UIUtils.createControlLabel(composite, UIConnectionMessages.dialog_connection_test_label_driver).setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             Text driverText = new Text(composite, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
+            driverText.setBackground(composite.getBackground());
             driverText.setText(clientVersion.trim());
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.widthHint = 300;
