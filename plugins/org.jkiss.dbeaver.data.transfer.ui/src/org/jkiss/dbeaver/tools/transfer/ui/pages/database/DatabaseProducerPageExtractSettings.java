@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings.ExtractType;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings.FetchedRowsPolicy;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
-import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -182,7 +181,7 @@ public class DatabaseProducerPageExtractSettings extends DataTransferPageNodeSet
             .row(rb -> rb
                 .enabled(queryDatabase)
                 .checkBox(DTUIMessages.database_producer_page_extract_settings_extract_in_batches, bb -> bb
-                    .tooltip(DTMessages.data_transfer_wizard_output_checkbox_extract_in_batches_tip)
+                    .tooltip(DTUIMessages.data_transfer_wizard_output_checkbox_extract_in_batches_tip)
                     .selected(extractInSegments)))
             .indent(p -> p.row(DTUIMessages.database_producer_page_extract_settings_rows_per_batch, rb -> rb
                 .enabled(UIObservables.and(queryDatabase, extractInSegments))

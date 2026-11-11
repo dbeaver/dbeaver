@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCopySettings;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
@@ -65,8 +64,8 @@ public class ResultSetHandlerCopySpecial extends ResultSetHandlerMain implements
 
         if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_COPY)) {
             UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
-                UIMessages.dialog_policy_data_copy_title,
-                UIMessages.dialog_policy_data_copy_msg,
+                ResultSetMessages.dialog_policy_data_copy_title,
+                ResultSetMessages.dialog_policy_data_copy_msg,
                 SWT.ICON_WARNING
             );
             return null;

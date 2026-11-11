@@ -47,7 +47,6 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionPermissionsDialog;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.utils.HelpUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.SecurityUtils;
@@ -95,7 +94,7 @@ public class PrefPageConnectionTypes extends AbstractPrefPage implements IWorkbe
         Composite composite = UIUtils.createComposite(parent, 1);
 
         if (!canEdit) {
-            UIUtils.createWarningLabel(composite, UIMessages.preference_page_no_edit_access, SWT.NONE, 1);
+            UIUtils.createWarningLabel(composite, UIConnectionMessages.preference_page_no_edit_access, SWT.NONE, 1);
         }
 
         {

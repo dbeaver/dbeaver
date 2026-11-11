@@ -556,6 +556,9 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_transactions_ddl_behavior_tip;
     public static String pref_page_ui_general_group_general;
 
+    public static String preference_page_no_edit_access;
+    public static String dialog_connection_wizard_start_connection_monitor_connected;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, UIConnectionMessages.class);
