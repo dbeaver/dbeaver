@@ -30,13 +30,18 @@ import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
+import java.net.InetAddress;
 import java.net.URI;
+import java.net.UnknownHostException;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 public class DDDesktopDamService {
+    private static final long CONNECTION_WAIT_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(45);
+
     @Nullable
     private static DDDesktopDamService instance;
 
@@ -75,12 +80,30 @@ public class DDDesktopDamService {
         return account.canRenameDam();
     }
 
+    @NotNull
+    public String suggestDamName() {
+        String computer = System.getenv("COMPUTERNAME");
+        if (computer == null || computer.isBlank()) {
+            computer = System.getenv("HOSTNAME");
+        }
+        if (computer == null || computer.isBlank()) {
+            try {
+                computer = InetAddress.getLocalHost().getHostName();
+            } catch (UnknownHostException e) {
+                // The product name is still a usable suggestion without a computer name.
+            }
+        }
+        String product = GeneralUtils.getProductName();
+        return computer == null || computer.isBlank() ? product : product + ": " + computer;
+    }
+
     private void awaitConnection(
         @NotNull DDRemoteDamDesktopSessionService session, @NotNull DBRProgressMonitor monitor
-    ) throws InterruptedException {
+    ) throws DBException, InterruptedException {
         var channel = session.getChannel();
         if (!channel.getStatus().isReady()) {
             CountDownLatch ready = new CountDownLatch(1);
+            long started = System.nanoTime();
             try (DDRemoteDamSubscription ignored = channel.observeState(status -> {
                 if (status.isReady()) {
                     ready.countDown();
@@ -89,6 +112,9 @@ public class DDDesktopDamService {
                 while (!ready.await(250, TimeUnit.MILLISECONDS)) {
                     if (monitor.isCanceled()) {
                         throw new InterruptedException("Waiting for DataDam connection was canceled");
+                    }
+                    if (System.nanoTime() - started >= CONNECTION_WAIT_TIMEOUT_NANOS) {
+                        throw new DBException("Timed out waiting for DataDam connection");
                     }
                 }
             }

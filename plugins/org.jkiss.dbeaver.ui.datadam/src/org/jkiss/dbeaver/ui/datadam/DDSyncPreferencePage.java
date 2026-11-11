@@ -83,6 +83,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     private Button damNameEditButton;
     private Composite damNameRow;
     private boolean canRenameDam = true;
+    private String suggestedDamName = GeneralUtils.getProductName();
     @Nullable
     private DDConnectedRemoteDam dam;
 
@@ -292,6 +293,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                     return Status.CANCEL_STATUS;
                 }
                 var service = DDDesktopDamService.getInstance();
+                String suggestion = service.suggestDamName();
                 boolean canRename = true;
                 try {
                     canRename = service.canRenameDam();
@@ -304,6 +306,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                     UIUtils.asyncExec(() -> {
                         if (isDamNameJobActive(this, monitor)) {
                             canRenameDam = allowed;
+                            suggestedDamName = suggestion;
                             showDam(result);
                             if (allowed && result != null && result.damName() == null) {
                                 editDamName();
@@ -317,6 +320,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                         if (isDamNameJobActive(this, monitor)) {
                             log.debug("Cannot read DataDam desktop name", e);
                             canRenameDam = allowed;
+                            suggestedDamName = suggestion;
                             showDam(null);
                         }
                     });
@@ -346,16 +350,10 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
     }
 
     private void editDamName() {
-        String computer = System.getenv("COMPUTERNAME");
-        if (computer == null || computer.isBlank()) {
-            computer = System.getenv("HOSTNAME");
-        }
-        String productName = GeneralUtils.getProductName();
-        String suggestedName = computer == null || computer.isBlank() ? productName : productName + ": " + computer;
         InputDialog dialog = new InputDialog(
             getShell(), DDTrackingUIMessages.sync_preference_page_dam_name_edit,
             DDTrackingUIMessages.sync_preference_page_dam_name_prompt,
-            dam == null || dam.damName() == null ? suggestedName : dam.damName(),
+            dam == null || dam.damName() == null ? suggestedDamName : dam.damName(),
             value -> {
                 try {
                     DDRemoteDam.normalizeName(value);
