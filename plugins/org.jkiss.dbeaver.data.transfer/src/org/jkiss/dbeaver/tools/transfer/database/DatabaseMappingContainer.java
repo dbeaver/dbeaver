@@ -25,6 +25,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -224,6 +225,21 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
 
     public void setTargetName(@NotNull String targetName) {
         this.targetName = targetName;
+    }
+
+    /**
+     * Returns true if the source name must be quoted to preserve its case or special characters.
+     * Target names derived from such sources must not be case-transformed.
+     */
+    public boolean isSourceNameQuoted() {
+        if (!(source instanceof DBSEntity)) {
+            return false;
+        }
+        DBPDataSource sourceDataSource = source.getDataSource();
+        String sourceName = source.getName();
+        return sourceDataSource != null
+            && CommonUtils.isNotEmpty(sourceName)
+            && sourceDataSource.getSQLDialect().mustBeQuoted(sourceName, true);
     }
 
     @Nullable
