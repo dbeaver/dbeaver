@@ -412,11 +412,13 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
         projectViewer.setContentProvider(ArrayContentProvider.getInstance());
         projectViewer.setLabelProvider(new ColumnLabelProvider() {
             @Override
+            @NotNull
             public String getText(@NotNull Object element) {
                 return ((DBPProject) element).getName();
             }
 
             @Override
+            @NotNull
             public Image getImage(@NotNull Object element) {
                 return DBeaverIcons.getImage(DBIcon.PROJECT);
             }
@@ -438,6 +440,7 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
         name.getColumn().setWidth(250);
         name.setLabelProvider(new ColumnLabelProvider() {
             @Override
+            @NotNull
             public String getText(@NotNull Object element) {
                 return ((AvailableConnection) element).connection().getName();
             }
@@ -448,6 +451,7 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
         driver.getColumn().setWidth(150);
         driver.setLabelProvider(new ColumnLabelProvider() {
             @Override
+            @NotNull
             public String getText(@NotNull Object element) {
                 return ((AvailableConnection) element).connection().getDriver().getName();
             }
@@ -458,6 +462,7 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
         scopeColumn.getColumn().setWidth(150);
         scopeColumn.setLabelProvider(new ColumnLabelProvider() {
             @Override
+            @NotNull
             public String getText(@NotNull Object element) {
                 DBPDataSourceContainer connection = ((AvailableConnection) element).connection();
                 AIDatabaseScope scope = DDMcpScopeUtils.getScope(
@@ -480,6 +485,7 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
             }
 
             @Override
+            @NotNull
             public String getToolTipText(@NotNull Object element) {
                 AvailableConnection connection = (AvailableConnection) element;
                 return connection.requiresManualConnection()

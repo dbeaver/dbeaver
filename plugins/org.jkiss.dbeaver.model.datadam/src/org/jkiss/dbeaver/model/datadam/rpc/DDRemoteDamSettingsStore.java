@@ -73,6 +73,7 @@ public class DDRemoteDamSettingsStore {
         }
     }
 
+    /** Receives the current settings and later updates; {@code null} means the session is unavailable. */
     @FunctionalInterface
     public interface Listener {
         void settingsChanged(@Nullable DDRemoteDamSettings settings) throws DBException;

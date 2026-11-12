@@ -61,7 +61,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
     private final List<? extends DBPProject> availableProjects;
     private DBPDataSourceContainer dataSource;
 
-    private static final String DIALOG_ID = "DBeaver.SelectDataSourceDialog";//$NON-NLS-1$
+    private static final String DIALOG_ID = "DBeaver.SelectDataSourceDialog"; //$NON-NLS-1$
     private boolean showConnected;
     private boolean showAllProjects;
     private DBNProjectDatabases projectNode;
@@ -158,7 +158,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             }
 
             @Override
-            public boolean select(Object element) {
+            public boolean select(@NotNull Object element) {
                 return element instanceof DBNProject projectNode &&
                     (availableProjects == null || availableProjects.contains(projectNode.getProject())) ||
                     element instanceof DBNProjectDatabases ||
@@ -253,8 +253,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
 
         treeViewer.addFilter(new ViewerFilter() {
             @Override
-            public boolean select(Viewer viewer, Object parentElement, Object element)
-            {
+            public boolean select(@NotNull Viewer viewer, @Nullable Object parentElement, @NotNull Object element) {
                 if (element instanceof DBNProject && !dsFilter.select(element)) {
                     return false;
                 }
