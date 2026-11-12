@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.properties.*;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanMode;
 import org.jkiss.dbeaver.ui.controls.bool.BooleanStyleDecorator;
@@ -553,7 +554,7 @@ public class PropertyTreeViewer extends TreeViewer {
         });
     }
 
-    private void showEditor(final TreeItem item, boolean isDef) {
+    private void showEditor(@Nullable final TreeItem item, boolean isDef) {
         applyOldEditorValue();
         disposeOldEditor();
         if (item == null) {
@@ -605,7 +606,7 @@ public class PropertyTreeViewer extends TreeViewer {
                 editorControl.addListener(SWT.Modify, editorValueListener);
                 editorControl.addListener(SWT.Selection, editorValueListener);
                 Control traverseControl = editorControl;
-                if (editorControl instanceof Composite) {
+                if (editorControl instanceof Composite && !(editorControl instanceof CSmartCombo<?>)) {
                     for (Control child : ((Composite) editorControl).getChildren()) {
                         if (child instanceof Text || child instanceof StyledText) {
                             traverseControl = child;

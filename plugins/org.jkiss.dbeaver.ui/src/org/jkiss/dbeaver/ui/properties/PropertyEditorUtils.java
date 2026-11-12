@@ -22,6 +22,8 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.services.IServiceLocator;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
@@ -62,8 +64,13 @@ public class PropertyEditorUtils {
         return cellEditor;
     }
 
-    public static CellEditor createCellEditor(Composite parent, Object object, DBPPropertyDescriptor property, int style)
-    {
+    @Nullable
+    public static CellEditor createCellEditor(
+        @NotNull Composite parent,
+        @NotNull Object object,
+        @NotNull DBPPropertyDescriptor property,
+        int style
+    ) {
         boolean isPropertySheet = (style & SWT.SHEET) != 0;
         style &= ~SWT.SHEET;
         // List
@@ -79,11 +86,10 @@ public class PropertyEditorUtils {
                     // Add null value
                     strings = ArrayUtils.insertArea(String.class, strings, 0, new Object[] { "" });
                 }
-                final CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(
-                    parent,
-                    strings,
-                    SWT.DROP_DOWN | (listProvider.allowCustomValue() ? SWT.NONE : SWT.READ_ONLY));
-                return editor;
+                if (listProvider.allowCustomValue()) {
+                    return new SmartComboBoxCellEditor(parent, strings, SWT.DROP_DOWN);
+                }
+                return new SmartComboBoxCellEditor(parent, strings);
             }
         }
         Class<?> propertyType = property.getDataType();
@@ -103,7 +109,7 @@ public class PropertyEditorUtils {
             return editor;
         } else if (BeanUtils.isBooleanType(propertyType)) {
             if (isPropertySheet) {
-                return new CustomComboBoxCellEditor(parent, new String[] { Boolean.TRUE.toString(), Boolean.FALSE.toString()} , SWT.DROP_DOWN | SWT.READ_ONLY);
+                return new SmartComboBoxCellEditor(parent, new String[] { Boolean.TRUE.toString(), Boolean.FALSE.toString()});
             } else {
                 return new CustomCheckboxCellEditor(parent);
             }
@@ -114,10 +120,7 @@ public class PropertyEditorUtils {
             for (int i = 0, itemsLength = enumConstants.length; i < itemsLength; i++) {
                 strings[i] = ((Enum)enumConstants[i]).name();
             }
-            return new CustomComboBoxCellEditor(
-                parent,
-                strings,
-                SWT.DROP_DOWN | SWT.READ_ONLY);
+            return new SmartComboBoxCellEditor(parent, strings);
         } else if (LocalDateTime.class.isAssignableFrom(propertyType)) {
             return new CustomLocalDateTimeCellEditor(parent);
         } else {

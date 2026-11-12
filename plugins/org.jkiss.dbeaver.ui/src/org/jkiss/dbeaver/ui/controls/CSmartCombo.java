@@ -95,10 +95,13 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         Caret caret = new Caret(this.text, SWT.NONE);
         caret.setSize(0, 0);
         this.text.setCaret(caret);
-        this.text.addListener(SWT.Selection, event ->
-            this.text.setSelection(this.text.getCaretOffset()));
+        this.text.addListener(SWT.Selection, event -> {
+            if (!this.text.getEditable()) {
+                this.text.setSelection(this.text.getCaretOffset());
+            }
+        });
         this.text.addListener(SWT.Paint, event -> {
-            if (this.hasFocus && this.text.isEnabled()) {
+            if (this.hasFocus && this.text.isEnabled() && !this.text.getEditable()) {
                 Rectangle clientArea = this.text.getClientArea();
                 event.gc.drawFocus(0, 0, clientArea.width - 1, clientArea.height - 1);
             }
@@ -178,7 +181,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             this.addListener(comboEvent, this.listener);
         }
 
-        int[] textEvents = {SWT.KeyDown, SWT.KeyUp, SWT.MouseDown, SWT.MouseUp, SWT.Traverse, SWT.FocusIn};
+        int[] textEvents = {SWT.KeyDown, SWT.KeyUp, SWT.MouseDown, SWT.MouseUp, SWT.Traverse, SWT.FocusIn, SWT.Modify};
         for (int textEvent : textEvents) {
             this.text.addListener(textEvent, this.listener);
             this.imageLabel.addListener(textEvent, this.listener);
@@ -327,7 +330,20 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     }
 
     public @NotNull String getText() {
-        return this.labelProvider.getText(this.selectedItem);
+        return this.text.getEditable() ? this.text.getText() : this.labelProvider.getText(this.selectedItem);
+    }
+
+    public void setEditable(boolean editable) {
+        checkWidget();
+        this.text.setEditable(editable);
+        this.text.getCaret().setSize(editable ? 1 : 0, this.text.getLineHeight());
+        this.text.setCursor(getDisplay().getSystemCursor(editable ? SWT.CURSOR_IBEAM : SWT.CURSOR_ARROW));
+        this.text.redraw();
+    }
+
+    @NotNull
+    public StyledText getTextControl() {
+        return this.text;
     }
 
     public void remove(int index) {
@@ -436,8 +452,12 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         for (int i = 0; i < this.items.size(); i++) {
             if (this.labelProvider.getText(items.get(i)).equals(string)) {
                 select(i);
-                break;
+                return;
             }
+        }
+        if (this.text.getEditable()) {
+            select(-1);
+            this.text.setText(string);
         }
     }
 
@@ -976,7 +996,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
     }
 
-    private void textEvent(@NotNull Event event) {
+    protected void textEvent(@NotNull Event event) {
         switch (event.type) {
             case SWT.FocusIn: {
                 handleFocus(SWT.FocusIn);
@@ -1007,7 +1027,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
 
                 if (event.keyCode == SWT.ARROW_UP || event.keyCode == SWT.ARROW_DOWN ||
                     event.keyCode == SWT.PAGE_UP || event.keyCode == SWT.PAGE_DOWN ||
-                    event.keyCode == SWT.HOME || event.keyCode == SWT.END) {
+                    !this.text.getEditable() && (event.keyCode == SWT.HOME || event.keyCode == SWT.END)) {
                     event.doit = false;
                     if ((event.stateMask & SWT.ALT) != 0 &&
                         (event.keyCode == SWT.ARROW_UP || event.keyCode == SWT.ARROW_DOWN)) {
@@ -1072,6 +1092,16 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 break;
             }
             case SWT.Modify: {
+                if (!this.text.getEditable()) {
+                    break;
+                }
+                this.selectedItem = null;
+                for (ITEM_TYPE item : this.items) {
+                    if (this.labelProvider.getText(item).equals(this.text.getText())) {
+                        this.selectedItem = item;
+                        break;
+                    }
+                }
                 Event e = new Event();
                 e.time = event.time;
                 notifyListeners(SWT.Modify, e);
@@ -1079,6 +1109,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             }
             case SWT.MouseDown: {
                 if (event.button != 1) {
+                    return;
+                }
+                if (event.widget == this.text && this.text.getEditable()) {
                     return;
                 }
                 setFocus();
@@ -1107,7 +1140,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                         // The enter causes default selection and
                         // the arrow keys are used to manipulate the list contents so
                         // do not use them for traversal.
-                        event.doit = false;
+                        if (!this.text.getEditable() || event.detail == SWT.TRAVERSE_RETURN) {
+                            event.doit = false;
+                        }
                         break;
                     default:
                         break;
