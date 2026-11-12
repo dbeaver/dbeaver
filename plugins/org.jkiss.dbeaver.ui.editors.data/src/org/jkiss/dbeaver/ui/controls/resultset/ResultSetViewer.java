@@ -54,6 +54,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.data.hints.DBDCellHintProvider;
@@ -428,7 +429,18 @@ public class ResultSetViewer extends Viewer
                 composite.setLayoutData(gd);
             }
 
-            this.viewerPanel.addDisposeListener(e -> dispose());
+            // Keep the registration registry: the container's project can change before disposal.
+            DBPProject project = container.getProject();
+            DBPDataSourceRegistry registry = project == null ? null : project.getDataSourceRegistry();
+            if (registry != null) {
+                registry.addDataSourceListener(this);
+            }
+            this.viewerPanel.addDisposeListener(e -> {
+                if (registry != null) {
+                    registry.removeDataSourceListener(this);
+                }
+                dispose();
+            });
 
             changeMode(false);
         } finally {
@@ -438,12 +450,6 @@ public class ResultSetViewer extends Viewer
         updateFiltersText();
 
         addListener(new ResultSetStatListener(this));
-
-        // Listen datasource events (like connect/disconnect/update)
-        DBPProject project = container.getProject();
-        if (project != null) {
-            project.getDataSourceRegistry().addDataSourceListener(this);
-        }
 
         themeUpdateJob = new AbstractJob("Update theme") {
             @NotNull
@@ -2359,11 +2365,6 @@ public class ResultSetViewer extends Viewer
         if (activePresentation != null) {
             activePresentation.dispose();
         }
-        DBPProject project = container.getProject();
-        if (project != null) {
-            project.getDataSourceRegistry().removeDataSourceListener(this);
-        }
-
         savePresentationSettings();
         clearData(true);
 

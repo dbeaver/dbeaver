@@ -48,6 +48,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     private final DBPProject project;
     private List<DBNNode> extraNodes;
     private DBNNode[] children;
+    private boolean disposed;
 
     public DBNProject(DBNNode parentNode, DBPProject project) {
         super(parentNode);
@@ -155,12 +156,11 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
             project.ensureOpen();
         }
 
+        List<DBNNode> children = new ArrayList<>();
         try {
             DBPDataSourceRegistry dataSourceRegistry = project.getDataSourceRegistry();
 
             dataSourceRegistry.checkForErrors();
-
-            List<DBNNode> children = new ArrayList<>();
 
             children.add(new DBNProjectDatabases(this, dataSourceRegistry));
             addProjectNodes(monitor, children);
@@ -168,6 +168,14 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
             filterChildren(children);
             return children.toArray(DBNNode[]::new);
         } catch (Throwable e) {
+            // These nodes have not been published in the cache yet.
+            for (DBNNode child : children) {
+                try {
+                    DBNUtils.disposeNode(child, false);
+                } catch (Throwable disposeError) {
+                    e.addSuppressed(disposeError);
+                }
+            }
             project.dispose();
             if (e instanceof DBException) {
                 throw e;
@@ -272,7 +280,11 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     }
 
     @Override
-    protected void dispose(boolean reflect) {
+    protected synchronized void dispose(boolean reflect) {
+        if (disposed) {
+            return;
+        }
+        disposed = true;
         if (extraNodes != null) {
             for (DBNNode node : extraNodes) {
                 DBNUtils.disposeNode(node, reflect);
@@ -289,6 +301,11 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
             getModel().fireNodeEvent(new DBNEvent(this, DBNEvent.Action.REMOVE, this));
         }
         super.dispose(reflect);
+    }
+
+    @Override
+    public synchronized boolean isDisposed() {
+        return disposed;
     }
 
     @NotNull
@@ -323,26 +340,40 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     }
 
     @NotNull
-    private DBNNode[] getRegularChildNodes(@NotNull DBRProgressMonitor monitor) throws DBException {
+    private synchronized DBNNode[] getRegularChildNodes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        if (disposed) {
+            throw new DBException("Project navigator node is disposed");
+        }
         if (children != null) {
             return children;
         }
-        children = readChildNodes(monitor);
+        DBNNode[] childNodes = readChildNodes(monitor);
+        // Loading can invoke callbacks which dispose this node reentrantly.
+        if (disposed) {
+            for (DBNNode child : childNodes) {
+                DBNUtils.disposeNode(child, false);
+            }
+            throw new DBException("Project navigator node is disposed");
+        }
+        children = childNodes;
         return children;
     }
 
     @Override
-    public boolean needsInitialization() {
-        return children == null;
+    public synchronized boolean needsInitialization() {
+        return !disposed && children == null;
     }
 
     @Override
-    public DBNNode[] getCachedChildren() {
+    @Nullable
+    public synchronized DBNNode[] getCachedChildren() {
         return children;
     }
 
     @Override
-    public void setCachedChildren(DBNNode[] children) {
-        this.children = children;
+    public synchronized void setCachedChildren(@Nullable DBNNode[] children) {
+        if (!disposed) {
+            this.children = children;
+        }
     }
 }
