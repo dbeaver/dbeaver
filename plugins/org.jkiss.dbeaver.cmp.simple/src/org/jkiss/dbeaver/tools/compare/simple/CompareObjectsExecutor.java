@@ -167,22 +167,38 @@ public class CompareObjectsExecutor {
 
         if (settings.isRefreshMetadata()) {
             nodes = new ArrayList<>(nodes);
+            Set<DBNNode> refreshedAncestors = Collections.newSetFromMap(new IdentityHashMap<>());
             for (int i = 0; i < nodes.size(); i++) {
                 DBNDatabaseNode node = nodes.get(i);
                 if (node instanceof DBNDatabaseFolder folder) {
                     DBNNode parentNode = folder.getParentNode();
-                    DBNNode refreshed = parentNode != null ? parentNode.refreshNode(monitor, DBNEvent.FORCE_REFRESH) : folder.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
-                    if (refreshed == null || folder.isDisposed()) {
-                        throw new DBException("Root folder '" + folder.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
+                    DBNNode refreshBoundary = parentNode != null ? parentNode : folder;
+                    if (refreshedAncestors.add(refreshBoundary)) {
+                        DBNNode refreshed = refreshBoundary.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
+                        if (refreshed == null || folder.isDisposed()) {
+                            throw new DBException("Root folder '" + folder.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
+                        }
                     }
                     if (folder.getObject() instanceof DBSObjectContainer container) {
                         container.cacheStructure(monitor, DBSObjectContainer.STRUCT_ALL);
                     }
                     folder.getChildren(monitor);
+                    if (!isNodeAttached(folder, monitor)) {
+                        throw new DBException("Root folder '" + folder.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
+                    }
                 } else {
-                    DBNNode refreshed = node.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
-                    if (refreshed == null || node.getObject() == null || node.isDisposed()) {
-                        throw new DBException("Root object '" + node.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
+                    DBNNode refreshBoundary = node;
+                    for (DBNNode p = node.getParentNode(); p != null; p = p.getParentNode()) {
+                        if (p instanceof DBNDataSource || p instanceof DBNDatabaseFolder) {
+                            refreshBoundary = p;
+                            break;
+                        }
+                    }
+                    if (refreshedAncestors.add(refreshBoundary)) {
+                        DBNNode refreshed = refreshBoundary.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
+                        if (refreshed == null || refreshBoundary.isDisposed()) {
+                            throw new DBException("Root object '" + node.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
+                        }
                     }
 
                     if (!isNodeAttached(node, monitor)) {
