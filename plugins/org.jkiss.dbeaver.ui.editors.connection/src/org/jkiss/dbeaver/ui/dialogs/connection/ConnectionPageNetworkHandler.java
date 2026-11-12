@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.preferences.PrefPageProjectNetworkProfiles;
 import org.jkiss.utils.CommonUtils;
 
@@ -166,7 +167,7 @@ public class ConnectionPageNetworkHandler extends ConnectionWizardPage {
             }
 
             profileProvidedHint.setText(NLS.bind(
-                "Using configuration from profile ''<a href=\"#\">{0}</a>''",
+                UIConnectionMessages.dialog_connection_network_profile_provided,
                 profile.getProfileName()
             ));
             UIUtils.setControlVisible(profileProvidedHint.getParent(), true);
