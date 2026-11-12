@@ -26,6 +26,7 @@ import org.jkiss.utils.ByteNumberFormat;
 import java.io.Closeable;
 import java.io.IOException;
 import java.nio.file.Path;
+import java.util.List;
 
 /**
  * Glue shared between {@link MimerBLOBValueHandler}/{@link MimerCLOBValueHandler}'s {@code
@@ -38,24 +39,40 @@ import java.nio.file.Path;
  */
 final class MimerLobUtil {
 
-    // ByteArrayOutputStream/CharArrayWriter's own default growth (double the backing array via
-    // Arrays.copyOf, old and new simultaneously live during the copy) would transiently need up
-    // to ~1.5x whatever's already been read whenever memoryLimit itself is large - the
-    // content.memory.maxsize preference allows up to 1 GiB. Growing by this fixed amount instead
-    // bounds that transient overshoot to one step, independent of how large memoryLimit is set.
-    private static final int MEMORY_GROWTH_STEP = 1 << 20;
-
     private MimerLobUtil() {
     }
 
     /**
-     * The next backing-array size to grow a memory buffer to, given it must hold at least
-     * {@code required} bytes/chars and should never exceed {@code memoryLimit} except when
-     * {@code required} itself already does (the one read that pushes past the limit and ends the
-     * read loop).
+     * Concatenates already-read chunks (each independently allocated at read time, trimmed to its
+     * own valid length - never recopied as the read loop goes) into the one contiguous array
+     * {@link org.jkiss.dbeaver.model.data.storage.BytesContentStorage} needs. A single O(total)
+     * pass, done once - not per chunk, which is what made the earlier grow-by-fixed-step attempt
+     * quadratic (each growth step recopied the whole prefix so far).
      */
-    static int nextCapacity(int currentCapacity, int required, int memoryLimit) {
-        return Math.max(required, Math.min(memoryLimit, currentCapacity + MEMORY_GROWTH_STEP));
+    @NotNull
+    static byte[] concatenateBytes(@NotNull List<byte[]> chunks, int total) {
+        byte[] result = new byte[total];
+        int offset = 0;
+        for (byte[] chunk : chunks) {
+            System.arraycopy(chunk, 0, result, offset, chunk.length);
+            offset += chunk.length;
+        }
+        return result;
+    }
+
+    /**
+     * The {@code char[]} sibling of {@link #concatenateBytes(List, int)}, for
+     * {@link org.jkiss.dbeaver.model.data.storage.StringContentStorage}'s {@code String}.
+     */
+    @NotNull
+    static String concatenateChars(@NotNull List<char[]> chunks, int total) {
+        char[] result = new char[total];
+        int offset = 0;
+        for (char[] chunk : chunks) {
+            System.arraycopy(chunk, 0, result, offset, chunk.length);
+            offset += chunk.length;
+        }
+        return new String(result);
     }
 
     @FunctionalInterface

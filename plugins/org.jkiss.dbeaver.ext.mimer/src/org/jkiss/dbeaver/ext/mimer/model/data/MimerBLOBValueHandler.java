@@ -41,7 +41,9 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -122,26 +124,27 @@ public class MimerBLOBValueHandler extends JDBCContentValueHandler {
         boolean spooled = false;
         try {
             byte[] buffer = new byte[8192];
-            byte[] memoryBuffer = new byte[Math.min(memoryLimit, buffer.length * 8)];
+            // Each chunk is its own, independently-allocated array - appending one never touches
+            // (let alone recopies) any earlier chunk, unlike growing a single backing array ever
+            // bigger would. The one unavoidable full-length copy - building the single contiguous
+            // array BytesContentStorage needs - happens exactly once, in concatenateBytes below.
+            List<byte[]> chunks = new ArrayList<>();
             int total = 0;
             int n;
             while (!monitor.isCanceled() && total < memoryLimit && (n = stream.read(buffer)) >= 0) {
-                if (total + n > memoryBuffer.length) {
-                    memoryBuffer = Arrays.copyOf(memoryBuffer, MimerLobUtil.nextCapacity(memoryBuffer.length, total + n, memoryLimit));
-                }
-                System.arraycopy(buffer, 0, memoryBuffer, total, n);
+                chunks.add(n == buffer.length ? buffer.clone() : Arrays.copyOf(buffer, n));
                 total += n;
             }
             if (monitor.isCanceled() || total < memoryLimit) {
-                content.setStorage(new BytesContentStorage(Arrays.copyOf(memoryBuffer, total), encoding));
+                content.setStorage(new BytesContentStorage(MimerLobUtil.concatenateBytes(chunks, total), encoding));
             } else {
-                int spooledTotal = total;
-                byte[] spooledBuffer = memoryBuffer;
                 Path tempFile = MimerLobUtil.spoolToTempFile(
                     monitor, platform, "mimer_blob" + TEMP_FILE_SEQUENCE.incrementAndGet(),
                     tempFilePath -> {
                         try (OutputStream os = Files.newOutputStream(tempFilePath)) {
-                            os.write(spooledBuffer, 0, spooledTotal);
+                            for (byte[] chunk : chunks) {
+                                os.write(chunk);
+                            }
                             ContentUtils.copyStreams(stream, -1, os, monitor);
                         }
                     });

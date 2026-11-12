@@ -42,7 +42,9 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -121,26 +123,25 @@ public class MimerCLOBValueHandler extends JDBCContentValueHandler {
         boolean spooled = false;
         try {
             char[] buffer = new char[8192];
-            char[] memoryBuffer = new char[Math.min(memoryLimit, buffer.length * 8)];
+            // See MimerBLOBValueHandler's identical chunk list for why - each chunk is its own
+            // array, appending one never recopies any earlier chunk.
+            List<char[]> chunks = new ArrayList<>();
             int total = 0;
             int n;
             while (!monitor.isCanceled() && total < memoryLimit && (n = reader.read(buffer)) >= 0) {
-                if (total + n > memoryBuffer.length) {
-                    memoryBuffer = Arrays.copyOf(memoryBuffer, MimerLobUtil.nextCapacity(memoryBuffer.length, total + n, memoryLimit));
-                }
-                System.arraycopy(buffer, 0, memoryBuffer, total, n);
+                chunks.add(n == buffer.length ? buffer.clone() : Arrays.copyOf(buffer, n));
                 total += n;
             }
             if (monitor.isCanceled() || total < memoryLimit) {
-                content.setStorage(new StringContentStorage(new String(memoryBuffer, 0, total)));
+                content.setStorage(new StringContentStorage(MimerLobUtil.concatenateChars(chunks, total)));
             } else {
-                int spooledTotal = total;
-                char[] spooledBuffer = memoryBuffer;
                 Path tempFile = MimerLobUtil.spoolToTempFile(
                     monitor, platform, "mimer_clob" + TEMP_FILE_SEQUENCE.incrementAndGet(),
                     tempFilePath -> {
                         try (Writer os = Files.newBufferedWriter(tempFilePath, Charset.forName(encoding))) {
-                            os.write(spooledBuffer, 0, spooledTotal);
+                            for (char[] chunk : chunks) {
+                                os.write(chunk);
+                            }
                             ContentUtils.copyStreams(reader, -1, os, monitor);
                         }
                     });
