@@ -333,9 +333,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
                 occurrencesHighlighter.updateInput(getEditorInput());
             }
             reloadSyntaxRules();
-            if (getSourceViewer() != null) {
-                reloadSourceViewerConfiguration();
-            }
         });
     }
 
@@ -1049,8 +1046,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             this.backgroundParsingJob.setup();
         }
         // Update configuration
-        if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration) {
-            ((SQLEditorSourceViewerConfiguration) getSourceViewerConfiguration()).onDataSourceChange();
+        if (getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration configuration) {
+            configuration.onDataSourceChange();
+            configuration.refreshAutoActivation();
         }
         if (verticalRuler != null) {
             verticalRuler.update();

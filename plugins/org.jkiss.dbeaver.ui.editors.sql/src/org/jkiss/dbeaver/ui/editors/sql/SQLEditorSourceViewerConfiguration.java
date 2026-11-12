@@ -85,6 +85,8 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
 
     private IContentAssistProcessor completionProcessor;
     private SQLHyperlinkDetector hyperlinkDetector;
+    @Nullable
+    private SQLContentAssistant contentAssistant;
 
     /**
      * This class implements a single token scanner.
@@ -271,6 +273,7 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         editor.getTextViewer().getControl().addDisposeListener(
             e -> configStore.removePropertyChangeListener(prefListener));
 
+        this.contentAssistant = assistant;
         return assistant;
     }
 
@@ -281,6 +284,18 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         );
         assistant.setAutoActivationDelay(store.getInt(SQLPreferenceConstants.AUTO_ACTIVATION_DELAY));
         assistant.setProposalPopupOrientation(IContentAssistant.PROPOSAL_OVERLAY);
+    }
+
+    /**
+     * Re-evaluates auto-activation without reconfiguring the whole source viewer.
+     */
+    void refreshAutoActivation() {
+        if (contentAssistant != null) {
+            contentAssistant.enableAutoActivation(
+                SQLEditorUtils.isSQLSyntaxParserApplied(editor)
+                && editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.ENABLE_AUTO_ACTIVATION)
+            );
+        }
     }
 
     @Override
