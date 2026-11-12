@@ -1431,7 +1431,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         // Stretch
         UIUtils.createEmptyLabel(presentationSwitchFolder, 1, 1).setLayoutData(new GridData(GridData.FILL_VERTICAL));
-        createToggleLayoutButton();
+        createResultPositionButtons();
     }
 
     /**
@@ -2320,9 +2320,11 @@ public class SQLEditor extends SQLEditorBase implements
             if (extraPresentationManager.activePresentation != null) {
                 // Check and add presentation panel toggles
                 final List<SQLPresentationPanelDescriptor> panels = extraPresentationManager.activePresentationDescriptor.getPanels();
-                for (SQLPresentationPanelDescriptor panelDescriptor : panels) {
-                    removeToggleLayoutButton();
+                if (!panels.isEmpty()) {
+                    removeResultPositionButtons();
                     sideBarChanged = true;
+                }
+                for (SQLPresentationPanelDescriptor panelDescriptor : panels) {
                     PresentationPanelToggleAction toggleAction = new PresentationPanelToggleAction(panelDescriptor);
                     VerticalButton panelButton = new VerticalButton(presentationSwitchFolder, SWT.RIGHT);
                     panelButton.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_END));
@@ -2332,7 +2334,9 @@ public class SQLEditor extends SQLEditorBase implements
                         //panelButton.setChecked(true);
                         toggleAction.run();
                     }
-                    createToggleLayoutButton();
+                }
+                if (!panels.isEmpty()) {
+                    createResultPositionButtons();
                 }
             }
 
@@ -2367,14 +2371,32 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void createToggleLayoutButton() {
-        VerticalButton.create(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK, getSite(), SQLEditorCommands.CMD_TOGGLE_LAYOUT, false);
+    private void createResultPositionButtons() {
+        VerticalButton.create(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK, getSite(), SQLEditorCommands.CMD_RESULTS_BELOW, false);
+        VerticalButton.create(presentationSwitchFolder, SWT.RIGHT | SWT.CHECK, getSite(), SQLEditorCommands.CMD_RESULTS_RIGHT, false);
+        updateResultPositionButtons();
     }
 
-    private void removeToggleLayoutButton() {
+    private void removeResultPositionButtons() {
         for (VerticalButton vButton : presentationSwitchFolder.getItems()) {
-            if (vButton.getCommandId() != null && vButton.getCommandId().equals(SQLEditorCommands.CMD_TOGGLE_LAYOUT)) {
+            if (SQLEditorCommands.CMD_RESULTS_BELOW.equals(vButton.getCommandId())
+                || SQLEditorCommands.CMD_RESULTS_RIGHT.equals(vButton.getCommandId())) {
                 vButton.dispose();
+            }
+        }
+    }
+
+    private void updateResultPositionButtons() {
+        if (presentationSwitchFolder == null || presentationSwitchFolder.isDisposed()) {
+            return;
+        }
+        for (VerticalButton button : presentationSwitchFolder.getItems()) {
+            if (SQLEditorCommands.CMD_RESULTS_BELOW.equals(button.getCommandId())
+                || SQLEditorCommands.CMD_RESULTS_RIGHT.equals(button.getCommandId())) {
+                button.setChecked(resultSetOrientation == ResultSetOrientation.HORIZONTAL
+                    ? SQLEditorCommands.CMD_RESULTS_BELOW.equals(button.getCommandId())
+                    : SQLEditorCommands.CMD_RESULTS_RIGHT.equals(button.getCommandId()));
+                button.redraw();
             }
         }
     }
@@ -2455,6 +2477,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
         if (resultsSash != null) {
             resultsSash.setOrientation(resultSetOrientation.getSashOrientation());
+            updateResultPositionButtons();
             if (previousOrientation != resultSetOrientation) {
                 SQLEditorHandlerPlaceExtraPanels.refreshCommandState(getSite());
             }

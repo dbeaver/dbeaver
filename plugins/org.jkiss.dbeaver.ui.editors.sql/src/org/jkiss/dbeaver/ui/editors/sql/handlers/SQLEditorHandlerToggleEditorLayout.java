@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -38,10 +39,16 @@ public class SQLEditorHandlerToggleEditorLayout extends AbstractHandler {
         if (editor != null) {
             String curPresentationName = DBWorkbench.getPlatform().getPreferenceStore().getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION);
             SQLEditor.ResultSetOrientation curOrientation = CommonUtils.valueOf(SQLEditor.ResultSetOrientation.class, curPresentationName, SQLEditor.ResultSetOrientation.HORIZONTAL);
-            if (curOrientation == SQLEditor.ResultSetOrientation.HORIZONTAL) {
+            if (SQLEditorCommands.CMD_RESULTS_BELOW.equals(event.getCommand().getId())) {
+                curOrientation = SQLEditor.ResultSetOrientation.HORIZONTAL;
+            } else if (SQLEditorCommands.CMD_RESULTS_RIGHT.equals(event.getCommand().getId())
+                || curOrientation == SQLEditor.ResultSetOrientation.HORIZONTAL) {
                 curOrientation = SQLEditor.ResultSetOrientation.VERTICAL;
             } else {
                 curOrientation = SQLEditor.ResultSetOrientation.HORIZONTAL;
+            }
+            if (curOrientation.name().equals(curPresentationName)) {
+                return null;
             }
             DBWorkbench.getPlatform().getPreferenceStore().setValue(SQLPreferenceConstants.RESULT_SET_ORIENTATION, curOrientation.name());
             try {
