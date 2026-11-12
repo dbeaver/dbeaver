@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.security;
 
 public enum SMTeamGrantType {
+    UNKNOWN,
     MANUAL,
     AUTH_PROVIDER,
     DEFAULT
