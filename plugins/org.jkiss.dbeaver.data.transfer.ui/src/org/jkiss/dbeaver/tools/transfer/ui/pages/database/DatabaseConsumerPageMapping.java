@@ -1109,7 +1109,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                 DBSObjectContainer container = settings.getContainer();
                 Collection<? extends DBSObject> children = container.getChildren(new LoggingProgressMonitor(log));
                 for (DBSObject child : CommonUtils.safeCollection(children)) {
-                    if (child instanceof DBSDataManipulator) {
+                    if (DatabaseTransferUtils.isValidTargetTable(child)) {
                         items.add(transformTargetName(
                             DBUtils.getQuotedIdentifier(child),
                             dmc.getMappingType()));
@@ -1232,6 +1232,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         boolean updateAttributesNames
     ) {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
+        // Reset the previous conflict message: it is recalculated for every mapping attempt
+        mappingErrorMessage = null;
         try {
             if (name.equals(DatabaseMappingAttribute.TARGET_NAME_SKIP)) {
                 if (mapping instanceof DatabaseMappingAttribute) {
@@ -1312,20 +1314,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             if (ns != null) {
                 DBSObject existingObject = ns.getObjectByName(monitor, unQuotedNameForSearch);
                 if (existingObject != null) {
-                    if (existingObject instanceof DBSDataManipulator) {
-                        targetDataContainer = (DBSDataManipulator) existingObject;
+                    if (DatabaseTransferUtils.isValidTargetTable(existingObject)
+                        && existingObject instanceof DBSDataManipulator targetTable) {
+                        targetDataContainer = targetTable;
                     } else {
-                        containerMapping.setTargetName(name);
-                        containerMapping.refreshMappingType(
-                            monitor,
-                            DatabaseMappingType.unspecified,
-                            false,
-                            false);
-                        mappingErrorMessage =
-                            "Name '" + unQuotedNameForSearch + "' is already used by " + DBUtils.getObjectTypeName(existingObject);
-
-                        UIUtils.asyncExec(() -> mappingViewer.refresh());
-                        return true;
+                        return reportTargetNameConflict(monitor, containerMapping, name, unQuotedNameForSearch, existingObject);
                     }
                 }
             }
@@ -1334,11 +1327,22 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         if (targetDataContainer == null && ns == null) {
             // Without a namespace, search for an existing data manipulator (writable table).
             // A namespace lookup already covers a missing name without loading every child in the container.
+            DBSObject conflictingObject = null;
             for (DBSObject child : CommonUtils.safeCollection(container.getChildren(monitor))) {
-                if (child instanceof DBSDataManipulator && unQuotedNameForSearch.equalsIgnoreCase(child.getName())) {
+                if (!unQuotedNameForSearch.equalsIgnoreCase(child.getName())) {
+                    continue;
+                }
+                if (DatabaseTransferUtils.isValidTargetTable(child)) {
                     targetDataContainer = (DBSDataManipulator) child;
                     break;
+                } else if (conflictingObject == null) {
+                    conflictingObject = child;
                 }
+            }
+            if (targetDataContainer == null && conflictingObject != null) {
+                // The name is taken by an object which cannot be used as a target (for instance a view).
+                // Report the conflict instead of silently switching the mapping to "create".
+                return reportTargetNameConflict(monitor, containerMapping, name, unQuotedNameForSearch, conflictingObject);
             }
         }
         if (targetDataContainer != null) {
@@ -1364,6 +1368,31 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             return true;
         }
         return false;
+    }
+
+    /**
+     * Reports a target name collision with an object which cannot be used as a data transfer target.
+     *
+     * @return always {@code true}, meaning that the mapping was handled
+     */
+    private boolean reportTargetNameConflict(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DatabaseMappingContainer containerMapping,
+        @NotNull String name,
+        @NotNull String unQuotedNameForSearch,
+        @NotNull DBSObject existingObject
+    ) throws DBException {
+        containerMapping.setTargetName(name);
+        containerMapping.refreshMappingType(
+            monitor,
+            DatabaseMappingType.unspecified,
+            false,
+            false);
+        mappingErrorMessage =
+            "Name '" + unQuotedNameForSearch + "' is already used by " + DBUtils.getObjectTypeName(existingObject);
+
+        UIUtils.asyncExec(() -> mappingViewer.refresh());
+        return true;
     }
 
     private void updateMappingRules() {
@@ -1396,6 +1425,10 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             //loadAndUpdateColumnsModel();
             for (Object element : elementList) {
                 if (element instanceof DatabaseMappingContainer container) {
+                    if (container.getTarget() != null) {
+                        // Keep the target already resolved from a saved task mapping
+                        continue;
+                    }
                     setMappingTarget(monitor, container, container.getTargetName(), true, false);
                 }
             }
@@ -1422,20 +1455,22 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             if (mappings.length == 1 && mappings[0].getTarget() != null) {
                 selectedNode = navigatorModel.getNodeByObject(mappings[0].getTarget());
             }
-            DBNNode node = DBWorkbench.getPlatformUI().selectObject(
+            DBNNode node = ObjectBrowserDialog.selectObject(
                 getShell(),
                 DTUIMessages.database_consumer_page_mapping_node_title,
                 rootNode,
                 selectedNode,
                 new Class[] {DBSObjectContainer.class, DBSDataManipulator.class},
                 new Class[] {DBSDataManipulator.class},
-                null);
+                null,
+                null,
+                DatabaseConsumerPageMapping::isTargetTableNode);
             if (node instanceof DBSWrapper dbw) {
                 DBSObject object = dbw.getObject();
                 try {
                     boolean needsUpdate = false;
                     for (DatabaseMappingContainer mapping : mappings) {
-                        if (object instanceof DBSDataManipulator dm) {
+                        if (DatabaseTransferUtils.isValidTargetTable(object) && object instanceof DBSDataManipulator dm) {
                             mapping.setTarget(dm);
                             mapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.existing, false);
                             if (mappings.length == 1) {
@@ -1467,6 +1502,14 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     public void updateMappingsAndButtons() {
         mappingViewer.refresh();
         mappingViewer.setSelection(mappingViewer.getSelection());
+    }
+
+    private static boolean isTargetTableNode(@NotNull DBNNode node) {
+        if (node instanceof DBSWrapper wrapper) {
+            DBSObject object = wrapper.getObject();
+            return !(object instanceof DBSDataManipulator) || DatabaseTransferUtils.isValidTargetTable(object);
+        }
+        return true;
     }
 
     private String transformTargetName(String name, @NotNull DatabaseMappingType mappingType) {
