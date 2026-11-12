@@ -33,6 +33,13 @@ public class DBNSpecialFolder extends DBNResource {
 
     @NotNull
     @Override
+    public String getNodeId() {
+        // Persisted navigator URIs must not depend on the display language or preference.
+        return getResource().getName();
+    }
+
+    @NotNull
+    @Override
     public String getNodeDisplayName() {
         IResource resource = getResource();
         if (resource != null
