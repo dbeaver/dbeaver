@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.storage.BytesContentStorage;
 import org.jkiss.dbeaver.model.data.storage.TemporaryContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -126,8 +125,7 @@ public class MimerBLOBValueHandler extends JDBCContentValueHandler {
             byte[] buffer = new byte[8192];
             // Each chunk is its own, independently-allocated array - appending one never touches
             // (let alone recopies) any earlier chunk, unlike growing a single backing array ever
-            // bigger would. The one unavoidable full-length copy - building the single contiguous
-            // array BytesContentStorage needs - happens exactly once, in concatenateBytes below.
+            // bigger would.
             List<byte[]> chunks = new ArrayList<>();
             int total = 0;
             int n;
@@ -136,7 +134,10 @@ public class MimerBLOBValueHandler extends JDBCContentValueHandler {
                 total += n;
             }
             if (monitor.isCanceled() || total < memoryLimit) {
-                content.setStorage(new BytesContentStorage(MimerLobUtil.concatenateBytes(chunks, total), encoding));
+                // Stays chunked - MimerChunkedBytesStorage only flattens into one array if/when
+                // something actually needs the real value (see its own javadoc for why that
+                // matters: most fetched rows in a browsed table are never individually opened).
+                content.setStorage(new MimerChunkedBytesStorage(chunks, total, encoding));
             } else {
                 Path tempFile = MimerLobUtil.spoolToTempFile(
                     monitor, platform, "mimer_blob" + TEMP_FILE_SEQUENCE.incrementAndGet(),

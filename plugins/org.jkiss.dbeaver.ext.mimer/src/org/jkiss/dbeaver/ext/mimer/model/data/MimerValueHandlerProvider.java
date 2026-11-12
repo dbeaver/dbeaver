@@ -39,34 +39,26 @@ import java.util.Locale;
  * <p>
  * {@link #getValueHandler} tries {@code typedObject.getTypeID()} first, but the driver's raw
  * catalog {@code DATA_TYPE} for {@code NATIONAL CHAR LARGE OBJECT} doesn't match {@code
- * Types.NCLOB} (see {@link MimerConstants#TYPE_NAMES_LARGE_OBJECT}'s own comment) -
- * {@code GenericMetaModel#createTableColumnImpl}/{@code JDBCColumnMetaData} normally correct it
- * via {@code MimerDataSource#getLocalDataType(String)} before this class ever sees it, but that's
- * an indirect side effect of a type-name lookup elsewhere in this plugin, not something this class
- * controls. So it also falls back to matching {@code typedObject.getTypeName()} directly against
- * the same name sets {@code MimerDataSource#resolveDataKind} already uses, rather than trusting
- * the type ID alone.
+ * Types.NCLOB} (see {@link MimerConstants#TYPE_NAMES_LARGE_OBJECT}'s own comment), so it also
+ * falls back to matching {@code typedObject.getTypeName()} against the same name sets {@code
+ * MimerDataSource#resolveDataKind} already uses.
  * <p>
- * Always returns a Mimer-specific handler for a matching column - deliberately never falls back
- * to the core JDBC-standard handler, for any driver version. The standard handler reads a BLOB/
- * CLOB/NCLOB lazily: it holds onto the {@code java.sql.Blob}/{@code Clob} locator {@code
- * getObject()}/{@code getBlob()}/{@code getClob()} returns and only actually reads from it later,
- * on first access. On Mimer SQL that locator is scoped to the transaction that fetched it - by
- * the time anything reads from it later (e.g. opening an image viewer well after the row's own
- * fetch completed), it throws {@code "<Blob|Clob> object became invalid after transaction
+ * Always returns a Mimer-specific handler for a matching column, never the core JDBC-standard
+ * one: that handler reads a BLOB/CLOB/NCLOB lazily, holding the {@code java.sql.Blob}/{@code
+ * Clob} locator and only reading from it on first access - but on Mimer SQL that locator is
+ * scoped to the transaction that fetched it, so a later read (e.g. opening an image viewer after
+ * the fetch completed) throws {@code "<Blob|Clob> object became invalid after transaction
  * ended"}. Confirmed live against driver 11.0.2: {@code DatabaseMetaData
  * #supportsResultSetHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT)} reports {@code false}, and
- * calling {@code Connection#setHoldability} to that value anyway is silently a no-op - the
- * server, not the driver, ties the locator's lifetime to the transaction, so this isn't something
- * a future driver patch can lift. {@link MimerBLOBValueHandler}/{@link MimerCLOBValueHandler}
- * avoid it by reading the full content eagerly, inside the same fetch, never holding onto the
- * locator - there is no driver version where handing a Mimer LOB column to the standard handler
- * would be safe. Returning {@code null} here instead would NOT reach that standard provider
- * either way: {@code DataTypeProviderRegistry#getValueHandlerProvider} picks this, the first
- * non-global provider matching both the datasource and the column type, and returns immediately -
- * the global providers are never even consulted - so {@code DBUtils#findValueHandler} would fall
- * straight through to {@code DefaultValueHandler}, which can't bind a value at all (throws on
- * every write) and skips the content-wrapper machinery LOB viewing/export relies on.
+ * {@code Connection#setHoldability} to that value is silently a no-op - the server, not the
+ * driver, ties the locator's lifetime to the transaction, so no driver patch alone can lift this;
+ * it would take a change on the server side too, and none is scheduled. {@link
+ * MimerBLOBValueHandler}/{@link MimerCLOBValueHandler} avoid it by reading the full content
+ * eagerly, inside the same fetch, never holding the locator. Returning {@code null} here instead
+ * would not reach the standard handler either way - {@code
+ * DataTypeProviderRegistry#getValueHandlerProvider} returns this provider's result immediately
+ * without consulting any other, so {@code DBUtils#findValueHandler} would fall through to {@code
+ * DefaultValueHandler}, which can't bind a value at all.
  *
  * @author Mimer Information Technology
  */

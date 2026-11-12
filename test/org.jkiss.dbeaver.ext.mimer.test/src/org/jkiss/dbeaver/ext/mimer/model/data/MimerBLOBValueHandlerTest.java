@@ -48,6 +48,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.sql.Types;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -180,6 +181,26 @@ public class MimerBLOBValueHandlerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void displayStringShowsTheRealHexPreviewForAPlainInMemoryStorageNotJustTheSize() {
+        // Regression test: an edited/pasted cell's new storage (set via updateContents, same as
+        // the inline cell editor's own save path produces) is a plain, already-in-memory
+        // BytesContentStorage - a genuinely different, non-lazy DBDContentCached from
+        // MimerChunkedBytesStorage, so there's no reason to withhold the base class's own real
+        // hex preview for it the way there is for the lazy chunked kind (see MimerContentBLOB's
+        // own javadoc).
+        MimerContentBLOB content = new MimerContentBLOB(executionContext);
+        byte[] data = {0x01, 0x02, 0x03};
+        content.updateContents(progressMonitor,
+            new org.jkiss.dbeaver.model.data.storage.BytesContentStorage(data, "UTF-8"));
+
+        String displayed = content.getDisplayString(DBDDisplayFormat.UI);
+
+        Assertions.assertNotNull(displayed);
+        Assertions.assertFalse(displayed.startsWith("[BLOB,"),
+            "A plain, already-in-memory storage should get the base class's real hex preview, not the bare size placeholder: " + displayed);
+    }
+
+    @Test
     public void noTempFileIsLeftBehindWhenSomethingGoesWrongWhileSpillingToDisk() throws Exception {
         // Past MEMORY_CONTENT_MAX_SIZE so fetchColumnValue has already committed to the
         // temp-file branch before the stream fails - exactly the case the Throwable catch
@@ -304,14 +325,31 @@ public class MimerBLOBValueHandlerTest extends DBeaverUnitTest {
     @Test
     public void displayStringShowsSizeOnceSpilledToATempFileInsteadOfStayingInMemory() throws Exception {
         // Not exercised through fetchValueObject - a real spill needs real file I/O (see the
-        // class javadoc for why that's not re-tested here). A plain DBDContentStorage mock is
-        // not a DBDContentCached, matching exactly what TemporaryContentStorage looks like to
-        // getDisplayString - that's the only thing this override actually branches on.
+        // class javadoc for why that's not re-tested here). A plain DBDContentStorage mock stands
+        // in for a real spilled TemporaryContentStorage - getDisplayString shows the same size
+        // placeholder for any non-null storage now, spilled or in-memory alike.
         DBDContentStorage spilledStorage = Mockito.mock(DBDContentStorage.class);
         Mockito.when(spilledStorage.getContentLength()).thenReturn(277_000L);
         MimerContentBLOB content = new MimerContentBLOB(executionContext);
         content.setStorage(spilledStorage);
 
         Assertions.assertEquals("[BLOB, 270KiB]", content.getDisplayString(DBDDisplayFormat.UI));
+    }
+
+    @Test
+    public void displayStringShowsSizeForInMemoryChunkedStorageTooWithoutMaterializingIt() {
+        // The whole point of MimerChunkedBytesStorage (see its own javadoc) is that browsing a
+        // table full of BLOBs never has to flatten any of them just to render a grid cell's text -
+        // verify that directly: a chunks list that throws if ever iterated proves getDisplayString
+        // never touches it, not just that the displayed text happens to be right.
+        @SuppressWarnings("unchecked")
+        List<byte[]> chunks = Mockito.mock(List.class);
+        MimerChunkedBytesStorage storage = new MimerChunkedBytesStorage(chunks, 277_000, "UTF-8");
+        MimerContentBLOB content = new MimerContentBLOB(executionContext);
+        content.setStorage(storage);
+
+        Assertions.assertEquals("[BLOB, 270KiB]", content.getDisplayString(DBDDisplayFormat.UI));
+
+        Mockito.verifyNoInteractions(chunks);
     }
 }

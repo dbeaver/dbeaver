@@ -30,10 +30,11 @@ import java.util.List;
 
 /**
  * Glue shared between {@link MimerBLOBValueHandler}/{@link MimerCLOBValueHandler}'s {@code
- * spoolToContent} and {@link MimerContentBLOB}/{@link MimerContentCLOB}'s {@code
- * getDisplayString} - the byte-vs-char read loop and storage types genuinely differ between the
- * two and stay separate, but the temp-file-with-cleanup-on-failure, close-with-release-on-failure,
- * and sized-placeholder-text pieces around them don't.
+ * spoolToContent}, {@link MimerChunkedBytesStorage}/{@link MimerChunkedCharsStorage}'s lazy
+ * flatten, and {@link MimerContentBLOB}/{@link MimerContentCLOB}'s {@code getDisplayString} - the
+ * byte-vs-char read loop and storage types genuinely differ between the two and stay separate,
+ * but the temp-file-with-cleanup-on-failure, close-with-release-on-failure, concatenation, and
+ * sized-placeholder-text pieces around them don't.
  *
  * @author Mimer Information Technology
  */
@@ -43,11 +44,10 @@ final class MimerLobUtil {
     }
 
     /**
-     * Concatenates already-read chunks (each independently allocated at read time, trimmed to its
-     * own valid length - never recopied as the read loop goes) into the one contiguous array
-     * {@link org.jkiss.dbeaver.model.data.storage.BytesContentStorage} needs. A single O(total)
-     * pass, done once - not per chunk, which is what made the earlier grow-by-fixed-step attempt
-     * quadratic (each growth step recopied the whole prefix so far).
+     * Concatenates already-read chunks into the one contiguous array {@link
+     * org.jkiss.dbeaver.model.data.storage.BytesContentStorage} needs - a single pass, done once,
+     * called lazily from {@link MimerChunkedBytesStorage#getCachedValue()} rather than eagerly for
+     * every fetched row.
      */
     @NotNull
     static byte[] concatenateBytes(@NotNull List<byte[]> chunks, int total) {
@@ -132,5 +132,28 @@ final class MimerLobUtil {
     @NotNull
     static String sizedPlaceholder(@NotNull String label, long contentLength) {
         return "[" + label + ", " + new ByteNumberFormat(ByteNumberFormat.BinaryPrefix.ISO).format(contentLength) + "]";
+    }
+
+    /**
+     * Up to {@code maxLength} characters from the start of {@code chunks}, without touching any
+     * chunk beyond what's needed - shared by {@link MimerChunkedCharsStorage#peekPreview} and
+     * {@link MimerCLOBValueHandler#spoolToContent} (see {@link MimerSpilledCharsStorage}). Walks
+     * as many chunks as it takes, not just the first - {@code Reader#read(char[])} isn't
+     * guaranteed to fill the buffer in one call.
+     */
+    @NotNull
+    static String extractPreview(@NotNull List<char[]> chunks, int maxLength) {
+        if (chunks.isEmpty()) {
+            return "";
+        }
+        StringBuilder preview = new StringBuilder(Math.min(maxLength, 64));
+        for (char[] chunk : chunks) {
+            int remaining = maxLength - preview.length();
+            if (remaining <= 0) {
+                break;
+            }
+            preview.append(chunk, 0, Math.min(remaining, chunk.length));
+        }
+        return preview.toString();
     }
 }

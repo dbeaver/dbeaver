@@ -29,16 +29,16 @@ import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentLOB;
 /**
  * A {@link JDBCContentBLOB} with no {@code java.sql.Blob} of its own - {@link
  * MimerBLOBValueHandler} populates it via {@link #setStorage} instead, writing the inherited
- * {@code protected storage} field directly rather than going through the public {@code
+ * {@code protected storage} field directly rather than through the public {@code
  * JDBCContentLOB#updateContents}, which would also flip {@code modified} to {@code true} - wrong
- * for freshly-fetched data. Same pattern {@code OracleContentXML} already uses for the identical
- * reason.
+ * for freshly-fetched data. Same pattern {@code OracleContentXML} uses for the same reason.
  * <p>
- * Also overrides {@code getDisplayString} to show the real content length even when the base
- * class's own check (storage must be {@link DBDContentCached}, i.e. still in memory) would
- * otherwise fall back to a bare {@code "[BLOB]"} - true for every value {@link
- * MimerBLOBValueHandler} had to spill to a temp file. {@code storage.getContentLength()} is cheap
- * even then (a file size, not a read), so there's no reason to show less than that.
+ * {@code getDisplayString} shows just the size, e.g. {@code "[BLOB, 270KiB]"}, for a {@link
+ * MimerChunkedBytesStorage} specifically - the base class's own version would flatten it via
+ * {@code getCachedValue()} just to preview it, which is exactly the per-row cost that class
+ * exists to avoid. Any other {@code DBDContentCached} storage (e.g. a plain {@code
+ * BytesContentStorage} from an edited cell) is already fully in memory, so the base class's real
+ * hex preview is let through unchanged.
  *
  * @author Mimer Information Technology
  */
@@ -60,10 +60,9 @@ class MimerContentBLOB extends JDBCContentBLOB {
     @Nullable
     @Override
     public String getDisplayString(@NotNull DBDDisplayFormat format) {
-        if (storage == null || storage instanceof DBDContentCached) {
-            // storage == null means this value is SQL NULL (blob is never set, see the
-            // constructor) - let the superclass report the NULL marker instead of treating it
-            // as a zero-length BLOB below.
+        if (storage == null || (storage instanceof DBDContentCached && !(storage instanceof MimerChunkedBytesStorage))) {
+            // null = SQL NULL; any other DBDContentCached that isn't the lazy chunked kind is
+            // cheap to preview - see this class's own javadoc.
             return super.getDisplayString(format);
         }
         try {
