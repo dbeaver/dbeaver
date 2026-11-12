@@ -84,6 +84,7 @@ import java.util.regex.PatternSyntaxException;
 public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 {
     private static final Log log = Log.getLog(SessionManagerViewer.class);
+    private static final String SQL_LABEL = "SQL";
 
     private final IWorkbenchPart workbenchPart;
     private final DBAServerSessionManager<SESSION_TYPE> sessionManager;
@@ -161,7 +162,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                 parent.addDisposeListener(e -> sqlViewer.dispose());
 
                 CTabItem sqlViewItem = new CTabItem(previewFolder, SWT.NONE);
-                sqlViewItem.setText(SessionEditorMessages.viewer_view_item_sql);
+                sqlViewItem.setText(SQL_LABEL);
                 sqlViewItem.setImage(DBeaverIcons.getImage(DBIcon.SQL_TEXT));
                 sqlViewItem.setControl(sqlViewer.getEditorControlWrapper());
 
@@ -454,7 +455,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             if (sessionManager instanceof DBAServerSessionManagerSQL &&
                 ((DBAServerSessionManagerSQL) sessionManager).canGenerateSessionReadQuery())
             {
-                contributionManager.add(ActionUtils.makeActionContribution(new Action(SessionEditorMessages.viewer_open_sql_editor_text, IAction.AS_PUSH_BUTTON) {
+                contributionManager.add(ActionUtils.makeActionContribution(new Action(SQL_LABEL, IAction.AS_PUSH_BUTTON) {
                     {
                         setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_SCRIPT));
                         setToolTipText(SessionEditorMessages.viewer_open_sql_editor_tip);

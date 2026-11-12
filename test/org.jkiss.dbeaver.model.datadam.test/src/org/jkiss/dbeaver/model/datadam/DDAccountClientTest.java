@@ -134,6 +134,19 @@ class DDAccountClientTest {
     }
 
     @Test
+    void readsRenamePermissionFromAccount() throws Exception {
+        var client = client();
+        response.set("{\"data\":{\"myPermissions\":[\"ACCOUNT_READ\",\"REMOTE_DAM_MANAGE\"]}}");
+        Assertions.assertTrue(client.canRenameDam());
+
+        response.set("{\"data\":{\"myPermissions\":[\"ACCOUNT_READ\"]}}");
+        Assertions.assertFalse(client.canRenameDam());
+
+        response.set("{\"data\":{\"myPermissions\":null}}");
+        Assertions.assertThrows(DBException.class, client::canRenameDam);
+    }
+
+    @Test
     void rejectsMissingSettingsAndGraphQlErrors() {
         var client = client();
         for (String invalid : List.of("null", "{\"data\":{}}", "{\"data\":null}",

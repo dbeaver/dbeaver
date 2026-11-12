@@ -16,27 +16,36 @@
  */
 package org.jkiss.dbeaver.model.datadam;
 
-import com.dbeaver.rest.client.AbstractRestClient;
+import com.dbeaver.rest.client.AbstractGraphQlClient;
 import com.dbeaver.rest.client.interceptor.HttpInterceptor;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.HttpConstants;
 
+import java.lang.reflect.Type;
+import java.net.URI;
 import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
 import java.util.List;
 
 /** Common HTTP configuration for DataDam desktop clients. */
-public abstract class DDClient extends AbstractRestClient {
+public abstract class DDClient extends AbstractGraphQlClient {
     private final Log log = Log.getLog(getClass());
+    protected final DDDesktopAccessService accessService;
 
     protected DDClient(
         @NotNull String url,
         int connectTimeoutMs,
         int readTimeoutMs,
         @NotNull List<HttpInterceptor> interceptors,
-        @NotNull HttpClient.Redirect redirectPolicy
+        @NotNull HttpClient.Redirect redirectPolicy,
+        @NotNull DDDesktopAccessService accessService
     ) {
         super(url, connectTimeoutMs, readTimeoutMs, interceptors, redirectPolicy);
+        this.accessService = accessService;
     }
 
     @NotNull
@@ -48,5 +57,15 @@ public abstract class DDClient extends AbstractRestClient {
     @Override
     protected void logDebug(@NotNull String message) {
         log.debug(message);
+    }
+
+    @NotNull
+    @Override
+    protected <T> T execute(@NotNull HttpRequest.Builder builder, @NotNull Type type) throws DBException {
+        URI uri = builder.build().uri();
+        DDEndpoints.requireSecureTransport(uri);
+        builder.setHeader(HttpConstants.HEADER_AUTHORIZATION,
+            HttpConstants.BEARER_PREFIX + accessService.getAccessTokenForResource(uri));
+        return super.execute(builder, type);
     }
 }

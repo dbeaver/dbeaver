@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.impl.AbstractDataSource;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.impl.jdbc.internal.JDBCModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -640,7 +640,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         }
         JDBCRemoteInstance defaultInstance = getDefaultInstance();
         defaultInstance.initializeMetaContext(monitor);
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, ModelMessages.model_jdbc_read_database_meta_data)) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, JDBCModelMessages.model_jdbc_read_database_meta_data)) {
             JDBCDatabaseMetaData metaData = session.getMetaData();
 
             readDatabaseServerVersion(session, metaData);

@@ -5,7 +5,7 @@
     <extension point="org.jkiss.dbeaver.application">
         <application id="dbeaver-ce-eclipse"
             family="DB"
-            name="%productName"
+            name="DBeaver"
             description="%productSubTitle"
             class="org.jkiss.dbeaver.ui.app.DBeaverPluginApplication"/>
     </extension>
