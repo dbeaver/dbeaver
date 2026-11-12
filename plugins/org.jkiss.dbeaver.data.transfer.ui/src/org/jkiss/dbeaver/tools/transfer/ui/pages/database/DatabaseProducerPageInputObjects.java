@@ -42,7 +42,6 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
-import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.pages.DataTransferPageNodeSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -76,7 +75,7 @@ public class DatabaseProducerPageInputObjects extends DataTransferPageNodeSettin
         {
             Composite tablesGroup = UIUtils.createComposite(composite, 1);
             tablesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-            UIUtils.createControlLabel(tablesGroup, DTMessages.data_transfer_wizard_mappings_name);
+            UIUtils.createControlLabel(tablesGroup, DTUIMessages.data_transfer_wizard_mappings_name);
 
             mappingTable = new Table(tablesGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             mappingTable.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -111,7 +110,7 @@ public class DatabaseProducerPageInputObjects extends DataTransferPageNodeSettin
             Composite controlGroup = UIUtils.createComposite(composite, 1);
             Button autoAssignButton = new Button(controlGroup, SWT.PUSH);
             autoAssignButton.setImage(DBeaverIcons.getImage(UIIcon.ASTERISK));
-            autoAssignButton.setText(DTMessages.data_transfer_db_consumer_auto_assign);
+            autoAssignButton.setText(DTUIMessages.data_transfer_db_consumer_auto_assign);
             autoAssignButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> autoAssignMappings()));
         }
 

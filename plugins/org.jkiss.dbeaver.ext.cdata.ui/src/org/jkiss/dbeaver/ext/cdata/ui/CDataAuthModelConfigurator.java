@@ -148,6 +148,12 @@ public class CDataAuthModelConfigurator extends DatabaseNativeAuthModelConfigura
         return !credentialsPromptMode || hierarchy != null && getErrorMessage() == null;
     }
 
+    @NotNull
+    @Override
+    protected String normalizeCredential(@NotNull String value) {
+        return value;
+    }
+
     @Nullable
     @Override
     public String getErrorMessage() {

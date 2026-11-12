@@ -153,6 +153,11 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
         notifyStateObservers();
     }
 
+    @NotNull
+    public String getClientDamId() {
+        return hello.clientDamId();
+    }
+
     @Override
     @NotNull
     public DDRemoteDamChannelStatus getStatus() {
@@ -439,8 +444,9 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
             session = attempt.session;
         }
         if (session == null) {
-            String damSessionId = DDRemoteDamProtocol.decodeHandshakeResponse(text).damSessionId();
-            var ready = new DDRemoteDamSessionInfo(hello.appDeploymentId(), hello.appInstanceId(), damSessionId);
+            var response = DDRemoteDamProtocol.decodeHandshakeResponse(text);
+            var ready = new DDRemoteDamSessionInfo(
+                hello.appDeploymentId(), hello.appInstanceId(), response.damSessionId(), response.settings());
             List<Registration<DDRemoteDamSessionListener>> listeners;
             synchronized (lock) {
                 if (current != attempt) {

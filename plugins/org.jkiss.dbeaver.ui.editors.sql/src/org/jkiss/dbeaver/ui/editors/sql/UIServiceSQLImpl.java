@@ -53,7 +53,7 @@ import org.jkiss.dbeaver.ui.editors.sql.dialogs.GenerateSQLParametrizedDialog;
 import org.jkiss.dbeaver.ui.editors.sql.dialogs.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerOpenEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLNavigatorContext;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
+import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -290,13 +290,13 @@ public class UIServiceSQLImpl implements UIServiceSQL {
                 buttonBar.setLayout(new GridLayout(3, false));
                 Button showQueryButton = UIUtils.createPushButton(
                     buttonBar,
-                    UIMessages.dialog_confirm_action_show_query,
+                    SQLEditorMessages.dialog_confirm_action_show_query,
                     null
                 );
                 showQueryButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
                     openSQLViewer(
                         contextProvider.getExecutionContext(),
-                        UIMessages.dialog_confirm_action_query,
+                        SQLEditorMessages.dialog_confirm_action_query,
                         null,
                         queryText,
                         false,

@@ -18,12 +18,12 @@ package org.jkiss.dbeaver.ui.app.standalone.update;
 
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor.PatchSeverity;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
@@ -51,9 +51,9 @@ final class VersionUpdatePresentation {
     static String getSeverityLabel(@NotNull PatchSeverity severity) {
         return switch (severity) {
             case NONE -> "";
-            case MEDIUM -> CoreMessages.dialog_version_update_severity_medium;
-            case HIGH -> CoreMessages.dialog_version_update_severity_high;
-            case CRITICAL -> CoreMessages.dialog_version_update_severity_critical;
+            case MEDIUM -> CoreApplicationMessages.dialog_version_update_severity_medium;
+            case HIGH -> CoreApplicationMessages.dialog_version_update_severity_high;
+            case CRITICAL -> CoreApplicationMessages.dialog_version_update_severity_critical;
         };
     }
 
@@ -70,7 +70,7 @@ final class VersionUpdatePresentation {
             sections.add(formatNotes(descriptor.getReleaseNotes()));
         }
         for (var patch : patches) {
-            String heading = NLS.bind(CoreMessages.dialog_version_update_patch_notes, patch.number(), patch.date());
+            String heading = NLS.bind(CoreApplicationMessages.dialog_version_update_patch_notes, patch.number(), patch.date());
             if (patch.severity() != PatchSeverity.NONE) {
                 heading += " - " + getSeverityLabel(patch.severity());
             }
@@ -83,6 +83,6 @@ final class VersionUpdatePresentation {
     private static String formatNotes(@NotNull String notes) {
         // Normalize each section independently; preserve short lines and spacing between changelog items.
         String formatted = notes.replace("\r", "").stripTrailing().stripIndent().strip();
-        return formatted.isEmpty() ? CoreMessages.dialog_version_update_no_notes : formatted;
+        return formatted.isEmpty() ? CoreApplicationMessages.dialog_version_update_no_notes : formatted;
     }
 }

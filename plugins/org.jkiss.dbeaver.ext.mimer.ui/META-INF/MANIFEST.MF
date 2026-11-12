@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver Mimer SQL UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.mimer.ui;singleton:=true
-Bundle-Version: 1.0.0.qualifier
-Bundle-Release-Date: 20260903
+Bundle-Version: 1.0.1.qualifier
+Bundle-Release-Date: 20261130
 Require-Bundle: org.jkiss.dbeaver.ui,
  org.jkiss.dbeaver.ui.navigator,
  org.jkiss.dbeaver.ui.editors.base,

@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCSavepointImpl;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.impl.jdbc.internal.JDBCModelMessages;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -333,7 +333,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     public void setTransactionIsolation(@NotNull DBRProgressMonitor monitor, @NotNull DBPTransactionIsolation transactionIsolation)
         throws DBCException {
         if (!(transactionIsolation instanceof JDBCTransactionIsolation jdbcTIL)) {
-            throw new DBCException(ModelMessages.model_jdbc_exception_invalid_transaction_isolation_parameter);
+            throw new DBCException(JDBCModelMessages.model_jdbc_exception_invalid_transaction_isolation_parameter);
         }
         try {
             getConnection().setTransactionIsolation(jdbcTIL.getCode());
@@ -453,7 +453,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             } else if (savepoint instanceof Savepoint) {
                 dbCon.releaseSavepoint((Savepoint) savepoint);
             } else {
-                throw new SQLFeatureNotSupportedException(ModelMessages.model_jdbc_exception_bad_savepoint_object);
+                throw new SQLFeatureNotSupportedException(JDBCModelMessages.model_jdbc_exception_bad_savepoint_object);
             }
         } catch (SQLException e) {
             throw new JDBCException(e, this);
@@ -486,7 +486,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 } else if (savepoint instanceof Savepoint) {
                     dbCon.rollback((Savepoint) savepoint);
                 } else {
-                    throw new SQLFeatureNotSupportedException(ModelMessages.model_jdbc_exception_bad_savepoint_object);
+                    throw new SQLFeatureNotSupportedException(JDBCModelMessages.model_jdbc_exception_bad_savepoint_object);
                 }
             } else {
                 dbCon.rollback();

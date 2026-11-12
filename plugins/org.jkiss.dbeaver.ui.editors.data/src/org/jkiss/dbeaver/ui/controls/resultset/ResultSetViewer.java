@@ -113,7 +113,6 @@ import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.data.internal.DataEditorsMessages;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain;
 import org.jkiss.dbeaver.ui.editors.text.DynamicFindReplaceTarget;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.NavigatorCommands;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -1409,6 +1408,7 @@ public class ResultSetViewer extends Viewer
                 ToolBar toolBar = panelToolBar.createControl(trControl);
                 toolBar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
+            UIUtils.installAndUpdateMainFont(trControl);
         } finally {
             panelFolder.setRedraw(true);
         }
@@ -2418,7 +2418,7 @@ public class ResultSetViewer extends Viewer
             }
         }
         if (DATA_EDIT_DISABLED) {
-            return UIMessages.dialog_policy_data_edit_msg;
+            return ResultSetMessages.dialog_policy_data_edit_msg;
         }
         return null;
     }
