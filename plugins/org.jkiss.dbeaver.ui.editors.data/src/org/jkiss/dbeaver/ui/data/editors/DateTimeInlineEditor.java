@@ -168,7 +168,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
                 SWT.MULTI, true, inline);
         textMode = new TextMode(this, timeEditor, valueController);
         dateEditorMode = new DateEditorMode(this, timeEditor);
-        if (!isCalendarMode()) {
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR)) {
             timeEditor.setToTextComposite();
             textMode.setChecked(true);
         } else dateEditorMode.setChecked(true);
@@ -182,8 +182,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     }
 
     private boolean isCalendarMode() {
-        return !(valueController.getValue() instanceof String)
-            && DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR);
+        return !timeEditor.isTextMode();
     }
 
     @Override
