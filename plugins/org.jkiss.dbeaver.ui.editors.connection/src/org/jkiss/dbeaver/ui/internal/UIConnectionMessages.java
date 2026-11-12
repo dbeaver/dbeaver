@@ -313,6 +313,28 @@ public class UIConnectionMessages extends NLS {
     public static String dialog_driver_select_viewer_order_by_score_label;
     public static String dialog_driver_select_viewer_order_by_score_description;
 
+    public static String dialog_connection_advanced_tab;
+    public static String dialog_connection_driver_type;
+    public static String dialog_connection_driver_type_tip;
+    public static String dialog_connection_network_profile_edit;
+    public static String dialog_connection_network_profile_active;
+    public static String dialog_connection_network_profile_name;
+    public static String dialog_connection_network_profile_active_name;
+    public static String dialog_connection_network_profile_no_profile;
+    public static String dialog_connection_network_profile_no_active;
+    public static String dialog_connection_network_profile_none;
+    public static String dialog_connection_network_profile_change;
+    public static String dialog_connection_network_profile_keep;
+    public static String dialog_connection_network_profile_remove;
+    public static String dialog_connection_network_profile_unselect_confirmation;
+    public static String dialog_connection_network_profile_change_confirmation;
+    public static String dialog_connection_network_profile_provided;
+    public static String pref_page_network_profiles_save_error_title;
+    public static String pref_page_network_profiles_save_error;
+    public static String pref_page_network_profiles_no_secret_controller;
+    public static String pref_page_network_profiles_project_error_title;
+    public static String pref_page_network_profiles_project_error;
+
     public static String pref_page_network_profiles_tool_create_title;
     public static String pref_page_network_profiles_tool_create_text;
     public static String pref_page_network_profiles_tool_create_dialog_profile_name;

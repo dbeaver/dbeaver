@@ -21,6 +21,9 @@ import org.eclipse.osgi.util.NLS;
 public class UINavigatorMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.internal.UINavigatorMessages"; //$NON-NLS-1$
 
+    public static String pref_page_navigator_localize_folder_names;
+    public static String pref_page_navigator_localize_folder_names_tip;
+
     //object properties editor
     public static String obj_editor_properties_control_action_filter_setting;
     public static String obj_editor_properties_control_action_configure_columns;
