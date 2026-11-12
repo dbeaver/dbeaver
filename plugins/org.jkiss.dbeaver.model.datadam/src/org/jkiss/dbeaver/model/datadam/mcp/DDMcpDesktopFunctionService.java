@@ -122,13 +122,11 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
             AIContextSettingsDataSource settings = new AIContextSettingsDataSource(connection);
             AIUtils.updateScopeSettingsIfNeeded(settings, connection, executionContext);
             AIDatabaseScope scope = settings.getScope();
-            if (scope == null) {
-                throw new DDMcpFunctionException(DDMcpFunctionErrorCode.INTERNAL_ERROR,
-                    "AI scope is unavailable for DataDam MCP datasource", null);
-            }
             AIDatabaseContext.Builder builder = new AIDatabaseContext.Builder(new DBSLogicalDataSource(connection))
-                .setExecutionContext(executionContext)
-                .setScope(scope);
+                .setExecutionContext(executionContext);
+            if (scope != null) {
+                builder.setScope(scope);
+            }
             if (scope == AIDatabaseScope.CUSTOM) {
                 String[] customObjectIds = settings.getCustomObjectIds();
                 if (customObjectIds != null && customObjectIds.length > 0) {
