@@ -73,6 +73,8 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
     private boolean updatingProjects;
     @Nullable
     private UUID displayedAccountId;
+    @Nullable
+    private DBPDataSourceContainer requestedConnection;
 
     public DDMcpConnectionsPreferencePage() {
         noDefaultButton();
@@ -102,11 +104,43 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
         projectViewer.setInput(projects);
         refreshConnections();
 
-        DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
-        if (activeProject != null && projects.contains(activeProject)) {
-            projectViewer.setSelection(new StructuredSelection(activeProject), true);
+        if (requestedConnection != null) {
+            selectConnection(requestedConnection);
+        } else {
+            DBPProject activeProject = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+            if (activeProject != null && projects.contains(activeProject)) {
+                projectViewer.setSelection(new StructuredSelection(activeProject), true);
+            }
         }
         return content;
+    }
+
+    @Override
+    public void applyData(@Nullable Object data) {
+        super.applyData(data);
+        if (data instanceof DBPDataSourceContainer connection) {
+            requestedConnection = connection;
+            if (projectViewer != null && !projectViewer.getControl().isDisposed()) {
+                selectConnection(connection);
+            }
+        }
+    }
+
+    private void selectConnection(@NotNull DBPDataSourceContainer connection) {
+        DBPProject project = connection.getProject();
+        if (!projects.contains(project)) {
+            projectViewer.setSelection(StructuredSelection.EMPTY);
+            return;
+        }
+        loadProject(project);
+        projectViewer.setSelection(new StructuredSelection(project), true);
+        for (TableItem item : connectionViewer.getTable().getItems()) {
+            if (item.getData() instanceof AvailableConnection available
+                && available.connection().getId().equals(connection.getId())) {
+                connectionViewer.setSelection(new StructuredSelection(available), true);
+                break;
+            }
+        }
     }
 
     private void createHeaders(@NotNull Composite parent) {

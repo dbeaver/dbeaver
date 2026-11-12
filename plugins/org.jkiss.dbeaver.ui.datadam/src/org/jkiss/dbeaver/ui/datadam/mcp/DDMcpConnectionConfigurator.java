@@ -22,6 +22,7 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -63,8 +64,9 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
         );
         UIUtils.createLink(
             group, "<a>" + DDTrackingUIMessages.sync_preference_page_mcp_settings_link + "</a>",
-            SelectionListener.widgetSelectedAdapter(e ->
-                UIUtils.showPreferencesFor(enableCheck.getShell(), null, DDMcpConnectionsPreferencePage.PAGE_ID))
+            SelectionListener.widgetSelectedAdapter(e -> PreferencesUtil.createPreferenceDialogOn(
+                enableCheck.getShell(), DDMcpConnectionsPreferencePage.PAGE_ID,
+                new String[]{DDMcpConnectionsPreferencePage.PAGE_ID}, connection).open())
         );
         Composite section = group.getParent();
         showStatus(parent, section, connection, settingsStore.getSettings());
