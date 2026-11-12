@@ -30,6 +30,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.app.internal.EclipseUIMessages;
 import org.jkiss.dbeaver.ui.editors.data.preferences.PrefPageResultSetMain;
 import org.jkiss.dbeaver.ui.editors.sql.preferences.PrefPageSQLEditor;
 
@@ -48,12 +49,12 @@ public class PrefPageEclipseGeneral extends AbstractPrefPage implements IWorkben
 
         Composite groupObjects = UIUtils.createTitledComposite(
             composite,
-            CoreMessages.pref_page_eclipse_ui_general_group_general,
+            EclipseUIMessages.pref_page_eclipse_ui_general_group_general,
             1,
             GridData.VERTICAL_ALIGN_BEGINNING
         );
         Label descLabel = new Label(groupObjects, SWT.WRAP);
-        descLabel.setText(CoreMessages.pref_page_eclipse_ui_general_group_label);
+        descLabel.setText(EclipseUIMessages.pref_page_eclipse_ui_general_group_label);
 
         performDefaults();
 

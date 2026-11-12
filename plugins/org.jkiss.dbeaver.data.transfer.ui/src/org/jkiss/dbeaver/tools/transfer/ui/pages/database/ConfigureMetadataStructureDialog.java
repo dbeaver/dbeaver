@@ -51,7 +51,6 @@ import org.jkiss.dbeaver.tools.transfer.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferUtils;
-import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -134,7 +133,7 @@ public class ConfigureMetadataStructureDialog extends BaseDialog {
         }
 
         showDDLTab = new CTabItem(configTabs, SWT.NONE);
-        showDDLTab.setText(DTMessages.data_transfer_wizard_page_ddl_name);
+        showDDLTab.setText(DTUIMessages.data_transfer_wizard_page_ddl_name);
         showDDL(showDDLTab);
 
         fullDDLTab = new CTabItem(configTabs, SWT.NONE);

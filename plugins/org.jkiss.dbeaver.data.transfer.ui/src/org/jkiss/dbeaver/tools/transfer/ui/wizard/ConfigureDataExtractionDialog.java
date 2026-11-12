@@ -202,7 +202,7 @@ public class ConfigureDataExtractionDialog extends BaseDialog {
         var canChangeThreads = UIObservables.predicate(() -> settings.getDataPipes().size() > 1);
 
         return pb -> pb
-            .row(DTMessages.data_transfer_wizard_output_label_max_threads, rb -> rb
+            .row(DTUIMessages.data_transfer_wizard_output_label_max_threads, rb -> rb
                 .enabled(UIObservables.and(queryDatabase, canChangeThreads))
                 .intTextField(threadCount, tb -> tb
                     .tooltip(DTUIMessages.database_producer_page_extract_settings_threads_num_text_tooltip)))
@@ -211,8 +211,8 @@ public class ConfigureDataExtractionDialog extends BaseDialog {
                 .intTextField(fetchSize, tb -> tb
                     .tooltip(DTUIMessages.database_producer_page_extract_settings_text_fetch_size_tooltip)))
             .row(rb -> rb
-                .checkBox(DTMessages.data_transfer_wizard_output_checkbox_extract_in_batches, bb -> bb
-                    .tooltip(DTMessages.data_transfer_wizard_output_checkbox_extract_in_batches_tip)
+                .checkBox(DTUIMessages.data_transfer_wizard_output_checkbox_extract_in_batches, bb -> bb
+                    .tooltip(DTUIMessages.data_transfer_wizard_output_checkbox_extract_in_batches_tip)
                     .selected(extractInSegments))
                 .enabled(queryDatabase)
                 .intTextField(segmentSize, tb -> tb.enabled(extractInSegments)));

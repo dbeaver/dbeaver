@@ -139,7 +139,6 @@ public class ResultSetMessages extends NLS {
     public static String sql_editor_resultset_filter_panel_label;
     public static String sql_editor_resultset_filter_panel_btn_open_console;
     public static String sql_editor_resultset_filter_panel_control_no_data;
-    public static String sql_editor_resultset_filter_panel_control_execute_to_see_result;
     public static String sql_editor_resultset_filter_panel_show_sql_label;
 
     public static String actions_name_color_by;
@@ -519,6 +518,10 @@ public class ResultSetMessages extends NLS {
     public static String dialog_save_script_error_message;
     public static String editor_datetime_set_current;
     public static String dialog_grouping_config_title;
+    public static String dialog_policy_data_copy_title;
+    public static String dialog_policy_data_copy_msg;
+    public static String dialog_policy_data_edit_msg;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, ResultSetMessages.class);

@@ -41,7 +41,6 @@ public class ModelMessages extends NLS {
     public static String model_ddl_transaction_behavior_ignored;
 
     public static String model_edit_execute_;
-    public static String model_jdbc_read_database_meta_data;
 
     public static String model_jdbc__rows_fetched;
     public static String model_jdbc_create_new_constraint;
@@ -50,7 +49,6 @@ public class ModelMessages extends NLS {
     public static String model_jdbc_create_new_object;
     public static String model_jdbc_create_new_table;
     public static String model_jdbc_create_new_table_column;
-    public static String model_jdbc_Database;
     public static String model_jdbc_delete_object;
     public static String model_jdbc_driver_properties;
     public static String model_jdbc_drop_constraint;
@@ -58,29 +56,17 @@ public class ModelMessages extends NLS {
     public static String model_jdbc_drop_index;
     public static String model_jdbc_drop_table;
     public static String model_jdbc_drop_table_column;
-    public static String model_jdbc_exception_bad_savepoint_object;
     public static String model_jdbc_exception_could_not_bind_statement_parameter;
     public static String model_jdbc_exception_internal_jdbc_driver_error;
-    public static String model_jdbc_exception_invalid_transaction_isolation_parameter;
     public static String model_jdbc_fetch_table_data;
-    public static String model_jdbc_fetch_table_row_count;
     public static String model_jdbc_find_objects_by_name;
     public static String model_jdbc_load_from_file_;
-    public static String model_jdbc_None;
-    public static String model_jdbc_Procedure;
-    public static String model_jdbc_read_committed;
-    public static String model_jdbc_read_uncommitted;
     public static String model_jdbc_rename_object;
     public static String model_jdbc_reorder_object;
-    public static String model_jdbc_repeatable_read;
-    public static String model_jdbc_save_to_file_;
-    public static String model_jdbc_Schema;
-    public static String model_jdbc_Serializable;
     public static String model_jdbc_unsupported_column_type_;
     public static String model_jdbc_unsupported_content_value_type_;
     public static String model_jdbc_unsupported_value_type_;
 
-    public static String model_navigator_Description;
     public static String model_navigator_load_;
     public static String model_navigator_Model_root;
     public static String model_navigator_Name;
@@ -110,10 +96,6 @@ public class ModelMessages extends NLS {
     public static String model_struct_Pseudo_Key;
     public static String model_struct_Unknown;
 
-    public static String CreateLinkedFileRunnable_e_cancelled_link;
-    public static String CreateLinkedFileRunnable_e_unable_to_link;
-    public static String CreateLinkedFolderRunnable_e_cancelled_link;
-    public static String CreateLinkedFolderRunnable_e_unable_to_link;
 
     public static String dbp_connection_type_table_development;
 
@@ -129,7 +111,6 @@ public class ModelMessages extends NLS {
     public static String dialog_connection_wizard_start_connection_monitor_start;
     public static String dialog_connection_wizard_start_connection_monitor_subtask_test;
     public static String dialog_connection_wizard_start_connection_monitor_success;
-    public static String dialog_connection_wizard_start_connection_monitor_connected;
     public static String dialog_connection_wizard_start_connection_monitor_thread;
     public static String dialog_connection_wizard_start_dialog_error_message;
 
@@ -145,44 +126,11 @@ public class ModelMessages extends NLS {
     public static String task_rows_fetched_message_part;
     public static String task_rows_modified_message_part;
     public static String task_statements_executed_message_part;
-    public static String controls_querylog_action_clear_log;
-    public static String controls_querylog_action_copy_all_fields;
-    public static String controls_querylog_action_delete;
-    public static String controls_querylog_column_duration_name;
-    public static String controls_querylog_column_duration_tooltip;
-    public static String controls_querylog_column_result_name;
-    public static String controls_querylog_column_result_tooltip;
-    public static String controls_querylog_column_rows_name;
-    public static String controls_querylog_column_rows_tooltip;
-    public static String controls_querylog_column_text_name;
-    public static String controls_querylog_column_text_tooltip;
-    public static String controls_querylog_column_time_name;
-    public static String controls_querylog_column_time_tooltip;
-    public static String controls_querylog_column_type_name;
-    public static String controls_querylog_column_type_tooltip;
-    public static String controls_querylog_column_schema_name;
-    public static String controls_querylog_column_schema_tip;
-    public static String controls_querylog_column_catalog_name;
-    public static String controls_querylog_column_catalog_tip;
-    public static String controls_querylog_column_connection_name;
-    public static String controls_querylog_column_connection_tooltip;
-    public static String controls_querylog_column_context_name;
-    public static String controls_querylog_column_context_tooltip;
-    public static String controls_querylog_commit;
     public static String controls_querylog_connected_to;
     public static String controls_querylog_disconnected_from;
     public static String controls_querylog_error;
-    public static String controls_querylog_job_refresh;
-    public static String controls_querylog_label_result;
-    public static String controls_querylog_label_text;
-    public static String controls_querylog_label_time;
-    public static String controls_querylog_label_type;
-    public static String controls_querylog_rollback;
-    public static String controls_querylog_savepoint;
     public static String controls_querylog_script;
-    public static String controls_querylog_shell_text;
     public static String controls_querylog_success;
-    public static String controls_querylog_transaction;
 
     public static String tasks_restore_confirmation_title;
     public static String tasks_restore_confirmation_cancelled_message;
@@ -192,8 +140,6 @@ public class ModelMessages extends NLS {
     public static String project_shared_display_name;
     public static String project_private_display_name;
 
-    public static String jdbc_content_view_error_message_title;
-    public static String jdbc_content_view_error_message_hint;
 
     public static String no_corresponding_table_column_text;
 

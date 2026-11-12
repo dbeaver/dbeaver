@@ -94,7 +94,6 @@ import org.jkiss.dbeaver.ui.actions.datasource.DataSourceToolbarUtils;
 import org.jkiss.dbeaver.ui.contentassist.ContentAssistUtils.ProposalActivationKey;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
-import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.css.CSSUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -121,7 +120,6 @@ import org.jkiss.dbeaver.ui.editors.sql.variables.AssignVariableAction;
 import org.jkiss.dbeaver.ui.editors.sql.variables.SQLVariablesPanel;
 import org.jkiss.dbeaver.ui.editors.text.DynamicFindReplaceTarget;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.utils.*;
 import org.jkiss.utils.ArrayUtils;
@@ -1330,8 +1328,8 @@ public class SQLEditor extends SQLEditorBase implements
         if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_SQL_EXECUTION)) {
             UIUtils.showMessageBox(
                 getSite().getShell(),
-                UIMessages.dialog_policy_sql_execution_title,
-                UIMessages.dialog_policy_sql_execution_msg,
+                SQLEditorMessages.dialog_policy_sql_execution_title,
+                SQLEditorMessages.dialog_policy_sql_execution_msg,
                 SWT.ICON_WARNING
             );
             return false;
@@ -4381,7 +4379,7 @@ public class SQLEditor extends SQLEditorBase implements
             public String getEmptyDataDescription() {
                 String execQuery = ActionUtils.findCommandDescription(SQLEditorCommands.CMD_EXECUTE_STATEMENT, getSite(), true);
                 String execScript = ActionUtils.findCommandDescription(SQLEditorCommands.CMD_EXECUTE_SCRIPT, getSite(), true);
-                return NLS.bind(ResultSetMessages.sql_editor_resultset_filter_panel_control_execute_to_see_result, execQuery, execScript);
+                return NLS.bind(SQLEditorMessages.sql_editor_resultset_filter_panel_control_execute_to_see_result, execQuery, execScript);
             }
         };
     }

@@ -33,7 +33,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
@@ -119,14 +118,14 @@ public class VersionUpdateDialog extends Dialog {
     @Override
     protected Control createDialogArea(@NotNull Composite parent)
     {
-        getShell().setText(CoreMessages.dialog_version_update_title);
+        getShell().setText(CoreApplicationMessages.dialog_version_update_title);
 
         Composite composite = new Composite(parent, SWT.NONE);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
         composite.setLayout(new GridLayout(1, false));
         Composite propGroup = UIUtils.createTitledComposite(
             composite,
-            CoreMessages.dialog_version_update_title,
+            CoreApplicationMessages.dialog_version_update_title,
             2,
             GridData.FILL_BOTH
         );
@@ -135,18 +134,18 @@ public class VersionUpdateDialog extends Dialog {
 
         final Label titleLabel = new Label(propGroup, SWT.NONE);
         titleLabel.setText(
-            NLS.bind(!isNewVersionAvailable() ? CoreMessages.dialog_version_update_no_new_version : CoreMessages.dialog_version_update_available_new_version, GeneralUtils.getProductName()));
+            NLS.bind(!isNewVersionAvailable() ? CoreApplicationMessages.dialog_version_update_no_new_version : CoreApplicationMessages.dialog_version_update_available_new_version, GeneralUtils.getProductName()));
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
         titleLabel.setLayoutData(gd);
         titleLabel.setFont(BaseThemeSettings.instance.baseFontBold);
 
-        UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_current_version);
+        UIUtils.createControlLabel(propGroup, CoreApplicationMessages.dialog_version_update_current_version);
         new Label(propGroup, SWT.NONE)
             .setText(currentVersion + (currentPatch > 0
-                ? " (" + NLS.bind(CoreMessages.dialog_about_label_patch, currentPatch) + ")" : ""));
+                ? " (" + NLS.bind(CoreApplicationMessages.dialog_about_label_patch, currentPatch) + ")" : ""));
 
-        UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_new_version);
+        UIUtils.createControlLabel(propGroup, CoreApplicationMessages.dialog_version_update_new_version);
         new Label(propGroup, SWT.NONE)
             .setText((newVersion.getPatchNumber() > 0 ? newVersion.getUpdateVersion() : newVersion.getProgramVersion().toString())
                 + "    (" + CommonUtils.notEmpty(newVersion.getPatchUpdateTime()) + ")");
@@ -156,10 +155,10 @@ public class VersionUpdateDialog extends Dialog {
             if (severity != PatchSeverity.NONE) {
                 Label severityLabel = new Label(propGroup, SWT.NONE);
                 severityLabel.setText(NLS.bind(
-                    CoreMessages.dialog_version_update_severity, VersionUpdatePresentation.getSeverityLabel(severity)));
+                    CoreApplicationMessages.dialog_version_update_severity, VersionUpdatePresentation.getSeverityLabel(severity)));
                 severityLabel.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false, 2, 1));
             }
-            final Label notesLabel = UIUtils.createControlLabel(propGroup, CoreMessages.dialog_version_update_notes);
+            final Label notesLabel = UIUtils.createControlLabel(propGroup, CoreApplicationMessages.dialog_version_update_notes);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             notesLabel.setLayoutData(gd);
@@ -173,8 +172,8 @@ public class VersionUpdateDialog extends Dialog {
 
             final Label hintLabel = new Label(propGroup, SWT.NONE);
             hintLabel.setText(NLS.bind(
-                CoreMessages.dialog_version_update_press_more_info,
-                CoreMessages.dialog_version_update_button_more_info,
+                CoreApplicationMessages.dialog_version_update_press_more_info,
+                CoreApplicationMessages.dialog_version_update_button_more_info,
                 newVersion.getUpdateVersion()));
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
@@ -200,21 +199,21 @@ public class VersionUpdateDialog extends Dialog {
         if (showConfig && isNewVersionAvailable()) {
             ((GridLayout) parent.getLayout()).numColumns++;
             dontShowAgainCheck = UIUtils.createCheckbox(parent,
-                NLS.bind(CoreMessages.dialog_version_update_ignore_version, newVersion.getUpdateVersion()), false);
+                NLS.bind(CoreApplicationMessages.dialog_version_update_ignore_version, newVersion.getUpdateVersion()), false);
         }
 
         if (isNewVersionAvailable()) {
             Button upgradeButton = createButton(
                 parent,
                 UPGRADE_ID,
-                CoreMessages.dialog_version_update_button_upgrade,
+                CoreApplicationMessages.dialog_version_update_button_upgrade,
                 true);
             PatchSeverity severity = newVersion.getMaxSeverity(currentVersion, currentPatch);
             if (severity != PatchSeverity.NONE) {
                 // Native buttons may ignore custom colors; the icon and text also communicate severity.
                 upgradeButton.setImage(DBeaverIcons.getImage(VersionUpdatePresentation.getSeverityIcon(severity)));
                 upgradeButton.setToolTipText(NLS.bind(
-                    CoreMessages.dialog_version_update_severity, VersionUpdatePresentation.getSeverityLabel(severity)));
+                    CoreApplicationMessages.dialog_version_update_severity, VersionUpdatePresentation.getSeverityLabel(severity)));
                 upgradeButton.setForeground(switch (severity) {
                     case CRITICAL -> BaseThemeSettings.instance.colorErrorForeground;
                     case HIGH -> BaseThemeSettings.instance.colorWarningForeground;
@@ -226,14 +225,14 @@ public class VersionUpdateDialog extends Dialog {
                 createButton(
                     parent,
                     CHECK_EA_ID,
-                    CoreMessages.dialog_version_update_button_early_access,
+                    CoreApplicationMessages.dialog_version_update_button_early_access,
                     false);
             }
         }
         createButton(
             parent,
             INFO_ID,
-            CoreMessages.dialog_version_update_button_more_info,
+            CoreApplicationMessages.dialog_version_update_button_more_info,
             false);
 
         createButton(
@@ -334,12 +333,12 @@ public class VersionUpdateDialog extends Dialog {
                         return Status.CANCEL_STATUS;
                     }
                 } catch (IOException e) {
-                    return GeneralUtils.makeErrorStatus(CoreMessages.dialog_version_update_downloader_error_cannot_download, e);
+                    return GeneralUtils.makeErrorStatus(CoreApplicationMessages.dialog_version_update_downloader_error_cannot_download, e);
                 }
 
                 if (UIUtils.confirmAction(
-                    CoreMessages.dialog_version_update_downloader_title,
-                    NLS.bind(CoreMessages.dialog_version_update_downloader_confirm_install, GeneralUtils.getProductName())
+                    CoreApplicationMessages.dialog_version_update_downloader_title,
+                    NLS.bind(CoreApplicationMessages.dialog_version_update_downloader_confirm_install, GeneralUtils.getProductName())
                 )) {
                     try {
                         monitor.subTask(CoreApplicationMessages.version_update_prepare);

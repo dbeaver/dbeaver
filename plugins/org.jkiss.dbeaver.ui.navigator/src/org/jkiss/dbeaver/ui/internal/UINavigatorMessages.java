@@ -134,8 +134,6 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_database_general_label_show_statistics_tip;
     public static String pref_page_database_general_label_show_node_actions;
     public static String pref_page_database_general_label_show_node_actions_tip;
-    public static String dialog_connection_set_default_connection_settings;
-    public static String dialog_connection_set_default_connection_settings_tip;
     public static String pref_page_database_general_label_show_child_count;
     public static String pref_page_database_general_label_show_child_count_tip;
     public static String pref_page_database_general_label_color_all_nodes;
@@ -180,6 +178,8 @@ public class UINavigatorMessages extends NLS {
     public static String CreateLinkHandler_e_create_link_title;
     public static String CreateLinkHandler_e_create_link_validation;
     public static String dialog_select_datasource_title;
+    public static String dialog_select_datasource_button_select;
+    public static String dialog_select_datasource_button_none;
 
     public static String controls_object_list_job_props_read;
     public static String controls_object_list_message_items;
@@ -296,6 +296,12 @@ public class UINavigatorMessages extends NLS {
 
     public static String confirm_commit_after_defaults_change_title;
     public static String confirm_commit_after_defaults_change_message;
+
+    public static String model_navigator_Description;
+    public static String CreateLinkedFileRunnable_e_cancelled_link;
+    public static String CreateLinkedFileRunnable_e_unable_to_link;
+    public static String CreateLinkedFolderRunnable_e_cancelled_link;
+    public static String CreateLinkedFolderRunnable_e_unable_to_link;
 
     static {
         // initialize resource bundle
