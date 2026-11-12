@@ -80,7 +80,6 @@ public class UIMessages extends NLS {
     public static String ui_properties_name;
     public static String ui_properties_value;
     
-    public static String save_execution_plan;
 
     public static String control_label_connection_folder;
 
@@ -112,8 +111,6 @@ public class UIMessages extends NLS {
     public static String text_with_open_dialog_edit_file;
 
     public static String preference_page_no_access;
-    public static String preference_page_no_edit_access;
-    public static String preference_page_disabled_secret_management;
 
     public static String notification_popup_context_message;
 
@@ -123,13 +120,6 @@ public class UIMessages extends NLS {
     public static String label_choose;
     public static String dialog_policy_data_export_msg;
     public static String dialog_policy_data_export_title;
-    public static String dialog_policy_data_import_msg;
-    public static String dialog_policy_data_import_title;
-    public static String dialog_policy_data_copy_title;
-    public static String dialog_policy_data_copy_msg;
-    public static String dialog_policy_data_edit_msg;
-    public static String dialog_policy_sql_execution_title;
-    public static String dialog_policy_sql_execution_msg;
 
     public static String popup_open_browser_open_external_browser;
 
@@ -141,8 +131,6 @@ public class UIMessages extends NLS {
     public static String dialog_oauth_browser_message;
     public static String dialog_oauth_browser_open_label;
 
-    public static String dialog_confirm_action_query;
-    public static String dialog_confirm_action_show_query;
 
     public static String holiday_decorations_disable_label;
     public static String holiday_decorations_disabled_message;

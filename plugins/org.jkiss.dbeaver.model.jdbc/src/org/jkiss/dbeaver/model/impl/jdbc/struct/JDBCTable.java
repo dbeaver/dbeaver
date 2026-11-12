@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStringValueHandler;
+import org.jkiss.dbeaver.model.impl.jdbc.internal.JDBCModelMessages;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -390,7 +391,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         } catch (DBException e) {
             throw new DBCException("Can't generate query conditions", e, session.getExecutionContext());
         }
-        monitor.subTask(ModelMessages.model_jdbc_fetch_table_row_count);
+        monitor.subTask(JDBCModelMessages.model_jdbc_fetch_table_row_count);
         try (DBCStatement dbStat = session.prepareStatement(
             DBCStatementType.QUERY,
             query.toString(),

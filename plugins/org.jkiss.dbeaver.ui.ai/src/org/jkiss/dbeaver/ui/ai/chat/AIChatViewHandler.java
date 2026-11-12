@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.ai.AIChatConversation;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.app.DBPRegistryListener;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -117,8 +118,17 @@ final class AIChatViewHandler {
                 container = activeContainer;
             }
         }
-        if (activeEditor != null && container == null) {
-            return;
+        if (container == null) {
+            container = chat.getDataSourceContainer();
+            if (container == null) {
+                DBPProject project = DBWorkbench.getPlatform().getWorkspace().getActiveProject();
+                if (project != null) {
+                    List<? extends DBPDataSourceContainer> dataSources = project.getDataSourceRegistry().getDataSources();
+                    if (dataSources.size() == 1) {
+                        container = dataSources.getFirst();
+                    }
+                }
+            }
         }
         final DBPDataSourceContainer finalContainer = container;
         UIUtils.syncExec(() -> {

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.AbstractDataSourceInfo;
+import org.jkiss.dbeaver.model.impl.jdbc.internal.JDBCModelMessages;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
@@ -37,9 +37,9 @@ import java.util.List;
 public class JDBCDataSourceInfo extends AbstractDataSourceInfo {
     private static final Log log = Log.getLog(JDBCDataSourceInfo.class);
 
-    public static final String TERM_SCHEMA = ModelMessages.model_jdbc_Schema;
-    public static final String TERM_PROCEDURE = ModelMessages.model_jdbc_Procedure;
-    public static final String TERM_CATALOG = ModelMessages.model_jdbc_Database;
+    public static final String TERM_SCHEMA = JDBCModelMessages.model_jdbc_Schema;
+    public static final String TERM_PROCEDURE = JDBCModelMessages.model_jdbc_Procedure;
+    public static final String TERM_CATALOG = JDBCModelMessages.model_jdbc_Database;
 
     private final JDBCDataSource dataSource;
     private boolean readOnly;

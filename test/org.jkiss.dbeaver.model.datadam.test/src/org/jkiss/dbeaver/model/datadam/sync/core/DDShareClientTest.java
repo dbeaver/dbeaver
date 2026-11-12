@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.datadam.sync.core;
 
 import com.dbeaver.datadam.share.api.exception.DDShareException;
+import com.dbeaver.datadam.share.api.model.DDSharedProjectConfiguration;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpServer;
@@ -30,6 +31,8 @@ import org.mockito.Mockito;
 
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -65,9 +68,9 @@ class DDShareClientTest {
             var manager = Mockito.mock(DDDesktopAccessService.class);
             session.when(DDDesktopAccessService::getInstance).thenReturn(manager);
             Mockito.when(manager.getAccessTokenForResource(Mockito.any())).thenReturn("test-token");
-            DDShareClient client = new DDShareClient("http://127.0.0.1:" + server.getAddress().getPort(), manager);
+            DDShareClient client = client("http://127.0.0.1:" + server.getAddress().getPort(), manager);
 
-            response.set("{\"data\":{\"createProject\":" + project + "}}");
+            response.set("{\"data\":{\"project\":" + project + "}}");
             var created = client.createProject(UUID.fromString(PROJECT_A), "Проект <test>", "Plain description");
             Assertions.assertEquals("Проект <test>", request.get().getAsJsonObject("variables").get("name").getAsString());
             Assertions.assertEquals("Plain description", request.get().getAsJsonObject("variables").get("description").getAsString());
@@ -76,7 +79,7 @@ class DDShareClientTest {
 
             project.addProperty("name", "Renamed");
             project.add("description", null);
-            response.set("{\"data\":{\"updateProject\":" + project + "}}");
+            response.set("{\"data\":{\"project\":" + project + "}}");
             var updated = client.updateProject(UUID.fromString(PROJECT_A), "Renamed", null);
             Assertions.assertEquals("Renamed", request.get().getAsJsonObject("variables").get("name").getAsString());
             Assertions.assertEquals("Renamed", updated.name());
@@ -85,6 +88,67 @@ class DDShareClientTest {
             response.set("{\"data\":{\"projects\":[" + project + "]}}");
             Assertions.assertEquals(updated, client.listProjects().getFirst());
             Mockito.verify(manager, Mockito.never()).getKeyBundle();
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void revisionPullPushAndDeleteResponsesUseTheirGraphQlAliases() throws Exception {
+        AtomicReference<JsonObject> request = new AtomicReference<>();
+        AtomicReference<String> response = new AtomicReference<>();
+        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/graphql", exchange -> {
+            request.set(JsonParser.parseString(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8))
+                .getAsJsonObject());
+            byte[] body = response.get().getBytes(StandardCharsets.UTF_8);
+            exchange.sendResponseHeaders(200, body.length);
+            try (var output = exchange.getResponseBody()) {
+                output.write(body);
+            }
+        });
+        server.start();
+        try {
+            var manager = Mockito.mock(DDDesktopAccessService.class);
+            Mockito.when(manager.getAccessTokenForResource(Mockito.any())).thenReturn("test-token");
+            var client = client("http://127.0.0.1:" + server.getAddress().getPort(), manager);
+            String revision = """
+                {"id":"%s","userId":"%s","updateTime":"2026-09-29T08:00:00Z","configurationFingerprint":"fp"}
+                """.formatted(PROJECT_A, PROJECT_B).trim();
+
+            response.set("{\"data\":{\"revision\":" + revision + "}}");
+            var current = client.getCurrentProjectRevision(UUID.fromString(PROJECT_A));
+            Assertions.assertEquals(UUID.fromString(PROJECT_A), current.id());
+            Assertions.assertEquals(LocalDateTime.parse("2026-09-29T08:00:00"), current.updateTime());
+            Assertions.assertTrue(request.get().get("query").getAsString().contains("revision: projectCurrentRevision"));
+
+            response.set("{\"data\":{\"projectPullConfiguration\":{\"files\":[{\"fileName\":\"prefs.json\","
+                + "\"encryptedContents\":\"AA==\",\"fingerprint\":\"file-fp\"}],\"currentRevision\":" + revision + "}}}");
+            var pulled = client.pullProjectConfiguration(UUID.fromString(PROJECT_A));
+            Assertions.assertEquals(current, pulled.currentRevision());
+            Assertions.assertEquals("prefs.json", pulled.files().getFirst().fileName());
+
+            response.set("{\"data\":{\"revision\":" + revision + "}}");
+            var pushed = client.pushProjectConfiguration(UUID.fromString(PROJECT_A),
+                new DDSharedProjectConfiguration("fp", List.of()), "previous-fp");
+            Assertions.assertEquals(current, pushed);
+            Assertions.assertEquals("fp", request.get().getAsJsonObject("variables")
+                .getAsJsonObject("projectContent").get("configurationFingerprint").getAsString());
+
+            response.set("{\"data\":{\"revisions\":[" + revision + "]}}");
+            var revisions = client.getProjectRevisions(UUID.fromString(PROJECT_A), null, null);
+            Assertions.assertEquals(List.of(current), revisions);
+            Assertions.assertTrue(request.get().getAsJsonObject("variables").get("startTime").isJsonNull());
+
+            response.set("{\"data\":{\"deleteProject\":true}}");
+            Assertions.assertTrue(client.deleteProject(UUID.fromString(PROJECT_A)));
+            response.set("{\"data\":{\"deleteProject\":false}}");
+            Assertions.assertFalse(client.deleteProject(UUID.fromString(PROJECT_A)));
+
+            response.set("{\"data\":{\"revision\":null}}");
+            Assertions.assertThrows(DDShareException.class,
+                () -> client.pushProjectConfiguration(UUID.fromString(PROJECT_A),
+                    new DDSharedProjectConfiguration("fp", List.of()), "previous-fp"));
         } finally {
             server.stop(0);
         }
@@ -111,7 +175,7 @@ class DDShareClientTest {
             var manager = Mockito.mock(DDDesktopAccessService.class);
             session.when(DDDesktopAccessService::getInstance).thenReturn(manager);
             Mockito.when(manager.getAccessTokenForResource(Mockito.any())).thenReturn("test-token");
-            Assertions.assertThrows(DDShareException.class, () -> new DDShareClient(base, manager).listProjects());
+            Assertions.assertThrows(DDShareException.class, () -> client(base, manager).listProjects());
             Assertions.assertEquals(0, redirected.get());
         } finally {
             server.stop(0);
@@ -123,7 +187,7 @@ class DDShareClientTest {
         DDDesktopAccessService accessService = Mockito.mock(DDDesktopAccessService.class);
         Mockito.when(accessService.getAccessTokenForResource(Mockito.any()))
             .thenThrow(new DBException("Sign in to DataDam first"));
-        DDShareClient client = new DDShareClient("http://127.0.0.1:1", accessService);
+        DDShareClient client = client("http://127.0.0.1:1", accessService);
 
         DDShareException error = Assertions.assertThrows(DDShareException.class, client::listProjects);
         Assertions.assertTrue(error.getCause().getMessage().contains("Sign in to DataDam"));
@@ -167,5 +231,16 @@ class DDShareClientTest {
         KeyGenerator keyGenerator = KeyGenerator.getInstance("AES");
         keyGenerator.init(256);
         return keyGenerator.generateKey();
+    }
+
+    @NotNull
+    private DDShareClient client(@NotNull String url, @NotNull DDDesktopAccessService accessService) {
+        return new DDShareClient(url, accessService) {
+            @NotNull
+            @Override
+            protected String getUserAgent() {
+                return "DataDam Share test";
+            }
+        };
     }
 }

@@ -421,10 +421,6 @@ public class SQLEditorMessages extends NLS {
     public static String sql_generator_nonsql_text;
 
     public static String sql_editor_separate_connection_no_editor_or_ds_selected;
-    public static String sql_editor_prefs_save_as_script_text;
-    public static String sql_editor_prefs_save_as_script_tip;
-    public static String sql_editor_prefs_disable_services_text;
-    public static String sql_editor_prefs_disable_services_tip;
     public static String sql_editor_prefs_script_advanced_settings;
     public static String sql_editor_prefs_script_disable_sql_syntax_parsing_for_scripts_bigger_than;
     public static String sql_editor_confirm_no_fetch_result_for_big_script_title;
@@ -469,6 +465,47 @@ public class SQLEditorMessages extends NLS {
     public static String update_conflict_message;
     public static String update_conflict_message_revert;
     public static String update_conflict_message_overwrite;
+    public static String sql_editor_resultset_filter_panel_control_execute_to_see_result;
+    public static String save_execution_plan;
+    public static String dialog_policy_sql_execution_title;
+    public static String dialog_policy_sql_execution_msg;
+    public static String dialog_confirm_action_query;
+    public static String dialog_confirm_action_show_query;
+    public static String model_jdbc_save_to_file_;
+    public static String controls_querylog_action_clear_log;
+    public static String controls_querylog_action_copy_all_fields;
+    public static String controls_querylog_action_delete;
+    public static String controls_querylog_column_duration_name;
+    public static String controls_querylog_column_duration_tooltip;
+    public static String controls_querylog_column_result_name;
+    public static String controls_querylog_column_result_tooltip;
+    public static String controls_querylog_column_rows_name;
+    public static String controls_querylog_column_rows_tooltip;
+    public static String controls_querylog_column_text_name;
+    public static String controls_querylog_column_text_tooltip;
+    public static String controls_querylog_column_time_name;
+    public static String controls_querylog_column_time_tooltip;
+    public static String controls_querylog_column_type_name;
+    public static String controls_querylog_column_type_tooltip;
+    public static String controls_querylog_column_schema_name;
+    public static String controls_querylog_column_schema_tip;
+    public static String controls_querylog_column_catalog_name;
+    public static String controls_querylog_column_catalog_tip;
+    public static String controls_querylog_column_connection_name;
+    public static String controls_querylog_column_connection_tooltip;
+    public static String controls_querylog_column_context_name;
+    public static String controls_querylog_column_context_tooltip;
+    public static String controls_querylog_commit;
+    public static String controls_querylog_job_refresh;
+    public static String controls_querylog_label_result;
+    public static String controls_querylog_label_text;
+    public static String controls_querylog_label_time;
+    public static String controls_querylog_label_type;
+    public static String controls_querylog_rollback;
+    public static String controls_querylog_savepoint;
+    public static String controls_querylog_shell_text;
+    public static String controls_querylog_transaction;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, SQLEditorMessages.class);
