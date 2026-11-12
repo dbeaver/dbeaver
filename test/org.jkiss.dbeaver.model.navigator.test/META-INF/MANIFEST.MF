@@ -10,4 +10,5 @@ Fragment-Host: org.jkiss.dbeaver.model
 Bundle-ActivationPolicy: lazy
 Require-Bundle: junit-jupiter-api,
  org.jkiss.dbeaver.test.platform,
- org.jkiss.dbeaver.model
+ org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.cmp.simple

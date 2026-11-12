@@ -35,6 +35,7 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
     private Button compareLazyProperties;
     private Button compareOnlyStructure;
     private Button compareScriptProperties;
+    private Button refreshMetadata;
 
     CompareObjectsPageSettings() {
         super(CompareUIMessages.compare_objects_page_settings_page);
@@ -95,6 +96,9 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
             compareScriptProperties = UIUtils.createCheckbox(compareSettings, CompareUIMessages.compare_objects_page_settings_checkbox_scripts, settings.isCompareScripts());
             compareScriptProperties.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
                 settings.setCompareScripts(compareScriptProperties.getSelection())));
+            refreshMetadata = UIUtils.createCheckbox(compareSettings, CompareUIMessages.compare_objects_page_settings_checkbox_refresh_metadata, settings.isRefreshMetadata());
+            refreshMetadata.addSelectionListener(SelectionListener.widgetSelectedAdapter(e ->
+                settings.setRefreshMetadata(refreshMetadata.getSelection())));
         }
         
         setControl(composite);
