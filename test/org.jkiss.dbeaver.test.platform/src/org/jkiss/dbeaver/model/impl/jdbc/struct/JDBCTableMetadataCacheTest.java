@@ -20,11 +20,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDialect;
 import org.jkiss.dbeaver.model.DBPContextWithAttributes;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
-import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
 import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -40,7 +38,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.sql.ResultSetMetaData;
@@ -48,6 +45,7 @@ import java.sql.Types;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 class JDBCTableMetadataCacheTest {
 
@@ -59,12 +57,11 @@ class JDBCTableMetadataCacheTest {
         attributes.setContextAttribute(DBSDataContainer.CONTEXT_READ_PREPARED_COLUMN_METADATA, Boolean.TRUE);
         JDBCTable<?, ?> table = table(session.getDataSource());
         List<JDBCStatement> statements = new ArrayList<>();
+        stubStatements(session, statements);
 
-        try (MockedStatic<DBUtils> utils = stubStatements(source, session, statements)) {
-            read(table, source, session, 0);
-            read(table, source, session, 5);
-            read(table, source, session, 10);
-        }
+        read(table, source, session, 0);
+        read(table, source, session, 5);
+        read(table, source, session, 10);
 
         Assertions.assertEquals(3, statements.size());
         ArgumentCaptor<JDBCResultSetMetaDataSnapshot> snapshots = ArgumentCaptor.forClass(JDBCResultSetMetaDataSnapshot.class);
@@ -83,14 +80,13 @@ class JDBCTableMetadataCacheTest {
         DBPContextWithAttributes attributes = (DBPContextWithAttributes) source;
         JDBCTable<?, ?> table = table(session.getDataSource());
         List<JDBCStatement> statements = new ArrayList<>();
+        stubStatements(session, statements);
 
-        try (MockedStatic<DBUtils> utils = stubStatements(source, session, statements)) {
-            read(table, source, session, 0);
-            attributes.setContextAttribute(DBSDataContainer.CONTEXT_READ_PREPARED_COLUMN_METADATA, Boolean.TRUE);
-            read(table, source, session, 5);
-            attributes.removeContextAttribute(DBSDataContainer.CONTEXT_READ_PREPARED_COLUMN_METADATA);
-            read(table, source, session, 10);
-        }
+        read(table, source, session, 0);
+        attributes.setContextAttribute(DBSDataContainer.CONTEXT_READ_PREPARED_COLUMN_METADATA, Boolean.TRUE);
+        read(table, source, session, 5);
+        attributes.removeContextAttribute(DBSDataContainer.CONTEXT_READ_PREPARED_COLUMN_METADATA);
+        read(table, source, session, 10);
 
         Mockito.verify(statements.get(0), Mockito.never()).setResultSetMetaDataSnapshot(Mockito.any());
         Mockito.verify(statements.get(1)).setResultSetMetaDataSnapshot(Mockito.any());
@@ -107,11 +103,10 @@ class JDBCTableMetadataCacheTest {
         JDBCTable<?, ?> first = table(session.getDataSource());
         JDBCTable<?, ?> second = table(session.getDataSource());
         List<JDBCStatement> statements = new ArrayList<>();
+        stubStatements(session, statements);
 
-        try (MockedStatic<DBUtils> utils = stubStatements(source, session, statements)) {
-            read(first, source, session, 0);
-            read(second, source, session, 5);
-        }
+        read(first, source, session, 0);
+        read(second, source, session, 5);
 
         Mockito.verify(session, Mockito.times(2)).prepareStatement(Mockito.anyString());
     }
@@ -124,12 +119,11 @@ class JDBCTableMetadataCacheTest {
             DBSDataContainer.CONTEXT_READ_PREPARED_COLUMN_METADATA, Boolean.TRUE);
         JDBCTable<?, ?> table = table(session.getDataSource());
         List<JDBCStatement> statements = new ArrayList<>();
+        stubStatements(session, statements);
 
-        try (MockedStatic<DBUtils> utils = stubStatements(source, session, statements)) {
-            read(table, source, session, 0);
-            Mockito.doReturn("other_books").when(table).getFullyQualifiedName(DBPEvaluationContext.DML);
-            read(table, source, session, 5);
-        }
+        read(table, source, session, 0);
+        Mockito.doReturn("other_books").when(table).getFullyQualifiedName(DBPEvaluationContext.DML);
+        read(table, source, session, 5);
 
         Mockito.verify(session, Mockito.times(2)).prepareStatement(Mockito.anyString());
     }
@@ -159,36 +153,22 @@ class JDBCTableMetadataCacheTest {
         ((DBPContextWithAttributes) source).setContextAttribute(
             DBSDataContainer.CONTEXT_READ_PREPARED_COLUMN_METADATA, Boolean.TRUE);
         JDBCTable<?, ?> table = table(session.getDataSource());
-        DBCQueryTransformProvider provider = Mockito.mock(DBCQueryTransformProvider.class);
-        Mockito.when(provider.createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT))
+        JDBCDataSource dataSource = session.getDataSource();
+        Mockito.when(dataSource.createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT))
             .thenReturn(new QueryTransformerLimit(false, true));
         List<JDBCStatement> statements = new ArrayList<>();
-        JDBCDataSource dataSource = session.getDataSource();
-        Mockito.when(dataSource.getSQLDialect()).thenReturn(new PostgreDialect());
+        stubStatements(session, statements);
 
-        try (MockedStatic<DBUtils> utils = Mockito.mockStatic(DBUtils.class, Mockito.CALLS_REAL_METHODS)) {
-            utils.when(() -> DBUtils.getAdapter(
-                Mockito.eq(DBCQueryTransformProvider.class), Mockito.same(dataSource))).thenReturn(provider);
-            utils.when(() -> DBUtils.makeStatement(
-                Mockito.same(source), Mockito.same(session), Mockito.eq(DBCStatementType.SCRIPT),
-                Mockito.anyString(), Mockito.anyLong(), Mockito.anyLong()
-            )).thenAnswer(invocation -> {
-                JDBCStatement statement = Mockito.mock(JDBCStatement.class);
-                Mockito.when(statement.getQueryString()).thenReturn(invocation.getArgument(3));
-                statements.add(statement);
-                return statement;
-            });
+        read(table, source, session, 0);
+        read(table, source, session, 5);
+        read(table, source, session, 10);
 
-            read(table, source, session, 0);
-            read(table, source, session, 5);
-            read(table, source, session, 10);
-
-            utils.verify(() -> DBUtils.makeStatement(
-                Mockito.same(source), Mockito.same(session), Mockito.eq(DBCStatementType.SCRIPT),
-                Mockito.contains("LIMIT 5 OFFSET 5"), Mockito.eq(-1L), Mockito.eq(-1L)));
-        }
         Assertions.assertEquals(3, statements.size());
+        Assertions.assertTrue(Objects.requireNonNull(statements.get(0).getQueryString()).contains("LIMIT 5"));
+        Assertions.assertTrue(Objects.requireNonNull(statements.get(1).getQueryString()).contains("LIMIT 5 OFFSET 5"));
+        Assertions.assertTrue(Objects.requireNonNull(statements.get(2).getQueryString()).contains("LIMIT 5 OFFSET 10"));
         for (JDBCStatement statement : statements) {
+            Mockito.verify(statement).setStatementSource(source);
             Mockito.verify(statement).setResultsFetchSize(0);
             Mockito.verify(statement, Mockito.never()).setLimit(Mockito.anyLong(), Mockito.anyLong());
             Mockito.verify(statement).setResultSetMetaDataSnapshot(Mockito.any());
@@ -204,13 +184,11 @@ class JDBCTableMetadataCacheTest {
             DBSDataContainer.CONTEXT_READ_ATTEMPT_LIMIT_TRANSFORMER, Boolean.TRUE);
         JDBCTable<?, ?> table = table(session.getDataSource());
         List<JDBCStatement> statements = new ArrayList<>();
+        stubStatements(session, statements);
 
-        try (MockedStatic<DBUtils> utils = stubStatements(source, session, statements)) {
-            read(table, source, session, 5);
-            utils.verify(() -> DBUtils.makeStatement(
-                Mockito.same(source), Mockito.same(session), Mockito.eq(DBCStatementType.SCRIPT),
-                Mockito.anyString(), Mockito.eq(5L), Mockito.eq(5L)));
-        }
+        read(table, source, session, 5);
+        Assertions.assertEquals("SELECT * FROM books", statements.getFirst().getQueryString());
+        Mockito.verify(statements.getFirst()).setLimit(5, 5);
         Mockito.verify(statements.getFirst()).setResultsFetchSize(10);
         Mockito.verify(statements.getFirst(), Mockito.never()).setResultsFetchSize(0);
     }
@@ -223,13 +201,10 @@ class JDBCTableMetadataCacheTest {
             DBSDataContainer.CONTEXT_READ_ATTEMPT_LIMIT_TRANSFORMER, Boolean.TRUE);
         JDBCTable<?, ?> table = table(session.getDataSource());
         List<JDBCStatement> statements = new ArrayList<>();
+        stubStatements(session, statements);
 
-        try (MockedStatic<DBUtils> utils = stubStatements(source, session, statements)) {
-            read(table, source, session, -1);
-            utils.verify(() -> DBUtils.makeStatement(
-                Mockito.same(source), Mockito.same(session), Mockito.eq(DBCStatementType.SCRIPT),
-                Mockito.anyString(), Mockito.eq(-1L), Mockito.eq(5L)));
-        }
+        read(table, source, session, -1);
+        Assertions.assertEquals("SELECT * FROM books", statements.getFirst().getQueryString());
         Mockito.verify(statements.getFirst()).setResultsFetchSize(10);
         Mockito.verify(statements.getFirst(), Mockito.never()).setResultsFetchSize(0);
     }
@@ -256,8 +231,9 @@ class JDBCTableMetadataCacheTest {
         JDBCSession session = Mockito.mock(JDBCSession.class, Mockito.RETURNS_DEEP_STUBS);
         JDBCDataSource dataSource = Mockito.mock(JDBCDataSource.class, Mockito.RETURNS_DEEP_STUBS);
         Mockito.when(session.getDataSource()).thenReturn(dataSource);
+        Mockito.when(dataSource.getDataSource()).thenReturn(dataSource);
         Mockito.when(session.getProgressMonitor()).thenReturn(Mockito.mock(DBRProgressMonitor.class));
-        Mockito.when(dataSource.getSQLDialect().getAllAttributesAlias()).thenReturn("*");
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(new PostgreDialect());
         Mockito.when(dataSource.getJdbcFactory()).thenReturn(new JDBCFactoryDefault());
         ResultSetMetaData metadata = Mockito.mock(ResultSetMetaData.class);
         Mockito.when(metadata.getColumnCount()).thenReturn(1);
@@ -279,23 +255,19 @@ class JDBCTableMetadataCacheTest {
             Mockito.mock(DBSDataContainer.class), Mockito.mock(DBCExecutionContext.class), new Object());
     }
 
-    @NotNull
-    private static MockedStatic<DBUtils> stubStatements(
-        @NotNull DBCExecutionSource source,
+    private static void stubStatements(
         @NotNull JDBCSession session,
         @NotNull List<JDBCStatement> statements
     ) throws Exception {
-        MockedStatic<DBUtils> utils = Mockito.mockStatic(DBUtils.class, Mockito.CALLS_REAL_METHODS);
-        utils.when(() -> DBUtils.makeStatement(
-            Mockito.same(source), Mockito.same(session), Mockito.eq(DBCStatementType.SCRIPT),
-            Mockito.anyString(), Mockito.anyLong(), Mockito.eq(5L)
+        Mockito.when(session.prepareStatement(
+            Mockito.eq(DBCStatementType.SCRIPT), Mockito.anyString(), Mockito.anyBoolean(),
+            Mockito.eq(false), Mockito.eq(false)
         )).thenAnswer(invocation -> {
             JDBCStatement statement = Mockito.mock(JDBCStatement.class);
-            Mockito.when(statement.getQueryString()).thenReturn(
-                "SELECT title FROM books LIMIT 5 OFFSET " + invocation.getArgument(4));
+            Mockito.when(statement.getQueryString()).thenReturn(invocation.getArgument(1));
+            Mockito.when(statement.getSession()).thenReturn(session);
             statements.add(statement);
             return statement;
         });
-        return utils;
     }
 }
