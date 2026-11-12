@@ -84,8 +84,8 @@ public class UIExecutionQueue {
                 nextJob = null;
                 runCount--;
             }
+            UIUtils.asyncExec(UIExecutionQueue::executeInUI);
         }
-        UIUtils.asyncExec(UIExecutionQueue::executeInUI);
     }
 
 }
