@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 public class VerticaConnectionPageAdvanced extends ConnectionPageAbstract {
@@ -37,7 +38,7 @@ public class VerticaConnectionPageAdvanced extends ConnectionPageAbstract {
     private Combo sqlDollarQuoteBehaviorCombo;
 
     public VerticaConnectionPageAdvanced() {
-        setTitle("Advanced");
+        setTitle(UIConnectionMessages.dialog_connection_advanced_tab);
     }
 
     @Override

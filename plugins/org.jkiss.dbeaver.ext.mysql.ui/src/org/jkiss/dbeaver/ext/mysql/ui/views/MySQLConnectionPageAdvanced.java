@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.TimeZone;
@@ -51,7 +52,7 @@ public class MySQLConnectionPageAdvanced extends ConnectionPageAbstract {
     private Combo serverTimezoneCombo;
 
     public MySQLConnectionPageAdvanced() {
-        setTitle("Advanced");
+        setTitle(UIConnectionMessages.dialog_connection_advanced_tab);
         setDescription("MySQL advanced connection setting");
     }
 
