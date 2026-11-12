@@ -361,7 +361,7 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
 
     @Override
     public synchronized boolean needsInitialization() {
-        return !disposed && children == null;
+        return children == null;
     }
 
     @Override

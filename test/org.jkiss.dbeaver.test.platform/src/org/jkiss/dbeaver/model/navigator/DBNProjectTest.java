@@ -43,6 +43,13 @@ public class DBNProjectTest extends DBeaverUnitTest {
     private DBPProject project;
     private DBPDataSourceRegistry registry;
 
+    @Override
+    public boolean verifyLaunched() {
+        return super.verifyLaunched()
+            && DBWorkbench.getPlatform().getNavigatorModel() != null
+            && DBWorkbench.getPlatform().getNavigatorModel().getRoot() != null;
+    }
+
     @BeforeEach
     public void setUpProject() {
         project = mock(DBPProject.class);
@@ -117,6 +124,7 @@ public class DBNProjectTest extends DBeaverUnitTest {
             disposal.get(1, TimeUnit.SECONDS);
             assertTrue(node.isDisposed());
             assertNull(node.getCachedChildren());
+            assertTrue(node.needsInitialization());
             assertThrows(DBException.class, () -> node.getChildren(new VoidProgressMonitor()));
         } finally {
             finishLoading.countDown();
@@ -168,7 +176,8 @@ public class DBNProjectTest extends DBeaverUnitTest {
         DBNProject node = new TestProject();
         DBNUtils.disposeNode(node, false);
         assertTrue(node.isDisposed());
-        assertFalse(node.needsInitialization());
+        assertTrue(node.needsInitialization());
+        assertNull(node.getCachedChildren());
         assertThrows(DBException.class, () -> node.getChildren(new VoidProgressMonitor()));
         verifyNoInteractions(registry);
     }
