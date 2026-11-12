@@ -26,13 +26,14 @@ import java.util.HashSet;
 import java.util.Set;
 
 public final class DBeaverProgressBarHelper {
+    // cocoa does not implement SWT.PAUSED for progress bars
     private static final long STOP_ANIMATION = OS.sel_registerName("stopAnimation:");
 
     private final Display display;
     private final Set<ProgressBar> pausedBars = new HashSet<>();
     private boolean updatePending;
 
-    private DBeaverProgressBarHelper(Display display) {
+    private DBeaverProgressBarHelper(@NotNull Display display) {
         this.display = display;
         Listener listener = event -> {
             if ((event.widget instanceof Shell || event.widget instanceof ProgressBar) && !updatePending) {
@@ -63,7 +64,7 @@ public final class DBeaverProgressBarHelper {
         }
     }
 
-    private void updateAnimations(Control control, boolean blocked) {
+    private void updateAnimations(@NotNull Control control, boolean blocked) {
         if (control instanceof ProgressBar bar && (bar.getStyle() & SWT.INDETERMINATE) != 0) {
             if (!bar.isVisible() || blocked) {
                 pausedBars.add(bar);

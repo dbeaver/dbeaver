@@ -629,7 +629,8 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
 
         @Override
-        public IStatus runInUIThread(IProgressMonitor monitor) {
+        @NotNull
+        public IStatus runInUIThread(@NotNull IProgressMonitor monitor) {
             synchronized (nodeInLoadingProcess) {
                 long nextDelay = WAIT_DELAY;
                 if (!nodeInLoadingProcess.isEmpty() && !UIUtils.isShellBlocked(treeViewer.getTree().getShell())) {
