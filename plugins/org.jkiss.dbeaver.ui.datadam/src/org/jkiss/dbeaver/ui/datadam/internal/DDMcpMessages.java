@@ -36,6 +36,7 @@ public class DDMcpMessages extends NLS {
     public static String mcp_connections_ready_tip;
     public static String mcp_connections_refresh;
     public static String mcp_connections_add;
+    public static String mcp_connections_configure_scope;
     public static String mcp_connections_remove;
     public static String mcp_connections_save_failed;
     public static String mcp_connections_open_failed;

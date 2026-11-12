@@ -39,9 +39,11 @@ import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionCatalog;
 import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionCatalog.AvailableConnection;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.preferences.PrefPageDataSourceAI;
 import org.jkiss.dbeaver.ui.datadam.internal.DDMcpMessages;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIIcons;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
@@ -66,6 +68,7 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
     private TableViewer connectionViewer;
     private TableViewer projectViewer;
     private Button addButton;
+    private Button configureButton;
     private Button removeButton;
     private boolean updatingProjects;
     @Nullable
@@ -111,12 +114,14 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
         projectsHeader.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, false, false));
         new Label(projectsHeader, SWT.NONE).setText(DDMcpMessages.mcp_connections_projects);
 
-        Composite connectionsHeader = UIUtils.createComposite(parent, 2);
+        Composite connectionsHeader = UIUtils.createComposite(parent, 3);
         connectionsHeader.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
         new Label(connectionsHeader, SWT.NONE).setText(DDMcpMessages.mcp_connections_connections);
         Button refreshButton = iconButton(connectionsHeader, UIIcon.REFRESH,
             DDMcpMessages.mcp_connections_refresh, this::refreshConnections);
         refreshButton.setLayoutData(new GridData(SWT.END, SWT.CENTER, true, false));
+        addButton = iconButton(connectionsHeader, DDTrackingUIIcons.SHARE_PROJECT,
+            DDMcpMessages.mcp_connections_add, this::addConnection);
     }
 
     private void createConnections(@NotNull Composite parent) {
@@ -138,8 +143,8 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
 
         Composite actions = UIUtils.createComposite(tableRow, 1);
         actions.setLayoutData(new GridData(SWT.BEGINNING, SWT.BEGINNING, false, false));
-        addButton = iconButton(actions, DDTrackingUIIcons.SHARE_PROJECT,
-            DDMcpMessages.mcp_connections_add, this::addConnection);
+        configureButton = iconButton(actions, UIIcon.CONFIGURATION,
+            DDMcpMessages.mcp_connections_configure_scope, this::configureScope);
         removeButton = iconButton(actions, DDTrackingUIIcons.PROJECT_DISCONNECT,
             DDMcpMessages.mcp_connections_remove, this::removeConnections);
     }
@@ -283,6 +288,21 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
         showConnections();
     }
 
+    private void configureScope() {
+        IStructuredSelection selection = connectionViewer.getStructuredSelection();
+        if (selection.size() != 1) {
+            return;
+        }
+        UIServiceConnections service = DBWorkbench.getService(UIServiceConnections.class);
+        if (service != null) {
+            AvailableConnection connection = (AvailableConnection) selection.getFirstElement();
+            service.openConnectionEditor(connection.connection(), PrefPageDataSourceAI.class.getName());
+            if (!connectionViewer.getControl().isDisposed()) {
+                refreshConnections();
+            }
+        }
+    }
+
     private void refreshConnections() {
         UUID accountId = DDDesktopAccessService.getInstance().getAccountId();
         if (!Objects.equals(displayedAccountId, accountId)) {
@@ -364,6 +384,7 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
 
     private void updateButtons() {
         addButton.setEnabled(selectedProject() != null);
+        configureButton.setEnabled(connectionViewer.getStructuredSelection().size() == 1);
         removeButton.setEnabled(!connectionViewer.getStructuredSelection().isEmpty());
     }
 
