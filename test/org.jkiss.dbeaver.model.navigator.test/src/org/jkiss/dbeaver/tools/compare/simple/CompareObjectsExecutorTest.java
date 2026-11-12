@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.compare.simple;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -55,6 +56,57 @@ public class CompareObjectsExecutorTest extends DBeaverUnitTest {
 
             CompareObjectsExecutor executor = new CompareObjectsExecutor(settings);
             CompareReport report = executor.compareObjects(new VoidProgressMonitor(), List.of(node));
+            Assertions.assertNotNull(report);
+        }
+    }
+
+    @Test
+    public void testCompareObjectsRefreshMetadataDelegatedRefreshSuccess() throws Exception {
+        CompareObjectsSettings settings = new CompareObjectsSettings();
+        settings.setRefreshMetadata(true);
+
+        DBNDatabaseNode ancestorNode = Mockito.mock(DBNDatabaseNode.class);
+        DBNDatabaseNode childNode = Mockito.mock(DBNDatabaseNode.class);
+        DBSObject object = Mockito.mock(DBSObject.class);
+        Mockito.when(childNode.getObject()).thenReturn(object);
+        Mockito.when(childNode.getParentNode()).thenReturn(ancestorNode);
+        Mockito.when(ancestorNode.getChildren(Mockito.any())).thenReturn(new DBNDatabaseNode[]{childNode});
+        // Delegated refresh returns ancestorNode instead of childNode
+        Mockito.when(childNode.refreshNode(Mockito.any(), Mockito.eq(DBNEvent.FORCE_REFRESH))).thenReturn(ancestorNode);
+        Mockito.when(childNode.isDisposed()).thenReturn(false);
+
+        settings.setNodes(List.of(childNode));
+
+        try (MockedStatic<DBNUtils> dbnUtils = Mockito.mockStatic(DBNUtils.class)) {
+            dbnUtils.when(() -> DBNUtils.getNodeByObject(Mockito.any(), Mockito.eq(object), Mockito.eq(false)))
+                .thenReturn(childNode);
+
+            CompareObjectsExecutor executor = new CompareObjectsExecutor(settings);
+            CompareReport report = executor.compareObjects(new VoidProgressMonitor(), List.of(childNode));
+            Assertions.assertNotNull(report);
+        }
+    }
+
+    @Test
+    public void testCompareObjectsRefreshMetadataFolderRootSuccess() throws Exception {
+        CompareObjectsSettings settings = new CompareObjectsSettings();
+        settings.setRefreshMetadata(true);
+
+        DBNDatabaseFolder folderNode = Mockito.mock(DBNDatabaseFolder.class);
+        DBSObject object = Mockito.mock(DBSObject.class);
+        Mockito.when(folderNode.getObject()).thenReturn(object);
+        Mockito.when(folderNode.getParentNode()).thenReturn(null);
+        Mockito.when(folderNode.refreshNode(Mockito.any(), Mockito.eq(DBNEvent.FORCE_REFRESH))).thenReturn(folderNode);
+        Mockito.when(folderNode.isDisposed()).thenReturn(false);
+
+        settings.setNodes(List.of(folderNode));
+
+        try (MockedStatic<DBNUtils> dbnUtils = Mockito.mockStatic(DBNUtils.class)) {
+            dbnUtils.when(() -> DBNUtils.getNodeByObject(Mockito.any(), Mockito.eq(object), Mockito.eq(false)))
+                .thenReturn(folderNode);
+
+            CompareObjectsExecutor executor = new CompareObjectsExecutor(settings);
+            CompareReport report = executor.compareObjects(new VoidProgressMonitor(), List.of(folderNode));
             Assertions.assertNotNull(report);
         }
     }
