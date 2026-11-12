@@ -874,18 +874,17 @@ public class PostgreUtils {
 
             // Permissions
             Collection<PostgrePrivilege> permissions = object.getPrivileges(monitor, true);
-            if (object instanceof PostgreProcedure && !CommonUtils.isEmpty(permissions) && !hasPublicGrantee(permissions)) {
-                // Functions and procedures grant EXECUTE to PUBLIC on creation, so re-running the DDL
-                // must revoke it when the ACL no longer has it, as pg_dump does.
-                // An empty list means the ACL couldn't be read, so PUBLIC may still be there.
-                PostgreObjectPrivilege publicPrivilege = new PostgreObjectPrivilege(
-                    object,
-                    new PostgreRoleReference(object.getDatabase(), PostgreConstants.PUBLIC_ROLE_NAME, null),
-                    Collections.emptyList()
-                );
-                Collections.addAll(actions,
-                    new PostgreCommandGrantPrivilege(object, false, object, publicPrivilege, new PostgrePrivilegeType[]{PostgrePrivilegeType.ALL})
-                        .getPersistActions(monitor, executionContext, options));
+            if (object instanceof PostgreProcedure procedure && procedure.hasExplicitAcl()) {
+                // A new function or procedure has EXECUTE for PUBLIC and ALL for its owner, so re-running
+                // the DDL must revoke whichever of them the ACL no longer has, as pg_dump does.
+                // An empty ACL ({}) revokes both.
+                if (!hasGrantee(permissions, PostgreConstants.PUBLIC_ROLE_NAME)) {
+                    addRevokeAll(monitor, executionContext, object,
+                        new PostgreRoleReference(object.getDatabase(), PostgreConstants.PUBLIC_ROLE_NAME, null), actions, options);
+                }
+                if (owner != null && !hasGrantee(permissions, owner.getName())) {
+                    addRevokeAll(monitor, executionContext, object, owner.getRoleReference(), actions, options);
+                }
             }
             if (!CommonUtils.isEmpty(permissions)) {
 
@@ -903,11 +902,28 @@ public class PostgreUtils {
         }
     }
 
-    private static boolean hasPublicGrantee(@NotNull Collection<PostgrePrivilege> permissions) {
+    private static void addRevokeAll(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull PostgrePrivilegeOwner object,
+        @NotNull PostgreRoleReference grantee,
+        @NotNull List<DBEPersistAction> actions,
+        @NotNull Map<String, Object> options
+    ) throws DBException {
+        PostgreObjectPrivilege privilege = new PostgreObjectPrivilege(object, grantee, Collections.emptyList());
+        Collections.addAll(actions,
+            new PostgreCommandGrantPrivilege(object, false, object, privilege, new PostgrePrivilegeType[]{PostgrePrivilegeType.ALL})
+                .getPersistActions(monitor, executionContext, options));
+    }
+
+    private static boolean hasGrantee(@Nullable Collection<PostgrePrivilege> permissions, @NotNull String roleName) {
+        if (permissions == null) {
+            return false;
+        }
         for (PostgrePrivilege permission : permissions) {
             if (permission instanceof PostgreObjectPrivilege objectPrivilege
                 && objectPrivilege.getGrantee() != null
-                && PostgreConstants.PUBLIC_ROLE_NAME.equals(objectPrivilege.getGrantee().getRoleName())
+                && roleName.equals(objectPrivilege.getGrantee().getRoleName())
             ) {
                 return true;
             }

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -94,8 +95,8 @@ public class PostgreProcedurePermissionsDDLTest extends DBeaverUnitTest {
 
     @Test
     public void noRevokeWhenAclIsUnknown() throws DBException {
-        // extractPermissionsFromACL returns an empty list when proacl can't be read
-        String ddl = generatePermissionsDDL(PostgreProcedureKind.f);
+        // proacl is NULL (default privileges) or couldn't be read
+        String ddl = generatePermissionsDDL(PostgreProcedureKind.f, (String[]) null);
 
         Assertions.assertFalse(ddl.contains("REVOKE"), ddl);
     }
@@ -108,8 +109,29 @@ public class PostgreProcedurePermissionsDDLTest extends DBeaverUnitTest {
         Assertions.assertTrue(ddl.contains("REVOKE ALL ON FUNCTION public.acltest() FROM PUBLIC"), ddl);
     }
 
+    @Test
+    public void revokesPublicAndOwnerWhenAclIsEmpty() throws DBException {
+        // proacl is {} after REVOKE ALL ... FROM public and REVOKE ALL ... FROM tester
+        String ddl = generatePermissionsDDL(PostgreProcedureKind.f);
+
+        Assertions.assertTrue(ddl.endsWith(
+            "ALTER FUNCTION public.acltest() OWNER TO tester\n"
+                + "REVOKE ALL ON FUNCTION public.acltest() FROM PUBLIC\n"
+                + "REVOKE ALL ON FUNCTION public.acltest() FROM tester"
+        ), ddl);
+    }
+
+    @Test
+    public void revokesOwnerWhenAclHasNoOwnerEntry() throws DBException {
+        String ddl = generatePermissionsDDL(PostgreProcedureKind.f, "=X/tester");
+
+        Assertions.assertTrue(ddl.contains("REVOKE ALL ON FUNCTION public.acltest() FROM tester"), ddl);
+        Assertions.assertFalse(ddl.contains("FROM PUBLIC"), ddl);
+        Assertions.assertTrue(ddl.contains("GRANT ALL ON FUNCTION public.acltest() TO PUBLIC"), ddl);
+    }
+
     @NotNull
-    private String generatePermissionsDDL(@NotNull PostgreProcedureKind kind, @NotNull String... aclItems) throws DBException {
+    private String generatePermissionsDDL(@NotNull PostgreProcedureKind kind, @Nullable String... aclItems) throws DBException {
         PostgreProcedure procedure = new PostgreProcedure(testSchema) {
             @Override
             public PostgreRole getOwner(DBRProgressMonitor monitor) {
@@ -118,7 +140,12 @@ public class PostgreProcedurePermissionsDDLTest extends DBeaverUnitTest {
 
             @Override
             public Collection<PostgrePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor, boolean includeNestedObjects) {
-                return PostgreUtils.extractPermissionsFromACL(this, aclItems, false);
+                return aclItems == null ? List.of() : PostgreUtils.extractPermissionsFromACL(this, aclItems, false);
+            }
+
+            @Override
+            public boolean hasExplicitAcl() {
+                return aclItems != null;
             }
         };
         procedure.setName("acltest");
