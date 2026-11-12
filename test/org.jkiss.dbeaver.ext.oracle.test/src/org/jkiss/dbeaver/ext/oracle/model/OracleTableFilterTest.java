@@ -33,6 +33,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -40,6 +41,7 @@ public class OracleTableFilterTest extends DBeaverUnitTest {
 
     private DBPDataSourceContainer container;
     private DBPPreferenceStore preferences;
+    private OracleDataSource dataSource;
     private OracleSchema schema;
     private JDBCSession session;
     private JDBCPreparedStatement statement;
@@ -51,7 +53,7 @@ public class OracleTableFilterTest extends DBeaverUnitTest {
         Mockito.when(container.getPreferenceStore()).thenReturn(preferences);
         Mockito.when(preferences.getBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS)).thenReturn(true);
         Mockito.when(container.getConnectionConfiguration()).thenReturn(new DBPConnectionConfiguration());
-        OracleDataSource dataSource = Mockito.mock(OracleDataSource.class);
+        dataSource = Mockito.mock(OracleDataSource.class);
         Mockito.when(dataSource.getContainer()).thenReturn(container);
         Mockito.when(dataSource.getSQLDialect()).thenReturn(new OracleSQLDialect());
         Mockito.when(dataSource.isViewAvailable(Mockito.any(), Mockito.nullable(String.class), Mockito.anyString())).thenReturn(true);
@@ -60,6 +62,37 @@ public class OracleTableFilterTest extends DBeaverUnitTest {
         statement = Mockito.mock(JDBCPreparedStatement.class);
         Mockito.when(session.getProgressMonitor()).thenReturn(monitor);
         Mockito.when(session.prepareStatement(Mockito.anyString())).thenReturn(statement);
+    }
+
+    @Test
+    public void schemaSubclassUsesDeclaredTableTypeForNodeFilter() throws Exception {
+        schema = new ExtendedSchema(dataSource);
+        DBSObjectFilter tables = new DBSObjectFilter();
+        tables.addExclude("HIDDEN*");
+        Mockito.when(container.getObjectFilter(ExtendedTable.class, schema, false)).thenReturn(tables);
+
+        for (boolean useUnion : new boolean[] {false, true}) {
+            container.getConnectionConfiguration().setProviderProperty(
+                OracleConstants.PROP_METADATA_USE_ALTERNATIVE_TABLE_QUERY, Boolean.toString(useUnion));
+            Mockito.clearInvocations(container, session, statement);
+
+            String sql = prepare(null);
+            String column = useUnion ? "t.TABLE_NAME" : "O.OBJECT_NAME";
+            Assertions.assertTrue(sql.contains("AND NOT (" + column + " LIKE ?"));
+            Mockito.verify(container).getObjectFilter(ExtendedTable.class, schema, false);
+            Mockito.verify(container, Mockito.never()).getObjectFilter(OracleTable.class, schema, false);
+            if (useUnion) {
+                verifyBindings("TEST_SCHEMA", "HIDDEN%", "TEST_SCHEMA", "TEST_SCHEMA");
+            } else {
+                verifyBindings("TEST_SCHEMA", "HIDDEN%");
+            }
+        }
+    }
+
+    @Test
+    public void baseSchemaStillUsesBaseTableTypeForNodeFilter() throws Exception {
+        prepare(null);
+        Mockito.verify(container).getObjectFilter(OracleTable.class, schema, false);
     }
 
     @Test
@@ -122,6 +155,11 @@ public class OracleTableFilterTest extends DBeaverUnitTest {
         verifyBindings("TEST_SCHEMA");
     }
 
+    /**
+     * Records the pre-existing filter lookup contract, not a precedence introduced by Oracle's server-side filtering:
+     * a schema-specific filter replaces the connection-wide filter rather than being combined with it. The mocked
+     * container supplies already-resolved filters here, so this test does not itself verify registry precedence.
+     */
     @Test
     public void globalFilterIsOverriddenBySchemaFilterAndDoesNotRestrictExactLookup() throws Exception {
         DBSObjectFilter global = new DBSObjectFilter();
@@ -298,5 +336,23 @@ public class OracleTableFilterTest extends DBeaverUnitTest {
             Mockito.verify(statement).setString(i + 1, values[i]);
         }
         Mockito.verify(statement, Mockito.times(values.length)).setString(Mockito.anyInt(), Mockito.anyString());
+    }
+
+    public static class ExtendedSchema extends OracleSchema {
+        public ExtendedSchema(@NotNull OracleDataSource dataSource) {
+            super(dataSource, 1, "TEST_SCHEMA");
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public Collection<ExtendedTable> getTables(DBRProgressMonitor monitor) throws org.jkiss.dbeaver.DBException {
+            return (Collection<ExtendedTable>) super.getTables(monitor);
+        }
+    }
+
+    public static class ExtendedTable extends OracleTable {
+        public ExtendedTable(@NotNull OracleSchema schema, @NotNull String name) {
+            super(schema, name);
+        }
     }
 }

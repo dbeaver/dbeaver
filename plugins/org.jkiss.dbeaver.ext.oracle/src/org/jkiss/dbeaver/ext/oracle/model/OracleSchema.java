@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialectRelational;
@@ -48,8 +49,10 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
@@ -210,6 +213,19 @@ public class OracleSchema extends OracleGlobalObject implements
         throws DBException
     {
         return getTableCache().getTypedObjects(monitor, this, OracleTable.class);
+    }
+
+    @NotNull
+    private Class<?> getTableFilterType() {
+        // The navigator registers filters using the runtime schema's declared Tables item type.
+        Method getter = DBXTreeItem.findPropertyReadMethod(getClass(), "tables");
+        if (getter != null) {
+            Class<?> type = BeanUtils.getCollectionType(getter.getGenericReturnType());
+            if (type != null && OracleTable.class.isAssignableFrom(type)) {
+                return type;
+            }
+        }
+        return OracleTable.class;
     }
 
     public OracleTable getTable(DBRProgressMonitor monitor, String name)
@@ -765,7 +781,7 @@ public class OracleSchema extends OracleGlobalObject implements
             DBSObjectFilter[] filters = new DBSObjectFilter[3];
             if (fullList && owner.getDataSource().getContainer().getPreferenceStore()
                 .getBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS)) {
-                filters[0] = owner.getDataSource().getContainer().getObjectFilter(OracleTable.class, owner, false);
+                filters[0] = owner.getDataSource().getContainer().getObjectFilter(owner.getTableFilterType(), owner, false);
                 filters[1] = owner.getDataSource().getContainer().getObjectFilter(OracleView.class, owner, false);
                 filters[2] = owner.getDataSource().getContainer().getObjectFilter(OracleMaterializedView.class, owner, false);
             }
