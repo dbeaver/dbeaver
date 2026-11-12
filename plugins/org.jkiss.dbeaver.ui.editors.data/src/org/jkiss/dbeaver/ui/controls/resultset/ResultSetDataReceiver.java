@@ -108,7 +108,7 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
             columnsCount = rsAttributes.size();
 
             // Extract column info
-            metaColumns = DBUtils.getAttributeBindings(session, getDataContainer(), metaData);
+            metaColumns = DBUtils.getAttributeBindings(session, getDataContainer(resultSet), metaData);
 
             resultSetViewer.setMetaData(resultSet, metaColumns);
         }
@@ -157,7 +157,7 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
         if (!nextSegmentRead) {
             if (metaColumns != null) {
                 try {
-                    DBSDataContainer dataContainer = getDataContainer();
+                    DBSDataContainer dataContainer = getDataContainer(resultSet);
                     // Read locators' metadata
                     DBSEntity entity = dataContainer instanceof DBSEntity e ? e : null;
                     DBExecUtils.bindAttributes(session, entity, resultSet, metaColumns, rows);
@@ -179,7 +179,7 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
             resultSetViewer.setData(monitor, tmpRows, focusRow);
         } else {
             monitor.subTask("Append data");
-            boolean resetOldRows = getDataContainer().getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING);
+            boolean resetOldRows = getDataContainer(resultSet).getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_REREAD_ON_SCROLLING);
             resultSetViewer.appendData(monitor, tmpRows, resetOldRows);
         }
         // Check for more data
@@ -210,6 +210,13 @@ class ResultSetDataReceiver implements DBDDataReceiver, DBDDataReceiverInteracti
 
     private DBSDataContainer getDataContainer() {
         return targetDataContainer != null ? targetDataContainer : resultSetViewer.getDataContainer();
+    }
+
+    private DBSDataContainer getDataContainer(@NotNull DBCResultSet resultSet) {
+        DBCStatement sourceStatement = resultSet.getSourceStatement();
+        DBCExecutionSource executionSource = sourceStatement == null ? null : sourceStatement.getStatementSource();
+        DBSDataContainer dataContainer = executionSource == null ? null : executionSource.getDataContainer();
+        return dataContainer != null ? dataContainer : getDataContainer();
     }
 
     @Override
