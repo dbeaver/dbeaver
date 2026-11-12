@@ -313,7 +313,8 @@ public class ContextComposite extends Composite {
     }
 
     public void openSettings() {
-        if (DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
+        if (DBWorkbench.isDistributed()
+            || DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER)) {
             AIUIUtils.showPreferences(getShell());
         } else {
             showScopeDropDown();

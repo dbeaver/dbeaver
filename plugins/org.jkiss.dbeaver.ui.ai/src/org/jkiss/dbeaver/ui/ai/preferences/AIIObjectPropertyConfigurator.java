@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.ai.preferences;
 
+import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
@@ -30,6 +32,10 @@ public interface AIIObjectPropertyConfigurator<ENGINE extends AIEngineDescriptor
 
     default Optional<AIEngineProperties> getCurrentProperties() {
         return Optional.empty();
+    }
+
+    default boolean createCredentialsControl(@NotNull Composite parent, @NotNull Runnable changeListener) {
+        return false;
     }
 
     default boolean supportsConnectionTest() {

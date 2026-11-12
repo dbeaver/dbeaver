@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.ai.registry.AIEngineDescriptor;
 import org.jkiss.dbeaver.model.ai.registry.AIEngineRegistry;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 
+import java.util.Map;
+
 /**
  * AI engine settings profile
  * Keeps global parameters and configuration of an AI engine
@@ -44,6 +46,7 @@ public class AIConfigurationProfile {
     private AIEngineProperties configuration;
 
     private transient AIEngineDescriptor engineDescriptor;
+    private transient Map<String, String> resolvedUserCredentials;
     private transient JsonObject unavailableProfile;
 
     public AIConfigurationProfile() {
@@ -144,17 +147,33 @@ public class AIConfigurationProfile {
 
     public void setConfiguration(@NotNull AIEngineProperties configuration) {
         this.configuration = configuration;
+        this.resolvedUserCredentials = null;
         this.global = configuration.isGlobal();
     }
 
+    @Nullable
+    Map<String, String> getResolvedUserCredentials() {
+        return resolvedUserCredentials;
+    }
+
+    void setResolvedUserCredentials(@NotNull Map<String, String> credentials) {
+        resolvedUserCredentials = Map.copyOf(credentials);
+    }
+
     public void saveSecrets() throws DBException {
-        if (configuration != null) {
+        if (AIUserProfileCredentials.isUserProfile(this)) {
+            AIUserProfileCredentials.saveChanges(this);
+        } else if (configuration != null) {
             configuration.saveSecrets(this);
         }
     }
 
     public void resolveSecrets() throws DBException {
-        getConfiguration().resolveSecrets(this);
+        if (AIUserProfileCredentials.isUserProfile(this)) {
+            AIUserProfileCredentials.resolve(this);
+        } else {
+            getConfiguration().resolveSecrets(this);
+        }
     }
 
     @Override

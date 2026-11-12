@@ -27,6 +27,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.ai.AISettings;
 import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
+import org.jkiss.dbeaver.model.rm.RMConstants;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
@@ -48,7 +50,7 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
 
     @Override
     protected void performDefaults() {
-        if (!hasAccessToPage()) {
+        if (!canManageConfiguration()) {
             return;
         }
         enableAICheck.setSelection(!this.settings.isAiDisabled());
@@ -56,8 +58,8 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
 
     @Override
     public boolean performOk() {
-        if (!hasAccessToPage()) {
-            return false;
+        if (!canManageConfiguration()) {
+            return true;
         }
         this.settings.setAiDisabled(!enableAICheck.getSelection());
 
@@ -82,6 +84,8 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
             !this.settings.isAiDisabled(),
             2);
 
+        enableAICheck.setEnabled(canManageConfiguration());
+
         Composite links = UIUtils.createTitledComposite(
             composite,
             "Configuration",
@@ -90,8 +94,10 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
 
         // Link to secure storage config
         addLinkToSettings(links, AIPreferencePageEngines.PAGE_ID);
-        addLinkToSettings(links, AIPreferencePagePrompts.PAGE_ID);
-        addLinkToSettings(links, AIPreferencePageConfiguration.PAGE_ID);
+        if (canManageConfiguration()) {
+            addLinkToSettings(links, AIPreferencePagePrompts.PAGE_ID);
+            addLinkToSettings(links, AIPreferencePageConfiguration.PAGE_ID);
+        }
 
         return composite;
     }
@@ -106,6 +112,10 @@ public class AIPreferencePageMain extends AbstractPrefPage implements IWorkbench
                 null
             );
         }
+    }
+
+    private boolean canManageConfiguration() {
+        return DBWorkbench.getPlatform().getWorkspace().hasRealmPermission(RMConstants.PERMISSION_CONFIGURATION_MANAGER);
     }
 
 }

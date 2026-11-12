@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.ai.AIConfigurationProfile;
 import org.jkiss.dbeaver.model.ai.AIConstants;
 import org.jkiss.dbeaver.model.ai.AILegacyEngineConfiguration;
 import org.jkiss.dbeaver.model.ai.AISettings;
+import org.jkiss.dbeaver.model.ai.AIUserProfileCredentials;
 import org.jkiss.dbeaver.model.ai.engine.AICredentialsProvider;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineProperties;
 import org.jkiss.dbeaver.model.ai.engine.openai.OpenAIProperties;
@@ -183,10 +184,17 @@ public class AISettingsManager {
                 return;
             }
 
+            if (AIUserProfileCredentials.isAvailable()) {
+                for (AIConfigurationProfile profile : settings.getConfigurations()) {
+                    if (profile.isAvailable() && !profile.isGlobal()) {
+                        AIUserProfileCredentials.saveChanges(profile);
+                    }
+                }
+            }
             if (!saveSecretsAsPlainText()) {
                 AIConfigurationProfile defaultProfile = settings.getDefaultConfigurationOrNull();
                 for (AIConfigurationProfile profile : settings.getConfigurations()) {
-                    if (!profile.isAvailable()) {
+                    if (!profile.isAvailable() || AIUserProfileCredentials.isUserProfile(profile)) {
                         continue;
                     }
                     if (profile == defaultProfile) {
@@ -247,6 +255,14 @@ public class AISettingsManager {
             return PropertySerializationUtils.baseNonSecurePropertiesGsonBuilder()
                 .registerTypeAdapter(AICredentialsProvider.class, new DBAAuthProviderAdapter()).create();
         }
+    }
+
+    @NotNull
+    private static AIEngineProperties getConfigurationForSave(@NotNull AIEngineProperties properties) throws DBException {
+        // personal tokens must never be written back to the shared configuration
+        return AIUserProfileCredentials.isAvailable() && !properties.isGlobal()
+            ? AIUserProfileCredentials.copyWithoutCredentials(properties)
+            : properties;
     }
 
     private interface AISettingsHolder {
@@ -347,7 +363,12 @@ public class AISettingsManager {
                 if (properties != null) {
                     out.beginObject();
                     out.name("properties");
-                    SAVE_PROPS_GSON.toJson(properties, properties.getClass(), out);
+                    try {
+                        AIEngineProperties sanitized = getConfigurationForSave(properties);
+                        SAVE_PROPS_GSON.toJson(sanitized, sanitized.getClass(), out);
+                    } catch (DBException e) {
+                        throw new IOException("Error preparing AI configuration", e);
+                    }
                     out.endObject();
                 } else {
                     writePreservedJson(out, Objects.requireNonNull(configuration.getUnavailableConfiguration()));
@@ -414,7 +435,7 @@ public class AISettingsManager {
             }
             out.name("configuration");
             try {
-                AIEngineProperties configuration = value.getConfiguration();
+                AIEngineProperties configuration = getConfigurationForSave(value.getConfiguration());
                 SAVE_PROPS_GSON.toJson(configuration, configuration.getClass(), out);
             } catch (DBException e) {
                 throw new IOException("Error saving AI profile '" + value.getProfileId() + "'", e);
