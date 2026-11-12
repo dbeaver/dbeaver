@@ -25,6 +25,7 @@ import org.antlr.v4.runtime.Token;
 import org.antlr.v4.runtime.tree.Trees;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.lsm.LSMAnalyzerParameters;
@@ -158,6 +159,21 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
         new GrammarCase("dbeaver#22773 ORDER BY i.*", "select * from account_invoice i order by i.*;"),
         new GrammarCase("dbeaver#20996 NOTNULL", "select * from mytable where 1 notnull;"),
         new GrammarCase("dbeaver#29316 DROP TABLE cache", "DROP TABLE cache;"),
+        new GrammarCase("dbeaver#42293 EXTRACT with cast", """
+            SELECT EXTRACT(YEAR FROM cal.dt)::INTEGER AS y, EXTRACT(EPOCH FROM cal.dt) AS e
+            FROM cte_datas AS cal;
+            """),
+        new GrammarCase("dbeaver#42293 SUBSTRING/TRIM/OVERLAY with FROM", """
+            SELECT SUBSTRING(x.v FROM 2 FOR 3), TRIM(BOTH 'x' FROM x.v), OVERLAY(x.v PLACING 'ZZ' FROM 3 FOR 2)
+            FROM t x;
+            """),
+        new GrammarCase("dbeaver#42293 TRIM variants", """
+            SELECT TRIM(x.v), TRIM(FROM x.v), TRIM(LEADING FROM x.v), TRIM(TRAILING x.c FROM x.v),
+                TRIM(BOTH FROM x.v, 'xy'), TRIM(x.v, 'xy')
+            FROM t x;
+            """),
+        new GrammarCase("dbeaver#42293 TRIM keywords as identifiers", "SELECT x.leading, x.trailing, x.both, x.trim FROM t x;"),
+        new GrammarCase("dbeaver#42293 IS DISTINCT FROM", "SELECT x.v FROM t x WHERE x.v IS DISTINCT FROM NULL AND x.w IS NOT DISTINCT FROM x.v;"),
         new GrammarCase("dbeaver#35607 ALTER FUNCTION", "ALTER FUNCTION s.f(integer) OWNER TO admin;"),
         new GrammarCase("dbeaver#35607 ALTER FUNCTION without signature", "ALTER FUNCTION myschema.myfunction OWNER TO myowner;"),
         new GrammarCase("dbeaver#41493 function argument is not a column", """
@@ -908,13 +924,39 @@ public class SQLStandardGrammarAcceptanceTest extends DBeaverUnitTest {
         return createParameters(dialect);
     }
 
+    @Test
+    void acceptsNamedParametersNamedLikeTrimKeywords() {
+        String sql = "SELECT x.v FROM t x WHERE x.a = :trim AND x.b = :both AND x.c = :leading AND x.d = :trailing";
+        SQLStandardParser parser = makeParser(sql, createParameters(BasicSQLDialect.INSTANCE, true));
+        var tree = parser.sqlQuery();
+        Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors());
+        Assertions.assertEquals(4, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_namedParameter).size());
+    }
+
+    @Test
+    void acceptsAttributeNamesNamedLikeTrimKeywords() {
+        String sql = "SELECT x.payload:trim, x.payload:both, x.payload:leading, x.payload:trailing FROM t x";
+        SQLStandardParser parser = makeParser(sql);
+        var tree = parser.sqlQuery();
+        Assertions.assertEquals(0, parser.getNumberOfSyntaxErrors());
+        Assertions.assertEquals(4, Trees.findAllRuleNodes(tree, SQLStandardParser.RULE_valueExpressionAttributeSpec).size());
+    }
+
     private static LSMAnalyzerParameters createParameters(@NotNull SQLDialect dialect) {
+        return createParameters(dialect, false);
+    }
+
+    private static LSMAnalyzerParameters createParameters(@NotNull SQLDialect dialect, boolean namedParameters) {
         var preferences = new SimplePreferenceStore() {
             @Override
             public void save() {
                 // In-memory test preferences.
             }
         };
+        if (namedParameters) {
+            preferences.setValue(ModelPreferences.SQL_PARAMETERS_ENABLED, true);
+            preferences.setValue(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX, ":");
+        }
         var syntaxManager = new SQLSyntaxManager(preferences);
         syntaxManager.init(dialect, preferences);
         return LSMAnalyzerParameters.forDialect(dialect, syntaxManager);

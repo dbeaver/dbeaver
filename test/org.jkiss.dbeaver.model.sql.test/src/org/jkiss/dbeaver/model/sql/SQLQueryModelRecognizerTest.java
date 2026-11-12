@@ -748,6 +748,31 @@ public class SQLQueryModelRecognizerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void recognizesTrimSpecificationAndTrimCharacter() {
+        SQLQueryModel model = SQLQueryModelRecognizer.recognizeQuery(
+            createContext(new VoidProgressMonitor()),
+            "SELECT TRIM(BOTH x.pad FROM x.v), TRIM(FROM x.w) FROM test_table x"
+        );
+
+        Assertions.assertNotNull(model);
+        List<String> symbols = model.getAllSymbols().stream().map(SQLQuerySymbolEntry::getRawName).toList();
+        Assertions.assertFalse(symbols.contains("BOTH"), () -> "TRIM specification recognized as a symbol: " + symbols);
+        Assertions.assertTrue(symbols.containsAll(List.of("pad", "v", "w")), () -> "TRIM operands not recognized: " + symbols);
+    }
+
+    @Test
+    public void recognizesTrimSpecificationWordAsColumnWithoutFrom() {
+        SQLQueryModel model = SQLQueryModelRecognizer.recognizeQuery(
+            createContext(new VoidProgressMonitor()),
+            "SELECT TRIM(BOTH + x.suffix) FROM test_table x"
+        );
+
+        Assertions.assertNotNull(model);
+        List<String> symbols = model.getAllSymbols().stream().map(SQLQuerySymbolEntry::getRawName).toList();
+        Assertions.assertTrue(symbols.containsAll(List.of("BOTH", "suffix")), () -> "TRIM source operand not recognized: " + symbols);
+    }
+
+    @Test
     public void resolvesVisibleUnprefixedVariableReferences() {
         SQLQueryVariableInfo definition = new SQLQueryVariableInfo(
             "current_value",
