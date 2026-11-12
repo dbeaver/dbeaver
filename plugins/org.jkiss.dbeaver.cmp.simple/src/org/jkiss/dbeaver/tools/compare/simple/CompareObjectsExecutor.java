@@ -174,34 +174,14 @@ public class CompareObjectsExecutor {
                     throw new DBException("Root object '" + node.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
                 }
 
-                for (DBNNode curr = node; curr != null; curr = curr.getParentNode()) {
-                    if (curr.isDisposed()) {
-                        throw new DBException("Root object '" + node.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
-                    }
-                }
-
-                DBNNode parent = node.getParentNode();
-                if (parent instanceof DBNDatabaseNode dbParent) {
-                    boolean attached = false;
-                    DBNDatabaseNode[] children = dbParent.getChildren(monitor);
-                    if (children != null) {
-                        for (DBNDatabaseNode child : children) {
-                            if (child == node || child.getObject() == node.getObject() || (child.getObject() != null && child.getObject().equals(node.getObject()))) {
-                                attached = true;
-                                nodes.set(i, child);
-                                break;
-                            }
-                        }
-                    }
-                    if (!attached) {
-                        throw new DBException("Root object '" + node.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
-                    }
+                if (!isNodeAttached(node, monitor)) {
+                    throw new DBException("Root object '" + node.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
                 }
 
                 DBSObject dbObject = node.getObject();
                 if (dbObject != null) {
                     DBNDatabaseNode resolvedNode = DBNUtils.getNodeByObject(monitor, dbObject, false);
-                    if (resolvedNode == null || resolvedNode.isDisposed() || resolvedNode.getObject() == null) {
+                    if (resolvedNode == null || resolvedNode.isDisposed() || resolvedNode.getObject() == null || !isNodeAttached(resolvedNode, monitor)) {
                         throw new DBException("Root object '" + node.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
                     }
                     nodes.set(i, resolvedNode);
@@ -211,6 +191,35 @@ public class CompareObjectsExecutor {
 
         compareNodes(monitor, nodes);
         return new CompareReport(rootNodes, reportLines);
+    }
+
+    private boolean isNodeAttached(@NotNull DBNNode node, @NotNull DBRProgressMonitor monitor) {
+        if (node.isDisposed()) {
+            return false;
+        }
+        DBNNode parent = node.getParentNode();
+        if (parent == null) {
+            return true;
+        }
+        if (parent.isDisposed()) {
+            return false;
+        }
+        if (!isNodeAttached(parent, monitor)) {
+            return false;
+        }
+        try {
+            DBNNode[] children = parent.getChildren(monitor);
+            if (children != null) {
+                for (DBNNode child : children) {
+                    if (child == node || (child instanceof DBNDatabaseNode dn && node instanceof DBNDatabaseNode n && dn.getObject() != null && dn.getObject().equals(n.getObject()))) {
+                        return true;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.debug("Error checking node attachment", e);
+        }
+        return false;
     }
 
     private void compareNodes(DBRProgressMonitor monitor, List<DBNDatabaseNode> nodes)
