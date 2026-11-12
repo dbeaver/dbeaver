@@ -125,12 +125,21 @@ public class PostgreDataSource extends JDBCDataSource implements DBSInstanceCont
         settingCache = new SettingCache();
     }
 
+    @Nullable
     @Override
-    public Object getDataSourceFeature(String featureId) {
+    public Object getDataSourceFeature(@NotNull String featureId) {
         return switch (featureId) {
             case DBPDataSource.FEATURE_MAX_STRING_LENGTH -> 10485760;
             case DBPDataSource.FEATURE_LOB_REQUIRE_TRANSACTIONS -> true;
+            // pgjdbc may query column metadata while the result cursor is active;
+            // CockroachDB rejects that second portal, so describe columns before opening the cursor.
             case DBPDataSource.FEATURE_JDBC_TABLE_READ_REQUIRES_PREPARED_COLUMN_METADATA ->
+                getServerType() instanceof PostgreServerCockroachDB;
+            // A fetch-size-limited pgjdbc cursor can leave a portal active between pages;
+            // CockroachDB rejects another portal while the previous one remains active.
+            // Successful SQL pagination fetches each bounded page without a fetching cursor,
+            // preventing portal conflicts between batched data-transfer queries.
+            case DBPDataSource.FEATURE_JDBC_ATTEMPT_LIMIT_TRANSFORMER_FOR_PAGINATED_TABLE_READ ->
                 getServerType() instanceof PostgreServerCockroachDB;
             default -> super.getDataSourceFeature(featureId);
         };

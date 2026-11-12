@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLExpressionFormatter;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryGeneratorUpdate;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
@@ -67,6 +68,21 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     private static final Log log = Log.getLog(JDBCTable.class);
 
     private static final String DEFAULT_TABLE_ALIAS = "x";
+
+    private record CachedMetadataEntry(
+        @NotNull JDBCSession session,
+        @NotNull JDBCTable<?, ?> table,
+        @NotNull String sourceQuery,
+        @NotNull JDBCResultSetMetaDataSnapshot snapshot
+    ) {
+        public boolean matches(
+            @NotNull JDBCSession jdbcSession,
+            @NotNull JDBCTable<?, ?> table,
+            @NotNull String sqlQuery
+        ) {
+            return this.session == jdbcSession && this.table == table && Objects.equals(this.sourceQuery, sqlQuery);
+        }
+    }
 
     private boolean persisted;
 
@@ -133,22 +149,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         long flags,
         int fetchSize
     ) throws DBException {
-        return readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, fetchSize, false);
-    }
-
-    @NotNull
-    @Override
-    public DBCStatistics readData(
-        @Nullable DBCExecutionSource source,
-        @NotNull DBCSession session,
-        @NotNull DBDDataReceiver dataReceiver,
-        @Nullable DBDDataFilter dataFilter,
-        long firstRow,
-        long maxRows,
-        long flags,
-        int fetchSize,
-        boolean prepareColumnMetadata
-    ) throws DBException {
         final DBCStatistics statistics = new DBCStatistics();
         final boolean hasLimits = firstRow >= 0 && maxRows > 0;
 
@@ -214,23 +214,49 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         monitor.subTask(ModelMessages.model_jdbc_fetch_table_data);
 
+        String paginatedQuery = null;
+        if (firstRow >= 0 && maxRows > 0 && source instanceof DBPContextWithAttributes attributes &&
+            Boolean.TRUE.equals(attributes.getContextAttribute(CONTEXT_READ_ATTEMPT_LIMIT_TRANSFORMER))) {
+            paginatedQuery = attemptSQLPagination(dataSource, sqlQuery, firstRow, maxRows);
+        }
+        boolean sqlLimited = paginatedQuery != null;
+
         try (DBCStatement dbStat = DBUtils.makeStatement(
             source,
             session,
             DBCStatementType.SCRIPT,
-            sqlQuery,
-            firstRow,
-            maxRows
+            sqlLimited ? paginatedQuery : sqlQuery,
+            sqlLimited ? -1 : firstRow,
+            sqlLimited ? -1 : maxRows
         )) {
             if (monitor.isCanceled()) {
                 return statistics;
             }
-            if (prepareColumnMetadata && dbStat instanceof JDBCStatement jdbcStatement && session instanceof JDBCSession jdbcSession) {
-                // Describe the exact query before opening the streaming cursor. Keep the description on
-                // the statement so its result set never needs a driver-side metadata lookup while fetching.
-                jdbcStatement.setResultSetMetaDataSnapshot(JDBCResultSetMetaDataSnapshot.prepare(jdbcSession, dbStat.getQueryString()));
+            if (dbStat instanceof JDBCStatement jdbcStatement && session instanceof JDBCSession jdbcSession &&
+                source instanceof DBPContextWithAttributes attributes && dbStat.getQueryString() != null) {
+                Object cacheEntry = attributes.getContextAttribute(CONTEXT_READ_PREPARED_COLUMN_METADATA);
+                // The source explicitly opted in. Only the first matching read describes the
+                // query; each segment still binds and validates its own result-set metadata.
+                if (cacheEntry instanceof JDBCTable.CachedMetadataEntry entry) {
+                    if (entry.matches(jdbcSession, this, sqlQuery)) {
+                        jdbcStatement.setResultSetMetaDataSnapshot(entry.snapshot);
+                    } else {
+                        cacheEntry = Boolean.TRUE;
+                    }
+                }
+                if (Boolean.TRUE.equals(cacheEntry)) {
+                    JDBCResultSetMetaDataSnapshot snapshot = JDBCResultSetMetaDataSnapshot.prepare(jdbcSession, dbStat.getQueryString());
+                    attributes.setContextAttribute(
+                        CONTEXT_READ_PREPARED_COLUMN_METADATA, new CachedMetadataEntry(jdbcSession, this, sqlQuery, snapshot)
+                    );
+                    jdbcStatement.setResultSetMetaDataSnapshot(snapshot);
+                }
             }
-            if (dbStat instanceof JDBCStatement && (fetchSize > 0 || maxRows > 0)) {
+            if (sqlLimited && dbStat instanceof JDBCStatement) {
+                // Fetch the entire SQL-limited page without a second JDBC batch limit.
+                // Override driver defaults and earlier transformers; SQL pagination still bounds the result.
+                dbStat.setResultsFetchSize(0);
+            } else if (dbStat instanceof JDBCStatement && (fetchSize > 0 || maxRows > 0)) {
                 DBExecUtils.setStatementFetchSize(dbStat, firstRow, maxRows, fetchSize);
             }
 
@@ -258,6 +284,35 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
             return statistics;
         }
+    }
+
+    @Nullable
+    private static String attemptSQLPagination(
+        @NotNull DBPDataSource dataSource,
+        @NotNull String queryText,
+        long offset,
+        long pageSize
+    ) {
+        try {
+            DBCQueryTransformProvider provider = DBUtils.getAdapter(DBCQueryTransformProvider.class, dataSource);
+            if (provider != null) {
+                DBCQueryTransformer transformer = provider.createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
+                if (transformer != null) {
+                    SQLQuery query = new SQLQuery(dataSource, queryText);
+                    if (!(transformer instanceof DBCQueryTransformerExt ext) || ext.isApplicableTo(query)) {
+                        transformer.setParameters(offset, pageSize);
+                        String limitedQuery = transformer.transformQueryString(query);
+                        if (limitedQuery != null && !limitedQuery.equals(queryText)) {
+                            return limitedQuery;
+                        }
+                    }
+                }
+            }
+            log.error("Cannot apply SQL limit transformer to paginated table read; using JDBC limits");
+        } catch (Exception e) {
+            log.error("Cannot apply SQL limit transformer to paginated table read; using JDBC limits", e);
+        }
+        return null;
     }
 
     @NotNull

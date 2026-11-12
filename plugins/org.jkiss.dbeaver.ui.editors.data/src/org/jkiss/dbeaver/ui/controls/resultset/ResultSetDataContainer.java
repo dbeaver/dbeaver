@@ -106,27 +106,11 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         @Nullable DBCExecutionSource source,
         @NotNull DBCSession session,
         @NotNull DBDDataReceiver dataReceiver,
-        DBDDataFilter dataFilter,
+        @Nullable DBDDataFilter dataFilter,
         long firstRow,
         long maxRows,
         long flags,
         int fetchSize
-    ) throws DBException {
-        return readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, fetchSize, false);
-    }
-
-    @NotNull
-    @Override
-    public DBCStatistics readData(
-        @Nullable DBCExecutionSource source,
-        @NotNull DBCSession session,
-        @NotNull DBDDataReceiver dataReceiver,
-        DBDDataFilter dataFilter,
-        long firstRow,
-        long maxRows,
-        long flags,
-        int fetchSize,
-        boolean prepareColumnMetadata
     ) throws DBException {
         boolean fetchedRowsOnly = proceedFetchedRowsOnly(flags);
         boolean selectedRowsOnly = proceedSelectedRowsOnly(flags);
@@ -155,9 +139,7 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
             statistics.setRowsFetched(resultCount);
             return statistics;
         } else {
-            return dataContainer.readData(
-                source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, fetchSize, prepareColumnMetadata
-            );
+            return dataContainer.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, fetchSize);
         }
     }
 

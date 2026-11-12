@@ -222,6 +222,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                 && consumer instanceof StreamTransferConsumer
                 && Boolean.TRUE.equals(dataSource.getDataSourceFeature(
                     DBPDataSource.FEATURE_JDBC_TABLE_READ_REQUIRES_PREPARED_COLUMN_METADATA));
+            final boolean attemptSQLPagination = extractInSegments && Boolean.TRUE.equals(dataSource.getDataSourceFeature(
+                DBPDataSource.FEATURE_JDBC_ATTEMPT_LIMIT_TRANSFORMER_FOR_PAGINATED_TABLE_READ));
 
             DBCExecutionContext context;
             if (dataContainer instanceof DBPContextProvider contextProvider) {
@@ -290,6 +292,12 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
 
                     try {
                         monitor.subTask("Read data");
+                        if (prepareColumnMetadata) {
+                            transferSource.setContextAttribute(DBSDataContainer.CONTEXT_READ_PREPARED_COLUMN_METADATA, Boolean.TRUE);
+                        }
+                        if (attemptSQLPagination) {
+                            transferSource.setContextAttribute(DBSDataContainer.CONTEXT_READ_ATTEMPT_LIMIT_TRANSFORMER, Boolean.TRUE);
+                        }
 
                         // Perform export
                         if (!extractInSegments) {
@@ -303,8 +311,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                 -1,
                                 maxRows,
                                 readFlags,
-                                settings.getFetchSize(),
-                                prepareColumnMetadata
+                                settings.getFetchSize()
                             ));
                             checkCanceled(monitor);
                         } else {
@@ -315,7 +322,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                                 checkCanceled(monitor);
                                 DBCStatistics statistics = dataContainer.readData(
                                     transferSource, session, consumer, dataFilter, offset, segmentSize, readFlags,
-                                    settings.getFetchSize(), prepareColumnMetadata);
+                                    settings.getFetchSize());
                                 checkCanceled(monitor);
                                 if (statistics.getRowsFetched() < segmentSize) {
                                     // Done
@@ -326,6 +333,9 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                             }
                         }
                     } finally {
+                        if (prepareColumnMetadata) {
+                            transferSource.removeContextAttribute(DBSDataContainer.CONTEXT_READ_PREPARED_COLUMN_METADATA);
+                        }
                         monitor.done();
                     }
 

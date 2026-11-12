@@ -37,6 +37,7 @@ public interface DBPContextWithAttributes {
     /**
      * Returns attribute value by name.
      */
+    @Nullable
     <T> T getContextAttribute(@NotNull String attributeName);
 
     /**
