@@ -73,6 +73,15 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
     ) throws DBException {
         SETTINGS settings = createTaskSettings(runnableContext, task);
         settings.setLogWriter(logStream);
+        if (settings.getDataSourceContainer() == null) {
+            // Checked before validateTaskParameters: some handlers use the data source container there
+            String dataSourceId = CommonUtils.toString(task.getProperties().get(AbstractNativeToolSettings.PROP_DATA_SOURCE));
+            DBException error = new DBException(
+                NLS.bind(NativeToolMessages.native_tool_handler_error_connection_not_found, dataSourceId, task.getName()));
+            listener.taskFinished(task, null, error, settings);
+            log.error(error.getMessage());
+            return new DBTTaskRunStatus();
+        }
         if (!validateTaskParameters(task, settings, log)) {
             listener.taskFinished(task, null, new InterruptedException("Task parameters validation failed"), settings);
             log.error("Task parameters validation failed");
@@ -276,11 +285,6 @@ public abstract class AbstractNativeToolHandler<SETTINGS extends AbstractNativeT
     }
 
     protected boolean doExecute(DBRProgressMonitor monitor, DBTTask task, SETTINGS settings, Log log) throws DBException, InterruptedException {
-        if (settings.getDataSourceContainer() == null) {
-            String dataSourceId = CommonUtils.toString(task.getProperties().get("dataSource")); //$NON-NLS-1$
-            throw new DBException(
-                NLS.bind(NativeToolMessages.native_tool_handler_error_connection_not_found, dataSourceId, task.getName()));
-        }
         validateClientHome(monitor, settings);
 
         long startTime = System.currentTimeMillis();
