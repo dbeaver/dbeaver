@@ -52,6 +52,7 @@ import java.util.*;
 import java.util.List;
 
 public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
+    public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.synchronization.mcp.connections";
     private static final int MIN_ROWS = 10;
     private static final int MAX_ROWS = 20;
 
