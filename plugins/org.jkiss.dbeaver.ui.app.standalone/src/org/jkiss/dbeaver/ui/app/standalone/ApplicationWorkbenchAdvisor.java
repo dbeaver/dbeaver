@@ -328,6 +328,7 @@ public class ApplicationWorkbenchAdvisor extends IDEWorkbenchAdvisor {
 
         if (DBWorkbench.getPlatform() instanceof DesktopPlatform platformDesktop) {
             platformDesktop.setWorkbenchStarted(true);
+            UIExecutionQueue.onWorkbenchStarted();
         }
     }
 

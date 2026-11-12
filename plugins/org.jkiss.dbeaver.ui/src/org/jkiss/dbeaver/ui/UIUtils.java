@@ -1909,6 +1909,22 @@ public class UIUtils {
         return control.getShell().getData() instanceof Dialog;
     }
 
+    public static boolean isShellBlocked(@NotNull Shell shell) {
+        for (Shell other : shell.getDisplay().getShells()) {
+            if (!other.isVisible() || isParent(other, shell)) {
+                continue;
+            }
+            if ((other.getStyle() & (SWT.APPLICATION_MODAL | SWT.SYSTEM_MODAL)) != 0) {
+                return true;
+            }
+            Composite parent = other.getParent();
+            if ((other.getStyle() & SWT.PRIMARY_MODAL) != 0 && parent != null && isParent(parent, shell)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public static boolean isInWizard(@NotNull Control control) {
         return control.getShell().getData() instanceof IWizardContainer;
     }

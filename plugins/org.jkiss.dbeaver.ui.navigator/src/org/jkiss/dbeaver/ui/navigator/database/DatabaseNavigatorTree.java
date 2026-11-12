@@ -632,7 +632,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         public IStatus runInUIThread(IProgressMonitor monitor) {
             synchronized (nodeInLoadingProcess) {
                 long nextDelay = WAIT_DELAY;
-                if (!nodeInLoadingProcess.isEmpty()) {
+                if (!nodeInLoadingProcess.isEmpty() && !UIUtils.isShellBlocked(treeViewer.getTree().getShell())) {
                     ticksCount++;
                     for (DBNNode node : nodeInLoadingProcess) {
                         Widget widget = treeViewer.testFindItem(node);
