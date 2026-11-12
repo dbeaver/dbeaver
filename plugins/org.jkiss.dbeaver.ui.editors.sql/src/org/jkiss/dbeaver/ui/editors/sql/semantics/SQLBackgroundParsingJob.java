@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLReconcilingStrategy;
 import org.jkiss.dbeaver.utils.ListNode;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.List;
 import java.util.concurrent.*;
@@ -393,18 +394,6 @@ public class SQLBackgroundParsingJob {
         }
     }
 
-    // TODO consider moving to utility class (see ImportProjectToTEHandler)
-    private static <T> T getFutureOrCancel(Future<T> future, IProgressMonitor monitor) throws ExecutionException, InterruptedException {
-        while (!monitor.isCanceled()) {
-            try {
-                return future.get(1, TimeUnit.SECONDS);
-            } catch (TimeoutException e) {
-                // proceed with job cancellation check
-            }
-        }
-        throw new CancellationException();
-    }
-
     /**
      * Prepare completion context for the specified position in the text
      */
@@ -467,7 +456,8 @@ public class SQLBackgroundParsingJob {
 
             try {
                 // A before-change request can precede scheduling; job.join() would return prematurely.
-                getFutureOrCancel(futureToAwait, monitor.getNestedMonitor());
+                // A null result means the wait timed out, so the loop re-checks whether the parser is still running.
+                RuntimeUtils.waitForFuture(futureToAwait, monitor.getNestedMonitor(), 1, TimeUnit.SECONDS);
                 lastAwaitedFuture = futureToAwait;
             } catch (InterruptedException | ExecutionException | CancellationException e) {
                 break;

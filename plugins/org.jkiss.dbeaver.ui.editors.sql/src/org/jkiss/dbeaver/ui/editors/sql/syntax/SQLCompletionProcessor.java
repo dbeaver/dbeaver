@@ -181,6 +181,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor {
                     boolean useNewCompletionEngine = mode.useNewAnalyzer
                         && editor.isAdvancedHighlightingEnabled()
                         && SQLEditorUtils.isSQLSyntaxParserApplied(editor)
+                        && editor.getSyntaxContext() != null
                         && store.getBoolean(SQLPreferenceConstants.READ_METADATA_FOR_SEMANTIC_ANALYSIS)
                         && dataSource != null && dataSource.getSQLDialect() instanceof BasicSQLDialect;
 

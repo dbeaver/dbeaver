@@ -161,6 +161,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     private SQLSymbolInserter sqlSymbolInserter;
 
     private int lastQueryErrorPosition = -1;
+    private IDocument bigDocumentListenerDocument;
+    private volatile boolean bigDocument;
+    private final IDocumentListener bigDocumentListener = new IDocumentListener() {
+        @Override
+        public void documentAboutToBeChanged(DocumentEvent event) {
+        }
+
+        @Override
+        public void documentChanged(DocumentEvent event) {
+            checkBigDocumentTransition();
+        }
+    };
 
     public SQLEditorBase() {
         super();
@@ -280,6 +292,51 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         long boundary = getBigScriptFileLengthBoundary();
         IDocument document = getDocument();
         return (document != null && document.getLength() > boundary) || isBigScript(getEditorInput(), boundary);
+    }
+
+    private void attachBigDocumentListener() {
+        IDocument document = getDocument();
+        if (document != bigDocumentListenerDocument) {
+            if (bigDocumentListenerDocument != null) {
+                bigDocumentListenerDocument.removeDocumentListener(bigDocumentListener);
+            }
+            bigDocumentListenerDocument = document;
+            if (document != null) {
+                document.addDocumentListener(bigDocumentListener);
+            }
+        }
+        bigDocument = isBigDocument();
+    }
+
+    private void detachBigDocumentListener() {
+        if (bigDocumentListenerDocument != null) {
+            bigDocumentListenerDocument.removeDocumentListener(bigDocumentListener);
+            bigDocumentListenerDocument = null;
+        }
+    }
+
+    private void checkBigDocumentTransition() {
+        boolean isBig = isBigDocument();
+        if (isBig == bigDocument) {
+            return;
+        }
+        bigDocument = isBig;
+        // Services which are configured eagerly (parser, syntax rules, auto-activation) must be re-applied
+        // when the document crosses the large-document threshold. Defer this because reloading the syntax
+        // rules reconfigures the source viewer and must not run inside a document change notification.
+        UIUtils.asyncExec(() -> {
+            if (getDocument() == null || isBigDocument() != bigDocument) {
+                // The document size changed again; the notification for the newest transition will do the work.
+                return;
+            }
+            if (occurrencesHighlighter != null) {
+                occurrencesHighlighter.updateInput(getEditorInput());
+            }
+            reloadSyntaxRules();
+            if (getSourceViewer() != null) {
+                reloadSourceViewerConfiguration();
+            }
+        });
     }
 
     static long getBigScriptFileLengthBoundary() {
@@ -625,6 +682,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         // The pre-switch call above used the new input but the old document. Re-evaluate after the
         // input switch so occurrence setup sees the document that is actually installed.
         handleInputChange(getEditorInput());
+        attachBigDocumentListener();
     }
 
     @Override
@@ -636,6 +694,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         }
 
         handleInputChange(getEditorInput());
+        // The saved file size may have crossed the large-document threshold.
+        checkBigDocumentTransition();
     }
 
     protected void doTextEditorSave(DBRProgressMonitor monitor) {
@@ -783,6 +843,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         if (this.backgroundParsingJob != null) {
             this.backgroundParsingJob.dispose();
         }
+        detachBigDocumentListener();
         this.occurrencesHighlighter.dispose();
 /*
         if (this.activationListener != null) {
@@ -930,7 +991,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         IDocument document = getDocument();
         syntaxManager.init(dialect, getActivePreferenceStore());
         SQLRuleManager ruleManager = new SQLRuleManager(syntaxManager);
-        ruleManager.loadRules(getDataSourceContainerForSyntaxRuleReloading(), !SQLEditorUtils.isSQLSyntaxParserApplied(getEditorInput()));
+        ruleManager.loadRules(getDataSourceContainerForSyntaxRuleReloading(), !SQLEditorUtils.isSQLSyntaxParserApplied(this));
         ruleScanner.refreshRules(getDataSourceContainerForSyntaxRuleReloading(), ruleManager, this);
         if (getDataSource() != null) {
             parserContext = new SQLParserContext(getDataSource(), syntaxManager, ruleManager, document != null ? document : new Document());
@@ -1424,6 +1485,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             case AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH:
             case AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS:
                 this.reloadSyntaxRules();
+                return;
+            case SQLPreferenceConstants.SCRIPT_BIG_FILE_LENGTH_BOUNDARY:
+                checkBigDocumentTransition();
                 return;
             case SQLPreferenceConstants.ADVANCED_HIGHLIGHTING_ENABLE:
                 this.reloadSourceViewerConfiguration();
