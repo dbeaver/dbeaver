@@ -62,14 +62,12 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
             false,
             1
         );
-        UIUtils.createLink(
-            group, "<a>" + DDTrackingUIMessages.sync_preference_page_mcp_settings_link + "</a>",
-            SelectionListener.widgetSelectedAdapter(e -> PreferencesUtil.createPreferenceDialogOn(
-                enableCheck.getShell(), DDMcpConnectionsPreferencePage.PAGE_ID,
-                new String[]{DDMcpConnectionsPreferencePage.PAGE_ID}, connection).open())
-        );
         Composite section = group.getParent();
         Button aiEnabledCheck = page.getAIEnabledCheck();
+        UIUtils.createLink(
+            group, "<a>" + DDTrackingUIMessages.sync_preference_page_mcp_settings_link + "</a>",
+            SelectionListener.widgetSelectedAdapter(e -> openMcpSettings(parent, section, connection, aiEnabledCheck))
+        );
         showStatus(parent, section, connection, aiEnabledCheck, settingsStore.getSettings());
         Runnable refresh = () -> UIUtils.asyncExec(() -> {
             if (!section.isDisposed()) {
@@ -99,6 +97,31 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
             settingsStore.removeListener(listener);
             DDDesktopAccessService.getInstance().removeAccessListener(accessListener);
         });
+    }
+
+    private void openMcpSettings(
+        @NotNull Composite parent,
+        @NotNull Composite section,
+        @NotNull DBPDataSourceContainer connection,
+        @NotNull Button aiEnabledCheck
+    ) {
+        DBPDataSourceContainer stored = connection.getRegistry().getDataSource(connection.getId());
+        boolean wasEnabled = stored != null && mcpConnectionCatalog.isEnabled(stored);
+        PreferencesUtil.createPreferenceDialogOn(
+            enableCheck.getShell(), DDMcpConnectionsPreferencePage.PAGE_ID,
+            new String[]{DDMcpConnectionsPreferencePage.PAGE_ID}, connection).open();
+        if (section.isDisposed()) {
+            return;
+        }
+        stored = connection.getRegistry().getDataSource(connection.getId());
+        boolean enabled = stored != null && mcpConnectionCatalog.isEnabled(stored);
+        if (stored != null && wasEnabled != enabled) {
+            mcpConnectionCatalog.setEnabled(connection, enabled);
+            if (available) {
+                enableCheck.setSelection(enabled);
+            }
+            showStatus(parent, section, connection, aiEnabledCheck, settingsStore.getSettings());
+        }
     }
 
     private void showStatus(
