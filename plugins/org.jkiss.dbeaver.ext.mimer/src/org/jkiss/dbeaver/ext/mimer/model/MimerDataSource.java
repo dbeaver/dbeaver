@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Version;
 
-import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -53,8 +52,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Properties;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * The Mimer SQL data source - adds datasource-global caches (users, groups, programs, databanks,
@@ -270,66 +267,6 @@ public class MimerDataSource extends GenericDataSource {
      */
     public boolean supportsSetSchemaStatement() {
         return isServerVersionAtLeast(11, 0);
-    }
-
-    // --- Driver version gate ---------------------------------------------------------------
-    // Mimer SQL has stayed on JDBC driver minor version 11.0 for many years, with individual
-    // driver fixes landing in patch releases instead - the inherited isDriverVersionAtLeast(major,
-    // minor) can't tell those apart (getDriverMajorVersion()/getDriverMinorVersion() both report
-    // the same "11"/"0" across the whole 11.0.x lineage), so readDriverVersion is
-    // overridden below to also capture the patch digit, and isDriverVersionAtLeast(major, minor,
-    // patch) reads it back.
-
-    /**
-     * Also captures the driver's patch/micro version from the free-form {@code
-     * DatabaseMetaData.getDriverVersion()} string (e.g. {@code "11.0.4 (51688)"}) - the only place
-     * it's available, since {@code getDriverMajorVersion()}/{@code getDriverMinorVersion()} alone
-     * can't distinguish one 11.0.x patch release from another. Falls back to whatever {@code
-     * super.readDriverVersion} already set (patch 0) if the string doesn't parse.
-     */
-    @Override
-    protected synchronized void readDriverVersion(@NotNull DatabaseMetaData metaData) {
-        super.readDriverVersion(metaData);
-        // Always recomputes rather than guarding on driverVersion == null (super already set
-        // it just above) - safe only because this method is synchronized and, per initialize()'s
-        // own call site, runs exactly once per connection; re-running it on an already-connected
-        // instance would re-parse rather than keep the first result, unlike the superclass.
-        try {
-            String rawVersion = metaData.getDriverVersion();
-            Matcher matcher = rawVersion == null ? null : Pattern.compile("(\\d+)\\.(\\d+)\\.(\\d+)").matcher(rawVersion);
-            // lookingAt(), not find() - anchors at the start so a stray dotted triplet elsewhere
-            // in a future driver's version string (e.g. a build/date tag) can't be mismatched for
-            // the real version.
-            if (matcher != null && matcher.lookingAt()) {
-                driverVersion = new Version(
-                    Integer.parseInt(matcher.group(1)),
-                    Integer.parseInt(matcher.group(2)),
-                    Integer.parseInt(matcher.group(3)));
-            }
-        } catch (SQLException ignored) {
-            // super's own major/minor-only Version (patch 0) already stands as the fallback
-        }
-    }
-
-    /**
-     * Like the inherited {@code isDriverVersionAtLeast(major, minor)}, but also compares the
-     * patch digit {@link #readDriverVersion} parses - needed to gate a fix that lands in a patch
-     * release rather than a new minor version. First used by {@link MimerValueHandlerProvider}.
-     */
-    public boolean isDriverVersionAtLeast(int major, int minor, int patch) {
-        if (driverVersion == null) {
-            return false;
-        }
-        if (driverVersion.getMajor() > major) {
-            return true;
-        } else if (driverVersion.getMajor() == major) {
-            if (driverVersion.getMinor() > minor) {
-                return true;
-            } else if (driverVersion.getMinor() == minor) {
-                return driverVersion.getMicro() >= patch;
-            }
-        }
-        return false;
     }
 
     /**

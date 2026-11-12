@@ -19,12 +19,10 @@ package org.jkiss.dbeaver.ext.mimer.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.mimer.MimerConstants;
-import org.jkiss.dbeaver.ext.mimer.model.MimerDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDFormatSettings;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
-import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.Types;
@@ -49,21 +47,26 @@ import java.util.Locale;
  * the same name sets {@code MimerDataSource#resolveDataKind} already uses, rather than trusting
  * the type ID alone.
  * <p>
- * Falls back to {@link JDBCContentValueHandler#INSTANCE} - the same handler the core JDBC-standard
- * provider would give a BLOB/CLOB/NCLOB column - once {@link
- * MimerDataSource#isDriverVersionAtLeast(int, int, int)} says the connected driver is 11.0.6 or
- * later, but only when the type ID itself already matched BLOB/CLOB/NCLOB directly: that cutoff
- * is for the separate {@code getObject()}/stream-read bug, not the vendor-ID mismatch the name
- * fallback above exists for, so a column only reached via the name fallback keeps using the
- * Mimer-specific wrapper regardless of driver version - its null/create-new handling still can't
- * be trusted to the standard handler while the ID itself stays wrong. Returning {@code null} here
- * would NOT reach that standard provider: {@code DataTypeProviderRegistry#getValueHandlerProvider}
- * picks this, the first non-global provider matching both the datasource and the column type, and
- * returns immediately - the global providers are never even consulted - so
- * {@code DBUtils#findValueHandler} would fall straight through to {@code DefaultValueHandler},
- * which can't bind a value at all (throws on every write) and skips the content-wrapper machinery
- * LOB viewing/export relies on. 11.0.6 isn't released yet and isn't confirmed to actually carry
- * the fix - bump the patch number here if it turns out not to.
+ * Always returns a Mimer-specific handler for a matching column - deliberately never falls back
+ * to the core JDBC-standard handler, for any driver version. The standard handler reads a BLOB/
+ * CLOB/NCLOB lazily: it holds onto the {@code java.sql.Blob}/{@code Clob} locator {@code
+ * getObject()}/{@code getBlob()}/{@code getClob()} returns and only actually reads from it later,
+ * on first access. On Mimer SQL that locator is scoped to the transaction that fetched it - by
+ * the time anything reads from it later (e.g. opening an image viewer well after the row's own
+ * fetch completed), it throws {@code "<Blob|Clob> object became invalid after transaction
+ * ended"}. Confirmed live against driver 11.0.2: {@code DatabaseMetaData
+ * #supportsResultSetHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT)} reports {@code false}, and
+ * calling {@code Connection#setHoldability} to that value anyway is silently a no-op - the
+ * server, not the driver, ties the locator's lifetime to the transaction, so this isn't something
+ * a future driver patch can lift. {@link MimerBLOBValueHandler}/{@link MimerCLOBValueHandler}
+ * avoid it by reading the full content eagerly, inside the same fetch, never holding onto the
+ * locator - there is no driver version where handing a Mimer LOB column to the standard handler
+ * would be safe. Returning {@code null} here instead would NOT reach that standard provider
+ * either way: {@code DataTypeProviderRegistry#getValueHandlerProvider} picks this, the first
+ * non-global provider matching both the datasource and the column type, and returns immediately -
+ * the global providers are never even consulted - so {@code DBUtils#findValueHandler} would fall
+ * straight through to {@code DefaultValueHandler}, which can't bind a value at all (throws on
+ * every write) and skips the content-wrapper machinery LOB viewing/export relies on.
  *
  * @author Mimer Information Technology
  */
@@ -78,17 +81,8 @@ public class MimerValueHandlerProvider implements DBDValueHandlerProvider {
     ) {
         Boolean isBlobById = classifyByTypeId(typedObject.getTypeID());
         if (isBlobById != null) {
-            boolean fixedByDriver = dataSource instanceof MimerDataSource mimerDataSource
-                && mimerDataSource.isDriverVersionAtLeast(11, 0, 6);
-            if (fixedByDriver) {
-                return JDBCContentValueHandler.INSTANCE;
-            }
             return isBlobById ? MimerBLOBValueHandler.INSTANCE : MimerCLOBValueHandler.INSTANCE;
         }
-        // The type ID itself didn't match BLOB/CLOB/NCLOB, so this connection's vendor-ID quirk
-        // (see this class's own javadoc) is still present regardless of isDriverVersionAtLeast -
-        // that cutoff only covers the separate getObject()/stream-read bug, not this ID mismatch,
-        // so the Mimer-specific wrapper (and its own null/create-new handling) always applies here.
         Boolean isBlobByName = classifyByName(typedObject.getTypeName());
         if (isBlobByName == null) {
             return null;
