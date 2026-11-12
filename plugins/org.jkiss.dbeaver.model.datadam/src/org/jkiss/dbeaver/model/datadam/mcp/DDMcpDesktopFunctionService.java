@@ -32,16 +32,14 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.datadam.mcp.function.DDMcpAiFunctionCatalog;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
@@ -121,10 +119,31 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
                 return null;
             }
             DBCExecutionContext executionContext = DBUtils.getOrOpenDefaultContext(dataSource, false);
-            return new AIDatabaseContext.Builder(new DBSLogicalDataSource(connection))
+            AIContextSettingsDataSource settings = new AIContextSettingsDataSource(connection);
+            AIUtils.updateScopeSettingsIfNeeded(settings, connection, executionContext);
+            AIDatabaseScope scope = settings.getScope();
+            if (scope == null) {
+                throw new DDMcpFunctionException(DDMcpFunctionErrorCode.INTERNAL_ERROR,
+                    "AI scope is unavailable for DataDam MCP datasource", null);
+            }
+            AIDatabaseContext.Builder builder = new AIDatabaseContext.Builder(new DBSLogicalDataSource(connection))
                 .setExecutionContext(executionContext)
-                .setScope(AIDatabaseScope.CURRENT_DATASOURCE)
-                .build();
+                .setScope(scope);
+            if (scope == AIDatabaseScope.CUSTOM) {
+                String[] customObjectIds = settings.getCustomObjectIds();
+                if (customObjectIds != null && customObjectIds.length > 0) {
+                    Set<String> ids = new LinkedHashSet<>();
+                    Collections.addAll(ids, customObjectIds);
+                    builder.setCustomEntities(AITextUtils.loadCustomEntities(monitor, dataSource, ids));
+                }
+            }
+            try {
+                return builder.build();
+            } catch (DBException e) {
+                log.debug("Cannot apply DataDam MCP datasource scope", e);
+                throw new DDMcpFunctionException(DDMcpFunctionErrorCode.INTERNAL_ERROR,
+                    "Cannot apply DataDam MCP datasource scope", null);
+            }
         } catch (DBException e) {
             log.debug("Cannot create DataDam MCP database context", e);
             return null;
