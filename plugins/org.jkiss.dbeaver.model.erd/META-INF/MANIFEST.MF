@@ -7,6 +7,7 @@ Bundle-Version: 1.1.33.qualifier
 Bundle-Release-Date: 20261130
 Bundle-RequiredExecutionEnvironment: JavaSE-21
 Bundle-ActivationPolicy: lazy
+Bundle-Localization: OSGI-INF/l10n/bundle
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.model.sql
 Export-Package: org.jkiss.dbeaver.model.erd
