@@ -26,10 +26,14 @@ public class DDMcpMessages extends NLS {
     public static String mcp_connection_settings_enabled_tip;
     public static String mcp_connection_status_loading;
     public static String mcp_connections_title;
+    public static String mcp_connections_description;
+    public static String mcp_connections_documentation;
+    public static String mcp_connections_login_required;
     public static String mcp_connections_projects;
     public static String mcp_connections_connections;
     public static String mcp_connections_name;
     public static String mcp_connections_driver;
+    public static String mcp_connections_scope;
     public static String mcp_connections_accessible;
     public static String mcp_connections_accessible_tip;
     public static String mcp_connections_manual_tip;

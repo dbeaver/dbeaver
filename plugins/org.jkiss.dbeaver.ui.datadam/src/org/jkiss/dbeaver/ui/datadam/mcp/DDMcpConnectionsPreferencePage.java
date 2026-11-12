@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.datadam.mcp;
 
+import com.dbeaver.datadam.dam.remote.api.DDRemoteDamSettingKeys;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
@@ -29,27 +31,44 @@ import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.ai.AIContextSettingsDataSource;
+import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.app.DBPProject;
+import org.jkiss.dbeaver.model.datadam.DDAccountClient;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
+import org.jkiss.dbeaver.model.datadam.DDProductConfig;
 import org.jkiss.dbeaver.model.datadam.DDWorkspace;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionCatalog;
 import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionCatalog.AvailableConnection;
+import org.jkiss.dbeaver.model.datadam.mcp.DDMcpScopeUtils;
+import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
+import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamSettingsStore;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.runtime.ui.UIServiceConnections;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.preferences.PrefPageDataSourceAI;
+import org.jkiss.dbeaver.ui.controls.CenteredImageLabelProvider;
+import org.jkiss.dbeaver.ui.datadam.DDDesktopDamService;
+import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDMcpMessages;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIIcons;
+import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.dialogs.SelectDataSourceDialog;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
 
+import java.net.URI;
 import java.util.*;
 import java.util.List;
 
@@ -57,9 +76,14 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.synchronization.mcp.connections";
     private static final int MIN_ROWS = 10;
     private static final int MAX_ROWS = 20;
+    private static final Log log = Log.getLog(DDMcpConnectionsPreferencePage.class);
+    private static final String MCP_SETTINGS_URL = "remote-dams";
+    private static final String MCP_DOCS_URL = "https://docs.datadam.cloud/MCP";
 
     private final DDMcpConnectionCatalog catalog = DDMcpConnectionCatalog.getInstance();
     private final DDWorkspace workspace = DDWorkspace.getInstance();
+    private final DDDesktopAccessService accessService = DDDesktopAccessService.getInstance();
+    private final DDRemoteDamSettingsStore settingsStore = DDRemoteDamSettingsStore.getInstance();
     private final Set<DBPDataSourceContainer> savedConnections = new LinkedHashSet<>();
     private final Set<DBPDataSourceContainer> selectedConnections = new LinkedHashSet<>();
     private final Set<DBPProject> loadedProjects = new LinkedHashSet<>();
@@ -70,6 +94,18 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
     private Button addButton;
     private Button configureButton;
     private Button removeButton;
+    private Button mcpCheck;
+    private Control loginHint;
+    private Control loadingHint;
+    private Control unavailableHint;
+    private Control globallyDisabledHint;
+    private Composite accessInfo;
+    @Nullable
+    private AbstractJob mcpJob;
+    @Nullable
+    private DDAccountClient.DamSettingsState mcpPermissions;
+    private boolean mcpLoading;
+    private boolean editable;
     private boolean updatingProjects;
     @Nullable
     private UUID displayedAccountId;
@@ -89,13 +125,22 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
     protected Control createPreferenceContent(@NotNull Composite parent) {
         Composite content = UIUtils.createPlaceholder(parent, 1);
         content.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+        ((GridLayout) content.getLayout()).verticalSpacing = 4;
+        Label description = DDUIUtils.create(content, DDMcpMessages.mcp_connections_description,
+            DDMcpMessages.mcp_connections_documentation, MCP_DOCS_URL);
+        GridLayout descriptionLayout = (GridLayout) description.getParent().getLayout();
+        descriptionLayout.marginHeight = 0;
+        descriptionLayout.verticalSpacing = 0;
+        createMcpControls(content);
 
         Composite columns = new Composite(content, SWT.NONE);
         GridLayout layout = new GridLayout(2, false);
         layout.marginWidth = 0;
         layout.marginHeight = 0;
         columns.setLayout(layout);
-        columns.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false));
+        GridData columnsData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        columnsData.verticalIndent = 8;
+        columns.setLayoutData(columnsData);
 
         createHeaders(columns);
         createProjects(columns);
@@ -103,6 +148,8 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
         connectionViewer.setInput(List.of());
         projectViewer.setInput(projects);
         refreshConnections();
+        subscribeToSettings(content);
+        loadMcpPermissions();
 
         if (requestedConnection != null) {
             selectConnection(requestedConnection);
@@ -113,6 +160,169 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
             }
         }
         return content;
+    }
+
+    private void createMcpControls(@NotNull Composite content) {
+        Composite controls = UIUtils.createPlaceholder(content, 1);
+        GridData controlsData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        controlsData.verticalIndent = 3;
+        controls.setLayoutData(controlsData);
+        mcpCheck = UIUtils.createCheckbox(controls,
+            DDTrackingUIMessages.sync_preference_page_mcp_enabled,
+            DDTrackingUIMessages.sync_preference_page_mcp_hint, false, 1);
+        mcpCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> updateMcpStatus(mcpCheck.getSelection())));
+        loginHint = createStatusLabel(controls, DDMcpMessages.mcp_connections_login_required);
+        loadingHint = createStatusLabel(controls, DDTrackingUIMessages.sync_preference_page_mcp_loading);
+        unavailableHint = createStatusLabel(controls, DDTrackingUIMessages.sync_preference_page_mcp_unavailable);
+        globallyDisabledHint = DDUIUtils.create(
+            controls, DDTrackingUIMessages.sync_preference_page_mcp_globally_disabled,
+            DDTrackingUIMessages.sync_preference_page_mcp_settings_link,
+            URI.create(DDEndpoints.getAccountBaseUrl()).resolve("/" + MCP_SETTINGS_URL).toString()
+        ).getParent();
+        globallyDisabledHint.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+    }
+
+    @NotNull
+    private Label createStatusLabel(@NotNull Composite parent, @NotNull String message) {
+        Label label = new Label(parent, SWT.NONE);
+        label.setText(message);
+        label.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
+        return label;
+    }
+
+    private void subscribeToSettings(@NotNull Composite content) {
+        Runnable refresh = () -> UIUtils.asyncExec(() -> {
+            if (!mcpCheck.isDisposed()) {
+                showMcpStatus();
+            }
+        });
+        DDRemoteDamSettingsStore.Listener listener = settings -> refresh.run();
+        DDDesktopAccessListener accessListener = new DDDesktopAccessListener() {
+            @Override
+            public void accessChanging() {
+            }
+
+            @Override
+            public void accessChanged() {
+                UIUtils.asyncExec(() -> {
+                    if (!mcpCheck.isDisposed()) {
+                        loadMcpPermissions();
+                        refreshConnections();
+                    }
+                });
+            }
+        };
+        settingsStore.addListener(listener);
+        accessService.addAccessListener(accessListener);
+        content.addDisposeListener(e -> {
+            if (mcpJob != null) {
+                mcpJob.cancel();
+            }
+            settingsStore.removeListener(listener);
+            accessService.removeAccessListener(accessListener);
+        });
+    }
+
+    private void loadMcpPermissions() {
+        if (mcpJob != null) {
+            mcpJob.cancel();
+        }
+        mcpPermissions = null;
+        mcpLoading = false;
+        if (accessService.getStatus() != DDDesktopAccessService.Status.SIGNED_IN
+            || !DDProductConfig.isIntegrationEnabled()) {
+            showMcpStatus();
+            return;
+        }
+        mcpLoading = true;
+        showMcpStatus();
+        mcpJob = DDDesktopDamService.getInstance().createJob(
+            "Read DataDam MCP permissions",
+            account -> account.getDamSettings(DDRemoteDamDesktopSessionService.getInstance().getClientDamId()),
+            state -> {
+                if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                    mcpPermissions = state;
+                    mcpLoading = false;
+                    showMcpStatus();
+                }
+            },
+            error -> {
+                if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                    log.debug("Cannot read DataDam MCP permissions", error);
+                    mcpLoading = false;
+                    showMcpStatus();
+                }
+            });
+    }
+
+    private void updateMcpStatus(boolean enabled) {
+        DDAccountClient.DamSettingsState previous = mcpPermissions;
+        if (previous == null || !mcpCheck.isEnabled()) {
+            return;
+        }
+        DDRemoteDamSettings before = settingsStore.getSettings();
+        mcpLoading = true;
+        showMcpStatus();
+        mcpJob = DDDesktopDamService.getInstance().createJob(
+            "Update DataDam MCP status",
+            account -> account.setDamSetting(
+                DDRemoteDamDesktopSessionService.getInstance().getClientDamId(), DDRemoteDamSettingKeys.MCP_ENABLED,
+                Boolean.toString(enabled), previous.accountId()),
+            updated -> {
+                if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN
+                    && mcpPermissions == previous) {
+                    mcpLoading = false;
+                    if (settingsStore.getSettings() == before) {
+                        settingsStore.updateSettings(updated);
+                    }
+                    showMcpStatus();
+                }
+            },
+            error -> {
+                if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN
+                    && mcpPermissions == previous) {
+                    mcpLoading = false;
+                    showMcpStatus();
+                    DBWorkbench.getPlatformUI().showError(
+                        DDMcpMessages.mcp_connections_title,
+                        DDTrackingUIMessages.sync_preference_page_mcp_update_failed, error);
+                }
+            });
+    }
+
+    private void showMcpStatus() {
+        boolean signedIn = accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN;
+        boolean supported = DDProductConfig.isIntegrationEnabled();
+        DDRemoteDamSettings settings = settingsStore.getSettings();
+        boolean accountEnabled = settings != null && settings.isAccountEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true);
+        boolean selected = signedIn && supported && settings != null && accountEnabled
+            && settings.isDamEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, false);
+        mcpCheck.setSelection(selected);
+        mcpCheck.setEnabled(signedIn && supported && accountEnabled
+            && mcpPermissions != null && mcpPermissions.canManage() && !mcpLoading);
+        editable = isEditingAllowed();
+        connectionViewer.getTable().setEnabled(editable);
+        accessInfo.setVisible(editable);
+        ((GridData) accessInfo.getLayoutData()).exclude = !editable;
+        showHint(loginHint, !signedIn);
+        showHint(loadingHint, signedIn && mcpLoading);
+        showHint(unavailableHint, signedIn && !mcpLoading && (!supported || settings == null || mcpPermissions == null));
+        showHint(globallyDisabledHint, signedIn && supported && settings != null && !accountEnabled);
+        updateButtons();
+        mcpCheck.getParent().getParent().layout(true, true);
+    }
+
+    private void showHint(@NotNull Control hint, boolean visible) {
+        hint.setVisible(visible);
+        ((GridData) hint.getLayoutData()).exclude = !visible;
+    }
+
+    private boolean isEditingAllowed() {
+        DDRemoteDamSettings settings = settingsStore.getSettings();
+        return accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN
+            && DDProductConfig.isIntegrationEnabled() && !mcpLoading
+            && mcpPermissions != null && mcpPermissions.canManage()
+            && settings != null && settings.isEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true, false);
     }
 
     @Override
@@ -181,6 +391,16 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
             DDMcpMessages.mcp_connections_configure_scope, this::configureScope);
         removeButton = iconButton(actions, DDTrackingUIIcons.PROJECT_DISCONNECT,
             DDMcpMessages.mcp_connections_remove, this::removeConnections);
+
+        accessInfo = UIUtils.createComposite(tableRow, 2);
+        accessInfo.setLayoutData(new GridData(SWT.FILL, SWT.BEGINNING, true, false, 2, 1));
+        Label infoIcon = new Label(accessInfo, SWT.NONE);
+        infoIcon.setImage(DBeaverIcons.getImage(DBIcon.SMALL_INFO));
+        Label infoText = new Label(accessInfo, SWT.WRAP);
+        infoText.setText(DDMcpMessages.mcp_connections_accessible_tip);
+        GridData infoData = new GridData(SWT.FILL, SWT.BEGINNING, true, false);
+        infoData.widthHint = 540;
+        infoText.setLayoutData(infoData);
     }
 
     private void createProjects(@NotNull Composite parent) {
@@ -233,18 +453,27 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
             }
         });
 
+        TableViewerColumn scopeColumn = new TableViewerColumn(connectionViewer, SWT.LEFT);
+        scopeColumn.getColumn().setText(DDMcpMessages.mcp_connections_scope);
+        scopeColumn.getColumn().setWidth(150);
+        scopeColumn.setLabelProvider(new ColumnLabelProvider() {
+            @Override
+            public String getText(@NotNull Object element) {
+                DBPDataSourceContainer connection = ((AvailableConnection) element).connection();
+                AIDatabaseScope scope = DDMcpScopeUtils.getScope(
+                    new AIContextSettingsDataSource(connection), connection, DBUtils.getDefaultContext(connection, true));
+                return scope == null ? "" : scope.getTitle();
+            }
+        });
+
         TableViewerColumn accessible = new TableViewerColumn(connectionViewer, SWT.LEFT);
         accessible.getColumn().setText(DDMcpMessages.mcp_connections_accessible);
         accessible.getColumn().setWidth(140);
         accessible.getColumn().setToolTipText(DDMcpMessages.mcp_connections_accessible_tip);
-        accessible.setLabelProvider(new ColumnLabelProvider() {
+        accessible.setLabelProvider(new CenteredImageLabelProvider() {
             @Override
-            public String getText(@NotNull Object element) {
-                return "";
-            }
-
-            @Override
-            public Image getImage(@NotNull Object element) {
+            @NotNull
+            protected Image getImage(@NotNull Object element) {
                 AvailableConnection connection = (AvailableConnection) element;
                 return DBeaverIcons.getImage(connection.requiresManualConnection()
                     ? DBIcon.SMALL_WARNING : UIIcon.OK_MARK);
@@ -417,9 +646,9 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
     }
 
     private void updateButtons() {
-        addButton.setEnabled(selectedProject() != null);
-        configureButton.setEnabled(connectionViewer.getStructuredSelection().size() == 1);
-        removeButton.setEnabled(!connectionViewer.getStructuredSelection().isEmpty());
+        addButton.setEnabled(editable && selectedProject() != null);
+        configureButton.setEnabled(editable && connectionViewer.getStructuredSelection().size() == 1);
+        removeButton.setEnabled(editable && !connectionViewer.getStructuredSelection().isEmpty());
     }
 
     private void updateTableHeight() {
@@ -438,6 +667,9 @@ public class DDMcpConnectionsPreferencePage extends AbstractPrefPage implements 
     }
 
     private boolean saveChanges() {
+        if (!isEditingAllowed()) {
+            return true;
+        }
         if (!Objects.equals(displayedAccountId, DDDesktopAccessService.getInstance().getAccountId())) {
             refreshConnections();
         }

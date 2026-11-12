@@ -69,12 +69,16 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
                 new String[]{DDMcpConnectionsPreferencePage.PAGE_ID}, connection).open())
         );
         Composite section = group.getParent();
-        showStatus(parent, section, connection, settingsStore.getSettings());
+        Button aiEnabledCheck = page.getAIEnabledCheck();
+        showStatus(parent, section, connection, aiEnabledCheck, settingsStore.getSettings());
         Runnable refresh = () -> UIUtils.asyncExec(() -> {
             if (!section.isDisposed()) {
-                showStatus(parent, section, connection, settingsStore.getSettings());
+                showStatus(parent, section, connection, aiEnabledCheck, settingsStore.getSettings());
             }
         });
+        SelectionListener aiListener = SelectionListener.widgetSelectedAdapter(e ->
+            showStatus(parent, section, connection, aiEnabledCheck, settingsStore.getSettings()));
+        aiEnabledCheck.addSelectionListener(aiListener);
         DDRemoteDamSettingsStore.Listener listener = settings -> refresh.run();
         DDDesktopAccessListener accessListener = new DDDesktopAccessListener() {
             @Override
@@ -89,6 +93,9 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
         settingsStore.addListener(listener);
         DDDesktopAccessService.getInstance().addAccessListener(accessListener);
         section.addDisposeListener(e -> {
+            if (!aiEnabledCheck.isDisposed()) {
+                aiEnabledCheck.removeSelectionListener(aiListener);
+            }
             settingsStore.removeListener(listener);
             DDDesktopAccessService.getInstance().removeAccessListener(accessListener);
         });
@@ -98,10 +105,11 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
         @NotNull Composite parent,
         @NotNull Composite section,
         @NotNull DBPDataSourceContainer connection,
+        @NotNull Button aiEnabledCheck,
         @Nullable DDRemoteDamSettings settings
     ) {
         boolean visible = isVisible();
-        boolean enabled = isAvailable(settings);
+        boolean enabled = isAvailable(settings) && aiEnabledCheck.getSelection();
         section.setVisible(visible);
         ((GridData) section.getLayoutData()).exclude = !visible;
         if (!enabled) {
@@ -126,7 +134,7 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
     public void saveSettings(@NotNull PrefPageDataSourceAI page) {
         DBPDataSourceContainer connection = page.getConnection();
         if (connection != null && enableCheck != null && enableCheck.isEnabled()
-            && isAvailable(settingsStore.getSettings())) {
+            && page.getAIEnabledCheck().getSelection() && isAvailable(settingsStore.getSettings())) {
             mcpConnectionCatalog.setEnabled(connection, enableCheck.getSelection());
         }
     }

@@ -32,14 +32,16 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.*;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
-import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.datadam.mcp.function.DDMcpAiFunctionCatalog;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.logical.DBSLogicalDataSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
@@ -120,20 +122,14 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
             }
             DBCExecutionContext executionContext = DBUtils.getOrOpenDefaultContext(dataSource, false);
             AIContextSettingsDataSource settings = new AIContextSettingsDataSource(connection);
-            AIUtils.updateScopeSettingsIfNeeded(settings, connection, executionContext);
-            AIDatabaseScope scope = settings.getScope();
+            AIDatabaseScope scope = DDMcpScopeUtils.getScope(settings, connection, executionContext);
             AIDatabaseContext.Builder builder = new AIDatabaseContext.Builder(new DBSLogicalDataSource(connection))
                 .setExecutionContext(executionContext);
             if (scope != null) {
                 builder.setScope(scope);
             }
             if (scope == AIDatabaseScope.CUSTOM) {
-                String[] customObjectIds = settings.getCustomObjectIds();
-                if (customObjectIds != null && customObjectIds.length > 0) {
-                    Set<String> ids = new LinkedHashSet<>();
-                    Collections.addAll(ids, customObjectIds);
-                    builder.setCustomEntities(AITextUtils.loadCustomEntities(monitor, dataSource, ids));
-                }
+                builder.setCustomEntities(DDMcpScopeUtils.loadCustomEntities(settings, monitor, dataSource));
             }
             try {
                 return builder.build();
