@@ -50,7 +50,7 @@ public class ProductConfigFeaturesPage extends ProductConfigWizardPage {
 
     @Override
     public void loadSettings() {
-        features = new ProductConfigFeaturesPanel(getWizard().isFeatureUpdate());
+        features = new ProductConfigFeaturesPanel(getWizard().isFeatureUpdate(), getWizard().getOrigin());
     }
 
     @Override

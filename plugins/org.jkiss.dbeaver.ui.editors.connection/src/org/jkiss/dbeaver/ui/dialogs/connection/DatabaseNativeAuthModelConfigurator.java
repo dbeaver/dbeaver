@@ -160,10 +160,10 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
         }
 
         if (this.usernameText != null) {
-            dataSource.getConnectionConfiguration().setUserName(GeneralUtils.trimAllWhitespaces(this.usernameText.getText()));
+            dataSource.getConnectionConfiguration().setUserName(normalizeCredential(this.usernameText.getText()));
         }
         if (this.passwordText != null && isPasswordApplicable() && !resetPassword) {
-            dataSource.getConnectionConfiguration().setUserPassword(GeneralUtils.trimAllWhitespaces(this.passwordText.getText()));
+            dataSource.getConnectionConfiguration().setUserPassword(normalizeCredential(this.passwordText.getText()));
         } else {
             dataSource.getConnectionConfiguration().setUserPassword(null);
         }
@@ -183,6 +183,11 @@ public class DatabaseNativeAuthModelConfigurator implements IObjectPropertyConfi
 
     protected boolean isPasswordApplicable() {
         return this.passwordText != null;
+    }
+
+    @NotNull
+    protected String normalizeCredential(@NotNull String value) {
+        return GeneralUtils.trimAllWhitespaces(value);
     }
 
     @Override

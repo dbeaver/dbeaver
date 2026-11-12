@@ -37,6 +37,7 @@ public class UINavigatorPreferencesInitializer extends AbstractPreferenceInitial
         DBPPreferenceStore store = ModelPreferences.getPreferences();
 
         // Navigator
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NAVIGATOR_LOCALIZE_FOLDER_NAMES, true);
         PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_EXPAND_ON_CONNECT, false);
         PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_RESTORE_FILTER, true);
         PrefUtils.setDefaultPreferenceValue(store, NavigatorPreferences.NAVIGATOR_RESTORE_STATE_DEPTH, 0);

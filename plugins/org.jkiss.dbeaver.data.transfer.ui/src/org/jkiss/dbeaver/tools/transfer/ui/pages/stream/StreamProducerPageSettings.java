@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamEntityMapping;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings;
@@ -82,9 +81,9 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     private String noneItemSelectedText = DTUIMessages.stream_consumer_page_settings_item_text_none;
 
     public StreamProducerPageSettings() {
-        super(DTMessages.data_transfer_wizard_page_input_files_name);
-        setTitle(DTMessages.data_transfer_wizard_page_input_files_title);
-        setDescription(DTMessages.data_transfer_wizard_page_input_files_description);
+        super(DTUIMessages.data_transfer_wizard_page_input_files_name);
+        setTitle(DTUIMessages.data_transfer_wizard_page_input_files_title);
+        setDescription(DTUIMessages.data_transfer_wizard_page_input_files_description);
         setPageComplete(false);
     }
 
@@ -179,7 +178,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
 
         {
             Composite exporterSettings = UIUtils.createComposite(settingsDivider, 1);
-            UIUtils.createControlLabel(exporterSettings, DTMessages.data_transfer_wizard_settings_group_importer);
+            UIUtils.createControlLabel(exporterSettings, DTUIMessages.data_transfer_wizard_settings_group_importer);
 
             propsEditor = new PropertyTreeViewer(exporterSettings, SWT.BORDER);
             Object layoutData = propsEditor.getControl().getLayoutData();
@@ -273,7 +272,7 @@ public class StreamProducerPageSettings extends DataTransferPageNodeSettings {
     private Composite createFileSelectionToolBar(@NotNull Composite inputFilesTableGroup) {
         final Composite toolbar = new Composite(inputFilesTableGroup, SWT.NONE);
         toolbar.setLayout(new GridLayout(4, false));
-        UIUtils.createControlLabel(toolbar, DTMessages.data_transfer_wizard_settings_group_input_files);
+        UIUtils.createControlLabel(toolbar, DTUIMessages.data_transfer_wizard_settings_group_input_files);
 
         tiOpenLocal = UIUtils.createPushButton(
             toolbar,

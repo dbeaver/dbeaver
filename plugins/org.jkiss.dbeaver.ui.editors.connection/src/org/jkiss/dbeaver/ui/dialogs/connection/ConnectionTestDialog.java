@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
@@ -61,7 +60,7 @@ public class ConnectionTestDialog extends BaseDialog {
             imageLabel.setImage(DBeaverIcons.getImage(DBIcon.STATUS_INFO));
 
             Label messageLabel = new Label(composite, SWT.NONE);
-            messageLabel.setText(NLS.bind(ModelMessages.dialog_connection_wizard_start_connection_monitor_connected, elapsedTime));
+            messageLabel.setText(NLS.bind(UIConnectionMessages.dialog_connection_wizard_start_connection_monitor_connected, elapsedTime));
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             messageLabel.setLayoutData(gd);
@@ -73,6 +72,7 @@ public class ConnectionTestDialog extends BaseDialog {
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.widthHint = 300;
             Text serverText = new Text(composite, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
+            serverText.setBackground(composite.getBackground());
             serverText.setText(serverVersion.trim());
             serverText.setLayoutData(gd);
         }
@@ -81,6 +81,7 @@ public class ConnectionTestDialog extends BaseDialog {
             UIUtils.createEmptyLabel(composite, 1, 1);
             UIUtils.createControlLabel(composite, UIConnectionMessages.dialog_connection_test_label_driver).setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             Text driverText = new Text(composite, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP);
+            driverText.setBackground(composite.getBackground());
             driverText.setText(clientVersion.trim());
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.widthHint = 300;

@@ -100,11 +100,11 @@
 
     <extension point="org.jkiss.dbeaver.resourceType">
         <type id="sql-script"
-              name="SQL script"
+              name="%resource.root.scripts"
               icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script.svg"
               folderIcon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/script_folder.svg"
               managable="true">
-            <root folder="Scripts"/>
+            <root folder="Scripts" label="%resource.root.scripts"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.sql"/>
         </type>
     </extension>

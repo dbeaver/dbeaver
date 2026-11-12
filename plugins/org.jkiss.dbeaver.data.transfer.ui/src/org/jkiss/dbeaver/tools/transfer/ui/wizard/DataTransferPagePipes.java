@@ -120,14 +120,14 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
     }
 
     DataTransferPagePipes(@NotNull DataTransferSettings settings) {
-        super(DTMessages.data_transfer_wizard_init_title);
+        super(DTUIMessages.data_transfer_wizard_init_title);
 
         if (settings.isConsumerOptional()) {
-            setTitle(DTMessages.data_transfer_wizard_init_title);
-            setDescription(DTMessages.data_transfer_wizard_init_description);
+            setTitle(DTUIMessages.data_transfer_wizard_init_title);
+            setDescription(DTUIMessages.data_transfer_wizard_init_description);
         } else {
-            setTitle(DTMessages.data_transfer_wizard_producers_title);
-            setDescription(DTMessages.data_transfer_wizard_producers_description);
+            setTitle(DTUIMessages.data_transfer_wizard_producers_title);
+            setDescription(DTUIMessages.data_transfer_wizard_producers_description);
         }
     }
 
@@ -272,7 +272,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         {
             TableViewerColumn columnName = new TableViewerColumn(viewer, SWT.LEFT);
             columnName.setLabelProvider(labelProvider);
-            columnName.getColumn().setText(DTMessages.data_transfer_wizard_init_column_exported);
+            columnName.getColumn().setText(DTUIMessages.data_transfer_wizard_init_column_exported);
 
 //            TableViewerColumn columnDesc = new TableViewerColumn(nodesTable, SWT.RIGHT);
 //            columnDesc.setLabelProvider(labelProvider);
@@ -503,7 +503,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             dataSourceColumn.getColumn().setText(DTUIMessages.data_transfer_wizard_data_source);
             dataSourceColumn.setLabelProvider(labelProvider);
             TableViewerColumn columnsColumn = new TableViewerColumn(inputsTable, SWT.RIGHT);
-            columnsColumn.getColumn().setText(DTMessages.data_transfer_wizard_settings_group_preview_columns);
+            columnsColumn.getColumn().setText(DTUIMessages.data_transfer_wizard_settings_group_preview_columns);
             columnsColumn.setLabelProvider(labelProvider);
         }
         if (!dataImport) {
@@ -567,7 +567,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
             DTUIMessages.data_transfer_task_configurator_dialog_button_label_add_query, UIIcon.SQL_SCRIPT_CREATE,
             SelectionListener.widgetSelectedAdapter(e -> addQuery()));
         editQueryButton = UIUtils.createToolItem(buttonsToolbar,
-            DTMessages.data_transfer_wizard_settings_button_edit, UIIcon.EDIT,
+            DTUIMessages.data_transfer_wizard_settings_button_edit, UIIcon.EDIT,
             SelectionListener.widgetSelectedAdapter(e -> editQuery()));
         removeButton = UIUtils.createToolItem(buttonsToolbar,
             DTUIMessages.data_transfer_task_configurator_dialog_button_label_remove, UIIcon.REMOVE,
@@ -596,7 +596,7 @@ public class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> 
         addQueryButton.setToolTipText(editable ? DTUIMessages.data_transfer_task_configurator_dialog_button_label_add_query :
             DTUIMessages.data_transfer_wizard_sources_locked);
         editQueryButton.setToolTipText(!editable ? DTUIMessages.data_transfer_wizard_sources_locked :
-            querySelected ? DTMessages.data_transfer_wizard_settings_button_edit : DTUIMessages.data_transfer_wizard_select_query);
+            querySelected ? DTUIMessages.data_transfer_wizard_settings_button_edit : DTUIMessages.data_transfer_wizard_select_query);
         removeButton.setToolTipText(!editable ? DTUIMessages.data_transfer_wizard_sources_locked :
             inputsTable.getSelection().isEmpty() ? DTUIMessages.data_transfer_wizard_select_source :
                 DTUIMessages.data_transfer_task_configurator_dialog_button_label_remove);

@@ -21,8 +21,8 @@
             <property name="aboutText" value="%aboutText"/>
             <property name="copyright" value="© 2026 DBeaver Corp"/>
             <property name="subTitle" value="%productSubTitle"/>
-            <property name="website" value="%productWebsite"/>
-            <property name="email" value="%productEmail"/>
+            <property name="website" value="https://dbeaver.io/"/>
+            <property name="email" value="support@dbeaver.com"/>
             <property name="versionUpdateURL" value="https://dbeaver.io/product/version.xml"/>
             <property name="earlyAccessURL" value="https://dbeaver.io/files/ea"/>
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
@@ -46,8 +46,8 @@
             <property name="aboutText" value="%aboutText"/>
             <property name="copyright" value="© 2026 DBeaver Corp"/>
             <property name="subTitle" value="%productSubTitle"/>
-            <property name="website" value="%productWebsite"/>
-            <property name="email" value="%productEmail"/>
+            <property name="website" value="https://dbeaver.io/"/>
+            <property name="email" value="support@dbeaver.com"/>
             <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
             <property name="appName" value="DBeaver CE"/>
             <property name="versionInfoCoord" value="154,53"/>
@@ -66,7 +66,7 @@
     <extension point="org.jkiss.dbeaver.application">
         <application id="dbeaver-ce"
             family="DB"
-            name="%productName"
+            name="DBeaver"
             description="%productSubTitle"/>
     </extension>
 
@@ -79,13 +79,13 @@
         <command
             id="org.jkiss.dbeaver.core.util.resetSettings"
             categoryId="org.jkiss.dbeaver.core.util"
-            name="Reset Settings..."
-            description="Reset settings and restart"/>
+            name="%command.org.jkiss.dbeaver.core.util.resetSettings.name"
+            description="%command.org.jkiss.dbeaver.core.util.resetSettings.description"/>
         <command
             id="org.jkiss.dbeaver.core.util.clearHistory"
             categoryId="org.jkiss.dbeaver.core.util"
-            name="Clear History..."
-            description="Clear logs, query history and restart"/>
+            name="%command.org.jkiss.dbeaver.core.util.clearHistory.name"
+            description="%command.org.jkiss.dbeaver.core.util.clearHistory.description"/>
         <command
                 id="org.jkiss.dbeaver.core.try.pro"
                 name="%command.org.jkiss.dbeaver.ui.try.pro.name"
@@ -98,8 +98,8 @@
                 categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command
                 id="org.jkiss.dbeaver.ui.window.minimize"
-                name="Minimize Window"
-                description="Minimize the current window"
+                name="%command.org.jkiss.dbeaver.ui.window.minimize.name"
+                description="%command.org.jkiss.dbeaver.ui.window.minimize.description"
                 categoryId="org.eclipse.ui.category.window"/>
         <command
                 id="org.jkiss.dbeaver.ui.versionUpdate"
@@ -392,7 +392,7 @@
     <!-- Keybindings. A bit different than standard -->
 
     <extension point="org.eclipse.ui.bindings">
-        <scheme description="%productName" id="org.jkiss.dbeaver.defaultKeyScheme" name="%productName" parentId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+        <scheme description="DBeaver" id="org.jkiss.dbeaver.defaultKeyScheme" name="DBeaver" parentId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
 
         <!-- Text editors -->
         <key commandId="org.eclipse.ui.edit.text.openLocalFile" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+O"/>
