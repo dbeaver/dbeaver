@@ -166,12 +166,38 @@ public class CompareObjectsExecutor {
         lastLine = null;
 
         if (settings.isRefreshMetadata()) {
+            nodes = new ArrayList<>(nodes);
             for (int i = 0; i < nodes.size(); i++) {
                 DBNDatabaseNode node = nodes.get(i);
                 DBNNode refreshed = node.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
                 if (refreshed == null || node.getObject() == null || node.isDisposed()) {
                     throw new DBException("Root object '" + node.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
                 }
+
+                for (DBNNode curr = node; curr != null; curr = curr.getParentNode()) {
+                    if (curr.isDisposed()) {
+                        throw new DBException("Root object '" + node.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
+                    }
+                }
+
+                DBNNode parent = node.getParentNode();
+                if (parent instanceof DBNDatabaseNode dbParent) {
+                    boolean attached = false;
+                    DBNDatabaseNode[] children = dbParent.getChildren(monitor);
+                    if (children != null) {
+                        for (DBNDatabaseNode child : children) {
+                            if (child == node || child.getObject() == node.getObject() || (child.getObject() != null && child.getObject().equals(node.getObject()))) {
+                                attached = true;
+                                nodes.set(i, child);
+                                break;
+                            }
+                        }
+                    }
+                    if (!attached) {
+                        throw new DBException("Root object '" + node.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
+                    }
+                }
+
                 DBSObject dbObject = node.getObject();
                 if (dbObject != null) {
                     DBNDatabaseNode resolvedNode = DBNUtils.getNodeByObject(monitor, dbObject, false);

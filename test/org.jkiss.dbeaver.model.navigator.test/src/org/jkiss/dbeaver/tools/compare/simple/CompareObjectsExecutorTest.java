@@ -38,10 +38,13 @@ public class CompareObjectsExecutorTest extends DBeaverUnitTest {
         CompareObjectsSettings settings = new CompareObjectsSettings();
         settings.setRefreshMetadata(true);
 
+        DBNDatabaseNode parentNode = Mockito.mock(DBNDatabaseNode.class);
         DBNDatabaseNode node = Mockito.mock(DBNDatabaseNode.class);
         DBSObject object = Mockito.mock(DBSObject.class);
         Mockito.when(node.getObject()).thenReturn(object);
-        Mockito.when(node.refreshNode(Mockito.any(), Mockito.eq(DBNEvent.FORCE_REFRESH))).thenReturn(node);
+        Mockito.when(node.getParentNode()).thenReturn(parentNode);
+        Mockito.when(parentNode.getChildren(Mockito.any())).thenReturn(new DBNDatabaseNode[]{node});
+        Mockito.when(node.refreshNode(Mockito.any(), Mockito.eq(DBNEvent.FORCE_REFRESH))).thenReturn(parentNode);
         Mockito.when(node.isDisposed()).thenReturn(false);
 
         settings.setNodes(List.of(node));
@@ -54,6 +57,30 @@ public class CompareObjectsExecutorTest extends DBeaverUnitTest {
             CompareReport report = executor.compareObjects(new VoidProgressMonitor(), List.of(node));
             Assertions.assertNotNull(report);
         }
+    }
+
+    @Test
+    public void testCompareObjectsRefreshMetadataStaleDetachedNodeThrowsException() throws Exception {
+        CompareObjectsSettings settings = new CompareObjectsSettings();
+        settings.setRefreshMetadata(true);
+
+        DBNDatabaseNode parentNode = Mockito.mock(DBNDatabaseNode.class);
+        DBNDatabaseNode node = Mockito.mock(DBNDatabaseNode.class);
+        DBSObject object = Mockito.mock(DBSObject.class);
+        Mockito.when(node.getObject()).thenReturn(object);
+        Mockito.when(node.getParentNode()).thenReturn(parentNode);
+        // Simulate that parent's children no longer contain node (detached node remaining undisposed)
+        Mockito.when(parentNode.getChildren(Mockito.any())).thenReturn(new DBNDatabaseNode[0]);
+        Mockito.when(node.refreshNode(Mockito.any(), Mockito.eq(DBNEvent.FORCE_REFRESH))).thenReturn(parentNode);
+        Mockito.when(node.isDisposed()).thenReturn(false);
+        Mockito.when(node.getNodeFullName()).thenReturn("TestTable");
+
+        settings.setNodes(List.of(node));
+
+        CompareObjectsExecutor executor = new CompareObjectsExecutor(settings);
+        Assertions.assertThrows(DBException.class, () -> {
+            executor.compareObjects(new VoidProgressMonitor(), List.of(node));
+        });
     }
 
     @Test
