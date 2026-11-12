@@ -169,22 +169,34 @@ public class CompareObjectsExecutor {
             nodes = new ArrayList<>(nodes);
             for (int i = 0; i < nodes.size(); i++) {
                 DBNDatabaseNode node = nodes.get(i);
-                DBNNode refreshed = node.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
-                if (refreshed == null || node.getObject() == null || node.isDisposed()) {
-                    throw new DBException("Root object '" + node.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
-                }
-
-                if (!isNodeAttached(node, monitor)) {
-                    throw new DBException("Root object '" + node.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
-                }
-
-                DBSObject dbObject = node.getObject();
-                if (dbObject != null) {
-                    DBNDatabaseNode resolvedNode = DBNUtils.getNodeByObject(monitor, dbObject, false);
-                    if (resolvedNode == null || resolvedNode.isDisposed() || resolvedNode.getObject() == null || !isNodeAttached(resolvedNode, monitor)) {
+                if (node instanceof DBNDatabaseFolder folder) {
+                    DBNNode parentNode = folder.getParentNode();
+                    DBNNode refreshed = parentNode != null ? parentNode.refreshNode(monitor, DBNEvent.FORCE_REFRESH) : folder.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
+                    if (refreshed == null || folder.isDisposed()) {
+                        throw new DBException("Root folder '" + folder.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
+                    }
+                    if (folder.getObject() instanceof DBSObjectContainer container) {
+                        container.cacheStructure(monitor, DBSObjectContainer.STRUCT_ALL);
+                    }
+                    folder.getChildren(monitor);
+                } else {
+                    DBNNode refreshed = node.refreshNode(monitor, DBNEvent.FORCE_REFRESH);
+                    if (refreshed == null || node.getObject() == null || node.isDisposed()) {
                         throw new DBException("Root object '" + node.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
                     }
-                    nodes.set(i, resolvedNode);
+
+                    if (!isNodeAttached(node, monitor)) {
+                        throw new DBException("Root object '" + node.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
+                    }
+
+                    DBSObject dbObject = node.getObject();
+                    if (dbObject != null) {
+                        DBNDatabaseNode resolvedNode = DBNUtils.getNodeByObject(monitor, dbObject, false);
+                        if (resolvedNode == null || resolvedNode.isDisposed() || resolvedNode.getObject() == null || !isNodeAttached(resolvedNode, monitor)) {
+                            throw new DBException("Root object '" + node.getNodeFullName() + "' no longer exists or was dropped during metadata refresh.");
+                        }
+                        nodes.set(i, resolvedNode);
+                    }
                 }
             }
         }
