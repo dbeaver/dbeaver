@@ -24,7 +24,9 @@ import org.jkiss.dbeaver.model.DBPAttributeReferencePurpose;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueFunctionExpression;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
@@ -52,6 +54,17 @@ public class PostgreDialectFunctionsTest extends DBeaverUnitTest {
     private PostgreSchema testSchema;
     private PostgreSchema PGCatalogTestSchema;
     private PostgreTableRegular testTableRegular;
+
+    @Test
+    public void conditionalFunctionsAreRecognizedInAnyCase() {
+        PostgreDialect dialect = new PostgreDialect();
+        dialect.initDriverSettings(null, null, Mockito.mock(JDBCDatabaseMetaData.class));
+
+        Assertions.assertTrue(SQLQueryValueFunctionExpression.isDialectFunction(dialect, "greatest"));
+        Assertions.assertTrue(SQLQueryValueFunctionExpression.isDialectFunction(dialect, "GREATEST"));
+        Assertions.assertTrue(SQLQueryValueFunctionExpression.isDialectFunction(dialect, "GrEaTeSt"));
+        Assertions.assertFalse(SQLQueryValueFunctionExpression.isDialectFunction(dialect, "missing_function"));
+    }
 
     @BeforeEach
     public void setUp() throws Exception {
