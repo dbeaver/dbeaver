@@ -17,5 +17,6 @@
 package org.jkiss.dbeaver.ui.datadam;
 
 public class DDUIConstants {
+    public static final String SHARED_PROJECTS_PATH = "/shared-projects";
     public static final String DATADAM_DOCS_URL = "https://docs.datadam.cloud/";
 }

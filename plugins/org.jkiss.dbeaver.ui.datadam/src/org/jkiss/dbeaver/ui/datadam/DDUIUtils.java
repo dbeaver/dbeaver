@@ -24,11 +24,18 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Link;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.net.URI;
+
 public class DDUIUtils {
     private DDUIUtils() {
+    }
+
+    public static void openCredentialReset() {
+        UIUtils.openWebBrowser(URI.create(DDEndpoints.getAccountBaseUrl()).resolve(DDUIConstants.SHARED_PROJECTS_PATH).toString());
     }
 
     @NotNull

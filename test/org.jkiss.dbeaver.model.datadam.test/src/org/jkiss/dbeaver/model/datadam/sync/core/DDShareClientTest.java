@@ -24,6 +24,8 @@ import com.sun.net.httpserver.HttpServer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.datadam.auth.DDCrypto;
+import org.jkiss.dbeaver.model.datadam.auth.DDKeyBundle;
+import org.jkiss.utils.Pair;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -34,6 +36,8 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.Map;
+import java.util.Base64;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.crypto.KeyGenerator;
@@ -45,8 +49,10 @@ class DDShareClientTest {
     private static final String PROJECT_B = UUID.randomUUID().toString();
 
     @Test
-    void projectMetadataRoundTripsWithoutAnEncryptionKey() throws Exception {
+    void projectCreationSendsTheImportedCredentialId() throws Exception {
         AtomicReference<JsonObject> request = new AtomicReference<>();
+        AtomicReference<String> credentialId = new AtomicReference<>();
+        UUID keyId = UUID.randomUUID();
         JsonObject project = JsonParser.parseString("""
             {"id":"%s", "name":"Проект <test>", "description":"Plain description",
              "projectOwner":"%s", "createTime":"2026-09-29T08:00:00Z", "updateTime":"2026-09-29T08:00:00Z"}
@@ -54,6 +60,7 @@ class DDShareClientTest {
         AtomicReference<String> response = new AtomicReference<>();
         HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         server.createContext("/graphql", exchange -> {
+            credentialId.set(exchange.getRequestHeaders().getFirst("X-DataDam-Credential-Id"));
             request.set(JsonParser.parseString(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8))
                 .getAsJsonObject());
             byte[] body = response.get().getBytes(StandardCharsets.UTF_8);
@@ -70,10 +77,13 @@ class DDShareClientTest {
             Mockito.when(manager.getAccessTokenForResource(Mockito.any())).thenReturn("test-token");
             DDShareClient client = client("http://127.0.0.1:" + server.getAddress().getPort(), manager);
 
+            Mockito.when(manager.getKeyBundle()).thenReturn(new DDKeyBundle(UUID.fromString(PROJECT_B), "unused", "unused", 1, keyId));
             response.set("{\"data\":{\"project\":" + project + "}}");
             var created = client.createProject(UUID.fromString(PROJECT_A), "Проект <test>", "Plain description");
             Assertions.assertEquals("Проект <test>", request.get().getAsJsonObject("variables").get("name").getAsString());
             Assertions.assertEquals("Plain description", request.get().getAsJsonObject("variables").get("description").getAsString());
+            Assertions.assertNull(credentialId.get());
+            Assertions.assertEquals(keyId.toString(), request.get().getAsJsonObject("variables").get("apiKeyId").getAsString());
             Assertions.assertEquals("Проект <test>", created.name());
             Assertions.assertEquals("Plain description", created.description());
 
@@ -87,7 +97,50 @@ class DDShareClientTest {
 
             response.set("{\"data\":{\"projects\":[" + project + "]}}");
             Assertions.assertEquals(updated, client.listProjects().getFirst());
-            Mockito.verify(manager, Mockito.never()).getKeyBundle();
+            Mockito.verify(manager).getKeyBundle();
+        } finally {
+            server.stop(0);
+        }
+    }
+
+    @Test
+    void uploadUsesTheSameBundleForEncryptionAndCredentialParameter() throws Exception {
+        SecretKey key = KeyGenerator.getInstance("AES").generateKey();
+        UUID keyId = UUID.randomUUID();
+        var bundle = new DDKeyBundle(UUID.randomUUID(), "unused", Base64.getEncoder().encodeToString(key.getEncoded()), 1, keyId);
+        var request = new AtomicReference<JsonObject>();
+        var credentialId = new AtomicReference<String>();
+        HttpServer server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+        server.createContext("/graphql", exchange -> {
+            credentialId.set(exchange.getRequestHeaders().getFirst("X-DataDam-Credential-Id"));
+            request.set(JsonParser.parseString(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8))
+                .getAsJsonObject());
+            byte[] body = "{\"data\":{\"revision\":{}}}".getBytes(StandardCharsets.UTF_8);
+            exchange.getResponseHeaders().set("Content-Type", "application/json");
+            exchange.sendResponseHeaders(200, body.length);
+            try (var output = exchange.getResponseBody()) {
+                output.write(body);
+            }
+        });
+        server.start();
+        try {
+            var access = Mockito.mock(DDDesktopAccessService.class);
+            Mockito.when(access.getAccessTokenForResource(Mockito.any())).thenReturn("token");
+            Mockito.when(access.getKeyBundle())
+                .thenReturn(bundle, new DDKeyBundle(bundle.accountId(), "other", "other", 1, UUID.randomUUID()));
+            var client = client("http://127.0.0.1:" + server.getAddress().getPort(), access);
+            byte[] contents = "project configuration".getBytes(StandardCharsets.UTF_8);
+            client.pushFiles(UUID.fromString(PROJECT_A),
+                new PreparedFiles(Map.of("data-sources.json", new Pair<>("file", contents)), "next"), "old");
+            Assertions.assertNull(credentialId.get());
+            Assertions.assertEquals(keyId.toString(), request.get().getAsJsonObject("variables").get("apiKeyId").getAsString());
+            String encrypted = request.get().getAsJsonObject("variables").getAsJsonObject("projectContent")
+                .getAsJsonArray("files").get(0).getAsJsonObject().get("encryptedContents").getAsString();
+            Assertions.assertArrayEquals(contents, DDCrypto.decrypt(key, Base64.getDecoder().decode(encrypted),
+                DDShareClient.aad(PROJECT_A, "data-sources.json")));
+            Mockito.verify(access).getKeyBundle();
+            Mockito.when(access.getKeyBundle()).thenReturn(new DDKeyBundle(bundle.accountId(), "old", "old", 1));
+            Assertions.assertThrows(DDShareException.class, () -> client.createProject(UUID.randomUUID(), "Legacy", null));
         } finally {
             server.stop(0);
         }
@@ -111,6 +164,8 @@ class DDShareClientTest {
         try {
             var manager = Mockito.mock(DDDesktopAccessService.class);
             Mockito.when(manager.getAccessTokenForResource(Mockito.any())).thenReturn("test-token");
+            Mockito.when(manager.getKeyBundle())
+                .thenReturn(new DDKeyBundle(UUID.fromString(PROJECT_B), "unused", "unused", 1, UUID.randomUUID()));
             var client = client("http://127.0.0.1:" + server.getAddress().getPort(), manager);
             String revision = """
                 {"id":"%s","userId":"%s","updateTime":"2026-09-29T08:00:00Z","configurationFingerprint":"fp"}
