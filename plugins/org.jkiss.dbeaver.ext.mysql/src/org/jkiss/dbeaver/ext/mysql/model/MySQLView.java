@@ -58,6 +58,7 @@ public class MySQLView extends MySQLTableBase implements DBSView
     private static final Pattern ALGORITHM_PATTERN = Pattern.compile("ALGORITHM\\s*=\\s*([A-Z_]+) ");
     private static final Pattern DEFINER_PATTERN = Pattern.compile(
         "DEFINER\\s*=\\s*(`(?:[^`]|``)*`(?:@`(?:[^`]|``)*`)?|CURRENT_USER(?:\\(\\))?) ", Pattern.CASE_INSENSITIVE);
+    private static final Pattern QUOTED_IDENTIFIER_PATTERN = Pattern.compile("`(?:[^`]|``)*`");
     private static final Pattern SQL_SECURITY_PATTERN = Pattern.compile(
         "SQL\\s+SECURITY\\s+(DEFINER|INVOKER) ", Pattern.CASE_INSENSITIVE);
 
@@ -256,8 +257,25 @@ public class MySQLView extends MySQLTableBase implements DBSView
     @Nullable
     private static String parseViewOption(@NotNull Pattern pattern, @NotNull String viewOptions) {
         // Trailing space: the last option is directly followed by " VIEW" in SHOW CREATE VIEW output
-        Matcher matcher = pattern.matcher(viewOptions + " ");
-        return matcher.find() ? matcher.group(1) : null;
+        String text = viewOptions + " ";
+        // Search outside of quoted identifiers, so a definer name like `x SQL SECURITY INVOKER` is not taken as an option
+        Matcher matcher = pattern.matcher(maskQuotedIdentifiers(text));
+        return matcher.find() ? text.substring(matcher.start(1), matcher.end(1)) : null;
+    }
+
+    /**
+     * Replaces the content of backtick-quoted identifiers with underscores, keeping the string length.
+     */
+    @NotNull
+    private static String maskQuotedIdentifiers(@NotNull String text) {
+        StringBuilder masked = new StringBuilder(text);
+        Matcher matcher = QUOTED_IDENTIFIER_PATTERN.matcher(text);
+        while (matcher.find()) {
+            for (int i = matcher.start() + 1; i < matcher.end() - 1; i++) {
+                masked.setCharAt(i, '_');
+            }
+        }
+        return masked.toString();
     }
 
     /**

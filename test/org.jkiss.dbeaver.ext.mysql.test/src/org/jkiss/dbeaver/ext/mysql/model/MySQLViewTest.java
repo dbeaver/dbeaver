@@ -50,6 +50,14 @@ public class MySQLViewTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void getViewOptionsClauseWhenDefinerNameContainsOptionsThenRealOptionsKept() {
+        String clause = MySQLView.getViewOptionsClause(
+            "CREATE ALGORITHM=UNDEFINED DEFINER=`owner SQL SECURITY INVOKER ALGORITHM=MERGE x`@`%` SQL SECURITY DEFINER");
+        Assertions.assertEquals(
+            " ALGORITHM=UNDEFINED  DEFINER=`owner SQL SECURITY INVOKER ALGORITHM=MERGE x`@`%`  SQL SECURITY DEFINER ", clause);
+    }
+
+    @Test
     public void getViewOptionsClauseWhenNoOptionsThenEmpty() {
         Assertions.assertEquals("", MySQLView.getViewOptionsClause("CREATE"));
     }
