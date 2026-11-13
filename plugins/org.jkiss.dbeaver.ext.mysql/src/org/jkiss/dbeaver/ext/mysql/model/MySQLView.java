@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -54,6 +54,13 @@ import java.util.regex.Pattern;
 public class MySQLView extends MySQLTableBase implements DBSView
 {
     private static final Log log = Log.getLog(MySQLView.class);
+
+    private static final Pattern ALGORITHM_PATTERN = Pattern.compile("ALGORITHM\\s*=\\s*([A-Z_]+) ");
+    private static final Pattern DEFINER_PATTERN = Pattern.compile(
+        "DEFINER\\s*=\\s*(`(?:[^`]|``)*`(?:@`(?:[^`]|``)*`)?|CURRENT_USER(?:\\(\\))?) ", Pattern.CASE_INSENSITIVE);
+    private static final Pattern QUOTED_IDENTIFIER_PATTERN = Pattern.compile("`(?:[^`]|``)*`");
+    private static final Pattern SQL_SECURITY_PATTERN = Pattern.compile(
+        "SQL\\s+SECURITY\\s+(DEFINER|INVOKER) ", Pattern.CASE_INSENSITIVE);
 
     public enum CheckOption {
         NONE(null),
@@ -218,11 +225,9 @@ public class MySQLView extends MySQLTableBase implements DBSView
                         if (definition != null) {
                             int divPos = definition.indexOf(" VIEW `");
                             if (divPos != -1) {
-                                additionalInfo.algorithm = parseAlgorithm(definition.substring(0, divPos));
-                                String params = "";
-                                if (!CommonUtils.isEmpty(additionalInfo.algorithm)) {
-                                    params += " ALGORITHM=" + additionalInfo.algorithm + " ";
-                                }
+                                String viewOptions = definition.substring(0, divPos);
+                                additionalInfo.algorithm = parseAlgorithm(viewOptions);
+                                String params = getViewOptionsClause(viewOptions);
                                 String statement;
                                 if (getDataSource().supportsAlterView()) {
                                     statement = isPersisted() ? "ALTER" : "CREATE";
@@ -244,9 +249,57 @@ public class MySQLView extends MySQLTableBase implements DBSView
         }
     }
 
-    private String parseAlgorithm(String ddl) {
-        Matcher matcher = Pattern.compile("ALGORITHM\\s*=\\s*([A-Z_]+) ").matcher(ddl);
-        return matcher.find() ? matcher.group(1) : null;
+    @Nullable
+    private static String parseAlgorithm(@NotNull String viewOptions) {
+        return parseViewOption(ALGORITHM_PATTERN, viewOptions);
+    }
+
+    @Nullable
+    private static String parseViewOption(@NotNull Pattern pattern, @NotNull String viewOptions) {
+        // Trailing space: the last option is directly followed by " VIEW" in SHOW CREATE VIEW output
+        String text = viewOptions + " ";
+        // Search outside of quoted identifiers, so a definer name like `x SQL SECURITY INVOKER` is not taken as an option
+        Matcher matcher = pattern.matcher(maskQuotedIdentifiers(text));
+        return matcher.find() ? text.substring(matcher.start(1), matcher.end(1)) : null;
+    }
+
+    /**
+     * Replaces the content of backtick-quoted identifiers with underscores, keeping the string length.
+     */
+    @NotNull
+    private static String maskQuotedIdentifiers(@NotNull String text) {
+        StringBuilder masked = new StringBuilder(text);
+        Matcher matcher = QUOTED_IDENTIFIER_PATTERN.matcher(text);
+        while (matcher.find()) {
+            for (int i = matcher.start() + 1; i < matcher.end() - 1; i++) {
+                masked.setCharAt(i, '_');
+            }
+        }
+        return masked.toString();
+    }
+
+    /**
+     * Returns the ALGORITHM, DEFINER and SQL SECURITY clauses of a view.
+     * Without DEFINER and SQL SECURITY, saving the view resets them to the current user and DEFINER.
+     *
+     * @param viewOptions the part of SHOW CREATE VIEW output before " VIEW `"
+     */
+    @NotNull
+    static String getViewOptionsClause(@NotNull String viewOptions) {
+        StringBuilder clause = new StringBuilder();
+        String algorithm = parseAlgorithm(viewOptions);
+        if (!CommonUtils.isEmpty(algorithm)) {
+            clause.append(" ALGORITHM=").append(algorithm).append(" ");
+        }
+        String definer = parseViewOption(DEFINER_PATTERN, viewOptions);
+        if (!CommonUtils.isEmpty(definer)) {
+            clause.append(" DEFINER=").append(definer).append(" ");
+        }
+        String sqlSecurity = parseViewOption(SQL_SECURITY_PATTERN, viewOptions);
+        if (!CommonUtils.isEmpty(sqlSecurity)) {
+            clause.append(" SQL SECURITY ").append(sqlSecurity).append(" ");
+        }
+        return clause.toString();
     }
 
     @NotNull
