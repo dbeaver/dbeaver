@@ -95,7 +95,8 @@ public final class SQLBackgroundParsingWorkbenchEnv implements SQLBackgroundPars
     @Nullable
     @Override
     public DBPDataSourceContainer getInputDataSource(@Nullable IEditorInput input) {
-        return EditorUtils.getInputDataSource(input);
+        // Parsing can be set up while the workbench is restoring editors and the job manager is suspended.
+        return EditorUtils.getInputDataSource(input, false);
     }
 
     @NotNull
