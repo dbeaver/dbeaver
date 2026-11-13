@@ -1,5 +1,7 @@
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_11826_1024)">
+<path d="M14.5 8H8V13.5H1.5V2.5H14.5V8Z" fill="white"/>
+<path opacity="0.15" d="M14.5 8H8V13.5H1.5V2.5H14.5V8Z" fill="#3387C5"/>
 <path d="M15 8H14V6H8V14H1V2H15V8ZM2 13H7V10H2V13ZM2 9H7V6H2V9ZM2 5H14V3H2V5Z" fill="#3387C5"/>
 <path d="M12.5 10V12.5M12.5 12.5V15M12.5 12.5H10M12.5 12.5H15" stroke="#3387C5"/>
 </g>

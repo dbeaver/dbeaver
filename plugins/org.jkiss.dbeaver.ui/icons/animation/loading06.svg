@@ -1,11 +1,10 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">
-    <circle cx="11.93" cy="4.27" r="1.5" fill="#c3c1b9"/>
-    <circle cx="8" cy="2.5" r="1.5" fill="#d0cec5"/>
-    <circle cx="4.11" cy="4.11" r="1.5" fill="#77756c"/>
-    <circle cx="2.5" cy="8" r="1.5" fill="#848279"/>
-    <circle cx="4.16" cy="12.05" r="1.5" fill="#908f86"/>
-    <circle cx="8" cy="13.5" r="1.5" fill="#9d9b92"/>
-    <circle cx="11.89" cy="11.89" r="1.5" fill="#aaa89f"/>
-    <circle cx="13.5" cy="8" r="1.5" fill="#b7b5ad"/>
+<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path opacity="0.39" d="M8 4V1.5" stroke="#71717A"/>
+<path opacity="0.51" d="M10.8279 5.17205L12.5959 3.40405" stroke="#71717A"/>
+<path opacity="0.64" d="M12 8H14.5" stroke="#71717A"/>
+<path opacity="0.76" d="M10.8279 10.8281L12.5959 12.5961" stroke="#71717A"/>
+<path opacity="0.88" d="M8 12V14.5" stroke="#71717A"/>
+<path d="M5.17205 10.8281L3.40405 12.5961" stroke="#71717A"/>
+<path opacity="0.15" d="M4 8H1.5" stroke="#71717A"/>
+<path opacity="0.27" d="M5.17205 5.17205L3.40405 3.40405" stroke="#71717A"/>
 </svg>
