@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.ai.engine.openai;
 
 import com.google.gson.JsonSyntaxException;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseChunk;
 import org.jkiss.dbeaver.model.ai.engine.AIEngineResponseConsumer;
 import org.jkiss.junit.DBeaverUnitTest;
@@ -26,12 +27,54 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
 
 public class OpenAiAPIStreamConsumerTest extends DBeaverUnitTest {
     private final AIEngineResponseConsumer listener = Mockito.mock(AIEngineResponseConsumer.class);
     private final OpenAiAPIStreamConsumer consumer = new OpenAiAPIStreamConsumer(listener);
+
+    @Test
+    public void ignoresCommentsWithoutLogging() {
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
+        PrintStream previousWriter = Log.getLogWriter();
+        Log.setLogWriter(output);
+        try {
+            consumer.accept(": keep-alive");
+            consumer.accept(":keep-alive");
+            consumer.accept(":");
+            consumer.accept(": data: {invalid json}");
+
+            Assertions.assertEquals("", output.toString(StandardCharsets.UTF_8));
+            Mockito.verifyNoInteractions(listener);
+
+            consumer.accept("unexpected event");
+            Assertions.assertTrue(output.toString(StandardCharsets.UTF_8).contains("Unknown OpenAI event: unexpected event"));
+        } finally {
+            Log.setLogWriter(previousWriter);
+        }
+    }
+
+    @Test
+    public void preservesResponseWithComments() {
+        consumer.accept(": keep-alive");
+        consumer.accept("data: {\"type\":\"response.output_text.delta\",\"delta\":\"There are 25 tables.\"}");
+        consumer.accept(":keep-alive");
+        consumer.accept("data: {\"type\":\"response.completed\",\"response\":{\"status\":\"completed\"}}");
+        consumer.accept(":");
+        consumer.accept("data: [DONE]");
+        consumer.complete();
+
+        ArgumentCaptor<AIEngineResponseChunk> chunk = ArgumentCaptor.forClass(AIEngineResponseChunk.class);
+        Mockito.verify(listener).nextChunk(chunk.capture());
+        Assertions.assertEquals(List.of("There are 25 tables."), chunk.getValue().getChoices());
+        Mockito.verify(listener).usage(Mockito.any());
+        Mockito.verify(listener).completeBlock();
+        Mockito.verifyNoMoreInteractions(listener);
+    }
 
     @Test
     public void ignoresDoneMarker() {

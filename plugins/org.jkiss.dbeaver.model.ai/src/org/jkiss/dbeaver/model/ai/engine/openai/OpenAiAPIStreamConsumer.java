@@ -48,6 +48,7 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
     public static final String EVENT_TYPE_RESPONSE_COMPLETED = "response.completed";
     public static final String EVENT_TYPE_ITEM_DONE = "response.output_item.done";
     private static final String DONE_EVENT = "[DONE]";
+    private static final String COMMENT_EVENT = ":";
     private static final String EVENT_EVENT = "event:";
     private static final String EVENT_TYPE_ARGUMENTS_DELTA = "response.function_call_arguments.delta";
     private final AIEngineResponseConsumer listener;
@@ -71,7 +72,7 @@ public class OpenAiAPIStreamConsumer implements Consumer<String> {
 
     @Override
     public void accept(@Nullable String event) {
-        if (failed || closed || CommonUtils.isEmpty(event)) {
+        if (failed || closed || CommonUtils.isEmpty(event) || event.startsWith(COMMENT_EVENT)) {
             return;
         }
         if (event.startsWith(DATA_EVENT)) {
