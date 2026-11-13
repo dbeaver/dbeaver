@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.hyperlink.IHyperlinkPresenter;
+import org.eclipse.jface.text.presentation.IPresentationReconciler;
 import org.eclipse.jface.text.source.Annotation;
 import org.eclipse.jface.text.source.IOverviewRuler;
 import org.eclipse.jface.text.source.IVerticalRuler;
@@ -85,6 +86,20 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
     void refreshTextSelection() {
         ITextSelection selection = (ITextSelection) getSelection();
         fireSelectionChanged(selection.getOffset(), selection.getLength());
+    }
+
+    /**
+     * Replaces the presentation reconciler without reconfiguring the whole viewer.
+     * This keeps the undo manager, the editor reconciler and the folding annotations intact.
+     */
+    void refreshPresentationReconciler(@NotNull SQLEditorSourceViewerConfiguration configuration) {
+        if (fPresentationReconciler != null) {
+            fPresentationReconciler.uninstall();
+        }
+        fPresentationReconciler = configuration.getPresentationReconciler(this);
+        if (fPresentationReconciler != null) {
+            fPresentationReconciler.install(this);
+        }
     }
 
     @Override

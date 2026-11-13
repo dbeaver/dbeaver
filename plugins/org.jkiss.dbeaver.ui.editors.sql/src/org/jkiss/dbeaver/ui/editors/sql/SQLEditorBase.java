@@ -323,7 +323,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         bigDocument = isBig;
         // Services which are configured eagerly (parser, syntax rules, auto-activation) must be re-applied
         // when the document crosses the large-document threshold. Defer this because reloading the syntax
-        // rules reconfigures the source viewer and must not run inside a document change notification.
+        // rules must not run inside a document change notification.
         UIUtils.asyncExec(() -> {
             if (getDocument() == null || isBigDocument() != bigDocument) {
                 // The document size changed again; the notification for the newest transition will do the work.
@@ -333,6 +333,17 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
                 occurrencesHighlighter.updateInput(getEditorInput());
             }
             reloadSyntaxRules();
+            // The presentation repairers are selected from the document size. Replace only the
+            // presentation reconciler: reconfiguring the viewer would reset undo history and the
+            // folding strategy cache.
+            if (getSourceViewer() instanceof SQLEditorSourceViewer sourceViewer
+                && getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration configuration) {
+                sourceViewer.refreshPresentationReconciler(configuration);
+            }
+            if (this instanceof SQLEditor sqlEditor) {
+                sqlEditor.refreshEditorIconAndTitle();
+            }
+            SQLEditorUtils.refreshSQLSyntaxParserCommandState();
         });
     }
 
@@ -697,6 +708,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
     protected void doTextEditorSave(DBRProgressMonitor monitor) {
         super.doSave(monitor.getNestedMonitor());
+        // Auto-save bypasses doSave(), so the on-disk size must be re-checked here as well.
+        checkBigDocumentTransition();
     }
 
     @Override

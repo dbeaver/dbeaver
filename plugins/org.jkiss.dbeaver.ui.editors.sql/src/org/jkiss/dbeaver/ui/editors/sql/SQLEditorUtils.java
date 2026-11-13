@@ -580,7 +580,17 @@ public class SQLEditorUtils {
             sqlEditor.refreshAdvancedServices();
         }
 
-        PlatformUI.getWorkbench().getService(ICommandService.class).refreshElements(DisableSQLSyntaxParserHandler.COMMAND_ID, null);
+        refreshSQLSyntaxParserCommandState();
+    }
+
+    /**
+     * Refreshes all contributions of the "Disable SQL syntax parser" command.
+     */
+    public static void refreshSQLSyntaxParserCommandState() {
+        ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
+        if (commandService != null) {
+            commandService.refreshElements(DisableSQLSyntaxParserHandler.COMMAND_ID, null);
+        }
     }
     
     private static void notifyPrefs(@NotNull DBPPreferenceStore prefStore, boolean newServicesEnabled) {

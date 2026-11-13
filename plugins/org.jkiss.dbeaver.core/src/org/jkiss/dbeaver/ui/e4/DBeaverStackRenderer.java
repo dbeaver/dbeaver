@@ -190,18 +190,18 @@ public class DBeaverStackRenderer extends StackRenderer {
                 saveAsScriptItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> sqlEditor.saveAsNewScript()));
             }
             
-            if (workbenchPart instanceof SQLEditor) {
+            if (workbenchPart instanceof SQLEditor sqlEditor) {
                 new MenuItem(menu, SWT.SEPARATOR);
                 MenuItem menuItemDisableSQLSyntaxParser = new MenuItem(menu, SWT.CHECK);
                 menuItemDisableSQLSyntaxParser.setText(SQLEditorMessages.sql_editor_prefs_disable_services_text);
                 menuItemDisableSQLSyntaxParser.setToolTipText(SQLEditorMessages.sql_editor_prefs_disable_services_tip);
                 
-                menuItemDisableSQLSyntaxParser.setSelection(!SQLEditorUtils.isSQLSyntaxParserApplied(editorInput));
+                menuItemDisableSQLSyntaxParser.setSelection(!SQLEditorUtils.isSQLSyntaxParserApplied(sqlEditor));
                 menuItemDisableSQLSyntaxParser.setEnabled(ActionUtils.isCommandEnabled(SQLEditorCommands.CMD_DISABLE_SQL_SYNTAX_PARSER, workbenchPart.getSite()));
                 
                 menuItemDisableSQLSyntaxParser.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         SQLEditorUtils.setSQLSyntaxParserEnabled(editorInput, !SQLEditorUtils.isSQLSyntaxParserEnabled(editorInput));
-                        menuItemDisableSQLSyntaxParser.setSelection(!SQLEditorUtils.isSQLSyntaxParserApplied(editorInput));
+                        menuItemDisableSQLSyntaxParser.setSelection(!SQLEditorUtils.isSQLSyntaxParserApplied(sqlEditor));
                     }));
             }
         }
