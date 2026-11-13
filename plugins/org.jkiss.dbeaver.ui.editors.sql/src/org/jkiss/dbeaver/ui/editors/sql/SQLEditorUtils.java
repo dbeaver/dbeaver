@@ -501,6 +501,20 @@ public class SQLEditorUtils {
     }
 
     /**
+     * Checks whether SQL syntax parser should be applied for the given editor and its current document
+     */
+    public static boolean isSQLSyntaxParserApplied(@NotNull SQLEditorBase editor) {
+        return isSQLSyntaxParserApplied(editor, editor.getEditorInput());
+    }
+
+    /**
+     * Checks whether SQL syntax parser should be applied for the given editor and input
+     */
+    public static boolean isSQLSyntaxParserApplied(@NotNull SQLEditorBase editor, @Nullable IEditorInput input) {
+        return !editor.isBigDocument() && isSQLSyntaxParserApplied(input);
+    }
+
+    /**
      * Checks whether Disable SQL syntax parser should be applied for the given editor
      */
     public static boolean isSQLSyntaxParserApplied(@Nullable IEditorInput input) {
@@ -566,7 +580,17 @@ public class SQLEditorUtils {
             sqlEditor.refreshAdvancedServices();
         }
 
-        PlatformUI.getWorkbench().getService(ICommandService.class).refreshElements(DisableSQLSyntaxParserHandler.COMMAND_ID, null);
+        refreshSQLSyntaxParserCommandState();
+    }
+
+    /**
+     * Refreshes all contributions of the "Disable SQL syntax parser" command.
+     */
+    public static void refreshSQLSyntaxParserCommandState() {
+        ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
+        if (commandService != null) {
+            commandService.refreshElements(DisableSQLSyntaxParserHandler.COMMAND_ID, null);
+        }
     }
     
     private static void notifyPrefs(@NotNull DBPPreferenceStore prefStore, boolean newServicesEnabled) {

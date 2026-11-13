@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.sql.semantics.SQLQueryVariablesSubset;
 import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 
 import java.util.List;
 import java.util.function.Function;
@@ -85,11 +84,6 @@ public final class SQLBackgroundParsingWorkbenchEnv implements SQLBackgroundPars
     @Override
     public void invalidatePresentation(@NotNull TextViewer viewer, int offset, int length) {
         UIUtils.asyncExec(() -> viewer.invalidateTextPresentation(offset, length));
-    }
-
-    @Override
-    public boolean isParserApplied(@Nullable IEditorInput input) {
-        return SQLEditorUtils.isSQLSyntaxParserApplied(input);
     }
 
     @Nullable

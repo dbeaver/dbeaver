@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 
 import java.util.Map;
@@ -56,7 +55,7 @@ public class DisableSQLSyntaxParserHandler extends AbstractHandler implements IE
         IWorkbenchPage activePage = UIUtils.getActiveWorkbenchWindow().getActivePage();
         if (activePage != null) {
             IEditorPart editor = activePage.getActiveEditor();
-            return editor != null && !SQLEditorBase.isBigScript(editor.getEditorInput());
+            return editor instanceof SQLEditor sqlEditor && !sqlEditor.isBigDocument();
         } else {
             return false;
         }
@@ -67,8 +66,8 @@ public class DisableSQLSyntaxParserHandler extends AbstractHandler implements IE
         IWorkbenchPage activePage = element.getServiceLocator().getService(IWorkbenchWindow.class).getActivePage();
         if (activePage != null) {
             IEditorPart editor = activePage.getActiveEditor();
-            if (editor instanceof SQLEditor) {
-                element.setChecked(!SQLEditorUtils.isSQLSyntaxParserApplied(((SQLEditor) editor).getEditorInput()));
+            if (editor instanceof SQLEditor sqlEditor) {
+                element.setChecked(!SQLEditorUtils.isSQLSyntaxParserApplied(sqlEditor));
             }
         }
     }

@@ -48,8 +48,6 @@ public interface SQLBackgroundParsingEnvironment {
 
     void invalidatePresentation(@NotNull TextViewer viewer, int offset, int length);
 
-    boolean isParserApplied(@Nullable IEditorInput input);
-
     @Nullable
     DBPDataSourceContainer getInputDataSource(@Nullable IEditorInput input);
 

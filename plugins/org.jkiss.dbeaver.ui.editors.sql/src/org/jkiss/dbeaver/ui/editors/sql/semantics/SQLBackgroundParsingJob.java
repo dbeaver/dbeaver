@@ -42,8 +42,10 @@ import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.tracking.SQLScriptVariablesTracker;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLReconcilingStrategy;
 import org.jkiss.dbeaver.utils.ListNode;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.List;
 import java.util.concurrent.*;
@@ -392,25 +394,23 @@ public class SQLBackgroundParsingJob {
         }
     }
 
-    // TODO consider moving to utility class (see ImportProjectToTEHandler)
-    private static <T> T getFutureOrCancel(Future<T> future, IProgressMonitor monitor) throws ExecutionException, InterruptedException {
-        while (!monitor.isCanceled()) {
-            try {
-                return future.get(1, TimeUnit.SECONDS);
-            } catch (TimeoutException e) {
-                // proceed with job cancellation check
-            }
-        }
-        throw new CancellationException();
-    }
-
     /**
      * Prepare completion context for the specified position in the text
      */
     @NotNull
     public SQLQueryCompletionContext obtainCompletionContext(DBRProgressMonitor monitor, @NotNull Position completionRequestPosition) {
+        if (!isParserRunning()) {
+            // The parser is not running for this editor, so there is no parse future to wait for.
+            return SQLQueryCompletionContext.prepareEmpty(0, completionRequestPosition.getOffset());
+        }
         CompletableFuture<?> lastAwaitedFuture = null;
         do {
+            if (!isParserRunning()) {
+                // The document may have crossed the large-document threshold (or the parser was disabled)
+                // while this request was waiting for the parsing result. In that case the scheduled parse
+                // is dropped and the awaited future never completes.
+                return SQLQueryCompletionContext.prepareEmpty(0, completionRequestPosition.getOffset());
+            }
             CompletableFuture<?> futureToAwait = null;
             synchronized (this.syncRoot) {
                 if (completionRequestPosition.isDeleted()) {
@@ -456,13 +456,24 @@ public class SQLBackgroundParsingJob {
 
             try {
                 // A before-change request can precede scheduling; job.join() would return prematurely.
-                getFutureOrCancel(futureToAwait, monitor.getNestedMonitor());
+                // A null result means the wait timed out, so the loop re-checks whether the parser is still running.
+                RuntimeUtils.waitForFuture(futureToAwait, monitor.getNestedMonitor(), 1, TimeUnit.SECONDS);
                 lastAwaitedFuture = futureToAwait;
             } catch (InterruptedException | ExecutionException | CancellationException e) {
                 break;
             }
         } while (!completionRequestPosition.isDeleted());
         return SQLQueryCompletionContext.prepareEmpty(0, completionRequestPosition.getOffset());
+    }
+
+    /**
+     * Checks whether the background parser is actually running for this editor.
+     * It is disabled for large documents and when the SQL syntax parser is not applied.
+     */
+    private boolean isParserRunning() {
+        return this.editor.getRuleManager() != null
+            && this.editor.isAdvancedHighlightingEnabled()
+            && SQLEditorUtils.isSQLSyntaxParserApplied(this.editor);
     }
 
     // Caller holds syncRoot.
@@ -603,7 +614,7 @@ public class SQLBackgroundParsingJob {
     private void schedule(@Nullable DocumentEvent event) {
         synchronized (this.syncRoot) {
             if (this.editor.getRuleManager() == null || !this.editor.isAdvancedHighlightingEnabled() ||
-                !this.environment.isParserApplied(this.editor.getEditorInput())
+                !SQLEditorUtils.isSQLSyntaxParserApplied(this.editor)
             ) {
                 return;
             }
@@ -633,7 +644,7 @@ public class SQLBackgroundParsingJob {
                 this.cancel();
             }
 
-            if (newDocument != null && this.environment.isParserApplied(editor.getEditorInput())) {
+            if (newDocument != null && SQLEditorUtils.isSQLSyntaxParserApplied(editor)) {
                 this.document = newDocument;
                 this.reset();
             }
