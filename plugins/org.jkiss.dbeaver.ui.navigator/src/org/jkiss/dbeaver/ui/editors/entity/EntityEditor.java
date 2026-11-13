@@ -1066,7 +1066,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     @NotNull
     private RefreshResult refreshPart(@Nullable final Object source, boolean force, boolean showConfirmation) {
-        if (getEditorInput() instanceof DatabaseNodeEditorInput input) {
+        if (getEditorInput() instanceof DatabaseNodeEditorInput input && !isDirty()) {
             input.refreshNodeIdentity();
         }
         if (getContainer() == null || getContainer().isDisposed() || saveInProgress) {
