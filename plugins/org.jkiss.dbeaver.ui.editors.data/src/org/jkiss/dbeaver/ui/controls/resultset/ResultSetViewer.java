@@ -348,7 +348,7 @@ public class ResultSetViewer extends Viewer
             this.viewerSash = UIUtils.createPartDivider(
                 getSite().getPart(),
                 this.viewerPanel,
-                UIUtils.checkSashStyle(SWT.HORIZONTAL | SWT.SMOOTH)
+                SWT.HORIZONTAL | SWT.SMOOTH
             );
             this.viewerSash.setLayoutData(new GridData(GridData.FILL_BOTH));
             CSSUtils.markConnectionTypeColor(this.viewerSash);
