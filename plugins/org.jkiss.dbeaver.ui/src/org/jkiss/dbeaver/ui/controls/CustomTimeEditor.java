@@ -332,9 +332,13 @@ public class CustomTimeEditor {
         }
     }
 
+    public boolean isTextMode() {
+        return textEditor != null && !textEditor.isDisposed();
+    }
+
     @Nullable
     public String getValueAsString() {
-        if (textEditor != null && !textEditor.isDisposed()) {
+        if (isTextMode()) {
             return textEditor.getText();
         }
         return null;

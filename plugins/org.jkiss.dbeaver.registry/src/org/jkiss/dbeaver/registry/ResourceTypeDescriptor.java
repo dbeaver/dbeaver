@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,7 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
     private final List<IContentType> contentTypes = new ArrayList<>();
     private final List<ObjectType> resourceTypes = new ArrayList<>();
     private final List<String> roots = new ArrayList<>();
+    private final Map<String, String> rootLabels = new HashMap<>();
     private String defaultRoot;
     private final Map<String, String> projectRoots = new HashMap<>();
 
@@ -88,6 +89,10 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
             String folder = rootConfig.getAttribute("folder");
             if (!CommonUtils.isEmpty(folder)) {
                 roots.add(folder);
+                String label = rootConfig.getAttribute("label");
+                if (!CommonUtils.isEmpty(label)) {
+                    rootLabels.put(folder, label);
+                }
             }
             if ("true".equals(rootConfig.getAttribute("default"))) {
                 defaultRoot = folder;
@@ -102,6 +107,12 @@ public class ResourceTypeDescriptor extends AbstractDescriptor implements DBPRes
     @Override
     public String getId() {
         return id;
+    }
+
+    /** Returns a display label only for a root declared by the contributing plugin. */
+    @Nullable
+    public String getRootFolderLabel(@NotNull String folder) {
+        return rootLabels.get(folder);
     }
 
     @NotNull
