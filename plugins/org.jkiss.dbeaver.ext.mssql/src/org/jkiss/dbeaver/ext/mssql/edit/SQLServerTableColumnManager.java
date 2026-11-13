@@ -183,7 +183,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
         @NotNull DBCExecutionContext executionContext,
         @NotNull List<DBEPersistAction> actionList,
         @NotNull ObjectChangeCommand command,
-        @NotNull Map<String, Object> options)
+        @NotNull Map<String, Object> options) throws DBException
     {
         final SQLServerTableColumn column = command.getObject();
         int totalProps = command.getProperties().size();
@@ -208,6 +208,7 @@ public class SQLServerTableColumnManager extends SQLTableColumnManager<SQLServer
             final String description = CommonUtils.toString(command.getProperty(DBConstants.PROP_ID_DESCRIPTION), null);
             boolean commentSet = SQLServerUtils.isCommentSet(
                 monitor,
+                executionContext,
                 column.getTable().getDatabase(),
                 SQLServerObjectClass.OBJECT_OR_COLUMN,
                 column.getTable().getObjectId(),
