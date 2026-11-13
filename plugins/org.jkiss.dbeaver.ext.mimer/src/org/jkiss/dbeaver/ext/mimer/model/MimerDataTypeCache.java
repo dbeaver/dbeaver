@@ -47,8 +47,10 @@ import java.util.Set;
  * since {@link MimerDataSource#resolveDataKind} classifies these by name prefix as {@code
  * DATETIME} regardless of the code.
  * <p>
- * Mimer SQL's three LOB types ({@link MimerConstants#TYPE_NAMES_LARGE_OBJECT}) are added the
- * same way, but registered with their real {@code java.sql.Types} codes - unlike {@code
+ * Mimer SQL's three LOB types ({@link #LARGE_OBJECT_PICKER_ENTRIES}, a subset of {@link
+ * MimerConstants#TYPE_NAMES_LARGE_OBJECT} - see that field's own comment for why the two lists
+ * aren't the same) are added the same way, but registered with their real {@code
+ * java.sql.Types} codes - unlike {@code
  * INTERVAL}, these do have one. That means {@code getDataKind()} for a column created via this
  * picker resolves correctly without even needing {@link MimerDataSource#resolveDataKind}'s
  * by-name override; that override is still needed to fix an *existing* column's tree icon,
@@ -94,6 +96,17 @@ import java.util.Set;
  * @author Mimer Information Technology
  */
 public class MimerDataTypeCache extends GenericDataTypeCache {
+
+    // A strict subset of MimerConstants.TYPE_NAMES_LARGE_OBJECT: that set also covers names only
+    // needed for *recognizing* an existing column's reported type, which is fine to keep broad
+    // since it has no visible effect. A name added here, though, shows up as a real, selectable
+    // Data Type picker entry - only add one once the driver actually reports it, since nothing
+    // ever removes a name from here again automatically.
+    private static final Set<String> LARGE_OBJECT_PICKER_ENTRIES = Set.of(
+        "BINARY LARGE OBJECT",
+        "CHARACTER LARGE OBJECT",
+        "NATIONAL CHAR LARGE OBJECT"
+    );
 
     private final Set<String> seenTypeNames = new HashSet<>();
 
@@ -151,7 +164,7 @@ public class MimerDataTypeCache extends GenericDataTypeCache {
         for (String typeName : MimerConstants.INTERVAL_TYPE_NAMES) {
             objectList.add(new GenericDataType(owner, Types.OTHER, typeName, null, false, true, 0, 0, 0));
         }
-        for (String typeName : MimerConstants.TYPE_NAMES_LARGE_OBJECT) {
+        for (String typeName : LARGE_OBJECT_PICKER_ENTRIES) {
             if (seenTypeNames.contains(typeName.toUpperCase(Locale.ENGLISH))) {
                 // Already reported correctly by the driver itself - only NATIONAL CHARACTER
                 // LARGE OBJECT was actually confirmed missing live, the other two are added
@@ -168,7 +181,7 @@ public class MimerDataTypeCache extends GenericDataTypeCache {
     private static int largeObjectTypeCode(@NotNull String typeName) {
         return switch (typeName) {
             case "BINARY LARGE OBJECT" -> Types.BLOB;
-            case "NATIONAL CHAR LARGE OBJECT" -> Types.NCLOB;
+            case "NATIONAL CHAR LARGE OBJECT", "NATIONAL CHARACTER LARGE OBJECT" -> Types.NCLOB;
             default -> Types.CLOB;
         };
     }

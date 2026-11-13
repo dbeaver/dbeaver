@@ -1,0 +1,200 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ext.mimer.model.data;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.storage.TemporaryContentStorage;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCContentValueHandler;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.runtime.DBWorkbench;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.io.Writer;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.atomic.AtomicLong;
+
+/**
+ * The {@code CLOB}/{@code NCLOB} sibling of {@link MimerBLOBValueHandler}: the same driver
+ * limitation applies to all three Mimer SQL LOB types - {@code getObject()}/{@code getClob()}/
+ * {@code getString()} don't work, use {@code getCharacterStream()} instead. One handler covers
+ * both {@code CLOB} and {@code NCLOB}.
+ * <p>
+ * Reads up to {@link ModelPreferences#MEMORY_CONTENT_MAX_SIZE} into memory and spills anything
+ * beyond that to a temp file, checking {@code DBRProgressMonitor#isCanceled()} throughout - see
+ * {@link MimerBLOBValueHandler}'s javadoc for why (the stream is tied to the current row, so this
+ * has to happen now rather than being deferred the way a real {@code Clob} locator could be).
+ * <p>
+ * One handler instance is shared by both types, but the "[CLOB, ...]"/"[NCLOB, ...]" placeholder
+ * should still say which one a column actually is - {@link #labelFor} resolves that and the
+ * result rides along on the {@link MimerContentCLOB} instance itself.
+ *
+ * @author Mimer Information Technology
+ */
+public class MimerCLOBValueHandler extends JDBCContentValueHandler {
+
+    private static final Log log = Log.getLog(MimerCLOBValueHandler.class);
+
+    public static final MimerCLOBValueHandler INSTANCE = new MimerCLOBValueHandler();
+
+    // See MimerBLOBValueHandler's identical field for why this is needed.
+    private static final AtomicLong TEMP_FILE_SEQUENCE = new AtomicLong();
+
+    @Override
+    protected DBDContent fetchColumnValue(
+        @NotNull DBCSession session,
+        @NotNull JDBCResultSet resultSet,
+        @NotNull DBSTypedObject type,
+        int index
+    ) throws DBCException, SQLException {
+        Reader reader = resultSet.getCharacterStream(index);
+        if (reader == null) {
+            return getValueFromObject(session, type, null, false, false);
+        }
+        try {
+            return spoolToContent(session.getProgressMonitor(), session, reader, labelFor(type));
+        } catch (Exception e) {
+            throw new DBCException("Error reading CLOB content", e, session.getExecutionContext());
+        }
+    }
+
+    @Override
+    public DBDContent getValueFromObject(
+        @NotNull DBCSession session,
+        @NotNull DBSTypedObject type,
+        @Nullable Object object,
+        boolean copy,
+        boolean validateValue
+    ) throws DBCException {
+        if (object == null) {
+            // type.getTypeID() isn't reliable for every Mimer LOB type name (see
+            // MimerValueHandlerProvider's javadoc) - the inherited switch would fall through to a
+            // binary JDBCContentBytes wrapper for the driver's vendor code. This handler is only
+            // ever selected for a genuine CLOB/NCLOB column, so build the right wrapper directly
+            // instead of redispatching on an identifier that isn't reliable here. Covers every
+            // null path, not just a fetched result-set value - new-row initialization and "Set to
+            // NULL" both call this method directly rather than through fetchColumnValue.
+            return new MimerContentCLOB(session.getExecutionContext(), labelFor(type));
+        }
+        if (object instanceof MimerContentCLOB content) {
+            // DBeaver can re-dispatch an already-fetched value back through here once it resolves
+            // the column against its real catalog entity attribute, which often isn't known yet
+            // at the very first fetch - correct the label every time, so it always reflects the
+            // most-resolved `type` seen so far rather than whichever came first.
+            content.setTypeLabel(labelFor(type));
+        }
+        return super.getValueFromObject(session, type, object, copy, validateValue);
+    }
+
+    /**
+     * {@code "NCLOB"} for an NCLOB column, {@code "CLOB"} otherwise. Checks the type name first,
+     * not {@code type.getTypeID()} - the numeric ID isn't reliable for every spelling Mimer SQL's
+     * catalog/driver can report (see {@link MimerValueHandlerProvider}'s javadoc), while every
+     * NCLOB-family spelling ({@code NCLOB}, {@code NCHAR LARGE OBJECT}, {@code NATIONAL
+     * CHAR(ACTER) LARGE OBJECT} - see {@link
+     * org.jkiss.dbeaver.ext.mimer.MimerConstants#TYPE_NAMES_LARGE_OBJECT}) starts with {@code
+     * "N"}, unlike any CLOB-family one. Falls back to the type ID only when the name is
+     * unavailable.
+     */
+    @NotNull
+    private static String labelFor(@NotNull DBSTypedObject type) {
+        String typeName = type.getTypeName();
+        if (typeName != null) {
+            return typeName.toUpperCase(Locale.ENGLISH).startsWith("N") ? "NCLOB" : "CLOB";
+        }
+        return type.getTypeID() == Types.NCLOB ? "NCLOB" : "CLOB";
+    }
+
+    @NotNull
+    private static MimerContentCLOB spoolToContent(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCSession session,
+        @NotNull Reader reader,
+        @NotNull String typeLabel
+    ) throws IOException {
+        DBCExecutionContext context = session.getExecutionContext();
+        DBPPlatform platform = DBWorkbench.getPlatform();
+        int memoryLimit = platform.getPreferenceStore().getInt(ModelPreferences.MEMORY_CONTENT_MAX_SIZE);
+        String encoding = DBValueFormatting.getDefaultBinaryFileEncoding(context.getDataSource());
+
+        MimerContentCLOB content = new MimerContentCLOB(context, typeLabel);
+        boolean spooled = false;
+        try {
+            char[] buffer = new char[8192];
+            // See MimerBLOBValueHandler's identical chunk list for why - each chunk is its own
+            // array, appending one never recopies any earlier chunk.
+            List<char[]> chunks = new ArrayList<>();
+            int total = 0;
+            int n;
+            while (!monitor.isCanceled() && total < memoryLimit && (n = reader.read(buffer)) >= 0) {
+                chunks.add(n == buffer.length ? buffer.clone() : Arrays.copyOf(buffer, n));
+                total += n;
+            }
+            if (monitor.isCanceled() || total < memoryLimit) {
+                // See MimerChunkedBytesStorage's javadoc for why this stays chunked.
+                content.setStorage(new MimerChunkedCharsStorage(chunks, total));
+            } else {
+                // Capture a preview before the content moves to disk - see
+                // MimerSpilledCharsStorage's javadoc.
+                String preview = MimerLobUtil.extractPreview(chunks, MimerContentCLOB.PREVIEW_LENGTH);
+                // Keep tallying the character count ourselves rather than via
+                // ContentUtils.copyStreams, which doesn't report one back.
+                long[] totalHolder = {total};
+                Path tempFile = MimerLobUtil.spoolToTempFile(
+                    monitor, platform, "mimer_clob" + TEMP_FILE_SEQUENCE.incrementAndGet(),
+                    tempFilePath -> {
+                        try (Writer os = Files.newBufferedWriter(tempFilePath, Charset.forName(encoding))) {
+                            for (char[] chunk : chunks) {
+                                os.write(chunk);
+                            }
+                            char[] spillBuffer = new char[8192];
+                            int spillCount;
+                            while (!monitor.isCanceled() && (spillCount = reader.read(spillBuffer)) >= 0) {
+                                os.write(spillBuffer, 0, spillCount);
+                                totalHolder[0] += spillCount;
+                            }
+                        }
+                    });
+                content.setStorage(new MimerSpilledCharsStorage(
+                    new TemporaryContentStorage(platform, tempFile, encoding, true), preview, totalHolder[0]));
+            }
+            spooled = true;
+        } finally {
+            MimerLobUtil.closeAfterSpooling(reader, spooled, content::release, log, "CLOB");
+        }
+        return content;
+    }
+}

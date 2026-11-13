@@ -1,0 +1,117 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.ext.mimer.model.data;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.mimer.MimerConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.data.DBDFormatSettings;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
+import org.jkiss.dbeaver.model.data.DBDValueHandlerProvider;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+
+import java.sql.Types;
+import java.util.Locale;
+
+/**
+ * Registered in {@code plugin.xml} ({@code org.jkiss.dbeaver.dataTypeProvider}, scoped to
+ * {@code <datasource id="mimer"/>} plus one {@code <type id="...">}/{@code <type name="...">}
+ * per type handled here) so {@link MimerBLOBValueHandler}/{@link MimerCLOBValueHandler} - the fix
+ * for a Mimer SQL JDBC Driver limitation reading {@code BLOB}/{@code CLOB}/{@code NCLOB} values,
+ * see their own javadoc - are used automatically for every matching column on a Mimer SQL
+ * connection. A new case here needs a matching {@code <type>} entry in {@code plugin.xml} too, or
+ * the registry filters the column out before this class is ever consulted.
+ * <p>
+ * {@link #getValueHandler} tries {@code typedObject.getTypeID()} first, but the driver's raw
+ * catalog {@code DATA_TYPE} for {@code NATIONAL CHAR LARGE OBJECT} doesn't match {@code
+ * Types.NCLOB} (see {@link MimerConstants#TYPE_NAMES_LARGE_OBJECT}'s own comment), so it also
+ * falls back to matching {@code typedObject.getTypeName()} against the same name sets {@code
+ * MimerDataSource#resolveDataKind} already uses.
+ * <p>
+ * Always returns a Mimer-specific handler for a matching column, never the core JDBC-standard
+ * one: that handler reads a BLOB/CLOB/NCLOB lazily, holding the {@code java.sql.Blob}/{@code
+ * Clob} locator and only reading from it on first access - but on Mimer SQL that locator is
+ * scoped to the transaction that fetched it, so a later read (e.g. opening an image viewer after
+ * the fetch completed) throws {@code "<Blob|Clob> object became invalid after transaction
+ * ended"}. Confirmed live against driver 11.0.2: {@code DatabaseMetaData
+ * #supportsResultSetHoldability(ResultSet.HOLD_CURSORS_OVER_COMMIT)} reports {@code false}, and
+ * {@code Connection#setHoldability} to that value is silently a no-op - the server, not the
+ * driver, ties the locator's lifetime to the transaction, so no driver patch alone can lift this;
+ * it would take a change on the server side too, and none is scheduled. {@link
+ * MimerBLOBValueHandler}/{@link MimerCLOBValueHandler} avoid it by reading the full content
+ * eagerly, inside the same fetch, never holding the locator. Returning {@code null} here instead
+ * would not reach the standard handler either way - {@code
+ * DataTypeProviderRegistry#getValueHandlerProvider} returns this provider's result immediately
+ * without consulting any other, so {@code DBUtils#findValueHandler} would fall through to {@code
+ * DefaultValueHandler}, which can't bind a value at all.
+ *
+ * @author Mimer Information Technology
+ */
+public class MimerValueHandlerProvider implements DBDValueHandlerProvider {
+
+    @Nullable
+    @Override
+    public DBDValueHandler getValueHandler(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBDFormatSettings preferences,
+        @NotNull DBSTypedObject typedObject
+    ) {
+        Boolean isBlobById = classifyByTypeId(typedObject.getTypeID());
+        if (isBlobById != null) {
+            return isBlobById ? MimerBLOBValueHandler.INSTANCE : MimerCLOBValueHandler.INSTANCE;
+        }
+        Boolean isBlobByName = classifyByName(typedObject.getTypeName());
+        if (isBlobByName == null) {
+            return null;
+        }
+        return isBlobByName ? MimerBLOBValueHandler.INSTANCE : MimerCLOBValueHandler.INSTANCE;
+    }
+
+    /**
+     * {@code true} for a BLOB-like type, {@code false} for a CLOB/NCLOB-like type, {@code null}
+     * if {@code typeId} isn't one of Mimer SQL's three LOB types at all.
+     */
+    @Nullable
+    private static Boolean classifyByTypeId(int typeId) {
+        switch (typeId) {
+            case Types.BLOB:
+                return true;
+            case Types.CLOB:
+            case Types.NCLOB:
+                return false;
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Same classification as {@link #classifyByTypeId(int)}, by name instead of type ID.
+     */
+    @Nullable
+    private static Boolean classifyByName(@Nullable String typeName) {
+        if (typeName == null) {
+            return null;
+        }
+        String upperTypeName = typeName.toUpperCase(Locale.ENGLISH);
+        if (!MimerConstants.TYPE_NAMES_LARGE_OBJECT.contains(upperTypeName)
+            && !MimerConstants.TYPE_NAMES_LARGE_OBJECT_ABBREVIATED.contains(upperTypeName)) {
+            return null;
+        }
+        return upperTypeName.equals("BLOB") || upperTypeName.contains("BINARY");
+    }
+}

@@ -89,10 +89,14 @@ public class MimerConstants {
     // same driver very plausibly mishandles all three identically - harmless even if one of them
     // turns out to already work fine (MimerDataTypeCache's own duplicate-name handling tolerates
     // a redundant entry).
+    // "NATIONAL CHARACTER LARGE OBJECT" - the catalog may report this spelled-out form instead
+    // of the abbreviated one above in a future driver version. Keep both here for as long as
+    // either might be reported.
     public static final Set<String> TYPE_NAMES_LARGE_OBJECT = Set.of(
         "BINARY LARGE OBJECT",
         "CHARACTER LARGE OBJECT",
-        "NATIONAL CHAR LARGE OBJECT"
+        "NATIONAL CHAR LARGE OBJECT",
+        "NATIONAL CHARACTER LARGE OBJECT"
     );
 
     // The short abbreviations for the three types above (BLOB/CLOB/NCLOB, plus the

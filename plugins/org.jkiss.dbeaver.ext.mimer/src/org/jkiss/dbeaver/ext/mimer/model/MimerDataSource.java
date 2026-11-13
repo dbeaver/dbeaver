@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.cache.DBSObjectCache;
 import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Version;
 
 import java.sql.SQLException;
 import java.sql.Types;
@@ -397,7 +398,7 @@ public class MimerDataSource extends GenericDataSource {
         List<MimerInfoRow> rows = new ArrayList<>(3);
         rows.add(new MimerInfoRow(this, "Product name", getInfo().getDatabaseProductName()));
         rows.add(new MimerInfoRow(this, "Product version", getInfo().getDatabaseProductVersion()));
-        org.osgi.framework.Version v = getInfo().getDatabaseVersion();
+        Version v = getInfo().getDatabaseVersion();
         if (v != null) {
             String num = v.getMicro() > 0
                 ? v.getMajor() + "." + v.getMinor() + "." + v.getMicro()
