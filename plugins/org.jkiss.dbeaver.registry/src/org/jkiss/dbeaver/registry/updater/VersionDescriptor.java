@@ -222,7 +222,7 @@ public class VersionDescriptor {
             public void saxEndElement(@NotNull SAXReader reader, @Nullable String namespaceURI, @NotNull String localName) throws XMLException {
                 String text = textBuffer.toString();
                 if (patch != null && depth == 4) {
-                    if (patch.put(localName, text) != null && "number".equals(localName)) {
+                    if (patch.put(localName, text) != null && "patch-version".equals(localName)) {
                         throw new XMLException("Duplicate patch number field");
                     }
                 } else if (patch != null && depth == 3) {
@@ -259,16 +259,16 @@ public class VersionDescriptor {
 
     @NotNull
     private static VersionPatch parsePatch(@NotNull Map<String, String> fields) throws XMLException {
-        String value = fields.getOrDefault("number", "").trim();
+        String value = fields.getOrDefault("patch-version", "").trim();
         int number = Integer.parseInt(value);
         if (number <= 0 || !value.matches("[0-9]+")) {
             throw new XMLException("Invalid patch number: " + value);
         }
         return new VersionPatch(
             number,
-            fields.getOrDefault("date", ""),
+            fields.getOrDefault("patch-date", ""),
             PatchSeverity.parse(fields.getOrDefault("severity", "")),
-            fields.getOrDefault("release-notes", "")
+            fields.getOrDefault("patch-release-notes", "")
         );
     }
 }
