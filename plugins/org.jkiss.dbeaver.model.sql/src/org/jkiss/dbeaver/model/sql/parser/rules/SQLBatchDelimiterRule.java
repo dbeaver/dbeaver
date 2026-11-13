@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
+import org.eclipse.jface.text.Document;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLBatchDelimiterToken;
 import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
@@ -82,6 +83,21 @@ public class SQLBatchDelimiterRule extends SQLDelimiterRule {
         boolean valid = hasValidLineEnding(scanner);
         restoreOffset(scanner, valid ? delimiterEndOffset : startOffset);
         return valid ? token : TPTokenAbstract.UNDEFINED;
+    }
+
+    /**
+     * Matches a batch delimiter in a single line of a script in the same way as the script parser does:
+     * the delimiter must be the first thing on the line and may be followed by a dialect-specific suffix
+     * and then only by a line end or a single-line comment.
+     *
+     * @param line   text of the line without the line break
+     * @param offset offset of the delimiter in the line
+     * @return offset right after the delimiter and its suffix or -1 if the line is not a batch delimiter line
+     */
+    public final int findMatchEnd(@NotNull String line, int offset) {
+        TPRuleBasedScanner scanner = new TPRuleBasedScanner();
+        scanner.setRange(new Document(line), offset, line.length() - offset);
+        return evaluate(scanner).isUndefined() ? -1 : scanner.getOffset();
     }
 
     /**
