@@ -23,34 +23,34 @@ import org.junit.jupiter.api.Test;
 public class MySQLViewTest extends DBeaverUnitTest {
 
     @Test
-    public void getViewOptionsClause_whenDefinerAndSqlSecurity_thenAllOptionsKept() {
+    public void getViewOptionsClauseWhenDefinerAndSqlSecurityThenAllOptionsKept() {
         String clause = MySQLView.getViewOptionsClause(
             "CREATE ALGORITHM=UNDEFINED DEFINER=`view_owner`@`%` SQL SECURITY INVOKER");
         Assertions.assertEquals(" ALGORITHM=UNDEFINED  DEFINER=`view_owner`@`%`  SQL SECURITY INVOKER ", clause);
     }
 
     @Test
-    public void getViewOptionsClause_whenSqlSecurityIsLastOption_thenItIsKept() {
+    public void getViewOptionsClauseWhenSqlSecurityIsLastOptionThenItIsKept() {
         String clause = MySQLView.getViewOptionsClause("CREATE SQL SECURITY DEFINER");
         Assertions.assertEquals(" SQL SECURITY DEFINER ", clause);
     }
 
     @Test
-    public void getViewOptionsClause_whenDefinerHasSpecialCharacters_thenDefinerKeptAsIs() {
+    public void getViewOptionsClauseWhenDefinerHasSpecialCharactersThenDefinerKeptAsIs() {
         String clause = MySQLView.getViewOptionsClause(
             "CREATE ALGORITHM=MERGE DEFINER=`app ``user`@`10.0.%` SQL SECURITY DEFINER");
         Assertions.assertEquals(" ALGORITHM=MERGE  DEFINER=`app ``user`@`10.0.%`  SQL SECURITY DEFINER ", clause);
     }
 
     @Test
-    public void getViewOptionsClause_whenDefinerIsRole_thenDefinerKept() {
+    public void getViewOptionsClauseWhenDefinerIsRoleThenDefinerKept() {
         // MariaDB allows a role as definer
         String clause = MySQLView.getViewOptionsClause("CREATE DEFINER=`app_role` SQL SECURITY DEFINER");
         Assertions.assertEquals(" DEFINER=`app_role`  SQL SECURITY DEFINER ", clause);
     }
 
     @Test
-    public void getViewOptionsClause_whenNoOptions_thenEmpty() {
+    public void getViewOptionsClauseWhenNoOptionsThenEmpty() {
         Assertions.assertEquals("", MySQLView.getViewOptionsClause("CREATE"));
     }
 }
