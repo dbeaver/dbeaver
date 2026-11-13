@@ -101,14 +101,12 @@ public class GetTableDetailsFunction implements AIFunction {
             }
         }
 
-        AISchemaGenerator schemaGenerator = new AISchemaGeneratorImpl();
+        AISchemaGeneratorImpl schemaGenerator = new AISchemaGeneratorImpl();
 
         boolean sendConstraints = CommonUtils.toBoolean(parameters.get(AIFunctionParams.DDL_CONSTRAINTS_PARAM));
         boolean sendIndexes = CommonUtils.toBoolean(parameters.get(AIFunctionParams.DDL_INDEXES_PARAM));
         boolean sendComments = CommonUtils.toBoolean(parameters.get(AIFunctionParams.DDL_COMMENTS_PARAM));
         boolean sendReferences = CommonUtils.toBoolean(parameters.get(AIFunctionParams.DDL_REFERENCES_PARAM));
-
-        boolean fullDDL = context.getPrompt().hasFeature(AIConstants.AI_PROMPT_FEATURE_FULL_DDL);
 
         AIDatabaseContext databaseContext = context.getContext();
         AISchemaGenerationOptions options = AISchemaGenerationOptions.builder()
@@ -117,7 +115,6 @@ public class GetTableDetailsFunction implements AIFunction {
             .withSendConstraints(sendConstraints)
             .withSendObjectComment(sendComments)
             .withSendIndexes(sendIndexes)
-            .withSendFullDDL(fullDDL)
             .withSendReferences(sendReferences)
             .withUseFQN(true)
             .withObjectFilter(databaseContext == null ? null : databaseContext.getSchemaGenerationOptions().objectFilter())
@@ -128,7 +125,7 @@ public class GetTableDetailsFunction implements AIFunction {
         StringJoiner c = new StringJoiner("\n");
         for (Map.Entry<String, Object> tee : tableMap.entrySet()) {
             if (tee.getValue() instanceof DBSEntity entity) {
-                c.add(schemaGenerator.generateSchema(
+                c.add(schemaGenerator.generateTableDetails(
                     context.getMonitor(),
                     executionContext,
                     options,
