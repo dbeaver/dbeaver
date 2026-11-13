@@ -3349,8 +3349,9 @@ public class SQLEditor extends SQLEditorBase implements
             .stream()
             .filter(q -> q instanceof SQLQuery)
             .map(q -> (SQLQuery) q)
-            .filter(query -> query.isDropDangerous() ||
-                isDropOperation(recognizeObjectOperation(query, objectOperationCache)))
+            .filter(query -> query.mayBeDDLStatement() &&
+                (query.isDropDangerous() ||
+                    isDropOperation(recognizeObjectOperation(query, objectOperationCache))))
             .toList();
     }
 
@@ -3362,7 +3363,7 @@ public class SQLEditor extends SQLEditorBase implements
         @NotNull SQLQuery query,
         @NotNull Map<SQLQuery, List<SQLObjectOperation>> objectOperationCache
     ) {
-        return recognizeObjectOperation(query, objectOperationCache) != null;
+        return query.mayBeDDLStatement() && recognizeObjectOperation(query, objectOperationCache) != null;
     }
 
     @Nullable
@@ -4509,7 +4510,9 @@ public class SQLEditor extends SQLEditorBase implements
                     );
                     if (!result.hasError() && refreshBehavior != SQLPreferenceConstants.MetadataRefreshBehavior.NEVER) {
                         SQLQuery query = result.getStatement();
-                        List<SQLObjectOperation> objectOperations = owner.recognizeObjectOperations(query);
+                        List<SQLObjectOperation> objectOperations = query.mayBeDDLStatement()
+                            ? owner.recognizeObjectOperations(query)
+                            : List.of();
                         if (query.getType() == SQLQueryType.DDL || !objectOperations.isEmpty()) {
                             metadataChanged = true;
                             if (metadataRefreshHandling == null || !metadataRefreshHandling.acceptsTargets()) {
