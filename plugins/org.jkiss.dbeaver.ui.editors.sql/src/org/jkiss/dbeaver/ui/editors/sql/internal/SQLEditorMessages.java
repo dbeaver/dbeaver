@@ -381,6 +381,8 @@ public class SQLEditorMessages extends NLS {
     public static String script_selector_project_table_folder_label;
 
     public static String source_viewer_open_in_sql_console;
+    public static String source_viewer_unsaved_changes_title;
+    public static String source_viewer_unsaved_changes_message;
     public static String source_viewer_show_ddl_text;
     public static String source_viewer_show_ddl_tip;
     public static String source_viewer_show_permissions_text;
