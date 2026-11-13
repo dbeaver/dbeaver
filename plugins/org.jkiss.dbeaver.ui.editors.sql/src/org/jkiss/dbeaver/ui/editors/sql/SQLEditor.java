@@ -5256,7 +5256,9 @@ public class SQLEditor extends SQLEditorBase implements
             }
 
             if (!stopped) {
-                setTitleImage(DBeaverIcons.getImage(UIIcon.LOADING.get(tickCount % UIIcon.LOADING.size())));
+                if (!UIUtils.isShellBlocked(editorControl.getShell())) {
+                    setTitleImage(DBeaverIcons.getImage(UIIcon.LOADING.get(tickCount % UIIcon.LOADING.size())));
+                }
                 schedule(100);
             } else {
                 if (oldCursor != null) {
