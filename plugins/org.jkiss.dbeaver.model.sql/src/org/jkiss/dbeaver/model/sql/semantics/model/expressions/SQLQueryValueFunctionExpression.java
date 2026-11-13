@@ -137,7 +137,10 @@ public class SQLQueryValueFunctionExpression extends SQLQueryValueExpression {
 
         if (this.procName.parts.size() == 1) {
             SQLQuerySymbolEntry name = this.procName.parts.getFirst();
-            if (isDialectFunction(context.getConnection().dialect, name.getName())) {
+            // Canonical names may be quoted for keywords even when the call itself is unquoted.
+            String rawName = name.getRawName();
+            if (!context.getConnection().dialect.isQuotedIdentifier(rawName)
+                && isDialectFunction(context.getConnection().dialect, rawName)) {
                 name.getSymbol().setSymbolClass(SQLQuerySymbolClass.FUNCTION);
                 name.setOrigin(origin);
                 return SQLQueryExprType.UNKNOWN;

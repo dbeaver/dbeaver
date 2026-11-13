@@ -24,8 +24,16 @@ import org.jkiss.dbeaver.model.DBPAttributeReferencePurpose;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryModelRecognizer;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQueryRecognitionContext;
+import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
+import org.jkiss.dbeaver.model.sql.semantics.model.SQLQueryModel;
 import org.jkiss.dbeaver.model.sql.semantics.model.expressions.SQLQueryValueFunctionExpression;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
@@ -64,6 +72,43 @@ public class PostgreDialectFunctionsTest extends DBeaverUnitTest {
         Assertions.assertTrue(SQLQueryValueFunctionExpression.isDialectFunction(dialect, "GREATEST"));
         Assertions.assertTrue(SQLQueryValueFunctionExpression.isDialectFunction(dialect, "GrEaTeSt"));
         Assertions.assertFalse(SQLQueryValueFunctionExpression.isDialectFunction(dialect, "missing_function"));
+    }
+
+    @Test
+    public void greatestUsesRawNameForValidation() throws Exception {
+        String sql = "SELECT GrEaTeSt(1, 2)";
+        JDBCDatabaseMetaData metaData = Mockito.mock(JDBCDatabaseMetaData.class);
+        Mockito.when(metaData.getIdentifierQuoteString()).thenReturn("\"");
+        Mockito.when(metaData.storesLowerCaseIdentifiers()).thenReturn(true);
+        Mockito.when(metaData.getSQLKeywords()).thenReturn("GREATEST");
+        postgreDialect.initDriverSettings(null, null, metaData);
+        SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
+        syntaxManager.init(postgreDialect, DBWorkbench.getPlatform().getPreferenceStore());
+        DBCExecutionContext executionContext = Mockito.mock(DBCExecutionContext.class);
+        PostgreDataSource dataSource = new PostgreDataSource(mockDataSourceContainer, "PG Test", "postgres") {
+            @Override
+            public SQLDialect getSQLDialect() {
+                return postgreDialect;
+            }
+        };
+        Mockito.when(executionContext.getDataSource()).thenReturn(dataSource);
+        SQLQueryRecognitionContext context = new SQLQueryRecognitionContext(
+            new VoidProgressMonitor(), executionContext, true, true, syntaxManager, postgreDialect
+        );
+        SQLQueryModel model = SQLQueryModelRecognizer.recognizeQuery(context, sql);
+
+        Assertions.assertNotNull(model);
+        SQLQueryValueFunctionExpression function = Assertions.assertInstanceOf(
+            SQLQueryValueFunctionExpression.class, model.findNodeContaining(sql.indexOf("GrEaTeSt") + 1)
+        );
+        Assertions.assertNotNull(function.getProcName());
+        Assertions.assertEquals("\"greatest\"", function.getProcName().parts.getFirst().getName());
+        Assertions.assertEquals("GrEaTeSt", function.getProcName().parts.getFirst().getRawName());
+        Assertions.assertTrue(SQLQueryValueFunctionExpression.isDialectFunction(
+            postgreDialect, function.getProcName().parts.getFirst().getRawName()
+        ));
+        Assertions.assertEquals(SQLQuerySymbolClass.FUNCTION, function.getProcName().parts.getFirst().getSymbolClass());
+        Assertions.assertTrue(context.getProblems().isEmpty(), context.getProblems().toString());
     }
 
     @BeforeEach
