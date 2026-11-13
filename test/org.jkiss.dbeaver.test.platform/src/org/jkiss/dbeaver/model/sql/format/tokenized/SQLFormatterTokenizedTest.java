@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.sql.format.tokenized;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerDialectMssql;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -57,12 +58,22 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         return formatter.format(sql, configuration);
     }
 
+    /**
+     * Makes the formatter use the real SQL Server dialect with its own batch delimiter rule (GO [count])
+     */
+    private void useSqlServerDialect() {
+        SQLDialect sqlServerDialect = new SQLServerDialectMssql();
+        Mockito.when(syntaxManager.getDialect()).thenReturn(sqlServerDialect);
+        Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(sqlServerDialect.getScriptDelimiters());
+        Mockito.when(syntaxManager.getBatchDelimiters()).thenReturn(sqlServerDialect.getBatchDelimiters());
+    }
+
     @BeforeEach
     public void init() throws Exception {
         Mockito.when(configuration.getSyntaxManager()).thenReturn(syntaxManager);
         String[] delimiters = new String[]{";"};
         Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(delimiters);
-        Mockito.when(syntaxManager.getBatchDelimiters()).thenReturn(new String[0]);
+        Mockito.lenient().when(syntaxManager.getBatchDelimiters()).thenReturn(new String[0]);
         Mockito.when(syntaxManager.getDialect()).thenReturn(dialect);
         Mockito.when(syntaxManager.getCatalogSeparator()).thenReturn(".");
         Mockito.when(configuration.getKeywordCase()).thenReturn(DBPIdentifierCase.UPPER);
@@ -401,7 +412,67 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void shouldKeepWordDelimiterFollowedByRepeatCount() {
+    public void shouldKeepSqlServerBatchDelimiterFollowedByRepeatCount() {
+        //given
+        String inputString = "SELECT 1" + lineBreak + "GO 5" + lineBreak + lineBreak + "SELECT 2";
+
+        useSqlServerDialect();
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains(";"), formattedString);
+    }
+
+    @Test
+    public void shouldKeepSqlServerBatchDelimiterFollowedByRepeatCountAndComment() {
+        //given
+        String inputString = "SELECT 1" + lineBreak + "GO 5 -- repeat" + lineBreak + lineBreak + "SELECT 2";
+
+        useSqlServerDialect();
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains(";"), formattedString);
+    }
+
+    @Test
+    public void shouldNotTreatSqlServerBatchDelimiterWithZeroRepeatCountAsDelimiter() {
+        //given
+        String inputString = "SELECT 1" + lineBreak + "GO 0" + lineBreak + lineBreak + "SELECT 2";
+
+        useSqlServerDialect();
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains(";"), formattedString);
+    }
+
+    @Test
+    public void shouldNotTreatInlineIdentifierNamedLikeSqlServerBatchDelimiterAsDelimiter() {
+        //given
+        String inputString = "SELECT 1 AS GO /* note */" + lineBreak + lineBreak + "SELECT 2";
+
+        useSqlServerDialect();
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains("*/;"), formattedString);
+    }
+
+    @Test
+    public void shouldNotTreatRepeatCountAsPartOfBatchDelimiterInDialectWithoutIt() {
         //given
         String inputString = "SELECT 1" + lineBreak + "GO 5" + lineBreak + lineBreak + "SELECT 2";
 
@@ -413,7 +484,8 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         String formattedString = format(inputString);
 
         //then
-        Assertions.assertFalse(formattedString.contains(";"), formattedString);
+        // Only the SQL Server batch delimiter rule accepts a repeat count, so GO 5 is a part of the query here
+        Assertions.assertTrue(formattedString.contains(";"), formattedString);
     }
 
     @Test

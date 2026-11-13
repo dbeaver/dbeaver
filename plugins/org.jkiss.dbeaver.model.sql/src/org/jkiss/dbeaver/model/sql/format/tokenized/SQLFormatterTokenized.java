@@ -18,20 +18,22 @@
 package org.jkiss.dbeaver.model.sql.format.tokenized;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
+import org.jkiss.dbeaver.model.sql.parser.rules.SQLBatchDelimiterRule;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 /**
  * SQL formatter
@@ -47,8 +49,8 @@ public class SQLFormatterTokenized implements SQLFormatter {
     private SQLFormatterConfiguration formatterCfg;
 
     private List<String> statementDelimiters = new ArrayList<>(2);
-    // Delimiters which are valid only on a line of their own (e.g. GO)
-    private final Set<String> batchDelimiters = new HashSet<>(2);
+    // The same batch delimiter rules (e.g. GO) which the script parser uses
+    private List<SQLBatchDelimiterRule> batchDelimiterRules = List.of();
 
     private boolean isCompact;
 
@@ -62,11 +64,6 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 statementDelimiters.add(delim.toUpperCase(Locale.ENGLISH));
             }
         }
-        batchDelimiters.clear();
-        for (String delim : formatterCfg.getSyntaxManager().getBatchDelimiters()) {
-            batchDelimiters.add(delim.toUpperCase(Locale.ENGLISH));
-        }
-
         SQLTokensParser fParser = new SQLTokensParser(formatterCfg);
 
         boolean isSqlEndsWithNewLine = false;
@@ -254,6 +251,10 @@ public class SQLFormatterTokenized implements SQLFormatter {
 
     private void convertEmptyLinesIntoDelimiters(@NotNull List<FormatterToken> argList) {
         String[] executableCommentPrefixes = formatterCfg.getSyntaxManager().getDialect().getExecutableCommentPrefixes();
+        DBPDataSource dataSource = formatterCfg.getDataSource();
+        batchDelimiterRules = SQLRuleManager.createBatchDelimiterRules(
+            formatterCfg.getSyntaxManager(),
+            dataSource == null ? null : dataSource.getContainer());
         boolean hasQueryContent = false;
         // Position right after the last token of the current statement which is not a comment
         int contentEndIndex = 0;
@@ -280,10 +281,8 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 }
             } else if (isStatementDelimiter(argList, i)) {
                 hasQueryContent = false;
-                if (isBatchDelimiter(token.getString())) {
-                    // The repeat count (e.g. GO 5) belongs to the delimiter, it is not a part of a query
-                    i = skipRepeatCount(argList, i);
-                }
+                // The delimiter suffix (e.g. the repeat count in GO 5) is not a part of a query
+                i = skipBatchDelimiterSuffix(argList, i);
             } else if (!isPlainComment(token, executableCommentPrefixes)) {
                 hasQueryContent = true;
                 contentEndIndex = i + 1;
@@ -321,66 +320,80 @@ public class SQLFormatterTokenized implements SQLFormatter {
         if (!statementDelimiters.contains(text.toUpperCase(Locale.ENGLISH))) {
             return false;
         }
-        if (!isBatchDelimiter(text)) {
-            return true;
-        }
-        // A batch delimiter is valid only on a line of its own, otherwise it is an identifier (e.g. an alias)
-        return isLineBoundary(argList, index - 1) && hasBatchDelimiterLineEnding(argList, index);
+        SQLBatchDelimiterRule rule = findBatchDelimiterRule(text);
+        // A batch delimiter is valid only where the script parser accepts it (e.g. on a line of its own),
+        // otherwise it is an identifier (e.g. an alias)
+        return rule == null || getBatchDelimiterSuffixLength(argList, index, rule) >= 0;
     }
 
-    private boolean isBatchDelimiter(@NotNull String text) {
-        return batchDelimiters.contains(text.toUpperCase(Locale.ENGLISH));
-    }
-
-    private static boolean isLineBoundary(@NotNull List<FormatterToken> argList, int index) {
-        if (index < 0 || index >= argList.size()) {
-            return true;
-        }
-        FormatterToken token = argList.get(index);
-        return token.getType() == TokenType.SPACE && token.getString().indexOf('\n') >= 0;
-    }
-
-    /**
-     * Checks the rest of the batch delimiter line the same way as the script parser does:
-     * after the delimiter and its optional repeat count there is nothing but a line end or a single-line comment.
-     */
-    private static boolean hasBatchDelimiterLineEnding(@NotNull List<FormatterToken> argList, int delimiterIndex) {
-        int index = skipInlineSpaces(argList, skipRepeatCount(argList, delimiterIndex) + 1);
-        if (index >= argList.size()) {
-            return true;
-        }
-        FormatterToken token = argList.get(index);
-        if (token.getType() == TokenType.SPACE) {
-            // Inline spaces are skipped already, so this one has a line break
-            return true;
-        }
-        return token.getType() == TokenType.COMMENT && !token.getString().startsWith(SQLConstants.ML_COMMENT_START);
-    }
-
-    /**
-     * Returns the index of the repeat count token which follows the batch delimiter (e.g. GO 5)
-     * or the index of the delimiter itself if there is no count.
-     */
-    private static int skipRepeatCount(@NotNull List<FormatterToken> argList, int delimiterIndex) {
-        int index = skipInlineSpaces(argList, delimiterIndex + 1);
-        if (index < argList.size() && argList.get(index).getType() == TokenType.VALUE) {
-            String value = argList.get(index).getString();
-            if (value.chars().allMatch(Character::isDigit) && value.chars().anyMatch(c -> c != '0')) {
-                return index;
+    @Nullable
+    private SQLBatchDelimiterRule findBatchDelimiterRule(@NotNull String text) {
+        for (SQLBatchDelimiterRule rule : batchDelimiterRules) {
+            if (rule.matches(text)) {
+                return rule;
             }
         }
-        return delimiterIndex;
+        return null;
     }
 
-    private static int skipInlineSpaces(@NotNull List<FormatterToken> argList, int fromIndex) {
-        int index = fromIndex;
-        while (index < argList.size()
-            && argList.get(index).getType() == TokenType.SPACE
-            && argList.get(index).getString().indexOf('\n') < 0
-        ) {
-            index++;
+    /**
+     * Returns the index of the last token which belongs to the batch delimiter at the given index
+     * or the given index if it is not a batch delimiter or it has no suffix.
+     */
+    private int skipBatchDelimiterSuffix(@NotNull List<FormatterToken> argList, int delimiterIndex) {
+        SQLBatchDelimiterRule rule = findBatchDelimiterRule(argList.get(delimiterIndex).getString());
+        int suffixLength = rule == null ? -1 : getBatchDelimiterSuffixLength(argList, delimiterIndex, rule);
+        int lastIndex = delimiterIndex;
+        for (int length = 0; length < suffixLength && lastIndex + 1 < argList.size(); ) {
+            length += argList.get(++lastIndex).getString().length();
         }
-        return index;
+        return lastIndex;
+    }
+
+    /**
+     * Asks the batch delimiter rule if the token starts a batch delimiter in the line which contains it.
+     * The tokens keep the original text, so the line is restored from them.
+     *
+     * @return the length of the delimiter suffix which follows the token (e.g. " 5" in GO 5)
+     * or -1 if the line is not a batch delimiter line
+     */
+    private static int getBatchDelimiterSuffixLength(
+        @NotNull List<FormatterToken> argList,
+        int delimiterIndex,
+        @NotNull SQLBatchDelimiterRule rule
+    ) {
+        String delimiter = argList.get(delimiterIndex).getString();
+        StringBuilder prefix = new StringBuilder();
+        for (int i = delimiterIndex - 1; i >= 0; i--) {
+            FormatterToken token = argList.get(i);
+            int lineBreak = token.getType() == TokenType.SPACE ? token.getString().lastIndexOf('\n') : -1;
+            if (lineBreak >= 0) {
+                prefix.insert(0, token.getString().substring(lineBreak + 1));
+                break;
+            }
+            prefix.insert(0, token.getString());
+        }
+        StringBuilder rest = new StringBuilder();
+        for (int i = delimiterIndex + 1; i < argList.size(); i++) {
+            FormatterToken token = argList.get(i);
+            int lineBreak = token.getType() == TokenType.SPACE ? indexOfLineBreak(token.getString()) : -1;
+            if (lineBreak >= 0) {
+                rest.append(token.getString(), 0, lineBreak);
+                break;
+            }
+            rest.append(token.getString());
+        }
+        int matchEnd = rule.findMatchEnd(prefix + delimiter + rest, prefix.length());
+        return matchEnd < 0 ? -1 : matchEnd - prefix.length() - delimiter.length();
+    }
+
+    private static int indexOfLineBreak(@NotNull String text) {
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) == '\n' || text.charAt(i) == '\r') {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private static boolean isPlainComment(@NotNull FormatterToken token, @NotNull String[] executableCommentPrefixes) {
