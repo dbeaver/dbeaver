@@ -96,6 +96,7 @@ public class MetaDataPanel extends ResultSetPanelBase {
                 }
             }
         });
+        UIUtils.installAndUpdateMainFont(filterPanel);
         
         this.presentation = presentation;
         this.attributeList = new MetaDataTable(panelContents);

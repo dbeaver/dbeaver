@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -50,7 +49,7 @@ class SQLScriptTaskDataSourceSelectorDialog extends BaseDialog {
     private List<DBNDataSource> selectedDataSources = new ArrayList<>();
 
     SQLScriptTaskDataSourceSelectorDialog(Shell parentShell, DBNProject projectNode) {
-        super(parentShell, DTMessages.sql_script_task_page_settings_group_connections, null);
+        super(parentShell, DTUIMessages.sql_script_task_page_settings_group_connections, null);
         this.projectNode = projectNode;
     }
 

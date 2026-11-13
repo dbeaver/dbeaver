@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
@@ -47,7 +46,7 @@ public abstract class ConnectionPageWithAuth extends ConnectionPageAbstract {
     protected void createAuthPanel(Composite parent, int hSpan) {
         authModelSelector = new AuthModelSelector(parent, () -> {
             // Apply font on auth mode change
-            Dialog.applyDialogFont(authModelSelector);
+            UIUtils.applyDialogFont(authModelSelector);
         }, this::authModelPropertiesChanged, true, this.getIntention());
         authModelSelector.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         UIUtils.setDefaultTextControlWidthHint(authModelSelector);

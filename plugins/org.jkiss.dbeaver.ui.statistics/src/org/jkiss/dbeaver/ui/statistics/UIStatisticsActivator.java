@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.statistics;
 
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.preferences.BundlePreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -56,9 +57,6 @@ public class UIStatisticsActivator extends AbstractUIPlugin {
     }
 
     public static void setTrackingEnabled(boolean enabled) {
-        if (enabled == isTrackingEnabled()) {
-            return;
-        }
         setPreferenceValue(PREF_FEATURE_TRACKING_ENABLED, enabled);
     }
 
@@ -70,9 +68,11 @@ public class UIStatisticsActivator extends AbstractUIPlugin {
         setPreferenceValue(PREF_SKIP_DATA_SHARE_CONFIRMATION, skip);
     }
 
-    private static void setPreferenceValue(String key, boolean value) {
+    private static void setPreferenceValue(@NotNull String key, boolean value) {
         DBPPreferenceStore preferenceStore = getDefault().getPreferences();
-        preferenceStore.setValue(key, value);
+        // Preserve an explicit opt-out: the boolean setter removes false as the default,
+        // while an absent tracking preference is displayed as true in configuration.
+        preferenceStore.setValue(key, Boolean.toString(value));
         try {
             preferenceStore.save();
         } catch (IOException e) {
@@ -106,4 +106,3 @@ public class UIStatisticsActivator extends AbstractUIPlugin {
         return preferences;
     }
 }
-

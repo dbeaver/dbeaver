@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,12 @@ package org.jkiss.dbeaver.ext.postgresql.model.jdbc;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetMetaDataImpl;
 
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
 /**
@@ -29,6 +32,7 @@ import java.sql.SQLException;
  */
 public class PostgreJdbcFactory extends JDBCFactoryDefault
 {
+    @NotNull
     @Override
     public JDBCResultSetMetaData createResultSetMetaData(@NotNull JDBCResultSet resultSet) throws SQLException {
         if (resultSet.getSession().getDataSource().isDriverVersionAtLeast(9, 0)) {
@@ -37,5 +41,30 @@ public class PostgreJdbcFactory extends JDBCFactoryDefault
         } else {
             return new JDBCResultSetMetaDataImpl(resultSet);
         }
+    }
+
+    @NotNull
+    @Override
+    public JDBCResultSetMetaData createResultSetMetaData(
+        @NotNull JDBCResultSet resultSet,
+        @NotNull ResultSetMetaData original
+    ) throws SQLException {
+        if (resultSet.getSession().getDataSource().isDriverVersionAtLeast(9, 0)) {
+            return new PostgreResultSetMetaDataImpl(resultSet, original);
+        }
+        return new JDBCResultSetMetaDataImpl(resultSet, original);
+    }
+
+    @NotNull
+    @Override
+    public JDBCResultSetMetaData createResultSetMetaData(
+        @NotNull JDBCSession session,
+        @NotNull JDBCStatement statement,
+        @NotNull ResultSetMetaData original
+    ) throws SQLException {
+        if (session.getDataSource().isDriverVersionAtLeast(9, 0)) {
+            return new PostgreResultSetMetaDataImpl(session, statement, original);
+        }
+        return new JDBCResultSetMetaDataImpl(session, statement, original);
     }
 }

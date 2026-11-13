@@ -56,6 +56,9 @@ public class DDImportKeyDialog extends BaseDialog {
                 phraseText.selectAll();
                 phraseText.paste();
             }));
+        UIUtils.createPushButton(
+            composite, DDTrackingUIMessages.import_key_dialog_reset_button, null,
+            SelectionListener.widgetSelectedAdapter(e -> DDUIUtils.openCredentialReset()));
         return composite;
     }
 

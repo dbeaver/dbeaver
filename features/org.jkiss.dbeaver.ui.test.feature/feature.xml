@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ui.test.feature"
       label="DBeaver Desktop UI Test Components"
-      version="1.0.239.qualifier"
+      version="1.0.240.qualifier"
       provider-name="DBeaver Corp">
 
    <copyright>DBeaver Corp and others</copyright>

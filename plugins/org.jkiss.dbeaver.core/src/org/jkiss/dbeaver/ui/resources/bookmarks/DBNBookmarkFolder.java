@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.resources.bookmarks;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.CoreException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -26,7 +25,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.DBNSpecialFolder;
 import org.jkiss.dbeaver.model.navigator.NavigatorResources;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -37,8 +36,8 @@ import java.util.Collections;
 /**
  * DBNBookmarkFolder
  */
-public class DBNBookmarkFolder extends DBNResource {
-    public DBNBookmarkFolder(DBNNode parentNode, IResource resource, DBPResourceHandler handler) throws DBException, CoreException {
+public class DBNBookmarkFolder extends DBNSpecialFolder {
+    public DBNBookmarkFolder(DBNNode parentNode, IResource resource, DBPResourceHandler handler) {
         super(parentNode, resource, handler);
     }
 
@@ -64,8 +63,8 @@ public class DBNBookmarkFolder extends DBNResource {
     @Override
     public void dropNodes(@NotNull DBRProgressMonitor monitor, @NotNull Collection<DBNNode> nodes) throws DBException {
         for (DBNNode node : nodes) {
-            if (node instanceof DBNDatabaseNode) {
-                BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node,
+            if (node instanceof DBNDatabaseNode dbNode) {
+                BookmarksHandlerImpl.createBookmark(dbNode,
                     node.getNodeDisplayName(),
                     (IFolder) getResource());
             } else if (node instanceof DBNBookmark) {
@@ -82,8 +81,8 @@ public class DBNBookmarkFolder extends DBNResource {
     @Override
     public void pasteNodes(@NotNull Collection<DBNNode> nodes) throws DBException {
         for (DBNNode node : nodes) {
-            if (node instanceof DBNDatabaseNode) {
-                BookmarksHandlerImpl.createBookmark((DBNDatabaseNode) node,
+            if (node instanceof DBNDatabaseNode dbNode) {
+                BookmarksHandlerImpl.createBookmark(dbNode,
                     node.getNodeDisplayName(),
                     (IFolder) getResource());
             }

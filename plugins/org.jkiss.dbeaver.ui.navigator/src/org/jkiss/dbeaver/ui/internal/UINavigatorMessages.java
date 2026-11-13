@@ -21,6 +21,9 @@ import org.eclipse.osgi.util.NLS;
 public class UINavigatorMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.internal.UINavigatorMessages"; //$NON-NLS-1$
 
+    public static String pref_page_navigator_localize_folder_names;
+    public static String pref_page_navigator_localize_folder_names_tip;
+
     //object properties editor
     public static String obj_editor_properties_control_action_filter_setting;
     public static String obj_editor_properties_control_action_configure_columns;
@@ -68,6 +71,8 @@ public class UINavigatorMessages extends NLS {
     public static String actions_navigator_view;
     public static String actions_navigator_view_script_button;
     public static String actions_navigator_filter_objects;
+    public static String actions_navigator_clear_user_filter;
+    public static String actions_navigator_clear_all_users_filter;
     public static String actions_navigator_search_filter_connection_name;
     public static String actions_navigator_search_filter_connection_description;
     public static String actions_navigator_search_filter_container_name;
@@ -132,8 +137,6 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_database_general_label_show_statistics_tip;
     public static String pref_page_database_general_label_show_node_actions;
     public static String pref_page_database_general_label_show_node_actions_tip;
-    public static String dialog_connection_set_default_connection_settings;
-    public static String dialog_connection_set_default_connection_settings_tip;
     public static String pref_page_database_general_label_show_child_count;
     public static String pref_page_database_general_label_show_child_count_tip;
     public static String pref_page_database_general_label_color_all_nodes;
@@ -178,6 +181,8 @@ public class UINavigatorMessages extends NLS {
     public static String CreateLinkHandler_e_create_link_title;
     public static String CreateLinkHandler_e_create_link_validation;
     public static String dialog_select_datasource_title;
+    public static String dialog_select_datasource_button_select;
+    public static String dialog_select_datasource_button_none;
 
     public static String controls_object_list_job_props_read;
     public static String controls_object_list_message_items;
@@ -260,10 +265,14 @@ public class UINavigatorMessages extends NLS {
     public static String navigator_project_explorer_columns_type_description;
     public static String navigator_nodes_filtered_by_settings_text;
     public static String navigator_nodes_filtered_by_settings_tip;
+    public static String navigator_nodes_filtered_by_user_filter_text;
+    public static String navigator_nodes_filtered_by_all_users_filter_text;
     public static String navigator_nodes_filtered_by_search_text;
     public static String navigator_nodes_filtered_by_search_tip;
     public static String navigator_nodes_filtered_by_search_and_filter_text;
     public static String navigator_nodes_filtered_by_search_and_filter_tip;
+    public static String navigator_nodes_filtered_by_search_and_user_filter_text;
+    public static String navigator_nodes_filtered_by_search_and_all_users_filter_text;
 
     public static String datasource_list_action_empty;
     public static String filter_connection_name_placeholder;
@@ -290,6 +299,12 @@ public class UINavigatorMessages extends NLS {
 
     public static String confirm_commit_after_defaults_change_title;
     public static String confirm_commit_after_defaults_change_message;
+
+    public static String model_navigator_Description;
+    public static String CreateLinkedFileRunnable_e_cancelled_link;
+    public static String CreateLinkedFileRunnable_e_unable_to_link;
+    public static String CreateLinkedFolderRunnable_e_cancelled_link;
+    public static String CreateLinkedFolderRunnable_e_unable_to_link;
 
     static {
         // initialize resource bundle

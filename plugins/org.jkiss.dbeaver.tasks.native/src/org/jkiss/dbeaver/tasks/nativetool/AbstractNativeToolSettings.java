@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,6 +46,9 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
     implements DBTTaskSettings, DBTTaskSettingsInput<BASE_OBJECT> {
 
     private static final Log log = Log.getLog(AbstractNativeToolSettings.class);
+
+    /** Task property that stores the id of the task's connection */
+    public static final String PROP_DATA_SOURCE = "dataSource"; //$NON-NLS-1$
 
     private final String PROP_NAME_EXTRA_ARGS = "tools.wizard." + getClass().getSimpleName() + ".extraArgs";
 
@@ -168,7 +171,7 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
         }
 
         if (dataSourceContainer == null) {
-            String dsID = preferenceStore.getString("dataSource");
+            String dsID = preferenceStore.getString(PROP_DATA_SOURCE);
             if (!CommonUtils.isEmpty(dsID)) {
                 if (getProject() == null) {
                     String projectName = preferenceStore.getString("project");
@@ -245,7 +248,7 @@ public abstract class AbstractNativeToolSettings<BASE_OBJECT extends DBSObject>
     public void saveSettings(DBRRunnableContext runnableContext, DBPPreferenceStore preferenceStore) {
         preferenceStore.setValue("project", getProject().getName());
         if (dataSourceContainer != null) {
-            preferenceStore.setValue("dataSource", dataSourceContainer.getId());
+            preferenceStore.setValue(PROP_DATA_SOURCE, dataSourceContainer.getId());
         }
 
         if (preferenceStore instanceof DBPPreferenceMap) {

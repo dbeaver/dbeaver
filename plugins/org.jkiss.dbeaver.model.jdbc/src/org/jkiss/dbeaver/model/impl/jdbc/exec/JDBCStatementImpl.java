@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCObjectSupplier;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaDataSnapshot;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.AbstractStatement;
@@ -59,6 +60,18 @@ public class JDBCStatementImpl<STATEMENT extends Statement> extends AbstractStat
     private long updateCount;
     private Throwable executeError;
     private boolean closed;
+    private JDBCResultSetMetaDataSnapshot resultSetMetaDataSnapshot;
+
+    @Override
+    public void setResultSetMetaDataSnapshot(@Nullable JDBCResultSetMetaDataSnapshot snapshot) {
+        this.resultSetMetaDataSnapshot = snapshot;
+    }
+
+    @Nullable
+    @Override
+    public JDBCResultSetMetaDataSnapshot getResultSetMetaDataSnapshot() {
+        return resultSetMetaDataSnapshot;
+    }
 
     public JDBCStatementImpl(
         @NotNull JDBCSession connection,

@@ -18,15 +18,16 @@ package org.jkiss.dbeaver.model.datadam.auth;
 
 import com.dbeaver.datadam.sso.api.DDSsoConstants;
 import com.dbeaver.datadam.sso.api.DDSsoScopes;
-import com.dbeaver.datadam.sso.api.model.DDSsoConfigResponse;
 import com.dbeaver.datadam.sso.api.model.DDSsoTokenResponse;
+import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
 import com.google.gson.JsonParseException;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.datadam.DDClient;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.DDEndpoints;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.oauth.OAuthConstants;
 
@@ -37,26 +38,23 @@ import java.util.List;
 import java.util.Map;
 
 /** HTTP operations for a public desktop client. Credentials are never attached to a browser URL. */
-public class DDDesktopSsoClient extends DDClient implements AutoCloseable {
+public class DDDesktopSsoClient extends AbstractRestClient implements AutoCloseable {
+    private static final Log log = Log.getLog(DDDesktopSsoClient.class);
+
     public DDDesktopSsoClient(@NotNull URI issuer) throws DBException {
         super(CommonUtils.removeTrailingSlash(issuer.toString()), DEFAULT_CONNECT_TIMEOUT, 10_000, List.of(), HttpClient.Redirect.NEVER);
         requireSecureServer(issuer);
     }
 
     @NotNull
-    public DDSsoConfigResponse discover() throws DBException {
-        try {
-            DDSsoConfigResponse config = executeGetRequest(
-                CommonUtils.removeLeadingSlash(DDSsoConstants.APPLICATION_CONFIG_PATH), DDSsoConfigResponse.class);
-            if (config == null || config.issuer() == null) {
-                throw new DBException("Invalid desktop SSO configuration");
-            }
-            URI issuer = URI.create(config.issuer());
-            requireSecureServer(issuer);
-            return config;
-        } catch (IllegalArgumentException e) {
-            throw new DBException("Invalid desktop SSO configuration", e);
-        }
+    @Override
+    protected String getUserAgent() {
+        return GeneralUtils.getProductUserAgent();
+    }
+
+    @Override
+    protected void logDebug(@NotNull String message) {
+        log.debug(message);
     }
 
     @NotNull
@@ -125,12 +123,8 @@ public class DDDesktopSsoClient extends DDClient implements AutoCloseable {
         if (tokens.refreshToken() != null && !DDSsoConstants.BASE64URL_256_PATTERN.matcher(tokens.refreshToken()).matches()) {
             throw new DBException("Invalid desktop SSO refresh token response");
         }
-        try {
-            if (!DDSsoScopes.parse(tokens.scope()).equals(DDSsoScopes.parse(scope))) {
-                throw new IllegalArgumentException();
-            }
-        } catch (IllegalArgumentException e) {
-            throw new DBException("Unexpected SSO access scopes");
+        if (!DDSsoScopes.parse(tokens.scope()).equals(DDSsoScopes.parse(scope))) {
+            throw new DBException("Response tokens scope doesn't match required scope '" + scope + "'");
         }
         return tokens;
     }
@@ -144,10 +138,10 @@ public class DDDesktopSsoClient extends DDClient implements AutoCloseable {
     @Override
     protected void handleRequestException(@NotNull String message, @NotNull Throwable e) throws DBException {
         if (e instanceof JsonParseException) {
-            throw new DBException("Invalid desktop SSO response");
+            throw new DBException("Invalid desktop SSO response", e);
         }
         // Transport errors can include response data. A failed rotation is never retried automatically.
-        throw new DBException("Desktop SSO request failed");
+        throw new DBException("Desktop SSO request failed", e);
     }
 
     private void requireSecureServer(@NotNull URI url) throws DBException {

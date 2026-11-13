@@ -36,11 +36,11 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.resourceType">
-        <type id="dashboard" name="Dashboard"
+        <type id="dashboard" name="%resource.root.dashboards"
               icon="icons/dashboard.svg"
               folderIcon="icons/dashboard_folder.svg"
               managable="true">
-            <root folder="Dashboards"/>
+            <root folder="Dashboards" label="%resource.root.dashboards"/>
             <contentTypeBinding contentTypeId="org.jkiss.dbeaver.dashboard"/>
         </type>
     </extension>

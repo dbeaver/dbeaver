@@ -69,7 +69,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
     private ValueFormatSelector valueFormatSelector;
 
     public StreamConsumerPageSettings() {
-        super(DTMessages.data_transfer_wizard_settings_name);
+        super(DTUIMessages.data_transfer_wizard_settings_name);
         setTitle(DTUIMessages.stream_consumer_page_settings_title);
         setDescription(DTUIMessages.stream_consumer_page_settings_description);
         setPageComplete(false);
@@ -129,7 +129,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
 
                 Button editProfileButton = UIUtils.createDialogButton(
                     generalSettings,
-                    DTMessages.data_transfer_wizard_settings_button_edit,
+                    DTUIMessages.data_transfer_wizard_settings_button_edit,
                     SelectionListener.widgetSelectedAdapter(e -> {
                             PreferenceDialog propDialog = PreferencesUtil.createPropertyDialogOn(
                                 getShell(),
@@ -157,9 +157,9 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
                 binariesPanel.setLayoutData(gd);
                 lobExtractType = new Combo(binariesPanel, SWT.DROP_DOWN | SWT.READ_ONLY);
                 lobExtractType.setItems(
-                    DTMessages.data_transfer_wizard_settings_binaries_item_set_to_null,
-                    DTMessages.data_transfer_wizard_settings_binaries_item_save_to_file,
-                    DTMessages.data_transfer_wizard_settings_binaries_item_inline);
+                    DTUIMessages.data_transfer_wizard_settings_binaries_item_set_to_null,
+                    DTUIMessages.data_transfer_wizard_settings_binaries_item_save_to_file,
+                    DTUIMessages.data_transfer_wizard_settings_binaries_item_inline);
                 lobExtractType.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
                         switch (lobExtractType.getSelectionIndex()) {
                             case EXTRACT_LOB_SKIP: settings.setLobExtractType(StreamConsumerSettings.LobExtractType.SKIP); break;
@@ -213,7 +213,7 @@ public class StreamConsumerPageSettings extends DataTransferPageNodeSettings {
     {
         DBPDataFormatterRegistry registry = DBPPlatformDesktop.getInstance().getDataFormatterRegistry();
         formatProfilesCombo.removeAll();
-        formatProfilesCombo.add(DTMessages.data_transfer_wizard_settings_listbox_formatting_item_default);
+        formatProfilesCombo.add(DTUIMessages.data_transfer_wizard_settings_listbox_formatting_item_default);
         for (DBDDataFormatterProfile profile : registry.getCustomProfiles()) {
             formatProfilesCombo.add(profile.getProfileName());
         }

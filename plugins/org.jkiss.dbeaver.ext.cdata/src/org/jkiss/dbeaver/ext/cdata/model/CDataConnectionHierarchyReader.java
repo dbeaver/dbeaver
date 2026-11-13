@@ -24,14 +24,31 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.io.IOException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class CDataConnectionHierarchyReader {
+    private static final Map<Path, CachedHierarchy> CACHE = new ConcurrentHashMap<>();
+
+    private record CachedHierarchy(
+        @NotNull FileTime modified,
+        long size,
+        @NotNull String driverClass,
+        @NotNull String source,
+        @NotNull CDataConnectionHierarchy hierarchy
+    ) {
+    }
+
     private CDataConnectionHierarchyReader() {
     }
 
@@ -47,25 +64,31 @@ public final class CDataConnectionHierarchyReader {
         @NotNull DBRProgressMonitor monitor,
         @NotNull CDataDriverDescriptor descriptor
     ) throws DBException {
+        if (monitor.isCanceled()) {
+            throw new DBException("CData hierarchy loading was canceled");
+        }
         var resolved = descriptor.resolveDriver(monitor);
         if (monitor.isCanceled()) {
             throw new DBException("CData hierarchy loading was canceled");
         }
-        // config connections require neither source credentials nor driver license activation
-        try (var loader = new URLClassLoader(
-            new URL[] {resolved.jarPath().toUri().toURL()}, ClassLoader.getPlatformClassLoader()
-        )) {
-            Class<?> driverClass = Class.forName(resolved.driverClassName(), false, loader);
-            var deregister = driverClass.getMethod("deregister");
-            try {
-                Driver driver = (Driver) driverClass.getConstructor().newInstance();
-                return read(driver, descriptor.getDriverInfo().jdbcName());
-            } finally {
-                // the driver's static initializer registers a separate instance that keeps this loader alive
-                deregister.invoke(null);
+        String source = descriptor.getDriverInfo().jdbcName();
+        try {
+            Path jarPath = resolved.jarPath().toRealPath();
+            var attributes = Files.readAttributes(jarPath, BasicFileAttributes.class);
+            CachedHierarchy cached = CACHE.get(jarPath);
+            if (cached != null && cached.modified().equals(attributes.lastModifiedTime()) && cached.size() == attributes.size()
+                && cached.driverClass().equals(resolved.driverClassName()) && cached.source().equals(source)) {
+                return cached.hierarchy().newConfiguration();
             }
-        } catch (ReflectiveOperationException | IOException e) {
-            throw new DBException("Unable to load CData connection hierarchy", e);
+            CDataConnectionHierarchy hierarchy = readIsolated(jarPath, resolved.driverClassName(), source);
+            if (monitor.isCanceled()) {
+                throw new DBException("CData hierarchy loading was canceled");
+            }
+            CACHE.put(jarPath, new CachedHierarchy(
+                attributes.lastModifiedTime(), attributes.size(), resolved.driverClassName(), source, hierarchy));
+            return hierarchy.newConfiguration();
+        } catch (IOException e) {
+            throw new DBException("Unable to read CData driver metadata", e);
         }
     }
 
@@ -84,6 +107,30 @@ public final class CDataConnectionHierarchyReader {
             }
         } catch (SQLException e) {
             throw new DBException("Unable to read CData connection hierarchy", e);
+        }
+    }
+
+    @NotNull
+    private static CDataConnectionHierarchy readIsolated(
+        @NotNull Path jarPath,
+        @NotNull String driverClassName,
+        @NotNull String source
+    ) throws DBException {
+        // config connections require neither source credentials nor driver license activation
+        try (var loader = new URLClassLoader(
+            new URL[] {jarPath.toUri().toURL()}, ClassLoader.getPlatformClassLoader()
+        )) {
+            Class<?> driverClass = Class.forName(driverClassName, false, loader);
+            var deregister = driverClass.getMethod("deregister");
+            try {
+                Driver driver = (Driver) driverClass.getConstructor().newInstance();
+                return read(driver, source);
+            } finally {
+                // the driver's static initializer registers a separate instance that keeps this loader alive
+                deregister.invoke(null);
+            }
+        } catch (ReflectiveOperationException | IOException e) {
+            throw new DBException("Unable to load CData connection hierarchy", e);
         }
     }
 }

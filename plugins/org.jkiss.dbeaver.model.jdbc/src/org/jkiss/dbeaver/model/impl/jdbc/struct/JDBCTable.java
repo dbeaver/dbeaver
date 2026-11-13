@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.data.order.OrderingPolicy;
 import org.jkiss.dbeaver.model.data.order.OrderingStrategy;
 import org.jkiss.dbeaver.model.data.order.OrderingUtils;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaDataSnapshot;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStringValueHandler;
+import org.jkiss.dbeaver.model.impl.jdbc.internal.JDBCModelMessages;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTable;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -132,8 +134,24 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         long flags,
         int fetchSize
     ) throws DBException {
-        DBCStatistics statistics = new DBCStatistics();
-        boolean hasLimits = firstRow >= 0 && maxRows > 0;
+        return readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, fetchSize, false);
+    }
+
+    @NotNull
+    @Override
+    public DBCStatistics readData(
+        @Nullable DBCExecutionSource source,
+        @NotNull DBCSession session,
+        @NotNull DBDDataReceiver dataReceiver,
+        @Nullable DBDDataFilter dataFilter,
+        long firstRow,
+        long maxRows,
+        long flags,
+        int fetchSize,
+        boolean prepareColumnMetadata
+    ) throws DBException {
+        final DBCStatistics statistics = new DBCStatistics();
+        final boolean hasLimits = firstRow >= 0 && maxRows > 0;
 
         DBPDataSource dataSource = session.getDataSource();
         DBRProgressMonitor monitor = session.getProgressMonitor();
@@ -203,10 +221,15 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             DBCStatementType.SCRIPT,
             sqlQuery,
             firstRow,
-            maxRows))
-        {
+            maxRows
+        )) {
             if (monitor.isCanceled()) {
                 return statistics;
+            }
+            if (prepareColumnMetadata && dbStat instanceof JDBCStatement jdbcStatement && session instanceof JDBCSession jdbcSession) {
+                // Describe the exact query before opening the streaming cursor. Keep the description on
+                // the statement so its result set never needs a driver-side metadata lookup while fetching.
+                jdbcStatement.setResultSetMetaDataSnapshot(JDBCResultSetMetaDataSnapshot.prepare(jdbcSession, dbStat.getQueryString()));
             }
             if (dbStat instanceof JDBCStatement && (fetchSize > 0 || maxRows > 0)) {
                 DBExecUtils.setStatementFetchSize(dbStat, firstRow, maxRows, fetchSize);
@@ -313,7 +336,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         } catch (DBException e) {
             throw new DBCException("Can't generate query conditions", e, session.getExecutionContext());
         }
-        monitor.subTask(ModelMessages.model_jdbc_fetch_table_row_count);
+        monitor.subTask(JDBCModelMessages.model_jdbc_fetch_table_row_count);
         try (DBCStatement dbStat = session.prepareStatement(
             DBCStatementType.QUERY,
             query.toString(),

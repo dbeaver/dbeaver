@@ -21,7 +21,9 @@ import com.sun.net.httpserver.HttpServer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.junit.jupiter.api.*;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 import java.io.IOException;
@@ -53,18 +55,16 @@ class DDDesktopSsoLoginTest {
     private final DBRProgressMonitor monitor = Mockito.mock(DBRProgressMonitor.class);
     private HttpServer sso;
     private URI issuer;
+    private MockedStatic<GeneralUtils> productInfo;
 
     @BeforeEach
     void startSso() throws IOException {
+        productInfo = Mockito.mockStatic(GeneralUtils.class, invocation -> switch (invocation.getMethod().getName()) {
+            case "getProductTitle", "getProductUserAgent" -> "DBeaver Test";
+            default -> invocation.callRealMethod();
+        });
         sso = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
         issuer = URI.create("http://127.0.0.1:" + sso.getAddress().getPort());
-        sso.createContext("/sso/config", exchange -> {
-            byte[] response = new Gson().toJson(Map.of("issuer", issuer.toString())).getBytes(StandardCharsets.UTF_8);
-            exchange.sendResponseHeaders(200, response.length);
-            try (var output = exchange.getResponseBody()) {
-                output.write(response);
-            }
-        });
         sso.createContext("/token", exchange -> {
             Assertions.assertNull(exchange.getRequestHeaders().getFirst("Authorization"));
             form.set(new String(exchange.getRequestBody().readAllBytes(), StandardCharsets.UTF_8));
@@ -92,14 +92,7 @@ class DDDesktopSsoLoginTest {
     @AfterEach
     void stopSso() {
         sso.stop(0);
-    }
-
-    @Test
-    void discoversIssuerThroughGenericConfigurationEndpoint() throws Exception {
-        try (var client = new DDDesktopSsoClient(issuer)) {
-            var config = client.discover();
-            Assertions.assertEquals(issuer.toString(), config.issuer());
-        }
+        productInfo.close();
     }
 
     @Test
