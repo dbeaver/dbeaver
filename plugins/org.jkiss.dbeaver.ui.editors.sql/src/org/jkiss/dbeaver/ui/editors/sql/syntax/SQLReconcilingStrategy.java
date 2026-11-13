@@ -94,6 +94,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
     private SpellingService spellingService;
     private SQLSpellingContext spellingContext;
     private boolean initialized;
+    private volatile boolean cacheInitialized;
 
     public SQLReconcilingStrategy(SQLEditorBase editor) {
         this.editor = editor;
@@ -129,8 +130,17 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
 
     @Override
     public void setDocument(IDocument document) {
+        // A new reconciler reuses this strategy. Its cache is cleared below, so remove
+        // annotations tracked by the previous reconciliation before they become orphaned.
+        if (this.initialized) {
+            ProjectionAnnotationModel model = editor.getProjectionAnnotationModel();
+            if (model != null) {
+                model.removeAllAnnotations();
+            }
+        }
         this.document = document;
         this.cache.clear();
+        this.cacheInitialized = false;
 
         spellingService = EditorsUI.getSpellingService();
         if (spellingService.getActiveSpellingEngineDescriptor(editor.getViewerConfiguration().getPreferenceStore()) != null) {
@@ -208,6 +218,11 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
             // folded state to save. Keep the previously persisted state instead of erasing it.
             return;
         }
+        if (!this.cacheInitialized) {
+            // The cache has not been rebuilt since the document/viewer was reconfigured.
+            // Preserve the previously persisted state instead of overwriting it with an empty cache.
+            return;
+        }
         StringJoiner stringJoiner = new StringJoiner(";");
         for (SQLScriptElementImpl position : cache) {
             ProjectionAnnotation annotation = position.getAnnotation();
@@ -255,12 +270,14 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
                 }
                 cache.clear();
             }
+            this.cacheInitialized = false;
             return;
         }
         ProjectionAnnotationModel model = editor.getProjectionAnnotationModel();
         if (model == null) {
             return;
         }
+        this.cacheInitialized = false;
         long documentModificationStamp = this.document instanceof IDocumentExtension4 documentExtension
             ? documentExtension.getModificationStamp()
             : IDocumentExtension4.UNKNOWN_MODIFICATION_STAMP;
@@ -341,6 +358,7 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         model.modifyAnnotations(deletions, additions, null);
         cache.removeAll(deletedPositions);
         cache.addAll(additions.values());
+        this.cacheInitialized = true;
 
         if (isSpellingEnabled() && spellingContext != null) {
             IRegion[] regions = new IRegion[] {

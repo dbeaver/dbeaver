@@ -101,6 +101,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -163,13 +164,29 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     private int lastQueryErrorPosition = -1;
     private IDocument bigDocumentListenerDocument;
     private volatile boolean bigDocument;
+    private volatile long bigDocumentByteLength = -1;
+    private volatile IDocument bigDocumentByteLengthDocument;
+    private volatile Charset bigDocumentCharset;
     private final IDocumentListener bigDocumentListener = new IDocumentListener() {
         @Override
         public void documentAboutToBeChanged(DocumentEvent event) {
+            if (bigDocumentByteLength >= 0 && event.getDocument() == bigDocumentByteLengthDocument) {
+                try {
+                    bigDocumentByteLength -= getEncodedLength(
+                        event.getDocument().get(event.getOffset(), event.getLength()),
+                        bigDocumentCharset
+                    );
+                } catch (BadLocationException e) {
+                    bigDocumentByteLength = -1;
+                }
+            }
         }
 
         @Override
         public void documentChanged(DocumentEvent event) {
+            if (bigDocumentByteLength >= 0 && event.getDocument() == bigDocumentByteLengthDocument) {
+                bigDocumentByteLength += getEncodedLength(event.getText(), bigDocumentCharset);
+            }
             checkBigDocumentTransition();
         }
     };
@@ -216,9 +233,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     private void refreshSyntaxColors() {
         ISourceViewer sourceViewer = getSourceViewer();
         if (sourceViewer != null && !sourceViewer.getTextWidget().isDisposed()) {
+            // Reloading syntax rules also refreshes the presentation reconciler without
+            // resetting undo history or the folding strategy cache.
             reloadSyntaxRules();
-            // Reconfigure to let comments/strings colors to take effect
-            sourceViewer.configure(getSourceViewerConfiguration());
         }
     }
 
@@ -291,7 +308,59 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     public boolean isBigDocument() {
         long boundary = getBigScriptFileLengthBoundary();
         IDocument document = getDocument();
-        return (document != null && document.getLength() > boundary) || isBigScript(getEditorInput(), boundary);
+        if (document != null) {
+            long documentLength = document.getLength();
+            if (documentLength > boundary) {
+                return true;
+            }
+            // The boundary is expressed in bytes. For in-memory documents use the encoded
+            // length in the ambiguous range; below boundary/4 even UTF-8 cannot exceed it.
+            if (documentLength > boundary / 4
+                && EditorUtils.getLocalFileFromInput(getEditorInput()) == null) {
+                long encodedLength = getDocumentByteLength(document);
+                if (encodedLength > boundary) {
+                    return true;
+                }
+            }
+        }
+        return isBigScript(getEditorInput(), boundary);
+    }
+
+    private long getDocumentByteLength(@NotNull IDocument document) {
+        if (document != bigDocumentByteLengthDocument) {
+            bigDocumentByteLengthDocument = document;
+            bigDocumentByteLength = -1;
+            bigDocumentCharset = null;
+        }
+        if (bigDocumentByteLength < 0) {
+            try {
+                bigDocumentCharset = getDocumentCharset();
+                bigDocumentByteLength = getEncodedLength(document.get(), bigDocumentCharset);
+            } catch (Exception e) {
+                log.debug("Error calculating document byte length", e);
+                return -1;
+            }
+        }
+        return bigDocumentByteLength;
+    }
+
+    @NotNull
+    private Charset getDocumentCharset() {
+        if (getEditorInput() instanceof StringEditorInput stringInput) {
+            try {
+                return Charset.forName(stringInput.getStorage().getCharset());
+            } catch (Exception e) {
+                log.debug("Error detecting document charset", e);
+            }
+        }
+        return Charset.forName(GeneralUtils.getDefaultFileEncoding());
+    }
+
+    private static long getEncodedLength(@Nullable CharSequence text, @Nullable Charset charset) {
+        if (text == null || charset == null) {
+            return 0;
+        }
+        return text.toString().getBytes(charset).length;
     }
 
     private void attachBigDocumentListener() {
@@ -305,6 +374,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
                 document.addDocumentListener(bigDocumentListener);
             }
         }
+        bigDocumentByteLengthDocument = document;
+        bigDocumentByteLength = -1;
+        bigDocumentCharset = null;
         bigDocument = isBigDocument();
     }
 
@@ -313,6 +385,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             bigDocumentListenerDocument.removeDocumentListener(bigDocumentListener);
             bigDocumentListenerDocument = null;
         }
+        bigDocumentByteLengthDocument = null;
+        bigDocumentByteLength = -1;
+        bigDocumentCharset = null;
     }
 
     private void checkBigDocumentTransition() {
@@ -325,21 +400,16 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         // when the document crosses the large-document threshold. Defer this because reloading the syntax
         // rules must not run inside a document change notification.
         UIUtils.asyncExec(() -> {
-            if (getDocument() == null || isBigDocument() != bigDocument) {
-                // The document size changed again; the notification for the newest transition will do the work.
+            if (isDisposed() || getDocument() == null || isBigDocument() != bigDocument) {
+                // The editor is closing or the document size changed again;
+                // the newest transition will do the work.
                 return;
             }
             if (occurrencesHighlighter != null) {
                 occurrencesHighlighter.updateInput(getEditorInput());
             }
             reloadSyntaxRules();
-            // The presentation repairers are selected from the document size. Replace only the
-            // presentation reconciler: reconfiguring the viewer would reset undo history and the
-            // folding strategy cache.
-            if (getSourceViewer() instanceof SQLEditorSourceViewer sourceViewer
-                && getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration configuration) {
-                sourceViewer.refreshPresentationReconciler(configuration);
-            }
+            refreshAdvancedServices();
             if (this instanceof SQLEditor sqlEditor) {
                 sqlEditor.refreshEditorIconAndTitle();
             }
@@ -1063,6 +1133,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             configuration.onDataSourceChange();
             configuration.refreshAutoActivation();
         }
+        // Rebuild only the presentation reconciler to apply the refreshed syntax rules and
+        // the size-dependent string/quoted repairers without resetting undo history.
+        refreshPresentationReconciler();
         if (verticalRuler != null) {
             verticalRuler.update();
         }
@@ -1524,6 +1597,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         SQLEditorSourceViewer sourceViewer = (SQLEditorSourceViewer) this.getSourceViewer();
         sourceViewer.unconfigure();
         sourceViewer.configure(configuration);
+    }
+
+    private void refreshPresentationReconciler() {
+        if (getSourceViewer() instanceof SQLEditorSourceViewer sourceViewer
+            && getSourceViewerConfiguration() instanceof SQLEditorSourceViewerConfiguration configuration) {
+            sourceViewer.refreshPresentationReconciler(configuration);
+        }
     }
 
     void setLastQueryErrorPosition(int lastQueryErrorPosition) {

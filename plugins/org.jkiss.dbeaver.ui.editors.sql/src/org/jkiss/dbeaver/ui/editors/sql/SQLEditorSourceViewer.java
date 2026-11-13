@@ -93,9 +93,11 @@ public class SQLEditorSourceViewer extends ProjectionViewer {
      * This keeps the undo manager, the editor reconciler and the folding annotations intact.
      */
     void refreshPresentationReconciler(@NotNull SQLEditorSourceViewerConfiguration configuration) {
-        if (fPresentationReconciler != null) {
-            fPresentationReconciler.uninstall();
+        if (fPresentationReconciler == null) {
+            // The viewer has not been configured yet; configure() will use the current state.
+            return;
         }
+        fPresentationReconciler.uninstall();
         fPresentationReconciler = configuration.getPresentationReconciler(this);
         if (fPresentationReconciler != null) {
             fPresentationReconciler.install(this);

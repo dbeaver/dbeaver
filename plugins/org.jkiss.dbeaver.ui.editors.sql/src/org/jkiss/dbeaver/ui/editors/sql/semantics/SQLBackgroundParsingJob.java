@@ -614,7 +614,7 @@ public class SQLBackgroundParsingJob {
     private void schedule(@Nullable DocumentEvent event) {
         synchronized (this.syncRoot) {
             if (this.editor.getRuleManager() == null || !this.editor.isAdvancedHighlightingEnabled() ||
-                !this.environment.isParserApplied(this.editor.getEditorInput())
+                !SQLEditorUtils.isSQLSyntaxParserApplied(this.editor)
             ) {
                 return;
             }
@@ -644,7 +644,7 @@ public class SQLBackgroundParsingJob {
                 this.cancel();
             }
 
-            if (newDocument != null && this.environment.isParserApplied(editor.getEditorInput())) {
+            if (newDocument != null && SQLEditorUtils.isSQLSyntaxParserApplied(editor)) {
                 this.document = newDocument;
                 this.reset();
             }
