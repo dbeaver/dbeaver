@@ -168,8 +168,8 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
                 SWT.MULTI, true, inline);
         textMode = new TextMode(this, timeEditor, valueController);
         dateEditorMode = new DateEditorMode(this, timeEditor);
-        if (!isCalendarMode()) {
-            textMode.run();
+        if (!DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR)) {
+            timeEditor.setToTextComposite();
             textMode.setChecked(true);
         } else dateEditorMode.setChecked(true);
 
@@ -182,7 +182,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     }
 
     private boolean isCalendarMode() {
-        return DBWorkbench.getPlatform().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_USE_DATETIME_EDITOR);
+        return !timeEditor.isTextMode();
     }
 
     @Override
@@ -210,6 +210,17 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     @Override
     public void primeEditorValue(@Nullable Object value) {
         timeEditor.setTextValue(valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT));
+        // Native date/time values can be strings and should be edited as text without calendar conversion.
+        dateEditorMode.setEnabled(!(value instanceof String));
+        if (value instanceof String) {
+            timeEditor.setToTextComposite();
+            textMode.setChecked(true);
+            dateEditorMode.setChecked(false);
+            if (valueController.getEditType() == IValueController.EditType.INLINE) {
+                timeEditor.selectAllContent();
+            }
+            return;
+        }
         try {
             timeEditor.setValue(value);
         } catch (DBCException exception) {
