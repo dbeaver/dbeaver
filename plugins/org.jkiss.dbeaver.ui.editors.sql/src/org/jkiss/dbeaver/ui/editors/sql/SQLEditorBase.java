@@ -738,9 +738,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
     @NotNull
     public IContentOutlinePage getOverviewOutlinePage() {
-        if (this.getSyntaxContext() == null) {
-            this.reloadSyntaxRules();
-        }
         if ((outlinePage == null || outlinePage.getControl() == null || outlinePage.getControl().isDisposed())) {
             outlinePage = new SQLEditorOutlinePage(this);
         }
@@ -978,6 +975,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
         if (this.semanticMarkersManager != null) {
             this.semanticMarkersManager.refresh();
+        }
+        if (this.outlinePage != null) {
+            this.outlinePage.refresh();
         }
     }
 
