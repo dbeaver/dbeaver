@@ -40,8 +40,17 @@ public class SQLStandardAnalyzer extends LSMAnalyzerImpl<SQLStandardLexer, SQLSt
     @Override
     protected Pair<SQLStandardLexer, SQLStandardParser> createParser(@NotNull STMSource source, @NotNull LSMAnalyzerParameters parameters) {
         SQLStandardLexer lexer = createLexer(source, parameters);
-        SQLStandardParser parser =  new SQLStandardParser(new CommonTokenStream(lexer), parameters);
+        SQLStandardParser parser = new SQLStandardParser(new CommonTokenStream(lexer), parameters);
         return new Pair<>(lexer, parser);
+    }
+
+    @NotNull
+    @Override
+    protected SQLStandardParser createParser(
+        @NotNull TokenStream tokenStream,
+        @NotNull LSMAnalyzerParameters parameters
+    ) {
+        return new SQLStandardParser(tokenStream, parameters);
     }
     
     public static SQLStandardLexer createLexer(@NotNull STMSource source, @NotNull LSMAnalyzerParameters parameters) {
