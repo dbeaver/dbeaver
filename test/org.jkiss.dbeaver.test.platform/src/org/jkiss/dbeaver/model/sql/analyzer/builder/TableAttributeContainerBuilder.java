@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTablePartition;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,14 +36,26 @@ import java.util.List;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.withSettings;
 
 public class TableAttributeContainerBuilder extends Builder<DBSTable, DBSEntityAttribute> {
     private final DBSTable entity;
     private final List<DBSTableForeignKey> associations = new ArrayList<>();
 
     public TableAttributeContainerBuilder(@NotNull DBPDataSource dataSource, @NotNull DBSObject parent, @NotNull String name) throws DBException {
+        this(dataSource, parent, name, false);
+    }
+
+    public TableAttributeContainerBuilder(
+        @NotNull DBPDataSource dataSource,
+        @NotNull DBSObject parent,
+        @NotNull String name,
+        boolean partition
+    ) throws DBException {
         super(dataSource, parent);
-        this.entity = mock(DBSTable.class);
+        this.entity = partition
+            ? mock(DBSTable.class, withSettings().extraInterfaces(DBSTablePartition.class))
+            : mock(DBSTable.class);
         when(entity.getDataSource()).thenReturn(dataSource);
         when(entity.getParentObject()).thenReturn(parent);
         when(entity.getName()).thenReturn(name);

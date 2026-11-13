@@ -57,6 +57,7 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 /**
  * Completion analyzer
@@ -103,7 +104,12 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
     }
 
     public List<SQLCompletionProposalBase> getProposals() {
-        return proposals;
+        if (proposals.stream().noneMatch(p -> SQLCompletionHelper.isNonPartitionTableOrView(p.getObject()))) {
+            return proposals;
+        }
+        return proposals.stream()
+            .filter(p -> !SQLCompletionHelper.isTablePartition(p.getObject()))
+            .collect(Collectors.toCollection(ArrayList::new));
     }
 
     public boolean isSearchFinished() {
@@ -1106,6 +1112,10 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
                     }
                 }
             }
+            if (parent instanceof DBSObjectContainer
+                && matchedObjects.stream().anyMatch(SQLCompletionHelper::isNonPartitionTableOrView)) {
+                matchedObjects.removeIf(SQLCompletionHelper::isTablePartition);
+            }
             if (!combinedMatch.isEmpty()) {
                 String replaceString = combinedMatch.toString();
 
@@ -1176,8 +1186,23 @@ public class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgres
         assistantParams.setCaseSensitive(request.getWordDetector().isQuoted(objectName));
         assistantParams.setGlobalSearch(request.getContext().isSearchGlobally());
         assistantParams.setMaxResults(MAX_STRUCT_PROPOSALS);
-        Collection<DBSObjectReference> references = assistant.findObjectsByMask(monitor, request.getContext().getExecutionContext(), assistantParams);
+        List<DBSObjectReference> references = new ArrayList<>(
+            assistant.findObjectsByMask(monitor, request.getContext().getExecutionContext(), assistantParams));
+        // Assistant returns unresolved references; classify them by the partition flag without resolving.
+        List<Boolean> partitionFlags = new ArrayList<>(references.size());
+        boolean hasNonPartitionTableOrView = false;
         for (DBSObjectReference reference : references) {
+            Boolean partitionFlag = SQLCompletionHelper.isTablePartitionReference(reference);
+            partitionFlags.add(partitionFlag);
+            if (Boolean.FALSE.equals(partitionFlag)) {
+                hasNonPartitionTableOrView = true;
+            }
+        }
+        for (int i = 0; i < references.size(); i++) {
+            if (hasNonPartitionTableOrView && Boolean.TRUE.equals(partitionFlags.get(i))) {
+                continue;
+            }
+            DBSObjectReference reference = references.get(i);
             proposals.add(
                 makeProposalsFromObject(
                     reference,
