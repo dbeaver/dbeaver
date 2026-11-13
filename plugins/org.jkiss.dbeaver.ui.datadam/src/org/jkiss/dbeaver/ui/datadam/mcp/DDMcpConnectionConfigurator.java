@@ -17,31 +17,31 @@
 package org.jkiss.dbeaver.ui.datadam.mcp;
 
 import com.dbeaver.datadam.dam.remote.api.DDRemoteDamSettingKeys;
-import org.eclipse.swt.SWT;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.datadam.DDAccountClient;
-import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionSettings;
-import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
+import org.jkiss.dbeaver.model.datadam.DDProductConfig;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
+import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
+import org.jkiss.dbeaver.model.datadam.mcp.DDMcpConnectionCatalog;
+import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamSettingsStore;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.preferences.PrefPageDataSourceAI;
-import org.jkiss.dbeaver.ui.datadam.DDDesktopDamService;
 import org.jkiss.dbeaver.ui.datadam.internal.DDMcpMessages;
+import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 
 public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<PrefPageDataSourceAI, PrefPageDataSourceAI> {
-    private static final Log log = Log.getLog(DDMcpConnectionConfigurator.class);
+    private final DDMcpConnectionCatalog mcpConnectionCatalog = DDMcpConnectionCatalog.getInstance();
+    private final DDRemoteDamSettingsStore settingsStore = DDRemoteDamSettingsStore.getInstance();
     private Button enableCheck;
-    private boolean resetPending;
-    @Nullable
-    private AbstractJob statusJob;
+    private boolean available;
 
     @Override
     public void createControl(
@@ -53,74 +53,128 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
         if (connection == null) {
             return;
         }
-        Label loading = new Label(parent, SWT.NONE);
-        loading.setText(DDMcpMessages.mcp_connection_status_loading);
-        loading.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        parent.addDisposeListener(e -> {
-            if (statusJob != null) {
-                statusJob.cancel();
+        Composite group = UIUtils.createTitledComposite(
+            parent, DDMcpMessages.mcp_connection_settings_group, 2, GridData.FILL_HORIZONTAL);
+        enableCheck = UIUtils.createCheckbox(
+            group,
+            DDMcpMessages.mcp_connection_settings_enabled,
+            DDMcpMessages.mcp_connection_settings_enabled_tip,
+            false,
+            1
+        );
+        Composite section = group.getParent();
+        Button aiEnabledCheck = page.getAIEnabledCheck();
+        UIUtils.createLink(
+            group, "<a>" + DDTrackingUIMessages.sync_preference_page_mcp_settings_link + "</a>",
+            SelectionListener.widgetSelectedAdapter(e -> openMcpSettings(parent, section, connection, aiEnabledCheck))
+        );
+        showStatus(parent, section, connection, aiEnabledCheck, settingsStore.getSettings());
+        Runnable refresh = () -> UIUtils.asyncExec(() -> {
+            if (!section.isDisposed()) {
+                showStatus(parent, section, connection, aiEnabledCheck, settingsStore.getSettings());
             }
         });
-        statusJob = DDDesktopDamService.getInstance().createJob(
-            "Check DataDam MCP availability",
-            account -> account.getDamSettings(
-                DDRemoteDamDesktopSessionService.getInstance().getClientDamId()),
-            status -> showStatus(parent, loading, page, status),
-            error -> {
-                log.debug("Cannot read DataDam MCP status", error);
-                showStatus(parent, loading, page, null);
-            });
+        SelectionListener aiListener = SelectionListener.widgetSelectedAdapter(e ->
+            showStatus(parent, section, connection, aiEnabledCheck, settingsStore.getSettings()));
+        aiEnabledCheck.addSelectionListener(aiListener);
+        DDRemoteDamSettingsStore.Listener listener = settings -> refresh.run();
+        DDDesktopAccessListener accessListener = new DDDesktopAccessListener() {
+            @Override
+            public void accessChanging() {
+            }
+
+            @Override
+            public void accessChanged() {
+                refresh.run();
+            }
+        };
+        settingsStore.addListener(listener);
+        DDDesktopAccessService.getInstance().addAccessListener(accessListener);
+        section.addDisposeListener(e -> {
+            if (!aiEnabledCheck.isDisposed()) {
+                aiEnabledCheck.removeSelectionListener(aiListener);
+            }
+            settingsStore.removeListener(listener);
+            DDDesktopAccessService.getInstance().removeAccessListener(accessListener);
+        });
+    }
+
+    private void openMcpSettings(
+        @NotNull Composite parent,
+        @NotNull Composite section,
+        @NotNull DBPDataSourceContainer connection,
+        @NotNull Button aiEnabledCheck
+    ) {
+        DBPDataSourceContainer stored = connection.getRegistry().getDataSource(connection.getId());
+        boolean wasEnabled = stored != null && mcpConnectionCatalog.isEnabled(stored);
+        PreferencesUtil.createPreferenceDialogOn(
+            enableCheck.getShell(), DDMcpConnectionsPreferencePage.PAGE_ID,
+            new String[]{DDMcpConnectionsPreferencePage.PAGE_ID}, connection).open();
+        if (section.isDisposed()) {
+            return;
+        }
+        stored = connection.getRegistry().getDataSource(connection.getId());
+        boolean enabled = stored != null && mcpConnectionCatalog.isEnabled(stored);
+        if (stored != null && wasEnabled != enabled) {
+            mcpConnectionCatalog.setEnabled(connection, enabled);
+            if (available) {
+                enableCheck.setSelection(enabled);
+            }
+            showStatus(parent, section, connection, aiEnabledCheck, settingsStore.getSettings());
+        }
     }
 
     private void showStatus(
         @NotNull Composite parent,
-        @NotNull Label loading,
-        @NotNull PrefPageDataSourceAI page,
-        @Nullable DDAccountClient.DamSettingsState status
+        @NotNull Composite section,
+        @NotNull DBPDataSourceContainer connection,
+        @NotNull Button aiEnabledCheck,
+        @Nullable DDRemoteDamSettings settings
     ) {
-        if (parent.isDisposed()) {
-            return;
+        boolean visible = isVisible();
+        boolean enabled = isAvailable(settings) && aiEnabledCheck.getSelection();
+        section.setVisible(visible);
+        ((GridData) section.getLayoutData()).exclude = !visible;
+        if (!enabled) {
+            enableCheck.setSelection(false);
+        } else if (!available) {
+            enableCheck.setSelection(mcpConnectionCatalog.isEnabled(connection));
         }
-        loading.dispose();
-        if (status != null && status.settings().isEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true, false)) {
-            Composite group = UIUtils.createTitledComposite(
-                parent, DDMcpMessages.mcp_connection_settings_group, 1, GridData.FILL_HORIZONTAL);
-            enableCheck = UIUtils.createCheckbox(
-                group,
-                DDMcpMessages.mcp_connection_settings_enabled,
-                DDMcpMessages.mcp_connection_settings_enabled_tip,
-                false,
-                1
-            );
-            if (!resetPending) {
-                loadSettings(page);
-            }
-        }
+        enableCheck.setEnabled(enabled);
+        available = enabled;
         parent.layout(true, true);
     }
 
     @Override
     public void loadSettings(@NotNull PrefPageDataSourceAI page) {
-        resetPending = false;
         DBPDataSourceContainer connection = page.getConnection();
-        if (connection != null && enableCheck != null) {
-            enableCheck.setSelection(DDMcpConnectionSettings.isEnabled(connection));
+        if (connection != null && enableCheck != null && available) {
+            enableCheck.setSelection(mcpConnectionCatalog.isEnabled(connection));
         }
     }
 
     @Override
     public void saveSettings(@NotNull PrefPageDataSourceAI page) {
         DBPDataSourceContainer connection = page.getConnection();
-        if (connection != null && (enableCheck != null || resetPending)) {
-            DDMcpConnectionSettings.setEnabled(connection, enableCheck != null && enableCheck.getSelection());
-            resetPending = false;
+        if (connection != null && enableCheck != null && enableCheck.isEnabled()
+            && page.getAIEnabledCheck().getSelection() && isAvailable(settingsStore.getSettings())) {
+            mcpConnectionCatalog.setEnabled(connection, enableCheck.getSelection());
         }
+    }
+
+    private boolean isAvailable(@Nullable DDRemoteDamSettings settings) {
+        return isVisible() && settings != null
+            && settings.isEnabled(DDRemoteDamSettingKeys.MCP_ENABLED, true, false);
+    }
+
+    private boolean isVisible() {
+        return DDProductConfig.isIntegrationEnabled()
+            && DDDesktopAccessService.getInstance().getStatus() == DDDesktopAccessService.Status.SIGNED_IN;
     }
 
     @Override
     public void resetSettings(@NotNull PrefPageDataSourceAI page) {
-        resetPending = true;
-        if (enableCheck != null) {
+        if (enableCheck != null && available) {
             enableCheck.setSelection(false);
         }
     }

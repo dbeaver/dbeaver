@@ -20,6 +20,7 @@ import org.jkiss.dbeaver.model.DBIcon;
 
 public class DDTrackingUIIcons {
     public static final DBIcon PROJECT_DATADAM = new DBIcon("datadam-project", "project_datadam.svg");
+    public static final DBIcon SHARE_PROJECT = new DBIcon("datadam-project-share", "share_project.svg");
     public static final DBIcon IMPORT_PROJECT = new DBIcon("datadam-project-import", "import_project.svg");
     public static final DBIcon PROJECT_SYNC = new DBIcon("datadam-project-sync", "project_sync.svg");
     public static final DBIcon PROJECT_DISCONNECT = new DBIcon("datadam-project-disconnect", "project_disconnect.svg");

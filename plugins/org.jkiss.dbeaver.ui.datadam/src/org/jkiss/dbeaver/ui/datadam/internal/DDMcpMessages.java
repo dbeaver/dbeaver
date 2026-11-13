@@ -25,6 +25,25 @@ public class DDMcpMessages extends NLS {
     public static String mcp_connection_settings_enabled;
     public static String mcp_connection_settings_enabled_tip;
     public static String mcp_connection_status_loading;
+    public static String mcp_connections_title;
+    public static String mcp_connections_description;
+    public static String mcp_connections_documentation;
+    public static String mcp_connections_login_required;
+    public static String mcp_connections_projects;
+    public static String mcp_connections_connections;
+    public static String mcp_connections_name;
+    public static String mcp_connections_driver;
+    public static String mcp_connections_scope;
+    public static String mcp_connections_accessible;
+    public static String mcp_connections_accessible_tip;
+    public static String mcp_connections_manual_tip;
+    public static String mcp_connections_ready_tip;
+    public static String mcp_connections_refresh;
+    public static String mcp_connections_add;
+    public static String mcp_connections_configure_scope;
+    public static String mcp_connections_remove;
+    public static String mcp_connections_save_failed;
+    public static String mcp_connections_open_failed;
 
     static {
         NLS.initializeMessages(BUNDLE_NAME, DDMcpMessages.class);

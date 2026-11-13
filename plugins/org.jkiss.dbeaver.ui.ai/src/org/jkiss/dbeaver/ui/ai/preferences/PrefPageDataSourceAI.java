@@ -24,11 +24,7 @@ import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Combo;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPropertyPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -236,6 +232,7 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
         }
         settings.loadSettingsFromMap(Map.of());
         enableAiCheck.setSelection(settings.isMetaTransferConfirmed());
+        enableAiCheck.notifyListeners(SWT.Selection, new Event());
         updateScopeSelection();
         if (aiConfigurator != null) {
             restoreConfiguratorEnablement(aiConfiguratorContent);
@@ -255,6 +252,11 @@ public class PrefPageDataSourceAI extends AbstractPrefPage implements IWorkbench
     @Nullable
     public DBPDataSourceContainer getConnection() {
         return element == null ? null : element.getAdapter(DBPDataSourceContainer.class);
+    }
+
+    @NotNull
+    public Button getAIEnabledCheck() {
+        return enableAiCheck;
     }
 
     @Override
