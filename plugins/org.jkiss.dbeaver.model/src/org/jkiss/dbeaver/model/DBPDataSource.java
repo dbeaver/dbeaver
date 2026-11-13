@@ -57,10 +57,11 @@ public interface DBPDataSource extends DBSInstanceContainer, DBPContextWithAttri
      * {@code JDBCFactory.createResultSetMetaData(JDBCResultSet)} path performs metadata lookups
      * while the cursor is active, potentially interfering with the fetch.
      * For streaming exports with a positive fetch size, when the data source advertises this feature,
-     * the transfer producer passes this request through
-     * {@link org.jkiss.dbeaver.model.struct.DBSDataContainer} to
-     * {@code JDBCTable.readData(..., prepareColumnMetadata)}. That method calls
-     * {@code JDBCResultSetMetaDataSnapshot.prepare(...)} before execution, using
+     * the transfer producer registers
+     * {@link org.jkiss.dbeaver.model.struct.DBSDataContainer#CONTEXT_READ_PREPARED_COLUMN_METADATA}
+     * on its execution source for the duration of the read. JDBC table reads prepare a
+     * {@code JDBCResultSetMetaDataSnapshot} before the first cursor opens and reuse it for
+     * matching segments of that transfer, using
      * {@code JDBCFactory.createResultSetMetaData(JDBCSession, JDBCStatement, ResultSetMetaData)} to
      * resolve driver-specific columns. When the result set opens, the snapshot supplies the prepared
      * descriptions to {@code JDBCFactory.createResultSetMetaData(JDBCResultSet, ResultSetMetaData)}.
@@ -68,6 +69,13 @@ public interface DBPDataSource extends DBSInstanceContainer, DBPContextWithAttri
      */
     String FEATURE_JDBC_TABLE_READ_REQUIRES_PREPARED_COLUMN_METADATA =
         "datasource.jdbc-table-read-requires-prepared-column-metadata";
+    /**
+     * For paginated JDBC table reads, attempt the dialect's SQL limit transformer instead of JDBC row limits.
+     * A successful transformation also disables JDBC fetching for that bounded statement. If it cannot be
+     * applied, the read logs an error and falls back to ordinary statement creation and fetch-size handling.
+     */
+    String FEATURE_JDBC_ATTEMPT_LIMIT_TRANSFORMER_FOR_PAGINATED_TABLE_READ =
+        "datasource.jdbc-attempt-limit-transformer-for-paginated-table-read";
 
 
 

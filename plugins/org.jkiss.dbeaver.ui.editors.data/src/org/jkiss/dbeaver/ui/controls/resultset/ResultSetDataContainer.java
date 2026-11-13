@@ -106,7 +106,7 @@ public class ResultSetDataContainer implements DBSDataContainer, DBPContextProvi
         @Nullable DBCExecutionSource source,
         @NotNull DBCSession session,
         @NotNull DBDDataReceiver dataReceiver,
-        DBDDataFilter dataFilter,
+        @Nullable DBDDataFilter dataFilter,
         long firstRow,
         long maxRows,
         long flags,
