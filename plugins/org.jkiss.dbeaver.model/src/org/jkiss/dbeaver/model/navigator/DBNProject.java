@@ -340,23 +340,46 @@ public class DBNProject extends DBNNode implements DBNNodeWithCache, DBNNodeExte
     }
 
     @NotNull
-    private synchronized DBNNode[] getRegularChildNodes(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (disposed) {
-            throw new DBException("Project navigator node is disposed");
+    private DBNNode[] getRegularChildNodes(@NotNull DBRProgressMonitor monitor) throws DBException {
+        synchronized (this) {
+            if (disposed) {
+                throw new DBException("Project navigator node is disposed");
+            }
+            if (children != null) {
+                return children;
+            }
         }
-        if (children != null) {
+
+        // Registry initialization can synchronously request a password on the UI thread.
+        // Do not hold the navigator lock: the UI may query this node while loading.
+        try {
+            if (getModel().isGlobal() && !project.isOpen()) {
+                project.ensureOpen();
+            }
+            project.getDataSourceRegistry();
+        } catch (Throwable e) {
+            project.dispose();
+            throw new DBException("Internal error", e);
+        }
+
+        synchronized (this) {
+            if (disposed) {
+                throw new DBException("Project navigator node is disposed");
+            }
+            if (children != null) {
+                return children;
+            }
+            DBNNode[] childNodes = readChildNodes(monitor);
+            // Loading can invoke callbacks which dispose this node reentrantly.
+            if (disposed) {
+                for (DBNNode child : childNodes) {
+                    DBNUtils.disposeNode(child, false);
+                }
+                throw new DBException("Project navigator node is disposed");
+            }
+            children = childNodes;
             return children;
         }
-        DBNNode[] childNodes = readChildNodes(monitor);
-        // Loading can invoke callbacks which dispose this node reentrantly.
-        if (disposed) {
-            for (DBNNode child : childNodes) {
-                DBNUtils.disposeNode(child, false);
-            }
-            throw new DBException("Project navigator node is disposed");
-        }
-        children = childNodes;
-        return children;
     }
 
     @Override
