@@ -140,12 +140,8 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
         if (tokens.refreshToken() != null && !DDSsoConstants.BASE64URL_256_PATTERN.matcher(tokens.refreshToken()).matches()) {
             throw new DBException("Invalid desktop SSO refresh token response");
         }
-        try {
-            if (!DDSsoScopes.parse(tokens.scope()).equals(DDSsoScopes.parse(scope))) {
-                throw new IllegalArgumentException();
-            }
-        } catch (IllegalArgumentException e) {
-            throw new DBException("Unexpected SSO access scopes");
+        if (!DDSsoScopes.parse(tokens.scope()).equals(DDSsoScopes.parse(scope))) {
+            throw new DBException("Response tokens scope doesn't match required scope '" + scope + "'");
         }
         return tokens;
     }
@@ -159,10 +155,10 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
     @Override
     protected void handleRequestException(@NotNull String message, @NotNull Throwable e) throws DBException {
         if (e instanceof JsonParseException) {
-            throw new DBException("Invalid desktop SSO response");
+            throw new DBException("Invalid desktop SSO response", e);
         }
         // Transport errors can include response data. A failed rotation is never retried automatically.
-        throw new DBException("Desktop SSO request failed");
+        throw new DBException("Desktop SSO request failed", e);
     }
 
     private void requireSecureServer(@NotNull URI url) throws DBException {
