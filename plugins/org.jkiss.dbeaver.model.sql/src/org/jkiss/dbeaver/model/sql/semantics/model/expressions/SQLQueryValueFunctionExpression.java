@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryConnectionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
@@ -136,7 +137,10 @@ public class SQLQueryValueFunctionExpression extends SQLQueryValueExpression {
 
         if (this.procName.parts.size() == 1) {
             SQLQuerySymbolEntry name = this.procName.parts.getFirst();
-            if (context.getConnection().dialect.getFunctions().contains(name.getName())) {
+            // Canonical names may be quoted for keywords even when the call itself is unquoted.
+            String rawName = name.getRawName();
+            if (!context.getConnection().dialect.isQuotedIdentifier(rawName)
+                && isDialectFunction(context.getConnection().dialect, rawName)) {
                 name.getSymbol().setSymbolClass(SQLQuerySymbolClass.FUNCTION);
                 name.setOrigin(origin);
                 return SQLQueryExprType.UNKNOWN;
@@ -278,6 +282,10 @@ public class SQLQueryValueFunctionExpression extends SQLQueryValueExpression {
             }
             return SQLQueryExprType.UNKNOWN;
         }
+    }
+
+    public static boolean isDialectFunction(@NotNull SQLDialect dialect, @NotNull String name) {
+        return dialect.getFunctions().stream().anyMatch(name::equalsIgnoreCase);
     }
 
     @Override
