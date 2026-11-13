@@ -18,7 +18,6 @@
                     label="PolarDB-X"
                     class="com.alibaba.polardbx.Driver"
                     sampleURL="jdbc:polardbx://{host}[:{port}][/{database}]"
-                    promoted="1"
                     categories="sql"
                     webURL="https://github.com/ApsaraDB/galaxysql"
                     description="PolarDB-X JDBC Driver"
