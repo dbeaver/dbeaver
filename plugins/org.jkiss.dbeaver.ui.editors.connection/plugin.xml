@@ -123,7 +123,7 @@
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" id="org.jkiss.dbeaver.preferences.connectionTypes" name="%page.org.jkiss.dbeaver.preferences.connectionTypes.name">
             <enabledWhen>
                 <or>
-                    <instanceof value="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
+                    <adapt type="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
                     <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
                 </or>
             </enabledWhen>
