@@ -111,11 +111,18 @@ public class CEditableLabel extends Composite {
         Region previous = clip.getRegion();
         Region region = null;
         if (!editing) {
-            // Cocoa's native text field trim is not included in getBorderWidth().
-            var trim = text.computeTrim(0, 0, 0, 0);
             region = new Region(getDisplay());
-            region.add(-trim.x, -trim.y,
-                Math.max(0, bounds.width - trim.width), Math.max(0, bounds.height - trim.height));
+            if (RuntimeUtils.isMacOS()) {
+                // Cocoa's native text field trim is not included in getBorderWidth().
+                var trim = text.computeTrim(0, 0, 0, 0);
+                region.add(-trim.x, -trim.y,
+                    Math.max(0, bounds.width - trim.width), Math.max(0, bounds.height - trim.height));
+            } else {
+                // computeTrim() also includes text margins on Windows, which must not be clipped.
+                int inset = text.getBorderWidth();
+                region.add(inset, inset,
+                    Math.max(0, bounds.width - inset * 2), Math.max(0, bounds.height - inset * 2));
+            }
         }
         clip.setRegion(region);
         if (previous != null) {

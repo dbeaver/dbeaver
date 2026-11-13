@@ -26,7 +26,6 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor.PatchSeverity;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -34,6 +33,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.app.standalone.DBeaverApplication;
+import org.jkiss.dbeaver.ui.app.standalone.internal.CoreApplicationMessages;
 import org.osgi.framework.Version;
 
 import java.util.Map;
@@ -122,9 +122,9 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
         element.setIcon(DBeaverIcons.getImageDescriptor(icon));
         if (severity != PatchSeverity.NONE) {
             // Command contributions do not expose native toolbar button colors.
-            element.setTooltip(NLS.bind(CoreMessages.dialog_version_update_severity, VersionUpdatePresentation.getSeverityLabel(severity)));
+            element.setTooltip(NLS.bind(CoreApplicationMessages.dialog_version_update_severity, VersionUpdatePresentation.getSeverityLabel(severity)));
         } else {
-            element.setTooltip(CoreMessages.dialog_version_update_title);
+            element.setTooltip(CoreApplicationMessages.dialog_version_update_title);
         }
     }
 

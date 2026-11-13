@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -60,7 +61,7 @@ public class MimerConnectionSettingsPage extends ConnectionPageAbstract {
         // Connection wizard (MySQLConnectionPageAdvanced/PostgreConnectionPageAdvanced) -
         // the wizard already knows it's a Mimer SQL connection, so naming this page after
         // the driver again was redundant.
-        setTitle("Advanced");
+        setTitle(UIConnectionMessages.dialog_connection_advanced_tab);
     }
 
     @Override

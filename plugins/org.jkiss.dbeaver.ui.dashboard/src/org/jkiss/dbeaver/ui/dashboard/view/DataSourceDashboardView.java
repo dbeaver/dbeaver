@@ -206,12 +206,12 @@ public class DataSourceDashboardView extends ViewPart implements DashboardViewer
 
     @Override
     public void dispose() {
+        if (dataSourceContainer != null) {
+            dataSourceContainer.getRegistry().removeDataSourceListener(this);
+        }
         super.dispose();
 
         if (dashboardListViewer != null) {
-            if (dataSourceContainer != null) {
-                dataSourceContainer.getRegistry().removeDataSourceListener(this);
-            }
             dashboardListViewer.dispose();
             dashboardListViewer = null;
         }
