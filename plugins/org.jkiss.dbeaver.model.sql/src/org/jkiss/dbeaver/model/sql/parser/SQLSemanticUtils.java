@@ -44,6 +44,10 @@ import java.util.function.Consumer;
 public class SQLSemanticUtils {
     private static final Log log = Log.getLog(SQLSemanticUtils.class);
 
+    public static boolean canTraverseQueryForTableNodes(@NotNull Statement statement) {
+        return statement instanceof ASTNodeAccess;
+    }
+
     public static void traverseQueryForTableNodes(@NotNull Statement statement, @NotNull Consumer<Table> onTableNode) {
         SimpleNode root = ((ASTNodeAccess) statement).getASTNode();
         ListNode<Node> stack = ListNode.of(root);

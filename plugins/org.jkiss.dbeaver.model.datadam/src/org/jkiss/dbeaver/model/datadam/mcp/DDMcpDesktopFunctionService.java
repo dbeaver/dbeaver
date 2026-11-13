@@ -97,9 +97,12 @@ public class DDMcpDesktopFunctionService implements DDMcpFunctionService {
             AIFunctionContext context = new AIFunctionContext(monitor, databaseContext, new EmptyPromptGenerator());
             AIFunctionResult result = function.getInstance().callFunction(context, functionArguments);
             return new DDMcpFunctionResult(new JsonPrimitive(result.getValue().toString()), false);
-        } catch (DBException e) {
-            log.debug("Cannot call DBeaver function through DataDam MCP", e);
-            throw new DDMcpFunctionException(DDMcpFunctionErrorCode.INTERNAL_ERROR, "Cannot call DBeaver function", null);
+        } catch (DDMcpFunctionException e) {
+            log.error("Cannot call DBeaver function through DataDam MCP", e);
+            throw e;
+        } catch (Exception e) {
+            log.error("Cannot call DBeaver function through DataDam MCP", e);
+            throw new DDMcpFunctionException(DDMcpFunctionErrorCode.INTERNAL_ERROR, "Cannot call DBeaver function", null, e);
         }
     }
 
