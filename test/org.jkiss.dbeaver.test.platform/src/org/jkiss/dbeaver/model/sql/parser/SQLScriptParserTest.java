@@ -1071,6 +1071,41 @@ public class SQLScriptParserTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void findSqlServerBatchDelimiterMatchEndInLine() throws DBException {
+        SQLDialect dialect = setDialect(SQLSERVER_DIALECT_NAME);
+        SQLSyntaxManager syntaxManager = Mockito.mock(SQLSyntaxManager.class);
+        Mockito.doReturn(dialect).when(syntaxManager).getDialect();
+        Mockito.doReturn(dialect.getBatchDelimiters()).when(syntaxManager).getBatchDelimiters();
+        SQLBatchDelimiterRule rule = SQLRuleManager.createBatchDelimiterRules(syntaxManager, null).get(0);
+
+        Assertions.assertEquals(2, rule.findMatchEnd("GO", 0));
+        Assertions.assertEquals(4, rule.findMatchEnd("GO 5", 0));
+        // The repeat count is a part of the delimiter, a trailing comment is not
+        Assertions.assertEquals("  go 12".length(), rule.findMatchEnd("  go 12 -- repeat", 2));
+        Assertions.assertEquals(-1, rule.findMatchEnd("GO 0", 0));
+        Assertions.assertEquals(-1, rule.findMatchEnd("GO 5x", 0));
+        Assertions.assertEquals(-1, rule.findMatchEnd("GO /* comment */", 0));
+        Assertions.assertEquals(-1, rule.findMatchEnd("GOfoo", 0));
+        String alias = "SELECT 1 AS GO";
+        Assertions.assertEquals(-1, rule.findMatchEnd(alias, alias.indexOf("GO")));
+    }
+
+    @Test
+    public void findGenericBatchDelimiterMatchEndInLine() {
+        SQLDialect dialect = Mockito.mock(SQLDialect.class);
+        Mockito.doReturn(new String[] {"--"}).when(dialect).getSingleLineComments();
+        SQLSyntaxManager syntaxManager = Mockito.mock(SQLSyntaxManager.class);
+        Mockito.doReturn(dialect).when(syntaxManager).getDialect();
+        Mockito.doReturn(new String[] {"go"}).when(syntaxManager).getBatchDelimiters();
+        SQLBatchDelimiterRule rule = SQLRuleManager.createBatchDelimiterRules(syntaxManager, null).get(0);
+
+        Assertions.assertEquals(2, rule.findMatchEnd("GO", 0));
+        Assertions.assertEquals(2, rule.findMatchEnd("go -- comment", 0));
+        // The repeat count is supported only by the SQL Server rule
+        Assertions.assertEquals(-1, rule.findMatchEnd("GO 5", 0));
+    }
+
+    @Test
     public void rejectInvalidSqlServerBatchDelimiters() throws DBException {
         String script = "select 1\nGO 0\nselect 2;\nGO 2 text\nselect 3;\nGO /* comment */";
         assertNoBatchSeparators(script);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2024 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,10 +18,15 @@
 package org.jkiss.dbeaver.model.sql.format.tokenized;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
+import org.jkiss.dbeaver.model.sql.parser.SQLRuleManager;
+import org.jkiss.dbeaver.model.sql.parser.rules.SQLBatchDelimiterRule;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -40,9 +45,11 @@ public class SQLFormatterTokenized implements SQLFormatter {
     private static final String[] DML_KEYWORD = { "SELECT", "UPDATE", "INSERT", "DELETE" };
 
 
+
     private SQLFormatterConfiguration formatterCfg;
 
     private List<String> statementDelimiters = new ArrayList<>(2);
+    private List<SQLBatchDelimiterRule> batchDelimiterRules = List.of();
 
     private boolean isCompact;
 
@@ -56,7 +63,6 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 statementDelimiters.add(delim.toUpperCase(Locale.ENGLISH));
             }
         }
-
         SQLTokensParser fParser = new SQLTokensParser(formatterCfg);
 
         boolean isSqlEndsWithNewLine = false;
@@ -242,8 +248,15 @@ public class SQLFormatterTokenized implements SQLFormatter {
         }
     }
 
-    private void convertEmptyLinesIntoDelimiters(List<FormatterToken> argList) {
-        for (int i= 0; i < argList.size(); i++) {
+    private void convertEmptyLinesIntoDelimiters(@NotNull List<FormatterToken> argList) {
+        String[] executableCommentPrefixes = formatterCfg.getSyntaxManager().getDialect().getExecutableCommentPrefixes();
+        DBPDataSource dataSource = formatterCfg.getDataSource();
+        batchDelimiterRules = SQLRuleManager.createBatchDelimiterRules(
+            formatterCfg.getSyntaxManager(),
+            dataSource == null ? null : dataSource.getContainer());
+        boolean hasQueryContent = false;
+        int contentEndIndex = 0;
+        for (int i = 0; i < argList.size(); i++) {
             FormatterToken token = argList.get(i);
             if (token.getType() == TokenType.SPACE) {
                 int lfCount = 0;
@@ -253,18 +266,134 @@ public class SQLFormatterTokenized implements SQLFormatter {
                     }
                 }
                 if (lfCount > 1) {
-                    if (i > 0 && statementDelimiters.contains(argList.get(i - 1).getString())) {
+                    if (i > 0 && isStatementDelimiter(argList, i - 1)) {
                         // Do nothing - there is a delimiter already
                     } else {
-                        argList.add(i, new FormatterToken(TokenType.SYMBOL, statementDelimiters.get(0)));
-                        i++;
+                        int delimiterIndex = findDelimiterIndex(argList, i, hasQueryContent, contentEndIndex, executableCommentPrefixes);
+                        if (delimiterIndex >= 0) {
+                            argList.add(delimiterIndex, new FormatterToken(TokenType.SYMBOL, statementDelimiters.get(0)));
+                            hasQueryContent = false;
+                            i++;
+                        }
                     }
                 }
+            } else if (isStatementDelimiter(argList, i)) {
+                hasQueryContent = false;
+                i = skipBatchDelimiterSuffix(argList, i);
+            } else if (!isPlainComment(token, executableCommentPrefixes)) {
+                hasQueryContent = true;
+                contentEndIndex = i + 1;
             }
         }
     }
 
-    private void concatenateDoublewordedKeywords(List<FormatterToken> argList) {
+    private int findDelimiterIndex(
+        @NotNull List<FormatterToken> argList,
+        int emptyLineIndex,
+        boolean hasQueryContent,
+        int contentEndIndex,
+        @NotNull String[] executableCommentPrefixes
+    ) {
+        if (!hasQueryContent) {
+            return -1;
+        }
+        int commentIndex = emptyLineIndex - 1;
+        if (commentIndex < 0 || !isPlainComment(argList.get(commentIndex), executableCommentPrefixes)) {
+            return emptyLineIndex;
+        }
+        if (argList.get(commentIndex).getString().startsWith(SQLConstants.ML_COMMENT_START)) {
+            return emptyLineIndex;
+        }
+        return contentEndIndex;
+    }
+
+    private boolean isStatementDelimiter(@NotNull List<FormatterToken> argList, int index) {
+        String text = argList.get(index).getString();
+        if (!statementDelimiters.contains(text.toUpperCase(Locale.ENGLISH))) {
+            return false;
+        }
+        SQLBatchDelimiterRule rule = findBatchDelimiterRule(text);
+        return rule == null || getBatchDelimiterSuffixLength(argList, index, rule) >= 0;
+    }
+
+    @Nullable
+    private SQLBatchDelimiterRule findBatchDelimiterRule(@NotNull String text) {
+        for (SQLBatchDelimiterRule rule : batchDelimiterRules) {
+            if (rule.matches(text)) {
+                return rule;
+            }
+        }
+        return null;
+    }
+
+    private int skipBatchDelimiterSuffix(@NotNull List<FormatterToken> argList, int delimiterIndex) {
+        SQLBatchDelimiterRule rule = findBatchDelimiterRule(argList.get(delimiterIndex).getString());
+        int suffixLength = rule == null ? -1 : getBatchDelimiterSuffixLength(argList, delimiterIndex, rule);
+        int lastIndex = delimiterIndex;
+        for (int length = 0; length < suffixLength && lastIndex + 1 < argList.size(); ) {
+            length += argList.get(++lastIndex).getString().length();
+        }
+        return lastIndex;
+    }
+
+    private static int getBatchDelimiterSuffixLength(
+        @NotNull List<FormatterToken> argList,
+        int delimiterIndex,
+        @NotNull SQLBatchDelimiterRule rule
+    ) {
+        String delimiter = argList.get(delimiterIndex).getString();
+        int lineStart = delimiterIndex;
+        while (lineStart > 0) {
+            FormatterToken token = argList.get(lineStart - 1);
+            if (token.getType() == TokenType.SPACE && token.getString().indexOf('\n') >= 0) {
+                break;
+            }
+            lineStart--;
+        }
+        StringBuilder prefix = new StringBuilder();
+        if (lineStart > 0) {
+            String space = argList.get(lineStart - 1).getString();
+            prefix.append(space, space.lastIndexOf('\n') + 1, space.length());
+        }
+        for (int i = lineStart; i < delimiterIndex; i++) {
+            prefix.append(argList.get(i).getString());
+        }
+        StringBuilder rest = new StringBuilder();
+        for (int i = delimiterIndex + 1; i < argList.size(); i++) {
+            FormatterToken token = argList.get(i);
+            int lineBreak = token.getType() == TokenType.SPACE ? indexOfLineBreak(token.getString()) : -1;
+            if (lineBreak >= 0) {
+                rest.append(token.getString(), 0, lineBreak);
+                break;
+            }
+            rest.append(token.getString());
+        }
+        int matchEnd = rule.findMatchEnd(prefix + delimiter + rest, prefix.length());
+        return matchEnd < 0 ? -1 : matchEnd - prefix.length() - delimiter.length();
+    }
+
+    private static int indexOfLineBreak(@NotNull String text) {
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) == '\n' || text.charAt(i) == '\r') {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private static boolean isPlainComment(@NotNull FormatterToken token, @NotNull String[] executableCommentPrefixes) {
+        if (token.getType() != TokenType.COMMENT) {
+            return false;
+        }
+        for (String prefix : executableCommentPrefixes) {
+            if (token.getString().startsWith(prefix)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void concatenateDoublewordedKeywords(@NotNull List<FormatterToken> argList) {
         for (int index = 0; index < argList.size() - 2; index++) {
             FormatterToken t0 = argList.get(index);
             FormatterToken t1 = argList.get(index + 1);

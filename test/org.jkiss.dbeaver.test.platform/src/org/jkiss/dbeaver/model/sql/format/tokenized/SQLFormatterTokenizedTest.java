@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.model.sql.format.tokenized;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.ext.mssql.model.SQLServerDialectMssql;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -42,10 +44,28 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
     private SQLSyntaxManager syntaxManager;
 
     private SQLDialect dialect = BasicSQLDialect.INSTANCE;
+    private final SQLDialect executableCommentsDialect = new BasicSQLDialect() {
+        @NotNull
+        @Override
+        public String[] getExecutableCommentPrefixes() {
+            return new String[] { "/*!", "/*M!" };
+        }
+    };
     private final String lineBreak = System.lineSeparator();
 
-    private String format(String sql) {
+    @NotNull
+    private String format(@NotNull String sql) {
         return formatter.format(sql, configuration);
+    }
+
+    /**
+     * Makes the formatter use the real SQL Server dialect with its own batch delimiter rule (GO [count])
+     */
+    private void useSqlServerDialect() {
+        SQLDialect sqlServerDialect = new SQLServerDialectMssql();
+        Mockito.when(syntaxManager.getDialect()).thenReturn(sqlServerDialect);
+        Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(sqlServerDialect.getScriptDelimiters());
+        Mockito.when(syntaxManager.getBatchDelimiters()).thenReturn(sqlServerDialect.getBatchDelimiters());
     }
 
     @BeforeEach
@@ -53,6 +73,7 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
         Mockito.when(configuration.getSyntaxManager()).thenReturn(syntaxManager);
         String[] delimiters = new String[]{";"};
         Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(delimiters);
+        Mockito.lenient().when(syntaxManager.getBatchDelimiters()).thenReturn(new String[0]);
         Mockito.when(syntaxManager.getDialect()).thenReturn(dialect);
         Mockito.when(syntaxManager.getCatalogSeparator()).thenReturn(".");
         Mockito.when(configuration.getKeywordCase()).thenReturn(DBPIdentifierCase.UPPER);
@@ -145,6 +166,22 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void shouldNotInsertDelimiterAfterCommentFollowedByEmptyLine() {
+        //given
+        String expectedString = "-- test" + lineBreak + lineBreak +
+            "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tmytable;";
+        String inputString = "-- test" + lineBreak + lineBreak + "SELECT * FROM mytable;";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertEquals(expectedString, formattedString);
+    }
+
+    @Test
     public void shouldEndCommentAtAnyLineSeparator() {
         for (String separator : new String[]{"\n", "\r\n"}) {
             //given
@@ -157,6 +194,329 @@ public class SQLFormatterTokenizedTest extends DBeaverUnitTest {
             Assertions.assertTrue(formattedString.startsWith("-- test"), formattedString);
             Assertions.assertTrue(formattedString.endsWith("SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tmytable;"), formattedString);
         }
+    }
+
+    @Test
+    public void shouldNotInsertDelimiterAfterBlockCommentFollowedByEmptyLine() {
+        //given
+        String expectedString = "/* test */" + lineBreak + lineBreak +
+            "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tmytable;";
+        String inputString = "/* test */" + lineBreak + lineBreak + "SELECT * FROM mytable;";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertEquals(expectedString, formattedString);
+    }
+
+    @Test
+    public void shouldInsertDelimiterAfterBlockCommentEndingQueryFollowedByEmptyLine() {
+        //given
+        String inputString = "SELECT 1 /* note */" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains("/* note */;"), formattedString);
+    }
+
+    @Test
+    public void shouldNotInsertDelimiterAfterCommentFollowingDelimiter() {
+        //given
+        String expectedString = "SELECT" + lineBreak + "\t1;" + lineBreak + "-- test" + lineBreak + lineBreak +
+            "SELECT" + lineBreak + "\t2";
+        String inputString = "SELECT 1;" + lineBreak + "-- test" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertEquals(expectedString, formattedString);
+    }
+
+    @Test
+    public void shouldInsertDelimiterBeforeSingleLineCommentEndingQuery() {
+        //given
+        String inputString = "SELECT 1 -- note" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains("-- note;"), formattedString);
+        int delimiterIndex = formattedString.indexOf(';');
+        Assertions.assertTrue(delimiterIndex >= 0 && delimiterIndex < formattedString.indexOf("-- note"), formattedString);
+    }
+
+    @Test
+    public void shouldInsertDelimiterAfterExecutableComment() {
+        //given
+        String inputString = "/*!40101 SET @x=1 */" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(syntaxManager.getDialect()).thenReturn(executableCommentsDialect);
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains("*/;"), formattedString);
+    }
+
+    @Test
+    public void shouldInsertDelimiterAfterMariaDbExecutableComment() {
+        //given
+        String inputString = "/*M!100100 SET @x=1 */" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(syntaxManager.getDialect()).thenReturn(executableCommentsDialect);
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains("*/;"), formattedString);
+    }
+
+    @Test
+    public void shouldNotTreatExecutableCommentAsQueryWhenDialectHasNoSuchComments() {
+        //given
+        String inputString = "/*!40101 SET @x=1 */" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains(";"), formattedString);
+    }
+
+    @Test
+    public void shouldNotInsertDelimiterAfterStandaloneBlockComment() {
+        //given
+        String inputString = "SELECT 1;" + lineBreak + "/* test */" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains("*/;"), formattedString);
+    }
+
+    @Test
+    public void shouldNotInsertDelimitersBetweenCommentOnlyParagraphs() {
+        //given
+        String inputString = "-- first" + lineBreak + lineBreak + "/* second */" + lineBreak + lineBreak + "-- third";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains(";"), formattedString);
+    }
+
+    @Test
+    public void shouldInsertDelimiterOnlyAfterQueryFollowingCommentParagraphs() {
+        //given
+        String inputString = "-- header" + lineBreak + lineBreak + "SELECT 1" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertEquals(1, formattedString.chars().filter(c -> c == ';').count(), formattedString);
+        Assertions.assertTrue(formattedString.indexOf(';') > formattedString.indexOf("SELECT"), formattedString);
+    }
+
+    @Test
+    public void shouldInsertDelimiterBeforeAllTrailingSingleLineComments() {
+        //given
+        String inputString = "SELECT 1" + lineBreak + "-- first" + lineBreak + "-- second" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains("-- first;"), formattedString);
+        Assertions.assertFalse(formattedString.contains("-- second;"), formattedString);
+        int delimiterIndex = formattedString.indexOf(';');
+        Assertions.assertTrue(delimiterIndex >= 0 && delimiterIndex < formattedString.indexOf("-- first"), formattedString);
+    }
+
+    @Test
+    public void shouldRecognizeWordDelimiterWrittenInOtherCase() {
+        //given
+        String inputString = "SELECT 1" + lineBreak + "go" + lineBreak + "-- note" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(new String[] { "GO" });
+        Mockito.when(syntaxManager.getBatchDelimiters()).thenReturn(new String[] { "go" });
+        Mockito.when(configuration.getKeywordCase()).thenReturn(DBPIdentifierCase.LOWER);
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains("go;"), formattedString);
+    }
+
+    @Test
+    public void shouldNotTreatIdentifierNamedLikeWordDelimiterAsDelimiter() {
+        //given
+        String inputString = "SELECT 1 AS GO /* note */" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(new String[] { ";", "GO" });
+        Mockito.when(syntaxManager.getBatchDelimiters()).thenReturn(new String[] { "go" });
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains("*/;"), formattedString);
+    }
+
+    @Test
+    public void shouldKeepWordDelimiterFollowedByLineComment() {
+        //given
+        String inputString = "SELECT 1" + lineBreak + "GO -- note" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(new String[] { ";", "GO" });
+        Mockito.when(syntaxManager.getBatchDelimiters()).thenReturn(new String[] { "go" });
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains(";"), formattedString);
+    }
+
+    @Test
+    public void shouldKeepSqlServerBatchDelimiterFollowedByRepeatCount() {
+        //given
+        String inputString = "SELECT 1" + lineBreak + "GO 5" + lineBreak + lineBreak + "SELECT 2";
+
+        useSqlServerDialect();
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains(";"), formattedString);
+    }
+
+    @Test
+    public void shouldKeepSqlServerBatchDelimiterFollowedByRepeatCountAndComment() {
+        //given
+        String inputString = "SELECT 1" + lineBreak + "GO 5 -- repeat" + lineBreak + lineBreak + "SELECT 2";
+
+        useSqlServerDialect();
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertFalse(formattedString.contains(";"), formattedString);
+    }
+
+    @Test
+    public void shouldNotTreatSqlServerBatchDelimiterWithZeroRepeatCountAsDelimiter() {
+        //given
+        String inputString = "SELECT 1" + lineBreak + "GO 0" + lineBreak + lineBreak + "SELECT 2";
+
+        useSqlServerDialect();
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains(";"), formattedString);
+    }
+
+    @Test
+    public void shouldNotTreatInlineIdentifierNamedLikeSqlServerBatchDelimiterAsDelimiter() {
+        //given
+        String inputString = "SELECT 1 AS GO /* note */" + lineBreak + lineBreak + "SELECT 2";
+
+        useSqlServerDialect();
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertTrue(formattedString.contains("*/;"), formattedString);
+    }
+
+    @Test
+    public void shouldNotTreatRepeatCountAsPartOfBatchDelimiterInDialectWithoutIt() {
+        //given
+        String inputString = "SELECT 1" + lineBreak + "GO 5" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(new String[] { ";", "GO" });
+        Mockito.when(syntaxManager.getBatchDelimiters()).thenReturn(new String[] { "go" });
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        // Only the SQL Server batch delimiter rule accepts a repeat count, so GO 5 is a part of the query here
+        Assertions.assertTrue(formattedString.contains(";"), formattedString);
+    }
+
+    @Test
+    public void shouldKeepInlineWordDelimiterWhichIsNotBatchDelimiter() {
+        //given
+        String inputString = "SELECT 1 TERM" + lineBreak + lineBreak + "SELECT 2";
+
+        Mockito.when(syntaxManager.getStatementDelimiters()).thenReturn(new String[] { "TERM" });
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertEquals(1, formattedString.split("TERM", -1).length - 1, formattedString);
+    }
+
+    @Test
+    public void shouldInsertDelimiterInEmptyLineBetweenQueries() {
+        //given
+        String expectedString = "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tt1;" + lineBreak + lineBreak +
+            "SELECT" + lineBreak + "\t*" + lineBreak + "FROM" + lineBreak + "\tt2";
+        String inputString = "SELECT * FROM t1" + lineBreak + lineBreak + "SELECT * FROM t2";
+
+        Mockito.when(preferenceStore.getBoolean(Mockito.eq(ModelPreferences.SQL_FORMAT_INSERT_DELIMITERS_IN_EMPTY_LINES))).thenReturn(true);
+
+        //when
+        String formattedString = format(inputString);
+
+        //then
+        Assertions.assertEquals(expectedString, formattedString);
     }
 
     @Test

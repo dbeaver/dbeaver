@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.sql.parser.rules;
 
+import org.eclipse.jface.text.Document;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLBatchDelimiterToken;
 import org.jkiss.dbeaver.model.text.parser.TPCharacterScanner;
@@ -82,6 +83,12 @@ public class SQLBatchDelimiterRule extends SQLDelimiterRule {
         boolean valid = hasValidLineEnding(scanner);
         restoreOffset(scanner, valid ? delimiterEndOffset : startOffset);
         return valid ? token : TPTokenAbstract.UNDEFINED;
+    }
+
+    public final int findMatchEnd(@NotNull String line, int offset) {
+        TPRuleBasedScanner scanner = new TPRuleBasedScanner();
+        scanner.setRange(new Document(line), offset, line.length() - offset);
+        return evaluate(scanner).isUndefined() ? -1 : scanner.getOffset();
     }
 
     /**
