@@ -1064,7 +1064,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
         return refreshPart(source, force, true);
     }
 
-    private RefreshResult refreshPart(final Object source, boolean force, boolean showConfirmation) {
+    @NotNull
+    private RefreshResult refreshPart(@Nullable final Object source, boolean force, boolean showConfirmation) {
+        if (getEditorInput() instanceof DatabaseNodeEditorInput input && !isDirty()) {
+            input.refreshNodeIdentity();
+        }
         if (getContainer() == null || getContainer().isDisposed() || saveInProgress) {
             return RefreshResult.IGNORED;
         }

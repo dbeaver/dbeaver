@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,10 +32,9 @@ import java.util.Objects;
 /**
  * DatabaseNodeEditorInput
  */
-public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode> implements IUnloadableEditorInput
-{
-    private final String nodePath;
-    private final String nodeName;
+public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode> implements IUnloadableEditorInput {
+    private String nodePath;
+    private String nodeName;
 
     public DatabaseNodeEditorInput(@NotNull DBNDatabaseNode dbmNode)
     {
@@ -54,6 +53,14 @@ public class DatabaseNodeEditorInput extends DatabaseEditorInput<DBNDatabaseNode
     @Override
     public String getNodePath() {
         return nodePath;
+    }
+
+    public void refreshNodeIdentity() {
+        var node = getNavigatorNode();
+        if (node != null && !node.isDisposed()) {
+            nodePath = node.getNodeUri();
+            nodeName = node.getNodeDisplayName();
+        }
     }
     
     @Override
