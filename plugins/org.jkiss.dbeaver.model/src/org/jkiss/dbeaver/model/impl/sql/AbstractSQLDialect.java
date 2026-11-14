@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHexNative;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.EmptyTokenPredicateSet;
 import org.jkiss.dbeaver.model.sql.parser.SQLTokenPredicateSet;
@@ -1031,6 +1032,12 @@ public abstract class AbstractSQLDialect implements SQLDialect {
     @Override
     public boolean hasCaseSensitiveFiltration() {
         return false;
+    }
+
+    @NotNull
+    @Override
+    public SQLDialectFeatures getDialectFeatures() {
+        return SQLDialectFeatures.Default.getInstance();
     }
 
 }

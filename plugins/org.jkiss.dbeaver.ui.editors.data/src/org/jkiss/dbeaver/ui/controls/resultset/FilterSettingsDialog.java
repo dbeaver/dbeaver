@@ -80,6 +80,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     private ToolItem moveBottomButton;
     private final Comparator<DBDAttributeBinding> activeSorter = POSITION_SORTER;
     private FilterSettingsTreeEditor treeEditor;
+    private boolean showAllColumns;
 
     FilterSettingsDialog(ResultSetViewer resultSetViewer) {
         super(resultSetViewer.getControl().getShell(), IHelpContextIds.CTX_DATA_FILTER);
@@ -302,6 +303,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                 });
                 UIUtils.createToolBarSeparator(toolbar, SWT.VERTICAL);
                 ToolItem showAllButton = createToolItem(toolbar, ResultSetMessages.dialog_toolbar_show_all, null, () -> {
+                    showAllColumns = true;
                     for (DBDAttributeConstraint constraint : constraints) {
                         constraint.setVisible(true);
                     }
@@ -505,6 +507,9 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         if (dataFilter.equalFilters(resultSetViewer.getModel().getDataFilter(), true)) {
             // Only attribute visibility was changed
             filtersChanged = false;
+        }
+        if (showAllColumns && resultSetViewer.getActivePresentation() instanceof SpreadsheetPresentation spreadsheet) {
+            spreadsheet.resetColumnFilter();
         }
         resultSetViewer.setDataFilter(
             dataFilter,

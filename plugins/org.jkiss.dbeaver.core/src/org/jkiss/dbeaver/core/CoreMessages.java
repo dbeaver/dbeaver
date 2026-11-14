@@ -21,6 +21,13 @@ import org.eclipse.osgi.util.NLS;
 public class CoreMessages extends NLS {
     public static final String BUNDLE_NAME = "org.jkiss.dbeaver.core.CoreResources"; //$NON-NLS-1$
 
+    public static String connection_init_confirmation_title;
+    public static String connection_init_confirmation_message;
+    public static String connection_init_confirmation_connection;
+    public static String connection_init_confirmation_url;
+    public static String connection_init_confirmation_script;
+    public static String connection_init_confirmation_allow;
+
 
     public static String driver_license_required_title;
     public static String driver_license_required_message;
@@ -28,14 +35,6 @@ public class CoreMessages extends NLS {
     public static String core_eula_dialog_accept;
     public static String core_eula_dialog_title;
 
-    public static String actions_menu_about;
-    public static String actions_menu_check_update;
-    public static String actions_menu_edit;
-    public static String actions_menu_file;
-    public static String actions_menu_help;
-    public static String actions_menu_navigate;
-    public static String actions_menu_window;
-    public static String actions_menu_window_showView;
 
     public static String action_menu_transaction_manualcommit_name;
     public static String action_menu_transaction_autocommit_name;
@@ -54,8 +53,6 @@ public class CoreMessages extends NLS {
 
     public static String model_navigator__connections;
     public static String model_navigator_Connection;
-    public static String dialog_about_label_version;
-    public static String dialog_about_title;
 
     public static String dialog_project_export_wizard_main_page;
     public static String dialog_project_export_wizard_monitor_collect_info;
@@ -143,22 +140,6 @@ public class CoreMessages extends NLS {
     public static String dialog_scripts_import_wizard_title;
     public static String dialog_scripts_import_wizard_window_title;
 
-    public static String dialog_version_update_available_new_version;
-    public static String dialog_version_update_ignore_version;
-    public static String dialog_version_update_button_more_info;
-    public static String dialog_version_update_button_upgrade;
-    public static String dialog_version_update_button_early_access;
-    public static String dialog_version_update_current_version;
-    public static String dialog_version_update_new_version;
-    public static String dialog_version_update_no_new_version;
-    public static String dialog_version_update_notes;
-    public static String dialog_version_update_no_notes;
-    public static String dialog_version_update_press_more_info;
-    public static String dialog_version_update_title;
-    public static String dialog_version_update_error_cannot_check_version;
-    public static String dialog_version_update_downloader_title;
-    public static String dialog_version_update_downloader_confirm_install;
-    public static String dialog_version_update_downloader_error_cannot_download;
 
     public static String model_navigator_Description;
     public static String model_navigator_load_;
@@ -197,7 +178,8 @@ public class CoreMessages extends NLS {
     public static String pref_page_ui_general_checkbox_automatic_updates;
     public static String pref_page_general_button_open_product_configuration;
     public static String pref_page_general_group_product_configuration;
-    public static String pref_page_general_workbench;
+    public static String pref_page_general_product_configuration_hint;
+    public static String pref_page_general_product_configuration_link;
     public static String pref_page_ui_general_group_browser;
     public static String pref_page_ui_general_group_theme;
     public static String pref_page_ui_general_combo_browser;
@@ -231,8 +213,6 @@ public class CoreMessages extends NLS {
     public static String pref_page_ui_general_check_zoom_restart_prompt_label;
     public static String pref_page_ui_general_check_zoom_restart_prompt_tip;
     public static String pref_page_ui_general_group_display;
-    public static String pref_page_eclipse_ui_general_group_general;
-    public static String pref_page_eclipse_ui_general_group_label;
 
     public static String pref_page_eclipse_ui_general_connections_group_label;
 
@@ -289,6 +269,8 @@ public class CoreMessages extends NLS {
     public static String pref_page_connection_label_close_connection_on_sleep_tip;
     public static String pref_page_connection_label_enable_shell_auth_model;
     public static String pref_page_connection_label_enable_shell_auth_model_tip;
+    public static String pref_page_connection_label_sanitize_driver_properties;
+    public static String pref_page_connection_label_sanitize_driver_properties_tip;
 
     public static String pref_page_network_expert_label;
     public static String pref_page_network_expert_preferred_ip_stack_label;
@@ -385,6 +367,14 @@ public class CoreMessages extends NLS {
     public static String project_selector_tooltip;
 
     public static String pref_page_user_interface_fonts_modify_tooltip;
+
+    public static String sql_editor_prefs_save_as_script_text;
+    public static String sql_editor_prefs_save_as_script_tip;
+    public static String sql_editor_prefs_disable_services_text;
+    public static String sql_editor_prefs_disable_services_tip;
+    public static String navigator_settings_customize_view;
+    public static String dialog_connection_set_default_connection_settings;
+    public static String dialog_connection_set_default_connection_settings_tip;
 
     static {
         // initialize resource bundle

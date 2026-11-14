@@ -39,6 +39,7 @@ import java.util.*;
  * Connection configuration.
  */
 public class DBPConnectionConfiguration implements DBPObject {
+    public static final String ATTRIBUTE_TEST_CONNECTION_SOURCE = "test-connection-source";
     // Variables
     public static final String VARIABLE_HOST = "host";
     public static final String VARIABLE_HOST_TUNNEL = "host.tunnel";
@@ -54,6 +55,8 @@ public class DBPConnectionConfiguration implements DBPObject {
     public static final String VAR_PROJECT_PATH = "project.path";
     public static final String VAR_PROJECT_NAME = "project.name";
     public static final String VAR_HOST_OR_DATABASE = "host_or_database";
+    public static final String VAR_DRIVER_NAME = "driver.name";
+    public static final String VAR_DRIVER_ID = "driver.id";
     public static final String VARIABLE_PREFIX_PROPERTIES = "properties.";
     public static final String VARIABLE_PREFIX_AUTH = "auth.";
     public static final String VARIABLE_PREFIX_ORIGIN = "origin.";

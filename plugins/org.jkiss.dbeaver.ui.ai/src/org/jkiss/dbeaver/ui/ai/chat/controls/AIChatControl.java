@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.ai.chat.controls;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.e4.ui.css.swt.dom.WidgetElement;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.source.Annotation;
@@ -45,6 +47,7 @@ import org.jkiss.dbeaver.model.ai.prompt.AIPromptGenerateSql;
 import org.jkiss.dbeaver.model.ai.qm.AIChatStorage;
 import org.jkiss.dbeaver.model.ai.quota.UserTokenQuotaService;
 import org.jkiss.dbeaver.model.ai.registry.AIAssistantRegistry;
+import org.jkiss.dbeaver.model.ai.registry.AISettingsManager;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.app.DBPWorkspace;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -53,10 +56,13 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNStreamData;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnable;
 import org.jkiss.dbeaver.model.sql.SQLScriptElement;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.BaseThemeSettings;
+import org.jkiss.dbeaver.ui.UIFonts;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.AIUIUtils;
 import org.jkiss.dbeaver.ui.ai.chat.AIChatController;
@@ -86,6 +92,9 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     private final PromptComposite promptComposite;
     private volatile boolean waitingForResponse = false;
     private volatile boolean isDataSourceInitialized = false;
+    private boolean dataSourceInitializationPending;
+    private DBPDataSourceContainer requestedDataSource;
+    private DBRRunnable pendingCommand;
 
     private AIContextSettings activeCompletionSettings;
     private AIChatConversation activeConversation;
@@ -151,6 +160,16 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         setTabList(tabList.toArray(new Control[0]));
 
         WidgetElement.applyStyles(this, true);
+
+        UIUtils.installAndUpdateMainFont(this);
+        if (promptComposite != null) {
+            promptComposite.updatePromptEditorSize();
+            BaseThemeSettings.instance.addPropertyListener(
+                UIFonts.DBeaver.MAIN_FONT,
+                s -> promptComposite.updatePromptEditorSize(),
+                this
+            );
+        }
 
         addDisposeListener(e -> chatSession.closeSession());
     }
@@ -331,6 +350,10 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     }
 
     public void submitPrompt(@NotNull AIMessage promptMessage) {
+        executeCommand(() -> submitPromptNow(promptMessage));
+    }
+
+    private void submitPromptNow(@NotNull AIMessage promptMessage) {
         AIChatConversation submittedConversation = activeConversation;
         AIContextSettings customSettings = submittedConversation.getCustomSettings();
         AIContextSettings settings = customSettings != null ? customSettings : getCompletionSettings();
@@ -381,6 +404,14 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
     }
 
     public boolean checkConfiguration() {
+        AIConfigurationProfile profile = activeConversation.getProfile();
+        if (profile == null) {
+            profile = AISettingsManager.getStaticSettings().getDefaultConfigurationOrNull();
+        }
+        if (profile != null && !profile.isAvailable()) {
+            AIUIUtils.showPreferences(getShell());
+            return false;
+        }
         try {
             if (!AIUtils.hasValidConfiguration()) {
                 AIUIUtils.showPreferences(getShell());
@@ -479,6 +510,11 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         }
     }
 
+    public void selectConversationProfile(@NotNull AIConfigurationProfile profile) {
+        AISettingsManager.getInstance().setDefaultConfiguration(profile);
+        setConversationProfile(getActiveConversation(), profile);
+    }
+
     public void setConversationProfile(@NotNull AIChatConversation conversation, @Nullable AIConfigurationProfile profile) {
         conversation.setProfile(profile);
         chatSession.notifyConversationProfileChanged(conversation);
@@ -522,17 +558,119 @@ public class AIChatControl extends Composite implements AIChatContextProvider {
         return chatSession.isBusy();
     }
 
-    public void setDataSource(@Nullable DBPDataSourceContainer container) throws DBException {
-        if (container == getDataSourceContainer() && isDataSourceInitialized) {
+    public boolean isInitializing() {
+        return dataSourceInitializationPending;
+    }
+
+    public void executeCommand(@NotNull DBRRunnable command) {
+        if (isDisposed() || isWaitingForResponse() || (isBusy() && !isInitializing())) {
             return;
         }
-        isDataSourceInitialized = true;
+        if (!isDataSourceInitialized) {
+            if (pendingCommand == null) {
+                pendingCommand = command;
+            }
+            if (!dataSourceInitializationPending) {
+                initializeDataSource();
+            }
+            return;
+        }
+        try {
+            command.run();
+        } catch (DBException e) {
+            DBWorkbench.getPlatformUI().showError(
+                AIChatMessagesUI.ai_chat_initialization_error,
+                AIChatMessagesUI.ai_chat_command_error_message,
+                e
+            );
+        }
+    }
+
+    public void setDataSource(@Nullable DBPDataSourceContainer container) throws DBException {
+        if (isWaitingForResponse()) {
+            return;
+        }
+        if (container == getDataSourceContainer() && isDataSourceInitialized && !dataSourceInitializationPending) {
+            return;
+        }
+        requestedDataSource = container;
+        if (dataSourceInitializationPending) {
+            return;
+        }
+        if (isDataSourceInitialized) {
+            selectDataSource(container);
+            return;
+        }
+        initializeDataSource();
+    }
+
+    private void initializeDataSource() {
+        dataSourceInitializationPending = true;
+        chatSession.setBusy(true);
+        AbstractJob initializationJob = new AbstractJob("Initialize AI chat session") {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
+                try {
+                    if (monitor.isCanceled()) {
+                        return Status.CANCEL_STATUS;
+                    }
+                    chatSession.init(monitor);
+                    return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
+                } catch (Exception e) {
+                    return monitor.isCanceled() ? Status.CANCEL_STATUS : GeneralUtils.makeExceptionStatus(e);
+                }
+            }
+        };
+        initializationJob.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(@NotNull IJobChangeEvent event) {
+                IStatus result = event.getResult();
+                UIUtils.asyncExec(() -> completeDataSourceInitialization(result));
+            }
+        });
+        initializationJob.schedule();
+    }
+
+    private void selectDataSource(@Nullable DBPDataSourceContainer container) throws DBException {
         AIChatConversation conversation = chatSession.getLastConversation(container);
-        this.setCompletionSettings(container == null || conversation == null ? null : chatSession.getConversationSettings(conversation));
-        this.selectConversation(
-            conversation != null ?
-                conversation :
-                createEmptyConversation(container));
+        setCompletionSettings(container == null || conversation == null ? null : chatSession.getConversationSettings(conversation));
+        selectConversation(conversation != null ? conversation : createEmptyConversation(container));
+        isDataSourceInitialized = true;
+    }
+
+    private void completeDataSourceInitialization(@NotNull IStatus result) {
+        if (isDisposed()) {
+            return;
+        }
+        DBRRunnable command = pendingCommand;
+        pendingCommand = null;
+        try {
+            if (result.isOK()) {
+                if (command == null) {
+                    selectDataSource(requestedDataSource);
+                } else {
+                    isDataSourceInitialized = true;
+                }
+            }
+        } catch (DBException e) {
+            result = GeneralUtils.makeExceptionStatus(e);
+        } finally {
+            dataSourceInitializationPending = false;
+            chatSession.setBusy(false);
+        }
+        if (result.matches(IStatus.CANCEL)) {
+            return;
+        }
+        if (!result.isOK()) {
+            DBWorkbench.getPlatformUI().showError(
+                AIChatMessagesUI.ai_chat_initialization_error,
+                AIChatMessagesUI.ai_chat_initialization_error_message,
+                result
+            );
+        } else if (command != null) {
+            executeCommand(command);
+        }
     }
 
     public boolean hasMessages() {

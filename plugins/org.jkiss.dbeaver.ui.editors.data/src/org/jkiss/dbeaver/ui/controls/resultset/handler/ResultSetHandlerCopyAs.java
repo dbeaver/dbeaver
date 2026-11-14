@@ -59,7 +59,6 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
-import org.jkiss.dbeaver.ui.internal.UIMessages;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -78,8 +77,8 @@ public class ResultSetHandlerCopyAs extends AbstractHandler implements IElementU
     public Object execute(ExecutionEvent event) throws ExecutionException {
         if (ApplicationPolicyProvider.getInstance().isPolicyEnabled(ApplicationPolicyProvider.POLICY_DATA_COPY)) {
             UIUtils.showMessageBox(HandlerUtil.getActiveShell(event),
-                UIMessages.dialog_policy_data_copy_title,
-                UIMessages.dialog_policy_data_copy_msg,
+                ResultSetMessages.dialog_policy_data_copy_title,
+                ResultSetMessages.dialog_policy_data_copy_msg,
                 SWT.ICON_WARNING
             );
             return null;

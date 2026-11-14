@@ -345,7 +345,7 @@ public class CDataDriverDescriptor extends DriverDescriptor implements DBPDriver
             return null;
         }
         DBPDriver driver = getProviderDescriptor().getRegistry().findDriver(driverInfo.iconDriver());
-        return driver instanceof CDataDriverDescriptor ? null : driver;
+        return driver == null || driver instanceof CDataDriverDescriptor || driver.getDriverStub() != null ? null : driver;
     }
 
     @NotNull

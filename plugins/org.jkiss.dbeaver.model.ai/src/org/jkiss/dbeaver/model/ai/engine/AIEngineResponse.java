@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.ai.AIMessageType;
 import org.jkiss.dbeaver.model.ai.AIUsage;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Completion request
@@ -33,11 +34,22 @@ public class AIEngineResponse {
     private final AIMessageType type;
     @Nullable
     private final List<String> variants;
-    @Nullable
-    private final AIFunctionCall functionCall;
+    @NotNull
+    private final List<AIFunctionCall> functionCalls;
     @Nullable
     private final AIUsage usage;
     private int processingTime;
+    @NotNull
+    private Map<String, String> messageMetadata = Map.of();
+
+    @NotNull
+    public Map<String, String> getMessageMetadata() {
+        return messageMetadata;
+    }
+
+    public void setMessageMetadata(@NotNull Map<String, String> messageMetadata) {
+        this.messageMetadata = Map.copyOf(messageMetadata);
+    }
 
     /**
      * Constructs response with text message
@@ -50,17 +62,21 @@ public class AIEngineResponse {
         this.type = type;
         this.variants = variants;
         this.usage = usage;
-        this.functionCall = null;
+        this.functionCalls = List.of();
     }
 
     /**
      * Constructs response with function call
      */
     public AIEngineResponse(@NotNull AIFunctionCall functionCall, @Nullable AIUsage usage) {
+        this(List.of(functionCall), usage);
+    }
+
+    public AIEngineResponse(@NotNull List<AIFunctionCall> functionCalls, @Nullable AIUsage usage) {
         this.usage = usage;
         this.type = AIMessageType.FUNCTION;
         this.variants = null;
-        this.functionCall = functionCall;
+        this.functionCalls = List.copyOf(functionCalls);
     }
 
     @NotNull
@@ -75,7 +91,12 @@ public class AIEngineResponse {
 
     @Nullable
     public AIFunctionCall getFunctionCall() {
-        return functionCall;
+        return functionCalls.isEmpty() ? null : functionCalls.getFirst();
+    }
+
+    @NotNull
+    public List<AIFunctionCall> getFunctionCalls() {
+        return functionCalls;
     }
 
     @Nullable
@@ -84,8 +105,9 @@ public class AIEngineResponse {
     }
 
     @Override
+    @NotNull
     public String toString() {
-        return "AI response (" + type + ") " + (variants != null ? variants : functionCall);
+        return "AI response (" + type + ") " + (variants != null ? variants : functionCalls);
     }
 
 }

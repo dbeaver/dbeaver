@@ -4,7 +4,7 @@
 <plugin>
 
     <extension point="org.eclipse.ui.commands">
-        <category id="org.jkiss.dbeaver.git.commands.category" name="Git Category"/>
+        <category id="org.jkiss.dbeaver.git.commands.category" name="%category.org.jkiss.dbeaver.git.commands.category.name"/>
         <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.share" name="%command.org.jkiss.dbeaver.git.commands.share.name"/>
         <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.projectFromGit" name="%command.org.jkiss.dbeaver.git.commands.projectFromGit.name"/>
         <command categoryId="org.jkiss.dbeaver.git.commands.category" id="org.jkiss.dbeaver.git.commands.commit" name="%command.org.jkiss.dbeaver.git.commands.commit.name"/>

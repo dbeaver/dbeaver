@@ -21,7 +21,7 @@ import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionCall;
 import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionDescriptor;
 import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionErrorCode;
 import com.dbeaver.datadam.mcp.api.model.DDMcpFunctionResult;
-import com.dbeaver.datadam.mcp.api.service.DDMcpFunctionService;
+import com.dbeaver.datadam.mcp.api.service.desktop.DDMcpFunctionService;
 import com.google.gson.JsonPrimitive;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;

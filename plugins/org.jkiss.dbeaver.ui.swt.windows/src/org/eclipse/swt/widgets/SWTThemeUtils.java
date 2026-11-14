@@ -68,12 +68,11 @@ public final class SWTThemeUtils {
         if (menuBar.foreground != display.menuBarForegroundPixel || menuBar.background != display.menuBarBackgroundPixel) {
             menuBar.initThemeColors();
             menuBar.updateBackground();
-            menuBar.updateForeground();
             boolean callback = menuBar.needsMenuCallback();
             MenuItem[] items = menuBar.getItems();
             for (int i = 0; i < items.length; i++) {
                 // SWT chooses both the owner-draw type and bitmap callback when it creates a menu item.
-                // Menu.updateForeground() changes only the bitmap, leaving Windows to draw the text twice.
+                // Changing only the bitmap leaves Windows to draw the text twice.
                 MENUITEMINFO info = new MENUITEMINFO();
                 info.cbSize = MENUITEMINFO.sizeof;
                 info.fMask = OS.MIIM_FTYPE;

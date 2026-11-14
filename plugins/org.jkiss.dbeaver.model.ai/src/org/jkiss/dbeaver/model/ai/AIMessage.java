@@ -25,13 +25,17 @@ import org.jkiss.utils.CommonUtils;
 import java.net.SocketTimeoutException;
 import java.net.http.HttpTimeoutException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.TimeoutException;
 
 /**
  * Represents a single AI message
  */
 public class AIMessage {
+    public static final String RESPONSE_CONTENT_MODIFIED = "response.contentModified";
+
     @NotNull
     private final AIMessageType role;
     @NotNull
@@ -225,7 +229,20 @@ public class AIMessage {
 
     @NotNull
     public AIMessage withContent(@NotNull String newContent) {
-        return new AIMessage(role, newContent, displayMessage, time, meta, error).withImages(images);
+        List<AIMessageMeta> updatedMeta = meta;
+        // native response state belongs to the original content
+        if (!content.equals(newContent) && meta != null) {
+            updatedMeta = meta.stream().map(info -> {
+                if (info.responseMetadata().isEmpty()) {
+                    return info;
+                }
+                Map<String, String> state = new HashMap<>(info.responseMetadata());
+                state.put(RESPONSE_CONTENT_MODIFIED, Boolean.TRUE.toString());
+                return new AIMessageMeta(info.type(), info.engineId(), info.modelId(), info.usage(), info.timeSpent(),
+                    info.systemPromptLength(), state);
+            }).toList();
+        }
+        return new AIMessage(role, newContent, displayMessage, time, updatedMeta, error).withImages(images);
     }
 
     @NotNull

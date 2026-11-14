@@ -73,12 +73,16 @@ public class OpenAiAPIStreamConsumerTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void preservesFunctionCallBeforeDoneMarker() {
+    public void preservesFunctionCallAfterCompletedResponse() {
         consumer.accept("""
             data: {"type":"response.output_item.done","item":{"type":"function_call",\
             "name":"db_listTableNames","call_id":"call_1","arguments":"{\\"schemaNames\\":\\"dbo\\"}"}}
             """);
+        Mockito.verifyNoInteractions(listener);
+        consumer.accept("data: {\"type\":\"response.completed\",\"response\":{\"status\":\"completed\"}}");
         consumer.accept("data: [DONE]");
+
+        consumer.complete();
 
         ArgumentCaptor<AIEngineResponseChunk> chunk = ArgumentCaptor.forClass(AIEngineResponseChunk.class);
         Mockito.verify(listener).nextChunk(chunk.capture());
@@ -87,6 +91,8 @@ public class OpenAiAPIStreamConsumerTest extends DBeaverUnitTest {
         Assertions.assertEquals("db_listTableNames", functionCall.getFunctionName());
         Assertions.assertEquals(Map.of("schemaNames", "dbo"), functionCall.getArguments());
         Assertions.assertEquals(Map.of("call_id", "call_1"), functionCall.getMessageMetadata());
+        Mockito.verify(listener).usage(Mockito.any());
+        Mockito.verify(listener).completeBlock();
         Mockito.verifyNoMoreInteractions(listener);
     }
 

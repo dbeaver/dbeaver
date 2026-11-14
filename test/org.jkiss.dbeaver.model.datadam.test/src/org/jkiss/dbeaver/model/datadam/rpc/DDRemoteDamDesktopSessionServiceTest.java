@@ -17,8 +17,10 @@
 package org.jkiss.dbeaver.model.datadam.rpc;
 
 import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSessionInfo;
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelState;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannelStatus;
+import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -28,21 +30,25 @@ import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 
 @Timeout(15)
 class DDRemoteDamDesktopSessionServiceTest {
     private final DDDesktopAccessService access = Mockito.mock(DDDesktopAccessService.class);
     private final DDRemoteDamDesktopChannel channel = Mockito.mock(DDRemoteDamDesktopChannel.class);
+    private final DDDesktopRpcRegistrationRegistry registrations = Mockito.mock(DDDesktopRpcRegistrationRegistry.class);
     private final DDRemoteDamDesktopSessionService service = new DDRemoteDamDesktopSessionService(
-        access, channel, Mockito.mock(DDDesktopRpcRegistrationRegistry.class));
+        access, channel, registrations);
     private final AtomicReference<DDRemoteDamChannelStatus> status = new AtomicReference<>(
         new DDRemoteDamChannelStatus(DDRemoteDamChannelState.DISCONNECTED, null));
 
@@ -61,6 +67,124 @@ class DDRemoteDamDesktopSessionServiceTest {
     }
 
     @Test
+    void waitsForRegistrationsBeforeReturningTheEndpoint() throws Exception {
+        Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
+        service.start();
+        ready("session");
+        var entered = new CountDownLatch(1);
+        var release = new CountDownLatch(1);
+        Mockito.doAnswer(invocation -> {
+            entered.countDown();
+            Assertions.assertTrue(release.await(3, TimeUnit.SECONDS));
+            return null;
+        }).when(registrations).registerEndpoint(Mockito.any(), Mockito.any());
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            var opening = executor.submit(service::getRpc);
+            try {
+                Assertions.assertTrue(entered.await(3, TimeUnit.SECONDS));
+                Assertions.assertFalse(opening.isDone());
+            } finally {
+                release.countDown();
+            }
+            var endpoint = opening.get(3, TimeUnit.SECONDS);
+            Assertions.assertSame(endpoint, service.getRpc());
+            Mockito.verify(registrations).registerEndpoint(endpoint, DDRemoteDamSettings.EMPTY);
+        }
+    }
+
+    @Test
+    void failedRegistrationClosesTheEndpointAndRetriesOnTheNextCall() throws Exception {
+        Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
+        service.start();
+        ready("session");
+        var failed = new AtomicReference<MessagingRpcEndpoint>();
+        Mockito.doAnswer(invocation -> {
+            failed.set(invocation.getArgument(0));
+            throw new DBException("Registration failed");
+        }).doNothing().when(registrations).registerEndpoint(Mockito.any(), Mockito.any());
+
+        Assertions.assertThrows(DBException.class, service::getRpc);
+        Assertions.assertTrue(failed.get().isCloseComplete());
+        Assertions.assertNotSame(failed.get(), service.getRpc());
+        Mockito.verify(registrations, Mockito.times(2)).registerEndpoint(Mockito.any(), Mockito.any());
+    }
+
+    @Test
+    void retriesInitialRegistrationFailureWhileTheChannelStaysReady() throws Exception {
+        Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
+        ready("session");
+        Mockito.when(channel.observeState(Mockito.any())).thenAnswer(invocation -> {
+            Consumer<DDRemoteDamChannelStatus> observer = invocation.getArgument(0);
+            observer.accept(status.get());
+            return (DDRemoteDamSubscription) () -> {};
+        });
+        var registered = new CountDownLatch(1);
+        Mockito.doThrow(new DBException("Registration failed")).doAnswer(invocation -> {
+            registered.countDown();
+            return null;
+        }).when(registrations).registerEndpoint(Mockito.any(), Mockito.any());
+
+        service.start();
+
+        Assertions.assertTrue(registered.await(3, TimeUnit.SECONDS));
+        Assertions.assertFalse(service.getRpc().isClosed());
+        Mockito.verify(registrations, Mockito.times(2)).registerEndpoint(Mockito.any(), Mockito.any());
+    }
+
+    @ParameterizedTest
+    @ValueSource(booleans = {false, true})
+    void invalidatingDuringRegistrationDoesNotBlockAndRejectsTheLateEndpoint(boolean close) throws Exception {
+        Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
+        service.start();
+        ready("session");
+        var entered = new CountDownLatch(1);
+        var release = new CountDownLatch(1);
+        var opened = new AtomicReference<MessagingRpcEndpoint>();
+        Mockito.doAnswer(invocation -> {
+            opened.set(invocation.getArgument(0));
+            entered.countDown();
+            Assertions.assertTrue(release.await(3, TimeUnit.SECONDS));
+            return null;
+        }).when(registrations).registerEndpoint(Mockito.any(), Mockito.any());
+        try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
+            var opening = executor.submit(service::getRpc);
+            try {
+                Assertions.assertTrue(entered.await(3, TimeUnit.SECONDS));
+                if (close) {
+                    service.close();
+                } else {
+                    listener().accessChanging();
+                }
+                Assertions.assertTrue(opened.get().isClosed());
+            } finally {
+                release.countDown();
+            }
+            var error = Assertions.assertThrows(ExecutionException.class, () -> opening.get(3, TimeUnit.SECONDS));
+            Assertions.assertInstanceOf(DBException.class, error.getCause());
+        }
+    }
+
+    @Test
+    void formatsClientDamIdentity() {
+        Assertions.assertEquals("d29ya3NwYWNlOkhPU1QxMjM",
+            DDRemoteDamDesktopSessionService.formatClientDamId("workspace", "HOST123"));
+    }
+
+    @Test
+    void clientDamIdentityChangesWithWorkspaceOrLocalHostId() {
+        String clientDamId = DDRemoteDamDesktopSessionService.formatClientDamId("workspace", "HOST123");
+
+        Assertions.assertNotEquals(clientDamId, DDRemoteDamDesktopSessionService.formatClientDamId("other-workspace", "HOST123"));
+        Assertions.assertNotEquals(clientDamId, DDRemoteDamDesktopSessionService.formatClientDamId("workspace", "HOST456"));
+    }
+
+    @Test
+    void clientDamIdentityUsesUtf8AndUnpaddedUrlSafeBase64() {
+        Assertions.assertEquals("5bel5L2c5Yy68J-ZgjpIT1NUMTIz",
+            DDRemoteDamDesktopSessionService.formatClientDamId("工作区🙂", "HOST123"));
+    }
+
+    @Test
     void startsTheChannelWithoutRequiringImportedKeys() {
         Mockito.when(access.getStatus()).thenReturn(DDDesktopAccessService.Status.SIGNED_IN);
 
@@ -73,7 +197,7 @@ class DDRemoteDamDesktopSessionServiceTest {
     }
 
     @ParameterizedTest
-    @EnumSource(value = DDDesktopAccessService.Status.class, names = {"SIGNED_OUT", "EXPIRED", "UNLOADED"})
+    @EnumSource(value = DDDesktopAccessService.Status.class, names = {"SIGNED_OUT", "INVALID_TOKEN"})
     void doesNotStartLoginOrTransportWhenAuthorizationIsUnavailable(@NotNull DDDesktopAccessService.Status status) {
         Mockito.when(access.getStatus()).thenReturn(status);
 

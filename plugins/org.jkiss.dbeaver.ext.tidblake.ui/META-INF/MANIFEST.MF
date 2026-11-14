@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver TiDBLake UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.tidblake.ui;singleton:=true
-Bundle-Version: 1.0.0.qualifier
-Bundle-Release-Date: 20260629
+Bundle-Version: 1.0.1.qualifier
+Bundle-Release-Date: 20261130
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.ext.tidblake,
  org.jkiss.dbeaver.ui,

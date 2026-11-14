@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ public abstract class ERDNotationBase {
     protected static final String LABEL_0_TO_1 = "0..1";
     protected static final String LABEL_1 = "1";
     protected static final String LABEL_1_TO_N = "1..n";
+    protected static final String LABEL_0_TO_N = "0..n";
     protected static final int LBL_V_DISTANCE = -4;
     protected static final int LBL_U_DISTANCE = 3;
     protected static final int CIRCLE_RADIUS = 4;

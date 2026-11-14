@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 final class CDataActivationDialog extends BaseDialog {
+    private static final String EULA_URL = "https://www.cdata.com/company/legal/eula/";
     private final CDataDriverDescriptor driver;
     private final CDataLicenseType selectedType;
     private final CDataResolvedDriver activationTarget;
@@ -152,7 +153,7 @@ final class CDataActivationDialog extends BaseDialog {
             }
         });
         Link consentLink = new Link(consent, SWT.WRAP);
-        consentLink.setText(CDataUIMessages.activation_eula_consent);
+        consentLink.setText(NLS.bind(CDataUIMessages.activation_eula_consent, EULA_URL));
         GridData consentData = new GridData(GridData.FILL_HORIZONTAL);
         consentData.widthHint = 460;
         consentLink.setLayoutData(consentData);

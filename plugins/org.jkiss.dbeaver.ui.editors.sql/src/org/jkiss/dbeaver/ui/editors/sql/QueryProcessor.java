@@ -62,6 +62,7 @@ abstract class QueryProcessor implements SQLResultsConsumer, DBCSmartTransaction
     private final AtomicInteger curJobRunning = new AtomicInteger(0);
     protected final List<QueryResultsContainer> resultContainers = new ArrayList<>();
     private DBDDataReceiver curDataReceiver = null;
+    private int curDataReceiverResultSet = -1;
 
     QueryProcessor(@NotNull SQLEditor owner, boolean singleQuery, boolean makeDefault) {
         this.owner = owner;
@@ -92,8 +93,14 @@ abstract class QueryProcessor implements SQLResultsConsumer, DBCSmartTransaction
         return curJobRunning;
     }
 
-    public void setCurDataReceiver(DBDDataReceiver curDataReceiver) {
+    /**
+     * Sets a receiver that gets query results instead of the result tabs.
+     *
+     * @param resultSetNumber number of the only result set of the query passed to the receiver, or -1 to pass all of them
+     */
+    public void setCurDataReceiver(@Nullable DBDDataReceiver curDataReceiver, int resultSetNumber) {
         this.curDataReceiver = curDataReceiver;
+        this.curDataReceiverResultSet = resultSetNumber;
     }
 
     @NotNull
@@ -336,6 +343,9 @@ abstract class QueryProcessor implements SQLResultsConsumer, DBCSmartTransaction
     @Override
     public DBDDataReceiver getDataReceiver(final SQLQuery statement, final int resultSetNumber) {
         if (curDataReceiver != null) {
+            if (curDataReceiverResultSet >= 0 && curDataReceiverResultSet != resultSetNumber) {
+                return null;
+            }
             return curDataReceiver;
         }
         final boolean isStatsResult = (statement != null && statement.getData() == SQLQueryJob.STATS_RESULTS);

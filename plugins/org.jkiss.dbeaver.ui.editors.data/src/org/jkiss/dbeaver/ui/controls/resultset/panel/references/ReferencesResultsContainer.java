@@ -139,6 +139,7 @@ class ReferencesResultsContainer implements IResultSetContainer {
                 }
             ));
 
+        UIUtils.installAndUpdateMainFont(keySelectorPanel);
         {
             Composite viewerContainer = new Composite(mainComposite, SWT.NONE);
             gd = new GridData(GridData.FILL_BOTH);

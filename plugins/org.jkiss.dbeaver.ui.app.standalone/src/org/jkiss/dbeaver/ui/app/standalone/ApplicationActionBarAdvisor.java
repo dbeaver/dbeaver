@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.app.standalone;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -44,7 +43,6 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.*;
@@ -61,9 +59,7 @@ import org.jkiss.dbeaver.ui.preferences.PrefPageGeneral;
 import org.jkiss.dbeaver.ui.services.ApplicationPolicyService;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
-import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
-import org.osgi.framework.Bundle;
 
 import java.lang.reflect.Field;
 import java.util.Date;
@@ -95,7 +91,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     private static final String[] REDUNTANT_ACTIONS_SETS = new String[] {
         "org.eclipse.ui.WorkingSetActionSet", //$NON-NLS-1$
         //"org.eclipse.ui.edit.text.actionSet.navigation", //$NON-NLS-1$
-        //"org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo", //$NON-NLS-1$
+        "org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo", //$NON-NLS-1$
         //"org.eclipse.ui.actionSet.openFiles", //$NON-NLS-1$
         "org.eclipse.ui.edit.text.actionSet.annotationNavigation", //$NON-NLS-1$
         //"org.eclipse.ui.NavigateActionSet", //$NON-NLS-1$
@@ -250,11 +246,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         // do not use standard help menu to avoid junk provided by platform (like cheat sheets)
         final boolean showAltHelp = isShowAltHelp();
 
-        MenuManager fileMenu = new MenuManager(CoreMessages.actions_menu_file, IWorkbenchActionConstants.M_FILE);
-        MenuManager editMenu = new MenuManager(CoreMessages.actions_menu_edit, IWorkbenchActionConstants.M_EDIT);
-        MenuManager navigateMenu = new MenuManager(CoreMessages.actions_menu_navigate, IWorkbenchActionConstants.M_NAVIGATE);
-        MenuManager windowMenu = new MenuManager(CoreMessages.actions_menu_window, IWorkbenchActionConstants.M_WINDOW);
-        MenuManager helpMenu = new MenuManager(CoreMessages.actions_menu_help, IWorkbenchActionConstants.M_HELP);
+        MenuManager fileMenu = new MenuManager(CoreApplicationMessages.actions_menu_file, IWorkbenchActionConstants.M_FILE);
+        MenuManager editMenu = new MenuManager(CoreApplicationMessages.actions_menu_edit, IWorkbenchActionConstants.M_EDIT);
+        MenuManager navigateMenu = new MenuManager(CoreApplicationMessages.actions_menu_navigate, IWorkbenchActionConstants.M_NAVIGATE);
+        MenuManager windowMenu = new MenuManager(CoreApplicationMessages.actions_menu_window, IWorkbenchActionConstants.M_WINDOW);
+        MenuManager helpMenu = new MenuManager(CoreApplicationMessages.actions_menu_help, IWorkbenchActionConstants.M_HELP);
 
         menuBar.add(fileMenu);
         menuBar.add(editMenu);
@@ -291,29 +287,6 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             //fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
         }
 
-        if (false) {
-            // Edit
-            // Disabled because new Eclipse adds this to the File menu by default
-            ActionSetRegistry asr = WorkbenchPlugin.getDefault().getActionSetRegistry();
-            IActionSetDescriptor actionSet = asr.findActionSet("org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo");
-            if (actionSet != null) {
-                MenuManager convertLDMenu = new MenuManager(actionSet.getLabel());
-                for (IConfigurationElement action : actionSet.getConfigurationElement().getChildren("action")) {
-                    String actionClassName = action.getAttribute("class");
-                    if (!CommonUtils.isEmpty(actionClassName)) {
-                        try {
-                            Bundle actionBundle = Platform.getBundle(action.getContributor().getName());
-                            Class<?> actionClass = actionBundle.loadClass(actionClassName);
-                            convertLDMenu.add((IAction)actionClass.getConstructor().newInstance());
-                        } catch (Throwable e) {
-                            log.error(e);
-                        }
-                    }
-                }
-                editMenu.add(convertLDMenu);
-            }
-        }
-
         {
             // Navigate
             navigateMenu.add(new GroupMarker(IWorkbenchActionConstants.NAV_START));
@@ -334,7 +307,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             //windowMenu.add(new ToggleViewAction(DatabaseTasksView.VIEW_ID));
             windowMenu.add(new GroupMarker("primary.views"));
             {
-                MenuManager showViewMenuMgr = new MenuManager(CoreMessages.actions_menu_window_showView, "showView"); //$NON-NLS-1$
+                MenuManager showViewMenuMgr = new MenuManager(CoreApplicationMessages.actions_menu_window_showView, "showView"); //$NON-NLS-1$
                 showViewMenuMgr.addMenuListener(manager ->
                     WorkbenchPatcher.patchViewIcons(Workbench.getInstance()));
                 IContributionItem showViewMenu = ContributionItemFactory.VIEWS_SHORTLIST.create(
@@ -351,7 +324,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
 
         {
             // Help
-            helpMenu.add(ActionUtils.makeAction(aboutAction, null, null, "about-box", CoreMessages.actions_menu_about, null, null));
+            helpMenu.add(ActionUtils.makeAction(aboutAction, null, null, "about-box", CoreApplicationMessages.actions_menu_about, null, null));
             helpMenu.add(showHelpAction);
             helpMenu.add(new Separator());
             helpMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, "org.eclipse.ui.help.installationDialog"));

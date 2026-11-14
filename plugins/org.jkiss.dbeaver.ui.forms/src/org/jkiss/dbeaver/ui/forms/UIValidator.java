@@ -16,9 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.forms;
 
-import org.eclipse.core.databinding.validation.ValidationStatus;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 
 import java.util.function.Function;
 
@@ -31,31 +32,36 @@ import java.util.function.Function;
 public interface UIValidator<T> extends Function<T, IStatus> {
     @NotNull
     static IStatus error(@NotNull String message) {
-        return ValidationStatus.error(message);
+        return status(IStatus.ERROR, message, null);
     }
 
     @NotNull
     static IStatus error(@NotNull String message, @NotNull Throwable exception) {
-        return ValidationStatus.error(message, exception);
+        return status(IStatus.ERROR, message, exception);
     }
 
     @NotNull
     static IStatus cancel(@NotNull String message) {
-        return ValidationStatus.cancel(message);
+        return status(IStatus.CANCEL, message, null);
     }
 
     @NotNull
     static IStatus warning(@NotNull String message) {
-        return ValidationStatus.warning(message);
+        return status(IStatus.WARNING, message, null);
     }
 
     @NotNull
     static IStatus info(@NotNull String message) {
-        return ValidationStatus.info(message);
+        return status(IStatus.INFO, message, null);
     }
 
     @NotNull
     static IStatus ok() {
-        return ValidationStatus.ok();
+        return Status.OK_STATUS;
+    }
+
+    @NotNull
+    private static IStatus status(int severity, @NotNull String message, @Nullable Throwable exception) {
+        return new Status(severity, UIFormsConstants.BUNDLE_ID, message, exception);
     }
 }

@@ -33,16 +33,27 @@ public class DDTrackingUIMessages extends NLS {
     public static String sync_preference_page_account_signed_in_as;
     public static String sync_preference_page_account_not_signed_in;
     public static String sync_preference_page_desktop_sign_in;
-    public static String sync_preference_page_refresh_token;
     public static String sync_preference_page_desktop_sign_out;
+    public static String sync_preference_page_open_account;
+    public static String sync_preference_page_dam_name_label;
+    public static String sync_preference_page_dam_name_edit;
+    public static String sync_preference_page_dam_name_prompt;
+    public static String sync_preference_page_dam_name_connecting;
+    public static String sync_preference_page_dam_name_not_set;
+    public static String sync_preference_page_dam_name_unavailable;
+    public static String sync_preference_page_dam_name_update_failed;
     public static String sync_preference_page_mcp_enabled;
     public static String sync_preference_page_mcp_hint;
+    public static String sync_preference_page_mcp_loading;
+    public static String sync_preference_page_mcp_unavailable;
+    public static String sync_preference_page_mcp_globally_disabled;
+    public static String sync_preference_page_mcp_settings_link;
+    public static String sync_preference_page_mcp_update_failed;
     public static String sync_preference_page_import_keys_button;
     public static String sync_preference_page_forget_keys_button;
     public static String sync_preference_page_forget_keys_confirm_title;
     public static String sync_preference_page_forget_keys_confirm_message;
     public static String sync_preference_page_import_keys_failed;
-    public static String sync_preference_page_encryption_not_configured;
     public static String sync_preference_page_login_failed;
     public static String sync_preference_page_logout_failed;
     public static String sync_preference_page_cannot_forget_keys;
@@ -55,9 +66,7 @@ public class DDTrackingUIMessages extends NLS {
     public static String project_sync_share_success;
     public static String project_sync_share_failed;
     public static String project_sync_update_job;
-    public static String project_sync_update_unchanged;
     public static String project_sync_update_success;
-    public static String project_sync_update_conflict;
     public static String project_sync_update_failed;
     public static String project_sync_resolve_job;
     public static String project_sync_resolve_failed;
@@ -75,10 +84,6 @@ public class DDTrackingUIMessages extends NLS {
     public static String project_sync_conflict_use_local;
     public static String project_sync_conflict_use_server;
     public static String project_sync_conflict_stop;
-    public static String project_sync_push_success;
-    public static String project_sync_push_failed;
-    public static String project_sync_pull_success;
-    public static String project_sync_pull_failed;
     public static String project_sync_unbind_confirm_title;
     public static String project_sync_unbind_confirm_message;
     public static String project_sync_unbind_job;
@@ -92,6 +97,7 @@ public class DDTrackingUIMessages extends NLS {
     public static String project_edit_failed;
 
     public static String projects_show_remote;
+    public static String projects_refresh;
     public static String projects_page_description;
     public static String projects_page_about_link;
     public static String projects_page_sign_in_help;
@@ -107,7 +113,15 @@ public class DDTrackingUIMessages extends NLS {
     public static String projects_unbind_selected_confirm_message;
     public static String projects_connect;
     public static String projects_sync_all;
+    public static String projects_sync_all_load_failed;
     public static String projects_import_all;
+    public static String projects_import_dialog_title;
+    public static String projects_import_prompt;
+    public static String projects_import_filter;
+    public static String projects_import_select_all;
+    public static String projects_import_project;
+    public static String projects_import_last_sync;
+    public static String projects_import_action;
     public static String projects_not_sync;
     public static String projects_choose_local;
     public static String projects_connect_failed;
@@ -123,6 +137,7 @@ public class DDTrackingUIMessages extends NLS {
     public static String import_key_dialog_title;
     public static String import_key_dialog_prompt_label;
     public static String import_key_dialog_paste_button;
+    public static String import_key_dialog_reset_button;
 
     static {
         // initialize resource bundle

@@ -90,7 +90,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
-        <category description="Database Debug commands" id="org.jkiss.dbeaver.debug.ui.commands.category" name="Database Debug"/>
+        <category description="%category.org.jkiss.dbeaver.debug.ui.commands.category.description" id="org.jkiss.dbeaver.debug.ui.commands.category" name="%category.org.jkiss.dbeaver.debug.ui.commands.category.name"/>
 
         <command id="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" name="%commands.command.menuDelegateToolbar.name" description="%commands.command.menuDelegateToolbar.description"/>
     </extension>

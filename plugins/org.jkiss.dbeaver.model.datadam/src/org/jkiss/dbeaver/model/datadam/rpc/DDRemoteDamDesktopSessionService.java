@@ -20,6 +20,7 @@ import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamHandshakeRequest;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannel;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
 import com.dbeaver.messaging.rpc.MessagingRpcEndpoint;
+import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -27,10 +28,13 @@ import org.jkiss.dbeaver.model.datadam.DDEndpoints;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessListener;
 import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.transport.DDRemoteDamDesktopChannel;
+import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -39,6 +43,7 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
     private static final Log log = Log.getLog(DDRemoteDamDesktopSessionService.class);
 
     private static final String APP_INSTANCE_ID = UUID.randomUUID().toString();
+    private static final long RPC_RETRY_DELAY = 1_000;
 
     private static DDRemoteDamDesktopSessionService instance;
 
@@ -48,12 +53,16 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
     private final AtomicBoolean started = new AtomicBoolean();
     private final AtomicBoolean closed = new AtomicBoolean();
     private final AtomicReference<DDRemoteDamSubscription> readyObservation = new AtomicReference<>();
+    private final Job rpcInitializationRetry = Job.createSystem("Retry DataDam RPC initialization", monitor -> {
+        initializeRpc();
+    });
 
     private final DDDesktopAccessListener accessListener = new DDDesktopAccessListener() {
 
         @Override
         public void accessChanging() {
             rpc.suspend(false);
+            rpcInitializationRetry.cancel();
             channel.pause();
         }
 
@@ -81,9 +90,11 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
     public static synchronized DDRemoteDamDesktopSessionService getInstance() throws DBException {
         if (instance == null) {
             DDDesktopAccessService access = DDDesktopAccessService.getInstance();
+            String workspaceId = DBWorkbench.getPlatform().getWorkspace().getWorkspaceId();
+            String clientDamId = formatClientDamId(workspaceId, BaseWorkspaceImpl.getLocalHostId());
             DDRemoteDamHandshakeRequest hello = new DDRemoteDamHandshakeRequest(
                 DBWorkbench.getPlatform().getDeploymentId(), APP_INSTANCE_ID,
-                DBWorkbench.getPlatform().getWorkspace().getWorkspaceId(),
+                workspaceId, clientDamId,
                 GeneralUtils.getProductName(), GeneralUtils.getProductVersion().toString());
             DDRemoteDamDesktopChannel channel = new DDRemoteDamDesktopChannel(
                 URI.create(DDEndpoints.getRemoteDamWebSocketUrl()), hello,
@@ -93,6 +104,12 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
             log.debug("Created DataDam desktop session service");
         }
         return instance;
+    }
+
+    @NotNull
+    static String formatClientDamId(@NotNull String workspaceId, @NotNull String localHostId) {
+        return Base64.getUrlEncoder().withoutPadding()
+            .encodeToString((workspaceId + ':' + localHostId).getBytes(StandardCharsets.UTF_8));
     }
 
     public void start() {
@@ -108,11 +125,9 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
         if (!closed.get()) {
             DDRemoteDamSubscription observation = channel.observeState(status -> {
                 if (status.isReady() && !closed.get()) {
-                    try {
-                        rpc.getRpc();
-                    } catch (DBException e) {
-                        log.warn("Cannot register desktop DataDam RPC services", e);
-                    }
+                    initializeRpc();
+                } else {
+                    rpcInitializationRetry.cancel();
                 }
             });
             readyObservation.set(observation);
@@ -123,6 +138,25 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
                 }
             }
         }
+    }
+
+    private void initializeRpc() {
+        if (closed.get() || !channel.getStatus().isReady()) {
+            return;
+        }
+        try {
+            rpc.getRpc();
+        } catch (DBException e) {
+            log.warn("Cannot open desktop DataDam RPC endpoint", e);
+            if (!closed.get() && channel.getStatus().isReady() && access.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
+                rpcInitializationRetry.schedule(RPC_RETRY_DELAY);
+            }
+        }
+    }
+
+    @NotNull
+    public String getClientDamId() {
+        return channel.getClientDamId();
     }
 
     @NotNull
@@ -138,6 +172,7 @@ public final class DDRemoteDamDesktopSessionService implements AutoCloseable {
     @Override
     public void close() {
         if (closed.compareAndSet(false, true)) {
+            rpcInitializationRetry.cancel();
             access.removeAccessListener(accessListener);
             DDRemoteDamSubscription observation = readyObservation.getAndSet(null);
             if (observation != null) {

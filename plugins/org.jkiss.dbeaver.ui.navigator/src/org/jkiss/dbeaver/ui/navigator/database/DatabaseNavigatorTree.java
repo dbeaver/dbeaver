@@ -629,10 +629,15 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
 
         @Override
-        public IStatus runInUIThread(IProgressMonitor monitor) {
+        @NotNull
+        public IStatus runInUIThread(@NotNull IProgressMonitor monitor) {
+            Tree tree = treeViewer.getTree();
+            if (tree.isDisposed()) {
+                return Status.OK_STATUS;
+            }
             synchronized (nodeInLoadingProcess) {
                 long nextDelay = WAIT_DELAY;
-                if (!nodeInLoadingProcess.isEmpty()) {
+                if (!nodeInLoadingProcess.isEmpty() && !UIUtils.isShellBlocked(tree.getShell())) {
                     ticksCount++;
                     for (DBNNode node : nodeInLoadingProcess) {
                         Widget widget = treeViewer.testFindItem(node);
@@ -644,7 +649,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 } else {
                     ticksCount = 0;
                 }
-                if (!treeViewer.getTree().isDisposed()) {
+                if (!tree.isDisposed()) {
                     schedule(nextDelay);
                 }
             }
