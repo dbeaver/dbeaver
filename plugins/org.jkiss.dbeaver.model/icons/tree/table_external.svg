@@ -1,15 +1,13 @@
 <svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g clip-path="url(#clip0_3821_10420)">
-<path d="M14 5V12H7V5H14ZM15 4H6V13H15V4Z" fill="#3387C5"/>
-<path d="M14 5H7V7H14V5Z" fill="#3387C5"/>
-<path d="M11 6H10V13H11V6Z" fill="#3387C5"/>
-<path d="M14 9H7V10H14V9Z" fill="#3387C5"/>
-<path d="M1 9V10H4.5V9H1Z" fill="#ED8000"/>
-<path d="M3 7L5.5 9.5L3 12V7Z" fill="#ED8000"/>
+<g clip-path="url(#clip0_11989_4560)">
+<path d="M14.5 8H8V13.5H1.5V2.5H14.5V8Z" fill="white"/>
+<path opacity="0.15" d="M14.5 8H8V13.5H1.5V2.5H14.5V8Z" fill="#3387C5"/>
+<path d="M15 8H14V6H8V14H1V2H15V8ZM2 13H7V10H2V13ZM2 9H7V6H2V9ZM2 5H14V3H2V5Z" fill="#3387C5"/>
+<path d="M9 12.5H15M12.5 15L15 12.5L12.5 10" stroke="#3387C5"/>
 </g>
 <defs>
-<clipPath id="clip0_3821_10420">
-<rect width="14" height="9" fill="white" transform="translate(1 4)"/>
+<clipPath id="clip0_11989_4560">
+<rect width="16" height="16" fill="white"/>
 </clipPath>
 </defs>
 </svg>

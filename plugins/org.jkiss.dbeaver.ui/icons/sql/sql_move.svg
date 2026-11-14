@@ -1,10 +1,5 @@
-<svg width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-<g transform="translate(16, 0) scale(-1, 1)">
-<g>
-<path d="M13 3V6H9V3H13ZM14 2H8V7H14V2Z" fill="#338ECC"/>
-<path d="M5 5.5L5 10.5L8 8L5 5.5Z" fill="#3387C5"/>
-<path d="M7 8L2 8" stroke="#3387C5" stroke-miterlimit="10"/>
-<path d="M13 10V13H9V10H13ZM14 9H8V14H14V9Z" fill="#338ECC"/>
-</g>
-</g>
+<svg width="16" height="16" viewBox="0 0 17 17" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path d="M13 1C14.1041 1 15 1.89586 15 3V4H12V8H11V3C11 2.63546 11.099 2.29439 11.2695 2H5C4.44814 2 4 2.44814 4 3V11H8V12H2V13C2 13.5519 2.44814 14 3 14H8V15H3C1.89586 15 1 14.1041 1 13V11H3V3C3 1.89586 3.89586 1 5 1H13ZM13 2C12.4481 2 12 2.44814 12 3H14C14 2.44814 13.5519 2 13 2Z" fill="#3387C5"/>
+<path d="M8 8V9H5V8H8ZM9 7H5V6H9V7Z" fill="#71717A"/>
+<path d="M9 12.5H15M12.5 15L15 12.5L12.5 10" stroke="#3387C5"/>
 </svg>
