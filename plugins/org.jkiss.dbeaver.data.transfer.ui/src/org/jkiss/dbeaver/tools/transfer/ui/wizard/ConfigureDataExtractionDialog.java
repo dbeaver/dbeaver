@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.forms.UIObservable;
 import org.jkiss.dbeaver.ui.forms.UIObservables;
 import org.jkiss.dbeaver.ui.forms.UIPanelBuilder;
 import org.jkiss.dbeaver.ui.forms.UIRowBuilder;
+import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.List;
@@ -194,7 +195,7 @@ public class ConfigureDataExtractionDialog extends BaseDialog {
     @NotNull
     private Consumer<UIRowBuilder> buildAdvancedRow(@NotNull UIObservable<Boolean> queryDatabase) {
         return rb -> rb
-            .titledPanel("Advanced", buildAdvancedPanel(queryDatabase));
+            .titledPanel(UIConnectionMessages.dialog_connection_advanced_tab, buildAdvancedPanel(queryDatabase));
     }
 
     @NotNull

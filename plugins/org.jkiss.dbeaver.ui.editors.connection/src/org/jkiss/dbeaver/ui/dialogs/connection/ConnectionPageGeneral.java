@@ -495,14 +495,14 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             // Filters
             Composite vmGroup = UIUtils.createTitledComposite(
                 refsGroup,
-                "Virtual model",
+                UIConnectionMessages.dialog_connection_virtual_model_group,
                 1,
                 GridData.VERTICAL_ALIGN_BEGINNING | GridData.HORIZONTAL_ALIGN_BEGINNING
             );
             showVirtualModelCheck = UIUtils.createCheckbox(
                 vmGroup,
-                "Show virtual model editor",
-                "Show virtual model pages in table editor",
+                UIConnectionMessages.dialog_connection_virtual_model_show,
+                UIConnectionMessages.dialog_connection_virtual_model_show_tip,
                 !navigatorSettings.isHideVirtualModel(),
                 1);
             showVirtualModelCheck.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> {
@@ -513,19 +513,14 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
             }));
             Button resetVM = UIUtils.createDialogButton(
                 vmGroup,
-                "Reset configuration",
+                UIConnectionMessages.dialog_connection_virtual_model_reset,
                 null,
-                "Delete all colorings, transformers and virtual table constraints for all tables in this data source",
+                UIConnectionMessages.dialog_connection_virtual_model_reset_tip,
                 SelectionListener.widgetSelectedAdapter(e -> {
                     if (UIUtils.confirmAction(
                         getShell(),
-                        "Reset virtual model settings",
-                        """
-                            You are about to reset all virtual model configuration.
-                             It includes:
-                            \t- All virtual constraints and foreign keys
-                            \t- All column transformers
-                            \t- All table row colorings"""
+                        UIConnectionMessages.dialog_connection_virtual_model_reset_title,
+                        UIConnectionMessages.dialog_connection_virtual_model_reset_message
                     )
                     ) {
                         dataSourceDescriptor.getVirtualModel().resetData();
