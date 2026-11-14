@@ -16,11 +16,14 @@
  */
 package org.jkiss.dbeaver.model.sql.parser;
 
+import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.parser.ASTNodeAccess;
 import net.sf.jsqlparser.parser.Node;
 import net.sf.jsqlparser.parser.SimpleNode;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.update.Update;
+import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -35,14 +38,30 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.utils.ListNode;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.Consumer;
 
 public class SQLSemanticUtils {
     private static final Log log = Log.getLog(SQLSemanticUtils.class);
+
+    public static boolean canTraverseQueryForTableNodes(@NotNull Statement statement) {
+        return statement instanceof ASTNodeAccess;
+    }
+
+    @NotNull
+    public static Set<String> findUpdateReferences(@NotNull Statement statement) {
+        if (!(statement instanceof Update update)) {
+            throw new UnsupportedOperationException("Cannot check references in this SQL statement");
+        }
+        if (update.getReturningClause() != null || update.getOutputClause() != null || update.getLimit() != null
+            || update.getPreferringClause() != null || update.getOrderByElements() != null && !update.getOrderByElements().isEmpty()) {
+            throw new UnsupportedOperationException("Cannot check all references in this UPDATE statement");
+        }
+        UpdateReferencesFinder finder = new UpdateReferencesFinder();
+        Set<String> names = finder.getTables(update);
+        names.addAll(finder.routineNames);
+        return names;
+    }
 
     public static void traverseQueryForTableNodes(@NotNull Statement statement, @NotNull Consumer<Table> onTableNode) {
         SimpleNode root = ((ASTNodeAccess) statement).getASTNode();
@@ -57,6 +76,19 @@ public class SQLSemanticUtils {
             for (int i = node.jjtGetNumChildren() - 1; i >= 0; i--) {
                 stack = ListNode.push(stack, node.jjtGetChild(i));
             }
+        }
+    }
+
+    private static class UpdateReferencesFinder extends TablesNamesFinder<Void> {
+        private final Set<String> routineNames = new HashSet<>();
+
+        @Override
+        public <S> Void visit(Function function, S context) {
+            String name = function.getName();
+            if (name != null && name.contains(".")) {
+                routineNames.add(name);
+            }
+            return super.visit(function, context);
         }
     }
 

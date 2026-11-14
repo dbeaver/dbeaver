@@ -22,10 +22,7 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class SQLSemanticUtilsTest extends DBeaverUnitTest {
 
@@ -73,6 +70,30 @@ public class SQLSemanticUtilsTest extends DBeaverUnitTest {
         );
 
         assertCollectionsEqual(referencedTables, foundTables);
+    }
+
+    @Test
+    public void simpleUpdateReferencesItsTarget() {
+        var query = new SQLQuery(null, "UPDATE public.allowed SET value = 1");
+
+        Assertions.assertEquals(Set.of("public.allowed"),
+            SQLSemanticUtils.findUpdateReferences(Objects.requireNonNull(query.getStatement())));
+    }
+
+    @Test
+    public void updateReferencesTargetAndQualifiedRoutine() {
+        var query = new SQLQuery(null, "UPDATE public.allowed SET value = private.read_payroll()");
+
+        Assertions.assertEquals(Set.of("public.allowed", "private.read_payroll"),
+            SQLSemanticUtils.findUpdateReferences(Objects.requireNonNull(query.getStatement())));
+    }
+
+    @Test
+    public void updateWithReturningIsNotPartiallyChecked() {
+        var query = new SQLQuery(null, "UPDATE public.allowed SET value = 1 RETURNING value");
+
+        Assertions.assertThrows(UnsupportedOperationException.class,
+            () -> SQLSemanticUtils.findUpdateReferences(Objects.requireNonNull(query.getStatement())));
     }
 
     private static <T> void assertCollectionsEqual(@NotNull Collection<T> a, @NotNull Collection<T> b) {
