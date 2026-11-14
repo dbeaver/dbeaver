@@ -101,12 +101,6 @@ public class SQLRuleManager {
         }
     }
 
-    /**
-     * Creates the rules of batch delimiters which are active for the dialect of the syntax manager.
-     * The rules are the same as the script parser uses, so other consumers (e.g. the formatter)
-     * recognize batch delimiters exactly the way the parser does.
-     * The returned rules are not thread-safe, each caller must use its own instances.
-     */
     @NotNull
     public static List<SQLBatchDelimiterRule> createBatchDelimiterRules(
         @NotNull SQLSyntaxManager syntaxManager,
@@ -126,10 +120,6 @@ public class SQLRuleManager {
         return selectBatchDelimiterRules(syntaxManager.getBatchDelimiters(), providedRules, lineCommentRules);
     }
 
-    /**
-     * Selects the batch delimiter rules which are active for the given delimiters: the dialect rules which match them
-     * and a generic rule for the delimiters which are not claimed by any dialect rule.
-     */
     @NotNull
     private static List<SQLBatchDelimiterRule> selectBatchDelimiterRules(
         @NotNull String[] batchDelimiters,
