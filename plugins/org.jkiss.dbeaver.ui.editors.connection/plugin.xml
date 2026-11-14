@@ -133,7 +133,9 @@
     <extension point="org.eclipse.ui.newWizards">
         <wizard
              category="org.jkiss.dbeaver.core.new.general"
-             class="org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard"
+             class="org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizardLauncher"
+             hasPages="false"
+             canFinishEarly="true"
              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/database.svg"
              id="org.jkiss.dbeaver.core.wizard.new.connection"
              name="%wizard.org.jkiss.dbeaver.core.wizard.new.connection.name">
