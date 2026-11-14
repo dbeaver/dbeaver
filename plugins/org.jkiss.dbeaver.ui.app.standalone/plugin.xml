@@ -215,7 +215,7 @@
         <handler commandId="org.jkiss.dbeaver.core.try.pro" class="org.jkiss.dbeaver.ui.app.standalone.actions.TryPROHandler"/>
         <handler commandId="org.jkiss.dbeaver.ui.window.minimize" class="org.jkiss.dbeaver.ui.app.standalone.actions.MinimizeWindowHandler"/>
         <handler commandId="org.jkiss.dbeaver.ui.versionUpdate" class="org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateHandler"/>
-        <handler commandId="org.jkiss.dbeaver.ui.versionUpdate.releaseNotes" class="org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateHandler"/>
+        <handler commandId="org.jkiss.dbeaver.ui.versionUpdate.releaseNotes" class="org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateHandler$ReleaseNotes"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -369,21 +369,11 @@
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
         </menuContribution>
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.trim.command2">
-            <toolbar label="%toolbar.versionUpdate.label" id="dbeaver-version-update">
-                <command
-                        commandId="org.jkiss.dbeaver.ui.versionUpdate"
-                        icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/download.svg"
-                        id="org.jkiss.dbeaver.ui.versionUpdate.menu"
-                        mode="FORCE_TEXT"
-                        style="pulldown">
-                    <visibleWhen>
-                        <test
-                                forcePluginActivation="true"
-                                property="org.jkiss.dbeaver.ui.versionUpdate.available"/>
-                    </visibleWhen>
-                </command>
-            </toolbar>
+            <toolbar label="%toolbar.versionUpdate.label" id="dbeaver-version-update"/>
         </menuContribution>
+        <menuContribution
+                class="org.jkiss.dbeaver.ui.app.standalone.update.VersionUpdateContribution"
+                locationURI="toolbar:dbeaver-version-update"/>
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.ui.versionUpdate.menu">
             <command commandId="org.jkiss.dbeaver.ui.versionUpdate.releaseNotes"/>
         </menuContribution>

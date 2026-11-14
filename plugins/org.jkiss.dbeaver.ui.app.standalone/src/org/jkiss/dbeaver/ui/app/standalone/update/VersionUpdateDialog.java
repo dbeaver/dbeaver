@@ -73,12 +73,16 @@ public class VersionUpdateDialog extends Dialog {
     private static final int UPGRADE_ID = 1001;
     private static final int CHECK_EA_ID = 1002;
 
+    @NotNull
     private final Version currentVersion;
     private final int currentPatch;
+    @NotNull
     private final VersionDescriptor newVersion;
 
     private final boolean showConfig;
+    @Nullable
     private Button dontShowAgainCheck;
+    @Nullable
     private final String earlyAccessURL;
 
     public VersionUpdateDialog(@Nullable Shell parentShell, @NotNull Version currentVersion, @NotNull VersionDescriptor newVersion, boolean showConfig)
@@ -186,11 +190,11 @@ public class VersionUpdateDialog extends Dialog {
         return parent;
     }
 
-    protected void createTopArea(Composite composite) {
+    protected void createTopArea(@NotNull Composite composite) {
 
     }
 
-    protected void createBottomArea(Composite composite) {
+    protected void createBottomArea(@NotNull Composite composite) {
 
     }
 
@@ -208,6 +212,18 @@ public class VersionUpdateDialog extends Dialog {
                 UPGRADE_ID,
                 CoreApplicationMessages.dialog_version_update_button_upgrade,
                 true);
+            Runnable updateBackground = () -> {
+                if (!upgradeButton.isDisposed()) {
+                    upgradeButton.setBackground(VersionUpdatePresentation.getUpdateBackground(newVersion.isMajorUpdate()));
+                }
+            };
+            BaseThemeSettings.instance.addPropertyListener(
+                newVersion.isMajorUpdate() ? BaseEditorColors.COLOR_BACKGROUND_GREEN : BaseEditorColors.COLOR_BACKGROUND_BLUE,
+                id -> UIUtils.asyncExec(updateBackground),
+                upgradeButton
+            );
+            // Apply after the dialog's initial theme styling.
+            UIUtils.asyncExec(updateBackground);
             PatchSeverity severity = newVersion.getMaxSeverity(currentVersion, currentPatch);
             if (severity != PatchSeverity.NONE) {
                 // Native buttons may ignore custom colors; the icon and text also communicate severity.
@@ -294,7 +310,7 @@ public class VersionUpdateDialog extends Dialog {
         @NotNull URI downloadUrl,
         @Nullable Consumer<IStatus> completion
     ) {
-        final AbstractJob job = new AbstractJob("Downloading installation file") {
+        final AbstractJob job = new AbstractJob(CoreApplicationMessages.version_update_download) {
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
@@ -322,7 +338,7 @@ public class VersionUpdateDialog extends Dialog {
 
                     log.debug("Downloading installation file to " + file);
                     try {
-                        WebUtils.downloadRemoteFile(monitor, "Obtaining installer", url, file, null);
+                        WebUtils.downloadRemoteFile(monitor, CoreApplicationMessages.version_update_obtain_installer, url, file, null);
                     } catch (InterruptedException e) {
                         log.debug("Canceled by user", e);
                         try {
@@ -358,12 +374,12 @@ public class VersionUpdateDialog extends Dialog {
                         }
 
                         @Override
-                        public boolean preShutdown(IWorkbench workbench, boolean forced) {
+                        public boolean preShutdown(@NotNull IWorkbench workbench, boolean forced) {
                             return true;
                         }
 
                         @Override
-                        public void postShutdown(IWorkbench workbench) {
+                        public void postShutdown(@NotNull IWorkbench workbench) {
                             try {
                                 installer.run(file, log);
                             } catch (Exception e) {

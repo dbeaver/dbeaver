@@ -165,7 +165,7 @@ public class ApplicationWorkbenchWindowAdvisor extends IDEWorkbenchWindowAdvisor
         configurer.setInitialSize(new Point(displaySize.width * 3 / 4, displaySize.height * 3 / 4));
         configurer.setShowCoolBar(true);
         configurer.setShowStatusLine(true);
-        configurer.setShowPerspectiveBar(true);
+        configurer.setShowPerspectiveBar(false);
         configurer.setShowProgressIndicator(true);
         configurer.configureEditorAreaDropListener(new EditorAreaDropAdapter());
 
