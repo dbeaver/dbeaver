@@ -294,6 +294,18 @@ public class CoreMessages extends NLS {
 
     public static String transaction_log_dialog_header_transaction_log;
 
+    public static String pending_transactions_dialog_title;
+    public static String pending_transactions_dialog_column_connection;
+    public static String pending_transactions_dialog_column_transaction;
+    public static String pending_transactions_dialog_checkbox_show_all_connections;
+    public static String pending_transactions_dialog_checkbox_show_all_connections_tip;
+    public static String pending_transactions_dialog_button_commit;
+    public static String pending_transactions_dialog_button_rollback;
+    public static String pending_transactions_dialog_error_no_active_part_title;
+    public static String pending_transactions_dialog_error_no_active_part_message;
+
+    public static String query_manager_view_label;
+
     // Preference/Properties
 
     public static String transaction_log_dialog_error_connect_to_a_database;
