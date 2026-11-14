@@ -132,7 +132,7 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
             : VersionUpdatePresentation.getSeverityIcon(severity);
         element.setIcon(DBeaverIcons.getImageDescriptor(icon));
         String tooltip = CoreApplicationMessages.dialog_version_update_title;
-        if (isUpdateAvailable() && !isMajorUpdate()) {
+        if (isUpdateAvailable() && isMajorUpdate()) {
             tooltip += "\n" + CoreApplicationMessages.dialog_version_update_major_version;
         }
         if (severity != PatchSeverity.NONE) {
