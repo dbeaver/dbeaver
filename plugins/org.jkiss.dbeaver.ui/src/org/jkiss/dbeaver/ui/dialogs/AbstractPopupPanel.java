@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,12 @@ package org.jkiss.dbeaver.ui.dialogs;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.ShellListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
@@ -36,6 +35,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 public abstract class AbstractPopupPanel extends BaseDialog {
 
     private boolean modeless;
+    private boolean closeOnOutsideClickInstalled;
     private static boolean popupOpen;
 
     public static boolean isPopupOpen() {
@@ -114,21 +114,18 @@ public abstract class AbstractPopupPanel extends BaseDialog {
         return !modeless;
     }
 
+    /**
+     * Closes a modeless popup when the user clicks outside of it.
+     * <p>
+     * Keyboard focus is deliberately not used here: with focus-follows-mouse window
+     * managers (e.g. GNOME with {@code focus-mode='sloppy'}) the popup loses focus as
+     * soon as the pointer moves over the parent window, which would close the popup
+     * before the user could reach it.
+     */
     protected void closeOnFocusLost(Control ... controls) {
-        if (modeless) {
-            FocusAdapter focusListener = new FocusAdapter() {
-                @Override
-                public void focusLost(FocusEvent e) {
-                    UIUtils.asyncExec(AbstractPopupPanel.this::handleFocusLost);
-                }
-            };
-            for (Control ctrl : controls) {
-                if (ctrl != null) {
-                    ctrl.addFocusListener(focusListener);
-                }
-            }
+        if (modeless && !closeOnOutsideClickInstalled) {
+            closeOnOutsideClickInstalled = installCloseOnOutsideClick();
         }
-
     }
 
     /**
@@ -140,17 +137,124 @@ public abstract class AbstractPopupPanel extends BaseDialog {
         shell.addShellListener(ShellListener.shellDeactivatedAdapter(e -> UIUtils.asyncExec(this::handleFocusLost)));
     }
 
+    private boolean installCloseOnOutsideClick() {
+        Shell popupShell = getShell();
+        if (popupShell == null || popupShell.isDisposed()) {
+            return false;
+        }
+        Display display = popupShell.getDisplay();
+        Listener mouseFilter = event -> {
+            if (event.type != SWT.MouseDown) {
+                return;
+            }
+            Shell shell = getShell();
+            if (shell == null || shell.isDisposed()) {
+                return;
+            }
+            Shell clickedShell = getWidgetShell(event.widget);
+            if (clickedShell == null) {
+                return;
+            }
+            // Ignore clicks inside the popup and its child shells (e.g. a drop-down opened from it)
+            if (isPopupShell(shell, clickedShell)) {
+                return;
+            }
+            // Keep the popup open while a blocking dialog opened from it is being handled
+            if (isBlockingDialog(clickedShell)) {
+                return;
+            }
+            // Ignore clicks in transient shells (combo drop-downs, tooltips) opened from the popup.
+            // They do not take focus, so keyboard focus remains inside the popup shell.
+            if ((clickedShell.getStyle() & SWT.ON_TOP) != 0) {
+                Control focusControl = display.getFocusControl();
+                if (focusControl != null && UIUtils.isParent(shell, focusControl)) {
+                    return;
+                }
+            }
+            UIUtils.asyncExec(this::closeIfOpen);
+        };
+        // Menu bars and menu items do not report mouse events as controls, so close the popup
+        // as soon as a menu that does not belong to it is shown.
+        Listener menuFilter = event -> {
+            Shell shell = getShell();
+            if (shell == null || shell.isDisposed() || !(event.widget instanceof Menu menu)) {
+                return;
+            }
+            Shell menuShell = getMenuShell(menu);
+            if (menuShell == null || isPopupShell(shell, menuShell) || isBlockingDialog(menuShell)) {
+                return;
+            }
+            UIUtils.asyncExec(this::closeIfOpen);
+        };
+        display.addFilter(SWT.MouseDown, mouseFilter);
+        display.addFilter(SWT.Show, menuFilter);
+        popupShell.addDisposeListener(e -> {
+            display.removeFilter(SWT.MouseDown, mouseFilter);
+            display.removeFilter(SWT.Show, menuFilter);
+            // The dialog may be opened again, which recreates the shell
+            closeOnOutsideClickInstalled = false;
+        });
+        return true;
+    }
+
+    private void closeIfOpen() {
+        Shell shell = getShell();
+        if (shell != null && !shell.isDisposed()) {
+            cancelPressed();
+        }
+    }
+
+    private static @Nullable Shell getWidgetShell(@NotNull Widget widget) {
+        if (widget instanceof Control control) {
+            return control.getShell();
+        }
+        if (widget instanceof MenuItem item) {
+            return getMenuShell(item.getParent());
+        }
+        if (widget instanceof Menu menu) {
+            return getMenuShell(menu);
+        }
+        return null;
+    }
+
+    private static @Nullable Shell getMenuShell(@NotNull Menu menu) {
+        Menu topMenu = menu;
+        while (topMenu.getParentMenu() != null) {
+            topMenu = topMenu.getParentMenu();
+        }
+        Object parent = topMenu.getParent();
+        if (parent instanceof Control control) {
+            return control.getShell();
+        }
+        if (parent instanceof Shell shell) {
+            return shell;
+        }
+        return null;
+    }
+
+    private static boolean isPopupShell(@NotNull Shell popupShell, @NotNull Shell shell) {
+        for (Composite parent = shell; parent != null; parent = parent.getParent()) {
+            if (parent == popupShell) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean isBlockingDialog(@NotNull Shell shell) {
+        Object dialogData = shell.getData();
+        return dialogData instanceof MessageBox
+            || dialogData instanceof MessageBoxModern
+            || dialogData instanceof BlockingPopupDialog
+            || dialogData instanceof ErrorDialog;
+    }
+
     private void handleFocusLost() {
         Shell shell = getShell();
         if (shell != null && !shell.isDisposed()) {
             Control focusControl = shell.getDisplay().getFocusControl();
             if (focusControl != null && !UIUtils.isParent(shell, focusControl)) {
-                Object dialogData = focusControl.getShell().getData();
-                if (dialogData instanceof MessageBox ||
-                    dialogData instanceof MessageBoxModern ||
-                    dialogData instanceof BlockingPopupDialog ||
-                    dialogData instanceof ErrorDialog
-                ) {
+                if (isBlockingDialog(focusControl.getShell())) {
                     return;
                 }
                 cancelPressed();
