@@ -137,6 +137,7 @@ public class DDTrackingUIMessages extends NLS {
     public static String import_key_dialog_title;
     public static String import_key_dialog_prompt_label;
     public static String import_key_dialog_paste_button;
+    public static String import_key_dialog_reset_button;
 
     static {
         // initialize resource bundle

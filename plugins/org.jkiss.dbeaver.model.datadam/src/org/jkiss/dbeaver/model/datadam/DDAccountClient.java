@@ -60,7 +60,7 @@ public class DDAccountClient extends DDClient {
     private static final String CRYPTO_STATE_QUERY = """
         query GatewayCryptoState {
             gatewayCryptoState {
-                accountId cryptoConfigured encryptedBundle generation salt iterations
+                accountId cryptoConfigured encryptedBundle generation salt iterations apiKeyId
             }
         }
         """;

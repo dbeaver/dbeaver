@@ -27,6 +27,7 @@ public record DDCryptoState(
     @Nullable String encryptedBundle,
     @Nullable Long generation,
     @Nullable String salt,
-    @Nullable Integer iterations
+    @Nullable Integer iterations,
+    @Nullable UUID apiKeyId
 ) {
 }

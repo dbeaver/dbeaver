@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.model.datadam.auth;
 
 import com.dbeaver.datadam.sso.api.DDSsoConstants;
 import com.dbeaver.datadam.sso.api.DDSsoScopes;
-import com.dbeaver.datadam.sso.api.model.DDSsoConfigResponse;
 import com.dbeaver.datadam.sso.api.model.DDSsoTokenResponse;
 import com.dbeaver.rest.client.AbstractRestClient;
 import com.dbeaver.rest.client.MediaType;
@@ -56,22 +55,6 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
     @Override
     protected void logDebug(@NotNull String message) {
         log.debug(message);
-    }
-
-    @NotNull
-    public DDSsoConfigResponse discover() throws DBException {
-        try {
-            DDSsoConfigResponse config = executeGetRequest(
-                CommonUtils.removeLeadingSlash(DDSsoConstants.APPLICATION_CONFIG_PATH), DDSsoConfigResponse.class);
-            if (config == null || config.issuer() == null) {
-                throw new DBException("Invalid desktop SSO configuration");
-            }
-            URI issuer = URI.create(config.issuer());
-            requireSecureServer(issuer);
-            return config;
-        } catch (IllegalArgumentException e) {
-            throw new DBException("Invalid desktop SSO configuration", e);
-        }
     }
 
     @NotNull
@@ -140,12 +123,8 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
         if (tokens.refreshToken() != null && !DDSsoConstants.BASE64URL_256_PATTERN.matcher(tokens.refreshToken()).matches()) {
             throw new DBException("Invalid desktop SSO refresh token response");
         }
-        try {
-            if (!DDSsoScopes.parse(tokens.scope()).equals(DDSsoScopes.parse(scope))) {
-                throw new IllegalArgumentException();
-            }
-        } catch (IllegalArgumentException e) {
-            throw new DBException("Unexpected SSO access scopes");
+        if (!DDSsoScopes.parse(tokens.scope()).equals(DDSsoScopes.parse(scope))) {
+            throw new DBException("Response tokens scope doesn't match required scope '" + scope + "'");
         }
         return tokens;
     }
@@ -159,10 +138,10 @@ public class DDDesktopSsoClient extends AbstractRestClient implements AutoClosea
     @Override
     protected void handleRequestException(@NotNull String message, @NotNull Throwable e) throws DBException {
         if (e instanceof JsonParseException) {
-            throw new DBException("Invalid desktop SSO response");
+            throw new DBException("Invalid desktop SSO response", e);
         }
         // Transport errors can include response data. A failed rotation is never retried automatically.
-        throw new DBException("Desktop SSO request failed");
+        throw new DBException("Desktop SSO request failed", e);
     }
 
     private void requireSecureServer(@NotNull URI url) throws DBException {

@@ -222,7 +222,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
 
     private void createColumnsPage(@NotNull Composite parent) {
         ConComposite group = new ConComposite(parent);
-        group.setGridLayout(1);
+        group.setLayout(new GridLayout(1, false));
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
         createTableTitle(group, DataEditorsMessages.virtual_structure_editor_columns_group_virtual);
 
@@ -236,7 +236,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
             return;
         }
         ConComposite group = new ConComposite(parent);
-        group.setGridLayout(1);
+        group.setLayout(new GridLayout(1, false));
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
         createTableTitle(group, DataEditorsMessages.virtual_structure_editor_columns_group_unique_keys);
 
@@ -337,7 +337,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
 
     private void createForeignKeysPage(@NotNull Composite parent) {
         ConComposite group = new ConComposite(parent);
-        group.setGridLayout(1);
+        group.setLayout(new GridLayout(1, false));
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
         createTableTitle(group, DataEditorsMessages.virtual_structure_editor_control_group_label_foreign_key);
 
@@ -383,7 +383,7 @@ public class VirtualStructureEditor extends AbstractDatabaseObjectEditor<DBSEnti
 
     private void createReferencesPage(@NotNull Composite parent) {
         ConComposite group = new ConComposite(parent);
-        group.setGridLayout(1);
+        group.setLayout(new GridLayout(1, false));
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
         createTableTitle(group, DataEditorsMessages.virtual_structure_editor_control_group_references);
 

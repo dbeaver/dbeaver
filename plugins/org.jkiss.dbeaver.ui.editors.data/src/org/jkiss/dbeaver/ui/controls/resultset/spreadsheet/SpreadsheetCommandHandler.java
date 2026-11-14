@@ -23,7 +23,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
@@ -35,7 +34,6 @@ import org.jkiss.dbeaver.ui.controls.lightgrid.IGridItem;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.controls.resultset.handler.ResultSetHandlerMain;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 
@@ -89,20 +87,6 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
             case CMD_COLUMNS_FIT_SCREEN:
                 spreadsheet.getSpreadsheet().packColumns(false);
                 break;
-            case CMD_COLUMNS_HIDE_EMPTY: {
-                final var model = spreadsheet.getController().getModel();
-                final var attributes = new HashSet<>(model.getVisibleAttributes());
-                for (ResultSetRow row : model.getAllRows()) {
-                    attributes.removeIf(attribute -> !DBUtils.isNullValue(model.getCellValue(attribute, row)));
-                }
-                if (!attributes.isEmpty()) {
-                    for (DBDAttributeBinding attribute : attributes) {
-                        model.setAttributeVisibility(attribute, false);
-                    }
-                    spreadsheet.refreshData(true, false, true);
-                }
-                break;
-            }
             case CMD_SELECT_COLUMNS: {
                 Spreadsheet s = spreadsheet.getSpreadsheet();
                 GridPos focusPos = s.getFocusPos();
@@ -193,6 +177,7 @@ public class SpreadsheetCommandHandler extends AbstractHandler {
                 break;
             }
             case CMD_SHOW_COLUMNS: {
+                spreadsheet.resetColumnFilter();
                 ResultSetModel model = spreadsheet.getController().getModel();
                 List<DBDAttributeBinding> hiddenAttributes = new ArrayList<>();
                 DBDAttributeConstraint[] constraints = model.getDataFilter().getConstraints();
