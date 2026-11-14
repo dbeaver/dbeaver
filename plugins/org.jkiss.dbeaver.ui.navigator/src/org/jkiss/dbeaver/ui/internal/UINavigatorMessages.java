@@ -139,6 +139,8 @@ public class UINavigatorMessages extends NLS {
     public static String pref_page_database_general_label_show_node_actions_tip;
     public static String pref_page_database_general_label_show_child_count;
     public static String pref_page_database_general_label_show_child_count_tip;
+    public static String pref_page_database_general_label_show_filter_node;
+    public static String pref_page_database_general_label_show_filter_node_tip;
     public static String pref_page_database_general_label_color_all_nodes;
     public static String pref_page_database_general_label_color_all_nodes_tip;
     public static String pref_page_database_general_label_show_folder_placeholders;

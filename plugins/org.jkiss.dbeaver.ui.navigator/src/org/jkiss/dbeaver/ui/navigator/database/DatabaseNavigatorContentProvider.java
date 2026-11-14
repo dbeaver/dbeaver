@@ -164,7 +164,7 @@ public class DatabaseNavigatorContentProvider implements IStructuredContentProvi
             if (parent.isFiltered()) {
                 if (searchBarIsActive) {
                     nodes.add(new TreeNodeFilterSearch(parent));
-                } else {
+                } else if (DBWorkbench.getPlatform().getPreferenceStore().getBoolean(NavigatorPreferences.NAVIGATOR_SHOW_FILTER_NODE)) {
                     nodes.add(new TreeNodeFilter(parent));
                 }
             }
