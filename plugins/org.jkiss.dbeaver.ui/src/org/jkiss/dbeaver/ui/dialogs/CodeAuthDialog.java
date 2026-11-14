@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -63,7 +63,8 @@ public class CodeAuthDialog extends Dialog implements BlockingPopupDialog {
     }
 
     @Override
-    protected Control createDialogArea(Composite parent) {
+    @NotNull
+    protected Control createDialogArea(@NotNull Composite parent) {
         Composite composite = (Composite) super.createDialogArea(parent);
 
         getShell().setText(UIMessages.dialog_auth_code_title);
@@ -75,6 +76,8 @@ public class CodeAuthDialog extends Dialog implements BlockingPopupDialog {
 
         LinkFactory.newLink(SWT.NONE)
             .text("<a>" + browserUrl + "</a>")
+            .layoutData(GridDataFactory.fillDefaults().grab(true, false)
+                .hint(convertHorizontalDLUsToPixels(IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH), SWT.DEFAULT).create())
             .onSelect(e -> ShellUtils.launchProgram(browserUrl.toString()))
             .create(composite);
 
