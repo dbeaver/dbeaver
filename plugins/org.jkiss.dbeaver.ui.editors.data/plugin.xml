@@ -1336,7 +1336,7 @@
             description="%confirm.org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable.tip"
             message="%confirm.org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable.message"
             toggleMessage="%confirm.org.jkiss.dbeaver.sql.resultset.serverSideOrderingUnavailable.toggleMessage"
-            group="Object Editor"/>
+            group="%confirm.object.editor.group.name"/>
         <confirmation
                 id="keep_statement_open"
                 title="%confirm.keep_statement_open.title"
