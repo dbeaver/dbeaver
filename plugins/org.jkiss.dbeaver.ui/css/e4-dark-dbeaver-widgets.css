@@ -1,3 +1,15 @@
+ColorDefinition#org-jkiss-dbeaver-ui-general-color-blue-background {
+    color: #294456;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-general-color-yellow-background {
+    color: #54482d;
+}
+
+ColorDefinition#org-jkiss-dbeaver-ui-general-color-green-background {
+    color: #354a32;
+}
+
 Label.dbeaverFormHint,
 .dbeaverFormHint Label,
 .dbeaverFormHint CLabel,

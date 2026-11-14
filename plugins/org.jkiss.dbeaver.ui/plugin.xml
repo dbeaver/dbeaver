@@ -94,6 +94,22 @@
     </extension>
 
     <extension point="org.eclipse.ui.themes">
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.ui.general.color.blue.background.label"
+            categoryId="org.eclipse.ui.workbenchMisc"
+            id="org.jkiss.dbeaver.ui.general.color.blue.background"
+            value="214,232,245"/>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.ui.general.color.yellow.background.label"
+            categoryId="org.eclipse.ui.workbenchMisc"
+            id="org.jkiss.dbeaver.ui.general.color.yellow.background"
+            value="255,240,204"/>
+        <colorDefinition
+            label="%colorDefinition.org.jkiss.dbeaver.ui.general.color.green.background.label"
+            categoryId="org.eclipse.ui.workbenchMisc"
+            id="org.jkiss.dbeaver.ui.general.color.green.background"
+            value="223,238,219"/>
+
         <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.dbeaver.ui.fonts.label" id="org.jkiss.dbeaver.ui.fonts">
             <description>%themeElementCategory.org.jkiss.dbeaver.ui.fonts.description</description>
         </themeElementCategory>

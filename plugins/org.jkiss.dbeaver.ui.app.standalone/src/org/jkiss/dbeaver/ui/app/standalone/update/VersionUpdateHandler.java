@@ -39,6 +39,13 @@ import org.osgi.framework.Version;
 import java.util.Map;
 
 public class VersionUpdateHandler extends AbstractHandler implements IElementUpdater {
+    public static class ReleaseNotes extends VersionUpdateHandler {
+        @Override
+        public void updateElement(@NotNull UIElement element, @NotNull Map parameters) {
+            element.setIcon(DBeaverIcons.getImageDescriptor(UIIcon.FILE));
+        }
+    }
+
     private static final int ANIMATION_DELAY = 100;
 
     public static final String COMMAND_UPDATE = "org.jkiss.dbeaver.ui.versionUpdate";
@@ -62,6 +69,10 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
 
     static boolean isUpdateAvailable() {
         return currentVersion != null && newVersion != null;
+    }
+
+    static boolean isMajorUpdate() {
+        return newVersion != null && newVersion.isMajorUpdate();
     }
 
     static void startUpdate(@NotNull Version current, @NotNull VersionDescriptor available) {
@@ -120,12 +131,17 @@ public class VersionUpdateHandler extends AbstractHandler implements IElementUpd
             ? UIIcon.LOADING.get(animationFrame % UIIcon.LOADING.size())
             : VersionUpdatePresentation.getSeverityIcon(severity);
         element.setIcon(DBeaverIcons.getImageDescriptor(icon));
-        if (severity != PatchSeverity.NONE) {
-            // Command contributions do not expose native toolbar button colors.
-            element.setTooltip(NLS.bind(CoreApplicationMessages.dialog_version_update_severity, VersionUpdatePresentation.getSeverityLabel(severity)));
-        } else {
-            element.setTooltip(CoreApplicationMessages.dialog_version_update_title);
+        String tooltip = CoreApplicationMessages.dialog_version_update_title;
+        if (isUpdateAvailable() && !isMajorUpdate()) {
+            tooltip += "\n" + CoreApplicationMessages.dialog_version_update_major_version;
         }
+        if (severity != PatchSeverity.NONE) {
+            tooltip += "\n" + NLS.bind(
+                CoreApplicationMessages.dialog_version_update_severity,
+                VersionUpdatePresentation.getSeverityLabel(severity)
+            );
+        }
+        element.setTooltip(tooltip);
     }
 
     private void downloadFinished(@NotNull IStatus status) {

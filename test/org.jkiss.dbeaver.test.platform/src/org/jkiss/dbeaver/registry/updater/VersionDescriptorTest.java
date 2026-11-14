@@ -73,6 +73,36 @@ public class VersionDescriptorTest extends DBeaverUnitTest {
             """));
     }
 
+    @Test
+    public void testMajorUpdateClassification() throws IOException {
+        VersionDescriptor descriptor = parse("<version><number>26.2.0</number></version>");
+        assertTrue(descriptor.isMajorUpdate());
+
+        descriptor.setProgramVersion(new Version("26.2.0.beta"));
+        assertTrue(descriptor.isMajorUpdate());
+
+        descriptor.setProgramVersion(new Version("26.2.1"));
+        assertFalse(descriptor.isMajorUpdate());
+        descriptor.setProgramVersion(new Version("27.0.1"));
+        assertFalse(descriptor.isMajorUpdate());
+    }
+
+    @Test
+    public void testPatchesInheritReleaseClassification() throws IOException {
+        VersionDescriptor descriptor = parse("""
+            <version>
+                <number>26.2.0</number>
+                <patches><patch><patch-version>1</patch-version></patch></patches>
+            </version>
+            """);
+        assertEquals("26.2.0.1", descriptor.getUpdateVersion());
+        assertTrue(descriptor.isMajorUpdate());
+
+        descriptor.setProgramVersion(new Version("26.2.1"));
+        assertEquals("26.2.1.1", descriptor.getUpdateVersion());
+        assertFalse(descriptor.isMajorUpdate());
+    }
+
     @NotNull
     private static VersionDescriptor parse(@NotNull String xml) throws IOException {
         return new VersionDescriptor(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
