@@ -27,6 +27,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLazyIcon;
 import org.jkiss.dbeaver.model.connection.DBPDriverWithLicense;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -54,7 +55,7 @@ public class NewConnectionDriverSelectorContributor extends DataSourceMenuContri
             action.loadIcon();
             menuItems.add(new ActionContributionItem(action));
         }
-        MenuManager allDriversMenu = new MenuManager("Other");
+        MenuManager allDriversMenu = new MenuManager(ModelMessages.model_struct_Other);
         for (DBPDriver driver : allDrivers) {
             if (recentDrivers.contains(driver)) {
                 continue;
