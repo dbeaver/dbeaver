@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -46,9 +46,12 @@ import org.jkiss.dbeaver.tools.transfer.serialize.SerializerRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.nio.charset.Charset;
+import java.nio.charset.CharsetEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
+import java.util.regex.Pattern;
 
 /**
  * Data transfer utils
@@ -57,6 +60,9 @@ public class DTUtils {
 
     private static final Log log = Log.getLog(DTUtils.class);
     private static final int MAX_SAMPLE_ROWS = 1000;
+
+    // Letters, combining marks and digits of any script may appear in XML names, characters U+0080..U+00BF may not
+    private static final Pattern XML_NAME_INVALID_CHARS = Pattern.compile("(?:[^\\p{L}\\p{M}\\p{Nd}]|[\\u0080-\\u00BF])+");
 
     public static void addSummary(StringBuilder summary, String option, Object value) {
         summary.append("\t").append(option).append(": ").append(value).append("\n");
@@ -76,6 +82,49 @@ public class DTUtils {
             if (propValue != null) {
                 addSummary(summary, prop.getDisplayName(), propValue);
             }
+        }
+    }
+
+    /**
+     * Turns a table or column name into a valid XML name. Characters that the output encoding
+     * can't represent are replaced as well, since the writer would turn them into '?'.
+     */
+    @NotNull
+    public static String escapeXmlElementName(@NotNull String name, @Nullable String encoding) {
+        String escapedName = XML_NAME_INVALID_CHARS.matcher(name).replaceAll("_");
+        CharsetEncoder encoder = getEncoder(encoding);
+        if (encoder != null && !encoder.canEncode(escapedName)) {
+            StringBuilder encodable = new StringBuilder(escapedName.length());
+            escapedName.codePoints().forEach(codePoint -> {
+                String character = Character.toString(codePoint);
+                if (encoder.canEncode(character)) {
+                    encodable.append(character);
+                } else if (encodable.isEmpty() || encodable.charAt(encodable.length() - 1) != '_') {
+                    encodable.append('_');
+                }
+            });
+            escapedName = encodable.toString();
+        }
+        if (escapedName.isEmpty()) {
+            return "_";
+        }
+        int firstCharacter = escapedName.codePointAt(0);
+        if (Character.isLetter(firstCharacter) || firstCharacter == '_') {
+            return escapedName;
+        }
+
+        return "_" + escapedName;
+    }
+
+    @Nullable
+    private static CharsetEncoder getEncoder(@Nullable String encoding) {
+        if (CommonUtils.isEmpty(encoding)) {
+            return null;
+        }
+        try {
+            return Charset.forName(encoding).newEncoder();
+        } catch (IllegalArgumentException e) {
+            return null;
         }
     }
 
