@@ -105,6 +105,7 @@ class FilterSettingsDialog extends AbstractPopupPanel {
     protected Control createContents(@NotNull Composite parent) {
         Control contents = super.createContents(parent);
         UIUtils.setHelp(contents, IHelpContextIds.CTX_DATA_FILTER);
+        ResultSetUtils.closeOnResultSetRefresh(resultSetViewer, getShell());
         return contents;
     }
 
@@ -521,10 +522,11 @@ class FilterSettingsDialog extends AbstractPopupPanel {
         if (showAllColumns && resultSetViewer.getActivePresentation() instanceof SpreadsheetPresentation spreadsheet) {
             spreadsheet.resetColumnFilter();
         }
+        // Detach the refresh listener before applying our own filter.
+        super.okPressed();
         resultSetViewer.setDataFilter(
             dataFilter,
             filtersChanged);
-        super.okPressed();
     }
 
     private void updateButtons() {

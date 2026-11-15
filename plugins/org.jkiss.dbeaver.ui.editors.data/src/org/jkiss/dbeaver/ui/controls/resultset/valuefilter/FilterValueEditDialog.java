@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.swt.widgets.ToolBar;
+import org.eclipse.swt.widgets.ToolItem;
 import org.eclipse.ui.internal.WorkbenchMessages;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -70,6 +71,14 @@ public class FilterValueEditDialog extends BaseDialog{
     protected IDialogSettings getDialogBoundsSettings()
     {
         return UIUtils.getDialogSettings(DIALOG_ID + "." + handler.getOperator().name());
+    }
+
+    @NotNull
+    @Override
+    protected Control createContents(@NotNull Composite parent) {
+        Control contents = super.createContents(parent);
+        ResultSetUtils.closeOnResultSetRefresh(handler.getViewer(), getShell());
+        return contents;
     }
 
     @Override
@@ -142,6 +151,7 @@ public class FilterValueEditDialog extends BaseDialog{
             ResultSetMessages.sql_editor_resultset_filter_panel_btn_apply.replace("&", ""),
             UIIcon.FILTER_APPLY,
             SelectionListener.widgetSelectedAdapter(event -> okPressed()));
+        new ToolItem(toolbar, SWT.SEPARATOR);
         UIUtils.createToolItem(
             toolbar,
             ResultSetMessages.controls_resultset_viewer_action_filter_clipboard,

@@ -181,6 +181,8 @@ public class ResultSetViewer extends Viewer
     private Composite filtersPanelComposite;
     @Nullable
     private ResultSetFilterPanel filtersPanel;
+    @Nullable
+    private FilterSettingsDialog filterSettingsDialog;
     private final CustomSashForm viewerSash;
 
     private final VerticalFolder panelSwitchFolder;
@@ -675,7 +677,22 @@ public class ResultSetViewer extends Viewer
     }
 
     public void showFilterSettingsDialog() {
-        new FilterSettingsDialog(ResultSetViewer.this).open();
+        if (filterSettingsDialog != null) {
+            Shell shell = filterSettingsDialog.getShell();
+            if (shell != null && !shell.isDisposed()) {
+                shell.forceActive();
+            }
+            return;
+        }
+        FilterSettingsDialog dialog = new FilterSettingsDialog(this);
+        filterSettingsDialog = dialog;
+        try {
+            dialog.open();
+        } finally {
+            if (filterSettingsDialog == dialog) {
+                filterSettingsDialog = null;
+            }
+        }
     }
 
     public void saveDataFilter() {
@@ -790,7 +807,7 @@ public class ResultSetViewer extends Viewer
         return model.getDataFilter();
     }
 
-    public void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData)
+    public void setDataFilter(@NotNull final DBDDataFilter dataFilter, boolean refreshData)
     {
         //if (!model.getDataFilter().equals(dataFilter))
         {
@@ -798,6 +815,7 @@ public class ResultSetViewer extends Viewer
             if (refreshData) {
                 refreshWithFilter(dataFilter);
             } else {
+                fireResultSetRefresh();
                 model.setDataFilter(dataFilter);
                 activePresentation.refreshData(true, false, true);
                 updateFiltersText();
@@ -2788,6 +2806,7 @@ public class ResultSetViewer extends Viewer
      */
     void setMetaData(@NotNull DBCResultSet resultSet, @NotNull DBDAttributeBinding[] attributes)
     {
+        fireResultSetRefresh();
         UIUtils.syncExec(undoRedoManager::clear);
         model.setMetaData(resultSet, attributes);
         activePresentation.clearMetaData();
@@ -4633,6 +4652,9 @@ public class ResultSetViewer extends Viewer
         dataPumpJob.setMaxRows(maxRows);
         dataPumpJob.setRefresh(refresh);
 
+        if (!scroll) {
+            fireResultSetRefresh();
+        }
         queueDataPump(dataPumpJob);
 
         return true;
@@ -4716,6 +4738,7 @@ public class ResultSetViewer extends Viewer
 
     public void clearData(boolean clearMetaData)
     {
+        fireResultSetRefresh();
         undoRedoManager.clear();
         this.model.releaseAllData();
         this.model.clearData();
@@ -5330,6 +5353,14 @@ public class ResultSetViewer extends Viewer
             listenersCopy = listeners.toArray(new IResultSetListener[0]);
         }
         return listenersCopy;
+    }
+
+    private void fireResultSetRefresh() {
+        UIUtils.syncExec(() -> {
+            for (IResultSetListener listener : getListenersCopy()) {
+                listener.onResultSetRefresh();
+            }
+        });
     }
 
     void fireResultSetChange() {
