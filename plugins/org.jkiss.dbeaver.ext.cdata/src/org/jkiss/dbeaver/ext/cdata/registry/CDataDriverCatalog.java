@@ -200,7 +200,7 @@ public final class CDataDriverCatalog {
             checkCanceled(monitor);
             Path etagFile = cacheFile.resolveSibling(cacheFile.getFileName() + ".etag");
             String etag = null;
-            boolean sameSource = true;
+            boolean sameSource = false;
             if (Files.isRegularFile(etagFile)) {
                 try {
                     CatalogETag saved = JSONUtils.GSON.fromJson(Files.readString(etagFile), CatalogETag.class);
@@ -208,8 +208,7 @@ public final class CDataDriverCatalog {
                         Files.deleteIfExists(etagFile);
                     } else if (hasCachedCatalog && catalogHash.equals(saved.urlHash())) {
                         etag = saved.etag();
-                    } else {
-                        sameSource = false;
+                        sameSource = true;
                     }
                 } catch (IOException | JsonParseException e) {
                     log.debug("Error reading CData catalog ETag (" + e.getClass().getSimpleName() + ")");
@@ -274,12 +273,12 @@ public final class CDataDriverCatalog {
                 Files.move(temporary, cacheFile, StandardCopyOption.REPLACE_EXISTING);
             }
             String etag = connection.getHeaderField("ETag");
-            if (etag != null && !etag.isBlank()) {
-                try {
-                    Files.writeString(etagFile, JSONUtils.GSON.toJson(new CatalogETag(catalogHash, etag)));
-                } catch (IOException e) {
-                    log.debug("Error saving CData catalog ETag", e);
-                }
+            try {
+                // Track the source even when the server does not supply a conditional request validator.
+                Files.writeString(etagFile, JSONUtils.GSON.toJson(
+                    new CatalogETag(catalogHash, etag == null || etag.isBlank() ? null : etag)));
+            } catch (IOException e) {
+                log.debug("Error saving CData catalog ETag", e);
             }
             return downloadedDrivers;
         } finally {
@@ -405,7 +404,7 @@ public final class CDataDriverCatalog {
         }
     }
 
-    private record CatalogETag(@NotNull String urlHash, @NotNull String etag) {
+    private record CatalogETag(@NotNull String urlHash, @Nullable String etag) {
     }
 
     private static final class CatalogFile {

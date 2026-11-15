@@ -168,6 +168,7 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
     public void reuseCatalogYoungerThanOneWeekWithoutConnecting() throws Exception {
         long modified = System.currentTimeMillis() - Duration.ofDays(6).toMillis();
         saveCachedCatalog(modified);
+        saveCachedETag("catalog-v1");
 
         Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, cacheFile, headers -> {
             Assertions.fail("Fresh catalog must not open a connection");
@@ -178,8 +179,28 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void refreshFreshCatalogWithoutValidSourceMetadata() throws Exception {
+        for (String metadata : List.of("", "{", "{}")) {
+            saveCachedCatalog(System.currentTimeMillis());
+            Files.deleteIfExists(etagFile());
+            if (!metadata.isEmpty()) {
+                Files.writeString(etagFile(), metadata);
+            }
+            var requests = new AtomicInteger();
+
+            Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, cacheFile, headers -> {
+                requests.incrementAndGet();
+                Assertions.assertFalse(headers.containsKey("If-None-Match"));
+                return downloadConnection;
+            }).size());
+            Assertions.assertEquals(1, requests.get());
+        }
+    }
+
+    @Test
     public void refreshCatalogAtOneWeek() throws Exception {
         saveCachedCatalog(System.currentTimeMillis() - Duration.ofDays(7).toMillis());
+        saveCachedETag("catalog-v1");
 
         Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
         Mockito.verify(downloadConnection).getInputStream();
@@ -457,7 +478,26 @@ public class CDataDriverCatalogTest extends DBeaverUnitTest {
 
         Assertions.assertEquals(3, CDataDriverCatalog.load(monitor, cacheFile, connectionFactory).size());
         Mockito.verify(downloadConnection).getInputStream();
-        Assertions.assertFalse(Files.exists(etagFile()));
+        Map<?, ?> metadata = JSONUtils.GSON.fromJson(Files.readString(etagFile()), Map.class);
+        Assertions.assertEquals(SecurityUtils.sha256Hex(""), metadata.get("urlHash"));
+        Assertions.assertNull(metadata.get("etag"));
+        CDataDriverCatalog.load(monitor, cacheFile, headers -> {
+            Assertions.fail("Catalog without an ETag must still be cached for one week");
+            return downloadConnection;
+        });
+    }
+
+    @Test
+    public void refreshChangedSourceWithoutETag() throws Exception {
+        Path firstCatalog = tempDirectory.resolve("first-catalog.json");
+        Path secondCatalog = tempDirectory.resolve("second-catalog.json");
+        Files.writeString(firstCatalog, CATALOG);
+        Files.writeString(secondCatalog, CATALOG.replace("2026", "2027"));
+
+        Assertions.assertEquals(2026,
+            CDataDriverCatalog.load(monitor, firstCatalog.toUri().toString(), cacheFile).getFirst().versionYear());
+        Assertions.assertEquals(2027,
+            CDataDriverCatalog.load(monitor, secondCatalog.toUri().toString(), cacheFile).getFirst().versionYear());
     }
 
     @Test
