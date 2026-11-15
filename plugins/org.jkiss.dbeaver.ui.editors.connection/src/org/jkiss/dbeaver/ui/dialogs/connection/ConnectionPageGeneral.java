@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.controls.ConnectionFolderSelector;
 import org.jkiss.dbeaver.ui.internal.UIConnectionMessages;
 import org.jkiss.dbeaver.ui.navigator.dialogs.EditObjectFilterDialog;
+import org.jkiss.dbeaver.ui.preferences.ConnectionTypePropertyElement;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 import org.jkiss.dbeaver.utils.DataSourceUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -412,7 +413,10 @@ public class ConnectionPageGeneral extends ConnectionWizardPage implements Navig
                         DataSourceDescriptor dataSource = getActiveDataSource();
                         UIUtils.showPreferencesFor(
                             ctGroup.getShell(),
-                            dataSource.getConnectionConfiguration().getConnectionType(),
+                            new ConnectionTypePropertyElement(
+                                dataSource.getConnectionConfiguration().getConnectionType(),
+                                connectionNameText.getText()
+                            ),
                             PrefPageConnectionTypes.PAGE_ID);
                         loadConnectionTypes(connectionTypeCombo);
                         if (!connectionTypeCombo.getItems().contains(curConType)) {
