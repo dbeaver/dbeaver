@@ -2260,7 +2260,8 @@ public class ResultSetViewer extends Viewer
         return curState != null ? curState.dataContainer : container.getDataContainer();
     }
 
-    public void setDataContainer(DBSDataContainer targetEntity, DBDDataFilter newFilter) {
+    public void setDataContainer(@NotNull DBSDataContainer targetEntity, @NotNull DBDDataFilter newFilter) {
+        fireResultSetRefresh();
         // Workaround for script results
         // In script mode history state isn't updated so we check for it here
         if (curState == null) {
@@ -4619,6 +4620,9 @@ public class ResultSetViewer extends Viewer
         final boolean refresh, // Refresh. Nothing was changed but refresh from server or scroll happened
         @Nullable final Runnable finalizer)
     {
+        if (!scroll) {
+            fireResultSetRefresh();
+        }
         DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext == null || dataContainer.getDataSource() != executionContext.getDataSource()) {
             // This may happen during cross-database entity navigation
@@ -4652,9 +4656,6 @@ public class ResultSetViewer extends Viewer
         dataPumpJob.setMaxRows(maxRows);
         dataPumpJob.setRefresh(refresh);
 
-        if (!scroll) {
-            fireResultSetRefresh();
-        }
         queueDataPump(dataPumpJob);
 
         return true;
