@@ -3934,14 +3934,12 @@ public class ResultSetViewer extends Viewer
                 }
                 filtersMenu.add(new Separator());
 
-/*
                 // Operators with multiple inputs
                 for (DBCLogicalOperator operator : operators) {
                     if (operator.getArgumentCount() < 0) {
-                        filtersMenu.add(new FilterByAttributeAction(operator, FilterByAttributeType.INPUT, attribute));
+                        filtersMenu.add(new FilterByAttributeAction(this, operator, FilterByAttributeType.INPUT, attribute));
                     }
                 }
-*/
 
                 // Operators with no inputs
                 for (DBCLogicalOperator operator : operators) {
