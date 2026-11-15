@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.app.DBPResourceTypeDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.navigator.DBNSpecialFolder;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.List;
@@ -183,7 +184,7 @@ public class ResourceHandlerDescriptor extends AbstractDescriptor implements DBP
         @Override
         public DBNNode makeNavigatorNode(@NotNull DBNNode parentNode, @NotNull IResource resource) throws CoreException, DBException {
             if (resource instanceof IFolder && parentNode.getAdapter(IResource.class) instanceof IProject) {
-                return new DBNResource(parentNode, resource, this);
+                return new DBNSpecialFolder(parentNode, resource, this);
             }
             return getHandler().makeNavigatorNode(parentNode, resource);
         }

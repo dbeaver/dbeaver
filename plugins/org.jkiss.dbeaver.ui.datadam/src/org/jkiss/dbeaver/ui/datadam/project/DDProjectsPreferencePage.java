@@ -136,7 +136,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         accountTextData.widthHint = UIUtils.getFontHeight(accountRow.getDisplay().getSystemFont()) * 22;
         accountText = UIUtils.createLabelText(
             accountRow, DDTrackingUIMessages.sync_preference_page_account_label, "", SWT.READ_ONLY, accountTextData);
-        Composite keyButtons = UIUtils.createComposite(keysGroup, 2);
+        Composite keyButtons = UIUtils.createComposite(keysGroup, 3);
         GridData keyButtonsData = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         keyButtonsData.horizontalSpan = 2;
         keyButtons.setLayoutData(keyButtonsData);
@@ -154,6 +154,9 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         GridData forgetKeysLayout = new GridData(SWT.BEGINNING, SWT.CENTER, false, false);
         forgetKeysLayout.horizontalIndent = 3;
         forgetKeysButton.setLayoutData(forgetKeysLayout);
+        UIUtils.createPushButton(
+            keyButtons, DDTrackingUIMessages.import_key_dialog_reset_button, null,
+            SelectionListener.widgetSelectedAdapter(e -> DDUIUtils.openCredentialReset()));
         projectsHelp = UIUtils.createWarningLabel(
             keysGroup, DDTrackingUIMessages.projects_page_sign_in_help, GridData.HORIZONTAL_ALIGN_BEGINNING, 2);
         ((GridData) projectsHelp.getLayoutData()).verticalIndent = 5;

@@ -67,8 +67,8 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
             }
         }""".formatted(PROJECT_FIELDS.indent(8));
     private static final String CREATE_PROJECT_MUTATION = """
-        mutation($projectId: ID!, $name: String!, $description: String) {
-            project: createProject(projectId: $projectId, name: $name, description: $description) {
+        mutation($apiKeyId: ID!, $projectId: ID!, $name: String!, $description: String) {
+            project: createProject(apiKeyId: $apiKeyId, projectId: $projectId, name: $name, description: $description) {
         %s
             }
         }""".formatted(PROJECT_FIELDS.indent(8));
@@ -102,8 +102,12 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
             }
         }""".formatted(REVISION_FIELDS.indent(12));
     private static final String PUSH_CONFIGURATION_MUTATION = """
-        mutation($projectId: ID!, $projectContent: ProjectConfigurationInput!, $lastKnownConfigurationFingerprint: String!) {
+        mutation(
+            $apiKeyId: ID!, $projectId: ID!,
+            $projectContent: ProjectConfigurationInput!, $lastKnownConfigurationFingerprint: String!
+        ) {
             revision: pushProjectConfiguration(
+                apiKeyId: $apiKeyId
                 projectId: $projectId
                 projectContent: $projectContent
                 lastKnownConfigurationFingerprint: $lastKnownConfigurationFingerprint
@@ -169,6 +173,7 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
         try {
             Map<String, Object> variables = new HashMap<>();
             variables.put("projectId", projectId.toString());
+            variables.put("apiKeyId", requireCredentialBundle().apiKeyId());
             variables.put(FIELD_NAME, name);
             variables.put(FIELD_DESCRIPTION, description);
             ProjectData data = executeGraphQl(CREATE_PROJECT_MUTATION, variables, ProjectData.class, "GraphQL request failed");
@@ -267,11 +272,26 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
         @NotNull String lastKnownConfigurationFingerprint
     ) throws DDShareException {
         try {
+            return pushProjectConfiguration(projectId, projectContent, lastKnownConfigurationFingerprint, requireCredentialBundle());
+        } catch (DBException e) {
+            throw new DDShareException("Failed to push project configuration", e);
+        }
+    }
+
+    @NotNull
+    private DDSharedProjectRevision pushProjectConfiguration(
+        @NotNull UUID projectId,
+        @NotNull DDSharedProjectConfiguration projectContent,
+        @NotNull String lastKnownConfigurationFingerprint,
+        @NotNull DDKeyBundle bundle
+    ) throws DDShareException {
+        try {
             RevisionData data = executeGraphQl(PUSH_CONFIGURATION_MUTATION,
                 Map.of(
                     "projectId", projectId.toString(),
                     "projectContent", projectContent,
-                    "lastKnownConfigurationFingerprint", lastKnownConfigurationFingerprint),
+                    "lastKnownConfigurationFingerprint", lastKnownConfigurationFingerprint,
+                    "apiKeyId", Objects.requireNonNull(bundle.apiKeyId())),
                 RevisionData.class, "GraphQL request failed");
             if (data.revision() == null) {
                 throw new DDShareException("Project not found or configuration fingerprint is stale: " + projectId);
@@ -292,9 +312,10 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
         @NotNull String lastKnownConfigurationFingerprint
     ) throws DDShareException {
         try {
+            DDKeyBundle bundle = requireCredentialBundle();
             List<DDSharedProjectFile> projectFiles = new ArrayList<>();
             if (!preparedFiles.files().isEmpty()) {
-                SecretKey key = getDataKey();
+                SecretKey key = new DDBundleCredentials(bundle).getDataKey();
                 for (Map.Entry<String, Pair<String, byte[]>> file : preparedFiles.files().entrySet()) {
                     Pair<String, byte[]> preparedFile = file.getValue();
                     projectFiles.add(new DDSharedProjectFile(
@@ -306,7 +327,7 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
             return pushProjectConfiguration(
                 projectId,
                 new DDSharedProjectConfiguration(preparedFiles.configurationFingerprint(), projectFiles),
-                lastKnownConfigurationFingerprint);
+                lastKnownConfigurationFingerprint, bundle);
         } catch (DBException e) {
             throw new DDShareException("Failed to encrypt project files", e);
         }
@@ -341,6 +362,15 @@ public class DDShareClient extends DDClient implements DDSharedProjectService {
         @NotNull SecretKey key, @NotNull String projectId, @NotNull String field, @NotNull String ciphertext
     ) throws DBException {
         return DDCrypto.decrypt(key, decodeBase64(ciphertext), aad(projectId, field));
+    }
+
+    @NotNull
+    private DDKeyBundle requireCredentialBundle() throws DBException {
+        DDKeyBundle bundle = accessService.getKeyBundle();
+        if (bundle == null || bundle.apiKeyId() == null) {
+            throw new DBException("Import the current DataDam recovery phrase before sharing projects");
+        }
+        return bundle;
     }
 
     @NotNull

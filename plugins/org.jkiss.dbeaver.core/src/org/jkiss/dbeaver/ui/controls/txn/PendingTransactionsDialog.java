@@ -90,8 +90,6 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
                 logViewer.refresh();
             }));
 
-        closeOnFocusLost(contextTree);
-
         {
             Composite controlPanel = UIUtils.createPlaceholder(composite, 3, 5);
             controlPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -106,8 +104,6 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
             rollbackButton = UIUtils.createPushButton(controlPanel, "Rollback", DBeaverIcons.getImage(UIIcon.TXN_ROLLBACK));
             rollbackButton.setEnabled(false);
             rollbackButton.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> endTransaction(false)));
-
-            closeOnFocusLost(showAllCheck, commitButton, rollbackButton);
         }
 
         super.createTransactionLogPanel(composite);
