@@ -81,8 +81,7 @@ public class TabbedFolderList extends ConComposite {
 
     Color widgetForeground;
     Color widgetNormalShadow;
-    private Color hoverGradientStart;
-    private Color hoverGradientEnd;
+    private Color hoverBackground;
     private Color elementBackground;
     private Color indentedDefaultBackground;
     private Color indentedHoverBackground;
@@ -178,17 +177,14 @@ public class TabbedFolderList extends ConComposite {
                 e.gc.setBackground(indentedHoverBackground);
                 e.gc.fillRectangle(0, 1, bounds.width - 1, bounds.height - 1);
             } else if (hover) {
-                e.gc.setForeground(hoverGradientStart);
-                e.gc.setBackground(hoverGradientEnd);
-                e.gc.fillGradientRectangle(0, 1, bounds.width - 1, bounds.height - 1, true);
+                e.gc.setBackground(hoverBackground);
+                e.gc.fillRectangle(0, 1, bounds.width - 1, bounds.height - 1);
             } else if (tab.isIndented()) {
                 e.gc.setBackground(indentedDefaultBackground);
                 e.gc.fillRectangle(0, 1, bounds.width - 1, bounds.height - 1);
             } else {
                 e.gc.setBackground(elementBackground);
                 e.gc.fillRectangle(0, 1, bounds.width - 1, bounds.height - 1);
-                //e.gc.setBackground(defaultGradientEnd);
-                //e.gc.fillGradientRectangle(0, 2, bounds.width - 1, bounds.height - 1, true);
             }
 
             if (!selected) {
@@ -802,21 +798,12 @@ public class TabbedFolderList extends ConComposite {
         widgetForeground = UIUtils.isInDialog(this) && !UIStyles.isDarkTheme()
             ? display.getSystemColor(SWT.COLOR_WIDGET_FOREGROUND)
             : UIStyles.getDefaultTextForeground();
-        widgetNormalShadow = sharedColors.getColor(UIUtils.blend(widgetForeground.getRGB(), widgetBackground.getRGB(), 20));
+        widgetNormalShadow = sharedColors.getColor(UIUtils.blend(
+            widgetForeground.getRGB(), widgetBackground.getRGB(), UIStyles.isDarkTheme() ? 40 : 20));
 
-		/*
-		 * gradient in the default tab: start colour WIDGET_NORMAL_SHADOW 100% +
-		 * white 20% + INFO_BACKGROUND 60% end colour WIDGET_NORMAL_SHADOW 100% +
-		 * INFO_BACKGROUND 40%
-		 */
-        /*
-        defaultGradientStart = sharedColors.getColor(
-            UIUtils.blend(infoBackground,
-                UIUtils.blend(white, widgetNormalShadow.getRGB(), 20), 60)
-        );
-        defaultGradientEnd = sharedColors.getColor(UIUtils.blend(infoBackground, widgetNormalShadow.getRGB(), 40));
-        */
-        if (widgetNormalShadow.hashCode() < widgetBackground.hashCode()) {
+        if (UIStyles.isDarkTheme()) {
+            elementBackground = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 20));
+        } else if (widgetNormalShadow.hashCode() < widgetBackground.hashCode()) {
             // Foreground darker than background - make element background darker
             elementBackground = sharedColors.getColor(UIUtils.blend(black, widgetBackground.getRGB(), 15));
         } else {
@@ -824,16 +811,13 @@ public class TabbedFolderList extends ConComposite {
             elementBackground = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 15));
         }
 
-		/*
-		 * gradient in the hover tab: start colour WIDGET_BACKGROUND 100% +
-		 * white 20% end colour WIDGET_BACKGROUND 100% + WIDGET_NORMAL_SHADOW
-		 * 10%
-		 */
-        hoverGradientStart = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 20));
-        hoverGradientEnd = sharedColors.getColor(UIUtils.blend(widgetNormalShadow.getRGB(), widgetBackground.getRGB(), 10));
+        hoverBackground = sharedColors.getColor(UIUtils.blend(
+            widgetForeground.getRGB(), widgetBackground.getRGB(), UIStyles.isDarkTheme() ? 10 : 25));
 
         indentedDefaultBackground = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 10));
-        indentedHoverBackground = sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 75));
+        indentedHoverBackground = UIStyles.isDarkTheme()
+            ? sharedColors.getColor(UIUtils.blend(white, widgetBackground.getRGB(), 75))
+            : hoverBackground;
     }
 
     @Override
