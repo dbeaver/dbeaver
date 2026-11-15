@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.dialogs.ControlEnableState;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -43,19 +42,19 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIStandardLabel;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.ui.controls.resultset.internal.ResultSetMessages;
 import org.jkiss.dbeaver.ui.controls.resultset.spreadsheet.SpreadsheetPresentation;
-import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.List;
 
-class FilterSettingsDialog extends HelpEnabledDialog {
+class FilterSettingsDialog extends AbstractPopupPanel {
     private static final String DIALOG_ID = "DBeaver.FilterSettingsDialog";//$NON-NLS-1$
 
     private final Comparator<DBDAttributeBinding> POSITION_SORTER = (o1, o2) -> {
@@ -82,8 +81,9 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     private FilterSettingsTreeEditor treeEditor;
     private boolean showAllColumns;
 
-    FilterSettingsDialog(ResultSetViewer resultSetViewer) {
-        super(resultSetViewer.getControl().getShell(), IHelpContextIds.CTX_DATA_FILTER);
+    FilterSettingsDialog(@NotNull ResultSetViewer resultSetViewer) {
+        super(resultSetViewer.getControl().getShell(), ResultSetMessages.controls_resultset_filter_title);
+        setModeless(true);
         this.resultSetViewer = resultSetViewer;
         this.dataFilter = new DBDDataFilter(resultSetViewer.getModel().getDataFilter());
         this.constraints = dataFilter.getConstraints();
@@ -98,6 +98,14 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     protected IDialogSettings getDialogBoundsSettings()
     {
         return UIUtils.getDialogSettings(DIALOG_ID);
+    }
+
+    @NotNull
+    @Override
+    protected Control createContents(@NotNull Composite parent) {
+        Control contents = super.createContents(parent);
+        UIUtils.setHelp(contents, IHelpContextIds.CTX_DATA_FILTER);
+        return contents;
     }
 
     @Override
@@ -273,7 +281,8 @@ class FilterSettingsDialog extends HelpEnabledDialog {
             treeEditor = new FilterSettingsTreeEditor(columnsTree);
 
             {
-                Composite tph = UIUtils.createComposite(columnsGroup, 1);
+                Composite tph = UIUtils.createComposite(columnsGroup, 2);
+                tph.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 ToolBar toolbar = new ToolBar(tph, SWT.HORIZONTAL | SWT.FLAT);
                 toolbar.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
                 moveTopButton = createToolItem(toolbar, ResultSetMessages.dialog_toolbar_move_to_top, UIIcon.ARROW_TOP, () -> {
@@ -327,6 +336,14 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                 });
                 columnsViewer.addSelectionChangedListener(event -> updateButtons());
 
+                ToolBar applyToolbar = new ToolBar(tph, SWT.FLAT | SWT.RIGHT);
+                applyToolbar.setLayoutData(new GridData(SWT.END, SWT.CENTER, false, false));
+                UIUtils.createToolItem(
+                    applyToolbar,
+                    UIStandardLabel.APPLY.getLabel(),
+                    ResultSetMessages.sql_editor_resultset_filter_panel_btn_apply.replace("&", ""),
+                    UIIcon.FILTER_APPLY,
+                    SelectionListener.widgetSelectedAdapter(event -> okPressed()));
             }
             CTabItem libsTab = new CTabItem(tabFolder, SWT.NONE);
             libsTab.setText(ResultSetMessages.controls_resultset_filter_group_columns);
@@ -462,16 +479,9 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     }
 
     @Override
-    protected void createButtonsForButtonBar(Composite parent)
-    {
-        createButton(parent, IDialogConstants.OK_ID, IDialogConstants.OK_LABEL, true);
-        createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
-    }
-
-    @Override
-    protected void buttonPressed(int buttonId)
-    {
-        super.buttonPressed(buttonId);
+    @NotNull
+    protected Control createButtonBar(@NotNull Composite parent) {
+        return parent;
     }
 
     @Override
@@ -700,7 +710,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         }
 
         public void okPressed() {
-            if (RuntimeUtils.isMacOS() && lastTreeItem != null && lastEditor != null && !lastEditor.isDisposed()) {
+            if (lastTreeItem != null && lastEditor != null && !lastEditor.isDisposed()) {
                 saveEditorValue(lastEditor, COLUMN_CRITERIA_INDEX, lastTreeItem);
             }
         }

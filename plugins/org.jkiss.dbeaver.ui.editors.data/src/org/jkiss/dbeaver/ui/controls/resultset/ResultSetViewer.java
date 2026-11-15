@@ -3051,6 +3051,7 @@ public class ResultSetViewer extends Viewer
                     viewerPanel.getShell(),
                     ConfirmationDialog.WARNING, ResultSetPreferences.CONFIRM_FILTER_RESULTSET,
                     ConfirmationDialog.CONFIRM,
+                    null,
                     curAttribute.getName()) != IDialogConstants.OK_ID)
                 {
                     return;
