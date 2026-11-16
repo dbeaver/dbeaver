@@ -59,6 +59,71 @@ public class DBNProjectTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void registryLoadingDoesNotBlockNavigatorQueries() throws Exception {
+        CountDownLatch loading = new CountDownLatch(1);
+        CountDownLatch finishLoading = new CountDownLatch(1);
+        AtomicBoolean firstLoad = new AtomicBoolean(true);
+        when(project.getDataSourceRegistry()).thenAnswer(invocation -> {
+            // Like BaseProjectImpl, publish the registry before prompting for its password.
+            if (firstLoad.getAndSet(false)) {
+                loading.countDown();
+                awaitLoading(finishLoading);
+            }
+            return registry;
+        });
+        DBNProject node = new TestProject();
+        var executor = Executors.newFixedThreadPool(2);
+        try {
+            var initialization = executor.submit(() -> node.getChildren(new VoidProgressMonitor()));
+            assertTrue(loading.await(1, TimeUnit.SECONDS));
+            var uiQuery = executor.submit(() -> {
+                assertTrue(node.needsInitialization());
+                assertNull(node.getCachedChildren());
+                return node.getChildren(new VoidProgressMonitor());
+            });
+            DBNNode[] children = uiQuery.get(1, TimeUnit.SECONDS);
+            finishLoading.countDown();
+            assertArrayEquals(children, initialization.get(1, TimeUnit.SECONDS));
+            verify(registry).addDataSourceListener(any(DBNProjectDatabases.class));
+        } finally {
+            finishLoading.countDown();
+            executor.shutdownNow();
+            assertTrue(executor.awaitTermination(1, TimeUnit.SECONDS));
+            DBNUtils.disposeNode(node, false);
+        }
+        verifyListenerRemoved();
+    }
+
+    @Test
+    public void disposalDuringRegistryLoadingPreventsChildPublication() throws Exception {
+        CountDownLatch loading = new CountDownLatch(1);
+        CountDownLatch finishLoading = new CountDownLatch(1);
+        when(project.getDataSourceRegistry()).thenAnswer(invocation -> {
+            loading.countDown();
+            awaitLoading(finishLoading);
+            return registry;
+        });
+        DBNProject node = new TestProject();
+        var executor = Executors.newFixedThreadPool(2);
+        try {
+            var initialization = executor.submit(() ->
+                assertThrows(DBException.class, () -> node.getChildren(new VoidProgressMonitor())));
+            assertTrue(loading.await(1, TimeUnit.SECONDS));
+            executor.submit(() -> DBNUtils.disposeNode(node, false)).get(1, TimeUnit.SECONDS);
+            finishLoading.countDown();
+            initialization.get(1, TimeUnit.SECONDS);
+            assertTrue(node.isDisposed());
+            assertNull(node.getCachedChildren());
+            verifyNoInteractions(registry);
+        } finally {
+            finishLoading.countDown();
+            executor.shutdownNow();
+            assertTrue(executor.awaitTermination(1, TimeUnit.SECONDS));
+            DBNUtils.disposeNode(node, false);
+        }
+    }
+
+    @Test
     public void concurrentInitializationRegistersOneListener() throws Exception {
         CountDownLatch loading = new CountDownLatch(1);
         CountDownLatch finishLoading = new CountDownLatch(1);

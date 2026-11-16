@@ -207,8 +207,8 @@
     <extension point="org.jkiss.dbeaver.app.config">
         <feature
             id="debug"
-            label="Procedure debugger"
-            description="Enables debugging of stored procedures and functions in PostgreSQL and its derivatives (Greenplum, TimescaleDB, etc.)"
+            label="%feature.debug.label"
+            description="%feature.debug.description"
             enabledByDefault="false"/>
     </extension>
 
