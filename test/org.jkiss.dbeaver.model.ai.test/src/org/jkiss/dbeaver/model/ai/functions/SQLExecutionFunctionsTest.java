@@ -20,6 +20,7 @@ import net.sf.jsqlparser.statement.UnsupportedStatement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AIFunctionContext;
 import org.jkiss.dbeaver.model.ai.AIFunctionType;
@@ -30,18 +31,25 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntityType;
+import org.jkiss.dbeaver.model.struct.DBSEntityTypeMapping;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 class SQLExecutionFunctionsTest {
     @Test
@@ -226,6 +234,66 @@ class SQLExecutionFunctionsTest {
         fixture.assertTextRestricted(function, definition);
         Mockito.when(fixture.databaseContext.getScope()).thenReturn(AIDatabaseScope.CURRENT_DATASOURCE);
         Assertions.assertDoesNotThrow(() -> fixture.verify(function, definition));
+        Mockito.when(fixture.databaseContext.hasDataSourceCustomScope()).thenReturn(true);
+        Assertions.assertThrows(DBException.class, () -> fixture.verify(function, definition));
+    }
+
+    @Test
+    void customTableScopeDoesNotAuthorizeRoutinesOrOtherObjectsInItsSchema() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        DBSSchema schema = (DBSSchema) ((DBSObjectContainer) fixture.dataSource).getChild(null, "public");
+        DBSEntity orders = (DBSEntity) schema.getChild(null, "orders");
+        DBSSequence sequence = Mockito.mock(DBSSequence.class);
+        Mockito.when(sequence.getName()).thenReturn("payroll_seq");
+        Mockito.when(sequence.getDataSource()).thenReturn(fixture.dataSource);
+        Mockito.when(sequence.getParentObject()).thenReturn(schema);
+        DBSEntityContainer container = (DBSEntityContainer) schema;
+        Mockito.when(container.getNestedEntityTypes()).thenReturn(new DBSEntityTypeMapping[] {
+            new DBSEntityTypeMapping(DBSEntityType.SEQUENCE, DBSSequence.class)
+        });
+        Mockito.doReturn(List.of(sequence)).when(container).getEntities(Mockito.any(), Mockito.eq(DBSEntityType.SEQUENCE));
+        Mockito.when(fixture.databaseContext.getScope()).thenReturn(AIDatabaseScope.CUSTOM);
+        Mockito.when(fixture.databaseContext.getCustomEntities()).thenReturn(List.of(orders));
+        Mockito.when(fixture.databaseContext.getCustomSchemas()).thenReturn(Set.of(schema));
+
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDQLFunction(), "SELECT count(*) FROM public.orders"));
+        fixture.assertRestricted(new ExecuteDQLFunction(), "SELECT read_payroll()");
+        fixture.assertTextRestricted(new ExecuteDQLFunction(), "SELECT read_payroll() FROM public.orders");
+        fixture.assertRestricted(new ExecuteDDLFunction(), "DROP SEQUENCE public.payroll_seq");
+        fixture.assertRestricted(new ExecuteDDLFunction(), "CREATE TABLE public.extra (id int)");
+        fixture.assertRestricted(new ExecuteDDLFunction(), "DROP SCHEMA public");
+        fixture.assertRestricted(new ExecuteDCLFunction(), "GRANT USAGE ON SCHEMA public TO reader");
+        Mockito.when(fixture.databaseContext.getCustomEntities()).thenReturn(List.of(sequence));
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDDLFunction(), "DROP SEQUENCE public.payroll_seq"));
+        Mockito.when(fixture.databaseContext.getCustomEntities()).thenReturn(List.of(schema));
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDDLFunction(), "DROP SEQUENCE public.payroll_seq"));
+    }
+
+    @Test
+    void existingIndexesAreCheckedAgainstTheirActualOwningEntity() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        DBSSchema schema = (DBSSchema) ((DBSObjectContainer) fixture.dataSource).getChild(null, "public");
+        DBSEntity orders = (DBSEntity) schema.getChild(null, "orders");
+        DBSEntity source = (DBSEntity) schema.getChild(null, "source");
+        DBSTableIndex ownIndex = Mockito.mock(DBSTableIndex.class);
+        Mockito.when(ownIndex.getName()).thenReturn("orders_idx");
+        Mockito.when(ownIndex.getDataSource()).thenReturn(fixture.dataSource);
+        Mockito.when(ownIndex.getParentObject()).thenReturn(orders);
+        DBSTableIndex otherIndex = Mockito.mock(DBSTableIndex.class);
+        Mockito.when(otherIndex.getName()).thenReturn("source_idx");
+        Mockito.when(otherIndex.getDataSource()).thenReturn(fixture.dataSource);
+        Mockito.when(otherIndex.getParentObject()).thenReturn(source);
+        DBSEntityType indexType = new DBSEntityType("index", "Index", null, true);
+        DBSEntityContainer container = (DBSEntityContainer) schema;
+        Mockito.when(container.getNestedEntityTypes()).thenReturn(new DBSEntityTypeMapping[] {
+            new DBSEntityTypeMapping(indexType, DBSTableIndex.class)
+        });
+        Mockito.doReturn(List.of(ownIndex, otherIndex)).when(container).getEntities(Mockito.any(), Mockito.same(indexType));
+        Mockito.when(fixture.databaseContext.getScope()).thenReturn(AIDatabaseScope.CUSTOM);
+        Mockito.when(fixture.databaseContext.getCustomEntities()).thenReturn(List.of(orders));
+        Mockito.when(fixture.databaseContext.getCustomSchemas()).thenReturn(Set.of(schema));
+        Assertions.assertDoesNotThrow(() -> fixture.verify(new ExecuteDDLFunction(), "DROP INDEX public.orders_idx"));
+        fixture.assertRestricted(new ExecuteDDLFunction(), "DROP INDEX public.source_idx");
     }
 
     @Test
@@ -330,7 +398,12 @@ class SQLExecutionFunctionsTest {
         private final AIFunctionContext context = Mockito.mock(AIFunctionContext.class);
 
         private ScopeFixture() throws DBException {
-            Mockito.when(dataSource.getSQLDialect()).thenReturn(BasicSQLDialect.INSTANCE);
+            Mockito.when(dataSource.getSQLDialect()).thenReturn(new BasicSQLDialect() {
+                @Override
+                public DBPIdentifierCase storesUnquotedCase() {
+                    return DBPIdentifierCase.LOWER;
+                }
+            });
             Mockito.when(executionContext.getDataSource()).thenReturn(dataSource);
             Mockito.when(context.getContext()).thenReturn(databaseContext);
             Mockito.when(databaseContext.getExecutionContext()).thenReturn(executionContext);
@@ -352,18 +425,17 @@ class SQLExecutionFunctionsTest {
 
         @NotNull
         private DBSSchema schema(@NotNull String name) throws DBException {
-            DBSSchema schema = Mockito.mock(DBSSchema.class, Mockito.withSettings().extraInterfaces(DBSProcedureContainer.class));
+            DBSSchema schema = Mockito.mock(DBSSchema.class,
+                Mockito.withSettings().extraInterfaces(DBSProcedureContainer.class, DBSEntityContainer.class));
             Mockito.when(schema.getName()).thenReturn(name);
             Mockito.when(schema.getDataSource()).thenReturn(dataSource);
             Mockito.when(schema.getParentObject()).thenReturn(dataSource);
             Mockito.doReturn(DBSEntity.class).when(schema).getPrimaryChildType(Mockito.any());
-            DBSEntity table = Mockito.mock(DBSEntity.class);
-            Mockito.when(table.getName()).thenReturn("orders");
-            Mockito.when(table.getDataSource()).thenReturn(dataSource);
-            Mockito.when(table.getParentObject()).thenReturn(schema);
+            Map<String, DBSEntity> entities = Map.of(
+                "orders", entity(schema, "orders"), "source", entity(schema, "source"), "report", entity(schema, "report"));
             Mockito.when(schema.getChild(Mockito.any(), Mockito.anyString())).thenAnswer(invocation -> {
                 String child = invocation.getArgument(1);
-                return child.equalsIgnoreCase("orders") || child.equalsIgnoreCase("source") ? table : null;
+                return entities.get(child.toLowerCase(Locale.ROOT));
             });
             DBSProcedure procedure = Mockito.mock(DBSProcedure.class);
             Mockito.when(procedure.getName()).thenReturn("refresh_orders");
@@ -374,6 +446,15 @@ class SQLExecutionFunctionsTest {
                 return child.equalsIgnoreCase("refresh_orders") || child.equalsIgnoreCase("read_payroll") ? procedure : null;
             });
             return schema;
+        }
+
+        @NotNull
+        private DBSEntity entity(@NotNull DBSSchema schema, @NotNull String name) {
+            DBSEntity entity = Mockito.mock(DBSEntity.class);
+            Mockito.when(entity.getName()).thenReturn(name);
+            Mockito.when(entity.getDataSource()).thenReturn(dataSource);
+            Mockito.when(entity.getParentObject()).thenReturn(schema);
+            return entity;
         }
 
         private void verify(@NotNull ExecuteSQLFunction function, @NotNull String sql) throws DBException {

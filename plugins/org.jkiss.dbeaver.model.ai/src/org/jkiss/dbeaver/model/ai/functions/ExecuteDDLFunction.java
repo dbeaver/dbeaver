@@ -29,6 +29,7 @@ import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
 import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
+import net.sf.jsqlparser.statement.drop.Drop;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
 import org.jkiss.code.NotNull;
@@ -72,8 +73,10 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
             verifyDatasourceScope(context);
         }
         if (operation != null) {
+            String type = operation.objectKind() == SQLObjectOperation.ObjectKind.OTHER && statement instanceof Drop drop
+                ? drop.getType().toUpperCase(Locale.ROOT) : operation.objectKind().name();
             verifyDefinitionObject(context, executionContext, String.join(".", operation.qualifiedNameParts()),
-                operation.objectKind().name(), operation.operation() == SQLObjectOperation.Operation.CREATE);
+                type, operation.operation() == SQLObjectOperation.Operation.CREATE);
         }
         if (statement instanceof CreateTable create) {
             if (create.getSelect() != null) {

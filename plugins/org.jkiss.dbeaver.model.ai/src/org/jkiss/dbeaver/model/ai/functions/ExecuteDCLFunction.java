@@ -47,7 +47,15 @@ public class ExecuteDCLFunction extends ExecuteSQLFunction {
             if (CommonUtils.isEmpty(grant.getObjectNameParts())) {
                 verifyDatasourceScope(context);
             } else {
-                verifyDefinitionObject(context, executionContext, String.join(".", grant.getObjectNameParts()), "OBJECT", false);
+                String name = String.join(".", grant.getObjectNameParts());
+                String type = CommonUtils.safeCollection(grant.getPrivileges()).stream().anyMatch(value -> value.equalsIgnoreCase("EXECUTE"))
+                    ? "PROCEDURE" : "OBJECT";
+                int qualifier = name.indexOf("::");
+                if (qualifier >= 0) {
+                    type = name.substring(0, qualifier).toUpperCase(Locale.ROOT);
+                    name = name.substring(qualifier + 2);
+                }
+                verifyDefinitionObject(context, executionContext, name, type, false);
             }
         } else if (query.getStatement() instanceof SetStatement set) {
             String name = CommonUtils.toString(set.getName());
@@ -81,8 +89,13 @@ public class ExecuteDCLFunction extends ExecuteSQLFunction {
                 .contains(tokens.get(start).toUpperCase(Locale.ROOT))) {
                 continue;
             }
-            if (start < tokens.size() && Set.of("OBJECT", "TABLE", "VIEW", "SCHEMA", "DATABASE", "SEQUENCE", "FUNCTION", "PROCEDURE", "TYPE")
+            if (start + 2 < tokens.size() && tokens.get(start + 1).equals(":") && tokens.get(start + 2).equals(":")) {
+                type = tokens.get(start).toUpperCase(Locale.ROOT);
+                start += 3;
+            } else if (start < tokens.size() && Set.of("OBJECT", "TABLE", "VIEW", "SCHEMA", "DATABASE", "SEQUENCE", "FUNCTION", "PROCEDURE", "TYPE")
                 .contains(tokens.get(start).toUpperCase(Locale.ROOT))) {
+                type = tokens.get(start++).toUpperCase(Locale.ROOT);
+            } else if (start + 1 < tokens.size() && readIdentifier(tokens, start + 1) != null) {
                 type = tokens.get(start++).toUpperCase(Locale.ROOT);
             }
             if (start + 1 < tokens.size() && tokens.get(start).equals(":") && tokens.get(start + 1).equals(":")) {

@@ -44,6 +44,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AIFunction;
@@ -67,12 +68,23 @@ import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.model.sql.exec.SQLScriptProcessor;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityConstraint;
+import org.jkiss.dbeaver.model.struct.DBSEntityContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntityElement;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSObjectType;
+import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTrigger;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
@@ -237,13 +249,19 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         @NotNull DBSObject object
     ) throws DBException {
         AIDatabaseContext databaseContext = requireDatabaseContext(context);
-        if (!AIUtils.isObjectInScope(databaseContext, databaseContext.getExecutionContext(), object)) {
+        DBSObject owner = object instanceof DBSEntityElement element ? element.getParentObject()
+            : object instanceof DBSTrigger trigger ? trigger.getTable() : null;
+        boolean allowed = AIUtils.isObjectInScope(databaseContext, databaseContext.getExecutionContext(), object)
+            || owner != null && databaseContext.isObjectAllowed(object)
+                && AIUtils.isObjectInScope(databaseContext, databaseContext.getExecutionContext(), owner);
+        if (!allowed) {
             throw new DBException("Database object '" + object.getName() + "' is outside the allowed scope");
         }
     }
 
     protected final void verifyDatasourceScope(@NotNull AIFunctionContext context) throws DBException {
-        if (requireDatabaseContext(context).getScope() != AIDatabaseScope.CURRENT_DATASOURCE) {
+        AIDatabaseContext databaseContext = requireDatabaseContext(context);
+        if (databaseContext.getScope() != AIDatabaseScope.CURRENT_DATASOURCE || databaseContext.hasDataSourceCustomScope()) {
             throw new DBException("This statement requires datasource-wide scope");
         }
     }
@@ -265,7 +283,16 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         @NotNull String type,
         boolean creation
     ) throws DBException {
-        if (Set.of("USER", "ROLE", "SYSTEM", "TABLESPACE", "EXTENSION").contains(type)
+        DBSObjectContainer root = DBUtils.getAdapter(DBSObjectContainer.class, executionContext.getDataSource());
+        DBCExecutionContextDefaults<?, ?> defaults = executionContext.getContextDefaults();
+        boolean schemas = root != null && DBSSchema.class.isAssignableFrom(root.getPrimaryChildType(context.getMonitor()))
+            || defaults != null && (defaults.getDefaultSchema() != null || defaults.supportsSchemaChange());
+        if (type.equals("SCHEMA") && !schemas) {
+            type = "DATABASE";
+        }
+        if (!Set.of("OBJECT", "OTHER", "TABLE", "VIEW", "MATERIALIZED VIEW", "INDEX", "SEQUENCE", "FUNCTION", "PROCEDURE",
+            "ROUTINE", "TRIGGER", "TYPE", "DOMAIN", "SCHEMA", "DATABASE", "CATALOG", "SYNONYM", "COLUMN", "CONSTRAINT",
+            "COLLATION", "CHARACTER SET", "CHARACTER_SET", "TRANSLATION", "TRANSFORM", "ASSERTION").contains(type)
             || creation && Set.of("DATABASE", "CATALOG").contains(type)) {
             verifyDatasourceScope(context);
             return;
@@ -274,49 +301,236 @@ public abstract class ExecuteSQLFunction implements AIFunction {
             throw new DBException("Creating a schema is outside the current-schema scope");
         }
         String[] parts = new SQLIdentifierDetector(executionContext.getDataSource().getSQLDialect()).splitIdentifier(name);
-        if (type.equals("COLUMN") && parts.length > 1) {
+        if (parts.length == 0 || parts.length > (type.equals("COLUMN") ? 4 : 3)) {
+            throw new DBException("Cannot verify this qualified object name");
+        }
+        if (type.equals("COLUMN")) {
+            if (parts.length < 2) {
+                throw new DBException("Cannot determine the column's owning table");
+            }
             parts = Arrays.copyOf(parts, parts.length - 1);
             name = String.join(".", parts);
+            type = "TABLE";
         }
-        DBSObject object = !creation && Set.of("OBJECT", "OTHER", "TABLE", "VIEW").contains(type)
-            ? findObject(context, executionContext, name) : null;
-        if (object == null) {
-            object = resolveNamespace(context, executionContext, parts, type, creation);
-        }
-        if (object == null || object instanceof DBPDataSource && requireDatabaseContext(context).getScope() == AIDatabaseScope.CUSTOM) {
+        DBSObject namespace = resolveNamespace(context, executionContext, parts, type, creation);
+        if (namespace == null) {
             throw new DBException("Cannot determine an allowed namespace for '" + name + "'");
         }
+        if (!creation && Set.of("FUNCTION", "PROCEDURE", "ROUTINE").contains(type)) {
+            Set<DBSObject> routines = findRoutines(context, executionContext, name);
+            if (!routines.isEmpty()) {
+                for (DBSObject routine : routines) {
+                    checkObjectScope(context, routine);
+                }
+                return;
+            }
+        }
+        DBSObject object = !creation && !Set.of("SCHEMA", "DATABASE", "CATALOG").contains(type)
+            ? findDefinitionObject(context, executionContext, name, type, namespace) : null;
+        if (object == null) {
+            if (!coversNamespace(context, namespace)) {
+                throw new DBException("The whole namespace of '" + name + "' is not in the allowed scope");
+            }
+            object = namespace;
+        }
         checkObjectScope(context, object);
+    }
+
+    private boolean coversNamespace(@NotNull AIFunctionContext context, @NotNull DBSObject namespace) throws DBException {
+        AIDatabaseContext databaseContext = requireDatabaseContext(context);
+        if (databaseContext.hasDataSourceCustomScope()) {
+            String namespaceId = DBUtils.getObjectFullId(namespace);
+            if (databaseContext.getDataSourceCustomObjectIds().stream()
+                .noneMatch(id -> namespaceId.equals(id) || namespaceId.startsWith(id + "/"))) {
+                return false;
+            }
+        }
+        if (databaseContext.getScope() == AIDatabaseScope.CURRENT_DATASOURCE) {
+            return true;
+        }
+        if (databaseContext.getScope() == AIDatabaseScope.CUSTOM) {
+            // Derived schema/catalog sets also contain ancestors of selected tables, not full namespace grants.
+            return CommonUtils.safeCollection(databaseContext.getCustomEntities()).stream()
+                .anyMatch(allowed -> isWithin(namespace, allowed));
+        }
+        DBCExecutionContext original = databaseContext.getExecutionContext();
+        DBCExecutionContextDefaults<?, ?> defaults = original.getContextDefaults();
+        if (defaults != null) {
+            DBSObject authority = databaseContext.getScope() == AIDatabaseScope.CURRENT_SCHEMA
+                ? defaults.getDefaultSchema() : defaults.getDefaultCatalog();
+            if (authority != null) {
+                return isWithin(namespace, authority);
+            }
+            DBSCatalog catalog = defaults.getDefaultCatalog();
+            if (catalog != null && !DBSSchema.class.isAssignableFrom(catalog.getPrimaryChildType(context.getMonitor()))) {
+                return isWithin(namespace, catalog);
+            }
+        }
+        DBSObjectContainer root = DBUtils.getAdapter(DBSObjectContainer.class, original.getDataSource());
+        if (root == null) {
+            return false;
+        }
+        Class<? extends DBSObject> children = root.getPrimaryChildType(context.getMonitor());
+        return !DBSCatalog.class.isAssignableFrom(children)
+            && (databaseContext.getScope() != AIDatabaseScope.CURRENT_SCHEMA || !DBSSchema.class.isAssignableFrom(children))
+            && isWithin(namespace, root);
+    }
+
+    private static boolean isWithin(@NotNull DBSObject object, @NotNull DBSObject parent) {
+        for (DBSObject current = object; current != null; current = current.getParentObject()) {
+            if (current == parent) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Nullable
+    private DBSObject findDefinitionObject(
+        @NotNull AIFunctionContext context,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull String name,
+        @NotNull String type,
+        @NotNull DBSObject namespace
+    ) throws DBException {
+        SQLIdentifierDetector identifiers = new SQLIdentifierDetector(executionContext.getDataSource().getSQLDialect());
+        String[] parts = identifiers.splitIdentifier(name);
+        String objectName = DBUtils.getUnQuotedNormalizedIdentifier(executionContext.getDataSource().getSQLDialect(), parts[parts.length - 1]);
+        boolean exactName = identifiers.isQuoted(parts[parts.length - 1]) || !coversNamespace(context, namespace);
+        Class<? extends DBSObject> objectClass = switch (type.replace(' ', '_')) {
+            case "TABLE", "VIEW", "MATERIALIZED_VIEW", "OBJECT" -> DBSEntity.class;
+            case "CONSTRAINT" -> DBSEntityConstraint.class;
+            case "SEQUENCE" -> DBSSequence.class;
+            case "FUNCTION", "PROCEDURE", "ROUTINE" -> DBSProcedure.class;
+            case "INDEX" -> DBSTableIndex.class;
+            case "TRIGGER" -> DBSTrigger.class;
+            case "TYPE", "DOMAIN" -> DBSDataType.class;
+            case "OTHER" -> DBSObject.class;
+            default -> null;
+        };
+        if (namespace instanceof DBSObjectContainer container) {
+            DBSObject child = container.getChild(context.getMonitor(), objectName);
+            if (child != null && objectClass != null && objectClass.isInstance(child)) {
+                return child;
+            }
+        }
+        if (namespace instanceof DBSEntityContainer container) {
+            for (var mapping : ArrayUtils.safeArray(container.getNestedEntityTypes())) {
+                if (objectClass != null && objectClass.isAssignableFrom(mapping.getEntityClass())
+                    || mapping.getEntityType().getId().equalsIgnoreCase(type)) {
+                    DBSObject child = DBUtils.findObject(container.getEntities(context.getMonitor(), mapping.getEntityType()),
+                        objectName, !exactName);
+                    if (child != null) {
+                        return child;
+                    }
+                }
+            }
+        }
+        DBSStructureAssistant<DBCExecutionContext> assistant = DBUtils.getAdapter(DBSStructureAssistant.class, namespace);
+        if (assistant == null) {
+            assistant = DBUtils.getAdapter(DBSStructureAssistant.class, executionContext.getDataSource());
+        }
+        if (assistant != null) {
+            DBSObjectType[] types = Arrays.stream(assistant.getSupportedObjectTypes())
+                .filter(candidate -> objectClass != null ? objectClass.isAssignableFrom(candidate.getTypeClass())
+                    : candidate.getTypeName().equalsIgnoreCase(type)).toArray(DBSObjectType[]::new);
+            if (types.length != 0) {
+                DBSStructureAssistant.ObjectsSearchParams search = new DBSStructureAssistant.ObjectsSearchParams(types, objectName);
+                search.setParentObject(namespace);
+                search.setGlobalSearch(false);
+                search.setLikeCondition(false);
+                search.setCaseSensitive(exactName);
+                search.setMaxResults(100);
+                for (var reference : assistant.findObjectsByMask(context.getMonitor(), executionContext, search)) {
+                    boolean matches = search.isCaseSensitive() ? objectName.equals(reference.getName())
+                        : objectName.equalsIgnoreCase(reference.getName());
+                    if (matches) {
+                        DBSObject child = reference.resolveObject(context.getMonitor());
+                        if (isWithin(child, namespace) && (objectClass == null || objectClass.isInstance(child))) {
+                            return child;
+                        }
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     @Nullable
     private DBSObject findObject(
         @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull String name
     ) throws DBException {
-        DBSObjectContainer root = DBUtils.getAdapter(DBSObjectContainer.class, executionContext.getDataSource());
-        if (root == null) {
-            throw new DBException("Datasource does not expose database objects");
-        }
         String[] parts = new SQLIdentifierDetector(executionContext.getDataSource().getSQLDialect()).splitIdentifier(name);
-        return AIUtils.findObjectByFQN(context.getMonitor(), executionContext, root, parts);
+        if (parts.length == 0 || parts.length > 3) {
+            throw new DBException("Cannot verify this qualified object name");
+        }
+        DBSObject namespace = resolveNamespace(context, executionContext, parts, "OBJECT", false);
+        return namespace instanceof DBSObjectContainer container ? container.getChild(context.getMonitor(),
+            DBUtils.getUnQuotedNormalizedIdentifier(executionContext.getDataSource().getSQLDialect(), parts[parts.length - 1])) : null;
     }
 
     protected final void verifyRoutine(
         @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull String name
     ) throws DBException {
+        Set<DBSObject> routines = findRoutines(context, executionContext, name);
+        if (routines.isEmpty()) {
+            throw new DBException("Database routine '" + name + "' not found");
+        }
+        for (DBSObject routine : routines) {
+            checkObjectScope(context, routine);
+        }
+    }
+
+    @NotNull
+    private Set<DBSObject> findRoutines(
+        @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull String name
+    ) throws DBException {
         String[] parts = new SQLIdentifierDetector(executionContext.getDataSource().getSQLDialect()).splitIdentifier(name);
+        if (parts.length == 0 || parts.length > 3) {
+            throw new DBException("Cannot verify this qualified routine name");
+        }
         DBSObject namespace = resolveNamespace(context, executionContext, parts, "FUNCTION", false);
         DBSProcedureContainer procedures = DBUtils.getAdapter(DBSProcedureContainer.class, namespace);
         String routineName = DBUtils.getUnQuotedNormalizedIdentifier(executionContext.getDataSource().getSQLDialect(), parts[parts.length - 1]);
+        Set<DBSObject> routines = new LinkedHashSet<>();
         DBSObject procedure = procedures == null ? null : procedures.getProcedure(context.getMonitor(), routineName);
-        if (procedure == null && procedures != null) {
+        if (procedure != null && namespace != null && isWithin(procedure, namespace)) {
+            routines.add(procedure);
+        }
+        if (procedures != null) {
             // Overloaded routines may use a signature rather than the display name as their unique cache key.
-            procedure = DBUtils.findObject(procedures.getProcedures(context.getMonitor()), routineName, true);
+            SQLIdentifierDetector identifiers = new SQLIdentifierDetector(executionContext.getDataSource().getSQLDialect());
+            boolean exactName = identifiers.isQuoted(parts[parts.length - 1]) || namespace == null || !coversNamespace(context, namespace);
+            for (DBSProcedure candidate : CommonUtils.safeCollection(procedures.getProcedures(context.getMonitor()))) {
+                boolean matches = exactName ? candidate.getName().equals(routineName)
+                    : candidate.getName().equalsIgnoreCase(routineName);
+                if (matches && namespace != null && isWithin(candidate, namespace)) {
+                    routines.add(candidate);
+                }
+            }
         }
-        if (procedure == null) {
-            throw new DBException("Database routine '" + name + "' not found");
+        return routines;
+    }
+
+    private void verifyFunctionReference(
+        @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull String name
+    ) throws DBException {
+        SQLIdentifierDetector identifiers = new SQLIdentifierDetector(executionContext.getDataSource().getSQLDialect());
+        if (identifiers.splitIdentifier(name).length > 1) {
+            verifyRoutine(context, executionContext, name);
+        } else {
+            Set<DBSObject> routines = findRoutines(context, executionContext, name);
+            if (!routines.isEmpty()) {
+                for (DBSObject routine : routines) {
+                    checkObjectScope(context, routine);
+                }
+            } else if (!identifiers.isQuoted(name) && executionContext.getDataSource().getSQLDialect().getFunctions().stream()
+                .anyMatch(builtin -> builtin.equalsIgnoreCase(name))) {
+                return;
+            } else {
+                verifyDatasourceScope(context);
+            }
         }
-        checkObjectScope(context, procedure);
     }
 
     @Nullable
@@ -328,7 +542,7 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         boolean creation
     ) throws DBException {
         DBSObjectContainer root = DBUtils.getAdapter(DBSObjectContainer.class, executionContext.getDataSource());
-        if (root == null || parts.length == 0) {
+        if (root == null || parts.length == 0 || parts.length > 3) {
             return null;
         }
         parts = Arrays.stream(parts).map(part -> DBUtils.getUnQuotedNormalizedIdentifier(
@@ -337,14 +551,33 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         Class<? extends DBSObject> childType = root.getPrimaryChildType(context.getMonitor());
         if (type.equals("SCHEMA")) {
             if (!creation) {
-                return DBUtils.getObjectByPath(context.getMonitor(), executionContext, root,
+                if (parts.length > 1 && !DBSCatalog.class.isAssignableFrom(childType)
+                    && (defaults == null || defaults.getDefaultCatalog() == null
+                        || !defaults.getDefaultCatalog().getName().equals(parts[parts.length - 2]))) {
+                    return null;
+                }
+                DBSObject object = DBUtils.getObjectByPath(context.getMonitor(), executionContext, root,
                     parts.length > 1 ? parts[parts.length - 2] : null, parts[parts.length - 1], null, true);
+                return object instanceof DBSSchema ? object : null;
             }
-            return parts.length > 1 ? root.getChild(context.getMonitor(), parts[0])
-                : defaults != null && defaults.getDefaultCatalog() != null ? defaults.getDefaultCatalog() : root;
+            if (parts.length > 1) {
+                DBSObject catalog = root.getChild(context.getMonitor(), parts[0]);
+                return catalog instanceof DBSCatalog ? catalog
+                    : defaults != null && defaults.getDefaultCatalog() != null
+                        && defaults.getDefaultCatalog().getName().equals(parts[0]) ? defaults.getDefaultCatalog() : null;
+            }
+            return defaults != null && defaults.getDefaultCatalog() != null ? defaults.getDefaultCatalog() : root;
         }
         if (type.equals("DATABASE") || type.equals("CATALOG")) {
-            return creation ? root : root.getChild(context.getMonitor(), parts[parts.length - 1]);
+            if (creation) {
+                return root;
+            }
+            DBSObject catalog = root.getChild(context.getMonitor(), parts[parts.length - 1]);
+            if (catalog instanceof DBSCatalog) {
+                return catalog;
+            }
+            return defaults != null && defaults.getDefaultCatalog() != null
+                && defaults.getDefaultCatalog().getName().equals(parts[parts.length - 1]) ? defaults.getDefaultCatalog() : null;
         }
         if (parts.length == 1) {
             if (defaults != null && defaults.getDefaultSchema() != null) {
@@ -357,9 +590,19 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         }
         boolean schemas = DBSSchema.class.isAssignableFrom(childType)
             || defaults != null && (defaults.getDefaultSchema() != null || defaults.supportsSchemaChange());
-        return DBUtils.getObjectByPath(context.getMonitor(), executionContext, root,
-            parts.length > 2 ? parts[parts.length - 3] : schemas ? null : parts[0],
-            schemas || parts.length > 2 ? parts[parts.length - 2] : null, null, true);
+        String catalogName = parts.length > 2 ? parts[parts.length - 3] : schemas ? null : parts[0];
+        String schemaName = schemas || parts.length > 2 ? parts[parts.length - 2] : null;
+        if (catalogName != null && !DBSCatalog.class.isAssignableFrom(childType)) {
+            if (defaults == null || defaults.getDefaultCatalog() == null || !defaults.getDefaultCatalog().getName().equals(catalogName)) {
+                return null;
+            }
+            if (schemaName == null) {
+                return defaults.getDefaultCatalog();
+            }
+        }
+        DBSObject namespace = DBUtils.getObjectByPath(context.getMonitor(), executionContext, root, catalogName, schemaName, null, true);
+        return schemaName != null ? namespace instanceof DBSSchema ? namespace : null
+            : namespace instanceof DBSCatalog ? namespace : null;
     }
 
     protected final void verifyStatementObjects(
@@ -404,7 +647,7 @@ public abstract class ExecuteSQLFunction implements AIFunction {
             verifyObject(context, executionContext, name);
         }
         for (String name : routines) {
-            verifyRoutine(context, executionContext, name);
+            verifyFunctionReference(context, executionContext, name);
         }
     }
 
@@ -422,7 +665,7 @@ public abstract class ExecuteSQLFunction implements AIFunction {
             verifyObject(context, executionContext, name);
         }
         for (String name : routines) {
-            verifyRoutine(context, executionContext, name);
+            verifyFunctionReference(context, executionContext, name);
         }
     }
 
@@ -472,9 +715,7 @@ public abstract class ExecuteSQLFunction implements AIFunction {
 
             @Override
             public <S> Void visit(@NotNull Function function, @Nullable S unused) {
-                if (function.getMultipartName().size() > 1) {
-                    routines.add(function.getName());
-                }
+                routines.add(function.getName());
                 return super.visit(function, unused);
             }
         };
@@ -523,7 +764,7 @@ public abstract class ExecuteSQLFunction implements AIFunction {
                 || !aliases.contains(identifierKey(table.getName())))) {
                 names.add(table.getFullyQualifiedName());
             }
-            if (value instanceof Function function && function.getMultipartName().size() > 1) {
+            if (value instanceof Function function) {
                 routines.add(function.getName());
             }
             for (int i = node.jjtGetNumChildren() - 1; i >= 0; i--) {
@@ -676,10 +917,17 @@ public abstract class ExecuteSQLFunction implements AIFunction {
     ) throws DBException {
         SQLIdentifierDetector identifiers = new SQLIdentifierDetector(executionContext.getDataSource().getSQLDialect());
         for (int i = 0; i < tokens.size(); i++) {
+            if (i > 0 && tokens.get(i - 1).equals(".")) {
+                continue;
+            }
             Identifier name = readIdentifier(tokens, i);
             if (name != null && name.end() < tokens.size() && tokens.get(name.end()).equals("(")
-                && identifiers.splitIdentifier(name.name()).length > 1 && !ignoredNames.contains(name.name())) {
-                verifyRoutine(context, executionContext, name.name());
+                && !ignoredNames.contains(name.name())) {
+                boolean qualified = identifiers.splitIdentifier(name.name()).length > 1;
+                DBPKeywordType keyword = executionContext.getDataSource().getSQLDialect().getKeywordType(name.name());
+                if (qualified || identifiers.isQuoted(name.name()) || keyword != DBPKeywordType.KEYWORD && keyword != DBPKeywordType.TYPE) {
+                    verifyFunctionReference(context, executionContext, name.name());
+                }
                 i = name.end() - 1;
             }
         }
@@ -696,6 +944,12 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         DBPDataSource dataSource = original.getDataSource();
         DBSObjectContainer root = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
         DBSObject object = root == null ? null : root.getChild(context.getMonitor(), catalogName);
+        if (!(object instanceof DBSCatalog)) {
+            DBCExecutionContextDefaults<?, ?> defaults = original.getContextDefaults();
+            if (defaults != null && defaults.getDefaultCatalog() != null && defaults.getDefaultCatalog().getName().equals(catalogName)) {
+                object = defaults.getDefaultCatalog();
+            }
+        }
         DBSInstance instance = dataSource.getAvailableInstances().stream()
             .filter(candidate -> candidate.getName().equals(catalogName)).findFirst().orElse(null);
         if (instance == null && !(object instanceof DBSCatalog)) {
