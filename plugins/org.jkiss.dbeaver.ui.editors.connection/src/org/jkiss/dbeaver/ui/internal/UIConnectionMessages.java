@@ -541,6 +541,8 @@ public class UIConnectionMessages extends NLS {
     public static String pref_page_database_general_checkbox_case_sensitive_names_tip;
     public static String pref_page_database_general_checkbox_disable_extra_metadata;
     public static String pref_page_database_general_checkbox_disable_extra_metadata_tip;
+    public static String pref_page_database_general_checkbox_preload_table_attributes;
+    public static String pref_page_database_general_checkbox_preload_table_attributes_tip;
     public static String pref_page_database_general_checkbox_rollback_on_error;
     public static String pref_page_database_general_checkbox_show_row_count;
     public static String pref_page_database_general_checkbox_show_row_count_tip;

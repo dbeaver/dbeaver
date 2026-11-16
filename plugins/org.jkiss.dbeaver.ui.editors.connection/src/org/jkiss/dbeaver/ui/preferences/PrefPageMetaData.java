@@ -46,6 +46,7 @@ public class PrefPageMetaData extends TargetPrefPage
     private Button readExpensiveCheck;
     private Combo separateMetaConnectionCombo;
     private Button disableExtraMetadataRead;
+    private Button preloadTableAttributesCheck;
     private Button caseSensitiveNamesCheck;
     private Button serverSideFiltersCheck;
     private Button addExtraDDLInfo;
@@ -64,6 +65,7 @@ public class PrefPageMetaData extends TargetPrefPage
             store.contains(ModelPreferences.META_SEPARATE_CONNECTION) ||
             store.contains(ModelPreferences.META_CASE_SENSITIVE) ||
             store.contains(ModelPreferences.META_DISABLE_EXTRA_READ) ||
+            store.contains(ModelPreferences.META_PRELOAD_TABLE_ATTRIBUTES) ||
             store.contains(ModelPreferences.META_USE_SERVER_SIDE_FILTERS)
             ;
     }
@@ -141,6 +143,12 @@ public class PrefPageMetaData extends TargetPrefPage
                 UIConnectionMessages.pref_page_database_general_checkbox_disable_extra_metadata_tip,
                 false,
                 1);
+            preloadTableAttributesCheck = UIUtils.createCheckbox(
+                performanceGroup,
+                UIConnectionMessages.pref_page_database_general_checkbox_preload_table_attributes,
+                UIConnectionMessages.pref_page_database_general_checkbox_preload_table_attributes_tip,
+                true,
+                1);
             readExpensiveCheck = UIUtils.createCheckbox(
                 performanceGroup,
                 UIConnectionMessages.pref_page_database_general_checkbox_show_row_count,
@@ -162,6 +170,7 @@ public class PrefPageMetaData extends TargetPrefPage
             ));
             caseSensitiveNamesCheck.setSelection(store.getBoolean(ModelPreferences.META_CASE_SENSITIVE));
             disableExtraMetadataRead.setSelection(store.getBoolean(ModelPreferences.META_DISABLE_EXTRA_READ));
+            preloadTableAttributesCheck.setSelection(store.getBoolean(ModelPreferences.META_PRELOAD_TABLE_ATTRIBUTES));
             addExtraDDLInfo.setSelection(store.getBoolean(ModelPreferences.META_EXTRA_DDL_INFO));
             serverSideFiltersCheck.setSelection(store.getBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS));
 
@@ -183,6 +192,7 @@ public class PrefPageMetaData extends TargetPrefPage
             }
             store.setValue(ModelPreferences.META_CASE_SENSITIVE, caseSensitiveNamesCheck.getSelection());
             store.setValue(ModelPreferences.META_DISABLE_EXTRA_READ, disableExtraMetadataRead.getSelection());
+            store.setValue(ModelPreferences.META_PRELOAD_TABLE_ATTRIBUTES, preloadTableAttributesCheck.getSelection());
             store.setValue(ModelPreferences.META_EXTRA_DDL_INFO, addExtraDDLInfo.getSelection());
             store.setValue(ModelPreferences.META_USE_SERVER_SIDE_FILTERS, serverSideFiltersCheck.getSelection());
 
@@ -199,6 +209,7 @@ public class PrefPageMetaData extends TargetPrefPage
         store.setToDefault(ModelPreferences.META_SEPARATE_CONNECTION);
         store.setToDefault(ModelPreferences.META_CASE_SENSITIVE);
         store.setToDefault(ModelPreferences.META_DISABLE_EXTRA_READ);
+        store.setToDefault(ModelPreferences.META_PRELOAD_TABLE_ATTRIBUTES);
         store.setToDefault(ModelPreferences.META_USE_SERVER_SIDE_FILTERS);
         store.setToDefault(ModelPreferences.META_EXTRA_DDL_INFO);
     }
@@ -212,6 +223,7 @@ public class PrefPageMetaData extends TargetPrefPage
         ));
         caseSensitiveNamesCheck.setSelection(store.getDefaultBoolean(ModelPreferences.META_CASE_SENSITIVE));
         disableExtraMetadataRead.setSelection(store.getDefaultBoolean(ModelPreferences.META_DISABLE_EXTRA_READ));
+        preloadTableAttributesCheck.setSelection(store.getDefaultBoolean(ModelPreferences.META_PRELOAD_TABLE_ATTRIBUTES));
         addExtraDDLInfo.setSelection(store.getDefaultBoolean(ModelPreferences.META_EXTRA_DDL_INFO));
         serverSideFiltersCheck.setSelection(store.getDefaultBoolean(ModelPreferences.META_USE_SERVER_SIDE_FILTERS));
         super.performDefaults();
