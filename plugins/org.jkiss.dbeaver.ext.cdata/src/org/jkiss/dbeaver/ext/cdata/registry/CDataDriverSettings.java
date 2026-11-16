@@ -64,9 +64,16 @@ record CDataDriverSettings(
         @NotNull Path file,
         @NotNull ThrowableSupplier<URLConnection, IOException> connectionFactory
     ) throws InterruptedException {
-        var cached = load(file);
+        var cached = readCached(file);
+        boolean hasCachedSettings = !cached.isEmpty();
+        if (!hasCachedSettings) {
+            cached = loadBundled();
+        }
         checkCanceled(monitor);
         try {
+            if (hasCachedSettings && CDataDriverCatalog.isCacheFresh(file)) {
+                return cached;
+            }
             URLConnection connection = connectionFactory.get();
             try {
                 Files.createDirectories(file.getParent());
@@ -107,6 +114,12 @@ record CDataDriverSettings(
 
     @NotNull
     static Map<String, CDataDriverSettings> load(@NotNull Path file) {
+        var cached = readCached(file);
+        return cached.isEmpty() ? loadBundled() : cached;
+    }
+
+    @NotNull
+    private static Map<String, CDataDriverSettings> readCached(@NotNull Path file) {
         if (Files.isRegularFile(file)) {
             try (Reader reader = Files.newBufferedReader(file)) {
                 return read(reader);
@@ -114,7 +127,7 @@ record CDataDriverSettings(
                 log.warn("Error reading CData driver settings", e);
             }
         }
-        return loadBundled();
+        return Map.of();
     }
 
     @NotNull
