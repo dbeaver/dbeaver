@@ -124,7 +124,7 @@ final class ResultSetFilterDialog extends AbstractPopupPanel {
             })
         );
 
-        closeOnFocusLost(searchText, toolBar, viewer.getTable());
+        closeOnFocusLost();
 
         return composite;
     }

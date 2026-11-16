@@ -201,6 +201,7 @@ public class ResultSetMessages extends NLS {
 
     public static String dialog_filter_value_edit_title;
     public static String dialog_filter_value_edit_label_choose_values;
+    public static String dialog_filter_value_edit_dialog_title;
     public static String dialog_filter_value_edit_label_define_description;
     public static String dialog_filter_value_edit_text_hint;
     public static String dialog_filter_value_edit_table_value_label;
