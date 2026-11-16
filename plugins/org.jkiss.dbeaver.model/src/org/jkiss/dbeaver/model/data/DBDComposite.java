@@ -48,4 +48,11 @@ public interface DBDComposite extends DBDComplexValue {
 
     void setAttributeValue(@NotNull DBSAttributeBase attribute, @Nullable Object value) throws DBCException;
 
+    /**
+     * Whether edits to members must persist the complete top-level value instead of a nested attribute.
+     */
+    default boolean requiresWholeValueUpdate() {
+        return false;
+    }
+
 }

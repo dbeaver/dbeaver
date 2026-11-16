@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.datadam.rpc;
 
+import com.dbeaver.datadam.dam.remote.api.model.DDRemoteDamSettings;
 import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamGsonRpcCodec;
 import com.dbeaver.datadam.dam.remote.api.rpc.DDRemoteDamRpcTransport;
 import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamChannel;
@@ -31,6 +32,7 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
     private static final Log log = Log.getLog(DDRemoteDamDesktopRpcService.class);
 
     private final Object lock = new Object();
+    private final Object initializationLock = new Object();
     private final DDRemoteDamChannel channel;
     private final DDDesktopRpcRegistrationRegistry registrations;
     @Nullable
@@ -40,14 +42,7 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
     private boolean active;
     private boolean closed;
 
-    DDRemoteDamDesktopRpcService(@NotNull DDRemoteDamChannel channel) {
-        this(channel, DDDesktopRpcRegistrationRegistry.getInstance());
-    }
-
-    DDRemoteDamDesktopRpcService(
-        @NotNull DDRemoteDamChannel channel,
-        @NotNull DDDesktopRpcRegistrationRegistry registrations
-    ) {
+    DDRemoteDamDesktopRpcService(@NotNull DDRemoteDamChannel channel, @NotNull DDDesktopRpcRegistrationRegistry registrations) {
         this.channel = channel;
         this.registrations = registrations;
     }
@@ -82,39 +77,47 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
     MessagingRpcEndpoint getRpc() throws DBException {
         synchronized (lock) {
             requireActive();
-            if (endpoint != null && endpoint.isCloseComplete()) {
-                endpoint = null;
-            }
-            if (endpoint != null) {
-                if (invalidated || endpoint.isClosed()) {
-                    throw new DBException("DataDam RPC endpoint is still closing");
+        }
+        synchronized (initializationLock) {
+            MessagingRpcEndpoint opened;
+            DDRemoteDamSettings settings;
+            synchronized (lock) {
+                requireActive();
+                if (endpoint != null && endpoint.isCloseComplete()) {
+                    endpoint = null;
                 }
-                return endpoint;
-            }
-            if (!channel.getStatus().isReady()) {
-                throw new DBException("DataDam RPC requires a ready message channel");
-            }
-            try {
-                MessagingRpcEndpoint opened = MessagingRpcEndpoint.open(
+                if (endpoint != null) {
+                    if (invalidated || endpoint.isClosed()) {
+                        throw new DBException("DataDam RPC endpoint is still closing");
+                    }
+                    return endpoint;
+                }
+                var status = channel.getStatus();
+                if (!status.isReady()) {
+                    throw new DBException("DataDam RPC requires a ready message channel");
+                }
+                opened = MessagingRpcEndpoint.open(
                     topic -> DDRemoteDamRpcTransport.forChannel(channel, topic, DDRemoteDamDesktopRpcService::executeRequest),
                     new DDRemoteDamGsonRpcCodec(new Gson()));
-                try {
-                    registerDesktopServices(opened);
-                } catch (RuntimeException e) {
-                    closeEndpoint(opened);
-                    throw e;
-                }
                 endpoint = opened;
                 invalidated = false;
-                return endpoint;
-            } catch (RuntimeException e) {
+                settings = status.session().settings();
+            }
+            try {
+                // registration may call the channel; keep authorization changes and shutdown unblocked
+                registrations.registerEndpoint(opened, settings);
+                synchronized (lock) {
+                    requireActive();
+                    if (invalidated || opened.isClosed()) {
+                        throw new DBException("DataDam RPC endpoint closed during initialization");
+                    }
+                    return opened;
+                }
+            } catch (DBException | RuntimeException e) {
+                closeEndpoint(opened);
                 throw new DBException("Cannot open DataDam RPC endpoint", e);
             }
         }
-    }
-
-    private void registerDesktopServices(@NotNull MessagingRpcEndpoint endpoint) {
-        registrations.registerAll(endpoint);
     }
 
     private static void executeRequest(@NotNull Runnable request) {
@@ -132,7 +135,7 @@ final class DDRemoteDamDesktopRpcService implements AutoCloseable {
         }
     }
 
-    private static void closeEndpoint(@Nullable MessagingRpcEndpoint endpoint) {
+    private void closeEndpoint(@Nullable MessagingRpcEndpoint endpoint) {
         if (endpoint != null) {
             try {
                 endpoint.close();

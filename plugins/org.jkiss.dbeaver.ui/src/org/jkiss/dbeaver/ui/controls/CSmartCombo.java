@@ -422,6 +422,10 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         checkWidget();
         super.setFont(font);
         this.text.setFont(font);
+        if (this.dropDownControl != null && !this.dropDownControl.isDisposed()) {
+            this.dropDownControl.setFont(font);
+            this.dropDownControl.requestLayout();
+        }
     }
 
     public void setText(@Nullable String string) {
@@ -553,6 +557,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         table.setLayoutData(new GridData(GridData.FILL_BOTH));
         this.dropDownControl = table;
         CSSUtils.applyStyles(this.popup);
+        table.setFont(getFont());
         this.dropDownBackground = UIStyles.isDarkTheme()
             ? this.popup.getBackground()
             : getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND);

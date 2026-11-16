@@ -17,11 +17,14 @@
 package org.jkiss.dbeaver.registry.driver;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.maven.MavenArtifact;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactDependency;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactVersion;
 
+import java.nio.file.Path;
 import java.util.List;
 
 /**
@@ -32,11 +35,36 @@ public class DriverLibraryMavenDependency extends DriverLibraryMavenArtifact
     private DriverLibraryMavenArtifact parent;
     private MavenArtifactDependency source;
 
-    public DriverLibraryMavenDependency(DriverLibraryMavenArtifact parent, MavenArtifactVersion localVersion, MavenArtifactDependency source) {
+    public DriverLibraryMavenDependency(
+        @NotNull DriverLibraryMavenArtifact parent,
+        @NotNull MavenArtifactVersion localVersion,
+        @NotNull MavenArtifactDependency source
+    ) {
         super(parent.getDriver(), FileType.jar, PATH_PREFIX + localVersion.toString(), null);
         this.parent = parent;
         this.localVersion = localVersion;
         this.source = source;
+    }
+
+    @Nullable
+    @Override
+    public Path getLocalFile() {
+        if (localVersion == null || localVersion.isInvalidVersion()) {
+            return null;
+        }
+        return MavenArtifact.FILE_JAR.equals(source.getType()) ?
+            localVersion.getCacheFile(MavenArtifact.FILE_JAR) : localVersion.getCacheFile();
+    }
+
+    @Nullable
+    @Override
+    public String getExternalURL(@NotNull DBRProgressMonitor monitor) {
+        MavenArtifactVersion version = getArtifactVersion(monitor);
+        if (version == null) {
+            return null;
+        }
+        return MavenArtifact.FILE_JAR.equals(source.getType()) ?
+            version.getExternalURL(MavenArtifact.FILE_JAR) : version.getExternalURL();
     }
 
     protected boolean isDependencyExcluded(DBRProgressMonitor monitor, MavenArtifactDependency dependency) {

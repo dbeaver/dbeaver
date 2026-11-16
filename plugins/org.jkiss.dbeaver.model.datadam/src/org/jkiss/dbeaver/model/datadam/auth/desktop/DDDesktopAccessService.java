@@ -32,6 +32,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
@@ -49,7 +50,7 @@ public class DDDesktopAccessService {
     private final List<DDDesktopAccessListener> accessListeners = new CopyOnWriteArrayList<>();
     private final URI accountUrl = URI.create(DDEndpoints.getAccountBaseUrl());
     private final URI storageUrl = URI.create(DDEndpoints.getStorageBaseUrl());
-    private final DDAccountClient accountClient = new DDAccountClient(accountUrl);
+    private final DDAccountClient accountClient = new DDAccountClient(accountUrl, this);
     private final DDDesktopUserService userService;
     private volatile boolean loaded;
     @Nullable
@@ -92,6 +93,12 @@ public class DDDesktopAccessService {
         }
     }
 
+    @Nullable
+    public UUID getAccountId() {
+        DDKeyBundle bundle = getKeyBundle();
+        return bundle == null ? null : bundle.accountId();
+    }
+
     @NotNull
     public String getAccessTokenForResource(@NotNull URI resource) throws DBException {
         try {
@@ -119,8 +126,7 @@ public class DDDesktopAccessService {
     /** Reads display information, including an Account request when keys and a valid token are available. */
     @NotNull
     public DDLoggedUserView getLoggedUserView() {
-        DDKeyBundle bundle = getKeyBundle();
-        return userService.getLoggedUserView(bundle == null ? null : bundle.accountId());
+        return userService.getLoggedUserView(getAccountId());
     }
 
 

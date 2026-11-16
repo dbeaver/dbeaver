@@ -21,7 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.lsm.sql.impl.syntax.SQLStandardParser;
-import org.jkiss.dbeaver.model.sql.SQLDialect.ProjectionAliasVisibilityScope;
+import org.jkiss.dbeaver.model.sql.SQLDialectFeatures.ProjectionAliasVisibilityScope;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultPseudoColumn;
@@ -184,7 +184,7 @@ public class SQLQueryRowsProjectionModel extends SQLQueryRowsSourceModel {
     ) {
         SQLQueryRowsDataContext unresolvedResult = context.combine(this.fromSource.getRowsDataContext());
         this.selectListScope.setSymbolsOrigin(new SQLQuerySymbolOrigin.RowsDataRef(unresolvedResult));
-        EnumSet<ProjectionAliasVisibilityScope> aliasVisibilities = this.getRowsSources().getDialect().getProjectionAliasVisibilityScope();
+        EnumSet<ProjectionAliasVisibilityScope> aliasVisibilities = this.getRowsSources().getDialect().getDialectFeatures().getProjectionAliasVisibilityScope();
 
         List<SQLQueryResultColumn> resultColumns = this.result.expandColumns(unresolvedResult, this, statistics);
         List<SQLQueryResultPseudoColumn> resultPseudoColumns = unresolvedResult.getPseudoColumnsList().stream()

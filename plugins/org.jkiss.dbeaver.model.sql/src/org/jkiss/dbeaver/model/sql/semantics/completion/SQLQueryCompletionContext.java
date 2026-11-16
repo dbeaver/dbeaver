@@ -525,6 +525,8 @@ public abstract class SQLQueryCompletionContext {
                 SQLQueryCompletionItem item;
                 if (child instanceof DBSProcedure p) {
                     item = SQLQueryCompletionItem.forProcedureObject(score, childName, contextObjext, p);
+                } else if (child instanceof DBSDataType type) {
+                    item = SQLQueryCompletionItem.forDbDataType(score, childName, contextObjext, type);
                 } else if (child instanceof DBSCatalog p) {
                     item = SQLQueryCompletionItem.forDbCatalogObject(score, childName, contextObjext, child);
                 } else if (child instanceof DBSSchema p) {
@@ -847,11 +849,12 @@ public abstract class SQLQueryCompletionContext {
                                     prepareProceduresCompletions(monitor, request, contextInfo.getKnownSources(), List.of(c), filterOrNull);
                                 }
                             }
-                            case OBJECT, TABLE -> {
+                            case OBJECT, TABLE, TYPE -> {
                                 if (origin.getObject() instanceof DBSObjectContainer objectContainer) {
                                     List<DBSObjectContainer> contexts = List.of(objectContainer);
                                     DBSObjectType objectTypesToPropose = switch (origin.getFilterMode()) {
                                         case TABLE -> RelationalObjectType.TYPE_TABLE;
+                                        case TYPE -> RelationalObjectType.TYPE_DATA_TYPE;
                                         default -> RelationalObjectType.TYPE_UNKNOWN;
                                     };
                                     prepareObjectCompletions(
@@ -1117,7 +1120,7 @@ public abstract class SQLQueryCompletionContext {
                     LinkedList<SQLQueryCompletionItem> tableRefs = new LinkedList<>();
                     if (request.getContext().getDataSource().getSQLDialect().supportsQualifiedColumnNames()) {
                         for (SourceResolutionResult rr : context.getKnownSources().getResolutionResults().values()) {
-                            if (rr.aliasOrNull != null && !rr.isCteSubquery) {
+                            if (rr.aliasOrNull != null && !rr.isNamedRowsSource) {
                                 SQLQueryWordEntry sourceAlias = makeFilterInfo(filterOrNull, rr.aliasOrNull.getName());
                                 int score = sourceAlias.matches(filterOrNull, this.searchInsideWords);
                                 if (score > 0) {
@@ -1201,11 +1204,24 @@ public abstract class SQLQueryCompletionContext {
                 @Nullable SQLQueryWordEntry filterOrNull
             ) {
                 LinkedList<SQLQueryCompletionItem> variableItems = new LinkedList<>();
-                for (SQLQueryVariableInfo variable : context.getVariablesList()) {
-                    SQLQueryWordEntry filterWord = makeFilterInfo(filterOrNull, variable.rawName());
+                List<SQLQueryLocalVariableInfo> localVariables = context.getLocalVariables();
+                for (SQLQueryLocalVariableInfo binding : localVariables) {
+                    SQLQueryWordEntry filterWord = makeFilterInfo(filterOrNull, binding.declaration().getRawName());
                     int score = filterWord.matches(filterOrNull, this.searchInsideWords);
                     if (score > 0) {
-                        variableItems.add(SQLQueryCompletionItem.forScriptVariable(score, filterWord, variable));
+                        variableItems.add(SQLQueryCompletionItem.forLocalVariable(score, filterWord, binding));
+                    }
+                }
+                Set<String> locallyShadowedNames = localVariables.stream()
+                    .map(binding -> binding.declaration().getName())
+                    .collect(Collectors.toSet());
+                for (SQLQueryVariableInfo variable : context.getVariablesList()) {
+                    if (!locallyShadowedNames.contains(variable.canonicalName())) {
+                        SQLQueryWordEntry filterWord = makeFilterInfo(filterOrNull, variable.rawName());
+                        int score = filterWord.matches(filterOrNull, this.searchInsideWords);
+                        if (score > 0) {
+                            variableItems.add(SQLQueryCompletionItem.forScriptVariable(score, filterWord, variable));
+                        }
                     }
                 }
                 return variableItems;
@@ -1301,7 +1317,7 @@ public abstract class SQLQueryCompletionContext {
 
                 AssociationsResolutionContext associations = this.getAssociationsContext(monitor, this.deepestContext, filterOrNull);
                 for (SourceResolutionResult rr : knownSources.getResolutionResults().values()) {
-                    if (rr.aliasOrNull != null && rr.isCteSubquery) {
+                    if (rr.aliasOrNull != null && rr.isNamedRowsSource) {
                         SQLQueryWordEntry aliasName = makeFilterInfo(filterOrNull, rr.aliasOrNull.getName());
                         int score = aliasName.matches(filterOrNull, this.searchInsideWords);
                         if (score > 0) {
@@ -1342,15 +1358,19 @@ public abstract class SQLQueryCompletionContext {
                 LinkedList<SQLQueryCompletionItem> completions = new LinkedList<>();
                 Set<DBSObject> objs = new HashSet<>();
                 try {
-                    this.collectImmediateChildren(
-                        monitor,
-                        knownSources,
-                        contexts,
-                        o -> objectTypes.stream().anyMatch(t -> t.getTypeClass().isAssignableFrom(o.getClass())) && objs.add(o),
-                        contextObjext,
-                        filterOrNull,
-                        completions
-                    );
+                    if (objectTypes.equals(Set.of(RelationalObjectType.TYPE_DATA_TYPE))) {
+                        this.collectTypes(monitor, request, contexts, contextObjext, filterOrNull, completions);
+                    } else {
+                        this.collectImmediateChildren(
+                            monitor,
+                            knownSources,
+                            contexts,
+                            o -> objectTypes.stream().anyMatch(t -> t.getTypeClass().isAssignableFrom(o.getClass())) && objs.add(o),
+                            contextObjext,
+                            filterOrNull,
+                            completions
+                        );
+                    }
                     if (request.getContext().isSearchProcedures()
                         && objectTypes.stream().anyMatch(t -> DBSProcedure.class.isAssignableFrom(t.getTypeClass()))
                     ) {
@@ -1360,6 +1380,46 @@ public abstract class SQLQueryCompletionContext {
                     log.error(e);
                 }
                 this.makeFilteredCompletionSet(filterOrNull, completions, results);
+            }
+
+            private void collectTypes(
+                @NotNull DBRProgressMonitor monitor,
+                @NotNull SQLCompletionRequest request,
+                @NotNull Collection<DBSObjectContainer> containers,
+                @Nullable SQLQueryCompletionItem.ContextObjectInfo contextObject,
+                @Nullable SQLQueryWordEntry filterOrNull,
+                @NotNull LinkedList<SQLQueryCompletionItem> accumulator
+            ) throws DBException {
+                Set<DBSObject> seen = new HashSet<>();
+                for (DBSObjectContainer container : containers) {
+                    DBSNamespace namespace = container instanceof DBSNamespaceContainer namespaces
+                        ? namespaces.getNamespaceForObjectType(RelationalObjectType.TYPE_DATA_TYPE) : null;
+                    // Some containers expose types only through their namespace, not through getChildren().
+                    Collection<? extends DBSObject> children = namespace == null
+                        ? container.getChildren(monitor)
+                        : namespace.getObjectsByType(monitor, RelationalObjectType.TYPE_DATA_TYPE);
+                    for (DBSObject child : children) {
+                        if (child instanceof DBSDataType type && !DBUtils.isHiddenObject(type) && seen.add(type)) {
+                            SQLQueryWordEntry childName = makeFilterInfo(filterOrNull, type.getName());
+                            int score = childName.matches(filterOrNull, this.searchInsideWords);
+                            if (score > 0) {
+                                accumulator.addLast(SQLQueryCompletionItem.forDbDataType(score, childName, contextObject, type));
+                            }
+                        }
+                    }
+                }
+                if (contextObject == null) {
+                    DBPDataSource dataSource = request.getContext().getDataSource();
+                    for (String name : dataSource.getSQLDialect().getDataTypes(dataSource)) {
+                        if (name != null && !name.isBlank()) {
+                            SQLQueryWordEntry typeName = makeFilterInfo(filterOrNull, name);
+                            int score = typeName.matches(filterOrNull, this.searchInsideWords);
+                            if (score > 0) {
+                                accumulator.addLast(SQLQueryCompletionItem.forTypeName(score, typeName, name));
+                            }
+                        }
+                    }
+                }
             }
 
             @Nullable
@@ -1671,8 +1731,11 @@ public abstract class SQLQueryCompletionContext {
         @NotNull
         Collection<SQLQueryVariableInfo> getVariablesList();
 
+        @NotNull
+        List<SQLQueryLocalVariableInfo> getLocalVariables();
+
         @Nullable
-        SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> s);
+        SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> s);
 
         boolean isJoin();
 
@@ -1685,14 +1748,17 @@ public abstract class SQLQueryCompletionContext {
         @Nullable
         SQLQueryDataContextInfo getRelatedContext();
 
+        @NotNull
         static SQLQueryDataContextInfo empty() {
             return EMPTY_DATA_CONTEXT_INFO;
         }
 
+        @NotNull
         static SQLQueryDataContextInfo makeFor(@NotNull SQLQueryRowsSourceContext rowsSourceContext) {
             return new SQLQueryRowsSourceContextInfo(rowsSourceContext);
         }
 
+        @NotNull
         static SQLQueryDataContextInfo makeFor(@NotNull SQLQueryRowsDataContext rowsDataContext) {
             return new SQLQueryRowsDataContextInfo(rowsDataContext);
         }
@@ -1735,9 +1801,15 @@ public abstract class SQLQueryCompletionContext {
             return this.rowsSourceContext.getVariablesSubset().getVariables();
         }
 
+        @NotNull
+        @Override
+        public List<SQLQueryLocalVariableInfo> getLocalVariables() {
+            return this.rowsSourceContext.getLocalVariables().getVisibleValueVariables();
+        }
+
         @Nullable
         @Override
-        public SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> tableName) {
+        public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> tableName) {
             List<DBSEntity> tables = rowsSourceContext.getConnectionInfo().findRealTables(monitor, tableName);
             return this.subquerySources.getResolutionResults().values()
                 .stream().filter(r -> tables.contains(r.tableOrNull)).findFirst().orElse(null);
@@ -1862,9 +1934,15 @@ public abstract class SQLQueryCompletionContext {
             return Collections.emptyList();
         }
 
+        @NotNull
+        @Override
+        public List<SQLQueryLocalVariableInfo> getLocalVariables() {
+            return Collections.emptyList();
+        }
+
         @Nullable
         @Override
-        public SourceResolutionResult resolveSource(DBRProgressMonitor monitor, List<String> s) {
+        public SourceResolutionResult resolveSource(@NotNull DBRProgressMonitor monitor, @NotNull List<String> s) {
             return null;
         }
 

@@ -129,6 +129,12 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
     }
 
     @Override
+    protected int getDialogBoundsStrategy() {
+        // Text-only confirmations must fit their message, even if a previous version displayed details.
+        return CommonUtils.isEmpty(codeBlockText) ? DIALOG_PERSISTLOCATION : super.getDialogBoundsStrategy();
+    }
+
+    @Override
     protected IDialogSettings getDialogBoundsSettings() {
         return CommonUtils.isNotEmpty(confirmationId) ? UIUtils.getDialogSettings("ConfirmationDialog." + confirmationId) : super.getDialogBoundsSettings();
     }

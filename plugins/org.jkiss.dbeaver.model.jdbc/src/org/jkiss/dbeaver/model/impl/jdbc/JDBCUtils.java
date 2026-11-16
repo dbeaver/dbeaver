@@ -964,7 +964,7 @@ public class JDBCUtils {
     public static DBPDataKind getDataKindByTypeID(int typeId, @Nullable String typeName) {
         return switch (typeId) {
             case Types.BOOLEAN -> DBPDataKind.BOOLEAN;
-            case Types.CHAR, Types.VARCHAR, Types.NVARCHAR, Types.LONGVARCHAR, Types.LONGNVARCHAR -> DBPDataKind.STRING;
+            case Types.CHAR, Types.NCHAR, Types.VARCHAR, Types.NVARCHAR, Types.LONGVARCHAR, Types.LONGNVARCHAR -> DBPDataKind.STRING;
             case Types.BIGINT, Types.DECIMAL, Types.DOUBLE, Types.FLOAT, Types.INTEGER, Types.NUMERIC, Types.REAL, Types.SMALLINT ->
                 DBPDataKind.NUMERIC;
             case Types.BIT, Types.TINYINT -> {

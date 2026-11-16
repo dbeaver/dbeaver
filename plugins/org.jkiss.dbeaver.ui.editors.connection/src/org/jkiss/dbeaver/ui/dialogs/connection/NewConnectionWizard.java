@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.jface.dialogs.Dialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbench;
@@ -55,6 +56,7 @@ public class NewConnectionWizard extends ConnectionWizard
     private ConnectionPageConnector pageConnector;
     private final Map<DBPDriver, ConnectionPageSettings> settingsPages = new HashMap<>();
     private ConnectionPageGeneral pageGeneral;
+    private final Set<DBPDriver> generalSettingsEdited = new HashSet<>();
     private DataSourceDescriptor dataSourceNew;
 
     /** A default constructor used by Eclipse's "New" command */
@@ -142,6 +144,47 @@ public class NewConnectionWizard extends ConnectionWizard
             return null;
         }
         return this.settingsPages.get(selectedDriver);
+    }
+
+    void openGeneralSettingsDialog() {
+        DataSourceDescriptor dataSource = getActiveDataSource();
+        ConnectionPageSettings settings = getPageSettings();
+        if (settings != null) {
+            settings.saveSettings(dataSource);
+        }
+        DataSourceDescriptor dialogDataSource = dataSource.getRegistry().createDataSource(dataSource);
+        ConnectionPageGeneral generalPage = new ConnectionPageGeneral(this, dialogDataSource);
+        try {
+            generalPage.setDataSourceFolder(pageGeneral.getDataSourceFolder());
+            if (new EditWizardPageDialog(this, generalPage, dialogDataSource).open() == IDialogConstants.OK_ID) {
+                copyGeneralSettings(dialogDataSource, dataSource);
+                generalSettingsEdited.add(dataSource.getDriver());
+                pageGeneral.setDataSourceFolder(dataSource.getFolder());
+                String editedName = generalPage.getEditedConnectionName();
+                if (editedName != null) {
+                    setConnectionNameOverride(editedName);
+                }
+                if (settings != null) {
+                    settings.refreshConnectionName();
+                }
+            }
+        } finally {
+            generalPage.dispose();
+            dialogDataSource.dispose();
+        }
+    }
+
+    private static void copyGeneralSettings(@NotNull DataSourceDescriptor source, @NotNull DataSourceDescriptor target) {
+        if (source != target) {
+            target.copyFrom(source);
+            target.setConnectionInfo(new DBPConnectionConfiguration(source.getConnectionConfiguration()));
+            target.setFolder(source.getFolder());
+            target.setModifyPermissions(source.getModifyPermission());
+            // Test copies already inherit preferences and may have additional runtime overrides.
+            if (!target.isTemporary()) {
+                target.getPreferenceStore().setProperties(source.getPreferenceStore().getProperties());
+            }
+        }
     }
 
     /**
@@ -337,7 +380,13 @@ public class NewConnectionWizard extends ConnectionWizard
      */
     @Override
     public boolean performFinish() {
-        return persistDataSource() != PersistResult.ERROR;
+        if (persistDataSource() == PersistResult.ERROR) {
+            return false;
+        }
+        if (dataSourceNew != null) {
+            firePropertyChangeEvent(PROP_CONNECTION_SAVED, null, dataSourceNew);
+        }
+        return true;
     }
 
     @Override
@@ -352,11 +401,19 @@ public class NewConnectionWizard extends ConnectionWizard
         if (driver.getDriverStub() != null) {
             return;
         }
+        // Accepted details must also reach a descriptor already persisted by a connection test.
+        // Copy before saving the controls so current connection and authentication edits take precedence.
+        if (generalSettingsEdited.contains(driver)) {
+            copyGeneralSettings(getActiveDataSource(), dataSource);
+        }
         ConnectionPageSettings pageSettings = getPageSettings(driver);
         if (pageSettings != null) {
             pageSettings.saveSettings(dataSource);
         }
-        pageGeneral.saveSettings(dataSource);
+        if (!generalSettingsEdited.contains(driver)) {
+            pageGeneral.saveSettings(dataSource);
+        }
+        applyConnectionName(dataSource);
         //pageNetwork.saveSettings(dataSource);
     }
 

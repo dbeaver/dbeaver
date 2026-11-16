@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,13 +19,12 @@ package org.jkiss.dbeaver.model.sql.semantics.completion;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.sql.messages.ModelSQLMessages;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbol;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQuerySymbolClass;
 import org.jkiss.dbeaver.model.sql.semantics.SQLQueryVariableInfo;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultColumn;
-import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryResultPseudoColumn;
-import org.jkiss.dbeaver.model.sql.semantics.context.SourceResolutionResult;
+import org.jkiss.dbeaver.model.sql.semantics.context.*;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -88,7 +87,14 @@ public abstract class SQLQueryCompletionItem {
         @NotNull String text,
         @Nullable String description
     ) {
-        return new SQLSpecialTextCompletionItem(score, filterKey, text, description);
+        return new SQLSpecialTextCompletionItem(score, filterKey, text, description, SQLQueryCompletionItemKind.UNKNOWN);
+    }
+
+    @NotNull
+    public static SQLQueryCompletionItem forTypeName(int score, @NotNull SQLQueryWordEntry filterKey, @NotNull String name) {
+        return new SQLSpecialTextCompletionItem(
+            score, filterKey, name, ModelSQLMessages.model_sql_semantic_symbolClass_TYPE, SQLQueryCompletionItemKind.TYPE
+        );
     }
 
     @NotNull
@@ -142,6 +148,15 @@ public abstract class SQLQueryCompletionItem {
     }
 
     @NotNull
+    public static SQLQueryCompletionItem forLocalVariable(
+        int score,
+        @NotNull SQLQueryWordEntry filterKey,
+        @NotNull SQLQueryLocalVariableInfo binding
+    ) {
+        return new SQLLocalVariableCompletionItem(score, filterKey, binding);
+    }
+
+    @NotNull
     public static SQLQueryCompletionItem forDbObject(
         int score,
         @NotNull SQLQueryWordEntry filterKey,
@@ -149,6 +164,16 @@ public abstract class SQLQueryCompletionItem {
         @NotNull DBSObject object
     ) {
         return new SQLDbNamedObjectCompletionItem(score, filterKey, resolvedContext, object, SQLQueryCompletionItemKind.UNKNOWN);
+    }
+
+    @NotNull
+    public static SQLQueryCompletionItem forDbDataType(
+        int score,
+        @NotNull SQLQueryWordEntry filterKey,
+        @Nullable ContextObjectInfo resolvedContext,
+        @NotNull DBSDataType type
+    ) {
+        return new SQLDbNamedObjectCompletionItem(score, filterKey, resolvedContext, type, SQLQueryCompletionItemKind.TYPE);
     }
 
 
@@ -355,6 +380,31 @@ public abstract class SQLQueryCompletionItem {
         }
     }
 
+    public static class SQLLocalVariableCompletionItem extends SQLQueryCompletionItem {
+        @NotNull
+        public final SQLQueryLocalVariableInfo binding;
+
+        SQLLocalVariableCompletionItem(
+            int score,
+            @NotNull SQLQueryWordEntry filterKey,
+            @NotNull SQLQueryLocalVariableInfo binding
+        ) {
+            super(score, filterKey);
+            this.binding = binding;
+        }
+
+        @NotNull
+        @Override
+        public SQLQueryCompletionItemKind getKind() {
+            return SQLQueryCompletionItemKind.LOCAL_VARIABLE;
+        }
+
+        @Override
+        protected <R> R applyImpl(SQLQueryCompletionItemVisitor<R> visitor) {
+            return visitor.visitLocalVariable(this);
+        }
+    }
+
     public abstract static class SQLDbObjectCompletionItem<T extends DBSObject> extends SQLQueryCompletionItem {
         @Nullable
         public final ContextObjectInfo resolvedContext;
@@ -432,22 +482,26 @@ public abstract class SQLQueryCompletionItem {
     public static class SQLSpecialTextCompletionItem extends SQLQueryCompletionItem {
         public final String text;
         public final String description;
+        @NotNull
+        public final SQLQueryCompletionItemKind kind;
 
         SQLSpecialTextCompletionItem(
             int score,
             @NotNull SQLQueryWordEntry filterKey,
             @NotNull String text,
-            @Nullable String description
+            @Nullable String description,
+            @NotNull SQLQueryCompletionItemKind kind
         ) {
             super(score, filterKey);
             this.text = text;
             this.description = description;
+            this.kind = kind;
         }
 
         @NotNull
         @Override
         public SQLQueryCompletionItemKind getKind() {
-            return SQLQueryCompletionItemKind.UNKNOWN;
+            return this.kind;
         }
 
         @Override

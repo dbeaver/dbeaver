@@ -632,7 +632,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         decl.append("CREATE OR REPLACE ").append(getProcedureTypeName()).append(" ")
             .append(DBUtils.getQuotedIdentifier(getContainer())).append(".")
             .append(functionSignature).append(lineSeparator);
-        if (getProcedureType().hasReturnValue() && !CommonUtils.isEmpty(returnTypeName)) {
+        if ((getProcedureType().hasReturnValue() || getDataSource().getServerType().supportsProcedureReturnValue())
+            && !CommonUtils.isEmpty(returnTypeName)) {
             decl.append("\tRETURNS ");
             if (isReturnsSet()) {
                 // Check for TABLE parameters and construct
@@ -642,7 +643,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                     for (int i = 0; i < tableParams.size(); i++) {
                         PostgreProcedureParameter tp = tableParams.get(i);
                         if (i > 0) decl.append(", ");
-                        decl.append(tp.getName()).append(" ").append(tp.getTypeName());
+                        decl.append(DBUtils.getQuotedIdentifier(getDataSource(), tp.getName())).append(" ").append(tp.getTypeName());
                     }
                     decl.append(")");
                 } else {
@@ -836,7 +837,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 if (forDDL && paramName.startsWith("$")) {
                     // Old PG versions. Skip this specific case, because it is not name, but param order number
                 } else {
-                    parameter.add(paramName);
+                    parameter.add(quote ? DBUtils.getQuotedIdentifier(schema.getDataSource(), paramName) : paramName);
                 }
             }
             final PostgreDataType dataType = param.getParameterType();

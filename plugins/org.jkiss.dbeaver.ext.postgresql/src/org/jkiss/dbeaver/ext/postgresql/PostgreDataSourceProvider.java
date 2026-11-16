@@ -41,6 +41,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class PostgreDataSourceProvider extends JDBCDataSourceProvider<PostgreDataSource> implements DBPNativeClientLocationManager {
     private static final Map<String, String> connectionsProps;
@@ -99,6 +100,15 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider<PostgreDat
             return configToUse.getUrl();
         }
 
+        String hostName = CommonUtils.notEmpty(configToUse.getHostName());
+        if (hostName.contains(",") || hostName.contains(":")) {
+            configToUse = new DBPConnectionConfiguration(configToUse);
+            String port = CommonUtils.notEmpty(configToUse.getHostPort());
+            // the URL template appends the port to the final host
+            configToUse.setHostName(Arrays.stream(hostName.split(",", -1))
+                .map(host -> host.contains(":") && !host.startsWith("[") ? "[" + host + "]" : host)
+                .collect(Collectors.joining((port.isEmpty() ? "" : ":" + port) + ",")));
+        }
         PostgreServerType serverType = PostgreUtils.getServerType(driver);
         if (serverType.supportsCustomConnectionURL()) {
             return DatabaseURL.generateUrlByTemplate(driver, configToUse);

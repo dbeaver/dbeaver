@@ -60,5 +60,12 @@ public class BaseThemeSettings extends ThemeListener {
     @ThemeColor(BaseEditorColors.COLOR_ACCENT)
     public volatile Color colorAccent;
 
+    @ThemeColor(BaseEditorColors.COLOR_BACKGROUND_BLUE)
+    public volatile Color colorBackgroundBlue;
+    @ThemeColor(BaseEditorColors.COLOR_BACKGROUND_YELLOW)
+    public volatile Color colorBackgroundYellow;
+    @ThemeColor(BaseEditorColors.COLOR_BACKGROUND_GREEN)
+    public volatile Color colorBackgroundGreen;
+
     public static final BaseThemeSettings instance = new BaseThemeSettings();
 }

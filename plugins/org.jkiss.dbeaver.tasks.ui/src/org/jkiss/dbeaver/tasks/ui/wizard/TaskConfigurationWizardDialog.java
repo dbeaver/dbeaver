@@ -241,14 +241,14 @@ public class TaskConfigurationWizardDialog extends MultiPageWizardDialog {
         super.updateButtons();
         var wizard = getWizard();
         wizard.updateTaskButtons();
+        Button saveButton = getButton(SAVE_BUTTON_ID);
+        if (saveButton != null && !saveButton.isDisposed()) {
+            saveButton.setEnabled(wizard.canFinish());
+        }
         if (wizard.canFinish()) {
             Button finishButton = getButton(IDialogConstants.OK_ID);
             if (finishButton != null && !finishButton.isDisposed()) {
                 getShell().setDefaultButton(finishButton);
-            }
-            Button saveButton = getButton(SAVE_BUTTON_ID);
-            if (saveButton != null && !saveButton.isDisposed()) {
-                saveButton.setEnabled(true);
             }
         }
     }

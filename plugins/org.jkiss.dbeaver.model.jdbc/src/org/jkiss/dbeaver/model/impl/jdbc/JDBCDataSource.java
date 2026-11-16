@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.model.impl.AbstractDataSource;
 import org.jkiss.dbeaver.model.impl.auth.AuthModelDatabaseNative;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.impl.jdbc.internal.JDBCModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -251,6 +251,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
                 // Authentication and driver substitution may have changed both the URL and properties.
                 // Validate before creating the driver or invoking any of its URL-processing APIs.
                 validateConnectionProperties(url, connectProps);
+                validateConnectionParameters(monitor, url, connectProps);
                 Driver driverInstance = createDriverInstance(monitor, driver);
                 if (driverInstance != null) {
                     try {
@@ -325,6 +326,13 @@ public abstract class JDBCDataSource extends AbstractDataSource
         catch (Throwable e) {
             throw new DBCConnectException("Unexpected driver error occurred while connecting to the database", e);
         }
+    }
+
+    protected void validateConnectionParameters(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable String url,
+        @NotNull Properties connectProps
+    ) throws DBCException {
     }
 
     /**
@@ -632,7 +640,7 @@ public abstract class JDBCDataSource extends AbstractDataSource
         }
         JDBCRemoteInstance defaultInstance = getDefaultInstance();
         defaultInstance.initializeMetaContext(monitor);
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, ModelMessages.model_jdbc_read_database_meta_data)) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, JDBCModelMessages.model_jdbc_read_database_meta_data)) {
             JDBCDatabaseMetaData metaData = session.getMetaData();
 
             readDatabaseServerVersion(session, metaData);

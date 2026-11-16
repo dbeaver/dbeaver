@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaData;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaDataSnapshot;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.AbstractResultSet;
@@ -46,6 +47,7 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
 
     private final ResultSet original;
     private JDBCResultSetMetaData metaData;
+    private final JDBCResultSetMetaDataSnapshot metaDataSnapshot;
     private long rowsFetched;
     private long maxRows = -1;
     private final boolean disableLogging;
@@ -63,6 +65,7 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
         }
 
         this.original = original;
+        this.metaDataSnapshot = statement.getResultSetMetaDataSnapshot();
         this.disableLogging = disableLogging;
 
         if (!disableLogging) {
@@ -213,12 +216,17 @@ public class JDBCResultSetImpl extends AbstractResultSet<JDBCSession, JDBCStatem
 
     @NotNull
     @Override
-    public JDBCResultSetMetaData getMeta()
-        throws DBCException
-    {
+    public JDBCResultSetMetaData getMeta() throws DBCException {
         if (metaData == null) {
             try {
-                metaData = createMetaDataImpl();
+                if (metaDataSnapshot != null) {
+                    ResultSetMetaData actual = original.getMetaData();
+                    metaDataSnapshot.validate(actual);
+                    metaData = session.getDataSource().getJdbcFactory()
+                        .createResultSetMetaData(this, metaDataSnapshot.toMetaData());
+                } else {
+                    metaData = createMetaDataImpl();
+                }
             } catch (SQLException e) {
                 throw new DBCException(e, session.getExecutionContext());
             }
