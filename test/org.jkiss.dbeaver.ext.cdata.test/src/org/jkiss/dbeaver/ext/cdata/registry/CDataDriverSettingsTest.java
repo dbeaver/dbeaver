@@ -68,6 +68,38 @@ public class CDataDriverSettingsTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void applyOptionalCategories() throws Exception {
+        var info = new CDataDriverInfo("postgresql", "postgresql", "PostgreSQL JDBC Driver", 2026,
+            CDataDriverTier.PROFESSIONAL, "https://www.cdata.com/", "postgresql", null);
+        for (String categories : List.of("", ",\"categories\":null", ",\"categories\":[]", ",\"categories\":[\"sql\",\"analytic\"]")) {
+            Files.writeString(cacheFile, "{\"postgresql\":{\"datatype_id\":\"postgresql\"" + categories + "}}");
+
+            var settings = CDataDriverSettings.load(cacheFile).get("postgresql");
+            var updated = info.withSettings(settings);
+
+            Assertions.assertEquals(categories.contains("sql") ? List.of("sql", "analytic") : List.of(), updated.categories());
+            Assertions.assertEquals("postgresql", updated.dataTypeId());
+        }
+        Assertions.assertTrue(info.withSettings(null).categories().isEmpty());
+    }
+
+    @Test
+    public void rejectInvalidCategoriesWithoutReplacingCache() throws Exception {
+        Files.writeString(cacheFile, SETTINGS);
+        expireCache();
+        for (String categories : List.of("[null]", "[\"\"]", "[\" \" ]", "{}", "\"sql\"")) {
+            String invalid = "{\"postgresql\":{\"datatype_id\":\"postgresql\",\"categories\":" + categories + "}}";
+            Mockito.when(connection.getInputStream()).thenReturn(new ByteArrayInputStream(invalid.getBytes(StandardCharsets.UTF_8)));
+
+            var settings = CDataDriverSettings.load(progressMonitor, cacheFile, () -> connection);
+
+            Assertions.assertEquals("postgresql", settings.get("postgresql").dataTypeId());
+            Assertions.assertEquals(SETTINGS, Files.readString(cacheFile));
+            assertNoTemporaryFiles();
+        }
+    }
+
+    @Test
     public void reuseSettingsYoungerThanOneWeekWithoutConnecting() throws Exception {
         Files.writeString(cacheFile, SETTINGS);
         long modified = System.currentTimeMillis() - Duration.ofDays(6).toMillis();
