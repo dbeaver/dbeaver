@@ -81,7 +81,7 @@ class SQLExecutionFunctionsTest {
     void dqlAcceptsOnlyReadOnlySelectStatements() throws Exception {
         ScopeFixture fixture = new ScopeFixture();
         ExecuteDQLFunction function = new ExecuteDQLFunction();
-        fixture.verify(function, "SELECT 1");
+        Assertions.assertDoesNotThrow(() -> fixture.verify(function, "SELECT 1"));
         fixture.verify(function, "VALUES (1)");
         fixture.verify(function, "TABLE public.orders");
         fixture.verify(function, "SELECT * FROM public.orders");
@@ -124,7 +124,7 @@ class SQLExecutionFunctionsTest {
         for (String sql : List.of("INSERT INTO public.orders VALUES (1)", "UPDATE public.orders SET id=2",
             "DELETE FROM public.orders", "REPLACE INTO public.orders VALUES (1)", "CALL public.refresh_orders()",
             "MERGE INTO public.orders t USING public.source s ON (t.id=s.id) WHEN MATCHED THEN UPDATE SET id=s.id")) {
-            fixture.verify(function, sql);
+            Assertions.assertDoesNotThrow(() -> fixture.verify(function, sql), sql);
         }
         fixture.assertRestricted(function, "DELETE FROM private.orders");
         fixture.assertRestricted(function, "INSERT INTO public.orders SELECT * FROM private.orders");
@@ -140,12 +140,13 @@ class SQLExecutionFunctionsTest {
             "ALTER TABLE public.orders ADD COLUMN name text", "CREATE INDEX public.idx ON public.orders(id)",
             "DROP VIEW public.report", "TRUNCATE TABLE public.orders",
             "RENAME TABLE public.orders TO public.old_orders", "COMMENT ON COLUMN public.orders.id IS 'id'")) {
-            fixture.verify(function, sql);
+            Assertions.assertDoesNotThrow(() -> fixture.verify(function, sql), sql);
         }
         for (String sql : List.of("CREATE TABLE private.new_orders (id int)",
             "CREATE TABLE public.copy AS SELECT * FROM private.orders", "CREATE INDEX public.idx ON private.orders(id)",
             "ALTER TABLE public.orders ADD FOREIGN KEY (id) REFERENCES private.orders(id)",
             "CREATE TABLE public.copy (id int REFERENCES private.orders(id))", "TRUNCATE TABLE private.orders",
+            "DROP TABLE public.orders, private.orders",
             "ALTER TABLE private.orders ADD COLUMN name text", "CREATE SCHEMA new_schema", "CREATE ROLE reader")) {
             fixture.assertRestricted(function, sql);
         }
@@ -155,9 +156,11 @@ class SQLExecutionFunctionsTest {
     void dclVerifiesObjectPrivilegesAndGlobalRoleOperations() throws Exception {
         ScopeFixture fixture = new ScopeFixture();
         ExecuteDCLFunction function = new ExecuteDCLFunction();
-        fixture.verify(function, "GRANT SELECT ON public.orders TO reader");
+        Assertions.assertDoesNotThrow(() -> fixture.verify(function, "GRANT SELECT ON public.orders TO reader"));
         fixture.verify(function, "GRANT USAGE ON SCHEMA public TO reader");
         fixture.assertRestricted(function, "REVOKE SELECT ON private.orders FROM reader");
+        fixture.assertRestricted(function, "GRANT USAGE ON SCHEMA private TO reader");
+        fixture.assertRestricted(function, "GRANT CONNECT ON DATABASE private TO reader");
         fixture.assertRestricted(function, "GRANT SELECT ON public.orders, private.orders TO reader");
         fixture.assertRestricted(function, "DENY SELECT ON OBJECT::private.orders TO reader");
         fixture.assertRestricted(function, "GRANT reporting TO reader");
@@ -171,7 +174,7 @@ class SQLExecutionFunctionsTest {
     @Test
     void textChecksApplyTheirOwnStatementWhitelistsAndScopeRules() throws Exception {
         ScopeFixture fixture = new ScopeFixture();
-        fixture.verifyText(new ExecuteDQLFunction(), "SELECT 'DELETE FROM private.decoy' FROM public.orders");
+        Assertions.assertDoesNotThrow(() -> fixture.verifyText(new ExecuteDQLFunction(), "SELECT 'DELETE FROM private.decoy' FROM public.orders"));
         fixture.verifyText(new ExecuteDMLFunction(), "/* prefix */ UPDATE public.orders SET id=1");
         fixture.verifyText(new ExecuteDDLFunction(), "CREATE DOMAIN public.positive AS integer CHECK (VALUE > 0)");
         fixture.verifyText(new ExecuteDCLFunction(), "REVOKE SELECT ON public.orders FROM reader");
@@ -190,7 +193,8 @@ class SQLExecutionFunctionsTest {
     @Test
     void executableCommentsAndUnterminatedStringsCannotBypassTextChecks() throws Exception {
         ScopeFixture fixture = new ScopeFixture();
-        fixture.assertRestricted(new ExecuteDQLFunction(), "SELECT * FROM public.orders /*! UNION SELECT * FROM private.orders */");
+        Assertions.assertThrows(DBException.class,
+            () -> fixture.verify(new ExecuteDQLFunction(), "SELECT * FROM public.orders /*! UNION SELECT * FROM private.orders */"));
         fixture.assertTextRestricted(new ExecuteDQLFunction(), "SELECT 'unterminated FROM public.orders");
         fixture.assertTextRestricted(new ExecuteDQLFunction(), "SELECT * INTO public.copy FROM public.orders");
     }
