@@ -21,7 +21,9 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPInheritedObject;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.ai.AISchemaGenerationOptions;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -29,9 +31,12 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTableConstraint;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -41,6 +46,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.junit.StaticFieldOverride;
@@ -131,7 +137,7 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
         Mockito.doReturn(List.of(primaryKey, uniqueKey)).when(table).getConstraints(monitor);
 
         TestTableManager manager = Mockito.mock(TestTableManager.class, Mockito.CALLS_REAL_METHODS);
-        manager.excludedIndexes = List.of(primaryIndex, constraintIndex);
+        manager.indexConstraints = Map.of(primaryIndex, primaryKey, constraintIndex, uniqueKey);
         TestIndexEditor editor = Mockito.mock(TestIndexEditor.class, Mockito.CALLS_REAL_METHODS);
         DBERegistry registry = Mockito.mock(DBERegistry.class);
         Mockito.when(registry.getObjectManager(table.getClass(), SQLTableManager.class)).thenReturn(manager);
@@ -140,14 +146,118 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
         Mockito.when(platform.getEditorsRegistry()).thenReturn(registry);
         try (var platformOverride = new StaticFieldOverride(DBWorkbench.class, "platform", platform)) {
             for (boolean sendConstraints : List.of(false, true)) {
-                AISchemaGenerationOptions options = options(false).withSendIndexes(true).withSendConstraints(sendConstraints).build();
-                String ddl = new AISchemaGeneratorImpl().generateSchema(monitor, null, options, table);
-                Assertions.assertEquals(sendConstraints, ddl.contains("PRIMARY KEY (id)"), ddl);
-                Assertions.assertEquals(sendConstraints, ddl.contains("UNIQUE (id)"), ddl);
-                Assertions.assertEquals(!sendConstraints, ddl.contains("CREATE UNIQUE INDEX orders_pkey"), ddl);
-                Assertions.assertEquals(!sendConstraints, ddl.contains("CREATE UNIQUE INDEX orders_unique_key"), ddl);
-                Assertions.assertTrue(ddl.contains("CREATE UNIQUE INDEX orders_unique_idx"), ddl);
+                for (boolean includePrimary : List.of(false, true)) {
+                    for (boolean includeUnique : List.of(false, true)) {
+                        AISchemaGenerationOptions options = options(false).withSendIndexes(true).withSendConstraints(sendConstraints)
+                            .withObjectFilter((progress, object) -> (object != primaryKey || includePrimary)
+                                && (object != uniqueKey || includeUnique)).build();
+                        String ddl = new AISchemaGeneratorImpl().generateSchema(monitor, null, options, table);
+                        Assertions.assertEquals(sendConstraints && includePrimary, ddl.contains("PRIMARY KEY (id)"), ddl);
+                        Assertions.assertEquals(sendConstraints && includeUnique, ddl.contains("UNIQUE (id)"), ddl);
+                        Assertions.assertEquals(!sendConstraints || !includePrimary,
+                            ddl.contains("CREATE UNIQUE INDEX orders_pkey"), ddl);
+                        Assertions.assertEquals(!sendConstraints || !includeUnique,
+                            ddl.contains("CREATE UNIQUE INDEX orders_unique_key"), ddl);
+                        Assertions.assertTrue(ddl.contains("CREATE UNIQUE INDEX orders_unique_idx"), ddl);
+                    }
+                }
             }
+        }
+    }
+
+    @Test
+    public void indexDDLDoesNotRenameCachedMetadata() throws Exception {
+        JDBCTable table = Mockito.mock(
+            JDBCTable.class, Mockito.withSettings()
+                .extraInterfaces(DBPQualifiedObject.class));
+        Mockito.when(((DBPQualifiedObject) table).getFullyQualifiedName(Mockito.any())).thenReturn("orders");
+        DBPDataSource dataSource = Mockito.mock(DBPDataSource.class);
+        Mockito.when(dataSource.getSQLDialect()).thenReturn(BasicSQLDialect.INSTANCE);
+        Mockito.doReturn(dataSource).when(table).getDataSource();
+        Mockito.when(table.getName()).thenReturn("orders");
+        Mockito.when(table.getEntityType()).thenReturn(DBSEntityType.TABLE);
+        DBSEntityAttribute column = Mockito.mock(DBSEntityAttribute.class);
+        Mockito.when(column.getName()).thenReturn("id");
+        Mockito.when(column.getTypeName()).thenReturn("INTEGER");
+        Mockito.doReturn(dataSource).when(column).getDataSource();
+        Mockito.doReturn(List.of(column)).when(table).getAttributes(monitor);
+        JDBCTableIndex index = Mockito.mock(
+            JDBCTableIndex.class, Mockito.CALLS_REAL_METHODS);
+        index.setName("order code idx");
+        index.setPersisted(true);
+        Mockito.doReturn(dataSource).when(index).getDataSource();
+        Mockito.doReturn(table).when(index).getTable();
+        Mockito.doReturn(table).when(index).getParentObject();
+        DBSTableIndexColumn indexColumn = Mockito.mock(
+            DBSTableIndexColumn.class);
+        Mockito.when(indexColumn.getName()).thenReturn("id");
+        Mockito.doReturn(dataSource).when(indexColumn).getDataSource();
+        Mockito.when(indexColumn.isAscending()).thenReturn(true);
+        Mockito.doReturn(List.of(indexColumn)).when(index).getAttributeReferences(Mockito.any());
+        Mockito.doReturn(List.of(index)).when(table).getIndexes(monitor);
+        TestGenericIndexManager editor = Mockito.mock(TestGenericIndexManager.class, Mockito.CALLS_REAL_METHODS);
+        DBERegistry registry = Mockito.mock(DBERegistry.class);
+        Mockito.when(registry.getObjectManager(index.getClass(), SQLObjectEditor.class)).thenReturn(editor);
+        DBPPlatform platform = mockPlatform();
+        Mockito.when(platform.getEditorsRegistry()).thenReturn(registry);
+        try (var platformOverride = new StaticFieldOverride(DBWorkbench.class, "platform", platform)) {
+            String ddl = new AISchemaGeneratorImpl().generateSchema(monitor, null, options(false).withSendIndexes(true).build(), table);
+            Assertions.assertTrue(ddl.contains("CREATE INDEX \"order code idx\" ON orders (\"id\")"), ddl);
+            Assertions.assertEquals("order code idx", index.getName(), ddl);
+        }
+    }
+
+    @Test
+    public void compactIndexesDoNotRevealFilteredColumns() throws Exception {
+        DBSTable table = table("orders");
+        BasicSQLDialect dialect = Mockito.spy(BasicSQLDialect.INSTANCE);
+        Mockito.doReturn(DBPIdentifierCase.LOWER).when(dialect).storesUnquotedCase();
+        Mockito.when(table.getDataSource().getSQLDialect()).thenReturn(dialect);
+        DBSEntityAttribute idColumn = table.getAttributes(monitor).getFirst();
+        DBSEntityAttribute secretColumn = Mockito.mock(DBSEntityAttribute.class);
+        Mockito.when(secretColumn.getName()).thenReturn("secret_column");
+        Mockito.doReturn(table.getDataSource()).when(secretColumn).getDataSource();
+        Mockito.doReturn(List.of(idColumn, secretColumn)).when(table).getAttributes(monitor);
+        DBSTableIndex allowed = index(table, "orders_id_idx");
+        DBSTableIndex rejected = index(table, "orders_secret_idx");
+        DBSTableIndex expression = index(table, "orders_expression_idx");
+        DBSTableIndex predicate = index(table, "orders_predicate_idx");
+        DBSTableIndexColumn idRef = Mockito.mock(DBSTableIndexColumn.class);
+        Mockito.doReturn(idColumn).when(idRef).getAttribute();
+        DBSTableIndexColumn secretRef = Mockito.mock(DBSTableIndexColumn.class);
+        Mockito.doReturn(secretColumn).when(secretRef).getAttribute();
+        Mockito.doReturn(List.of(idRef)).when(allowed).getAttributeReferences(monitor);
+        Mockito.doReturn(List.of(secretRef)).when(rejected).getAttributeReferences(monitor);
+        Mockito.doReturn(List.of(Mockito.mock(DBSTableIndexColumn.class))).when(expression).getAttributeReferences(monitor);
+        Mockito.doReturn(List.of(idRef)).when(predicate).getAttributeReferences(monitor);
+        Mockito.doReturn(List.of(allowed, rejected, expression, predicate)).when(table).getIndexes(monitor);
+        TestIndexEditor editor = Mockito.mock(TestIndexEditor.class, Mockito.CALLS_REAL_METHODS);
+        editor.definitions = Map.of(
+            expression, "CREATE INDEX orders_expression_idx ON orders (lower(secret_column))",
+            predicate, "CREATE INDEX orders_predicate_idx ON orders (id) WHERE \"secret_column\" IS NOT NULL"
+        );
+        DBERegistry registry = Mockito.mock(DBERegistry.class);
+        Mockito.when(registry.getObjectManager(allowed.getClass(), SQLObjectEditor.class)).thenReturn(editor);
+        DBPPlatform platform = mockPlatform();
+        Mockito.when(platform.getEditorsRegistry()).thenReturn(registry);
+        try (var platformOverride = new StaticFieldOverride(DBWorkbench.class, "platform", platform)) {
+            AISchemaGenerationOptions options = options(false).withSendIndexes(true)
+                .withObjectFilter((progress, object) -> object != secretColumn).build();
+            String ddl = new AISchemaGeneratorImpl().generateSchema(monitor, null, options, table);
+            Assertions.assertTrue(ddl.contains("CREATE INDEX orders_id_idx"), ddl);
+            Assertions.assertFalse(ddl.contains("secret_column"), ddl);
+            Assertions.assertFalse(ddl.contains("orders_secret_idx"), ddl);
+            Assertions.assertFalse(ddl.contains("orders_expression_idx"), ddl);
+            Assertions.assertFalse(ddl.contains("orders_predicate_idx"), ddl);
+            Mockito.verify(editor, Mockito.never()).makeCreateCommand(Mockito.eq(rejected), Mockito.anyMap());
+            editor.definitions = Map.of(allowed,
+                "CREATE INDEX orders_id_idx ON orders (id) WHERE 'secret_column' <> '' /* secret_column */");
+            ddl = new AISchemaGeneratorImpl().generateSchema(monitor, null, options, table);
+            Assertions.assertTrue(ddl.contains("CREATE INDEX orders_id_idx"), ddl);
+            Mockito.when(secretColumn.getName()).thenReturn("date");
+            editor.definitions = Map.of(allowed, "CREATE INDEX orders_id_idx ON orders (id) WHERE date IS NOT NULL");
+            ddl = new AISchemaGeneratorImpl().generateSchema(monitor, null, options, table);
+            Assertions.assertFalse(ddl.contains("CREATE INDEX orders_id_idx"), ddl);
         }
     }
 
@@ -403,11 +513,12 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
     public abstract static class TestTableManager extends SQLTableManager<DBSTable, DBSObjectContainer> {
         private SQLForeignKeyManager<?, ?> foreignKeys;
         private DBSTableForeignKey extraKey;
-        private List<DBSTableIndex> excludedIndexes;
+        private Map<DBSTableIndex, DBSEntityConstraint> indexConstraints;
 
+        @Nullable
         @Override
-        protected boolean isIncludeIndexInDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSTableIndex index) throws DBException {
-            return (excludedIndexes == null || !excludedIndexes.contains(index)) && super.isIncludeIndexInDDL(monitor, index);
+        public DBSEntityConstraint getIndexConstraint(@NotNull DBRProgressMonitor monitor, @NotNull DBSTableIndex index) {
+            return indexConstraints == null ? null : indexConstraints.get(index);
         }
 
         @Override
@@ -447,7 +558,12 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
         }
     }
 
+    public abstract static class TestGenericIndexManager extends SQLIndexManager<JDBCTableIndex, JDBCTable> {
+    }
+
     public abstract static class TestIndexEditor extends SQLObjectEditor<DBSTableIndex, DBSTable> {
+        private Map<DBSTableIndex, String> definitions;
+
         @Override
         protected void addObjectCreateActions(
             @NotNull DBRProgressMonitor monitor,
@@ -458,7 +574,7 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
         ) {
             DBSTableIndex index = command.getObject();
             String ddl = "CREATE " + (index.isUnique() ? "UNIQUE " : "") + "INDEX " + index.getName() + " ON orders (id DESC)";
-            actions.add(new SQLDatabasePersistAction("Index", ddl));
+            actions.add(new SQLDatabasePersistAction("Index", definitions == null ? ddl : definitions.getOrDefault(index, ddl)));
         }
     }
 

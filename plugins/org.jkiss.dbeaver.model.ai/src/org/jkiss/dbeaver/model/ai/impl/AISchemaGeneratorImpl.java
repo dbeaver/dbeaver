@@ -33,10 +33,13 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
+import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.model.text.parser.TPToken;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -64,10 +67,11 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         if (!CommonUtils.isEmpty(tableDDL)) {
             DBStructUtils.addDDLLine(ddl, tableDDL);
         } else {
-            generateCustomDDL(monitor, executionContext, options, entity, ddl);
+            Set<DBSEntityConstraint> includedConstraints = new HashSet<>();
+            generateCustomDDL(monitor, executionContext, options, entity, ddl, includedConstraints);
             ddl.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER).append(GeneralUtils.getDefaultLineSeparator());
             if (options.sendIndexes() && entity instanceof DBSTable table) {
-                addIndexesDDL(monitor, options, table, ddl);
+                addIndexesDDL(monitor, options, table, includedConstraints, ddl);
             }
         }
 
@@ -85,21 +89,74 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         @NotNull DBRProgressMonitor monitor,
         @NotNull AISchemaGenerationOptions options,
         @NotNull DBSTable table,
+        @NotNull Set<DBSEntityConstraint> includedConstraints,
         @NotNull StringBuilder ddl
     ) throws DBException {
         Map<String, Object> ddlOptions = Map.of(DBPScriptObject.OPTION_SKIP_DROPS, true);
         SQLTableManager<?, ?> tableManager = options.sendConstraints()
             ? DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(table.getClass(), SQLTableManager.class)
             : null;
+        Set<String> excludedColumns = new HashSet<>();
+        for (DBSEntityAttribute column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
+            if (DBUtils.isHiddenObject(column) || !options.includesObject(monitor, column)) {
+                excludedColumns.add(column.getName());
+            }
+        }
         for (DBSTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
             if (DBUtils.isHiddenObject(index) || DBUtils.isInheritedObject(index) || !options.includesObject(monitor, index)) {
                 continue;
             }
-            if (tableManager != null && !tableManager.isIndexIncludedInDDL(monitor, index)) {
+            if (tableManager != null && includedConstraints.contains(tableManager.getIndexConstraint(monitor, index))) {
                 continue;
             }
-            DBStructUtils.addDDLLine(ddl, DBStructUtils.generateObjectDDL(monitor, index, ddlOptions, false));
+            if (!includesAttributes(monitor, options, index)) {
+                continue;
+            }
+            String indexDDL = DBStructUtils.generateObjectDDL(monitor, index, ddlOptions, false);
+            if (includesIndexDefinition(table.getDataSource(), excludedColumns, indexDDL)) {
+                DBStructUtils.addDDLLine(ddl, indexDDL);
+            }
         }
+    }
+
+    private boolean includesAttributes(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AISchemaGenerationOptions options,
+        @NotNull DBSEntityReferrer referrer
+    ) throws DBException {
+        for (DBSEntityAttributeRef reference : CommonUtils.safeCollection(referrer.getAttributeReferences(monitor))) {
+            DBSEntityAttribute attribute = reference.getAttribute();
+            if (attribute != null && (DBUtils.isHiddenObject(attribute) || !options.includesObject(monitor, attribute))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private boolean includesIndexDefinition(
+        @NotNull DBPDataSource dataSource,
+        @NotNull Set<String> excludedColumns,
+        @NotNull String indexDDL
+    ) {
+        if (excludedColumns.isEmpty()) {
+            return true;
+        }
+        // expressions and predicates can reference columns absent from index metadata
+        var context = SQLScriptParser.prepareSqlParserContext(
+            dataSource, dataSource.getSQLDialect(), DBWorkbench.getPlatform().getPreferenceStore(), indexDDL);
+        var scanner = context.getScanner();
+        scanner.setRange(context.getDocument(), 0, indexDDL.length());
+        for (TPToken token = scanner.nextToken(); !token.isEOF(); token = scanner.nextToken()) {
+            Object tokenType = token.getData();
+            if (tokenType instanceof SQLTokenType && tokenType != SQLTokenType.T_STRING
+                && tokenType != SQLTokenType.T_COMMENT && tokenType != SQLTokenType.T_NUMBER) {
+                String identifier = indexDDL.substring(scanner.getTokenOffset(), scanner.getTokenOffset() + scanner.getTokenLength());
+                if (excludedColumns.contains(DBUtils.getUnQuotedNormalizedIdentifier(dataSource.getSQLDialect(), identifier))) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     @Nullable
@@ -179,13 +236,13 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         }
     }
 
-    @NotNull
-    private String generateCustomDDL(
+    private void generateCustomDDL(
         @NotNull DBRProgressMonitor monitor,
         @Nullable DBCExecutionContext executionContext,
         @NotNull AISchemaGenerationOptions options,
         @NotNull DBSEntity table,
-        @NotNull StringBuilder ddl
+        @NotNull StringBuilder ddl,
+        @NotNull Set<DBSEntityConstraint> includedConstraints
     ) throws DBException {
         String name = options.useFQN() || requiresFqn(table, executionContext)
             ? DBUtils.getObjectFullName(table.getDataSource(), table, DBPEvaluationContext.DDL)
@@ -209,7 +266,8 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         List<? extends DBSEntityAttribute> attributes = table.getAttributes(monitor);
 
         if (attributes == null || attributes.isEmpty()) {
-            return ddl.append(");").toString();
+            ddl.append(");");
+            return;
         }
 
         StringJoiner joiner = new StringJoiner(",", " (", ") ");
@@ -226,7 +284,7 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         }
 
         if (options.sendConstraints()) {
-            describeTableKeys(monitor, options, table).forEach(joiner::add);
+            describeTableKeys(monitor, options, table, includedConstraints).forEach(joiner::add);
         }
 
         if (options.sendForeignKeys()) {
@@ -234,7 +292,6 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         }
 
         ddl.append(joiner);
-        return ddl.toString();
     }
 
     private static boolean requiresFqn(
@@ -254,7 +311,8 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
     private List<String> describeTableKeys(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AISchemaGenerationOptions options,
-        @NotNull DBSEntity entity
+        @NotNull DBSEntity entity,
+        @NotNull Set<DBSEntityConstraint> includedConstraints
     ) throws DBException {
         Collection<? extends DBSEntityConstraint> constraints = entity.getConstraints(monitor);
         if (CommonUtils.isEmpty(constraints)) {
@@ -263,12 +321,14 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
 
         List<String> keyDescriptions = new ArrayList<>(constraints.size());
         for (DBSEntityConstraint c : constraints) {
-            if (!options.includesObject(monitor, c)) {
+            if (!options.includesObject(monitor, c)
+                || c instanceof DBSEntityReferrer referrer && !includesAttributes(monitor, options, referrer)) {
                 continue;
             }
             String description = describeConstraint(monitor, c);
             if (!CommonUtils.isEmpty(description)) {
                 keyDescriptions.add(description);
+                includedConstraints.add(c);
             }
         }
 

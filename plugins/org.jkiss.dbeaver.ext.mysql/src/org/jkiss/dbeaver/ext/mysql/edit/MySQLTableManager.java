@@ -170,6 +170,13 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
         }
     }
 
+    @Nullable
+    @Override
+    public MySQLTableConstraint getIndexConstraint(@NotNull DBRProgressMonitor monitor, @NotNull DBSTableIndex index)
+            throws DBException {
+        return ((MySQLTableIndex) index).getTable().getUniqueKey(monitor, index.getName());
+    }
+
     @Override
     protected boolean isIncludeIndexInDDL(DBRProgressMonitor monitor, DBSTableIndex index) throws DBException {
         return !((MySQLTableIndex) index).isUniqueKeyIndex(monitor) && super.isIncludeIndexInDDL(monitor, index);

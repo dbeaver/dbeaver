@@ -399,8 +399,9 @@ public abstract class SQLTableManager<OBJECT_TYPE extends DBSEntity, CONTAINER_T
         return !skipObject(constraint);
     }
 
-    public boolean isIndexIncludedInDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSTableIndex index) throws DBException {
-        return isIncludeIndexInDDL(monitor, index);
+    @Nullable
+    public DBSEntityConstraint getIndexConstraint(@NotNull DBRProgressMonitor monitor, @NotNull DBSTableIndex index) throws DBException {
+        return null;
     }
 
     protected boolean isIncludeIndexInDDL(DBRProgressMonitor monitor, DBSTableIndex index) throws DBException {

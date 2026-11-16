@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -58,12 +57,6 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends AbstractTableIndex, TA
 
         // Create index
         final String indexName = DBUtils.getQuotedIdentifier(index.getDataSource(), index.getName());
-        if (index instanceof DBPNamedObject2) {
-            ((DBPNamedObject2) index).setName(indexName);
-        } else {
-            log.error("Cannot set index name");
-        }
-
         final String tableName = DBUtils.getEntityScriptName(table, options);
 
         StringBuilder decl = new StringBuilder(40);
