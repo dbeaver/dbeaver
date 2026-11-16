@@ -43,6 +43,10 @@ public class DDProjectUpdateHandler extends DDProjectHandler<DDProjectSynchroniz
         return new DDProjectSynchronizationJob(project);
     }
 
+    public void synchronizeProject(@NotNull DBPProject project) {
+        scheduleJob(project, new DDProjectSynchronizationJob(project));
+    }
+
     @Override
     protected void onSuccess(@NotNull DBPProject project, @NotNull DDProjectSynchronizationJob job) {
         var status = job.getOperationResult();

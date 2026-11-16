@@ -78,7 +78,7 @@ abstract class DDProjectHandler<J extends Job> extends AbstractHandler {
         return NLS.bind(DDTrackingUIMessages.project_sync_conflict_project, project.getName());
     }
 
-    private void scheduleJob(@NotNull DBPProject project, @NotNull J job) {
+    protected void scheduleJob(@NotNull DBPProject project, @NotNull J job) {
         scheduleBackgroundJob(job, status -> {
             if (status.isOK()) {
                 onSuccess(project, job);

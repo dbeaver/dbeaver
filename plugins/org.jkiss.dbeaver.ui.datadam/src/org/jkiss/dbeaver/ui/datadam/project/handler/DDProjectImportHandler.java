@@ -109,7 +109,7 @@ public class DDProjectImportHandler extends AbstractHandler {
     }
 
     @NotNull
-    private IStatus importProjects(@NotNull List<DDSharedProject> selected, @NotNull DBRProgressMonitor monitor) {
+    public IStatus importProjects(@NotNull List<DDSharedProject> selected, @NotNull DBRProgressMonitor monitor) {
         ProjectJobBatchResult<?> result = uiManager.importProjects(selected, monitor);
         UIUtils.asyncExec(() -> {
             if (!result.canceled()) {

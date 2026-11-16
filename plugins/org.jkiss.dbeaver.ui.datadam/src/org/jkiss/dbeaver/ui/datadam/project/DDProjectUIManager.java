@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.DDDesktopTokenUIManager;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
+import org.jkiss.dbeaver.ui.datadam.project.event.DDProjectEventListener;
 import org.jkiss.dbeaver.ui.datadam.project.job.*;
 import org.jkiss.dbeaver.ui.datadam.project.navigator.DDProjectSyncPropertyTester;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorContent;
@@ -63,7 +64,7 @@ public class DDProjectUIManager {
     private final DDProjectManager projectManager = DDProjectManager.getInstance();
 
     private DDProjectUIManager() {
-        DDSharedProjectEventsServiceDesktop.getInstance().subscribe(new DDProjectEventListener());
+        DDSharedProjectEventsServiceDesktop.getInstance().subscribe(new DDProjectEventListener(this));
         accessService.addKeyBundleListener(this::refreshProjectVisibility);
         accessService.addAccessListener(new DDDesktopAccessListener() {
             @Override

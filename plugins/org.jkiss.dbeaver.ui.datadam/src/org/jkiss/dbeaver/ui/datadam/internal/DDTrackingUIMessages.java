@@ -90,6 +90,12 @@ public class DDTrackingUIMessages extends NLS {
     public static String project_sync_unbind_job;
     public static String project_sync_unbind_success;
     public static String project_sync_unbind_failed;
+    public static String project_sync_deleted_title;
+    public static String project_sync_deleted_message;
+    public static String project_sync_deleted_delete_local;
+    public static String project_sync_deleted_keep_local;
+    public static String project_sync_deleted_active_message;
+    public static String project_sync_deleted_failed;
     public static String project_sync_import_list_job;
     public static String project_sync_import_list_failed;
     public static String project_sync_import_job;
