@@ -1480,11 +1480,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         if (container == null || container.getDataSource() == null) {
             return name;
         }
-        if (mappingType == DatabaseMappingType.create
-            || (mappingType == DatabaseMappingType.unspecified && skipCaseChanging)) {
-            return DatabaseTransferUtils.getTransformedName(container.getDataSource(), name, skipCaseChanging);
-        }
-        return DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
+        return DatabaseTransferUtils.getTransformedTargetName(
+            container.getDataSource(),
+            name,
+            mappingType,
+            skipCaseChanging);
     }
 
     protected void mapColumnsAndTable(DatabaseMappingContainer mapping) {

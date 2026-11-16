@@ -357,7 +357,12 @@ public class DatabaseMappingContainer implements DatabaseMappingObject {
                 if (!CommonUtils.isEmpty(targetName)) {
                     DBSObjectContainer objectContainer = consumerSettings.getContainer();
                     if (objectContainer != null) {
-                        DBSObject child = objectContainer.getChild(new VoidProgressMonitor(), targetName);
+                        // Target name may be persisted quoted to preserve its case. Container lookup expects a raw name.
+                        DBPDataSource dataSource = objectContainer.getDataSource();
+                        String targetNameForSearch = dataSource == null
+                            ? targetName
+                            : DBUtils.getUnQuotedIdentifier(dataSource, targetName);
+                        DBSObject child = objectContainer.getChild(new VoidProgressMonitor(), targetNameForSearch);
                         if (child instanceof DBSDataManipulator) {
                             target = (DBSDataManipulator) child;
                         }

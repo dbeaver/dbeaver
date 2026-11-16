@@ -235,6 +235,9 @@ public class DatabaseTransferUtils {
         String tableName;
         if (containerMapping.getMappingType() == DatabaseMappingType.create) {
             tableName = getTransformedName(dataSource, containerMapping.getTargetName(), false);
+        } else if (containerMapping.getMappingType() == DatabaseMappingType.recreate && containerMapping.getTarget() != null) {
+            // Recreated table must keep the name it already has in the target database
+            tableName = containerMapping.getTargetName();
         } else {
             tableName = DBObjectNameCaseTransformer.transformName(dataSource, containerMapping.getTargetName());
         }
@@ -348,6 +351,35 @@ public class DatabaseTransferUtils {
         }
         log.debug("Can't transform target attribute name");
         return targetName;
+    }
+
+    /**
+     * Transforms a target table name according to the mapping type.
+     * Names derived from quoted source names keep their original case and are quoted if needed.
+     * Existing and recreated tables already have a real name in the target database, so such names are kept as is.
+     *
+     * @param dataSource for preferences and dialect info
+     * @param targetName name for transformation
+     * @param mappingType target mapping type
+     * @param skipCaseChanging true if we do not want to change the name case of the original name
+     * @return transformed target name
+     */
+    @NotNull
+    public static String getTransformedTargetName(
+        @NotNull DBPDataSource dataSource,
+        @NotNull String targetName,
+        @NotNull DatabaseMappingType mappingType,
+        boolean skipCaseChanging
+    ) {
+        if (mappingType == DatabaseMappingType.create) {
+            return getTransformedName(dataSource, targetName, skipCaseChanging);
+        }
+        if (skipCaseChanging) {
+            return mappingType == DatabaseMappingType.unspecified
+                ? getTransformedName(dataSource, targetName, true)
+                : targetName;
+        }
+        return DBObjectNameCaseTransformer.transformName(dataSource, targetName);
     }
 
     private static void getTableFullName(
@@ -595,11 +627,11 @@ public class DatabaseTransferUtils {
     }
 
     @NotNull
-    private static String getTableFinalName(
+    static String getTableFinalName(
         @NotNull String targetName,
         @NotNull Class<? extends DBSObject> tableClass,
         @Nullable DBSEntity table,
-        boolean extraTransform
+        boolean newTable
     ) throws DBException {
         if (table == null) {
             throw new DBException("Internal error - target table not set");
@@ -608,10 +640,11 @@ public class DatabaseTransferUtils {
             return targetName;
         }
         String tableFinalName;
-        if (extraTransform) {
+        if (newTable) {
             tableFinalName = getTransformedName(table.getDataSource(), targetName, false);
         } else {
-            tableFinalName = DBObjectNameCaseTransformer.transformName(table.getDataSource(), targetName);
+            // Recreated table must keep the name it already has in the target database
+            tableFinalName = targetName;
         }
         if (table instanceof DBPNamedObject2 namedObject2 && tableFinalName != null) {
             namedObject2.setName(tableFinalName);
