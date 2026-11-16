@@ -27,10 +27,6 @@ public class AIConstants {
 
     public static final String AI_COMPLETION_MAX_CHOICES = "ai.completion.maxChoices";
     public static final String AI_RESPONSE_LANGUAGE = "ai.language";
-    public static final String AI_SAMPLE_ROWS_COUNT = "ai.sampleRowsCount";
-    public static final String AI_MAX_SAMPLE_ROWS_COUNT = "ai.maxSampleRowsCount";
-    public static final int DEFAULT_SAMPLE_DATA_ROW_COUNT = 10;
-    public static final int DEFAULT_MAX_SAMPLE_ROWS_COUNT = 200;
 
     // Metadata send default properties
 

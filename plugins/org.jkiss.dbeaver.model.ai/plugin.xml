@@ -185,21 +185,6 @@
             <parameter name="format" type="string" defaultValue="csv" validValuesProvider="org.jkiss.dbeaver.model.ai.functions.AITextExportFormatValueProvider" description="Output text format ID"/>
         </function>
 
-        <function
-            id="readTableData"
-            legacyId="readTableSampleRows"
-            enabledByDefault="true"
-            name="Read table data"
-            type="INFORMATION"
-            class="org.jkiss.dbeaver.model.ai.functions.AIFunctionReadTableData"
-            categoryId="execute.sql"
-            defaultAllowMode="ASK"
-            description="Returns first rowCount rows of table in specified format."
-            userDescription="Returns first rows of table in specified format.">
-            <parameter name="table" required="true" type="string" description="Fully qualified table name (with preceding catalog or/and schema names)"/>
-            <parameter name="rowCount" type="integer" description="Number of rows. Defaults to the configured sample row count."/>
-            <parameter name="format" type="string" defaultValue="csv" validValuesProvider="org.jkiss.dbeaver.model.ai.functions.AITextExportFormatValueProvider" description="Output text format"/>
-        </function>
     </extension>
 
     <!-- AISyncUnit sync is disabled for now, see pro#9577. Class kept, just not registered. -->

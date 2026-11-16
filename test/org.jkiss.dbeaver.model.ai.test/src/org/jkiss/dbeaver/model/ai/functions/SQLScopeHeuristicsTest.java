@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai.functions;
 
+import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
@@ -33,8 +35,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Stream;
@@ -68,21 +70,49 @@ class SQLScopeHeuristicsTest {
             "payroll".equalsIgnoreCase(invocation.getArgument(1)) ? table : null);
         SQLQuery query = Mockito.mock(SQLQuery.class);
         Mockito.when(query.getText()).thenReturn("SELECT * FROM private.payroll");
-        Method verify = ExecuteSQLFunction.class.getDeclaredMethod(
-            "verifyObjectsInScope", SQLQuery.class, DBCExecutionContext.class, AIDatabaseContext.class);
-        verify.setAccessible(true);
-        AIFunctionResult denied = (AIFunctionResult) verify.invoke(new ExecuteSQLFunction(), query, executionContext, context);
+        ExecuteSQLFunction function = new ExecuteSQLFunction();
+        AIFunctionResult denied = function.verifyObjectsInScope(query, executionContext, context);
         Assertions.assertTrue(denied.getValue().toString().contains("out of allowed scope"));
         Mockito.verify(schema).getChild(Mockito.any(), Mockito.anyString());
 
         Mockito.doReturn(schema).when(defaults).getDefaultSchema();
-        Assertions.assertNull(verify.invoke(new ExecuteSQLFunction(), query, executionContext, context));
+        Assertions.assertNull(function.verifyObjectsInScope(query, executionContext, context));
 
         Mockito.when(query.getText()).thenReturn("some unrecognized command");
-        InvocationTargetException error = Assertions.assertThrows(InvocationTargetException.class,
-            () -> verify.invoke(new ExecuteSQLFunction(), query, executionContext, context));
-        Assertions.assertInstanceOf(DBException.class, error.getCause());
-        Assertions.assertTrue(error.getCause().getMessage().contains("Cannot determine database objects"));
+        DBException error = Assertions.assertThrows(DBException.class,
+            () -> function.verifyObjectsInScope(query, executionContext, context));
+        Assertions.assertTrue(error.getMessage().contains("Cannot determine database objects"));
+    }
+
+    @Test
+    void rejectsUnknownExplicitCatalogRatherThanUsingDefault() throws DBException {
+        DBPDataSource dataSource = Mockito.mock(DBPDataSource.class);
+        DBSInstance defaultInstance = Mockito.mock(DBSInstance.class);
+        DBSInstance selectedInstance = Mockito.mock(DBSInstance.class);
+        Mockito.when(dataSource.getDefaultInstance()).thenReturn(defaultInstance);
+        Mockito.when(selectedInstance.getName()).thenReturn("selected");
+        Mockito.doReturn(List.of(selectedInstance)).when(dataSource).getAvailableInstances();
+        Assertions.assertSame(defaultInstance, ExecuteSQLFunction.resolveInstance(dataSource, null));
+        Assertions.assertSame(selectedInstance, ExecuteSQLFunction.resolveInstance(dataSource, "selected"));
+        Assertions.assertThrows(DBException.class, () -> ExecuteSQLFunction.resolveInstance(dataSource, "unknown"));
+    }
+
+    @Test
+    void parsedCtesResolveOnlyPhysicalTablesInTheirScope() throws Exception {
+        for (QueryCase test : List.of(
+            query("CTE", "WITH recent AS (SELECT * FROM orders) SELECT * FROM recent", "orders"),
+            query("Qualified table", "WITH recent AS (SELECT * FROM orders) SELECT * FROM app.recent", "orders", "app.recent"),
+            query("Nested CTE", "SELECT * FROM (WITH recent AS (SELECT * FROM orders) SELECT * FROM recent) q JOIN recent ON true",
+                "orders", "recent"),
+            query("Non-recursive shadow", "WITH recent AS (SELECT * FROM recent) SELECT * FROM recent", "recent"),
+            query("Recursive CTE", "WITH RECURSIVE recent AS (SELECT * FROM orders UNION ALL SELECT * FROM recent) SELECT * FROM recent",
+                "orders")
+        )) {
+            Set<String> physicalTables = new HashSet<>();
+            ExecuteSQLFunction.traverseQueryTables(CCJSqlParserUtil.parse(test.sql()),
+                table -> physicalTables.add(table.getFullyQualifiedName()));
+            Assertions.assertEquals(test.expected(), physicalTables, test.label());
+        }
     }
 
     @Test

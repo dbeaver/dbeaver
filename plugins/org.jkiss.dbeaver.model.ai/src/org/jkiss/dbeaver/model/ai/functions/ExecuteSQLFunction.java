@@ -16,6 +16,13 @@
  */
 package org.jkiss.dbeaver.model.ai.functions;
 
+import net.sf.jsqlparser.parser.ASTNodeAccess;
+import net.sf.jsqlparser.parser.Node;
+import net.sf.jsqlparser.parser.SimpleNode;
+import net.sf.jsqlparser.schema.Table;
+import net.sf.jsqlparser.statement.Statement;
+import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.WithItem;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -54,6 +61,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
+import java.util.function.Consumer;
 
 public class ExecuteSQLFunction implements AIFunction {
     private static final Log log = Log.getLog(ExecuteSQLFunction.class);
@@ -80,6 +88,9 @@ public class ExecuteSQLFunction implements AIFunction {
         String catalog = CommonUtils.toString(parameters.get(AIFunctionParams.CATALOG_PARAM), null);
         String sqlQuery = CommonUtils.toString(parameters.get(SQL_PARAM));
         int maxRows = CommonUtils.toInt(parameters.get(MAX_ROWS_PARAM), 10);
+        if (maxRows <= 0) {
+            throw new DBException("Maximum row count must be greater than zero");
+        }
 
         if (CommonUtils.isEmptyTrimmed(sqlQuery)) {
             throw new DBException("Parameter '" + SQL_PARAM + "' not specified");
@@ -87,12 +98,7 @@ public class ExecuteSQLFunction implements AIFunction {
         DataTransferProcessorDescriptor processor = AIDataExportUtils.getProcessor(
             CommonUtils.toString(parameters.get(FORMAT_PARAM), "csv"));
 
-        DBSInstance dbsInstance = dataSource.getAvailableInstances()
-            .stream()
-            .filter(it -> it.getName().equals(catalog))
-            .findFirst()
-            .map(DBSInstance.class::cast)
-            .orElse(dataSource.getDefaultInstance());
+        DBSInstance dbsInstance = resolveInstance(dataSource, catalog);
 
         DBCExecutionContext executionContext = DBUtils.getOrOpenDefaultContext(dbsInstance, false);
 
@@ -109,6 +115,9 @@ public class ExecuteSQLFunction implements AIFunction {
             .filter(it -> it instanceof SQLQuery)
             .map(SQLQuery.class::cast)
             .toList();
+        if (scriptElements.size() > 1 && !processor.isAppendable()) {
+            throw new DBException("Format '" + processor.getAIFormatId() + "' supports only one SQL statement per call");
+        }
 
         SQLScriptContext scriptContext = new SQLScriptContext(
             null,
@@ -152,6 +161,7 @@ public class ExecuteSQLFunction implements AIFunction {
                 consumer,
                 log
             );
+            scriptProcessor.setMaxRows(maxRows);
 
             scriptProcessor.runScript(context.getMonitor());
             consumer.finishTransfer(context.getMonitor(), false);
@@ -164,7 +174,7 @@ public class ExecuteSQLFunction implements AIFunction {
     }
 
     @Nullable
-    private AIFunctionResult verifyObjectsInScope(
+    AIFunctionResult verifyObjectsInScope(
         @NotNull SQLQuery query,
         @NotNull DBCExecutionContext executionContext,
         @NotNull AIDatabaseContext aiDatabaseContext
@@ -224,7 +234,7 @@ public class ExecuteSQLFunction implements AIFunction {
             return new QueryTablesResolutionResult(resolvedObjects, unresolvedObjects);
         }
 
-        SQLSemanticUtils.traverseQueryForTableNodes(query.getStatement(), tableNode -> {
+        traverseQueryTables(query.getStatement(), tableNode -> {
             DBSObject object = SQLSemanticUtils.findObjectForTableNode(
                 new VoidProgressMonitor(),
                 executionContext,
@@ -240,6 +250,63 @@ public class ExecuteSQLFunction implements AIFunction {
         });
 
         return new QueryTablesResolutionResult(resolvedObjects, unresolvedObjects);
+    }
+
+    @NotNull
+    static DBSInstance resolveInstance(@NotNull DBPDataSource dataSource, @Nullable String catalog) throws DBException {
+        if (CommonUtils.isEmpty(catalog)) {
+            return dataSource.getDefaultInstance();
+        }
+        return dataSource.getAvailableInstances().stream()
+            .filter(instance -> instance.getName().equals(catalog))
+            .findFirst()
+            .orElseThrow(() -> new DBException("Catalog '" + catalog + "' not found"));
+    }
+
+    private record TableScope(@NotNull Node node, @NotNull Set<String> aliases) {
+    }
+
+    static void traverseQueryTables(@NotNull Statement statement, @NotNull Consumer<Table> onTable) {
+        Deque<TableScope> stack = new ArrayDeque<>();
+        stack.push(new TableScope(((ASTNodeAccess) statement).getASTNode(), Set.of()));
+        Set<Select> handledSelects = Collections.newSetFromMap(new IdentityHashMap<>());
+        Set<Table> handledTables = Collections.newSetFromMap(new IdentityHashMap<>());
+        while (!stack.isEmpty()) {
+            TableScope scope = stack.pop();
+            Node node = scope.node();
+            Set<String> aliases = scope.aliases();
+            Object value = node instanceof SimpleNode simpleNode ? simpleNode.jjtGetValue() : null;
+            if (value instanceof Select select && handledSelects.add(select)) {
+                Set<String> visibleAliases = new HashSet<>(aliases);
+                for (WithItem<?> item : CommonUtils.safeCollection(select.getWithItemsList())) {
+                    Set<String> definitionAliases = new HashSet<>(visibleAliases);
+                    if (item.isRecursive()) {
+                        definitionAliases.add(identifierKey(item.getAliasName()));
+                    }
+                    // CTE definitions have separate AST roots. Check their physical tables as well as the main query.
+                    if (item.getParenthesedStatement() instanceof ASTNodeAccess definition) {
+                        stack.push(new TableScope(definition.getASTNode(), definitionAliases));
+                    }
+                    visibleAliases.add(identifierKey(item.getAliasName()));
+                }
+                aliases = visibleAliases;
+            }
+            if (value instanceof Table table && handledTables.add(table)) {
+                boolean qualified = !CommonUtils.isEmpty(table.getSchemaName())
+                    || table.getDatabase() != null && !CommonUtils.isEmpty(table.getDatabase().getDatabaseName());
+                if (qualified || !aliases.contains(identifierKey(table.getName()))) {
+                    onTable.accept(table);
+                }
+            }
+            for (int i = node.jjtGetNumChildren() - 1; i >= 0; i--) {
+                stack.push(new TableScope(node.jjtGetChild(i), aliases));
+            }
+        }
+    }
+
+    @NotNull
+    private static String identifierKey(@NotNull String name) {
+        return name.startsWith("\"") || name.startsWith("`") || name.startsWith("[") ? name : name.toUpperCase(Locale.ROOT);
     }
 
     @NotNull
