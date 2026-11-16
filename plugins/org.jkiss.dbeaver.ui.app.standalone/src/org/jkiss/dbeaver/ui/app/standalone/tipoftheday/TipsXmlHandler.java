@@ -20,6 +20,8 @@ import org.eclipse.core.runtime.Platform;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.app.DBPPlatformDesktop;
+import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -105,8 +107,12 @@ public class TipsXmlHandler extends DefaultHandler {
 
     @NotNull
     public static InputStream openTipsFile() {
-        String language = System.getProperty("osgi.nl", Locale.getDefault().toString());
-        Locale tipsLocale = Locale.forLanguageTag(language.replace('_', '-'));
+        return openTipsFile(DBPPlatformDesktop.getInstance().getPlatformLanguage());
+    }
+
+    @NotNull
+    public static InputStream openTipsFile(@NotNull DBPPlatformLanguage language) {
+        Locale tipsLocale = Locale.forLanguageTag(language.getCode().replace('_', '-'));
         ResourceBundle.Control control = ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_DEFAULT);
         for (Locale locale : control.getCandidateLocales(TIPS_RESOURCE_BASE, tipsLocale)) {
             String resourceName = control.toBundleName(TIPS_RESOURCE_BASE, locale) + ".xml";
