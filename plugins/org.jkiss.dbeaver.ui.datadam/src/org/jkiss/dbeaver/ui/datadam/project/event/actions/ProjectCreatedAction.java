@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.datadam.project.event.actions;
 
-import com.dbeaver.datadam.dam.remote.api.model.DDSharedProjectEvent;
 import com.dbeaver.datadam.share.api.model.DDSharedProject;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -28,28 +27,29 @@ import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 import org.jkiss.dbeaver.ui.datadam.project.handler.DDProjectImportHandler;
 
 import java.util.List;
+import java.util.UUID;
 
 public class ProjectCreatedAction extends AbstractProjectEventJob {
-    public ProjectCreatedAction(@NotNull DDProjectUIManager uiManager, @NotNull DDSharedProjectEvent event) {
-        super(uiManager, event, DDTrackingUIMessages.project_sync_import_list_job,
+    public ProjectCreatedAction(@NotNull DDProjectUIManager uiManager, @NotNull UUID remoteProjectId) {
+        super(uiManager, remoteProjectId, DDTrackingUIMessages.project_sync_import_list_job,
             DDTrackingUIMessages.project_sync_import_list_failed);
     }
 
     @NotNull
     @Override
     protected IStatus perform(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (uiManager.getProjectManager().isCreatingProject(event.projectId())) {
-            log.debug("Ignoring shared project creation: project is being shared locally: " + event.projectId());
+        if (uiManager.getProjectManager().isCreatingProject(remoteProjectId)) {
+            log.debug("Ignoring shared project creation: project is being shared locally: " + remoteProjectId);
             return Status.OK_STATUS;
         }
         if (findLocalProject() != null) {
-            log.debug("Ignoring shared project creation: project is already imported: " + event.projectId());
+            log.debug("Ignoring shared project creation: project is already imported: " + remoteProjectId);
             return Status.OK_STATUS;
         }
         DDSharedProject remote = uiManager.getProjectManager().getRemoteProjects().stream()
-            .filter(project -> project.id().equals(event.projectId())).findFirst().orElse(null);
+            .filter(project -> project.id().equals(remoteProjectId)).findFirst().orElse(null);
         if (remote == null) {
-            log.debug("Ignoring shared project creation: remote project not found: " + event.projectId());
+            log.debug("Ignoring shared project creation: remote project not found: " + remoteProjectId);
             return Status.CANCEL_STATUS;
         }
         if (monitor.isCanceled()) {

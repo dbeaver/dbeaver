@@ -50,6 +50,7 @@ public final class DDSharedProjectEventsServiceDesktop implements DDSharedProjec
 
     @Override
     public void projectChanged(@NotNull DDSharedProjectEvent event) {
+        log.debug("Received shared project event " + event.change() + " for project " + event.projectId());
         for (Listener listener : listeners) {
             try {
                 listener.subscriber.onEvent(event);

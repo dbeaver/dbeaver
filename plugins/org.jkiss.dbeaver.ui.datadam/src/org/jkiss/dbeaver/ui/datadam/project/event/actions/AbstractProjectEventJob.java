@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.datadam.project.event.actions;
 
-import com.dbeaver.datadam.dam.remote.api.model.DDSharedProjectEvent;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
@@ -32,21 +31,23 @@ import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 
+import java.util.UUID;
+
 public abstract class AbstractProjectEventJob extends AbstractJob {
     protected final Log log = Log.getLog(getClass());
     protected final DDProjectUIManager uiManager;
-    protected final DDSharedProjectEvent event;
+    protected final UUID remoteProjectId;
     private final String failureMessage;
 
     protected AbstractProjectEventJob(
         @NotNull DDProjectUIManager uiManager,
-        @NotNull DDSharedProjectEvent event,
+        @NotNull UUID remoteProjectId,
         @NotNull String name,
         @NotNull String failureMessage
     ) {
         super(name);
         this.uiManager = uiManager;
-        this.event = event;
+        this.remoteProjectId = remoteProjectId;
         this.failureMessage = failureMessage;
     }
 
@@ -67,7 +68,7 @@ public abstract class AbstractProjectEventJob extends AbstractJob {
     @Nullable
     protected LocalProjectInfo findLocalProject() throws DBException {
         return uiManager.getLocalProjects().stream()
-            .filter(local -> event.projectId().equals(local.remoteProjectId()))
+            .filter(local -> remoteProjectId.equals(local.remoteProjectId()))
             .findFirst().orElse(null);
     }
 

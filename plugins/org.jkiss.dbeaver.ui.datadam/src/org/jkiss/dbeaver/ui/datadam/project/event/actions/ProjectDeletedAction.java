@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.datadam.project.event.actions;
 
-import com.dbeaver.datadam.dam.remote.api.model.DDSharedProjectEvent;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
@@ -32,9 +31,11 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 
+import java.util.UUID;
+
 public class ProjectDeletedAction extends AbstractProjectEventJob {
-    public ProjectDeletedAction(@NotNull DDProjectUIManager uiManager, @NotNull DDSharedProjectEvent event) {
-        super(uiManager, event, DDTrackingUIMessages.project_sync_deleted_title,
+    public ProjectDeletedAction(@NotNull DDProjectUIManager uiManager, @NotNull UUID remoteProjectId) {
+        super(uiManager, remoteProjectId, DDTrackingUIMessages.project_sync_deleted_title,
             DDTrackingUIMessages.project_sync_deleted_failed);
     }
 
@@ -43,7 +44,7 @@ public class ProjectDeletedAction extends AbstractProjectEventJob {
     protected IStatus perform(@NotNull DBRProgressMonitor monitor) throws DBException {
         LocalProjectInfo local = findLocalProject();
         if (local == null) {
-            log.debug("Ignoring shared project deletion: local project not found: " + event.projectId());
+            log.debug("Ignoring shared project deletion: local project not found: " + remoteProjectId);
             return Status.OK_STATUS;
         }
         DBPProject project = local.project();

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.datadam.project.event;
 import com.dbeaver.datadam.dam.remote.api.model.DDSharedProjectEvent;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.rpc.DDSharedProjectEventSource;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 import org.jkiss.dbeaver.ui.datadam.project.event.actions.AbstractProjectEventJob;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.ui.datadam.project.event.actions.ProjectCreatedAction;
 import org.jkiss.dbeaver.ui.datadam.project.event.actions.ProjectDeletedAction;
 
 public class DDProjectEventListener implements DDSharedProjectEventSource.Subscriber {
+    private static final Log log = Log.getLog(DDProjectEventListener.class);
     private final DDProjectUIManager uiManager;
 
     public DDProjectEventListener(@NotNull DDProjectUIManager uiManager) {
@@ -35,21 +37,23 @@ public class DDProjectEventListener implements DDSharedProjectEventSource.Subscr
 
     @Override
     public void projectCreated(@NotNull DDSharedProjectEvent event) throws DBException {
-        schedule(new ProjectCreatedAction(uiManager, event));
+        schedule(new ProjectCreatedAction(uiManager, event.projectId()));
     }
 
     @Override
     public void projectMetadataUpdated(@NotNull DDSharedProjectEvent event) throws DBException {
+        log.debug("Shared project metadata updated: " + event.projectId());
+        // Metadata is currently fetched through the client whenever it is needed.
     }
 
     @Override
     public void projectConfigurationUpdated(@NotNull DDSharedProjectEvent event) throws DBException {
-        schedule(new ProjectConfigurationUpdatedAction(uiManager, event));
+        schedule(new ProjectConfigurationUpdatedAction(uiManager, event.projectId()));
     }
 
     @Override
     public void projectDeleted(@NotNull DDSharedProjectEvent event) throws DBException {
-        schedule(new ProjectDeletedAction(uiManager, event));
+        schedule(new ProjectDeletedAction(uiManager, event.projectId()));
     }
 
     private void schedule(@NotNull AbstractProjectEventJob job) {
