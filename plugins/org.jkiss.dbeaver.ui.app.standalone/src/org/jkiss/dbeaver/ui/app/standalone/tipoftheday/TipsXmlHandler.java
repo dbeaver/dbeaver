@@ -105,8 +105,10 @@ public class TipsXmlHandler extends DefaultHandler {
 
     @NotNull
     public static InputStream openTipsFile() {
+        String language = System.getProperty("osgi.nl", Locale.getDefault().toString());
+        Locale tipsLocale = Locale.forLanguageTag(language.replace('_', '-'));
         ResourceBundle.Control control = ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_DEFAULT);
-        for (Locale locale : control.getCandidateLocales(TIPS_RESOURCE_BASE, Locale.getDefault())) {
+        for (Locale locale : control.getCandidateLocales(TIPS_RESOURCE_BASE, tipsLocale)) {
             String resourceName = control.toBundleName(TIPS_RESOURCE_BASE, locale) + ".xml";
             InputStream stream = TipsXmlHandler.class.getResourceAsStream(resourceName);
             if (stream != null) {
