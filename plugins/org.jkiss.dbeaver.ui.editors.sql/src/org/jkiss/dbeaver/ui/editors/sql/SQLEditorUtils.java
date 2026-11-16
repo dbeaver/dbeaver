@@ -508,10 +508,12 @@ public class SQLEditorUtils {
     }
 
     /**
-     * Checks whether SQL syntax parser should be applied for the given editor and input
+     * Checks whether SQL syntax parser should be applied for the given editor and input.
+     * The editor's document is authoritative for the size: the on-disk size of a file-backed
+     * document is stale while it has unsaved changes.
      */
     public static boolean isSQLSyntaxParserApplied(@NotNull SQLEditorBase editor, @Nullable IEditorInput input) {
-        return !editor.isBigDocument() && isSQLSyntaxParserApplied(input);
+        return !editor.isBigDocument() && isSQLSyntaxParserEnabled(input);
     }
 
     /**

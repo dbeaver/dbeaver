@@ -164,6 +164,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     private int lastQueryErrorPosition = -1;
     private IDocument bigDocumentListenerDocument;
     private volatile boolean bigDocument;
+    private volatile long bigDocumentTransitionGeneration;
     private volatile long bigDocumentByteLength = -1;
     private volatile IDocument bigDocumentByteLengthDocument;
     private volatile Charset bigDocumentCharset;
@@ -171,6 +172,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         @Override
         public void documentAboutToBeChanged(DocumentEvent event) {
             if (bigDocumentByteLength >= 0 && event.getDocument() == bigDocumentByteLengthDocument) {
+                if (event.getDocument().getLength() > getBigScriptFileLengthBoundary()) {
+                    // Already above the threshold by character count, so the exact encoded length
+                    // is not needed. Do not encode a huge range being replaced or deleted.
+                    bigDocumentByteLength = -1;
+                    return;
+                }
                 try {
                     bigDocumentByteLength -= getEncodedLength(
                         event.getDocument().get(event.getOffset(), event.getLength()),
@@ -185,7 +192,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         @Override
         public void documentChanged(DocumentEvent event) {
             if (bigDocumentByteLength >= 0 && event.getDocument() == bigDocumentByteLengthDocument) {
-                bigDocumentByteLength += getEncodedLength(event.getText(), bigDocumentCharset);
+                if (event.getDocument().getLength() > getBigScriptFileLengthBoundary()) {
+                    // The character count already exceeds the threshold; the cache is rebuilt
+                    // if the document shrinks back into the ambiguous range.
+                    bigDocumentByteLength = -1;
+                } else {
+                    bigDocumentByteLength += getEncodedLength(event.getText(), bigDocumentCharset);
+                }
             }
             checkBigDocumentTransition();
         }
@@ -304,26 +317,26 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
      * Checks whether the editor document is large enough to disable expensive SQL editor services.
      * Unlike {@link #isBigScript(IEditorInput)}, this also covers SQL consoles and unsaved scripts
      * which have no associated file.
+     * <p>
+     * When a document is installed it is the only source of truth: the on-disk file size may be stale
+     * (unsaved edits) and must not keep the editor in large-document mode after most of the content is
+     * deleted. {@link #isBigScript(IEditorInput)} is used only while the editor has no document yet.
      */
     public boolean isBigDocument() {
         long boundary = getBigScriptFileLengthBoundary();
         IDocument document = getDocument();
-        if (document != null) {
-            long documentLength = document.getLength();
-            if (documentLength > boundary) {
-                return true;
-            }
-            // The boundary is expressed in bytes. For in-memory documents use the encoded
-            // length in the ambiguous range; below boundary/4 even UTF-8 cannot exceed it.
-            if (documentLength > boundary / 4
-                && EditorUtils.getLocalFileFromInput(getEditorInput()) == null) {
-                long encodedLength = getDocumentByteLength(document);
-                if (encodedLength > boundary) {
-                    return true;
-                }
-            }
+        if (document == null) {
+            // The editor is not initialized yet; the only available estimate is the on-disk size.
+            return isBigScript(getEditorInput(), boundary);
         }
-        return isBigScript(getEditorInput(), boundary);
+        long documentLength = document.getLength();
+        if (documentLength > boundary) {
+            return true;
+        }
+        // The boundary is expressed in bytes. For the ambiguous range (above boundary/4 even an
+        // encoding with 4 bytes per character cannot exceed the boundary) measure the encoded
+        // length of the current document.
+        return documentLength > boundary / 4 && getDocumentByteLength(document) > boundary;
     }
 
     private long getDocumentByteLength(@NotNull IDocument document) {
@@ -346,11 +359,23 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
 
     @NotNull
     private Charset getDocumentCharset() {
-        if (getEditorInput() instanceof StringEditorInput stringInput) {
+        IEditorInput editorInput = getEditorInput();
+        if (editorInput instanceof StringEditorInput stringInput) {
             try {
                 return Charset.forName(stringInput.getStorage().getCharset());
             } catch (Exception e) {
                 log.debug("Error detecting document charset", e);
+            }
+        } else {
+            // Measure file-backed documents with the charset used to load/save them, not with the
+            // platform default, so that the byte length matches the size the file will have.
+            IFile file = EditorUtils.getFileFromInput(editorInput);
+            if (file != null) {
+                try {
+                    return Charset.forName(file.getCharset());
+                } catch (Exception e) {
+                    log.debug("Error detecting file charset", e);
+                }
             }
         }
         return Charset.forName(GeneralUtils.getDefaultFileEncoding());
@@ -378,6 +403,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         bigDocumentByteLength = -1;
         bigDocumentCharset = null;
         bigDocument = isBigDocument();
+        // A pending transition callback belongs to the previous document and must not reconfigure
+        // services of the newly installed one.
+        bigDocumentTransitionGeneration++;
     }
 
     private void detachBigDocumentListener() {
@@ -388,6 +416,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
         bigDocumentByteLengthDocument = null;
         bigDocumentByteLength = -1;
         bigDocumentCharset = null;
+        bigDocumentTransitionGeneration++;
     }
 
     private void checkBigDocumentTransition() {
@@ -396,13 +425,16 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
             return;
         }
         bigDocument = isBig;
+        final long transitionGeneration = ++bigDocumentTransitionGeneration;
         // Services which are configured eagerly (parser, syntax rules, auto-activation) must be re-applied
         // when the document crosses the large-document threshold. Defer this because reloading the syntax
         // rules must not run inside a document change notification.
         UIUtils.asyncExec(() -> {
-            if (isDisposed() || getDocument() == null || isBigDocument() != bigDocument) {
-                // The editor is closing or the document size changed again;
-                // the newest transition will do the work.
+            if (isDisposed() || getDocument() == null
+                || transitionGeneration != bigDocumentTransitionGeneration
+                || isBigDocument() != bigDocument) {
+                // The editor is closing, the document was replaced or the document size crossed the
+                // threshold again; only the callback of the latest transition must do the work.
                 return;
             }
             if (occurrencesHighlighter != null) {
@@ -1044,7 +1076,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements
     }
 
     public void reloadSyntaxRules() {
-        if (SQLEditorUtils.isSQLSyntaxParserApplied(this.getEditorInput()) && this.isAdvancedHighlightingEnabled()) {
+        if (SQLEditorUtils.isSQLSyntaxParserApplied(this) && this.isAdvancedHighlightingEnabled()) {
             if (this.backgroundParsingJob == null) {
                 this.backgroundParsingJob = new SQLBackgroundParsingJob(this);
             }
