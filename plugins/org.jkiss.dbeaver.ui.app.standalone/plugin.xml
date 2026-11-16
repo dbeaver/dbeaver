@@ -400,6 +400,10 @@
         <key commandId="org.eclipse.ui.edit.text.join.lines" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SHIFT+J"/>
         <key commandId="org.eclipse.ui.help.dynamicHelp" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F1"/>
 
+        <!-- Override the global F2 breakpoint-label binding while preserving text-editor tooltips. -->
+        <key commandId="org.eclipse.ui.edit.rename" contextId="org.eclipse.ui.contexts.window" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F2"/>
+        <key commandId="org.eclipse.ui.edit.text.showInformation" contextId="org.eclipse.ui.textEditorScope" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F2"/>
+
         <key commandId="org.eclipse.text.quicksearch.commands.quicksearchCommand" contextId="org.eclipse.ui.contexts.window" sequence="CTRL+ALT+SHIFT+F" schemeId="org.jkiss.dbeaver.defaultKeyScheme"/>
         
         <!-- Minimize window on macOS -->
