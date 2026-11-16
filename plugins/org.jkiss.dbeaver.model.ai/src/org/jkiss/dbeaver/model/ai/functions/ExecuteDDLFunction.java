@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.ai.functions;
 import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.Alter;
+import net.sf.jsqlparser.statement.alter.AlterOperation;
 import net.sf.jsqlparser.statement.alter.AlterSession;
 import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
@@ -131,6 +132,11 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
                 }
                 List<String> action = tokenize(executionContext.getDataSource().getSQLDialect(), expression.toString());
                 verifySchemaDestinations(context, executionContext, action);
+                boolean partition = verifyPartitionTargets(context, executionContext, action);
+                if (expression.getOperation() == AlterOperation.UNSPECIFIC && !partition
+                    && !(action.size() > 1 && action.getFirst().equalsIgnoreCase("SET") && action.get(1).equalsIgnoreCase("SCHEMA"))) {
+                    verifyDatasourceScope(context);
+                }
                 verifyDefinitionExpressions(context, executionContext, expression.toString(), references);
             }
         } else if (statement instanceof Truncate truncate) {
@@ -189,6 +195,9 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
         }
         verifyDefinitionObject(context, executionContext, target.name(), type, command.equals("CREATE"));
         verifySchemaDestinations(context, executionContext, tokens);
+        if (command.equals("ALTER")) {
+            verifyPartitionTargets(context, executionContext, tokens.subList(target.end(), tokens.size()));
+        }
         if (command.equals("DROP") || command.equals("TRUNCATE")) {
             int end = target.end();
             while (end < tokens.size() && tokens.get(end).equals(",")) {
@@ -244,5 +253,35 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
         for (String source : findTextObjects(tokens, Set.of("FROM", "JOIN"))) {
             verifyObject(context, executionContext, source);
         }
+    }
+
+    private boolean verifyPartitionTargets(
+        @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull List<String> action
+    ) throws DBException {
+        String command = firstKeyword(action);
+        int start = -1;
+        if (Set.of("ATTACH", "DETACH").contains(command) && action.size() > 1 && action.get(1).equalsIgnoreCase("PARTITION")) {
+            start = 2;
+        } else if (command.equals("EXCHANGE") || command.equals("SWITCH")) {
+            for (int i = 1; i < action.size(); i++) {
+                if (command.equals("SWITCH") && action.get(i).equalsIgnoreCase("TO")) {
+                    start = i + 1;
+                    break;
+                }
+                if (command.equals("EXCHANGE") && i + 1 < action.size()
+                    && action.get(i).equalsIgnoreCase("WITH") && action.get(i + 1).equalsIgnoreCase("TABLE")) {
+                    start = i + 2;
+                    break;
+                }
+            }
+        } else {
+            return false;
+        }
+        Identifier target = start < 0 ? null : readIdentifier(action, start);
+        if (target == null) {
+            throw new DBException("Cannot determine the referenced partition table");
+        }
+        verifyObject(context, executionContext, target.name());
+        return true;
     }
 }

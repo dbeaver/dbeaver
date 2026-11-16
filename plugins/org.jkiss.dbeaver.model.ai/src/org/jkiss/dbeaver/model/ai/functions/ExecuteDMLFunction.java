@@ -83,6 +83,10 @@ public class ExecuteDMLFunction extends ExecuteSQLFunction {
         List<String> tokens = tokenize(executionContext.getDataSource().getSQLDialect(), queryText);
         requireStatement(Set.of("INSERT", "UPDATE", "DELETE", "MERGE", "REPLACE", "UPSERT", "CALL", "COPY", "LOAD")
             .contains(firstKeyword(tokens)), SQLQueryCategory.DML);
+        if (Set.of("COPY", "LOAD").contains(firstKeyword(tokens))) {
+            // File/program endpoints are not bounded by a table-level database scope.
+            verifyDatasourceScope(context);
+        }
         if (firstKeyword(tokens).equals("CALL")) {
             Identifier routine = readIdentifier(tokens, 1);
             if (routine == null) {

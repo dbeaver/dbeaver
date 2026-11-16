@@ -55,7 +55,11 @@ public class ExecuteDCLFunction extends ExecuteSQLFunction {
                     type = name.substring(0, qualifier).toUpperCase(Locale.ROOT);
                     name = name.substring(qualifier + 2);
                 }
-                verifyDefinitionObject(context, executionContext, name, type, false);
+                if (name.equals("*") || name.endsWith(".*")) {
+                    verifyWildcardNamespace(context, executionContext, name.equals("*") ? name : name.substring(0, name.length() - 2));
+                } else {
+                    verifyDefinitionObject(context, executionContext, name, type, false);
+                }
             }
         } else if (query.getStatement() instanceof SetStatement set) {
             String name = CommonUtils.toString(set.getName());
@@ -104,8 +108,13 @@ public class ExecuteDCLFunction extends ExecuteSQLFunction {
             Identifier target = readIdentifier(tokens, start);
             while (target != null) {
                 foundTarget = true;
-                verifyDefinitionObject(context, executionContext, target.name(), type, false);
                 start = target.end();
+                if (start + 1 < tokens.size() && tokens.get(start).equals(".") && tokens.get(start + 1).equals("*")) {
+                    verifyWildcardNamespace(context, executionContext, target.name());
+                    start += 2;
+                } else {
+                    verifyDefinitionObject(context, executionContext, target.name(), type, false);
+                }
                 if (start < tokens.size() && tokens.get(start).equals("(")) {
                     start = skipParentheses(tokens, start);
                 }
@@ -117,6 +126,16 @@ public class ExecuteDCLFunction extends ExecuteSQLFunction {
         }
         if (!foundTarget) {
             verifyDatasourceScope(context);
+        }
+    }
+
+    private void verifyWildcardNamespace(
+        @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull String name
+    ) throws DBException {
+        if (name.contains("*") || name.contains("%") || name.contains("_")) {
+            verifyDatasourceScope(context);
+        } else {
+            verifyDefinitionObject(context, executionContext, name, "SCHEMA", false);
         }
     }
 }

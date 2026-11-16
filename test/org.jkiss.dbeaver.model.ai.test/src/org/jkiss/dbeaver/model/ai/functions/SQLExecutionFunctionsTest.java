@@ -218,11 +218,26 @@ class SQLExecutionFunctionsTest {
         fixture.assertTextRestricted(new ExecuteDQLFunction(), "SELECT * FROM private.orders");
         fixture.assertTextRestricted(new ExecuteDMLFunction(), "INSERT INTO public.orders SELECT * FROM private.orders");
         fixture.assertTextRestricted(new ExecuteDMLFunction(), "CALL public.refresh_orders(private.read_payroll())");
+        fixture.assertTextRestricted(new ExecuteDMLFunction(), "COPY public.orders TO PROGRAM 'command'");
+        fixture.assertTextRestricted(new ExecuteDMLFunction(), "LOAD DATA LOCAL INFILE 'file' INTO TABLE public.orders");
         fixture.assertTextRestricted(new ExecuteDDLFunction(), "CREATE INDEX public.idx ON private.orders(id)");
         fixture.assertTextRestricted(new ExecuteDDLFunction(), "CREATE SYNONYM public.orders_alias FOR private.orders");
         fixture.assertTextRestricted(new ExecuteDDLFunction(), "ALTER TABLE public.orders SET SCHEMA private");
         fixture.assertTextRestricted(new ExecuteDDLFunction(), "DROP TABLE public.orders, private.orders");
         fixture.assertTextRestricted(new ExecuteDCLFunction(), "REVOKE SELECT ON public.orders, private.orders FROM reader");
+        fixture.assertTextRestricted(new ExecuteDCLFunction(), "GRANT SELECT ON private.* TO reader");
+        Assertions.assertDoesNotThrow(() -> fixture.verifyText(new ExecuteDCLFunction(), "GRANT SELECT ON public.* TO reader"));
+    }
+
+    @Test
+    void partitionMovesVerifyTheReferencedTable() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        ExecuteDDLFunction function = new ExecuteDDLFunction();
+        Assertions.assertDoesNotThrow(() -> fixture.verify(function,
+            "ALTER TABLE public.orders ATTACH PARTITION public.source FOR VALUES IN (1)"));
+        fixture.assertRestricted(function, "ALTER TABLE public.orders ATTACH PARTITION private.orders FOR VALUES IN (1)");
+        fixture.assertTextRestricted(function, "ALTER TABLE public.orders EXCHANGE PARTITION p WITH TABLE private.orders");
+        fixture.assertTextRestricted(function, "ALTER TABLE public.orders SWITCH PARTITION 1 TO private.orders");
     }
 
     @Test
