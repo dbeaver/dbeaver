@@ -136,8 +136,10 @@ public class DatabaseTransferUtils {
                 DBSObject newTarget = container.getChild(monitor, DBUtils.getUnQuotedIdentifier(container.getDataSource(), containerMapping.getTargetName()));
                 if (newTarget == null) {
                     throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));
-                } else if (!(newTarget instanceof DBSDataManipulator)) {
-                    throw new DBCException("New table " + DBUtils.getObjectFullName(newTarget, DBPEvaluationContext.UI) + " doesn't support data manipulation");
+                } else if (!isValidTargetTable(newTarget)) {
+                    throw new DBCException(
+                        "New table " + DBUtils.getObjectFullName(newTarget, DBPEvaluationContext.UI)
+                            + " is not a valid data transfer target");
                 }
                 setMappingTarget(containerMapping, (DBSDataManipulator) newTarget);
             }

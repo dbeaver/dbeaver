@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -37,6 +38,27 @@ public class DatabaseTransferUtilsTest {
     public void viewIsNotTargetTable() {
         DBSView view = Mockito.mock(DBSView.class, Mockito.withSettings().extraInterfaces(DBSDataManipulator.class));
         Assertions.assertFalse(DatabaseTransferUtils.isValidTargetTable(view));
+    }
+
+    @Test
+    public void tableWithViewFlagIsNotTargetTable() {
+        DBSTable table = Mockito.mock(DBSTable.class, Mockito.withSettings().extraInterfaces(DBSDataManipulator.class));
+        Mockito.when(table.isView()).thenReturn(true);
+        Assertions.assertFalse(DatabaseTransferUtils.isValidTargetTable(table));
+    }
+
+    @Test
+    public void viewEntityTypeIsNotTargetTable() {
+        DBSTable table = Mockito.mock(DBSTable.class, Mockito.withSettings().extraInterfaces(DBSDataManipulator.class));
+        Mockito.when(table.getEntityType()).thenReturn(DBSEntityType.VIEW);
+        Assertions.assertFalse(DatabaseTransferUtils.isValidTargetTable(table));
+    }
+
+    @Test
+    public void sequenceEntityTypeIsNotTargetTable() {
+        DBSTable table = Mockito.mock(DBSTable.class, Mockito.withSettings().extraInterfaces(DBSDataManipulator.class));
+        Mockito.when(table.getEntityType()).thenReturn(DBSEntityType.SEQUENCE);
+        Assertions.assertFalse(DatabaseTransferUtils.isValidTargetTable(table));
     }
 
     @Test

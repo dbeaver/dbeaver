@@ -104,6 +104,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
     private boolean transformComboKeyboardSelection;
     private boolean firstInit = true;
     private String mappingErrorMessage;
+    private DatabaseMappingObject mappingErrorSource;
 
     private static abstract class MappingLabelProvider extends CellLabelProvider {
         @Override
@@ -1232,8 +1233,11 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         boolean updateAttributesNames
     ) {
         final DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
-        // Reset the previous conflict message: it is recalculated for every mapping attempt
-        mappingErrorMessage = null;
+        if (!TARGET_NAME_BROWSE.equals(name) && mapping == mappingErrorSource) {
+            // The conflict of this mapping is being recalculated
+            mappingErrorMessage = null;
+            mappingErrorSource = null;
+        }
         try {
             if (name.equals(DatabaseMappingAttribute.TARGET_NAME_SKIP)) {
                 if (mapping instanceof DatabaseMappingAttribute) {
@@ -1382,6 +1386,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         @NotNull String unQuotedNameForSearch,
         @NotNull DBSObject existingObject
     ) throws DBException {
+        containerMapping.setTarget(null);
         containerMapping.setTargetName(name);
         containerMapping.refreshMappingType(
             monitor,
@@ -1390,6 +1395,7 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             false);
         mappingErrorMessage =
             "Name '" + unQuotedNameForSearch + "' is already used by " + DBUtils.getObjectTypeName(existingObject);
+        mappingErrorSource = containerMapping;
 
         UIUtils.asyncExec(() -> mappingViewer.refresh());
         return true;
@@ -1425,8 +1431,9 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             //loadAndUpdateColumnsModel();
             for (Object element : elementList) {
                 if (element instanceof DatabaseMappingContainer container) {
-                    if (container.getTarget() != null) {
-                        // Keep the target already resolved from a saved task mapping
+                    if (container.getMappingType() != DatabaseMappingType.unspecified
+                        && DatabaseTransferUtils.isValidTargetTable(container.getTarget())) {
+                        // Keep a valid target already resolved from a saved task mapping
                         continue;
                     }
                     setMappingTarget(monitor, container, container.getTargetName(), true, false);
@@ -1473,6 +1480,10 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                         if (DatabaseTransferUtils.isValidTargetTable(object) && object instanceof DBSDataManipulator dm) {
                             mapping.setTarget(dm);
                             mapping.refreshMappingType(getWizard().getRunnableContext(), DatabaseMappingType.existing, false);
+                            if (mapping == mappingErrorSource) {
+                                mappingErrorMessage = null;
+                                mappingErrorSource = null;
+                            }
                             if (mappings.length == 1) {
                                 // Call to this method also shows up a dialog.
                                 // It could be very noisy in case of a large amount of mappings
@@ -1699,6 +1710,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
         // Otherwise we keep current mappings (to allow wizard page navigation without loosing mappings)
         DatabaseConsumerSettings settings = getDatabaseConsumerSettings();
         model.clear();
+        mappingErrorMessage = null;
+        mappingErrorSource = null;
 
         List<Throwable> errors = new ArrayList<>();
 
@@ -1814,6 +1827,8 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
             setErrorMessage(errorMessage);
             return false;
         } else {
+            mappingErrorMessage = null;
+            mappingErrorSource = null;
             setErrorMessage(null);
             return true;
         }
