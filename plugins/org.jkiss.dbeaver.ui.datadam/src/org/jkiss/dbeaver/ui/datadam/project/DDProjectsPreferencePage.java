@@ -57,7 +57,6 @@ import org.jkiss.dbeaver.ui.datadam.DDUIConstants;
 import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIIcons;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictResolver.Choice;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager.ProjectJobBatchResult;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.preferences.AbstractPrefPage;
@@ -69,7 +68,6 @@ import java.util.*;
 import java.util.List;
 import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 
 public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.synchronization.projects";
@@ -577,7 +575,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             getShell(), DDTrackingUIMessages.projects_connect, project, project.getName(), project.getDescription());
         if (editor.open() == Window.OK) {
             var details = editor.getDetails();
-            runOperation(() -> uiManager.shareProject(details.project(), details.name(), details.description()));
+            runOperation(monitor -> uiManager.shareProject(details.project(), details.name(), details.description(), monitor));
         }
     }
 
@@ -591,7 +589,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             getShell(), DDTrackingUIMessages.projects_edit, project, project.name(), project.description());
         if (editor.open() == Window.OK) {
             var details = editor.getDetails();
-            runOperation(() -> uiManager.updateProject(details.project(), details.name(), details.description()));
+            runOperation(monitor -> uiManager.updateProject(details.project(), details.name(), details.description(), monitor));
         }
     }
 
@@ -606,31 +604,52 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     }
 
     private void syncProjects(@NotNull List<DBPProject> projects) {
-        ProjectJobBatchResult<?> result = runOperation(() -> uiManager.synchronizeProjects(projects));
+        ProjectJobBatchResult<?> result = runOperation(monitor -> uiManager.synchronizeProjects(projects, monitor));
         if (result != null) {
-            if (projects.size() == 1) {
-                openSingleConflictDialog(result);
-            } else {
+            List<DBPProject> conflicts = getConflictedProjects(result);
+            if (conflicts.size() == 1) {
+                resolveProjectConflict(conflicts.getFirst());
+            } else if (!conflicts.isEmpty()) {
                 showConflictWarning(result);
             }
         }
     }
 
     private void importProjects(@NotNull List<DDSharedProject> projects) {
-        runOperation(() -> uiManager.importProjects(projects));
+        runOperation(monitor -> uiManager.importProjects(projects, monitor));
     }
 
     private void resolveProjectConflict(@NotNull DBPProject project) {
-        try {
-            Choice choice = conflictResolver.openConflictDialog(getShell(), project);
-            if (choice != null) {
-                ProjectJobBatchResult<?> result = runOperation(() -> conflictResolver.applyConflictChoice(project, choice));
-                if (result != null) {
-                    showConflictWarning(result);
+        if (operationRunning) {
+            return;
+        }
+        operationRunning = true;
+        updateSelectionActions();
+        Shell shell = getShell();
+        DBRRunnableWithResult<ProjectStatus> operation = new DBRRunnableWithResult<>() {
+            @Override
+            public void run(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
+                try {
+                    result = conflictResolver.resolve(project, monitor, shell);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
                 }
             }
-        } catch (DBException e) {
-            showError(DDTrackingUIMessages.project_sync_revisions_failed, e);
+        };
+        try {
+            UIUtils.runInProgressDialog(operation);
+            if (operation.getResult() == ProjectStatus.CONFLICT) {
+                MessageDialog.openWarning(getShell(), DDTrackingUIMessages.project_sync_title,
+                    NLS.bind(DDTrackingUIMessages.projects_conflicts, project.getName()));
+            }
+        } catch (InvocationTargetException e) {
+            showError(DDTrackingUIMessages.project_sync_resolve_failed, e.getTargetException());
+        } finally {
+            operationRunning = false;
+            if (!viewer.getControl().isDisposed()) {
+                uiManager.refreshProjectVisibility();
+                loadProjects();
+            }
         }
     }
 
@@ -644,7 +663,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             ? NLS.bind(DDTrackingUIMessages.project_sync_unbind_confirm_message, projects.get(0).getName())
             : DDTrackingUIMessages.projects_unbind_selected_confirm_message;
         if (UIUtils.confirmAction(getShell(), DDTrackingUIMessages.project_sync_unbind_confirm_title, message)) {
-            runOperation(() -> uiManager.unbindProjects(projects));
+            runOperation(monitor -> uiManager.unbindProjects(projects, monitor));
         }
     }
 
@@ -705,20 +724,35 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     }
 
     @Nullable
-    private ProjectJobBatchResult<?> runOperation(@NotNull Supplier<ProjectJobBatchResult<?>> operation) {
+    private ProjectJobBatchResult<?> runOperation(@NotNull Function<DBRProgressMonitor, ProjectJobBatchResult<?>> operation) {
         if (operationRunning) {
             return null;
         }
         operationRunning = true;
         updateSelectionActions();
-        ProjectJobBatchResult<?> result;
+        ProjectJobBatchResult<?> result = null;
         try {
-            result = operation.get();
+            DBRRunnableWithResult<ProjectJobBatchResult<?>> runner = new DBRRunnableWithResult<>() {
+                @Override
+                public void run(@NotNull DBRProgressMonitor monitor) {
+                    this.result = operation.apply(monitor);
+                }
+            };
+            try {
+                UIUtils.runInProgressDialog(runner);
+                result = runner.getResult();
+            } catch (InvocationTargetException e) {
+                showError(DDTrackingUIMessages.project_sync_title, e.getTargetException());
+            }
         } finally {
             operationRunning = false;
             if (!viewer.getControl().isDisposed()) {
+                uiManager.refreshProjectVisibility();
                 loadProjects();
             }
+        }
+        if (result == null) {
+            return null;
         }
         if (!result.failures().isEmpty() && !viewer.getControl().isDisposed()) {
             IStatus[] errors = result.failures().stream().map(failure -> {
@@ -731,16 +765,6 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
                 new MultiStatus(PLUGIN_ID, 0, errors, message, null), IStatus.ERROR).open();
         }
         return result;
-    }
-
-    private void openSingleConflictDialog(@NotNull ProjectJobBatchResult<?> result) {
-        if (viewer.getControl().isDisposed() || result.results().isEmpty()) {
-            return;
-        }
-        DBPProject project = conflictedProject(result.results().get(0));
-        if (project != null) {
-            resolveProjectConflict(project);
-        }
     }
 
     private void showConflictWarning(@NotNull ProjectJobBatchResult<?> result) {

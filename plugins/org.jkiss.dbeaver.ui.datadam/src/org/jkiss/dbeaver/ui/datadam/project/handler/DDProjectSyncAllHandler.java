@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.ui.datadam.project.handler;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -29,18 +29,16 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.SyncResult;
 import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictResolver;
-import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictResolver.Choice;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
+import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager.ProjectJobBatchResult;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager.ProjectListing;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
 import java.util.List;
 
 public class DDProjectSyncAllHandler extends AbstractHandler {
@@ -51,70 +49,98 @@ public class DDProjectSyncAllHandler extends AbstractHandler {
     @Override
     public Object execute(@NotNull ExecutionEvent event) {
         Shell shell = HandlerUtil.getActiveShell(event);
-        List<DBPProject> projects = loadBoundProjects();
-        if (projects == null || projects.isEmpty()) {
-            return null;
-        }
-
-        var syncResult = uiManager.synchronizeProjects(projects);
-        List<String> errors = new ArrayList<>();
-        syncResult.failures().forEach(failure -> errors.add(failure.projectName() + ": " + failure.error().getMessage()));
-        if (!syncResult.canceled()) {
-            for (SyncResult result : syncResult.results()) {
-                if (result.status() != ProjectStatus.CONFLICT) {
-                    continue;
-                }
+        AbstractJob job = new AbstractJob(DDTrackingUIMessages.projects_sync_all) {
+            @NotNull
+            @Override
+            protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
-                    Choice choice = conflictResolver.openConflictDialog(shell, result.project());
-                    if (choice != null) {
-                        var resolution = conflictResolver.applyConflictChoice(result.project(), choice);
-                        resolution.failures().forEach(failure ->
-                            errors.add(failure.projectName() + ": " + failure.error().getMessage()));
+                    List<DBPProject> projects = loadBoundProjects(monitor);
+                    if (projects == null || projects.isEmpty()) {
+                        return Status.CANCEL_STATUS;
                     }
+                    ProjectJobBatchResult<SyncResult> result = uiManager.synchronizeProjects(projects, monitor);
+                    if (result.canceled()) {
+                        return Status.CANCEL_STATUS;
+                    }
+                    int updated = (int) result.results().stream()
+                        .filter(sync -> sync.status() == ProjectStatus.UP_TO_DATE).count();
+                    List<String> errors = result.failures().stream()
+                        .map(failure -> failure.projectName() + ": " + failure.error().getMessage()).toList();
+                    List<DBPProject> conflicts = result.results().stream()
+                        .filter(sync -> sync.status() == ProjectStatus.CONFLICT)
+                        .map(SyncResult::project).toList();
+                    UIUtils.syncExec(() -> showResults(updated, errors));
+                    resolveConflicts(conflicts, monitor, shell);
+                    return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
                 } catch (DBException e) {
-                    errors.add(result.project().getName() + ": " + e.getMessage());
+                    UIUtils.asyncExec(() -> DBWorkbench.getPlatformUI().showNotification(
+                        DDTrackingUIMessages.project_sync_title, DDTrackingUIMessages.projects_sync_all_load_failed,
+                        true, null));
+                    return Status.error(DDTrackingUIMessages.projects_sync_all_load_failed, e);
                 }
             }
-        }
-        if (!errors.isEmpty()) {
-            MessageDialog.openError(shell, DDTrackingUIMessages.project_sync_title,
-                NLS.bind(DDTrackingUIMessages.projects_errors, String.join("\n", errors)));
-        }
+        };
+        job.setUser(true);
+        job.schedule();
         return null;
     }
 
     @Nullable
-    private List<DBPProject> loadBoundProjects() {
-        DBRRunnableWithResult<List<DBPProject>> loader = new DBRRunnableWithResult<>() {
-            @Override
-            public void run(@NotNull DBRProgressMonitor monitor) throws InvocationTargetException {
-                monitor.beginTask(DDTrackingUIMessages.projects_sync_all, IProgressMonitor.UNKNOWN);
-                try {
-                    List<ProjectListing> listings = uiManager.loadProjectListings(monitor);
-                    if (listings == null || monitor.isCanceled()) {
-                        return;
-                    }
-                    List<DBPProject> bound = listings.stream()
-                        .filter(listing -> listing.localProject() != null && listing.remoteProject() != null)
-                        .map(listing -> listing.localProject().project())
-                        .toList();
-                    if (!monitor.isCanceled()) {
-                        result = bound;
-                    }
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                } finally {
-                    monitor.done();
-                }
-            }
-        };
-        try {
-            UIUtils.runInProgressDialog(loader);
-            return loader.getResult();
-        } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError(DDTrackingUIMessages.project_sync_title,
-                DDTrackingUIMessages.projects_sync_all_load_failed, e.getTargetException());
+    private List<DBPProject> loadBoundProjects(@NotNull DBRProgressMonitor monitor) throws DBException {
+        List<ProjectListing> listings = uiManager.loadProjectListings(monitor);
+        if (listings == null || monitor.isCanceled()) {
             return null;
+        }
+        return listings.stream()
+            .filter(listing -> listing.localProject() != null && listing.remoteProject() != null)
+            .map(listing -> listing.localProject().project())
+            .toList();
+    }
+
+    private void resolveConflicts(
+        @NotNull List<DBPProject> conflicts,
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull Shell shell
+    ) {
+        for (DBPProject project : conflicts) {
+            if (monitor.isCanceled()) {
+                return;
+            }
+            try {
+                ProjectStatus result = conflictResolver.resolve(project, monitor, shell);
+                if (result != null) {
+                    UIUtils.syncExec(() -> showConflictResult(project, result));
+                }
+            } catch (DBException e) {
+                UIUtils.syncExec(() -> DBWorkbench.getPlatformUI().showNotification(project.getName(),
+                    DDTrackingUIMessages.project_sync_resolve_failed, true,
+                    () -> DBWorkbench.getPlatformUI().showError(
+                        DDTrackingUIMessages.project_sync_title, DDTrackingUIMessages.project_sync_resolve_failed, e)));
+            }
+        }
+    }
+
+    private void showConflictResult(@NotNull DBPProject project, @NotNull ProjectStatus result) {
+        switch (result) {
+            case UP_TO_DATE -> DBWorkbench.getPlatformUI().showNotification(project.getName(),
+                DDTrackingUIMessages.project_sync_update_success, false, null);
+            case NOT_SYNC -> DBWorkbench.getPlatformUI().showNotification(project.getName(),
+                DDTrackingUIMessages.project_sync_unbind_success, false, null);
+            case CONFLICT -> DBWorkbench.getPlatformUI().showWarningNotification(project.getName(),
+                NLS.bind(DDTrackingUIMessages.projects_conflicts, project.getName()));
+            default -> DBWorkbench.getPlatformUI().showNotification(project.getName(),
+                DDTrackingUIMessages.project_sync_update_failed, true, null);
+        }
+    }
+
+    private void showResults(int updated, @NotNull List<String> errors) {
+        if (updated > 0) {
+            DBWorkbench.getPlatformUI().showNotification(DDTrackingUIMessages.project_sync_title,
+                NLS.bind(DDTrackingUIMessages.project_sync_update_count, updated), false, null);
+        }
+        if (!errors.isEmpty()) {
+            DBWorkbench.getPlatformUI().showNotification(DDTrackingUIMessages.project_sync_title,
+                NLS.bind(DDTrackingUIMessages.projects_errors, String.join("\n", errors)), true, null);
         }
     }
 }

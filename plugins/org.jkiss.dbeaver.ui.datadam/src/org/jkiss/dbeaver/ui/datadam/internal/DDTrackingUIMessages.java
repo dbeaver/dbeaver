@@ -67,6 +67,7 @@ public class DDTrackingUIMessages extends NLS {
     public static String project_sync_share_failed;
     public static String project_sync_update_job;
     public static String project_sync_update_success;
+    public static String project_sync_update_count;
     public static String project_sync_update_failed;
     public static String project_sync_resolve_job;
     public static String project_sync_resolve_failed;
@@ -92,6 +93,7 @@ public class DDTrackingUIMessages extends NLS {
     public static String project_sync_import_list_job;
     public static String project_sync_import_list_failed;
     public static String project_sync_import_job;
+    public static String project_sync_import_success;
     public static String project_sync_import_failed;
     public static String project_edit_job;
     public static String project_edit_failed;

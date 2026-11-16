@@ -26,17 +26,17 @@ import org.jkiss.dbeaver.Log;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-public final class DDSharedProjectEvents implements DDSharedProjectEventsService, DDSharedProjectEventSource {
-    private static final Log log = Log.getLog(DDSharedProjectEvents.class);
-    private static final DDSharedProjectEvents INSTANCE = new DDSharedProjectEvents();
+public final class DDSharedProjectEventsServiceDesktop implements DDSharedProjectEventsService, DDSharedProjectEventSource {
+    private static final Log log = Log.getLog(DDSharedProjectEventsServiceDesktop.class);
+    private static final DDSharedProjectEventsServiceDesktop INSTANCE = new DDSharedProjectEventsServiceDesktop();
 
     private final List<Listener> listeners = new CopyOnWriteArrayList<>();
 
-    private DDSharedProjectEvents() {
+    private DDSharedProjectEventsServiceDesktop() {
     }
 
     @NotNull
-    public static DDSharedProjectEvents getInstance() {
+    public static DDSharedProjectEventsServiceDesktop getInstance() {
         return INSTANCE;
     }
 

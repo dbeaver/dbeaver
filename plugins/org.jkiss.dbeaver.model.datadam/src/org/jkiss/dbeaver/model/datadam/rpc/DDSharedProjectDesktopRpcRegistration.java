@@ -34,7 +34,7 @@ public class DDSharedProjectDesktopRpcRegistration implements DDDesktopRpcRegist
     public void register(@NotNull MessagingRpcEndpoint endpoint, @NotNull DDRemoteDamSettings settings) {
         if (registeredEndpoint != endpoint) {
             endpoint.register(DDSharedProjectEventsService.SERVICE_ID, DDSharedProjectEventsService.class,
-                DDSharedProjectEvents.getInstance());
+                DDSharedProjectEventsServiceDesktop.getInstance());
             registeredEndpoint = endpoint;
         }
     }
