@@ -47,16 +47,6 @@ import java.util.stream.Collectors;
 public class AISchemaGeneratorImpl implements AISchemaGenerator {
     private static final Log log = Log.getLog(AISchemaGeneratorImpl.class);
 
-    @NotNull
-    public String generateTableDetails(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBCExecutionContext executionContext,
-        @NotNull AISchemaGenerationOptions options,
-        @NotNull DBSEntity entity
-    ) throws DBException {
-        return generateSchema(monitor, executionContext, options, entity, true);
-    }
-
     @Override
     @NotNull
     public String generateSchema(
@@ -65,33 +55,20 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         @NotNull AISchemaGenerationOptions options,
         @NotNull DBSEntity entity
     ) throws DBException {
-        return generateSchema(monitor, executionContext, options, entity, false);
-    }
-
-    @NotNull
-    private String generateSchema(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable DBCExecutionContext executionContext,
-        @NotNull AISchemaGenerationOptions options,
-        @NotNull DBSEntity entity,
-        boolean tableDetails
-    ) throws DBException {
         if (!options.includesObject(monitor, entity)) {
             return "";
         }
         StringBuilder ddl = new StringBuilder();
 
-        String tableDDL = null;
-        if (tableDetails) {
-            tableDDL = getTableDetailsDDL(monitor, options, entity);
-        } else if (options.sendFullDDL()) {
-            tableDDL = getFullDDL(monitor, options, entity);
-        }
+        String tableDDL = options.sendFullDDL() ? getFullDDL(monitor, options, entity) : null;
         if (!CommonUtils.isEmpty(tableDDL)) {
             DBStructUtils.addDDLLine(ddl, tableDDL);
         } else {
             generateCustomDDL(monitor, executionContext, options, entity, ddl);
             ddl.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER).append(GeneralUtils.getDefaultLineSeparator());
+            if (options.sendIndexes() && entity instanceof DBSTable table) {
+                addIndexesDDL(monitor, options, table, ddl);
+            }
         }
 
         if (options.sendReferences() && executionContext != null) {
@@ -104,37 +81,19 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         return ddl.toString().trim();
     }
 
-    @Nullable
-    private String getTableDetailsDDL(
+    private void addIndexesDDL(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AISchemaGenerationOptions options,
-        @NotNull DBSEntity entity
+        @NotNull DBSTable table,
+        @NotNull StringBuilder ddl
     ) throws DBException {
-        SQLObjectEditor<?, ?> editor = DBWorkbench.getPlatform().getEditorsRegistry()
-            .getObjectManager(entity.getClass(), SQLObjectEditor.class);
-        if (!(editor instanceof SQLTableManager<?, ?>)) {
-            return null;
+        Map<String, Object> ddlOptions = Map.of(DBPScriptObject.OPTION_SKIP_DROPS, true);
+        for (DBSTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
+            if (DBUtils.isHiddenObject(index) || DBUtils.isInheritedObject(index) || !options.includesObject(monitor, index)) {
+                continue;
+            }
+            DBStructUtils.addDDLLine(ddl, DBStructUtils.generateObjectDDL(monitor, index, ddlOptions, false));
         }
-
-        Map<String, Object> ddlOptions = new HashMap<>();
-        ddlOptions.put(DBPScriptObject.OPTION_SKIP_DROPS, true);
-        ddlOptions.put(DBPScriptObject.OPTION_SKIP_INDEXES, !options.sendIndexes());
-        ddlOptions.put(DBPScriptObject.OPTION_SKIP_UNIQUE_KEYS, !options.sendConstraints());
-        ddlOptions.put(DBPScriptObject.OPTION_DDL_SKIP_FOREIGN_KEYS, !options.sendForeignKeys());
-        ddlOptions.put(DBPScriptObject.OPTION_INCLUDE_COMMENTS, options.sendObjectComment());
-        DBSObjectDDLFilter filter = (progress, object) -> {
-            if (!options.includesObject(progress, object)) {
-                return false;
-            }
-            if (object instanceof DBSTableIndex) {
-                return options.sendIndexes();
-            }
-            if (object instanceof DBSEntityAssociation) {
-                return options.sendForeignKeys();
-            }
-            return !(object instanceof DBSEntityConstraint) || options.sendConstraints();
-        };
-        return DBStructUtils.generateTableDDL(monitor, entity, ddlOptions, false, filter);
     }
 
     @Nullable
