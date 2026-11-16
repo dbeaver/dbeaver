@@ -110,6 +110,48 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void compactSchemaUsesTableIndexPolicyWhenIncludingConstraints() throws Exception {
+        DBSTable table = table("orders");
+        DBSTableIndex primaryIndex = index(table, "orders_pkey");
+        Mockito.when(primaryIndex.isPrimary()).thenReturn(true);
+        DBSTableIndex constraintIndex = index(table, "orders_unique_key");
+        DBSTableIndex standaloneIndex = index(table, "orders_unique_idx");
+        for (DBSTableIndex index : List.of(primaryIndex, constraintIndex, standaloneIndex)) {
+            Mockito.when(index.isUnique()).thenReturn(true);
+        }
+        Mockito.doReturn(List.of(primaryIndex, constraintIndex, standaloneIndex)).when(table).getIndexes(monitor);
+        DBSEntityAttributeRef column = Mockito.mock(DBSEntityAttributeRef.class);
+        Mockito.doReturn(table.getAttributes(monitor).getFirst()).when(column).getAttribute();
+        DBSEntityReferrer primaryKey = Mockito.mock(DBSEntityReferrer.class);
+        Mockito.when(primaryKey.getConstraintType()).thenReturn(DBSEntityConstraintType.PRIMARY_KEY);
+        Mockito.doReturn(List.of(column)).when(primaryKey).getAttributeReferences(monitor);
+        DBSEntityReferrer uniqueKey = Mockito.mock(DBSEntityReferrer.class);
+        Mockito.when(uniqueKey.getConstraintType()).thenReturn(DBSEntityConstraintType.UNIQUE_KEY);
+        Mockito.doReturn(List.of(column)).when(uniqueKey).getAttributeReferences(monitor);
+        Mockito.doReturn(List.of(primaryKey, uniqueKey)).when(table).getConstraints(monitor);
+
+        TestTableManager manager = Mockito.mock(TestTableManager.class, Mockito.CALLS_REAL_METHODS);
+        manager.excludedIndexes = List.of(primaryIndex, constraintIndex);
+        TestIndexEditor editor = Mockito.mock(TestIndexEditor.class, Mockito.CALLS_REAL_METHODS);
+        DBERegistry registry = Mockito.mock(DBERegistry.class);
+        Mockito.when(registry.getObjectManager(table.getClass(), SQLTableManager.class)).thenReturn(manager);
+        Mockito.when(registry.getObjectManager(standaloneIndex.getClass(), SQLObjectEditor.class)).thenReturn(editor);
+        DBPPlatform platform = mockPlatform();
+        Mockito.when(platform.getEditorsRegistry()).thenReturn(registry);
+        try (var platformOverride = new StaticFieldOverride(DBWorkbench.class, "platform", platform)) {
+            for (boolean sendConstraints : List.of(false, true)) {
+                AISchemaGenerationOptions options = options(false).withSendIndexes(true).withSendConstraints(sendConstraints).build();
+                String ddl = new AISchemaGeneratorImpl().generateSchema(monitor, null, options, table);
+                Assertions.assertEquals(sendConstraints, ddl.contains("PRIMARY KEY (id)"), ddl);
+                Assertions.assertEquals(sendConstraints, ddl.contains("UNIQUE (id)"), ddl);
+                Assertions.assertEquals(!sendConstraints, ddl.contains("CREATE UNIQUE INDEX orders_pkey"), ddl);
+                Assertions.assertEquals(!sendConstraints, ddl.contains("CREATE UNIQUE INDEX orders_unique_key"), ddl);
+                Assertions.assertTrue(ddl.contains("CREATE UNIQUE INDEX orders_unique_idx"), ddl);
+            }
+        }
+    }
+
+    @Test
     public void compactSchemaDoesNotReadUnrequestedIndexes() throws DBException {
         DBSTable table = table("orders");
         AISchemaGenerationOptions options = options(false).withSendIndexes(false).build();
@@ -361,6 +403,12 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
     public abstract static class TestTableManager extends SQLTableManager<DBSTable, DBSObjectContainer> {
         private SQLForeignKeyManager<?, ?> foreignKeys;
         private DBSTableForeignKey extraKey;
+        private List<DBSTableIndex> excludedIndexes;
+
+        @Override
+        protected boolean isIncludeIndexInDDL(@NotNull DBRProgressMonitor monitor, @NotNull DBSTableIndex index) throws DBException {
+            return (excludedIndexes == null || !excludedIndexes.contains(index)) && super.isIncludeIndexInDDL(monitor, index);
+        }
 
         @Override
         @SuppressWarnings({"rawtypes", "unchecked"})

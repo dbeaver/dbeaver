@@ -88,8 +88,14 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         @NotNull StringBuilder ddl
     ) throws DBException {
         Map<String, Object> ddlOptions = Map.of(DBPScriptObject.OPTION_SKIP_DROPS, true);
+        SQLTableManager<?, ?> tableManager = options.sendConstraints()
+            ? DBWorkbench.getPlatform().getEditorsRegistry().getObjectManager(table.getClass(), SQLTableManager.class)
+            : null;
         for (DBSTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
             if (DBUtils.isHiddenObject(index) || DBUtils.isInheritedObject(index) || !options.includesObject(monitor, index)) {
+                continue;
+            }
+            if (tableManager != null && !tableManager.isIndexIncludedInDDL(monitor, index)) {
                 continue;
             }
             DBStructUtils.addDDLLine(ddl, DBStructUtils.generateObjectDDL(monitor, index, ddlOptions, false));
