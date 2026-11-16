@@ -155,13 +155,25 @@ public class MimerCLOBValueHandler extends JDBCContentValueHandler {
         try {
             char[] buffer = new char[8192];
             // See MimerBLOBValueHandler's identical chunk list for why - each chunk is its own
-            // array, appending one never recopies any earlier chunk.
+            // array, appending one never recopies any earlier chunk. Reads accumulate into
+            // `buffer` across however many read() calls it takes to fill it - Reader#read is
+            // never guaranteed to fill the array in one call - for the same reason.
             List<char[]> chunks = new ArrayList<>();
             int total = 0;
+            int filled = 0;
             int n;
-            while (!monitor.isCanceled() && total < memoryLimit && (n = reader.read(buffer)) >= 0) {
-                chunks.add(n == buffer.length ? buffer.clone() : Arrays.copyOf(buffer, n));
+            while (!monitor.isCanceled() && total < memoryLimit
+                && (n = reader.read(buffer, filled, buffer.length - filled)) >= 0) {
+                filled += n;
                 total += n;
+                if (filled == buffer.length) {
+                    chunks.add(buffer);
+                    buffer = new char[8192];
+                    filled = 0;
+                }
+            }
+            if (filled > 0) {
+                chunks.add(Arrays.copyOf(buffer, filled));
             }
             if (monitor.isCanceled() || total < memoryLimit) {
                 // See MimerChunkedBytesStorage's javadoc for why this stays chunked.

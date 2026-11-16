@@ -125,13 +125,26 @@ public class MimerBLOBValueHandler extends JDBCContentValueHandler {
             byte[] buffer = new byte[8192];
             // Each chunk is its own, independently-allocated array - appending one never touches
             // (let alone recopies) any earlier chunk, unlike growing a single backing array ever
-            // bigger would.
+            // bigger would. Reads accumulate into `buffer` across however many read() calls it
+            // takes to fill it - InputStream#read is never guaranteed to fill the array in one
+            // call - so a stream that only ever returns short reads still produces ~8 KiB chunks
+            // instead of one tiny chunk (and List entry) per call.
             List<byte[]> chunks = new ArrayList<>();
             int total = 0;
+            int filled = 0;
             int n;
-            while (!monitor.isCanceled() && total < memoryLimit && (n = stream.read(buffer)) >= 0) {
-                chunks.add(n == buffer.length ? buffer.clone() : Arrays.copyOf(buffer, n));
+            while (!monitor.isCanceled() && total < memoryLimit
+                && (n = stream.read(buffer, filled, buffer.length - filled)) >= 0) {
+                filled += n;
                 total += n;
+                if (filled == buffer.length) {
+                    chunks.add(buffer);
+                    buffer = new byte[8192];
+                    filled = 0;
+                }
+            }
+            if (filled > 0) {
+                chunks.add(Arrays.copyOf(buffer, filled));
             }
             if (monitor.isCanceled() || total < memoryLimit) {
                 // Stays chunked - MimerChunkedBytesStorage only flattens into one array if/when
