@@ -22,6 +22,8 @@ import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.util.regex.Pattern;
+
 public class SQLUtilsTest extends DBeaverUnitTest {
 
     private static final OracleSQLDialect ORACLE_SQL_DIALECT = new OracleSQLDialect();
@@ -193,5 +195,102 @@ public class SQLUtilsTest extends DBeaverUnitTest {
                 "CREATE INDEX I ON A(id);\n\n",
             sb.toString()
         );
+    }
+
+    // --- makeLikePattern / matchesLike backslash regression tests (issue #42872) ---
+
+    @Test
+    public void makeLikePattern_backslashBeforeNonWildcard_matchesLiteral() {
+        // CORP backslash user must compile and match the same literal string
+        String pattern = SQLUtils.makeLikePattern("CORP\\user");
+        Assertions.assertDoesNotThrow(() -> Pattern.compile(pattern));
+        Assertions.assertTrue(SQLUtils.matchesLike("CORP\\user", "CORP\\user"));
+        // Must not match without the backslash
+        Assertions.assertFalse(SQLUtils.matchesLike("CORPuser", "CORP\\user"));
+    }
+
+    @Test
+    public void makeLikePattern_backslashBeforeJ_matchesLiteral() {
+        // CORP\john must not throw
+        String pattern = SQLUtils.makeLikePattern("CORP\\john");
+        Assertions.assertDoesNotThrow(() -> Pattern.compile(pattern));
+        Assertions.assertTrue(SQLUtils.matchesLike("CORP\\john", "CORP\\john"));
+    }
+
+    @Test
+    public void makeLikePattern_trailingBackslash_matchesLiteral() {
+        // Trailing backslash must not be dropped or produce invalid regex
+        String pattern = SQLUtils.makeLikePattern("trail\\");
+        Assertions.assertDoesNotThrow(() -> Pattern.compile(pattern));
+        Assertions.assertTrue(SQLUtils.matchesLike("trail\\", "trail\\"));
+        Assertions.assertFalse(SQLUtils.matchesLike("trail", "trail\\"));
+    }
+
+    @Test
+    public void makeLikePattern_backslashB_doesNotActAsWordBoundary() {
+        // a\b must match the literal string "a\b", not act as regex \b (word boundary)
+        String pattern = SQLUtils.makeLikePattern("a\\b");
+        Assertions.assertDoesNotThrow(() -> Pattern.compile(pattern));
+        Assertions.assertTrue(SQLUtils.matchesLike("a\\b", "a\\b"));
+        // Must not match just "a" (would happen if \b was a word boundary)
+        Assertions.assertFalse(SQLUtils.matchesLike("a", "a\\b"));
+    }
+
+    @Test
+    public void makeLikePattern_escapedWildcards_stillWork() {
+        // \_ should match literal underscore, not single-char wildcard
+        Assertions.assertTrue(SQLUtils.matchesLike("a_b", "a\\_b"));
+        Assertions.assertFalse(SQLUtils.matchesLike("aXb", "a\\_b"));
+
+        // \* should match literal asterisk
+        Assertions.assertTrue(SQLUtils.matchesLike("a*b", "a\\*b"));
+        Assertions.assertFalse(SQLUtils.matchesLike("aXYZb", "a\\*b"));
+
+        // \? should match literal question mark
+        Assertions.assertTrue(SQLUtils.matchesLike("a?b", "a\\?b"));
+        Assertions.assertFalse(SQLUtils.matchesLike("aXb", "a\\?b"));
+
+        // \. should match literal dot
+        Assertions.assertTrue(SQLUtils.matchesLike("a.b", "a\\.b"));
+        Assertions.assertFalse(SQLUtils.matchesLike("aXb", "a\\.b"));
+
+        // \% should match literal percent
+        Assertions.assertTrue(SQLUtils.matchesLike("a%b", "a\\%b"));
+        Assertions.assertFalse(SQLUtils.matchesLike("aXYZb", "a\\%b"));
+    }
+
+    @Test
+    public void makeLikePattern_wildcards_stillWork() {
+        // % and * as multi-char wildcards
+        Assertions.assertTrue(SQLUtils.matchesLike("abcdef", "%cd%"));
+        Assertions.assertTrue(SQLUtils.matchesLike("abcdef", "*cd*"));
+
+        // _ and ? as single-char wildcards
+        Assertions.assertTrue(SQLUtils.matchesLike("abc", "a_c"));
+        Assertions.assertTrue(SQLUtils.matchesLike("abc", "a?c"));
+        Assertions.assertFalse(SQLUtils.matchesLike("abbc", "a_c"));
+    }
+
+    @Test
+    public void makeLikePattern_multipleBackslashes_matchLiteral() {
+        // Double backslash should match literal double backslash
+        Assertions.assertTrue(SQLUtils.matchesLike("a\\\\b", "a\\\\b"));
+        // Backslash followed by different non-wildcard chars
+        Assertions.assertTrue(SQLUtils.matchesLike("x\\y\\z", "x\\y\\z"));
+    }
+
+    @Test
+    public void makeLikePattern_backslashWithWildcard_combined() {
+        // Pattern with both literal backslash and multi-char wildcard %
+        Assertions.assertTrue(SQLUtils.matchesLike("CORP\\user_01", "CORP\\user%"));
+        Assertions.assertFalse(SQLUtils.matchesLike("CORP\\other", "CORP\\user%"));
+
+        // Single-char wildcard _ still works alongside literal backslash
+        Assertions.assertTrue(SQLUtils.matchesLike("CORP\\userX01", "CORP\\user_01"));
+        Assertions.assertFalse(SQLUtils.matchesLike("CORP\\userXY01", "CORP\\user_01"));
+
+        // Escaped wildcard \_ matches literal underscore only
+        Assertions.assertTrue(SQLUtils.matchesLike("CORP\\user_01", "CORP\\user\\_01"));
+        Assertions.assertFalse(SQLUtils.matchesLike("CORP\\userX01", "CORP\\user\\_01"));
     }
 }

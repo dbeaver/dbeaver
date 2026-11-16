@@ -454,8 +454,10 @@ public final class SQLUtils {
                         result.append("\\").append(nc);
                         i++;
                     } else {
-                        result.append("\\");
+                        result.append("\\\\");
                     }
+                } else {
+                    result.append("\\\\");
                 }
             } else {
                 result.append(c);
