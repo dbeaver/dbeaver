@@ -181,6 +181,12 @@
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.tasks">
+            <command commandId="org.jkiss.dbeaver.task.create">
+                <visibleWhen checkEnabled="true">
+                    <test property="org.jkiss.dbeaver.core.global.ui.hasPermission" value="database-developer"/>
+                </visibleWhen>
+            </command>
+            <separator name="create" visible="true"/>
             <command commandId="org.jkiss.dbeaver.task.group" style="toggle" label="%command.org.jkiss.dbeaver.task.group.category.name"
                      icon="icons/task_list.svg">
                 <parameter name="group" value="category"/>
