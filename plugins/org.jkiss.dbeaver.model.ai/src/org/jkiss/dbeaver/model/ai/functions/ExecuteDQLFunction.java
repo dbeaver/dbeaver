@@ -16,49 +16,51 @@
  */
 package org.jkiss.dbeaver.model.ai.functions;
 
+import net.sf.jsqlparser.statement.select.Select;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.ai.functions.heuristics.DQLScopeHeuristics;
-import org.jkiss.dbeaver.model.ai.functions.heuristics.SQLScopeHeuristics;
+import org.jkiss.dbeaver.model.ai.AIFunctionContext;
+import org.jkiss.dbeaver.model.ai.AIFunctionResult;
 import org.jkiss.dbeaver.model.ai.utils.AIDataExportUtils;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
-import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class ExecuteDQLFunction extends ExecuteSQLFunction {
-    private static final SQLScopeHeuristics HEURISTICS = new DQLScopeHeuristics();
     public static final String MAX_ROWS_PARAM = "maxRows";
     public static final String FORMAT_PARAM = "format";
 
     @NotNull
     @Override
-    protected SQLQueryCategory getQueryCategory() {
-        return SQLQueryCategory.DQL;
-    }
-
-    @NotNull
-    @Override
-    protected SQLScopeHeuristics getScopeHeuristics() {
-        return HEURISTICS;
-    }
-
-    @NotNull
-    @Override
-    protected String getResultValue(@NotNull String output, @NotNull DBCStatistics statistics) {
-        return output;
+    public AIFunctionResult callFunction(@NotNull AIFunctionContext context, @NotNull Map<String, Object> parameters) throws DBException {
+        ExecutionResult result = executeQueries(context, parameters,
+            AIDataExportUtils.getProcessor(CommonUtils.toString(parameters.get(FORMAT_PARAM), "csv")),
+            CommonUtils.toInt(parameters.get(MAX_ROWS_PARAM), 10));
+        return new AIFunctionResult(getResultType(), result.output());
     }
 
     @Override
-    protected int getMaxRows(@NotNull Map<String, Object> parameters) {
-        return CommonUtils.toInt(parameters.get(MAX_ROWS_PARAM), 10);
+    protected void verifyStatement(
+        @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull SQLQuery query
+    ) throws DBException {
+        requireStatement(query.getStatement() instanceof Select && !query.isModifying(), SQLQueryCategory.DQL);
+        verifyStatementObjects(context, executionContext, query.getStatement());
     }
 
-    @NotNull
     @Override
-    protected DataTransferProcessorDescriptor getResultProcessor(@NotNull Map<String, Object> parameters) throws DBException {
-        return AIDataExportUtils.getProcessor(CommonUtils.toString(parameters.get(FORMAT_PARAM), "csv"));
+    protected void verifyQueryText(
+        @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull String queryText
+    ) throws DBException {
+        List<String> tokens = tokenize(queryText);
+        requireStatement(Set.of("SELECT", "VALUES", "TABLE").contains(firstKeyword(tokens)) && !containsKeyword(tokens, Set.of(
+            "INSERT", "UPDATE", "DELETE", "MERGE", "INTO", "CREATE", "ALTER", "DROP", "TRUNCATE", "RENAME", "COMMENT",
+            "CALL", "EXEC", "EXECUTE", "COPY", "LOAD", "GRANT", "REVOKE", "DENY", "REPLACE", "UPSERT", "DO"
+        )), SQLQueryCategory.DQL);
+        verifyTextObjects(context, executionContext, tokens, Set.of("FROM", "JOIN", "TABLE"));
     }
 }

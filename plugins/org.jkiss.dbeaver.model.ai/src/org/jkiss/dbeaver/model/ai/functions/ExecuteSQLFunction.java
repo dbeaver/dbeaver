@@ -16,13 +16,19 @@
  */
 package org.jkiss.dbeaver.model.ai.functions;
 
+import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.Function;
 import net.sf.jsqlparser.parser.ASTNodeAccess;
+import net.sf.jsqlparser.parser.CCJSqlParser;
+import net.sf.jsqlparser.parser.CCJSqlParserConstants;
 import net.sf.jsqlparser.parser.Node;
+import net.sf.jsqlparser.parser.ParseException;
 import net.sf.jsqlparser.parser.SimpleNode;
+import net.sf.jsqlparser.parser.Token;
+import net.sf.jsqlparser.parser.TokenMgrException;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
-import net.sf.jsqlparser.statement.select.PlainSelect;
+import net.sf.jsqlparser.statement.UnsupportedStatement;
 import net.sf.jsqlparser.statement.select.Select;
 import net.sf.jsqlparser.statement.select.WithItem;
 import net.sf.jsqlparser.util.TablesNamesFinder;
@@ -38,7 +44,6 @@ import org.jkiss.dbeaver.model.ai.AIFunctionContext;
 import org.jkiss.dbeaver.model.ai.AIFunctionResult;
 import org.jkiss.dbeaver.model.ai.AIFunctionType;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
-import org.jkiss.dbeaver.model.ai.functions.heuristics.SQLScopeHeuristics;
 import org.jkiss.dbeaver.model.ai.utils.AIDataExportUtils;
 import org.jkiss.dbeaver.model.ai.utils.AIUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -47,7 +52,6 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
@@ -55,7 +59,6 @@ import org.jkiss.dbeaver.model.sql.data.SQLQueryDataContainer;
 import org.jkiss.dbeaver.model.sql.exec.SQLScriptProcessor;
 import org.jkiss.dbeaver.model.sql.parser.SQLIdentifierDetector;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
-import org.jkiss.dbeaver.model.sql.parser.SQLSemanticUtils;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
@@ -64,7 +67,6 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
-import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporter;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.utils.CommonUtils;
@@ -72,112 +74,122 @@ import org.jkiss.utils.CommonUtils;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.function.Consumer;
 
 public abstract class ExecuteSQLFunction implements AIFunction {
     private static final Log log = Log.getLog(ExecuteSQLFunction.class);
 
     public static final String SQL_PARAM = "sqlQuery";
 
-    @NotNull
-    @Override
-    public AIFunctionResult callFunction(
-        @NotNull AIFunctionContext context,
-        @NotNull Map<String, Object> parameters
-    ) throws DBException {
-        AIDatabaseContext aiDatabaseContext = context.getContext();
-        if (aiDatabaseContext == null) {
-            return new AIFunctionResult(
-                AIFunctionType.INFORMATION,
-                ""
-            );
-        }
+    protected record ExecutionResult(@NotNull String output, @NotNull DBCStatistics statistics) {
+    }
 
-        DBPDataSource dataSource = aiDatabaseContext.getExecutionContext().getDataSource();
-        String catalog = CommonUtils.toString(parameters.get(AIFunctionParams.CATALOG_PARAM), null);
-        String sqlQuery = CommonUtils.toString(parameters.get(SQL_PARAM));
-        DataTransferProcessorDescriptor processor = getResultProcessor(parameters);
-        int maxRows = processor == null ? 0 : getMaxRows(parameters);
+    @NotNull
+    protected final AIFunctionType getResultType() {
+        return AIFunctionType.INFORMATION;
+    }
+
+    /** A semantic rejection is final; text fallback is only for statements the parser cannot represent. */
+    protected final void verifyQuery(
+        @NotNull AIFunctionContext context,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull SQLQuery query
+    ) throws DBException {
+        // Some dialects execute special comments that JSQLParser otherwise ignores.
+        if (query.getText().contains("/*!") || query.getText().contains("/*M!") || query.getText().contains("/*m!")) {
+            tokenize(query.getText());
+        }
+        if (query.getStatement() == null || query.getStatement() instanceof UnsupportedStatement) {
+            verifyQueryText(context, executionContext, query.getText());
+        } else {
+            verifyStatement(context, executionContext, query);
+        }
+    }
+
+    protected abstract void verifyStatement(
+        @NotNull AIFunctionContext context,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull SQLQuery query
+    ) throws DBException;
+
+    protected abstract void verifyQueryText(
+        @NotNull AIFunctionContext context,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull String queryText
+    ) throws DBException;
+
+    @NotNull
+    protected final ExecutionResult executeQueries(
+        @NotNull AIFunctionContext context,
+        @NotNull Map<String, Object> parameters,
+        @Nullable DataTransferProcessorDescriptor processor,
+        int maxRows
+    ) throws DBException {
+        AIDatabaseContext databaseContext = requireDatabaseContext(context);
+        String sql = CommonUtils.toString(parameters.get(SQL_PARAM));
+        if (CommonUtils.isEmptyTrimmed(sql)) {
+            throw new DBException("Parameter '" + SQL_PARAM + "' not specified");
+        }
         if (processor != null && maxRows <= 0) {
             throw new DBException("Maximum row count must be greater than zero");
         }
-
-        if (CommonUtils.isEmptyTrimmed(sqlQuery)) {
-            throw new DBException("Parameter '" + SQL_PARAM + "' not specified");
-        }
-
-        DBSInstance dbsInstance = resolveInstance(dataSource, catalog);
-
-        DBCExecutionContext executionContext = DBUtils.getOrOpenDefaultContext(dbsInstance, false);
-
-        if (!AIUtils.isObjectInScope(aiDatabaseContext, executionContext, dbsInstance)) {
-            return new AIFunctionResult(
-                AIFunctionType.INFORMATION,
-                "Database instance '" + dbsInstance.getName() + "' is not in scope. Access restricted."
-            );
-        }
-
-        List<SQLQuery> scriptElements = SQLScriptParser
-            .parseScript(dataSource, sqlQuery)
-            .stream()
-            .filter(it -> it instanceof SQLQuery)
-            .map(SQLQuery.class::cast)
-            .toList();
-        if (processor != null && scriptElements.size() > 1 && !processor.isAppendable()) {
-            throw new DBException("Format '" + processor.getAIFormatId() + "' supports only one SQL statement per call");
-        }
-        if (scriptElements.isEmpty()) {
-            throw new DBException("No SQL statements to execute");
-        }
-
-        SQLScriptContext scriptContext = new SQLScriptContext(
-            null,
-            () -> executionContext,
-            null,
-            new LogOutputWriter(log),
-            null
-        );
-
-        for (SQLQuery query : scriptElements) {
-            AIFunctionResult invalidObjectsMessage = verifyObjectsInScope(query, executionContext, aiDatabaseContext);
-            if (invalidObjectsMessage != null) {
-                return invalidObjectsMessage;
+        DBCExecutionContext originalContext = databaseContext.getExecutionContext();
+        DBCExecutionContext executionContext = openExecutionContext(context,
+            CommonUtils.toString(parameters.get(AIFunctionParams.CATALOG_PARAM), null));
+        try {
+            return executeVerifiedQueries(context, executionContext, sql, processor, maxRows);
+        } finally {
+            if (executionContext != originalContext) {
+                executionContext.close();
             }
         }
+    }
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+    @NotNull
+    private ExecutionResult executeVerifiedQueries(
+        @NotNull AIFunctionContext context,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull String sql,
+        @Nullable DataTransferProcessorDescriptor processor,
+        int maxRows
+    ) throws DBException {
+        DBPDataSource dataSource = executionContext.getDataSource();
+        List<SQLQuery> queries = SQLScriptParser.parseScript(dataSource, sql).stream()
+            .filter(SQLQuery.class::isInstance).map(SQLQuery.class::cast).toList();
+        if (queries.isEmpty()) {
+            throw new DBException("No SQL statements to execute");
+        }
+        if (processor != null && queries.size() > 1 && !processor.isAppendable()) {
+            throw new DBException("Format '" + processor.getAIFormatId() + "' supports only one statement per call");
+        }
+        for (SQLQuery query : queries) {
+            verifyQuery(context, executionContext, query);
+        }
+        SQLScriptContext scriptContext = new SQLScriptContext(null, () -> executionContext, null, new LogOutputWriter(), null);
+        ByteArrayOutputStream output = new ByteArrayOutputStream();
         DBCStatistics statistics = new DBCStatistics();
         boolean modifiedRowCountKnown = true;
-        for (SQLQuery query : scriptElements) {
+        for (SQLQuery query : queries) {
             StreamTransferConsumer consumer = null;
             if (processor != null) {
                 query.setResultSetLimit(0, maxRows);
                 consumer = new StreamTransferConsumer();
-                SQLQueryDataContainer sqlQueryDataContainer = new SQLQueryDataContainer(
-                    new DataSourceContextProvider(dataSource), query, scriptContext, log
-                );
-                IStreamDataExporter streamDataExporter = AIDataExportUtils.createExporter(processor);
+                StreamConsumerSettings settings = new StreamConsumerSettings();
+                settings.setOutputClipboard(false);
+                settings.setOutputEncodingBOM(false);
+                settings.setOutputEncoding(StandardCharsets.UTF_8.name());
                 consumer.initTransfer(
-                    sqlQueryDataContainer,
-                    prepareSettings(),
-                    new IDataTransferConsumer.TransferParameters(false, false, outputStream),
-                    streamDataExporter,
+                    new SQLQueryDataContainer(new DataSourceContextProvider(dataSource), query, scriptContext, log),
+                    settings,
+                    new IDataTransferConsumer.TransferParameters(false, false, output),
+                    AIDataExportUtils.createExporter(processor),
                     AIDataExportUtils.getProperties(processor),
                     dataSource.getContainer().getProject()
                 );
             }
-
-            SQLScriptProcessor scriptProcessor = new SQLScriptProcessor(
-                executionContext,
-                List.of(query),
-                scriptContext,
-                consumer,
-                log
-            );
+            SQLScriptProcessor scriptProcessor = new SQLScriptProcessor(executionContext, List.of(query), scriptContext, consumer, log);
             if (processor != null) {
                 scriptProcessor.setMaxRows(maxRows);
             }
-
             scriptProcessor.runScript(context.getMonitor());
             statistics.accumulate(scriptProcessor.getTotalStatistics());
             modifiedRowCountKnown &= scriptProcessor.getTotalStatistics().getRowsUpdated() >= 0;
@@ -185,209 +197,145 @@ public abstract class ExecuteSQLFunction implements AIFunction {
                 consumer.finishTransfer(context.getMonitor(), false);
             }
         }
-
         if (!modifiedRowCountKnown) {
             statistics.setRowsUpdated(-1);
         }
-        return new AIFunctionResult(
-            getResultType(),
-            getResultValue(outputStream.toString(StandardCharsets.UTF_8), statistics)
-        );
+        return new ExecutionResult(output.toString(StandardCharsets.UTF_8), statistics);
     }
 
     @NotNull
-    protected abstract SQLQueryCategory getQueryCategory();
+    protected final AIFunctionResult completionResult(@NotNull ExecutionResult result) {
+        return new AIFunctionResult(getResultType(), "Executed " + result.statistics().getStatementsCount() + " statement(s)");
+    }
 
-    @NotNull
-    protected final AIFunctionType getResultType() {
-        return AIFunctionType.INFORMATION;
+    protected static void requireStatement(boolean accepted, @NotNull SQLQueryCategory category) throws DBException {
+        if (!accepted) {
+            throw new DBException("This function only accepts " + category + " statements");
+        }
     }
 
     @NotNull
-    protected Object getResultValue(@NotNull String output, @NotNull DBCStatistics statistics) {
-        return "Executed " + statistics.getStatementsCount() + " statement(s)";
+    private static AIDatabaseContext requireDatabaseContext(@NotNull AIFunctionContext context) throws DBException {
+        AIDatabaseContext databaseContext = context.getContext();
+        if (databaseContext == null) {
+            throw new DBException("No database connection");
+        }
+        return databaseContext;
     }
 
-    @NotNull
-    protected abstract SQLScopeHeuristics getScopeHeuristics();
+    protected final void checkObjectScope(
+        @NotNull AIFunctionContext context,
+        @NotNull DBSObject object
+    ) throws DBException {
+        AIDatabaseContext databaseContext = requireDatabaseContext(context);
+        if (!AIUtils.isObjectInScope(databaseContext, databaseContext.getExecutionContext(), object)) {
+            throw new DBException("Database object '" + object.getName() + "' is outside the allowed scope");
+        }
+    }
 
-    protected int getMaxRows(@NotNull Map<String, Object> parameters) {
-        return 0;
+    protected final void verifyDatasourceScope(@NotNull AIFunctionContext context) throws DBException {
+        if (requireDatabaseContext(context).getScope() != AIDatabaseScope.CURRENT_DATASOURCE) {
+            throw new DBException("This statement requires datasource-wide scope");
+        }
+    }
+
+    protected final void verifyObject(
+        @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull String name
+    ) throws DBException {
+        DBSObject object = findObject(context, executionContext, name);
+        if (object == null) {
+            throw new DBException("Database object '" + name + "' not found");
+        }
+        checkObjectScope(context, object);
+    }
+
+    protected final void verifyDefinitionObject(
+        @NotNull AIFunctionContext context,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull String name,
+        @NotNull String type,
+        boolean creation
+    ) throws DBException {
+        if (Set.of("USER", "ROLE", "SYSTEM", "TABLESPACE", "EXTENSION").contains(type)
+            || creation && Set.of("DATABASE", "CATALOG").contains(type)) {
+            verifyDatasourceScope(context);
+            return;
+        }
+        if (creation && type.equals("SCHEMA") && requireDatabaseContext(context).getScope() == AIDatabaseScope.CURRENT_SCHEMA) {
+            throw new DBException("Creating a schema is outside the current-schema scope");
+        }
+        String[] parts = new SQLIdentifierDetector(executionContext.getDataSource().getSQLDialect()).splitIdentifier(name);
+        if (type.equals("COLUMN") && parts.length > 1) {
+            parts = Arrays.copyOf(parts, parts.length - 1);
+            name = String.join(".", parts);
+        }
+        DBSObject object = !creation && Set.of("OBJECT", "OTHER", "TABLE", "VIEW").contains(type)
+            ? findObject(context, executionContext, name) : null;
+        if (object == null) {
+            object = resolveNamespace(context, executionContext, parts, type, creation);
+        }
+        if (object == null || object instanceof DBPDataSource && requireDatabaseContext(context).getScope() == AIDatabaseScope.CUSTOM) {
+            throw new DBException("Cannot determine an allowed namespace for '" + name + "'");
+        }
+        checkObjectScope(context, object);
     }
 
     @Nullable
-    protected DataTransferProcessorDescriptor getResultProcessor(@NotNull Map<String, Object> parameters) throws DBException {
-        return null;
-    }
-
-    final void validateQuery(@NotNull SQLQuery query) throws DBException {
-        SQLQueryCategory category = SQLScopeHeuristics.getQueryCategory(query.getText());
-        SQLQueryCategory parsedCategory = SQLQueryCategory.UNKNOWN;
-        if (query.getStatement() != null) {
-            parsedCategory = query.getType().getCategory();
-        }
-        if (query.getStatement() instanceof Select && query.isMutatingStatement()) {
-            category = query.getStatement() instanceof PlainSelect select
-                && (!CommonUtils.isEmpty(select.getIntoTables()) || select.getIntoTempTable() != null)
-                ? SQLQueryCategory.DDL : SQLQueryCategory.DML;
-            parsedCategory = category;
-        }
-        if (category != getQueryCategory()
-            || parsedCategory != SQLQueryCategory.UNKNOWN && parsedCategory != category
-            || category == SQLQueryCategory.DQL && (query.isModifying() || SQLScopeHeuristics.hasWriteKeywords(query.getText()))) {
-            throw new DBException("This function only accepts " + getQueryCategory() + " statements");
-        }
-    }
-
-    @Nullable
-    final AIFunctionResult verifyObjectsInScope(
-        @NotNull SQLQuery query,
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull AIDatabaseContext aiDatabaseContext
+    private DBSObject findObject(
+        @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull String name
     ) throws DBException {
-        validateQuery(query);
-        QueryTablesResolutionResult resolutionResult = this.resolveQueryTables(executionContext, query, aiDatabaseContext.getScope());
-        List<String> messages = new LinkedList<>();
-        if (resolutionResult.datasourceWideRequired && aiDatabaseContext.getScope() != AIDatabaseScope.CURRENT_DATASOURCE) {
-            messages.add("This statement requires datasource-wide scope");
+        DBSObjectContainer root = DBUtils.getAdapter(DBSObjectContainer.class, executionContext.getDataSource());
+        if (root == null) {
+            throw new DBException("Datasource does not expose database objects");
         }
-        for (String tableName : resolutionResult.unresolvedObjects) {
-            messages.add(tableName + " is not found");
-        }
-        for (DBSObject object : resolutionResult.resolvedTables) {
-            if (object instanceof DBPDataSource && aiDatabaseContext.getScope() == AIDatabaseScope.CUSTOM
-                || !AIUtils.isObjectInScope(aiDatabaseContext, executionContext, object)) {
-                messages.add(DBUtils.getFullQualifiedName(executionContext.getDataSource(), object) + " is out of allowed scope");
-            }
-        }
-        if (!messages.isEmpty()) {
-            return new AIFunctionResult(
-                AIFunctionType.INFORMATION,
-                "SQL query operates with restricted database objects: " + String.join(", ", messages)
-            );
-        }
-        return null;
+        String[] parts = new SQLIdentifierDetector(executionContext.getDataSource().getSQLDialect()).splitIdentifier(name);
+        return AIUtils.findObjectByFQN(context.getMonitor(), executionContext, root, parts);
     }
 
-    record QueryTablesResolutionResult(
-        @NotNull Set<DBSObject> resolvedTables,
-        @NotNull Set<String> unresolvedObjects,
-        boolean datasourceWideRequired
-    ) {
-    }
-
-    @NotNull
-    private QueryTablesResolutionResult resolveQueryTables(
-        @NotNull DBCExecutionContext executionContext,
-        @NotNull SQLQuery query,
-        @NotNull AIDatabaseScope scope
+    protected final void verifyRoutine(
+        @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull String name
     ) throws DBException {
-        SQLIdentifierDetector identifierDetector = new SQLIdentifierDetector(executionContext.getDataSource().getSQLDialect());
-
-        Set<DBSObject> resolvedObjects = new HashSet<>();
-        Set<String> unresolvedObjects = new HashSet<>();
-
-        if (!(query.getStatement() instanceof Select) || query.isMutatingStatement()) {
-            if (!(executionContext.getDataSource() instanceof DBSObjectContainer root)) {
-                throw new DBException("Cannot resolve database objects in an unparsed SQL statement");
-            }
-            Map<String, SQLScopeHeuristics.ObjectReference> references = new LinkedHashMap<>();
-            for (SQLScopeHeuristics.ObjectReference reference : getScopeHeuristics().extractReferences(query.getText())) {
-                references.put(reference.name(), reference);
-            }
-            if (query.getStatement() != null) {
-                try {
-                    for (String name : new TablesNamesFinder<Void>().getTables(query.getStatement())) {
-                        references.putIfAbsent(name, new SQLScopeHeuristics.ObjectReference(name, "OBJECT", false));
-                    }
-                } catch (UnsupportedOperationException | ClassCastException e) {
-                    // TablesNamesFinder does not support every statement, including data-modifying CTEs.
-                    log.debug("Using heuristic object resolution: " + e.getMessage());
-                }
-            }
-            boolean global = references.isEmpty()
-                && (getQueryCategory() == SQLQueryCategory.DCL || getQueryCategory() == SQLQueryCategory.DDL);
-            if (references.isEmpty() && !global) {
-                throw new DBException("Cannot determine database objects in an unparsed SQL statement");
-            }
-            for (SQLScopeHeuristics.ObjectReference reference : references.values()) {
-                String[] parts = identifierDetector.splitIdentifier(reference.name());
-                if (reference.type().equals("COLUMN") && parts.length > 1) {
-                    parts = Arrays.copyOf(parts, parts.length - 1);
-                }
-                if (Set.of("USER", "ROLE", "TABLESPACE", "SYSTEM", "EXTENSION").contains(reference.type())) {
-                    global = true;
-                    continue;
-                }
-                if (reference.creation() && Set.of("SCHEMA", "DATABASE", "CATALOG").contains(reference.type())) {
-                    global |= !reference.type().equals("SCHEMA") || scope == AIDatabaseScope.CURRENT_SCHEMA;
-                }
-                DBSObject object = Set.of("SCHEMA", "DATABASE", "CATALOG").contains(reference.type())
-                    ? resolveNamespace(executionContext, root, parts, reference.type(), reference.creation())
-                    : AIUtils.findObjectByFQN(new VoidProgressMonitor(), executionContext, root, parts);
-                if (object == null && Set.of("PROCEDURE", "FUNCTION").contains(reference.type()) && !reference.creation()) {
-                    DBSObject namespace = resolveNamespace(executionContext, root, parts, reference.type(), false);
-                    DBSProcedureContainer procedures = DBUtils.getAdapter(DBSProcedureContainer.class, namespace);
-                    if (procedures != null) {
-                        object = procedures.getProcedure(new VoidProgressMonitor(), DBUtils.getUnQuotedNormalizedIdentifier(
-                            executionContext.getDataSource().getSQLDialect(), parts[parts.length - 1]));
-                    }
-                }
-                if (object == null && (getQueryCategory() == SQLQueryCategory.DDL || getQueryCategory() == SQLQueryCategory.DCL)) {
-                    object = resolveNamespace(executionContext, root, parts, reference.type(), reference.creation());
-                }
-                if (object == null) {
-                    unresolvedObjects.add(reference.name());
-                } else {
-                    resolvedObjects.add(object);
-                }
-            }
-            return new QueryTablesResolutionResult(resolvedObjects, unresolvedObjects, global);
+        String[] parts = new SQLIdentifierDetector(executionContext.getDataSource().getSQLDialect()).splitIdentifier(name);
+        DBSObject namespace = resolveNamespace(context, executionContext, parts, "FUNCTION", false);
+        DBSProcedureContainer procedures = DBUtils.getAdapter(DBSProcedureContainer.class, namespace);
+        String routineName = DBUtils.getUnQuotedNormalizedIdentifier(executionContext.getDataSource().getSQLDialect(), parts[parts.length - 1]);
+        DBSObject procedure = procedures == null ? null : procedures.getProcedure(context.getMonitor(), routineName);
+        if (procedure == null && procedures != null) {
+            // Overloaded routines may use a signature rather than the display name as their unique cache key.
+            procedure = DBUtils.findObject(procedures.getProcedures(context.getMonitor()), routineName, true);
         }
-
-        traverseQueryTables(query.getStatement(), tableNode -> {
-            DBSObject object = SQLSemanticUtils.findObjectForTableNode(
-                new VoidProgressMonitor(),
-                executionContext,
-                executionContext.getDataSource(),
-                identifierDetector,
-                tableNode
-            );
-            if (object == null) {
-                unresolvedObjects.add(tableNode.getFullyQualifiedName().toString());
-            } else {
-                resolvedObjects.add(object);
-            }
-        });
-
-        return new QueryTablesResolutionResult(resolvedObjects, unresolvedObjects, false);
+        if (procedure == null) {
+            throw new DBException("Database routine '" + name + "' not found");
+        }
+        checkObjectScope(context, procedure);
     }
 
     @Nullable
     private static DBSObject resolveNamespace(
+        @NotNull AIFunctionContext context,
         @NotNull DBCExecutionContext executionContext,
-        @NotNull DBSObjectContainer root,
         @NotNull String[] parts,
         @NotNull String type,
         boolean creation
     ) throws DBException {
-        parts = Arrays.stream(parts)
-            .map(part -> DBUtils.getUnQuotedNormalizedIdentifier(executionContext.getDataSource().getSQLDialect(), part))
-            .toArray(String[]::new);
+        DBSObjectContainer root = DBUtils.getAdapter(DBSObjectContainer.class, executionContext.getDataSource());
+        if (root == null || parts.length == 0) {
+            return null;
+        }
+        parts = Arrays.stream(parts).map(part -> DBUtils.getUnQuotedNormalizedIdentifier(
+            executionContext.getDataSource().getSQLDialect(), part)).toArray(String[]::new);
         DBCExecutionContextDefaults<?, ?> defaults = executionContext.getContextDefaults();
-        Class<? extends DBSObject> childType = root.getPrimaryChildType(new VoidProgressMonitor());
-        boolean schemas = DBSSchema.class.isAssignableFrom(childType)
-            || defaults != null && (defaults.getDefaultSchema() != null || defaults.supportsSchemaChange());
+        Class<? extends DBSObject> childType = root.getPrimaryChildType(context.getMonitor());
         if (type.equals("SCHEMA")) {
             if (!creation) {
-                return DBUtils.getObjectByPath(new VoidProgressMonitor(), executionContext, root,
+                return DBUtils.getObjectByPath(context.getMonitor(), executionContext, root,
                     parts.length > 1 ? parts[parts.length - 2] : null, parts[parts.length - 1], null, true);
             }
-            return parts.length > 1 ? root.getChild(new VoidProgressMonitor(), parts[0])
+            return parts.length > 1 ? root.getChild(context.getMonitor(), parts[0])
                 : defaults != null && defaults.getDefaultCatalog() != null ? defaults.getDefaultCatalog() : root;
         }
         if (type.equals("DATABASE") || type.equals("CATALOG")) {
-            return creation ? root : root.getChild(new VoidProgressMonitor(), parts[parts.length - 1]);
+            return creation ? root : root.getChild(context.getMonitor(), parts[parts.length - 1]);
         }
         if (parts.length == 1) {
             if (defaults != null && defaults.getDefaultSchema() != null) {
@@ -396,67 +344,111 @@ public abstract class ExecuteSQLFunction implements AIFunction {
             if (defaults != null && defaults.getDefaultCatalog() != null) {
                 return defaults.getDefaultCatalog();
             }
-            // A schema/catalog cannot be guessed when the datasource exposes more than one namespace.
             return DBSCatalog.class.isAssignableFrom(childType) || DBSSchema.class.isAssignableFrom(childType) ? null : root;
         }
-        String catalog = parts.length > 2 ? parts[parts.length - 3] : schemas ? null : parts[0];
-        String schema = schemas || parts.length > 2 ? parts[parts.length - 2] : null;
-        return DBUtils.getObjectByPath(new VoidProgressMonitor(), executionContext, root, catalog, schema, null, true);
+        boolean schemas = DBSSchema.class.isAssignableFrom(childType)
+            || defaults != null && (defaults.getDefaultSchema() != null || defaults.supportsSchemaChange());
+        return DBUtils.getObjectByPath(context.getMonitor(), executionContext, root,
+            parts.length > 2 ? parts[parts.length - 3] : schemas ? null : parts[0],
+            schemas || parts.length > 2 ? parts[parts.length - 2] : null, null, true);
+    }
+
+    protected final void verifyStatementObjects(
+        @NotNull AIFunctionContext context,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull Statement statement
+    ) throws DBException {
+        Set<String> names = new LinkedHashSet<>();
+        Set<String> routines = new LinkedHashSet<>();
+        if (statement instanceof Select select && select.getASTNode() != null) {
+            collectSelectObjects(select, names, routines);
+        } else {
+            try {
+                names.addAll(objectFinder(routines).getTables(statement));
+            } catch (UnsupportedOperationException | ClassCastException e) {
+                throw new DBException("Cannot verify objects in this parsed statement", e);
+            }
+        }
+        for (String name : names) {
+            verifyObject(context, executionContext, name);
+        }
+        for (String name : routines) {
+            verifyRoutine(context, executionContext, name);
+        }
+    }
+
+    protected final void verifyExpressionObjects(
+        @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull Expression expression
+    ) throws DBException {
+        Set<String> routines = new LinkedHashSet<>();
+        Set<String> names;
+        try {
+            names = objectFinder(routines).getTables(expression);
+        } catch (UnsupportedOperationException | ClassCastException e) {
+            throw new DBException("Cannot verify objects in this expression", e);
+        }
+        for (String name : names) {
+            verifyObject(context, executionContext, name);
+        }
+        for (String name : routines) {
+            verifyRoutine(context, executionContext, name);
+        }
     }
 
     @NotNull
-    static DBSInstance resolveInstance(@NotNull DBPDataSource dataSource, @Nullable String catalog) throws DBException {
-        if (CommonUtils.isEmpty(catalog)) {
-            return dataSource.getDefaultInstance();
-        }
-        return dataSource.getAvailableInstances().stream()
-            .filter(instance -> instance.getName().equals(catalog))
-            .findFirst()
-            .orElseThrow(() -> new DBException("Catalog '" + catalog + "' not found"));
+    private static TablesNamesFinder<Void> objectFinder(@NotNull Set<String> routines) {
+        return new TablesNamesFinder<>() {
+            @Override
+            public <S> Void visit(@NotNull Function function, @Nullable S unused) {
+                if (function.getMultipartName().size() > 1) {
+                    routines.add(function.getName());
+                }
+                return super.visit(function, unused);
+            }
+        };
     }
 
-    private record TableScope(@NotNull Node node, @NotNull Set<String> aliases) {
+    private record SelectScope(@NotNull Node node, @NotNull Set<String> aliases) {
     }
 
-    static void traverseQueryTables(@NotNull Statement statement, @NotNull Consumer<Table> onTable) {
-        Deque<TableScope> stack = new ArrayDeque<>();
-        stack.push(new TableScope(((ASTNodeAccess) statement).getASTNode(), Set.of()));
-        Set<Select> handledSelects = Collections.newSetFromMap(new IdentityHashMap<>());
-        Set<Table> handledTables = Collections.newSetFromMap(new IdentityHashMap<>());
-        Set<Function> handledFunctions = Collections.newSetFromMap(new IdentityHashMap<>());
+    private static void collectSelectObjects(
+        @NotNull Select select, @NotNull Set<String> names, @NotNull Set<String> routines
+    ) throws DBException {
+        Deque<SelectScope> stack = new ArrayDeque<>();
+        stack.push(new SelectScope(select.getASTNode(), Set.of()));
+        Set<Select> visited = Collections.newSetFromMap(new IdentityHashMap<>());
         while (!stack.isEmpty()) {
-            TableScope scope = stack.pop();
+            SelectScope scope = stack.pop();
             Node node = scope.node();
             Set<String> aliases = scope.aliases();
-            Object value = node instanceof SimpleNode simpleNode ? simpleNode.jjtGetValue() : null;
-            if (value instanceof Select select && handledSelects.add(select)) {
-                Set<String> visibleAliases = new HashSet<>(aliases);
-                for (WithItem<?> item : CommonUtils.safeCollection(select.getWithItemsList())) {
-                    Set<String> definitionAliases = new HashSet<>(visibleAliases);
+            Object value = node instanceof SimpleNode simple ? simple.jjtGetValue() : null;
+            if (value instanceof Select nested && visited.add(nested)) {
+                Set<String> visible = new HashSet<>(aliases);
+                for (WithItem<?> item : CommonUtils.safeCollection(nested.getWithItemsList())) {
+                    // Definitions have separate AST roots, and their aliases must not escape the enclosing SELECT.
+                    Set<String> definitionAliases = new HashSet<>(visible);
                     if (item.isRecursive()) {
                         definitionAliases.add(identifierKey(item.getAliasName()));
                     }
-                    // CTE definitions have separate AST roots. Check their physical tables as well as the main query.
                     if (item.getParenthesedStatement() instanceof ASTNodeAccess definition) {
-                        stack.push(new TableScope(definition.getASTNode(), definitionAliases));
+                        stack.push(new SelectScope(definition.getASTNode(), definitionAliases));
+                    } else {
+                        throw new DBException("Cannot verify a non-SELECT common-table definition here");
                     }
-                    visibleAliases.add(identifierKey(item.getAliasName()));
+                    visible.add(identifierKey(item.getAliasName()));
                 }
-                aliases = visibleAliases;
+                aliases = visible;
             }
-            if (value instanceof Table table && handledTables.add(table)) {
-                boolean qualified = !CommonUtils.isEmpty(table.getSchemaName())
-                    || table.getDatabase() != null && !CommonUtils.isEmpty(table.getDatabase().getDatabaseName());
-                if (qualified || !aliases.contains(identifierKey(table.getName()))) {
-                    onTable.accept(table);
-                }
+            if (value instanceof Table table && (!CommonUtils.isEmpty(table.getSchemaName())
+                || table.getDatabase() != null && !CommonUtils.isEmpty(table.getDatabase().getDatabaseName())
+                || !aliases.contains(identifierKey(table.getName())))) {
+                names.add(table.getFullyQualifiedName());
             }
-            if (value instanceof Function function && handledFunctions.add(function) && function.getMultipartName().size() > 1) {
-                // Qualified routines can read data just like tables and must be checked against the same scope.
-                onTable.accept(new Table(function.getMultipartName()));
+            if (value instanceof Function function && function.getMultipartName().size() > 1) {
+                routines.add(function.getName());
             }
             for (int i = node.jjtGetNumChildren() - 1; i >= 0; i--) {
-                stack.push(new TableScope(node.jjtGetChild(i), aliases));
+                stack.push(new SelectScope(node.jjtGetChild(i), aliases));
             }
         }
     }
@@ -467,31 +459,195 @@ public abstract class ExecuteSQLFunction implements AIFunction {
     }
 
     @NotNull
-    private StreamConsumerSettings prepareSettings() {
-        StreamConsumerSettings settings = new StreamConsumerSettings();
-        settings.setOutputClipboard(false);
-        settings.setOutputEncodingBOM(false);
-        settings.setOutputEncoding(StandardCharsets.UTF_8.name());
-        return settings;
+    protected static List<String> tokenize(@NotNull String sql) throws DBException {
+        try {
+            CCJSqlParser lexer = new CCJSqlParser(sql).withSquareBracketQuotation(true).withBackslashEscapeCharacter(true);
+            List<String> tokens = new ArrayList<>();
+            while (true) {
+                Token token = lexer.getNextToken();
+                for (Token comment = token.specialToken; comment != null; comment = comment.specialToken) {
+                    String text = comment.image.toUpperCase(Locale.ROOT);
+                    if (text.startsWith("/*!") || text.startsWith("/*M!")) {
+                        throw new DBException("Cannot verify executable SQL comments");
+                    }
+                }
+                if (token.kind == CCJSqlParserConstants.EOF) {
+                    return tokens;
+                }
+                tokens.add(token.image);
+            }
+        } catch (ParseException | TokenMgrException e) {
+            throw new DBException("Cannot tokenize SQL statement", e);
+        }
+    }
+
+    @NotNull
+    protected static String firstKeyword(@NotNull List<String> tokens) {
+        return tokens.isEmpty() ? "" : tokens.getFirst().toUpperCase(Locale.ROOT);
+    }
+
+    protected static boolean containsKeyword(@NotNull List<String> tokens, @NotNull Set<String> words) {
+        for (int i = 0; i < tokens.size(); i++) {
+            if ((i == 0 || !tokens.get(i - 1).equals(".")) && words.contains(tokens.get(i).toUpperCase(Locale.ROOT))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected static int skipParentheses(@NotNull List<String> tokens, int start) {
+        int depth = 0;
+        for (int i = start; i < tokens.size(); i++) {
+            if (tokens.get(i).equals("(")) {
+                depth++;
+            } else if (tokens.get(i).equals(")") && --depth == 0) {
+                return i + 1;
+            }
+        }
+        return tokens.size();
+    }
+
+    protected record Identifier(@NotNull String name, int end) {
+    }
+
+    @Nullable
+    protected static Identifier readIdentifier(@NotNull List<String> tokens, int start) {
+        if (start >= tokens.size() || !isIdentifier(tokens.get(start))) {
+            return null;
+        }
+        StringBuilder name = new StringBuilder(tokens.get(start++));
+        while (start + 1 < tokens.size() && tokens.get(start).equals(".") && isIdentifier(tokens.get(start + 1))) {
+            name.append('.').append(tokens.get(start + 1));
+            start += 2;
+        }
+        return new Identifier(name.toString(), start);
+    }
+
+    private static boolean isIdentifier(@NotNull String token) {
+        return !token.isEmpty() && (token.startsWith("\"") || token.startsWith("`") || token.startsWith("[")
+            || (Character.isJavaIdentifierStart(token.charAt(0)) || token.charAt(0) == '#')
+                && !Set.of("SELECT", "FROM", "JOIN", "WHERE", "ON", "AS", "TO", "SET", "VALUES", "USING", "ONLY")
+                    .contains(token.toUpperCase(Locale.ROOT)));
+    }
+
+    @NotNull
+    protected static Set<String> findTextObjects(@NotNull List<String> tokens, @NotNull Set<String> prefixes) {
+        Set<String> names = new LinkedHashSet<>();
+        Set<Integer> fromDepths = new HashSet<>();
+        int depth = 0;
+        for (int i = 0; i < tokens.size(); i++) {
+            String token = tokens.get(i).toUpperCase(Locale.ROOT);
+            if (token.equals("(")) {
+                depth++;
+            } else if (token.equals(")")) {
+                fromDepths.remove(depth--);
+            } else if (Set.of("WHERE", "SET", "GROUP", "ORDER", "HAVING", "LIMIT", "RETURNING", "VALUES", "UNION", "EXCEPT", "INTERSECT")
+                .contains(token)) {
+                fromDepths.remove(depth);
+            }
+            if ((prefixes.contains(token) && (i == 0 || !tokens.get(i - 1).equals(".")))
+                || token.equals(",") && fromDepths.contains(depth)) {
+                int start = i + 1;
+                while (start < tokens.size() && Set.of("ONLY", "LATERAL", "LOW_PRIORITY", "IGNORE", "OVERWRITE")
+                    .contains(tokens.get(start).toUpperCase(Locale.ROOT))) {
+                    start++;
+                }
+                Identifier name = readIdentifier(tokens, start);
+                if (name != null) {
+                    names.add(name.name());
+                    i = name.end() - 1;
+                }
+                if (token.equals("FROM") || token.equals("UPDATE")) {
+                    fromDepths.add(depth);
+                }
+            }
+        }
+        return names;
+    }
+
+    protected final void verifyTextObjects(
+        @NotNull AIFunctionContext context,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<String> tokens,
+        @NotNull Set<String> prefixes
+    ) throws DBException {
+        Set<String> names = findTextObjects(tokens, prefixes);
+        if (names.isEmpty()) {
+            throw new DBException("Cannot determine database objects in this SQL statement");
+        }
+        for (String name : names) {
+            verifyObject(context, executionContext, name);
+        }
+        verifyTextRoutines(context, executionContext, tokens, Set.of());
+    }
+
+    protected final void verifyTextRoutines(
+        @NotNull AIFunctionContext context,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull List<String> tokens,
+        @NotNull Set<String> ignoredNames
+    ) throws DBException {
+        for (int i = 0; i < tokens.size(); i++) {
+            Identifier name = readIdentifier(tokens, i);
+            if (name != null && name.end() < tokens.size() && tokens.get(name.end()).equals("(")
+                && name.name().contains(".") && !ignoredNames.contains(name.name())) {
+                verifyRoutine(context, executionContext, name.name());
+                i = name.end() - 1;
+            }
+        }
+    }
+
+    @NotNull
+    protected final DBCExecutionContext openExecutionContext(
+        @NotNull AIFunctionContext context, @Nullable String catalogName
+    ) throws DBException {
+        DBCExecutionContext original = requireDatabaseContext(context).getExecutionContext();
+        if (CommonUtils.isEmpty(catalogName)) {
+            return original;
+        }
+        DBPDataSource dataSource = original.getDataSource();
+        DBSObjectContainer root = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
+        DBSObject object = root == null ? null : root.getChild(context.getMonitor(), catalogName);
+        DBSInstance instance = dataSource.getAvailableInstances().stream()
+            .filter(candidate -> candidate.getName().equals(catalogName)).findFirst().orElse(null);
+        if (instance == null && !(object instanceof DBSCatalog)) {
+            throw new DBException("Catalog '" + catalogName + "' not found");
+        }
+        checkObjectScope(context, object instanceof DBSCatalog ? object : instance);
+        if (instance == null && object instanceof DBSInstance catalogInstance) {
+            instance = catalogInstance;
+        }
+        if (instance != null) {
+            return instance.openIsolatedContext(context.getMonitor(), "MCP SQL execution", original);
+        }
+        DBCExecutionContext isolated = original.getOwnerInstance().openIsolatedContext(context.getMonitor(), "MCP SQL execution", original);
+        if (isolated == original) {
+            throw new DBException("Isolated catalog selection is not supported by this datasource");
+        }
+        try {
+            var defaults = isolated.getContextDefaults();
+            if (defaults == null || !defaults.supportsCatalogChange()) {
+                throw new DBException("Catalog selection is not supported by this execution context");
+            }
+            // Structural catalogs (for example MySQL databases) need not be DBSInstance objects.
+            defaults.setDefaultCatalog(context.getMonitor(), (DBSCatalog) object, null);
+            return isolated;
+        } catch (DBException | RuntimeException e) {
+            isolated.close();
+            throw e;
+        }
     }
 
     private static class LogOutputWriter implements DBCOutputWriter {
-        private final Log log;
-
-        private LogOutputWriter(@NotNull Log log) {
-            this.log = log;
-        }
-
         @Override
         public void println(@Nullable DBCOutputSeverity severity, @Nullable String message) {
             if (message != null) {
-                log.debug("MCP sql execution log: " + message);
+                log.debug("MCP SQL execution: " + message);
             }
         }
 
         @Override
         public void flush() {
-
         }
     }
 }
