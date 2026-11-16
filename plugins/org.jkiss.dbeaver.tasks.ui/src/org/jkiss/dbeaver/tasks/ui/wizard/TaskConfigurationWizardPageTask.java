@@ -27,6 +27,8 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -54,6 +56,7 @@ import java.util.*;
  */
 class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfigurationWizard> {
     private static final Log log = Log.getLog(TaskConfigurationWizardPageTask.class);
+    private static final String COMMON_TASK_CATEGORY_ID = "common";
 
     private final DBPProject selectedProject;
     private Text taskLabelText;
@@ -73,7 +76,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
 
     private Map<DBTTaskType, TaskConfigurationWizard> taskWizards = new HashMap<>();
 
-    TaskConfigurationWizardPageTask(DBTTask task) {
+    TaskConfigurationWizardPageTask(@Nullable DBTTask task) {
         super(task == null ? TaskUIMessages.task_config_wizard_page_settings_create_task : TaskUIMessages.task_config_wizard_page_settings_edit_task);
         setTitle(task == null ? TaskUIMessages.task_config_wizard_page_task_title_new_task_prop : TaskUIMessages.task_config_wizard_page_settings_title_task_prop);
         setDescription(TaskUIMessages.task_config_wizard_page_settings_descr_set_task);
@@ -87,6 +90,16 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
             this.selectedCategory = selectedTaskType.getCategory();
         }
         this.selectedProject = NavigatorUtils.getSelectedProject();
+        if (this.task == null) {
+            String baseName = TaskUIMessages.task_config_wizard_page_task_default_name;
+            this.taskName = baseName;
+            DBTTaskManager taskManager = selectedProject.getTaskManager();
+            int index = 1;
+            while (taskManager.getTaskByName(this.taskName) != null) {
+                this.taskName = baseName + " (" + index + ")";
+                index++;
+            }
+        }
         setPageComplete(this.task != null);
     }
 
@@ -136,7 +149,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                 taskLabelText = UIUtils.createLabelText(
                     infoPanel,
                     TaskUIMessages.task_config_wizard_page_task_text_label_name,
-                    task == null ? "" : CommonUtils.notEmpty(task.getName()),
+                    CommonUtils.notEmpty(taskName),
                     SWT.BORDER
                 );
                 if (taskSaved) {
@@ -298,9 +311,11 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
         getWizard().getContainer().updateButtons();
     }
 
-    private void addTaskCategories(TreeItem parentItem, DBTTaskCategory[] categories) {
+    private void addTaskCategories(@Nullable TreeItem parentItem, @NotNull DBTTaskCategory[] categories) {
         List<DBTTaskCategory> allCats = Arrays.asList(categories);
-        allCats.sort(Comparator.comparing(DBTTaskCategory::getName));
+        allCats.sort(Comparator
+            .comparing((DBTTaskCategory category) -> !COMMON_TASK_CATEGORY_ID.equals(category.getId()))
+            .thenComparing(DBTTaskCategory::getName));
 
         for (DBTTaskCategory cat : categories) {
             if (!isTaskCategoryApplicable(cat)) {
