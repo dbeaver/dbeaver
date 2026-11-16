@@ -14,14 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.ai.functions;
+package org.jkiss.dbeaver.model.ai.functions.heuristics;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Locale;
@@ -35,7 +37,7 @@ import java.util.regex.Pattern;
  * recognizable references in vendor extensions and incomplete statements can still be checked.
  * An empty result does not establish that a statement accesses no database objects.
  */
-public final class SQLScopeHeuristics {
+public abstract class SQLScopeHeuristics {
     private static final Pattern WORD = Pattern.compile("[\\p{L}_$#@][\\p{L}\\p{N}_$#@]*");
     private static final Pattern DOLLAR_QUOTE = Pattern.compile("\\$(?:[A-Za-z_][A-Za-z_0-9]*)?\\$");
     private static final Set<String> TABLE_PREFIXES = Set.of(
@@ -56,16 +58,100 @@ public final class SQLScopeHeuristics {
         "UNNEST", "JSON_TABLE", "OPENJSON", "GENERATE_SERIES", "GENERATOR", "FLATTEN", "JSONB_TO_RECORDSET"
     );
 
-    private SQLScopeHeuristics() {
+    protected SQLScopeHeuristics() {
     }
 
     @NotNull
     public static Set<String> extractTableNames(@NotNull String sql) {
-        return extractTableNames(sql, 0);
+        return extractTableNames(sql, 0, TABLE_PREFIXES);
     }
 
     @NotNull
-    private static Set<String> extractTableNames(@NotNull String sql, int recursion) {
+    public static SQLQueryCategory getQueryCategory(@NotNull String sql) {
+        List<String> tokens = tokenize(sql);
+        int start = 0;
+        while (start < tokens.size() && tokens.get(start).equals("(")) {
+            start++;
+        }
+        if (start < tokens.size() && tokens.get(start).equalsIgnoreCase("WITH")) {
+            start++;
+            if (start < tokens.size() && tokens.get(start).equalsIgnoreCase("RECURSIVE")) {
+                start++;
+            }
+            while (start < tokens.size() && isName(tokens.get(start))) {
+                start++;
+                if (start < tokens.size() && tokens.get(start).equals("(")) {
+                    start = skipParentheses(tokens, start);
+                }
+                if (start >= tokens.size() || !tokens.get(start++).equalsIgnoreCase("AS")) {
+                    return SQLQueryCategory.UNKNOWN;
+                }
+                while (start < tokens.size() && Set.of("NOT", "MATERIALIZED").contains(tokens.get(start).toUpperCase(Locale.ROOT))) {
+                    start++;
+                }
+                if (start >= tokens.size() || !tokens.get(start).equals("(")) {
+                    return SQLQueryCategory.UNKNOWN;
+                }
+                start = skipParentheses(tokens, start);
+                if (start >= tokens.size() || !tokens.get(start).equals(",")) {
+                    break;
+                }
+                start++;
+            }
+        }
+        if (start >= tokens.size()) {
+            return SQLQueryCategory.UNKNOWN;
+        }
+        if (tokens.get(start).equalsIgnoreCase("ALTER") && start + 2 < tokens.size()
+            && tokens.get(start + 1).equalsIgnoreCase("DEFAULT") && tokens.get(start + 2).equalsIgnoreCase("PRIVILEGES")) {
+            return SQLQueryCategory.DCL;
+        }
+        if (tokens.get(start).equalsIgnoreCase("SET")) {
+            return start + 1 < tokens.size() && (tokens.get(start + 1).equalsIgnoreCase("ROLE")
+                || start + 2 < tokens.size() && tokens.get(start + 1).equalsIgnoreCase("SESSION")
+                    && tokens.get(start + 2).equalsIgnoreCase("AUTHORIZATION")) ? SQLQueryCategory.DCL : SQLQueryCategory.UNKNOWN;
+        }
+        return switch (tokens.get(start).toUpperCase(Locale.ROOT)) {
+            case "SELECT", "VALUES", "TABLE", "SHOW", "DESCRIBE", "DESC", "EXPLAIN" -> hasWriteKeywords(sql)
+                ? SQLQueryCategory.UNKNOWN : SQLQueryCategory.DQL;
+            case "INSERT", "UPDATE", "DELETE", "MERGE", "CALL", "REPLACE", "UPSERT", "COPY", "LOAD" -> SQLQueryCategory.DML;
+            case "CREATE", "ALTER", "DROP", "TRUNCATE", "RENAME", "COMMENT" -> SQLQueryCategory.DDL;
+            case "GRANT", "REVOKE", "DENY" -> SQLQueryCategory.DCL;
+            default -> SQLQueryCategory.UNKNOWN;
+        };
+    }
+
+    public static boolean hasWriteKeywords(@NotNull String sql) {
+        List<String> tokens = tokenize(sql);
+        for (int i = 0; i < tokens.size(); i++) {
+            if ((i == 0 || !tokens.get(i - 1).equals(".")) && Set.of(
+                "INSERT", "UPDATE", "DELETE", "MERGE", "CREATE", "ALTER", "DROP", "TRUNCATE", "INTO",
+                "CALL", "EXEC", "EXECUTE", "COPY", "GRANT", "REVOKE", "DENY", "DO", "REPLACE", "UPSERT", "LOAD",
+                "RENAME", "COMMENT"
+            ).contains(tokens.get(i).toUpperCase(Locale.ROOT))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public record ObjectReference(@NotNull String name, @NotNull String type, boolean creation) {
+    }
+
+    @NotNull
+    protected static Map<String, ObjectReference> referencedObjects(@NotNull String sql, @NotNull Set<String> prefixes) {
+        Map<String, ObjectReference> references = new LinkedHashMap<>();
+        for (String name : extractTableNames(sql, 0, prefixes)) {
+            references.put(name, new ObjectReference(name, "OBJECT", false));
+        }
+        return references;
+    }
+
+    @NotNull
+    public abstract List<ObjectReference> extractReferences(@NotNull String sql);
+
+    @NotNull
+    private static Set<String> extractTableNames(@NotNull String sql, int recursion, @NotNull Set<String> prefixes) {
         List<String> tokens = tokenize(sql);
         Set<String> names = new LinkedHashSet<>();
         if (tokens.size() > 1 && tokens.getFirst().equals("db") && tokens.get(1).equals(".")) {
@@ -75,7 +161,8 @@ public final class SQLScopeHeuristics {
         Set<Integer> fromDepths = new HashSet<>();
         Set<Integer> scalarFromDepths = new HashSet<>();
         Map<Integer, Set<String>> commonTables = new HashMap<>();
-        boolean select = tokens.stream().anyMatch(token -> token.equalsIgnoreCase("SELECT"));
+        boolean sqlStatement = getQueryCategory(sql) != SQLQueryCategory.UNKNOWN
+            || tokens.stream().anyMatch(token -> token.equalsIgnoreCase("SELECT"));
         int depth = 0;
         boolean indexOrTrigger = false;
         boolean rename = false;
@@ -85,7 +172,7 @@ public final class SQLScopeHeuristics {
             String keyword = token.toUpperCase(Locale.ROOT);
             if (token.startsWith("'") && i > 0 && recursion < 8
                 && Set.of("EXEC", "EXECUTE", "IMMEDIATE", "DO", "AS").contains(tokens.get(i - 1).toUpperCase(Locale.ROOT))) {
-                names.addAll(extractTableNames(token.substring(1, token.length() - 1).replace("''", "'"), recursion + 1));
+                names.addAll(extractTableNames(token.substring(1, token.length() - 1).replace("''", "'"), recursion + 1, prefixes));
             }
             if (token.equals("(")) {
                 depth++;
@@ -112,7 +199,7 @@ public final class SQLScopeHeuristics {
                 indexOrTrigger = true;
             } else if (keyword.equals("RENAME")) {
                 rename = true;
-            } else if (TABLE_PREFIXES.contains(keyword) || keyword.equals("ON") && indexOrTrigger
+            } else if (prefixes.contains(keyword) || keyword.equals("ON") && indexOrTrigger
                 || keyword.equals("TO") && rename || token.equals(",") && fromDepths.contains(depth)) {
                 if (i > 0 && tokens.get(i - 1).equals(".")
                     || keyword.equals("FROM") && scalarFromDepths.contains(depth)
@@ -143,7 +230,7 @@ public final class SQLScopeHeuristics {
                 }
             } else if (END_FROM.contains(keyword)) {
                 fromDepths.remove(depth);
-            } else if (select && isName(token) && (i == 0 || !tokens.get(i - 1).equals("."))
+            } else if (sqlStatement && isName(token) && (i == 0 || !tokens.get(i - 1).equals("."))
                 && i + 1 < tokens.size() && tokens.get(i + 1).equals(".")) {
                 Name routine = readName(tokens, i);
                 if (routine != null && routine.end() < tokens.size() && tokens.get(routine.end()).equals("(")) {
@@ -190,7 +277,7 @@ public final class SQLScopeHeuristics {
         return name.startsWith("\"") || name.startsWith("`") || name.startsWith("[") ? name : name.toUpperCase(Locale.ROOT);
     }
 
-    private static int skipParentheses(@NotNull List<String> tokens, int start) {
+    protected static int skipParentheses(@NotNull List<String> tokens, int start) {
         int nesting = 0;
         for (int i = start; i < tokens.size(); i++) {
             if (tokens.get(i).equals("(")) {
@@ -203,7 +290,7 @@ public final class SQLScopeHeuristics {
     }
 
     @Nullable
-    private static Name readName(@NotNull List<String> tokens, int start) {
+    protected static Name readName(@NotNull List<String> tokens, int start) {
         if (start >= tokens.size() || !isName(tokens.get(start))) {
             return null;
         }
@@ -217,7 +304,8 @@ public final class SQLScopeHeuristics {
                 name.append('.');
                 end++;
             }
-            if (end >= tokens.size() || !isName(tokens.get(end))) {
+            // A qualified identifier can contain words that are keywords outside an identifier.
+            if (end >= tokens.size() || !(isName(tokens.get(end)) || WORD.matcher(tokens.get(end)).matches())) {
                 return null;
             }
             name.append(tokens.get(end++));
@@ -321,7 +409,7 @@ public final class SQLScopeHeuristics {
     }
 
     @NotNull
-    private static List<String> tokenize(@NotNull String sql) {
+    protected static List<String> tokenize(@NotNull String sql) {
         List<String> tokens = new ArrayList<>();
         Matcher word = WORD.matcher(sql);
         Matcher dollarQuote = DOLLAR_QUOTE.matcher(sql);
@@ -416,6 +504,6 @@ public final class SQLScopeHeuristics {
         return -1;
     }
 
-    private record Name(@NotNull String text, int end) {
+    protected record Name(@NotNull String text, int end) {
     }
 }

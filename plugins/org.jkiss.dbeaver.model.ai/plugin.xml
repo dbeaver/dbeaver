@@ -171,18 +171,60 @@
             description="Executes various SQL queries"/>
 
         <function
-            id="executeSQL"
-            name="Execute SQL"
+            id="executeDQL"
+            name="Execute DQL"
             enabledByDefault="true"
             type="INFORMATION"
             purpose="MCP"
-            class="org.jkiss.dbeaver.model.ai.functions.ExecuteSQLFunction"
+            class="org.jkiss.dbeaver.model.ai.functions.ExecuteDQLFunction"
             categoryId="execute.sql"
-            description="Executes a provided SQL query and returns the results in the specified format.">
+            description="Executes read-only SELECT-like SQL queries and returns the results in the specified format. Use executeDML for data changes and executeDDL for schema changes.">
             <parameter name="catalogName" required="false" type="string" description="Catalog name to execute the query in. Must be specified if the database supports multiple catalogs."/>
-            <parameter name="sqlQuery" required="true" type="string" description="The SQL query to be executed. Use fully qualified table names."/>
+            <parameter name="sqlQuery" required="true" type="string" description="Read-only SELECT-like SQL query. Use fully qualified table names."/>
             <parameter name="maxRows" required="false" type="integer" defaultValue="10" description="Maximum number of rows to return"/>
             <parameter name="format" type="string" defaultValue="csv" validValuesProvider="org.jkiss.dbeaver.model.ai.functions.AITextExportFormatValueProvider" description="Output text format ID"/>
+        </function>
+
+        <function
+            id="executeDML"
+            name="Execute DML"
+            enabledByDefault="true"
+            type="INFORMATION"
+            purpose="MCP"
+            class="org.jkiss.dbeaver.model.ai.functions.ExecuteDMLFunction"
+            categoryId="execute.sql"
+            defaultAllowMode="ASK"
+            description="Executes data manipulation statements, including INSERT, UPDATE, DELETE, MERGE, and CALL. Returns the number of modified rows reported by the driver, or -1 if unavailable. All referenced database objects must be in the allowed scope.">
+            <parameter name="catalogName" required="false" type="string" description="Catalog name to execute the statements in. Must be specified if the database supports multiple catalogs."/>
+            <parameter name="sqlQuery" required="true" type="string" description="DML statements to execute. Use fully qualified table names."/>
+        </function>
+
+        <function
+            id="executeDDL"
+            name="Execute DDL"
+            enabledByDefault="true"
+            type="INFORMATION"
+            purpose="MCP"
+            class="org.jkiss.dbeaver.model.ai.functions.ExecuteDDLFunction"
+            categoryId="execute.sql"
+            defaultAllowMode="ASK"
+            description="Executes data definition statements, including CREATE, ALTER, DROP, TRUNCATE, RENAME, and COMMENT. Existing objects and the parent namespace of new objects must be in the allowed scope.">
+            <parameter name="catalogName" required="false" type="string" description="Catalog name to execute the statements in. Must be specified if the database supports multiple catalogs."/>
+            <parameter name="sqlQuery" required="true" type="string" description="DDL statements to execute. Use fully qualified object names."/>
+        </function>
+
+        <function
+            id="executeDCL"
+            name="Execute DCL"
+            enabledByDefault="true"
+            type="INFORMATION"
+            purpose="MCP"
+            class="org.jkiss.dbeaver.model.ai.functions.ExecuteDCLFunction"
+            categoryId="execute.sql"
+            defaultAllowMode="ASK"
+            description="Executes data control statements, including GRANT and REVOKE. Object privileges must be in the allowed scope; global privilege and role changes require datasource-wide scope.">
+            <parameter name="catalogName" required="false" type="string" description="Catalog name to execute the statements in. Must be specified if the database supports multiple catalogs."/>
+            <parameter name="sqlQuery" required="true" type="string" description="DCL statements to execute. Use fully qualified object names."/>
         </function>
 
     </extension>

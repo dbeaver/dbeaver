@@ -18,12 +18,18 @@ package org.jkiss.dbeaver.model.ai.functions;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.ai.AIFunction;
 import org.jkiss.dbeaver.model.ai.AIFunctionContext;
 import org.jkiss.dbeaver.model.ai.AIFunctionResult;
 import org.jkiss.dbeaver.model.ai.AIFunctionType;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 
 import java.util.Map;
 
@@ -42,15 +48,24 @@ public class GetDatasourceInfoFunction implements AIFunction {
             );
         }
 
-        DBPDataSourceInfo info = aiDatabaseContext.getExecutionContext().getDataSource().getInfo();
+        DBPDataSource dataSource = aiDatabaseContext.getExecutionContext().getDataSource();
+        DBPDataSourceInfo info = dataSource.getInfo();
+        DBCExecutionContextDefaults<?, ?> defaults = aiDatabaseContext.getExecutionContext().getContextDefaults();
+        boolean supportsCatalogs = defaults != null && (defaults.getDefaultCatalog() != null || defaults.supportsCatalogChange());
+        boolean supportsSchemas = defaults != null && (defaults.getDefaultSchema() != null || defaults.supportsSchemaChange());
+        if (dataSource instanceof DBSObjectContainer container) {
+            Class<? extends DBSObject> childType = container.getPrimaryChildType(context.getMonitor());
+            supportsCatalogs |= DBSCatalog.class.isAssignableFrom(childType);
+            supportsSchemas |= DBSSchema.class.isAssignableFrom(childType);
+        }
         String responseText = """
             Database Driver: %s %s
             Supports Catalogs: %s
             Supports Schemas: %s
             """.formatted(
             info.getDriverName(), info.getDriverVersion(),
-            (info.getCatalogTerm() != null),
-            (info.getSchemaTerm() != null)
+            supportsCatalogs,
+            supportsSchemas
         );
 
 

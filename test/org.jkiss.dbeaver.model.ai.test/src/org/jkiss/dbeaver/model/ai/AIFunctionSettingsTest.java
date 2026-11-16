@@ -129,4 +129,16 @@ class AIFunctionSettingsTest {
         loaded.finishSettingsLoading();
         Assertions.assertEquals(saved, JSONUtils.GSON.toJson(loaded));
     }
+
+    @Test
+    void migratesDisabledExecuteSqlToDqlOnlyWhenLoadingSettings() {
+        AIFunctionSettings loaded = JSONUtils.GSON.fromJson("""
+            {"functions":{"db":{"df":["executeSQL"]}}}
+            """, AIFunctionSettings.class);
+        loaded.finishSettingsLoading();
+        AIToolbox toolbox = Mockito.mock(AIToolbox.class);
+        Mockito.when(toolbox.getToolboxId()).thenReturn(AIConstants.INTERNAL_TOOLBOX_ID);
+        Assertions.assertEquals(Set.of("executeDQL"), loaded.getToolboxSettings(toolbox).getDisabledFunctions());
+        Assertions.assertFalse(JSONUtils.GSON.toJson(loaded).contains("executeSQL"));
+    }
 }

@@ -28,7 +28,8 @@ import java.util.*;
  */
 public final class AIFunctionSettings {
     private static final Map<String, String> LEGACY_FUNCTION_NAMES = Map.of(
-        "readTableSampleRows", "readTableData"
+        "readTableSampleRows", "readTableData",
+        "executeSQL", "executeDQL"
     );
 
     @SerializedName("enabled")

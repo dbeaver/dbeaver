@@ -23,12 +23,13 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.ai.AIDatabaseScope;
 import org.jkiss.dbeaver.model.ai.AIFunctionResult;
 import org.jkiss.dbeaver.model.ai.engine.AIDatabaseContext;
+import org.jkiss.dbeaver.model.ai.functions.heuristics.SQLScopeHeuristics;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
-import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.junit.jupiter.api.Assertions;
@@ -70,7 +71,7 @@ class SQLScopeHeuristicsTest {
             "payroll".equalsIgnoreCase(invocation.getArgument(1)) ? table : null);
         SQLQuery query = Mockito.mock(SQLQuery.class);
         Mockito.when(query.getText()).thenReturn("SELECT * FROM private.payroll");
-        ExecuteSQLFunction function = new ExecuteSQLFunction();
+        ExecuteDQLFunction function = new ExecuteDQLFunction();
         AIFunctionResult denied = function.verifyObjectsInScope(query, executionContext, context);
         Assertions.assertTrue(denied.getValue().toString().contains("out of allowed scope"));
         Mockito.verify(schema).getChild(Mockito.any(), Mockito.anyString());
@@ -81,7 +82,7 @@ class SQLScopeHeuristicsTest {
         Mockito.when(query.getText()).thenReturn("some unrecognized command");
         DBException error = Assertions.assertThrows(DBException.class,
             () -> function.verifyObjectsInScope(query, executionContext, context));
-        Assertions.assertTrue(error.getMessage().contains("Cannot determine database objects"));
+        Assertions.assertTrue(error.getMessage().contains("only accepts DQL statements"));
     }
 
     @Test
@@ -92,9 +93,9 @@ class SQLScopeHeuristicsTest {
         Mockito.when(dataSource.getDefaultInstance()).thenReturn(defaultInstance);
         Mockito.when(selectedInstance.getName()).thenReturn("selected");
         Mockito.doReturn(List.of(selectedInstance)).when(dataSource).getAvailableInstances();
-        Assertions.assertSame(defaultInstance, ExecuteSQLFunction.resolveInstance(dataSource, null));
-        Assertions.assertSame(selectedInstance, ExecuteSQLFunction.resolveInstance(dataSource, "selected"));
-        Assertions.assertThrows(DBException.class, () -> ExecuteSQLFunction.resolveInstance(dataSource, "unknown"));
+        Assertions.assertSame(defaultInstance, ExecuteDQLFunction.resolveInstance(dataSource, null));
+        Assertions.assertSame(selectedInstance, ExecuteDQLFunction.resolveInstance(dataSource, "selected"));
+        Assertions.assertThrows(DBException.class, () -> ExecuteDQLFunction.resolveInstance(dataSource, "unknown"));
     }
 
     @Test
@@ -106,10 +107,13 @@ class SQLScopeHeuristicsTest {
                 "orders", "recent"),
             query("Non-recursive shadow", "WITH recent AS (SELECT * FROM recent) SELECT * FROM recent", "recent"),
             query("Recursive CTE", "WITH RECURSIVE recent AS (SELECT * FROM orders UNION ALL SELECT * FROM recent) SELECT * FROM recent",
-                "orders")
+                "orders"),
+            query("Qualified routine", "SELECT private.read_payroll() FROM public.orders", "private.read_payroll", "public.orders"),
+            query("Routine in CTE", "WITH x AS (SELECT private.read_payroll()) SELECT * FROM x", "private.read_payroll"),
+            query("Built-in functions", "SELECT count(*), sum(amount) FROM orders", "orders")
         )) {
             Set<String> physicalTables = new HashSet<>();
-            ExecuteSQLFunction.traverseQueryTables(CCJSqlParserUtil.parse(test.sql()),
+            ExecuteDQLFunction.traverseQueryTables(CCJSqlParserUtil.parse(test.sql()),
                 table -> physicalTables.add(table.getFullyQualifiedName()));
             Assertions.assertEquals(test.expected(), physicalTables, test.label());
         }

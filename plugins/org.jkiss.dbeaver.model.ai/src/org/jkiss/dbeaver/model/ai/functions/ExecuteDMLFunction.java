@@ -1,0 +1,46 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2026 DBeaver Corp and others
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package org.jkiss.dbeaver.model.ai.functions;
+
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.ai.functions.heuristics.DMLScopeHeuristics;
+import org.jkiss.dbeaver.model.ai.functions.heuristics.SQLScopeHeuristics;
+import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
+
+public class ExecuteDMLFunction extends ExecuteSQLFunction {
+    private static final SQLScopeHeuristics HEURISTICS = new DMLScopeHeuristics();
+
+    @NotNull
+    @Override
+    protected SQLScopeHeuristics getScopeHeuristics() {
+        return HEURISTICS;
+    }
+
+    @NotNull
+    @Override
+    protected SQLQueryCategory getQueryCategory() {
+        return SQLQueryCategory.DML;
+    }
+
+    @NotNull
+    @Override
+    protected Long getResultValue(@NotNull String output, @NotNull DBCStatistics statistics) {
+        return statistics.getRowsUpdated();
+    }
+
+}
