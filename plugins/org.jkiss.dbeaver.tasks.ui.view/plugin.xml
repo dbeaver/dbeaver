@@ -65,6 +65,19 @@
 
     <extension point="org.eclipse.ui.handlers">
         <!-- Task view handlers -->
+        <handler commandId="org.eclipse.ui.file.rename" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerRename">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <instanceof value="org.jkiss.dbeaver.model.task.DBTTask">
+                            <test property="org.jkiss.dbeaver.task.editable"/>
+                        </instanceof>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.eclipse.ui.edit.delete" class="org.jkiss.dbeaver.tasks.ui.view.TaskHandlerDelete">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.tasks.part.active"/></activeWhen>
             <enabledWhen>

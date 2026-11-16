@@ -67,6 +67,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
     private DBTTaskCategory selectedCategory;
     private DBTTaskType selectedTaskType;
     private String taskName;
+    private String generatedTaskName;
     private String taskDescription;
     private String selectedTaskFolderName;
     private Map<String, Object> initialProperties = new LinkedHashMap<>();
@@ -89,7 +90,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
             this.selectedTaskType = this.task.getType();
             this.selectedCategory = selectedTaskType.getCategory();
         }
-        this.selectedProject = NavigatorUtils.getSelectedProject();
+        this.selectedProject = task == null ? NavigatorUtils.getSelectedProject() : task.getProject();
         if (this.task == null) {
             String baseName = TaskUIMessages.task_config_wizard_page_task_default_name;
             this.taskName = baseName;
@@ -99,6 +100,7 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                 this.taskName = baseName + " (" + index + ")";
                 index++;
             }
+            generatedTaskName = taskName;
         }
         setPageComplete(this.task != null);
     }
@@ -152,10 +154,6 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
                     CommonUtils.notEmpty(taskName),
                     SWT.BORDER
                 );
-                if (taskSaved) {
-                    taskLabelText.setEditable(false);
-                    //taskLabelText.setEnabled(false);
-                }
                 taskLabelText.addModifyListener(e -> {
                     taskName = taskLabelText.getText();
                     modifyListener.modifyText(e);
@@ -299,6 +297,10 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
     }
 
     private void updateTaskTypeSelection() {
+        if (selectedTaskType != null && generatedTaskName != null && generatedTaskName.equals(taskName)) {
+            generatedTaskName = DBTaskUtils.generateTaskName(selectedProject.getTaskManager(), selectedTaskType);
+            taskLabelText.setText(generatedTaskName);
+        }
         if (task != null && selectedTaskType != null) {
             if (task.getType() != selectedTaskType) {
                 task.setType(selectedTaskType);
@@ -384,16 +386,14 @@ class TaskConfigurationWizardPageTask extends ActiveWizardPage<TaskConfiguration
 
     @Override
     protected boolean determinePageCompletion() {
-        if (CommonUtils.isEmpty(taskName)) {
+        if (CommonUtils.isEmptyTrimmed(taskName)) {
             setErrorMessage(TaskUIMessages.task_configuration_wizard_page_task_error_message_enter_task_name);
             return false;
         }
-        if (task == null) {
-            DBTTask task2 = selectedProject.getTaskManager().getTaskByName(taskName);
-            if (task2 != null) {
-                setErrorMessage(NLS.bind(TaskUIMessages.task_configuration_wizard_page_task_already_exists, taskName, selectedProject.getName()));
-                return false;
-            }
+        DBTTask task2 = selectedProject.getTaskManager().getTaskByName(taskName);
+        if (task2 != null && task2 != task) {
+            setErrorMessage(NLS.bind(TaskUIMessages.task_configuration_wizard_page_task_already_exists, taskName, selectedProject.getName()));
+            return false;
         }
         if (selectedTaskType == null) {
             setErrorMessage(TaskUIMessages.task_configuration_wizard_page_task_enter_type);
