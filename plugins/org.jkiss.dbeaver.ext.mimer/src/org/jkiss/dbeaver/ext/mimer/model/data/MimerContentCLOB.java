@@ -84,6 +84,15 @@ class MimerContentCLOB extends JDBCContentCLOB {
             return super.getDisplayString(format);
         }
         try {
+            if (format != DBDDisplayFormat.UI && currentStorage instanceof DBDContentCached cached) {
+                // EDIT (cell editor, Copy)/NATIVE want the real value, never the bounded preview
+                // below - unlike plain UI grid rendering, altering what's copied/edited would be
+                // silent data loss. Only reachable when the whole value is already cached in
+                // memory - MimerSpilledCharsStorage (spilled to disk) isn't DBDContentCached, so a
+                // too-large-for-memory value still falls through to the preview for every format,
+                // same as before, since there's nothing fuller to offer there.
+                return CommonUtils.toString(cached.getCachedValue());
+            }
             String text;
             long length;
             if (currentStorage instanceof MimerPreviewableStorage previewable) {

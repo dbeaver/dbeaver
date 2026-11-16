@@ -361,6 +361,22 @@ public class MimerCLOBValueHandlerTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void displayStringReturnsTheFullValueForEditFormatEvenWhenLongerThanThePreview() {
+        // Regression test: Copy (Ctrl+C) and the cell editor both request
+        // DBDDisplayFormat.EDIT, which must never return the bounded UI preview below - doing so
+        // would silently truncate (and append a synthetic size suffix to) whatever gets copied or
+        // edited. Only UI format shows the bounded "preview... [CLOB, size]" text.
+        String value = "ab".repeat(4_500);
+        MimerChunkedCharsStorage storage = new MimerChunkedCharsStorage(List.of(value.toCharArray()), value.length());
+        MimerContentCLOB content = new MimerContentCLOB(executionContext);
+        content.setStorage(storage);
+
+        Assertions.assertEquals(value, content.getDisplayString(DBDDisplayFormat.EDIT));
+        Assertions.assertNotEquals(value, content.getDisplayString(DBDDisplayFormat.UI),
+            "UI format should still show the bounded preview, not the full value");
+    }
+
+    @Test
     public void displayStringShowsJustThePreviewWhenItAlreadyCoversTheWholeValue() {
         // For a value that short to begin with, the preview IS the whole value, so no "..." or
         // size suffix should be added.
