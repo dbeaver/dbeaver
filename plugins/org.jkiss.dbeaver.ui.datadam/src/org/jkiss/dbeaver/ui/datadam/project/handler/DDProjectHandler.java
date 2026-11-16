@@ -27,9 +27,10 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.app.DBPProject;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -64,13 +65,13 @@ abstract class DDProjectHandler<J extends Job> extends AbstractHandler {
     protected abstract void onSuccess(@NotNull DBPProject project, @NotNull J job);
 
     protected void showMessage(@NotNull DBPProject project, @NotNull String message) {
-        DBWorkbench.getPlatformUI().showNotification(projectTitle(project), message, false, null);
+        DDUIUtils.showNotification(projectTitle(project), message, DBPMessageType.INFORMATION, null);
     }
 
     protected void showError(@NotNull DBPProject project, @NotNull String message, @NotNull Throwable error) {
         String title = projectTitle(project);
-        DBWorkbench.getPlatformUI().showNotification(title, message, true,
-            () -> DBWorkbench.getPlatformUI().showError(title, message, error));
+        DDUIUtils.showNotification(title, message, DBPMessageType.ERROR,
+            () -> DDUIUtils.showError(title, message, error));
     }
 
     @NotNull

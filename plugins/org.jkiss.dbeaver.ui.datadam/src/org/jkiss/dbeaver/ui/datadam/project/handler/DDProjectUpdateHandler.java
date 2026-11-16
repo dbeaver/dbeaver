@@ -24,12 +24,13 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictResolver;
 import org.jkiss.dbeaver.ui.datadam.project.job.DDProjectSynchronizationJob;
@@ -86,9 +87,9 @@ public class DDProjectUpdateHandler extends DDProjectHandler<DDProjectSynchroniz
                 switch (resolution.result) {
                     case NOT_SYNC -> showMessage(project, DDTrackingUIMessages.project_sync_unbind_success);
                     case UP_TO_DATE -> showMessage(project, DDTrackingUIMessages.project_sync_update_success);
-                    case CONFLICT -> DBWorkbench.getPlatformUI().showWarningNotification(
+                    case CONFLICT -> DDUIUtils.showNotification(
                         projectTitle(project),
-                        NLS.bind(DDTrackingUIMessages.projects_conflicts, project.getName()));
+                        NLS.bind(DDTrackingUIMessages.projects_conflicts, project.getName()), DBPMessageType.WARNING, null);
                     default -> showError(project, DDTrackingUIMessages.project_sync_update_failed,
                         new DBException("Project synchronization ended with status: " + resolution.result));
                 }

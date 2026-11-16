@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.model.datadam.auth.desktop.DDDesktopAccessService;
 import org.jkiss.dbeaver.model.datadam.rpc.DDRemoteDamDesktopSessionService;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -228,7 +227,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                 }
             });
         } catch (InvocationTargetException e) {
-            DBWorkbench.getPlatformUI().showError(SYNC_TITLE, errorMessage, e.getTargetException());
+            DDUIUtils.showError(SYNC_TITLE, errorMessage, e.getTargetException());
         } finally {
             refresh();
         }
@@ -391,7 +390,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
                     UIUtils.asyncExec(() -> {
                         if (isDamNameJobActive(this, monitor)) {
                             showDam(dam);
-                            DBWorkbench.getPlatformUI().showError(
+                            DDUIUtils.showError(
                                 SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_dam_name_update_failed, e);
                         }
                     });
@@ -447,7 +446,7 @@ public class DDSyncPreferencePage extends AbstractPrefPage implements IWorkbench
             error -> {
                 if (!mcpCheck.isDisposed() && accessService.getStatus() == DDDesktopAccessService.Status.SIGNED_IN) {
                     showMcpStatus(null);
-                    DBWorkbench.getPlatformUI().showError(
+                    DDUIUtils.showError(
                         SYNC_TITLE, DDTrackingUIMessages.sync_preference_page_mcp_update_failed, error);
                 }
             });

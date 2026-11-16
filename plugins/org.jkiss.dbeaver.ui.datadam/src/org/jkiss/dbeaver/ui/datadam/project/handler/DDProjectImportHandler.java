@@ -34,11 +34,12 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager.ProjectJobBatchResult;
@@ -114,14 +115,15 @@ public class DDProjectImportHandler extends AbstractHandler {
         UIUtils.asyncExec(() -> {
             if (!result.canceled()) {
                 if (!result.results().isEmpty()) {
-                    DBWorkbench.getPlatformUI().showNotification(DDTrackingUIMessages.project_sync_title,
-                        NLS.bind(DDTrackingUIMessages.project_sync_import_success, result.results().size()), false, null);
+                    DDUIUtils.showNotification(DDTrackingUIMessages.project_sync_title,
+                        NLS.bind(DDTrackingUIMessages.project_sync_import_success, result.results().size()),
+                        DBPMessageType.INFORMATION, null);
                 }
                 if (!result.failures().isEmpty()) {
                     String errors = String.join("\n", result.failures().stream()
                         .map(failure -> failure.projectName() + ": " + failure.error().getMessage()).toList());
-                    DBWorkbench.getPlatformUI().showNotification(DDTrackingUIMessages.project_sync_title,
-                        NLS.bind(DDTrackingUIMessages.projects_errors, errors), true, null);
+                    DDUIUtils.showNotification(DDTrackingUIMessages.project_sync_title,
+                        NLS.bind(DDTrackingUIMessages.projects_errors, errors), DBPMessageType.ERROR, null);
                 }
             }
         });
@@ -129,9 +131,8 @@ public class DDProjectImportHandler extends AbstractHandler {
     }
 
     private void showError(@NotNull String message, @NotNull Throwable error) {
-        DBWorkbench.getPlatformUI().showNotification(DDTrackingUIMessages.project_sync_title, message, true,
-            () -> DBWorkbench.getPlatformUI().showError(DDTrackingUIMessages.project_sync_title,
-                message, error));
+        DDUIUtils.showNotification(DDTrackingUIMessages.project_sync_title, message, DBPMessageType.ERROR,
+            () -> DDUIUtils.showError(DDTrackingUIMessages.project_sync_title, message, error));
     }
 
     private static class ImportProjectsDialog extends BaseDialog {

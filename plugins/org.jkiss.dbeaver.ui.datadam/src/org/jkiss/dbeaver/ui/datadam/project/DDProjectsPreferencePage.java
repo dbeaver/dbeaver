@@ -798,7 +798,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
 
     private void showError(@NotNull String message, @NotNull Throwable error) {
         UIUtils.asyncExec(() ->
-            DBWorkbench.getPlatformUI().showError(DDTrackingUIMessages.project_sync_title, message, error));
+            DDUIUtils.showError(DDTrackingUIMessages.project_sync_title, message, error));
     }
 
     @Override

@@ -26,13 +26,14 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.SyncResult;
 import org.jkiss.dbeaver.model.datadam.sync.project.ProjectStatus;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictResolver;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
@@ -73,9 +74,9 @@ public class DDProjectSyncAllHandler extends AbstractHandler {
                     resolveConflicts(conflicts, monitor, shell);
                     return monitor.isCanceled() ? Status.CANCEL_STATUS : Status.OK_STATUS;
                 } catch (DBException e) {
-                    UIUtils.asyncExec(() -> DBWorkbench.getPlatformUI().showNotification(
+                    UIUtils.asyncExec(() -> DDUIUtils.showNotification(
                         DDTrackingUIMessages.project_sync_title, DDTrackingUIMessages.projects_sync_all_load_failed,
-                        true, null));
+                        DBPMessageType.ERROR, null));
                     return Status.error(DDTrackingUIMessages.projects_sync_all_load_failed, e);
                 }
             }
@@ -112,9 +113,9 @@ public class DDProjectSyncAllHandler extends AbstractHandler {
                     UIUtils.syncExec(() -> showConflictResult(project, result));
                 }
             } catch (DBException e) {
-                UIUtils.syncExec(() -> DBWorkbench.getPlatformUI().showNotification(project.getName(),
-                    DDTrackingUIMessages.project_sync_resolve_failed, true,
-                    () -> DBWorkbench.getPlatformUI().showError(
+                UIUtils.syncExec(() -> DDUIUtils.showNotification(project.getName(),
+                    DDTrackingUIMessages.project_sync_resolve_failed, DBPMessageType.ERROR,
+                    () -> DDUIUtils.showError(
                         DDTrackingUIMessages.project_sync_title, DDTrackingUIMessages.project_sync_resolve_failed, e)));
             }
         }
@@ -122,25 +123,25 @@ public class DDProjectSyncAllHandler extends AbstractHandler {
 
     private void showConflictResult(@NotNull DBPProject project, @NotNull ProjectStatus result) {
         switch (result) {
-            case UP_TO_DATE -> DBWorkbench.getPlatformUI().showNotification(project.getName(),
-                DDTrackingUIMessages.project_sync_update_success, false, null);
-            case NOT_SYNC -> DBWorkbench.getPlatformUI().showNotification(project.getName(),
-                DDTrackingUIMessages.project_sync_unbind_success, false, null);
-            case CONFLICT -> DBWorkbench.getPlatformUI().showWarningNotification(project.getName(),
-                NLS.bind(DDTrackingUIMessages.projects_conflicts, project.getName()));
-            default -> DBWorkbench.getPlatformUI().showNotification(project.getName(),
-                DDTrackingUIMessages.project_sync_update_failed, true, null);
+            case UP_TO_DATE -> DDUIUtils.showNotification(project.getName(),
+                DDTrackingUIMessages.project_sync_update_success, DBPMessageType.INFORMATION, null);
+            case NOT_SYNC -> DDUIUtils.showNotification(project.getName(),
+                DDTrackingUIMessages.project_sync_unbind_success, DBPMessageType.INFORMATION, null);
+            case CONFLICT -> DDUIUtils.showNotification(project.getName(),
+                NLS.bind(DDTrackingUIMessages.projects_conflicts, project.getName()), DBPMessageType.WARNING, null);
+            default -> DDUIUtils.showNotification(project.getName(),
+                DDTrackingUIMessages.project_sync_update_failed, DBPMessageType.ERROR, null);
         }
     }
 
     private void showResults(int updated, @NotNull List<String> errors) {
         if (updated > 0) {
-            DBWorkbench.getPlatformUI().showNotification(DDTrackingUIMessages.project_sync_title,
-                NLS.bind(DDTrackingUIMessages.project_sync_update_count, updated), false, null);
+            DDUIUtils.showNotification(DDTrackingUIMessages.project_sync_title,
+                NLS.bind(DDTrackingUIMessages.project_sync_update_count, updated), DBPMessageType.INFORMATION, null);
         }
         if (!errors.isEmpty()) {
-            DBWorkbench.getPlatformUI().showNotification(DDTrackingUIMessages.project_sync_title,
-                NLS.bind(DDTrackingUIMessages.projects_errors, String.join("\n", errors)), true, null);
+            DDUIUtils.showNotification(DDTrackingUIMessages.project_sync_title,
+                NLS.bind(DDTrackingUIMessages.projects_errors, String.join("\n", errors)), DBPMessageType.ERROR, null);
         }
     }
 }

@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.datadam.project.event.actions;
 import com.dbeaver.datadam.dam.remote.api.model.DDSharedProjectEvent;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.dialogs.MessageDialog;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -28,8 +27,8 @@ import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.datadam.sync.project.DDProjectManager.LocalProjectInfo;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 
@@ -73,10 +72,8 @@ public abstract class AbstractProjectEventJob extends AbstractJob {
     }
 
     protected void showError(@NotNull DBException error) {
-        UIUtils.asyncExec(() -> DBeaverNotifications.showNotification(
-            DBeaverNotifications.NT_GENERIC, DDTrackingUIMessages.project_sync_title,
+        UIUtils.asyncExec(() -> DDUIUtils.showNotification(DDTrackingUIMessages.project_sync_title,
             failureMessage, DBPMessageType.ERROR,
-            () -> MessageDialog.openError(UIUtils.getActiveWorkbenchShell(),
-                DDTrackingUIMessages.project_sync_title, failureMessage + "\n" + error.getMessage())));
+            () -> DDUIUtils.showError(DDTrackingUIMessages.project_sync_title, failureMessage, error)));
     }
 }
