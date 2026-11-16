@@ -30,5 +30,7 @@ public class AIPreferenceInitializer extends AbstractPreferenceInitializer {
         store.setDefault(AIConstants.AI_SEND_CONSTRAINTS, false);
         store.setDefault(AIConstants.AI_SEND_FOREIGN_KEYS, false);
         store.setDefault(AIConstants.AI_JOIN_RULE, AISqlJoinRule.DEFAULT.name());
+        store.setDefault(AIConstants.AI_SAMPLE_ROWS_COUNT, AIConstants.DEFAULT_SAMPLE_DATA_ROW_COUNT);
+        store.setDefault(AIConstants.AI_MAX_SAMPLE_ROWS_COUNT, AIConstants.DEFAULT_MAX_SAMPLE_ROWS_COUNT);
     }
 }

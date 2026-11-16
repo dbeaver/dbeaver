@@ -29,6 +29,6 @@ Automatic-Module-Name: org.jkiss.dbeaver.model.ai
 Require-Bundle: org.jkiss.dbeaver.model.jdbc,
  org.jkiss.dbeaver.model.security,
  org.jkiss.dbeaver.model.sql,
+ org.jkiss.dbeaver.data.transfer,
  org.jkiss.dbeaver.registry;visibility:=reexport
-
 

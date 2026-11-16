@@ -91,6 +91,20 @@
             name="Database schema discovery"
             description="Functions for database schema discovery"/>
 
+        <!-- Catalogs are provided in the database snapshot for AI prompts. -->
+        <function
+            id="listCatalogNames"
+            name="List catalog names"
+            enabledByDefault="true"
+            type="INFORMATION"
+            purpose="MCP"
+            system="true"
+            class="org.jkiss.dbeaver.model.ai.functions.ListCatalogNamesFunction"
+            categoryId="schema.discovery"
+            description="Lists catalogs/databases available in the current datasource. 'Catalog' is the same as 'database' in many database servers."
+            userDescription="Lists catalog/database names available in the current datasource">
+        </function>
+
         <function
             id="listSchemaNames"
             name="List schema names"
@@ -133,6 +147,58 @@
             <parameter name="ddlIndexes" required="false" type="boolean" description="Adds indexes and other storage information in the DDL. Default: false."/>
             <parameter name="ddlComments" required="false" type="boolean" description="Adds table and column comments in the DDL. Default: false."/>
             <parameter name="ddlReferences" required="false" type="boolean" description="Adds foreign keys from other referencing tables in the DDL. Default: false."/>
+        </function>
+
+        <category
+            id="advanced.mcp"
+            name="MCP Functions"
+            description="Functions for MCP integration"/>
+
+        <function
+            id="getDatasourceInfo"
+            name="Get Datasource Info"
+            enabledByDefault="true"
+            type="INFORMATION"
+            purpose="MCP"
+            class="org.jkiss.dbeaver.model.ai.functions.GetDatasourceInfoFunction"
+            categoryId="advanced.mcp"
+            description="Returns information about the current datasource: its type, version, and other relevant details.">
+        </function>
+
+        <category
+            id="execute.sql"
+            name="Execute SQL query"
+            description="Executes various SQL queries"/>
+
+        <function
+            id="executeSQL"
+            name="Execute SQL"
+            enabledByDefault="true"
+            type="INFORMATION"
+            purpose="MCP"
+            class="org.jkiss.dbeaver.model.ai.functions.ExecuteSQLFunction"
+            categoryId="execute.sql"
+            description="Executes a provided SQL query and returns the results in the specified format.">
+            <parameter name="catalogName" required="false" type="string" description="Catalog name to execute the query in. Must be specified if the database supports multiple catalogs."/>
+            <parameter name="sqlQuery" required="true" type="string" description="The SQL query to be executed. Use fully qualified table names."/>
+            <parameter name="maxRows" required="false" type="integer" defaultValue="10" description="Maximum number of rows to return"/>
+            <parameter name="format" type="string" defaultValue="csv" validValuesProvider="org.jkiss.dbeaver.model.ai.functions.AITextExportFormatValueProvider" description="Output text format ID"/>
+        </function>
+
+        <function
+            id="readTableData"
+            legacyId="readTableSampleRows"
+            enabledByDefault="true"
+            name="Read table data"
+            type="INFORMATION"
+            class="org.jkiss.dbeaver.model.ai.functions.AIFunctionReadTableData"
+            categoryId="execute.sql"
+            defaultAllowMode="ASK"
+            description="Returns first rowCount rows of table in specified format."
+            userDescription="Returns first rows of table in specified format.">
+            <parameter name="table" required="true" type="string" description="Fully qualified table name (with preceding catalog or/and schema names)"/>
+            <parameter name="rowCount" type="integer" description="Number of rows. Defaults to the configured sample row count."/>
+            <parameter name="format" type="string" defaultValue="csv" validValuesProvider="org.jkiss.dbeaver.model.ai.functions.AITextExportFormatValueProvider" description="Output text format"/>
         </function>
     </extension>
 
