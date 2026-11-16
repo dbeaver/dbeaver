@@ -19,8 +19,15 @@ package org.jkiss.dbeaver.ui.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class UIConnectionMessages extends NLS {
-
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ui.internal.UIConnectionMessages"; //$NON-NLS-1$
+
+    public static String dialog_connection_virtual_model_group;
+    public static String dialog_connection_virtual_model_show;
+    public static String dialog_connection_virtual_model_show_tip;
+    public static String dialog_connection_virtual_model_reset;
+    public static String dialog_connection_virtual_model_reset_tip;
+    public static String dialog_connection_virtual_model_reset_title;
+    public static String dialog_connection_virtual_model_reset_message;
 
     public static String dialog_connection_edit_wizard_conn_conf_general_link;
     public static String dialog_connection_name_pattern_settings;

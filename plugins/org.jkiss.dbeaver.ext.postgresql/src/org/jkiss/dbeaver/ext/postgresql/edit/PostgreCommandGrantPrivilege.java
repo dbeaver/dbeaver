@@ -78,7 +78,11 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
         } else {
             for (PostgrePrivilegeType pn : privilegeTypes) {
                 privName.add(pn.name());
-                withGrantOption |= CommonUtils.isBitSet(privilege.getPermission(pn), PostgrePrivilege.WITH_GRANT_OPTION);
+                if (pn == PostgrePrivilegeType.ALL) {
+                    withGrantOption |= isGrantableForAllPrivileges();
+                } else {
+                    withGrantOption |= CommonUtils.isBitSet(privilege.getPermission(pn), PostgrePrivilege.WITH_GRANT_OPTION);
+                }
             }
         }
 
@@ -200,6 +204,23 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePriv
             modified.removeIf(granted::remove);
             revoked.addAll(modified);
         }
+    }
+
+    /**
+     * GRANT ALL ... WITH GRANT OPTION is only correct when every granted privilege is grantable.
+     * The ACL stores each privilege separately (e.g. EXECUTE), so ALL itself has no entry to check.
+     */
+    private boolean isGrantableForAllPrivileges() {
+        PostgrePrivilege.ObjectPermission[] permissions = privilege.getPermissions();
+        if (permissions.length == 0) {
+            return false;
+        }
+        for (PostgrePrivilege.ObjectPermission permission : permissions) {
+            if (!CommonUtils.isBitSet(permission.getPermissions(), PostgrePrivilege.WITH_GRANT_OPTION)) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private boolean hasAllPrivilegeTypes() {

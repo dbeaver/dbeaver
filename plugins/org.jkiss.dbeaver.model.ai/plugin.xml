@@ -78,8 +78,8 @@
     <extension point="org.jkiss.dbeaver.app.config">
         <feature
             id="ai"
-            label="AI integration"
-            description="Use AI to create and edit queries, answer questions, troubleshoot errors, or explore database objects."
+            label="%feature.ai.label"
+            description="%feature.ai.description"
             enabledByDefault="true"
             enablementTester="org.jkiss.dbeaver.model.ai.app.config.AIProductConfigFeatureTester"
             availabilityTester="org.jkiss.dbeaver.model.ai.app.config.AIProductConfigFeatureTester"/>
