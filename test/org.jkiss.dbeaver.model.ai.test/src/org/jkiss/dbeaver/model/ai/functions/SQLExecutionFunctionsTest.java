@@ -73,8 +73,11 @@ class SQLExecutionFunctionsTest {
         function.verifyQuery(context, executionContext, unparsed);
         Mockito.when(unparsed.getStatement()).thenReturn(new UnsupportedStatement(List.of("SELECT", "unsupported")));
         function.verifyQuery(context, executionContext, unparsed);
+        Mockito.when(unparsed.getStatement()).thenReturn(new SQLQuery(null, "SELECT 1").getStatement());
+        Mockito.when(unparsed.getParseError()).thenReturn(new DBException("Incomplete semantic analysis"));
+        function.verifyQuery(context, executionContext, unparsed);
         Assertions.assertEquals(1, function.semanticChecks);
-        Assertions.assertEquals(2, function.textChecks);
+        Assertions.assertEquals(3, function.textChecks);
     }
 
     @Test
@@ -133,11 +136,28 @@ class SQLExecutionFunctionsTest {
     }
 
     @Test
+    void dmlResolvesCteSourcesWithoutTreatingAliasesAsPhysicalTables() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        ExecuteDMLFunction function = new ExecuteDMLFunction();
+        Assertions.assertDoesNotThrow(() -> fixture.verify(function,
+            "WITH recent AS (SELECT * FROM public.source) UPDATE public.orders SET id=recent.id FROM recent"));
+        Assertions.assertDoesNotThrow(() -> fixture.verify(function,
+            "WITH initial_rows AS (SELECT * FROM public.source), recent AS (SELECT * FROM initial_rows) "
+                + "UPDATE public.orders SET id=recent.id FROM recent"));
+        fixture.assertRestricted(function,
+            "WITH recent AS (SELECT * FROM private.orders) UPDATE public.orders SET id=recent.id FROM recent");
+        fixture.assertRestricted(function,
+            "WITH recent AS (SELECT * FROM public.source) UPDATE private.orders SET id=recent.id FROM recent");
+    }
+
+    @Test
     void ddlVerifiesDefinitionTargetsAndSemanticSources() throws Exception {
         ScopeFixture fixture = new ScopeFixture();
         ExecuteDDLFunction function = new ExecuteDDLFunction();
         for (String sql : List.of("CREATE TABLE public.new_orders (id int)", "CREATE SEQUENCE public.order_ids",
             "ALTER TABLE public.orders ADD COLUMN name text", "CREATE INDEX public.idx ON public.orders(id)",
+            "ALTER VIEW public.report AS SELECT * FROM public.orders",
+            "CREATE TABLE public.cache (value text DEFAULT public.read_payroll())",
             "CREATE SYNONYM public.orders_alias FOR public.orders", "DROP VIEW public.report", "TRUNCATE TABLE public.orders",
             "RENAME TABLE public.orders TO public.old_orders", "COMMENT ON COLUMN public.orders.id IS 'id'")) {
             Assertions.assertDoesNotThrow(() -> fixture.verify(function, sql), sql);
@@ -148,6 +168,9 @@ class SQLExecutionFunctionsTest {
             "CREATE TABLE public.copy (id int REFERENCES private.orders(id))", "TRUNCATE TABLE private.orders",
             "DROP TABLE public.orders, private.orders",
             "CREATE SYNONYM public.orders_alias FOR private.orders", "CREATE PUBLIC SYNONYM orders_alias FOR public.orders",
+            "ALTER VIEW public.report AS SELECT * FROM private.orders", "ALTER TABLE public.orders SET SCHEMA private",
+            "CREATE TABLE public.cache (value text DEFAULT private.read_payroll())",
+            "ALTER TABLE public.orders ADD COLUMN value text DEFAULT private.read_payroll()",
             "ALTER TABLE private.orders ADD COLUMN name text", "CREATE SCHEMA new_schema", "CREATE ROLE reader")) {
             fixture.assertRestricted(function, sql);
         }
@@ -189,8 +212,20 @@ class SQLExecutionFunctionsTest {
         fixture.assertTextRestricted(new ExecuteDMLFunction(), "CALL public.refresh_orders(private.read_payroll())");
         fixture.assertTextRestricted(new ExecuteDDLFunction(), "CREATE INDEX public.idx ON private.orders(id)");
         fixture.assertTextRestricted(new ExecuteDDLFunction(), "CREATE SYNONYM public.orders_alias FOR private.orders");
+        fixture.assertTextRestricted(new ExecuteDDLFunction(), "ALTER TABLE public.orders SET SCHEMA private");
         fixture.assertTextRestricted(new ExecuteDDLFunction(), "DROP TABLE public.orders, private.orders");
         fixture.assertTextRestricted(new ExecuteDCLFunction(), "REVOKE SELECT ON public.orders, private.orders FROM reader");
+    }
+
+    @Test
+    void opaqueRoutineDefinitionsRequireDatasourceWideScope() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        ExecuteDDLFunction function = new ExecuteDDLFunction();
+        String definition = "CREATE FUNCTION public.allowed() RETURNS integer AS $$ SELECT id FROM private.orders $$ LANGUAGE SQL";
+        Assertions.assertThrows(DBException.class, () -> fixture.verify(function, definition));
+        fixture.assertTextRestricted(function, definition);
+        Mockito.when(fixture.databaseContext.getScope()).thenReturn(AIDatabaseScope.CURRENT_DATASOURCE);
+        Assertions.assertDoesNotThrow(() -> fixture.verify(function, definition));
     }
 
     @Test
@@ -214,6 +249,15 @@ class SQLExecutionFunctionsTest {
             }
         });
         Assertions.assertDoesNotThrow(() -> fixture.verifyText(new ExecuteDQLFunction(), "SELECT 'it\\'s a string' FROM public.orders"));
+        Mockito.when(fixture.dataSource.getSQLDialect()).thenReturn(new BasicSQLDialect() {
+            @NotNull
+            @Override
+            public String[][] getIdentifierQuoteStrings() {
+                return new String[][] {{"[", "]"}};
+            }
+        });
+        Assertions.assertDoesNotThrow(() -> fixture.verifyText(new ExecuteDQLFunction(), "SELECT [private.read_payroll()] FROM [public].[orders]"));
+        fixture.assertTextRestricted(new ExecuteDQLFunction(), "SELECT * FROM [private].[orders]");
     }
 
     @Test

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai.functions;
 
+import net.sf.jsqlparser.statement.CreateFunctionalStatement;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.alter.Alter;
 import net.sf.jsqlparser.statement.alter.AlterSession;
@@ -26,6 +27,7 @@ import net.sf.jsqlparser.statement.create.index.CreateIndex;
 import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
+import net.sf.jsqlparser.statement.create.view.AlterView;
 import net.sf.jsqlparser.statement.create.view.CreateView;
 import net.sf.jsqlparser.statement.refresh.RefreshMaterializedViewStatement;
 import net.sf.jsqlparser.statement.truncate.Truncate;
@@ -58,10 +60,15 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
     ) throws DBException {
         Statement statement = query.getStatement();
         SQLObjectOperation operation = query.getObjectOperation();
-        requireStatement(operation != null || statement instanceof Truncate || statement instanceof RenameTableStatement
+        requireStatement(operation != null || statement instanceof CreateFunctionalStatement
+            || statement instanceof Truncate || statement instanceof RenameTableStatement
             || statement instanceof Comment || statement instanceof RefreshMaterializedViewStatement
             || statement instanceof AlterSystemStatement || statement instanceof AlterSession, SQLQueryCategory.DDL);
         if (statement instanceof CreateSynonym synonym && synonym.isPublicSynonym()) {
+            verifyDatasourceScope(context);
+        }
+        if (statement instanceof CreateFunctionalStatement) {
+            // Procedural-language bodies are opaque to JSQLParser and cannot be verified within a narrowed scope.
             verifyDatasourceScope(context);
         }
         if (operation != null) {
@@ -76,12 +83,16 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
                 verifyObject(context, executionContext, create.getLikeTable().getFullyQualifiedName());
             }
             for (var index : CommonUtils.safeCollection(create.getIndexes())) {
+                Set<String> ignored = new HashSet<>();
                 if (index instanceof ForeignKeyIndex foreignKey) {
                     verifyObject(context, executionContext, foreignKey.getTable().getFullyQualifiedName());
+                    ignored.add(foreignKey.getTable().getFullyQualifiedName());
                 }
+                verifyDefinitionExpressions(context, executionContext, index.toString(), ignored);
             }
             for (var column : CommonUtils.safeCollection(create.getColumnDefinitions())) {
                 List<String> specs = CommonUtils.safeList(column.getColumnSpecs());
+                Set<String> references = new HashSet<>();
                 for (int i = 0; i < specs.size(); i++) {
                     if (specs.get(i).equalsIgnoreCase("REFERENCES")) {
                         Identifier reference = readIdentifier(specs, i + 1);
@@ -89,24 +100,35 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
                             throw new DBException("Cannot determine referenced table");
                         }
                         verifyObject(context, executionContext, reference.name());
+                        references.add(reference.name());
                     }
                 }
+                verifyDefinitionExpressions(context, executionContext, String.join(" ", specs), references);
             }
         } else if (statement instanceof CreateIndex create) {
             verifyObject(context, executionContext, create.getTable().getFullyQualifiedName());
+            verifyDefinitionExpressions(context, executionContext, String.join(",", create.getIndex().getColumnsNames()), Set.of());
         } else if (statement instanceof CreateSynonym create) {
             verifyObject(context, executionContext, create.getFor());
         } else if (statement instanceof CreateView create) {
             verifyStatementObjects(context, executionContext, create.getSelect());
+        } else if (statement instanceof AlterView alter) {
+            verifyStatementObjects(context, executionContext, alter.getSelect());
         } else if (statement instanceof Alter alter) {
             for (var expression : CommonUtils.safeCollection(alter.getAlterExpressions())) {
+                Set<String> references = new HashSet<>();
                 if (expression.getFkSourceTable() != null) {
-                    verifyObject(context, executionContext, expression.getFkSourceSchema() == null ? expression.getFkSourceTable()
-                        : expression.getFkSourceSchema() + "." + expression.getFkSourceTable());
+                    String reference = expression.getFkSourceSchema() == null ? expression.getFkSourceTable()
+                        : expression.getFkSourceSchema() + "." + expression.getFkSourceTable();
+                    verifyObject(context, executionContext, reference);
+                    references.add(reference);
                 }
                 if (expression.getNewTableName() != null) {
                     verifyDefinitionObject(context, executionContext, expression.getNewTableName(), "TABLE", true);
                 }
+                List<String> action = tokenize(executionContext.getDataSource().getSQLDialect(), expression.toString());
+                verifySchemaDestinations(context, executionContext, action);
+                verifyDefinitionExpressions(context, executionContext, expression.toString(), references);
             }
         } else if (statement instanceof Truncate truncate) {
             for (var table : truncate.getTables()) {
@@ -139,7 +161,7 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
             && !(command.equals("ALTER") && tokens.size() > 2 && tokens.get(1).equalsIgnoreCase("DEFAULT")
                 && tokens.get(2).equalsIgnoreCase("PRIVILEGES")), SQLQueryCategory.DDL);
         int start = 1;
-        while (start < tokens.size() && Set.of("OR", "REPLACE", "TEMP", "TEMPORARY", "UNLOGGED", "UNIQUE", "MATERIALIZED", "ON")
+        while (start < tokens.size() && Set.of("OR", "REPLACE", "ALTER", "TEMP", "TEMPORARY", "UNLOGGED", "UNIQUE", "MATERIALIZED", "ON")
             .contains(tokens.get(start).toUpperCase(Locale.ROOT))) {
             start++;
         }
@@ -159,7 +181,11 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
         if (target == null) {
             throw new DBException("Cannot determine DDL target");
         }
+        if (!command.equals("DROP") && Set.of("FUNCTION", "PROCEDURE", "TRIGGER").contains(type)) {
+            verifyDatasourceScope(context);
+        }
         verifyDefinitionObject(context, executionContext, target.name(), type, command.equals("CREATE"));
+        verifySchemaDestinations(context, executionContext, tokens);
         if (command.equals("DROP") || command.equals("TRUNCATE")) {
             int end = target.end();
             while (end < tokens.size() && tokens.get(end).equals(",")) {
@@ -187,5 +213,33 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
             }
         }
         verifyTextRoutines(context, executionContext, tokens, Set.of(target.name()));
+    }
+
+    private void verifySchemaDestinations(
+        @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull List<String> tokens
+    ) throws DBException {
+        for (int i = 0; i + 1 < tokens.size(); i++) {
+            if (tokens.get(i).equalsIgnoreCase("SET") && tokens.get(i + 1).equalsIgnoreCase("SCHEMA")) {
+                Identifier schema = readIdentifier(tokens, i + 2);
+                if (schema == null) {
+                    throw new DBException("Cannot determine destination schema");
+                }
+                verifyDefinitionObject(context, executionContext, schema.name(), "SCHEMA", false);
+            }
+        }
+    }
+
+    private void verifyDefinitionExpressions(
+        @NotNull AIFunctionContext context,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull String expression,
+        @NotNull Set<String> ignoredNames
+    ) throws DBException {
+        // Defaults, generated expressions, and check constraints are retained as raw specifications by JSQLParser.
+        List<String> tokens = tokenize(executionContext.getDataSource().getSQLDialect(), expression);
+        verifyTextRoutines(context, executionContext, tokens, ignoredNames);
+        for (String source : findTextObjects(tokens, Set.of("FROM", "JOIN"))) {
+            verifyObject(context, executionContext, source);
+        }
     }
 }

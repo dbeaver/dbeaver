@@ -208,7 +208,7 @@
             class="org.jkiss.dbeaver.model.ai.functions.ExecuteDDLFunction"
             categoryId="execute.sql"
             defaultAllowMode="ASK"
-            description="Executes data definition statements, including CREATE, ALTER, DROP, TRUNCATE, RENAME, and COMMENT. Existing objects and the parent namespace of new objects must be in the allowed scope.">
+            description="Executes data definition statements, including CREATE, ALTER, DROP, TRUNCATE, RENAME, and COMMENT. Existing objects and the parent namespace of new objects must be in the allowed scope. Routine and trigger definitions with opaque bodies require datasource-wide scope.">
             <parameter name="catalogName" required="false" type="string" description="Catalog name to execute the statements in. Must be specified if the database supports multiple catalogs."/>
             <parameter name="sqlQuery" required="true" type="string" description="DDL statements to execute. Use fully qualified object names."/>
         </function>

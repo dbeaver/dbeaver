@@ -29,8 +29,15 @@ import net.sf.jsqlparser.parser.TokenMgrException;
 import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.UnsupportedStatement;
+import net.sf.jsqlparser.statement.delete.Delete;
+import net.sf.jsqlparser.statement.insert.Insert;
+import net.sf.jsqlparser.statement.merge.Merge;
+import net.sf.jsqlparser.statement.select.ParenthesedSelect;
+import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
+import net.sf.jsqlparser.statement.select.TableStatement;
 import net.sf.jsqlparser.statement.select.WithItem;
+import net.sf.jsqlparser.statement.update.Update;
 import net.sf.jsqlparser.util.TablesNamesFinder;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -51,8 +58,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
 import org.jkiss.dbeaver.model.sql.SQLScriptContext;
@@ -100,7 +107,7 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         if (query.getText().contains("/*!") || query.getText().contains("/*M!") || query.getText().contains("/*m!")) {
             tokenize(executionContext.getDataSource().getSQLDialect(), query.getText());
         }
-        if (query.getStatement() == null || query.getStatement() instanceof UnsupportedStatement) {
+        if (query.getStatement() == null || query.getParseError() != null || query.getStatement() instanceof UnsupportedStatement) {
             verifyQueryText(context, executionContext, query.getText());
         } else {
             verifyStatement(context, executionContext, query);
@@ -360,16 +367,38 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         @NotNull DBCExecutionContext executionContext,
         @NotNull Statement statement
     ) throws DBException {
+        verifyStatementObjects(context, executionContext, statement, Set.of());
+    }
+
+    private void verifyStatementObjects(
+        @NotNull AIFunctionContext context,
+        @NotNull DBCExecutionContext executionContext,
+        @NotNull Statement statement,
+        @NotNull Set<String> inheritedCtes
+    ) throws DBException {
         Set<String> names = new LinkedHashSet<>();
         Set<String> routines = new LinkedHashSet<>();
-        if (statement instanceof Select select && select.getASTNode() != null) {
-            collectSelectObjects(select, names, routines);
-        } else {
-            try {
-                names.addAll(objectFinder(routines).getTables(statement));
-            } catch (UnsupportedOperationException | ClassCastException e) {
-                throw new DBException("Cannot verify objects in this parsed statement", e);
+        try {
+            if (statement instanceof Select select && select.getASTNode() != null) {
+                collectSelectObjects(select, names, routines, inheritedCtes);
+            } else {
+                Set<String> ctes = new HashSet<>(inheritedCtes);
+                List<WithItem<?>> definitions = statement instanceof Insert insert ? insert.getWithItemsList()
+                    : statement instanceof Update update ? update.getWithItemsList()
+                    : statement instanceof Delete delete ? delete.getWithItemsList()
+                    : statement instanceof Merge merge ? merge.getWithItemsList() : List.of();
+                for (WithItem<?> definition : CommonUtils.safeCollection(definitions)) {
+                    Set<String> visible = new HashSet<>(ctes);
+                    if (definition.isRecursive()) {
+                        visible.add(identifierKey(definition.getAliasName()));
+                    }
+                    verifyStatementObjects(context, executionContext, definition.getParenthesedStatement(), visible);
+                    ctes.add(identifierKey(definition.getAliasName()));
+                }
+                objectFinder(names, routines, ctes).getTables(statement);
             }
+        } catch (UnsupportedOperationException | ClassCastException | IllegalArgumentException e) {
+            throw new DBException("Cannot verify objects in this parsed statement", e);
         }
         for (String name : names) {
             verifyObject(context, executionContext, name);
@@ -383,10 +412,10 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull Expression expression
     ) throws DBException {
         Set<String> routines = new LinkedHashSet<>();
-        Set<String> names;
+        Set<String> names = new LinkedHashSet<>();
         try {
-            names = objectFinder(routines).getTables(expression);
-        } catch (UnsupportedOperationException | ClassCastException e) {
+            objectFinder(names, routines, Set.of()).getTables(expression);
+        } catch (UnsupportedOperationException | ClassCastException | IllegalArgumentException e) {
             throw new DBException("Cannot verify objects in this expression", e);
         }
         for (String name : names) {
@@ -398,8 +427,49 @@ public abstract class ExecuteSQLFunction implements AIFunction {
     }
 
     @NotNull
-    private static TablesNamesFinder<Void> objectFinder(@NotNull Set<String> routines) {
+    private static TablesNamesFinder<Void> objectFinder(
+        @NotNull Set<String> names, @NotNull Set<String> routines, @NotNull Set<String> ctes
+    ) {
         return new TablesNamesFinder<>() {
+            @Override
+            public <S> Void visit(@NotNull Table table, @Nullable S unused) {
+                if (!CommonUtils.isEmpty(table.getSchemaName())
+                    || table.getDatabase() != null && !CommonUtils.isEmpty(table.getDatabase().getDatabaseName())
+                    || !ctes.contains(identifierKey(table.getName()))) {
+                    names.add(table.getFullyQualifiedName());
+                }
+                return null;
+            }
+
+            @Override
+            public <S> Void visit(@NotNull WithItem<?> item, @Nullable S unused) {
+                // Definitions are verified separately with only the aliases visible at their declaration.
+                return null;
+            }
+
+            @Override
+            public <S> Void visit(@NotNull Select select, @Nullable S unused) {
+                collectSelectObjects(select, names, routines, ctes);
+                return null;
+            }
+
+            @Override
+            public <S> Void visit(@NotNull PlainSelect select, @Nullable S unused) {
+                collectSelectObjects(select, names, routines, ctes);
+                return null;
+            }
+
+            @Override
+            public <S> Void visit(@NotNull ParenthesedSelect select, @Nullable S unused) {
+                collectSelectObjects(select, names, routines, ctes);
+                return null;
+            }
+
+            @Override
+            public <S> Void visit(@NotNull TableStatement select, @Nullable S unused) {
+                return visit(select.getTable(), unused);
+            }
+
             @Override
             public <S> Void visit(@NotNull Function function, @Nullable S unused) {
                 if (function.getMultipartName().size() > 1) {
@@ -414,10 +484,17 @@ public abstract class ExecuteSQLFunction implements AIFunction {
     }
 
     private static void collectSelectObjects(
-        @NotNull Select select, @NotNull Set<String> names, @NotNull Set<String> routines
-    ) throws DBException {
+        @NotNull Select select, @NotNull Set<String> names, @NotNull Set<String> routines, @NotNull Set<String> inheritedCtes
+    ) {
+        if (select.getASTNode() == null) {
+            if (select instanceof TableStatement table) {
+                names.add(table.getTable().getFullyQualifiedName());
+                return;
+            }
+            throw new IllegalArgumentException("Cannot resolve this SELECT representation");
+        }
         Deque<SelectScope> stack = new ArrayDeque<>();
-        stack.push(new SelectScope(select.getASTNode(), Set.of()));
+        stack.push(new SelectScope(select.getASTNode(), inheritedCtes));
         Set<Select> visited = Collections.newSetFromMap(new IdentityHashMap<>());
         while (!stack.isEmpty()) {
             SelectScope scope = stack.pop();
@@ -435,7 +512,7 @@ public abstract class ExecuteSQLFunction implements AIFunction {
                     if (item.getParenthesedStatement() instanceof ASTNodeAccess definition) {
                         stack.push(new SelectScope(definition.getASTNode(), definitionAliases));
                     } else {
-                        throw new DBException("Cannot verify a non-SELECT common-table definition here");
+                        throw new IllegalArgumentException("Cannot verify a non-SELECT common-table definition here");
                     }
                     visible.add(identifierKey(item.getAliasName()));
                 }
@@ -462,6 +539,9 @@ public abstract class ExecuteSQLFunction implements AIFunction {
 
     @NotNull
     protected static List<String> tokenize(@NotNull SQLDialect dialect, @NotNull String sql) throws DBException {
+        if (sql.isBlank()) {
+            return List.of();
+        }
         try {
             boolean bracketIdentifiers = false;
             for (String[] quotes : ArrayUtils.safeArray(dialect.getIdentifierQuoteStrings())) {
@@ -594,10 +674,11 @@ public abstract class ExecuteSQLFunction implements AIFunction {
         @NotNull List<String> tokens,
         @NotNull Set<String> ignoredNames
     ) throws DBException {
+        SQLIdentifierDetector identifiers = new SQLIdentifierDetector(executionContext.getDataSource().getSQLDialect());
         for (int i = 0; i < tokens.size(); i++) {
             Identifier name = readIdentifier(tokens, i);
             if (name != null && name.end() < tokens.size() && tokens.get(name.end()).equals("(")
-                && name.name().contains(".") && !ignoredNames.contains(name.name())) {
+                && identifiers.splitIdentifier(name.name()).length > 1 && !ignoredNames.contains(name.name())) {
                 verifyRoutine(context, executionContext, name.name());
                 i = name.end() - 1;
             }

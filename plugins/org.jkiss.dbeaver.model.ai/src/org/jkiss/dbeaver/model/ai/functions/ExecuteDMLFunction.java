@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.ai.functions;
 
+import net.sf.jsqlparser.schema.Table;
 import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.delete.Delete;
 import net.sf.jsqlparser.statement.execute.Execute;
@@ -62,6 +63,15 @@ public class ExecuteDMLFunction extends ExecuteSQLFunction {
                 verifyExpressionObjects(context, executionContext, execute.getExprList());
             }
         } else {
+            Table target = statement instanceof Insert insert ? insert.getTable()
+                : statement instanceof Update update ? update.getTable()
+                : statement instanceof Delete delete ? delete.getTable()
+                : statement instanceof Merge merge ? merge.getTable()
+                : ((Upsert) statement).getTable();
+            if (target != null) {
+                // A modification target is a physical object even if a CTE has the same unqualified name.
+                verifyObject(context, executionContext, target.getFullyQualifiedName());
+            }
             verifyStatementObjects(context, executionContext, statement);
         }
     }
