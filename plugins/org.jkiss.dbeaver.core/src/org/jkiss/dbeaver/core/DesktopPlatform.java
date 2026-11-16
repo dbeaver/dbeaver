@@ -87,8 +87,7 @@ public class DesktopPlatform extends BasePlatformImpl implements DBPPlatformDesk
         log.debug("Initialize desktop platform...");
 
         if (getPreferenceStore().getBoolean(DBeaverPreferences.SECURITY_USE_BOUNCY_CASTLE)) {
-            // Register BC security provider
-            SecurityProviderUtils.registerSecurityProvider();
+            SecurityProviderUtils.registerSecurityProviderInBackground();
         }
 
         this.certificateStorage = new DefaultCertificateStorage(
