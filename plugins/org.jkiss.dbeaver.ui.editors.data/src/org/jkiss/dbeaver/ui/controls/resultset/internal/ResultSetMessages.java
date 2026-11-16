@@ -113,6 +113,8 @@ public class ResultSetMessages extends NLS {
     public static String controls_resultset_viewer_unpin_columns;
     public static String controls_resultset_viewer_hide_column_x;
     public static String controls_resultset_viewer_hide_columns_x;
+    public static String controls_resultset_viewer_hide_null_columns;
+    public static String controls_resultset_viewer_hide_empty_string_columns;
     public static String controls_resultset_viewer_hide_columns_error_title;
     public static String controls_resultset_viewer_hide_columnss_error_text;
     public static String controls_resultset_viewer_show_hidden_columns;
@@ -139,7 +141,6 @@ public class ResultSetMessages extends NLS {
     public static String sql_editor_resultset_filter_panel_label;
     public static String sql_editor_resultset_filter_panel_btn_open_console;
     public static String sql_editor_resultset_filter_panel_control_no_data;
-    public static String sql_editor_resultset_filter_panel_control_execute_to_see_result;
     public static String sql_editor_resultset_filter_panel_show_sql_label;
 
     public static String actions_name_color_by;
@@ -200,6 +201,7 @@ public class ResultSetMessages extends NLS {
 
     public static String dialog_filter_value_edit_title;
     public static String dialog_filter_value_edit_label_choose_values;
+    public static String dialog_filter_value_edit_dialog_title;
     public static String dialog_filter_value_edit_label_define_description;
     public static String dialog_filter_value_edit_text_hint;
     public static String dialog_filter_value_edit_table_value_label;
@@ -483,6 +485,10 @@ public class ResultSetMessages extends NLS {
     public static String find_and_replace_overlay_label;
     public static String find_and_replace_overlay_tooltip;
     public static String find_and_replace_find_all_tooltip;
+
+    public static String dialog_policy_data_copy_title;
+    public static String dialog_policy_data_copy_msg;
+    public static String dialog_policy_data_edit_msg;
 
     static {
         // initialize resource bundle

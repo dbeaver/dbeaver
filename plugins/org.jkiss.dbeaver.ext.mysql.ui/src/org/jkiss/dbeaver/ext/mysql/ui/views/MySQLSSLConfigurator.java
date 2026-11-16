@@ -49,8 +49,8 @@ public class MySQLSSLConfigurator extends SSLConfiguratorTrustStoreUI {
         gd.minimumHeight = 200;
         composite.setLayoutData(gd);
 
-        createSSLConfigHint(composite, true, 1);
-        createTrustStoreConfigGroup(composite);
+        Composite sslParameters = createTrustStoreConfigGroup(composite);
+        createSSLConfigHint(sslParameters, true, 1);
 
         {
             cipherSuitesText = UIUtils.createLabelText(sslCertComposite, MySQLUIMessages.mysql_ssl_configurator_label_cipher_suites, ""); //$NON-NLS-2$

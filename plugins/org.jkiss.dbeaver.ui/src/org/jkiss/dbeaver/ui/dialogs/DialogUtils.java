@@ -279,10 +279,20 @@ public class DialogUtils {
         return directory;
     }
 
-    public static TreeViewer createFilteredTree(Composite parent, int treeStyle, PatternFilter filter, String initialText) {
+    @NotNull
+    public static TreeViewer createFilteredTree(
+        @NotNull Composite parent,
+        int treeStyle,
+        @NotNull PatternFilter filter,
+        @Nullable String initialText
+    ) {
         FilteredTree filteredTree = new FilteredTree(parent, treeStyle, filter, true, true);
         if (initialText != null) {
             filteredTree.setInitialText(initialText);
+        }
+        Text filterControl = filteredTree.getFilterControl();
+        if (filterControl != null) {
+            UIUtils.installAndUpdateMainFont(filterControl);
         }
         return filteredTree.getViewer();
     }

@@ -22,6 +22,11 @@ public final class ProductConfigMessages extends NLS {
     public static String wizard_title;
     public static String wizard_apply;
 
+    public static String preferences_features_hint;
+    public static String preferences_open_product_configuration;
+    public static String preferences_restart_title;
+    public static String preferences_restart_message;
+
     public static String welcome_title;
     public static String welcome_description;
     public static String welcome_body_text;

@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.ui.internal.DTUIMessages;
 import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
@@ -53,7 +52,7 @@ class SQLScriptTaskScriptSelectorDialog extends BaseDialog {
     private final List<DBNNode> selectedScripts = new ArrayList<>();
 
     SQLScriptTaskScriptSelectorDialog(Shell parentShell, DBNProject projectNode) {
-        super(parentShell, DTMessages.sql_script_task_page_settings_group_files, null);
+        super(parentShell, DTUIMessages.sql_script_task_page_settings_group_files, null);
         this.projectNode = projectNode;
     }
 

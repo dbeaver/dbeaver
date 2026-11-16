@@ -41,7 +41,9 @@ import org.jkiss.utils.CommonUtils;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -50,6 +52,7 @@ import java.util.stream.Collectors;
 public class QMAIChatHistoryMapper {
 
     private static final Log log = Log.getLog(QMAIChatHistoryMapper.class);
+    private static final String USAGE_UNAVAILABLE = "dbeaver.usage.unavailable";
     private static final String EXCEPTION_MESSAGE_PROPERTY = "detailMessage";
 
     @NotNull
@@ -345,23 +348,31 @@ public class QMAIChatHistoryMapper {
             return null;
         }
         return meta.stream()
-            .filter(it -> it.usage() != null)
+            .filter(it -> it.usage() != null || !it.responseMetadata().isEmpty())
             .map(QMAIChatHistoryMapper::toQMAIMessageMeta)
             .toList();
     }
 
     @NotNull
     public static QMAIMessageMeta toQMAIMessageMeta(@NotNull AIMessageMeta meta) {
+        AIUsage usage = meta.usage();
+        Map<String, String> metadata = meta.responseMetadata();
+        if (usage == null) {
+            usage = new AIUsage(0, 0, 0, 0);
+            metadata = new HashMap<>(metadata);
+            metadata.put(USAGE_UNAVAILABLE, Boolean.TRUE.toString());
+        }
         return new QMAIMessageMeta(
             meta.type(),
             meta.engineId(),
             meta.modelId(),
             meta.systemPromptLength(),
             meta.timeSpent(),
-            meta.usage().totalInputTokens(),
-            meta.usage().cachedTokens(),
-            meta.usage().totalOutputTokens(),
-            meta.usage().reasoningTokens()
+            usage.totalInputTokens(),
+            usage.cachedTokens(),
+            usage.totalOutputTokens(),
+            usage.reasoningTokens(),
+            metadata
         );
     }
 
@@ -378,18 +389,21 @@ public class QMAIChatHistoryMapper {
 
     @NotNull
     public static AIMessageMeta toAIMessageMeta(@NotNull QMAIMessageMeta meta) {
+        Map<String, String> metadata = new HashMap<>(meta.responseMetadata());
+        boolean usageUnavailable = Boolean.parseBoolean(metadata.remove(USAGE_UNAVAILABLE));
         return new AIMessageMeta(
             meta.type(),
             meta.engineId(),
             meta.modelId(),
-            new AIUsage(
+            usageUnavailable ? null : new AIUsage(
                 meta.totalInputTokens(),
                 meta.cachedTokens(),
                 meta.totalOutputTokens(),
                 meta.reasoningTokens()
             ),
             meta.timeSpent(),
-            meta.systemPromptLength()
+            meta.systemPromptLength(),
+            metadata
         );
     }
 }

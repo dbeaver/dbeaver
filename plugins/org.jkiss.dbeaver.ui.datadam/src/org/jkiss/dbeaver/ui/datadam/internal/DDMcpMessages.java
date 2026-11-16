@@ -24,6 +24,7 @@ public class DDMcpMessages extends NLS {
     public static String mcp_connection_settings_group;
     public static String mcp_connection_settings_enabled;
     public static String mcp_connection_settings_enabled_tip;
+    public static String mcp_connection_status_loading;
 
     static {
         NLS.initializeMessages(BUNDLE_NAME, DDMcpMessages.class);

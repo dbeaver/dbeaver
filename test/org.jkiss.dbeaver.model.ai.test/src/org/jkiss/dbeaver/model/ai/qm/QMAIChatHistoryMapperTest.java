@@ -80,6 +80,16 @@ public class QMAIChatHistoryMapperTest {
     }
 
     @Test
+    public void preservesMetadataWithoutInventingReportedUsage() {
+        List<AIMessageMeta> original = List.of(new AIMessageMeta(AIMetaTypes.PROMPT, "test", "model", null,
+            Duration.ofSeconds(2), 10, Map.of("openai.response.output", "opaque-state")));
+        List<QMAIMessageMeta> stored = QMAIChatHistoryMapper.toQMAIMessageMeta(original);
+        Assertions.assertEquals(1, stored.size());
+        QMAIMessageMeta restored = JSONUtils.GSON.fromJson(JSONUtils.GSON.toJson(stored.getFirst()), QMAIMessageMeta.class);
+        Assertions.assertEquals(original, QMAIChatHistoryMapper.toAIMessageMeta(List.of(restored)));
+    }
+
+    @Test
     public void preservesReportedZeroUsageInHistory() {
         List<AIMessageMeta> original = List.of(
             new AIMessageMeta(AIMetaTypes.PROMPT, "test", "model", new AIUsage(0, 0, 0, 0), Duration.ofSeconds(2), 10)

@@ -404,7 +404,7 @@ public abstract class PrefPageNetworkProfiles extends AbstractPrefPage {
             try {
                 secretController = getSecretController();
             } catch (DBException e) {
-                DBWorkbench.getPlatformUI().showError("No secret controller", null, e);
+                DBWorkbench.getPlatformUI().showError(UIConnectionMessages.pref_page_network_profiles_no_secret_controller, null, e);
                 return;
             }
 

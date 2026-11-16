@@ -1143,6 +1143,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 UIUtils.asyncExec(() -> composite.setBackground(editControl.getBackground()));
             }
 
+            UIUtils.applyMainFont(composite);
             Point parentRect = getDisplay().map(filtersText, null, new Point(0, 0));
             Rectangle displayRect = getMonitor().getClientArea();
 
@@ -1217,7 +1218,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 @Override
                 public void update(@NotNull ViewerCell cell) {
                     cell.setText(((QMQueryFilter) cell.getElement()).text());
-                    cell.setFont(BaseThemeSettings.instance.monospaceFont);
                 }
             });
 

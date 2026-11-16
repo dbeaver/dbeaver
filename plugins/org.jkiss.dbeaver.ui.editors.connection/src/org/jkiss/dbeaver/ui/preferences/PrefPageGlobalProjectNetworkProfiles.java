@@ -179,9 +179,9 @@ public final class PrefPageGlobalProjectNetworkProfiles extends AbstractPrefPage
     private boolean canShowProject(@Nullable DBPProject project) {
         if (project != null && project.getDataSourceRegistry().hasError()) {
             DBWorkbench.getPlatformUI().showError(
-                "Error opening project",
+                UIConnectionMessages.pref_page_network_profiles_project_error_title,
                 NLS.bind(
-                    "Can''t show network profiles for project ''{0}'' because it can''t be loaded",
+                    UIConnectionMessages.pref_page_network_profiles_project_error,
                     project.getDisplayName()
                 )
             );

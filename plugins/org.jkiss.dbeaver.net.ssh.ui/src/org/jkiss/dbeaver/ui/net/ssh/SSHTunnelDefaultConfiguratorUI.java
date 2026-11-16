@@ -138,7 +138,7 @@ public class SSHTunnelDefaultConfiguratorUI implements IObjectPropertyConfigurat
                 }
             });
 
-            final Composite client = new Composite(hostsComposite, SWT.BORDER);
+            final Composite client = new Composite(hostsComposite, SWT.NONE);
             client.setLayout(GridLayoutFactory.fillDefaults().spacing(0, 0).create());
             client.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             hostsComposite.setClient(client);
