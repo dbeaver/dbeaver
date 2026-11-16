@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaObject;
 import org.jkiss.dbeaver.ext.starrocks.StarRocksUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -142,6 +141,7 @@ public class StarRocksMetaModel extends GenericMetaModel {
 
         GenericSchema schema = owner.getSchema();
         String schemaName = schema != null ? schema.getName() : owner.getName();
+        String tableName = object != null ? object.getName() : objectName;
 
         // StarRocks returns Table_type="VIEW" for both views and materialized views.
         // Only internal catalogs support materialized views - external catalogs don't.
@@ -169,9 +169,15 @@ public class StarRocksMetaModel extends GenericMetaModel {
                 "FROM information_schema.tables t " + //$NON-NLS-1$
                 "WHERE t.table_schema = ?"; //$NON-NLS-1$
         }
+        if (tableName != null) {
+            query += " AND t.table_name = ?"; //$NON-NLS-1$
+        }
 
         JDBCPreparedStatement stmt = session.prepareStatement(query);
         stmt.setString(1, schemaName);
+        if (tableName != null) {
+            stmt.setString(2, tableName);
+        }
         return stmt;
     }
 
