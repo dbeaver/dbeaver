@@ -24,7 +24,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.datadam.DDAccountClient;
@@ -34,7 +33,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.ai.preferences.PrefPageDataSourceAI;
-import org.jkiss.dbeaver.ui.datadam.DDServerCatalog;
+import org.jkiss.dbeaver.ui.datadam.DDDesktopDamService;
 import org.jkiss.dbeaver.ui.datadam.internal.DDMcpMessages;
 
 public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<PrefPageDataSourceAI, PrefPageDataSourceAI> {
@@ -62,20 +61,15 @@ public class DDMcpConnectionConfigurator implements IObjectPropertyConfigurator<
                 statusJob.cancel();
             }
         });
-        try {
-            statusJob = DDServerCatalog.getInstance().createJob(
-                "Check DataDam MCP availability",
-                account -> account.getDamSettings(
-                    DDRemoteDamDesktopSessionService.getInstance().getClientDamId()),
-                status -> showStatus(parent, loading, page, status),
-                error -> {
-                    log.debug("Cannot read DataDam MCP status", error);
-                    showStatus(parent, loading, page, null);
-                });
-        } catch (DBException e) {
-            log.debug("Cannot read DataDam MCP status", e);
-            showStatus(parent, loading, page, null);
-        }
+        statusJob = DDDesktopDamService.getInstance().createJob(
+            "Check DataDam MCP availability",
+            account -> account.getDamSettings(
+                DDRemoteDamDesktopSessionService.getInstance().getClientDamId()),
+            status -> showStatus(parent, loading, page, status),
+            error -> {
+                log.debug("Cannot read DataDam MCP status", error);
+                showStatus(parent, loading, page, null);
+            });
     }
 
     private void showStatus(

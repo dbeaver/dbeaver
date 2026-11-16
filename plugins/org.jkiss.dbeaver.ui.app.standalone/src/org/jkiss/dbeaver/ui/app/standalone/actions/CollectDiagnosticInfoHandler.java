@@ -375,11 +375,16 @@ public class CollectDiagnosticInfoHandler extends AbstractHandler {
             String zipEntryProjectNamePrefix = "tasks/" + project.getName() + "/";
             for (DBTTask task: taskManager.getAllTasks()) {
                 String zipEntryNamePrefix = zipEntryProjectNamePrefix + task.getName() + "/";
-                for (DBTTaskRun taskRun: task.getAllRuns()) {
-                    Path runLog = task.getRunLog(taskRun);
-                    if (runLog != null) {
-                        diagnosticsEntries.add(new DiagnosticsEntry(runLog, zipEntryNamePrefix + runLog.getFileName().toString()));
+                try {
+                    for (DBTTaskRun taskRun: task.getAllRuns()) {
+                        Path runLog = task.getRunLog(taskRun);
+                        if (runLog != null) {
+                            diagnosticsEntries.add(new DiagnosticsEntry(runLog, zipEntryNamePrefix + runLog.getFileName().toString()));
+                        }
                     }
+                } catch (RuntimeException e) {
+                    // Task history may be unavailable; keep collecting the logs needed to diagnose it.
+                    log.warn("Cannot collect task logs for '" + zipEntryNamePrefix + "'", e);
                 }
             }
         }

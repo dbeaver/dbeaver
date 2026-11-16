@@ -23,6 +23,7 @@ import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.ai.internal.AIUIMessages;
 import org.jkiss.dbeaver.ui.validator.IntegerValidator;
 import org.jkiss.utils.CommonUtils;
 
@@ -88,7 +89,7 @@ public class ContextWindowSizeField {
         public ContextWindowSizeField build() {
             Text text = UIUtils.createLabelText(
                 parent,
-                "Context window size",
+                AIUIMessages.ai_engine_configurator_context_window_size,
                 "",
                 SWT.BORDER
             );

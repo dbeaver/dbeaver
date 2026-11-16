@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.data.DBDValueCloneable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.impl.jdbc.internal.JDBCModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.utils.CommonUtils;
@@ -129,8 +129,8 @@ public abstract class JDBCContentLOB extends JDBCContentAbstract implements DBDC
             executionContext.getContextAttribute(ERROR_MESSAGE_PARAM_IS_SHOWN));
         if (!errorMessageIsShown && transactionManager != null && transactionManager.isAutoCommit()) {
             DBWorkbench.getPlatformUI().showWarningMessageBox(
-                ModelMessages.jdbc_content_view_error_message_title,
-                ModelMessages.jdbc_content_view_error_message_hint);
+                JDBCModelMessages.jdbc_content_view_error_message_title,
+                JDBCModelMessages.jdbc_content_view_error_message_hint);
             executionContext.setContextAttribute(ERROR_MESSAGE_PARAM_IS_SHOWN, Boolean.TRUE);
         }
         throw new DBCException(e.getMessage(), e);

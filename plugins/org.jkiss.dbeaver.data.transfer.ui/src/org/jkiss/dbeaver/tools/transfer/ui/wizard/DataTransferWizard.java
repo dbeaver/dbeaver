@@ -48,7 +48,6 @@ import org.jkiss.dbeaver.tasks.ui.wizard.TaskProcessorUI;
 import org.jkiss.dbeaver.tools.transfer.*;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTActivator;
-import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
@@ -374,7 +373,7 @@ public class DataTransferWizard extends TaskConfigurationWizard<DataTransferSett
                 // We need it because some data producers cannot be serialized properly (e.g. ResultSetDatacontainer - see #7342)
                 DataTransferWizardExecutor executor = new DataTransferWizardExecutor(
                     getRunnableContext(),
-                    DTMessages.data_transfer_wizard_job_name,
+                    DTUIMessages.data_transfer_wizard_job_name,
                     getSettings());
                 executor.executeTask();
                 if (executor.getError() instanceof DBException dbe) {

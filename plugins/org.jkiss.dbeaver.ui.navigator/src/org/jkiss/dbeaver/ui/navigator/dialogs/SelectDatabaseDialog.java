@@ -215,7 +215,6 @@ public class SelectDatabaseDialog extends ObjectListDialog<DBNDatabaseNode> {
 
 
         instanceList.loadData();
-        closeOnFocusLost(instanceList.getItemsViewer().getControl());
     }
 
     @Override

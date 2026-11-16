@@ -69,7 +69,6 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorCommands;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.SQLEditorHandlerRenameFile;
-import org.jkiss.dbeaver.ui.editors.sql.internal.SQLEditorMessages;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.File;
@@ -185,16 +184,16 @@ public class DBeaverStackRenderer extends StackRenderer {
                 addActionItem(workbenchPart, menu, IWorkbenchCommandConstants.FILE_SAVE_AS);
 
                 final MenuItem saveAsScriptItem = new MenuItem(menu, SWT.PUSH);
-                saveAsScriptItem.setText(SQLEditorMessages.sql_editor_prefs_save_as_script_text);
-                saveAsScriptItem.setToolTipText(SQLEditorMessages.sql_editor_prefs_save_as_script_tip);
+                saveAsScriptItem.setText(CoreMessages.sql_editor_prefs_save_as_script_text);
+                saveAsScriptItem.setToolTipText(CoreMessages.sql_editor_prefs_save_as_script_tip);
                 saveAsScriptItem.addSelectionListener(SelectionListener.widgetSelectedAdapter(e -> sqlEditor.saveAsNewScript()));
             }
             
             if (workbenchPart instanceof SQLEditor) {
                 new MenuItem(menu, SWT.SEPARATOR);
                 MenuItem menuItemDisableSQLSyntaxParser = new MenuItem(menu, SWT.CHECK);
-                menuItemDisableSQLSyntaxParser.setText(SQLEditorMessages.sql_editor_prefs_disable_services_text);
-                menuItemDisableSQLSyntaxParser.setToolTipText(SQLEditorMessages.sql_editor_prefs_disable_services_tip);
+                menuItemDisableSQLSyntaxParser.setText(CoreMessages.sql_editor_prefs_disable_services_text);
+                menuItemDisableSQLSyntaxParser.setToolTipText(CoreMessages.sql_editor_prefs_disable_services_tip);
                 
                 menuItemDisableSQLSyntaxParser.setSelection(!SQLEditorUtils.isSQLSyntaxParserApplied(editorInput));
                 menuItemDisableSQLSyntaxParser.setEnabled(ActionUtils.isCommandEnabled(SQLEditorCommands.CMD_DISABLE_SQL_SYNTAX_PARSER, workbenchPart.getSite()));

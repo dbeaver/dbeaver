@@ -35,6 +35,13 @@ public class DDTrackingUIMessages extends NLS {
     public static String sync_preference_page_desktop_sign_in;
     public static String sync_preference_page_desktop_sign_out;
     public static String sync_preference_page_open_account;
+    public static String sync_preference_page_dam_name_label;
+    public static String sync_preference_page_dam_name_edit;
+    public static String sync_preference_page_dam_name_prompt;
+    public static String sync_preference_page_dam_name_connecting;
+    public static String sync_preference_page_dam_name_not_set;
+    public static String sync_preference_page_dam_name_unavailable;
+    public static String sync_preference_page_dam_name_update_failed;
     public static String sync_preference_page_mcp_enabled;
     public static String sync_preference_page_mcp_hint;
     public static String sync_preference_page_mcp_loading;
@@ -130,6 +137,7 @@ public class DDTrackingUIMessages extends NLS {
     public static String import_key_dialog_title;
     public static String import_key_dialog_prompt_label;
     public static String import_key_dialog_paste_button;
+    public static String import_key_dialog_reset_button;
 
     static {
         // initialize resource bundle
