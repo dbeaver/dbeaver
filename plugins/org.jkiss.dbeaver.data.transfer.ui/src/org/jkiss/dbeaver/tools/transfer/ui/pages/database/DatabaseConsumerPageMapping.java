@@ -699,9 +699,12 @@ public class DatabaseConsumerPageMapping extends DataTransferPageNodeSettings {
                     String name = CommonUtils.toString(value);
                     DatabaseMappingObject dmo = (DatabaseMappingObject) element;
                     DBPDataSource dataSource = settings.getTargetDataSource(dmo);
+                    boolean keepSourceCase = dmo instanceof DatabaseMappingContainer container
+                        && container.isSourceNameQuoted();
                     if (!name.equals(DatabaseMappingAttribute.TARGET_NAME_SKIP) && !name.equals(TARGET_NAME_BROWSE)
                         && !isConfigurationRow(dmo)
                         && dataSource != null && !DBUtils.isQuotedIdentifier(dataSource, name)
+                        && !keepSourceCase
                     ) {
                         name = DBObjectNameCaseTransformer.transformName(dataSource, name);
                     }
