@@ -138,7 +138,7 @@ class SQLExecutionFunctionsTest {
         ExecuteDDLFunction function = new ExecuteDDLFunction();
         for (String sql : List.of("CREATE TABLE public.new_orders (id int)", "CREATE SEQUENCE public.order_ids",
             "ALTER TABLE public.orders ADD COLUMN name text", "CREATE INDEX public.idx ON public.orders(id)",
-            "DROP VIEW public.report", "TRUNCATE TABLE public.orders",
+            "CREATE SYNONYM public.orders_alias FOR public.orders", "DROP VIEW public.report", "TRUNCATE TABLE public.orders",
             "RENAME TABLE public.orders TO public.old_orders", "COMMENT ON COLUMN public.orders.id IS 'id'")) {
             Assertions.assertDoesNotThrow(() -> fixture.verify(function, sql), sql);
         }
@@ -147,6 +147,7 @@ class SQLExecutionFunctionsTest {
             "ALTER TABLE public.orders ADD FOREIGN KEY (id) REFERENCES private.orders(id)",
             "CREATE TABLE public.copy (id int REFERENCES private.orders(id))", "TRUNCATE TABLE private.orders",
             "DROP TABLE public.orders, private.orders",
+            "CREATE SYNONYM public.orders_alias FOR private.orders", "CREATE PUBLIC SYNONYM orders_alias FOR public.orders",
             "ALTER TABLE private.orders ADD COLUMN name text", "CREATE SCHEMA new_schema", "CREATE ROLE reader")) {
             fixture.assertRestricted(function, sql);
         }
@@ -177,6 +178,7 @@ class SQLExecutionFunctionsTest {
         Assertions.assertDoesNotThrow(() -> fixture.verifyText(new ExecuteDQLFunction(), "SELECT 'DELETE FROM private.decoy' FROM public.orders"));
         fixture.verifyText(new ExecuteDMLFunction(), "/* prefix */ UPDATE public.orders SET id=1");
         fixture.verifyText(new ExecuteDDLFunction(), "CREATE DOMAIN public.positive AS integer CHECK (VALUE > 0)");
+        fixture.verifyText(new ExecuteDDLFunction(), "CREATE SYNONYM public.orders_alias FOR public.orders");
         fixture.verifyText(new ExecuteDCLFunction(), "REVOKE SELECT ON public.orders FROM reader");
         fixture.assertTextRestricted(new ExecuteDQLFunction(), "UPDATE public.orders SET id=1");
         fixture.assertTextRestricted(new ExecuteDMLFunction(), "SELECT * FROM public.orders");
@@ -186,6 +188,7 @@ class SQLExecutionFunctionsTest {
         fixture.assertTextRestricted(new ExecuteDMLFunction(), "INSERT INTO public.orders SELECT * FROM private.orders");
         fixture.assertTextRestricted(new ExecuteDMLFunction(), "CALL public.refresh_orders(private.read_payroll())");
         fixture.assertTextRestricted(new ExecuteDDLFunction(), "CREATE INDEX public.idx ON private.orders(id)");
+        fixture.assertTextRestricted(new ExecuteDDLFunction(), "CREATE SYNONYM public.orders_alias FOR private.orders");
         fixture.assertTextRestricted(new ExecuteDDLFunction(), "DROP TABLE public.orders, private.orders");
         fixture.assertTextRestricted(new ExecuteDCLFunction(), "REVOKE SELECT ON public.orders, private.orders FROM reader");
     }

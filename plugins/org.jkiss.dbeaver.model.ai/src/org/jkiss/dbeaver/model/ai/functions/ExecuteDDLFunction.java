@@ -23,6 +23,7 @@ import net.sf.jsqlparser.statement.alter.AlterSystemStatement;
 import net.sf.jsqlparser.statement.alter.RenameTableStatement;
 import net.sf.jsqlparser.statement.comment.Comment;
 import net.sf.jsqlparser.statement.create.index.CreateIndex;
+import net.sf.jsqlparser.statement.create.synonym.CreateSynonym;
 import net.sf.jsqlparser.statement.create.table.CreateTable;
 import net.sf.jsqlparser.statement.create.table.ForeignKeyIndex;
 import net.sf.jsqlparser.statement.create.view.CreateView;
@@ -60,6 +61,9 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
         requireStatement(operation != null || statement instanceof Truncate || statement instanceof RenameTableStatement
             || statement instanceof Comment || statement instanceof RefreshMaterializedViewStatement
             || statement instanceof AlterSystemStatement || statement instanceof AlterSession, SQLQueryCategory.DDL);
+        if (statement instanceof CreateSynonym synonym && synonym.isPublicSynonym()) {
+            verifyDatasourceScope(context);
+        }
         if (operation != null) {
             verifyDefinitionObject(context, executionContext, String.join(".", operation.qualifiedNameParts()),
                 operation.objectKind().name(), operation.operation() == SQLObjectOperation.Operation.CREATE);
@@ -90,6 +94,8 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
             }
         } else if (statement instanceof CreateIndex create) {
             verifyObject(context, executionContext, create.getTable().getFullyQualifiedName());
+        } else if (statement instanceof CreateSynonym create) {
+            verifyObject(context, executionContext, create.getFor());
         } else if (statement instanceof CreateView create) {
             verifyStatementObjects(context, executionContext, create.getSelect());
         } else if (statement instanceof Alter alter) {
@@ -137,6 +143,10 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
             .contains(tokens.get(start).toUpperCase(Locale.ROOT))) {
             start++;
         }
+        if (start + 1 < tokens.size() && tokens.get(start).equalsIgnoreCase("PUBLIC") && tokens.get(start + 1).equalsIgnoreCase("SYNONYM")) {
+            verifyDatasourceScope(context);
+            start++;
+        }
         String type = start < tokens.size() ? tokens.get(start++).toUpperCase(Locale.ROOT) : "";
         if (command.equals("TRUNCATE") && !type.equals("TABLE")) {
             type = "TABLE";
@@ -167,6 +177,9 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
         }
         if (type.equals("INDEX") || type.equals("TRIGGER")) {
             prefixes.add("ON");
+        }
+        if (type.equals("SYNONYM")) {
+            prefixes.add("FOR");
         }
         for (String source : findTextObjects(tokens, prefixes)) {
             if (!source.equals(target.name())) {
