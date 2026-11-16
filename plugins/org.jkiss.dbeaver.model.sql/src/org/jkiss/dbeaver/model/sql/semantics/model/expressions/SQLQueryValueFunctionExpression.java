@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.semantics.*;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryConnectionContext;
 import org.jkiss.dbeaver.model.sql.semantics.context.SQLQueryExprType;
@@ -140,7 +139,7 @@ public class SQLQueryValueFunctionExpression extends SQLQueryValueExpression {
             // Canonical names may be quoted for keywords even when the call itself is unquoted.
             String rawName = name.getRawName();
             if (!context.getConnection().dialect.isQuotedIdentifier(rawName)
-                && isDialectFunction(context.getConnection().dialect, rawName)) {
+                && context.getConnection().dialect.isFunction(rawName)) {
                 name.getSymbol().setSymbolClass(SQLQuerySymbolClass.FUNCTION);
                 name.setOrigin(origin);
                 return SQLQueryExprType.UNKNOWN;
@@ -282,10 +281,6 @@ public class SQLQueryValueFunctionExpression extends SQLQueryValueExpression {
             }
             return SQLQueryExprType.UNKNOWN;
         }
-    }
-
-    public static boolean isDialectFunction(@NotNull SQLDialect dialect, @NotNull String name) {
-        return dialect.getFunctions().stream().anyMatch(name::equalsIgnoreCase);
     }
 
     @Override

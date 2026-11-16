@@ -68,10 +68,10 @@ public class PostgreDialectFunctionsTest extends DBeaverUnitTest {
         PostgreDialect dialect = new PostgreDialect();
         dialect.initDriverSettings(null, null, Mockito.mock(JDBCDatabaseMetaData.class));
 
-        Assertions.assertTrue(SQLQueryValueFunctionExpression.isDialectFunction(dialect, "greatest"));
-        Assertions.assertTrue(SQLQueryValueFunctionExpression.isDialectFunction(dialect, "GREATEST"));
-        Assertions.assertTrue(SQLQueryValueFunctionExpression.isDialectFunction(dialect, "GrEaTeSt"));
-        Assertions.assertFalse(SQLQueryValueFunctionExpression.isDialectFunction(dialect, "missing_function"));
+        Assertions.assertTrue(dialect.isFunction("greatest"));
+        Assertions.assertTrue(dialect.isFunction("GREATEST"));
+        Assertions.assertTrue(dialect.isFunction("GrEaTeSt"));
+        Assertions.assertFalse(dialect.isFunction("missing_function"));
     }
 
     @Test
@@ -104,9 +104,7 @@ public class PostgreDialectFunctionsTest extends DBeaverUnitTest {
         Assertions.assertNotNull(function.getProcName());
         Assertions.assertEquals("\"greatest\"", function.getProcName().parts.getFirst().getName());
         Assertions.assertEquals("GrEaTeSt", function.getProcName().parts.getFirst().getRawName());
-        Assertions.assertTrue(SQLQueryValueFunctionExpression.isDialectFunction(
-            postgreDialect, function.getProcName().parts.getFirst().getRawName()
-        ));
+        Assertions.assertTrue(postgreDialect.isFunction(function.getProcName().parts.getFirst().getRawName()));
         Assertions.assertEquals(SQLQuerySymbolClass.FUNCTION, function.getProcName().parts.getFirst().getSymbolClass());
         Assertions.assertTrue(context.getProblems().isEmpty(), context.getProblems().toString());
     }

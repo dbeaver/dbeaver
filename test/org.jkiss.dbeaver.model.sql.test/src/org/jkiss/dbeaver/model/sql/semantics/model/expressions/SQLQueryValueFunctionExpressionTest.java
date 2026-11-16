@@ -16,24 +16,21 @@
  */
 package org.jkiss.dbeaver.model.sql.semantics.model.expressions;
 
+import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
-
-import java.util.List;
 
 public class SQLQueryValueFunctionExpressionTest extends DBeaverUnitTest {
 
     @Test
     public void builtInFunctionsAreCaseInsensitive() {
-        SQLDialect dialect = Mockito.mock(SQLDialect.class);
-        Mockito.when(dialect.getFunctions()).thenReturn(List.of("INSTR", "GREATEST", "IF"));
+        SQLDialect dialect = BasicSQLDialect.INSTANCE;
 
-        Assertions.assertTrue(SQLQueryValueFunctionExpression.isDialectFunction(dialect, "instr"));
-        Assertions.assertTrue(SQLQueryValueFunctionExpression.isDialectFunction(dialect, "greatest"));
-        Assertions.assertTrue(SQLQueryValueFunctionExpression.isDialectFunction(dialect, "IF"));
-        Assertions.assertFalse(SQLQueryValueFunctionExpression.isDialectFunction(dialect, "missing_function"));
+        Assertions.assertTrue(dialect.isFunction("lower"));
+        Assertions.assertTrue(dialect.isFunction("LOWER"));
+        Assertions.assertTrue(dialect.isFunction("LoWeR"));
+        Assertions.assertFalse(dialect.isFunction("missing_function"));
     }
 }
