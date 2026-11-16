@@ -200,7 +200,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
     // --- makeLikePattern / matchesLike backslash regression tests (issue #42872) ---
 
     @Test
-    public void makeLikePattern_backslashBeforeNonWildcard_matchesLiteral() {
+    public void makeLikePatternBackslashBeforeNonWildcardMatchesLiteral() {
         // CORP backslash user must compile and match the same literal string
         String pattern = SQLUtils.makeLikePattern("CORP\\user");
         Assertions.assertDoesNotThrow(() -> Pattern.compile(pattern));
@@ -210,7 +210,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void makeLikePattern_backslashBeforeJ_matchesLiteral() {
+    public void makeLikePatternBackslashBeforeJMatchesLiteral() {
         // CORP\john must not throw
         String pattern = SQLUtils.makeLikePattern("CORP\\john");
         Assertions.assertDoesNotThrow(() -> Pattern.compile(pattern));
@@ -218,7 +218,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void makeLikePattern_trailingBackslash_matchesLiteral() {
+    public void makeLikePatternTrailingBackslashMatchesLiteral() {
         // Trailing backslash must not be dropped or produce invalid regex
         String pattern = SQLUtils.makeLikePattern("trail\\");
         Assertions.assertDoesNotThrow(() -> Pattern.compile(pattern));
@@ -227,7 +227,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void makeLikePattern_backslashB_doesNotActAsWordBoundary() {
+    public void makeLikePatternBackslashBDoesNotActAsWordBoundary() {
         // a\b must match the literal string "a\b", not act as regex \b (word boundary)
         String pattern = SQLUtils.makeLikePattern("a\\b");
         Assertions.assertDoesNotThrow(() -> Pattern.compile(pattern));
@@ -237,7 +237,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void makeLikePattern_escapedWildcards_stillWork() {
+    public void makeLikePatternEscapedWildcardsStillWork() {
         // \_ should match literal underscore, not single-char wildcard
         Assertions.assertTrue(SQLUtils.matchesLike("a_b", "a\\_b"));
         Assertions.assertFalse(SQLUtils.matchesLike("aXb", "a\\_b"));
@@ -260,7 +260,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void makeLikePattern_wildcards_stillWork() {
+    public void makeLikePatternWildcardsStillWork() {
         // % and * as multi-char wildcards
         Assertions.assertTrue(SQLUtils.matchesLike("abcdef", "%cd%"));
         Assertions.assertTrue(SQLUtils.matchesLike("abcdef", "*cd*"));
@@ -272,7 +272,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void makeLikePattern_multipleBackslashes_matchLiteral() {
+    public void makeLikePatternMultipleBackslashesMatchLiteral() {
         // Double backslash should match literal double backslash
         Assertions.assertTrue(SQLUtils.matchesLike("a\\\\b", "a\\\\b"));
         // Backslash followed by different non-wildcard chars
@@ -280,7 +280,7 @@ public class SQLUtilsTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void makeLikePattern_backslashWithWildcard_combined() {
+    public void makeLikePatternBackslashWithWildcardCombined() {
         // Pattern with both literal backslash and multi-char wildcard %
         Assertions.assertTrue(SQLUtils.matchesLike("CORP\\user_01", "CORP\\user%"));
         Assertions.assertFalse(SQLUtils.matchesLike("CORP\\other", "CORP\\user%"));
