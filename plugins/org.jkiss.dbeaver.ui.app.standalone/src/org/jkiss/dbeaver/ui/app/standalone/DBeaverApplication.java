@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.model.impl.app.BaseWorkspaceImpl;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.rcp.DesktopApplicationImpl;
 import org.jkiss.dbeaver.registry.ApplicationPolicyProvider;
+import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.SWTBrowserRegistry;
 import org.jkiss.dbeaver.registry.timezone.TimezoneRegistry;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
@@ -291,6 +292,9 @@ public class DBeaverApplication extends DesktopApplicationImpl implements DBPApp
             showMessageBox("Error initializing platform", CommonUtils.getAllExceptionMessages(e), SWT.ICON_ERROR);
             return IApplication.EXIT_OK;
         }
+
+        // The first window needs the drivers, load them while the display and workbench start
+        DataSourceProviderRegistry.loadInBackground();
 
         // Write version info
         writeWorkspaceInfo();
