@@ -16,11 +16,69 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.jkiss.junit.DBeaverUnitTest;
+import org.jkiss.code.NotNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 
-public class PostgreProcedureAggregateDDLTest extends DBeaverUnitTest {
+import java.util.List;
+
+public class PostgreProcedureAggregateDDLTest {
+
+    @Test
+    public void legacyAggregateQueryUsesOidAndSupportedCatalogColumns() {
+        String query = getQuery(8, 2);
+
+        Assertions.assertTrue(query.endsWith("WHERE aggfnoid = ?"));
+        Assertions.assertTrue(query.contains("agginitval\nFROM pg_aggregate"));
+        Assertions.assertTrue(query.contains("CASE aggfinalfn WHEN 0 THEN NULL ELSE aggfinalfn END AS aggfinalfn"));
+        Assertions.assertFalse(query.contains("aggfinalfn::text"));
+        for (String unsupported : List.of("pg_identify_object", "aggmtransfn", "aggserialfn", "aggcombinefn", "aggfinalmodify")) {
+            Assertions.assertFalse(query.contains(unsupported), unsupported);
+        }
+    }
+
+    @Test
+    public void objectIdentityIsAvailableBeforeMovingAggregates() {
+        String query = getQuery(9, 3);
+
+        Assertions.assertTrue(query.contains("pg_identify_object"));
+        Assertions.assertFalse(query.contains("aggmtransfn"));
+        Assertions.assertFalse(query.contains(",\nFROM"));
+    }
+
+    @Test
+    public void movingAggregatesDoNotRequireSerializationSupport() {
+        for (int minor : List.of(4, 5)) {
+            String query = getQuery(9, minor);
+            Assertions.assertTrue(query.contains("aggmtransfn"));
+            Assertions.assertFalse(query.contains("aggserialfn"));
+            Assertions.assertFalse(query.contains("aggdeserialfn"));
+            Assertions.assertFalse(query.contains("proparallel"));
+        }
+    }
+
+    @Test
+    public void parallelAggregatesIncludeSerializationAndCombineFunctions() {
+        String query = getQuery(9, 6);
+
+        for (String column : List.of("aggserialfn", "aggdeserialfn", "aggcombinefn", "pg_proc.proparallel")) {
+            Assertions.assertTrue(query.contains(column), column);
+        }
+        Assertions.assertFalse(query.contains("aggfinalmodify"));
+        Assertions.assertTrue(getQuery(11, 0).contains("aggfinalmodify"));
+    }
+
+    @NotNull
+    private String getQuery(int major, int minor) {
+        PostgreDataSource dataSource = Mockito.mock(PostgreDataSource.class);
+        Mockito.when(dataSource.isServerVersionAtLeast(Mockito.anyInt(), Mockito.anyInt())).thenAnswer(invocation -> {
+            int requiredMajor = invocation.getArgument(0);
+            int requiredMinor = invocation.getArgument(1);
+            return major > requiredMajor || major == requiredMajor && minor >= requiredMinor;
+        });
+        return PostgreProcedure.getAggregateQuery(dataSource);
+    }
 
     @Test
     public void preservesCombineFunctionAndParallelSafe() {

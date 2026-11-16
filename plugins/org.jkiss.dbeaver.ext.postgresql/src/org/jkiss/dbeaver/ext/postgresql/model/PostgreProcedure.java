@@ -46,7 +46,6 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -485,27 +484,16 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     private void configureAggregateQuery(DBRProgressMonitor monitor) throws DBCException {
+        boolean supportsMovingAggregates = getDataSource().isServerVersionAtLeast(9, 4);
+        boolean supportsParallelAggregates = getDataSource().isServerVersionAtLeast(9, 6);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read aggregate function body")) {
-            String query = "SELECT (pg_identify_object('pg_proc'::regclass, aggfnoid, 0)).identity,\n" +
-                "aggtransfn::regproc,\n" +
-                "format_type(aggtranstype, NULL) as aggtranstype,\n" +
-                "CASE aggfinalfn WHEN '-'::regproc THEN NULL ELSE aggfinalfn::text END,\n" +
-                "CASE aggsortop WHEN 0 THEN NULL ELSE oprname END,\n" +
-                "agginitval, " +
-                (getDataSource().isServerVersionAtLeast(9, 4) ? "aggmtransfn, aggminvtransfn,\n" +
-                "aggfinalextra, aggmfinalextra, aggserialfn, aggdeserialfn, aggmfinalfn,\n" +
-                "format_type(aggmtranstype, NULL) as aggmtranstype\n" : "") +
-                (getDataSource().isServerVersionAtLeast(9, 6) ? ",aggcombinefn, pg_proc.proparallel\n" : "") +
-                (getDataSource().isServerVersionAtLeast(11, 0) ? ",aggfinalmodify, aggmfinalmodify " : "") +
-                "FROM pg_aggregate\n" +
-                "LEFT JOIN pg_proc ON pg_proc.oid = pg_aggregate.aggfnoid\n" +
-                "LEFT JOIN pg_operator ON pg_operator.oid = aggsortop\n" +
-                "WHERE aggfnoid = ?::regproc";
+            String query = getAggregateQuery(getDataSource());
             try (JDBCPreparedStatement dbStat = session.prepareStatement(query)) {
-                dbStat.setString(1, getFullyQualifiedName(DBPEvaluationContext.DDL));
+                dbStat.setLong(1, getObjectId());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
-                        String fullName = JDBCUtils.safeGetString(dbResult, "identity");
+                        String fullName = getDataSource().isServerVersionAtLeast(9, 3)
+                            ? JDBCUtils.safeGetString(dbResult, "identity") : getFullQualifiedSignature();
                         String aggtransfn = JDBCUtils.safeGetString(dbResult, "aggtransfn"); // Transition function
 
                         // Data type of the aggregate function's internal transition (state) data
@@ -517,18 +505,18 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                         String initval = JDBCUtils.safeGetString(dbResult, "agginitval");
 
                         // Forward transition function for moving-aggregate mode
-                        String mtransfn = JDBCUtils.safeGetString(dbResult, "aggmtransfn");
-                        String mtranstype = JDBCUtils.safeGetString(dbResult, "aggmtranstype");
+                        String mtransfn = supportsMovingAggregates ? JDBCUtils.safeGetString(dbResult, "aggmtransfn") : null;
+                        String mtranstype = supportsMovingAggregates ? JDBCUtils.safeGetString(dbResult, "aggmtranstype") : null;
 
                         // Inverse transition function for moving-aggregate mode
-                        String minvtransfn = JDBCUtils.safeGetString(dbResult, "aggminvtransfn");
+                        String minvtransfn = supportsMovingAggregates ? JDBCUtils.safeGetString(dbResult, "aggminvtransfn") : null;
 
-                        final String serialfn = JDBCUtils.safeGetString(dbResult, "aggserialfn");
-                        final String deserialfn = JDBCUtils.safeGetString(dbResult, "aggdeserialfn");
-                        final String mfinalfn = JDBCUtils.safeGetString(dbResult, "aggmfinalfn");
-                        final String combinefn = getDataSource().isServerVersionAtLeast(9, 6)
+                        final String serialfn = supportsParallelAggregates ? JDBCUtils.safeGetString(dbResult, "aggserialfn") : null;
+                        final String deserialfn = supportsParallelAggregates ? JDBCUtils.safeGetString(dbResult, "aggdeserialfn") : null;
+                        final String mfinalfn = supportsMovingAggregates ? JDBCUtils.safeGetString(dbResult, "aggmfinalfn") : null;
+                        final String combinefn = supportsParallelAggregates
                             ? JDBCUtils.safeGetString(dbResult, "aggcombinefn") : null;
-                        final String parallel = getDataSource().isServerVersionAtLeast(9, 6)
+                        final String parallel = supportsParallelAggregates
                             ? JDBCUtils.safeGetString(dbResult, "proparallel") : null;
 
                         TransitionModifies finalmodify = null;
@@ -543,10 +531,11 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                                 JDBCUtils.safeGetString(dbResult, "aggmfinalmodify")); // For the aggmfinalfn
                         }
 
-                        boolean finalextra = JDBCUtils.safeGetBoolean(dbResult, "aggfinalextra"); // arguments to aggfinalfn
-                        boolean mfinalextra = JDBCUtils.safeGetBoolean(dbResult, "aggmfinalextra"); // arguments to aggmfinalfn
+                        boolean finalextra = supportsMovingAggregates && JDBCUtils.safeGetBoolean(dbResult, "aggfinalextra");
+                        boolean mfinalextra = supportsMovingAggregates && JDBCUtils.safeGetBoolean(dbResult, "aggmfinalextra");
 
-                        StringBuilder aggregateBody = new StringBuilder("CREATE OR REPLACE AGGREGATE ");
+                        StringBuilder aggregateBody = new StringBuilder(getDataSource().isServerVersionAtLeast(12, 0)
+                            ? "CREATE OR REPLACE AGGREGATE " : "CREATE AGGREGATE ");
                         final String delim = ",\n\t";
                         aggregateBody.append(fullName).append(" (\n")
                             .append("\tSFUNC = ").append(aggtransfn).append(delim)
@@ -567,12 +556,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                         if (CommonUtils.isNotEmpty(deserialfn) && !MISSING_AGGREGATE_FUNCTION.equals(deserialfn)) {
                             aggregateBody.append(delim).append("DESERIALFUNC = ").append(deserialfn);
                         }
-                        if (CommonUtils.isNotEmpty(initval)) {
-                            if (!Pattern.matches("[0-9]+", initval)) {
-                                // Quote non numeric values
-                                initval = "'" + initval + "'";
-                            }
-                            aggregateBody.append(delim).append("INITCOND = ").append(initval);
+                        if (initval != null) {
+                            aggregateBody.append(delim).append("INITCOND = ").append(SQLUtils.quoteString(this, initval));
                         }
                         if (CommonUtils.isNotEmpty(mtransfn) && !MISSING_AGGREGATE_FUNCTION.equals(mtransfn)) {
                             aggregateBody.append(delim).append("MSFUNC = ").append(mtransfn);
@@ -604,6 +589,34 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             log.debug("Error reading aggregate function body", e);
             body = "-- Aggregate function " + getFullQualifiedSignature() + "\n-- " + e.getMessage();
         }
+    }
+
+    @NotNull
+    static String getAggregateQuery(@NotNull PostgreDataSource dataSource) {
+        List<String> columns = new ArrayList<>(List.of(
+            "aggtransfn::regproc",
+            "format_type(aggtranstype, NULL) AS aggtranstype",
+            "CASE aggfinalfn WHEN 0 THEN NULL ELSE aggfinalfn END AS aggfinalfn",
+            "CASE aggsortop WHEN 0 THEN NULL ELSE oprname END AS oprname",
+            "agginitval"
+        ));
+        if (dataSource.isServerVersionAtLeast(9, 3)) {
+            columns.add("(pg_identify_object('pg_proc'::regclass, aggfnoid, 0)).identity");
+        }
+        if (dataSource.isServerVersionAtLeast(9, 4)) {
+            Collections.addAll(columns, "aggmtransfn", "aggminvtransfn", "aggfinalextra", "aggmfinalextra", "aggmfinalfn",
+                "format_type(aggmtranstype, NULL) AS aggmtranstype");
+        }
+        if (dataSource.isServerVersionAtLeast(9, 6)) {
+            Collections.addAll(columns, "aggserialfn", "aggdeserialfn", "aggcombinefn", "pg_proc.proparallel");
+        }
+        if (dataSource.isServerVersionAtLeast(11, 0)) {
+            Collections.addAll(columns, "aggfinalmodify", "aggmfinalmodify");
+        }
+        return "SELECT " + String.join(",\n", columns) + "\nFROM pg_aggregate\n"
+            + "LEFT JOIN pg_proc ON pg_proc.oid = pg_aggregate.aggfnoid\n"
+            + "LEFT JOIN pg_operator ON pg_operator.oid = aggsortop\n"
+            + "WHERE aggfnoid = ?";
     }
 
     static void appendAggregateExecutionOptions(@NotNull StringBuilder ddl, @Nullable String combineFunction, @Nullable String parallel) {
