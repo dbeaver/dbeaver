@@ -51,6 +51,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContextDefaults;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputSeverity;
 import org.jkiss.dbeaver.model.exec.output.DBCOutputWriter;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.impl.DataSourceContextProvider;
 import org.jkiss.dbeaver.model.sql.SQLQuery;
 import org.jkiss.dbeaver.model.sql.SQLQueryCategory;
@@ -69,6 +70,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.ByteArrayOutputStream;
@@ -96,7 +98,7 @@ public abstract class ExecuteSQLFunction implements AIFunction {
     ) throws DBException {
         // Some dialects execute special comments that JSQLParser otherwise ignores.
         if (query.getText().contains("/*!") || query.getText().contains("/*M!") || query.getText().contains("/*m!")) {
-            tokenize(query.getText());
+            tokenize(executionContext.getDataSource().getSQLDialect(), query.getText());
         }
         if (query.getStatement() == null || query.getStatement() instanceof UnsupportedStatement) {
             verifyQueryText(context, executionContext, query.getText());
@@ -459,9 +461,14 @@ public abstract class ExecuteSQLFunction implements AIFunction {
     }
 
     @NotNull
-    protected static List<String> tokenize(@NotNull String sql) throws DBException {
+    protected static List<String> tokenize(@NotNull SQLDialect dialect, @NotNull String sql) throws DBException {
         try {
-            CCJSqlParser lexer = new CCJSqlParser(sql).withSquareBracketQuotation(true).withBackslashEscapeCharacter(true);
+            boolean bracketIdentifiers = false;
+            for (String[] quotes : ArrayUtils.safeArray(dialect.getIdentifierQuoteStrings())) {
+                bracketIdentifiers |= quotes.length == 2 && quotes[0].equals("[") && quotes[1].equals("]");
+            }
+            CCJSqlParser lexer = new CCJSqlParser(sql).withSquareBracketQuotation(bracketIdentifiers)
+                .withBackslashEscapeCharacter(dialect.getStringEscapeCharacter() == '\\');
             List<String> tokens = new ArrayList<>();
             while (true) {
                 Token token = lexer.getNextToken();

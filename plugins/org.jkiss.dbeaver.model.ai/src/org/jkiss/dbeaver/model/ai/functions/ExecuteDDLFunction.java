@@ -133,7 +133,7 @@ public class ExecuteDDLFunction extends ExecuteSQLFunction {
     protected void verifyQueryText(
         @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull String queryText
     ) throws DBException {
-        List<String> tokens = tokenize(queryText);
+        List<String> tokens = tokenize(executionContext.getDataSource().getSQLDialect(), queryText);
         String command = firstKeyword(tokens);
         requireStatement(Set.of("CREATE", "ALTER", "DROP", "TRUNCATE", "RENAME", "COMMENT", "REFRESH").contains(command)
             && !(command.equals("ALTER") && tokens.size() > 2 && tokens.get(1).equalsIgnoreCase("DEFAULT")

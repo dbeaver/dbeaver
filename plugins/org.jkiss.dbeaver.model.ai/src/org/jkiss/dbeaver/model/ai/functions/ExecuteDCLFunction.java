@@ -63,7 +63,7 @@ public class ExecuteDCLFunction extends ExecuteSQLFunction {
     protected void verifyQueryText(
         @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull String queryText
     ) throws DBException {
-        List<String> tokens = tokenize(queryText);
+        List<String> tokens = tokenize(executionContext.getDataSource().getSQLDialect(), queryText);
         String command = firstKeyword(tokens);
         boolean defaultPrivileges = tokens.size() > 2 && command.equals("ALTER") && tokens.get(1).equalsIgnoreCase("DEFAULT")
             && tokens.get(2).equalsIgnoreCase("PRIVILEGES");

@@ -56,7 +56,7 @@ public class ExecuteDQLFunction extends ExecuteSQLFunction {
     protected void verifyQueryText(
         @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull String queryText
     ) throws DBException {
-        List<String> tokens = tokenize(queryText);
+        List<String> tokens = tokenize(executionContext.getDataSource().getSQLDialect(), queryText);
         requireStatement(Set.of("SELECT", "VALUES", "TABLE").contains(firstKeyword(tokens)) && !containsKeyword(tokens, Set.of(
             "INSERT", "UPDATE", "DELETE", "MERGE", "INTO", "CREATE", "ALTER", "DROP", "TRUNCATE", "RENAME", "COMMENT",
             "CALL", "EXEC", "EXECUTE", "COPY", "LOAD", "GRANT", "REVOKE", "DENY", "REPLACE", "UPSERT", "DO"

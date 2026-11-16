@@ -203,6 +203,20 @@ class SQLExecutionFunctionsTest {
     }
 
     @Test
+    void textTokenizationRespectsDialectBracketsAndStringEscapes() throws DBException {
+        ScopeFixture fixture = new ScopeFixture();
+        Assertions.assertDoesNotThrow(() -> fixture.verifyText(new ExecuteDQLFunction(), "SELECT ARRAY[1,2] FROM public.orders"));
+        fixture.assertTextRestricted(new ExecuteDQLFunction(), "SELECT ARRAY[private.read_payroll()] FROM public.orders");
+        Mockito.when(fixture.dataSource.getSQLDialect()).thenReturn(new BasicSQLDialect() {
+            @Override
+            public char getStringEscapeCharacter() {
+                return '\\';
+            }
+        });
+        Assertions.assertDoesNotThrow(() -> fixture.verifyText(new ExecuteDQLFunction(), "SELECT 'it\\'s a string' FROM public.orders"));
+    }
+
+    @Test
     void dmlResultIsAnInformationValueContainingTheModifiedRowCount() {
         DBCStatistics statistics = new DBCStatistics();
         statistics.addRowsUpdated(2);

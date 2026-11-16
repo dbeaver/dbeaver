@@ -70,7 +70,7 @@ public class ExecuteDMLFunction extends ExecuteSQLFunction {
     protected void verifyQueryText(
         @NotNull AIFunctionContext context, @NotNull DBCExecutionContext executionContext, @NotNull String queryText
     ) throws DBException {
-        List<String> tokens = tokenize(queryText);
+        List<String> tokens = tokenize(executionContext.getDataSource().getSQLDialect(), queryText);
         requireStatement(Set.of("INSERT", "UPDATE", "DELETE", "MERGE", "REPLACE", "UPSERT", "CALL", "COPY", "LOAD")
             .contains(firstKeyword(tokens)), SQLQueryCategory.DML);
         if (firstKeyword(tokens).equals("CALL")) {
