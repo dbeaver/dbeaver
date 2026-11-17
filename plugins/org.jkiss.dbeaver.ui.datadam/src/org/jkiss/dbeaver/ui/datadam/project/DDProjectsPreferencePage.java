@@ -39,6 +39,7 @@ import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -75,6 +76,7 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 
 public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkbenchPreferencePage {
+    private static final Log log = Log.getLog(DDProjectsPreferencePage.class);
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.synchronization.projects";
     private static final String PLUGIN_ID = "org.jkiss.dbeaver.ui.datadam";
     private static final String PREF_SHOW_REMOTE_PROJECTS = "datadam.projects.showRemoteProjects";
@@ -96,6 +98,9 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private Control streamSyncInfo;
     @Nullable
     private AbstractJob streamSyncJob;
+    @Nullable
+    private AbstractJob streamSyncPermissionJob;
+    private boolean canManageStreamSync;
     private boolean streamSyncUpdating;
     private boolean streamSyncEnabled;
     private Label projectsDescription;
@@ -285,6 +290,9 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         if (streamSyncJob != null) {
             streamSyncJob.cancel();
         }
+        if (streamSyncPermissionJob != null) {
+            streamSyncPermissionJob.cancel();
+        }
         if (accountViewJob != null) {
             accountViewJob.cancel();
         }
@@ -392,7 +400,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
     private void updateStreamSyncStatus() {
         UUID accountId = accessService.getAccountId();
         DDRemoteDamSettings settings = settingsStore.getSettings();
-        if (accountId == null || settings == null) {
+        if (accountId == null || settings == null || !canManageStreamSync) {
             showStreamSyncStatus(settings);
             return;
         }
@@ -428,7 +436,7 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
         streamSyncEnabled = settings != null && ready
             && settings.isDamEnabled(DDRemoteDamSettingKeys.PROJECTS_STREAM_SYNC, false);
         streamSyncCheck.setSelection(streamSyncEnabled);
-        streamSyncCheck.setEnabled(settings != null && ready && !streamSyncUpdating);
+        streamSyncCheck.setEnabled(settings != null && ready && canManageStreamSync && !streamSyncUpdating);
         streamSyncInfo.setVisible(streamSyncEnabled);
         ((GridData) streamSyncInfo.getLayoutData()).exclude = !streamSyncEnabled;
         boolean showRemoteProjects = !streamSyncEnabled;
@@ -468,6 +476,10 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             if (streamSyncJob != null) {
                 streamSyncJob.cancel();
             }
+            if (streamSyncPermissionJob != null) {
+                streamSyncPermissionJob.cancel();
+            }
+            canManageStreamSync = false;
             streamSyncUpdating = false;
             accountText.setText(present ? accountId.toString() : DDTrackingUIMessages.sync_preference_page_unknown);
             if (accountViewJob != null) {
@@ -485,10 +497,38 @@ public class DDProjectsPreferencePage extends AbstractPrefPage implements IWorkb
             if (streamSyncJob != null) {
                 streamSyncJob.cancel();
             }
+            if (streamSyncPermissionJob != null) {
+                streamSyncPermissionJob.cancel();
+            }
+            canManageStreamSync = false;
             streamSyncUpdating = false;
+        } else {
+            loadStreamSyncPermission(accountId);
         }
         showStreamSyncStatus(settingsStore.getSettings());
         updateSelectionActions();
+    }
+
+    private void loadStreamSyncPermission(@NotNull UUID accountId) {
+        if (streamSyncPermissionJob != null) {
+            streamSyncPermissionJob.cancel();
+        }
+        canManageStreamSync = false;
+        streamSyncPermissionJob = DDDesktopDamService.getInstance().createJob(
+            "Check DataDam project sync setting permission",
+            account -> account.canManageDamSettings(),
+            allowed -> {
+                if (!streamSyncCheck.isDisposed() && Objects.equals(accountId, accessService.getAccountId())) {
+                    canManageStreamSync = allowed;
+                    showStreamSyncStatus(settingsStore.getSettings());
+                }
+            },
+            error -> {
+                if (!streamSyncCheck.isDisposed() && Objects.equals(accountId, accessService.getAccountId())) {
+                    log.debug("Cannot check DataDam project sync setting permission", error);
+                    showStreamSyncStatus(settingsStore.getSettings());
+                }
+            });
     }
 
     private void loadAccountName() {
