@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.model.ai.impl;
 
+import net.sf.jsqlparser.expression.ExpressionVisitorAdapter;
+import net.sf.jsqlparser.schema.Column;
+import net.sf.jsqlparser.statement.select.Select;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -34,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.parser.SQLScriptParser;
+import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.sql.parser.tokens.SQLTokenType;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
@@ -113,7 +117,10 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
                 continue;
             }
             String indexDDL = DBStructUtils.generateObjectDDL(monitor, index, ddlOptions, false);
-            if (includesIndexDefinition(table.getDataSource(), excludedColumns, indexDDL)) {
+            var references = index.getAttributeReferences(monitor);
+            boolean checkExpressions = CommonUtils.isEmpty(references)
+                || references.stream().anyMatch(reference -> reference.getAttribute() == null);
+            if (includesIndexDefinition(table.getDataSource(), excludedColumns, checkExpressions, indexDDL)) {
                 DBStructUtils.addDDLLine(ddl, indexDDL);
             }
         }
@@ -136,27 +143,109 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
     private boolean includesIndexDefinition(
         @NotNull DBPDataSource dataSource,
         @NotNull Set<String> excludedColumns,
+        boolean checkExpressions,
         @NotNull String indexDDL
     ) {
         if (excludedColumns.isEmpty()) {
             return true;
         }
-        // expressions and predicates can reference columns absent from index metadata
         var context = SQLScriptParser.prepareSqlParserContext(
             dataSource, dataSource.getSQLDialect(), DBWorkbench.getPlatform().getPreferenceStore(), indexDDL);
         var scanner = context.getScanner();
         scanner.setRange(context.getDocument(), 0, indexDDL.length());
+        List<String> expressions = new ArrayList<>();
+        boolean tableFound = false;
+        boolean columnsFound = false;
+        boolean includedColumns = false;
+        int depth = 0;
+        int columnsStart = -1;
+        int predicateStart = -1;
         for (TPToken token = scanner.nextToken(); !token.isEOF(); token = scanner.nextToken()) {
             Object tokenType = token.getData();
-            if (tokenType instanceof SQLTokenType && tokenType != SQLTokenType.T_STRING
-                && tokenType != SQLTokenType.T_COMMENT && tokenType != SQLTokenType.T_NUMBER) {
-                String identifier = indexDDL.substring(scanner.getTokenOffset(), scanner.getTokenOffset() + scanner.getTokenLength());
-                if (excludedColumns.contains(DBUtils.getUnQuotedNormalizedIdentifier(dataSource.getSQLDialect(), identifier))) {
-                    return false;
+            if (tokenType == SQLTokenType.T_STRING || tokenType == SQLTokenType.T_QUOTED
+                || tokenType == SQLTokenType.T_COMMENT || token.isWhitespace()) {
+                continue;
+            }
+            int offset = scanner.getTokenOffset();
+            String text = indexDDL.substring(offset, offset + scanner.getTokenLength());
+            if (!tableFound) {
+                tableFound = text.equalsIgnoreCase("ON");
+                continue;
+            }
+            if (text.equals("(")) {
+                if (depth == 0 && (!columnsFound || includedColumns)) {
+                    columnsStart = offset + 1;
+                }
+                depth++;
+            } else if (text.equals(")")) {
+                depth--;
+                if (depth == 0 && columnsStart >= 0) {
+                    if (checkExpressions) {
+                        expressions.add("SELECT 1 ORDER BY " + indexDDL.substring(columnsStart, offset));
+                    }
+                    columnsStart = -1;
+                    columnsFound = true;
+                    includedColumns = false;
+                }
+            } else if (depth == 0 && columnsFound) {
+                if (predicateStart >= 0 && (text.equals(";") || text.equalsIgnoreCase("WITH")
+                    || text.equalsIgnoreCase("ON"))) {
+                    expressions.add("SELECT 1 WHERE " + indexDDL.substring(predicateStart, offset));
+                    predicateStart = -1;
+                    break;
+                }
+                if (predicateStart < 0 && text.equalsIgnoreCase("WHERE")) {
+                    predicateStart = offset + scanner.getTokenLength();
+                } else if (predicateStart < 0 && text.equalsIgnoreCase("INCLUDE")) {
+                    includedColumns = true;
                 }
             }
         }
+        if (predicateStart >= 0) {
+            expressions.add("SELECT 1 WHERE " + indexDDL.substring(predicateStart));
+        }
+        if (checkExpressions && (!columnsFound || depth != 0)) {
+            return false;
+        }
+        for (String expression : expressions) {
+            if (!includesIndexExpression(dataSource, excludedColumns, expression)) {
+                return false;
+            }
+        }
         return true;
+    }
+
+    private boolean includesIndexExpression(
+        @NotNull DBPDataSource dataSource,
+        @NotNull Set<String> excludedColumns,
+        @NotNull String expression
+    ) {
+        Set<String> columns = new HashSet<>();
+        var dialect = dataSource.getSQLDialect();
+        var visitor = new ExpressionVisitorAdapter<Void>() {
+            @Nullable
+            @Override
+            public <CONTEXT> Void visit(@NotNull Column column, @Nullable CONTEXT context) {
+                String name = column.getColumnName();
+                columns.add(dialect.isQuotedIdentifier(name)
+                    ? dialect.getUnquotedIdentifier(name, true)
+                    : DBUtils.getUnQuotedNormalizedIdentifier(dialect, name));
+                return null;
+            }
+        };
+        try {
+            var select = ((Select) SQLSemanticProcessor.parseQuery(dialect, expression)).getPlainSelect();
+            if (select.getWhere() != null) {
+                select.getWhere().accept(visitor, null);
+            }
+            for (var orderBy : CommonUtils.safeCollection(select.getOrderByElements())) {
+                orderBy.getExpression().accept(visitor, null);
+            }
+            return Collections.disjoint(excludedColumns, columns);
+        } catch (DBException e) {
+            log.debug("Unable to determine index column scope", e);
+            return false;
+        }
     }
 
     @Nullable
