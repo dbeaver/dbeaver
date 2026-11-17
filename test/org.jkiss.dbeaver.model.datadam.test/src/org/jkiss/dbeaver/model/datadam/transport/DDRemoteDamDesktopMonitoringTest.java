@@ -25,6 +25,7 @@ import com.dbeaver.datadam.dam.remote.api.transport.DDRemoteDamSubscription;
 import com.google.gson.JsonObject;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.datadam.internal.DDConnectionMessages;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
 import org.jkiss.junit.DBeaverUnitTest;
 import org.jkiss.utils.BaseWebSocketClient;
@@ -37,6 +38,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.http.WebSocket;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -101,6 +103,20 @@ public class DDRemoteDamDesktopMonitoringTest extends DBeaverUnitTest {
             first.listener.onText(first.socket, encoded, true);
             Assertions.assertEquals(afterReconnect.bytesReceived(), channel.getMonitor().snapshot().bytesReceived());
             Assertions.assertEquals(utf8Length(DDRemoteDamProtocol.encodeHandshakeRequest(HELLO)), afterReconnect.bytesSent());
+        }
+    }
+
+    @Test
+    void malformedAndOversizedTextReportsAnInvalidMessage() throws Exception {
+        for (String text : List.of("\uD800x", "\uDC00", "\uD800", "x".repeat(65_537))) {
+            try (var fixture = new Fixture()) {
+                var peer = fixture.ready("session");
+                peer.listener.onText(peer.socket, text, true);
+                var monitor = fixture.channel.getMonitor();
+                Assertions.assertEquals(DDConnectionMessages.invalid_message, monitor.snapshot().error());
+                Assertions.assertTrue(monitor.getEvents().stream().anyMatch(event ->
+                    event.type() == DDConnectionMonitor.EventType.ERROR && DDConnectionMessages.invalid_message.equals(event.details())));
+            }
         }
     }
 

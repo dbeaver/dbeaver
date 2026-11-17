@@ -635,7 +635,7 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
                 char value = data.charAt(i);
                 if (highSurrogate) {
                     if (!Character.isLowSurrogate(value)) {
-                        finish(attempt, true);
+                        finish(attempt, true, DDConnectionMessages.invalid_message);
                         return null;
                     }
                     highSurrogate = false;
@@ -643,18 +643,18 @@ public final class DDRemoteDamDesktopChannel implements DDRemoteDamChannel {
                     bytes += 4;
                     highSurrogate = true;
                 } else if (Character.isLowSurrogate(value)) {
-                    finish(attempt, true);
+                    finish(attempt, true, DDConnectionMessages.invalid_message);
                     return null;
                 } else {
                     bytes += value <= 0x7f ? 1 : value <= 0x7ff ? 2 : 3;
                 }
                 if (bytes > MAX_MESSAGE_BYTES) {
-                    finish(attempt, true);
+                    finish(attempt, true, DDConnectionMessages.invalid_message);
                     return null;
                 }
             }
             if (last && highSurrogate) {
-                finish(attempt, true);
+                finish(attempt, true, DDConnectionMessages.invalid_message);
                 return null;
             }
             synchronized (lock) {
