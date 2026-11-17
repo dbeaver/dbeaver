@@ -19,15 +19,21 @@ package org.jkiss.dbeaver.ui.datadam.project.event;
 import com.dbeaver.datadam.dam.remote.api.model.DDSharedProjectEvent;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.datadam.rpc.DDSharedProjectEventSource;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 import org.jkiss.dbeaver.ui.datadam.project.event.actions.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 public class DDProjectEventListener implements DDSharedProjectEventSource.Subscriber {
     private static final Log log = Log.getLog(DDProjectEventListener.class);
@@ -35,6 +41,7 @@ public class DDProjectEventListener implements DDSharedProjectEventSource.Subscr
     private final List<DDSharedProjectEvent> pendingEvents = new ArrayList<>();
     private State state = State.STOPPED;
     private boolean syncRunning;
+    private CompletableFuture<Shell> waitingForShell;
 
     private enum State {
         STOPPED, SYNCHRONIZING, LISTENING
@@ -63,6 +70,11 @@ public class DDProjectEventListener implements DDSharedProjectEventSource.Subscr
         }
         state = State.STOPPED;
         pendingEvents.clear();
+        if (waitingForShell != null) {
+            waitingForShell.cancel(false);
+            waitingForShell = null;
+            syncRunning = false;
+        }
     }
 
     @Override
@@ -77,16 +89,50 @@ public class DDProjectEventListener implements DDSharedProjectEventSource.Subscr
 
     private void startSynchronization() {
         syncRunning = true;
-        SyncAllJob job = new SyncAllJob(uiManager);
-        job.addJobChangeListener(new JobChangeAdapter() {
-            @Override
-            public void done(@NotNull IJobChangeEvent event) {
-                job.removeJobChangeListener(this);
-                synchronizationFinished();
+        CompletableFuture<Shell> ready = waitForWorkbenchShell();
+        waitingForShell = ready;
+        ready.thenAccept(shell -> {
+            synchronized (DDProjectEventListener.this) {
+                if (waitingForShell != ready || state == State.STOPPED) {
+                    return;
+                }
+                waitingForShell = null;
+                SyncAllJob job = new SyncAllJob(uiManager, shell);
+                job.addJobChangeListener(new JobChangeAdapter() {
+                    @Override
+                    public void done(@NotNull IJobChangeEvent event) {
+                        job.removeJobChangeListener(this);
+                        synchronizationFinished();
+                    }
+                });
+                job.setUser(true);
+                job.schedule();
             }
         });
-        job.setUser(true);
-        job.schedule();
+    }
+
+    @NotNull
+    private CompletableFuture<Shell> waitForWorkbenchShell() {
+        CompletableFuture<Shell> ready = new CompletableFuture<>();
+        UIUtils.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                if (ready.isDone()) {
+                    return;
+                }
+                if (PlatformUI.isWorkbenchRunning()) {
+                    for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+                        Shell shell = window.getShell();
+                        if (shell != null && !shell.isDisposed() && shell.isVisible()) {
+                            ready.complete(shell);
+                            return;
+                        }
+                    }
+                }
+                Display.getCurrent().timerExec(250, this);
+            }
+        });
+        return ready;
     }
 
     private synchronized void synchronizationFinished() {

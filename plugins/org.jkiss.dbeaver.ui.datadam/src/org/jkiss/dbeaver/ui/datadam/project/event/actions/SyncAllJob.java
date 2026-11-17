@@ -23,13 +23,10 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPProject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectUIManager.ProjectListing;
@@ -42,10 +39,12 @@ import java.util.List;
 public class SyncAllJob extends Job {
     private static final Log log = Log.getLog(SyncAllJob.class);
     private final DDProjectUIManager uiManager;
+    private final Shell shell;
 
-    public SyncAllJob(@NotNull DDProjectUIManager uiManager) {
+    public SyncAllJob(@NotNull DDProjectUIManager uiManager, @NotNull Shell shell) {
         super(DDTrackingUIMessages.projects_sync_all);
         this.uiManager = uiManager;
+        this.shell = shell;
     }
 
     @NotNull
@@ -77,16 +76,6 @@ public class SyncAllJob extends Job {
                 .filter(listing -> listing.localProject() != null && listing.remoteProject() != null)
                 .map(listing -> listing.localProject().project()).toList();
             if (!existing.isEmpty()) {
-                Shell shell = UIUtils.syncExec(new RunnableWithResult<>() {
-                    @Nullable
-                    @Override
-                    public Shell runWithResult() {
-                        return UIUtils.getActiveWorkbenchShell();
-                    }
-                });
-                if (shell == null) {
-                    return outcome = Status.CANCEL_STATUS;
-                }
                 IStatus result = new DDProjectSyncAllHandler().synchronizeProjects(existing, progress, shell);
                 if (!result.isOK()) {
                     return outcome = result;
