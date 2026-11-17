@@ -37,6 +37,7 @@ public interface DDSharedProjectEventSource {
                 case METADATA_UPDATED -> projectMetadataUpdated(event);
                 case CONFIGURATION_UPDATED -> projectConfigurationUpdated(event);
                 case DELETED -> projectDeleted(event);
+                default -> throw new IllegalStateException("Unexpected shared project change: " + event.change());
             }
         }
 

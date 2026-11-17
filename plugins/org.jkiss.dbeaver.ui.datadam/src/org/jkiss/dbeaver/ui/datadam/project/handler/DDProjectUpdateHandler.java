@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.app.DBPProject;
@@ -34,6 +33,8 @@ import org.jkiss.dbeaver.ui.datadam.DDUIUtils;
 import org.jkiss.dbeaver.ui.datadam.internal.DDTrackingUIMessages;
 import org.jkiss.dbeaver.ui.datadam.project.DDProjectConflictResolver;
 import org.jkiss.dbeaver.ui.datadam.project.job.DDProjectSynchronizationJob;
+
+import java.util.concurrent.atomic.AtomicReference;
 
 public class DDProjectUpdateHandler extends DDProjectHandler<DDProjectSynchronizationJob> {
     private final DDProjectConflictResolver conflictResolver = new DDProjectConflictResolver(uiManager);
@@ -65,15 +66,14 @@ public class DDProjectUpdateHandler extends DDProjectHandler<DDProjectSynchroniz
 
     private void resolveConflict(@NotNull DBPProject project) {
         Shell shell = UIUtils.getActiveWorkbenchShell();
+        AtomicReference<ProjectStatus> resolutionResult = new AtomicReference<>();
         var resolution = new AbstractJob(DDTrackingUIMessages.project_sync_resolve_job) {
-            @Nullable
-            private ProjectStatus result;
-
             @NotNull
             @Override
             protected IStatus run(@NotNull DBRProgressMonitor monitor) {
                 try {
-                    result = conflictResolver.resolve(project, monitor, shell);
+                    ProjectStatus result = conflictResolver.resolve(project, monitor, shell);
+                    resolutionResult.set(result);
                     return result == null ? Status.CANCEL_STATUS : Status.OK_STATUS;
                 } catch (DBException e) {
                     return Status.error(DDTrackingUIMessages.project_sync_resolve_failed, e);
@@ -81,17 +81,18 @@ public class DDProjectUpdateHandler extends DDProjectHandler<DDProjectSynchroniz
             }
         };
         scheduleBackgroundJob(resolution, status -> {
+            ProjectStatus result = resolutionResult.get();
             if (status.getSeverity() == IStatus.ERROR) {
                 showError(project, status.getMessage(), status.getException());
-            } else if (status.isOK() && resolution.result != null) {
-                switch (resolution.result) {
+            } else if (status.isOK() && result != null) {
+                switch (result) {
                     case NOT_SYNC -> showMessage(project, DDTrackingUIMessages.project_sync_unbind_success);
                     case UP_TO_DATE -> showMessage(project, DDTrackingUIMessages.project_sync_update_success);
                     case CONFLICT -> DDUIUtils.showNotification(
                         projectTitle(project),
                         NLS.bind(DDTrackingUIMessages.projects_conflicts, project.getName()), DBPMessageType.WARNING, null);
                     default -> showError(project, DDTrackingUIMessages.project_sync_update_failed,
-                        new DBException("Project synchronization ended with status: " + resolution.result));
+                        new DBException("Project synchronization ended with status: " + result));
                 }
             }
         });

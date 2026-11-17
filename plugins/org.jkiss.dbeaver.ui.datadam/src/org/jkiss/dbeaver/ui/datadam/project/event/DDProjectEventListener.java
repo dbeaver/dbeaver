@@ -84,6 +84,7 @@ public class DDProjectEventListener implements DDSharedProjectEventSource.Subscr
                 + " for project " + event.projectId() + ": stream sync stopped");
             case SYNCHRONIZING -> pendingEvents.add(event);
             case LISTENING -> DDSharedProjectEventSource.Subscriber.super.onEvent(event);
+            default -> throw new IllegalStateException("Unexpected project sync state: " + state);
         }
     }
 
@@ -93,7 +94,7 @@ public class DDProjectEventListener implements DDSharedProjectEventSource.Subscr
         waitingForShell = ready;
         ready.thenAccept(shell -> {
             synchronized (DDProjectEventListener.this) {
-                if (waitingForShell != ready || state == State.STOPPED) {
+                if (!ready.equals(waitingForShell) || state == State.STOPPED) {
                     return;
                 }
                 waitingForShell = null;
