@@ -888,10 +888,19 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     /**
      * True when proacl was read as an array, including an empty one ({}).
-     * False for NULL (default privileges) or a value that couldn't be read.
+     * False for NULL (default privileges) or a value that couldn't be decoded,
+     * because then the privileges are unknown and nothing may be revoked.
      */
     public boolean hasExplicitAcl() {
-        return acl instanceof java.sql.Array;
+        if (!(acl instanceof java.sql.Array array)) {
+            return false;
+        }
+        try {
+            array.getArray();
+            return true;
+        } catch (SQLException e) {
+            return false;
+        }
     }
 
     @Override

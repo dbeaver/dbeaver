@@ -916,6 +916,7 @@ public class PostgreUtils {
                 .getPersistActions(monitor, executionContext, options));
     }
 
+    // Role names come from the catalog, so they are matched exactly: "PUBLIC" is a real role, not the pseudo-role
     private static boolean hasGrantee(@Nullable Collection<PostgrePrivilege> permissions, @NotNull String roleName) {
         if (permissions == null) {
             return false;

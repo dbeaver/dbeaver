@@ -29,8 +29,10 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.lang.reflect.Proxy;
+import java.sql.Array;
+import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -94,11 +96,20 @@ public class PostgreProcedurePermissionsDDLTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void noRevokeWhenAclIsUnknown() throws DBException {
-        // proacl is NULL (default privileges) or couldn't be read
+    public void noRevokeWhenAclIsNull() throws DBException {
+        // proacl is NULL, the function has default privileges
         String ddl = generatePermissionsDDL(PostgreProcedureKind.f, (String[]) null);
 
         Assertions.assertFalse(ddl.contains("REVOKE"), ddl);
+    }
+
+    @Test
+    public void noRevokeWhenAclCannotBeDecoded() throws DBException {
+        // proacl is an array, but Array.getArray() fails, so its privileges are unknown
+        String ddl = generatePermissionsDDL(PostgreProcedureKind.f, testUser, createAclArray(null));
+
+        Assertions.assertFalse(ddl.contains("REVOKE"), ddl);
+        Assertions.assertFalse(ddl.contains("GRANT"), ddl);
     }
 
     @Test
@@ -107,6 +118,50 @@ public class PostgreProcedurePermissionsDDLTest extends DBeaverUnitTest {
         String ddl = generatePermissionsDDL(PostgreProcedureKind.f, "tester=X/tester", "PUBLIC=X/tester");
 
         Assertions.assertTrue(ddl.contains("REVOKE ALL ON FUNCTION public.acltest() FROM PUBLIC"), ddl);
+        Assertions.assertTrue(ddl.contains("GRANT ALL ON FUNCTION public.acltest() TO \"PUBLIC\""), ddl);
+    }
+
+    @Test
+    public void revokesFromOwnerNamedUppercasePublic() throws DBException {
+        // A real role "PUBLIC" owns the function and proacl is {}
+        PostgreRole owner = new PostgreRole(testSchema.getDatabase(), "PUBLIC", "test", true);
+        String ddl = generatePermissionsDDL(PostgreProcedureKind.f, owner, createAclArray(new String[0]));
+
+        Assertions.assertTrue(ddl.endsWith(
+            "ALTER FUNCTION public.acltest() OWNER TO \"PUBLIC\"\n"
+                + "REVOKE ALL ON FUNCTION public.acltest() FROM PUBLIC\n"
+                + "REVOKE ALL ON FUNCTION public.acltest() FROM \"PUBLIC\""
+        ), ddl);
+    }
+
+    @Test
+    public void ownerNamedUppercasePublicKeepsItsGrant() throws DBException {
+        PostgreRole owner = new PostgreRole(testSchema.getDatabase(), "PUBLIC", "test", true);
+        String ddl = generatePermissionsDDL(PostgreProcedureKind.f, owner, createAclArray(new String[]{"PUBLIC=X/PUBLIC"}));
+
+        Assertions.assertTrue(ddl.endsWith(
+            "ALTER FUNCTION public.acltest() OWNER TO \"PUBLIC\"\n"
+                + "REVOKE ALL ON FUNCTION public.acltest() FROM PUBLIC\n"
+                + "GRANT ALL ON FUNCTION public.acltest() TO \"PUBLIC\""
+        ), ddl);
+    }
+
+    @Test
+    public void matchesOwnerNameCaseSensitively() throws DBException {
+        // AclOwner and aclowner are different roles in the catalog
+        PostgreRole owner = new PostgreRole(testSchema.getDatabase(), "AclOwner", "test", true);
+        String ddl = generatePermissionsDDL(
+            PostgreProcedureKind.f, owner, createAclArray(new String[]{"=X/AclOwner", "aclowner=X/AclOwner"}));
+
+        Assertions.assertTrue(ddl.contains("REVOKE ALL ON FUNCTION public.acltest() FROM \"AclOwner\""), ddl);
+        Assertions.assertFalse(ddl.contains("FROM PUBLIC"), ddl);
+        Assertions.assertTrue(ddl.contains("GRANT ALL ON FUNCTION public.acltest() TO aclowner"), ddl);
+
+        ddl = generatePermissionsDDL(
+            PostgreProcedureKind.f, owner, createAclArray(new String[]{"=X/AclOwner", "AclOwner=X/AclOwner"}));
+
+        Assertions.assertFalse(ddl.contains("REVOKE"), ddl);
+        Assertions.assertTrue(ddl.contains("GRANT ALL ON FUNCTION public.acltest() TO \"AclOwner\""), ddl);
     }
 
     @Test
@@ -130,6 +185,7 @@ public class PostgreProcedurePermissionsDDLTest extends DBeaverUnitTest {
         Assertions.assertTrue(ddl.contains("GRANT ALL ON FUNCTION public.acltest() TO PUBLIC"), ddl);
     }
 
+    @Test
     public void keepsGrantOption() throws DBException {
         // proacl after GRANT EXECUTE ... TO qa_acl_user WITH GRANT OPTION (#42798)
         String ddl = generatePermissionsDDL(PostgreProcedureKind.f, "tester=X/tester", "qa_acl_user=X*/tester");
@@ -142,20 +198,23 @@ public class PostgreProcedurePermissionsDDLTest extends DBeaverUnitTest {
 
     @NotNull
     private String generatePermissionsDDL(@NotNull PostgreProcedureKind kind, @Nullable String... aclItems) throws DBException {
+        return generatePermissionsDDL(kind, testUser, aclItems == null ? null : createAclArray(aclItems));
+    }
+
+    @NotNull
+    private String generatePermissionsDDL(
+        @NotNull PostgreProcedureKind kind,
+        @NotNull PostgreRole owner,
+        @Nullable Array proacl
+    ) throws DBException {
         PostgreProcedure procedure = new PostgreProcedure(testSchema) {
+            {
+                acl = proacl;
+            }
+
             @Override
             public PostgreRole getOwner(DBRProgressMonitor monitor) {
-                return testUser;
-            }
-
-            @Override
-            public Collection<PostgrePrivilege> getPrivileges(@NotNull DBRProgressMonitor monitor, boolean includeNestedObjects) {
-                return aclItems == null ? List.of() : PostgreUtils.extractPermissionsFromACL(this, aclItems, false);
-            }
-
-            @Override
-            public boolean hasExplicitAcl() {
-                return aclItems != null;
+                return owner;
             }
         };
         procedure.setName("acltest");
@@ -167,5 +226,25 @@ public class PostgreProcedurePermissionsDDLTest extends DBeaverUnitTest {
             monitor, procedure, actions, Map.of(DBPScriptObject.OPTION_INCLUDE_PERMISSIONS, true)
         );
         return actions.stream().map(DBEPersistAction::getScript).collect(Collectors.joining("\n"));
+    }
+
+    /**
+     * proacl as the JDBC driver returns it. Null items make getArray() fail.
+     */
+    @NotNull
+    private static Array createAclArray(@Nullable String[] aclItems) {
+        return (Array) Proxy.newProxyInstance(
+            Array.class.getClassLoader(),
+            new Class<?>[]{Array.class},
+            (proxy, method, args) -> {
+                if ("getArray".equals(method.getName()) && method.getParameterCount() == 0) {
+                    if (aclItems == null) {
+                        throw new SQLException("Can't decode proacl");
+                    }
+                    return aclItems;
+                }
+                throw new UnsupportedOperationException(method.getName());
+            }
+        );
     }
 }
