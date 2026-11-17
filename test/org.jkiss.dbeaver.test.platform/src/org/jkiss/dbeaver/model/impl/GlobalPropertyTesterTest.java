@@ -16,50 +16,35 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
-import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.runtime.DBWorkbench;
+import org.jkiss.junit.DBeaverUnitTest;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import java.util.UUID;
 
-class GlobalPropertyTesterTest {
+public class GlobalPropertyTesterTest extends DBeaverUnitTest {
     @Test
     void preferenceDefaultDoesNotOverrideExplicitFalseAndPreservesExistingDefault() {
         String preference = "statusbar.test." + UUID.randomUUID();
-        var store = new SimplePreferenceStore() {
-            @Override
-            public void save() {
-            }
-        };
-        var platform = Mockito.mock(DBPPlatform.class);
-        Mockito.when(platform.getPreferenceStore()).thenReturn(store);
-        try (var workbench = Mockito.mockStatic(DBWorkbench.class)) {
-            workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+        var store = DBWorkbench.getPlatform().getPreferenceStore();
+        try {
             var tester = new GlobalPropertyTester();
             Assertions.assertFalse(tester.test(null, GlobalPropertyTester.PROP_HAS_PREFERENCE, new Object[0], preference));
             Assertions.assertTrue(tester.test(null, GlobalPropertyTester.PROP_HAS_PREFERENCE, new Object[] {true}, preference));
-            store.setValue(preference, false);
+            store.setValue(preference, Boolean.FALSE.toString());
             Assertions.assertFalse(tester.test(null, GlobalPropertyTester.PROP_HAS_PREFERENCE, new Object[] {true}, preference));
             store.setValue(preference, true);
             Assertions.assertTrue(tester.test(null, GlobalPropertyTester.PROP_HAS_PREFERENCE, new Object[] {false}, preference));
+        } finally {
+            store.setToDefault(preference);
         }
     }
 
     @Test
     void systemPropertyFallbackTakesPrecedenceOverTheOptionalDefault() {
         String preference = "statusbar.test." + UUID.randomUUID();
-        var store = new SimplePreferenceStore() {
-            @Override
-            public void save() {
-            }
-        };
-        var platform = Mockito.mock(DBPPlatform.class);
-        Mockito.when(platform.getPreferenceStore()).thenReturn(store);
-        try (var workbench = Mockito.mockStatic(DBWorkbench.class)) {
-            workbench.when(DBWorkbench::getPlatform).thenReturn(platform);
+        try {
             var tester = new GlobalPropertyTester();
             System.setProperty(preference, "false");
             Assertions.assertFalse(tester.test(null, GlobalPropertyTester.PROP_HAS_PREFERENCE, new Object[] {true}, preference));
