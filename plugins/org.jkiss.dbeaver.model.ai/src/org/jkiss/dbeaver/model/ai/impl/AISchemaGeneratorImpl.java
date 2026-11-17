@@ -68,7 +68,7 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
             generateCustomDDL(monitor, executionContext, options, entity, ddl);
             ddl.append(SQLConstants.DEFAULT_STATEMENT_DELIMITER).append(GeneralUtils.getDefaultLineSeparator());
             if (options.sendIndexes() && entity instanceof DBSTable table) {
-                describeIndexes(monitor, options, table, ddl);
+                addIndexesDDL(monitor, options, table, ddl);
             }
         }
 
@@ -82,37 +82,47 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         return ddl.toString().trim();
     }
 
-    private void describeIndexes(
+    private void addIndexesDDL(
         @NotNull DBRProgressMonitor monitor,
         @NotNull AISchemaGenerationOptions options,
         @NotNull DBSTable table,
         @NotNull StringBuilder ddl
-    ) throws DBException {
-        for (DBSTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
-            if (DBUtils.isHiddenObject(index) || DBUtils.isInheritedObject(index) || !options.includesObject(monitor, index)) {
-                continue;
-            }
-            List<? extends DBSTableIndexColumn> references = index.getAttributeReferences(monitor);
-            if (CommonUtils.isEmpty(references)) {
-                continue;
-            }
-            StringJoiner columns = new StringJoiner(", ", "(", ")");
-            boolean included = true;
-            for (DBSTableIndexColumn reference : references) {
-                DBSEntityAttribute attribute = reference.getAttribute();
-                if (attribute != null && (DBUtils.isHiddenObject(attribute) || !options.includesObject(monitor, attribute))) {
-                    included = false;
-                    break;
+    ) {
+        try {
+            for (DBSTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
+                if (DBUtils.isHiddenObject(index) || DBUtils.isInheritedObject(index) || !options.includesObject(monitor, index)) {
+                    continue;
                 }
-                columns.add((attribute == null ? "<expression>" : DBUtils.getQuotedIdentifier(attribute))
-                    + (reference.isAscending() ? " ASC" : " DESC"));
+                String description = describeIndex(monitor, options, index);
+                if (!CommonUtils.isEmpty(description)) {
+                    ddl.append(description).append(GeneralUtils.getDefaultLineSeparator());
+                }
             }
-            if (included) {
-                ddl.append(index.isUnique() ? "-- UNIQUE INDEX " : "-- INDEX ")
-                    .append(DBUtils.getQuotedIdentifier(index)).append(" ").append(columns)
-                    .append(GeneralUtils.getDefaultLineSeparator());
-            }
+        } catch (DBException e) {
+            log.debug("Error reading table '" + table.getFullyQualifiedName(DBPEvaluationContext.DDL) + "' indexes", e);
         }
+    }
+
+    @Nullable
+    private String describeIndex(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull AISchemaGenerationOptions options,
+        @NotNull DBSTableIndex index
+    ) throws DBException {
+        List<? extends DBSTableIndexColumn> references = index.getAttributeReferences(monitor);
+        if (CommonUtils.isEmpty(references)) {
+            return null;
+        }
+        StringJoiner columns = new StringJoiner(", ", "(", ")");
+        for (DBSTableIndexColumn reference : references) {
+            DBSEntityAttribute attribute = reference.getAttribute();
+            if (attribute != null && (DBUtils.isHiddenObject(attribute) || !options.includesObject(monitor, attribute))) {
+                return null;
+            }
+            columns.add((attribute == null ? "<expression>" : DBUtils.getQuotedIdentifier(attribute))
+                + (reference.isAscending() ? " ASC" : " DESC"));
+        }
+        return (index.isUnique() ? "-- UNIQUE INDEX " : "-- INDEX ") + DBUtils.getQuotedIdentifier(index) + " " + columns;
     }
 
     @Nullable

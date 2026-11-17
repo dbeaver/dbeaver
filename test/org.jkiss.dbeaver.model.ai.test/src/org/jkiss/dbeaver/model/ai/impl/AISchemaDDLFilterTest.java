@@ -166,6 +166,32 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
     }
 
     @Test
+    public void compactSchemaSurvivesIndexListFailure() throws DBException {
+        DBSTable table = table("orders");
+        Mockito.doThrow(new DBException("Index metadata unavailable")).when(table).getIndexes(monitor);
+        AISchemaGenerationOptions options = options(false).withSendIndexes(true).build();
+
+        String ddl = Assertions.assertDoesNotThrow(() -> new AISchemaGeneratorImpl().generateSchema(monitor, null, options, table));
+        Assertions.assertTrue(ddl.contains("CREATE TABLE"), ddl);
+        Assertions.assertTrue(ddl.contains("INTEGER"), ddl);
+    }
+
+    @Test
+    public void compactSchemaSurvivesIndexColumnFailure() throws DBException {
+        DBSTable table = table("orders");
+        DBSTableIndex index = Mockito.mock(DBSTableIndex.class);
+        DBSTableIndex valid = index(table, "valid_index", table.getAttributes(monitor).getFirst());
+        Mockito.doReturn(List.of(valid, index)).when(table).getIndexes(monitor);
+        Mockito.doThrow(new DBException("Index columns unavailable")).when(index).getAttributeReferences(monitor);
+        AISchemaGenerationOptions options = options(false).withSendIndexes(true).build();
+
+        String ddl = Assertions.assertDoesNotThrow(() -> new AISchemaGeneratorImpl().generateSchema(monitor, null, options, table));
+        Assertions.assertTrue(ddl.contains("CREATE TABLE"), ddl);
+        Assertions.assertTrue(ddl.contains("INTEGER"), ddl);
+        Assertions.assertTrue(ddl.contains("-- INDEX \"valid_index\""), ddl);
+    }
+
+    @Test
     public void explicitFullDDLRetainsNativeDefinitions() throws DBException {
         for (String nativeDDL : List.of(
             "CREATE TABLE app.orders (id NUMBER) SEGMENT CREATION IMMEDIATE "
