@@ -117,6 +117,21 @@
                </restriction>
             </simpleType>
          </attribute>
+         <attribute name="readOnlyHint" type="boolean">
+            <annotation>
+               <documentation>MCP hint: the function does not modify its environment. Defaults to false.</documentation>
+            </annotation>
+         </attribute>
+         <attribute name="destructiveHint" type="boolean">
+            <annotation>
+               <documentation>MCP hint: the function may perform destructive updates. Defaults to true. Only meaningful when readOnlyHint is false.</documentation>
+            </annotation>
+         </attribute>
+         <attribute name="idempotentHint" type="boolean">
+            <annotation>
+               <documentation>MCP hint: repeated calls with the same arguments have no additional side effects. Defaults to false. Only meaningful when readOnlyHint is false.</documentation>
+            </annotation>
+         </attribute>
          <attribute name="system" type="boolean">
             <annotation>
                <documentation>If true, this is a system function</documentation>
