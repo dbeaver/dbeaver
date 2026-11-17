@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2025 DBeaver Corp and others
+ * Copyright (C) 2010-2026 DBeaver Corp and others
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -90,7 +90,9 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
     @Override
     public OBJECT getCachedObject(@Nullable String name) {
         synchronized (cacheSync) {
-            return objectList == null || name == null ? null : getObjectMap().get(caseSensitive ? name : name.toUpperCase());
+            return objectList == null || name == null
+                ? null
+                : getObjectMap().get(caseSensitive ? name : name.toUpperCase(Locale.ROOT));
         }
     }
 
@@ -138,8 +140,8 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
         synchronized (cacheSync) {
             if (this.objectMap != null) {
                 if (!caseSensitive) {
-                    oldName = oldName.toUpperCase(Locale.ENGLISH);
-                    newName = newName.toUpperCase(Locale.ENGLISH);
+                    oldName = oldName.toUpperCase(Locale.ROOT);
+                    newName = newName.toUpperCase(Locale.ROOT);
                 }
                 if (this.objectMap.remove(oldName) == object) {
                     this.objectMap.put(newName, object);
@@ -304,7 +306,7 @@ public abstract class AbstractObjectCache<OWNER extends DBSObject, OBJECT extend
             return null;
         }
         if (!caseSensitive) {
-            return name.toUpperCase();
+            return name.toUpperCase(Locale.ROOT);
         }
         return name;
     }

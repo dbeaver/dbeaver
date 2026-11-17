@@ -59,6 +59,7 @@ public class AIUIMessages extends NLS {
     public static String gpt_preference_page_combo_engine;
     public static String gpt_preference_page_text_temperature;
     public static String ai_engine_configurator_temperature_default;
+    public static String ai_engine_configurator_context_window_size;
     public static String gpt_preference_page_refresh_models;
     public static String gpt_preference_page_ai_query_confirm_group;
     public static String gpt_preference_page_ai_query_confirm_rule_execute;
