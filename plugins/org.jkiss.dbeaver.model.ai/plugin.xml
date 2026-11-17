@@ -94,6 +94,9 @@
         <!-- Catalogs are provided in the database snapshot for AI prompts. -->
         <function
             id="listCatalogNames"
+            readOnlyHint="true"
+            destructiveHint="false"
+            idempotentHint="true"
             name="List catalog names"
             enabledByDefault="true"
             type="INFORMATION"
@@ -107,6 +110,9 @@
 
         <function
             id="listSchemaNames"
+            readOnlyHint="true"
+            destructiveHint="false"
+            idempotentHint="true"
             name="List schema names"
             enabledByDefault="true"
             type="INFORMATION"
@@ -120,6 +126,9 @@
 
         <function
             id="listTableNames"
+            readOnlyHint="true"
+            destructiveHint="false"
+            idempotentHint="true"
             name="List table names"
             enabledByDefault="true"
             type="INFORMATION"
@@ -134,6 +143,9 @@
 
         <function
             id="getTableDetails"
+            readOnlyHint="true"
+            destructiveHint="false"
+            idempotentHint="true"
             name="Get table details"
             enabledByDefault="true"
             type="INFORMATION"
@@ -156,6 +168,9 @@
 
         <function
             id="getDatasourceInfo"
+            readOnlyHint="true"
+            destructiveHint="false"
+            idempotentHint="true"
             name="Get Datasource Info"
             enabledByDefault="true"
             type="INFORMATION"
@@ -172,6 +187,9 @@
 
         <function
             id="executeDQL"
+            readOnlyHint="true"
+            destructiveHint="false"
+            idempotentHint="true"
             name="Execute DQL"
             enabledByDefault="true"
             type="INFORMATION"
@@ -188,6 +206,9 @@
 
         <function
             id="executeDML"
+            readOnlyHint="false"
+            destructiveHint="true"
+            idempotentHint="false"
             name="Execute DML"
             enabledByDefault="true"
             type="INFORMATION"
@@ -202,6 +223,9 @@
 
         <function
             id="executeDDL"
+            readOnlyHint="false"
+            destructiveHint="true"
+            idempotentHint="false"
             name="Execute DDL"
             enabledByDefault="true"
             type="INFORMATION"
@@ -216,6 +240,9 @@
 
         <function
             id="executeDCL"
+            readOnlyHint="false"
+            destructiveHint="true"
+            idempotentHint="false"
             name="Execute DCL"
             enabledByDefault="true"
             type="INFORMATION"
