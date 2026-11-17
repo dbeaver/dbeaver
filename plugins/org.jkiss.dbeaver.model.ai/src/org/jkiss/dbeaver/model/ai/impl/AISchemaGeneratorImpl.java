@@ -92,23 +92,27 @@ public class AISchemaGeneratorImpl implements AISchemaGenerator {
         try {
             DBERegistry editorsRegistry = DBWorkbench.getPlatform().getEditorsRegistry();
             for (DBSTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
-                if (DBUtils.isHiddenObject(index) || DBUtils.isInheritedObject(index) || !options.includesObject(monitor, index)
-                    || !includesIndexAttributes(monitor, options, index)) {
-                    continue;
-                }
-                SQLObjectEditor indexEditor = editorsRegistry.getObjectManager(index.getClass(), SQLObjectEditor.class);
-                if (indexEditor != null) {
-                    String indexName = index.getName();
-                    try {
-                        DBEPersistAction[] actions = indexEditor.makeCreateCommand(index, Map.of()).getPersistActions(
-                            monitor, executionContext == null ? DBUtils.getDefaultContext(index, true) : executionContext, Map.of());
-                        DBStructUtils.addDDLLine(ddl, SQLUtils.generateScript(table.getDataSource(), actions, false));
-                    } finally {
-                        // generic index managers may quote the cached object's name while generating DDL
-                        if (index instanceof DBPNamedObject2 namedIndex && !indexName.equals(index.getName())) {
-                            namedIndex.setName(indexName);
+                try {
+                    if (DBUtils.isHiddenObject(index) || DBUtils.isInheritedObject(index) || !options.includesObject(monitor, index)
+                        || !includesIndexAttributes(monitor, options, index)) {
+                        continue;
+                    }
+                    SQLObjectEditor indexEditor = editorsRegistry.getObjectManager(index.getClass(), SQLObjectEditor.class);
+                    if (indexEditor != null) {
+                        String indexName = index.getName();
+                        try {
+                            DBEPersistAction[] actions = indexEditor.makeCreateCommand(index, Map.of()).getPersistActions(
+                                monitor, executionContext == null ? DBUtils.getDefaultContext(index, true) : executionContext, Map.of());
+                            DBStructUtils.addDDLLine(ddl, SQLUtils.generateScript(table.getDataSource(), actions, false));
+                        } finally {
+                            // generic index managers may quote the cached object's name while generating DDL
+                            if (index instanceof DBPNamedObject2 namedIndex && !indexName.equals(index.getName())) {
+                                namedIndex.setName(indexName);
+                            }
                         }
                     }
+                } catch (DBException e) {
+                    log.debug("Error reading index '" + index.getName() + "'", e);
                 }
             }
         } catch (DBException e) {

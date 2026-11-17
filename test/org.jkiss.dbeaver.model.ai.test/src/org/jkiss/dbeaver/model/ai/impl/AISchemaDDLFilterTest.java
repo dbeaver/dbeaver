@@ -182,18 +182,48 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
     }
 
     @Test
-    public void compactSchemaSurvivesIndexColumnFailure() throws DBException {
+    public void compactSchemaKeepsIndexesAfterColumnFailure() throws DBException {
         DBSTable table = table("orders");
-        DBSTableIndex index = Mockito.mock(DBSTableIndex.class);
-        DBSTableIndex valid = index(table, "valid_index", table.getAttributes(monitor).getFirst());
-        Mockito.doReturn(List.of(valid, index)).when(table).getIndexes(monitor);
-        Mockito.doThrow(new DBException("Index columns unavailable")).when(index).getAttributeReferences(monitor);
-        indexEditor().definitions.put("valid_index", "CREATE INDEX valid_index ON orders (id);");
+        DBSEntityAttribute column = table.getAttributes(monitor).getFirst();
+        DBSTableIndex broken = index(table, "broken_index", column);
+        Mockito.doThrow(new DBException("Index columns unavailable")).when(broken).getAttributeReferences(monitor);
+        TestIndexEditor editor = indexEditor();
+        editor.definitions.put("before_index", "CREATE INDEX before_index ON orders (id);");
+        editor.definitions.put("after_index", "CREATE INDEX after_index ON orders (id);");
         AISchemaGenerationOptions options = options(false).withSendIndexes(true).build();
+        DBSTableIndex before = index(table, "before_index", column);
+        DBSTableIndex after = index(table, "after_index", column);
 
-        String ddl = Assertions.assertDoesNotThrow(() -> new AISchemaGeneratorImpl().generateSchema(monitor, null, options, table));
-        Assertions.assertTrue(ddl.contains("CREATE TABLE"), ddl);
-        Assertions.assertTrue(ddl.contains("CREATE INDEX valid_index"), ddl);
+        for (List<DBSTableIndex> indexes : List.of(List.of(broken, before, after), List.of(before, broken, after))) {
+            Mockito.doReturn(indexes).when(table).getIndexes(monitor);
+            String ddl = Assertions.assertDoesNotThrow(() -> new AISchemaGeneratorImpl().generateSchema(monitor, null, options, table));
+            Assertions.assertTrue(ddl.contains("CREATE TABLE"), ddl);
+            Assertions.assertTrue(ddl.contains("CREATE INDEX before_index"), ddl);
+            Assertions.assertTrue(ddl.contains("CREATE INDEX after_index"), ddl);
+        }
+    }
+
+    @Test
+    public void compactSchemaKeepsIndexesAfterManagerFailure() throws DBException {
+        TestIndexEditor editor = indexEditor();
+        editor.failingIndex = "broken index";
+        editor.definitions.put("before_index", "CREATE INDEX before_index ON orders (id);");
+        editor.definitions.put("after_index", "CREATE INDEX after_index ON orders (id);");
+        AISchemaGenerationOptions options = options(false).withSendIndexes(true).build();
+        DBSTable table = table("orders");
+        DBSEntityAttribute column = table.getAttributes(monitor).getFirst();
+        DBSTableIndex broken = index(table, "broken index", column);
+        DBSTableIndex before = index(table, "before_index", column);
+        DBSTableIndex after = index(table, "after_index", column);
+
+        for (List<DBSTableIndex> indexes : List.of(List.of(broken, before, after), List.of(before, broken, after))) {
+            Mockito.doReturn(indexes).when(table).getIndexes(monitor);
+            String ddl = Assertions.assertDoesNotThrow(() -> new AISchemaGeneratorImpl().generateSchema(monitor, null, options, table));
+            Assertions.assertTrue(ddl.contains("CREATE TABLE"), ddl);
+            Assertions.assertTrue(ddl.contains("CREATE INDEX before_index"), ddl);
+            Assertions.assertTrue(ddl.contains("CREATE INDEX after_index"), ddl);
+            Assertions.assertEquals("broken index", broken.getName());
+        }
     }
 
     @Test
@@ -213,7 +243,7 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
         DBSTableIndex index = index(table, "order index", table.getAttributes(monitor).getFirst());
         Mockito.doReturn(List.of(index)).when(table).getIndexes(monitor);
         TestIndexEditor editor = indexEditor();
-        editor.fail = true;
+        editor.failingIndex = "order index";
         String ddl = Assertions.assertDoesNotThrow(() -> new AISchemaGeneratorImpl().generateSchema(
             monitor, null, options(false).withSendIndexes(true).build(), table));
         Assertions.assertTrue(ddl.contains("CREATE TABLE"), ddl);
@@ -516,7 +546,7 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
 
     public abstract static class TestIndexEditor extends SQLObjectEditor<DBSTableIndex, DBSObjectContainer> {
         private Map<String, String> definitions;
-        private boolean fail;
+        private String failingIndex;
 
         @Override
         protected void addObjectCreateActions(
@@ -526,7 +556,7 @@ public class AISchemaDDLFilterTest extends DBeaverUnitTest {
             @NotNull ObjectCreateCommand command,
             @NotNull Map<String, Object> options
         ) throws DBException {
-            if (fail) {
+            if (command.getObject().getName().equals(failingIndex)) {
                 ((DBPNamedObject2) command.getObject()).setName("quoted index");
                 throw new DBException("Index DDL unavailable");
             }
