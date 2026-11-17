@@ -53,9 +53,6 @@ public class DBeaverStatusBarTrim {
     @PostConstruct
     public void createControls(@NotNull Composite parent) {
         Composite bar = UIUtils.createPlaceholder(parent, 1, 0);
-        if (!DBWorkbench.getPlatform().getApplication().isStandalone()) {
-            return;
-        }
         List<ItemDescriptor> descriptors = new ArrayList<>();
         for (var config : Platform.getExtensionRegistry().getConfigurationElementsFor(EXTENSION_ID)) {
             if (!"item".equals(config.getName())) {
